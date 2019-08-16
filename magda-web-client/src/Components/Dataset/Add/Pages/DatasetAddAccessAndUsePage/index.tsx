@@ -21,6 +21,11 @@ import * as codelists from "constants/DatasetConstants";
 import { getFormatIcon } from "../../../View/DistributionIcon";
 import helpIcon from "assets/help.svg";
 
+import ReactSelect from "react-select";
+import ReactSelectStyles from "../../../../Common/react-select/ReactSelectStyles";
+
+import "./index.scss";
+
 type Props = {
     edit: (aspectField: string) => (field: string) => (newValue: any) => void;
     editState: (field: string) => (newValue: any) => void;
@@ -95,8 +100,9 @@ export default function DatasetAddPeoplePage(props: Props) {
                 </div>
 
                 <h3>Dataset use</h3>
+
                 {files.length !== 0 && (
-                    <React.Fragment>
+                    <div className="question-license-apply-type">
                         <h4>
                             What type of license should be applied to these
                             files?
@@ -109,91 +115,193 @@ export default function DatasetAddPeoplePage(props: Props) {
                             desired.
                         </ToolTip>
 
-                        <p>
-                            <AlwaysEditor
-                                value={_licenseLevel}
-                                onChange={props.editState("_licenseLevel")}
-                                editor={codelistEditor(
-                                    codelists.datasetLicenseLevel
-                                )}
-                            />
-                        </p>
-                    </React.Fragment>
-                )}
-                <h4>What license restrictions should be applied?</h4>
-                <ToolTip>
-                    We recommend a Whole of Government License be applied to
-                    encourage inter-department data sharing in the future.
-                </ToolTip>
-                {_licenseLevel === "dataset" ? (
-                    <div>
-                        <p>
-                            <AlwaysEditor
-                                value={datasetUsage.licenseLevel}
-                                onChange={editDatasetUsage("licenseLevel")}
-                                editor={codelistEditor(codelists.licenseLevel)}
-                            />
-                        </p>
-                        {datasetUsage.licenseLevel === "custom" && (
-                            <p>
-                                <AlwaysEditor
-                                    value={datasetUsage.license}
-                                    onChange={editDatasetUsage("license")}
-                                    editor={textEditorEx({
-                                        placeholder: "Please specify a license"
-                                    })}
+                        <div className="row">
+                            <div className="col-sm-4">
+                                <ReactSelect
+                                    className="license-apply-type-select"
+                                    styles={ReactSelectStyles}
+                                    isSearchable={false}
+                                    options={
+                                        Object.keys(
+                                            codelists.datasetLicenseLevel
+                                        ).map(key => ({
+                                            label:
+                                                codelists.datasetLicenseLevel[
+                                                    key
+                                                ],
+                                            value: key
+                                        })) as any
+                                    }
+                                    value={
+                                        _licenseLevel
+                                            ? {
+                                                  label:
+                                                      codelists
+                                                          .datasetLicenseLevel[
+                                                          _licenseLevel
+                                                      ],
+                                                  value: _licenseLevel
+                                              }
+                                            : null
+                                    }
+                                    onChange={item =>
+                                        props.editState("_licenseLevel")(
+                                            item.value
+                                        )
+                                    }
                                 />
-                            </p>
-                        )}
-                    </div>
-                ) : (
-                    <div>
-                        {files.map((file, fileIndex) => {
-                            const edit = field => value => {
-                                file.usage[field] = value;
-                                props.editState("files")(files);
-                            };
-                            return (
-                                <div className="fileBlock">
-                                    <span className="fileBlock-icon">
-                                        <img
-                                            className="file-icon"
-                                            src={getFormatIcon(file)}
-                                        />
-                                    </span>
-                                    <span className="fileBlock-text">
-                                        {file.title}
-                                    </span>
-
-                                    <div className="fileBlock-control">
-                                        <p>
-                                            <AlwaysEditor
-                                                value={file.usage.licenseLevel}
-                                                onChange={edit("licenseLevel")}
-                                                editor={codelistEditor(
-                                                    codelists.licenseLevel
-                                                )}
-                                            />
-                                        </p>
-                                        {file.usage.licenseLevel ===
-                                            "custom" && (
-                                            <p>
-                                                <AlwaysEditor
-                                                    value={file.usage.license}
-                                                    onChange={edit("license")}
-                                                    editor={textEditorEx({
-                                                        placeholder:
-                                                            "Please specify a license"
-                                                    })}
-                                                />
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-                            );
-                        })}
+                            </div>
+                        </div>
                     </div>
                 )}
+
+                <div className="question-license-restriction-type">
+                    <h4>What license restrictions should be applied?</h4>
+                    <ToolTip>
+                        We recommend a Whole of Government License be applied to
+                        encourage inter-department data sharing in the future.
+                    </ToolTip>
+                    {_licenseLevel === "dataset" ? (
+                        <div className="license-dataset-option-container">
+                            <div className="row">
+                                <div className="col-sm-6">
+                                    <ReactSelect
+                                        styles={ReactSelectStyles}
+                                        isSearchable={false}
+                                        options={
+                                            Object.keys(
+                                                codelists.licenseLevel
+                                            ).map(key => ({
+                                                label:
+                                                    codelists.licenseLevel[key],
+                                                value: key
+                                            })) as any
+                                        }
+                                        value={
+                                            datasetUsage.licenseLevel
+                                                ? {
+                                                      label:
+                                                          codelists
+                                                              .licenseLevel[
+                                                              datasetUsage
+                                                                  .licenseLevel
+                                                          ],
+                                                      value:
+                                                          datasetUsage.licenseLevel
+                                                  }
+                                                : null
+                                        }
+                                        onChange={item =>
+                                            editDatasetUsage("licenseLevel")(
+                                                item.value
+                                            )
+                                        }
+                                    />
+                                </div>
+                            </div>
+                            <div className="row">
+                                <div className="col-sm-6">
+                                    {datasetUsage.licenseLevel === "custom" && (
+                                        <div>
+                                            <AlwaysEditor
+                                                value={datasetUsage.license}
+                                                onChange={editDatasetUsage(
+                                                    "license"
+                                                )}
+                                                editor={textEditorEx({
+                                                    placeholder:
+                                                        "Please specify a license..."
+                                                })}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="license-distribution-option-container">
+                            {files.map((file, fileIndex) => {
+                                const edit = field => value => {
+                                    file.usage[field] = value;
+                                    props.editState("files")(files);
+                                };
+                                return (
+                                    <div className="fileBlock">
+                                        <span className="fileBlock-icon">
+                                            <img
+                                                className="file-icon"
+                                                src={getFormatIcon(file)}
+                                            />
+                                        </span>
+                                        <span className="fileBlock-text">
+                                            {file.title}
+                                        </span>
+                                        <div className="fileBlock-control col-sm-6">
+                                            <div>
+                                                <ReactSelect
+                                                    styles={ReactSelectStyles}
+                                                    isSearchable={false}
+                                                    menuPortalTarget={
+                                                        document.body
+                                                    }
+                                                    options={
+                                                        Object.keys(
+                                                            codelists.licenseLevel
+                                                        ).map(key => ({
+                                                            label:
+                                                                codelists
+                                                                    .licenseLevel[
+                                                                    key
+                                                                ],
+                                                            value: key
+                                                        })) as any
+                                                    }
+                                                    value={
+                                                        file.usage.licenseLevel
+                                                            ? {
+                                                                  label:
+                                                                      codelists
+                                                                          .licenseLevel[
+                                                                          file
+                                                                              .usage
+                                                                              .licenseLevel
+                                                                      ],
+                                                                  value:
+                                                                      datasetUsage.licenseLevel
+                                                              }
+                                                            : null
+                                                    }
+                                                    onChange={item =>
+                                                        edit("licenseLevel")(
+                                                            item.value
+                                                        )
+                                                    }
+                                                />
+                                            </div>
+                                            {file.usage.licenseLevel ===
+                                                "custom" && (
+                                                <div>
+                                                    <AlwaysEditor
+                                                        value={
+                                                            file.usage.license
+                                                        }
+                                                        onChange={edit(
+                                                            "license"
+                                                        )}
+                                                        editor={textEditorEx({
+                                                            placeholder:
+                                                                "Please specify a license..."
+                                                        })}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
 
                 <h4>What is the security classification of this dataset?</h4>
                 <p>

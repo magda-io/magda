@@ -1,0 +1,86 @@
+@import "variables";
+
+.dataset-add-meta-data-pages {
+    .dataset-access-and-use-page {
+        h2 {
+            font-size: 38px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.61;
+            letter-spacing: normal;
+            color: #30384d;
+            margin-bottom: 80px;
+        }
+
+        h3 {
+            font-size: 29px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.03;
+            letter-spacing: normal;
+            color: #484848;
+            margin-bottom: 76px;
+        }
+
+        .question-who-can-see-dataset {
+            margin-bottom: 54px;
+        }
+
+        .question-access-notes textarea {
+            padding-left: 16px !important;
+        }
+
+        .question-license-restriction-type {
+            .textEditorEx-outter-container {
+                margin-top: 20px;
+                width: 100%;
+                max-width: none !important;
+                .au-text-input {
+                    max-width: none !important;
+                }
+                .edit-icon-container {
+                    position: initial;
+                }
+            }
+            .license-distribution-option-container {
+                .fileBlock {
+                    border: solid 1px #cccaca;
+                    margin-bottom: 15px;
+                    overflow: auto;
+                }
+
+                .fileBlock-icon {
+                    float: left;
+                    padding: 0.8em;
+                    margin-top: 6px;
+                }
+
+                .fileBlock-control {
+                    float: right;
+                    padding: 0.5em;
+                }
+
+                .fileBlock-text {
+                    display: inline-block;
+                    padding: 1em;
+                    margin-top: 6px;
+                    font-size: 15px;
+                    font-weight: normal;
+                    font-style: normal;
+                    font-stretch: normal;
+                    line-height: 1.33;
+                    letter-spacing: normal;
+                    color: #484848;
+                }
+                .textEditorEx-outter-container {
+                    margin-top: 10px !important;
+                    .au-text-input {
+                        margin-bottom: 0px;
+                    }
+                }
+            }
+        }
+    }
+}
