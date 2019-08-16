@@ -4,6 +4,10 @@
  * https://react-select.com/styles
  */
 const customStyles = {
+    control: provided => ({
+        ...provided,
+        height: "44px"
+    }),
     multiValue: provided => ({
         ...provided,
         backgroundColor: "#30384d",

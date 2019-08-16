@@ -14,6 +14,7 @@ const StateSelectStyles = {
     }),
     control: provided => ({
         ...provided,
+        height: "44px",
         borderRadius: "2px"
     })
 };
