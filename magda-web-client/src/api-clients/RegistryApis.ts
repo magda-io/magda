@@ -27,12 +27,6 @@ export function fetchOrganization(publisherId: string): Promise<Publisher> {
 }
 
 export async function ensureAspectExists(id: string, jsonSchema: any) {
-    // try {
-    //     await request(
-    //         "GET",
-    //         `${config.baseUrl}api/v0/registry-auth/aspects/${id}`
-    //     );
-    // } catch (error) {
     await request(
         "PUT",
         `${config.baseUrl}api/v0/registry-auth/aspects/${id}`,
@@ -42,7 +36,6 @@ export async function ensureAspectExists(id: string, jsonSchema: any) {
             jsonSchema
         }
     );
-    // }
 }
 
 type Record = {
