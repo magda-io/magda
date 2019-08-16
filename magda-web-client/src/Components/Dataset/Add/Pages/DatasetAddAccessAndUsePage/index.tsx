@@ -99,7 +99,7 @@ export default function DatasetAddPeoplePage(props: Props) {
                     </div>
                 </div>
 
-                <h3>Dataset use</h3>
+                <h3 className="with-underline">Dataset use</h3>
 
                 {files.length !== 0 && (
                     <div className="question-license-apply-type">
