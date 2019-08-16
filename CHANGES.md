@@ -9,6 +9,8 @@ Registry:
 -   Changed database schema.
 -   Provide services based on Tenant IDs.
 -   Fixed PATCH request to registry won't trigger notification to webhook
+-   Moved provenance and information security information out of `dcat-dataset-strings`.
+-   Removed some unused fields from `dcat-dataset-strings` - it should now be back to looking more-or-less like DCAT.
 
 Gateway:
 
