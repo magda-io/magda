@@ -303,6 +303,29 @@ trait RegistryConverters extends RegistryProtocols {
 
     val publishing = hit.aspects.getOrElse("publishing", JsObject())
 
+    val accessNotes = Try {
+      hit.aspects.get("access") match {
+        case Some(JsObject(access)) =>
+          Some(DataSetAccessNotes(notes = access.get("notes") match {
+            case Some(JsString(notes)) => Some(notes)
+            case _ => None
+          }, location= access.get("location") match {
+            case Some(JsString(location)) => Some(location)
+            case _ => None
+          }))
+        case _ => None
+      }
+    } match {
+      case Success(notes) => notes
+      case Failure(e) =>
+        if (logger.isDefined) {
+          logger.get.error(
+            s"Failed to convert dataset access notes aspect for dataset ${hit.id}: ${e.getMessage}"
+          )
+        }
+        None
+    }
+
     DataSet(
       identifier = hit.id,
       tenantId = hit.tenantId.get,
@@ -337,7 +360,8 @@ trait RegistryConverters extends RegistryProtocols {
       publishingState = Some(
         publishing.extract[String]('state.?).getOrElse("published")
       ), // assume not set means published
-      accessControl = accessControl
+      accessControl = accessControl,
+      accessNotes = accessNotes
     )
   }
 
@@ -670,7 +694,8 @@ object Registry extends RegistryConverters {
       "dataset-format",
       "publishing",
       "spatial-coverage",
-      "dataset-access-control"
+      "dataset-access-control",
+      "access"
     )
   }
 }

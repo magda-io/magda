@@ -90,3 +90,35 @@ export function autocompletePublishers(
         }
     });
 }
+
+type AutoCompleteResult = {
+    inputString: String;
+    suggestions: string[];
+    errorMessage?: string;
+};
+
+export async function autoCompleteAccessLocation(
+    term: string,
+    size: number = 8
+): Promise<string[]> {
+    const url = `${config.searchApiUrl +
+        "autoComplete"}?field=accessNotes.location&input=${encodeURIComponent(
+        term
+    )}&size=${size}`;
+
+    const response = await fetch(url, config.fetchOptions);
+    try {
+        const resData: AutoCompleteResult = await response.json();
+        if (resData.errorMessage) {
+            throw new Error(resData.errorMessage);
+        }
+        return resData.suggestions;
+    } catch (e) {
+        if (!response.ok) {
+            // --- server side error
+            throw Error(response.statusText);
+        } else {
+            throw Error(e);
+        }
+    }
+}
