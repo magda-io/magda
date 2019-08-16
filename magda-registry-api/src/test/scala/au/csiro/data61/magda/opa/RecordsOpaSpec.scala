@@ -48,8 +48,9 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
 
   val orgNames = List("Dep. A", "Branch A, Dep. A", "Branch B, Dep. A", "Section C, Branch B, Dep. A", "Section C, Branch B, Dep. A")
   val dataPath = "magda-registry-api/src/test/scala/au/csiro/data61/magda/opa/data/"
+  val accessControlSchemaFile = "magda-registry-aspects/dataset-access-control.schema.json"
   private def createAspectDefinitions(param: RecordsOpaSpec.this.FixtureParam) = {
-    val accessControlSchemaSource: BufferedSource = fromFile(dataPath + "access-control-schema.json")
+    val accessControlSchemaSource: BufferedSource = fromFile(accessControlSchemaFile)
     val orgAspectSchemaSource: BufferedSource = fromFile(dataPath + "organization-schema.json")
     val accessControlSchema: String = try accessControlSchemaSource.mkString finally accessControlSchemaSource.close()
     val orgAspectSchema: String = try orgAspectSchemaSource.mkString finally orgAspectSchemaSource.close()
