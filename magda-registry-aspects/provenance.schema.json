@@ -32,7 +32,7 @@
                 }
             }
         },
-        "affiliatedOrganizationIdsIds": {
+        "affiliatedOrganizationIds": {
             "description": "Which other organisation(s), if any, was this produced in collaboration with?",
             "type": "array",
             "items": {

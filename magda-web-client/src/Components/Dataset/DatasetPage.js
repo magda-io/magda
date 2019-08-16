@@ -739,10 +739,10 @@ class RecordHandler extends React.Component {
                                                     enabled={hasEditPermissions}
                                                     value={
                                                         dataset.provenance
-                                                            .affiliatedOrganisationIds
+                                                            .affiliatedOrganizationIds
                                                     }
                                                     onChange={provenanceChange(
-                                                        "affiliatedOrganisationIds"
+                                                        "affiliatedOrganizationIds"
                                                     )}
                                                     editor={multilineTextEditor}
                                                 />

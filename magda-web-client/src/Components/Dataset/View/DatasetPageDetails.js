@@ -51,13 +51,15 @@ class DatasetPageDetails extends Component {
                                 ))}
                             </div>
                         </div>
-                        {source && (
+                        {(source || dataset.provenance) && (
                             <div className="dataset-details-source">
                                 <h3 className="section-heading">Data Source</h3>
-                                <MarkdownViewer
-                                    markdown={source}
-                                    truncate={false}
-                                />
+                                {source && (
+                                    <MarkdownViewer
+                                        markdown={source}
+                                        truncate={false}
+                                    />
+                                )}
                                 <a
                                     className="landing-page"
                                     href={dataset.landingPage}
@@ -65,10 +67,10 @@ class DatasetPageDetails extends Component {
                                     {dataset.landingPage}
                                 </a>
                                 {defined(dataset.provenance) &&
-                                defined(dataset.creation.isOpenData) ? (
+                                defined(dataset.provenance.isOpenData) ? (
                                     <h3 className="section-heading">
                                         Type:{" "}
-                                        {dataset.creation.isOpenData
+                                        {dataset.provenance.isOpenData
                                             ? "Public"
                                             : "Private"}
                                     </h3>

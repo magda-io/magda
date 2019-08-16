@@ -3,6 +3,17 @@
     "title": "Metadata about information security",
     "type": "object",
     "properties": {
+        "classification": {
+            "title": "Security classification. See https://www.protectivesecurity.gov.au/informationsecurity/Documents/AustralianGovernmentclassificationsystem.pdf for more details.",
+            "type": "string",
+            "enum": [
+                "UNCLASSIFIED",
+                "PROTECTED",
+                "CONFIDENTIAL",
+                "SECRET",
+                "TOP SECRET"
+            ]
+        },
         "disseminationLimits": {
             "title": "Any sensitivity DLMs. See https://www.protectivesecurity.gov.au/informationsecurity/Documents/AustralianGovernmentclassificationsystem.pdf for more details.",
             "type": "array",
@@ -17,17 +28,6 @@
                     "Sensitive: Commercial"
                 ]
             }
-        },
-        "classification": {
-            "title": "Security classification. See https://www.protectivesecurity.gov.au/informationsecurity/Documents/AustralianGovernmentclassificationsystem.pdf for more details.",
-            "type": "string",
-            "enum": [
-                "UNCLASSIFIED",
-                "PROTECTED",
-                "CONFIDENTIAL",
-                "SECRET",
-                "TOP SECRET"
-            ]
         }
     }
 }

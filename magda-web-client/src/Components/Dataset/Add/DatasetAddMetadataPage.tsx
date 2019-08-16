@@ -36,7 +36,7 @@ import TagInput from "Components/Common/TagInput";
 import AccrualPeriodicityInput from "./AccrualPeriodicityInput";
 import { State, saveState } from "./DatasetAddCommon";
 import DatasetAddPeoplePage from "./Pages/People/DatasetAddPeoplePage";
-import { createPublisher } from "api-clients/RegistryApis";
+import { createPublisher, ensureAspectExists } from "api-clients/RegistryApis";
 import withAddDatasetState from "./withAddDatasetState";
 
 import datasetPublishingAspect from "@magda/registry-aspects/publishing.schema.json";
@@ -48,7 +48,9 @@ import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribu
 import accessAspect from "@magda/registry-aspects/access.schema.json";
 import provenanceAspect from "@magda/registry-aspects/provenance.schema.json";
 import informationSecurityAspect from "@magda/registry-aspects/information-security.schema.json";
-import datasetAccessControl from "@magda/registry-aspects/dataset-access-control.schema.json";
+import datasetAccessControlAspect from "@magda/registry-aspects/dataset-access-control.schema.json";
+import organizationDetailsAspect from "@magda/registry-aspects/organization-details.schema.json";
+import datasetPublisherAspect from "@magda/registry-aspects/dataset-publisher.schema.json";
 
 import "./DatasetAddMetadataPage.scss";
 import "./DatasetAddFilesPage.scss";
@@ -76,7 +78,8 @@ const aspects = {
     access: accessAspect,
     provenance: provenanceAspect,
     "information-security": informationSecurityAspect,
-    "dataset-access-control": datasetAccessControl
+    "dataset-access-control": datasetAccessControlAspect,
+    "dataset-publisher": datasetPublisherAspect
 };
 
 type Props = {
@@ -118,11 +121,13 @@ class NewDataset extends React.Component<Props, State> {
         this.renderSubmitPage.bind(this)
     ];
 
-    edit = (aspectField: string) => (field: string) => (newValue: any) => {
+    edit = <K extends keyof State>(aspectField: K) => (field: string) => (
+        newValue: any
+    ) => {
         this.setState(state => {
-            const item = Object.assign({}, state[aspectField]);
-            item[field] = newValue;
-            return Object.assign({}, state, { [aspectField]: item });
+            return {
+                [aspectField]: { ...state[aspectField], [field]: newValue }
+            } as Pick<State, K>;
         });
     };
 
@@ -133,6 +138,8 @@ class NewDataset extends React.Component<Props, State> {
     };
 
     render() {
+        console.log(this.state);
+
         const { files } = this.state;
 
         let { step, lastDatasetId } = this.props;
@@ -569,9 +576,7 @@ class NewDataset extends React.Component<Props, State> {
                     <p>
                         <AlwaysEditor
                             value={informationSecurity.classification}
-                            onChange={editInformationSecurity(
-                                "securityClassification"
-                            )}
+                            onChange={editInformationSecurity("classification")}
                             editor={codelistEditor(codelists.classification)}
                         />
                     </p>
@@ -686,7 +691,8 @@ class NewDataset extends React.Component<Props, State> {
             setLicenseToDataset,
             datasetLevelLicense,
             informationSecurity,
-            datasetAccess
+            datasetAccess,
+            provenance
         } = this.state;
 
         if (!dataset.publisher) {
@@ -712,9 +718,13 @@ class NewDataset extends React.Component<Props, State> {
             );
 
             if (!match) {
-                publisherId = uuidv4();
-
                 // OK no publisher, lets add it
+                await ensureAspectExists(
+                    "organization-details",
+                    organizationDetailsAspect
+                );
+
+                publisherId = uuidv4();
                 await createPublisher({
                     id: publisherId,
                     name: dataset.publisher.name,
@@ -777,7 +787,8 @@ class NewDataset extends React.Component<Props, State> {
                 "information-security": informationSecurity,
                 "dataset-access-control": {
                     orgUnitOwnerId: dataset.owningOrgUnitId
-                }
+                },
+                provenance: provenance
             }
         };
         this.props.createRecord(inputDataset, inputDistributions, aspects);

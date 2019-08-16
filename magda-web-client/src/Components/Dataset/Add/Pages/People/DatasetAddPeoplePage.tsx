@@ -10,7 +10,8 @@ import * as codelists from "constants/DatasetConstants";
 import {
     Dataset,
     DatasetPublishing,
-    Provenance
+    Provenance,
+    State as AddMetadataState
 } from "Components/Dataset/Add/DatasetAddCommon";
 import OrganisationAutoComplete from "./OrganisationAutocomplete";
 import OrgUnitDropdown from "./OrgUnitDropdown";
@@ -75,7 +76,9 @@ function YesNoEditReveal(props) {
 }
 
 type Props = {
-    edit: (aspectField: string) => (field: string) => (newValue: any) => void;
+    edit: <K extends keyof AddMetadataState>(
+        aspectField: K
+    ) => (field: string) => (newValue: any) => void;
     dataset: Dataset;
     provenance: Provenance;
     publishing: DatasetPublishing;
