@@ -26,6 +26,7 @@ Indexer:
 -   Fixed indexer throws an error when temporalCoverage aspects intervals is an empty array
 -   Index datasets with tenant ID.
 -   Fixed indexer throws an error when affiliatedOrganisation field is created
+-   Fixed indexer incorrect parsing bounding box data in spatialCoverage aspect
 
 Cataloging:
 
