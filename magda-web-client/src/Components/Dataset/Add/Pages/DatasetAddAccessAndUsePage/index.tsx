@@ -70,13 +70,15 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                 </div>
 
                 <div className="question-access-notes">
-                    <h4>How can other users access this dataset?</h4>
+                    <h4>Where cam users access this dataset from?</h4>
                     <ToolTip>
-                        Include locations on share drives, URLs of databases,
-                        how to arrange access etc.
+                        Select the best location for this dataset based on its
+                        contents and your organisation file structure.
                     </ToolTip>
+                    <h4>Dataset location:</h4>
                     <div className="access-location-input-container">
                         <AccessLocationAutoComplete
+                            placeholder="Start typing a file location name..."
                             defaultValue={
                                 datasetAccess.location
                                     ? datasetAccess.location
@@ -85,10 +87,11 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                             onChange={editDatasetAccess("location")}
                         />
                     </div>
+                    <h4>Dataset access notes:</h4>
                     <div>
                         <MultilineTextEditor
                             value={datasetAccess.notes}
-                            placerHolder="Enter access notes"
+                            placerHolder="Enter any access considerations for users, such as permissions or restrictions they should be aware of..."
                             onChange={editDatasetAccess("notes")}
                         />
                     </div>
