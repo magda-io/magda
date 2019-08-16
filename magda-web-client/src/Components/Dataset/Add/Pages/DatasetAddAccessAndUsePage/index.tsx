@@ -70,7 +70,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                 </div>
 
                 <div className="question-access-notes">
-                    <h4>Where cam users access this dataset from?</h4>
+                    <h4>Where can users access this dataset from?</h4>
                     <ToolTip>
                         Select the best location for this dataset based on its
                         contents and your organisation file structure.
