@@ -27,6 +27,7 @@ object OpaTypes {
   case object Gte extends OpaOp
 
   object OpaOp {
+
     def apply(op: String): OpaOp = op match {
       case "equal" => Eq
       case "eq"    => Eq
@@ -76,6 +77,7 @@ case class RegoTermBoolean(value: Boolean) extends RegoTermValue
 case class RegoTermNumber(value: BigDecimal) extends RegoTermValue
 
 object RegoTerm {
+
   def apply(termJson: JsValue): RegoTerm = {
     val jsObj = termJson.asJsObject
     (jsObj.fields("type"), jsObj.fields("value")) match {
@@ -96,6 +98,7 @@ case class RegoRefPartString(value: String) extends RegoRefPart
 case class RegoRefPartVar(value: String) extends RegoRefPart
 
 object RegoRefPart {
+
   def apply(refJson: JsValue): RegoRefPart = refJson match {
     case JsObject(ref) =>
       (ref.get("type"), ref.get("value")) match {
@@ -146,8 +149,8 @@ class OpaQueryer()(
   }
 
   def queryRecord(
-    jwtToken: Option[String],
-    policyId: String
+      jwtToken: Option[String],
+      policyId: String
   ): Future[List[OpaQuery]] = {
     queryPolicy(jwtToken, policyId)
   }
@@ -168,9 +171,9 @@ class OpaQueryer()(
       policyId: String
   ): Future[List[OpaQuery]] = {
     val requestData: String = s"""{
-      |  "query": "data.$policyId",
-      |  "unknowns": ["input.object"]
-      |}""".stripMargin
+                                 |  "query": "data.$policyId",
+                                 |  "unknowns": ["input.object"]
+                                 |}""".stripMargin
 
     // println(requestData)
 
@@ -215,7 +218,7 @@ class OpaQueryer()(
     val result = json.asJsObject.fields
       .get("result") match {
       case Some(aResult) => aResult
-      case None         => throw new Exception("Got no result for opa query")
+      case None          => throw new Exception("Got no result for opa query")
     }
 
     val rulesOpt = result.asJsObject.fields
@@ -237,7 +240,8 @@ class OpaQueryer()(
           .flatMap(_.elements.toList)
           .flatMap { element =>
             val fields = element.asJsObject.fields
-            val isDefault = fields.getOrElse("default", JsFalse)
+            val isDefault = fields
+              .getOrElse("default", JsFalse)
               .asInstanceOf[JsBoolean]
               .value
             val headValue =
@@ -296,7 +300,6 @@ class OpaQueryer()(
 
     }
 
-    println(rulesOpt)
     rulesOpt
   }
 

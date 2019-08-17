@@ -3,89 +3,129 @@ package au.csiro.data61.magda.opa
 import akka.http.scaladsl.model.StatusCodes
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.registry._
+import org.scalatest.Ignore
 import spray.json._
 
 import scala.collection.immutable
-import scala.concurrent.duration._
 import scala.io.BufferedSource
 import scala.io.Source.fromFile
 
+@Ignore
 class RecordsOpaSpec extends ApiWithOpaSpec {
 
-  s"""
-     |     Relationship among users, organizations and records.
-     |
-     |              +----------+
-     |              |  Dep. A  |
-     |              | userId0  |
-     |              | record-0 |
-     |              +----+-----+
-     |                   |
-     |          +--------+--------+
-     |          |                 |
-     |      +----+-----+       +----+-----+
-     |      | Branch A |       | Branch B |
-     |      | userId1  |       | userId2  |
-     |      | record-1 |       | record-2 |
-     |      +----------+       +----+-----+
-     |                              |
-     |               +--------------------------+
-     |               |             |            |
-     |           +----+----+  +----+----+  +----+-----+      +----------+
-     |           |Section A|  |Section B|  |Section C |      | (Public) |
-     |           |         |  |         |  | userId3  |      | record-4 | (No access control but orgUnit = Section C)
-     |           |         |  |         |  | record-3 |      +----------+
-     |           +---------+  +---------+  +----------+
-     """
-
+  /**
+    *     Relationship among users, organizations and records.
+    *
+    *                +----------+
+    *                |  Dep. A  |
+    *                | userId0  |
+    *                | record-0 |
+    *                +----+-----+
+    *                     |
+    *            +--------+--------+
+    *            |                 |
+    *       +----+-----+       +----+-----+
+    *       | Branch A |       | Branch B |
+    *       | userId1  |       | userId2  |
+    *       | record-1 |       | record-2 |
+    *       +----------+       +----+-----+
+    *                               |
+    *                  +--------------------------+
+    *                  |            |             |
+    *             +----+----+  +----+----+  +----+-----+      +----------+
+    *             |Section A|  |Section B|  |Section C |      | (Public) |
+    *             |         |  |         |  | userId3  |      | record-4 |
+    *             |         |  |         |  | record-3 |      +----------+
+    *             +---------+  +---------+  +----------+     (Section C owns record-4 but does
+    *                                                         not put access restriction on it.)
+    */
+  val userId0 = "00000000-0000-1000-0000-000000000000" // admin user
+  val userId1 = "00000000-0000-1000-0001-000000000000"
+  val userId2 = "00000000-0000-1000-0002-000000000000"
+  val userId3 = "00000000-0000-1000-0003-000000000000"
 
   val userIdsAndExpectedRecordIdIndexes = List(
     (userId0, List(0, 1, 2, 3, 4)),
     (userId1, List(1, 4)),
     (userId2, List(2, 3, 4)),
     (userId3, List(3, 4)),
-    (anonymous, List(4)))
+    ("anonymous", List(4))
+  )
 
-  val orgNames = List("Dep. A", "Branch A, Dep. A", "Branch B, Dep. A", "Section C, Branch B, Dep. A", "Section C, Branch B, Dep. A")
-  val dataPath = "magda-registry-api/src/test/scala/au/csiro/data61/magda/opa/data/"
-  val accessControlSchemaFile = "magda-registry-aspects/dataset-access-control.schema.json"
-  private def createAspectDefinitions(param: RecordsOpaSpec.this.FixtureParam) = {
-    val accessControlSchemaSource: BufferedSource = fromFile(accessControlSchemaFile)
-    val orgAspectSchemaSource: BufferedSource = fromFile(dataPath + "organization-schema.json")
-    val accessControlSchema: String = try accessControlSchemaSource.mkString finally accessControlSchemaSource.close()
-    val orgAspectSchema: String = try orgAspectSchemaSource.mkString finally orgAspectSchemaSource.close()
+  val orgNames = List(
+    "Dep. A",
+    "Branch A, Dep. A",
+    "Branch B, Dep. A",
+    "Section C, Branch B, Dep. A",
+    "Section C, Branch B, Dep. A"
+  )
+
+  val dataPath =
+    "magda-registry-api/src/test/scala/au/csiro/data61/magda/opa/data/"
+
+  val accessControlSchemaFile =
+    "magda-registry-aspects/dataset-access-control.schema.json"
+
+  private def createAspectDefinitions(
+      param: RecordsOpaSpec.this.FixtureParam
+  ) = {
+    val accessControlSchemaSource: BufferedSource = fromFile(
+      accessControlSchemaFile
+    )
+    val orgAspectSchemaSource: BufferedSource = fromFile(
+      dataPath + "organization-schema.json"
+    )
+    val accessControlSchema: String = try accessControlSchemaSource.mkString
+    finally accessControlSchemaSource.close()
+    val orgAspectSchema: String = try orgAspectSchemaSource.mkString
+    finally orgAspectSchemaSource.close()
     val accessControlAspectId = "dataset-access-control"
     val orgAspectId = "organization"
-    val accessControlDef = AspectDefinition(accessControlAspectId, "dataset-access-control", Some(JsonParser(accessControlSchema).asJsObject))
-    val orgAspectDef = AspectDefinition(orgAspectId, "dataset-access-control", Some(JsonParser(orgAspectSchema).asJsObject))
-    val aspectData = List((accessControlAspectId, accessControlDef), (orgAspectId, orgAspectDef))
+    val accessControlDef = AspectDefinition(
+      accessControlAspectId,
+      "access control aspect",
+      Some(JsonParser(accessControlSchema).asJsObject)
+    )
+    val orgAspectDef = AspectDefinition(
+      orgAspectId,
+      "organization aspect",
+      Some(JsonParser(orgAspectSchema).asJsObject)
+    )
+    val aspectDefs = List(
+      accessControlDef,
+      orgAspectDef
+    )
 
-    aspectData.map(a => {
-      val aspectId = a._1
-      val aspectDef = a._2
-      Get(s"/v0/aspects/$aspectId")   ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(userId0) ~>  param.api(Full).routes ~> check {
-        response.entity.toStrict(1 second).map(entity => {
-          val json = entity.data.utf8String.parseJson.asJsObject()
-          if (json.fields("message").equals(JsString("No aspect exists with that ID."))){
-            Post(s"/v0/aspects", aspectDef) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(userId0) ~>  param.api(Full).routes ~> check {
-              status shouldBe StatusCodes.OK
-            }
+    aspectDefs.map(aspectDef => {
+      Get(s"/v0/aspects/${aspectDef.id}") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+        userId0
+      ) ~> param.api(Full).routes ~> check {
+        if (status == StatusCodes.NotFound) {
+          Post(s"/v0/aspects", aspectDef) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+            userId0
+          ) ~> param.api(Full).routes ~> check {
+            status shouldBe StatusCodes.OK
           }
-        })
+        }
       }
     })
   }
 
   private def createRecords(param: RecordsOpaSpec.this.FixtureParam) = {
     val recordsSource: BufferedSource = fromFile(dataPath + "records.json")
-    val recordsJsonStr: String = try recordsSource.mkString finally recordsSource.close()
+    val recordsJsonStr: String = try recordsSource.mkString
+    finally recordsSource.close()
     val recordsJson = JsonParser(recordsJsonStr)
     val records: List[Record] = recordsJson.convertTo[List[Record]]
 
     records.map(record => {
-      Get(s"/v0/records/${record.id}") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(userId0) ~>  param.api(Full).routes ~> check {
-        if (status == StatusCodes.NotFound){
-          Post(s"/v0/records", record) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(userId0) ~>  param.api(Full).routes ~> check {
+      Get(s"/v0/records/${record.id}") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+        userId0
+      ) ~> param.api(Full).routes ~> check {
+        if (status == StatusCodes.NotFound) {
+          Post(s"/v0/records", record) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+            userId0
+          ) ~> param.api(Full).routes ~> check {
             status shouldBe StatusCodes.OK
           }
         }
@@ -93,48 +133,95 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
     })
   }
 
-
-  it("should apply access control when responding to query aspect by record ID") { param =>
-
+  it(
+    "should apply access control when returning specified aspect (path param) of specified record"
+  ) { param =>
     createAspectDefinitions(param)
     createRecords(param)
 
     val recordIds: immutable.Seq[(Int, String)] = for {
-      i <- 1 to 5
-      recordId = "record-"+i
+      i <- 0 to 4
+      recordId = "record-" + i
     } yield (i, recordId)
 
     userIdsAndExpectedRecordIdIndexes.map(userIdAndExpectedRecordIndexes => {
       val userId = userIdAndExpectedRecordIndexes._1
       val expectedRecordIndexes = userIdAndExpectedRecordIndexes._2
+      var foundRecordsCounter = 0
 
-      var isMeaningful = false
-      recordIds.map( recordIdAndIndex => {
+      recordIds.map(recordIdAndIndex => {
         val recordIndex = recordIdAndIndex._1
         val recordId = recordIdAndIndex._2
 
-        Get(s"/v0/records/$recordId/aspects/organization") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(userId) ~>  param.api(Full).routes ~> check {
-          if (expectedRecordIndexes.contains(recordIndex)){
+        Get(s"/v0/records/$recordId/aspects/organization") ~> addTenantIdHeader(
+          TENANT_0
+        ) ~> addJwtToken(userId) ~> param.api(Full).routes ~> check {
+          val theResponse = responseAs[Option[JsObject]]
+          if (expectedRecordIndexes.contains(recordIndex)) {
             status shouldBe StatusCodes.OK
-            response.entity.toStrict(1 second).map(entity => {
-              val json = entity.data.utf8String.parseJson.asJsObject()
-              isMeaningful = true
-              json.fields("name") shouldBe orgNames(recordIndex)
-            })
-          }
-          else {
-            status shouldBe StatusCodes.OK
-            val result: Option[Long] = response.entity.contentLengthOption
-            result.get shouldBe 0
+            foundRecordsCounter = foundRecordsCounter + 1
+            theResponse.get.fields("name") shouldBe JsString(
+              orgNames(recordIndex)
+            )
+          } else {
+            status shouldBe StatusCodes.NotFound
+            theResponse.get.fields("message") shouldBe JsString(
+              "No record or aspect exists with the given IDs."
+            )
           }
         }
+
       })
 
-      isMeaningful shouldBe true
+      foundRecordsCounter shouldBe expectedRecordIndexes.length
     })
   }
 
-  it("should apply access control when responding to aspect query") { param =>
+  it(
+    "should apply access control when returning specified aspect (query param) of specified record"
+  ) { param =>
+    createAspectDefinitions(param)
+    createRecords(param)
+
+    val recordIds: immutable.Seq[(Int, String)] = for {
+      i <- 0 to 4
+      recordId = "record-" + i
+    } yield (i, recordId)
+
+    userIdsAndExpectedRecordIdIndexes.map(userIdAndExpectedRecordIndexes => {
+      val userId = userIdAndExpectedRecordIndexes._1
+      val expectedRecordIndexes = userIdAndExpectedRecordIndexes._2
+      var foundRecordsCounter = 0
+
+      recordIds.map(recordIdAndIndex => {
+        val index = recordIdAndIndex._1
+        val recordId = recordIdAndIndex._2
+
+        Get(s"/v0/records/$recordId?aspect=organization") ~> addTenantIdHeader(
+          TENANT_0
+        ) ~> addJwtToken(userId) ~> param.api(Full).routes ~> check {
+          if (expectedRecordIndexes.contains(index)) {
+            foundRecordsCounter = foundRecordsCounter + 1
+            val record = responseAs[Option[Record]]
+            status shouldBe StatusCodes.OK
+            record.get.id shouldBe "record-" + index
+            record.get.aspects("organization").fields("name") shouldBe JsString(
+              orgNames(index)
+            )
+          } else {
+            status shouldBe StatusCodes.NotFound
+          }
+        }
+
+      })
+
+      foundRecordsCounter shouldBe expectedRecordIndexes.length
+    })
+  }
+
+  it(
+    "should apply access control when returning records with required aspect"
+  ) { param =>
     createAspectDefinitions(param)
     createRecords(param)
 
@@ -143,7 +230,9 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
       val expectedRecordIndexes = userIdAndExpectedRecordIndexes._2
       val aspectId = "organization"
 
-      Get(s"/v0/records?aspect=$aspectId") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(userId) ~>  param.api(Full).routes ~> check {
+      Get(s"/v0/records?aspect=$aspectId") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+        userId
+      ) ~> param.api(Full).routes ~> check {
         status shouldBe StatusCodes.OK
         val records = responseAs[RecordsPage[Record]].records
         records.length shouldBe expectedRecordIndexes.length
@@ -158,6 +247,37 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
       }
 
     })
+
+  }
+
+  it(
+    "should apply access control when returning records only"
+  ) { param =>
+    createAspectDefinitions(param)
+    createRecords(param)
+
+    userIdsAndExpectedRecordIdIndexes.map(
+      userIdAndExpectedRecordIndexes => {
+        val userId = userIdAndExpectedRecordIndexes._1
+        val expectedRecordIndexes = userIdAndExpectedRecordIndexes._2
+
+        Get(s"/v0/records") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+          userId
+        ) ~> param.api(Full).routes ~> check {
+          status shouldBe StatusCodes.OK
+          val records = responseAs[RecordsPage[Record]].records
+          records.length shouldBe expectedRecordIndexes.length
+          val results: List[(Record, Int)] = records.zip(expectedRecordIndexes)
+          results.map(res => {
+            val record = res._1
+            val index = res._2
+            record.id shouldBe "record-" + index
+            record.aspects shouldBe Map()
+          })
+        }
+
+      }
+    )
 
   }
 }
