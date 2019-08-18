@@ -132,5 +132,13 @@ And the response will be:
 }
 ```
 
-Note: If a jwt token is incorrect (e.g. typo), the user will be considered unauthenticated and
-only get "record-4" that has no access restriction.
+### Note
+
+1. If a jwt token is incorrect (e.g. typo), the user will be considered unauthenticated and
+   only get "record-4" that has no access restriction.
+
+2. In full deployment case, a user must log in and use URL api/v0/registry-auth/records
+   (NOT api/v0/registry/records) to get records that have access control aspect.
+
+    URL api/v0/registry/records is for anonymous users therefore will not be able to get
+    any restricted records.

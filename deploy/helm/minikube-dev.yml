@@ -27,7 +27,7 @@ gateway:
     ckanAuthenticationUrl: https://data.gov.au/data
 
 registry-api:
-  skipAuthorization: true
+  skipAuthorization: false
   
 correspondence-api:
   smtpPort: 2525
