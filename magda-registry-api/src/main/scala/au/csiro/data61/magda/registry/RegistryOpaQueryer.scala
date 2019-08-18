@@ -6,6 +6,7 @@ import au.csiro.data61.magda.opa.OpaQueryer
 import au.csiro.data61.magda.opa.OpaTypes._
 import com.typesafe.config.Config
 
+import au.csiro.data61.magda.directives.AuthDirectives.skipAuthorization
 import scala.concurrent.{ExecutionContext, Future}
 
 class RegistryOpaQueryer()(
@@ -16,15 +17,16 @@ class RegistryOpaQueryer()(
 ) extends OpaQueryer {
 
   def queryForRecord(
-    jwt: Option[String],
-    operationType: AuthOperations.OperationType
+      jwt: Option[String],
+      operationType: AuthOperations.OperationType
   ): Future[List[OpaQuery]] = {
-    val skipOpaQuery = "auth.skipOpaQuery"
-    if (config.hasPath(skipOpaQuery) && config.getBoolean(skipOpaQuery)){
+
+    if (skipAuthorization)
       Future.successful(List(OpaQuerySkipAccessControl))
-    }
-    else {
-      super.queryRecord(jwt, "object.registry.record.owner_orgunit." + operationType.id)
-    }
+    else
+      super.queryRecord(
+        jwt,
+        policyId = "object.registry.record.owner_orgunit." + operationType.id
+      )
   }
 }
