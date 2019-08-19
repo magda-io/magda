@@ -355,7 +355,7 @@ trait RegistryConverters extends RegistryProtocols {
       hasQuality = hasQuality,
       score = None,
       source = hit.aspects.get("source").map(_.convertTo[DataSouce]),
-      creation = provenanceOpt
+      provenance = provenanceOpt
         .map(_.convertTo[Provenance]),
       publishingState = Some(
         publishing.extract[String]('state.?).getOrElse("published")
