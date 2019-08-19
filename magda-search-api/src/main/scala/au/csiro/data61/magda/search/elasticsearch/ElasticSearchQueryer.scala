@@ -31,7 +31,6 @@ import com.sksamuel.elastic4s.searches.sort.SortOrder
 import com.sksamuel.elastic4s.searches.{ScoreMode, SearchRequest}
 import com.sksamuel.elastic4s.searches.queries.matches.{MatchAllQuery, MatchNoneQuery}
 import com.typesafe.config.Config
-import java.security.MessageDigest
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -72,7 +71,6 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   val ALLOWED_AUTO_COMPLETE_FIELDS = Seq(
     "accessNotes.location"
   )
-
 
   override def search(
     jwtToken: Option[String],
