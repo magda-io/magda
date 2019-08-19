@@ -280,4 +280,35 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
     )
 
   }
+
+  it(
+    "should apply access control when returning records with required aspect and required limit"
+  ) { param =>
+    createAspectDefinitions(param)
+    createRecords(param)
+
+    val limit = 3
+    val userIdAndExpectedRecordIndexes = (userId0, List(0, 1, 2))
+
+    val userId = userIdAndExpectedRecordIndexes._1
+    val expectedRecordIndexes = userIdAndExpectedRecordIndexes._2
+    val aspectId = "organization"
+
+    Get(s"/v0/records?aspect=$aspectId&limit=$limit") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+      userId
+    ) ~> param.api(Full).routes ~> check {
+      status shouldBe StatusCodes.OK
+      val records = responseAs[RecordsPage[Record]].records
+      records.length shouldBe expectedRecordIndexes.length
+      val results: List[(Record, Int)] = records.zip(expectedRecordIndexes)
+      results.map(res => {
+        val record = res._1
+        val index = res._2
+        record.id shouldBe "record-" + index
+        val aspect = record.aspects(aspectId)
+        aspect.fields("name") shouldEqual JsString(orgNames(index))
+      })
+    }
+
+  }
 }
