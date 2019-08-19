@@ -78,6 +78,7 @@ UI:
 -   Style adjustment for question Who can see the dataset once it is published on Access and Use page
 -   Added access location auto complete input on Access and Use page
 -   Fixed a JS error which causes blank screen on Organisations Page
+-   Show an error message screen if the user is not allowed to access the add dataset page
 
 Gateway:
 
