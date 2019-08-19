@@ -25,8 +25,8 @@ class DatasetAddFilesPage extends React.Component<
         this.addFiles(await getFiles("*.*"));
     }
 
-    async onDrop(fileList: FileList) {
-        this.addFiles(fileList);
+    async onDrop(fileList: FileList, event: any) {
+        this.addFiles(fileList, event);
     }
 
     updateLastModifyDate() {
@@ -49,9 +49,28 @@ class DatasetAddFilesPage extends React.Component<
         });
     }
 
-    addFiles = async (fileList: FileList) => {
+    private isDirItem(idx: number, event: any) {
+        try {
+            if (!event) return false;
+            // --- access web browser API to test whether it's a directory
+            const rawEntry = event.dataTransfer.items[idx].webkitGetAsEntry();
+            if (rawEntry.isFile === false || rawEntry.isDirectory === true)
+                return true;
+            else return false;
+        } catch (e) {
+            // --- If the API is not supported, the web browser must not support drop a directory
+            return false;
+        }
+    }
+
+    addFiles = async (fileList: FileList, event: any = null) => {
         for (let i = 0; i < fileList.length; i++) {
             const thisFile = fileList.item(i);
+
+            if (this.isDirItem(i, event)) {
+                // --- skip the directory item
+                continue;
+            }
 
             if (thisFile) {
                 const newFile = {
