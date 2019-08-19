@@ -553,6 +553,26 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     strategyToCombiner(strategy)(clauses.flatten)
   }
 
+  /**
+    * Encode AggName into a string only contains [a-z0-9_-], because anything else will break ElasticSearch
+    * @param name name string
+    * @return encoded string
+    */
+  def encodeAggName(name: String): String = {
+    val base64Result = new String(java.util.Base64.getEncoder.encode(name.getBytes("utf-8")), "utf-8")
+    base64Result.replace("=", "_")
+  }
+
+  /**
+    * Decode encoded string into original string
+    * @param encodedName
+    * @return
+    */
+  def decodeAggName(encodedName: String): String = {
+    val base64String = encodedName.replace("_", "=")
+    new String(java.util.Base64.getDecoder.decode(base64String.getBytes("utf-8")), "utf-8")
+  }
+
   override def searchFacets(
     jwtToken: Option[String],
     facetType: FacetType,
@@ -594,7 +614,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                 // Create a dataset filter aggregation for each hit in the initial query
                 val filters = hits.map {
                   case (name, identifier) =>
-                    filterAggregation(name).query(
+                    filterAggregation(encodeAggName(name)).query(
                       facetDef.exactMatchQuery(Specified(name)))
                 }
 
@@ -614,10 +634,11 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                     case results: RequestSuccess[SearchResponse] =>
                       val aggregations = results.result.aggregations.data.map {
                         case (name: String, value: Map[String, Any]) =>
-                          (name,
+                          val decodedName = decodeAggName(name)
+                          (decodedName,
                             new FacetOption(
                               identifier = None,
-                              value = name,
+                              value = decodedName,
                               hitCount = value
                                 .get("doc_count")
                                 .map(_.toString.toLong)
