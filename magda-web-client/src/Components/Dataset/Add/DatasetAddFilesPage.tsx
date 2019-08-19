@@ -52,8 +52,12 @@ class DatasetAddFilesPage extends React.Component<
     private isDirItem(idx: number, event: any) {
         try {
             if (!event) return false;
-            // --- access web browser API to test whether it's a directory
-            const rawEntry = event.dataTransfer.items[idx].webkitGetAsEntry();
+            // --- access web browser raw API to test whether it's a directory
+            const rawItem = event.dataTransfer.items[idx];
+            // --- test `getAsEntry` first as it could be the future standard
+            const rawEntry = rawItem.getAsEntry
+                ? rawItem.getAsEntry()
+                : rawItem.webkitGetAsEntry();
             if (rawEntry.isFile === false || rawEntry.isDirectory === true)
                 return true;
             else return false;
