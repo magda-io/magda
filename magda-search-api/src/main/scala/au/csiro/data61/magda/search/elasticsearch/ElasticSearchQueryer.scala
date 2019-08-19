@@ -554,7 +554,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   }
 
   /**
-    * Encode AggName into a string only contains [a-z0-9_-]
+    * Encode AggName into a string only contains [a-z0-9_-], because anything else will break ElasticSearch
     * @param name name string
     * @return encoded string
     */
