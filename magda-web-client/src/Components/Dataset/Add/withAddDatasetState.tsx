@@ -9,7 +9,8 @@ type Props = { initialState: State; user: User } & RouterProps;
 
 function mapStateToProps(state: any) {
     return {
-        user: state.userManagement && state.userManagement.user
+        user: state.userManagement && state.userManagement.user,
+        isFetchingWhoAmI: state.userManagement.isFetchingWhoAmI
     };
 }
 
@@ -28,10 +29,30 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
             }
         }, [props.user]);
 
-        if (state) {
+        if (
+            !props.user ||
+            props.user.id === "" ||
+            props.user.isAdmin !== true
+        ) {
+            if (props.isFetchingWhoAmI) {
+                return <div>Loading...</div>;
+            } else {
+                return (
+                    <div
+                        className="au-body au-page-alerts au-page-alerts--error"
+                        style={{ marginTop: "50px" }}
+                    >
+                        <span>
+                            Only admin users are allowed to access this page.
+                        </span>
+                    </div>
+                );
+            }
+        }
+        if (state && props.user.isAdmin === true) {
             return <Component {...props} initialState={state} />;
         } else {
-            return <div>Loading</div>;
+            return <div>Loading...</div>;
         }
     };
 

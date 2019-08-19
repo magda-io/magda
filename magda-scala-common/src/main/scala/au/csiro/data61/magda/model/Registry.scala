@@ -264,11 +264,13 @@ trait RegistryConverters extends RegistryProtocols {
                 None
               } else {
                 Some(
+                  // --- see magda-registry-aspects/spatial-coverage.schema.json
+                  // --- Bounding box in order minlon (west), minlat (south), maxlon (east), maxlat (north)
                   BoundingBox(
                     bbox.elements(3).convertTo[Double],
                     bbox.elements(2).convertTo[Double],
-                    bbox.elements(0).convertTo[Double],
-                    bbox.elements(1).convertTo[Double]
+                    bbox.elements(1).convertTo[Double],
+                    bbox.elements(0).convertTo[Double]
                   )
                 ).map(Location(_))
               }
