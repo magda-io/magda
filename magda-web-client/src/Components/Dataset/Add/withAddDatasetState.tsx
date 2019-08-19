@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { RouterProps, withRouter } from "react-router-dom";
+import { RouterProps, withRouter, Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 
 import { loadState, State } from "./DatasetAddCommon";
@@ -28,10 +28,24 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
             }
         }, [props.user]);
 
-        if (state) {
+        if (state && props.user.isAdmin == true) {
             return <Component {...props} initialState={state} />;
+        } else if (state && props.user.isAdmin == false) {
+            return (
+                <Redirect
+                    to={`/error?errorCode=403&reason=${encodeURIComponent(
+                        "Only admins users are allowed to access the add dataset page."
+                    )}`}
+                />
+            );
         } else {
-            return <div>Loading</div>;
+            return (
+                <Redirect
+                    to={`/error?errorCode=401&reason=${encodeURIComponent(
+                        "Only logged-in users are allowed to access the add dataset page."
+                    )}`}
+                />
+            );
         }
     };
 
