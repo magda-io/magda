@@ -541,13 +541,13 @@ object Generators {
 
   def provenanceGen =
     for {
-      mechanism <- Gen.option(arbitrary[String].map(_.take(50).trim))
-      sourceSystem <- Gen.option(arbitrary[String].map(_.take(50).trim))
+      mechanism <- Gen.option(Generators.textGen.map(_.take(50).trim))
+      sourceSystem <- Gen.option(Generators.textGen.map(_.take(50).trim))
       derivedFrom <- Gen.option(
-        Gen.listOf(arbitrary[String].map(_.take(50).trim))
+        Gen.listOf(Generators.textGen.map(_.take(50).trim))
       )
       affiliatedOrganizationIds <- Gen.option(
-        Gen.listOf(arbitrary[String].map(_.take(50).trim))
+        Gen.listOf(Generators.textGen.map(_.take(50).trim))
       )
       isOpenData <- Gen.option(arbitrary[Boolean])
     } yield
@@ -623,7 +623,7 @@ object Generators {
       )
       quality <- twoDigitDoubleGen
       hasQuality <- arbitrary[Boolean]
-      provenance <- provenanceGen
+      provenance <- Gen.option(provenanceGen)
     } yield
       DataSet(
         identifier = identifier.toString,
@@ -649,7 +649,8 @@ object Generators {
         hasQuality =
           if (quality > 0) true else if (quality == 1) false else hasQuality,
         score = None,
-        publishingState = Some("published")
+        publishingState = Some("published"),
+        provenance = provenance
       )
 
   val INDEXED_REGIONS_COUNT = 12

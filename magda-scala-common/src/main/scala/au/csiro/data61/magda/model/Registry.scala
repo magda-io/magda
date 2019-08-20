@@ -695,7 +695,8 @@ object Registry extends RegistryConverters {
       "publishing",
       "spatial-coverage",
       "dataset-access-control",
-      "access"
+      "access",
+      "provenance"
     )
   }
 }
