@@ -115,6 +115,7 @@ export type State = {
     _lastModifiedDate: string;
     _createdDate: string;
     isPublishing: boolean;
+    error: Error | null;
 };
 
 type TemporalCoverage = {
@@ -161,6 +162,7 @@ function createBlankState(user: User): State {
         },
         datasetAccess: {},
         isPublishing: false,
+        error: null,
         _createdDate: new Date().toISOString(),
         _lastModifiedDate: new Date().toISOString(),
         _licenseLevel: "dataset"

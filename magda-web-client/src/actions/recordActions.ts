@@ -262,6 +262,8 @@ export function createRecord(
                     detail: error.message
                 })
             );
+            // --- throw out error so it can be caught by try/catch
+            throw error;
         }
     };
 }

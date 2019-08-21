@@ -56,6 +56,8 @@ import { BoundingBox } from "helpers/datasetSearch";
 
 import ReviewFilesList from "./ReviewFilesList";
 
+import ErrorMessageBox from "./ErrorMessageBox";
+
 import helpIcon from "assets/help.svg";
 
 const aspects = {
@@ -131,15 +133,12 @@ class NewDataset extends React.Component<Props, State> {
     render() {
         const { files } = this.state;
 
-        let { step, lastDatasetId } = this.props;
+        let { step } = this.props;
 
         step = Math.max(Math.min(step, this.steps.length - 1), 0);
 
         const nextIsPublish = step + 1 >= this.steps.length;
 
-        if (lastDatasetId) {
-            this.props.history.push(`/dataset/${lastDatasetId}`);
-        }
         return (
             <div className="dataset-add-files-root dataset-add-meta-data-pages">
                 <div className="row">
@@ -154,6 +153,7 @@ class NewDataset extends React.Component<Props, State> {
                 {this.steps[step]()}
                 <br />
                 <br />
+                <ErrorMessageBox error={this.state.error} />
                 <br />
                 <div className="row next-save-button-row">
                     <div className="col-sm-12">
@@ -161,7 +161,7 @@ class NewDataset extends React.Component<Props, State> {
                             className="au-btn next-button"
                             onClick={
                                 nextIsPublish
-                                    ? this.publishDataset.bind(this)
+                                    ? this.performanPublishDataset.bind(this)
                                     : this.gotoStep.bind(this, step + 1)
                             }
                         >
@@ -184,14 +184,40 @@ class NewDataset extends React.Component<Props, State> {
         );
     }
 
-    saveAndExit() {
-        saveState(this.state, this.props.datasetId);
-        this.props.history.push(`/dataset/list`);
+    resetError() {
+        return new Promise(resolve => {
+            this.setState(state => {
+                setTimeout(() => resolve(), 1);
+                return {
+                    ...state,
+                    error: null
+                };
+            });
+        });
     }
 
-    gotoStep(step) {
-        saveState(this.state, this.props.datasetId);
-        this.props.history.push("../" + this.props.datasetId + "/" + step);
+    async saveAndExit() {
+        try {
+            await this.resetError();
+            saveState(this.state, this.props.datasetId);
+            this.props.history.push(`/dataset/list`);
+        } catch (e) {
+            this.setState({
+                error: e
+            });
+        }
+    }
+
+    async gotoStep(step) {
+        try {
+            await this.resetError();
+            saveState(this.state, this.props.datasetId);
+            this.props.history.push("../" + this.props.datasetId + "/" + step);
+        } catch (e) {
+            this.setState({
+                error: e
+            });
+        }
     }
 
     renderBasicDetails() {
@@ -452,6 +478,19 @@ class NewDataset extends React.Component<Props, State> {
         );
     }
 
+    async performanPublishDataset() {
+        try {
+            await this.resetError();
+            await this.publishDataset();
+            this.props.history.push(`/dataset/${this.props.lastDatasetId}`);
+        } catch (e) {
+            this.setState({
+                isPublishing: false,
+                error: e
+            });
+        }
+    }
+
     async publishDataset() {
         saveState(this.state, this.props.datasetId);
 
@@ -470,10 +509,6 @@ class NewDataset extends React.Component<Props, State> {
         if (!dataset.publisher) {
             throw new Error("No publisher selected");
         }
-
-        this.setState({
-            isPublishing: true
-        });
 
         let publisherId: string;
         if (!dataset.publisher.existingId) {
@@ -561,7 +596,11 @@ class NewDataset extends React.Component<Props, State> {
                 }
             }
         };
-        this.props.createRecord(inputDataset, inputDistributions, aspects);
+        await this.props.createRecord(
+            inputDataset,
+            inputDistributions,
+            aspects
+        );
     }
 }
 
