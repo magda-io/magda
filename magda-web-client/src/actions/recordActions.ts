@@ -252,13 +252,13 @@ export function createRecord(
             for (const distribution of inputDistributions) {
                 await request(
                     "POST",
-                    `${config.baseUrl}api/v0/registry-auth/records`,
+                    `${config.registryAuthApiUrl}records`,
                     distribution
                 );
             }
             const json = await request(
                 "POST",
-                `${config.baseUrl}api/v0/registry-auth/records`,
+                `${config.registryAuthApiUrl}records`,
                 inputDataset
             );
             return dispatch(receiveNewDataset(json));
@@ -271,12 +271,9 @@ export function createRecord(
 
 async function ensureAspectExists(id: string, jsonSchema: any) {
     try {
-        await request(
-            "GET",
-            `${config.baseUrl}api/v0/registry-auth/aspects/${id}`
-        );
+        await request("GET", `${config.registryAuthApiUrl}aspects/${id}`);
     } catch (error) {
-        await request("POST", `${config.baseUrl}api/v0/registry-auth/aspects`, {
+        await request("POST", `${config.registryAuthApiUrl}aspects`, {
             id,
             name: jsonSchema.title,
             jsonSchema

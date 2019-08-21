@@ -14,22 +14,35 @@ const ErrorMessageBox: FunctionComponent<Props> = props => {
             case 500:
                 return (
                     <div className="au-body au-page-alerts au-page-alerts--error">
-                        <span>
-                            Magda has encountered an error when submitting your
-                            dataset. Everything is still saved locally - please
-                            try again in 5 minutes
-                        </span>
+                        <div>
+                            <span>
+                                Magda has encountered an error when submitting
+                                your dataset.
+                            </span>
+                        </div>
+                        <div>
+                            <span>
+                                Everything is still saved locally - please try
+                                again in 5 minutes.
+                            </span>
+                        </div>
                     </div>
                 );
             case 400:
                 return (
                     <div className="au-body au-page-alerts au-page-alerts--error">
-                        <span>
-                            Magda has encountered the following error: $
-                            {error.message ? error.message : "" + error}. We've
-                            logged this internally, please contact $
-                            [emailAddress] for help.
-                        </span>
+                        <div>
+                            <span>
+                                Magda has encountered the following error:
+                                {error.message ? error.message : "" + error}.
+                            </span>
+                        </div>
+                        <div>
+                            <span>
+                                We've logged this internally, please contact $
+                                [emailAddress] for help.
+                            </span>
+                        </div>
                     </div>
                 );
             case 403:
@@ -47,12 +60,19 @@ const ErrorMessageBox: FunctionComponent<Props> = props => {
                 // --- could be the following: 404 (Not Found), 401 (Not Authorisied)
                 return (
                     <div className="au-body au-page-alerts au-page-alerts--error">
-                        <span>
-                            Magda has encountered an error (statusCode:{" "}
-                            {error.statusCode}) when submitting your dataset.
-                            Everything is still saved locally - please try again
-                            in 5 minutes
-                        </span>
+                        <div>
+                            <span>
+                                Magda has encountered an error (statusCode:{" "}
+                                {error.statusCode}) when submitting your
+                                dataset.
+                            </span>
+                        </div>
+                        <div>
+                            <span>
+                                Everything is still saved locally - please try
+                                again in 5 minutes.
+                            </span>
+                        </div>
                     </div>
                 );
         }
@@ -60,11 +80,15 @@ const ErrorMessageBox: FunctionComponent<Props> = props => {
     // --- any other unknown error. Usually a front-end logic bug.
     return (
         <div className="au-body au-page-alerts au-page-alerts--error">
-            <span>
-                Magda has encountered the following error:
-                {error.message ? error.message : "" + error}. Please contact $
-                [emailAddress] for help.
-            </span>
+            <div>
+                <span>
+                    Magda has encountered the following error:
+                    {error.message ? error.message : "" + error}.
+                </span>
+            </div>
+            <div>
+                <span>Please contact $ [emailAddress] for help.</span>
+            </div>
         </div>
     );
 };
