@@ -41,8 +41,6 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
     const editDatasetAccess = props.edit("datasetAccess");
     const editInformationSecurity = props.edit("informationSecurity");
 
-    console.log(licenseLevel);
-
     return (
         <div className="row dataset-access-and-use-page">
             <div className="col-sm-12">
