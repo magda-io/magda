@@ -130,15 +130,11 @@ class NewDataset extends React.Component<Props, State> {
         });
     };
 
-    editState = (field: string) => (newValue: any) => {
-        this.setState(state => {
-            return Object.assign({}, state, { [field]: newValue });
-        });
+    editState = <K extends keyof State>(field: K) => (newValue: any) => {
+        this.setState({ [field]: newValue } as Pick<State, K>);
     };
 
     render() {
-        console.log(this.state);
-
         const { files } = this.state;
 
         let { step, lastDatasetId } = this.props;
@@ -472,7 +468,7 @@ class NewDataset extends React.Component<Props, State> {
             spatialCoverage,
             temporalCoverage,
             files,
-            setLicenseToDataset,
+            licenseLevel,
             datasetLevelLicense,
             informationSecurity,
             datasetAccess,
@@ -537,12 +533,13 @@ class NewDataset extends React.Component<Props, State> {
         }
 
         const inputDistributions = files.map(file => {
-            const aspect = setLicenseToDataset
-                ? {
-                      ...file,
-                      license: datasetLevelLicense
-                  }
-                : file;
+            const aspect =
+                licenseLevel === "dataset"
+                    ? {
+                          ...file,
+                          license: datasetLevelLicense
+                      }
+                    : file;
 
             return {
                 id: createId("dist"),

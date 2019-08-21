@@ -122,7 +122,7 @@ export type State = {
     _lastModifiedDate: string;
     _createdDate: string;
 
-    setLicenseToDataset: boolean;
+    licenseLevel: "dataset" | "distribution";
     datasetLevelLicense?: string;
 
     isPublishing: boolean;
@@ -163,7 +163,7 @@ function createBlankState(user: User): State {
         datasetAccess: {},
         informationSecurity: {},
         provenance: {},
-        setLicenseToDataset: true,
+        licenseLevel: "dataset",
         isPublishing: false,
         _createdDate: new Date().toISOString(),
         _lastModifiedDate: new Date().toISOString()

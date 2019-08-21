@@ -23,7 +23,7 @@ type Props = {
     edit: <K extends keyof State>(
         aspectField: K
     ) => (field: string) => (newValue: any) => void;
-    editState: (field: string) => (newValue: any) => void;
+    editState: <K extends keyof State>(field: K) => (newValue: any) => void;
     stateData: State;
 };
 
@@ -32,7 +32,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
         files,
         datasetAccess,
         datasetLevelLicense,
-        setLicenseToDataset,
+        licenseLevel,
         datasetPublishing,
         informationSecurity
     } = props.stateData;
@@ -40,6 +40,8 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
     const editDatasetPublishing = props.edit("datasetPublishing");
     const editDatasetAccess = props.edit("datasetAccess");
     const editInformationSecurity = props.edit("informationSecurity");
+
+    console.log(licenseLevel);
 
     return (
         <div className="row dataset-access-and-use-page">
@@ -116,18 +118,9 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
 
                         <p>
                             <AlwaysEditor
-                                value={
-                                    setLicenseToDataset
-                                        ? codelists.datasetLicenseLevel.dataset
-                                        : codelists.datasetLicenseLevel
-                                              .distribution
-                                }
+                                value={licenseLevel}
                                 onChange={value => {
-                                    props.editState("setLicenseToDataset")(
-                                        value ===
-                                            codelists.datasetLicenseLevel
-                                                .dataset
-                                    );
+                                    props.editState("licenseLevel")(value);
                                 }}
                                 editor={codelistEditor(
                                     codelists.datasetLicenseLevel
@@ -142,7 +135,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     encourage inter-department data sharing in the future.
                 </ToolTip>
 
-                {setLicenseToDataset ? (
+                {licenseLevel === "dataset" ? (
                     <LicenseEditor
                         value={datasetLevelLicense || ""}
                         onChange={props.editState("datasetLevelLicense")}
