@@ -22,12 +22,14 @@ Search:
 
 -   Prevent freeText query from being None which will cause score to be 0
 -   Add tenant specific search.
+-   Fixed facet options (publishers) API error: Invalid aggregation name
 
 Indexer:
 
 -   Fixed indexer throws an error when temporalCoverage aspects intervals is an empty array
 -   Index datasets with tenant ID.
 -   Fixed indexer throws an error when affiliatedOrganisation field is created
+-   Fixed indexer incorrect parsing bounding box data in spatialCoverage aspect
 
 Cataloging:
 
@@ -78,7 +80,10 @@ UI:
 -   Made all keywords extracted lower case
 -   Made extracted keywords fall back on non-vocabulary-filtered keywords if it doesn't find enough keywords matching the vocabulary.
 -   Style adjustment for question Who can see the dataset once it is published on Access and Use page
+-   Added access location auto complete input on Access and Use page
 -   Fixed a JS error which causes blank screen on Organisations Page
+-   Fixed: drop a folder to Add dataset file drop area will break the UI
+-   Show an error message screen if the user is not allowed to access the add dataset page
 
 Gateway:
 

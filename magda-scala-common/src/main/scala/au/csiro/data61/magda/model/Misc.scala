@@ -64,6 +64,10 @@ package misc {
      orgUnitOwnerId: Option[String] = None,
      preAuthorisedPermissionIds: Option[Seq[String]] = None)
 
+  case class DataSetAccessNotes(
+      notes: Option[String] = None,
+      location: Option[String] = None)
+
   case class DataSet(
       identifier: String,
       tenantId: BigInt,
@@ -87,11 +91,12 @@ package misc {
       quality: Double,
       hasQuality: Boolean = false,
       source: Option[DataSouce] = None,
-      creation: Option[Provenance] = None,
+      provenance: Option[Provenance] = None,
       score: Option[Float],
       publishingState: Option[String] = None,
       accessControl: Option[AccessControl] = None,
-      accrualPeriodicityRecurrenceRule: Option[String] = None) {
+      accrualPeriodicityRecurrenceRule: Option[String] = None,
+      accessNotes: Option[DataSetAccessNotes] = None) {
 
     override def toString: String = s"Dataset(identifier = $identifier, tenantId = $tenantId, title=$title)"
 
@@ -498,6 +503,8 @@ package misc {
 
     implicit val accessControlFormat: RootJsonFormat[AccessControl] = jsonFormat3(AccessControl.apply)
 
+    implicit val datasetAccessNotesFormat: RootJsonFormat[DataSetAccessNotes] = jsonFormat2(DataSetAccessNotes.apply)
+
     /**
       * Manually implement RootJsonFormat to overcome the limit of 22 parameters
       */
@@ -526,11 +533,12 @@ package misc {
           "indexed" -> dataSet.indexed.toJson,
           "quality" -> dataSet.quality.toJson,
           "hasQuality" -> dataSet.hasQuality.toJson,
-          "creation" -> dataSet.creation.toJson,
+          "provenance" -> dataSet.provenance.toJson,
           "source" -> dataSet.source.toJson,
           "score" -> dataSet.score.toJson,
           "publishingState" -> dataSet.publishingState.toJson,
-          "accessControl" -> dataSet.accessControl.toJson
+          "accessControl" -> dataSet.accessControl.toJson,
+          "accessNotes" -> dataSet.accessNotes.toJson
         )
 
       def convertOptionField[T:JsonReader](fieldName: String, jsData: JsValue): Option[T] = {
@@ -574,11 +582,12 @@ package misc {
           quality = Protocols.convertField[Double]("quality", json),
           hasQuality = Protocols.convertField[Boolean]("hasQuality", json),
           source = convertOptionField[DataSouce]("source", json),
-          creation = convertOptionField[Provenance]("creation", json),
+          provenance = convertOptionField[Provenance]("provenance", json),
           score = convertOptionField[Float]("score", json),
           publishingState = convertOptionField[String]("publishingState", json),
           accessControl = convertOptionField[AccessControl]("accessControl", json),
-          accrualPeriodicityRecurrenceRule = convertOptionField[String]("accrualPeriodicityRecurrenceRule", json)
+          accrualPeriodicityRecurrenceRule = convertOptionField[String]("accrualPeriodicityRecurrenceRule", json),
+          accessNotes = convertOptionField[DataSetAccessNotes]("accessNotes", json)
         )
       }
     }

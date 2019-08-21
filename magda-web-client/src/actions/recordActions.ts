@@ -243,7 +243,7 @@ export function createRecord(
         try {
             // make sure all the aspects exist (this should be improved at some point, but will do for now)
             const aspectPromises = Object.entries(aspects).map(
-                ([aspect, definition]) => ensureAspectExists
+                ([aspect, definition]) => ensureAspectExists(aspect, definition)
             );
             await Promise.all(aspectPromises);
 

@@ -5,7 +5,7 @@ import java.time.OffsetDateTime
 
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import au.csiro.data61.magda.api.model.{OrganisationsSearchResult, RegionSearchResult, SearchResult}
+import au.csiro.data61.magda.api.model.{AutoCompleteQueryResult, OrganisationsSearchResult, RegionSearchResult, SearchResult}
 import au.csiro.data61.magda.api.{FilterValue, Query, Specified, Unspecified}
 import au.csiro.data61.magda.model.Temporal
 import au.csiro.data61.magda.model.Temporal.{ApiDate, PeriodOfTime}
@@ -20,9 +20,9 @@ import au.csiro.data61.magda.util.ErrorHandling.RootCause
 import au.csiro.data61.magda.util.SetExtractor
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.http.ElasticDsl._
-import com.sksamuel.elastic4s.http.search.SearchResponse
+import com.sksamuel.elastic4s.http.search.{Aggregations, SearchResponse}
 import com.sksamuel.elastic4s.http.{ElasticClient, ElasticDsl, RequestSuccess}
-import com.sksamuel.elastic4s.searches.aggs.{Aggregation => AggregationDefinition}
+import com.sksamuel.elastic4s.searches.aggs.{FilterAggregation, Aggregation => AggregationDefinition}
 import com.sksamuel.elastic4s.searches.collapse.CollapseRequest
 import com.sksamuel.elastic4s.searches.queries.funcscorer.{ScoreFunction => ScoreFunctionDefinition}
 import com.sksamuel.elastic4s.searches.queries.term.TermQuery
@@ -68,6 +68,10 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     "contactPoint.identifier",
     "publisher.acronym")
 
+  val ALLOWED_AUTO_COMPLETE_FIELDS = Seq(
+    "accessNotes.location"
+  )
+
   override def search(
     jwtToken: Option[String],
     inputQuery: Query,
@@ -112,6 +116,87 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       case e: Throwable =>
         logger.error(e, "Exception when searching")
         failureSearchResult(inputQuery, "Unknown error")
+    }
+  }
+
+  override def autoCompleteQuery(
+    jwtToken: Option[String],
+    field: String,
+    input: Option[String],
+    size: Option[Int],
+    tenantId: BigInt): Future[AutoCompleteQueryResult] = {
+
+    val inputString: String = input.getOrElse("").trim
+
+    if(inputString == "") Future.successful(AutoCompleteQueryResult(inputString, List()))
+    else if(!ALLOWED_AUTO_COMPLETE_FIELDS.contains(field)) Future.successful(
+      AutoCompleteQueryResult(
+        inputString,
+        List(),
+        Some("Unrecognised auto-complete field")
+      )
+    )
+    else {
+
+      // --- by default, autoComplete using all dataset user has access to
+      // --- modify the filter (currently, empty Set()) to restrict to only draft (or published) datasets only
+      val publishingStatusQueryFuture = opaQueryer.publishingStateQuery(Set(), jwtToken)
+
+      val sizeLimit:Int = if(size.isEmpty) 10
+      else if(size.get <1) 1
+      else if(size.get > 100) 100
+      else size.get
+
+      clientFuture.flatMap { implicit client =>
+        publishingStatusQueryFuture.flatMap { publishingStatusQuery =>
+
+          val filterQuery = boolQuery().must(Seq(
+            termQuery("tenantId", tenantId),
+            publishingStatusQuery,
+            matchQuery(s"${field}.autoComplete", inputString)
+          ))
+
+          val aggs = termsAggregation("suggestions")
+            .field(s"${field}.keyword")
+            .size(sizeLimit)
+
+          val query = ElasticDsl
+            .search(indices.getIndex(config, Indices.DataSetsIndex))
+            .size(0) // --- disable hits data from response as we only need aggregation
+            .query(filterQuery)
+            .aggregations(aggs)
+
+          client.execute(query).flatMap {
+            case results: RequestSuccess[SearchResponse] => Future.successful(results.result)
+            case IllegalArgumentException(e) => throw e
+            case ESGenericException(e) => throw e
+          }.map{ result =>
+            val aggs = result.aggregations
+            val items = aggs.dataAsMap
+              .get("suggestions")
+              .flatMap(AggUtils.toAgg(_))
+              .toSeq
+              .flatMap(_.dataAsMap.get("buckets").toSeq)
+              .flatMap(_.asInstanceOf[Seq[Map[String, Any]]].map{m =>
+                val agg = Aggregations(m)
+                agg.data("key").toString
+              })
+
+            AutoCompleteQueryResult(inputString, items)
+          }
+        }
+      } recover {
+        case RootCause(illegalArgument: IllegalArgumentException) =>
+          logger.error(illegalArgument, "Exception when searching")
+          AutoCompleteQueryResult(
+            inputString,
+            List(),
+            Some("Bad argument: " + illegalArgument.getMessage))
+        case e: Throwable =>
+          logger.error(e, "Exception when searching")
+          AutoCompleteQueryResult(inputString, List(), Some("Unknown error"))
+      }
+
     }
   }
 
@@ -468,6 +553,26 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     strategyToCombiner(strategy)(clauses.flatten)
   }
 
+  /**
+    * Encode AggName into a string only contains [a-z0-9_-], because anything else will break ElasticSearch
+    * @param name name string
+    * @return encoded string
+    */
+  def encodeAggName(name: String): String = {
+    val base64Result = new String(java.util.Base64.getEncoder.encode(name.getBytes("utf-8")), "utf-8")
+    base64Result.replace("=", "_")
+  }
+
+  /**
+    * Decode encoded string into original string
+    * @param encodedName
+    * @return
+    */
+  def decodeAggName(encodedName: String): String = {
+    val base64String = encodedName.replace("_", "=")
+    new String(java.util.Base64.getDecoder.decode(base64String.getBytes("utf-8")), "utf-8")
+  }
+
   override def searchFacets(
     jwtToken: Option[String],
     facetType: FacetType,
@@ -509,7 +614,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                 // Create a dataset filter aggregation for each hit in the initial query
                 val filters = hits.map {
                   case (name, identifier) =>
-                    filterAggregation(name).query(
+                    filterAggregation(encodeAggName(name)).query(
                       facetDef.exactMatchQuery(Specified(name)))
                 }
 
@@ -529,10 +634,11 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
                     case results: RequestSuccess[SearchResponse] =>
                       val aggregations = results.result.aggregations.data.map {
                         case (name: String, value: Map[String, Any]) =>
-                          (name,
+                          val decodedName = decodeAggName(name)
+                          (decodedName,
                             new FacetOption(
                               identifier = None,
-                              value = name,
+                              value = decodedName,
                               hitCount = value
                                 .get("doc_count")
                                 .map(_.toString.toLong)

@@ -281,6 +281,48 @@ class SearchApi(val searchQueryer: SearchQueryer)(implicit val config: Config, i
           }
           } ~
           /**
+            * @apiGroup Search
+            * @api {get} /v0/search/autoComplete Generate a suggestion list of a dataset field
+            * @apiDescription Returns a suggestion list based on text content of a specified dataset field
+            *
+            * @apiParam (Query) {string} [field] which field will be used to generate the suggestion list; e.g. accessNotes.notes
+            * @apiParam (Query) {string} [inputString] full text input
+            * @apiParam (Query) {number} [limit=10] number of suggestion items to return; If larger than 100, will be capped at 100
+            *
+            * @apiSuccess {String[]} suggestion[] a List of suggestion item.
+            *
+            * @apiSuccessExample {any} 200
+            *    {
+            *        "inputString": "asdd",
+            *        "suggestions": [
+            *            "asdd sddsds",
+            *            "asdd ssd sddssd",
+            *            "asdd sdds",
+            *            ...
+            *       ]
+            *    }
+            */
+          pathPrefix("autoComplete") {requiresTenantId { tenantId =>
+            extractRequest { request =>
+              (get & parameters(
+                "field",
+                'input ?,
+                "limit" ? 10
+              )) { (field, input, limit) ⇒
+                onSuccess(searchQueryer.autoCompleteQuery(
+                  request.headers.find(_.is("x-magda-session")).map(_.value()),
+                  field,
+                  input,
+                  Some(limit),
+                  tenantId)) { result =>
+                  val status = if (result.errorMessage.isDefined) StatusCodes.InternalServerError else StatusCodes.OK
+                  complete(status, result)
+                }
+              }
+            }
+          }
+          } ~
+          /**
            * @apiGroup Search
            * @api {get} /v0/search/region-types Get Region Types
            * @apiDescription Returns a list of region types

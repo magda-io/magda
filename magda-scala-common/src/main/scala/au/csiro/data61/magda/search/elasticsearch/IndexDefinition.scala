@@ -64,6 +64,22 @@ object IndexDefinition extends DefaultJsonProtocol {
       .fields(fields)
   }
 
+  val MagdaEdgeNgramFilter =
+    EdgeNGramTokenFilter("magda_edge_ngram_filter", Some(1), Some(20))
+
+  def magdaAutocompleteField(name: String, extraFields: FieldDefinition*) = {
+
+    val fields = extraFields ++ Seq(
+      keywordField("keyword"),
+      textField("quote").analyzer("quote"),
+      textField("autoComplete")
+        .analyzer("magda_edge_ngram")
+        .searchAnalyzer("standard")
+    )
+
+    textField(name).analyzer("english").fields(fields)
+  }
+
   val MagdaSynonymTokenFilter = SynonymTokenFilter(
     "synonym",
     Some("analysis/wn_s.pl"),
@@ -74,7 +90,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 43,
+    version = 45,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       val baseDefinition =
@@ -82,95 +98,100 @@ object IndexDefinition extends DefaultJsonProtocol {
           .shards(config.getInt("elasticSearch.shardCount"))
           .replicas(config.getInt("elasticSearch.replicaCount"))
           .mappings(
-            mapping(indices.getType(Indices.DataSetsIndexType)).fields(
-              objectField("accrualPeriodicity").fields(
-                magdaTextField("text")
-              ),
-              keywordField("accrualPeriodicityRecurrenceRule"),
-              objectField("temporal").fields(
-                objectField("start").fields(
-                  dateField("date"),
-                  textField("text")
+            mapping(indices.getType(Indices.DataSetsIndexType))
+              .fields(
+                objectField("accrualPeriodicity").fields(
+                  magdaTextField("text")
                 ),
-                objectField("end").fields(
-                  dateField("date"),
-                  textField("text")
-                )
-              ),
-              objectField("publisher").fields(
-                keywordField("identifier"),
-                textField("acronym")
-                  .analyzer("keyword")
-                  .searchAnalyzer("uppercase"),
-                magdaTextField("jurisdiction"),
-                // --- the field used to merge org records by jurisdiction
-                // --- if jurisdiction is not null, its value is jurisdiction + org name
-                // --- if null, its value is org record identifier (thus, avoid merging)
-                textField("aggregation_keywords").analyzer("keyword"),
-                magdaTextField("description"),
-                keywordField("imageUrl"),
-                keywordField("phone"),
-                keywordField("email"),
-                magdaTextField("addrStreet", keywordField("keyword")),
-                magdaTextField("addrSuburb", keywordField("keyword")),
-                magdaTextField("addrState", keywordField("keyword")),
-                keywordField("addrPostCode"),
-                keywordField("addrCountry"),
-                keywordField("website"),
-                magdaTextField(
-                  "name",
-                  keywordField("keyword"),
-                  textField("keyword_lowercase")
-                    .analyzer("quote")
-                    .fielddata(true)
-                )
-              ),
-              nestedField("distributions").fields(
-                keywordField("identifier"),
+                keywordField("accrualPeriodicityRecurrenceRule"),
+                objectField("temporal").fields(
+                  objectField("start").fields(
+                    dateField("date"),
+                    textField("text")
+                  ),
+                  objectField("end").fields(
+                    dateField("date"),
+                    textField("text")
+                  )
+                ),
+                objectField("publisher").fields(
+                  keywordField("identifier"),
+                  textField("acronym")
+                    .analyzer("keyword")
+                    .searchAnalyzer("uppercase"),
+                  magdaTextField("jurisdiction"),
+                  // --- the field used to merge org records by jurisdiction
+                  // --- if jurisdiction is not null, its value is jurisdiction + org name
+                  // --- if null, its value is org record identifier (thus, avoid merging)
+                  textField("aggregation_keywords").analyzer("keyword"),
+                  magdaTextField("description"),
+                  keywordField("imageUrl"),
+                  keywordField("phone"),
+                  keywordField("email"),
+                  magdaTextField("addrStreet", keywordField("keyword")),
+                  magdaTextField("addrSuburb", keywordField("keyword")),
+                  magdaTextField("addrState", keywordField("keyword")),
+                  keywordField("addrPostCode"),
+                  keywordField("addrCountry"),
+                  keywordField("website"),
+                  magdaTextField(
+                    "name",
+                    keywordField("keyword"),
+                    textField("keyword_lowercase")
+                      .analyzer("quote")
+                      .fielddata(true)
+                  )
+                ),
+                nestedField("distributions").fields(
+                  keywordField("identifier"),
+                  magdaTextField("title"),
+                  magdaSynonymTextField("description"),
+                  magdaTextField(
+                    "format",
+                    textField("keyword_lowercase")
+                      .analyzer("quote")
+                      .fielddata(true)
+                  )
+                ),
+                objectField("spatial").fields(geoshapeField("geoJson")),
                 magdaTextField("title"),
                 magdaSynonymTextField("description"),
-                magdaTextField(
-                  "format",
-                  textField("keyword_lowercase")
-                    .analyzer("quote")
-                    .fielddata(true)
+                magdaTextField("keywords"),
+                magdaSynonymTextField("themes"),
+                doubleField("quality"),
+                booleanField("hasQuality"),
+                keywordField("catalog"),
+                objectField("source").fields(
+                  keywordField("id"),
+                  magdaTextField("name"),
+                  objectField("extras").dynamic(true)
+                ),
+                objectField("provenance").fields(
+                  magdaTextField("mechanism"),
+                  magdaTextField("sourceSystem"),
+                  booleanField("isOpenData"),
+                  magdaTextField("affiliatedOrganisationIds")
+                ),
+                objectField("accessControl").fields(
+                  keywordField("ownerId"),
+                  keywordField("orgUnitOwnerId"),
+                  keywordField("preAuthorisedPermissionIds")
+                ),
+                keywordField("years"),
+                /*
+                 * not sure whether is Elasticsearch or elastic4s
+                 * Any field without mapping will be created as Text type --- which will create no `fielddata` error for aggregation
+                 * */
+                keywordField("identifier"),
+                keywordField("tenantId"),
+                objectField("contactPoint").fields(keywordField("identifier")),
+                dateField("indexed"),
+                keywordField("publishingState"),
+                objectField("accessNotes").fields(
+                  magdaTextField("notes"),
+                  magdaAutocompleteField("location")
                 )
-              ),
-              objectField("spatial").fields(geoshapeField("geoJson")),
-              magdaTextField("title"),
-              magdaSynonymTextField("description"),
-              magdaTextField("keywords"),
-              magdaSynonymTextField("themes"),
-              doubleField("quality"),
-              booleanField("hasQuality"),
-              keywordField("catalog"),
-              objectField("source").fields(
-                keywordField("id"),
-                magdaTextField("name"),
-                objectField("extras").dynamic(true)
-              ),
-              objectField("creation").fields(
-                magdaTextField("mechanism"),
-                magdaTextField("sourceSystem"),
-                booleanField("isOpenData"),
-                magdaTextField("affiliatedOrganisationIds")
-              ),
-              objectField("accessControl").fields(
-                keywordField("ownerId"),
-                keywordField("orgUnitOwnerId"),
-                keywordField("preAuthorisedPermissionIds")
-              ),
-              keywordField("years"),
-              /*
-               * not sure whether is Elasticsearch or elastic4s
-               * Any field without mapping will be created as Text type --- which will create no `fielddata` error for aggregation
-               * */
-              keywordField("identifier"),
-              keywordField("tenantId"),
-              objectField("contactPoint").fields(keywordField("identifier")),
-              dateField("indexed"),
-              keywordField("publishingState")
-            )
+              )
           )
           .analysis(
             CustomAnalyzerDefinition(
@@ -205,7 +226,10 @@ object IndexDefinition extends DefaultJsonProtocol {
                   "english_possessive_stemmer",
                   "possessive_english"
                 ),
-                StemmerTokenFilter("light_english_stemmer", "light_english"),
+                StemmerTokenFilter(
+                  "light_english_stemmer",
+                  "light_english"
+                ),
                 //Es 6.x doesn't allow `stop` before Synonym
                 //StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English)),
                 MagdaSynonymTokenFilter,
@@ -228,11 +252,24 @@ object IndexDefinition extends DefaultJsonProtocol {
                   "english_possessive_stemmer",
                   "possessive_english"
                 ),
-                StemmerTokenFilter("light_english_stemmer", "light_english"),
+                StemmerTokenFilter(
+                  "light_english_stemmer",
+                  "light_english"
+                ),
                 StopTokenFilter(
                   "english_stop",
                   Some(NamedStopTokenFilter.English)
                 )
+              )
+            ),
+            // this analyzer is created only for indexing purpose
+            // do not use as search analyzer
+            CustomAnalyzerDefinition(
+              "magda_edge_ngram",
+              StandardTokenizer,
+              List(
+                LowercaseTokenFilter,
+                MagdaEdgeNgramFilter
               )
             )
           )

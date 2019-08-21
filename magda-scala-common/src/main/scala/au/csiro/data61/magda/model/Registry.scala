@@ -265,11 +265,13 @@ trait RegistryConverters extends RegistryProtocols {
                 None
               } else {
                 Some(
+                  // --- see magda-registry-aspects/spatial-coverage.schema.json
+                  // --- Bounding box in order minlon (west), minlat (south), maxlon (east), maxlat (north)
                   BoundingBox(
                     bbox.elements(3).convertTo[Double],
                     bbox.elements(2).convertTo[Double],
-                    bbox.elements(0).convertTo[Double],
-                    bbox.elements(1).convertTo[Double]
+                    bbox.elements(1).convertTo[Double],
+                    bbox.elements(0).convertTo[Double]
                   )
                 ).map(Location(_))
               }
@@ -303,6 +305,29 @@ trait RegistryConverters extends RegistryProtocols {
 
     val publishing = hit.aspects.getOrElse("publishing", JsObject())
 
+    val accessNotes = Try {
+      hit.aspects.get("access") match {
+        case Some(JsObject(access)) =>
+          Some(DataSetAccessNotes(notes = access.get("notes") match {
+            case Some(JsString(notes)) => Some(notes)
+            case _ => None
+          }, location= access.get("location") match {
+            case Some(JsString(location)) => Some(location)
+            case _ => None
+          }))
+        case _ => None
+      }
+    } match {
+      case Success(notes) => notes
+      case Failure(e) =>
+        if (logger.isDefined) {
+          logger.get.error(
+            s"Failed to convert dataset access notes aspect for dataset ${hit.id}: ${e.getMessage}"
+          )
+        }
+        None
+    }
+
     DataSet(
       identifier = hit.id,
       tenantId = hit.tenantId.get,
@@ -332,12 +357,13 @@ trait RegistryConverters extends RegistryProtocols {
       hasQuality = hasQuality,
       score = None,
       source = hit.aspects.get("source").map(_.convertTo[DataSouce]),
-      creation = provenanceOpt
+      provenance = provenanceOpt
         .map(_.convertTo[Provenance]),
       publishingState = Some(
         publishing.extract[String]('state.?).getOrElse("published")
       ), // assume not set means published
-      accessControl = accessControl
+      accessControl = accessControl,
+      accessNotes = accessNotes
     )
   }
 
@@ -670,7 +696,9 @@ object Registry extends RegistryConverters {
       "dataset-format",
       "publishing",
       "spatial-coverage",
-      "dataset-access-control"
+      "dataset-access-control",
+      "access",
+      "provenance"
     )
   }
 }
