@@ -36,6 +36,9 @@
             "organization": {
                 "name": "Branch B, Dep. A",
                 "email": "Branch.B@somewhere"
+            },
+            "withLink": {
+                "someLink": "record-1"
             }
         }
     },

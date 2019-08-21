@@ -17,7 +17,7 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
     *     Relationship among users, organizations and records.
     *
     *                +----------+
-    *                |  Dep. A  |
+    *                |  Dep. A  |  1
     *                | userId0  |
     *                | record-0 |
     *                +----+-----+
@@ -25,9 +25,9 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
     *            +--------+--------+
     *            |                 |
     *       +----+-----+       +----+-----+
-    *       | Branch A |       | Branch B |
-    *       | userId1  |       | userId2  |
-    *       | record-1 |       | record-2 |
+    *       | Branch A | 2     | Branch B | 3
+    *       | userId1  |  ref  | userId2  |
+    *       | record-1 | <---- | record-2 |
     *       +----------+       +----+-----+
     *                               |
     *                  +--------------------------+
@@ -72,28 +72,50 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
     val accessControlSchemaSource: BufferedSource = fromFile(
       accessControlSchemaFile
     )
+
     val orgAspectSchemaSource: BufferedSource = fromFile(
       dataPath + "organization-schema.json"
     )
+
+    val withLinkAspectSchemaSource: BufferedSource = fromFile(
+      dataPath + "with-link-schema.json"
+    )
+
     val accessControlSchema: String = try accessControlSchemaSource.mkString
     finally accessControlSchemaSource.close()
+
     val orgAspectSchema: String = try orgAspectSchemaSource.mkString
     finally orgAspectSchemaSource.close()
+
+    val withLinkAspectSchema: String = try withLinkAspectSchemaSource.mkString
+    finally orgAspectSchemaSource.close()
+
     val accessControlAspectId = "dataset-access-control"
     val orgAspectId = "organization"
+    val withLinkId = "withLink"
+
     val accessControlDef = AspectDefinition(
       accessControlAspectId,
       "access control aspect",
       Some(JsonParser(accessControlSchema).asJsObject)
     )
+
     val orgAspectDef = AspectDefinition(
       orgAspectId,
       "organization aspect",
       Some(JsonParser(orgAspectSchema).asJsObject)
     )
+
+    val withLinkAspectDef = AspectDefinition(
+      withLinkId,
+      "with link aspect",
+      Some(JsonParser(withLinkAspectSchema).asJsObject)
+    )
+
     val aspectDefs = List(
       accessControlDef,
-      orgAspectDef
+      orgAspectDef,
+      withLinkAspectDef
     )
 
     aspectDefs.map(aspectDef => {
@@ -111,14 +133,17 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
     })
   }
 
-  private def createRecords(param: RecordsOpaSpec.this.FixtureParam) = {
-    val recordsSource: BufferedSource = fromFile(dataPath + "records.json")
-    val recordsJsonStr: String = try recordsSource.mkString
-    finally recordsSource.close()
-    val recordsJson = JsonParser(recordsJsonStr)
-    val records: List[Record] = recordsJson.convertTo[List[Record]]
+  val recordsSource: BufferedSource = fromFile(dataPath + "records.json")
 
-    records.map(record => {
+  val recordsJsonStr: String = try recordsSource.mkString
+  finally recordsSource.close()
+
+  val recordsJson = JsonParser(recordsJsonStr)
+  val testRecords: List[Record] = recordsJson.convertTo[List[Record]]
+
+  private def createRecords(param: RecordsOpaSpec.this.FixtureParam) = {
+
+    testRecords.map(record => {
       Get(s"/v0/records/${record.id}") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
         userId0
       ) ~> param.api(Full).routes ~> check {
@@ -308,6 +333,90 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
         val aspect = record.aspects(aspectId)
         aspect.fields("name") shouldEqual JsString(orgNames(index))
       })
+    }
+
+  }
+
+  it(
+    "should return referenced record (dereference=false) to authorized user"
+    ) { param =>
+    createAspectDefinitions(param)
+    createRecords(param)
+
+    val referencingRecordId = "record-2"
+    val aspectId = "withLink"
+    val referencedRecordId = "record-1"
+
+    Get(s"/v0/records/$referencingRecordId?aspect=$aspectId&dereference=false") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+      userId0
+    ) ~> param.api(Full).routes ~> check {
+      status shouldBe StatusCodes.OK
+      val record = responseAs[Record]
+      record.id shouldBe referencingRecordId
+      record.aspects(aspectId).fields("someLink") shouldEqual JsString(referencedRecordId)
+    }
+  }
+
+  it(
+    "should return referenced record (dereference=true) to authorized user"
+  ) { param =>
+    createAspectDefinitions(param)
+    createRecords(param)
+
+    val referencingRecordId = "record-2"
+    val aspectId = "withLink"
+    val referencedRecordIndex = 1 // "record-1"
+
+    Get(s"/v0/records/$referencingRecordId?aspect=$aspectId&dereference=true") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+      userId0
+    ) ~> param.api(Full).routes ~> check {
+      status shouldBe StatusCodes.OK
+      val record = responseAs[Record]
+      record.id shouldBe referencingRecordId
+      val aspect: JsObject = record.aspects(aspectId)
+      val target = testRecords(referencedRecordIndex)
+      val expected = JsObject("aspects" ->
+        JsObject(
+          "id" -> JsString(target.id),
+          "name" -> JsString(target.name),
+          "organization" -> JsObject("name" -> JsString(orgNames(referencedRecordIndex)), "email" -> JsString("Branch.A@somewhere")),
+          "dataset-access-control" -> JsObject("orgUnitOwnerId" -> JsString("00000000-0000-2000-0002-000000000000"))
+        ))
+
+      aspect.fields("someLink").asJsObject().canEqual(expected) shouldBe true
+    }
+  }
+
+  it(
+    "should not return referenced (dereference=false) record to unauthorized user"
+  ) { param =>
+//    createAspectDefinitions(param)
+//    createRecords(param)
+
+    val referencingRecordId = "record-2"
+    val aspectId = "withLink"
+
+    Get(s"/v0/records/$referencingRecordId?aspect=$aspectId&dereference=false") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+      userId2
+    ) ~> param.api(Full).routes ~> check {
+      status shouldBe StatusCodes.NotFound
+    }
+
+  }
+
+  it(
+    "should not return referenced (dereference=true) record to unauthorized user"
+  ) { param =>
+    createAspectDefinitions(param)
+    createRecords(param)
+
+    val recordId = "record-2"
+    val aspectId = "withLink"
+
+    Get(s"/v0/records/$recordId?aspect=$aspectId&dereference=true") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+      userId2
+    ) ~> param.api(Full).routes ~> check {
+      status shouldBe StatusCodes.NotFound
     }
 
   }
