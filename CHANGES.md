@@ -81,6 +81,7 @@ UI:
 -   Added access location auto complete input on Access and Use page
 -   Fixed a JS error which causes blank screen on Organisations Page
 -   Show an error message screen if the user is not allowed to access the add dataset page
+-   Make sure all publish new dataset errors are captured and shown to users on add dataset page
 
 Gateway:
 
