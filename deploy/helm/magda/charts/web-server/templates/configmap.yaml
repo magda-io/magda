@@ -11,6 +11,10 @@ data:
     "disableAuthenticationFeatures": {{ .Values.disableAuthenticationFeatures }},
     "baseUrl": {{ .Values.baseUrl | default "/" | quote }},
     "featureFlags": {{ toJson .Values.featureFlags | quote }},
-    "vocabularyApiEndpoints": {{ toJson .Values.vocabularyApiEndpoints | quote }}
-    
+    "vocabularyApiEndpoints": {{ toJson .Values.vocabularyApiEndpoints | quote }},
+    {{- if .Values.global.defaultContactEmail }}
+    "defaultContactEmail": {{ toJson .Values.global.defaultContactEmail | quote }}
+    {{- else }}
+    "defaultContactEmail": {{ toJson .Values.defaultContactEmail | quote }}
+    {{- end }}
   }'

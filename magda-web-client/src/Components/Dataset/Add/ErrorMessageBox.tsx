@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from "react";
 import { connect } from "react-redux";
+import { config } from "config";
 import ServerError from "./Errors/ServerError";
 
 type Props = {
@@ -39,8 +40,15 @@ const ErrorMessageBox: FunctionComponent<Props> = props => {
                         </div>
                         <div>
                             <span>
-                                We've logged this internally, please contact $
-                                [emailAddress] for help.
+                                We've logged this internally, please contact{" "}
+                                <a
+                                    href={`mailto:${
+                                        config.defaultContactEmail
+                                    }`}
+                                >
+                                    {config.defaultContactEmail}
+                                </a>{" "}
+                                for help.
                             </span>
                         </div>
                     </div>
@@ -87,7 +95,13 @@ const ErrorMessageBox: FunctionComponent<Props> = props => {
                 </span>
             </div>
             <div>
-                <span>Please contact $ [emailAddress] for help.</span>
+                <span>
+                    Please contact{" "}
+                    <a href={`mailto:${config.defaultContactEmail}`}>
+                        {config.defaultContactEmail}
+                    </a>{" "}
+                    for help.
+                </span>
             </div>
         </div>
     );
