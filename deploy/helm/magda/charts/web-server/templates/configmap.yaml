@@ -13,8 +13,8 @@ data:
     "featureFlags": {{ toJson .Values.featureFlags | quote }},
     "vocabularyApiEndpoints": {{ toJson .Values.vocabularyApiEndpoints | quote }},
     {{- if .Values.global.defaultContactEmail }}
-    "defaultContactEmail": {{ toJson .Values.global.defaultContactEmail | quote }}
+    "defaultContactEmail": {{ toJson .Values.global.defaultContactEmail }}
     {{- else }}
-    "defaultContactEmail": {{ toJson .Values.defaultContactEmail | quote }}
+    "defaultContactEmail": {{ toJson .Values.defaultContactEmail }}
     {{- end }}
   }'
