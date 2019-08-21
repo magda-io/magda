@@ -3,15 +3,13 @@ import React from "react";
 import ToolTip from "Components/Dataset/Add/ToolTip";
 import HelpSnippet from "Components/Common/HelpSnippet";
 import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
-import {
-    textEditorEx,
-    MultilineTextEditor
-} from "Components/Editing/Editors/textEditor";
+import { MultilineTextEditor } from "Components/Editing/Editors/textEditor";
 import {
     codelistEditor,
     codelistRadioEditor,
     multiCodelistEditor
 } from "Components/Editing/Editors/codelistEditor";
+import LicenseEditor from "Components/Dataset/Add/LicenseEditor";
 
 import AccessLocationAutoComplete from "./AccessLocationAutoComplete";
 
@@ -22,8 +20,10 @@ import { getFormatIcon } from "../../../View/DistributionIcon";
 import helpIcon from "assets/help.svg";
 
 type Props = {
-    edit: (aspectField: string) => (field: string) => (newValue: any) => void;
-    editState: (field: string) => (newValue: any) => void;
+    edit: <K extends keyof State>(
+        aspectField: K
+    ) => (field: string) => (newValue: any) => void;
+    editState: <K extends keyof State>(field: K) => (newValue: any) => void;
     stateData: State;
 };
 
@@ -31,14 +31,16 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
     let {
         files,
         datasetAccess,
-        datasetUsage,
+        datasetLevelLicense,
+        licenseLevel,
         datasetPublishing,
-        _licenseLevel
+        informationSecurity
     } = props.stateData;
 
     const editDatasetPublishing = props.edit("datasetPublishing");
     const editDatasetAccess = props.edit("datasetAccess");
-    const editDatasetUsage = props.edit("datasetUsage");
+    const editInformationSecurity = props.edit("informationSecurity");
+
     return (
         <div className="row dataset-access-and-use-page">
             <div className="col-sm-12">
@@ -114,8 +116,10 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
 
                         <p>
                             <AlwaysEditor
-                                value={_licenseLevel}
-                                onChange={props.editState("_licenseLevel")}
+                                value={licenseLevel}
+                                onChange={value => {
+                                    props.editState("licenseLevel")(value);
+                                }}
                                 editor={codelistEditor(
                                     codelists.datasetLicenseLevel
                                 )}
@@ -128,32 +132,17 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     We recommend a Whole of Government License be applied to
                     encourage inter-department data sharing in the future.
                 </ToolTip>
-                {_licenseLevel === "dataset" ? (
-                    <div>
-                        <p>
-                            <AlwaysEditor
-                                value={datasetUsage.licenseLevel}
-                                onChange={editDatasetUsage("licenseLevel")}
-                                editor={codelistEditor(codelists.licenseLevel)}
-                            />
-                        </p>
-                        {datasetUsage.licenseLevel === "custom" && (
-                            <p>
-                                <AlwaysEditor
-                                    value={datasetUsage.license}
-                                    onChange={editDatasetUsage("license")}
-                                    editor={textEditorEx({
-                                        placeholder: "Please specify a license"
-                                    })}
-                                />
-                            </p>
-                        )}
-                    </div>
+
+                {licenseLevel === "dataset" ? (
+                    <LicenseEditor
+                        value={datasetLevelLicense || ""}
+                        onChange={props.editState("datasetLevelLicense")}
+                    />
                 ) : (
                     <div>
                         {files.map((file, fileIndex) => {
                             const edit = field => value => {
-                                file.usage[field] = value;
+                                file[field] = value;
                                 props.editState("files")(files);
                             };
                             return (
@@ -169,28 +158,10 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                     </span>
 
                                     <div className="fileBlock-control">
-                                        <p>
-                                            <AlwaysEditor
-                                                value={file.usage.licenseLevel}
-                                                onChange={edit("licenseLevel")}
-                                                editor={codelistEditor(
-                                                    codelists.licenseLevel
-                                                )}
-                                            />
-                                        </p>
-                                        {file.usage.licenseLevel ===
-                                            "custom" && (
-                                            <p>
-                                                <AlwaysEditor
-                                                    value={file.usage.license}
-                                                    onChange={edit("license")}
-                                                    editor={textEditorEx({
-                                                        placeholder:
-                                                            "Please specify a license"
-                                                    })}
-                                                />
-                                            </p>
-                                        )}
+                                        <LicenseEditor
+                                            value={file.license || ""}
+                                            onChange={edit("license")}
+                                        />
                                     </div>
                                 </div>
                             );
@@ -201,8 +172,8 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                 <h4>What is the security classification of this dataset?</h4>
                 <p>
                     <AlwaysEditor
-                        value={datasetUsage.securityClassification}
-                        onChange={editDatasetUsage("securityClassification")}
+                        value={informationSecurity.classification}
+                        onChange={editInformationSecurity("classification")}
                         editor={codelistEditor(codelists.classification)}
                     />
                 </p>
@@ -261,8 +232,10 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
 
                 <p>
                     <AlwaysEditor
-                        value={datasetUsage.disseminationLimits}
-                        onChange={editDatasetUsage("disseminationLimits")}
+                        value={informationSecurity.disseminationLimits}
+                        onChange={editInformationSecurity(
+                            "disseminationLimits"
+                        )}
                         editor={multiCodelistEditor(
                             codelists.disseminationLimits
                         )}

@@ -1,10 +1,9 @@
 ---
 name: Refined Issue
 about: A self-contained bit of work to be done, usually produced through refinement
-title: ''
+title: ""
 labels: refined-unreviewed
-assignees: ''
-
+assignees: ""
 ---
 
 ## Description

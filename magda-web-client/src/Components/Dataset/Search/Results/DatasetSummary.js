@@ -75,10 +75,13 @@ export default class DatasetSummary extends Component {
             }
         }
 
-        if (defined(dataset.creation) && defined(dataset.creation.isOpenData)) {
+        if (
+            defined(dataset.provenance) &&
+            defined(dataset.provenance.isOpenData)
+        ) {
             datasetSummaryItems.push(
                 <div className="dataset-summary-type">
-                    {dataset.creation.isOpenData ? "Public" : "Private"}
+                    {dataset.provenance.isOpenData ? "Public" : "Private"}
                 </div>
             );
         }

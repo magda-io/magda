@@ -196,6 +196,7 @@ trait RegistryConverters extends RegistryProtocols {
         )
       case _ => None
     }
+    val provenanceOpt = hit.aspects.get("provenance")
 
     val qualityAspectOpt = hit.aspects.get("dataset-quality-rating")
 
@@ -356,14 +357,8 @@ trait RegistryConverters extends RegistryProtocols {
       hasQuality = hasQuality,
       score = None,
       source = hit.aspects.get("source").map(_.convertTo[DataSouce]),
-      creation = dcatStrings
-        .getFields("creation")
-        .headOption
-        .filter {
-          case JsNull => false
-          case _      => true
-        }
-        .map(_.convertTo[DcatCreation]),
+      provenance = provenanceOpt
+        .map(_.convertTo[Provenance]),
       publishingState = Some(
         publishing.extract[String]('state.?).getOrElse("published")
       ), // assume not set means published
@@ -702,7 +697,8 @@ object Registry extends RegistryConverters {
       "publishing",
       "spatial-coverage",
       "dataset-access-control",
-      "access"
+      "access",
+      "provenance"
     )
   }
 }

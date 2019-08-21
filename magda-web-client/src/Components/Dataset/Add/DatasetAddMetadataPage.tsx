@@ -32,8 +32,8 @@ import TagInput from "Components/Common/TagInput";
 import AccrualPeriodicityInput from "./AccrualPeriodicityInput";
 import { State, saveState } from "./DatasetAddCommon";
 import DatasetAddPeoplePage from "./Pages/People/DatasetAddPeoplePage";
+import { createPublisher, ensureAspectExists } from "api-clients/RegistryApis";
 import DatasetAddAccessAndUsePage from "./Pages/DatasetAddAccessAndUsePage";
-import { createPublisher } from "api-clients/RegistryApis";
 import withAddDatasetState from "./withAddDatasetState";
 
 import datasetPublishingAspect from "@magda/registry-aspects/publishing.schema.json";
@@ -42,9 +42,12 @@ import spatialCoverageAspect from "@magda/registry-aspects/spatial-coverage.sche
 import temporalCoverageAspect from "@magda/registry-aspects/temporal-coverage.schema.json";
 import datasetDistributionsAspect from "@magda/registry-aspects/dataset-distributions.schema.json";
 import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribution-strings.schema.json";
-import usageAspect from "@magda/registry-aspects/usage.schema.json";
 import accessAspect from "@magda/registry-aspects/access.schema.json";
-import datasetAccessControl from "@magda/registry-aspects/dataset-access-control.schema.json";
+import provenanceAspect from "@magda/registry-aspects/provenance.schema.json";
+import informationSecurityAspect from "@magda/registry-aspects/information-security.schema.json";
+import datasetAccessControlAspect from "@magda/registry-aspects/dataset-access-control.schema.json";
+import organizationDetailsAspect from "@magda/registry-aspects/organization-details.schema.json";
+import datasetPublisherAspect from "@magda/registry-aspects/dataset-publisher.schema.json";
 
 import "./DatasetAddMetadataPage.scss";
 import "./DatasetAddFilesPage.scss";
@@ -71,9 +74,11 @@ const aspects = {
     "temporal-coverage": temporalCoverageAspect,
     "dataset-distributions": datasetDistributionsAspect,
     "dcat-distribution-strings": dcatDistributionStringsAspect,
-    usage: usageAspect,
     access: accessAspect,
-    "dataset-access-control": datasetAccessControl
+    provenance: provenanceAspect,
+    "information-security": informationSecurityAspect,
+    "dataset-access-control": datasetAccessControlAspect,
+    "dataset-publisher": datasetPublisherAspect
 };
 
 type Props = {
@@ -110,6 +115,7 @@ class NewDataset extends React.Component<Props, State> {
                 edit={this.edit}
                 dataset={this.state.dataset}
                 publishing={this.state.datasetPublishing}
+                provenance={this.state.provenance}
             />
         ),
         () => (
@@ -122,18 +128,18 @@ class NewDataset extends React.Component<Props, State> {
         this.renderSubmitPage.bind(this)
     ];
 
-    edit = (aspectField: string) => (field: string) => (newValue: any) => {
+    edit = <K extends keyof State>(aspectField: K) => (field: string) => (
+        newValue: any
+    ) => {
         this.setState(state => {
-            const item = Object.assign({}, state[aspectField]);
-            item[field] = newValue;
-            return Object.assign({}, state, { [aspectField]: item });
+            return {
+                [aspectField]: { ...state[aspectField], [field]: newValue }
+            } as Pick<State, K>;
         });
     };
 
-    editState = (field: string) => (newValue: any) => {
-        this.setState(state => {
-            return Object.assign({}, state, { [field]: newValue });
-        });
+    editState = <K extends keyof State>(field: K) => (newValue: any) => {
+        this.setState({ [field]: newValue } as Pick<State, K>);
     };
 
     render() {
@@ -495,9 +501,11 @@ class NewDataset extends React.Component<Props, State> {
             spatialCoverage,
             temporalCoverage,
             files,
-            _licenseLevel,
-            datasetUsage,
-            datasetAccess
+            licenseLevel,
+            datasetLevelLicense,
+            informationSecurity,
+            datasetAccess,
+            provenance
         } = this.state;
 
         if (!dataset.publisher) {
@@ -519,9 +527,13 @@ class NewDataset extends React.Component<Props, State> {
             );
 
             if (!match) {
-                publisherId = uuidv4();
-
                 // OK no publisher, lets add it
+                await ensureAspectExists(
+                    "organization-details",
+                    organizationDetailsAspect
+                );
+
+                publisherId = uuidv4();
                 await createPublisher({
                     id: publisherId,
                     name: dataset.publisher.name,
@@ -550,25 +562,23 @@ class NewDataset extends React.Component<Props, State> {
         }
 
         const inputDistributions = files.map(file => {
-            let usage: any = undefined;
-            if (_licenseLevel !== "dataset") {
-                usage = file.usage;
-            }
+            const aspect =
+                licenseLevel === "dataset"
+                    ? {
+                          ...file,
+                          license: datasetLevelLicense
+                      }
+                    : file;
+
             return {
                 id: createId("dist"),
                 name: file.title,
                 aspects: {
-                    "dcat-distribution-strings": Object.assign(file, {
-                        usage: undefined
-                    }),
-                    usage
+                    "dcat-distribution-strings": aspect
                 }
             };
         });
-        let usage: any = undefined;
-        if (_licenseLevel === "dataset") {
-            usage = datasetUsage;
-        }
+
         const inputDataset = {
             id,
             name: dataset.title,
@@ -581,13 +591,14 @@ class NewDataset extends React.Component<Props, State> {
                     distributions: inputDistributions.map(d => d.id)
                 },
                 access: datasetAccess,
-                usage,
                 "dataset-publisher": {
                     publisher: publisherId
                 },
+                "information-security": informationSecurity,
                 "dataset-access-control": {
                     orgUnitOwnerId: dataset.owningOrgUnitId
-                }
+                },
+                provenance: provenance
             }
         };
         await this.props.createRecord(

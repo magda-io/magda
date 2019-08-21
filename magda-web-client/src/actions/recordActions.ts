@@ -3,6 +3,7 @@ import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
 import { RecordAction, RawDataset } from "../helpers/record";
 import { FetchError } from "../types";
+import { ensureAspectExists } from "api-clients/RegistryApis";
 import request from "helpers/request";
 
 export function requestDataset(id: string): RecordAction {
@@ -98,7 +99,9 @@ export function fetchDatasetFromRegistry(id: string): Function {
     return (dispatch: Function) => {
         dispatch(requestDataset(id));
         let parameters =
-            "dereference=true&aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&optionalAspect=usage&optionalAspect=access&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=source-link-status&optionalAspect=dataset-quality-rating&optionalAspect=spatial-coverage&optionalAspect=publishing&optionalAspect=dataset-access-control";
+            "dereference=true&aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&" +
+            "optionalAspect=usage&optionalAspect=access&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=source-link-status&optionalAspect=dataset-quality-rating&" +
+            "optionalAspect=spatial-coverage&optionalAspect=publishing&optionalAspect=dataset-access-control&optionalAspect=provenance&optionalAspect=information-security";
         const url =
             config.registryApiUrl +
             `records/${encodeURIComponent(id)}?${parameters}`;
@@ -245,10 +248,12 @@ export function createRecord(
     return async (dispatch: Function, getState: () => any) => {
         dispatch(createNewDataset(inputDataset));
         try {
-            // -- set up access control aspect
-            for (const [aspect, definition] of Object.entries(aspects)) {
-                await ensureAspectExists(aspect, definition);
-            }
+            // make sure all the aspects exist (this should be improved at some point, but will do for now)
+            const aspectPromises = Object.entries(aspects).map(
+                ([aspect, definition]) => ensureAspectExists(aspect, definition)
+            );
+            await Promise.all(aspectPromises);
+
             for (const distribution of inputDistributions) {
                 await request(
                     "POST",
@@ -267,16 +272,4 @@ export function createRecord(
             throw error;
         }
     };
-}
-
-async function ensureAspectExists(id: string, jsonSchema: any) {
-    try {
-        await request("GET", `${config.registryAuthApiUrl}aspects/${id}`);
-    } catch (error) {
-        await request("POST", `${config.registryAuthApiUrl}aspects`, {
-            id,
-            name: jsonSchema.title,
-            jsonSchema
-        });
-    }
 }

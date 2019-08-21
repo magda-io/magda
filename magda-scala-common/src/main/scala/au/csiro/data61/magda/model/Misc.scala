@@ -52,13 +52,12 @@ package misc {
 
   case class DataSouce(id: String, name: Option[String], extras: Option[Map[String, JsValue]] = None)
 
-  case class DcatCreation(
-     isInternallyProduced: Option[Boolean] = None,
-     mechanism: Option[String] = None,
-     sourceSystem: Option[String] = None,
-     likelihoodOfRelease: Option[String] = None,
-     isOpenData: Option[Boolean] = None,
-     affiliatedOrganisation: Option[Seq[String]] = None)
+  case class Provenance(
+    mechanism: Option[String],
+    sourceSystem: Option[String],
+    derivedFrom: Option[Seq[String]],
+    affiliatedOrganizationIds: Option[Seq[String]],
+    isOpenData: Option[Boolean])
 
   case class AccessControl(
      ownerId: Option[String] = None,
@@ -92,7 +91,7 @@ package misc {
       quality: Double,
       hasQuality: Boolean = false,
       source: Option[DataSouce] = None,
-      creation: Option[DcatCreation] = None,
+      provenance: Option[Provenance] = None,
       score: Option[Float],
       publishingState: Option[String] = None,
       accessControl: Option[AccessControl] = None,
@@ -351,7 +350,7 @@ package misc {
 
   trait Protocols extends DefaultJsonProtocol with Temporal.Protocols {
     implicit val dataSouceFormat: RootJsonFormat[DataSouce] = jsonFormat3(DataSouce.apply)
-    implicit val dcatCreationFormat: RootJsonFormat[DcatCreation] = jsonFormat6(DcatCreation.apply)
+    implicit val provenanceFormat: RootJsonFormat[Provenance] = jsonFormat5(Provenance.apply)
 
     implicit val licenseFormat: RootJsonFormat[License] = jsonFormat2(License.apply)
 
@@ -534,7 +533,7 @@ package misc {
           "indexed" -> dataSet.indexed.toJson,
           "quality" -> dataSet.quality.toJson,
           "hasQuality" -> dataSet.hasQuality.toJson,
-          "creation" -> dataSet.creation.toJson,
+          "provenance" -> dataSet.provenance.toJson,
           "source" -> dataSet.source.toJson,
           "score" -> dataSet.score.toJson,
           "publishingState" -> dataSet.publishingState.toJson,
@@ -583,7 +582,7 @@ package misc {
           quality = Protocols.convertField[Double]("quality", json),
           hasQuality = Protocols.convertField[Boolean]("hasQuality", json),
           source = convertOptionField[DataSouce]("source", json),
-          creation = convertOptionField[DcatCreation]("creation", json),
+          provenance = convertOptionField[Provenance]("provenance", json),
           score = convertOptionField[Float]("score", json),
           publishingState = convertOptionField[String]("publishingState", json),
           accessControl = convertOptionField[AccessControl]("accessControl", json),
