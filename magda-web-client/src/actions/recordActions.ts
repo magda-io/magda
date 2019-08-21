@@ -87,6 +87,13 @@ export function createNewDatasetError(error: FetchError): RecordAction {
     };
 }
 
+export function createNewDatasetReset(error: FetchError): RecordAction {
+    return {
+        type: actionTypes.DATASET_CREATE_RESET,
+        error
+    };
+}
+
 export function fetchDatasetFromRegistry(id: string): Function {
     return (dispatch: Function) => {
         dispatch(requestDataset(id));
@@ -256,12 +263,6 @@ export function createRecord(
             );
             return dispatch(receiveNewDataset(json));
         } catch (error) {
-            dispatch(
-                createNewDatasetError({
-                    title: error.name,
-                    detail: error.message
-                })
-            );
             // --- throw out error so it can be caught by try/catch
             throw error;
         }

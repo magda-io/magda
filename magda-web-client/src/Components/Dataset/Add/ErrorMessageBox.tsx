@@ -1,8 +1,9 @@
 import React, { FunctionComponent } from "react";
+import { connect } from "react-redux";
 import ServerError from "./Errors/ServerError";
 
 type Props = {
-    error: Error | null;
+    error?: Error | null;
 };
 
 const ErrorMessageBox: FunctionComponent<Props> = props => {
@@ -68,4 +69,9 @@ const ErrorMessageBox: FunctionComponent<Props> = props => {
     );
 };
 
-export default ErrorMessageBox;
+export default connect(state => ({
+    error:
+        state.record && state.record.newDataset
+            ? state.record.newDataset.error
+            : null
+}))(ErrorMessageBox);
