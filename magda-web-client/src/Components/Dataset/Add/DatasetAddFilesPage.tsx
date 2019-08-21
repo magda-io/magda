@@ -87,8 +87,7 @@ class DatasetAddFilesPage extends React.Component<
                     byteSize: thisFile.size,
                     modified: new Date(thisFile.lastModified),
                     format: fileFormat(thisFile),
-                    _state: FileState.Added,
-                    usage: {}
+                    _state: FileState.Added
                 };
 
                 processFile(thisFile, update => {
