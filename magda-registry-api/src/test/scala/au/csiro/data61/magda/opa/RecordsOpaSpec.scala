@@ -353,7 +353,7 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
       status shouldBe StatusCodes.OK
       val record = responseAs[Record]
       record.id shouldBe referencingRecordId
-      record.aspects(aspectId).fields("someLink") shouldEqual JsString(referencedRecordId)
+      record.aspects(aspectId).fields("someLink") shouldEqual JsObject("id" -> JsString(referencedRecordId))
     }
   }
 
@@ -390,8 +390,8 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
   it(
     "should not return referenced (dereference=false) record to unauthorized user"
   ) { param =>
-//    createAspectDefinitions(param)
-//    createRecords(param)
+    createAspectDefinitions(param)
+    createRecords(param)
 
     val referencingRecordId = "record-2"
     val aspectId = "withLink"
