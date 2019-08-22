@@ -38,7 +38,7 @@ class RecordAspectsServiceRO(
 
   /**
     * @apiGroup Registry Record Aspects
-    * @api {get} /v0/registry/records/{recordId}/aspects/{aspectId} Get a record aspect by ID
+    * @api {get} /v0/registry-ro/records/{recordId}/aspects/{aspectId} Get a record aspect by ID
     *
     * @apiDescription Get a list of all aspects of a record
     * @apiParam (path) {string} recordId ID of the record for which to fetch an aspect

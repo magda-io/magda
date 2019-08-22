@@ -26,7 +26,7 @@ object CommandLine {
    * Execute from the command line with sbt "registryApi/runMain au.csiro.data61.magda.registry.CommandLine ./swagger.json"
    */
   def main(args: Array[String]) = {
-    val docService = new SwaggerDocService("localhost", 9001, "/api/v0/registry/", system)
+    val docService = new SwaggerDocService("localhost", 9001, "/api/v0/registry-ro/", system)
     val swaggerJson = docService.generateSwaggerJson
     val jsonPatchJson = docService.getJsonPatchSchema
     system.terminate()

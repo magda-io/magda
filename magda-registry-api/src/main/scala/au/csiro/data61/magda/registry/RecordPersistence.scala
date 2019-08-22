@@ -1173,7 +1173,7 @@ object DefaultRecordPersistence
                       property.extract[JsValue]('links.? / filter { value =>
                         val relPredicate = 'rel.is[String](_ == "item")
                         val hrefPredicate =
-                          'href.is[String](_ == "/api/v0/registry/records/{$}")
+                          'href.is[String](_ == "/api/v0/registry-ro/records/{$}")
                         relPredicate(value) && hrefPredicate(value)
                       })
 
@@ -1181,7 +1181,7 @@ object DefaultRecordPersistence
                       'items.? / 'links.? / filter { value =>
                         val relPredicate = 'rel.is[String](_ == "item")
                         val hrefPredicate =
-                          'href.is[String](_ == "/api/v0/registry/records/{$}")
+                          'href.is[String](_ == "/api/v0/registry-ro/records/{$}")
                         relPredicate(value) && hrefPredicate(value)
                       }
                     )

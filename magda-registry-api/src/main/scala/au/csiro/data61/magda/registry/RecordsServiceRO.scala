@@ -49,7 +49,7 @@ class RecordsServiceRO(
 
   /**
     * @apiGroup Registry Record Service
-    * @api {get} /v0/registry/records Get a list of all records
+    * @api {get} /v0/registry-ro/records Get a list of all records
     *
     * @apiDescription Get a list of all records
     * @apiParam (query) {string[]} aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter. Only records that have all of these aspects will be included in the response.
@@ -188,7 +188,7 @@ class RecordsServiceRO(
 
   /**
     * @apiGroup Registry Record Service
-    * @api {get} /v0/registry/records/summary Get a list of all records as summaries
+    * @api {get} /v0/registry-ro/records/summary Get a list of all records as summaries
     *
     * @apiDescription Get a list of all records as summaries
     *
@@ -261,7 +261,7 @@ class RecordsServiceRO(
 
   /**
     * @apiGroup Registry Record Service
-    * @api {get} /v0/registry/records/count Get the count of records matching the parameters
+    * @api {get} /v0/registry-ro/records/count Get the count of records matching the parameters
     *
     * @apiDescription Get the count of records matching the parameters. If no parameters are specified, the count will be approximate for performance reasons.
     *
@@ -323,7 +323,7 @@ class RecordsServiceRO(
 
   /**
     * @apiGroup Registry Record Service
-    * @api {get} /v0/registry/records/pagetokens Get a list tokens for paging through the records
+    * @api {get} /v0/registry-ro/records/pagetokens Get a list tokens for paging through the records
     * @apiPrivate
     * @apiDescription Get a list tokens for paging through the records
     *
@@ -388,7 +388,7 @@ class RecordsServiceRO(
 
   /**
     * @apiGroup Registry Record Service
-    * @api {get} /v0/registry/records/{id} Get a record by ID
+    * @api {get} /v0/registry-ro/records/{id} Get a record by ID
     *
     * @apiDescription Gets a complete record, including data for all aspects.
     *
@@ -497,7 +497,7 @@ class RecordsServiceRO(
 
   /**
     * @apiGroup Registry Record Service
-    * @api {get} /v0/registry/records/summary/{id} Get a summary record by ID
+    * @api {get} /v0/registry-ro/records/summary/{id} Get a summary record by ID
     *
     * @apiDescription Gets a summary record, including all the aspect ids for which this record has data.
     *

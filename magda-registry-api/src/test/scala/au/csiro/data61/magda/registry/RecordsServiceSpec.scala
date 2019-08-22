@@ -389,7 +389,7 @@ class RecordsServiceSpec extends ApiSpec {
             |            "type": "string",
             |            "links": [
             |                {
-            |                    "href": "/api/v0/registry/records/{$}",
+            |                    "href": "/api/v0/registry-ro/records/{$}",
             |                    "rel": "item"
             |                }
             |            ]
@@ -452,7 +452,7 @@ class RecordsServiceSpec extends ApiSpec {
             |                "type": "string",
             |                "links": [
             |                    {
-            |                        "href": "/api/v0/registry/records/{$}",
+            |                        "href": "/api/v0/registry-ro/records/{$}",
             |                        "rel": "item"
             |                    }
             |                ]
@@ -528,7 +528,7 @@ class RecordsServiceSpec extends ApiSpec {
             |                "type": "string",
             |                "links": [
             |                    {
-            |                        "href": "/api/v0/registry/records/{$}",
+            |                        "href": "/api/v0/registry-ro/records/{$}",
             |                        "rel": "item"
             |                    }
             |                ]

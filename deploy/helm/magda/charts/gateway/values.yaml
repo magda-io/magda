@@ -30,9 +30,14 @@ defaultRoutes:
     to: http://search-api/v0
     auth: true
   registry:
-    to: http://registry-api-read-only/v0
+    to: http://registry-api/v0
+    auth: true
+  # legacy - all registry is now auth
   registry-auth:
     to: http://registry-api/v0
+    auth: true
+  registry-ro:
+    to: http://registry-api-read-only/v0
     auth: true
   auth:
     to: http://authorization-api/v0/public

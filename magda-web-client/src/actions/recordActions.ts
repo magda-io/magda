@@ -94,7 +94,7 @@ export function fetchDatasetFromRegistry(id: string): Function {
         let parameters =
             "dereference=true&aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&optionalAspect=usage&optionalAspect=access&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=source-link-status&optionalAspect=dataset-quality-rating&optionalAspect=spatial-coverage&optionalAspect=publishing&optionalAspect=dataset-access-control";
         const url =
-            config.registryApiUrl +
+            config.registryRoApiUrl +
             `records/${encodeURIComponent(id)}?${parameters}`;
 
         return fetch(url, config.fetchOptions)
@@ -135,7 +135,7 @@ export function fetchDistributionFromRegistry(id: string): any {
     return (dispatch: Function) => {
         dispatch(requestDistribution(id));
         let url: string =
-            config.registryApiUrl +
+            config.registryRoApiUrl +
             `records/${encodeURIComponent(
                 id
             )}?aspect=dcat-distribution-strings&optionalAspect=source-link-status&optionalAspect=source&optionalAspect=visualization-info&optionalAspect=access&optionalAspect=usage&optionalAspect=dataset-format&optionalAspect=ckan-resource&optionalAspect=publishing`;
@@ -174,7 +174,7 @@ export function modifyRecordAspect(
     return async (dispatch: Function) => {
         id = encodeURIComponent(id);
         aspect = encodeURIComponent(aspect);
-        let url = config.registryAuthApiUrl + `records/${id}/aspects/${aspect}`;
+        let url = config.registryFullApiUrl + `records/${id}/aspects/${aspect}`;
 
         if (field.indexOf("/") !== -1) {
             let body = await fetch(url);
@@ -268,13 +268,13 @@ export function createRecord(
             for (const distribution of inputDistributions) {
                 await request(
                     "POST",
-                    `${config.baseUrl}api/v0/registry-auth/records`,
+                    `${config.baseUrl}api/v0/registry/records`,
                     distribution
                 );
             }
             const json = await request(
                 "POST",
-                `${config.baseUrl}api/v0/registry-auth/records`,
+                `${config.baseUrl}api/v0/registry/records`,
                 inputDataset
             );
             return dispatch(receiveNewDataset(json));
@@ -293,10 +293,10 @@ async function ensureAspectExists(id: string, jsonSchema: any) {
     try {
         await request(
             "GET",
-            `${config.baseUrl}api/v0/registry-auth/aspects/${id}`
+            `${config.baseUrl}api/v0/registry-ro/aspects/${id}`
         );
     } catch (error) {
-        await request("POST", `${config.baseUrl}api/v0/registry-auth/aspects`, {
+        await request("POST", `${config.baseUrl}api/v0/registry/aspects`, {
             id,
             name: jsonSchema.title,
             jsonSchema

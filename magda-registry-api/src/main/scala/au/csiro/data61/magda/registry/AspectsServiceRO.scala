@@ -21,7 +21,7 @@ import akka.actor.ActorRef
 
 /**
  * @apiGroup Registry Aspects
- * @api {get} /v0/registry/aspects Get a list of all aspects
+ * @api {get} /v0/registry-ro/aspects Get a list of all aspects
  * @apiSuccess (Success 200) {json} Response The aspect definitions.
  * @apiSuccessExample {json} Response:
  *
@@ -53,7 +53,7 @@ class AspectsServiceRO(config: Config, authClient: AuthApiClient, system: ActorS
 
   /**
    * @apiGroup Registry Aspects
-   * @api {get} /v0/registry/aspects/{id} Get an aspect by ID
+   * @api {get} /v0/registry-ro/aspects/{id} Get an aspect by ID
    *
    * @apiDescription Get an aspect by ID
    *

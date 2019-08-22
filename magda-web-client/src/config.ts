@@ -44,11 +44,10 @@ const serverConfig: {
     vocabularyApiEndpoints: string[];
 } = window.magda_server_config || {};
 
-const registryApiUrl =
+const registryRoApiUrl =
+    serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry-ro";
+const registryFullApiUrl =
     serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry/";
-const registryAuthApiUrl =
-    serverConfig.registryApiBaseUrl ||
-    fallbackApiHost + "api/v0/registry-auth/";
 
 const previewMapUrl =
     serverConfig.previewMapBaseUrl || fallbackApiHost + "preview-map/";
@@ -78,8 +77,8 @@ const vocabularyApiEndpoints =
     Array.isArray(serverConfig.vocabularyApiEndpoints) &&
     serverConfig.vocabularyApiEndpoints.length
         ? serverConfig.vocabularyApiEndpoints
-        // --- default endpoints
-        : [
+        : // --- default endpoints
+          [
               "https://vocabs.ands.org.au/repository/api/lda/abares/australian-land-use-and-management-classification/version-8/concept.json",
               "https://vocabs.ands.org.au/repository/api/lda/ands-nc/controlled-vocabulary-for-resource-type-genres/version-1-1/concept.json"
           ];
@@ -93,8 +92,8 @@ export const config = {
     adminApiURL,
     searchApiUrl:
         serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search/",
-    registryApiUrl: registryApiUrl,
-    registryAuthApiUrl: registryAuthApiUrl,
+    registryRoApiUrl: registryRoApiUrl,
+    registryFullApiUrl: registryFullApiUrl,
     adminApiUrl:
         serverConfig.adminApiBaseUrl || fallbackApiHost + "api/v0/admin/",
     authApiUrl: serverConfig.authApiBaseUrl || fallbackApiHost + "api/v0/auth/",

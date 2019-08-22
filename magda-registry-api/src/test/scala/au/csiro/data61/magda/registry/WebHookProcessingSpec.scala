@@ -739,7 +739,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
                 |            "type": "string",
                 |            "links": [
                 |                {
-                |                    "href": "/api/v0/registry/records/{$}",
+                |                    "href": "/api/v0/registry-ro/records/{$}",
                 |                    "rel": "item"
                 |                }
                 |            ]
@@ -805,7 +805,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
                 |            "type": "string",
                 |            "links": [
                 |                {
-                |                    "href": "/api/v0/registry/records/{$}",
+                |                    "href": "/api/v0/registry-ro/records/{$}",
                 |                    "rel": "item"
                 |                }
                 |            ]
@@ -865,7 +865,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
                 |               "type": "string",
                 |               "links": [
                 |                   {
-                |                       "href": "/api/v0/registry/records/{$}",
+                |                       "href": "/api/v0/registry-ro/records/{$}",
                 |                       "rel": "item"
                 |                   }
                 |               ]
@@ -923,7 +923,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
                 |            "type": "string",
                 |            "links": [
                 |                {
-                |                    "href": "/api/v0/registry/records/{$}",
+                |                    "href": "/api/v0/registry-ro/records/{$}",
                 |                    "rel": "item"
                 |                }
                 |            ]
@@ -989,7 +989,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
                 |               "type": "string",
                 |               "links": [
                 |                   {
-                |                       "href": "/api/v0/registry/records/{$}",
+                |                       "href": "/api/v0/registry-ro/records/{$}",
                 |                       "rel": "item"
                 |                   }
                 |               ]
@@ -1053,7 +1053,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
                 |            "type": "string",
                 |            "links": [
                 |                {
-                |                    "href": "/api/v0/registry/records/{$}",
+                |                    "href": "/api/v0/registry-ro/records/{$}",
                 |                    "rel": "item"
                 |                }
                 |            ]
@@ -1116,7 +1116,7 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
                 |            "type": "string",
                 |            "links": [
                 |                {
-                |                    "href": "/api/v0/registry/records/{$}",
+                |                    "href": "/api/v0/registry-ro/records/{$}",
                 |                    "rel": "item"
                 |                }
                 |            ]

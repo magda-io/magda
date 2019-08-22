@@ -50,7 +50,7 @@ class RecordsService(
 
   /**
     * @apiGroup Registry Record Service
-    * @api {delete} /v0/registry-auth/records/{recordId} Delete a record
+    * @api {delete} /v0/registry/records/{recordId} Delete a record
     *
     * @apiDescription Delete a record
     *
@@ -140,7 +140,7 @@ class RecordsService(
 
   /**
     * @apiGroup Registry Record Service
-    * @api {delete} /v0/registry/records Trim by source tag
+    * @api {delete} /v0/registry-ro/records Trim by source tag
     *
     * @apiDescription Trims records with the provided source that DON’T have the supplied source tag
     *
@@ -259,7 +259,7 @@ class RecordsService(
 
   /**
     * @apiGroup Registry Record Service
-    * @api {put} /v0/registry-auth/records/{id} Modify a record by ID
+    * @api {put} /v0/registry/records/{id} Modify a record by ID
     *
     * @apiDescription Modifies a record. Aspects included in the request are created or updated, but missing aspects are not removed.
     *
@@ -355,7 +355,7 @@ class RecordsService(
 
   /**
     * @apiGroup Registry Record Service
-    * @api {patch} /v0/registry-auth/records/{id} Modify a record by applying a JSON Patch
+    * @api {patch} /v0/registry/records/{id} Modify a record by applying a JSON Patch
     *
     * @apiDescription The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
     *
@@ -458,7 +458,7 @@ class RecordsService(
 
   /**
     * @apiGroup Registry Record Service
-    * @api {post} /v0/registry/records Create a new record
+    * @api {post} /v0/registry-ro/records Create a new record
     *
     * @apiDescription Create a new record
     *
