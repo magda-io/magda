@@ -196,6 +196,7 @@ trait RegistryConverters extends RegistryProtocols {
         )
       case _ => None
     }
+    val provenanceOpt = hit.aspects.get("provenance")
 
     val qualityAspectOpt = hit.aspects.get("dataset-quality-rating")
 
@@ -264,11 +265,13 @@ trait RegistryConverters extends RegistryProtocols {
                 None
               } else {
                 Some(
+                  // --- see magda-registry-aspects/spatial-coverage.schema.json
+                  // --- Bounding box in order minlon (west), minlat (south), maxlon (east), maxlat (north)
                   BoundingBox(
                     bbox.elements(3).convertTo[Double],
                     bbox.elements(2).convertTo[Double],
-                    bbox.elements(0).convertTo[Double],
-                    bbox.elements(1).convertTo[Double]
+                    bbox.elements(1).convertTo[Double],
+                    bbox.elements(0).convertTo[Double]
                   )
                 ).map(Location(_))
               }
@@ -354,14 +357,8 @@ trait RegistryConverters extends RegistryProtocols {
       hasQuality = hasQuality,
       score = None,
       source = hit.aspects.get("source").map(_.convertTo[DataSouce]),
-      creation = dcatStrings
-        .getFields("creation")
-        .headOption
-        .filter {
-          case JsNull => false
-          case _      => true
-        }
-        .map(_.convertTo[DcatCreation]),
+      provenance = provenanceOpt
+        .map(_.convertTo[Provenance]),
       publishingState = Some(
         publishing.extract[String]('state.?).getOrElse("published")
       ), // assume not set means published
@@ -700,7 +697,8 @@ object Registry extends RegistryConverters {
       "publishing",
       "spatial-coverage",
       "dataset-access-control",
-      "access"
+      "access",
+      "provenance"
     )
   }
 }
