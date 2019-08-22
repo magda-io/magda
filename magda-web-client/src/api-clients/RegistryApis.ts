@@ -8,7 +8,7 @@ export function createPublisher(inputRecord: Publisher) {
 
 export function fetchOrganization(publisherId: string): Promise<Publisher> {
     let url: string =
-        config.registryApiUrl +
+        config.registryReadOnlyApiUrl +
         `records/${encodeURIComponent(
             publisherId
         )}?aspect=organization-details`;
@@ -35,7 +35,7 @@ type Record = {
 function createRecord(inputRecord: Record) {
     return request(
         "POST",
-        `${config.baseUrl}api/v0/registry-auth/records`,
+        `${config.baseUrl}api/v0/registry/records`,
         inputRecord
     );
 }

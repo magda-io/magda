@@ -44,11 +44,11 @@ const serverConfig: {
     defaultOrganizationId?: string;
 } = window.magda_server_config || {};
 
-const registryApiUrl =
-    serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry/";
-const registryAuthApiUrl =
+const registryReadOnlyApiUrl =
     serverConfig.registryApiBaseUrl ||
-    fallbackApiHost + "api/v0/registry-auth/";
+    fallbackApiHost + "api/v0/registry-read-only/";
+const registryFullApiUrl =
+    serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry/";
 
 const previewMapUrl =
     serverConfig.previewMapBaseUrl || fallbackApiHost + "preview-map/";
@@ -89,8 +89,8 @@ export const config = {
     contentApiURL,
     searchApiUrl:
         serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search/",
-    registryApiUrl: registryApiUrl,
-    registryAuthApiUrl: registryAuthApiUrl,
+    registryReadOnlyApiUrl: registryReadOnlyApiUrl,
+    registryFullApiUrl: registryFullApiUrl,
     adminApiUrl:
         serverConfig.adminApiBaseUrl || fallbackApiHost + "api/v0/admin/",
     authApiUrl: serverConfig.authApiBaseUrl || fallbackApiHost + "api/v0/auth/",

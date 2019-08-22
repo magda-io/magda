@@ -34,7 +34,7 @@ class RecordAspectsService(
 
   /**
     * @apiGroup Registry Record Aspects
-    * @api {put} /v0/registry-auth/records/{recordId}/aspects/{aspectId} Modify a record aspect by ID
+    * @api {put} /v0/registry/records/{recordId}/aspects/{aspectId} Modify a record aspect by ID
     * @apiDescription Modifies a record aspect. If the aspect does not yet exist on this record, it is created.
     * @apiParam (path) {string} recordId ID of the record for which to update an aspect.
     * @apiParam (path) {string} aspectId ID of the aspect to update
@@ -145,7 +145,7 @@ class RecordAspectsService(
 
   /**
     * @apiGroup Registry Record Aspects
-    * @api {delete} /v0/registry-auth/records/{recordId}/aspects/{aspectId} Delete a record aspect by ID
+    * @api {delete} /v0/registry/records/{recordId}/aspects/{aspectId} Delete a record aspect by ID
     * @apiDescription Deletes a record aspect.
     * @apiParam (path) {string} recordId ID of the record for which to update an aspect.
     * @apiParam (path) {string} aspectId ID of the aspect to update
@@ -227,7 +227,7 @@ class RecordAspectsService(
 
   /**
     * @apiGroup Registry Record Aspects
-    * @api {patch} /v0/registry-auth/records/{recordId}/aspects/{aspectId} Modify a record aspect by applying a JSON Patch
+    * @api {patch} /v0/registry/records/{recordId}/aspects/{aspectId} Modify a record aspect by applying a JSON Patch
     * @apiDescription The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
     * @apiParam (path) {string} recordId ID of the record for which to update an aspect.
     * @apiParam (path) {string} aspectId ID of the aspect to update
