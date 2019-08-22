@@ -11,7 +11,7 @@ global:
   useCloudSql: false
   useCombinedDb: true
   enablePriorityClass: false
-  defaultContactEmail: "alex.gilleran+magda@csiro.it"
+  defaultContactEmail: "magda@mailinator.com"
 
 gateway:
   ckanRedirectionDomain: "ckan.data.gov.au"
