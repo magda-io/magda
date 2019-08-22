@@ -133,6 +133,22 @@ export default function DatasetAddPeoplePage({
                 </div>
                 <hr />
                 <h3>Production</h3>
+                <h4>How was this dataset produced?</h4>
+                <div>
+                    <AlwaysEditor
+                        value={provenance.mechanism}
+                        onChange={editProvenance("mechanism")}
+                        editor={multilineTextEditor}
+                    />
+                </div>
+                <h4>What system (if any) was used to produce the data?</h4>
+                <div>
+                    <AlwaysEditor
+                        value={provenance.sourceSystem}
+                        onChange={editProvenance("sourceSystem")}
+                        editor={multilineTextEditor}
+                    />
+                </div>
                 <h4>
                     Was this dataset produced in collaboration with with other
                     organisations?
@@ -155,23 +171,7 @@ export default function DatasetAddPeoplePage({
                         />
                     </YesNoEditReveal>
                 </div>
-                <h4>How was this dataset produced?</h4>
-                <div>
-                    <AlwaysEditor
-                        value={provenance.mechanism}
-                        onChange={editProvenance("mechanism")}
-                        editor={multilineTextEditor}
-                    />
-                </div>
-                <h4>What system was used to create this dataset?</h4>
-                <div>
-                    <AlwaysEditor
-                        value={provenance.sourceSystem}
-                        onChange={editProvenance("sourceSystem")}
-                        editor={multilineTextEditor}
-                    />
-                </div>
-                <h4>What was the source of this data?</h4>
+                <h4>What datasets (if any) was this data derived from?</h4>
                 <div>
                     <AlwaysEditor
                         value={provenance.derivedFrom}
