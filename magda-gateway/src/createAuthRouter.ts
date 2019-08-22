@@ -103,7 +103,7 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
                 wsFedIdpUrl: options.vanguardWsFedIdpUrl,
                 wsFedRealm: options.vanguardWsFedRealm,
                 wsFedCertificate: options.vanguardWsFedCertificate,
-                externalAuthHome: `${options.externalUrl}/auth`
+                externalUrl: options.externalUrl
             })
         }
     ];
