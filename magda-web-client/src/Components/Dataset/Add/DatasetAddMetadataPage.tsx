@@ -173,7 +173,7 @@ class NewDataset extends React.Component<Props, State> {
                             className="au-btn next-button"
                             onClick={
                                 nextIsPublish
-                                    ? this.performanPublishDataset.bind(this)
+                                    ? this.performPublishDataset.bind(this)
                                     : this.gotoStep.bind(this, step + 1)
                             }
                         >
@@ -478,7 +478,7 @@ class NewDataset extends React.Component<Props, State> {
         );
     }
 
-    async performanPublishDataset() {
+    async performPublishDataset() {
         try {
             await this.resetError();
             await this.publishDataset();
