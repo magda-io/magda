@@ -28,7 +28,10 @@ export default function vanguard(options: VanguardOptions) {
     const externalAuthHome = options.externalAuthHome;
 
     if (!wsFedIdpUrl || !wsFedRealm || !wsFedCertificate) {
-        return undefined;
+        // --- we will know we didn't setup vanguard well
+        throw new Error(
+            "Vanguard SSO module is missing one of the following parameters: wsFedIdpUrl, wsFedRealm or wsFedCertificate"
+        );
     }
 
     passport.use(
