@@ -18,8 +18,8 @@ function isCustom(license: string) {
 }
 
 /**
- * We will have to introduce
- * @param param0
+ * Figure out custom license text box status from props.value
+ * avoid using derived state to avoid inconsistent state
  */
 export default function LicenseEditor({ value: license, onChange }: Props) {
     const usingCustomLicense = isCustom(license);
