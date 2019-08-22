@@ -164,6 +164,7 @@ function createBlankState(user: User): State {
         informationSecurity: {},
         provenance: {},
         licenseLevel: "dataset",
+        datasetLevelLicense: "world",
         isPublishing: false,
         _createdDate: new Date().toISOString(),
         _lastModifiedDate: new Date().toISOString()
