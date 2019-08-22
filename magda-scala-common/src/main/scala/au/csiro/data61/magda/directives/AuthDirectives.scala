@@ -32,6 +32,11 @@ object AuthDirectives {
       "authorization.skip"
     )
 
+  def skipOpaQuery(implicit config: Config) =
+    config.hasPath("authorization.skipOpaQuery") && config.getBoolean(
+      "authorization.skipOpaQuery"
+    )
+
   /** Gets the X-Magda-Session header out of the request, providing it as a string without doing any verification */
   def getJwt(): Directive1[Option[String]] = {
     extractRequest flatMap { request =>

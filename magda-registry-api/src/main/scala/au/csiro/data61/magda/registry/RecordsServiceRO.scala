@@ -160,6 +160,7 @@ class RecordsServiceRO(
               materializer,
               ec
             ) { opaQueries =>
+              assert(opaQueries nonEmpty)
               complete {
                 DB readOnly { session =>
                   recordPersistence.getAllWithAspects(
@@ -394,6 +395,7 @@ class RecordsServiceRO(
               materializer,
               ec
             ) { opaQueries =>
+              assert(opaQueries nonEmpty)
               complete {
                 DB readOnly { session =>
                   "0" :: recordPersistence
@@ -504,6 +506,7 @@ class RecordsServiceRO(
               materializer,
               ec
             ) { opaQueries =>
+              assert(opaQueries nonEmpty)
               DB readOnly { session =>
                 recordPersistence.getByIdWithAspects(
                   session,

@@ -2,6 +2,7 @@ package au.csiro.data61.magda.registry
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.stream.Materializer
 import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
@@ -96,17 +97,18 @@ class RecordAspectsServiceRO(
               materializer,
               system.dispatcher
             ) { opaQueries =>
-
-              complete {
-                DB readOnly { session =>
-                  recordPersistence
-                    .getRecordAspectById(
-                      session,
-                      tenantId,
-                      recordId,
-                      aspectId,
-                      opaQueries
-                    )
+              assert(opaQueries nonEmpty)
+              DB readOnly { session =>
+                recordPersistence
+                  .getRecordAspectById(
+                    session,
+                    tenantId,
+                    recordId,
+                    aspectId,
+                    opaQueries
+                  ) match {
+                  case Some(recordAspect) => complete(recordAspect)
+                  case _ => complete(StatusCodes.NotFound, BadRequest("No record or aspect exists with the given IDs."))
                 }
               }
             }
