@@ -34,8 +34,8 @@ const ErrorMessageBox: FunctionComponent<Props> = props => {
                     <div className="au-body au-page-alerts au-page-alerts--error">
                         <div>
                             <span>
-                                Magda has encountered the following error:
-                                {error.message ? error.message : "" + error}.
+                                Magda has encountered the following error:&nbsp;
+                                {error.message ? error.message : "" + error}
                             </span>
                         </div>
                         <div>
@@ -90,8 +90,8 @@ const ErrorMessageBox: FunctionComponent<Props> = props => {
         <div className="au-body au-page-alerts au-page-alerts--error">
             <div>
                 <span>
-                    Magda has encountered the following error:
-                    {error.message ? error.message : "" + error}.
+                    Magda has encountered the following error:&nbsp;
+                    {error.message ? error.message : "" + error}
                 </span>
             </div>
             <div>
