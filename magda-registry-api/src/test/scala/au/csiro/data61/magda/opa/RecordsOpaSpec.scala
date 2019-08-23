@@ -3,7 +3,7 @@ package au.csiro.data61.magda.opa
 import akka.http.scaladsl.model.StatusCodes
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.registry._
-import org.scalatest.Ignore
+import org.scalatest.{Assertion, Ignore}
 import spray.json._
 
 import scala.collection.immutable
@@ -17,7 +17,7 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
     *     Relationship among users, organizations and records.
     *
     *                +----------+
-    *                |  Dep. A  |  1
+    *                |  Dep. A  |
     *                | userId0  |
     *                | record-0 |
     *                +----+-----+
@@ -25,19 +25,20 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
     *            +--------+--------+
     *            |                 |
     *       +----+-----+       +----+-----+
-    *       | Branch A | 2     | Branch B | 3
+    *       | Branch A |       | Branch B |
     *       | userId1  |  ref  | userId2  |
-    *       | record-1 | <---- | record-2 |
-    *       +----------+       +----+-----+
-    *                               |
-    *                  +--------------------------+
-    *                  |            |             |
-    *             +----+----+  +----+----+  +----+-----+      +----------+
-    *             |Section A|  |Section B|  |Section C |      | (Public) |
-    *             |         |  |         |  | userId3  |      | record-4 |
-    *             |         |  |         |  | record-3 |      +----------+
-    *             +---------+  +---------+  +----------+     (Section C owns record-4 but does
-    *                                                         not put access restriction on it.)
+    *       | record-1 | <---- | record-2 |      ref
+    *       |          | <---- | record-5 | --------------+
+    *       +----------+       +----+-----+               |
+    *                               |                     |
+    *                  +--------------------------+       |
+    *                  |            |             |       |
+    *             +----+----+  +----+----+  +----+-----+  |      +----------+
+    *             |Section A|  |Section B|  |Section C |  |      | (Public) |
+    *             |         |  |         |  | userId3  |  |      | record-4 |
+    *             |         |  |         |  | record-3 |<-+      +----------+
+    *             +---------+  +---------+  +----------+        (Section C owns record-4 but does
+    *                                                            not put access restriction on it.)
     */
   val userId0 = "00000000-0000-1000-0000-000000000000" // admin user
   val userId1 = "00000000-0000-1000-0001-000000000000"
@@ -45,9 +46,9 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
   val userId3 = "00000000-0000-1000-0003-000000000000"
 
   val userIdsAndExpectedRecordIdIndexesWithoutReferencing = List(
-    (userId0, List(0, 1, 2, 3, 4)),
+    (userId0, List(0, 1, 2, 3, 4, 5)),
     (userId1, List(1, 4)),
-    (userId2, List(2, 3, 4)),
+    (userId2, List(2, 3, 4, 5)),
     (userId3, List(3, 4)),
     ("anonymous", List(4))
   )
@@ -67,7 +68,8 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
     "Branch A, Dep. A",
     "Branch B, Dep. A",
     "Section C, Branch B, Dep. A",
-    "Section C, Branch B, Dep. A"
+    "Section C, Branch B, Dep. A",
+    "Branch B, Dep. A"
   )
 
   val dataPath =
@@ -95,6 +97,10 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
       dataPath + "with-link-schema.json"
     )
 
+    val withLinksAspectSchemaSource: BufferedSource = fromFile(
+      dataPath + "with-links-schema.json"
+    )
+
     val accessControlSchema: String = try accessControlSchemaSource.mkString
     finally accessControlSchemaSource.close()
 
@@ -102,11 +108,15 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
     finally orgAspectSchemaSource.close()
 
     val withLinkAspectSchema: String = try withLinkAspectSchemaSource.mkString
-    finally orgAspectSchemaSource.close()
+    finally withLinkAspectSchemaSource.close()
+
+    val withLinksAspectSchema: String = try withLinksAspectSchemaSource.mkString
+    finally withLinksAspectSchemaSource.close()
 
     val accessControlAspectId = "dataset-access-control"
     val orgAspectId = "organization"
     val withLinkId = "withLink"
+    val withLinksId = "withLinks"
 
     val accessControlDef = AspectDefinition(
       accessControlAspectId,
@@ -126,10 +136,17 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
       Some(JsonParser(withLinkAspectSchema).asJsObject)
     )
 
+    val withLinksAspectDef = AspectDefinition(
+      withLinksId,
+      "with links aspect",
+      Some(JsonParser(withLinksAspectSchema).asJsObject)
+    )
+
     val aspectDefs = List(
       accessControlDef,
       orgAspectDef,
-      withLinkAspectDef
+      withLinkAspectDef,
+      withLinksAspectDef
     )
 
     aspectDefs.map(aspectDef => {
@@ -186,7 +203,7 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
     createRecords(param)
 
     val recordIds: immutable.Seq[(Int, String)] = for {
-      i <- 0 to 4
+      i <- 0 to 5
       recordId = "record-" + i
     } yield (i, recordId)
 
@@ -230,7 +247,7 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
     createRecords(param)
 
     val recordIds: immutable.Seq[(Int, String)] = for {
-      i <- 0 to 4
+      i <- 0 to 5
       recordId = "record-" + i
     } yield (i, recordId)
 
@@ -499,4 +516,120 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
 
   }
 
+  it(
+    "should return both record-1 and record-3 in links (dereference=false) to userId0"
+  ) { param =>
+    createAspectDefinitions(param)
+    createRecords(param)
+
+    val referencingRecordId = "record-5"
+    val withLinksAspectId = "withLinks"
+    val linksName = "someLinks"
+
+    Get(s"/v0/records/$referencingRecordId?aspect=$withLinksAspectId&dereference=false") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+      userId0
+    ) ~> param.api(Full).routes ~> check {
+      status shouldBe StatusCodes.OK
+      val record = responseAs[Record]
+      record.id shouldBe referencingRecordId
+      record.aspects(withLinksAspectId).fields(linksName) shouldEqual JsArray(JsString("record-1"), JsString("record-3"))
+    }
+  }
+
+  it(
+    "should return both record-1 and record-3 in links (dereference=true) to userId0"
+  ) { param =>
+    createAspectDefinitions(param)
+    createRecords(param)
+
+    val referencingRecordId = "record-5"
+    val withLinksAspectId = "withLinks"
+    val linksName = "someLinks"
+
+    Get(s"/v0/records/$referencingRecordId?aspect=$withLinksAspectId&dereference=true") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+      userId0
+    ) ~> param.api(Full).routes ~> check {
+      status shouldBe StatusCodes.OK
+      val record = responseAs[Record]
+      record.id shouldBe referencingRecordId
+
+      val referencedRecordIndex1 = 1
+      val target1 = testRecords(referencedRecordIndex1)
+      val expected1 = JsObject("aspects" ->
+        JsObject(
+          "id" -> JsString(target1.id),
+          "name" -> JsString(target1.name),
+          "organization" -> JsObject("name" -> JsString(orgNames(referencedRecordIndex1)), "email" -> JsString("Branch.A@somewhere")),
+          "dataset-access-control" -> JsObject("orgUnitOwnerId" -> JsString("00000000-0000-2000-0002-000000000000"))
+        ))
+
+      val referencedRecordIndex2 = 3
+      val target2 = testRecords(referencedRecordIndex2)
+      val expected2 = JsObject("aspects" ->
+        JsObject(
+          "id" -> JsString(target2.id),
+          "name" -> JsString(target2.name),
+          "organization" -> JsObject("name" -> JsString(orgNames(referencedRecordIndex2)), "email" -> JsString("Branch.B@somewhere")),
+          "dataset-access-control" -> JsObject("orgUnitOwnerId" -> JsString("00000000-0000-2000-0003-000000000000"))
+        ))
+
+      val actual = record.aspects(withLinksAspectId).fields(linksName).convertTo[Array[JsObject]]
+      actual.length shouldBe 2
+      actual(0).canEqual(expected1) shouldBe true
+      actual(1).canEqual(expected2) shouldBe true
+    }
+  }
+
+  it(
+    "should return record-3 but not record-1 in links (dereference=false) to userId2"
+  ) { param =>
+    createAspectDefinitions(param)
+    createRecords(param)
+
+    val referencingRecordId = "record-5"
+    val withLinksAspectId = "withLinks"
+    val linksName = "someLinks"
+
+    Get(s"/v0/records/$referencingRecordId?aspect=$withLinksAspectId&dereference=false") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+      userId2
+    ) ~> param.api(Full).routes ~> check {
+      status shouldBe StatusCodes.OK
+      val record = responseAs[Record]
+      record.id shouldBe referencingRecordId
+      record.aspects(withLinksAspectId).fields(linksName) shouldEqual JsArray(JsString("record-3"))
+    }
+  }
+
+  it(
+    "should return record-3 but not record-1 in links (dereference=true) to userId2"
+  ) { param =>
+    createAspectDefinitions(param)
+    createRecords(param)
+
+    val referencingRecordId = "record-5"
+    val withLinksAspectId = "withLinks"
+    val linksName = "someLinks"
+
+    Get(s"/v0/records/$referencingRecordId?aspect=$withLinksAspectId&dereference=true") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+      userId2
+    ) ~> param.api(Full).routes ~> check {
+      status shouldBe StatusCodes.OK
+      val record = responseAs[Record]
+      record.id shouldBe referencingRecordId
+
+      val referencedRecordIndex = 3
+      val target = testRecords(referencedRecordIndex)
+      val expected = JsObject("aspects" ->
+        JsObject(
+          "id" -> JsString(target.id),
+          "name" -> JsString(target.name),
+          "organization" -> JsObject("name" -> JsString(orgNames(referencedRecordIndex)), "email" -> JsString("Branch.B@somewhere")),
+          "dataset-access-control" -> JsObject("orgUnitOwnerId" -> JsString("00000000-0000-2000-0003-000000000000"))
+        ))
+
+      val actual = record.aspects(withLinksAspectId).fields(linksName).convertTo[Array[JsObject]]
+      actual.length shouldBe 1
+      actual(0).canEqual(expected) shouldBe true
+    }
+  }
 }

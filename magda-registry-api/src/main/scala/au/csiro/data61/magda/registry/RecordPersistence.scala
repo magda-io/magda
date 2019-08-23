@@ -1462,39 +1462,61 @@ object DefaultRecordPersistence
           .map {
             case PropertyWithLink(propertyName, true) =>
               sqls"""(
-                    |                CASE WHEN
-                    |                        EXISTS (
-                    |                            SELECT FROM jsonb_array_elements_text(RecordAspects.data->$propertyName)
-                    |                        )
-                    |                    THEN(
-                    |                        select jsonb_set(
-                    |                                    RecordAspects.data,
-                    |                                    ${"{\"" + propertyName + "\"}"}::text[],
-                    |                                    jsonb_agg(
-                    |                                        jsonb_build_object(
-                    |                                            'id',
-                    |                                            Records.recordId,
-                    |                                            'name',
-                    |                                            Records.name,
-                    |                                            'aspects',
-                    |                                            (
-                    |                                                select jsonb_object_agg(aspectId, data)
-                    |                                                from RecordAspects
-                    |                                                where tenantId=Records.tenantId and recordId=Records.recordId
-                    |                                            )
-                    |                                        )
-                    |                                    )
-                    |                                )
-                    |                        from Records
-                    |                        inner join jsonb_array_elements_text(RecordAspects.data->$propertyName) as aggregatedId on aggregatedId=Records.recordId and RecordAspects.tenantId=Records.tenantId
-                    |                    )
-                    |                    ELSE(
-                    |                        select data
-                    |                        from RecordAspects
-                    |                        where (aspectId, recordid, tenantId) = ($aspectId, Records.recordId, Records.tenantId)
-                    |                    )
-                    |                END
-            )""".stripMargin
+                      case when $dereference then (
+                        CASE WHEN EXISTS (
+                          SELECT FROM jsonb_array_elements_text(RecordAspects.data->$propertyName)) THEN (
+                            select jsonb_set(
+                                            RecordAspects.data,
+                                            ${"{\"" + propertyName + "\"}"}::text[],
+                                            jsonb_agg(
+                                                jsonb_build_object(
+                                                    'id',
+                                                    Records.recordId,
+                                                    'name',
+                                                    Records.name,
+                                                    'aspects',
+                                                    (
+                                                        select jsonb_object_agg(aspectId, data)
+                                                        from RecordAspects
+                                                        where tenantId=Records.tenantId and recordId=Records.recordId
+                                                    )
+                                                )
+                                            )
+                                        )
+                                from Records
+                                inner join jsonb_array_elements_text(RecordAspects.data->$propertyName) as aggregatedId
+                                on aggregatedId=Records.recordId and RecordAspects.tenantId=Records.tenantId
+                                where $opaConditions
+                            )
+                        ELSE(
+                          select data from RecordAspects
+                          where (aspectId, recordid, tenantId) = ($aspectId, Records.recordId, Records.tenantId)
+                        )
+                        END
+                      )
+                      else (
+                        CASE WHEN EXISTS (
+                          SELECT FROM jsonb_array_elements_text(RecordAspects.data->$propertyName)) THEN (
+                            select jsonb_set(
+                                            RecordAspects.data,
+                                            ${"{\"" + propertyName + "\"}"}::text[],
+                                            jsonb_agg(
+                                              Records.recordId
+                                            )
+                                        )
+                                from Records
+                                inner join jsonb_array_elements_text(RecordAspects.data->$propertyName) as aggregatedId
+                                on aggregatedId=Records.recordId and RecordAspects.tenantId=Records.tenantId
+                                where $opaConditions
+                            )
+                        ELSE(
+                          select data from RecordAspects
+                          where (aspectId, recordid, tenantId) = ($aspectId, Records.recordId, Records.tenantId)
+                        )
+                        END
+                      )
+                      end
+            )"""
             case PropertyWithLink(propertyName, false) =>
               sqls"""(
                      select
@@ -1510,7 +1532,8 @@ object DefaultRecordPersistence
                      else RecordAspects.data
                      end
                      from Records where Records.tenantId=RecordAspects.tenantId and
-                     Records.recordId=RecordAspects.data->>$propertyName and $opaConditions)"""
+                     Records.recordId=RecordAspects.data->>$propertyName and $opaConditions
+                     )"""
           }
           .getOrElse(sqls"data")
 
