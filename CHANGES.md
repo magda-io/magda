@@ -90,6 +90,7 @@ Gateway:
 -   Add ArcGIS/ESRI Authentication provider, including support for on-premise instances of ArcGIS Portal.
 -   Add Vanguard (WS-FED) Authentication provider
 -   Made organisation field an autocomplete in add dataset page.
+-   Corrected Vanguard Authentication Landing Url
 
 Access Control:
 
