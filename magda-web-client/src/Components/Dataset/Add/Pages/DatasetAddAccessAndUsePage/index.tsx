@@ -173,10 +173,8 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                     value={dataset.defaultLicense || ""}
                                     onChange={license => {
                                         props.editState("dataset")({
-                                            dataset: {
-                                                ...dataset,
-                                                defaultLicense: license
-                                            }
+                                            ...dataset,
+                                            defaultLicense: license
                                         });
                                     }}
                                 />
