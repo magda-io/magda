@@ -44,13 +44,23 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
   val userId2 = "00000000-0000-1000-0002-000000000000"
   val userId3 = "00000000-0000-1000-0003-000000000000"
 
-  val userIdsAndExpectedRecordIdIndexes = List(
+  val userIdsAndExpectedRecordIdIndexesWithoutReferencing = List(
     (userId0, List(0, 1, 2, 3, 4)),
     (userId1, List(1, 4)),
     (userId2, List(2, 3, 4)),
     (userId3, List(3, 4)),
     ("anonymous", List(4))
   )
+
+  val userIdsAndExpectedRecordIdIndexesWithReferencing = List(
+    (userId0, List(2)),
+    (userId1, List()),
+    (userId2, List()),
+    (userId3, List()),
+    ("anonymous", List())
+  )
+
+  val linkedRecordIdsMap: Map[String, String] = Map("record-2"->"record-1")
 
   val orgNames = List(
     "Dep. A",
@@ -66,9 +76,13 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
   val accessControlSchemaFile =
     "magda-registry-aspects/dataset-access-control.schema.json"
 
+  var hasAspectDefinitions = false
   private def createAspectDefinitions(
       param: RecordsOpaSpec.this.FixtureParam
-  ) = {
+  ): AnyVal = {
+    if (hasAspectDefinitions)
+      return
+
     val accessControlSchemaSource: BufferedSource = fromFile(
       accessControlSchemaFile
     )
@@ -131,6 +145,8 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
         }
       }
     })
+
+    hasAspectDefinitions = true
   }
 
   val recordsSource: BufferedSource = fromFile(dataPath + "records.json")
@@ -141,7 +157,10 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
   val recordsJson = JsonParser(recordsJsonStr)
   val testRecords: List[Record] = recordsJson.convertTo[List[Record]]
 
-  private def createRecords(param: RecordsOpaSpec.this.FixtureParam) = {
+  var hasRecords = false
+  private def createRecords(param: RecordsOpaSpec.this.FixtureParam): AnyVal = {
+    if (hasRecords)
+      return
 
     testRecords.map(record => {
       Get(s"/v0/records/${record.id}") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
@@ -156,6 +175,8 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
         }
       }
     })
+
+    hasRecords = true
   }
 
   it(
@@ -169,7 +190,7 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
       recordId = "record-" + i
     } yield (i, recordId)
 
-    userIdsAndExpectedRecordIdIndexes.map(userIdAndExpectedRecordIndexes => {
+    userIdsAndExpectedRecordIdIndexesWithoutReferencing.map(userIdAndExpectedRecordIndexes => {
       val userId = userIdAndExpectedRecordIndexes._1
       val expectedRecordIndexes = userIdAndExpectedRecordIndexes._2
       var foundRecordsCounter = 0
@@ -213,7 +234,7 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
       recordId = "record-" + i
     } yield (i, recordId)
 
-    userIdsAndExpectedRecordIdIndexes.map(userIdAndExpectedRecordIndexes => {
+    userIdsAndExpectedRecordIdIndexesWithoutReferencing.map(userIdAndExpectedRecordIndexes => {
       val userId = userIdAndExpectedRecordIndexes._1
       val expectedRecordIndexes = userIdAndExpectedRecordIndexes._2
       var foundRecordsCounter = 0
@@ -250,7 +271,7 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
     createAspectDefinitions(param)
     createRecords(param)
 
-    userIdsAndExpectedRecordIdIndexes.map(userIdAndExpectedRecordIndexes => {
+    userIdsAndExpectedRecordIdIndexesWithoutReferencing.map(userIdAndExpectedRecordIndexes => {
       val userId = userIdAndExpectedRecordIndexes._1
       val expectedRecordIndexes = userIdAndExpectedRecordIndexes._2
       val aspectId = "organization"
@@ -276,12 +297,44 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
   }
 
   it(
+    "should apply access control when returning records with required referencing aspect"
+  ) { param =>
+    createAspectDefinitions(param)
+    createRecords(param)
+
+    userIdsAndExpectedRecordIdIndexesWithReferencing.map(userIdAndExpectedRecordIndexes => {
+      val userId = userIdAndExpectedRecordIndexes._1
+      val expectedRecordIndexes = userIdAndExpectedRecordIndexes._2
+      val withLinkAspectId = "withLink"
+      val linkName = "someLink"
+
+      Get(s"/v0/records?aspect=$withLinkAspectId") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+        userId
+      ) ~> param.api(Full).routes ~> check {
+        status shouldBe StatusCodes.OK
+        val records = responseAs[RecordsPage[Record]].records
+        records.length shouldBe expectedRecordIndexes.length
+        val results: List[(Record, Int)] = records.zip(expectedRecordIndexes)
+        results.map(res => {
+          val record = res._1
+          val index = res._2
+          record.id shouldBe "record-" + index
+          val aspect = record.aspects(withLinkAspectId)
+          aspect.fields(linkName) shouldEqual JsString(linkedRecordIdsMap(record.id))
+        })
+      }
+
+    })
+
+  }
+
+  it(
     "should apply access control when returning records only"
   ) { param =>
     createAspectDefinitions(param)
     createRecords(param)
 
-    userIdsAndExpectedRecordIdIndexes.map(
+    userIdsAndExpectedRecordIdIndexesWithoutReferencing.map(
       userIdAndExpectedRecordIndexes => {
         val userId = userIdAndExpectedRecordIndexes._1
         val expectedRecordIndexes = userIdAndExpectedRecordIndexes._2
@@ -344,16 +397,17 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
     createRecords(param)
 
     val referencingRecordId = "record-2"
-    val aspectId = "withLink"
+    val withLinkAspectId = "withLink"
+    val linkName = "someLink"
     val referencedRecordId = "record-1"
 
-    Get(s"/v0/records/$referencingRecordId?aspect=$aspectId&dereference=false") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+    Get(s"/v0/records/$referencingRecordId?aspect=$withLinkAspectId&dereference=false") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
       userId0
     ) ~> param.api(Full).routes ~> check {
       status shouldBe StatusCodes.OK
       val record = responseAs[Record]
       record.id shouldBe referencingRecordId
-      record.aspects(aspectId).fields("someLink") shouldEqual JsObject("id" -> JsString(referencedRecordId))
+      record.aspects(withLinkAspectId).fields(linkName) shouldEqual JsString(referencedRecordId)
     }
   }
 
@@ -364,16 +418,17 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
     createRecords(param)
 
     val referencingRecordId = "record-2"
-    val aspectId = "withLink"
+    val withLinkAspectId = "withLink"
+    val linkName = "someLink"
     val referencedRecordIndex = 1 // "record-1"
 
-    Get(s"/v0/records/$referencingRecordId?aspect=$aspectId&dereference=true") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+    Get(s"/v0/records/$referencingRecordId?aspect=$withLinkAspectId&dereference=true") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
       userId0
     ) ~> param.api(Full).routes ~> check {
       status shouldBe StatusCodes.OK
       val record = responseAs[Record]
       record.id shouldBe referencingRecordId
-      val aspect: JsObject = record.aspects(aspectId)
+      val aspect: JsObject = record.aspects(withLinkAspectId)
       val target = testRecords(referencedRecordIndex)
       val expected = JsObject("aspects" ->
         JsObject(
@@ -383,7 +438,7 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
           "dataset-access-control" -> JsObject("orgUnitOwnerId" -> JsString("00000000-0000-2000-0002-000000000000"))
         ))
 
-      aspect.fields("someLink").asJsObject().canEqual(expected) shouldBe true
+      aspect.fields(linkName).asJsObject().canEqual(expected) shouldBe true
     }
   }
 
@@ -393,15 +448,26 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
     createAspectDefinitions(param)
     createRecords(param)
 
-    val referencingRecordId = "record-2"
-    val aspectId = "withLink"
+    val referencingRecordIndex = 2
+    val referencingRecordId = "record-" + referencingRecordIndex
+    val withLinkAspectId = "withLink"
 
-    Get(s"/v0/records/$referencingRecordId?aspect=$aspectId&dereference=false") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+    Get(s"/v0/records/$referencingRecordId?aspect=$withLinkAspectId&dereference=false") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
       userId2
     ) ~> param.api(Full).routes ~> check {
       status shouldBe StatusCodes.NotFound
     }
 
+    val organizationAspectId = "organization"
+    Get(s"/v0/records/$referencingRecordId?aspect=$organizationAspectId&optionalAspect=$withLinkAspectId&dereference=false") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+      userId2
+    ) ~> param.api(Full).routes ~> check {
+      status shouldBe StatusCodes.OK
+      val record = responseAs[Record]
+      record.id shouldBe referencingRecordId
+      record.aspects.get(withLinkAspectId) shouldBe None
+      record.aspects(organizationAspectId).fields("name") shouldBe JsString(orgNames(referencingRecordIndex))
+    }
   }
 
   it(
@@ -410,14 +476,27 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
     createAspectDefinitions(param)
     createRecords(param)
 
-    val recordId = "record-2"
-    val aspectId = "withLink"
+    val referencingRecordIndex = 2
+    val referencingRecordId = "record-" + referencingRecordIndex
+    val withLinkAspectId = "withLink"
 
-    Get(s"/v0/records/$recordId?aspect=$aspectId&dereference=true") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+    Get(s"/v0/records/$referencingRecordId?aspect=$withLinkAspectId&dereference=true") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
       userId2
     ) ~> param.api(Full).routes ~> check {
       status shouldBe StatusCodes.NotFound
     }
 
+    val organizationAspectId = "organization"
+    Get(s"/v0/records/$referencingRecordId?aspect=$organizationAspectId&optionalAspect=$withLinkAspectId&dereference=true") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+      userId2
+    ) ~> param.api(Full).routes ~> check {
+      status shouldBe StatusCodes.OK
+      val record = responseAs[Record]
+      record.id shouldBe referencingRecordId
+      record.aspects.get(withLinkAspectId) shouldBe None
+      record.aspects(organizationAspectId).fields("name") shouldBe JsString(orgNames(referencingRecordIndex))
+    }
+
   }
+
 }

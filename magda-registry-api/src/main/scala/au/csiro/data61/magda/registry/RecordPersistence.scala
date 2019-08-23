@@ -410,7 +410,7 @@ object DefaultRecordPersistence
           inner join Records using (recordId, tenantId)
           where (RecordAspects.recordId, RecordAspects.aspectId, RecordAspects.tenantId)=($recordId, $aspectId, $tenantId)
 	        ${if (opaWhereClauseParts.isEmpty) SQLSyntax.empty
-            else sqls"""and (${SQLSyntax.joinWithOr(opaWhereClauseParts: _*)})"""}
+    else sqls"""and (${SQLSyntax.joinWithOr(opaWhereClauseParts: _*)})"""}
       """
       .map(rowToAspect)
       .single
@@ -1152,7 +1152,8 @@ object DefaultRecordPersistence
     // If we're dereferencing links, we'll need to determine which fields of the selected aspects are links.
     val dereferenceLinks = dereference.getOrElse(false)
 
-    val referencingDetails = buildDereferenceMap(session, List.concat(aspectIds, optionalAspectIds))
+    val referencingDetails =
+      buildDereferenceMap(session, List.concat(aspectIds, optionalAspectIds))
 
     val recordsFilteredByTenantClause: SQLSyntax = filterRecordsByTenantClause(
       tenantId
@@ -1187,19 +1188,27 @@ object DefaultRecordPersistence
       .map(l => Math.min(l, maxResultCount))
       .getOrElse(defaultResultCount)
 
-    // TODO: Not to hard code temp.aspect0
+    val nonNullAspectsWhereClause =
+      SQLSyntax.where(SQLSyntax.joinWithAnd(aspectIds.zipWithIndex.map {
+        case (_, index) =>
+          val name = SQLSyntax.createUnsafely(s"temp.aspect$index")
+          sqls"$name is not null"
+      }.toSeq: _*))
+
     val rawResult1: SQL[Nothing, NoExtractor] =
       sql"""select * from (
               select Records.sequence as sequence,
                      Records.recordId as recordId,
                      Records.name as recordName,
                      Records.tenantId as tenantId
-                     ${if (aspectSelectors.nonEmpty) sqls", $aspectSelectors" else SQLSyntax.empty},
+                     ${if (aspectSelectors.nonEmpty) sqls", $aspectSelectors"
+      else SQLSyntax.empty},
                      Records.sourcetag as sourceTag
               from Records
               ${makeWhereClause(whereClauseParts)}
             ) as temp
-            ${if (aspectSelectors.nonEmpty) sqls"where temp.aspect0 is not null" else SQLSyntax.empty}
+            ${if (aspectIds.nonEmpty) sqls"$nonNullAspectsWhereClause"
+      else SQLSyntax.empty}
             order by temp.sequence
             offset ${start.getOrElse(0)}
             limit ${limit + 1}"""
@@ -1396,14 +1405,14 @@ object DefaultRecordPersistence
       opaQueries: Seq[OpaQuery],
       operationType: AuthOperations.OperationType
   ): Iterable[SQLSyntax] = {
-    val theOpaQueries: List[OpaQuery] = if (opaQueries.nonEmpty) opaQueries.toList else List(OpaQuerySkipAccessControl)
+    val theOpaQueries: List[OpaQuery] =
+      if (opaQueries.nonEmpty) opaQueries.toList
+      else List(OpaQuerySkipAccessControl)
     val opaSql: SQLSyntax =
-        sqls"(${
-          SQLSyntax.joinWithAnd(
-            SQLSyntax
-              .joinWithOr(opaQueriesToWhereClauseParts(tenantId, theOpaQueries): _*)
-          )
-        })"
+      sqls"(${SQLSyntax.joinWithAnd(
+        SQLSyntax
+          .joinWithOr(opaQueriesToWhereClauseParts(tenantId, theOpaQueries): _*)
+      )})"
 
     val aspectWhereClauses: Seq[Option[SQLSyntax]] = aspectIdsToWhereClause(
       tenantId,
@@ -1415,18 +1424,18 @@ object DefaultRecordPersistence
   }
 
   private def opaQueriesToWhereParts(
-    tenantId: BigInt,
-    opaQueries: Seq[OpaQuery],
-    operationType: AuthOperations.OperationType
+      tenantId: BigInt,
+      opaQueries: Seq[OpaQuery],
+      operationType: AuthOperations.OperationType
   ): Iterable[SQLSyntax] = {
-    val theOpaQueries: List[OpaQuery] = if (opaQueries.nonEmpty) opaQueries.toList else List(OpaQuerySkipAccessControl)
+    val theOpaQueries: List[OpaQuery] =
+      if (opaQueries.nonEmpty) opaQueries.toList
+      else List(OpaQuerySkipAccessControl)
     val opaSql: SQLSyntax =
-      sqls"(${
-        SQLSyntax.joinWithAnd(
-          SQLSyntax
-            .joinWithOr(opaQueriesToWhereClauseParts(tenantId, theOpaQueries): _*)
-        )
-      })"
+      sqls"(${SQLSyntax.joinWithAnd(
+        SQLSyntax
+          .joinWithOr(opaQueriesToWhereClauseParts(tenantId, theOpaQueries): _*)
+      )})"
 
     val result = List(opaSql)
     result
@@ -1440,12 +1449,9 @@ object DefaultRecordPersistence
       referencingDetails: Map[String, PropertyWithLink],
       dereference: Boolean = false
   ): Iterable[scalikejdbc.SQLSyntax] = {
-    val whereParts = opaQueriesToWhereParts(
-      tenantId,
-      opaQueries,
-      operationType).toSeq
-
-    val theParts = SQLSyntax.joinWithAnd(whereParts: _*)
+    val opaConditions = SQLSyntax.joinWithAnd(
+      opaQueriesToWhereParts(tenantId, opaQueries, operationType).toSeq: _*
+    )
 
     val result: Iterable[SQLSyntax] = aspectIds.zipWithIndex.map {
       case (aspectId, index) =>
@@ -1490,29 +1496,26 @@ object DefaultRecordPersistence
                     |                END
             )""".stripMargin
             case PropertyWithLink(propertyName, false) =>
-              if (dereference) {
-                sqls"""(select jsonb_set(RecordAspects.data,
-                                      ${"{\"" + propertyName + "\"}"}::text[],
-                                      jsonb_build_object('id', Records.recordId,
-                                      'name', Records.name,
-                                      'aspects', (
-                                          select jsonb_object_agg(aspectId, data) from RecordAspects
-                                          where tenantId=Records.tenantId and recordId=Records.recordId)))
-                     from Records
-                     where Records.tenantId=RecordAspects.tenantId and
-                     Records.recordId=RecordAspects.data->>$propertyName and $theParts)"""
-              } else {
-                sqls"""(select jsonb_set(RecordAspects.data,
-                                      ${"{\"" + propertyName + "\"}"}::text[],
-                                      jsonb_build_object('id', Records.recordId))
-                     from Records
-                     where Records.tenantId=RecordAspects.tenantId and
-                     Records.recordId=RecordAspects.data->>$propertyName and $theParts)"""
-              }
+              sqls"""(
+                     select
+                     case when $dereference then
+                     jsonb_set(RecordAspects.data,
+                              ${"{\"" + propertyName + "\"}"}::text[],
+                              jsonb_build_object(
+                              'id', Records.recordId,
+                              'name', Records.name,
+                              'aspects', (
+                               select jsonb_object_agg(aspectId, data) from RecordAspects
+                               where tenantId=Records.tenantId and recordId=Records.recordId)))
+                     else RecordAspects.data
+                     end
+                     from Records where Records.tenantId=RecordAspects.tenantId and
+                     Records.recordId=RecordAspects.data->>$propertyName and $opaConditions)"""
           }
           .getOrElse(sqls"data")
 
-        sqls"""(select $selection from RecordAspects where (aspectId, recordid, tenantId)=($aspectId, Records.recordId, Records.tenantId)) as $aspectColumnName"""
+        sqls"""(select $selection from RecordAspects
+              where (aspectId, recordid, tenantId)=($aspectId, Records.recordId, Records.tenantId)) as $aspectColumnName"""
     }
 
     result
