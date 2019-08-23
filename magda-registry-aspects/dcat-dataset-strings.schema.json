@@ -84,6 +84,10 @@
             "title": "A Web page that can be navigated to in a Web browser to gain access to the dataset, its distributions and/or additional information. This should only be a MAGDA landing page if MAGDA is the official source of this dataset.",
             "type": "string",
             "format": "uri"
+        },
+        "defaultLicense": {
+            "title": "Default license for any distributions contained by this dataset.",
+            "type": "string"
         }
     },
     "additionalProperties": false

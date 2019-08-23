@@ -35,8 +35,8 @@ type Props = {
 export default function DatasetAddAccessAndUsePage(props: Props) {
     let {
         files,
+        dataset,
         datasetAccess,
-        datasetLevelLicense,
         licenseLevel,
         datasetPublishing,
         informationSecurity
@@ -170,10 +170,15 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         <div className="license-dataset-option-container row">
                             <div className="col-sm-6">
                                 <LicenseEditor
-                                    value={datasetLevelLicense || ""}
-                                    onChange={props.editState(
-                                        "datasetLevelLicense"
-                                    )}
+                                    value={dataset.defaultLicense || ""}
+                                    onChange={license => {
+                                        props.editState("dataset")({
+                                            dataset: {
+                                                ...dataset,
+                                                defaultLicense: license
+                                            }
+                                        });
+                                    }}
                                 />
                             </div>
                         </div>

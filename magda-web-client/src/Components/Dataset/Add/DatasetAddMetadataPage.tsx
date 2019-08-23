@@ -469,7 +469,6 @@ class NewDataset extends React.Component<Props, State> {
             temporalCoverage,
             files,
             licenseLevel,
-            datasetLevelLicense,
             informationSecurity,
             datasetAccess,
             provenance
@@ -537,7 +536,7 @@ class NewDataset extends React.Component<Props, State> {
                 licenseLevel === "dataset"
                     ? {
                           ...file,
-                          license: datasetLevelLicense
+                          license: dataset.defaultLicense
                       }
                     : file;
 
