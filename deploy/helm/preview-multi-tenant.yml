@@ -6,6 +6,7 @@ global:
     pullPolicy: Always
   exposeNodePorts: false
   enablePriorityClass: false
+  defaultContactEmail: "magda-test@googlegroups.com"
 
 tags:
   all: true
@@ -92,7 +93,6 @@ web-server:
     cataloguing: true
 
 correspondence-api:
-  defaultRecipient: "magda-test@googlegroups.com"
   alwaysSendToDefaultRecipient: true
   smtpHostname: "smtp.mailgun.org"
   smtpPort: 2525

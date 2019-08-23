@@ -126,6 +126,7 @@ export type State = {
     datasetLevelLicense?: string;
 
     isPublishing: boolean;
+    error: Error | null;
 };
 
 type TemporalCoverage = {
@@ -165,6 +166,7 @@ function createBlankState(user: User): State {
         provenance: {},
         licenseLevel: "dataset",
         isPublishing: false,
+        error: null,
         _createdDate: new Date().toISOString(),
         _lastModifiedDate: new Date().toISOString()
     };
