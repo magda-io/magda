@@ -47,9 +47,9 @@ const serverConfig: {
 
 const registryApiUrl =
     serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry/";
-const registryAuthApiUrl =
-    serverConfig.registryApiBaseUrl ||
-    fallbackApiHost + "api/v0/registry-auth/";
+const registryAuthApiUrl = serverConfig.baseUrl
+    ? serverConfig.baseUrl + "api/v0/registry-auth/"
+    : fallbackApiHost + "api/v0/registry-auth/";
 
 const previewMapUrl =
     serverConfig.previewMapBaseUrl || fallbackApiHost + "preview-map/";

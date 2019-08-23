@@ -53,14 +53,21 @@ const ErrorMessageBox: FunctionComponent<Props> = props => {
                         </div>
                     </div>
                 );
+            case 401: //--- 401 reuse the same error message for 403
             case 403:
                 return (
                     <div className="au-body au-page-alerts au-page-alerts--error">
-                        <span>
-                            You've been logged out - please Sign In again to
-                            submit the dataset - everything has been saved
-                            locally.
-                        </span>
+                        <div>
+                            <span>
+                                You don't have permission to publish the dataset
+                                - this is most likely because you've been logged
+                                out - please Sign In again to submit the
+                                dataset.
+                            </span>
+                        </div>
+                        <div>
+                            <span>Everything has been saved locally.</span>
+                        </div>
                     </div>
                 );
             default:
