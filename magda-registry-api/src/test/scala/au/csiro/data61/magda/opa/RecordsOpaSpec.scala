@@ -27,30 +27,34 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
     *       +----+-----+       +----+-----+
     *       | Branch A |       | Branch B |
     *       | userId1  |  ref  | userId2  |
-    *       | record-1 | <---- | record-2 |      ref
-    *       |          | <---- | record-5 | --------------+
-    *       +----------+       +----+-----+               |
-    *                               |                     |
-    *                  +--------------------------+       |
-    *                  |            |             |       |
-    *             +----+----+  +----+----+  +----+-----+  |      +----------+
-    *             |Section A|  |Section B|  |Section C |  |      | (Public) |
-    *             |         |  |         |  | userId3  |  |      | record-4 |
-    *             |         |  |         |  | record-3 |<-+      +----------+
-    *             +---------+  +---------+  +----------+        (Section C owns record-4 but does
-    *                                                            not put access restriction on it.)
+    *   +-->| record-1 | <-----| record-2 |      ref
+    *   |   |          | <-----| record-5 |----------------+
+    *   |   +----------+       +----+-----+                |
+    *   |                           |                      |
+    *   |              +--------------------------+        |
+    *   |              |            |             |        |
+    *   |         +----+----+  +----+----+  +----+-----+   |     +----------+
+    *   |         |Section A|  |Section B|  |Section C |   |     | (Public) |
+    *   |         |         |  |         |  | userId3  |   |     |          |
+    *   |         |         |  +---------+  |          |<--+     |          |  (Section C owns record-4 but does
+    *   |         +---------+         ? <---| record-3 | <-------| record-4 |   not put access restriction on it.)
+    *   |                               ref +----------+     ref +----------+
+    *   |                                                              | ref
+    *   +------------------------------ -------------------------------+
+    *
     */
   val userId0 = "00000000-0000-1000-0000-000000000000" // admin user
   val userId1 = "00000000-0000-1000-0001-000000000000"
   val userId2 = "00000000-0000-1000-0002-000000000000"
   val userId3 = "00000000-0000-1000-0003-000000000000"
+  val anonymous = "anonymous"
 
   val userIdsAndExpectedRecordIdIndexesWithoutReferencing = List(
     (userId0, List(0, 1, 2, 3, 4, 5)),
     (userId1, List(1, 4)),
     (userId2, List(2, 3, 4, 5)),
     (userId3, List(3, 4)),
-    ("anonymous", List(4))
+    (anonymous, List(4))
   )
 
   val userIdsAndExpectedRecordIdIndexesWithReferencing = List(
@@ -602,7 +606,7 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
 
   it(
     "should return record-3 but not record-1 in links (dereference=true) to userId2"
-  ) { param =>
+    ) { param =>
     createAspectDefinitions(param)
     createRecords(param)
 
@@ -630,6 +634,44 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
       val actual = record.aspects(withLinksAspectId).fields(linksName).convertTo[Array[JsObject]]
       actual.length shouldBe 1
       actual(0).canEqual(expected) shouldBe true
+    }
+  }
+
+  it(
+    "should not return any in links (dereference=true) to anonymous user"
+  ) { param =>
+    createAspectDefinitions(param)
+    createRecords(param)
+
+    val referencingRecordId = "record-5"
+    val withLinksAspectId = "withLinks"
+
+    Get(s"/v0/records/$referencingRecordId?aspect=$withLinksAspectId&dereference=true") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+      anonymous
+    ) ~> param.api(Full).routes ~> check {
+      // TODO: Should this return OK with empty links?
+      status shouldBe StatusCodes.NotFound
+    }
+  }
+
+  it(
+    "should return empty links (dereference=true) to userId2"
+  ) { param =>
+    createAspectDefinitions(param)
+    createRecords(param)
+
+    val referencingRecordId = "record-3"
+    val withLinksAspectId = "withLinks"
+    val linksName = "someLinks"
+
+    Get(s"/v0/records/$referencingRecordId?aspect=$withLinksAspectId&dereference=true") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+      userId2
+    ) ~> param.api(Full).routes ~> check {
+      status shouldBe StatusCodes.OK
+      val record = responseAs[Record]
+      record.id shouldBe referencingRecordId
+      val actual = record.aspects(withLinksAspectId).fields(linksName).convertTo[Array[JsObject]]
+      actual.length shouldBe 0
     }
   }
 }

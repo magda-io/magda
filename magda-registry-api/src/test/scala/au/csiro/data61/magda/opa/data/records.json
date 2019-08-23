@@ -53,6 +53,9 @@
             "organization": {
                 "name": "Section C, Branch B, Dep. A",
                 "email": "Section.C@somewhere"
+            },
+            "withLinks": {
+                "someLinks": []
             }
         }
     },
@@ -64,6 +67,9 @@
             "organization": {
                 "name": "Section C, Branch B, Dep. A",
                 "email": "Section.C@somewhere"
+            },
+            "withLinks": {
+                "someLinks": ["record-1", "record-3"]
             }
         }
     },
