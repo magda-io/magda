@@ -160,7 +160,7 @@ class RecordsServiceRO(
               materializer,
               ec
             ) { opaQueries =>
-              assert(opaQueries nonEmpty)
+              assert(opaQueries.nonEmpty)
               complete {
                 DB readOnly { session =>
                   recordPersistence.getAllWithAspects(
@@ -252,10 +252,19 @@ class RecordsServiceRO(
       requiresTenantId { tenantId =>
         parameters('pageToken.?, 'start.as[Int].?, 'limit.as[Int].?) {
           (pageToken, start, limit) =>
-            complete {
-              DB readOnly { session =>
-                recordPersistence
-                  .getAll(session, tenantId, pageToken, start, limit)
+            withRecordOpaQuery(AuthOperations.read)(
+              config,
+              system,
+              materializer,
+              ec
+            ) { opaQueries =>
+              assert(opaQueries.nonEmpty)
+
+              complete {
+                DB readOnly { session =>
+                  recordPersistence
+                    .getAll(session, tenantId, opaQueries, pageToken, start, limit)
+                }
               }
             }
         }
@@ -320,12 +329,21 @@ class RecordsServiceRO(
         parameters('aspect.*, 'aspectQuery.*) { (aspects, aspectQueries) =>
           val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
 
-          complete {
-            DB readOnly { session =>
-              CountResponse(
-                recordPersistence
-                  .getCount(session, tenantId, aspects, parsedAspectQueries)
-              )
+          withRecordOpaQuery(AuthOperations.read)(
+            config,
+            system,
+            materializer,
+            ec
+          ) { opaQueries =>
+            assert(opaQueries.nonEmpty)
+
+            complete {
+              DB readOnly { session =>
+                CountResponse(
+                  recordPersistence
+                    .getCount(session, tenantId, opaQueries, aspects, parsedAspectQueries)
+                )
+              }
             }
           }
         }
@@ -395,7 +413,7 @@ class RecordsServiceRO(
               materializer,
               ec
             ) { opaQueries =>
-              assert(opaQueries nonEmpty)
+              assert(opaQueries.nonEmpty)
               complete {
                 DB readOnly { session =>
                   "0" :: recordPersistence
@@ -506,7 +524,7 @@ class RecordsServiceRO(
               materializer,
               ec
             ) { opaQueries =>
-              assert(opaQueries nonEmpty)
+              assert(opaQueries.nonEmpty)
               DB readOnly { session =>
                 recordPersistence.getByIdWithAspects(
                   session,
@@ -589,14 +607,23 @@ class RecordsServiceRO(
   def getByIdSummary: Route = get {
     path("summary" / Segment) { id =>
       requiresTenantId { tenantId =>
-        DB readOnly { session =>
-          recordPersistence.getById(session, tenantId, id) match {
-            case Some(record) => complete(record)
-            case None =>
-              complete(
-                StatusCodes.NotFound,
-                BadRequest("No record exists with that ID.")
-              )
+        withRecordOpaQuery(AuthOperations.read)(
+          config,
+          system,
+          materializer,
+          ec
+        ) { opaQueries =>
+          assert(opaQueries.nonEmpty)
+
+          DB readOnly { session =>
+            recordPersistence.getById(session, tenantId, opaQueries, id) match {
+              case Some(record) => complete(record)
+              case None =>
+                complete(
+                  StatusCodes.NotFound,
+                  BadRequest("No record exists with that ID.")
+                )
+            }
           }
         }
       }
