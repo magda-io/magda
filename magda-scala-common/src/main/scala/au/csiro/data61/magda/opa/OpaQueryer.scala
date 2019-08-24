@@ -257,8 +257,7 @@ class OpaQueryer()(
                   .get("body")
                   .map(_.asInstanceOf[JsArray])
               case JsBoolean(false) if isDefault =>
-                //noinspection ScalaDeprecation
-                Seq(JsArray(List(JsObject("terms" -> headValue))))
+                Seq(JsArray(Vector(JsObject("terms" -> headValue))))
               case _ =>
                 throw new Exception(
                   "Found head value with value other than true that wasn't default"

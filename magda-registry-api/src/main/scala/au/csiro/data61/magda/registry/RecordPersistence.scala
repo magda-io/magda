@@ -494,6 +494,7 @@ object DefaultRecordPersistence
           this.getById(session, tenantId, id) match {
             case Some(record) =>
               Failure(
+                // TODO: Return a better error code.
                 new RuntimeException(
                   s"You don't have permission to create this record $record."
                 )
