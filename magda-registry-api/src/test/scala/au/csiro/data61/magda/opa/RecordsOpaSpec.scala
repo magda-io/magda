@@ -402,6 +402,67 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
 
   }
 
+  describe("should authorize page tokens query") {
+
+    it(
+      "and return different page tokens for different users"
+    ) { param =>
+      createAspectDefinitions(param)
+      createRecords(param)
+      val pageSize = 3
+
+      // If the test records are inserted into a clean table (current sequence = 0),
+      // this map represents the expected zero-based page tokens for each users when
+      // page size is set to 3. However, during development, records might be inserted
+      // and deleted by developer frequently, resulting in non-zero based page tokens.
+      // In that case, the expected page tokens will be adjusted later in the test.
+      // See expectedPageTokens.
+      val expectedPageTokensBaseMap = Map(
+        userId0 -> List(0, 2, 5), // authorized to all 6 records
+        userId1 -> List(0), // authorized to record-1, record-4
+        userId2 -> List(0, 2), // authorized to record-2, record-3, record-4, record-5
+        userId3 -> List(0), // authorized to record-3, record-4
+        anonymous -> List(0) // authorized to record-4
+      )
+
+      userIdsAndExpectedRecordIdIndexesWithoutLink.map(
+        userIdAndExpectedRecordIndexes => {
+          val userId = userIdAndExpectedRecordIndexes._1
+
+          var firstRecordToken = 0
+          Get(s"/v0/records?limit=1") ~> addTenantIdHeader(
+            TENANT_0
+          ) ~> addJwtToken(
+            userId
+          ) ~> param.api(Full).routes ~> check {
+            val page = responseAs[RecordsPage[Record]]
+            if (page.hasMore)
+              firstRecordToken = page.nextPageToken.map(Integer.parseInt).get
+          }
+
+          Get(s"/v0/records/pagetokens?aspect=$organizationId&limit=$pageSize") ~> addTenantIdHeader(
+            TENANT_0
+          ) ~> addJwtToken(
+            userId
+          ) ~> param.api(Full).routes ~> check {
+            status shouldBe StatusCodes.OK
+            val actualPageTokens = responseAs[List[String]]
+
+            val expectedPageTokens = expectedPageTokensBaseMap(userId).map(
+              offset => if (offset == 0) 0 else firstRecordToken + offset
+            )
+
+//            println(s"----- $userId, $firstRecordToken, $actualPageTokens")
+            actualPageTokens
+              .map(Integer.parseInt) shouldEqual expectedPageTokens
+          }
+
+        }
+      )
+    }
+
+  }
+
   describe("should authorize query by aspect value") {
     def encode(rawQueriedValue: String) = {
       java.net.URLEncoder.encode(rawQueriedValue, "UTF-8")
