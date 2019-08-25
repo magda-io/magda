@@ -284,6 +284,7 @@ class NewDataset extends React.Component<Props, State> {
                                 value={dataset.themes}
                                 onChange={editDataset("themes")}
                                 placeHolderText="Type a theme and press ENTER…"
+                                useVocabularyAutoCompleteInput={false}
                             />
                         </div>
                     </div>
