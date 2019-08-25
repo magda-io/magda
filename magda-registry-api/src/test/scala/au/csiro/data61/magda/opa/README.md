@@ -100,7 +100,7 @@ Here is an example query on behalf of user with ID of 00000000-0000-1000-0003-00
 curl --header "X-Magda-Session:eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiIwMDAwMDAwMC0wMDAwLTEwMDAtMDAwMy0wMDAwMDAwMDAwMDAifQ.cCCS3XqslU6ZQYlYhkJ9Fm4mFj7E_g4dmGnRGEgaZmA" --header "X-Magda-Tenant-Id: 0" http://localhost:6101/v0/records?aspect=organization | json_pp
 ```
 
-And the response will be:
+And the response might look like:
 
 ```
 {
@@ -132,13 +132,7 @@ And the response will be:
 }
 ```
 
-### Note
+#### Note
 
-1. If a jwt token is incorrect (e.g. typo), the user will be considered unauthenticated and
-   only get "record-4" that has no access restriction.
-
-2. In full deployment case, a user must log in and use URL api/v0/registry-auth/records
-   (NOT api/v0/registry/records) to get records that have access control aspect.
-
-    URL api/v0/registry/records is for anonymous users therefore will not be able to get
-    any restricted records.
+If the above jwt token is incorrect (e.g. typo), the user will be considered unauthenticated and only
+get "record-4" that has no access restriction.
