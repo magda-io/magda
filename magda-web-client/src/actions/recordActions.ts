@@ -273,15 +273,3 @@ export function createRecord(
         }
     };
 }
-
-async function ensureAspectExists(id: string, jsonSchema: any) {
-    try {
-        await request("GET", `${config.registryFullApiUrl}aspects/${id}`);
-    } catch (error) {
-        await request("POST", `${config.registryFullApiUrl}aspects`, {
-            id,
-            name: jsonSchema.title,
-            jsonSchema
-        });
-    }
-}
