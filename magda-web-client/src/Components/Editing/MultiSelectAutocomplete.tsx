@@ -50,6 +50,7 @@ export default function MultiSelectAutoComplete<T>(
             styles={ReactSelectStyles}
             value={props.value && props.value.map(props.toData)}
             loadOptions={loadOptions}
+            placeholder={props.placeHolderText}
         />
     );
 }

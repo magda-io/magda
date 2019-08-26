@@ -264,7 +264,7 @@ class NewDataset extends React.Component<Props, State> {
                             <TagInput
                                 value={dataset.keywords}
                                 onChange={editDataset("keywords")}
-                                placeHolderText="Type in keyword and press ENTER…"
+                                placeHolderText="Enter a keyword"
                                 useVocabularyAutoCompleteInput={true}
                             />
                         </div>
@@ -283,7 +283,7 @@ class NewDataset extends React.Component<Props, State> {
                             <TagInput
                                 value={dataset.themes}
                                 onChange={editDataset("themes")}
-                                placeHolderText="Type a theme and press ENTER…"
+                                placeHolderText="Enter a theme"
                                 useVocabularyAutoCompleteInput={false}
                             />
                         </div>
