@@ -15,6 +15,7 @@ const customStyles = {
     control: provided => ({
         ...provided,
         width: "560px",
+        height: "44px",
         borderRadius: "2px"
     })
 };

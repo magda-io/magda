@@ -578,5 +578,5 @@ export const licenseLevel = {
 
 export const datasetLicenseLevel = {
     dataset: "Dataset level license",
-    distribution: "Distribution level license"
+    distribution: "Distribution (or file/URL) level license"
 };
