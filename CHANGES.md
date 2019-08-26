@@ -92,6 +92,7 @@ Gateway:
 -   Add Vanguard (WS-FED) Authentication provider
 -   Made organisation field an autocomplete in add dataset page.
 -   Corrected Vanguard Authentication Landing Url
+-   Fixed Google oAuth Error: authRouter
 
 Access Control:
 
