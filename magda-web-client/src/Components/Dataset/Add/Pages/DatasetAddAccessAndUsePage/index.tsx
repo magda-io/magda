@@ -1,7 +1,6 @@
 import React from "react";
 
 import ToolTip from "Components/Dataset/Add/ToolTip";
-import HelpSnippet from "Components/Common/HelpSnippet";
 import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
 import { MultilineTextEditor } from "Components/Editing/Editors/textEditor";
 import {
@@ -211,78 +210,43 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     )}
                 </div>
 
-                <h4>What is the security classification of this dataset?</h4>
-                <p>
-                    <AlwaysEditor
-                        value={informationSecurity.classification}
-                        onChange={editInformationSecurity("classification")}
-                        editor={codelistEditor(codelists.classification)}
-                    />
-                </p>
-                <h4 className="snippet-heading">
-                    What is the sensitivity of this dataset?
-                </h4>
-                <HelpSnippet>
-                    <p>
-                        Magda security classification refers to the
-                        Attorney-General Department's Sensitive and
-                        Classification policy.
-                        <br />
-                        It is important that the appropriate security
-                        classification level is selected to protect the
-                        confidentiality, integrity and availability of the data.
-                        The framework is as follows:
-                    </p>
-                    <p>
-                        UNCLASSIFIED: Compromise of information confidentiality
-                        would be expected to cause{" "}
-                        <b>low or no business impact.</b>
-                    </p>
-                    <p>
-                        PROTECTED: Compromise of information confidentiality
-                        would be expected to cause{" "}
-                        <b>
-                            limited damage to an individual, organisation or
-                            government generally if compromised.
-                        </b>
-                    </p>
-                    <p>
-                        CONFIDENTIAL: Compromise of information confidentiality
-                        would be expected to cause{" "}
-                        <b>
-                            damage to the national interest, organisations or
-                            individuals.
-                        </b>
-                    </p>
-                    <p>
-                        SECRET: Compromise of information confidentiality would
-                        be expected to cause{" "}
-                        <b>
-                            serious damage to national interest, organisations
-                            or individuals.
-                        </b>
-                    </p>
-                    <p>
-                        TOP SECRET: Compromise of information confidentiality
-                        would be expected to cause{" "}
-                        <b>
-                            exceptionally grave damage to te national interest,
-                            organisations or individuals.
-                        </b>
-                    </p>
-                </HelpSnippet>
+                <div className="question-security-classification">
+                    <h4 className="with-icon">
+                        <span>
+                            What is the security classification of this dataset?
+                        </span>
+                        <span className="help-icon-container">
+                            <img src={helpIcon} />
+                        </span>
+                    </h4>
+                    <div>
+                        <AlwaysEditor
+                            value={informationSecurity.classification}
+                            onChange={editInformationSecurity("classification")}
+                            editor={codelistEditor(codelists.classification)}
+                        />
+                    </div>
+                </div>
 
-                <p>
-                    <AlwaysEditor
-                        value={informationSecurity.disseminationLimits}
-                        onChange={editInformationSecurity(
-                            "disseminationLimits"
-                        )}
-                        editor={multiCodelistEditor(
-                            codelists.disseminationLimits
-                        )}
-                    />
-                </p>
+                <div className="question-security-classification">
+                    <h4 className="with-icon">
+                        <span>What is the sensitivity of this dataset?</span>
+                        <span className="help-icon-container">
+                            <img src={helpIcon} />
+                        </span>
+                    </h4>
+                    <div>
+                        <AlwaysEditor
+                            value={informationSecurity.disseminationLimits}
+                            onChange={editInformationSecurity(
+                                "disseminationLimits"
+                            )}
+                            editor={multiCodelistEditor(
+                                codelists.disseminationLimits
+                            )}
+                        />
+                    </div>
+                </div>
             </div>
         </div>
     );
