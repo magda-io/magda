@@ -84,6 +84,7 @@ UI:
 -   Fixed a JS error which causes blank screen on Organisations Page
 -   Fixed: drop a folder to Add dataset file drop area will break the UI
 -   Show an error message screen if the user is not allowed to access the add dataset page
+-   Updated security classification & sensitivity questions according to the new design
 
 Gateway:
 
