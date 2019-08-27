@@ -19,3 +19,4 @@ useLocalStyleSheet: false
 contentApiBaseUrlInternal: "http://content-api/v0/"
 featureFlags: {}
 vocabularyApiEndpoints: []
+defaultContactEmail: "mail@example.com"

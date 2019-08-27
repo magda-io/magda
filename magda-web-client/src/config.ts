@@ -42,13 +42,14 @@ const serverConfig: {
     };
     vocabularyApiEndpoints: string[];
     defaultOrganizationId?: string;
+    defaultContactEmail?: string;
 } = window.magda_server_config || {};
 
 const registryApiUrl =
     serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry/";
-const registryAuthApiUrl =
-    serverConfig.registryApiBaseUrl ||
-    fallbackApiHost + "api/v0/registry-auth/";
+const registryAuthApiUrl = serverConfig.baseUrl
+    ? serverConfig.baseUrl + "api/v0/registry-auth/"
+    : fallbackApiHost + "api/v0/registry-auth/";
 
 const previewMapUrl =
     serverConfig.previewMapBaseUrl || fallbackApiHost + "preview-map/";
@@ -147,7 +148,8 @@ export const config = {
         serverConfig.featureFlags ||
         (process.env.NODE_ENV === "development" ? DEV_FEATURE_FLAGS : {}),
     vocabularyApiEndpoints,
-    defaultOrganizationId: serverConfig.defaultOrganizationId
+    defaultOrganizationId: serverConfig.defaultOrganizationId,
+    defaultContactEmail: serverConfig.defaultContactEmail
 };
 
 export const defaultConfiguration = {

@@ -1,4 +1,7 @@
 import React from "react";
+import { bindActionCreators } from "redux";
+import { connect } from "react-redux";
+import { createNewDatasetReset } from "actions/recordActions";
 import { withRouter } from "react-router";
 import "./AddDatasetProgressMeter.scss";
 import iconTick from "assets/tick.svg";
@@ -14,6 +17,7 @@ interface StepItem {
 interface PropsType {
     history: History;
     location: Location;
+    createNewDatasetReset: Function;
 }
 
 export const Steps: StepItem[] = [
@@ -103,6 +107,8 @@ const AddDatasetProgressMeter = (props: PropsType) => {
                         return;
                     }
                     props.history.push(createStepUrl(datasetId, item));
+                    if (props.createNewDatasetReset)
+                        props.createNewDatasetReset();
                 }}
             >
                 <div className="step-item">
@@ -132,4 +138,18 @@ const AddDatasetProgressMeter = (props: PropsType) => {
     );
 };
 
-export default withRouter(AddDatasetProgressMeter);
+const mapDispatchToProps = dispatch => {
+    return bindActionCreators(
+        {
+            createNewDatasetReset: createNewDatasetReset
+        },
+        dispatch
+    );
+};
+
+export default withRouter(
+    connect(
+        null,
+        mapDispatchToProps
+    )(AddDatasetProgressMeter)
+);
