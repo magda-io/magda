@@ -18,6 +18,7 @@ import ReactSelect from "react-select";
 import ReactSelectStyles from "../../../../Common/react-select/ReactSelectStyles";
 import PurpleToolTip from "Components/Common/Tooltip";
 import { config } from "config";
+import AUpageAlert from "@gov.au/page-alerts";
 
 import "./index.scss";
 
@@ -284,6 +285,33 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                             />
                         </div>
                     </div>
+                    {informationSecurity.classification === "PROTECTED" ? (
+                        <div className="row">
+                            <div className="col-sm-12">
+                                <AUpageAlert as="warning">
+                                    <div>
+                                        Protected datasets must be stored within
+                                        the Protected Enclave
+                                    </div>
+                                </AUpageAlert>
+                            </div>
+                        </div>
+                    ) : null}
+                    {informationSecurity.classification === "SECRET" ||
+                    informationSecurity.classification === "TOP SECRET" ? (
+                        <div className="row">
+                            <div className="col-sm-12">
+                                <AUpageAlert as="warning">
+                                    <div>
+                                        Secret or Top Secret classified data
+                                        must not be stored on any departmental
+                                        network, and must be managed as a
+                                        physical asset
+                                    </div>
+                                </AUpageAlert>
+                            </div>
+                        </div>
+                    ) : null}
                 </div>
                 {informationSecurity.classification === "OFFICIAL:SENSITIVE" ? (
                     <div className="question-security-classification">
