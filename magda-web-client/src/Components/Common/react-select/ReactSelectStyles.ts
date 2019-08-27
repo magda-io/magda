@@ -6,7 +6,7 @@
 const customStyles = {
     control: provided => ({
         ...provided,
-        height: "44px"
+        minHeight: "44px"
     }),
     multiValue: provided => ({
         ...provided,
