@@ -314,7 +314,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     ) : null}
                 </div>
                 {informationSecurity.classification === "OFFICIAL:SENSITIVE" ? (
-                    <div className="question-security-classification">
+                    <div className="question-sensitivity">
                         <h4>
                             <span>
                                 What sensitivity markers should be added to this
