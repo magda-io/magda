@@ -26,7 +26,11 @@ import { Steps as ProgressMeterStepsConfig } from "../../Common/AddDatasetProgre
 import * as codelists from "constants/DatasetConstants";
 import TagInput from "Components/Common/TagInput";
 import AccrualPeriodicityInput from "./AccrualPeriodicityInput";
-import { State, saveState } from "./DatasetAddCommon";
+import {
+    State,
+    saveState,
+    OrganisationAutocompleteChoice
+} from "./DatasetAddCommon";
 import DatasetAddPeoplePage from "./Pages/People/DatasetAddPeoplePage";
 import { createPublisher, ensureAspectExists } from "api-clients/RegistryApis";
 import DatasetAddAccessAndUsePage from "./Pages/DatasetAddAccessAndUsePage";
@@ -49,7 +53,6 @@ import "./DatasetAddMetadataPage.scss";
 import "./DatasetAddFilesPage.scss";
 import "./DatasetAddCommon.scss";
 import { autocompletePublishers } from "api-clients/SearchApis";
-import publisher from "reducers/publisherReducer";
 
 import SpatialAreaInput, {
     InputMethod as SpatialAreaInputInputMethod
@@ -476,61 +479,18 @@ class NewDataset extends React.Component<Props, State> {
             provenance
         } = this.state;
 
-        if (!dataset.publisher) {
-            throw new Error("No publisher selected");
-        }
-
         this.setState({
             isPublishing: true
         });
 
-        let publisherId: string;
-        if (!dataset.publisher.existingId) {
-            // Do a last check to make sure the publisher really doesn't exist
-            const existingPublishers = await autocompletePublishers(
-                {},
-                dataset.publisher.name
-            );
+        let publisherId;
+        if (dataset.publisher) {
+            publisherId = getOrgIdFromAutocompleteChoice(dataset.publisher);
 
-            const match = existingPublishers.options.find(
-                publisher =>
-                    publisher.value.toLowerCase().trim() ===
-                    dataset.publisher!.name.toLowerCase().trim()
-            );
-
-            if (!match) {
-                // OK no publisher, lets add it
-                await ensureAspectExists(
-                    "organization-details",
-                    organizationDetailsAspect
-                );
-
-                publisherId = uuidv4();
-                await createPublisher({
-                    id: publisherId,
-                    name: dataset.publisher.name,
-                    aspects: {
-                        "organization-details": {
-                            name: dataset.publisher.name,
-                            title: dataset.publisher.name,
-                            imageUrl: "",
-                            description:
-                                "Added manually during dataset creation"
-                        }
-                    }
-                });
-            } else {
-                publisherId = match.identifier;
-            }
-
-            const newPublisher = {
-                name: publisher.name,
+            this.edit("dataset")("publisher")({
+                name: dataset.publisher.name,
                 publisherId
-            };
-
-            this.edit("dataset")("publisher")(newPublisher);
-        } else {
-            publisherId = dataset.publisher.existingId;
+            });
         }
 
         const inputDistributions = files.map(file => {
@@ -563,18 +523,78 @@ class NewDataset extends React.Component<Props, State> {
                     distributions: inputDistributions.map(d => d.id)
                 },
                 access: datasetAccess,
-                "dataset-publisher": {
-                    publisher: publisherId
-                },
                 "information-security": informationSecurity,
                 "dataset-access-control": {
                     orgUnitOwnerId: dataset.owningOrgUnitId
                 },
-                provenance: provenance
+                provenance: {
+                    mechanism: provenance.mechanism,
+
+                    sourceSystem: provenance.sourceSystem,
+                    derivedFrom: provenance.derivedFrom,
+                    affiliatedOrganizationIds:
+                        provenance.affiliatedOrganizations &&
+                        (await Promise.all(
+                            provenance.affiliatedOrganizations.map(org =>
+                                getOrgIdFromAutocompleteChoice(org)
+                            )
+                        )),
+                    isOpenData: provenance.isOpenData
+                },
+                "dataset-publisher": publisherId && {
+                    publisher: publisherId
+                }
             }
         };
         this.props.createRecord(inputDataset, inputDistributions, aspects);
     }
+}
+
+async function getOrgIdFromAutocompleteChoice(
+    organization: OrganisationAutocompleteChoice
+) {
+    let orgId: string;
+    if (!organization.existingId) {
+        // Do a last check to make sure the publisher really doesn't exist
+        const existingPublishers = await autocompletePublishers(
+            {},
+            organization.name
+        );
+
+        const match = existingPublishers.options.find(
+            publisher =>
+                publisher.value.toLowerCase().trim() ===
+                organization!.name.toLowerCase().trim()
+        );
+
+        if (!match) {
+            // OK no publisher, lets add it
+            await ensureAspectExists(
+                "organization-details",
+                organizationDetailsAspect
+            );
+
+            orgId = uuidv4();
+            await createPublisher({
+                id: orgId,
+                name: organization.name,
+                aspects: {
+                    "organization-details": {
+                        name: organization.name,
+                        title: organization.name,
+                        imageUrl: "",
+                        description: "Added manually during dataset creation"
+                    }
+                }
+            });
+        } else {
+            orgId = match.identifier;
+        }
+    } else {
+        orgId = organization.existingId;
+    }
+
+    return orgId;
 }
 
 function mapStateToProps(state, old) {

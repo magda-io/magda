@@ -83,7 +83,7 @@ export type Provenance = {
     mechanism?: string;
     sourceSystem?: string;
     derivedFrom?: string[];
-    affiliatedOrganizationIds?: string[];
+    affiliatedOrganizations?: OrganisationAutocompleteChoice[];
     isOpenData?: boolean;
 };
 
@@ -171,7 +171,7 @@ function createBlankState(user: User): State {
 }
 
 // saving data in the local storage for now
-// TODO: consider whether it makes sense to store this in registery as a custom state or something
+// TODO: consider whether it makes sense to store this in registry as a custom state or something
 export async function loadState(id: string, user: User): Promise<State> {
     const stateString = localStorage[id];
     let state: State;

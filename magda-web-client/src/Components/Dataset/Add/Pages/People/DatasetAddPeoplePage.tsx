@@ -15,65 +15,9 @@ import {
 } from "Components/Dataset/Add/DatasetAddCommon";
 import OrganisationAutoComplete from "./OrganisationAutocomplete";
 import OrgUnitDropdown from "./OrgUnitDropdown";
+import YesNoReveal from "../../YesNoReveal";
 
-function YesNoEditReveal(props) {
-    const yes = !!props.value;
-    const name = Math.random() + "";
-    const yesOpts: any = {
-        name,
-        value: "yes"
-    };
-    const noOpts: any = { name, value: "no" };
-    if (yes) {
-        yesOpts.checked = "checked";
-    } else {
-        noOpts.checked = true;
-    }
-    yesOpts.onChange = noOpts.onChange = e => {
-        if (e.target.value === "yes") {
-            props.onChange(props.defaultValue);
-        } else {
-            props.onChange(props.nullValue);
-        }
-    };
-    return (
-        <div>
-            <div>
-                <div className="au-control-input">
-                    <input
-                        className="au-control-input__input"
-                        type="radio"
-                        id={name + "-no"}
-                        {...noOpts}
-                    />
-                    <label
-                        htmlFor={name + "-no"}
-                        className="au-control-input__text"
-                    >
-                        No
-                    </label>
-                </div>
-            </div>
-            <div>
-                <div className="au-control-input">
-                    <input
-                        className="au-control-input__input"
-                        type="radio"
-                        id={name + "-yes"}
-                        {...yesOpts}
-                    />
-                    <label
-                        className="au-control-input__text"
-                        htmlFor={name + "-yes"}
-                    >
-                        Yes
-                    </label>
-                </div>
-            </div>
-            {yes && props.children}
-        </div>
-    );
-}
+import "./DatasetAddPeoplePage.scss";
 
 type Props = {
     edit: <K extends keyof AddMetadataState>(
@@ -106,7 +50,8 @@ export default function DatasetAddPeoplePage({
                 </h4>
                 <div>
                     <OrganisationAutoComplete
-                        defaultValue={dataset.publisher}
+                        multi={false}
+                        value={dataset.publisher}
                         onOrgSelected={editDataset("publisher")}
                     />
                 </div>
@@ -154,22 +99,21 @@ export default function DatasetAddPeoplePage({
                     organisations?
                 </h4>
                 <div>
-                    <YesNoEditReveal
-                        value={provenance.affiliatedOrganizationIds}
-                        defaultValue={[]}
-                        nullValue={null}
-                        onChange={editProvenance("affiliatedOrganizationIds")}
+                    <YesNoReveal
+                        value={provenance.affiliatedOrganizations}
+                        onChange={editProvenance("affiliatedOrganizations")}
+                        name="affiliatedOrganizations"
                     >
-                        <AlwaysEditor
-                            value={provenance.affiliatedOrganizationIds}
-                            onChange={editProvenance(
-                                "affiliatedOrganizationIds"
-                            )}
-                            editor={multiTextEditorEx({
-                                placeholder: "Add an organisation"
-                            })}
-                        />
-                    </YesNoEditReveal>
+                        <div className="affiliated-organizations__select-wrapper">
+                            <OrganisationAutoComplete
+                                multi={true}
+                                value={provenance.affiliatedOrganizations}
+                                onOrgSelected={editProvenance(
+                                    "affiliatedOrganizations"
+                                )}
+                            />
+                        </div>
+                    </YesNoReveal>
                 </div>
                 <h4>What datasets (if any) was this data derived from?</h4>
                 <div>
