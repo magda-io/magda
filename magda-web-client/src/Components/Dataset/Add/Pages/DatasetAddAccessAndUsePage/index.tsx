@@ -3,11 +3,7 @@ import React from "react";
 import ToolTip from "Components/Dataset/Add/ToolTip";
 import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
 import { MultilineTextEditor } from "Components/Editing/Editors/textEditor";
-import {
-    codelistEditor,
-    codelistRadioEditor,
-    multiCodelistEditor
-} from "Components/Editing/Editors/codelistEditor";
+import { codelistRadioEditor } from "Components/Editing/Editors/codelistEditor";
 import LicenseEditor from "Components/Dataset/Add/LicenseEditor";
 
 import AccessLocationAutoComplete from "./AccessLocationAutoComplete";
@@ -213,40 +209,100 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                 <div className="question-security-classification">
                     <h4 className="with-icon">
                         <span>
-                            What is the security classification of this dataset?
+                            What is the sensitivity or security classification
+                            of this dataset?
                         </span>
                         <span className="help-icon-container">
                             <img src={helpIcon} />
                         </span>
                     </h4>
-                    <div>
-                        <AlwaysEditor
-                            value={informationSecurity.classification}
-                            onChange={editInformationSecurity("classification")}
-                            editor={codelistEditor(codelists.classification)}
-                        />
+                    <div className="row">
+                        <div className="col-sm-6">
+                            <ReactSelect
+                                styles={ReactSelectStyles}
+                                isSearchable={false}
+                                options={
+                                    Object.keys(codelists.classification).map(
+                                        key => ({
+                                            label:
+                                                codelists.classification[key],
+                                            value: key
+                                        })
+                                    ) as any
+                                }
+                                value={
+                                    informationSecurity.classification
+                                        ? {
+                                              label:
+                                                  codelists.classification[
+                                                      informationSecurity
+                                                          .classification
+                                                  ],
+                                              value:
+                                                  informationSecurity.classification
+                                          }
+                                        : null
+                                }
+                                onChange={item =>
+                                    editInformationSecurity("classification")(
+                                        item.value
+                                    )
+                                }
+                            />
+                        </div>
                     </div>
                 </div>
-
-                <div className="question-security-classification">
-                    <h4 className="with-icon">
-                        <span>What is the sensitivity of this dataset?</span>
-                        <span className="help-icon-container">
-                            <img src={helpIcon} />
-                        </span>
-                    </h4>
-                    <div>
-                        <AlwaysEditor
-                            value={informationSecurity.disseminationLimits}
-                            onChange={editInformationSecurity(
-                                "disseminationLimits"
-                            )}
-                            editor={multiCodelistEditor(
-                                codelists.disseminationLimits
-                            )}
-                        />
+                {informationSecurity.classification === "OFFICIAL:SENSITIVE" ? (
+                    <div className="question-security-classification">
+                        <h4 className="with-icon">
+                            <span>
+                                What sensitivity markers should be added to this
+                                dataset?
+                            </span>
+                            <span className="help-icon-container">
+                                <img src={helpIcon} />
+                            </span>
+                        </h4>
+                        <div className="row">
+                            <div className="col-sm-6">
+                                <ReactSelect
+                                    styles={ReactSelectStyles}
+                                    isSearchable={false}
+                                    options={
+                                        Object.keys(
+                                            codelists.disseminationLimits
+                                        ).map(key => ({
+                                            label:
+                                                codelists.disseminationLimits[
+                                                    key
+                                                ],
+                                            value: key
+                                        })) as any
+                                    }
+                                    value={
+                                        informationSecurity.disseminationLimits
+                                            ? {
+                                                  label:
+                                                      codelists
+                                                          .disseminationLimits[
+                                                          informationSecurity
+                                                              .disseminationLimits
+                                                      ],
+                                                  value:
+                                                      informationSecurity.disseminationLimits
+                                              }
+                                            : null
+                                    }
+                                    onChange={item =>
+                                        editInformationSecurity(
+                                            "disseminationLimits"
+                                        )(item.value)
+                                    }
+                                />
+                            </div>
+                        </div>
                     </div>
-                </div>
+                ) : null}
             </div>
         </div>
     );
