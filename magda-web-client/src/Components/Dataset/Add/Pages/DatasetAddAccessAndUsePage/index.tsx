@@ -16,6 +16,8 @@ import helpIcon from "assets/help.svg";
 
 import ReactSelect from "react-select";
 import ReactSelectStyles from "../../../../Common/react-select/ReactSelectStyles";
+import PurpleToolTip from "Components/Common/Tooltip";
+import { config } from "config";
 
 import "./index.scss";
 
@@ -207,13 +209,44 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                 </div>
 
                 <div className="question-security-classification">
-                    <h4 className="with-icon">
+                    <h4>
                         <span>
                             What is the sensitivity or security classification
                             of this dataset?
                         </span>
-                        <span className="help-icon-container">
-                            <img src={helpIcon} />
+                        <span className="tooltip-container">
+                            <PurpleToolTip
+                                className="tooltip no-print"
+                                launcher={() => (
+                                    <div className="tooltip-launcher-icon help-icon">
+                                        <img
+                                            src={helpIcon}
+                                            alt="Security classifications, click for more information"
+                                        />
+                                    </div>
+                                )}
+                                innerElementClassName="inner"
+                            >
+                                {() => (
+                                    <>
+                                        Magda security classification refers to
+                                        the Attorney-General Department’s
+                                        Sensitive and Classification policy. It
+                                        is important that the appropriate
+                                        security classification level is
+                                        selected to protect the confidentiality,
+                                        integrity and availability of the data.
+                                        The framework is as follows:{" "}
+                                        <a
+                                            target="_blank"
+                                            href="/page/security-classification"
+                                        >
+                                            {config.baseExternalUrl}
+                                            page/security-classification
+                                        </a>
+                                    </>
+                                )}
+                            </PurpleToolTip>
                         </span>
                     </h4>
                     <div className="row">
@@ -254,13 +287,38 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                 </div>
                 {informationSecurity.classification === "OFFICIAL:SENSITIVE" ? (
                     <div className="question-security-classification">
-                        <h4 className="with-icon">
+                        <h4>
                             <span>
                                 What sensitivity markers should be added to this
                                 dataset?
                             </span>
-                            <span className="help-icon-container">
-                                <img src={helpIcon} />
+                            <span className="tooltip-container">
+                                <PurpleToolTip
+                                    className="tooltip no-print"
+                                    launcher={() => (
+                                        <div className="tooltip-launcher-icon help-icon">
+                                            <img
+                                                src={helpIcon}
+                                                alt="Security classifications, click for more information"
+                                            />
+                                        </div>
+                                    )}
+                                    innerElementClassName="inner"
+                                >
+                                    {() => (
+                                        <>
+                                            Visit this page for more detail on
+                                            Access Restrictions - Information
+                                            Management Markers:{" "}
+                                            <a
+                                                target="_blank"
+                                                href="https://www.protectivesecurity.gov.au/information/sensitive-classified-information/Pages/default.aspx"
+                                            >
+                                                https://www.protectivesecurity.gov.au/information/sensitive-classified-information/Pages/default.aspx
+                                            </a>
+                                        </>
+                                    )}
+                                </PurpleToolTip>
                             </span>
                         </h4>
                         <div className="row">

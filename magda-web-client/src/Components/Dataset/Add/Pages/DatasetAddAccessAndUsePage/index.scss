@@ -92,9 +92,10 @@
 
         .question-security-classification {
             margin-bottom: 52px;
-        }
-
-        .question-security-classification {
+            .inner {
+                width: 500px;
+                text-align: left;
+            }
         }
     }
 }

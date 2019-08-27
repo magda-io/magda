@@ -47,6 +47,21 @@
         vertical-align: middle;
     }
 
+    .tooltip-container {
+        position: relative;
+        .tooltip {
+            position: absolute;
+            padding-left: 4px;
+            top: -2px;
+        }
+        .inner {
+            a:hover {
+                font-weight: bold;
+                color: #fff;
+            }
+        }
+    }
+
     .dataset-details-and-contents-page {
         h2 {
             font-size: 38px;
