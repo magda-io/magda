@@ -68,10 +68,8 @@
                 "affiliatedOrganizationIds": ["AI"]
             },
             "information-security": {
-                "disseminationLimits": [
-                    "Sensitive: Personal",
-                    "Sensitive: Commercial"
-                ]
+                "classification": "OFFICIAL:SENSITIVE",
+                "disseminationLimits": "PERSONAL PRIVACY"
             }
         },
         "sourceTag": "stag"
@@ -144,7 +142,7 @@
                 "mechanism": "Data generated and provided to us by Data61"
             },
             "information-security": {
-                "disseminationLimits": ["For Official Use Only"]
+                "classification": "OFFICIAL"
             }
         },
         "sourceTag": "stag"
@@ -217,7 +215,7 @@
                 "affiliatedOrganizationIds": ["Machine Learning"]
             },
             "information-security": {
-                "disseminationLimits": ["For Official Use Only"]
+                "classification": "OFFICIAL"
             }
         },
         "sourceTag": "stag"

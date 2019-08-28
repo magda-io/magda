@@ -139,8 +139,8 @@
                 "isOpenData": false
             },
             "information-security": {
-                "disseminationLimits": ["Sensitive", "Sensitive: Personal"],
-                "classification": "UNCLASSIFIED"
+                "classification": "OFFICIAL:SENSITIVE",
+                "disseminationLimits": "PERSONAL PRIVACY"
             }
         },
         "sourceTag": "stag"
@@ -239,7 +239,7 @@
                 "isOpenData": true
             },
             "information-security": {
-                "classification": "UNCLASSIFIED"
+                "classification": "PROTECTED"
             }
         },
         "sourceTag": "stag"
@@ -338,7 +338,6 @@
                 "isOpenData": true
             },
             "information-security": {
-                "disseminationLimits": ["Sensitive: Personal"],
                 "classification": "PROTECTED"
             }
         },

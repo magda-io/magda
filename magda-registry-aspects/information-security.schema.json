@@ -17,15 +17,12 @@
         },
         "disseminationLimits": {
             "title": "Any sensitivity DLMs (dissemination limiting marker). See https://www.protectivesecurity.gov.au/information/sensitive-classified-information/Pages/default.aspx for more details.",
-            "type": "array",
-            "items": {
-                "type": "string",
-                "enum": [
-                    "LEGAL PRIVILEGE",
-                    "LEGISLATIVE SECRECY",
-                    "PERSONAL PRIVACY"
-                ]
-            }
+            "type": "string",
+            "enum": [
+                "LEGAL PRIVILEGE",
+                "LEGISLATIVE SECRECY",
+                "PERSONAL PRIVACY"
+            ]
         }
     }
 }
