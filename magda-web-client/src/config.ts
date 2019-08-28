@@ -42,6 +42,7 @@ const serverConfig: {
     };
     vocabularyApiEndpoints: string[];
     defaultOrganizationId?: string;
+    defaultContactEmail?: string;
 } = window.magda_server_config || {};
 
 const registryReadOnlyApiUrl =
@@ -147,7 +148,8 @@ export const config = {
         serverConfig.featureFlags ||
         (process.env.NODE_ENV === "development" ? DEV_FEATURE_FLAGS : {}),
     vocabularyApiEndpoints,
-    defaultOrganizationId: serverConfig.defaultOrganizationId
+    defaultOrganizationId: serverConfig.defaultOrganizationId,
+    defaultContactEmail: serverConfig.defaultContactEmail
 };
 
 export const defaultConfiguration = {

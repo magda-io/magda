@@ -1,9 +1,6 @@
 import uuidv4 from "uuid/v4";
 
-import {
-    licenseLevel,
-    ContactPointDisplayOption
-} from "constants/DatasetConstants";
+import { ContactPointDisplayOption } from "constants/DatasetConstants";
 import { fetchOrganization } from "api-clients/RegistryApis";
 import { config } from "config";
 import { User } from "reducers/userManagementReducer";
@@ -13,6 +10,7 @@ export type File = {
     description?: string;
     issued?: string;
     modified: Date;
+    license?: string;
     rights?: string;
     accessURL?: string;
     accessNotes?: string;
@@ -27,7 +25,6 @@ export type File = {
     themes?: string[];
     temporalCoverage?: any;
     spatialCoverage?: any;
-    usage: Usage;
 
     similarFingerprint?: any;
     equalHash?: string;
@@ -78,12 +75,17 @@ export type Dataset = {
     importance?: string;
     accrualPeriodicity?: string;
     accrualPeriodicityRecurrenceRule?: string;
-    creation_affiliatedOrganisation?: string[];
-    creation_sourceSystem?: string;
-    creation_mechanism?: string;
-    creation_isOpenData?: boolean;
     accessLevel?: string;
     accessNotesTemp?: string;
+    defaultLicense?: string;
+};
+
+export type Provenance = {
+    mechanism?: string;
+    sourceSystem?: string;
+    derivedFrom?: string[];
+    affiliatedOrganizationIds?: string[];
+    isOpenData?: boolean;
 };
 
 export type DatasetPublishing = {
@@ -102,6 +104,11 @@ type SpatialCoverage = {
     lv5Id?: string;
 };
 
+type InformationSecurity = {
+    disseminationLimits?: string[];
+    classification?: string;
+};
+
 export type State = {
     files: File[];
     dataset: Dataset;
@@ -109,12 +116,17 @@ export type State = {
     processing: boolean;
     spatialCoverage: SpatialCoverage;
     temporalCoverage: TemporalCoverage;
-    datasetUsage: Usage;
     datasetAccess: Access;
-    _licenseLevel: string;
+    informationSecurity: InformationSecurity;
+    provenance: Provenance;
+
     _lastModifiedDate: string;
     _createdDate: string;
+
+    licenseLevel: "dataset" | "distribution";
+
     isPublishing: boolean;
+    error: Error | null;
 };
 
 type TemporalCoverage = {
@@ -126,17 +138,9 @@ export type Interval = {
     end?: Date;
 };
 
-type Usage = {
-    licenseLevel?: string;
-    license?: string;
-    disseminationLimits?: string[];
-    securityClassification?: string;
-};
-
 type Access = {
-    url?: string;
+    location?: string;
     notes?: string;
-    downloadURL?: string;
 };
 
 function createBlankState(user: User): State {
@@ -146,7 +150,8 @@ function createBlankState(user: User): State {
         dataset: {
             title: "Untitled",
             languages: ["eng"],
-            owningOrgUnitId: user.orgUnitId
+            owningOrgUnitId: user.orgUnitId,
+            defaultLicense: "world"
         },
         datasetPublishing: {
             state: "draft",
@@ -157,14 +162,14 @@ function createBlankState(user: User): State {
         temporalCoverage: {
             intervals: []
         },
-        datasetUsage: {
-            license: licenseLevel.government
-        },
         datasetAccess: {},
+        informationSecurity: {},
+        provenance: {},
+        licenseLevel: "dataset",
         isPublishing: false,
+        error: null,
         _createdDate: new Date().toISOString(),
-        _lastModifiedDate: new Date().toISOString(),
-        _licenseLevel: "dataset"
+        _lastModifiedDate: new Date().toISOString()
     };
 }
 
@@ -196,10 +201,6 @@ export async function loadState(id: string, user: User): Promise<State> {
 export function saveState(state: State, id = "") {
     id = id || `dataset-${uuidv4()}`;
     state = Object.assign({}, state);
-
-    if (state.files.length === 0 && state._licenseLevel !== "dataset") {
-        state._licenseLevel = "dataset";
-    }
 
     state._lastModifiedDate = new Date().toISOString();
     const dataset = JSON.stringify(state);

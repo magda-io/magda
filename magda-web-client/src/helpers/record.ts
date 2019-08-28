@@ -133,6 +133,19 @@ export type ParsedDistribution = {
     ckanResource: any;
 };
 
+export type ParsedProvenance = {
+    mechanism?: string;
+    sourceSystem?: string;
+    derivedFrom?: string;
+    affiliatedOrganizationIds?: string[];
+    isOpenData?: boolean;
+};
+
+export type ParsedInformationSecurity = {
+    disseminationLimits: string;
+    classification: string;
+};
+
 // all aspects become required and must have value
 export type ParsedDataset = {
     identifier?: string;
@@ -153,14 +166,12 @@ export type ParsedDataset = {
     error?: FetchError;
     hasQuality?: boolean;
     sourceDetails?: any;
-    creation?: any;
+    provenance?: ParsedProvenance;
     publishingState?: string;
-    importance?: string;
-    creationAffiliatedOrganisation?: string;
     spatialCoverageBbox?: any;
     temporalExtent?: any;
     accessLevel?: string;
-    informationSecurity?: any;
+    informationSecurity?: ParsedInformationSecurity;
     accessControl?: {
         ownerId: string;
         orgUnitOwnerId: string;
@@ -388,9 +399,6 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         datasetInfo.modified && getDateString(datasetInfo.modified);
 
     const publishing = aspects["publishing"] || {};
-
-    const creation = datasetInfo["creation"] || {};
-
     const publisher = aspects["dataset-publisher"]
         ? aspects["dataset-publisher"]["publisher"]
         : emptyPublisher;
@@ -484,14 +492,12 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         linkedDataRating,
         hasQuality,
         sourceDetails: aspects["source"],
-        creation: datasetInfo["creation"] || {},
-        importance: datasetInfo["importance"],
+        provenance: aspects["provenance"] || {},
         publishingState: publishing["state"],
-        creationAffiliatedOrganisation: creation["affiliatedOrganisation"],
         spatialCoverageBbox: spatialCoverage["bbox"],
         temporalExtent: datasetInfo["temporal"] || {},
         accessLevel: datasetInfo["accessLevel"],
-        informationSecurity: datasetInfo["informationSecurity"] || {},
+        informationSecurity: aspects["information-security"] || {},
         accessControl,
         accrualPeriodicity: datasetInfo["accrualPeriodicity"] || "",
         accrualPeriodicityRecurrenceRule:

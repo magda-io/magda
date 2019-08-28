@@ -26,7 +26,11 @@ spec:
             "--smtpHostname", {{ .Values.smtpHostname | quote }},
             "--smtpPort", {{ .Values.smtpPort | default 587 | quote }},
             "--smtpSecure", {{ .Values.smtpSecure | default true | quote }},
+            {{- if .Values.global.defaultContactEmail }}
+            "--defaultRecipient", {{ .Values.global.defaultContactEmail | quote }},
+            {{- else }}
             "--defaultRecipient", {{ .Values.defaultRecipient | quote }},
+            {{- end }}
             "--alwaysSendToDefaultRecipient", {{.Values.alwaysSendToDefaultRecipient | quote}}
         ]
         livenessProbe:

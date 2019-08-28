@@ -26,7 +26,7 @@ type RecordResult = {
 
 type NewDataset = {
     isCreating?: boolean;
-    error?: Object;
+    error?: Error | null;
     dataset?: Object;
 };
 
@@ -80,6 +80,13 @@ const record = (state: RecordResult = initialData, action: RecordAction) => {
                 newDataset: {
                     isCreating: false,
                     error: action.error
+                }
+            });
+        case "DATASET_CREATE_RESET":
+            return Object.assign({}, state, {
+                newDataset: {
+                    isCreating: false,
+                    error: null
                 }
             });
         case "REQUEST_DATASET_CREATE":

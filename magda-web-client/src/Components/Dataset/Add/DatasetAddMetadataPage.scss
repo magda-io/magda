@@ -42,27 +42,6 @@
         border: 1px solid $AU-color-foreground-action;
     }
 
-    .fileBlock {
-        border: 1px solid #cccccc;
-        overflow: auto;
-        line-height: 100%;
-    }
-
-    .fileBlock-icon {
-        float: left;
-        padding: 0.8em;
-    }
-
-    .fileBlock-control {
-        float: right;
-        padding: 0.5em;
-    }
-
-    .fileBlock-text {
-        display: inline-block;
-        padding: 1em;
-    }
-
     .snippet-heading {
         display: inline-block;
         vertical-align: middle;
@@ -158,34 +137,6 @@
 
         .question-time-period {
             margin-bottom: 50px;
-        }
-    }
-
-    .dataset-access-and-use-page {
-        h2 {
-            font-size: 38px;
-            font-weight: normal;
-            font-style: normal;
-            font-stretch: normal;
-            line-height: 1.61;
-            letter-spacing: normal;
-            color: #30384d;
-            margin-bottom: 80px;
-        }
-
-        h3 {
-            font-size: 29px;
-            font-weight: normal;
-            font-style: normal;
-            font-stretch: normal;
-            line-height: 1.03;
-            letter-spacing: normal;
-            color: #484848;
-            margin-bottom: 76px;
-        }
-
-        .question-who-can-see-dataset {
-            margin-bottom: 54px;
         }
     }
 

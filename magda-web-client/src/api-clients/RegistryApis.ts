@@ -26,6 +26,14 @@ export function fetchOrganization(publisherId: string): Promise<Publisher> {
     });
 }
 
+export async function ensureAspectExists(id: string, jsonSchema: any) {
+    await request("PUT", `${config.registryFullApiUrl}aspects/${id}`, {
+        id,
+        name: jsonSchema.title,
+        jsonSchema
+    });
+}
+
 type Record = {
     id: string;
     name: string;
@@ -33,9 +41,5 @@ type Record = {
 };
 
 function createRecord(inputRecord: Record) {
-    return request(
-        "POST",
-        `${config.baseUrl}api/v0/registry/records`,
-        inputRecord
-    );
+    return request("POST", `${config.registryFullApiUrl}records`, inputRecord);
 }

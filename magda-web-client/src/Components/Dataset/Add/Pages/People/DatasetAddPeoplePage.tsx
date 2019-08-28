@@ -9,7 +9,9 @@ import { codelistRadioEditor } from "Components/Editing/Editors/codelistEditor";
 import * as codelists from "constants/DatasetConstants";
 import {
     Dataset,
-    DatasetPublishing
+    DatasetPublishing,
+    Provenance,
+    State as AddMetadataState
 } from "Components/Dataset/Add/DatasetAddCommon";
 import OrganisationAutoComplete from "./OrganisationAutocomplete";
 import OrgUnitDropdown from "./OrgUnitDropdown";
@@ -74,16 +76,23 @@ function YesNoEditReveal(props) {
 }
 
 type Props = {
-    edit: (aspectField: string) => (field: string) => (newValue: any) => void;
+    edit: <K extends keyof AddMetadataState>(
+        aspectField: K
+    ) => (field: string) => (newValue: any) => void;
     dataset: Dataset;
+    provenance: Provenance;
     publishing: DatasetPublishing;
 };
 
-export default function DatasetAddPeoplePage(props: Props) {
-    const { dataset } = props;
-
-    const editDataset = props.edit("dataset");
-    const editPublishing = props.edit("datasetPublishing");
+export default function DatasetAddPeoplePage({
+    dataset,
+    provenance,
+    publishing,
+    edit
+}: Props) {
+    const editDataset = edit("dataset");
+    const editPublishing = edit("datasetPublishing");
+    const editProvenance = edit("provenance");
 
     return (
         <div className="row people-and-production-page">
@@ -114,7 +123,7 @@ export default function DatasetAddPeoplePage(props: Props) {
                 </h4>
                 <div>
                     <AlwaysEditor
-                        value={props.publishing.contactPointDisplay}
+                        value={publishing.contactPointDisplay}
                         onChange={editPublishing("contactPointDisplay")}
                         editor={codelistRadioEditor(
                             "dataset-contact-point-display",
@@ -130,17 +139,15 @@ export default function DatasetAddPeoplePage(props: Props) {
                 </h4>
                 <div>
                     <YesNoEditReveal
-                        value={dataset.creation_affiliatedOrganisation}
+                        value={provenance.affiliatedOrganizationIds}
                         defaultValue={[]}
                         nullValue={null}
-                        onChange={editDataset(
-                            "creation_affiliatedOrganisation"
-                        )}
+                        onChange={editProvenance("affiliatedOrganizationIds")}
                     >
                         <AlwaysEditor
-                            value={dataset.creation_affiliatedOrganisation}
-                            onChange={editDataset(
-                                "creation_affiliatedOrganisation"
+                            value={provenance.affiliatedOrganizationIds}
+                            onChange={editProvenance(
+                                "affiliatedOrganizationIds"
                             )}
                             editor={multiTextEditorEx({
                                 placeholder: "Add an organisation"
@@ -148,12 +155,30 @@ export default function DatasetAddPeoplePage(props: Props) {
                         />
                     </YesNoEditReveal>
                 </div>
-                <h4>How was the dataset produced?</h4>
+                <h4>How was this dataset produced?</h4>
                 <div>
                     <AlwaysEditor
-                        value={dataset.creation_mechanism}
-                        onChange={editDataset("creation_mechanism")}
+                        value={provenance.mechanism}
+                        onChange={editProvenance("mechanism")}
                         editor={multilineTextEditor}
+                    />
+                </div>
+                <h4>What system was used to create this dataset?</h4>
+                <div>
+                    <AlwaysEditor
+                        value={provenance.sourceSystem}
+                        onChange={editProvenance("sourceSystem")}
+                        editor={multilineTextEditor}
+                    />
+                </div>
+                <h4>What was the source of this data?</h4>
+                <div>
+                    <AlwaysEditor
+                        value={provenance.derivedFrom}
+                        onChange={editProvenance("derivedFrom")}
+                        editor={multiTextEditorEx({
+                            placeholder: "Enter a dataset id"
+                        })}
                     />
                 </div>
             </div>

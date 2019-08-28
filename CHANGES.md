@@ -10,6 +10,8 @@ Registry:
 -   Changed database schema.
 -   Provide services based on Tenant IDs.
 -   Fixed PATCH request to registry won't trigger notification to webhook
+-   Moved provenance and information security information out of `dcat-dataset-strings`.
+-   Removed some unused fields from `dcat-dataset-strings` - it should now be back to looking more-or-less like DCAT.
 
 Gateway:
 
@@ -21,12 +23,14 @@ Search:
 
 -   Prevent freeText query from being None which will cause score to be 0
 -   Add tenant specific search.
+-   Fixed facet options (publishers) API error: Invalid aggregation name
 
 Indexer:
 
 -   Fixed indexer throws an error when temporalCoverage aspects intervals is an empty array
 -   Index datasets with tenant ID.
 -   Fixed indexer throws an error when affiliatedOrganisation field is created
+-   Fixed indexer incorrect parsing bounding box data in spatialCoverage aspect
 
 Cataloging:
 
@@ -77,12 +81,18 @@ UI:
 -   Made all keywords extracted lower case
 -   Made extracted keywords fall back on non-vocabulary-filtered keywords if it doesn't find enough keywords matching the vocabulary.
 -   Style adjustment for question Who can see the dataset once it is published on Access and Use page
+-   Added access location auto complete input on Access and Use page
+-   Fixed a JS error which causes blank screen on Organisations Page
+-   Fixed: drop a folder to Add dataset file drop area will break the UI
+-   Show an error message screen if the user is not allowed to access the add dataset page
+-   Make sure all publish new dataset errors are captured and shown to users on add dataset page
 
 Gateway:
 
 -   Add ArcGIS/ESRI Authentication provider, including support for on-premise instances of ArcGIS Portal.
 -   Add Vanguard (WS-FED) Authentication provider
 -   Made organisation field an autocomplete in add dataset page.
+-   Corrected Vanguard Authentication Landing Url
 
 Access Control:
 

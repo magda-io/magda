@@ -3,8 +3,6 @@ import { withRouter } from "react-router";
 import uuidv4 from "uuid/v4";
 import ReactSelect from "react-select";
 
-import { getFormatIcon } from "../View/DistributionIcon";
-
 import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
 import {
     textEditorEx,
@@ -14,15 +12,14 @@ import {
     dateEditor,
     multiDateIntervalEditor
 } from "Components/Editing/Editors/dateEditor";
-import {
-    codelistEditor,
-    codelistRadioEditor,
-    multiCodelistEditor
-} from "Components/Editing/Editors/codelistEditor";
-import ToolTip from "Components/Dataset/Add/ToolTip";
-import HelpSnippet from "Components/Common/HelpSnippet";
 
-import { createRecord } from "actions/recordActions";
+import ToolTip from "Components/Dataset/Add/ToolTip";
+
+import {
+    createRecord,
+    createNewDatasetReset,
+    createNewDatasetError
+} from "actions/recordActions";
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
 
@@ -35,7 +32,8 @@ import TagInput from "Components/Common/TagInput";
 import AccrualPeriodicityInput from "./AccrualPeriodicityInput";
 import { State, saveState } from "./DatasetAddCommon";
 import DatasetAddPeoplePage from "./Pages/People/DatasetAddPeoplePage";
-import { createPublisher } from "api-clients/RegistryApis";
+import { createPublisher, ensureAspectExists } from "api-clients/RegistryApis";
+import DatasetAddAccessAndUsePage from "./Pages/DatasetAddAccessAndUsePage";
 import withAddDatasetState from "./withAddDatasetState";
 
 import datasetPublishingAspect from "@magda/registry-aspects/publishing.schema.json";
@@ -44,9 +42,12 @@ import spatialCoverageAspect from "@magda/registry-aspects/spatial-coverage.sche
 import temporalCoverageAspect from "@magda/registry-aspects/temporal-coverage.schema.json";
 import datasetDistributionsAspect from "@magda/registry-aspects/dataset-distributions.schema.json";
 import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribution-strings.schema.json";
-import usageAspect from "@magda/registry-aspects/usage.schema.json";
 import accessAspect from "@magda/registry-aspects/access.schema.json";
-import datasetAccessControl from "@magda/registry-aspects/dataset-access-control.schema.json";
+import provenanceAspect from "@magda/registry-aspects/provenance.schema.json";
+import informationSecurityAspect from "@magda/registry-aspects/information-security.schema.json";
+import datasetAccessControlAspect from "@magda/registry-aspects/dataset-access-control.schema.json";
+import organizationDetailsAspect from "@magda/registry-aspects/organization-details.schema.json";
+import datasetPublisherAspect from "@magda/registry-aspects/dataset-publisher.schema.json";
 
 import "./DatasetAddMetadataPage.scss";
 import "./DatasetAddFilesPage.scss";
@@ -62,6 +63,8 @@ import { BoundingBox } from "helpers/datasetSearch";
 
 import ReviewFilesList from "./ReviewFilesList";
 
+import ErrorMessageBox from "./ErrorMessageBox";
+
 import helpIcon from "assets/help.svg";
 
 const aspects = {
@@ -71,14 +74,18 @@ const aspects = {
     "temporal-coverage": temporalCoverageAspect,
     "dataset-distributions": datasetDistributionsAspect,
     "dcat-distribution-strings": dcatDistributionStringsAspect,
-    usage: usageAspect,
     access: accessAspect,
-    "dataset-access-control": datasetAccessControl
+    provenance: provenanceAspect,
+    "information-security": informationSecurityAspect,
+    "dataset-access-control": datasetAccessControlAspect,
+    "dataset-publisher": datasetPublisherAspect
 };
 
 type Props = {
     initialState: State;
     createRecord: Function;
+    createNewDatasetReset: Function;
+    createNewDatasetError: Function;
     isCreating: boolean;
     creationError: any;
     lastDatasetId: string;
@@ -108,38 +115,42 @@ class NewDataset extends React.Component<Props, State> {
                 edit={this.edit}
                 dataset={this.state.dataset}
                 publishing={this.state.datasetPublishing}
+                provenance={this.state.provenance}
             />
         ),
-        this.renderRestriction.bind(this),
+        () => (
+            <DatasetAddAccessAndUsePage
+                edit={this.edit}
+                editState={this.editState}
+                stateData={this.state}
+            />
+        ),
         this.renderSubmitPage.bind(this)
     ];
 
-    edit = (aspectField: string) => (field: string) => (newValue: any) => {
+    edit = <K extends keyof State>(aspectField: K) => (field: string) => (
+        newValue: any
+    ) => {
         this.setState(state => {
-            const item = Object.assign({}, state[aspectField]);
-            item[field] = newValue;
-            return Object.assign({}, state, { [aspectField]: item });
+            return {
+                [aspectField]: { ...state[aspectField], [field]: newValue }
+            } as Pick<State, K>;
         });
     };
 
-    editState = (field: string) => (newValue: any) => {
-        this.setState(state => {
-            return Object.assign({}, state, { [field]: newValue });
-        });
+    editState = <K extends keyof State>(field: K) => (newValue: any) => {
+        this.setState({ [field]: newValue } as Pick<State, K>);
     };
 
     render() {
         const { files } = this.state;
 
-        let { step, lastDatasetId } = this.props;
+        let { step } = this.props;
 
         step = Math.max(Math.min(step, this.steps.length - 1), 0);
 
         const nextIsPublish = step + 1 >= this.steps.length;
 
-        if (lastDatasetId) {
-            this.props.history.push(`/dataset/${lastDatasetId}`);
-        }
         return (
             <div className="dataset-add-files-root dataset-add-meta-data-pages">
                 <div className="row">
@@ -154,6 +165,7 @@ class NewDataset extends React.Component<Props, State> {
                 {this.steps[step]()}
                 <br />
                 <br />
+                <ErrorMessageBox />
                 <br />
                 <div className="row next-save-button-row">
                     <div className="col-sm-12">
@@ -161,7 +173,7 @@ class NewDataset extends React.Component<Props, State> {
                             className="au-btn next-button"
                             onClick={
                                 nextIsPublish
-                                    ? this.publishDataset.bind(this)
+                                    ? this.performPublishDataset.bind(this)
                                     : this.gotoStep.bind(this, step + 1)
                             }
                         >
@@ -184,14 +196,28 @@ class NewDataset extends React.Component<Props, State> {
         );
     }
 
-    saveAndExit() {
-        saveState(this.state, this.props.datasetId);
-        this.props.history.push(`/dataset/list`);
+    resetError() {
+        this.props.createNewDatasetReset();
     }
 
-    gotoStep(step) {
-        saveState(this.state, this.props.datasetId);
-        this.props.history.push("../" + this.props.datasetId + "/" + step);
+    async saveAndExit() {
+        try {
+            await this.resetError();
+            saveState(this.state, this.props.datasetId);
+            this.props.history.push(`/dataset/list`);
+        } catch (e) {
+            this.props.createNewDatasetError(e);
+        }
+    }
+
+    async gotoStep(step) {
+        try {
+            await this.resetError();
+            saveState(this.state, this.props.datasetId);
+            this.props.history.push("../" + this.props.datasetId + "/" + step);
+        } catch (e) {
+            this.props.createNewDatasetError(e);
+        }
     }
 
     renderBasicDetails() {
@@ -423,252 +449,6 @@ class NewDataset extends React.Component<Props, State> {
         );
     }
 
-    renderRestriction() {
-        let {
-            files,
-            datasetAccess,
-            datasetUsage,
-            datasetPublishing,
-            _licenseLevel
-        } = this.state;
-
-        const editDatasetPublishing = this.edit("datasetPublishing");
-        const editDatasetAccess = this.edit("datasetAccess");
-        const editDatasetUsage = this.edit("datasetUsage");
-        return (
-            <div className="row dataset-access-and-use-page">
-                <div className="col-sm-12">
-                    <h2>Access and Use</h2>
-                    <h3 className="with-underline">User access</h3>
-                    <div className="question-who-can-see-dataset">
-                        <h4 className="with-icon">
-                            <span>
-                                Who can see the dataset once it is published?
-                            </span>
-                            <span className="help-icon-container">
-                                <img src={helpIcon} />
-                            </span>
-                        </h4>
-                        <ToolTip>
-                            We recommend you publish your data to everyone in
-                            your organisation to help prevent data silos.
-                        </ToolTip>
-                        <div>
-                            <AlwaysEditor
-                                value={datasetPublishing.level}
-                                onChange={editDatasetPublishing("level")}
-                                editor={codelistRadioEditor(
-                                    "dataset-publishing-level",
-                                    codelists.publishingLevel
-                                )}
-                            />
-                        </div>
-                    </div>
-
-                    <h4>How can other users access this dataset?</h4>
-                    <ToolTip>
-                        Include locations on share drives, URLs of databases,
-                        how to arrange access etc.
-                    </ToolTip>
-                    <p>
-                        <MultilineTextEditor
-                            value={datasetAccess.notes}
-                            placerHolder="Enter access notes"
-                            onChange={editDatasetAccess("notes")}
-                        />
-                    </p>
-                    <hr />
-                    <h3>Dataset use</h3>
-                    {files.length !== 0 && (
-                        <React.Fragment>
-                            <h4>
-                                What type of license should be applied to these
-                                files?
-                            </h4>
-
-                            <ToolTip>
-                                By default, Magda adds Licenses at the Dataset
-                                Level (i.e. to all files), but this can be
-                                overriden to apply at a Distribution (each file
-                                or URL) level if desired.
-                            </ToolTip>
-
-                            <p>
-                                <AlwaysEditor
-                                    value={_licenseLevel}
-                                    onChange={this.editState("_licenseLevel")}
-                                    editor={codelistEditor(
-                                        codelists.datasetLicenseLevel
-                                    )}
-                                />
-                            </p>
-                        </React.Fragment>
-                    )}
-                    <h4>What license restrictions should be applied?</h4>
-                    <ToolTip>
-                        We recommend a Whole of Government License be applied to
-                        encourage inter-department data sharing in the future.
-                    </ToolTip>
-                    {_licenseLevel === "dataset" ? (
-                        <div>
-                            <p>
-                                <AlwaysEditor
-                                    value={datasetUsage.licenseLevel}
-                                    onChange={editDatasetUsage("licenseLevel")}
-                                    editor={codelistEditor(
-                                        codelists.licenseLevel
-                                    )}
-                                />
-                            </p>
-                            {datasetUsage.licenseLevel === "custom" && (
-                                <p>
-                                    <AlwaysEditor
-                                        value={datasetUsage.license}
-                                        onChange={editDatasetUsage("license")}
-                                        editor={textEditorEx({
-                                            placeholder:
-                                                "Please specify a license"
-                                        })}
-                                    />
-                                </p>
-                            )}
-                        </div>
-                    ) : (
-                        <div>
-                            {files.map((file, fileIndex) => {
-                                const edit = field => value => {
-                                    file.usage[field] = value;
-                                    this.editState("files")(files);
-                                };
-                                return (
-                                    <div className="fileBlock">
-                                        <span className="fileBlock-icon">
-                                            <img
-                                                className="file-icon"
-                                                src={getFormatIcon(file)}
-                                            />
-                                        </span>
-                                        <span className="fileBlock-text">
-                                            {file.title}
-                                        </span>
-
-                                        <div className="fileBlock-control">
-                                            <p>
-                                                <AlwaysEditor
-                                                    value={
-                                                        file.usage.licenseLevel
-                                                    }
-                                                    onChange={edit(
-                                                        "licenseLevel"
-                                                    )}
-                                                    editor={codelistEditor(
-                                                        codelists.licenseLevel
-                                                    )}
-                                                />
-                                            </p>
-                                            {file.usage.licenseLevel ===
-                                                "custom" && (
-                                                <p>
-                                                    <AlwaysEditor
-                                                        value={
-                                                            file.usage.license
-                                                        }
-                                                        onChange={edit(
-                                                            "license"
-                                                        )}
-                                                        editor={textEditorEx({
-                                                            placeholder:
-                                                                "Please specify a license"
-                                                        })}
-                                                    />
-                                                </p>
-                                            )}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
-
-                    <h4>
-                        What is the security classification of this dataset?
-                    </h4>
-                    <p>
-                        <AlwaysEditor
-                            value={datasetUsage.securityClassification}
-                            onChange={editDatasetUsage(
-                                "securityClassification"
-                            )}
-                            editor={codelistEditor(codelists.classification)}
-                        />
-                    </p>
-                    <h4 className="snippet-heading">
-                        What is the sensitivity of this dataset?
-                    </h4>
-                    <HelpSnippet>
-                        <p>
-                            Magda security classification refers to the
-                            Attorney-General Department's Sensitive and
-                            Classification policy.
-                            <br />
-                            It is important that the appropriate security
-                            classification level is selected to protect the
-                            confidentiality, integrity and availability of the
-                            data. The framework is as follows:
-                        </p>
-                        <p>
-                            UNCLASSIFIED: Compromise of information
-                            confidentiality would be expected to cause{" "}
-                            <b>low or no business impact.</b>
-                        </p>
-                        <p>
-                            PROTECTED: Compromise of information confidentiality
-                            would be expected to cause{" "}
-                            <b>
-                                limited damage to an individual, organisation or
-                                government generally if compromised.
-                            </b>
-                        </p>
-                        <p>
-                            CONFIDENTIAL: Compromise of information
-                            confidentiality would be expected to cause{" "}
-                            <b>
-                                damage to the national interest, organisations
-                                or individuals.
-                            </b>
-                        </p>
-                        <p>
-                            SECRET: Compromise of information confidentiality
-                            would be expected to cause{" "}
-                            <b>
-                                serious damage to national interest,
-                                organisations or individuals.
-                            </b>
-                        </p>
-                        <p>
-                            TOP SECRET: Compromise of information
-                            confidentiality would be expected to cause{" "}
-                            <b>
-                                exceptionally grave damage to te national
-                                interest, organisations or individuals.
-                            </b>
-                        </p>
-                    </HelpSnippet>
-
-                    <p>
-                        <AlwaysEditor
-                            value={datasetUsage.disseminationLimits}
-                            onChange={editDatasetUsage("disseminationLimits")}
-                            editor={multiCodelistEditor(
-                                codelists.disseminationLimits
-                            )}
-                        />
-                    </p>
-                </div>
-            </div>
-        );
-    }
-
     renderSubmitPage() {
         const { datasetPublishing } = this.state;
         return (
@@ -698,6 +478,19 @@ class NewDataset extends React.Component<Props, State> {
         );
     }
 
+    async performPublishDataset() {
+        try {
+            await this.resetError();
+            await this.publishDataset();
+            this.props.history.push(`/dataset/${this.props.lastDatasetId}`);
+        } catch (e) {
+            this.setState({
+                isPublishing: false
+            });
+            this.props.createNewDatasetError(e);
+        }
+    }
+
     async publishDataset() {
         saveState(this.state, this.props.datasetId);
 
@@ -708,18 +501,15 @@ class NewDataset extends React.Component<Props, State> {
             spatialCoverage,
             temporalCoverage,
             files,
-            _licenseLevel,
-            datasetUsage,
-            datasetAccess
+            licenseLevel,
+            informationSecurity,
+            datasetAccess,
+            provenance
         } = this.state;
 
         if (!dataset.publisher) {
             throw new Error("No publisher selected");
         }
-
-        this.setState({
-            isPublishing: true
-        });
 
         let publisherId: string;
         if (!dataset.publisher.existingId) {
@@ -736,9 +526,13 @@ class NewDataset extends React.Component<Props, State> {
             );
 
             if (!match) {
-                publisherId = uuidv4();
-
                 // OK no publisher, lets add it
+                await ensureAspectExists(
+                    "organization-details",
+                    organizationDetailsAspect
+                );
+
+                publisherId = uuidv4();
                 await createPublisher({
                     id: publisherId,
                     name: dataset.publisher.name,
@@ -767,25 +561,23 @@ class NewDataset extends React.Component<Props, State> {
         }
 
         const inputDistributions = files.map(file => {
-            let usage: any = undefined;
-            if (_licenseLevel !== "dataset") {
-                usage = file.usage;
-            }
+            const aspect =
+                licenseLevel === "dataset"
+                    ? {
+                          ...file,
+                          license: dataset.defaultLicense
+                      }
+                    : file;
+
             return {
                 id: createId("dist"),
                 name: file.title,
                 aspects: {
-                    "dcat-distribution-strings": Object.assign(file, {
-                        usage: undefined
-                    }),
-                    usage
+                    "dcat-distribution-strings": aspect
                 }
             };
         });
-        let usage: any = undefined;
-        if (_licenseLevel === "dataset") {
-            usage = datasetUsage;
-        }
+
         const inputDataset = {
             id,
             name: dataset.title,
@@ -798,16 +590,21 @@ class NewDataset extends React.Component<Props, State> {
                     distributions: inputDistributions.map(d => d.id)
                 },
                 access: datasetAccess,
-                usage,
                 "dataset-publisher": {
                     publisher: publisherId
                 },
+                "information-security": informationSecurity,
                 "dataset-access-control": {
                     orgUnitOwnerId: dataset.owningOrgUnitId
-                }
+                },
+                provenance: provenance
             }
         };
-        this.props.createRecord(inputDataset, inputDistributions, aspects);
+        await this.props.createRecord(
+            inputDataset,
+            inputDistributions,
+            aspects
+        );
     }
 }
 
@@ -841,7 +638,9 @@ function mapStateToProps(state, old) {
 const mapDispatchToProps = dispatch => {
     return bindActionCreators(
         {
-            createRecord: createRecord
+            createRecord: createRecord,
+            createNewDatasetReset: createNewDatasetReset,
+            createNewDatasetError: createNewDatasetError
         },
         dispatch
     );
