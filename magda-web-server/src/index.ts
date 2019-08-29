@@ -126,6 +126,11 @@ const argv = yargs
         describe: "The id of a default organization to use for new datasets",
         type: "string",
         required: false
+    })
+    .option("defaultContactEmail", {
+        describe:
+            "Default contact email for users to report magda system errors",
+        type: "string"
     }).argv;
 
 var app = express();
@@ -200,7 +205,8 @@ const webServerConfig = {
     gapiIds: argv.gapiIds,
     featureFlags: argv.featureFlags || {},
     vocabularyApiEndpoints: (argv.vocabularyApiEndpoints || []) as string[],
-    defaultOrganizationId: argv.defaultOrganizationId
+    defaultOrganizationId: argv.defaultOrganizationId,
+    defaultContactEmail: argv.defaultContactEmail
 };
 
 app.get("/server-config.js", function(req, res) {

@@ -77,6 +77,7 @@ export type Dataset = {
     accrualPeriodicityRecurrenceRule?: string;
     accessLevel?: string;
     accessNotesTemp?: string;
+    defaultLicense?: string;
 };
 
 export type Provenance = {
@@ -123,9 +124,9 @@ export type State = {
     _createdDate: string;
 
     licenseLevel: "dataset" | "distribution";
-    datasetLevelLicense?: string;
 
     isPublishing: boolean;
+    error: Error | null;
 };
 
 type TemporalCoverage = {
@@ -149,7 +150,8 @@ function createBlankState(user: User): State {
         dataset: {
             title: "Untitled",
             languages: ["eng"],
-            owningOrgUnitId: user.orgUnitId
+            owningOrgUnitId: user.orgUnitId,
+            defaultLicense: "world"
         },
         datasetPublishing: {
             state: "draft",
@@ -165,6 +167,7 @@ function createBlankState(user: User): State {
         provenance: {},
         licenseLevel: "dataset",
         isPublishing: false,
+        error: null,
         _createdDate: new Date().toISOString(),
         _lastModifiedDate: new Date().toISOString()
     };

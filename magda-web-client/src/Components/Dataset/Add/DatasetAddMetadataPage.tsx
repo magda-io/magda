@@ -15,7 +15,11 @@ import {
 
 import ToolTip from "Components/Dataset/Add/ToolTip";
 
-import { createRecord } from "actions/recordActions";
+import {
+    createRecord,
+    createNewDatasetReset,
+    createNewDatasetError
+} from "actions/recordActions";
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
 
@@ -62,6 +66,8 @@ import { BoundingBox } from "helpers/datasetSearch";
 
 import ReviewFilesList from "./ReviewFilesList";
 
+import ErrorMessageBox from "./ErrorMessageBox";
+
 import helpIcon from "assets/help.svg";
 
 const aspects = {
@@ -81,6 +87,8 @@ const aspects = {
 type Props = {
     initialState: State;
     createRecord: Function;
+    createNewDatasetReset: Function;
+    createNewDatasetError: Function;
     isCreating: boolean;
     creationError: any;
     lastDatasetId: string;
@@ -140,15 +148,12 @@ class NewDataset extends React.Component<Props, State> {
     render() {
         const { files } = this.state;
 
-        let { step, lastDatasetId } = this.props;
+        let { step } = this.props;
 
         step = Math.max(Math.min(step, this.steps.length - 1), 0);
 
         const nextIsPublish = step + 1 >= this.steps.length;
 
-        if (lastDatasetId) {
-            this.props.history.push(`/dataset/${lastDatasetId}`);
-        }
         return (
             <div className="dataset-add-files-root dataset-add-meta-data-pages">
                 <div className="row">
@@ -163,6 +168,7 @@ class NewDataset extends React.Component<Props, State> {
                 {this.steps[step]()}
                 <br />
                 <br />
+                <ErrorMessageBox />
                 <br />
                 <div className="row next-save-button-row">
                     <div className="col-sm-12">
@@ -170,7 +176,7 @@ class NewDataset extends React.Component<Props, State> {
                             className="au-btn next-button"
                             onClick={
                                 nextIsPublish
-                                    ? this.publishDataset.bind(this)
+                                    ? this.performPublishDataset.bind(this)
                                     : this.gotoStep.bind(this, step + 1)
                             }
                         >
@@ -193,14 +199,28 @@ class NewDataset extends React.Component<Props, State> {
         );
     }
 
-    saveAndExit() {
-        saveState(this.state, this.props.datasetId);
-        this.props.history.push(`/dataset/list`);
+    resetError() {
+        this.props.createNewDatasetReset();
     }
 
-    gotoStep(step) {
-        saveState(this.state, this.props.datasetId);
-        this.props.history.push("../" + this.props.datasetId + "/" + step);
+    async saveAndExit() {
+        try {
+            await this.resetError();
+            saveState(this.state, this.props.datasetId);
+            this.props.history.push(`/dataset/list`);
+        } catch (e) {
+            this.props.createNewDatasetError(e);
+        }
+    }
+
+    async gotoStep(step) {
+        try {
+            await this.resetError();
+            saveState(this.state, this.props.datasetId);
+            this.props.history.push("../" + this.props.datasetId + "/" + step);
+        } catch (e) {
+            this.props.createNewDatasetError(e);
+        }
     }
 
     renderBasicDetails() {
@@ -462,6 +482,19 @@ class NewDataset extends React.Component<Props, State> {
         );
     }
 
+    async performPublishDataset() {
+        try {
+            await this.resetError();
+            await this.publishDataset();
+            this.props.history.push(`/dataset/${this.props.lastDatasetId}`);
+        } catch (e) {
+            this.setState({
+                isPublishing: false
+            });
+            this.props.createNewDatasetError(e);
+        }
+    }
+
     async publishDataset() {
         saveState(this.state, this.props.datasetId);
 
@@ -473,7 +506,6 @@ class NewDataset extends React.Component<Props, State> {
             temporalCoverage,
             files,
             licenseLevel,
-            datasetLevelLicense,
             informationSecurity,
             datasetAccess,
             provenance
@@ -498,7 +530,7 @@ class NewDataset extends React.Component<Props, State> {
                 licenseLevel === "dataset"
                     ? {
                           ...file,
-                          license: datasetLevelLicense
+                          license: dataset.defaultLicense
                       }
                     : file;
 
@@ -546,7 +578,11 @@ class NewDataset extends React.Component<Props, State> {
                 }
             }
         };
-        this.props.createRecord(inputDataset, inputDistributions, aspects);
+        await this.props.createRecord(
+            inputDataset,
+            inputDistributions,
+            aspects
+        );
     }
 }
 
@@ -627,7 +663,9 @@ function mapStateToProps(state, old) {
 const mapDispatchToProps = dispatch => {
     return bindActionCreators(
         {
-            createRecord: createRecord
+            createRecord: createRecord,
+            createNewDatasetReset: createNewDatasetReset,
+            createNewDatasetError: createNewDatasetError
         },
         dispatch
     );

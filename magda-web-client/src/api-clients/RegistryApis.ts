@@ -27,15 +27,11 @@ export function fetchOrganization(publisherId: string): Promise<Publisher> {
 }
 
 export async function ensureAspectExists(id: string, jsonSchema: any) {
-    await request(
-        "PUT",
-        `${config.baseUrl}api/v0/registry-auth/aspects/${id}`,
-        {
-            id,
-            name: jsonSchema.title,
-            jsonSchema
-        }
-    );
+    await request("PUT", `${config.registryAuthApiUrl}aspects/${id}`, {
+        id,
+        name: jsonSchema.title,
+        jsonSchema
+    });
 }
 
 type Record = {
@@ -45,9 +41,5 @@ type Record = {
 };
 
 function createRecord(inputRecord: Record) {
-    return request(
-        "POST",
-        `${config.baseUrl}api/v0/registry-auth/records`,
-        inputRecord
-    );
+    return request("POST", `${config.registryAuthApiUrl}records`, inputRecord);
 }
