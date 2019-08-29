@@ -78,9 +78,9 @@ spec:
             "--tenantUrl", "http://tenant-api/v0",
             "--previewMap", "http://preview-map:6110",
 {{- if .Values.global.enableMultiTenants }}
-            "--enableMultiTenants", true,
+            "--enableMultiTenants", "true",
 {{- else }}
-            "--enableMultiTenants", false,
+            "--enableMultiTenants", "false",
 {{- end }}
 {{- if .Values.global.magdaAdminPortalName }}
             "--magdaAdminPortalName", {{ .Values.global.magdaAdminPortalName | quote}}
