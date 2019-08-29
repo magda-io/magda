@@ -6,6 +6,7 @@ import akka.NotUsed
 import akka.event.LoggingAdapter
 import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.model.Registry._
+import au.csiro.data61.magda.opa.OpaTypes._
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import scalikejdbc._
@@ -13,8 +14,6 @@ import spray.json._
 import spray.json.lenses.JsonLenses._
 
 import scala.util.{Failure, Success, Try}
-
-import au.csiro.data61.magda.opa.OpaTypes._
 
 // TODO: Not to filter results by tenant ID for magda internal use only functions.
 // For example, getByIdsWithAspects() is used by WebHookProcessor that may send records to Indexer.
@@ -1194,11 +1193,14 @@ object DefaultRecordPersistence
       .map(l => Math.min(l, maxResultCount))
       .getOrElse(defaultResultCount)
 
-    val tempName = SQLSyntax.createUnsafely("temp")
+    val rawTempName = ColumnNamePrefixType.PREFIX_TEMP.toString
+    // Create unsafely so that column names will look like temp.aspect0 and temp.sequence.
+    // Otherwise it will look like 'temp'.aspect0 and 'temp'.sequence.
+    val tempName = SQLSyntax.createUnsafely(rawTempName)
     val nonNullAspectsWhereClause =
       SQLSyntax.where(SQLSyntax.joinWithAnd(aspectIds.zipWithIndex.map {
         case (_, index) =>
-          val name = getAspectColumnName(index, prefix = tempName + ".")
+          val name = getAspectColumnName(index, prefix = ColumnNamePrefixType.PREFIX_TEMP)
           sqls"$name is not null"
       }.toSeq: _*))
 
@@ -1338,19 +1340,19 @@ object DefaultRecordPersistence
     if (aspectIds.isEmpty) {
       Map()
     } else {
-      val aspects: List[(String, JsObject)] =
+      val aspects: List[(String, Option[JsObject])] =
         sql"""select aspectId, jsonSchema
             from Aspects
             where aspectId in ($aspectIds)
           """
           .map(rs => {
-            if (rs.string("jsonSchema") != null)
+            if (rs.stringOpt("jsonSchema").isDefined)
               (
                 rs.string("aspectId"),
-                JsonParser(rs.string("jsonSchema")).asJsObject
+                Some(JsonParser(rs.string("jsonSchema")).asJsObject)
               )
             else
-              (rs.string("aspectId"), null)
+              (rs.string("aspectId"), None)
           })
           .list
           .apply()
@@ -1359,13 +1361,13 @@ object DefaultRecordPersistence
         .map {
           case (aspectId, jsonSchema) =>
             // This aspect can only have links if it uses hyper-schema
-            if (jsonSchema != null && jsonSchema.fields
+            if (jsonSchema.isDefined && jsonSchema.get.fields
                   .getOrElse("$schema", JsString(""))
                   .toString()
                   .contains("hyper-schema")) {
               // TODO: support multiple linked properties in an aspect.
 
-              val properties = jsonSchema.fields
+              val properties = jsonSchema.get.fields
                 .get("properties")
                 .flatMap {
                   case JsObject(theProperties) => Some(theProperties)
@@ -1425,10 +1427,9 @@ object DefaultRecordPersistence
       if (opaQueries.nonEmpty) opaQueries.toList
       else List(OpaQuerySkipAccessControl)
     val opaSql: SQLSyntax =
-      sqls"(${SQLSyntax.joinWithAnd(
-        SQLSyntax
-          .joinWithOr(opaQueriesToWhereClauseParts(tenantId, theOpaQueries): _*)
-      )})"
+      sqls"(${SQLSyntax
+        .joinWithOr(opaQueriesToWhereClauseParts(tenantId, theOpaQueries): _*)
+      })"
 
     val aspectWhereClauses: Seq[Option[SQLSyntax]] = aspectIdsToWhereClause(
       tenantId,
@@ -1448,21 +1449,27 @@ object DefaultRecordPersistence
       if (opaQueries.nonEmpty) opaQueries.toList
       else List(OpaQuerySkipAccessControl)
     val opaSql: SQLSyntax =
-      sqls"(${SQLSyntax.joinWithAnd(
-        SQLSyntax
+      sqls"(${SQLSyntax
           .joinWithOr(opaQueriesToWhereClauseParts(tenantId, theOpaQueries): _*)
-      )})"
+      })"
 
     val result = List(opaSql)
     result
   }
 
+  private object ColumnNamePrefixType extends Enumeration {
+    type ColumnNamePrefixType
+    val PREFIX_TEMP: ColumnNamePrefixType.Value = Value(0, "temp")
+    val PREFIX_EMPTY: ColumnNamePrefixType.Value = Value(1, "")
+  }
+
   private def getAspectColumnName(
       index: Int,
-      prefix: String = ""
+      prefix: ColumnNamePrefixType.Value = ColumnNamePrefixType.PREFIX_EMPTY
   ): SQLSyntax = {
+    val prefixStr = if (prefix == ColumnNamePrefixType.PREFIX_TEMP) prefix.toString + "." else prefix.toString
     // Use a simple numbered column name rather than trying to make the aspect name safe.
-    SQLSyntax.createUnsafely(prefix + s"aspect$index")
+    SQLSyntax.createUnsafely(prefixStr + s"aspect$index")
   }
 
   private def getOpaConditions(tenantId: BigInt, opaQueries: Seq[OpaQuery], operationType: AuthOperations.OperationType) = {
