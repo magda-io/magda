@@ -117,6 +117,7 @@ Others:
 -   Format minion will trust dcat format if other measures indicate a ESRI REST format
 -   Added ASC to 4 stars rating list
 -   Removed Travis CI (Gitlab CI still remains)
+-   Disabled tenant-api & tenant-db when `enableMultiTenants` = false
 
 ## 0.0.55
 
