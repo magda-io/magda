@@ -21,8 +21,8 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
     *                | record-0 |
     *                +----+-----+
     *                     |
-    *            +--------+--------+
-    *            |                 |
+    *            +--------+---------+
+    *            |                  |
     *       +----+-----+       +----+-----+
     *       | Branch A |       | Branch B |
     *       | userId1  |  ref  | userId2  |
@@ -30,8 +30,8 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
     *   |   |          | <-----| record-5 |----------------+
     *   |   +----------+       +----+-----+                |
     *   |                           |                      |
-    *   |              +--------------------------+        |
-    *   |              |            |             |        |
+    *   |              +-------------------------+         |
+    *   |              |            |            |         |
     *   |         +----+----+  +----+----+  +----+-----+   |     +----------+
     *   |         |Section A|  |Section B|  |Section C |   |     | (Public) |
     *   |         |         |  |         |  | userId3  |   |     |          |
@@ -39,7 +39,7 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
     *   |         +---------+   [empty] <---| record-3 | <-------| record-4 |   not put access restriction on it.)
     *   |                               ref +----------+     ref +----------+
     *   |                                                              | ref
-    *   +------------------------------ -------------------------------+
+    *   +--------------------------------------------------------------+
     *
     */
   val userId0 = "00000000-0000-1000-0000-000000000000" // admin user
@@ -83,7 +83,7 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
   val linksName = "someLinks"
 
   val dataPath =
-    "magda-registry-api/src/test/scala/au/csiro/data61/magda/opa/data/"
+    "magda-registry-api/src/test/resources/data/"
 
   var hasAspectDefinitions = false
   private def createAspectDefinitions(
