@@ -8,6 +8,7 @@ global:
     maxUnavailable: 1
   enablePriorityClass: true
   defaultContactEmail: "magda-test@googlegroups.com"
+  enableMultiTenants: false
 
 tags:
   all: true

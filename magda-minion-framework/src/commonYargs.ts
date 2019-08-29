@@ -1,7 +1,6 @@
 import * as yargs from "yargs";
 
 import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
-import { MAGDA_SYSTEM_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 export type MinionArguments = {
     listenPort: string | number;
@@ -9,9 +8,9 @@ export type MinionArguments = {
     jwtSecret: string;
     userId: string;
     registryUrl: string;
+    enableMultiTenant: boolean;
     tenantUrl: string;
     retries: string | number;
-    tenantId: string | number;
 };
 
 /**
@@ -67,6 +66,21 @@ export default function commonYargs<
                 process.env.npm_package_config_registryUrl ||
                 "http://localhost:6101/v0"
         })
+        .option("enableMultiTenant", {
+            describe: "Whether to run in multi-tenant mode.",
+            type: "boolean",
+            default:
+                typeof process.env.ENABLE_MULTI_TENANTS !== "undefined"
+                    ? process.env.ENABLE_MULTI_TENANTS
+                        ? true
+                        : false
+                    : typeof process.env
+                          .npm_package_config_enableMultiTenants !== "undefined"
+                    ? process.env.npm_package_config_enableMultiTenants
+                        ? true
+                        : false
+                    : false
+        })
         .option("tenantUrl", {
             describe: "The base url for the tenant service",
             type: "string",
@@ -79,16 +93,6 @@ export default function commonYargs<
             describe: "The number of times to retry calling the registry",
             type: "number",
             default: process.env.RETRIES || 10
-        })
-        .option("tenantId", {
-            describe:
-                "The Tenant id to use when making requests to the registry",
-            type: "number",
-            demand: true,
-            default:
-                process.env.TENANT_ID ||
-                process.env.npm_package_config_tenantId ||
-                MAGDA_SYSTEM_ID
         });
 
     const returnValue = addJwtSecretFromEnvVar(additions(yarr).argv);

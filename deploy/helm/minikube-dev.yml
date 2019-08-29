@@ -12,6 +12,7 @@ global:
   useCombinedDb: true
   enablePriorityClass: false
   defaultContactEmail: "magda@mailinator.com"
+  enableMultiTenants: false
 
 gateway:
   ckanRedirectionDomain: "ckan.data.gov.au"

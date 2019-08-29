@@ -1,7 +1,6 @@
 import minion from "@magda/minion-framework/dist/index";
 import onRecordFound from "./onRecordFound";
 import commonYargs from "@magda/minion-framework/dist/commonYargs";
-import { MAGDA_SYSTEM_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 const ID = "minion-visualization";
 const argv = commonYargs(6311, "http://localhost:6311");
 
@@ -17,7 +16,6 @@ minion({
     aspects: ["dcat-distribution-strings"],
     async: true,
     id: ID,
-    tenantId: MAGDA_SYSTEM_ID,
     onRecordFound,
     optionalAspects: [],
     writeAspectDefs: [aspectDefinition]
