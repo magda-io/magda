@@ -66,24 +66,6 @@ export default function OrgUnitDropdown({
                 }))}
                 placeholder="Select a team"
             />
-
-            // <select
-            //     className="au-select"
-            //     defaultValue={orgUnitId || ""}
-            //     onChange={onChange}
-            // >
-            //     <option value="" disabled>
-            //         Select a team
-            //     </option>
-
-            //     {result.map(val => {
-            //         return (
-            //             <option key={val.id} value={val.id}>
-            //                 {val.name}
-            //             </option>
-            //         );
-            //     })}
-            // </select>
         );
     }
 }
