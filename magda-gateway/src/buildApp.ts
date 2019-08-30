@@ -106,6 +106,10 @@ export default function buildApp(config: Config) {
     _.forEach(
         (config.proxyRoutesJson as unknown) as Routes,
         (value: any, key: string) => {
+            // --- skip tenant api status prob if multiTenantsMode is off
+            if (key === "tenant" && !tenantMode.multiTenantsMode) {
+                return;
+            }
             // --- skip install status probs if statusCheck == false
             if (value && value.statusCheck === false) {
                 return;
