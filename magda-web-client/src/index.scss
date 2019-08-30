@@ -293,6 +293,15 @@ h4 {
     display: none;
 }
 
+.au-control-input__text::before,
+.au-control-input__text::after {
+    z-index: 0;
+}
+
+.au-control-input__text::after {
+    z-index: 0;
+}
+
 @media print {
     .au-breadcrumbs {
         display: none;
