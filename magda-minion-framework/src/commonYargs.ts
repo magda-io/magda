@@ -71,7 +71,7 @@ export default function commonYargs<
             type: "boolean",
             default:
                 typeof process.env.ENABLE_MULTI_TENANTS !== "undefined"
-                    ? process.env.ENABLE_MULTI_TENANTS
+                    ? process.env.ENABLE_MULTI_TENANTS.toLowerCase() === "true"
                         ? true
                         : false
                     : typeof process.env
