@@ -1,15 +1,15 @@
 package object.registry.record
 
-test_allow_correct_orgunit {
-    orgunit with input as {
+test_allow_correct_groups {
+    groups with input as {
         "user": {
-            "managingOrgUnitIds": ["1", "2", "3", "4"]
+            "groups": ["G1", "G2"]
         },
         "object": {
             "registry": {
                 "record": {
-                    "dataset-access-control": {
-                        "orgUnitOwnerId": "3"
+                    "esri-access-control": {
+                        "groups": ["G2", "G3"]
                     }
                 }
             }
@@ -17,16 +17,16 @@ test_allow_correct_orgunit {
     }
 }
 
-test_deny_wrong_orgunit {
-    not orgunit with input as {
+test_deny_wrong_groups {
+    not groups with input as {
         "user": {
-            "managingOrgUnitIds": ["1", "2", "3", "4"]
+            "groups": ["G1", "G2"]
         },
         "object": {
             "registry": {
                 "record": {
-                    "dataset-access-control": {
-                        "orgUnitOwnerId": "5"
+                    "esri-access-control": {
+                        "groups": ["G3", "G4"]
                     }
                 }
             }
@@ -35,9 +35,9 @@ test_deny_wrong_orgunit {
 }
 
 test_deny_no_access_control_info {
-    not orgunit with input as {
+    not groups with input as {
         "user": {
-            "managingOrgUnitIds": ["1", "2", "3", "4"]
+            "groups": ["G1", "G2"]
         },
         "object": {
             "registry": {
@@ -48,16 +48,16 @@ test_deny_no_access_control_info {
     }
 }
 
-test_deny_empty_managing_orgunit_ids {
-    not orgunit with input as {
+test_deny_empty_user_groups {
+    not groups with input as {
         "user": {
-            "managingOrgUnitIds": []
+            "groups": []
         },
         "object": {
             "registry": {
                 "record": {
-                    "dataset-access-control": {
-                        "orgUnitOwnerId": "5"
+                    "esri-access-control": {
+                        "groups": ["G1", "G2"]
                     }
                 }
             }

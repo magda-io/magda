@@ -33,3 +33,9 @@ test_deny_read_if_user_has_wrong_permission {
         }
     }
 }
+
+test_deny_read_by_default_if_input_is_empty {
+    not read with input as {
+
+    }
+}
