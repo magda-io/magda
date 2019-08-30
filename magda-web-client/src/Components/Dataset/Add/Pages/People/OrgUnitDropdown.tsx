@@ -53,7 +53,6 @@ export default function OrgUnitDropdown({
                         | { value: string }
                         | undefined
                         | null);
-                    console.log(value);
                     if (value) {
                         onChangeCallback(value.value);
                     }
