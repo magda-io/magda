@@ -578,6 +578,11 @@ class NewDataset extends React.Component<Props, State> {
                 }
             }
         };
+
+        if (!inputDataset.aspects["dataset-access-control"].orgUnitOwnerId) {
+            delete inputDataset.aspects["dataset-access-control"];
+        }
+
         await this.props.createRecord(
             inputDataset,
             inputDistributions,
