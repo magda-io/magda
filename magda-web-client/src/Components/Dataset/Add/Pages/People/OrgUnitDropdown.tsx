@@ -1,5 +1,8 @@
 import React from "react";
 import { useAsync } from "react-async-hook";
+import Select from "react-select";
+
+import ReactSelectStyles from "Components/Common/react-select/ReactSelectStyles";
 
 import { OrgUnit, listOrgUnits } from "api-clients/OrgUnitApis";
 
@@ -38,29 +41,30 @@ export default function OrgUnitDropdown({
             </div>
         );
     } else {
-        const onChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-            const value = event.target.value;
-            onChangeCallback(value);
-        };
+        const value = result.find(option => option.id === orgUnitId);
 
         return (
-            <select
-                className="au-select"
-                defaultValue={orgUnitId || ""}
-                onChange={onChange}
-            >
-                <option value="" disabled>
-                    Select a team
-                </option>
-
-                {result.map(val => {
-                    return (
-                        <option key={val.id} value={val.id}>
-                            {val.name}
-                        </option>
-                    );
-                })}
-            </select>
+            <Select
+                className="react-select"
+                isMulti={false}
+                isSearchable={false}
+                onChange={(rawValue, action) => {
+                    const value = rawValue as (
+                        | { value: string }
+                        | undefined
+                        | null);
+                    if (value) {
+                        onChangeCallback(value.value);
+                    }
+                }}
+                styles={ReactSelectStyles}
+                value={value && { label: value.name, value: value.id }}
+                options={result.map(option => ({
+                    label: option.name,
+                    value: option.id
+                }))}
+                placeholder="Select a team"
+            />
         );
     }
 }

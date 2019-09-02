@@ -59,12 +59,10 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
   val userIdsAndExpectedRecordIdIndexesWithSingleLink = List(
     (userId0, List(2)),
     (userId1, List()),
-    (userId2, List()),
+    (userId2, List(2)),
     (userId3, List()),
     (anonymous, List())
   )
-
-  val singleLinkRecordIdMap: Map[String, String] = Map("record-2" -> "record-1")
 
   val recordOrgNames = List(
     "Dep. A",
@@ -219,6 +217,12 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
 
     hasRecords = true
   }
+
+  val singleLinkRecordIdMapDereferenceIsFalse: Map[(String, String), String] =
+    Map((userId0, "record-2") -> "record-1", (userId2, "record-2") -> "")
+
+  val singleLinkRecordIdMapDereferenceIsTrue: Map[(String, String), JsObject] =
+    Map((userId0, "record-2") -> testRecords(1).toJson.asJsObject, (userId2, "record-2") -> JsObject.empty)
 
   describe("should authorize non-link aspect query") {
     it(
@@ -403,21 +407,156 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
   }
 
   describe("should authorize page tokens query") {
+    it(
+      "and return different page tokens for different users (with-links aspect)"
+    ) { param =>
+      createAspectDefinitions(param)
+      createRecords(param)
+      val pageSize = 2
+
+      /**
+        *  How the expectedPageTokenOffsetMap is built
+        *
+        *  If the test records are inserted into a clean table (when sequence starts at 0),
+        *  this map represents the expected page token offsets for each users when page size
+        *  is set to 2.
+        *
+        *  The formula for token offset calculation is
+        *
+        *            token offset = record sequence - first token = s - f
+        *
+        *  During test and development, records might be inserted and deleted frequently,
+        *  resulting in non-zero-sequence-based page tokens. The expected page tokens can be
+        *  calculated by the following formula
+        *
+        *             page tokens = first token + token offset = f + offset
+        *
+        *
+        *
+        *   sequence (s)        |  0          1         2         3          4         5
+        *   --------------------+---------------------------------------------------------------
+        *   userId0             |                                [record-3  record-4] [record-5]
+        *   first token (f = 3) |
+        *   token offset(s - f) |                                0          1
+        *   tokens (f + offset) |                                0          4
+        *   --------------------+---------------------------------------------------------------
+        *   userId1             |                                           [record-4]
+        *   first token (f = 4) |
+        *   token offset (s - f)|                                           0
+        *   tokens (f + offset) |                                           0
+        *   --------------------+---------------------------------------------------------------
+        *   userId2             |                                [record-3  record-4] [record-5]
+        *   first token (f = 3) |
+        *   token offset (s - f)|                                0          1
+        *   tokens (f + offset) |                                0          4
+        *   --------------------+---------------------------------------------------------------
+        *   userId3             |                                [record-3  record-4]
+        *   first token (f = 3) |
+        *   token offset (s - f)|                                0          1
+        *   tokens (f + offset) |                                0          4
+        *   --------------------+---------------------------------------------------------------
+        *   anonymous           |                                           [record-4]
+        *   first token (f = 4) |
+        *   token offset (s - f)|                                           0
+        *   tokens (f + offset) |                                           0
+        */
+      val expectedPageTokenOffsetMap = Map(
+        userId0 -> List(0, 1), // authorized to record-3, record-4, record-5
+        userId1 -> List(0), // authorized to record-4
+        userId2 -> List(0, 1), // authorized to record-3, record-4, record-5
+        userId3 -> List(0, 1), // authorized to record-3, record-4
+        anonymous -> List(0) // authorized to record-4
+      )
+
+      userIdsAndExpectedRecordIdIndexesWithoutLink.map(
+        userIdAndExpectedRecordIndexes => {
+          val userId = userIdAndExpectedRecordIndexes._1
+
+          var firstRecordToken = 0
+          Get(s"/v0/records?aspect=$withLinksId&limit=1") ~> addTenantIdHeader(
+            TENANT_0
+          ) ~> addJwtToken(
+            userId
+          ) ~> param.api(Full).routes ~> check {
+            val page = responseAs[RecordsPage[Record]]
+            if (page.hasMore)
+              firstRecordToken = page.nextPageToken.map(Integer.parseInt).get
+          }
+
+          Get(s"/v0/records/pagetokens?aspect=$withLinksId&limit=$pageSize") ~> addTenantIdHeader(
+            TENANT_0
+          ) ~> addJwtToken(
+            userId
+          ) ~> param.api(Full).routes ~> check {
+            status shouldBe StatusCodes.OK
+            val actualPageTokens = responseAs[List[String]]
+
+            val expectedPageTokens = expectedPageTokenOffsetMap(userId).map(
+              offset => if (offset == 0) 0 else firstRecordToken + offset
+            )
+
+            //            println(s"----- $userId, $firstRecordToken, $actualPageTokens")
+            actualPageTokens
+              .map(Integer.parseInt) shouldEqual expectedPageTokens
+          }
+
+        }
+      )
+    }
 
     it(
-      "and return different page tokens for different users"
+      "and return different page tokens for different users (non-link aspect)"
     ) { param =>
       createAspectDefinitions(param)
       createRecords(param)
       val pageSize = 3
 
-      // If the test records are inserted into a clean table (current sequence = 0),
-      // this map represents the expected zero-based page tokens for each users when
-      // page size is set to 3. However, during development, records might be inserted
-      // and deleted by developer frequently, resulting in non-zero based page tokens.
-      // In that case, the expected page tokens will be adjusted later in the test.
-      // See expectedPageTokens.
-      val expectedPageTokensBaseMap = Map(
+      /**
+        *  How the expectedPageTokenOffsetMap is built
+        *
+        *  If the test records are inserted into a clean table (when sequence starts at 0),
+        *  this map represents the expected page token offsets for each users when page size
+        *  is set to 3.
+        *
+        *  The formula for token offset calculation is
+        *
+        *            token offset = record sequence - first token = s - f
+        *
+        *  During test and development, records might be inserted and deleted frequently,
+        *  resulting in non-zero-sequence-based page tokens. The expected page tokens can be
+        *  calculated by the following formula (always starts with token 0)
+        *
+        *             page tokens = first token + token offset = f + offset
+        *
+        *
+        *   sequence (s)        | 0          1         2          3          4         5
+        *   --------------------+---------------------------------------------------------------
+        *   userId0             | [record-0  record-1  record-2]  [record-3  record-4  record-5]
+        *   first token (f = 0) |
+        *   token offset        |  0                   2                               5
+        *   tokens (f + offset) |  0                   2                               5
+        *   --------------------+---------------------------------------------------------------
+        *   userId1             |           [record-1                        record-4]
+        *   first token (f = 1) |
+        *   token offset (s - f)|            0
+        *   tokens (f + offset) |            0
+        *   --------------------+----------------------------------------------------------------
+        *   userId2             |                      [record-2   record-3  record-4] [record-5]
+        *   first token (f = 2) |
+        *   token offset (s - f)|                       0                    2
+        *   tokens (f + offset) |                       0                    4
+        *   --------------------+----------------------------------------------------------------
+        *   userId3             |                                  [record-3 record-4]
+        *   first token (f = 3) |
+        *   token offset (s - f)|                                   0
+        *   tokens (f + offset) |                                   0
+        *   --------------------+----------------------------------------------------------------
+        *   anonymous           |                                            [record-4]
+        *   first token (f = 3) |
+        *   token offset (s - f)|                                             0
+        *   tokens (f + offset) |                                             0
+        */
+      val expectedPageTokenOffsetMap = Map(
         userId0 -> List(0, 2, 5), // authorized to all 6 records
         userId1 -> List(0), // authorized to record-1, record-4
         userId2 -> List(0, 2), // authorized to record-2, record-3, record-4, record-5
@@ -430,7 +569,7 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
           val userId = userIdAndExpectedRecordIndexes._1
 
           var firstRecordToken = 0
-          Get(s"/v0/records?limit=1") ~> addTenantIdHeader(
+          Get(s"/v0/records?aspect=$organizationId&limit=1") ~> addTenantIdHeader(
             TENANT_0
           ) ~> addJwtToken(
             userId
@@ -448,7 +587,7 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
             status shouldBe StatusCodes.OK
             val actualPageTokens = responseAs[List[String]]
 
-            val expectedPageTokens = expectedPageTokensBaseMap(userId).map(
+            val expectedPageTokens = expectedPageTokenOffsetMap(userId).map(
               offset => if (offset == 0) 0 else firstRecordToken + offset
             )
 
@@ -673,18 +812,21 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
       ) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
         userId2
       ) ~> param.api(Full).routes ~> check {
-        status shouldBe StatusCodes.NotFound
+        status shouldBe StatusCodes.OK
+        val record = responseAs[Record]
+        record.id shouldBe referencingRecordId
+        record.aspects(withLinkId).fields(linkName) shouldEqual JsString("")
       }
 
       Get(
-        s"/v0/records/$referencingRecordId?aspect=$organizationId&optionalAspect=$withLinkId&dereference=false"
+        s"/v0/records/$referencingRecordId?aspect=$organizationId&aspect=$withLinkId&dereference=false"
       ) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
         userId2
       ) ~> param.api(Full).routes ~> check {
         status shouldBe StatusCodes.OK
         val record = responseAs[Record]
         record.id shouldBe referencingRecordId
-        record.aspects.get(withLinkId) shouldBe None
+        record.aspects(withLinkId).fields(linkName) shouldBe JsString("")
         record.aspects(organizationId).fields("name") shouldBe JsString(
           recordOrgNames(referencingRecordIndex)
         )
@@ -705,18 +847,23 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
       ) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
         userId2
       ) ~> param.api(Full).routes ~> check {
-        status shouldBe StatusCodes.NotFound
+        status shouldBe StatusCodes.OK
+        val record = responseAs[Record]
+        record.id shouldBe referencingRecordId
+        record
+          .aspects(withLinkId)
+          .fields(linkName) shouldEqual JsObject.empty
       }
 
       Get(
-        s"/v0/records/$referencingRecordId?aspect=$organizationId&optionalAspect=$withLinkId&dereference=true"
+        s"/v0/records/$referencingRecordId?aspect=$organizationId&aspect=$withLinkId&dereference=true"
       ) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
         userId2
       ) ~> param.api(Full).routes ~> check {
         status shouldBe StatusCodes.OK
         val record = responseAs[Record]
         record.id shouldBe referencingRecordId
-        record.aspects.get(withLinkId) shouldBe None
+        record.aspects(withLinkId).fields(linkName) shouldBe JsObject.empty
         record.aspects(organizationId).fields("name") shouldBe JsString(
           recordOrgNames(referencingRecordIndex)
         )
@@ -750,8 +897,41 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
               val index = res._2
               record.id shouldBe "record-" + index
               record.aspects(withLinkId).fields(linkName) shouldEqual JsString(
-                singleLinkRecordIdMap(record.id)
+                singleLinkRecordIdMapDereferenceIsFalse((userId, record.id))
               )
+            })
+          }
+        }
+      )
+    }
+
+    it(
+      "for all users on all records (dereference=true)"
+    ) { param =>
+      createAspectDefinitions(param)
+      createRecords(param)
+
+      userIdsAndExpectedRecordIdIndexesWithSingleLink.map(
+        userIdAndExpectedRecordIndexes => {
+          val userId = userIdAndExpectedRecordIndexes._1
+          val expectedRecordIndexes = userIdAndExpectedRecordIndexes._2
+
+          Get(s"/v0/records?aspect=$withLinkId&dereference=true") ~> addTenantIdHeader(
+            TENANT_0
+          ) ~> addJwtToken(
+            userId
+          ) ~> param.api(Full).routes ~> check {
+            status shouldBe StatusCodes.OK
+            val records = responseAs[RecordsPage[Record]].records
+            records.length shouldBe expectedRecordIndexes.length
+            val results: List[(Record, Int)] =
+              records.zip(expectedRecordIndexes)
+            results.map(res => {
+              val record = res._1
+              val index = res._2
+              record.id shouldBe "record-" + index
+              record.aspects(withLinkId).fields(linkName) shouldEqual
+                singleLinkRecordIdMapDereferenceIsTrue((userId, record.id))
             })
           }
         }
@@ -867,6 +1047,33 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
     }
 
     it(
+      "and not return any links referenced by record-4 to anonymous user (dereference=false)"
+    ) { param =>
+      createAspectDefinitions(param)
+      createRecords(param)
+
+      val referencingRecordId = "record-4" // with links to record-1 and record-3
+      val withLinksAspectId = "withLinks"
+
+      Get(
+        s"/v0/records/$referencingRecordId?aspect=$withLinksAspectId&dereference=false"
+      ) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+        anonymous
+      ) ~> param.api(Full).routes ~> check {
+        status shouldBe StatusCodes.OK
+        val record = responseAs[Record]
+        record.id shouldBe referencingRecordId
+
+        val actual = record
+          .aspects(withLinksId)
+          .fields(linksName)
+          .convertTo[Array[Record]]
+
+        actual.length shouldBe 0
+      }
+    }
+
+    it(
       "and not return any links referenced by record-4 to anonymous user (dereference=true)"
     ) { param =>
       createAspectDefinitions(param)
@@ -880,7 +1087,42 @@ class RecordsOpaSpec extends ApiWithOpaSpec {
       ) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
         anonymous
       ) ~> param.api(Full).routes ~> check {
-        status shouldBe StatusCodes.NotFound
+        status shouldBe StatusCodes.OK
+        val record = responseAs[Record]
+        record.id shouldBe referencingRecordId
+
+        val actual = record
+          .aspects(withLinksId)
+          .fields(linksName)
+          .convertTo[Array[Record]]
+
+        actual.length shouldBe 0
+      }
+    }
+
+    it(
+      "and return record-3 with empty links to userId2 (dereference=false)"
+    ) { param =>
+      createAspectDefinitions(param)
+      createRecords(param)
+
+      val referencingRecordId = "record-3" // with links to nothing
+
+      Get(
+        s"/v0/records/$referencingRecordId?aspect=$withLinksId&dereference=false"
+      ) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
+        userId2
+      ) ~> param.api(Full).routes ~> check {
+        status shouldBe StatusCodes.OK
+        val record = responseAs[Record]
+        record.id shouldBe referencingRecordId
+
+        val actual = record
+          .aspects(withLinksId)
+          .fields(linksName)
+          .convertTo[Array[Record]]
+
+        actual.length shouldBe 0
       }
     }
 

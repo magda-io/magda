@@ -1,46 +1,88 @@
 import React from "react";
+import debouncePromise from "debounce-promise";
 
 import { autocompletePublishers } from "api-clients/SearchApis";
-import AutoCompleteInput from "Components/Editing/AutoCompleteInput";
 import { OrganisationAutocompleteChoice } from "../../DatasetAddCommon";
+import ASyncCreatableSelect from "react-select/async-creatable";
+import ReactSelectStyles from "Components/Common/react-select/ReactSelectStyles";
 
-import editIcon from "assets/edit.svg";
+type Props =
+    | {
+          onOrgSelected: (
+              choice: OrganisationAutocompleteChoice | undefined
+          ) => void;
+          value?: OrganisationAutocompleteChoice;
+          multi: false;
+      }
+    | {
+          onOrgSelected: (
+              choices: OrganisationAutocompleteChoice[] | undefined
+          ) => void;
+          value?: OrganisationAutocompleteChoice[];
+          multi: true;
+      };
 
-type Props = {
-    onOrgSelected: (choice: OrganisationAutocompleteChoice) => void;
-    defaultValue?: OrganisationAutocompleteChoice;
+type Choice = {
+    value: string;
+    label: string;
+    existingId?: string;
 };
 
-async function query(term: string) {
-    const apiResult = await autocompletePublishers({}, term);
+function fromReactSelect(choice: Choice) {
+    return {
+        existingId: choice.existingId,
+        name: choice.label
+    };
+}
 
-    return apiResult.options.map(searchPublisher => ({
-        name: searchPublisher.value,
-        existingId: searchPublisher.identifier
-    }));
+function toReactSelectValue(choice: OrganisationAutocompleteChoice): Choice {
+    return {
+        existingId: choice.existingId,
+        value: choice.existingId || choice.name,
+        label: choice.name
+    };
 }
 
 export default function OrganisationAutocomplete(props: Props) {
-    const { onOrgSelected, defaultValue } = props;
+    const query: (term: string) => Promise<Choice[]> = debouncePromise(
+        async (term: string) => {
+            const apiResult = await autocompletePublishers({}, term);
 
-    const handleNewOrg = (orgName: string) => onOrgSelected({ name: orgName });
+            return apiResult.options.map(option => ({
+                existingId: option.identifier,
+                value: option.identifier,
+                label: option.value
+            }));
+        },
+        200
+    );
 
     return (
-        <div className="org-auto-complete-input-outer-container">
-            <img className="edit-icon" src={editIcon} />
-            <AutoCompleteInput<OrganisationAutocompleteChoice>
-                suggestionSize={5}
-                query={query}
-                objectToString={x => x.name}
-                onSuggestionSelected={props.onOrgSelected}
-                onTypedValueSelected={handleNewOrg}
-                defaultValue={defaultValue}
-                emptyOnSelect={false}
-                inputProps={{
-                    placeholder: "Search for an Organisation",
-                    className: "au-text-input tag-input org-auto-complete-input"
-                }}
-            />
-        </div>
+        <ASyncCreatableSelect
+            className="react-select"
+            isMulti={props.multi}
+            isSearchable={true}
+            onChange={(rawValue, action) => {
+                if (!rawValue) {
+                    props.onOrgSelected(undefined);
+                } else if (props.multi) {
+                    props.onOrgSelected(
+                        (rawValue as Choice[]).map(fromReactSelect)
+                    );
+                } else {
+                    props.onOrgSelected(fromReactSelect(rawValue as Choice));
+                }
+            }}
+            styles={ReactSelectStyles}
+            value={
+                props.value
+                    ? props.multi
+                        ? props.value!.map(toReactSelectValue)
+                        : toReactSelectValue(props.value!)
+                    : props.value
+            }
+            loadOptions={query}
+            placeholder="Search for an organisation"
+        />
     );
 }
