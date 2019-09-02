@@ -350,10 +350,11 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                             </span>
                         </h4>
                         <div className="row">
-                            <div className="col-sm-6">
+                            <div className="col-sm-8">
                                 <ReactSelect
                                     styles={ReactSelectStyles}
                                     isSearchable={false}
+                                    isMulti={true}
                                     options={
                                         Object.keys(
                                             codelists.disseminationLimits
@@ -366,23 +367,25 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                         })) as any
                                     }
                                     value={
+                                        informationSecurity.disseminationLimits &&
                                         informationSecurity.disseminationLimits
-                                            ? {
-                                                  label:
-                                                      codelists
-                                                          .disseminationLimits[
-                                                          informationSecurity
-                                                              .disseminationLimits
-                                                      ],
-                                                  value:
-                                                      informationSecurity.disseminationLimits
-                                              }
-                                            : null
+                                            .length
+                                            ? informationSecurity.disseminationLimits.map(
+                                                  item => ({
+                                                      label:
+                                                          codelists
+                                                              .disseminationLimits[
+                                                              item
+                                                          ],
+                                                      value: item
+                                                  })
+                                              )
+                                            : []
                                     }
-                                    onChange={item =>
+                                    onChange={items =>
                                         editInformationSecurity(
                                             "disseminationLimits"
-                                        )(item.value)
+                                        )(items.map(item => item.value))
                                     }
                                 />
                             </div>

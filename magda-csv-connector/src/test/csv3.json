@@ -69,7 +69,7 @@
             },
             "information-security": {
                 "classification": "OFFICIAL:SENSITIVE",
-                "disseminationLimits": "PERSONAL PRIVACY"
+                "disseminationLimits": ["PERSONAL PRIVACY"]
             }
         },
         "sourceTag": "stag"

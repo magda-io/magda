@@ -1,7 +1,5 @@
 const { fuzzy } = libraries;
 
-let disseminationLimits = [];
-
 const DLMs = {
     "LEGAL PRIVILEGE": "LEGAL PRIVILEGE",
     "LEGISLATIVE SECRECY": "LEGISLATIVE SECRECY",
@@ -17,10 +15,10 @@ const CLASSIFICATIONS = {
     "TOP SECRET": "TOP SECRET"
 };
 
-function detectOption(str) {
+function detectOption(str, similarity = 0.2) {
     const selectedFieldData = fuzzy.findClosestFieldThreshold(
         dataset,
-        0.2,
+        similarity,
         str
     );
     if (selectedFieldData && fuzzy.similarity(selectedFieldData, "yes")) {
@@ -44,27 +42,25 @@ let classification =
         ? classificationDetectResult[0]
         : null;
 
-const sensitivityMarkerDetectResult = Object.keys(DLMs)
+const sensitivityMarkers = Object.keys(DLMs)
     .map(v => ({
         value: v,
-        isDetected: detectOption(DLMs[v])
+        isDetected: detectOption(DLMs[v], 0.5)
     }))
     // --- the more restrictive option decides the final result. e.g. Top Secret has higher priority than Secret
     .reverse()
     .filter(item => item.isDetected === true)
     .map(item => item.value);
 
-let sensitivityMarker =
-    sensitivityMarkerDetectResult && sensitivityMarkerDetectResult.length
-        ? sensitivityMarkerDetectResult[0]
-        : null;
-
 // --- extra ad-hoc rules:
-if (sensitivityMarker) {
-    if (detectOption("personally identifiable information"))
-        sensitivityMarker = "PERSONAL PRIVACY";
+if (
+    sensitivityMarkers.indexOf("PERSONAL PRIVACY") === -1 &&
+    detectOption("personally identifiable information", 0.5)
+) {
+    sensitivityMarkers.push("PERSONAL PRIVACY");
 }
-if (!classification && !sensitivityMarker) {
+
+if (!classification && !sensitivityMarkers.length) {
     const classificationColValue = fuzzy.findClosestFieldThreshold(
         dataset,
         0.5,
@@ -78,10 +74,10 @@ if (!classification && !sensitivityMarker) {
 }
 
 if (!classification) {
-    if (sensitivityMarker) {
-        // --- classfication must be OFFICIAL:SENSITIVE when sensitivityMarker is available
+    if (sensitivityMarkers.length) {
+        // --- classfication must be OFFICIAL:SENSITIVE when sensitivityMarkers is available
         return {
-            disseminationLimits: sensitivityMarker,
+            disseminationLimits: sensitivityMarkers,
             classification: "OFFICIAL:SENSITIVE"
         };
     } else {
@@ -89,9 +85,9 @@ if (!classification) {
     }
 } else {
     // --- disseminationLimits only present when classification === "OFFICIAL:SENSITIVE"
-    if (classification === "OFFICIAL:SENSITIVE" && sensitivityMarker) {
+    if (classification === "OFFICIAL:SENSITIVE" && sensitivityMarkers.length) {
         return {
-            disseminationLimits: sensitivityMarker,
+            disseminationLimits: sensitivityMarkers,
             classification
         };
     } else {

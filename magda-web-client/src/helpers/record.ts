@@ -142,7 +142,7 @@ export type ParsedProvenance = {
 };
 
 export type ParsedInformationSecurity = {
-    disseminationLimits: string;
+    disseminationLimits: string[];
     classification: string;
 };
 

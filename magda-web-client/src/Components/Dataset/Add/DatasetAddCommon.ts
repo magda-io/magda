@@ -105,7 +105,7 @@ type SpatialCoverage = {
 };
 
 type InformationSecurity = {
-    disseminationLimits?: string;
+    disseminationLimits?: string[];
     classification?: string;
 };
 
