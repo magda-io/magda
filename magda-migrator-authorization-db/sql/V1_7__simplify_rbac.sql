@@ -1,14 +1,14 @@
-INSERT INTO resources (name, description, uri) VALUES ('a dummy resource', 'for compatibility only', 'not/a/real/resource');
+INSERT INTO resources (name, description, uri) VALUES ('a registry record resource', 'The uri is a compatibility placeholder. Its value is not important.', 'registry/record');
 
-INSERT INTO permissions (name, description, resource_id) VALUES ('Create Registry Record', 'Allows the user to create a record/record aspect in the registry', (SELECT id FROM resources WHERE uri='not/a/real/resource'));
-INSERT INTO permissions (name, description, resource_id) VALUES ('Read Registry Record', 'Allows the user to read a record/record aspect in the registry', (SELECT id FROM resources WHERE uri='not/a/real/resource'));
-INSERT INTO permissions (name, description, resource_id) VALUES ('Update Registry Record', 'Allows the user to update a record/record aspect in the registry', (SELECT id FROM resources WHERE uri='not/a/real/resource'));
-INSERT INTO permissions (name, description, resource_id) VALUES ('Delete Registry Record', 'Allows the user to delete a record/record aspect in the registry', (SELECT id FROM resources WHERE uri='not/a/real/resource'));
+INSERT INTO permissions (name, description, resource_id) VALUES ('Create Registry Record', 'Allows the user to create a record/record aspect in the registry', (SELECT id FROM resources WHERE uri='registry/record'));
+INSERT INTO permissions (name, description, resource_id) VALUES ('Read Registry Record', 'Allows the user to read a record/record aspect in the registry', (SELECT id FROM resources WHERE uri='registry/record'));
+INSERT INTO permissions (name, description, resource_id) VALUES ('Update Registry Record', 'Allows the user to update a record/record aspect in the registry', (SELECT id FROM resources WHERE uri='registry/record'));
+INSERT INTO permissions (name, description, resource_id) VALUES ('Delete Registry Record', 'Allows the user to delete a record/record aspect in the registry', (SELECT id FROM resources WHERE uri='registry/record'));
 
-INSERT INTO operations (uri, name, resource_id) VALUES ('object/registry/record/create', 'Create registry record/aspect', (SELECT id FROM resources WHERE uri='not/a/real/resource'));
-INSERT INTO operations (uri, name, resource_id) VALUES ('object/registry/record/read', 'Read registry record/aspect', (SELECT id FROM resources WHERE uri='not/a/real/resource'));
-INSERT INTO operations (uri, name, resource_id) VALUES ('object/registry/record/update', 'Update registry record/aspect',(SELECT id FROM resources WHERE uri='not/a/real/resource'));
-INSERT INTO operations (uri, name, resource_id) VALUES ('object/registry/record/delete', 'Delete registry record/aspect', (SELECT id FROM resources WHERE uri='not/a/real/resource'));
+INSERT INTO operations (uri, name, resource_id) VALUES ('object/registry/record/create', 'Create registry record/aspect', (SELECT id FROM resources WHERE uri='registry/record'));
+INSERT INTO operations (uri, name, resource_id) VALUES ('object/registry/record/read', 'Read registry record/aspect', (SELECT id FROM resources WHERE uri='registry/record'));
+INSERT INTO operations (uri, name, resource_id) VALUES ('object/registry/record/update', 'Update registry record/aspect',(SELECT id FROM resources WHERE uri='registry/record'));
+INSERT INTO operations (uri, name, resource_id) VALUES ('object/registry/record/delete', 'Delete registry record/aspect', (SELECT id FROM resources WHERE uri='registry/record'));
 
 INSERT INTO permission_operations (permission_id, operation_id) VALUES (
     (SELECT id FROM permissions WHERE name='Create Registry Record'), (SELECT id FROM operations WHERE uri='object/registry/record/create')

@@ -94,7 +94,7 @@ kubectl apply -f deploy/kubernetes/local-storage.yaml
 kubectl apply -f deploy/kubernetes/local-storage-volume.yaml
 ```
 
-Note: If using docker for desktop version 19.03.1 or above, change the value from "docker-for-desktop" to "docker-desktop" in nodeAffinity in file deploy/kubernetes/local-storage-volume.yaml
+Note: If using docker desktop for Windows older than version 19, change the value from "docker-desktop" to "docker-for-desktop" in nodeAffinity in file deploy/kubernetes/local-storage-volume.yaml
 
 ### Install Magda on your minikube/docker-desktop cluster
 

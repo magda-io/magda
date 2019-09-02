@@ -1,40 +1,22 @@
 package au.csiro.data61.magda.directives
 
-import scala.collection.immutable.Seq
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-import scala.util.control.NonFatal
-
 import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.model.headers
-import akka.http.scaladsl.server._
-import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.unmarshalling.Unmarshal
-import akka.stream.Materializer
-import au.csiro.data61.magda.model.Auth.User
-import akka.http.scaladsl.model.headers.CustomHeader
-import com.typesafe.config.Config
-import au.csiro.data61.magda.client.AuthApiClient
-import akka.http.scaladsl.server.AuthenticationFailedRejection
-import akka.http.scaladsl.model.headers.HttpChallenge
-import au.csiro.data61.magda.Authentication
 import akka.event.Logging
-import au.csiro.data61.magda.opa.OpaQueryer
+import akka.http.scaladsl.model.headers
+import akka.http.scaladsl.model.headers.HttpChallenge
+import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.{AuthenticationFailedRejection, _}
+import au.csiro.data61.magda.Authentication
+import au.csiro.data61.magda.client.AuthApiClient
+import com.typesafe.config.Config
+
+import scala.util.control.NonFatal
 
 object AuthDirectives {
 
   def skipAuthorization(implicit config: Config) =
     config.hasPath("authorization.skip") && config.getBoolean(
       "authorization.skip"
-    )
-
-  def skipOpaQuery(implicit config: Config) =
-    config.hasPath("authorization.skipOpaQuery") && config.getBoolean(
-      "authorization.skipOpaQuery"
     )
 
   /** Gets the X-Magda-Session header out of the request, providing it as a string without doing any verification */

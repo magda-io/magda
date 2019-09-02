@@ -25,11 +25,7 @@ object Directives {
     AuthDirectives.getJwt().flatMap { jwt =>
       val recordFuture: Future[List[OpaQuery]] = queryer.queryForRecord(jwt, operationType)
 
-      val recordPermissionsF: Future[List[OpaQuery]] = for {
-        recordPermission <- recordFuture
-      } yield recordPermission
-
-      onSuccess(recordPermissionsF).flatMap { queryResults =>
+      onSuccess(recordFuture).flatMap { queryResults =>
         provide(queryResults)
       }
     }

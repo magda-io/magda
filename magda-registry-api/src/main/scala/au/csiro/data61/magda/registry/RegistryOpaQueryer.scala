@@ -6,7 +6,6 @@ import au.csiro.data61.magda.opa.OpaQueryer
 import au.csiro.data61.magda.opa.OpaTypes._
 import com.typesafe.config.Config
 
-import au.csiro.data61.magda.directives.AuthDirectives.skipOpaQuery
 import scala.concurrent.{ExecutionContext, Future}
 
 class RegistryOpaQueryer()(
@@ -15,6 +14,11 @@ class RegistryOpaQueryer()(
     ec: ExecutionContext,
     materializer: Materializer
 ) extends OpaQueryer {
+
+  private def skipOpaQuery(implicit config: Config) =
+    config.hasPath("authorization.skipOpaQuery") && config.getBoolean(
+      "authorization.skipOpaQuery"
+    )
 
   def queryForRecord(
       jwt: Option[String],
