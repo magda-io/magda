@@ -76,12 +76,12 @@ dependencies:
       - all
       - opa
   - name: tenant-api
-    condition: enableMultiTenants
+    condition: global.enableMultiTenants
     tags:
       - all
       - tenant-api
   - name: tenant-db
-    condition: enableMultiTenants
+    condition: global.enableMultiTenants
     tags:
       - all
       - tenant-db
