@@ -45,9 +45,6 @@ spec:
 {{- if .Values.auth.aafClientUri}}
             "--aafClientUri", {{ .Values.auth.aafClientUri| quote }},
 {{- end }}
-{{- if .Values.auth.googleClientId }}
-            "--googleClientId", {{ .Values.auth.googleClientId | quote }},
-{{- end }}
 {{- if .Values.auth.vanguardWsFedIdpUrl }}
             "--vanguardWsFedIdpUrl", {{ .Values.auth.vanguardWsFedIdpUrl | quote }},
 {{- end }}

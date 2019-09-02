@@ -30,7 +30,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
 
   /**
    * @apiGroup Registry Record Service
-   * @api {delete} /v0/registry-auth/records/{recordId} Delete a record
+   * @api {delete} /v0/registry/records/{recordId} Delete a record
    *
    * @apiDescription Delete a record
    *
@@ -57,7 +57,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
       requireIsAdmin(authClient)(system, config) { _ =>
         requiresTenantId { tenantId =>
           val theResult = DB localTx { session =>
-            recordPersistence.deleteRecord(session, recordId, tenantId) match {
+            recordPersistence.deleteRecord(session, tenantId, recordId) match {
               case Success(result) => complete(DeleteResult(result))
               case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
             }
@@ -108,7 +108,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
               // --- DB session needs to be created within the `Future`
               // --- as the `Future` will keep running after timeout and require active DB session
               DB localTx { implicit session =>
-                recordPersistence.trimRecordsBySource(sourceTagToPreserve, sourceId, tenantId, Some(logger))
+                recordPersistence.trimRecordsBySource(tenantId, sourceTagToPreserve, sourceId, Some(logger))
               }
             } map { result =>
               webHookActor ! WebHookActor.Process()
@@ -136,7 +136,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
 
   /**
    * @apiGroup Registry Record Service
-   * @api {put} /v0/registry-auth/records/{id} Modify a record by ID
+   * @api {put} /v0/registry/records/{id} Modify a record by ID
    *
    * @apiDescription Modifies a record. Aspects included in the request are created or updated, but missing aspects are not removed.
    *
@@ -173,7 +173,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
         requiresTenantId { tenantId =>
             entity(as[Record]) { recordIn =>
               val result = DB localTx { session =>
-                recordPersistence.putRecordById(session, id, tenantId, recordIn) match {
+                recordPersistence.putRecordById(session, tenantId, id, recordIn, Nil) match {
                   case Success(recordOut) =>
                     complete(recordOut)
                   case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
@@ -190,7 +190,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
 
   /**
    * @apiGroup Registry Record Service
-   * @api {patch} /v0/registry-auth/records/{id} Modify a record by applying a JSON Patch
+   * @api {patch} /v0/registry/records/{id} Modify a record by applying a JSON Patch
    *
    * @apiDescription The patch should follow IETF RFC 6902 (https://tools.ietf.org/html/rfc6902).
    *
@@ -225,7 +225,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
         requiresTenantId { tenantId =>
           entity(as[JsonPatch]) { recordPatch =>
             val theResult = DB localTx { session =>
-              recordPersistence.patchRecordById(session, id, tenantId, recordPatch) match {
+              recordPersistence.patchRecordById(session, tenantId, id, recordPatch, Nil) match {
                 case Success(result) =>
                   complete(result)
                 case Failure(exception) =>
@@ -280,7 +280,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
         pathEnd {
           entity(as[Record]) { record =>
             val result = DB localTx { session =>
-              recordPersistence.createRecord(session, record, tenantId) match {
+              recordPersistence.createRecord(session, tenantId, record) match {
                 case Success(theResult) => complete(theResult)
                 case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
               }

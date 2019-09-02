@@ -9,6 +9,7 @@ import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
 import au.csiro.data61.magda.model.Registry._
+import au.csiro.data61.magda.opa.OpaTypes.OpaQuerySkipAccessControl
 import scalikejdbc._
 import spray.json.JsString
 
@@ -28,6 +29,9 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
   private val http = Http(actorSystem)
   private implicit val materializer: ActorMaterializer = ActorMaterializer()(actorSystem)
   val recordPersistence: DefaultRecordPersistence.type = DefaultRecordPersistence
+  // No access control will apply to webhooks.
+  // In the current system, all web hooks are treated as system level users.
+  val opaQuerySkipAccessControl = List(OpaQuerySkipAccessControl)
 
   private def getTenantRecordIdsMap(events: List[RegistryEvent]): mutable.HashMap[BigInt, Set[String]] = {
     val tenantRecordIdsMap = new mutable.HashMap[BigInt, Set[String]]
@@ -60,6 +64,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
     val changeEvents = events.filter(event => relevantEventTypes.contains(event.eventType))
     val recordChangeEvents = events.filter(event => event.eventType.isRecordEvent || event.eventType.isRecordAspectEvent)
     val aspectDefinitionChangeEvents = events.filter(event => event.eventType.isAspectDefinitionEvent)
+
     val aspectDefinitionIds = aspectDefinitionChangeEvents.map(_.data.fields("aspectId").asInstanceOf[JsString].value)
 
     // If we're including records, get a complete record with aspects for each record ID
@@ -74,6 +79,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
               session,
               tenantId,
               recordIds,
+              this.opaQuerySkipAccessControl,
               webHook.config.aspects.getOrElse(Nil),
               webHook.config.optionalAspects.getOrElse(Nil),
               webHook.config.dereference)
@@ -94,6 +100,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
               session,
               tenantId,
               recordIds,
+              this.opaQuerySkipAccessControl,
               recordIdsExcluded,
               webHook.config.aspects.getOrElse(Nil),
               webHook.config.optionalAspects.getOrElse(Nil),
@@ -129,7 +136,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
         val directTenantRecordIdsMap = getTenantRecordIdsMap(directRecordChangeEvents)
 
         // Get records directly modified by these events.
-        val directRecords =
+	      val directRecords =
           if (directTenantRecordIdsMap.isEmpty)
             RecordsPage(hasMore = false, None, Nil)
           else
@@ -141,16 +148,14 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
           case Some(false) | None => List[Record]()
           case Some(true) =>
             val allTenantRecordIdsMap = getTenantRecordIdsMap(recordChangeEvents)
-
-            if (allTenantRecordIdsMap.isEmpty)
+            if (allTenantRecordIdsMap.isEmpty) {
               Nil
-            else
-              getTenantLinkingRecordPages(allTenantRecordIdsMap, directTenantRecordIdsMap)
+            } else {
+	            getTenantLinkingRecordPages(allTenantRecordIdsMap, directTenantRecordIdsMap)
+            }
         }
 
-        val allRecords = directRecords.records ++ recordsFromDereference
-
-        Some(allRecords)
+        Some(directRecords.records ++ recordsFromDereference)
       }
     }
 

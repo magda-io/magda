@@ -78,10 +78,10 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
   override def testConfigSource =
     s"""
       |db.default.url = "${databaseUrl}?currentSchema=test"
-      |authorization.skip = true
+      |authorization.skip = false
+      |authorization.skipOpaQuery = true
       |akka.loglevel = debug
       |authApi.baseUrl = "http://localhost:6104"
-      |authorization.skip=false
       |webhooks.actorTickRate=0
       |webhooks.eventPageSize=10
       |akka.test.timefactor=20.0

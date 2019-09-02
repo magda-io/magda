@@ -6,7 +6,7 @@
 const customStyles = {
     control: provided => ({
         ...provided,
-        height: "44px"
+        minHeight: "44px"
     }),
     multiValue: provided => ({
         ...provided,
@@ -21,7 +21,6 @@ const customStyles = {
         lineHeight: "normal",
         letterSpacing: "normal",
         minWidth: "111px",
-        maxWidth: "233px",
         paddingTop: "8px",
         paddingBottom: "10px",
         paddingLeft: "19px",
@@ -38,7 +37,6 @@ const customStyles = {
         lineHeight: "normal",
         letterSpacing: "normal",
         minWidth: "50px",
-        maxWidth: "172px",
         textOverflow: "ellipsis",
         whiteSpace: "nowrap",
         overflow: "hidden",
