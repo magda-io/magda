@@ -55,6 +55,11 @@ export function fileStateToText(state: FileState) {
     }
 }
 
+export type DatasetAutocompleteChoice = {
+    existingId: string;
+    name: string;
+};
+
 export type OrganisationAutocompleteChoice = {
     existingId?: string;
     name: string;
@@ -83,7 +88,7 @@ export type Dataset = {
 export type Provenance = {
     mechanism?: string;
     sourceSystem?: string;
-    derivedFrom?: string[];
+    derivedFrom?: DatasetAutocompleteChoice[];
     affiliatedOrganizations?: OrganisationAutocompleteChoice[];
     isOpenData?: boolean;
 };

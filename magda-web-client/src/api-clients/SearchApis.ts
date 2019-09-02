@@ -1,8 +1,10 @@
 import { config } from "config";
 
 import buildSearchQueryString, {
-    Query as SearchQuery
+    Query as SearchQuery,
+    Query
 } from "../helpers/buildSearchQueryString";
+import { DataSearchJson } from "../helpers/datasetSearch";
 
 type SearchApiResult = {
     hitCount: number;
@@ -121,4 +123,18 @@ export async function autoCompleteAccessLocation(
             throw Error(e);
         }
     }
+}
+
+export function searchDatasets(queryObject: Query): Promise<DataSearchJson> {
+    let url: string =
+        config.searchApiUrl + `datasets?${buildSearchQueryString(queryObject)}`;
+    return fetch(url, config.fetchOptions).then((response: any) => {
+        if (response.status === 200) {
+            return response.json();
+        }
+        let errorMessage = response.statusText;
+        if (!errorMessage)
+            errorMessage = "Failed to retrieve network resource.";
+        throw new Error(errorMessage);
+    });
 }

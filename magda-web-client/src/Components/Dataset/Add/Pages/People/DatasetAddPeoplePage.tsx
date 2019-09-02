@@ -1,10 +1,7 @@
 import React from "react";
 
 import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
-import {
-    multilineTextEditor,
-    multiTextEditorEx
-} from "Components/Editing/Editors/textEditor";
+import { multilineTextEditor } from "Components/Editing/Editors/textEditor";
 import { codelistRadioEditor } from "Components/Editing/Editors/codelistEditor";
 import * as codelists from "constants/DatasetConstants";
 import {
@@ -14,6 +11,7 @@ import {
     State as AddMetadataState
 } from "Components/Dataset/Add/DatasetAddCommon";
 import OrganisationAutoComplete from "./OrganisationAutocomplete";
+import DatasetAutoComplete from "./DatasetAutocomplete";
 import OrgUnitDropdown from "./OrgUnitDropdown";
 import YesNoReveal from "../../YesNoReveal";
 
@@ -117,12 +115,9 @@ export default function DatasetAddPeoplePage({
                 </div>
                 <h4>What datasets (if any) was this data derived from?</h4>
                 <div>
-                    <AlwaysEditor
+                    <DatasetAutoComplete
                         value={provenance.derivedFrom}
-                        onChange={editProvenance("derivedFrom")}
-                        editor={multiTextEditorEx({
-                            placeholder: "Enter a dataset id"
-                        })}
+                        onDatasetSelected={editProvenance("derivedFrom")}
                     />
                 </div>
             </div>
