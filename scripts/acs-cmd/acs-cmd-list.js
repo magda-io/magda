@@ -8,15 +8,11 @@ program
     .description(
         `A tool for viewing magda access control data. Version: ${pkg.version}`
     )
-    .command("resources", "List all resources")
     .command("permissions", "List all permissions")
     .command("roles", "List all roles")
     .command("users", "List all users")
     .on("command:*", function(cmds) {
-        if (
-            ["resources", "permissions", "roles", "users"].indexOf(cmds[0]) ===
-            -1
-        ) {
+        if (["permissions", "roles", "users"].indexOf(cmds[0]) === -1) {
             console.error(
                 chalk.red(
                     `Invalid command: ${program.args.join(

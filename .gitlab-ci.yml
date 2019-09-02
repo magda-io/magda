@@ -221,6 +221,8 @@ buildtest:registry:
     POSTGRES_PASSWORD: ""
   script:
     - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
+    # The tests in opa/RecordOpaSpec are not fully automated yet therefore skipped.
+    # Please see opa/README.md for details.
     - sbt registryApi/test
   artifacts:
     paths:

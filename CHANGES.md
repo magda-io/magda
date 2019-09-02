@@ -3,6 +3,7 @@
 General:
 
 -   Add multi-tenant support. Deployed as single tenant by default.
+-   Add access control capability to registry api, only applying to some read operations currently.
 
 Registry:
 

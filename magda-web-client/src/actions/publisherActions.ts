@@ -100,7 +100,7 @@ function fetchPublisher(id) {
     return (dispatch: Function) => {
         dispatch(requestPublisher());
         const url = `${
-            config.registryApiUrl
+            config.registryReadOnlyApiUrl
         }records/${id}?aspect=organization-details`;
 
         return fetch(url, config.fetchOptions)
