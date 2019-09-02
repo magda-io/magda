@@ -8,7 +8,7 @@ export function createPublisher(inputRecord: Publisher) {
 
 export function fetchOrganization(publisherId: string): Promise<Publisher> {
     let url: string =
-        config.registryApiUrl +
+        config.registryReadOnlyApiUrl +
         `records/${encodeURIComponent(
             publisherId
         )}?aspect=organization-details`;
@@ -27,7 +27,7 @@ export function fetchOrganization(publisherId: string): Promise<Publisher> {
 }
 
 export async function ensureAspectExists(id: string, jsonSchema: any) {
-    await request("PUT", `${config.registryAuthApiUrl}aspects/${id}`, {
+    await request("PUT", `${config.registryFullApiUrl}aspects/${id}`, {
         id,
         name: jsonSchema.title,
         jsonSchema
@@ -41,5 +41,5 @@ type Record = {
 };
 
 function createRecord(inputRecord: Record) {
-    return request("POST", `${config.registryAuthApiUrl}records`, inputRecord);
+    return request("POST", `${config.registryFullApiUrl}records`, inputRecord);
 }

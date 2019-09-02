@@ -12,14 +12,7 @@ program
     .version(pkg.version)
     .action(async () => {
         try {
-            const selectFields = [
-                "id",
-                "name",
-                "description",
-                "user_ownership_constraint",
-                "org_unit_ownership_constraint",
-                "pre_authorised_constraint"
-            ];
+            const selectFields = ["id", "name", "description"];
             const result = await pool.query(
                 `SELECT ${selectFields.join(", ")} FROM permissions`
             );
@@ -27,17 +20,7 @@ program
                 throw new Error("Cannot find any records!");
             }
 
-            const data = [
-                [
-                    "ID",
-                    "Name",
-                    "Description",
-                    "User\nOwnership\nConstraint",
-                    "Org Unit\nOwnership\nConstraint",
-                    "Pre-Auhtorised\nConstraint",
-                    "Operations"
-                ]
-            ];
+            const data = [["ID", "Name", "Description", "Operations"]];
             const options = {
                 columns: {
                     0: {

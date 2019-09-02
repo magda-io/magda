@@ -90,7 +90,7 @@ object EventPersistence extends Protocols with DiffsonProtocol {
     val eventTypesFilter = if (eventTypes.isEmpty) sqls"1=1" else
       SQLSyntax.joinWithOr(eventTypes.map(v => v.value).map(v => sqls"eventtypeid = $v").toArray: _*)
 
-    val linkAspects = recordPersistence.buildDereferenceMap(session, aspectIds)
+    val linkAspects = recordPersistence.buildReferenceMap(session, aspectIds)
     val dereferenceSelectors: Set[SQLSyntax] = linkAspects.toSet[(String, PropertyWithLink)].map {
       case (aspectId, propertyWithLink) =>
         if (propertyWithLink.isArray) {

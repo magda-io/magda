@@ -3,6 +3,7 @@
 General:
 
 -   Add multi-tenant support. Deployed as single tenant by default.
+-   Add access control capability to registry api, only applying to some read operations currently.
 
 Registry:
 
@@ -93,6 +94,7 @@ Gateway:
 -   Add Vanguard (WS-FED) Authentication provider
 -   Made organisation field an autocomplete in add dataset page.
 -   Corrected Vanguard Authentication Landing Url
+-   Fixed Google oAuth Error: authRouter
 
 Access Control:
 

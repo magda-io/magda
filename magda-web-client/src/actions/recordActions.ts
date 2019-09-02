@@ -103,7 +103,7 @@ export function fetchDatasetFromRegistry(id: string): Function {
             "optionalAspect=usage&optionalAspect=access&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=source-link-status&optionalAspect=dataset-quality-rating&" +
             "optionalAspect=spatial-coverage&optionalAspect=publishing&optionalAspect=dataset-access-control&optionalAspect=provenance&optionalAspect=information-security";
         const url =
-            config.registryApiUrl +
+            config.registryReadOnlyApiUrl +
             `records/${encodeURIComponent(id)}?${parameters}`;
 
         return fetch(url, config.fetchOptions)
@@ -144,7 +144,7 @@ export function fetchDistributionFromRegistry(id: string): any {
     return (dispatch: Function) => {
         dispatch(requestDistribution(id));
         let url: string =
-            config.registryApiUrl +
+            config.registryReadOnlyApiUrl +
             `records/${encodeURIComponent(
                 id
             )}?aspect=dcat-distribution-strings&optionalAspect=source-link-status&optionalAspect=source&optionalAspect=visualization-info&optionalAspect=access&optionalAspect=usage&optionalAspect=dataset-format&optionalAspect=ckan-resource&optionalAspect=publishing`;
@@ -183,7 +183,7 @@ export function modifyRecordAspect(
     return async (dispatch: Function) => {
         id = encodeURIComponent(id);
         aspect = encodeURIComponent(aspect);
-        let url = config.registryAuthApiUrl + `records/${id}/aspects/${aspect}`;
+        let url = config.registryFullApiUrl + `records/${id}/aspects/${aspect}`;
 
         if (field.indexOf("/") !== -1) {
             let body = await fetch(url);
@@ -257,13 +257,13 @@ export function createRecord(
             for (const distribution of inputDistributions) {
                 await request(
                     "POST",
-                    `${config.registryAuthApiUrl}records`,
+                    `${config.registryFullApiUrl}records`,
                     distribution
                 );
             }
             const json = await request(
                 "POST",
-                `${config.registryAuthApiUrl}records`,
+                `${config.registryFullApiUrl}records`,
                 inputDataset
             );
             return dispatch(receiveNewDataset(json));

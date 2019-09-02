@@ -1,0 +1,21 @@
+{
+    "$schema": "http://json-schema.org/hyper-schema#",
+    "title": "An aspect with an array of links",
+    "type": "object",
+    "properties": {
+        "someLinks": {
+            "title": "Link to other records.",
+            "type": "array",
+            "items": {
+                "title": "A link",
+                "type": "string",
+                "links": [
+                    {
+                        "href": "/api/v0/registry/records/{$}",
+                        "rel": "item"
+                    }
+                ]
+            }
+        }
+    }
+}
