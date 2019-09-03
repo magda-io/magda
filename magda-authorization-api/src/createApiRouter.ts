@@ -484,7 +484,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *    }
      */
     router.get(
-        "/public/orgunits/listCandidateCustodianOrgUnits/:custodianOrgLevel/:samePathOrgUnitId",
+        "/public/orgunits/listCandidateCustodianOrgUnits/:custodianOrgLevel/:samePathOrgUnitId*?",
         MUST_BE_ADMIN,
         async (req, res) => {
             try {
@@ -499,7 +499,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
                 const nodes = await orgQueryer.getAllNodesAtLevel(levelNumber);
 
-                if (samePathOrgUnitId & nodes.length) {
+                if (samePathOrgUnitId && nodes.length) {
                     for (let i = 0; i < nodes.length; i++) {
                         const r = await orgQueryer.compareNodes(
                             nodes[i]["id"],
