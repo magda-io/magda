@@ -16,6 +16,7 @@ import OrgUnitDropdown from "./OrgUnitDropdown";
 import YesNoReveal from "../../YesNoReveal";
 
 import "./DatasetAddPeoplePage.scss";
+import { User } from "reducers/userManagementReducer";
 
 type Props = {
     edit: <K extends keyof AddMetadataState>(
@@ -24,13 +25,15 @@ type Props = {
     dataset: Dataset;
     provenance: Provenance;
     publishing: DatasetPublishing;
+    user: User;
 };
 
 export default function DatasetAddPeoplePage({
     dataset,
     provenance,
     publishing,
-    edit
+    edit,
+    user
 }: Props) {
     const editDataset = edit("dataset");
     const editPublishing = edit("datasetPublishing");
@@ -116,6 +119,7 @@ export default function DatasetAddPeoplePage({
                 <h4>What datasets (if any) was this data derived from?</h4>
                 <div>
                     <DatasetAutoComplete
+                        user={user}
                         value={provenance.derivedFrom}
                         onDatasetSelected={editProvenance("derivedFrom")}
                     />

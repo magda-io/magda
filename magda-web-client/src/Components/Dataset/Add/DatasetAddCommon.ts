@@ -148,7 +148,7 @@ type Access = {
     notes?: string;
 };
 
-function createBlankState(user: User): State {
+export function createBlankState(user: User): State {
     return {
         files: [],
         processing: false,
@@ -203,12 +203,15 @@ export async function loadState(id: string, user: User): Promise<State> {
     return state;
 }
 
-export function saveState(state: State, id = "") {
-    id = id || `dataset-${uuidv4()}`;
+export function saveState(state: State, id = createId()) {
     state = Object.assign({}, state);
 
     state._lastModifiedDate = new Date().toISOString();
     const dataset = JSON.stringify(state);
     localStorage[id] = dataset;
     return id;
+}
+
+export function createId(type = "ds") {
+    return `magda-${type}-${uuidv4()}`;
 }

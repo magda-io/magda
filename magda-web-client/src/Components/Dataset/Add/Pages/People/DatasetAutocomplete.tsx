@@ -2,17 +2,23 @@ import React from "react";
 import debouncePromise from "debounce-promise";
 
 import { searchDatasets } from "api-clients/SearchApis";
-import { DatasetAutocompleteChoice } from "../../DatasetAddCommon";
+import {
+    DatasetAutocompleteChoice,
+    saveState,
+    createBlankState
+} from "../../DatasetAddCommon";
 import ASyncSelect, { Async } from "react-select/async";
 import ReactSelectStyles from "Components/Common/react-select/ReactSelectStyles";
 import { OptionProps } from "react-select/src/components/Option";
 import { components } from "react-select";
+import { User } from "reducers/userManagementReducer";
 
 type Props = {
     onDatasetSelected: (
         choices: DatasetAutocompleteChoice[] | undefined
     ) => void;
     value?: DatasetAutocompleteChoice[];
+    user: User;
 };
 
 type Choice = {
@@ -78,7 +84,20 @@ export default function OrganisationAutocomplete(props: Props) {
                             label: `Add new: "${term}"`,
                             onClick: () => {
                                 selectRef.current && selectRef.current.blur();
-                                console.log("hello");
+                                const newDatasetState = createBlankState(
+                                    props.user
+                                );
+                                newDatasetState.dataset.title = term;
+                                const newDatasetId = saveState(newDatasetState);
+                                const newChoice = {
+                                    existingId: newDatasetId,
+                                    name: term
+                                };
+                                props.onDatasetSelected(
+                                    props.value
+                                        ? [...props.value, newChoice]
+                                        : [newChoice]
+                                );
                             }
                         }
                     ]
