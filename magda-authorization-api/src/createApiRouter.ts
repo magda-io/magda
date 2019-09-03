@@ -455,6 +455,73 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
+     * @api {put} /public/orgunits/listCandidateCustodianOrgUnits/:custodianOrgLevel/:samePathOrgUnitId List Candidate Custodian OrgUnits by org tree level
+     * @apiDescription
+     * List Candidate Custodian OrgUnits by org tree level.
+     * Optionally provide a Org Unit Id that will be used to
+     * mark one candidate org unit (if exist) who is on the same org tree path
+     *
+     * @apiParam (Path) {string} custodianOrgLevel The level number (starts from 1) where all org Units of the tree are taken horizontally as candidate.
+     * @apiParam (Path) {string} samePathOrgUnitId Optional; The org unit id that is used to set the default candidate (by lookup the org unit that is on the same tree path)
+     *
+     * @apiSuccessExample {string} 200
+     *     [{
+     *       "id": "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7",
+     *       "name": "node 1",
+     *       "description": "xxxxxxxx",
+     *       "isDefault": true
+     *     },{
+     *       "id": "e5f0ed5f-bb00-4e49-89a6-3f044aecc3f7",
+     *       "name": "node 2",
+     *       "description": "xxxxxxxx"
+     *     }]
+     *
+     * @apiErrorExample {json} 401/404/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 404, 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.get(
+        "/public/orgunits/listCandidateCustodianOrgUnits/:custodianOrgLevel/:samePathOrgUnitId",
+        MUST_BE_ADMIN,
+        async (req, res) => {
+            try {
+                const { custodianOrgLevel, samePathOrgUnitId } = req.params;
+
+                const levelNumber = parseInt(custodianOrgLevel);
+
+                if (levelNumber < 1 || isNaN(levelNumber))
+                    throw new Error(
+                        `Invalid level number: ${custodianOrgLevel}.`
+                    );
+
+                const nodes = await orgQueryer.getAllNodesAtLevel(levelNumber);
+
+                if (samePathOrgUnitId & nodes.length) {
+                    for (let i = 0; i < nodes.length; i++) {
+                        const r = await orgQueryer.compareNodes(
+                            nodes[i]["id"],
+                            samePathOrgUnitId
+                        );
+                        if (r === "unrelated") nodes[i].isDefault = true;
+                    }
+                }
+
+                res.status(200).json(nodes);
+            } catch (e) {
+                respondWithError(
+                    "GET /public/orgunits/listCandidateCustodianOrgUnits/:custodianOrgLevel/:samePathOrgUnitId",
+                    res,
+                    e
+                );
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth
      * @api {get} /public/orgunits Get orgunits by name
      * @apiDescription Gets org units matching a name
      *
