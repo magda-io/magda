@@ -56,7 +56,7 @@ export function fileStateToText(state: FileState) {
 }
 
 export type DatasetAutocompleteChoice = {
-    existingId: string;
+    existingId?: string;
     name: string;
 };
 

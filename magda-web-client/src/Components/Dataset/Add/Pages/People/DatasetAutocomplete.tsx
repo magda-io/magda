@@ -3,8 +3,10 @@ import debouncePromise from "debounce-promise";
 
 import { searchDatasets } from "api-clients/SearchApis";
 import { DatasetAutocompleteChoice } from "../../DatasetAddCommon";
-import ASyncCreatableSelect from "react-select/async-creatable";
+import ASyncSelect, { Async } from "react-select/async";
 import ReactSelectStyles from "Components/Common/react-select/ReactSelectStyles";
+import { OptionProps } from "react-select/src/components/Option";
+import { components } from "react-select";
 
 type Props = {
     onDatasetSelected: (
@@ -16,7 +18,7 @@ type Props = {
 type Choice = {
     value: string;
     label: string;
-    existingId: string;
+    existingId?: string;
 };
 
 function fromReactSelect(choice: Choice): DatasetAutocompleteChoice {
@@ -34,22 +36,72 @@ function toReactSelectValue(choice: DatasetAutocompleteChoice): Choice {
     };
 }
 
-export default function OrganisationAutocomplete(props: Props) {
-    const query: (term: string) => Promise<Choice[]> = debouncePromise(
-        async (term: string) => {
-            const apiResult = await searchDatasets({ q: term });
+const CustomOption = (props: OptionProps<Choice>) => (
+    <components.Option
+        {...props}
+        innerProps={{
+            ...props.innerProps,
+            onClick: event => {
+                if (props.data.onClick) {
+                    props.innerRef;
+                    props.data.onClick(event);
+                } else {
+                    props.innerProps.onClick(event);
+                }
+            }
+        }}
+    />
+);
 
-            return apiResult.dataSets.map(option => ({
+export default function OrganisationAutocomplete(props: Props) {
+    let selectRef = React.createRef<Async<Choice>>();
+
+    const query: (term: string) => Promise<any> = debouncePromise(
+        async (term: string) => {
+            const apiResult = await searchDatasets({ q: term, limit: 4 });
+
+            const result = await apiResult.dataSets.map(option => ({
                 existingId: option.identifier,
                 value: option.identifier,
                 label: option.title
             }));
+
+            return [
+                {
+                    label: "Existing datasets in your catalog",
+                    options: result
+                },
+                {
+                    label: "Add this as a new dataset to your catalog",
+                    options: [
+                        {
+                            label: `Add new: "${term}"`,
+                            onClick: () => {
+                                selectRef.current && selectRef.current.blur();
+                                console.log("hello");
+                            }
+                        }
+                    ]
+                },
+                {
+                    label: "Don't add anything for now",
+                    options: [
+                        {
+                            label: `Use name: "${term}"`,
+                            onClick: () => {
+                                selectRef.current && selectRef.current.blur();
+                                console.log("goodbye");
+                            }
+                        }
+                    ]
+                }
+            ];
         },
         200
     );
 
     return (
-        <ASyncCreatableSelect
+        <ASyncSelect
             className="react-select"
             isMulti={true}
             isSearchable={true}
@@ -68,6 +120,10 @@ export default function OrganisationAutocomplete(props: Props) {
             }
             loadOptions={query}
             placeholder="Search for dataset"
+            components={{
+                Option: CustomOption
+            }}
+            ref={selectRef}
         />
     );
 }
