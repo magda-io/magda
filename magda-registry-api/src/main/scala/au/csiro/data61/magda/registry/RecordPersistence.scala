@@ -20,11 +20,11 @@ import scala.util.{Failure, Success, Try}
 // In this case, those records should not be filtered by tenant ID.
 trait RecordPersistence {
 
-//  GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(
-//    enabled = true,
-//    singleLineMode = false,
-//    logLevel = 'info
-//  )
+  GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(
+    enabled = true,
+    singleLineMode = false,
+    logLevel = 'info
+  )
 
   def getAll(
       implicit session: DBSession,
@@ -1627,12 +1627,22 @@ object DefaultRecordPersistence
   }
 
   private def aspectQueryToWhereClause(tenantId: BigInt, query: AspectQuery) = {
-//    data #>> string_to_array(${query.path.mkString(",")}, ',') = ${query.value})
-//    (data->'groups')::jsonb ?? ${query.value})
+    val equalsOrContainsClause =
+      if (query.path.length == 2) {
+        val thePath = query.path.map(e => e).filter(e => !e.equals("*"))
+        sqls"""
+        (data #>> string_to_array(${thePath.mkString(",")}, ','))::jsonb ?? ${query.value}
+      """
+      } else {
+        sqls"""
+        data #>> string_to_array(${query.path.mkString(",")}, ',') = ${query.value}
+      """
+      }
+
     sqls"""EXISTS (
              SELECT 1 FROM recordaspects
              WHERE (aspectId, recordid, tenantId)=(${query.aspectId}, Records.recordId, Records.tenantId) AND
-             (data #>> string_to_array(${query.path.mkString(",")}, ',')) = ${query.value})
+             $equalsOrContainsClause)
       """
   }
 
@@ -1648,9 +1658,6 @@ object DefaultRecordPersistence
       else
         List(OpaQuerySkipAccessControl)
 
-    // TODO: make it configurable
-    val accessControlAspectId = "dataset-access-control"
-//    val accessControlAspectId = "esri-access-control"
     theOpaQueries.map {
       case OpaQueryMatchValue(
           OpaRefObjectKey("object")
@@ -1661,12 +1668,11 @@ object DefaultRecordPersistence
           _, // operation is not used at the moment. It is assumed to be eq.
           aValue
           ) =>
-        val accessControlAspectId = accessAspectId
         val query = AspectQuery(
-          aspectId = accessControlAspectId,
+          aspectId = accessAspectId,
           path = finalKey.map {
             case OpaRefObjectKey(key) => key
-            case OpaRefAllInArray     => "[_]"
+            case OpaRefAllInArray     => "*"
             case x                    => throw new Exception("Could not understand " + x)
           },
           value = aValue match {
@@ -1678,11 +1684,11 @@ object DefaultRecordPersistence
 
         aspectQueryToWhereClause(tenantId, query)
       case OpaQueryMatchNoAccessControl =>
-        sqls"""NOT EXISTS (
-               SELECT 1 FROM recordaspects
-               WHERE (recordaspects.recordid, recordaspects.tenantid)=(records.recordid, $tenantId) AND
-               aspectId = $accessControlAspectId)
-          """
+        sqls"""
+              EXISTS (
+              SELECT 1 FROM public_records
+              WHERE (recordid, tenantid)=(records.recordid, $tenantId))
+            """
       case OpaQuerySkipAccessControl => sqls"true"
       case OpaQueryMatchNone         => sqls"false"
       case unmatched =>
