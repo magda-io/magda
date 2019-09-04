@@ -81,6 +81,12 @@
                 img.file-icon {
                     width: 24px;
                 }
+                .file-title {
+                    width: 200px;
+                    overflow-wrap: anywhere;
+                    word-break: break-all;
+                    white-space: pre-wrap;
+                }
             }
         }
         .show-more-button-container {

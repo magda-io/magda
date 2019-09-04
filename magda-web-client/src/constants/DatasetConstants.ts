@@ -531,21 +531,16 @@ export const accessLevel = {
 };
 
 export const disseminationLimits = {
-    "For Official Use Only": "For Official Use Only",
-    Sensitive: "Sensitive",
-    "Sensitive: Personal": "Sensitive: Personal",
-    "Sensitive: Legal": "Sensitive: Legal",
-    "Sensitive: Cabinet": "Sensitive: Cabinet",
-    "Sensitive: Commercial": "Sensitive: Commercial",
-    "Sensitive: Cultural": "Sensitive: Cultural",
-    "Sensitive: Legal Privilege": "Sensitive: Legal Privilege",
-    "Sensitive: Legislative Secrecy": "Sensitive: Legislative Secrecy"
+    "LEGAL PRIVILEGE": "Legal Privilege",
+    "LEGISLATIVE SECRECY": "Legislative Secrecy",
+    "PERSONAL PRIVACY": "Personal Privacy"
 };
 
 export const classification = {
-    UNCLASSIFIED: "UNCLASSIFIED",
+    UNOFFICIAL: "UNOFFICIAL",
+    OFFICIAL: "OFFICIAL",
+    "OFFICIAL:SENSITIVE": "OFFICIAL:SENSITIVE",
     PROTECTED: "PROTECTED",
-    CONFIDENTIAL: "CONFIDENTIAL",
     SECRET: "SECRET",
     "TOP SECRET": "TOP SECRET"
 };

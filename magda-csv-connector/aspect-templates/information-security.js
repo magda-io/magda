@@ -1,80 +1,98 @@
 const { fuzzy } = libraries;
 
-let disseminationLimits = [];
-
 const DLMs = {
-    "For Official Use Only": "For Official Use Only",
-    Sensitive: "For Official Use Only",
-    "Sensitive: Personal": "Sensitive: Personal",
-    "Sensitive: Legal": "Sensitive: Legal",
-    "Sensitive: Cabinet": "Sensitive: Cabinet"
+    "LEGAL PRIVILEGE": "LEGAL PRIVILEGE",
+    "LEGISLATIVE SECRECY": "LEGISLATIVE SECRECY",
+    "PERSONAL PRIVACY": "PERSONAL PRIVACY"
 };
 
 const CLASSIFICATIONS = {
-    UNCLASSIFIED: "UNCLASSIFIED",
+    UNOFFICIAL: "UNOFFICIAL",
+    OFFICIAL: "OFFICIAL",
+    "OFFICIAL:SENSITIVE": "OFFICIAL:SENSITIVE",
     PROTECTED: "PROTECTED",
-    CONFIDENTIAL: "CONFIDENTIAL",
     SECRET: "SECRET",
     "TOP SECRET": "TOP SECRET"
 };
 
-let isSensitiveData = fuzzy.findClosestFieldThreshold(
-    dataset,
-    0.5,
-    "sensitive data"
-);
-if (isSensitiveData && fuzzy.similarity(isSensitiveData, "yes")) {
-    disseminationLimits.push("Sensitive");
-}
-
-let isSensitivePersonalData = fuzzy.findClosestFieldThreshold(
-    dataset,
-    0.5,
-    "personally identifiable information"
-);
-if (
-    isSensitivePersonalData &&
-    fuzzy.similarity(isSensitivePersonalData, "yes")
-) {
-    disseminationLimits.push("Sensitive: Personal");
-}
-
-let isSensitiveCommercialData = fuzzy.findClosestFieldThreshold(
-    dataset,
-    0.5,
-    "potentially commercially sensitive"
-);
-if (
-    isSensitiveCommercialData &&
-    fuzzy.similarity(isSensitiveCommercialData, "yes")
-) {
-    disseminationLimits.push("Sensitive: Commercial");
-}
-
-let classification = fuzzy.findClosestFieldThreshold(
-    dataset,
-    0.5,
-    "security classification"
-);
-
-if (classification) {
-    let DLM = fuzzy.findClosestFieldThreshold(DLMs, 0.5, classification);
-    if (DLM) {
-        disseminationLimits.push(DLM);
-    }
-    classification = fuzzy.findClosestFieldThreshold(
-        CLASSIFICATIONS,
-        0.5,
-        classification
+function detectOption(str, similarity = 0.2) {
+    const selectedFieldData = fuzzy.findClosestFieldThreshold(
+        dataset,
+        similarity,
+        str
     );
+    if (selectedFieldData && fuzzy.similarity(selectedFieldData, "yes")) {
+        return true;
+    }
+    return false;
 }
 
-disseminationLimits =
-    (disseminationLimits.length && disseminationLimits) || undefined;
+const classificationDetectResult = Object.keys(CLASSIFICATIONS)
+    .map(v => ({
+        value: v,
+        isDetected: detectOption(CLASSIFICATIONS[v])
+    }))
+    // --- the more restrictive option decides the final result. e.g. Top Secret has higher priority than Secret
+    .reverse()
+    .filter(item => item.isDetected === true)
+    .map(item => item.value);
 
-if (classification || disseminationLimits) {
-    return {
-        disseminationLimits,
-        classification
-    };
+let classification =
+    classificationDetectResult && classificationDetectResult.length
+        ? classificationDetectResult[0]
+        : null;
+
+const sensitivityMarkers = Object.keys(DLMs)
+    .map(v => ({
+        value: v,
+        isDetected: detectOption(DLMs[v], 0.5)
+    }))
+    // --- the more restrictive option decides the final result. e.g. Top Secret has higher priority than Secret
+    .reverse()
+    .filter(item => item.isDetected === true)
+    .map(item => item.value);
+
+// --- extra ad-hoc rules:
+if (
+    sensitivityMarkers.indexOf("PERSONAL PRIVACY") === -1 &&
+    detectOption("personally identifiable information", 0.5)
+) {
+    sensitivityMarkers.push("PERSONAL PRIVACY");
+}
+
+if (!classification && !sensitivityMarkers.length) {
+    const classificationColValue = fuzzy.findClosestFieldThreshold(
+        dataset,
+        0.5,
+        "security classification"
+    );
+    if (classificationColValue) {
+        if (fuzzy.similarity(classificationColValue, "OFFICIAL")) {
+            classification = "OFFICIAL";
+        }
+    }
+}
+
+if (!classification) {
+    if (sensitivityMarkers.length) {
+        // --- classfication must be OFFICIAL:SENSITIVE when sensitivityMarkers is available
+        return {
+            disseminationLimits: sensitivityMarkers,
+            classification: "OFFICIAL:SENSITIVE"
+        };
+    } else {
+        return undefined;
+    }
+} else {
+    // --- disseminationLimits only present when classification === "OFFICIAL:SENSITIVE"
+    if (classification === "OFFICIAL:SENSITIVE" && sensitivityMarkers.length) {
+        return {
+            disseminationLimits: sensitivityMarkers,
+            classification
+        };
+    } else {
+        return {
+            classification
+        };
+    }
 }

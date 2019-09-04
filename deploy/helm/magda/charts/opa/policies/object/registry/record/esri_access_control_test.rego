@@ -1,7 +1,7 @@
 package object.registry.record
 
 test_allow_all_matched_groups {
-    groups with input as {
+    esri_access_control with input as {
         "user": {
             "groups": ["G1", "G2"]
         },
@@ -18,7 +18,8 @@ test_allow_all_matched_groups {
 }
 
 test_allow_any_matched_groups {
-    groups with input as {
+    esri_access_control with input as {
+
         "user": {
             "groups": ["G1", "G2"]
         },
@@ -35,7 +36,7 @@ test_allow_any_matched_groups {
 }
 
 test_deny_wrong_groups {
-    not groups with input as {
+    not esri_access_control with input as {
         "user": {
             "groups": ["G1", "G2"]
         },
@@ -52,7 +53,7 @@ test_deny_wrong_groups {
 }
 
 test_deny_no_access_control_info {
-    not groups with input as {
+    not esri_access_control with input as {
         "user": {
             "groups": ["G1", "G2"]
         },
@@ -66,7 +67,7 @@ test_deny_no_access_control_info {
 }
 
 test_deny_empty_user_groups {
-    not groups with input as {
+    not esri_access_control with input as {
         "user": {
             "groups": []
         },

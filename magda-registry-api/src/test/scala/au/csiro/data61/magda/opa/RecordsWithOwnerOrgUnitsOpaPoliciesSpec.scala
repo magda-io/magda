@@ -32,7 +32,7 @@ class RecordsWithOwnerOrgUnitsOpaPoliciesSpec extends RecordsOpaSpec {
     )
 
     case class DBsWithEnvSpecificConfig(configToUse: Config)
-      extends DBs
+        extends DBs
         with TypesafeConfigReader
         with TypesafeConfig
         with EnvPrefix {
@@ -58,7 +58,9 @@ class RecordsWithOwnerOrgUnitsOpaPoliciesSpec extends RecordsOpaSpec {
       )
 
     try {
-      super.withFixture(test.toNoArgTest(FixtureParam(api, actor, authClient, testConfig)))
+      super.withFixture(
+        test.toNoArgTest(FixtureParam(api, actor, authClient, testConfig))
+      )
     } finally {
       //      Await.result(system.terminate(), 30 seconds)
       Await.result(gracefulStop(actor, 30 seconds), 30 seconds)
