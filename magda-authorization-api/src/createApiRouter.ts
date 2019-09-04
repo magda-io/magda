@@ -455,25 +455,27 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {put} /public/orgunits/listCandidateCustodianOrgUnits/:custodianOrgLevel/:samePathOrgUnitId List Candidate Custodian OrgUnits by org tree level
+     * @api {put} /public/orgunits/listOrgUnitsAtLevel/:custodianOrgLevel/:testOrgUnitId List OrgUnits at certain org tree level
      * @apiDescription
-     * List Candidate Custodian OrgUnits by org tree level.
-     * Optionally provide a Org Unit Id that will be used to
-     * mark one candidate org unit (if exist) who is on the same org tree path
+     * List all OrgUnits at certain org tree level
+     * Optionally provide a test Org Unit Id that will be used to
+     * test the relationship with each of returned orgUnit item.
+     * Possible Value: 'ancestor', 'descendant', 'equal', 'unrelated'
      *
-     * @apiParam (Path) {string} custodianOrgLevel The level number (starts from 1) where all org Units of the tree are taken horizontally as candidate.
-     * @apiParam (Path) {string} samePathOrgUnitId Optional; The org unit id that is used to set the default candidate (by lookup the org unit that is on the same tree path)
+     * @apiParam (Path) {string} custodianOrgLevel The level number (starts from 1) where org Units of the tree are taken horizontally.
+     * @apiParam (Path) {string} testOrgUnitId Optional; The org unit id that is used to test the relationship with each of returned orgUnit item.
      *
      * @apiSuccessExample {string} 200
      *     [{
      *       "id": "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7",
      *       "name": "node 1",
      *       "description": "xxxxxxxx",
-     *       "isDefault": true
+     *       "relationship": "unrelated"
      *     },{
      *       "id": "e5f0ed5f-bb00-4e49-89a6-3f044aecc3f7",
      *       "name": "node 2",
-     *       "description": "xxxxxxxx"
+     *       "description": "xxxxxxxx",
+     *       "relationship": "ancestor"
      *     }]
      *
      * @apiErrorExample {json} 401/404/500
@@ -484,35 +486,33 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *    }
      */
     router.get(
-        "/public/orgunits/listCandidateCustodianOrgUnits/:custodianOrgLevel/:samePathOrgUnitId*?",
+        "/public/orgunits/listOrgUnitsAtLevel/:orgLevel/:testOrgUnitId*?",
         MUST_BE_ADMIN,
         async (req, res) => {
             try {
-                const { custodianOrgLevel, samePathOrgUnitId } = req.params;
+                const { orgLevel, testOrgUnitId } = req.params;
 
-                const levelNumber = parseInt(custodianOrgLevel);
+                const levelNumber = parseInt(orgLevel);
 
                 if (levelNumber < 1 || isNaN(levelNumber))
-                    throw new Error(
-                        `Invalid level number: ${custodianOrgLevel}.`
-                    );
+                    throw new Error(`Invalid level number: ${orgLevel}.`);
 
                 const nodes = await orgQueryer.getAllNodesAtLevel(levelNumber);
 
-                if (samePathOrgUnitId && nodes.length) {
+                if (testOrgUnitId && nodes.length) {
                     for (let i = 0; i < nodes.length; i++) {
                         const r = await orgQueryer.compareNodes(
                             nodes[i]["id"],
-                            samePathOrgUnitId
+                            testOrgUnitId
                         );
-                        if (r === "unrelated") nodes[i].isDefault = true;
+                        nodes[i]["relationship"] = r;
                     }
                 }
 
                 res.status(200).json(nodes);
             } catch (e) {
                 respondWithError(
-                    "GET /public/orgunits/listCandidateCustodianOrgUnits/:custodianOrgLevel/:samePathOrgUnitId",
+                    "GET /public/orgunits/listOrgUnitsAtLevel/:custodianOrgLevel/:testOrgUnitId",
                     res,
                     e
                 );

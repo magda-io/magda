@@ -28,29 +28,27 @@ export async function listOrgUnits({
     }
 }
 
-export interface CandidateOrgUnit extends OrgUnit {
-    isDefault?: boolean;
+export interface OrgUnitWithRelationship extends OrgUnit {
+    relationship?: string;
 }
 
 /**
- * List Candidate Custodian OrgUnits by org tree level.
- * Optionally provide a Org Unit Id that will be used to mark
- * one candidate org unit (if exist) who is on the same org tree path
- * as the default candidate (`isDefault` field = true).
+ * List all OrgUnits at certain org tree level.
+ * Optionally provide a test Org Unit Id that will be used to
+ * test the relationship with each of returned orgUnit item.
+ * Possible Value: 'ancestor', 'descendant', 'equal', 'unrelated'.
  *
  * @export
- * @param {number} custodianOrgLevel - The level number where all org Units of the tree are taken horizontally as candidate
- * @param {string} [samePathOrgUnitId] - The org unit id that is used to set the default candidate (by lookup the org unit that is on the same tree path)
- * @returns {Promise<OrgUnit[]>}
+ * @param {number} orgLevel - The level number (starts from 1) where org Units of the tree are taken horizontally.
+ * @param {string} [testOrgUnitId] - Optional; The org unit id that is used to test the relationship with each of returned orgUnit item.
+ * @returns {Promise<OrgUnitWithRelationship[]>}
  */
-export async function listCandidateCustodianOrgUnits(
-    custodianOrgLevel: number,
-    samePathOrgUnitId?: string
-): Promise<CandidateOrgUnit[]> {
-    const uri = `${
-        config.authApiUrl
-    }/orgunits/listCandidateCustodianOrgUnits/${custodianOrgLevel}${
-        samePathOrgUnitId ? `/${samePathOrgUnitId}` : ""
+export async function listOrgUnitsAtLevel(
+    orgLevel: number,
+    testOrgUnitId?: string
+): Promise<OrgUnitWithRelationship[]> {
+    const uri = `${config.authApiUrl}/orgunits/listOrgUnitsAtLevel/${orgLevel}${
+        testOrgUnitId ? `/${testOrgUnitId}` : ""
     }`;
 
     const res = await fetch(uri, config.fetchOptions);
