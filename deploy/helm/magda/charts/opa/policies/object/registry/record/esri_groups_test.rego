@@ -1,4 +1,4 @@
-package object.registry.record.owner_orgunit
+package object.registry.record.esri_groups
 
 test_allow_read_if_groups_and_permission_are_correct {
     read with input as {

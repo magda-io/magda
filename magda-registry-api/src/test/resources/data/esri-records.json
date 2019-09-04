@@ -1,0 +1,97 @@
+[
+    {
+        "id": "record-0",
+        "name": "This record can only be viewed by Dep. A or higher.",
+        "aspects": {
+            "esri-access-control": {
+                "groups": ["Dep. A"]
+            },
+            "organization": {
+                "name": "Dep. A",
+                "email": "dep.A@somewhere"
+            }
+        }
+    },
+    {
+        "id": "record-1",
+        "name": "This record can only be viewed by Branch A of Dep. A or higher.",
+        "aspects": {
+            "esri-access-control": {
+                "groups": ["Dep. A", "Branch A, Dep. A"]
+            },
+            "organization": {
+                "name": "Branch A, Dep. A",
+                "email": "Branch.A@somewhere"
+            }
+        }
+    },
+
+    {
+        "id": "record-2",
+        "name": "This record can only be viewed by Branch B of Dep. A or higher.",
+        "aspects": {
+            "esri-access-control": {
+                "groups": ["Dep. A", "Branch B, Dep. A"]
+            },
+            "organization": {
+                "name": "Branch B, Dep. A",
+                "email": "Branch.B@somewhere"
+            },
+            "withLink": {
+                "someLink": "record-1"
+            }
+        }
+    },
+
+    {
+        "id": "record-3",
+        "name": "This record can only be viewed by Section C of Branch B of Dep. A or higher.",
+        "aspects": {
+            "esri-access-control": {
+                "groups": [
+                    "Dep. A",
+                    "Branch B, Dep. A",
+                    "Section C, Branch B, Dep. A"
+                ]
+            },
+            "organization": {
+                "name": "Section C, Branch B, Dep. A",
+                "email": "Section.C@somewhere"
+            },
+            "withLinks": {
+                "someLinks": []
+            }
+        }
+    },
+
+    {
+        "id": "record-4",
+        "name": "This record has no access control.",
+        "aspects": {
+            "organization": {
+                "name": "Section C, Branch B, Dep. A",
+                "email": "Section.C@somewhere"
+            },
+            "withLinks": {
+                "someLinks": ["record-1", "record-3"]
+            }
+        }
+    },
+
+    {
+        "id": "record-5",
+        "name": "This record can only be viewed by Branch B of Dep. A or higher.",
+        "aspects": {
+            "esri-access-control": {
+                "groups": ["Dep. A", "Branch B, Dep. A"]
+            },
+            "organization": {
+                "name": "Branch B, Dep. A",
+                "email": "Branch.B@somewhere"
+            },
+            "withLinks": {
+                "someLinks": ["record-1", "record-3"]
+            }
+        }
+    }
+]

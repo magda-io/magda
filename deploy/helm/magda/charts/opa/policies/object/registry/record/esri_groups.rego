@@ -1,4 +1,4 @@
-package object.registry.record.owner_orgunit
+package object.registry.record.esri_groups
 
 import data.object.registry.record.has_permission
 import data.object.registry.record.groups

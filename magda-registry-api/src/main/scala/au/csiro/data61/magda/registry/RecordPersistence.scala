@@ -1110,12 +1110,14 @@ object DefaultRecordPersistence
         )
       else Seq(Some(sqls"Records.tenantId=$tenantId"))
 
-    val opaConditions = getOpaConditions(tenantId, opaQueries, AuthOperations.read)
+    val opaConditions =
+      getOpaConditions(tenantId, opaQueries, AuthOperations.read)
 
-    val whereClauseParts = countWhereClauseParts :+ Option(opaConditions) :+ pageToken.map(
-      token =>
-        sqls"Records.sequence > ${token.toLong} and Records.tenantId=$tenantId"
-    )
+    val whereClauseParts = countWhereClauseParts :+ Option(opaConditions) :+ pageToken
+      .map(
+        token =>
+          sqls"Records.sequence > ${token.toLong} and Records.tenantId=$tenantId"
+      )
     val limit = rawLimit.getOrElse(defaultResultCount)
 
     val result =
@@ -1200,7 +1202,10 @@ object DefaultRecordPersistence
     val nonNullAspectsWhereClause =
       SQLSyntax.where(SQLSyntax.joinWithAnd(aspectIds.zipWithIndex.map {
         case (_, index) =>
-          val name = getAspectColumnName(index, prefix = ColumnNamePrefixType.PREFIX_TEMP)
+          val name = getAspectColumnName(
+            index,
+            prefix = ColumnNamePrefixType.PREFIX_TEMP
+          )
           sqls"$name is not null"
       }.toSeq: _*))
 
@@ -1211,13 +1216,13 @@ object DefaultRecordPersistence
                      Records.name as recordName,
                      Records.tenantId as tenantId
                      ${if (aspectSelectors.nonEmpty) sqls", $aspectSelectors"
-                       else SQLSyntax.empty},
+      else SQLSyntax.empty},
                      Records.sourcetag as sourceTag
               from Records
               ${makeWhereClause(whereClauseParts)}
             ) as $tempName
             ${if (aspectIds.nonEmpty) sqls"$nonNullAspectsWhereClause"
-              else SQLSyntax.empty}
+      else SQLSyntax.empty}
             order by $tempName.sequence
             offset ${start.getOrElse(0)}
             limit ${limit + 1}
@@ -1250,8 +1255,11 @@ object DefaultRecordPersistence
       recordSelector: Iterable[Option[SQLSyntax]] = Iterable()
   ): Long = {
     val recordsFilteredByTenantClause = filterRecordsByTenantClause(tenantId)
-    val opaConditions = getOpaConditions(tenantId, opaQueries, AuthOperations.read)
-    val theRecordSelector = Iterable(Some(recordsFilteredByTenantClause)) ++ recordSelector ++ Iterable(Some(opaConditions))
+    val opaConditions =
+      getOpaConditions(tenantId, opaQueries, AuthOperations.read)
+    val theRecordSelector = Iterable(Some(recordsFilteredByTenantClause)) ++ recordSelector ++ Iterable(
+      Some(opaConditions)
+    )
     val statement = if (aspectIds.size == 1) {
       // If there's only one aspect id, it's much much more efficient to query the recordaspects table rather than records.
       // Because a record cannot have more than one aspect for each type, counting the number of recordaspects with a certain aspect type
@@ -1264,8 +1272,7 @@ object DefaultRecordPersistence
         .toSeq
       val recordSelectorWhereClause = theRecordSelector.flatten
         .map(
-          recordSelectorInner =>
-            sqls"""EXISTS(
+          recordSelectorInner => sqls"""EXISTS(
                      SELECT 1 FROM Records
                      WHERE Records.tenantId=$tenantId AND RecordAspects.recordId=Records.recordId AND $recordSelectorInner)
               """
@@ -1428,8 +1435,7 @@ object DefaultRecordPersistence
       else List(OpaQuerySkipAccessControl)
     val opaSql: SQLSyntax =
       sqls"(${SQLSyntax
-        .joinWithOr(opaQueriesToWhereClauseParts(tenantId, theOpaQueries): _*)
-      })"
+        .joinWithOr(opaQueriesToWhereClauseParts(tenantId, theOpaQueries): _*)})"
 
     val aspectWhereClauses: Seq[Option[SQLSyntax]] = aspectIdsToWhereClause(
       tenantId,
@@ -1450,8 +1456,7 @@ object DefaultRecordPersistence
       else List(OpaQuerySkipAccessControl)
     val opaSql: SQLSyntax =
       sqls"(${SQLSyntax
-          .joinWithOr(opaQueriesToWhereClauseParts(tenantId, theOpaQueries): _*)
-      })"
+        .joinWithOr(opaQueriesToWhereClauseParts(tenantId, theOpaQueries): _*)})"
 
     val result = List(opaSql)
     result
@@ -1467,12 +1472,18 @@ object DefaultRecordPersistence
       index: Int,
       prefix: ColumnNamePrefixType.Value = ColumnNamePrefixType.PREFIX_EMPTY
   ): SQLSyntax = {
-    val prefixStr = if (prefix == ColumnNamePrefixType.PREFIX_TEMP) prefix.toString + "." else prefix.toString
+    val prefixStr =
+      if (prefix == ColumnNamePrefixType.PREFIX_TEMP) prefix.toString + "."
+      else prefix.toString
     // Use a simple numbered column name rather than trying to make the aspect name safe.
     SQLSyntax.createUnsafely(prefixStr + s"aspect$index")
   }
 
-  private def getOpaConditions(tenantId: BigInt, opaQueries: Seq[OpaQuery], operationType: AuthOperations.OperationType) = {
+  private def getOpaConditions(
+      tenantId: BigInt,
+      opaQueries: Seq[OpaQuery],
+      operationType: AuthOperations.OperationType
+  ) = {
     SQLSyntax.joinWithAnd(
       opaQueriesToWhereParts(tenantId, opaQueries, operationType).toSeq: _*
     )
@@ -1487,83 +1498,103 @@ object DefaultRecordPersistence
       dereference: Boolean = false
   ): Iterable[scalikejdbc.SQLSyntax] = {
     val opaConditions = getOpaConditions(tenantId, opaQueries, operationType)
+    val referenceDetails =
+      buildReferenceMap(session, aspectIds.toSeq)
 
     val result: Iterable[SQLSyntax] = aspectIds.zipWithIndex.map {
       case (aspectId, index) =>
-        val referenceDetails =
-          buildReferenceMap(session, aspectIds.toSeq)
-
         val aspectColumnName = getAspectColumnName(index)
         val selection = referenceDetails
           .get(aspectId)
           .map {
             case PropertyWithLink(propertyName, true) =>
               sqls"""(
-                      case when $dereference then (
-                        CASE WHEN EXISTS (SELECT FROM jsonb_array_elements_text(RecordAspects.data->$propertyName)) THEN (
-                          select jsonb_set(
-                            RecordAspects.data,
-                            ${"{\"" + propertyName + "\"}"}::text[],
-                            jsonb_agg(
-                              jsonb_build_object(
-                                'id',
-                                Records.recordId,
-                                'name',
-                                Records.name,
-                                'aspects',
-                                (
-                                  select jsonb_object_agg(aspectId, data)
-                                  from RecordAspects
-                                  where tenantId=Records.tenantId and recordId=Records.recordId
-                                  ))))
-                          from Records
-                          inner join jsonb_array_elements_text(RecordAspects.data->$propertyName) as aggregatedId
-                          on aggregatedId=Records.recordId and RecordAspects.tenantId=Records.tenantId
-                          where $opaConditions
+                      (with d as (select (
+                          case when $dereference then (
+                            CASE WHEN EXISTS (SELECT FROM jsonb_array_elements_text(RecordAspects.data->$propertyName)) THEN (
+                              select jsonb_set(
+                                RecordAspects.data,
+                                ${"{\"" + propertyName + "\"}"}::text[],
+                                jsonb_agg(
+                                  jsonb_build_object(
+                                    'id',
+                                    Records.recordId,
+                                    'name',
+                                    Records.name,
+                                    'aspects',
+                                    (
+                                      select jsonb_object_agg(aspectId, data)
+                                      from RecordAspects
+                                      where tenantId=Records.tenantId and recordId=Records.recordId
+                                      ))))
+                              from Records
+                              inner join jsonb_array_elements_text(RecordAspects.data->$propertyName) as aggregatedId
+                              on aggregatedId=Records.recordId and RecordAspects.tenantId=Records.tenantId
+                              where $opaConditions
+                            )
+                            ELSE (
+                              select data from RecordAspects
+                              where (aspectId, recordid, tenantId) = ($aspectId, Records.recordId, Records.tenantId)
+                            )
+                            END
+                          )
+                          else (
+                            CASE WHEN EXISTS (SELECT FROM jsonb_array_elements_text(RecordAspects.data->$propertyName)) THEN (
+                                select jsonb_set(
+                                         RecordAspects.data,
+                                         ${"{\"" + propertyName + "\"}"}::text[],
+                                         jsonb_agg(Records.recordId))
+                                from Records
+                                inner join jsonb_array_elements_text(RecordAspects.data->$propertyName) as aggregatedId
+                                on aggregatedId=Records.recordId and RecordAspects.tenantId=Records.tenantId
+                                where $opaConditions
+                            )
+                            ELSE (
+                              select data from RecordAspects
+                              where (aspectId, recordid, tenantId) = ($aspectId, Records.recordId, Records.tenantId)
+                            )
+                            END
+                          )
+                          end
+                        ))
+
+                        select coalesce(
+                          (select * from d),
+                          (select jsonb_set(RecordAspects.data, ${"{\"" + propertyName + "\"}"}::text[], '[]'::jsonb))
                         )
-                        ELSE (
-                          select data from RecordAspects
-                          where (aspectId, recordid, tenantId) = ($aspectId, Records.recordId, Records.tenantId)
-                        )
-                        END
                       )
-                      else (
-                        CASE WHEN EXISTS (SELECT FROM jsonb_array_elements_text(RecordAspects.data->$propertyName)) THEN (
-                            select jsonb_set(
-                                     RecordAspects.data,
-                                     ${"{\"" + propertyName + "\"}"}::text[],
-                                     jsonb_agg(Records.recordId))
-                            from Records
-                            inner join jsonb_array_elements_text(RecordAspects.data->$propertyName) as aggregatedId
-                            on aggregatedId=Records.recordId and RecordAspects.tenantId=Records.tenantId
-                            where $opaConditions
-                        )
-                        ELSE (
-                          select data from RecordAspects
-                          where (aspectId, recordid, tenantId) = ($aspectId, Records.recordId, Records.tenantId)
-                        )
-                        END
-                      )
-                      end)
-                """
+              )"""
             case PropertyWithLink(propertyName, false) =>
               sqls"""(
-                     select
-                     case when $dereference then
-                       jsonb_set(
-                         RecordAspects.data,
-                         ${"{\"" + propertyName + "\"}"}::text[],
-                         jsonb_build_object(
-                           'id', Records.recordId,
-                           'name', Records.name,
-                           'aspects', (
-                             select jsonb_object_agg(aspectId, data) from RecordAspects
-                             where tenantId=Records.tenantId and recordId=Records.recordId)))
-                     else RecordAspects.data
-                     end
-                     from Records where Records.tenantId=RecordAspects.tenantId and
-                     Records.recordId=RecordAspects.data->>$propertyName and $opaConditions)
-                """
+                       (with d as ( select
+                             (select
+                             case when $dereference then
+                               jsonb_set(
+                                 RecordAspects.data,
+                                 ${"{\"" + propertyName + "\"}"}::text[],
+                                 jsonb_build_object(
+                                   'id', Records.recordId,
+                                   'name', Records.name,
+                                   'aspects', (
+                                     select jsonb_object_agg(aspectId, data) from RecordAspects
+                                     where tenantId=Records.tenantId and recordId=Records.recordId)))
+                             else RecordAspects.data
+                             end
+                             from Records where Records.tenantId=RecordAspects.tenantId and
+                             Records.recordId=RecordAspects.data->>$propertyName and $opaConditions)
+                           )
+
+                           select coalesce(
+                             (select * from d),
+                             case when $dereference then
+                             (select jsonb_set(RecordAspects.data, ${"{\"" + propertyName + "\"}"}::text[], '{}'::jsonb))
+                             else
+                             (select jsonb_set(RecordAspects.data, ${"{\"" + propertyName + "\"}"}::text[], '""'::jsonb))
+                             end
+                           )
+                        )
+
+                     )"""
           }
           .getOrElse(sqls"data")
 
@@ -1596,10 +1627,12 @@ object DefaultRecordPersistence
   }
 
   private def aspectQueryToWhereClause(tenantId: BigInt, query: AspectQuery) = {
+//    data #>> string_to_array(${query.path.mkString(",")}, ',') = ${query.value})
+//    (data->'groups')::jsonb ?? ${query.value})
     sqls"""EXISTS (
              SELECT 1 FROM recordaspects
              WHERE (aspectId, recordid, tenantId)=(${query.aspectId}, Records.recordId, Records.tenantId) AND
-             data #>> string_to_array(${query.path.mkString(",")}, ',') = ${query.value})
+             (data #>> string_to_array(${query.path.mkString(",")}, ',')) = ${query.value})
       """
   }
 
@@ -1615,22 +1648,26 @@ object DefaultRecordPersistence
       else
         List(OpaQuerySkipAccessControl)
 
+    // TODO: make it configurable
     val accessControlAspectId = "dataset-access-control"
+//    val accessControlAspectId = "esri-access-control"
     theOpaQueries.map {
       case OpaQueryMatchValue(
           OpaRefObjectKey("object")
             :: OpaRefObjectKey("registry")
             :: OpaRefObjectKey("record")
-            :: OpaRefObjectKey(`accessControlAspectId`)
+            :: OpaRefObjectKey(accessAspectId)
             :: finalKey,
           _, // operation is not used at the moment. It is assumed to be eq.
           aValue
           ) =>
+        val accessControlAspectId = accessAspectId
         val query = AspectQuery(
           aspectId = accessControlAspectId,
           path = finalKey.map {
             case OpaRefObjectKey(key) => key
-            case _                    => "[_]"
+            case OpaRefAllInArray     => "[_]"
+            case x                    => throw new Exception("Could not understand " + x)
           },
           value = aValue match {
             case OpaValueString(string)   => string

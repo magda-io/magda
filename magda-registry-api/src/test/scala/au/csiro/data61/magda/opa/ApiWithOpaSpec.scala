@@ -5,7 +5,6 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
-import akka.pattern.gracefulStop
 import au.csiro.data61.magda.Authentication
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.model.Auth.AuthProtocols
@@ -18,12 +17,9 @@ import au.csiro.data61.magda.registry._
 import com.auth0.jwt.JWT
 import com.typesafe.config.Config
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{Matchers, Outcome, fixture}
-import scalikejdbc._
-import scalikejdbc.config.{DBs, EnvPrefix, TypesafeConfig, TypesafeConfigReader}
-import spray.json.JsonParser
+import org.scalatest.{Matchers, fixture}
+import spray.json.{JsObject, JsonParser}
 
-import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.io.BufferedSource
 import scala.io.Source.fromFile
@@ -45,71 +41,55 @@ abstract class ApiWithOpaSpec
   case class FixtureParam(
       api: Role => Api,
       webHookActor: ActorRef,
-      authClient: AuthApiClient
+      authClient: AuthApiClient,
+      config: Config
   )
 
   def addTenantIdHeader(tenantId: BigInt): RawHeader = {
     RawHeader(MAGDA_TENANT_ID_HEADER, tenantId.toString)
   }
 
-  def addJwtToken(userId: String): RawHeader = {
-    if (userId.equals("anonymous"))
-      RawHeader("", "")
-    else {
-      val jwtToken =
-        JWT.create().withClaim("userId", userId).sign(Authentication.algorithm)
-//      println(s"userId: $userId")
-//      println(s"jwtToken: $jwtToken")
-      RawHeader(
-        Authentication.headerName,
-        jwtToken
-      )
+  def addJwtToken(userId: String, policyId: String): RawHeader = {
+    val theBasePolicyId = policyId
+
+    if (theBasePolicyId.contains("esri")) {
+      if (userId.equals("anonymous"))
+        RawHeader("", "")
+      else {
+        val jwtToken =
+          JWT
+            .create()
+            .withClaim("userId", userId)
+            .withArrayClaim("groups", esriUserGroupMap(userId))
+            .sign(Authentication.algorithm)
+        //      println(s"userId: $userId")
+        //      println(s"jwtToken: $jwtToken")
+        RawHeader(
+          Authentication.headerName,
+          jwtToken
+        )
+      }
+    } else {
+      if (userId.equals("anonymous"))
+        RawHeader("", "")
+      else {
+        val jwtToken =
+          JWT
+            .create()
+            .withClaim("userId", userId)
+            .sign(Authentication.algorithm)
+        //      println(s"userId: $userId")
+        //      println(s"jwtToken: $jwtToken")
+        RawHeader(
+          Authentication.headerName,
+          jwtToken
+        )
+      }
     }
+
   }
 
   val TENANT_0: BigInt = 0
-
-  override def withFixture(test: OneArgTest): Outcome = {
-
-    GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(
-      enabled = false,
-      singleLineMode = true,
-      logLevel = 'debug
-    )
-
-    case class DBsWithEnvSpecificConfig(configToUse: Config)
-        extends DBs
-        with TypesafeConfigReader
-        with TypesafeConfig
-        with EnvPrefix {
-
-      override val config: Config = configToUse
-    }
-
-    DBsWithEnvSpecificConfig(testConfig).setupAll()
-
-    val actor = system.actorOf(
-      WebHookActor.props("http://localhost:6101/v0/")(testConfig)
-    )
-    val authClient =
-      new AuthApiClient()(testConfig, system, executor, materializer)
-    val api = (role: Role) =>
-      new Api(
-        if (role == Full) Some(actor) else None,
-        authClient,
-        testConfig,
-        system,
-        executor,
-        materializer
-      )
-
-    try {
-      super.withFixture(test.toNoArgTest(FixtureParam(api, actor, authClient)))
-    } finally {
-      //      Await.result(system.terminate(), 30 seconds)
-      Await.result(gracefulStop(actor, 30 seconds), 30 seconds)
-    }
-  }
 
   /**
     *     Relationship among users, organizations and records.
@@ -147,6 +127,14 @@ abstract class ApiWithOpaSpec
   val userId3 = "00000000-0000-1000-0003-000000000000"
   val anonymous = "anonymous"
 
+  val esriUserGroupMap: Map[String, Array[String]] = Map(
+    userId0 -> Array("Dep. A", "Branch A, Dep. A", "Branch B, Dep. A", "Section C, Branch B, Dep. A"),
+    userId1 -> Array("Branch A, Dep. A"),
+    userId2 -> Array("Branch B, Dep. A", "Section C, Branch B, Dep. A"),
+    userId3 -> Array("Section C, Branch B, Dep. A")
+  )
+
+
   val userIdsAndExpectedRecordIdIndexesWithoutLink = List(
     (userId0, List(0, 1, 2, 3, 4, 5)),
     (userId1, List(1, 4)),
@@ -158,7 +146,7 @@ abstract class ApiWithOpaSpec
   val userIdsAndExpectedRecordIdIndexesWithSingleLink = List(
     (userId0, List(2)),
     (userId1, List()),
-    (userId2, List()),
+    (userId2, List(2)),
     (userId3, List()),
     (anonymous, List())
   )
@@ -175,6 +163,7 @@ abstract class ApiWithOpaSpec
   )
 
   val accessControlId = "dataset-access-control"
+  val esriAccessControlId = "esri-access-control"
   val organizationId = "organization"
   val withLinkId = "withLink"
   val linkName = "someLink"
@@ -196,6 +185,10 @@ abstract class ApiWithOpaSpec
       "magda-registry-aspects/dataset-access-control.schema.json"
     )
 
+    val esriAccessControlSchemaSource: BufferedSource = fromFile(
+      "magda-registry-aspects/esri-access-control.schema.json"
+    )
+
     val orgAspectSchemaSource: BufferedSource = fromFile(
       dataPath + "organization-schema.json"
     )
@@ -213,6 +206,13 @@ abstract class ApiWithOpaSpec
         accessControlSchemaSource.mkString
       } finally {
         accessControlSchemaSource.close()
+      }
+
+    val esriAccessControlSchema: String =
+      try {
+        esriAccessControlSchemaSource.mkString
+      } finally {
+        esriAccessControlSchemaSource.close()
       }
 
     val orgAspectSchema: String =
@@ -242,6 +242,12 @@ abstract class ApiWithOpaSpec
       Some(JsonParser(accessControlSchema).asJsObject)
     )
 
+    val esriAccessControlDef = AspectDefinition(
+      esriAccessControlId,
+      "access control aspect",
+      Some(JsonParser(esriAccessControlSchema).asJsObject)
+    )
+
     val orgAspectDef = AspectDefinition(
       organizationId,
       "organization aspect",
@@ -262,6 +268,7 @@ abstract class ApiWithOpaSpec
 
     val aspectDefs = List(
       accessControlDef,
+      esriAccessControlDef,
       orgAspectDef,
       withLinkAspectDef,
       withLinksAspectDef
@@ -269,11 +276,11 @@ abstract class ApiWithOpaSpec
 
     aspectDefs.map(aspectDef => {
       Get(s"/v0/aspects/${aspectDef.id}") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        userId0
+        userId0, ""
       ) ~> param.api(Full).routes ~> check {
         if (status == StatusCodes.NotFound) {
           Post(s"/v0/aspects", aspectDef) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-            userId0
+            userId0, ""
           ) ~> param.api(Full).routes ~> check {
             status shouldBe StatusCodes.OK
           }
@@ -296,21 +303,28 @@ abstract class ApiWithOpaSpec
     JsonParser(recordsJsonStr).convertTo[List[Record]]
   }
 
-  val testRecords: List[Record] = getTestRecords(dataPath + "records.json")
+  var testRecords: List[Record] = Nil
 
   var hasRecords = false
 
   def createRecords(param: FixtureParam): AnyVal = {
     if (hasRecords)
       return
+    import scalikejdbc._
+    DB localTx { implicit session =>
+      sql"Delete from public.recordaspects".update
+        .apply()
+      sql"Delete from public.records".update
+        .apply()
+    }
 
     testRecords.map(record => {
       Get(s"/v0/records/${record.id}") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        userId0
+        userId0, ""
       ) ~> param.api(Full).routes ~> check {
         if (status == StatusCodes.NotFound) {
           Post(s"/v0/records", record) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-            userId0
+            userId0, ""
           ) ~> param.api(Full).routes ~> check {
             status shouldBe StatusCodes.OK
           }
@@ -320,5 +334,16 @@ abstract class ApiWithOpaSpec
 
     hasRecords = true
   }
+
+  lazy val singleLinkRecordIdMapDereferenceIsFalse
+      : Map[(String, String), String] =
+    Map((userId0, "record-2") -> "record-1", (userId2, "record-2") -> "")
+
+  lazy val singleLinkRecordIdMapDereferenceIsTrue
+      : Map[(String, String), JsObject] =
+    Map(
+      (userId0, "record-2") -> testRecords(1).toJson.asJsObject,
+      (userId2, "record-2") -> JsObject.empty
+    )
 
 }

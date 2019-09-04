@@ -1,6 +1,23 @@
 package object.registry.record
 
-test_allow_correct_groups {
+test_allow_all_matched_groups {
+    groups with input as {
+        "user": {
+            "groups": ["G1", "G2"]
+        },
+        "object": {
+            "registry": {
+                "record": {
+                    "esri-access-control": {
+                        "groups": ["G1", "G2"]
+                    }
+                }
+            }
+        }
+    }
+}
+
+test_allow_any_matched_groups {
     groups with input as {
         "user": {
             "groups": ["G1", "G2"]
