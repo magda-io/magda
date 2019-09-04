@@ -68,6 +68,20 @@ export default class EsriPortalUrlBuilder {
             .toString();
     }
 
+    // https://someportal/arcgis/sharing/rest/content/items/ea532dd8876b4646aa2ab49533e458aa/groups?f=pjson
+    public getContentItemGroups(id: string): string {
+        return this.apiBaseUrl
+            .clone()
+            .segment("content/items")
+            .segment(id)
+            .segment("groups")
+            .addSearch({
+                f: "pjson",
+                token: this.token
+            })
+            .toString();
+    }
+
     // https://someserver/arcgis/rest/services/public/Topo_Map/MapServer?f=pjson
     // https://someserver/arcgis/rest/services/public/Topo_Map/MapServer/0?f=pjson
     public getResource(resouceUrl: string): string {

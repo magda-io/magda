@@ -175,6 +175,22 @@ export default class EsriPortal implements ConnectorSource {
         return undefined;
     }
 
+    private requestGroupInformation(contentId: string): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
+            request(
+                this.urlBuilder.getContentItemGroups(contentId),
+                { json: true },
+                (error, response, body) => {
+                    if (error) {
+                        reject(error);
+                        return;
+                    }
+                    resolve(body);
+                }
+            );
+        });
+    }
+
     private requestDistributionInformation(
         distributionUrl: string
     ): Promise<any> {
@@ -225,6 +241,39 @@ export default class EsriPortal implements ConnectorSource {
                             item.distributions = [];
 
                             const distUri = new URI(item.url);
+
+                            if (item.access !== "public") {
+                                // Let's get the group information for an item because that's how
+                                // access to the item is controlled
+                                const groupInfo = await that.requestGroupInformation(
+                                    item.id
+                                );
+
+                                const adminGroupIds = groupInfo.admin.map(
+                                    (g: any) => g.id
+                                );
+                                const memberGroupIds = groupInfo.member.map(
+                                    (g: any) => g.id
+                                );
+                                const otherGroupIds = groupInfo.other.map(
+                                    (g: any) => g.id
+                                );
+
+                                const allGroups = adminGroupIds.concat(
+                                    memberGroupIds,
+                                    otherGroupIds
+                                );
+                                const uniqueGroups = allGroups.filter(
+                                    (it: any, idx: any) =>
+                                        allGroups.indexOf(it) === idx
+                                );
+                                item.groups =
+                                    uniqueGroups.length > 0
+                                        ? uniqueGroups
+                                        : undefined;
+                            } else {
+                                item.groups = undefined;
+                            }
 
                             // We're looking at an individual layer (coule be either map or feature service)
                             // eg https://maps.six.nsw.gov.au/arcgis/rest/services/public/Valuation/MapServer/0

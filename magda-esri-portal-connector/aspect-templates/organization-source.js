@@ -4,5 +4,5 @@ return {
     type: "esri-portal-organization",
     url: esriPortal.getOrganizationShowUrl(organization.id),
     id: esriPortal.id,
-    name: esriPortal.title || esriPortal.name
+    name: esriPortal.title
 };
