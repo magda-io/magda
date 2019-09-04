@@ -58,6 +58,7 @@ export function fileStateToText(state: FileState) {
 export type DatasetAutocompleteChoice = {
     existingId?: string;
     name: string;
+    shouldShowTooltip?: boolean;
 };
 
 export type OrganisationAutocompleteChoice = {

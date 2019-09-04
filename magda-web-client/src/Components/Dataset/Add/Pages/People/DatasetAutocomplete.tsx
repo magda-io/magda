@@ -12,6 +12,14 @@ import ReactSelectStyles from "Components/Common/react-select/ReactSelectStyles"
 import { OptionProps } from "react-select/src/components/Option";
 import { components } from "react-select";
 import { User } from "reducers/userManagementReducer";
+import Tooltip from "Components/Common/Tooltip";
+import ExplanationTooltip from "Components/Common/ExplanationTooltip";
+import { retrieveLocalData, setLocalData } from "storage/localStorage";
+
+import "./DatasetAutocomplete.scss";
+import { MultiValueProps } from "react-select/src/components/MultiValue";
+
+const LS_KEY_HIDE_TOOLTIP = "magda-hide-dataset-autocomplete-tooltip";
 
 type Props = {
     onDatasetSelected: (
@@ -25,12 +33,14 @@ type Choice = {
     value: string;
     label: string;
     existingId?: string;
+    shouldShowTooltip?: boolean;
 };
 
 function fromReactSelect(choice: Choice): DatasetAutocompleteChoice {
     return {
         existingId: choice.existingId,
-        name: choice.label
+        name: choice.label,
+        shouldShowTooltip: choice.shouldShowTooltip
     };
 }
 
@@ -38,7 +48,8 @@ function toReactSelectValue(choice: DatasetAutocompleteChoice): Choice {
     return {
         existingId: choice.existingId,
         value: choice.existingId || choice.name,
-        label: choice.name
+        label: choice.name,
+        shouldShowTooltip: choice.shouldShowTooltip
     };
 }
 
@@ -59,8 +70,32 @@ const CustomOption = (props: OptionProps<Choice>) => (
     />
 );
 
+const CustomMultiValue = (props: MultiValueProps<Choice>) => {
+    const showTooltip = (props.data as Choice).shouldShowTooltip;
+    const component = <components.MultiValue {...props} />;
+
+    return showTooltip ? (
+        <Tooltip
+            launcher={() => component}
+            startOpen={true}
+            requireClickToDismiss={true}
+            orientation="below"
+        >
+            {dismiss => (
+                <ExplanationTooltip dismiss={dismiss}>
+                    This has been added as a draft dataset. You can edit it from
+                    your homepage.
+                </ExplanationTooltip>
+            )}
+        </Tooltip>
+    ) : (
+        component
+    );
+};
+retrieveLocalData;
+
 export default function OrganisationAutocomplete(props: Props) {
-    let selectRef = React.createRef<Async<Choice>>();
+    const selectRef = React.createRef<Async<Choice>>();
 
     const query: (term: string) => Promise<any> = debouncePromise(
         async (term: string) => {
@@ -72,6 +107,12 @@ export default function OrganisationAutocomplete(props: Props) {
                 label: option.title
             }));
 
+            const addChoice = (dataset: DatasetAutocompleteChoice) => {
+                props.onDatasetSelected(
+                    props.value ? [...props.value, dataset] : [dataset]
+                );
+            };
+
             return [
                 {
                     label: "Existing datasets in your catalog",
@@ -82,22 +123,33 @@ export default function OrganisationAutocomplete(props: Props) {
                     options: [
                         {
                             label: `Add new: "${term}"`,
-                            onClick: () => {
+                            onClick: (
+                                event: React.MouseEvent<
+                                    HTMLDivElement,
+                                    MouseEvent
+                                >
+                            ) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+
                                 selectRef.current && selectRef.current.blur();
+
                                 const newDatasetState = createBlankState(
                                     props.user
                                 );
                                 newDatasetState.dataset.title = term;
                                 const newDatasetId = saveState(newDatasetState);
-                                const newChoice = {
+
+                                addChoice({
                                     existingId: newDatasetId,
-                                    name: term
-                                };
-                                props.onDatasetSelected(
-                                    props.value
-                                        ? [...props.value, newChoice]
-                                        : [newChoice]
-                                );
+                                    name: term,
+                                    shouldShowTooltip: !retrieveLocalData(
+                                        LS_KEY_HIDE_TOOLTIP,
+                                        false
+                                    )
+                                });
+
+                                setLocalData(LS_KEY_HIDE_TOOLTIP, true);
                             }
                         }
                     ]
@@ -107,9 +159,20 @@ export default function OrganisationAutocomplete(props: Props) {
                     options: [
                         {
                             label: `Use name: "${term}"`,
-                            onClick: () => {
+                            onClick: (
+                                event: React.MouseEvent<
+                                    HTMLDivElement,
+                                    MouseEvent
+                                >
+                            ) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+
                                 selectRef.current && selectRef.current.blur();
-                                console.log("goodbye");
+
+                                addChoice({
+                                    name: term
+                                });
                             }
                         }
                     ]
@@ -133,14 +196,21 @@ export default function OrganisationAutocomplete(props: Props) {
                     );
                 }
             }}
-            styles={ReactSelectStyles}
+            styles={{
+                ...ReactSelectStyles,
+                valueContainer: provided => ({
+                    ...provided,
+                    overflow: "visible"
+                })
+            }}
             value={
                 props.value ? props.value!.map(toReactSelectValue) : props.value
             }
             loadOptions={query}
             placeholder="Search for dataset"
             components={{
-                Option: CustomOption
+                Option: CustomOption,
+                MultiValue: CustomMultiValue
             }}
             ref={selectRef}
         />

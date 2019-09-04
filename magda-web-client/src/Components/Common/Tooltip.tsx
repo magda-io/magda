@@ -1,22 +1,33 @@
+import React from "react";
+
 import "./Tooltip.scss";
 
-import React from "react";
+type Props = {
+    requireClickToDismiss?: boolean;
+    onDismiss?: () => void;
+    className?: string;
+    startOpen?: boolean;
+    orientation?: "below" | "above";
+    launcher?: React.ComponentType;
+    innerElementClassName?: string;
+    children: (dismiss: () => void) => React.ReactNode;
+};
+
+type State = {
+    offset: number;
+    dismissed: boolean;
+};
 
 /**
  * @description Return a information tooltip, on hover show calculation method.
- * @returns { div }
  */
-class Tooltip extends React.Component {
-    constructor(props) {
-        super(props);
-
-        this.rootRef = React.createRef();
-        this.tooltipTextElementRef = React.createRef();
-        this.state = {
-            offset: 0,
-            dismissed: false
-        };
-    }
+class Tooltip extends React.Component<Props, State> {
+    rootRef = React.createRef<HTMLDivElement>();
+    tooltipTextElementRef = React.createRef<HTMLSpanElement>();
+    state = {
+        offset: 0,
+        dismissed: false
+    };
 
     componentDidMount() {
         if (this.props.requireClickToDismiss) {
@@ -36,7 +47,10 @@ class Tooltip extends React.Component {
     }
 
     handleClickOutside = event => {
-        if (!this.rootRef.current.contains(event.target)) {
+        if (
+            !this.rootRef.current ||
+            !this.rootRef.current.contains(event.target)
+        ) {
             this.dismiss();
         }
     };
@@ -54,13 +68,13 @@ class Tooltip extends React.Component {
         const rootElement = this.rootRef.current;
 
         // Why .firstChild? Because we can't attach a ref to a render prop unless whatever's passed in passes the ref through to its first dom element
-        const launcherElement = rootElement.firstChild;
+        const launcherElement = rootElement!.firstChild!;
 
         const launcherElementStyle =
-            launcherElement.currentStyle ||
-            window.getComputedStyle(launcherElement);
+            (launcherElement as any).currentStyle ||
+            window.getComputedStyle(launcherElement as Element);
 
-        const tooltipWidth = tooltipTextElement.offsetWidth;
+        const tooltipWidth = tooltipTextElement!.offsetWidth;
         const offset =
             (tooltipWidth +
                 parseFloat(launcherElementStyle.marginLeft) +
