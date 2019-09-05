@@ -157,7 +157,7 @@ function createBlankState(user: User): State {
         datasetPublishing: {
             state: "draft",
             level: "agency",
-            contactPointDisplay: "members"
+            contactPointDisplay: "team"
         },
         spatialCoverage: {},
         temporalCoverage: {

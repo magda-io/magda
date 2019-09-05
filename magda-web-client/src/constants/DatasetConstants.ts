@@ -550,12 +550,12 @@ export const classification = {
     "TOP SECRET": "TOP SECRET"
 };
 
-export type ContactPointDisplayOption = "members" | "team" | "organization";
+export type ContactPointDisplayOption = "team" | "custodian" | "organization";
 
 export const contactPointDisplay: Record<ContactPointDisplayOption, string> = {
-    members: "Display members of the maintaining team",
-    team: "Display maintaining team",
-    organization: "Display organisation"
+    team: "Display maintaining team name",
+    custodian: "Display data custodian area name",
+    organization: "Display organisation name"
 };
 
 export const publishingLevel = {

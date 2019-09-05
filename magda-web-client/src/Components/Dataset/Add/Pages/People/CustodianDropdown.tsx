@@ -76,7 +76,7 @@ export default function CustodianDropdown({
             <Select
                 className="react-select"
                 isMulti={false}
-                isSearchable={false}
+                isSearchable={true}
                 onChange={(rawValue, action) => {
                     const value = rawValue as (
                         | { value: string }
