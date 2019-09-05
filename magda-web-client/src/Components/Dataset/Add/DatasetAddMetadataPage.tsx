@@ -566,7 +566,12 @@ class NewDataset extends React.Component<Props, State> {
                     mechanism: provenance.mechanism,
 
                     sourceSystem: provenance.sourceSystem,
-                    derivedFrom: provenance.derivedFrom,
+                    derivedFrom:
+                        provenance.derivedFrom &&
+                        provenance.derivedFrom.map(choice => ({
+                            id: choice.existingId,
+                            name: !choice.existingId ? choice.name : undefined
+                        })),
                     affiliatedOrganizationIds:
                         provenance.affiliatedOrganizations &&
                         (await Promise.all(
