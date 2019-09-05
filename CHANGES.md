@@ -85,6 +85,7 @@ UI:
 -   Fixed: drop a folder to Add dataset file drop area will break the UI
 -   Show an error message screen if the user is not allowed to access the add dataset page
 -   Make sure all publish new dataset errors are captured and shown to users on add dataset page
+-   Added the ability to add references to datasets that a new dataset was derived from.
 
 Gateway:
 
