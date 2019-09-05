@@ -2,8 +2,8 @@ import { expect } from "chai";
 import "mocha";
 import * as yargs from "yargs";
 import addJwtSecretFromEnvVar from "../../session/addJwtSecretFromEnvVar";
-import * as GetUserId from "../../session/GetUserId";
-import * as GetUserGroups from "../../session/GetUserGroups";
+import { getUserId } from "../../session/GetUserId";
+import { getUserGroups } from "../../session/GetUserGroups";
 const { mockRequest } = require("mock-req-res");
 const jwt = require("jsonwebtoken");
 
@@ -31,9 +31,7 @@ describe("Get authz claim from jwt token", () => {
             }
         });
 
-        const actual = GetUserId.getUserId(req, argv.jwtSecret).valueOr(
-            "wrong answer"
-        );
+        const actual = getUserId(req, argv.jwtSecret).valueOr("wrong answer");
         expect(actual).to.be.equal(aUserId);
     });
 
@@ -54,9 +52,7 @@ describe("Get authz claim from jwt token", () => {
             }
         });
 
-        const actual = GetUserGroups.getUserGroups(req, argv.jwtSecret).valueOr(
-            []
-        );
+        const actual = getUserGroups(req, argv.jwtSecret).valueOr([]);
         expect(actual).to.be.deep.equal(groups);
     });
 });
