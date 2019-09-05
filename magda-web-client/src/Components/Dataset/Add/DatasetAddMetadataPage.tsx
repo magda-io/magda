@@ -557,7 +557,8 @@ class NewDataset extends React.Component<Props, State> {
                 access: datasetAccess,
                 "information-security": informationSecurity,
                 "dataset-access-control": {
-                    orgUnitOwnerId: dataset.owningOrgUnitId
+                    orgUnitOwnerId: dataset.owningOrgUnitId,
+                    custodianOrgUnitId: dataset.custodianOrgUnitId
                 },
                 provenance: {
                     mechanism: provenance.mechanism,
