@@ -28,7 +28,7 @@ class RegistryOpaQueryer()(
     if (skipOpaQuery) {
       Future.successful(List(OpaQuerySkipAccessControl))
     } else {
-      val theBasePolicyId =
+      val theRecordPolicyId =
         if (config.hasPath("opa.recordPolicyId")) {
           config.getString("opa.recordPolicyId")
         } else {
@@ -37,7 +37,7 @@ class RegistryOpaQueryer()(
 
       super.queryRecord(
         jwt,
-        policyId = theBasePolicyId + "." + operationType.id
+        policyId = theRecordPolicyId + "." + operationType.id
       )
     }
   }

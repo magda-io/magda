@@ -1,5 +1,6 @@
 package au.csiro.data61.magda.opa
 
+import akka.pattern.gracefulStop
 import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes
@@ -8,20 +9,18 @@ import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import au.csiro.data61.magda.Authentication
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.model.Auth.AuthProtocols
-import au.csiro.data61.magda.model.Registry.{
-  AspectDefinition,
-  MAGDA_TENANT_ID_HEADER,
-  Record
-}
+import au.csiro.data61.magda.model.Registry.{AspectDefinition, MAGDA_TENANT_ID_HEADER, Record}
 import au.csiro.data61.magda.registry._
 import com.auth0.jwt.JWT
 import com.typesafe.config.Config
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{Matchers, fixture}
+import org.scalatest.{Matchers, Outcome, fixture}
 import scalikejdbc.{GlobalSettings, LoggingSQLAndTimeSettings}
 import scalikejdbc._
+import scalikejdbc.config.{DBs, EnvPrefix, TypesafeConfig, TypesafeConfigReader}
 import spray.json.{JsObject, JsonParser}
 
+import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.io.BufferedSource
 import scala.io.Source.fromFile
@@ -40,6 +39,43 @@ abstract class ApiWithOpaSpec
     super.beforeAll()
   }
 
+  override def withFixture(test: OneArgTest): Outcome = {
+    case class DBsWithEnvSpecificConfig(configToUse: Config)
+      extends DBs
+        with TypesafeConfigReader
+        with TypesafeConfig
+        with EnvPrefix {
+
+      override val config: Config = configToUse
+    }
+
+    DBsWithEnvSpecificConfig(testConfig).setupAll()
+
+    val actor = system.actorOf(
+      WebHookActor.props("http://localhost:6101/v0/")(testConfig)
+    )
+    val authClient =
+      new AuthApiClient()(testConfig, system, executor, materializer)
+    val api = (role: Role) =>
+      new Api(
+        if (role == Full) Some(actor) else None,
+        authClient,
+        testConfig,
+        system,
+        executor,
+        materializer
+      )
+
+    try {
+      super.withFixture(
+        test.toNoArgTest(FixtureParam(api, actor, authClient, testConfig))
+      )
+    } finally {
+      //      Await.result(system.terminate(), 30 seconds)
+      Await.result(gracefulStop(actor, 30 seconds), 30 seconds)
+    }
+  }
+
   case class FixtureParam(
       api: Role => Api,
       webHookActor: ActorRef,
@@ -52,7 +88,7 @@ abstract class ApiWithOpaSpec
   }
 
   def addJwtToken(userId: String, recordPolicyId: String): RawHeader = {
-    if (userId.equals("anonymous"))
+    if (userId.equals(anonymous))
       return RawHeader("", "")
 
     val theRecordPolicyId = recordPolicyId
@@ -89,7 +125,16 @@ abstract class ApiWithOpaSpec
   val TENANT_0: BigInt = 0
 
   /**
-    *     Relationship among users, organizations and records.
+    *                          Relationship among users, organizations and records
+    *
+    *   (1) If using the hierarchical organization based policy, a user's access privilege is based on the user's
+    *       ID and orgUnitId.
+    *
+    *   (2) If using esri groups-based policy, a user's access privilege is based on the user's ID and groups.
+    *       The testing users are assigned to some groups in such a way that their access privileges will be the
+    *       same as in case (1).
+    *
+    *
     *
     *                +----------+
     *                |  Dep. A  |
