@@ -19,7 +19,6 @@ import minion from "../index";
 import fakeArgv from "./fakeArgv";
 import makePromiseQueryable from "./makePromiseQueryable";
 import baseSpec from "./baseSpec";
-import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 baseSpec(
     "webhooks",
@@ -90,12 +89,14 @@ baseSpec(
                         lcAlphaNumStringArbNe,
                         lcAlphaNumStringArbNe,
                         jsc.integer(1, 10),
+                        jsc.bool,
                         (
                             recordsBatches,
                             domain,
                             jwtSecret,
                             userId,
-                            concurrency
+                            concurrency,
+                            enableMultiTenant
                         ) => {
                             beforeEachProperty();
 
@@ -123,11 +124,11 @@ baseSpec(
                                 argv: fakeArgv({
                                     internalUrl,
                                     registryUrl,
+                                    enableMultiTenant,
                                     tenantUrl,
                                     jwtSecret,
                                     userId,
-                                    listenPort: listenPort(),
-                                    tenantId: MAGDA_ADMIN_PORTAL_ID
+                                    listenPort: listenPort()
                                 }),
                                 id: "id",
                                 aspects: [],
@@ -150,8 +151,7 @@ baseSpec(
                                         return match.success
                                             ? Promise.resolve()
                                             : Promise.reject(fakeError);
-                                    }),
-                                tenantId: MAGDA_ADMIN_PORTAL_ID
+                                    })
                             };
 
                             registryScope.get(/\/hooks\/.*/).reply(200, {

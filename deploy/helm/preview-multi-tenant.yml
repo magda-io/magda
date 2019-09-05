@@ -7,6 +7,7 @@ global:
   exposeNodePorts: false
   enablePriorityClass: false
   defaultContactEmail: "magda-test@googlegroups.com"
+  enableMultiTenants: true
 
 tags:
   all: true
@@ -33,7 +34,6 @@ gateway:
     ckanAuthenticationUrl: https://data.gov.au/data
   autoscaler:
     enabled: false
-  enableMultiTenants: true
   helmet:
     frameguard: false
   cors:
