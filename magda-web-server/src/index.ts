@@ -131,6 +131,10 @@ const argv = yargs
         describe:
             "Default contact email for users to report magda system errors",
         type: "string"
+    })
+    .option("custodianOrgLevel", {
+        describe: "Data custodian org unit tree level",
+        type: "number"
     }).argv;
 
 var app = express();
@@ -206,7 +210,8 @@ const webServerConfig = {
     featureFlags: argv.featureFlags || {},
     vocabularyApiEndpoints: (argv.vocabularyApiEndpoints || []) as string[],
     defaultOrganizationId: argv.defaultOrganizationId,
-    defaultContactEmail: argv.defaultContactEmail
+    defaultContactEmail: argv.defaultContactEmail,
+    custodianOrgLevel: argv.custodianOrgLevel
 };
 
 app.get("/server-config.js", function(req, res) {
