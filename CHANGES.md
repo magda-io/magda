@@ -3,7 +3,9 @@
 General:
 
 -   Add multi-tenant support. Deployed as single tenant by default.
--   Add access control capability to registry api, only applying to some read operations currently.
+-   Add access control capability to registry api, only applying to read operations currently.
+    The registry service can be configured to support either hierarchical organization based access
+    policy (default) or Esri groups based access policy.
 
 Registry:
 
