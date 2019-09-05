@@ -2,7 +2,7 @@ import "./FilterExplanation.scss";
 
 import React from "react";
 
-import ExplanationTooltip from "Components/Common/ExplanationTooltip";
+import ExplanationTooltipContent from "Components/Common/ExplanationTooltipContent";
 
 type Props = {
     filterType: string;
@@ -11,7 +11,7 @@ type Props = {
 
 export default function FilterExplanation(props: Props) {
     return (
-        <ExplanationTooltip dismiss={props.dismiss}>
+        <ExplanationTooltipContent dismiss={props.dismiss}>
             <h3 className="filter-explanation-heading">
                 Filter by {props.filterType}
             </h3>
@@ -22,6 +22,6 @@ export default function FilterExplanation(props: Props) {
                 </span>
                 .
             </p>
-        </ExplanationTooltip>
+        </ExplanationTooltipContent>
     );
 }

@@ -1,4 +1,4 @@
-import "./ExplanationTooltip.scss";
+import "./ExplanationTooltipContent.scss";
 
 import React from "react";
 
@@ -7,7 +7,7 @@ type Props = {
     dismiss: () => void;
 };
 
-export default function ExplanationTooltip(props: Props) {
+export default function ExplanationTooltipContent(props: Props) {
     return (
         <div className="explanation-tooltip">
             <div>{props.children}</div>

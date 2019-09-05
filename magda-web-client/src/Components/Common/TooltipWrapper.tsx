@@ -1,15 +1,23 @@
 import React from "react";
 
-import "./Tooltip.scss";
+import "./TooltipWrapper.scss";
 
 type Props = {
+    /** Does this require a click outside the tooltip to dismiss, or should it disappear after a delay?  */
     requireClickToDismiss?: boolean;
+    /** Invoked when the tooltip is dismissed by the user - not called if the tooltip disappears automatically  */
     onDismiss?: () => void;
+    /** Classname to apply to the wrapper element */
     className?: string;
+    /** Whether the tooltip should start in an open state */
     startOpen?: boolean;
+    /** Whether the tooltip should show up above or below the element it wraps */
     orientation?: "below" | "above";
+    /** The wrapped component that should launch the tooltip. If startOpen is false then it will show the tooltip when hovered over */
     launcher?: React.ComponentType;
+    /** Class to apply to the  actual tooltip */
     innerElementClassName?: string;
+    /** The tooltip content itself, as higher-order function that provides a function to dismiss the tooltip */
     children: (dismiss: () => void) => React.ReactNode;
 };
 
@@ -21,7 +29,7 @@ type State = {
 /**
  * @description Return a information tooltip, on hover show calculation method.
  */
-class Tooltip extends React.Component<Props, State> {
+class TooltipWrapper extends React.Component<Props, State> {
     rootRef = React.createRef<HTMLDivElement>();
     tooltipTextElementRef = React.createRef<HTMLSpanElement>();
     state = {
@@ -121,4 +129,4 @@ class Tooltip extends React.Component<Props, State> {
     }
 }
 
-export default Tooltip;
+export default TooltipWrapper;

@@ -1,5 +1,6 @@
 import React from "react";
 import debouncePromise from "debounce-promise";
+import { Link } from "react-router-dom";
 
 import { searchDatasets } from "api-clients/SearchApis";
 import {
@@ -12,8 +13,8 @@ import ReactSelectStyles from "Components/Common/react-select/ReactSelectStyles"
 import { OptionProps } from "react-select/src/components/Option";
 import { components } from "react-select";
 import { User } from "reducers/userManagementReducer";
-import Tooltip from "Components/Common/Tooltip";
-import ExplanationTooltip from "Components/Common/ExplanationTooltip";
+import TooltipWrapper from "Components/Common/TooltipWrapper";
+import ExplanationTooltipContent from "Components/Common/ExplanationTooltipContent";
 import { retrieveLocalData, setLocalData } from "storage/localStorage";
 
 import "./DatasetAutocomplete.scss";
@@ -75,19 +76,19 @@ const CustomMultiValue = (props: MultiValueProps<Choice>) => {
     const component = <components.MultiValue {...props} />;
 
     return showTooltip ? (
-        <Tooltip
+        <TooltipWrapper
             launcher={() => component}
             startOpen={true}
-            requireClickToDismiss={true}
+            clickOutsideToDismiss={true}
             orientation="below"
         >
             {dismiss => (
-                <ExplanationTooltip dismiss={dismiss}>
+                <ExplanationTooltipContent dismiss={dismiss}>
                     This has been added as a draft dataset. You can edit it from
-                    your homepage.
-                </ExplanationTooltip>
+                    your <Link to="/dataset/list">drafts page</Link>.
+                </ExplanationTooltipContent>
             )}
-        </Tooltip>
+        </TooltipWrapper>
     ) : (
         component
     );
