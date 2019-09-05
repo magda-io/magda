@@ -43,7 +43,7 @@ const serverConfig: {
     vocabularyApiEndpoints: string[];
     defaultOrganizationId?: string;
     defaultContactEmail?: string;
-    custodianOrgLevel?: string;
+    custodianOrgLevel: number;
 } = window.magda_server_config || {};
 
 const registryReadOnlyApiUrl =
@@ -152,6 +152,8 @@ export const config = {
     defaultOrganizationId: serverConfig.defaultOrganizationId,
     defaultContactEmail: serverConfig.defaultContactEmail,
     custodianOrgLevel: serverConfig.custodianOrgLevel
+        ? serverConfig.custodianOrgLevel
+        : 2
 };
 
 export const defaultConfiguration = {
