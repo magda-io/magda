@@ -79,7 +79,7 @@ const CustomMultiValue = (props: MultiValueProps<Choice>) => {
         <TooltipWrapper
             launcher={() => component}
             startOpen={true}
-            clickOutsideToDismiss={true}
+            requireClickToDismiss={true}
             orientation="below"
         >
             {dismiss => (
