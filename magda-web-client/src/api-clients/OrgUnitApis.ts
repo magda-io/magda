@@ -47,7 +47,7 @@ export async function listOrgUnitsAtLevel(
     orgLevel: number,
     testOrgUnitId?: string
 ): Promise<OrgUnitWithRelationship[]> {
-    const uri = `${config.authApiUrl}/orgunits/listOrgUnitsAtLevel/${orgLevel}${
+    const uri = `${config.authApiUrl}orgunits/listOrgUnitsAtLevel/${orgLevel}${
         testOrgUnitId ? `/${testOrgUnitId}` : ""
     }`;
 

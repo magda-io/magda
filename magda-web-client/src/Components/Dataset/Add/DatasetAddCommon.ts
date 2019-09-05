@@ -69,6 +69,7 @@ export type Dataset = {
     keywords?: string[];
     themes?: string[];
     owningOrgUnitId?: string;
+    custodianOrgUnitId?: string;
     contactPointDisplay?: string;
     publisher?: OrganisationAutocompleteChoice;
     landingPage?: string;
