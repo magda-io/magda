@@ -15,16 +15,13 @@ import spray.json.lenses.JsonLenses._
 
 import scala.util.{Failure, Success, Try}
 
-// TODO: Not to filter results by tenant ID for magda internal use only functions.
-// For example, getByIdsWithAspects() is used by WebHookProcessor that may send records to Indexer.
-// In this case, those records should not be filtered by tenant ID.
 trait RecordPersistence {
 
-  GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(
-    enabled = true,
-    singleLineMode = false,
-    logLevel = 'info
-  )
+//  GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(
+//    enabled = true,
+//    singleLineMode = false,
+//    logLevel = 'info
+//  )
 
   def getAll(
       implicit session: DBSession,
@@ -445,8 +442,6 @@ object DefaultRecordPersistence
         : Seq[Option[SQLSyntax]] = recordSelector.toSeq ++ requiredAspectsAndOpaQueriesSelectors :+ Some(
       recordsFilteredByTenantClause
     )
-
-//    val whereClauseParts: Seq[Option[scalikejdbc.SQLSyntax]] = aspectIdsToWhereClause(aspectIds) ++ recordSelector
 
     sql"""SELECT sequence
         FROM
@@ -1209,7 +1204,7 @@ object DefaultRecordPersistence
           sqls"$name is not null"
       }.toSeq: _*))
 
-    val rawResult1: SQL[Nothing, NoExtractor] =
+    val rawResult: SQL[Nothing, NoExtractor] =
       sql"""select * from (
               select Records.sequence as sequence,
                      Records.recordId as recordId,
@@ -1228,7 +1223,7 @@ object DefaultRecordPersistence
             limit ${limit + 1}
         """
 
-    val rawResult: List[(Long, Record)] = rawResult1
+    val result = rawResult
       .map(rs => {
         (
           rs.long("sequence"),
@@ -1238,7 +1233,6 @@ object DefaultRecordPersistence
       .list
       .apply()
 
-    val result = rawResult
     val hasMore = result.length > limit
     val trimmed = result.take(limit)
     val lastSequence = if (hasMore) Some(trimmed.last._1) else None
@@ -1626,10 +1620,12 @@ object DefaultRecordPersistence
     )
   }
 
+  private val ALL_IN_ARRAY: String = "[_]"
+
   private def aspectQueryToWhereClause(tenantId: BigInt, query: AspectQuery) = {
     val equalsOrContainsClause =
-      if (query.path.length == 2) {
-        val thePath = query.path.map(e => e).filter(e => !e.equals("*"))
+      if (query.path.length == 2 && query.path(1).equals(ALL_IN_ARRAY)) {
+        val thePath = query.path.map(e => e).filter(e => !e.equals(ALL_IN_ARRAY))
         sqls"""
         (data #>> string_to_array(${thePath.mkString(",")}, ','))::jsonb ?? ${query.value}
       """
@@ -1672,7 +1668,7 @@ object DefaultRecordPersistence
           aspectId = accessAspectId,
           path = finalKey.map {
             case OpaRefObjectKey(key) => key
-            case OpaRefAllInArray     => "*"
+            case OpaRefAllInArray     => ALL_IN_ARRAY
             case x                    => throw new Exception("Could not understand " + x)
           },
           value = aValue match {
