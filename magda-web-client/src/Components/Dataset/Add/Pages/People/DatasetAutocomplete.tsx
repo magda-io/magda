@@ -93,7 +93,6 @@ const CustomMultiValue = (props: MultiValueProps<Choice>) => {
         component
     );
 };
-retrieveLocalData;
 
 export default function OrganisationAutocomplete(props: Props) {
     const selectRef = React.createRef<Async<Choice>>();
