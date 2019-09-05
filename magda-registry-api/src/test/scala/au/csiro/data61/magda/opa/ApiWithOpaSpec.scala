@@ -18,6 +18,8 @@ import com.auth0.jwt.JWT
 import com.typesafe.config.Config
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Matchers, fixture}
+import scalikejdbc.{GlobalSettings, LoggingSQLAndTimeSettings}
+import scalikejdbc._
 import spray.json.{JsObject, JsonParser}
 
 import scala.concurrent.duration._
@@ -35,7 +37,7 @@ abstract class ApiWithOpaSpec
   implicit def default(implicit system: ActorSystem): RouteTestTimeout =
     RouteTestTimeout(300 seconds)
   override def beforeAll(): Unit = {
-    Util.clearWebHookActorsCache()
+    super.beforeAll()
   }
 
   case class FixtureParam(
@@ -49,42 +51,37 @@ abstract class ApiWithOpaSpec
     RawHeader(MAGDA_TENANT_ID_HEADER, tenantId.toString)
   }
 
-  def addJwtToken(userId: String, policyId: String): RawHeader = {
-    val theBasePolicyId = policyId
+  def addJwtToken(userId: String, recordPolicyId: String): RawHeader = {
+    if (userId.equals("anonymous"))
+      return RawHeader("", "")
 
-    if (theBasePolicyId.contains("esri")) {
-      if (userId.equals("anonymous"))
-        RawHeader("", "")
-      else {
-        val jwtToken =
-          JWT
-            .create()
-            .withClaim("userId", userId)
-            .withArrayClaim("groups", esriUserGroupMap(userId))
-            .sign(Authentication.algorithm)
-        //      println(s"userId: $userId")
-        //      println(s"jwtToken: $jwtToken")
-        RawHeader(
-          Authentication.headerName,
-          jwtToken
-        )
-      }
+    val theRecordPolicyId = recordPolicyId
+
+    if (theRecordPolicyId.endsWith("esri_groups")) {
+      val jwtToken =
+        JWT
+          .create()
+          .withClaim("userId", userId)
+          .withArrayClaim("groups", esriUserGroupMap(userId))
+          .sign(Authentication.algorithm)
+      //      println(s"userId: $userId")
+      //      println(s"jwtToken: $jwtToken")
+      RawHeader(
+        Authentication.headerName,
+        jwtToken
+      )
     } else {
-      if (userId.equals("anonymous"))
-        RawHeader("", "")
-      else {
-        val jwtToken =
-          JWT
-            .create()
-            .withClaim("userId", userId)
-            .sign(Authentication.algorithm)
-        //      println(s"userId: $userId")
-        //      println(s"jwtToken: $jwtToken")
-        RawHeader(
-          Authentication.headerName,
-          jwtToken
-        )
-      }
+      val jwtToken =
+        JWT
+          .create()
+          .withClaim("userId", userId)
+          .sign(Authentication.algorithm)
+      //      println(s"userId: $userId")
+      //      println(s"jwtToken: $jwtToken")
+      RawHeader(
+        Authentication.headerName,
+        jwtToken
+      )
     }
 
   }
@@ -128,12 +125,16 @@ abstract class ApiWithOpaSpec
   val anonymous = "anonymous"
 
   val esriUserGroupMap: Map[String, Array[String]] = Map(
-    userId0 -> Array("Dep. A", "Branch A, Dep. A", "Branch B, Dep. A", "Section C, Branch B, Dep. A"),
+    userId0 -> Array(
+      "Dep. A",
+      "Branch A, Dep. A",
+      "Branch B, Dep. A",
+      "Section C, Branch B, Dep. A"
+    ),
     userId1 -> Array("Branch A, Dep. A"),
     userId2 -> Array("Branch B, Dep. A", "Section C, Branch B, Dep. A"),
     userId3 -> Array("Section C, Branch B, Dep. A")
   )
-
 
   val userIdsAndExpectedRecordIdIndexesWithoutLink = List(
     (userId0, List(0, 1, 2, 3, 4, 5)),
@@ -276,11 +277,13 @@ abstract class ApiWithOpaSpec
 
     aspectDefs.map(aspectDef => {
       Get(s"/v0/aspects/${aspectDef.id}") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        userId0, ""
+        userId0,
+        ""
       ) ~> param.api(Full).routes ~> check {
         if (status == StatusCodes.NotFound) {
           Post(s"/v0/aspects", aspectDef) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-            userId0, ""
+            userId0,
+            ""
           ) ~> param.api(Full).routes ~> check {
             status shouldBe StatusCodes.OK
           }
@@ -310,7 +313,7 @@ abstract class ApiWithOpaSpec
   def createRecords(param: FixtureParam): AnyVal = {
     if (hasRecords)
       return
-    import scalikejdbc._
+
     DB localTx { implicit session =>
       sql"Delete from public.recordaspects".update
         .apply()
@@ -320,11 +323,13 @@ abstract class ApiWithOpaSpec
 
     testRecords.map(record => {
       Get(s"/v0/records/${record.id}") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        userId0, ""
+        userId0,
+        ""
       ) ~> param.api(Full).routes ~> check {
         if (status == StatusCodes.NotFound) {
           Post(s"/v0/records", record) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-            userId0, ""
+            userId0,
+            ""
           ) ~> param.api(Full).routes ~> check {
             status shouldBe StatusCodes.OK
           }
@@ -345,5 +350,11 @@ abstract class ApiWithOpaSpec
       (userId0, "record-2") -> testRecords(1).toJson.asJsObject,
       (userId2, "record-2") -> JsObject.empty
     )
+
+  GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(
+    enabled = false,
+    singleLineMode = true,
+    logLevel = 'debug
+  )
 
 }

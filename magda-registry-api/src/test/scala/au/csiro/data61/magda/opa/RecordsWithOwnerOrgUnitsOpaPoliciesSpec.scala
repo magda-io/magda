@@ -6,7 +6,6 @@ import au.csiro.data61.magda.registry.{Api, Full, Role, WebHookActor}
 import com.typesafe.config.Config
 import org.scalatest.{Ignore, Outcome}
 import scalikejdbc.config.{DBs, EnvPrefix, TypesafeConfig, TypesafeConfigReader}
-import scalikejdbc.{GlobalSettings, LoggingSQLAndTimeSettings}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -15,7 +14,7 @@ import scala.concurrent.duration._
 class RecordsWithOwnerOrgUnitsOpaPoliciesSpec extends RecordsOpaSpec {
   override def testConfigSource =
     s"""
-       |opa.basePolicyId="object.registry.record.owner_orgunit"
+       |opa.recordPolicyId="object.registry.record.owner_orgunit"
     """.stripMargin
 
   override def beforeAll() = {
@@ -24,13 +23,6 @@ class RecordsWithOwnerOrgUnitsOpaPoliciesSpec extends RecordsOpaSpec {
   }
 
   override def withFixture(test: OneArgTest): Outcome = {
-
-    GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(
-      enabled = false,
-      singleLineMode = true,
-      logLevel = 'debug
-    )
-
     case class DBsWithEnvSpecificConfig(configToUse: Config)
         extends DBs
         with TypesafeConfigReader

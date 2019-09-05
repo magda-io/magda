@@ -17,12 +17,6 @@ import scala.util.{Failure, Success, Try}
 
 trait RecordPersistence {
 
-//  GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(
-//    enabled = true,
-//    singleLineMode = false,
-//    logLevel = 'info
-//  )
-
   def getAll(
       implicit session: DBSession,
       tenantId: BigInt,
@@ -1625,7 +1619,7 @@ object DefaultRecordPersistence
   private def aspectQueryToWhereClause(tenantId: BigInt, query: AspectQuery) = {
     val equalsOrContainsClause =
       if (query.path.length == 2 && query.path(1).equals(ALL_IN_ARRAY)) {
-        val thePath = query.path.map(e => e).filter(e => !e.equals(ALL_IN_ARRAY))
+        val thePath = query.path.filter(!_.equals(ALL_IN_ARRAY))
         sqls"""
         (data #>> string_to_array(${thePath.mkString(",")}, ','))::jsonb ?? ${query.value}
       """

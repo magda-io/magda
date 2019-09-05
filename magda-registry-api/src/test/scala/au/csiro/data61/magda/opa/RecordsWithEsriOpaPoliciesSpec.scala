@@ -6,7 +6,6 @@ import au.csiro.data61.magda.registry.{Api, Full, Role, WebHookActor}
 import com.typesafe.config.Config
 import org.scalatest.{Ignore, Outcome}
 import scalikejdbc.config.{DBs, EnvPrefix, TypesafeConfig, TypesafeConfigReader}
-import scalikejdbc.{GlobalSettings, LoggingSQLAndTimeSettings}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -15,7 +14,7 @@ import scala.concurrent.duration._
 class RecordsWithEsriOpaPoliciesSpec extends RecordsOpaSpec {
   override def testConfigSource =
     s"""
-       |opa.basePolicyId="object.registry.record.esri_groups"
+       |opa.recordPolicyId="object.registry.record.esri_groups"
     """.stripMargin
 
   override def beforeAll() = {
@@ -24,15 +23,8 @@ class RecordsWithEsriOpaPoliciesSpec extends RecordsOpaSpec {
   }
 
   override def withFixture(test: OneArgTest): Outcome = {
-
-    GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(
-      enabled = false,
-      singleLineMode = true,
-      logLevel = 'debug
-    )
-
     case class DBsWithEnvSpecificConfig(configToUse: Config)
-      extends DBs
+        extends DBs
         with TypesafeConfigReader
         with TypesafeConfig
         with EnvPrefix {
@@ -58,7 +50,9 @@ class RecordsWithEsriOpaPoliciesSpec extends RecordsOpaSpec {
       )
 
     try {
-      super.withFixture(test.toNoArgTest(FixtureParam(api, actor, authClient, testConfig)))
+      super.withFixture(
+        test.toNoArgTest(FixtureParam(api, actor, authClient, testConfig))
+      )
     } finally {
       //      Await.result(system.terminate(), 30 seconds)
       Await.result(gracefulStop(actor, 30 seconds), 30 seconds)

@@ -29,10 +29,10 @@ class RegistryOpaQueryer()(
       Future.successful(List(OpaQuerySkipAccessControl))
     } else {
       val theBasePolicyId =
-        if (config.hasPath("opa.basePolicyId")) {
-          config.getString("opa.basePolicyId")
+        if (config.hasPath("opa.recordPolicyId")) {
+          config.getString("opa.recordPolicyId")
         } else {
-          throw new Exception("Error: Missing opa base policy ID.")
+          throw new Exception("Error: Missing opa.recordPolicyId in the config.")
         }
 
       super.queryRecord(

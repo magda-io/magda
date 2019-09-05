@@ -8,10 +8,10 @@ import spray.json._
 
 abstract class RecordsOpaSpec extends ApiWithOpaSpec {
   private def getPolicyId(param: FixtureParam) = {
-    if (param.config.hasPath("opa.basePolicyId")) {
-      param.config.getString("opa.basePolicyId")
+    if (param.config.hasPath("opa.recordPolicyId")) {
+      param.config.getString("opa.recordPolicyId")
     } else {
-      throw new Exception("Error: Missing opa base policy ID.")
+      throw new Exception("Error: Missing opa.recordPolicyId in the config.")
     }
   }
 
