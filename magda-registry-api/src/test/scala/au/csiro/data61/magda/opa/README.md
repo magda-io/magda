@@ -70,14 +70,23 @@ yarn dev
 
 It is very convenient to debug the tests with IntelliJ IDEA.
 
-After running the tests in RecordsOpaSpect once, all test data are persisted in the database.
-You may run RegistryApp with default config from the IntelliJ then query the registry api as
-different users. A user is identified by a jwt token in the request header.
+There are currently two suites of tests. One, `RecordsWithOwnerOrgUnitsOpaPoliciesSpec`, is configured to use the
+hierarchical organization based access control policy `object.registry.record.owner_orgunit` that corresponds to
+`dataset-access-control` aspect, the other, `RecordsWithEsriOpaPoliciesSpec`, is configured to use Esri groups based
+policy `object.registry.record.esri_groups` that corresponds to `esri-access-control` aspect.
 
-To find out the jwt tokens for all testing users, uncomment the two print statements in method
-addJwtToken in file opa/ApiWithOpaSpec.scala.
+Both suites perform tests under the same conditions described in `Relationship among users, organizations and records.`
+in the class of `ApiWithOpaSpec`.
 
-Here are some jwt token examples:
+After running either of the two suites, the testing data are persisted in the database.
+
+You may run RegistryApp with default config (using default policy `object.registry.record.owner_orgunit`) from
+the IntelliJ then query the registry api as different users. A user is identified by a jwt token in the request header.
+
+To find out the jwt tokens for all testing users, uncomment the print statements in the method of addJwtToken in file
+opa/ApiWithOpaSpec.scala.
+
+Here are some jwt token examples when using policy `object.registry.record.owner_orgunit`:
 
 ```
 userId: 00000000-0000-1000-0000-000000000000

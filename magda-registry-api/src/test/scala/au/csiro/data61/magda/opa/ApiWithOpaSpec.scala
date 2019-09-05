@@ -1,5 +1,6 @@
 package au.csiro.data61.magda.opa
 
+import akka.pattern.gracefulStop
 import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes
@@ -8,18 +9,18 @@ import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import au.csiro.data61.magda.Authentication
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.model.Auth.AuthProtocols
-import au.csiro.data61.magda.model.Registry.{
-  AspectDefinition,
-  MAGDA_TENANT_ID_HEADER,
-  Record
-}
+import au.csiro.data61.magda.model.Registry.{AspectDefinition, MAGDA_TENANT_ID_HEADER, Record}
 import au.csiro.data61.magda.registry._
 import com.auth0.jwt.JWT
 import com.typesafe.config.Config
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{Matchers, fixture}
+import org.scalatest.{Matchers, Outcome, fixture}
+import scalikejdbc.{GlobalSettings, LoggingSQLAndTimeSettings}
+import scalikejdbc._
+import scalikejdbc.config.{DBs, EnvPrefix, TypesafeConfig, TypesafeConfigReader}
 import spray.json.{JsObject, JsonParser}
 
+import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.io.BufferedSource
 import scala.io.Source.fromFile
@@ -35,7 +36,44 @@ abstract class ApiWithOpaSpec
   implicit def default(implicit system: ActorSystem): RouteTestTimeout =
     RouteTestTimeout(300 seconds)
   override def beforeAll(): Unit = {
-    Util.clearWebHookActorsCache()
+    super.beforeAll()
+  }
+
+  override def withFixture(test: OneArgTest): Outcome = {
+    case class DBsWithEnvSpecificConfig(configToUse: Config)
+      extends DBs
+        with TypesafeConfigReader
+        with TypesafeConfig
+        with EnvPrefix {
+
+      override val config: Config = configToUse
+    }
+
+    DBsWithEnvSpecificConfig(testConfig).setupAll()
+
+    val actor = system.actorOf(
+      WebHookActor.props("http://localhost:6101/v0/")(testConfig)
+    )
+    val authClient =
+      new AuthApiClient()(testConfig, system, executor, materializer)
+    val api = (role: Role) =>
+      new Api(
+        if (role == Full) Some(actor) else None,
+        authClient,
+        testConfig,
+        system,
+        executor,
+        materializer
+      )
+
+    try {
+      super.withFixture(
+        test.toNoArgTest(FixtureParam(api, actor, authClient, testConfig))
+      )
+    } finally {
+      //      Await.result(system.terminate(), 30 seconds)
+      Await.result(gracefulStop(actor, 30 seconds), 30 seconds)
+    }
   }
 
   case class FixtureParam(
@@ -49,42 +87,37 @@ abstract class ApiWithOpaSpec
     RawHeader(MAGDA_TENANT_ID_HEADER, tenantId.toString)
   }
 
-  def addJwtToken(userId: String, policyId: String): RawHeader = {
-    val theBasePolicyId = policyId
+  def addJwtToken(userId: String, recordPolicyId: String): RawHeader = {
+    if (userId.equals(anonymous))
+      return RawHeader("", "")
 
-    if (theBasePolicyId.contains("esri")) {
-      if (userId.equals("anonymous"))
-        RawHeader("", "")
-      else {
-        val jwtToken =
-          JWT
-            .create()
-            .withClaim("userId", userId)
-            .withArrayClaim("groups", esriUserGroupMap(userId))
-            .sign(Authentication.algorithm)
-        //      println(s"userId: $userId")
-        //      println(s"jwtToken: $jwtToken")
-        RawHeader(
-          Authentication.headerName,
-          jwtToken
-        )
-      }
+    val theRecordPolicyId = recordPolicyId
+
+    if (theRecordPolicyId.endsWith("esri_groups")) {
+      val jwtToken =
+        JWT
+          .create()
+          .withClaim("userId", userId)
+          .withArrayClaim("groups", esriUserGroupMap(userId))
+          .sign(Authentication.algorithm)
+      //      println(s"userId: $userId")
+      //      println(s"jwtToken: $jwtToken")
+      RawHeader(
+        Authentication.headerName,
+        jwtToken
+      )
     } else {
-      if (userId.equals("anonymous"))
-        RawHeader("", "")
-      else {
-        val jwtToken =
-          JWT
-            .create()
-            .withClaim("userId", userId)
-            .sign(Authentication.algorithm)
-        //      println(s"userId: $userId")
-        //      println(s"jwtToken: $jwtToken")
-        RawHeader(
-          Authentication.headerName,
-          jwtToken
-        )
-      }
+      val jwtToken =
+        JWT
+          .create()
+          .withClaim("userId", userId)
+          .sign(Authentication.algorithm)
+      //      println(s"userId: $userId")
+      //      println(s"jwtToken: $jwtToken")
+      RawHeader(
+        Authentication.headerName,
+        jwtToken
+      )
     }
 
   }
@@ -92,7 +125,16 @@ abstract class ApiWithOpaSpec
   val TENANT_0: BigInt = 0
 
   /**
-    *     Relationship among users, organizations and records.
+    *                          Relationship among users, organizations and records
+    *
+    *   (1) If using the hierarchical organization based policy, a user's access privilege is based on the user's
+    *       ID and orgUnitId.
+    *
+    *   (2) If using esri groups-based policy, a user's access privilege is based on the user's ID and groups.
+    *       The testing users are assigned to some groups in such a way that their access privileges will be the
+    *       same as in case (1).
+    *
+    *
     *
     *                +----------+
     *                |  Dep. A  |
@@ -128,12 +170,16 @@ abstract class ApiWithOpaSpec
   val anonymous = "anonymous"
 
   val esriUserGroupMap: Map[String, Array[String]] = Map(
-    userId0 -> Array("Dep. A", "Branch A, Dep. A", "Branch B, Dep. A", "Section C, Branch B, Dep. A"),
+    userId0 -> Array(
+      "Dep. A",
+      "Branch A, Dep. A",
+      "Branch B, Dep. A",
+      "Section C, Branch B, Dep. A"
+    ),
     userId1 -> Array("Branch A, Dep. A"),
     userId2 -> Array("Branch B, Dep. A", "Section C, Branch B, Dep. A"),
     userId3 -> Array("Section C, Branch B, Dep. A")
   )
-
 
   val userIdsAndExpectedRecordIdIndexesWithoutLink = List(
     (userId0, List(0, 1, 2, 3, 4, 5)),
@@ -276,11 +322,13 @@ abstract class ApiWithOpaSpec
 
     aspectDefs.map(aspectDef => {
       Get(s"/v0/aspects/${aspectDef.id}") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        userId0, ""
+        userId0,
+        ""
       ) ~> param.api(Full).routes ~> check {
         if (status == StatusCodes.NotFound) {
           Post(s"/v0/aspects", aspectDef) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-            userId0, ""
+            userId0,
+            ""
           ) ~> param.api(Full).routes ~> check {
             status shouldBe StatusCodes.OK
           }
@@ -310,7 +358,7 @@ abstract class ApiWithOpaSpec
   def createRecords(param: FixtureParam): AnyVal = {
     if (hasRecords)
       return
-    import scalikejdbc._
+
     DB localTx { implicit session =>
       sql"Delete from public.recordaspects".update
         .apply()
@@ -320,11 +368,13 @@ abstract class ApiWithOpaSpec
 
     testRecords.map(record => {
       Get(s"/v0/records/${record.id}") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        userId0, ""
+        userId0,
+        ""
       ) ~> param.api(Full).routes ~> check {
         if (status == StatusCodes.NotFound) {
           Post(s"/v0/records", record) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-            userId0, ""
+            userId0,
+            ""
           ) ~> param.api(Full).routes ~> check {
             status shouldBe StatusCodes.OK
           }
@@ -345,5 +395,11 @@ abstract class ApiWithOpaSpec
       (userId0, "record-2") -> testRecords(1).toJson.asJsObject,
       (userId2, "record-2") -> JsObject.empty
     )
+
+  GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(
+    enabled = false,
+    singleLineMode = true,
+    logLevel = 'debug
+  )
 
 }
