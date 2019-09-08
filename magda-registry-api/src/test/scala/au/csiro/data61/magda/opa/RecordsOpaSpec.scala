@@ -5,7 +5,6 @@ import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.registry._
 import spray.json._
 
-
 abstract class RecordsOpaSpec extends ApiWithOpaSpec {
   private def getPolicyId(param: FixtureParam) = {
     if (param.config.hasPath("opa.recordPolicyId")) {
@@ -35,7 +34,9 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
 
               Get(s"/v0/records/$recordId/aspects/$organizationId") ~> addTenantIdHeader(
                 TENANT_0
-              ) ~> addJwtToken(userId, policyId) ~> param.api(Full).routes ~> check {
+              ) ~> addJwtToken(userId, policyId) ~> param
+                .api(Full)
+                .routes ~> check {
                 val theResponse = responseAs[Option[JsObject]]
                 if (expectedRecordIndexes.contains(recordIndex)) {
                   status shouldBe StatusCodes.OK
@@ -76,7 +77,9 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
 
               Get(s"/v0/records/$recordId?aspect=$organizationId") ~> addTenantIdHeader(
                 TENANT_0
-              ) ~> addJwtToken(userId, policyId) ~> param.api(Full).routes ~> check {
+              ) ~> addJwtToken(userId, policyId) ~> param
+                .api(Full)
+                .routes ~> check {
                 if (expectedRecordIndexes.contains(index)) {
                   foundRecordsCounter = foundRecordsCounter + 1
                   val record = responseAs[Option[Record]]
@@ -113,7 +116,8 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
           Get(s"/v0/records?aspect=$organizationId") ~> addTenantIdHeader(
             TENANT_0
           ) ~> addJwtToken(
-            userId, policyId
+            userId,
+            policyId
           ) ~> param.api(Full).routes ~> check {
             status shouldBe StatusCodes.OK
             val records = responseAs[RecordsPage[Record]].records
@@ -148,7 +152,8 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
           val expectedRecordIndexes = userIdAndExpectedRecordIndexes._2
 
           Get(s"/v0/records") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-            userId, policyId
+            userId,
+            policyId
           ) ~> param.api(Full).routes ~> check {
             status shouldBe StatusCodes.OK
             val records = responseAs[RecordsPage[Record]].records
@@ -182,7 +187,8 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
       Get(s"/v0/records?aspect=$organizationId&limit=$limit") ~> addTenantIdHeader(
         TENANT_0
       ) ~> addJwtToken(
-        userId, policyId
+        userId,
+        policyId
       ) ~> param.api(Full).routes ~> check {
         status shouldBe StatusCodes.OK
         val records = responseAs[RecordsPage[Record]].records
@@ -273,7 +279,8 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
           Get(s"/v0/records?aspect=$withLinksId&limit=1") ~> addTenantIdHeader(
             TENANT_0
           ) ~> addJwtToken(
-            userId, policyId
+            userId,
+            policyId
           ) ~> param.api(Full).routes ~> check {
             val page = responseAs[RecordsPage[Record]]
             if (page.hasMore)
@@ -283,7 +290,8 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
           Get(s"/v0/records/pagetokens?aspect=$withLinksId&limit=$pageSize") ~> addTenantIdHeader(
             TENANT_0
           ) ~> addJwtToken(
-            userId, policyId
+            userId,
+            policyId
           ) ~> param.api(Full).routes ~> check {
             status shouldBe StatusCodes.OK
             val actualPageTokens = responseAs[List[String]]
@@ -370,7 +378,8 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
           Get(s"/v0/records?aspect=$organizationId&limit=1") ~> addTenantIdHeader(
             TENANT_0
           ) ~> addJwtToken(
-            userId, policyId
+            userId,
+            policyId
           ) ~> param.api(Full).routes ~> check {
             val page = responseAs[RecordsPage[Record]]
             if (page.hasMore)
@@ -380,7 +389,8 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
           Get(s"/v0/records/pagetokens?aspect=$organizationId&limit=$pageSize") ~> addTenantIdHeader(
             TENANT_0
           ) ~> addJwtToken(
-            userId, policyId
+            userId,
+            policyId
           ) ~> param.api(Full).routes ~> check {
             status shouldBe StatusCodes.OK
             val actualPageTokens = responseAs[List[String]]
@@ -472,7 +482,8 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
           val expectedRecordIndexes = userIdAndExpectedRecordIndexes._2
 
           Get(s"/v0/records/summary") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-            userId, policyId
+            userId,
+            policyId
           ) ~> param.api(Full).routes ~> check {
             status shouldBe StatusCodes.OK
             val records = responseAs[RecordsPage[RecordSummary]].records
@@ -483,7 +494,7 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
               val record = res._1
               val index = res._2
               record.id shouldBe "record-" + index
-              record.aspects shouldBe testRecords(index).aspects.keys.toList
+              record.aspects.toSet shouldBe testRecords(index).aspects.keys.toSet
             })
           }
         }
@@ -509,13 +520,15 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
 
               Get(s"/v0/records/summary/$recordId") ~> addTenantIdHeader(
                 TENANT_0
-              ) ~> addJwtToken(userId, policyId) ~> param.api(Full).routes ~> check {
+              ) ~> addJwtToken(userId, policyId) ~> param
+                .api(Full)
+                .routes ~> check {
                 if (expectedRecordIndexes.contains(recordIndex)) {
                   status shouldBe StatusCodes.OK
                   foundRecordsCounter = foundRecordsCounter + 1
                   val recordSummary = responseAs[RecordSummary]
                   recordSummary.id shouldBe recordId
-                  recordSummary.aspects shouldBe testRecords(recordIndex).aspects.keys.toList
+                  recordSummary.aspects.toSet shouldBe testRecords(recordIndex).aspects.keys.toSet
                 } else {
                   status shouldBe StatusCodes.NotFound
                 }
@@ -540,7 +553,8 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
           val expectedRecordIndexes = userIdAndExpectedRecordIndexes._2
 
           Get(s"/v0/records/count") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-            userId, policyId
+            userId,
+            policyId
           ) ~> param.api(Full).routes ~> check {
             status shouldBe StatusCodes.OK
             val countResponse = responseAs[CountResponse]
@@ -567,7 +581,8 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
       Get(
         s"/v0/records/$referencingRecordId?aspect=$withLinkId&dereference=false"
       ) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        userId0, policyId
+        userId0,
+        policyId
       ) ~> param.api(Full).routes ~> check {
         status shouldBe StatusCodes.OK
         val record = responseAs[Record]
@@ -591,7 +606,8 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
       Get(
         s"/v0/records/$referencingRecordId?aspect=$withLinkId&dereference=true"
       ) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        userId0, policyId
+        userId0,
+        policyId
       ) ~> param.api(Full).routes ~> check {
         status shouldBe StatusCodes.OK
         val record = responseAs[Record]
@@ -617,7 +633,8 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
       Get(
         s"/v0/records/$referencingRecordId?aspect=$withLinkId&dereference=false"
       ) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        userId2, policyId
+        userId2,
+        policyId
       ) ~> param.api(Full).routes ~> check {
         status shouldBe StatusCodes.OK
         val record = responseAs[Record]
@@ -628,7 +645,8 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
       Get(
         s"/v0/records/$referencingRecordId?aspect=$organizationId&aspect=$withLinkId&dereference=false"
       ) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        userId2, policyId
+        userId2,
+        policyId
       ) ~> param.api(Full).routes ~> check {
         status shouldBe StatusCodes.OK
         val record = responseAs[Record]
@@ -653,7 +671,8 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
       Get(
         s"/v0/records/$referencingRecordId?aspect=$withLinkId&dereference=true"
       ) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        userId2, policyId
+        userId2,
+        policyId
       ) ~> param.api(Full).routes ~> check {
         status shouldBe StatusCodes.OK
         val record = responseAs[Record]
@@ -666,7 +685,8 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
       Get(
         s"/v0/records/$referencingRecordId?aspect=$organizationId&aspect=$withLinkId&dereference=true"
       ) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        userId2, policyId
+        userId2,
+        policyId
       ) ~> param.api(Full).routes ~> check {
         status shouldBe StatusCodes.OK
         val record = responseAs[Record]
@@ -694,7 +714,8 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
           Get(s"/v0/records?aspect=$withLinkId") ~> addTenantIdHeader(
             TENANT_0
           ) ~> addJwtToken(
-            userId, policyId
+            userId,
+            policyId
           ) ~> param.api(Full).routes ~> check {
             status shouldBe StatusCodes.OK
             val records = responseAs[RecordsPage[Record]].records
@@ -729,7 +750,8 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
           Get(s"/v0/records?aspect=$withLinkId&dereference=true") ~> addTenantIdHeader(
             TENANT_0
           ) ~> addJwtToken(
-            userId, policyId
+            userId,
+            policyId
           ) ~> param.api(Full).routes ~> check {
             status shouldBe StatusCodes.OK
             val records = responseAs[RecordsPage[Record]].records
@@ -762,7 +784,8 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
       Get(
         s"/v0/records/$referencingRecordId?aspect=$withLinksId&dereference=false"
       ) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        userId0, policyId
+        userId0,
+        policyId
       ) ~> param.api(Full).routes ~> check {
         status shouldBe StatusCodes.OK
         val record = responseAs[Record]
@@ -786,7 +809,8 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
       Get(
         s"/v0/records/$referencingRecordId?aspect=$withLinksId&dereference=true"
       ) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        userId0, policyId
+        userId0,
+        policyId
       ) ~> param.api(Full).routes ~> check {
         status shouldBe StatusCodes.OK
         val record = responseAs[Record]
@@ -819,7 +843,8 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
       Get(
         s"/v0/records/$referencingRecordId?aspect=$withLinksId&dereference=false"
       ) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        userId2, policyId
+        userId2,
+        policyId
       ) ~> param.api(Full).routes ~> check {
         status shouldBe StatusCodes.OK
         val record = responseAs[Record]
@@ -842,7 +867,8 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
       Get(
         s"/v0/records/$referencingRecordId?aspect=$withLinksId&dereference=true"
       ) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        userId2, policyId
+        userId2,
+        policyId
       ) ~> param.api(Full).routes ~> check {
         status shouldBe StatusCodes.OK
         val record = responseAs[Record]
@@ -873,7 +899,8 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
       Get(
         s"/v0/records/$referencingRecordId?aspect=$withLinksAspectId&dereference=false"
       ) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        anonymous, policyId
+        anonymous,
+        policyId
       ) ~> param.api(Full).routes ~> check {
         status shouldBe StatusCodes.OK
         val record = responseAs[Record]
@@ -901,7 +928,8 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
       Get(
         s"/v0/records/$referencingRecordId?aspect=$withLinksAspectId&dereference=true"
       ) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        anonymous, policyId
+        anonymous,
+        policyId
       ) ~> param.api(Full).routes ~> check {
         status shouldBe StatusCodes.OK
         val record = responseAs[Record]
@@ -928,7 +956,8 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
       Get(
         s"/v0/records/$referencingRecordId?aspect=$withLinksId&dereference=false"
       ) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        userId2, policyId
+        userId2,
+        policyId
       ) ~> param.api(Full).routes ~> check {
         status shouldBe StatusCodes.OK
         val record = responseAs[Record]
@@ -955,7 +984,8 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
       Get(
         s"/v0/records/$referencingRecordId?aspect=$withLinksId&dereference=true"
       ) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        userId2, policyId
+        userId2,
+        policyId
       ) ~> param.api(Full).routes ~> check {
         status shouldBe StatusCodes.OK
         val record = responseAs[Record]

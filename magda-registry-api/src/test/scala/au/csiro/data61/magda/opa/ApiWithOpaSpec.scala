@@ -9,7 +9,11 @@ import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import au.csiro.data61.magda.Authentication
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.model.Auth.AuthProtocols
-import au.csiro.data61.magda.model.Registry.{AspectDefinition, MAGDA_TENANT_ID_HEADER, Record}
+import au.csiro.data61.magda.model.Registry.{
+  AspectDefinition,
+  MAGDA_TENANT_ID_HEADER,
+  Record
+}
 import au.csiro.data61.magda.registry._
 import com.auth0.jwt.JWT
 import com.typesafe.config.Config
@@ -18,7 +22,7 @@ import org.scalatest.{Matchers, Outcome, fixture}
 import scalikejdbc.{GlobalSettings, LoggingSQLAndTimeSettings}
 import scalikejdbc._
 import scalikejdbc.config.{DBs, EnvPrefix, TypesafeConfig, TypesafeConfigReader}
-import spray.json.{JsObject, JsonParser}
+import spray.json.{JsObject, JsString, JsonParser}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -41,7 +45,7 @@ abstract class ApiWithOpaSpec
 
   override def withFixture(test: OneArgTest): Outcome = {
     case class DBsWithEnvSpecificConfig(configToUse: Config)
-      extends DBs
+        extends DBs
         with TypesafeConfigReader
         with TypesafeConfig
         with EnvPrefix {
@@ -340,15 +344,49 @@ abstract class ApiWithOpaSpec
   }
 
   def getTestRecords(file: String): List[Record] = {
-    val recordsSource: BufferedSource = fromFile(file)
+    val baseFile = dataPath + "records.json"
+    val baseRecordsSource = fromFile(baseFile)
+    val recordsAccessControlAspectSource = fromFile(file)
 
-    val recordsJsonStr: String = try {
-      recordsSource.mkString
+    val baseRecordsJsonStr = try {
+      baseRecordsSource.mkString
     } finally {
-      recordsSource.close()
+      baseRecordsSource.close()
     }
 
-    JsonParser(recordsJsonStr).convertTo[List[Record]]
+    val baseRecords = JsonParser(baseRecordsJsonStr).convertTo[List[Record]]
+
+    val recordsAccessControlAspectJsonStr = try {
+      recordsAccessControlAspectSource.mkString
+    } finally {
+      recordsAccessControlAspectSource.close()
+    }
+
+    val accessControlAspects = JsonParser(recordsAccessControlAspectJsonStr)
+      .convertTo[List[JsObject]]
+
+    val recordAccessControlAspectMap = accessControlAspects
+      .map(each => {
+        each.fields("id") -> each.fields("aspects").asJsObject
+      })
+      .toMap
+
+    baseRecords.map(record => {
+      val accessControlAspect =
+        recordAccessControlAspectMap.get(JsString(record.id))
+      if (accessControlAspect.nonEmpty) {
+        val key = accessControlAspect.get.fields.keys.toList.head
+        val keys = record.aspects.keys.toList
+        val theAspectList = keys
+          .map(k => k -> record.aspects(k)) :+ key -> accessControlAspect.get
+          .fields(key)
+          .asJsObject
+
+        record.copy(aspects = theAspectList.toMap)
+      } else {
+        record
+      }
+    })
   }
 
   var testRecords: List[Record] = Nil

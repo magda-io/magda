@@ -4,14 +4,14 @@ import org.scalatest.Ignore
 
 @Ignore
 class RecordsWithEsriOpaPoliciesSpec extends RecordsOpaSpec {
-  override def testConfigSource =
+  override def testConfigSource: String =
     s"""
        |opa.recordPolicyId="object.registry.record.esri_groups"
     """.stripMargin
 
-  override def beforeAll() = {
+  override def beforeAll(): Unit = {
     super.beforeAll()
-    testRecords = getTestRecords(dataPath + "esri-records.json")
+    testRecords = getTestRecords(dataPath + "add-esri-access-control-aspect.json")
   }
 
 }
