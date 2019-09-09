@@ -36,7 +36,7 @@ export default function CustodianDropdown({
             <div className="au-body au-page-alerts au-page-alerts--error">
                 <span style={{ verticalAlign: "-2px" }}>
                     Could not retrieve data custodian list, or there are no data
-                    custodian in the system.
+                    custodians in the system.
                 </span>
                 <button
                     className="au-btn au-btn--tertiary"
@@ -49,10 +49,7 @@ export default function CustodianDropdown({
             </div>
         );
     } else {
-        const selectedValue = find(result, option => {
-            if (orgUnitId && option.id === orgUnitId) return true;
-            else return false;
-        });
+        const selectedValue = orgUnitId && find(result, option => option.id === orgUnitId);
 
         if ((!selectedValue || !hasUserSelected) && teamOrgUnitId) {
             const relatedOrgUnit = find(
