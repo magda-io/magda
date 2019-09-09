@@ -1,6 +1,5 @@
 import React from "react";
 import debouncePromise from "debounce-promise";
-import { Link } from "react-router-dom";
 
 import { searchDatasets } from "api-clients/SearchApis";
 import {
@@ -85,7 +84,15 @@ const CustomMultiValue = (props: MultiValueProps<Choice>) => {
             {dismiss => (
                 <ExplanationTooltipContent dismiss={dismiss}>
                     This has been added as a draft dataset. You can edit it from
-                    your <Link to="/dataset/list">drafts page</Link>.
+                    your{" "}
+                    <a
+                        href="/dataset/list"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        drafts page
+                    </a>
+                    .
                 </ExplanationTooltipContent>
             )}
         </TooltipWrapper>
