@@ -49,23 +49,21 @@ export default function CustodianDropdown({
             </div>
         );
     } else {
-        const selectedValue = orgUnitId && find(result, option => option.id === orgUnitId);
+        const selectedValue =
+            typeof (orgUnitId !== "undefined") &&
+            find(result, option => option.id === orgUnitId);
 
         if ((!selectedValue || !hasUserSelected) && teamOrgUnitId) {
             const relatedOrgUnit = find(
                 result,
                 option =>
                     option.relationship && option.relationship !== "unrelated"
-            );
-            if (
-                relatedOrgUnit &&
-                (relatedOrgUnit as OrgUnitWithRelationship).id !== orgUnitId
-            ) {
+            ) as OrgUnitWithRelationship | undefined;
+
+            if (relatedOrgUnit && relatedOrgUnit.id !== orgUnitId) {
                 // --- we do need to send out onChangeCallback to update upper level state to make sure it's consistent with the screen value
                 // --- only update when we find a different value here otherwise we will trigger a infinite loop
-                onChangeCallback(
-                    (relatedOrgUnit as OrgUnitWithRelationship).id
-                );
+                onChangeCallback(relatedOrgUnit.id);
             }
         }
 
