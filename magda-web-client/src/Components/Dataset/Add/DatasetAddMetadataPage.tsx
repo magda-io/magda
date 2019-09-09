@@ -569,7 +569,9 @@ class NewDataset extends React.Component<Props, State> {
                     derivedFrom:
                         provenance.derivedFrom &&
                         provenance.derivedFrom.map(choice => ({
-                            id: choice.existingId,
+                            id: choice.existingId
+                                ? [choice.existingId]
+                                : undefined,
                             name: !choice.existingId ? choice.name : undefined
                         })),
                     affiliatedOrganizationIds:
