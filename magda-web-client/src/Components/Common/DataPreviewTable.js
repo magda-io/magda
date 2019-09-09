@@ -54,6 +54,7 @@ export default class DataPreviewTable extends Component {
             .then(papa => {
                 return new Promise((resolve, reject) => {
                     papa.parse(config.proxyUrl + "_0d/" + url, {
+                        worker: true,
                         download: true,
                         header: true,
                         skipEmptyLines: true,
@@ -68,6 +69,9 @@ export default class DataPreviewTable extends Component {
             })
             .then(results => {
                 if (!this.isCancelled) {
+                    if (results.data.length > 100) {
+                        results.data = results.data.slice(0, 100);
+                    }
                     this.setState({
                         error: null,
                         loading: false,

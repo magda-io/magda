@@ -108,6 +108,7 @@ const fetchData = function(url, overrideNewLine) {
         Papa =>
             new Promise((resolve, reject) => {
                 Papa.parse(config.proxyUrl + "_0d/" + url, {
+                    worker: true,
                     download: true,
                     header: true,
                     skipEmptyLines: true,
