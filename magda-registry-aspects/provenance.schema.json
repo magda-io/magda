@@ -1,5 +1,5 @@
 {
-    "$schema": "http://json-schema.org/schema#",
+    "$schema": "http://json-schema.org/hyper-schema#",
     "title": "Provenance",
     "description": "Describes how this data was collected or generated.",
     "type": "object",
