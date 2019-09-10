@@ -40,15 +40,17 @@ export interface OrgUnitWithRelationship extends OrgUnit {
  *
  * @export
  * @param {number} orgLevel - The level number (starts from 1) where org Units of the tree are taken horizontally.
- * @param {string} [testOrgUnitId] - Optional; The org unit id that is used to test the relationship with each of returned orgUnit item.
+ * @param {string} [relationshipOrgUnitId] - Optional; The org unit id that is used to test the relationship with each of returned orgUnit item.
  * @returns {Promise<OrgUnitWithRelationship[]>}
  */
 export async function listOrgUnitsAtLevel(
     orgLevel: number,
-    testOrgUnitId?: string
+    relationshipOrgUnitId?: string
 ): Promise<OrgUnitWithRelationship[]> {
-    const uri = `${config.authApiUrl}orgunits/listOrgUnitsAtLevel/${orgLevel}${
-        testOrgUnitId ? `/${testOrgUnitId}` : ""
+    const uri = `${config.authApiUrl}orgunits/bylevel/${orgLevel}${
+        relationshipOrgUnitId
+            ? `?relationshipOrgUnitId=${relationshipOrgUnitId}`
+            : ""
     }`;
 
     const res = await fetch(uri, config.fetchOptions);

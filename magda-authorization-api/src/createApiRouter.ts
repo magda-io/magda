@@ -455,15 +455,15 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {put} /public/orgunits/listOrgUnitsAtLevel/:custodianOrgLevel/:testOrgUnitId List OrgUnits at certain org tree level
+     * @api {get} /public/orgunits/bylevel/:orgLevel List OrgUnits at certain org tree level
      * @apiDescription
      * List all OrgUnits at certain org tree level
      * Optionally provide a test Org Unit Id that will be used to
      * test the relationship with each of returned orgUnit item.
      * Possible Value: 'ancestor', 'descendant', 'equal', 'unrelated'
      *
-     * @apiParam (Path) {string} custodianOrgLevel The level number (starts from 1) where org Units of the tree are taken horizontally.
-     * @apiParam (Path) {string} testOrgUnitId Optional; The org unit id that is used to test the relationship with each of returned orgUnit item.
+     * @apiParam (Path) {string} orgLevel The level number (starts from 1) where org Units of the tree are taken horizontally.
+     * @apiParam (Query) {string} relationshipOrgUnitId Optional; The org unit id that is used to test the relationship with each of returned orgUnit item.
      *
      * @apiSuccessExample {string} 200
      *     [{
@@ -486,11 +486,12 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *    }
      */
     router.get(
-        "/public/orgunits/listOrgUnitsAtLevel/:orgLevel/:testOrgUnitId*?",
+        "/public/orgunits/bylevel/:orgLevel",
         MUST_BE_ADMIN,
         async (req, res) => {
             try {
-                const { orgLevel, testOrgUnitId } = req.params;
+                const orgLevel = req.params.orgLevel;
+                const relationshipOrgUnitId = req.query.relationshipOrgUnitId;
 
                 const levelNumber = parseInt(orgLevel);
 
@@ -499,11 +500,11 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
                 const nodes = await orgQueryer.getAllNodesAtLevel(levelNumber);
 
-                if (testOrgUnitId && nodes.length) {
+                if (relationshipOrgUnitId && nodes.length) {
                     for (let i = 0; i < nodes.length; i++) {
                         const r = await orgQueryer.compareNodes(
                             nodes[i]["id"],
-                            testOrgUnitId
+                            relationshipOrgUnitId
                         );
                         nodes[i]["relationship"] = r;
                     }
@@ -512,7 +513,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 res.status(200).json(nodes);
             } catch (e) {
                 respondWithError(
-                    "GET /public/orgunits/listOrgUnitsAtLevel/:custodianOrgLevel/:testOrgUnitId",
+                    "GET /public/orgunits/bylevel/:orgLevel",
                     res,
                     e
                 );
