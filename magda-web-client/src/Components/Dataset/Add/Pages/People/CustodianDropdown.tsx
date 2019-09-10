@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { useAsync } from "react-async-hook";
+import React, { useEffect, useState } from "react";
+import { useAsyncCallback } from "react-async-hook";
 import Select from "react-select";
 import { config } from "config";
 import find from "lodash/find";
@@ -22,15 +22,28 @@ export default function CustodianDropdown({
     teamOrgUnitId,
     onChange: onChangeCallback
 }: Props) {
-    const { loading, error, result, execute } = useAsync(listOrgUnitsAtLevel, [
-        config.custodianOrgLevel,
-        teamOrgUnitId
-    ]);
+    // If we already have a value from orgUnitId we can assume the user already picked it.
+    const [hasUserSelected, setHasUserSelected] = useState(!!orgUnitId);
+
+    // Set up the call for loading custodian org units, but don't call it yet.
+    const { loading, error, result, execute } = useAsyncCallback(() =>
+        listOrgUnitsAtLevel(config.custodianOrgLevel, teamOrgUnitId)
+    );
+
+    // We don't need to load org units unless we're starting up (!result) or
+    // the user hasn't selected a custodian yet (which means we need to do another
+    // call every time they change the team responsible in order to preselect
+    // the corresponding custodian org unit).
+    useEffect(() => {
+        if (!result || !hasUserSelected) {
+            execute();
+        }
+    }, [config.custodianOrgLevel, teamOrgUnitId]);
 
     // If there's no org unit already set, when we know what org units exist, set it to the one
     // above the current user in the org tree
     useEffect(() => {
-        if (!orgUnitId && result && teamOrgUnitId) {
+        if (!hasUserSelected && result && teamOrgUnitId) {
             const relatedOrgUnit = find(
                 result,
                 option =>
@@ -41,7 +54,7 @@ export default function CustodianDropdown({
                 onChangeCallback(relatedOrgUnit.id);
             }
         }
-    }, [result]);
+    }, [result, teamOrgUnitId]);
 
     if (loading) {
         return <span>Loading...</span>;
@@ -52,12 +65,7 @@ export default function CustodianDropdown({
                     Could not retrieve data custodian list, or there are no data
                     custodians in the system.
                 </span>
-                <button
-                    className="au-btn au-btn--tertiary"
-                    onClick={() =>
-                        execute(config.custodianOrgLevel, teamOrgUnitId)
-                    }
-                >
+                <button className="au-btn au-btn--tertiary" onClick={execute}>
                     Try Again
                 </button>
             </div>
@@ -78,6 +86,7 @@ export default function CustodianDropdown({
                         | undefined
                         | null);
                     if (value) {
+                        setHasUserSelected(true);
                         onChangeCallback(value.value);
                     }
                 }}
