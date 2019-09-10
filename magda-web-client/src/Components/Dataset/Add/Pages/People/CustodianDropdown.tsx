@@ -50,7 +50,7 @@ export default function CustodianDropdown({
         );
     } else {
         const selectedValue =
-            typeof (orgUnitId !== "undefined") &&
+            typeof orgUnitId !== "undefined" &&
             find(result, option => option.id === orgUnitId);
 
         if ((!selectedValue || !hasUserSelected) && teamOrgUnitId) {
