@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { useAsync } from "react-async-hook";
 import Select from "react-select";
 import { config } from "config";
@@ -22,12 +22,26 @@ export default function CustodianDropdown({
     teamOrgUnitId,
     onChange: onChangeCallback
 }: Props) {
-    // --- use hasUserSelected to tell whether user has selected a value or not
-    const [hasUserSelected, setHasUserSelected] = useState(false);
     const { loading, error, result, execute } = useAsync(listOrgUnitsAtLevel, [
         config.custodianOrgLevel,
         teamOrgUnitId
     ]);
+
+    // If there's no org unit already set, when we know what org units exist, set it to the one
+    // above the current user in the org tree
+    useEffect(() => {
+        if (!orgUnitId && result && teamOrgUnitId) {
+            const relatedOrgUnit = find(
+                result,
+                option =>
+                    option.relationship && option.relationship !== "unrelated"
+            ) as OrgUnitWithRelationship | undefined;
+
+            if (relatedOrgUnit) {
+                onChangeCallback(relatedOrgUnit.id);
+            }
+        }
+    }, [result]);
 
     if (loading) {
         return <span>Loading...</span>;
@@ -53,20 +67,6 @@ export default function CustodianDropdown({
             typeof orgUnitId !== "undefined" &&
             find(result, option => option.id === orgUnitId);
 
-        if ((!selectedValue || !hasUserSelected) && teamOrgUnitId) {
-            const relatedOrgUnit = find(
-                result,
-                option =>
-                    option.relationship && option.relationship !== "unrelated"
-            ) as OrgUnitWithRelationship | undefined;
-
-            if (relatedOrgUnit && relatedOrgUnit.id !== orgUnitId) {
-                // --- we do need to send out onChangeCallback to update upper level state to make sure it's consistent with the screen value
-                // --- only update when we find a different value here otherwise we will trigger a infinite loop
-                onChangeCallback(relatedOrgUnit.id);
-            }
-        }
-
         return (
             <Select
                 className="react-select"
@@ -78,7 +78,6 @@ export default function CustodianDropdown({
                         | undefined
                         | null);
                     if (value) {
-                        if (!hasUserSelected) setHasUserSelected(true);
                         onChangeCallback(value.value);
                     }
                 }}
