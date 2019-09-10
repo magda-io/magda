@@ -735,17 +735,9 @@ class RecordHandler extends React.Component {
                                                 organisations?
                                             </h4>
                                             <div>
-                                                <ToggleEditor
-                                                    enabled={hasEditPermissions}
-                                                    value={
-                                                        dataset.provenance
-                                                            .affiliatedOrganizationIds
-                                                    }
-                                                    onChange={provenanceChange(
-                                                        "affiliatedOrganizationIds"
-                                                    )}
-                                                    editor={multilineTextEditor}
-                                                />
+                                                {dataset.provenance.affiliatedOrganizationIds.map(
+                                                    org => org.name
+                                                )}
                                             </div>
                                             <h4>
                                                 How was the dataset produced?

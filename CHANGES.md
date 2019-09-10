@@ -85,8 +85,10 @@ UI:
 -   Fixed a JS error which causes blank screen on Organisations Page
 -   Fixed: drop a folder to Add dataset file drop area will break the UI
 -   Show an error message screen if the user is not allowed to access the add dataset page
+-   Updated security classification & sensitivity questions according to the new design
 -   Make sure all publish new dataset errors are captured and shown to users on add dataset page
 -   Added Custodian field to the 'People and Production' page
+-   Added the ability to add references to datasets that a new dataset was derived from.
 
 Gateway:
 
@@ -120,6 +122,7 @@ Others:
 -   Format minion will trust dcat format if other measures indicate a ESRI REST format
 -   Added ASC to 4 stars rating list
 -   Removed Travis CI (Gitlab CI still remains)
+-   Disabled tenant-api & tenant-db when `enableMultiTenants` = false
 
 ## 0.0.55
 

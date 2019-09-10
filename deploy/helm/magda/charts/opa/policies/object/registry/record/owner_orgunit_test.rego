@@ -79,7 +79,7 @@ test_deny_read_if_both_owner_and_orgunit_are_incorrect {
         "object": {
             "registry": {
                 "record": {
-                    "access-control": {
+                    "dataset-access-control": {
                         "ownerId": "personB",
                         "orgUnitOwnerId": "3"
                     }
@@ -109,7 +109,7 @@ test_deny_read_if_permission_is_incorrect {
         "object": {
             "registry": {
                 "record": {
-                    "access-control": {
+                    "dataset-access-control": {
                         "ownerId": "personA",
                         "orgUnitOwnerId": "3"
                     }

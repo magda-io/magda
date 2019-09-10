@@ -15,7 +15,6 @@ import fakeArgv from "./fakeArgv";
 import MinionOptions from "../MinionOptions";
 import minion from "../index";
 import baseSpec from "./baseSpec";
-import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 const aspectArb = jsc.record({
     id: jsc.string,
@@ -175,6 +174,7 @@ baseSpec(
                 lcAlphaNumStringArbNe,
                 lcAlphaNumStringArbNe,
                 jsc.integer(0, 10),
+                jsc.bool,
                 (
                     aspectDefs: AspectDefinition[],
                     id: string,
@@ -185,7 +185,8 @@ baseSpec(
                     optionalAspects: string[],
                     jwtSecret: string,
                     userId: string,
-                    concurrency: number
+                    concurrency: number,
+                    enableMultiTenant: boolean
                 ) => {
                     beforeEachProperty();
                     const registryUrl = `http://${registryHost}.com`;
@@ -215,11 +216,11 @@ baseSpec(
                         argv: fakeArgv({
                             internalUrl,
                             registryUrl,
+                            enableMultiTenant,
                             tenantUrl,
                             jwtSecret,
                             userId,
-                            listenPort: listenPort(),
-                            tenantId: MAGDA_ADMIN_PORTAL_ID
+                            listenPort: listenPort()
                         }),
                         id,
                         aspects: hook.config.aspects,
@@ -228,8 +229,7 @@ baseSpec(
                         express: expressApp,
                         onRecordFound: record => Promise.resolve(),
                         maxRetries: 0,
-                        concurrency: concurrency,
-                        tenantId: MAGDA_ADMIN_PORTAL_ID
+                        concurrency: concurrency
                     };
 
                     return minion(options).then(() => {

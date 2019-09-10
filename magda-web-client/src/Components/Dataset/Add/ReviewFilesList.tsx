@@ -75,7 +75,7 @@ const ReviewFilesList: FunctionComponent<PropsType> = props => {
                                             className="file-icon"
                                             src={getFormatIcon(file)}
                                         />
-                                        <div className="file-titile">
+                                        <div className="file-title">
                                             {file.title}
                                         </div>
                                     </div>

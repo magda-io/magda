@@ -1,14 +1,9 @@
 import React from "react";
 
 import ToolTip from "Components/Dataset/Add/ToolTip";
-import HelpSnippet from "Components/Common/HelpSnippet";
 import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
 import { MultilineTextEditor } from "Components/Editing/Editors/textEditor";
-import {
-    codelistEditor,
-    codelistRadioEditor,
-    multiCodelistEditor
-} from "Components/Editing/Editors/codelistEditor";
+import { codelistRadioEditor } from "Components/Editing/Editors/codelistEditor";
 import LicenseEditor from "Components/Dataset/Add/LicenseEditor";
 
 import AccessLocationAutoComplete from "./AccessLocationAutoComplete";
@@ -21,6 +16,9 @@ import helpIcon from "assets/help.svg";
 
 import ReactSelect from "react-select";
 import ReactSelectStyles from "../../../../Common/react-select/ReactSelectStyles";
+import PurpleToolTip from "Components/Common/Tooltip";
+import { config } from "config";
+import AUpageAlert from "@gov.au/page-alerts";
 
 import "./index.scss";
 
@@ -211,78 +209,189 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     )}
                 </div>
 
-                <h4>What is the security classification of this dataset?</h4>
-                <p>
-                    <AlwaysEditor
-                        value={informationSecurity.classification}
-                        onChange={editInformationSecurity("classification")}
-                        editor={codelistEditor(codelists.classification)}
-                    />
-                </p>
-                <h4 className="snippet-heading">
-                    What is the sensitivity of this dataset?
-                </h4>
-                <HelpSnippet>
-                    <p>
-                        Magda security classification refers to the
-                        Attorney-General Department's Sensitive and
-                        Classification policy.
-                        <br />
-                        It is important that the appropriate security
-                        classification level is selected to protect the
-                        confidentiality, integrity and availability of the data.
-                        The framework is as follows:
-                    </p>
-                    <p>
-                        UNCLASSIFIED: Compromise of information confidentiality
-                        would be expected to cause{" "}
-                        <b>low or no business impact.</b>
-                    </p>
-                    <p>
-                        PROTECTED: Compromise of information confidentiality
-                        would be expected to cause{" "}
-                        <b>
-                            limited damage to an individual, organisation or
-                            government generally if compromised.
-                        </b>
-                    </p>
-                    <p>
-                        CONFIDENTIAL: Compromise of information confidentiality
-                        would be expected to cause{" "}
-                        <b>
-                            damage to the national interest, organisations or
-                            individuals.
-                        </b>
-                    </p>
-                    <p>
-                        SECRET: Compromise of information confidentiality would
-                        be expected to cause{" "}
-                        <b>
-                            serious damage to national interest, organisations
-                            or individuals.
-                        </b>
-                    </p>
-                    <p>
-                        TOP SECRET: Compromise of information confidentiality
-                        would be expected to cause{" "}
-                        <b>
-                            exceptionally grave damage to te national interest,
-                            organisations or individuals.
-                        </b>
-                    </p>
-                </HelpSnippet>
-
-                <p>
-                    <AlwaysEditor
-                        value={informationSecurity.disseminationLimits}
-                        onChange={editInformationSecurity(
-                            "disseminationLimits"
-                        )}
-                        editor={multiCodelistEditor(
-                            codelists.disseminationLimits
-                        )}
-                    />
-                </p>
+                <div className="question-security-classification">
+                    <h4>
+                        <span>
+                            What is the sensitivity or security classification
+                            of this dataset?
+                        </span>
+                        <span className="tooltip-container">
+                            <PurpleToolTip
+                                className="tooltip no-print"
+                                launcher={() => (
+                                    <div className="tooltip-launcher-icon help-icon">
+                                        <img
+                                            src={helpIcon}
+                                            alt="Security classifications, click for more information"
+                                        />
+                                    </div>
+                                )}
+                                innerElementClassName="inner"
+                            >
+                                {() => (
+                                    <>
+                                        Magda security classification refers to
+                                        the Attorney-General Department’s
+                                        Sensitive and Classification policy. It
+                                        is important that the appropriate
+                                        security classification level is
+                                        selected to protect the confidentiality,
+                                        integrity and availability of the data.
+                                        The framework is as follows:{" "}
+                                        <a
+                                            target="_blank"
+                                            href="/page/security-classification"
+                                        >
+                                            {config.baseExternalUrl}
+                                            page/security-classification
+                                        </a>
+                                    </>
+                                )}
+                            </PurpleToolTip>
+                        </span>
+                    </h4>
+                    <div className="row">
+                        <div className="col-sm-6">
+                            <ReactSelect
+                                styles={ReactSelectStyles}
+                                isSearchable={false}
+                                options={
+                                    Object.keys(codelists.classification).map(
+                                        key => ({
+                                            label:
+                                                codelists.classification[key],
+                                            value: key
+                                        })
+                                    ) as any
+                                }
+                                value={
+                                    informationSecurity.classification
+                                        ? {
+                                              label:
+                                                  codelists.classification[
+                                                      informationSecurity
+                                                          .classification
+                                                  ],
+                                              value:
+                                                  informationSecurity.classification
+                                          }
+                                        : null
+                                }
+                                onChange={item =>
+                                    editInformationSecurity("classification")(
+                                        item.value
+                                    )
+                                }
+                            />
+                        </div>
+                    </div>
+                    {informationSecurity.classification === "PROTECTED" ? (
+                        <div className="row">
+                            <div className="col-sm-12">
+                                <AUpageAlert as="warning">
+                                    <div>
+                                        Protected datasets must be stored within
+                                        the Protected Enclave
+                                    </div>
+                                </AUpageAlert>
+                            </div>
+                        </div>
+                    ) : null}
+                    {informationSecurity.classification === "SECRET" ||
+                    informationSecurity.classification === "TOP SECRET" ? (
+                        <div className="row">
+                            <div className="col-sm-12">
+                                <AUpageAlert as="warning">
+                                    <div>
+                                        Secret or Top Secret classified data
+                                        must not be stored on any departmental
+                                        network, and must be managed as a
+                                        physical asset
+                                    </div>
+                                </AUpageAlert>
+                            </div>
+                        </div>
+                    ) : null}
+                </div>
+                {informationSecurity.classification === "OFFICIAL:SENSITIVE" ? (
+                    <div className="question-sensitivity">
+                        <h4>
+                            <span>
+                                What sensitivity markers should be added to this
+                                dataset?
+                            </span>
+                            <span className="tooltip-container">
+                                <PurpleToolTip
+                                    className="tooltip no-print"
+                                    launcher={() => (
+                                        <div className="tooltip-launcher-icon help-icon">
+                                            <img
+                                                src={helpIcon}
+                                                alt="Security classifications, click for more information"
+                                            />
+                                        </div>
+                                    )}
+                                    innerElementClassName="inner"
+                                >
+                                    {() => (
+                                        <>
+                                            Visit this page for more detail on
+                                            Access Restrictions - Information
+                                            Management Markers:{" "}
+                                            <a
+                                                target="_blank"
+                                                href="https://www.protectivesecurity.gov.au/information/sensitive-classified-information/Pages/default.aspx"
+                                            >
+                                                https://www.protectivesecurity.gov.au/information/sensitive-classified-information/Pages/default.aspx
+                                            </a>
+                                        </>
+                                    )}
+                                </PurpleToolTip>
+                            </span>
+                        </h4>
+                        <div className="row">
+                            <div className="col-sm-8">
+                                <ReactSelect
+                                    styles={ReactSelectStyles}
+                                    isSearchable={false}
+                                    isMulti={true}
+                                    options={
+                                        Object.keys(
+                                            codelists.disseminationLimits
+                                        ).map(key => ({
+                                            label:
+                                                codelists.disseminationLimits[
+                                                    key
+                                                ],
+                                            value: key
+                                        })) as any
+                                    }
+                                    value={
+                                        informationSecurity.disseminationLimits &&
+                                        informationSecurity.disseminationLimits
+                                            .length
+                                            ? informationSecurity.disseminationLimits.map(
+                                                  item => ({
+                                                      label:
+                                                          codelists
+                                                              .disseminationLimits[
+                                                              item
+                                                          ],
+                                                      value: item
+                                                  })
+                                              )
+                                            : []
+                                    }
+                                    onChange={items =>
+                                        editInformationSecurity(
+                                            "disseminationLimits"
+                                        )(items.map(item => item.value))
+                                    }
+                                />
+                            </div>
+                        </div>
+                    </div>
+                ) : null}
             </div>
         </div>
     );

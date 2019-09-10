@@ -11,6 +11,7 @@ import Crawler from "./Crawler";
 import { Tenant } from "@magda/typescript-common/dist/tenant-api/Tenant";
 import AuthorizedTenantClient from "@magda/typescript-common/dist/tenant-api/AuthorizedTenantClient";
 import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
+import { MAGDA_SYSTEM_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 export default async function minion(options: MinionOptions): Promise<void> {
     checkOptions(options);
@@ -19,16 +20,18 @@ export default async function minion(options: MinionOptions): Promise<void> {
         jwtSecret: options.argv.jwtSecret,
         userId: options.argv.userId,
         maxRetries: options.maxRetries,
-        tenantId: options.tenantId
+        tenantId: MAGDA_SYSTEM_ID
     });
 
-    const tenantClient = new AuthorizedTenantClient({
-        urlStr: options.argv.tenantUrl,
-        maxRetries: 1,
-        secondsBetweenRetries: 1,
-        jwtSecret: options.argv.jwtSecret,
-        userId: options.argv.userId
-    });
+    const tenantClient = options.argv.enableMultiTenant
+        ? new AuthorizedTenantClient({
+              urlStr: options.argv.tenantUrl,
+              maxRetries: 1,
+              secondsBetweenRetries: 1,
+              jwtSecret: options.argv.jwtSecret,
+              userId: options.argv.userId
+          })
+        : null;
 
     const crawler = new Crawler(registry, options);
 
@@ -87,10 +90,6 @@ export default async function minion(options: MinionOptions): Promise<void> {
             throw new Error(`User id is unspecified`);
         }
 
-        if (options.argv.tenantId === undefined) {
-            throw new Error(`Tenant id is unspecified`);
-        }
-
         const containsBlank = (strings: string[]) =>
             strings.some(string => string === "");
 
@@ -115,11 +114,11 @@ export default async function minion(options: MinionOptions): Promise<void> {
 
         // If magda is deployed in multi-tenant mode, any datasets from any new tenants created
         // after this call will be not be processed. To process them, run the minion again.
-        const tenantIds: number[] = await tenantClient
-            .getTenants()
-            .then((tenants: Tenant[]) => {
-                return tenants.map(t => t.id);
-            });
+        const tenantIds: number[] = options.argv.enableMultiTenant
+            ? await tenantClient.getTenants().then((tenants: Tenant[]) => {
+                  return tenants.map(t => t.id);
+              })
+            : [];
 
         // We always create aspect definition for tenant with ID of MAGDA_ADMIN_PORTAL_ID
         // because a minion does not know if magda is deployed in single- or multi-tenant mode.

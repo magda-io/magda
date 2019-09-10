@@ -1,10 +1,7 @@
 import React from "react";
 
 import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
-import {
-    multilineTextEditor,
-    multiTextEditorEx
-} from "Components/Editing/Editors/textEditor";
+import { multilineTextEditor } from "Components/Editing/Editors/textEditor";
 import { codelistRadioEditor } from "Components/Editing/Editors/codelistEditor";
 import * as codelists from "constants/DatasetConstants";
 import {
@@ -14,11 +11,13 @@ import {
     State as AddMetadataState
 } from "Components/Dataset/Add/DatasetAddCommon";
 import OrganisationAutoComplete from "./OrganisationAutocomplete";
+import DatasetAutoComplete from "./DatasetAutocomplete";
 import OrgUnitDropdown from "./OrgUnitDropdown";
 import CustodianDropdown from "./CustodianDropdown";
 import YesNoReveal from "../../YesNoReveal";
 
 import "./DatasetAddPeoplePage.scss";
+import { User } from "reducers/userManagementReducer";
 
 type Props = {
     edit: <K extends keyof AddMetadataState>(
@@ -27,13 +26,15 @@ type Props = {
     dataset: Dataset;
     provenance: Provenance;
     publishing: DatasetPublishing;
+    user: User;
 };
 
 export default function DatasetAddPeoplePage({
     dataset,
     provenance,
     publishing,
-    edit
+    edit,
+    user
 }: Props) {
     const editDataset = edit("dataset");
     const editPublishing = edit("datasetPublishing");
@@ -129,12 +130,10 @@ export default function DatasetAddPeoplePage({
                 </div>
                 <h4>What datasets (if any) was this data derived from?</h4>
                 <div>
-                    <AlwaysEditor
+                    <DatasetAutoComplete
+                        user={user}
                         value={provenance.derivedFrom}
-                        onChange={editProvenance("derivedFrom")}
-                        editor={multiTextEditorEx({
-                            placeholder: "Enter a dataset id"
-                        })}
+                        onDatasetSelected={editProvenance("derivedFrom")}
                     />
                 </div>
             </div>
