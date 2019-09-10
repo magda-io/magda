@@ -84,10 +84,12 @@ export default function CustodianDropdown({
                 }}
                 styles={ReactSelectStyles}
                 value={
-                    selectedValue && {
-                        label: selectedValue.name,
-                        value: selectedValue.id
-                    }
+                    selectedValue
+                        ? {
+                              label: selectedValue.name,
+                              value: selectedValue.id
+                          }
+                        : undefined
                 }
                 options={result.map(option => ({
                     label: option.name,
