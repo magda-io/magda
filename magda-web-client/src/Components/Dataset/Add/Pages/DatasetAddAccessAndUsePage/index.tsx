@@ -16,7 +16,7 @@ import helpIcon from "assets/help.svg";
 
 import ReactSelect from "react-select";
 import ReactSelectStyles from "../../../../Common/react-select/ReactSelectStyles";
-import PurpleToolTip from "Components/Common/Tooltip";
+import PurpleToolTip from "Components/Common/TooltipWrapper";
 import { config } from "config";
 import AUpageAlert from "@gov.au/page-alerts";
 
