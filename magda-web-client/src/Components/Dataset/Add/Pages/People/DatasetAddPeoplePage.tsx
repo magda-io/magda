@@ -13,6 +13,7 @@ import {
 import OrganisationAutoComplete from "./OrganisationAutocomplete";
 import DatasetAutoComplete from "./DatasetAutocomplete";
 import OrgUnitDropdown from "./OrgUnitDropdown";
+import CustodianDropdown from "./CustodianDropdown";
 import YesNoReveal from "../../YesNoReveal";
 
 import "./DatasetAddPeoplePage.scss";
@@ -61,6 +62,17 @@ export default function DatasetAddPeoplePage({
                     <OrgUnitDropdown
                         orgUnitId={dataset.owningOrgUnitId}
                         onChange={editDataset("owningOrgUnitId")}
+                    />
+                </div>
+                <h4>
+                    Which area of the organisation should be referenced as the
+                    data custodian?
+                </h4>
+                <div>
+                    <CustodianDropdown
+                        orgUnitId={dataset.custodianOrgUnitId}
+                        teamOrgUnitId={dataset.owningOrgUnitId}
+                        onChange={editDataset("custodianOrgUnitId")}
                     />
                 </div>
                 <h4>

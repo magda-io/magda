@@ -75,6 +75,7 @@ export type Dataset = {
     keywords?: string[];
     themes?: string[];
     owningOrgUnitId?: string;
+    custodianOrgUnitId?: string;
     contactPointDisplay?: string;
     publisher?: OrganisationAutocompleteChoice;
     landingPage?: string;
@@ -162,7 +163,7 @@ export function createBlankState(user: User): State {
         datasetPublishing: {
             state: "draft",
             level: "agency",
-            contactPointDisplay: "members"
+            contactPointDisplay: "team"
         },
         spatialCoverage: {},
         temporalCoverage: {
