@@ -2,9 +2,16 @@ import "./FilterExplanation.scss";
 
 import React from "react";
 
-export default function FilterExplanation(props) {
+import ExplanationTooltipContent from "Components/Common/ExplanationTooltipContent";
+
+type Props = {
+    filterType: string;
+    dismiss: () => void;
+};
+
+export default function FilterExplanation(props: Props) {
     return (
-        <div className="filter-explanation">
+        <ExplanationTooltipContent dismiss={props.dismiss}>
             <h3 className="filter-explanation-heading">
                 Filter by {props.filterType}
             </h3>
@@ -15,13 +22,6 @@ export default function FilterExplanation(props) {
                 </span>
                 .
             </p>
-            <button
-                type="button"
-                className="filter-explanation-link au-btn au-btn--tertiary"
-                onClick={props.dismiss}
-            >
-                Got it!
-            </button>
-        </div>
+        </ExplanationTooltipContent>
     );
 }

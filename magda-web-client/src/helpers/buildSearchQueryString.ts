@@ -19,7 +19,9 @@ export type Query = {
 
 export default function buildSearchQueryString(
     query: Query,
-    searchResultsPerPage?
+    searchResultsPerPage: number = defined(query.limit)
+        ? query.limit!
+        : defaultConfiguration.searchResultsPerPage
 ) {
     let keywords = queryToString("query", query.q);
     let dateFroms = queryToString("dateFrom", query.dateFrom);
@@ -33,12 +35,6 @@ export default function buildSearchQueryString(
         "region",
         queryToLocation(query.regionId, query.regionType)
     );
-
-    searchResultsPerPage = defined(searchResultsPerPage)
-        ? searchResultsPerPage
-        : defined(query.limit)
-        ? query.limit
-        : defaultConfiguration.searchResultsPerPage;
 
     let startIndex = query.page ? (query.page - 1) * searchResultsPerPage : 0;
 
