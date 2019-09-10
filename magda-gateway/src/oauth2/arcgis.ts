@@ -78,7 +78,25 @@ export default function arcgis(options: ArcGisOptions) {
                 ((profile as any)._json && (profile as any)._json.thumbnail);
 
             createOrGetUserToken(authorizationApi, profile, "arcgis")
-                .then(userId => cb(null, userId))
+                .then(userToken => {
+                    const url = `${
+                        options.arcgisInstanceBaseUrl
+                    }/sharing/rest/community/users/${
+                        profile.username
+                    }?f=json&token=${accessToken}`;
+                    // console.log("url = " + url);
+                    fetch(url, { method: "get" })
+                        .then(res => {
+                            return res.json();
+                        })
+                        .then(jsObj =>
+                            cb(null, {
+                                id: userToken.id,
+                                groups: jsObj["groups"]
+                            })
+                        )
+                        .catch(error => cb(error));
+                })
                 .catch(error => cb(error));
         })
     );
