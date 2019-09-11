@@ -455,6 +455,74 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
+     * @api {get} /public/orgunits/bylevel/:orgLevel List OrgUnits at certain org tree level
+     * @apiDescription
+     * List all OrgUnits at certain org tree level
+     * Optionally provide a test Org Unit Id that will be used to
+     * test the relationship with each of returned orgUnit item.
+     * Possible Value: 'ancestor', 'descendant', 'equal', 'unrelated'
+     *
+     * @apiParam (Path) {string} orgLevel The level number (starts from 1) where org Units of the tree are taken horizontally.
+     * @apiParam (Query) {string} relationshipOrgUnitId Optional; The org unit id that is used to test the relationship with each of returned orgUnit item.
+     *
+     * @apiSuccessExample {string} 200
+     *     [{
+     *       "id": "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7",
+     *       "name": "node 1",
+     *       "description": "xxxxxxxx",
+     *       "relationship": "unrelated"
+     *     },{
+     *       "id": "e5f0ed5f-bb00-4e49-89a6-3f044aecc3f7",
+     *       "name": "node 2",
+     *       "description": "xxxxxxxx",
+     *       "relationship": "ancestor"
+     *     }]
+     *
+     * @apiErrorExample {json} 401/404/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 404, 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.get(
+        "/public/orgunits/bylevel/:orgLevel",
+        MUST_BE_ADMIN,
+        async (req, res) => {
+            try {
+                const orgLevel = req.params.orgLevel;
+                const relationshipOrgUnitId = req.query.relationshipOrgUnitId;
+
+                const levelNumber = parseInt(orgLevel);
+
+                if (levelNumber < 1 || isNaN(levelNumber))
+                    throw new Error(`Invalid level number: ${orgLevel}.`);
+
+                const nodes = await orgQueryer.getAllNodesAtLevel(levelNumber);
+
+                if (relationshipOrgUnitId && nodes.length) {
+                    for (let i = 0; i < nodes.length; i++) {
+                        const r = await orgQueryer.compareNodes(
+                            nodes[i]["id"],
+                            relationshipOrgUnitId
+                        );
+                        nodes[i]["relationship"] = r;
+                    }
+                }
+
+                res.status(200).json(nodes);
+            } catch (e) {
+                respondWithError(
+                    "GET /public/orgunits/bylevel/:orgLevel",
+                    res,
+                    e
+                );
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth
      * @api {get} /public/orgunits Get orgunits by name
      * @apiDescription Gets org units matching a name
      *

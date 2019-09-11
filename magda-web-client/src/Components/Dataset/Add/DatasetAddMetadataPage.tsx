@@ -18,7 +18,8 @@ import { Steps as ProgressMeterStepsConfig } from "../../Common/AddDatasetProgre
 import {
     State,
     saveState,
-    OrganisationAutocompleteChoice
+    OrganisationAutocompleteChoice,
+    createId
 } from "./DatasetAddCommon";
 import DetailsAndContents from "./Pages/DetailsAndContents";
 import DatasetAddPeoplePage from "./Pages/People/DatasetAddPeoplePage";
@@ -49,6 +50,7 @@ import ReviewFilesList from "./ReviewFilesList";
 import ErrorMessageBox from "./ErrorMessageBox";
 
 import helpIcon from "assets/help.svg";
+import { User } from "reducers/userManagementReducer";
 
 const aspects = {
     publishing: datasetPublishingAspect,
@@ -76,6 +78,7 @@ type Props = {
     datasetId: string;
     isNewDataset: boolean;
     history: any;
+    user: User;
 };
 
 class NewDataset extends React.Component<Props, State> {
@@ -105,6 +108,7 @@ class NewDataset extends React.Component<Props, State> {
                 dataset={this.state.dataset}
                 publishing={this.state.datasetPublishing}
                 provenance={this.state.provenance}
+                user={this.props.user}
             />
         ),
         () => (
@@ -254,7 +258,6 @@ class NewDataset extends React.Component<Props, State> {
     async publishDataset() {
         saveState(this.state, this.props.datasetId);
 
-        const id = createId("ds");
         const {
             dataset,
             datasetPublishing,
@@ -300,7 +303,7 @@ class NewDataset extends React.Component<Props, State> {
         });
 
         const inputDataset = {
-            id,
+            id: this.props.datasetId,
             name: dataset.title,
             aspects: {
                 publishing: datasetPublishing,
@@ -313,13 +316,21 @@ class NewDataset extends React.Component<Props, State> {
                 access: datasetAccess,
                 "information-security": informationSecurity,
                 "dataset-access-control": {
-                    orgUnitOwnerId: dataset.owningOrgUnitId
+                    orgUnitOwnerId: dataset.owningOrgUnitId,
+                    custodianOrgUnitId: dataset.custodianOrgUnitId
                 },
                 provenance: {
                     mechanism: provenance.mechanism,
 
                     sourceSystem: provenance.sourceSystem,
-                    derivedFrom: provenance.derivedFrom,
+                    derivedFrom:
+                        provenance.derivedFrom &&
+                        provenance.derivedFrom.map(choice => ({
+                            id: choice.existingId
+                                ? [choice.existingId]
+                                : undefined,
+                            name: !choice.existingId ? choice.name : undefined
+                        })),
                     affiliatedOrganizationIds:
                         provenance.affiliatedOrganizations &&
                         (await Promise.all(
@@ -440,10 +451,6 @@ export default withAddDatasetState(
         )(NewDataset)
     )
 );
-
-function createId(type = "ds") {
-    return `magda-${type}-${uuidv4()}`;
-}
 
 function denormalise(values) {
     const output = {};
