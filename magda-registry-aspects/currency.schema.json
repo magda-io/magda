@@ -1,11 +1,11 @@
 {
-    "$schema": "http://json-schema.org/schema#",
+    "$schema": "http://json-schema.org/hyper-schema#",
     "title": "Currency",
     "description": "Describes how up-to-date the dataset is",
     "type": "object",
     "properties": {
         "status": {
-            "description": "How was it produced?",
+            "description": "the status of the this dataset",
             "type": "string",
             "enum": ["CURRENT", "SUPERSEDED", "RETIRED"]
         },
