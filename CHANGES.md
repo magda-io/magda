@@ -89,6 +89,7 @@ UI:
 -   Make sure all publish new dataset errors are captured and shown to users on add dataset page
 -   Added Custodian field to the 'People and Production' page
 -   Added the ability to add references to datasets that a new dataset was derived from.
+-   Added `dataset status` question to 'Details and Contents' page
 
 Gateway:
 
