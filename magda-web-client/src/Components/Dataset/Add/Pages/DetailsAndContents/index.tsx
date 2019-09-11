@@ -183,10 +183,16 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                 onChange={(item: any) => {
                                     const status = item.value as CurrentStatusType;
                                     editCurrency("status")(status);
-                                    if (status !== "SUPERSEDED") {
+                                    if (
+                                        status !== "SUPERSEDED" &&
+                                        currency.supersededBy
+                                    ) {
                                         editCurrency("supersededBy")([]);
                                     }
-                                    if (status !== "RETIRED") {
+                                    if (
+                                        status !== "RETIRED" &&
+                                        currency.retireReason
+                                    ) {
                                         editCurrency("retireReason")("");
                                     }
                                 }}

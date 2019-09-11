@@ -39,6 +39,7 @@ import informationSecurityAspect from "@magda/registry-aspects/information-secur
 import datasetAccessControlAspect from "@magda/registry-aspects/dataset-access-control.schema.json";
 import organizationDetailsAspect from "@magda/registry-aspects/organization-details.schema.json";
 import datasetPublisherAspect from "@magda/registry-aspects/dataset-publisher.schema.json";
+import currencyAspect from "@magda/registry-aspects/currency.schema.json";
 
 import "./DatasetAddMetadataPage.scss";
 import "./DatasetAddFilesPage.scss";
@@ -63,7 +64,8 @@ const aspects = {
     provenance: provenanceAspect,
     "information-security": informationSecurityAspect,
     "dataset-access-control": datasetAccessControlAspect,
-    "dataset-publisher": datasetPublisherAspect
+    "dataset-publisher": datasetPublisherAspect,
+    currency: currencyAspect
 };
 
 type Props = {
@@ -268,7 +270,8 @@ class NewDataset extends React.Component<Props, State> {
             licenseLevel,
             informationSecurity,
             datasetAccess,
-            provenance
+            provenance,
+            currency
         } = this.state;
 
         this.setState({
@@ -320,6 +323,7 @@ class NewDataset extends React.Component<Props, State> {
                     orgUnitOwnerId: dataset.owningOrgUnitId,
                     custodianOrgUnitId: dataset.custodianOrgUnitId
                 },
+                currency,
                 provenance: {
                     mechanism: provenance.mechanism,
 
