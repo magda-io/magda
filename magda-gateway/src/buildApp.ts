@@ -43,6 +43,9 @@ type Config = {
     proxyRoutesJson: {
         [localRoute: string]: ProxyTarget;
     };
+    webProxyRoutesJson: {
+        [localRoute: string]: string;
+    };
     helmetJson: string;
     cspJson: string;
     corsJson: string;
@@ -106,6 +109,10 @@ export default function buildApp(config: Config) {
     _.forEach(
         (config.proxyRoutesJson as unknown) as Routes,
         (value: any, key: string) => {
+            // --- skip tenant api status prob if multiTenantsMode is off
+            if (key === "tenant" && !tenantMode.multiTenantsMode) {
+                return;
+            }
             // --- skip install status probs if statusCheck == false
             if (value && value.statusCheck === false) {
                 return;
@@ -191,6 +198,13 @@ export default function buildApp(config: Config) {
             tenantMode
         })
     );
+
+    if (config.webProxyRoutesJson) {
+        _.forEach(config.webProxyRoutesJson, (value: string, key: string) => {
+            app.use("/" + key, createGenericProxy(value, tenantMode));
+        });
+    }
+
     app.use("/preview-map", createGenericProxy(config.previewMap, tenantMode));
 
     if (config.enableCkanRedirection) {

@@ -10,7 +10,7 @@ class DatasetListPage extends React.Component<any, any> {
     render() {
         const datasets: any[] = [];
         for (const [id, dataset] of Object.entries(localStorage)) {
-            if (id.match(/^dataset-/)) {
+            if (id.match(/^magda-ds-/)) {
                 try {
                     datasets.push({
                         id,

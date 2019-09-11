@@ -79,6 +79,10 @@ export default function createApiRouter(options: ApiRouterOptions): Router {
     }
 
     _.forEach(options.routes, (value: ProxyTarget, key: string) => {
+        // --- skip tenant api router if multiTenantsMode is off
+        if (key === "tenant" && !options.tenantMode.multiTenantsMode) {
+            return;
+        }
         proxyRoute(
             `/${key}`,
             value.to,

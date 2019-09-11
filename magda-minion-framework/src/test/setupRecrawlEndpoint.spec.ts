@@ -14,8 +14,6 @@ import baseSpec from "./baseSpec";
 import Crawler from "../Crawler";
 import setupRecrawlEndpoint from "../setupRecrawlEndpoint";
 
-import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/src/registry/TenantConsts";
-
 baseSpec(
     "Recrawl APIs",
     (
@@ -36,11 +34,11 @@ baseSpec(
                 argv: fakeArgv({
                     internalUrl: "example",
                     registryUrl: "example",
+                    enableMultiTenant: true,
                     tenantUrl: "example",
                     jwtSecret: "jwtSecret",
                     userId: "userId",
-                    listenPort: listenPort(),
-                    tenantId: MAGDA_ADMIN_PORTAL_ID
+                    listenPort: listenPort()
                 }),
                 id: "id",
                 aspects: [],
@@ -51,8 +49,7 @@ baseSpec(
                 concurrency: 1,
                 onRecordFound: (recordFound: Record) => {
                     return Promise.resolve();
-                },
-                tenantId: MAGDA_ADMIN_PORTAL_ID
+                }
             };
 
             setupRecrawlEndpoint(app, options, crawler);
@@ -81,11 +78,11 @@ baseSpec(
                 argv: fakeArgv({
                     internalUrl: "example",
                     registryUrl: "example",
+                    enableMultiTenant: true,
                     tenantUrl: "example",
                     jwtSecret: "jwtSecret",
                     userId: "userId",
-                    listenPort: listenPort(),
-                    tenantId: MAGDA_ADMIN_PORTAL_ID
+                    listenPort: listenPort()
                 }),
                 id: "id",
                 aspects: [],
@@ -96,8 +93,7 @@ baseSpec(
                 concurrency: 1,
                 onRecordFound: (recordFound: Record) => {
                     return Promise.resolve();
-                },
-                tenantId: MAGDA_ADMIN_PORTAL_ID
+                }
             };
 
             setupRecrawlEndpoint(app, options, crawler);
@@ -154,11 +150,11 @@ baseSpec(
                             argv: fakeArgv({
                                 internalUrl: "example",
                                 registryUrl: "example",
+                                enableMultiTenant: true,
                                 tenantUrl: "example",
                                 jwtSecret: "jwtSecret",
                                 userId: "userId",
-                                listenPort: listenPort(),
-                                tenantId: MAGDA_ADMIN_PORTAL_ID
+                                listenPort: listenPort()
                             }),
                             id: "id",
                             aspects: [],
@@ -169,8 +165,7 @@ baseSpec(
                             concurrency: 1,
                             onRecordFound: (recordFound: Record) => {
                                 return Promise.resolve();
-                            },
-                            tenantId: MAGDA_ADMIN_PORTAL_ID
+                            }
                         };
 
                         setupRecrawlEndpoint(app, options, crawler);

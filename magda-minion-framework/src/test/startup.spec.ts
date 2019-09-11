@@ -18,7 +18,6 @@ import MinionOptions from "../MinionOptions";
 import fakeArgv from "./fakeArgv";
 import makePromiseQueryable from "./makePromiseQueryable";
 import baseSpec from "./baseSpec";
-import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 baseSpec(
     "on startup",
@@ -38,6 +37,7 @@ baseSpec(
             jsc.suchthat(jsc.integer, int => int > 0),
             lcAlphaNumStringArbNe,
             lcAlphaNumStringArbNe,
+            jsc.bool,
             (
                 registryHost,
                 tenantHost,
@@ -46,7 +46,8 @@ baseSpec(
                 records,
                 pageSize,
                 jwtSecret,
-                userId
+                userId,
+                enableMultiTenant
             ) => {
                 beforeEachProperty();
                 const registryUrl = `http://${registryHost}.com`;
@@ -103,11 +104,11 @@ baseSpec(
                     argv: fakeArgv({
                         internalUrl: `http://example.com`,
                         registryUrl,
+                        enableMultiTenant,
                         tenantUrl,
                         jwtSecret,
                         userId,
-                        listenPort: listenPort(),
-                        tenantId: MAGDA_ADMIN_PORTAL_ID
+                        listenPort: listenPort()
                     }),
                     id: "id",
                     aspects: aspects,
@@ -117,8 +118,7 @@ baseSpec(
                     maxRetries: 0,
                     onRecordFound: sinon
                         .stub()
-                        .callsFake(() => Promise.resolve()),
-                    tenantId: MAGDA_ADMIN_PORTAL_ID
+                        .callsFake(() => Promise.resolve())
                 };
 
                 const minionPromise = makePromiseQueryable(minion(options));
@@ -150,6 +150,7 @@ baseSpec(
             aspects: string[];
             optionalAspects: string[];
             concurrency: number;
+            enableMultiTenant: boolean;
         };
 
         jsc.property(
@@ -164,7 +165,8 @@ baseSpec(
                     jwtSecret: lcAlphaNumStringArb,
                     userId: lcAlphaNumStringArb,
                     registryUrl: lcAlphaNumStringArb,
-                    concurrency: jsc.integer(0, 10)
+                    concurrency: jsc.integer(0, 10),
+                    enableMultiTenant: jsc.bool
                 }),
                 (record: input) =>
                     record.port <= 0 ||
@@ -185,7 +187,8 @@ baseSpec(
                 optionalAspects,
                 jwtSecret,
                 userId,
-                concurrency
+                concurrency,
+                enableMultiTenant
             }: input) => {
                 beforeEachProperty();
 
@@ -194,10 +197,10 @@ baseSpec(
                         internalUrl: internalUrl,
                         listenPort: port,
                         registryUrl: "",
+                        enableMultiTenant,
                         tenantUrl: "",
                         jwtSecret,
-                        userId,
-                        tenantId: MAGDA_ADMIN_PORTAL_ID
+                        userId
                     }),
                     id: id,
                     aspects: aspects,
@@ -207,8 +210,7 @@ baseSpec(
                     concurrency,
                     onRecordFound: sinon
                         .stub()
-                        .callsFake(record => Promise.resolve()),
-                    tenantId: MAGDA_ADMIN_PORTAL_ID
+                        .callsFake(record => Promise.resolve())
                 };
 
                 return minion(options)

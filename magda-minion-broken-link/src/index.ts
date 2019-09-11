@@ -4,7 +4,6 @@ import brokenLinkAspectDef from "./brokenLinkAspectDef";
 import commonYargs from "@magda/minion-framework/dist/commonYargs";
 import { CoreOptions } from "request";
 import coerceJson from "@magda/typescript-common/dist/coerceJson";
-import { MAGDA_SYSTEM_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 const ID = "minion-broken-link";
 
@@ -46,7 +45,6 @@ function sleuthBrokenLinks() {
         optionalAspects: [],
         async: true,
         writeAspectDefs: [brokenLinkAspectDef],
-        tenantId: MAGDA_SYSTEM_ID,
         onRecordFound: (record, registry) =>
             onRecordFound(
                 record,

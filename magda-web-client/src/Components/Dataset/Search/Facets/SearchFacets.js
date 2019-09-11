@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { config } from "config";
 import { Medium } from "Components/Common/Responsive";
-import Tooltip from "Components/Common/Tooltip";
+import TooltipWrapper from "Components/Common/TooltipWrapper";
 import ClearAllButton from "./ClearAllButton";
 import { retrieveLocalData, setLocalData } from "storage/localStorage";
 import FilterExplanation from "./FilterExplanation";
@@ -98,7 +98,7 @@ class SearchFacets extends Component {
             !retrieveLocalData("hideFilterTooltips", false)
         ) {
             return (
-                <Tooltip
+                <TooltipWrapper
                     key={filter.id + "tooltip"}
                     startOpen={true}
                     requireClickToDismiss={true}
@@ -112,7 +112,7 @@ class SearchFacets extends Component {
                             filterType={filter.name}
                         />
                     )}
-                </Tooltip>
+                </TooltipWrapper>
             );
         } else {
             return filterComponent;
