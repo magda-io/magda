@@ -25,9 +25,16 @@ import AccrualPeriodicityInput from "../../AccrualPeriodicityInput";
 import ReactSelect from "react-select";
 import ReactSelectStyles from "../../../../Common/react-select/ReactSelectStyles";
 
-import { State } from "Components/Dataset/Add/DatasetAddCommon";
+import {
+    State,
+    CurrentStatusType
+} from "Components/Dataset/Add/DatasetAddCommon";
+import { User } from "reducers/userManagementReducer";
 
 import helpIcon from "assets/help.svg";
+
+import DatasetAutoComplete from "../People/DatasetAutocomplete";
+import "../People/DatasetAutocomplete.scss";
 
 import "./index.scss";
 
@@ -39,13 +46,20 @@ type Props = {
         state: ((prevState: Readonly<State>) => State) | State,
         callback?: () => void
     ) => void;
+    user: User;
     stateData: State;
 };
 
 export default function DatasetAddAccessAndUsePage(props: Props) {
-    const { dataset, spatialCoverage, temporalCoverage } = props.stateData;
+    const {
+        dataset,
+        spatialCoverage,
+        temporalCoverage,
+        currency
+    } = props.stateData;
     const editDataset = props.edit("dataset");
     const editTemporalCoverage = props.edit("temporalCoverage");
+    const editCurrency = props.edit("currency");
     return (
         <div className="row dataset-details-and-contents-page">
             <div className="col-sm-12">
@@ -151,6 +165,66 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                 </div>
 
                 <h3 className="with-underline">Dates and updates</h3>
+
+                <div className="question-dataset-status">
+                    <h4>What is the status of the this dataset?</h4>
+                    <div className="row">
+                        <div className="col-sm-6">
+                            <ReactSelect
+                                className="react-select"
+                                isMulti={false}
+                                isSearchable={false}
+                                options={Object.keys(
+                                    codelists.datasetCurrencyStatus
+                                ).map(key => ({
+                                    label: codelists.datasetCurrencyStatus[key],
+                                    value: key
+                                }))}
+                                onChange={(item: any) => {
+                                    const status = item.value as CurrentStatusType;
+                                    editCurrency("status")(status);
+                                    if (status !== "SUPERSEDED") {
+                                        editCurrency("supersededBy")([]);
+                                    }
+                                    if (status !== "RETIRED") {
+                                        editCurrency("retireReason")("");
+                                    }
+                                }}
+                                styles={ReactSelectStyles}
+                                value={{
+                                    label:
+                                        codelists.datasetCurrencyStatus[
+                                            currency.status
+                                        ],
+                                    value: currency.status
+                                }}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {currency.status === "SUPERSEDED" ? (
+                    <div className="question-dataset-superseded-by">
+                        <h4>What dataset has it been superseded by?</h4>
+
+                        <DatasetAutoComplete
+                            user={props.user}
+                            value={currency.supersededBy}
+                            onDatasetSelected={editCurrency("supersededBy")}
+                        />
+                    </div>
+                ) : null}
+
+                {currency.status === "RETIRED" ? (
+                    <div className="question-dataset-retire-reason">
+                        <h4>Why was this dataset retired?</h4>
+                        <MultilineTextEditor
+                            value={currency.retireReason}
+                            placerHolder="Enter dataset retire reason"
+                            onChange={editCurrency("retireReason")}
+                        />
+                    </div>
+                ) : null}
 
                 <div className="row date-row">
                     <div className="col-sm-4 question-issue-date">

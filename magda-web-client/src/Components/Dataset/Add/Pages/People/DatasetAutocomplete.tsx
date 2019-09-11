@@ -101,7 +101,7 @@ const CustomMultiValue = (props: MultiValueProps<Choice>) => {
     );
 };
 
-export default function OrganisationAutocomplete(props: Props) {
+export default function DatasetAutocomplete(props: Props) {
     const selectRef = React.createRef<Async<Choice>>();
 
     const query: (term: string) => Promise<any> = debouncePromise(

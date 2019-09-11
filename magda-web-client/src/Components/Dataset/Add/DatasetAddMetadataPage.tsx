@@ -100,6 +100,7 @@ class NewDataset extends React.Component<Props, State> {
                 edit={this.edit}
                 setState={this.setState.bind(this)}
                 stateData={this.state}
+                user={this.props.user}
             />
         ),
         () => (
