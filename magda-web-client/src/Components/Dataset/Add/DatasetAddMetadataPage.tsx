@@ -19,7 +19,8 @@ import {
     State,
     saveState,
     OrganisationAutocompleteChoice,
-    createId
+    createId,
+    DatasetAutocompleteChoice
 } from "./DatasetAddCommon";
 import DetailsAndContents from "./Pages/DetailsAndContents";
 import DatasetAddPeoplePage from "./Pages/People/DatasetAddPeoplePage";
@@ -306,6 +307,15 @@ class NewDataset extends React.Component<Props, State> {
             };
         });
 
+        const preProcessDatasetAutocompleteChoices = (
+            choices?: DatasetAutocompleteChoice[]
+        ) =>
+            choices &&
+            choices.map(choice => ({
+                id: choice.existingId ? [choice.existingId] : undefined,
+                name: !choice.existingId ? choice.name : undefined
+            }));
+
         const inputDataset = {
             id: this.props.datasetId,
             name: dataset.title,
@@ -323,19 +333,18 @@ class NewDataset extends React.Component<Props, State> {
                     orgUnitOwnerId: dataset.owningOrgUnitId,
                     custodianOrgUnitId: dataset.custodianOrgUnitId
                 },
-                currency,
+                currency: {
+                    ...currency,
+                    supersededBy: preProcessDatasetAutocompleteChoices(
+                        currency.supersededBy
+                    )
+                },
                 provenance: {
                     mechanism: provenance.mechanism,
-
                     sourceSystem: provenance.sourceSystem,
-                    derivedFrom:
-                        provenance.derivedFrom &&
-                        provenance.derivedFrom.map(choice => ({
-                            id: choice.existingId
-                                ? [choice.existingId]
-                                : undefined,
-                            name: !choice.existingId ? choice.name : undefined
-                        })),
+                    derivedFrom: preProcessDatasetAutocompleteChoices(
+                        provenance.derivedFrom
+                    ),
                     affiliatedOrganizationIds:
                         provenance.affiliatedOrganizations &&
                         (await Promise.all(
