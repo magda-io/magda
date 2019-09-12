@@ -10,7 +10,7 @@
             "enum": ["CURRENT", "SUPERSEDED", "RETIRED"]
         },
         "supersededBy": {
-            "description": "What dataset has it been superseded by?",
+            "description": "What dataset(s) has it been superseded by?",
             "type": "array",
             "items": {
                 "type": "object",

@@ -211,7 +211,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
 
                 {currency.status === "SUPERSEDED" ? (
                     <div className="question-dataset-superseded-by">
-                        <h4>What dataset has it been superseded by?</h4>
+                        <h4>What dataset(s) has it been superseded by?</h4>
 
                         <DatasetAutoComplete
                             user={props.user}
