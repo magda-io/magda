@@ -78,6 +78,12 @@ policy `object.registry.record.esri_groups` that corresponds to `esri-access-con
 Both suites perform tests under the same conditions described in `Relationship among users, organizations and records.`
 in the class of `ApiWithOpaSpec`.
 
+#### Note
+
+The current Java JWT library is not capable of creating custom claims that are json objects.
+The typescript library comes to help. The jwt tokens used in testing esri policy are created by
+magda-typescript-common/src/test/session/buildJwt.spec.ts.
+
 After running either of the two suites, the testing data are persisted in the database.
 
 You may run RegistryApp with default config (using default policy `object.registry.record.owner_orgunit`) from

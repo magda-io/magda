@@ -3,7 +3,9 @@ package object.registry.record
 test_allow_all_matched_groups {
     esri_access_control with input as {
         "user": {
-            "groups": ["G1", "G2"]
+            "session" : {
+            "esriGroups": ["G1", "G2"]
+            }
         },
         "object": {
             "registry": {
@@ -19,9 +21,10 @@ test_allow_all_matched_groups {
 
 test_allow_any_matched_groups {
     esri_access_control with input as {
-
         "user": {
-            "groups": ["G1", "G2"]
+            "session" : {
+                "esriGroups": ["G1", "G2"]
+            }
         },
         "object": {
             "registry": {
@@ -38,7 +41,9 @@ test_allow_any_matched_groups {
 test_deny_wrong_groups {
     not esri_access_control with input as {
         "user": {
-            "groups": ["G1", "G2"]
+            "session" : {
+                "esriGroups": ["G1", "G2"]
+            }
         },
         "object": {
             "registry": {
@@ -55,7 +60,9 @@ test_deny_wrong_groups {
 test_deny_no_access_control_info {
     not esri_access_control with input as {
         "user": {
-            "groups": ["G1", "G2"]
+            "session" : {
+                "esriGroups": ["G1", "G2"]
+            }
         },
         "object": {
             "registry": {
@@ -69,7 +76,9 @@ test_deny_no_access_control_info {
 test_deny_empty_user_groups {
     not esri_access_control with input as {
         "user": {
-            "groups": []
+            "session" : {
+                "esriGroups": []
+            }
         },
         "object": {
             "registry": {
