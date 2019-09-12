@@ -1169,11 +1169,11 @@ class NestedSetModelQueryer {
             const nodeChildren = await this.getChildTextTreeNodes(nodes[i].id);
             if (nodeChildren.length) {
                 textNodeList.push({
-                    text: nodes[i].name,
+                    text: NestedSetModelQueryer.getLabel(nodes[i]),
                     children: nodeChildren
                 });
             } else {
-                textNodeList.push(nodes[i].name);
+                textNodeList.push(NestedSetModelQueryer.getLabel(nodes[i]));
             }
         }
         return textNodeList;
@@ -1203,16 +1203,20 @@ class NestedSetModelQueryer {
                 const children = await this.getChildTextTreeNodes(rootNode.id);
                 if (children.length) {
                     tree.push({
-                        text: rootNode.name,
+                        text: NestedSetModelQueryer.getLabel(rootNode),
                         children
                     });
                 } else {
-                    tree.push(rootNode.name);
+                    tree.push(NestedSetModelQueryer.getLabel(rootNode));
                 }
                 return textTree(tree);
             },
             nothing: async () => "Empty Tree"
         });
+    }
+
+    static getLabel(node: NodeRecord) {
+        return `${node.name} (${node.id})`;
     }
 }
 
