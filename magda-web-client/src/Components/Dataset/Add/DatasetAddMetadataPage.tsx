@@ -360,6 +360,14 @@ class NewDataset extends React.Component<Props, State> {
             }
         };
 
+        if (currency.status !== "SUPERSEDED") {
+            delete inputDataset.aspects.currency.supersededBy;
+        }
+
+        if (currency.status !== "RETIRED") {
+            delete inputDataset.aspects.currency.retireReason;
+        }
+
         if (!inputDataset.aspects["dataset-access-control"].orgUnitOwnerId) {
             delete inputDataset.aspects["dataset-access-control"];
         }

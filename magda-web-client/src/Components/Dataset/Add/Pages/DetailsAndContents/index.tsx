@@ -25,10 +25,7 @@ import AccrualPeriodicityInput from "../../AccrualPeriodicityInput";
 import ReactSelect from "react-select";
 import ReactSelectStyles from "../../../../Common/react-select/ReactSelectStyles";
 
-import {
-    State,
-    CurrentStatusType
-} from "Components/Dataset/Add/DatasetAddCommon";
+import { State } from "Components/Dataset/Add/DatasetAddCommon";
 import { User } from "reducers/userManagementReducer";
 
 import helpIcon from "assets/help.svg";
@@ -180,22 +177,9 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                     label: codelists.datasetCurrencyStatus[key],
                                     value: key
                                 }))}
-                                onChange={(item: any) => {
-                                    const status = item.value as CurrentStatusType;
-                                    editCurrency("status")(status);
-                                    if (
-                                        status !== "SUPERSEDED" &&
-                                        currency.supersededBy
-                                    ) {
-                                        editCurrency("supersededBy")([]);
-                                    }
-                                    if (
-                                        status !== "RETIRED" &&
-                                        currency.retireReason
-                                    ) {
-                                        editCurrency("retireReason")("");
-                                    }
-                                }}
+                                onChange={(item: any) =>
+                                    editCurrency("status")(item.value)
+                                }
                                 styles={ReactSelectStyles}
                                 value={{
                                     label:
