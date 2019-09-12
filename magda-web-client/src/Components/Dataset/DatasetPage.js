@@ -569,13 +569,15 @@ class RecordHandler extends React.Component {
                                         onChange={datasetChange("contactPoint")}
                                         editor={multilineTextEditor}
                                     >
-                                        {this.props.dataset.contactPoint && (
+                                        {this.props.dataset.contactPoint ? (
                                             <ContactPoint
                                                 contactPoint={
                                                     this.props.dataset
                                                         .contactPoint
                                                 }
                                             />
+                                        ) : (
+                                            <></>
                                         )}
                                     </ToggleEditor>
                                     <ToggleEditor
