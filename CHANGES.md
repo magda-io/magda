@@ -91,6 +91,7 @@ UI:
 -   Added the ability to add references to datasets that a new dataset was derived from.
 -   Fixed edit file panel text input layout
 -   Fixed a blank screen issue on dataset page
+-   Fixed "NOT SET" appears on the dataset page for non-admins
 
 Gateway:
 
