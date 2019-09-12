@@ -735,9 +735,16 @@ class RecordHandler extends React.Component {
                                                 organisations?
                                             </h4>
                                             <div>
-                                                {dataset.provenance.affiliatedOrganizationIds.map(
-                                                    org => org.name
-                                                )}
+                                                {dataset &&
+                                                    dataset.provenance &&
+                                                    dataset.provenance
+                                                        .affiliatedOrganizationIds &&
+                                                    dataset.provenance
+                                                        .affiliatedOrganizationIds
+                                                        .length &&
+                                                    dataset.provenance.affiliatedOrganizationIds.map(
+                                                        org => org.name
+                                                    )}
                                             </div>
                                             <h4>
                                                 How was the dataset produced?
