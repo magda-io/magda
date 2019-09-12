@@ -90,6 +90,7 @@ UI:
 -   Added Custodian field to the 'People and Production' page
 -   Added the ability to add references to datasets that a new dataset was derived from.
 -   Fixed edit file panel text input layout
+-   Fixed a blank screen issue on dataset page
 
 Gateway:
 
