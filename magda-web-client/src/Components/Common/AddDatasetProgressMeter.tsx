@@ -1,8 +1,9 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
 import { createNewDatasetReset } from "actions/recordActions";
-import { withRouter } from "react-router";
+import { Link } from "react-router-dom";
+import { withRouter, match } from "react-router";
 import "./AddDatasetProgressMeter.scss";
 import iconTick from "assets/tick.svg";
 import { History, Location } from "history";
@@ -11,64 +12,41 @@ type urlFunc = (datasetId: string) => string;
 interface StepItem {
     title: string;
     url: string | urlFunc;
-    testFunc: (url: string) => boolean;
 }
 
 interface PropsType {
     history: History;
     location: Location;
     createNewDatasetReset: Function;
+    match: match<{
+        dataset: string;
+        step: string;
+    }>;
 }
 
 export const Steps: StepItem[] = [
     {
         title: "Add files",
         url: datasetId =>
-            datasetId
-                ? `/dataset/add/files/${datasetId}`
-                : "/dataset/add/files",
-        testFunc: url => url.indexOf("/dataset/add/files") !== -1
+            datasetId ? `/dataset/add/files/${datasetId}` : "/dataset/add/files"
     },
     {
         title: "Details and Contents",
-        url: "/dataset/add/metadata/${datasetId}/0",
-        testFunc: url =>
-            url.search(/\/dataset\/add\/metadata\/[^\/]+\/0/) !== -1
+        url: "/dataset/add/metadata/${datasetId}/0"
     },
     {
         title: "People and Production",
-        url: "/dataset/add/metadata/${datasetId}/1",
-        testFunc: url =>
-            url.search(/\/dataset\/add\/metadata\/[^\/]+\/1/) !== -1
+        url: "/dataset/add/metadata/${datasetId}/1"
     },
     {
         title: "Access and User",
-        url: "/dataset/add/metadata/${datasetId}/2",
-        testFunc: url =>
-            url.search(/\/dataset\/add\/metadata\/[^\/]+\/2/) !== -1
+        url: "/dataset/add/metadata/${datasetId}/2"
     },
     {
         title: "Submit for Approval",
-        url: "/dataset/add/metadata/${datasetId}/3",
-        testFunc: url =>
-            url.search(/\/dataset\/add\/metadata\/[^\/]+\/3/) !== -1
+        url: "/dataset/add/metadata/${datasetId}/3"
     }
 ];
-
-function determineCurrentStep(location) {
-    const { pathname } = location;
-    for (let i = 0; i < Steps.length; i++) {
-        if (Steps[i].testFunc(pathname)) return i + 1;
-    }
-    throw new Error("Can't determine current progress step");
-}
-
-function determineDatasetId(location) {
-    const { pathname } = location;
-    const matches = pathname.match(/dataset-[\da-z-]+/);
-    if (matches) return matches[0];
-    return "";
-}
 
 function createStepUrl(datasetId, item: StepItem) {
     if (typeof item.url === "string") {
@@ -81,46 +59,83 @@ function createStepUrl(datasetId, item: StepItem) {
 }
 
 const AddDatasetProgressMeter = (props: PropsType) => {
+    function determineDatasetId() {
+        return props.match.params.dataset;
+    }
+
+    function determineCurrentStep() {
+        const stepNo = parseInt(props.match.params.step);
+        if (Number.isNaN(stepNo)) {
+            return 0;
+        } else {
+            return stepNo + 1;
+        }
+    }
+
     function renderStepItem(
         item: StepItem,
         idx: number,
         currentStep: number,
         datasetId: string
     ) {
-        let statusClass, iconItem;
-        if (currentStep < idx + 1) {
-            statusClass = "future-item";
-            iconItem = <div className="round-number-icon">{idx + 1}</div>;
-        } else if (currentStep > idx + 1) {
-            statusClass = "past-item";
-            iconItem = <img className="step" src={iconTick} />;
-        } else {
-            statusClass = "current-item";
-            iconItem = <div className="round-number-icon">{idx + 1}</div>;
-        }
-        return (
-            <div
-                key={idx}
-                className={`col-sm-2 step-item-container ${statusClass}`}
-                onClick={() => {
-                    if (statusClass !== "past-item") {
-                        return;
-                    }
-                    props.history.push(createStepUrl(datasetId, item));
-                    if (props.createNewDatasetReset)
-                        props.createNewDatasetReset();
-                }}
-            >
-                <div className="step-item">
-                    {iconItem}
-                    <div className="step-item-title">{item.title}</div>
-                </div>
+        type Status = {
+            class: "past-item" | "current-item" | "future-item";
+            iconItem: ReactNode;
+        };
+
+        const status: Status = (() => {
+            if (currentStep < idx) {
+                return {
+                    class: "future-item",
+                    iconItem: <div className="round-number-icon">{idx + 1}</div>
+                } as Status;
+            } else if (currentStep > idx) {
+                return {
+                    class: "past-item",
+                    iconItem: <img className="step" src={iconTick} />
+                } as Status;
+            } else {
+                return {
+                    class: "current-item",
+                    iconItem: <div className="round-number-icon">{idx + 1}</div>
+                } as Status;
+            }
+        })();
+
+        const inner = (
+            <div className="step-item">
+                {status.iconItem}
+                <div className="step-item-title">{item.title}</div>
             </div>
         );
+
+        if (status.class === "past-item") {
+            return (
+                <Link
+                    key={idx}
+                    className={`col-sm-2 step-item-container past-item`}
+                    to={createStepUrl(datasetId, item)}
+                    onClick={() => {
+                        props.createNewDatasetReset();
+                    }}
+                >
+                    {inner}
+                </Link>
+            );
+        } else {
+            return (
+                <div
+                    key={idx}
+                    className={`col-sm-2 step-item-container ${status.class}`}
+                >
+                    {inner}
+                </div>
+            );
+        }
     }
 
-    const currentStep = determineCurrentStep(props.location);
-    const datasetId = determineDatasetId(props.location);
+    const currentStep = determineCurrentStep();
+    const datasetId = determineDatasetId();
 
     return (
         <div className="row add-dataset-progress-meter">
