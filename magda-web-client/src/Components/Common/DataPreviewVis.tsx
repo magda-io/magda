@@ -3,39 +3,92 @@ import React, { Component } from "react";
 import DataPreviewTable from "./DataPreviewTable";
 import DataPreviewChart from "./DataPreviewChart";
 import { ParsedDistribution } from "helpers/record";
+import CsvDataLoader, { DataLoadingResult } from "helpers/CsvDataLoader";
 import "./DataPreviewVis.scss";
+
+type VisType = "chart" | "table";
+
+type StateType = {
+    visType: VisType;
+    isDataLoading: boolean;
+    dataLoadingResult: DataLoadingResult | null;
+};
 
 class DataPreviewVis extends Component<
     {
         distribution: ParsedDistribution;
     },
-    any
+    StateType
 > {
+    private dataLoader: CsvDataLoader | null = null;
+
     constructor(props) {
         super(props);
         this.state = {
-            chartType: "line",
-            chartTitle: "",
-            yAxis: null,
-            xAxis: null,
-            xScale: "temporal",
-            yScale: "quantitative",
-            visType: "chart"
+            visType: "chart",
+            isDataLoading: true,
+            dataLoadingResult: null
         };
         this.onChangeTab = this.onChangeTab.bind(this);
+        this.dataLoader = null;
+    }
+
+    componentDidMount() {
+        this.loadData();
+    }
+
+    componentDidUpdate(prevProps) {
+        const distribution = this.props.distribution;
+        const prevDistribution = prevProps.distribution;
+        if (distribution !== prevDistribution) {
+            this.loadData();
+        }
+    }
+
+    componentWillUnmount() {
+        if (this.dataLoader) {
+            this.dataLoader.abort();
+        }
+    }
+
+    async loadData() {
+        // If none of chart & table compatiblePreviews option is false, no need to load data
+        const distribution = this.props.distribution;
+        if (
+            !distribution ||
+            !distribution.identifier ||
+            (!distribution.compatiblePreviews.chart &&
+                !distribution.compatiblePreviews.table)
+        ) {
+            return;
+        }
+
+        this.dataLoader = new CsvDataLoader(this.props.distribution);
+        this.setState({ isDataLoading: true });
+        const result = await this.dataLoader.load();
+        this.setState({
+            isDataLoading: false,
+            dataLoadingResult: result
+        });
     }
 
     renderChart() {
         return (
             <DataPreviewChart
-                distribution={this.props.distribution}
+                dataLoadingResult={this.state.dataLoadingResult}
+                isLodaing={this.state.isDataLoading}
                 onChangeTab={this.onChangeTab}
             />
         );
     }
 
     renderTable() {
-        return <DataPreviewTable distribution={this.props.distribution} />;
+        return (
+            <DataPreviewTable
+                dataLoadingResult={this.state.dataLoadingResult}
+                isLodaing={this.state.isDataLoading}
+            />
+        );
     }
 
     onChangeTab(tab) {

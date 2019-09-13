@@ -44,9 +44,8 @@ const serverConfig: {
     defaultOrganizationId?: string;
     defaultContactEmail?: string;
     custodianOrgLevel: number;
-    maxChartProcessingRows?: number;
-    maxTableProcessingRows?: number;
-    csvChunkSize?: number;
+    maxChartProcessingRows: number;
+    maxTableProcessingRows: number;
 } = window.magda_server_config || {};
 
 const registryReadOnlyApiUrl =
@@ -157,8 +156,12 @@ export const config = {
     custodianOrgLevel: serverConfig.custodianOrgLevel
         ? serverConfig.custodianOrgLevel
         : 2,
-    maxChartProcessingRows: serverConfig.maxChartProcessingRows,
+    maxChartProcessingRows: serverConfig.maxChartProcessingRows
+        ? serverConfig.maxChartProcessingRows
+        : 15000,
     maxTableProcessingRows: serverConfig.maxTableProcessingRows
+        ? serverConfig.maxTableProcessingRows
+        : 200
 };
 
 export const defaultConfiguration = {

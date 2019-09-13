@@ -4,8 +4,7 @@ import { config } from "../config";
 import { Parser, ParseResult, ParseError, ParseMeta } from "papaparse";
 import { ParsedDistribution } from "./record";
 
-const DEFAULT_MAX_CHART_PROCESSING_ROWS_NUMBER = 15000;
-const DEFAULT_MAX_TABLE_PROCESSING_ROWS_NUMBER = 200;
+export type DataLoadingResult = ParseResult;
 
 type CsvUrlType = string;
 
@@ -44,15 +43,20 @@ class CsvDataLoader {
     private data: any[] = [];
     private errors: ParseError[] = [];
     private metaData: ParseMeta | null = null;
+    private isLoading: boolean = false;
+    /**
+     * When download & parse process is aborted as result of user or client side event (e.g. component will be unmounted),
+     * We set this marker and let loader know it should abort any unfinished processing.
+     *
+     * @private
+     * @type {boolean}
+     * @memberof CsvDataLoader
+     */
+    private toBeAbort: boolean = false;
 
     constructor(source: CsvSourceType) {
-        this.maxChartProcessingRows = config.maxChartProcessingRows
-            ? config.maxChartProcessingRows
-            : DEFAULT_MAX_CHART_PROCESSING_ROWS_NUMBER;
-
-        this.maxTableProcessingRows = config.maxTableProcessingRows
-            ? config.maxTableProcessingRows
-            : DEFAULT_MAX_TABLE_PROCESSING_ROWS_NUMBER;
+        this.maxChartProcessingRows = config.maxChartProcessingRows;
+        this.maxTableProcessingRows = config.maxTableProcessingRows;
 
         this.maxProcessRows = Math.max(
             this.maxChartProcessingRows,
@@ -62,7 +66,7 @@ class CsvDataLoader {
         this.url = this.getSourceUrl(source);
     }
 
-    getSourceUrl(source: CsvSourceType): string {
+    private getSourceUrl(source: CsvSourceType): string {
         if (typeof source === "string") {
             return source;
         }
@@ -79,13 +83,20 @@ class CsvDataLoader {
         );
     }
 
-    resetDownloadData() {
+    private resetDownloadData() {
         this.data = [];
         this.errors = [];
         this.metaData = null;
+        this.isLoading = false;
+        this.toBeAbort = false;
     }
 
-    async load(overrideNewLine = ""): Promise<ParseResult> {
+    abort() {
+        if (!this.isLoading) return;
+        this.toBeAbort = true;
+    }
+
+    async load(overrideNewLine = ""): Promise<DataLoadingResult> {
         this.resetDownloadData();
         const Papa = await getPapaParse();
         const proxyUrl = config.proxyUrl + "_0d/" + this.url;
@@ -99,6 +110,13 @@ class CsvDataLoader {
                 trimHeader: true,
                 chunk: (results: ParseResult, parser: Parser) => {
                     try {
+                        if (this.toBeAbort) {
+                            parser.abort();
+                            reject(
+                                new Error("Data processing has been aborted.")
+                            );
+                            return;
+                        }
                         if (
                             results.data.length <= 1 &&
                             results.errors.length >= 1 &&
