@@ -1,5 +1,6 @@
-import buildSearchQueryString from "../helpers/buildSearchQueryString";
-import { config } from "../config";
+import buildSearchQueryString, {
+    Query
+} from "../helpers/buildSearchQueryString";
 import { actionTypes } from "../constants/ActionTypes";
 import { FetchError, Dispatch } from "../types";
 import {
@@ -7,6 +8,7 @@ import {
     FacetAction,
     SearchAction
 } from "../helpers/datasetSearch";
+import { searchDatasets } from "api-clients/SearchApis";
 
 export function requestResults(
     queryObject: any,
@@ -43,23 +45,12 @@ export function resetDatasetSearch(): SearchAction {
     };
 }
 
-export function fetchSearchResults(query: string, queryObject: any) {
+export function fetchSearchResults(queryObject: Query) {
     return (dispatch: Dispatch) => {
-        let url: string = config.searchApiUrl + `datasets?${query}`;
-        dispatch(requestResults(queryObject, query));
-        return fetch(url, config.fetchOptions)
-            .then((response: any) => {
-                if (response.status === 200) {
-                    return response.json();
-                }
-                let errorMessage = response.statusText;
-                if (!errorMessage)
-                    errorMessage = "Failed to retrieve network resource.";
-                throw new Error(errorMessage);
-            })
-            .then((json: DataSearchJson) => {
-                return dispatch(receiveResults(query, json));
-            })
+        const queryString = buildSearchQueryString(queryObject);
+        dispatch(requestResults(queryObject, queryString));
+        searchDatasets(queryObject)
+            .then(json => dispatch(receiveResults(queryString, json)))
             .catch(error =>
                 dispatch(
                     transferFailed({ title: error.name, detail: error.message })
@@ -68,32 +59,28 @@ export function fetchSearchResults(query: string, queryObject: any) {
     };
 }
 
-export function shouldFetchSearchResults(
-    state: any,
-    keyword: string,
-    query: string
-): boolean {
+export function shouldFetchSearchResults(state: any, query: Query): boolean {
+    const apiQuery = buildSearchQueryString(
+        query,
+        state.content.configuration.searchResultsPerPage
+    );
     const datasetSearch = state.datasetSearch;
-    if (!datasetSearch || (!keyword && !query)) {
+    if (!datasetSearch || (!query.q && !query)) {
         return false;
     } else if (datasetSearch.isFetching) {
         return false;
-    } else if (query !== datasetSearch.apiQuery) {
+    } else if (apiQuery !== datasetSearch.apiQuery) {
         return true;
     } else {
         return false;
     }
 }
 
-export function fetchSearchResultsIfNeeded(urlQueryObject: any) {
+export function fetchSearchResultsIfNeeded(urlQueryObject: Query) {
     return (dispatch, getState) => {
         const state = getState();
-        const apiQuery = buildSearchQueryString(
-            urlQueryObject,
-            state.content.configuration.searchResultsPerPage
-        );
-        if (shouldFetchSearchResults(state, urlQueryObject.q, apiQuery)) {
-            return dispatch(fetchSearchResults(apiQuery, urlQueryObject));
+        if (shouldFetchSearchResults(state, urlQueryObject)) {
+            return dispatch(fetchSearchResults(urlQueryObject));
         }
     };
 }

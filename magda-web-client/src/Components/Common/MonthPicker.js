@@ -4,7 +4,7 @@ import debounce from "lodash/debounce";
 import "./MonthPicker.scss";
 import helpIcon from "assets/help.svg";
 import defined from "helpers/defined";
-import Tooltip from "./Tooltip";
+import TooltipWrapper from "./TooltipWrapper";
 
 const MONTH_NAMES = [
     ["Jan", "Feb", "Mar"],
@@ -152,7 +152,7 @@ class MonthPicker extends Component {
             (upperYear === currYear && upperMonth > currMonth)
         ) {
             return (
-                <Tooltip
+                <TooltipWrapper
                     startOpen={false}
                     requireClickToDismiss={false}
                     launcher={() => (
@@ -166,7 +166,7 @@ class MonthPicker extends Component {
                     orientation="below"
                 >
                     {dismiss => "Some datasets are predictions"}
-                </Tooltip>
+                </TooltipWrapper>
             );
         }
     };

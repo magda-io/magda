@@ -569,13 +569,15 @@ class RecordHandler extends React.Component {
                                         onChange={datasetChange("contactPoint")}
                                         editor={multilineTextEditor}
                                     >
-                                        {this.props.dataset.contactPoint && (
+                                        {this.props.dataset.contactPoint ? (
                                             <ContactPoint
                                                 contactPoint={
                                                     this.props.dataset
                                                         .contactPoint
                                                 }
                                             />
+                                        ) : (
+                                            <></>
                                         )}
                                     </ToggleEditor>
                                     <ToggleEditor
@@ -735,17 +737,16 @@ class RecordHandler extends React.Component {
                                                 organisations?
                                             </h4>
                                             <div>
-                                                <ToggleEditor
-                                                    enabled={hasEditPermissions}
-                                                    value={
-                                                        dataset.provenance
-                                                            .affiliatedOrganizationIds
-                                                    }
-                                                    onChange={provenanceChange(
-                                                        "affiliatedOrganizationIds"
+                                                {dataset &&
+                                                    dataset.provenance &&
+                                                    dataset.provenance
+                                                        .affiliatedOrganizationIds &&
+                                                    dataset.provenance
+                                                        .affiliatedOrganizationIds
+                                                        .length &&
+                                                    dataset.provenance.affiliatedOrganizationIds.map(
+                                                        org => org.name
                                                     )}
-                                                    editor={multilineTextEditor}
-                                                />
                                             </div>
                                             <h4>
                                                 How was the dataset produced?

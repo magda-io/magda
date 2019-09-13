@@ -24,6 +24,12 @@
                 "minLength": 36,
                 "maxLength": 36
             }
+        },
+        "custodianOrgUnitId": {
+            "title": "the id of the data custodian organisation unit",
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36
         }
     }
 }

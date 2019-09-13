@@ -35,6 +35,7 @@ baseSpec(
             userId: string,
             concurrency: number,
             async: boolean,
+            enableMultiTenant: boolean,
             // --- init func creates other context variables shared among callbacks
             envInit: () => any,
             onRecordFound: (
@@ -81,11 +82,11 @@ baseSpec(
                 argv: fakeArgv({
                     internalUrl,
                     registryUrl,
+                    enableMultiTenant,
                     tenantUrl,
                     jwtSecret,
                     userId,
-                    listenPort: listenPort(),
-                    tenantId: tenantId
+                    listenPort: listenPort()
                 }),
                 id: "id",
                 aspects: [],
@@ -94,8 +95,7 @@ baseSpec(
                 async,
                 express: expressApp,
                 concurrency: concurrency,
-                onRecordFound: onRecordFound.bind(context),
-                tenantId: tenantId
+                onRecordFound: onRecordFound.bind(context)
             };
 
             registryScope
@@ -129,6 +129,7 @@ baseSpec(
                     lcAlphaNumStringArbNe,
                     lcAlphaNumStringArbNe,
                     jsc.integer(1, 10),
+                    jsc.bool,
                     jsc.bool,
                     _.partialRight(
                         basecrawlerTest,
