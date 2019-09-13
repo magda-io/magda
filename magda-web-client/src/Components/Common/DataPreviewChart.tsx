@@ -8,10 +8,31 @@ import upArrowIcon from "assets/upArrow.svg";
 import AUpageAlert from "pancake/react/page-alerts";
 import memoize from "memoize-one";
 import { gapi } from "analytics/ga";
+import { DataLoadingResult } from "helpers/CsvDataLoader";
+import { ParsedDistribution } from "helpers/record";
 
 import "./DataPreviewChart.scss";
 
-let ReactEcharts = null;
+type PropsType = {
+    dataLoadingResult: DataLoadingResult | null;
+    isLodaing: boolean;
+    distribution: ParsedDistribution;
+    onChangeTab: (string) => void;
+};
+
+type StateType = {
+    error: Error;
+    avlXCols: any[];
+    avlYCols: any[];
+    xAxis: any;
+    yAxis: any;
+    chartOption: any;
+    isExpanded: boolean;
+    chartType: string;
+    chartTitle: string;
+};
+
+let ReactEcharts;
 
 const defaultChartType = "bar";
 
@@ -23,28 +44,25 @@ const switchTabOnFirstGo = memoize(
         prev.distribution.identifier === next.distribution.identifier
 );
 
-class DataPreviewChart extends Component {
+class DataPreviewChart extends Component<PropsType, StateType> {
+    private chartDatasetEncoder: ChartDatasetEncoder = new ChartDatasetEncoder();
+
     constructor(props) {
         super(props);
         this.state = this.getResetState({
             chartType: defaultChartType,
-            isLoading: true,
             chartTitle: this.props.distribution.title
                 ? this.props.distribution.title
                 : "",
             isExpanded: true
         });
-        this.chartDatasetEncoder = null;
         this.onChartConfigChanged = this.onChartConfigChanged.bind(this);
         this.onToggleButtonClick = this.onToggleButtonClick.bind(this);
         this.onDismissError = this.onDismissError.bind(this);
-        this.isCancelled = false;
     }
 
-    getResetState(extraOptions = null) {
+    getResetState(extraOptions: any = {}) {
         const options = {
-            error: null,
-            isLoading: false,
             avlXCols: [],
             avlYCols: [],
             xAxis: null,
@@ -55,122 +73,78 @@ class DataPreviewChart extends Component {
         else return { ...options, ...extraOptions };
     }
 
-    async initChartData() {
-        try {
-            if (
-                ChartDatasetEncoder.isValidDistributionData(
-                    this.props.distribution
-                )
-            ) {
-                if (!this.chartDatasetEncoder)
-                    this.chartDatasetEncoder = new ChartDatasetEncoder(
-                        this.props.distribution
-                    );
-                else this.chartDatasetEncoder.init(this.props.distribution);
-                if (!this.chartDatasetEncoder.isDataLoaded)
-                    await this.chartDatasetEncoder.loadData();
+    initChartData() {
+        this.chartDatasetEncoder.processData(
+            this.props.distribution,
+            this.props.dataLoadingResult
+        );
 
-                let chartType = this.state.chartType;
-                if (!this.state.xAxis || !this.state.yAxis) {
-                    this.chartDatasetEncoder.setDefaultParameters();
-                    //if(this.chartDatasetEncoder.yAxis.isAggr) chartType = "pie";
-                    // will not set to pie by default
-                } else {
-                    this.chartDatasetEncoder.setX(this.state.xAxis);
-                    this.chartDatasetEncoder.setY(this.state.yAxis);
-                }
-
-                if (!chartType) chartType = defaultChartType;
-                this.chartDatasetEncoder.setChartType(chartType);
-                const chartOption = this.chartDatasetEncoder.getChartOption("");
-
-                if (!this.isCancelled) {
-                    this.setState({
-                        error: null,
-                        isLoading: false,
-                        avlXCols: this.chartDatasetEncoder.getAvailableXCols(),
-                        avlYCols: this.chartDatasetEncoder.getAvailableYCols(),
-                        xAxis: this.chartDatasetEncoder.xAxis,
-                        yAxis: this.chartDatasetEncoder.yAxis,
-                        chartType,
-                        chartOption
-                    });
-                }
-            }
-        } catch (e) {
-            console.error(e);
-            throw e; //--- not capture here; only for debug
+        let chartType = this.state.chartType;
+        if (!this.state.xAxis || !this.state.yAxis) {
+            this.chartDatasetEncoder.setDefaultParameters();
+            //if(this.chartDatasetEncoder.yAxis.isAggr) chartType = "pie";
+            // will not set to pie by default
+        } else {
+            this.chartDatasetEncoder.setX(this.state.xAxis);
+            this.chartDatasetEncoder.setY(this.state.yAxis);
         }
+
+        if (!chartType) chartType = defaultChartType;
+        this.chartDatasetEncoder.setChartType(chartType);
+        const chartOption = this.chartDatasetEncoder.getChartOption("");
+
+        this.setState({
+            avlXCols: this.chartDatasetEncoder.getAvailableXCols(),
+            avlYCols: this.chartDatasetEncoder.getAvailableYCols(),
+            xAxis: this.chartDatasetEncoder.xAxis,
+            yAxis: this.chartDatasetEncoder.yAxis,
+            chartType,
+            chartOption
+        });
     }
 
     async componentDidMount() {
         try {
             if (!ReactEcharts)
                 ReactEcharts = (await import("echarts-for-react")).default;
-            await this.initChartData();
+            this.initChartData();
         } catch (e) {
-            if (!this.isCancelled) {
-                this.setState(
-                    this.getResetState({
-                        error: e
-                    })
-                );
+            this.setState(
+                this.getResetState({
+                    error: e
+                })
+            );
 
-                gapi.event({
-                    category: "Error",
-                    action: `Failed to display chart for ${
-                        window.location.href
-                    }: ${e.message}`,
-                    label: "Chart Display Failure",
-                    nonInteraction: true
-                });
+            gapi.event({
+                category: "Error",
+                action: `Failed to display chart for ${window.location.href}: ${
+                    e.message
+                }`,
+                label: "Chart Display Failure",
+                nonInteraction: true
+            });
 
-                // if there is error, automatically switch to table view
-                switchTabOnFirstGo(this.props);
-            }
+            // if there is error, automatically switch to table view
+            switchTabOnFirstGo(this.props);
         }
     }
 
     async componentDidUpdate(prevProps, prevState) {
         try {
-            if (
-                ChartDatasetEncoder.isValidDistributionData(
-                    this.props.distribution
-                ) &&
-                (prevProps.distribution.identifier !==
-                    this.props.distribution.identifier ||
-                    prevState.chartTitle !== this.state.chartTitle ||
-                    prevState.chartType !== this.state.chartType ||
-                    prevState.xAxis !== this.state.xAxis ||
-                    prevState.yAxis !== this.state.yAxis) &&
-                !this.isCancelled
-            ) {
-                this.setState(
-                    this.getResetState({
-                        isLoading: true
-                    })
-                );
-                await this.initChartData();
-            }
+            this.initChartData();
         } catch (e) {
             // we do not automatically switch to table view here because chart has already successfully rendered.
             // for subsequent error cause the chart to not render, we will just display an error message
-            if (!this.isCancelled) {
-                this.setState(
-                    this.getResetState({
-                        error: e
-                    })
-                );
-            }
+            this.setState(
+                this.getResetState({
+                    error: e
+                })
+            );
         }
     }
 
-    componentWillUnmount() {
-        this.isCancelled = true;
-    }
-
     onChartConfigChanged(key, value) {
-        this.setState({ [key]: value });
+        this.setState({ [key]: value } as any);
     }
 
     onToggleButtonClick(e) {
@@ -186,7 +160,12 @@ class DataPreviewChart extends Component {
     }
 
     render() {
-        if (this.state.error)
+        if (
+            (this.props.dataLoadingResult &&
+                this.props.dataLoadingResult.errors &&
+                this.props.dataLoadingResult.errors.length) ||
+            this.state.error
+        )
             return (
                 <AUpageAlert as="error" className="notification__inner">
                     <h3>Oops</h3>
@@ -199,17 +178,12 @@ class DataPreviewChart extends Component {
                     </button>
                 </AUpageAlert>
             );
-        if (this.state.isLoading) return <Spinner height="420px" />;
+        if (this.props.isLodaing) return <Spinner height="420px" />;
         if (!ReactEcharts)
             return <div>Unexpected Error: failed to load chart component.</div>;
 
         return (
-            <div
-                className="row data-preview-chart"
-                ref={chartWidthDiv => {
-                    this.chartWidthDiv = chartWidthDiv;
-                }}
-            >
+            <div className="row data-preview-chart">
                 <div className="col-sm-8 chart-panel-container">
                     <h4 className="chart-title">{this.state.chartTitle}</h4>
                     <ReactEcharts

@@ -10,7 +10,6 @@ import { DataLoadingResult } from "helpers/CsvDataLoader";
 type PropsType = {
     dataLoadingResult: DataLoadingResult | null;
     isLodaing: boolean;
-    onChangeTab: (string) => void;
 };
 
 export default class DataPreviewTable extends Component<PropsType> {

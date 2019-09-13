@@ -75,6 +75,7 @@ class DataPreviewVis extends Component<
     renderChart() {
         return (
             <DataPreviewChart
+                distribution={this.props.distribution}
                 dataLoadingResult={this.state.dataLoadingResult}
                 isLodaing={this.state.isDataLoading}
                 onChangeTab={this.onChangeTab}
