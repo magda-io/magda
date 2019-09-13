@@ -98,8 +98,16 @@ abstract class ApiWithOpaSpec
     val theRecordPolicyId = recordPolicyId
 
     if (theRecordPolicyId.endsWith("esri_groups")) {
-      // The current Java JWT library is not capable of creating custom claims that are json objects.
-      // The typescript library comes to help. These jwt tokens are created by magda-typescript-common/src/test/session/buildJwt.spec.ts.
+      /**
+        * The current Java JWT library is not capable of creating custom claims that are json objects.
+        * The typescript library comes to help. These jwt tokens are created by magda-typescript-common/src/test/session/buildJwtForRegistryEsriOpaTest.ts.
+        *
+        * Follow the steps below to create them.
+        *
+        *     cd magda-typescript-common
+        *     yarn build
+        *     yarn create_esri_jwt
+       */
       val jwtToken =
         if (userId.equals("00000000-0000-1000-0000-000000000000"))
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwMDAwMDAwMC0wMDAwLTEwMDAtMDAwMC0wMDAwMDAwMDAwMDAiLCJzZXNzaW9uIjp7InNlc3Npb24iOnsiZXNyaUdyb3VwcyI6WyJEZXAuIEEiLCJCcmFuY2ggQSwgRGVwLiBBIiwiQnJhbmNoIEIsIERlcC4gQSIsIlNlY3Rpb24gQywgQnJhbmNoIEIsIERlcC4gQSJdfX0sImlhdCI6MTU2ODI4ODgzNn0.V8VzOqKKngc2Fykuy7C_oBjvJRhJeosLnN8a066ffuo"
