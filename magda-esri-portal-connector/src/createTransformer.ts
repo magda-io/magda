@@ -27,6 +27,7 @@ export default function createTransformer({
         datasetAspectBuilders: datasetAspectBuilders,
         distributionAspectBuilders: distributionAspectBuilders,
         organizationAspectBuilders: organizationAspectBuilders,
+        tenantId: 0,
         libraries: {
             cleanOrgTitle: cleanOrgTitle,
             moment: moment,

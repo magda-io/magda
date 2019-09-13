@@ -85,6 +85,12 @@ export const argv: any = addJwtSecretFromEnvVar(
             demand: true,
             default:
                 process.env.USER_ID || process.env.npm_package_config_userId
+        })
+        .option("tenantId", {
+            describe: "The tenant id",
+            type: "number",
+            demand: true,
+            default: 0
         }).argv
 );
 
