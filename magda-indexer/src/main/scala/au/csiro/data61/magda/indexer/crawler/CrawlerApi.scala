@@ -1,22 +1,14 @@
 package au.csiro.data61.magda.indexer.crawler
 
-import au.csiro.data61.magda.indexer.search.SearchIndexer
-import au.csiro.data61.magda.api.BaseMagdaApi
-import au.csiro.data61.magda.model.Registry.WebHookPayload
-import akka.event.LoggingAdapter
-import akka.http.scaladsl.server.Directives._
-import scala.util.Failure
-import scala.util.Success
-import akka.http.scaladsl.model.StatusCodes.{ Accepted, Conflict, OK }
 import akka.actor.ActorSystem
-import scala.concurrent.Future
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import spray.json._
-import au.csiro.data61.magda.model.Registry.RegistryProtocols
-import scala.concurrent.duration._
-import au.csiro.data61.magda.AppConfig
+import akka.http.scaladsl.model.StatusCodes.{Accepted, Conflict, OK}
+import akka.http.scaladsl.server.Directives._
+import au.csiro.data61.magda.api.BaseMagdaApi
+import au.csiro.data61.magda.indexer.search.SearchIndexer
+import au.csiro.data61.magda.model.RegistryProtocols
 import com.typesafe.config.Config
+
+import scala.util.{Failure, Success}
 
 class CrawlerApi(crawler: Crawler, indexer: SearchIndexer)(implicit system: ActorSystem, config: Config) extends BaseMagdaApi with RegistryProtocols {
   implicit val ec = system.dispatcher

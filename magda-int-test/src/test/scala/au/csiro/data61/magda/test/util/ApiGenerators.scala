@@ -1,45 +1,16 @@
 package au.csiro.data61.magda.test.util
 
-import java.time.Duration
-import scala.collection.mutable
-import java.time.temporal.ChronoUnit
-
-import org.scalacheck.{ Gen, Shrink }
-import org.scalacheck.Gen.Choose._
-import org.scalacheck.Arbitrary._
-import com.monsanto.labs.mwundo.GeoJson._
+import au.csiro.data61.magda.api.{FilterValue, Query, Specified, Unspecified}
 import au.csiro.data61.magda.model.misc._
-import au.csiro.data61.magda.model.Temporal._
-import java.time.ZonedDateTime
-
-import com.fortysevendeg.scalacheck.datetime.instances.jdk8._
-import com.fortysevendeg.scalacheck.datetime.GenDateTime.genDateTimeWithinRange
-import java.time.ZoneOffset
-
-import org.locationtech.jts.geom
-import org.locationtech.jts.operation.valid.IsValidOp
-import java.time.Instant
-
-import akka.http.scaladsl.model.MediaTypes
-import java.util.concurrent.atomic.AtomicInteger
-
-import akka.http.scaladsl.server.Route
-import au.csiro.data61.magda.api.Query
-import au.csiro.data61.magda.util.Regex._
-import org.scalacheck.Shrink.shrink
 import au.csiro.data61.magda.spatial.RegionSource
-import spray.json.JsObject
-import java.net.URL
-import spray.json._
-import au.csiro.data61.magda.model.misc.Protocols._
-import org.locationtech.jts.geom.GeometryFactory
-import com.monsanto.labs.mwundo.GeoJson._
-import au.csiro.data61.magda.util.MwundoJTSConversions._
-import au.csiro.data61.magda.api.Specified
-import au.csiro.data61.magda.api.Unspecified
-import au.csiro.data61.magda.api.FilterValue
-import com.typesafe.config.Config
 import au.csiro.data61.magda.test.util.Generators._
+import au.csiro.data61.magda.util.Regex._
+import com.typesafe.config.Config
+import org.scalacheck.Gen
+import org.scalacheck.Gen.Choose._
+import spray.json.{JsObject, _}
+
+import scala.collection.mutable
 
 object ApiGenerators {
   def queryTextGen(dataSets: List[DataSet]) = {

@@ -740,7 +740,8 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
             pullPolicy: "pullPolicy",
             namespace,
             jwtSecret: "secret",
-            userId: "user"
+            userId: "user",
+            tenantId: 0
         });
 
         const app = express();

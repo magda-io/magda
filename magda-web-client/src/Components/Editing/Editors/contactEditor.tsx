@@ -2,6 +2,7 @@ import React from "react";
 import Editor from "./Editor";
 
 import "./contactEditor.scss";
+import editIcon from "assets/edit.svg";
 
 export type Contact = {
     name?: string;
@@ -95,13 +96,16 @@ class ContactEditorComponent extends React.Component<any, any> {
 
         return (
             <div>
-                <div>
+                <div className="contact-editor-input-outter-container">
                     <input
-                        className="au-text-input"
+                        className="au-text-input contact-editor-input"
                         type="search"
                         placeholder="Search for a contact"
                         onChange={this.search.bind(this)}
                     />
+                    <div className="edit-icon-container">
+                        <img className="edit-icon" src={editIcon} />
+                    </div>
                 </div>
 
                 <div className="contactList">

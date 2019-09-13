@@ -1,7 +1,4 @@
 package au.csiro.data61.magda.api
-import org.scalacheck._
-import org.scalacheck.Shrink
-import org.scalatest._
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.StatusCodes.OK
@@ -9,12 +6,9 @@ import akka.http.scaladsl.server.Route
 import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.model.misc._
 import au.csiro.data61.magda.search.SearchStrategy
-import au.csiro.data61.magda.test.util.ApiGenerators._
-import au.csiro.data61.magda.test.util.MagdaMatchers
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute
-import org.apache.lucene.analysis.standard.StandardAnalyzer
-import au.csiro.data61.magda.test.util.Generators
-import au.csiro.data61.magda.util.Regex._
+import au.csiro.data61.magda.test.util.{Generators, MagdaMatchers}
+import org.scalacheck.{Shrink, _}
+
 import scala.util.Random
 
 class LanguageAnalyzerSpec extends BaseSearchApiSpec {
@@ -61,7 +55,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
         .filterNot(term => Generators.luceneStopWords.exists(stopWord => term.equals(stopWord.toLowerCase)))
 
       def test(dataSet: DataSet, term: String, routes: Route, tuples: List[(DataSet, String)]) = {
-        Get(s"""/v0/datasets?query=${encodeForUrl(term)}&limit=10000""") ~> routes ~> check {
+        Get(s"""/v0/datasets?query=${encodeForUrl(term)}&limit=10000""") ~> addSingleTenantIdHeader ~> routes ~> check {
           status shouldBe OK
           val result = responseAs[SearchResult]
 
@@ -81,7 +75,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     def termExtractor(dataSet: DataSet) = dataSet.publisher.toSeq.flatMap(_.name.toSeq)
 
     def test(dataSet: DataSet, publisherName: String, routes: Route, tuples: List[(DataSet, String)]) = {
-      Get(s"""/v0/facets/publisher/options?facetQuery=${encodeForUrl(publisherName)}&limit=10000""") ~> routes ~> check {
+      Get(s"""/v0/facets/publisher/options?facetQuery=${encodeForUrl(publisherName)}&limit=10000""") ~> addSingleTenantIdHeader ~> routes ~> check {
         status shouldBe OK
         val result = responseAs[FacetSearchResult]
 
@@ -103,7 +97,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
     def termExtractor(dataSet: DataSet) = dataSet.distributions.flatMap(_.format).filterNot(x => x.equalsIgnoreCase("and") || x.equalsIgnoreCase("or"))
 
     def test(dataSet: DataSet, formatName: String, routes: Route, tuples: List[(DataSet, String)]) = {
-      Get(s"""/v0/facets/format/options?facetQuery=${encodeForUrl(formatName)}&limit=${tuples.size}""") ~> routes ~> check {
+      Get(s"""/v0/facets/format/options?facetQuery=${encodeForUrl(formatName)}&limit=${tuples.size}""") ~> addSingleTenantIdHeader ~> routes ~> check {
         status shouldBe OK
         val result = responseAs[FacetSearchResult]
         val formats = termExtractor(dataSet)

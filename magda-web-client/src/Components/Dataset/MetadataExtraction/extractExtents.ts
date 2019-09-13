@@ -10,7 +10,7 @@ export function extractExtents(input, output) {
         if (rows.length) {
             const headersSet = new Set<string>();
             for (let row of rows) {
-                for (let key of Object.keys(row)) {
+                for (let key of Object.keys(row as object)) {
                     headersSet.add(key);
                 }
             }
@@ -285,6 +285,7 @@ function calculateSpatialExtent(rows: any[], headers: string[]) {
         spatial.minLng !== Number.MAX_SAFE_INTEGER
     ) {
         return {
+            spatialDataInputMethod: "bbox",
             bbox: [
                 spatial.minLng,
                 spatial.minLat,

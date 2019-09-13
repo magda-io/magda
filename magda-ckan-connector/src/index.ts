@@ -16,7 +16,8 @@ const ckan = new Ckan({
 const registry = new Registry({
     baseUrl: argv.registryUrl,
     jwtSecret: argv.jwtSecret,
-    userId: argv.userId
+    userId: argv.userId,
+    tenantId: argv.tenantId
 });
 
 const connector = new JsonConnector({

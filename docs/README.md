@@ -8,7 +8,7 @@ Government agencies, private companies and research organisations generally do a
 
 ## A platform for every part of the data landscape
 
-Magda is an open-source software platform designed to assist in all areas of the data ecosystem, from collection and authoring, through internal discovery and use, all the way to sharing inter-organisation or publishing on an open data portal. Originally developed as an open data aggregator for [data.gov.au](https://data.gov.au), after extensive research how data is used in the publich, research and private sector, it is now being extended into a set of components that can be arranged for many use-cases - internal private data portals, public open-data aggregators, limited data access portals for organisational partners, or any combination, with various users able to access different datasets depending on their permission level.
+Magda is an open-source software platform designed to assist in all areas of the data ecosystem, from collection and authoring, through internal discovery and use, all the way to sharing inter-organisation or publishing on an open data portal. Originally developed as an open data aggregator for [data.gov.au](https://data.gov.au), after extensive research how data is used in the public, research and private sector, it is now being extended into a set of components that can be arranged for many use-cases - internal private data portals, public open-data aggregators, limited data access portals for organisational partners, or any combination, with various users able to access different datasets depending on their permission level.
 
 ## Features
 

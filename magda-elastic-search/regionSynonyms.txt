@@ -1,5 +1,25 @@
 
 
+# Region Type: COUNTRY
+# From: https://s3-ap-southeast-2.amazonaws.com/magda-files/custom/country.geojson
+
+australia (mainland), australia => country/1
+australian offshore remote territories => country/2
+
+
+# Region Type: OFFSHORE_TERRITORIES
+# From: https://s3-ap-southeast-2.amazonaws.com/magda-files/custom/off-shore-territories.geojson
+
+norfolk island => offshore_territories/21
+christmas island => offshore_territories/22
+jervis bay territory => offshore_territories/23
+cocos (keeling) islands => offshore_territories/24
+ashmore and cartier islands => offshore_territories/25
+coral sea islands => offshore_territories/26
+australian antarctic territory => offshore_territories/27
+heard island and mcdonald islands => offshore_territories/28
+
+
 # Region Type: SA4
 # From: https://s3-ap-southeast-2.amazonaws.com/magda-files/SA4.geojson
 

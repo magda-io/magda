@@ -86,7 +86,7 @@ export class ListMultiItemEditor<V> extends MultiItemEditor<V> {
         const { newValue } = this.state;
         const value = this.value();
         return (
-            <React.Fragment>
+            <div className="list-multi-item-editor-container">
                 {enabled && (
                     <React.Fragment>
                         {editor.edit(newValue, this.change.bind(this), value, {
@@ -108,7 +108,7 @@ export class ListMultiItemEditor<V> extends MultiItemEditor<V> {
                 )}
                 {!enabled && (!value || !value.length) && "NOT SET"}
                 {!enabled && (!value || !value.length) ? null : (
-                    <div className="multi-list-item-editor-container">
+                    <div className="multi-list-item-editor-container clearfix">
                         {value.map((val, i) => {
                             return (
                                 <div
@@ -129,7 +129,7 @@ export class ListMultiItemEditor<V> extends MultiItemEditor<V> {
                         })}
                     </div>
                 )}
-            </React.Fragment>
+            </div>
         );
     }
 

@@ -15,6 +15,7 @@ import AuthError from "@magda/typescript-common/dist/authorization-api/AuthError
 import { installStatusRouter } from "@magda/typescript-common/dist/express/status";
 import { NodeNotFoundError } from "./NestedSetModelQueryer";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
+import { AuthorizedRegistryOptions } from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
 import getUsersAllowedOperationOnDataset from "./getUsersAllowedOperationOnDataset";
@@ -24,6 +25,7 @@ export interface ApiRouterOptions {
     registryApiUrl: string;
     opaUrl: string;
     jwtSecret: string;
+    tenantId: number;
 }
 
 /**
@@ -46,7 +48,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
     installStatusRouter(router, status, "/public");
 
     function respondWithError(route: string, res: express.Response, e: Error) {
-        console.error(`Error happened when processed "${route}": ${e}`);
+        console.error(`Error happened when processed "${route}"`);
+        console.error(e);
 
         if (e instanceof NodeNotFoundError) {
             res.status(404).json({
@@ -218,11 +221,14 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 const datasetId = req.query.datasetId;
                 if (datasetId) {
                     // --- load dataset info from registry
-                    const registryClient = new Registry({
+                    const registryOptions: AuthorizedRegistryOptions = {
                         baseUrl: options.registryApiUrl,
                         jwtSecret: options.jwtSecret,
-                        userId: (req as any).userId
-                    });
+                        userId: (req as any).userId,
+                        tenantId: options.tenantId
+                    };
+
+                    const registryClient = new Registry(registryOptions);
                     const record: Record = unionToThrowable(
                         await registryClient.getRecord(datasetId, undefined, [
                             "publishing",
@@ -453,6 +459,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * @apiDescription Gets org units matching a name
      *
      * @apiParam (query) {string} nodeName the name of the org unit to look up
+     * @apiParam (query) {boolean} leafNodesOnly Whether only leaf nodes should be returned
      *
      * @apiSuccessExample {json} 200
      *    [{
@@ -470,13 +477,13 @@ export default function createApiRouter(options: ApiRouterOptions) {
      */
     router.get("/public/orgunits", MUST_BE_ADMIN, async (req, res) => {
         try {
-            const nodeName = req.query.nodeName;
+            const nodeName: string = req.query.nodeName;
+            const leafNodesOnly: string = req.query.leafNodesOnly;
 
-            if (!nodeName || nodeName.length === 0) {
-                throw new Error("No nodeName parameter specified");
-            }
-
-            const nodes = await orgQueryer.getNodesByName(nodeName);
+            const nodes = await orgQueryer.getNodes({
+                name: nodeName,
+                leafNodesOnly: leafNodesOnly === "true"
+            });
             res.status(200).json(nodes);
         } catch (e) {
             respondWithError("/public/orgunits", res, e);

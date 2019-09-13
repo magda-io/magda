@@ -26,6 +26,10 @@ bin
 # IntelliJ specific
 .idea
 
+# VS Code
+.bloop
+.metals
+
 regions
 snapshots
 .cache-tests
@@ -36,3 +40,10 @@ pancake
 package-lock.json
 */package-lock.json
 .nyc_*
+
+# docker specific
+docker-context-*/
+
+#tenant-api specific
+magda-tenant-api/lib/
+

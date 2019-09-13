@@ -14,7 +14,7 @@ export interface VanguardOptions {
     wsFedIdpUrl: string;
     wsFedRealm: string;
     wsFedCertificate: string;
-    externalAuthHome: string;
+    externalUrl: string;
 }
 
 const STRATEGY = "vanguard";
@@ -25,10 +25,13 @@ export default function vanguard(options: VanguardOptions) {
     const wsFedIdpUrl = options.wsFedIdpUrl;
     const wsFedRealm = options.wsFedRealm;
     const wsFedCertificate = options.wsFedCertificate;
-    const externalAuthHome = options.externalAuthHome;
+    const externalUrl = options.externalUrl;
 
     if (!wsFedIdpUrl || !wsFedRealm || !wsFedCertificate) {
-        return undefined;
+        // --- we will know we didn't setup vanguard well
+        throw new Error(
+            "Vanguard SSO module is missing one of the following parameters: wsFedIdpUrl, wsFedRealm or wsFedCertificate"
+        );
     }
 
     passport.use(
@@ -71,6 +74,8 @@ export default function vanguard(options: VanguardOptions) {
         passport.authenticate(STRATEGY, {})(req, res, next);
     });
 
+    const successRedirectUrl = `${externalUrl}/sign-in-redirect?redirectTo=/account`;
+
     router.all(
         "/return",
         passport.authenticate(STRATEGY, {
@@ -78,7 +83,7 @@ export default function vanguard(options: VanguardOptions) {
             failureFlash: true
         }),
         function(req, res) {
-            redirectOnSuccess(req.query.redirect || externalAuthHome, req, res);
+            redirectOnSuccess(successRedirectUrl, req, res);
         }
     );
 

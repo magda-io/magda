@@ -48,25 +48,7 @@
                 "modified": "2014-01-01",
                 "themes": ["666", "#GAMERS", "DATA"],
                 "keywords": ["Operations", "Item", "Yes"],
-                "contactPoint": "Fred Nerk\n\nNuclear Plant",
-                "creation": {
-                    "mechanism": "Yes",
-                    "sourceSystem": "CRM",
-                    "likelihoodOfRelease": "Low",
-                    "affiliatedOrganisation": ["AI"]
-                },
-                "accessLevel": "Non-Public",
-                "importance": "Essential",
-                "status": "Current",
-                "informationSecurity": {
-                    "disseminationLimits": [
-                        "Sensitive: Personal",
-                        "Sensitive: Commercial"
-                    ]
-                },
-                "metadata": {
-                    "format": "META FMT"
-                }
+                "contactPoint": "Fred Nerk\n\nNuclear Plant"
             },
             "source": {
                 "type": "csv-dataset",
@@ -79,6 +61,15 @@
             },
             "dataset-publisher": {
                 "publisher": "org-connector-c8fecbdf502fbbaaeadd52d9aebe0848"
+            },
+            "provenance": {
+                "mechanism": "Yes",
+                "sourceSystem": "CRM",
+                "affiliatedOrganizationIds": ["AI"]
+            },
+            "information-security": {
+                "classification": "OFFICIAL:SENSITIVE",
+                "disseminationLimits": ["PERSONAL PRIVACY"]
             }
         },
         "sourceTag": "stag"
@@ -133,16 +124,7 @@
                     "Item",
                     "Data generated and provided to us by Data61"
                 ],
-                "contactPoint": "Engineering",
-                "creation": {
-                    "mechanism": "Data generated and provided to us by Data61",
-                    "likelihoodOfRelease": "Restricted"
-                },
-                "accessLevel": "Restricted Public",
-                "importance": "Useful",
-                "informationSecurity": {
-                    "disseminationLimits": ["For Official Use Only"]
-                }
+                "contactPoint": "Engineering"
             },
             "source": {
                 "type": "csv-dataset",
@@ -155,6 +137,12 @@
             },
             "dataset-publisher": {
                 "publisher": "org-connector-5d554bc5f3d2cd182cdd0952b1fb87ca"
+            },
+            "provenance": {
+                "mechanism": "Data generated and provided to us by Data61"
+            },
+            "information-security": {
+                "classification": "OFFICIAL"
             }
         },
         "sourceTag": "stag"
@@ -207,21 +195,7 @@
                 "accrualPeriodicity": "Ad-Hoc",
                 "themes": ["For Official Use Only"],
                 "keywords": ["Compliance", "Item", "For Official Use Only"],
-                "contactPoint": "META STD\n\nGaming",
-                "creation": {
-                    "mechanism": "No",
-                    "sourceSystem": "Recycle bin",
-                    "likelihoodOfRelease": "Low",
-                    "affiliatedOrganisation": ["Machine Learning"]
-                },
-                "accessLevel": "T3",
-                "status": "Retired",
-                "informationSecurity": {
-                    "disseminationLimits": ["For Official Use Only"]
-                },
-                "metadata": {
-                    "standard": "META STD"
-                }
+                "contactPoint": "META STD\n\nGaming"
             },
             "source": {
                 "type": "csv-dataset",
@@ -234,6 +208,14 @@
             },
             "dataset-publisher": {
                 "publisher": "org-connector-967ef2eb34634ba418db94dab610ba6f"
+            },
+            "provenance": {
+                "mechanism": "No",
+                "sourceSystem": "Recycle bin",
+                "affiliatedOrganizationIds": ["Machine Learning"]
+            },
+            "information-security": {
+                "classification": "OFFICIAL"
             }
         },
         "sourceTag": "stag"

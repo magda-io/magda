@@ -6,6 +6,7 @@ global:
     pullPolicy: Always
   exposeNodePorts: false
   enablePriorityClass: false
+  defaultContactEmail: "magda-test@googlegroups.com"
 
 tags:
   all: true
@@ -88,7 +89,6 @@ web-server:
     - "https://vocabs.ands.org.au/repository/api/lda/ands-nc/controlled-vocabulary-for-resource-type-genres/version-1-1/concept.json"
 
 correspondence-api:
-  defaultRecipient: "magda-test@googlegroups.com"
   alwaysSendToDefaultRecipient: true
   smtpHostname: "smtp.mailgun.org"
   smtpPort: 2525

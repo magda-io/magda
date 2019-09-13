@@ -1,6 +1,25 @@
 import { Action } from "../types";
 
-const defaultUserInfo = {
+type Role = {
+    id: string;
+    name: string;
+    description: string;
+    permissionIds: string[];
+};
+
+export type User = {
+    id: string;
+    displayName: string;
+    email: string;
+    photoURL: string;
+    source: string;
+    isAdmin: boolean;
+    roles: Role[];
+    permissions: any[];
+    orgUnitId?: string;
+};
+
+const defaultUserInfo: User = {
     id: "",
     displayName: "Anonymous User",
     email: "",
@@ -18,7 +37,16 @@ const defaultUserInfo = {
     permissions: []
 };
 
-const initialData = {
+type UserManagementState = {
+    user: User;
+    isFetchingWhoAmI: boolean;
+    whoAmIError: Error | null;
+    providers: any[];
+    isFetchingProviders: boolean;
+    providersError?: Error | null;
+};
+
+const initialData: UserManagementState = {
     user: { ...defaultUserInfo },
     isFetchingWhoAmI: false,
     whoAmIError: null,
@@ -27,7 +55,10 @@ const initialData = {
     providersError: null
 };
 
-const userManagementMapping = (state = initialData, action: Action) => {
+const userManagementMapping = (
+    state: UserManagementState = initialData,
+    action: Action
+) => {
     switch (action.type) {
         case "REQUEST_WHO_AM_I":
             return Object.assign({}, state, {

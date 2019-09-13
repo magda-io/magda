@@ -12,6 +12,7 @@ export interface CreateTransformerOptions {
     datasetAspectBuilders: AspectBuilder[];
     distributionAspectBuilders: AspectBuilder[];
     organizationAspectBuilders: AspectBuilder[];
+    tenantId: number;
 }
 
 export default function createTransformer({
@@ -20,13 +21,15 @@ export default function createTransformer({
     sourceUrl,
     datasetAspectBuilders,
     distributionAspectBuilders,
-    organizationAspectBuilders
+    organizationAspectBuilders,
+    tenantId
 }: CreateTransformerOptions) {
     return new CsvTransformer({
         sourceId: id,
         datasetAspectBuilders: datasetAspectBuilders,
         distributionAspectBuilders: distributionAspectBuilders,
         organizationAspectBuilders: organizationAspectBuilders,
+        tenantId: tenantId,
         libraries: {
             // moment: moment,
             cleanOrgTitle: cleanOrgTitle,

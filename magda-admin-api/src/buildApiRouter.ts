@@ -19,6 +19,7 @@ export interface Options {
     pullPolicy: string;
     jwtSecret: string;
     userId: string;
+    tenantId: number;
     namespace?: string;
 }
 
@@ -170,7 +171,8 @@ export default function buildApiRouter(options: Options) {
                                 dockerRepo: options.dockerRepo,
                                 registryApiUrl: options.registryApiUrl,
                                 pullPolicy: options.pullPolicy,
-                                userId: options.userId
+                                userId: options.userId,
+                                tenantId: options.tenantId
                             })
                         )
                         .then((result: any) => {
@@ -218,7 +220,8 @@ export default function buildApiRouter(options: Options) {
             registryApiUrl: options.registryApiUrl,
             pullPolicy: options.pullPolicy,
             k8sApi,
-            userId: options.userId
+            userId: options.userId,
+            tenantId: options.tenantId
         })
     );
 

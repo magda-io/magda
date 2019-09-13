@@ -11,6 +11,7 @@ global:
   useCloudSql: false
   useCombinedDb: true
   enablePriorityClass: false
+  defaultContactEmail: "magda@mailinator.com"
 
 gateway:
   ckanRedirectionDomain: "ckan.data.gov.au"
@@ -27,11 +28,10 @@ gateway:
     ckanAuthenticationUrl: https://data.gov.au/data
 
 registry-api:
-  skipAuthorization: true
+  skipAuthorization: false
   
 correspondence-api:
   smtpPort: 2525
-  defaultRecipient: "alex.gilleran+magda@csiro.it"
   smtpHostname: "smtp.mailgun.org"
   
 web-server:

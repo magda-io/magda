@@ -37,6 +37,7 @@ import scalikejdbc.config.TypesafeConfigReader
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import akka.pattern.gracefulStop
+import au.csiro.data61.magda.model.Registry.{MAGDA_ADMIN_PORTAL_ID, MAGDA_TENANT_ID_HEADER, MAGDA_SYSTEM_ID}
 
 abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers with Protocols with SprayJsonSupport with MockFactory with AuthProtocols {
   override def beforeAll(): Unit = {
@@ -46,6 +47,24 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
   case class FixtureParam(api: Role => Api, webHookActor: ActorRef, asAdmin: HttpRequest => HttpRequest, asNonAdmin: HttpRequest => HttpRequest, fetcher: HttpFetcher, authClient: AuthApiClient)
 
   val databaseUrl = Option(System.getenv("POSTGRES_URL")).getOrElse("jdbc:postgresql://localhost:5432/postgres")
+
+  def addTenantIdHeader(tenantId: BigInt): RawHeader = {
+    RawHeader(MAGDA_TENANT_ID_HEADER, tenantId.toString)
+  }
+
+  def addAdminPortalIdHeader: RawHeader = {
+    addTenantIdHeader(MAGDA_ADMIN_PORTAL_ID)
+  }
+
+  def addSystemTenantHeader: RawHeader = {
+    addTenantIdHeader(MAGDA_SYSTEM_ID)
+  }
+
+  // Any positive numbers
+  val TENANT_1: BigInt = 1
+  val TENANT_2: BigInt = 2
+  val DOMAIN_NAME_1: String = "test1"
+  val DOMAIN_NAME_2: String = "test2"
 
   // Stop Flyway from producing so much spam that Travis terminates the process.
   LoggerFactory.getLogger("org.flywaydb").asInstanceOf[Logger].setLevel(Level.WARN)
@@ -59,10 +78,10 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
   override def testConfigSource =
     s"""
       |db.default.url = "${databaseUrl}?currentSchema=test"
-      |authorization.skip = true
+      |authorization.skip = false
+      |authorization.skipOpaQuery = true
       |akka.loglevel = debug
       |authApi.baseUrl = "http://localhost:6104"
-      |authorization.skip=false
       |webhooks.actorTickRate=0
       |webhooks.eventPageSize=10
       |akka.test.timefactor=20.0

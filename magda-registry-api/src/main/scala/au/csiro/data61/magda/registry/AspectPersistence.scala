@@ -13,27 +13,29 @@ import gnieh.diffson.sprayJson._
 import au.csiro.data61.magda.model.Registry._
 
 object AspectPersistence extends Protocols with DiffsonProtocol {
-  def getAll(implicit session: DBSession): List[AspectDefinition] = {
-    sql"select aspectId, name, jsonSchema from Aspects".map(rowToAspect).list.apply()
+  def getAll(implicit session: DBSession, tenantId: BigInt): List[AspectDefinition] = {
+    sql"select aspectId, name, jsonSchema, tenantId from Aspects where tenantId = $tenantId".map(rowToAspect).list.apply()
   }
 
-  def getById(implicit session: DBSession, id: String): Option[AspectDefinition] = {
-    sql"""select aspectId, name, jsonSchema from Aspects where aspectId=$id""".map(rowToAspect).single.apply()
+  def getById(implicit session: DBSession, id: String, tenantId: BigInt): Option[AspectDefinition] = {
+    sql"""select aspectId, name, jsonSchema, tenantId from Aspects where aspectId=$id and tenantId=$tenantId""".map(rowToAspect).single.apply()
   }
 
-  def getByIds(implicit session: DBSession, ids: Iterable[String]): List[AspectDefinition] = {
+  def getByIds(implicit session: DBSession, ids: Iterable[String], tenantId: BigInt): List[AspectDefinition] = {
     if (ids.isEmpty)
       List()
-    else
-      sql"select aspectId, name, jsonSchema from Aspects where aspectId in ($ids)".map(rowToAspect).list.apply()
+    else {
+      sql"""select aspectId, name, jsonSchema, tenantId from Aspects where ${if (tenantId == MAGDA_SYSTEM_ID) SQLSyntax.empty else sqls"tenantId = $tenantId and"} aspectId in ($ids)"""
+        .map(rowToAspect).list.apply()
+    }
   }
 
-  def putById(implicit session: DBSession, id: String, newAspect: AspectDefinition): Try[AspectDefinition] = {
+  def putById(implicit session: DBSession, id: String, newAspect: AspectDefinition, tenantId: BigInt): Try[AspectDefinition] = {
     for {
       _ <- if (id == newAspect.id) Success(newAspect) else Failure(new RuntimeException("The provided ID does not match the aspect's ID."))
-      oldAspect <- this.getById(session, id) match {
+      oldAspect <- this.getById(session, id, tenantId) match {
         case Some(aspect) => Success(aspect)
-        case None => create(session, newAspect)
+        case None => create(session, newAspect, tenantId)
       }
       aspectPatch <- Try {
         // Diff the old aspect and the new one
@@ -42,13 +44,13 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
 
         JsonDiff.diff(oldAspectJson, newAspectJson, false)
       }
-      result <- patchById(session, id, aspectPatch)
+      result <- patchById(session, id, aspectPatch, tenantId)
     } yield result
   }
 
-  def patchById(implicit session: DBSession, id: String, aspectPatch: JsonPatch): Try[AspectDefinition] = {
+  def patchById(implicit session: DBSession, id: String, aspectPatch: JsonPatch, tenantId: BigInt): Try[AspectDefinition] = {
     for {
-      aspect <- this.getById(session, id) match {
+      aspect <- this.getById(session, id, tenantId) match {
         case Some(aspect) => Success(aspect)
         case None => Failure(new RuntimeException("No aspect exists with that ID."))
       }
@@ -71,8 +73,8 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
 
       eventId <- Try {
         if (testAspectPatch.ops.length > 0) {
-          val event = PatchAspectDefinitionEvent(id, aspectPatch).toJson.compactPrint
-          sql"insert into Events (eventTypeId, userId, data) values (${PatchAspectDefinitionEvent.Id}, 0, $event::json)".updateAndReturnGeneratedKey().apply()
+          val event = PatchAspectDefinitionEvent(id, aspectPatch, tenantId).toJson.compactPrint
+          sql"insert into Events (eventTypeId, userId, tenantId, data) values (${PatchAspectDefinitionEvent.Id}, 0, $tenantId, $event::json)".updateAndReturnGeneratedKey().apply()
         } else {
           0
         }
@@ -84,8 +86,8 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
             case Some(jsonSchema) => jsonSchema.compactPrint
             case None => null
           }
-          sql"""insert into Aspects (aspectId, name, lastUpdate, jsonSchema) values (${patchedAspect.id}, ${patchedAspect.name}, $eventId, $jsonString::json)
-               on conflict (aspectId) do update
+          sql"""insert into Aspects (aspectId, tenantId, name, lastUpdate, jsonSchema) values (${patchedAspect.id}, $tenantId, ${patchedAspect.name}, $eventId, $jsonString::json)
+               on conflict (aspectId, tenantId) do update
                set name = ${patchedAspect.name}, lastUpdate = $eventId, jsonSchema = $jsonString::json
                """.update.apply()
         } else {
@@ -95,10 +97,10 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
     } yield patchedAspect
   }
 
-  def create(implicit session: DBSession, aspect: AspectDefinition): Try[AspectDefinition] = {
+  def create(implicit session: DBSession, aspect: AspectDefinition, tenantId: BigInt): Try[AspectDefinition] = {
     // Create a 'Create Aspect' event
-    val eventJson = CreateAspectDefinitionEvent(aspect.id, aspect.name, aspect.jsonSchema).toJson.compactPrint
-    val eventId = sql"insert into Events (eventTypeId, userId, data) values (${CreateAspectDefinitionEvent.Id}, 0, $eventJson::json)".updateAndReturnGeneratedKey().apply()
+    val eventJson = CreateAspectDefinitionEvent(aspect.id, aspect.name, aspect.jsonSchema, tenantId).toJson.compactPrint
+    val eventId = sql"insert into Events (eventTypeId, userId, tenantId, data) values (${CreateAspectDefinitionEvent.Id}, 0, $tenantId, $eventJson::json)".updateAndReturnGeneratedKey().apply()
 
     // Create the actual Aspect
     try {
@@ -106,7 +108,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
         case Some(jsonSchema) => jsonSchema.compactPrint
         case None => null
       }
-      sql"insert into Aspects (aspectId, name, lastUpdate, jsonSchema) values (${aspect.id}, ${aspect.name}, $eventId, $jsonString::json)".update.apply()
+      sql"insert into Aspects (aspectId, tenantId, name, lastUpdate, jsonSchema) values (${aspect.id}, $tenantId, ${aspect.name}, $eventId, $jsonString::json)".update.apply()
       Success(aspect)
     } catch {
       case e: SQLException => Failure(new RuntimeException("An aspect with the specified ID already exists."))

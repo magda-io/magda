@@ -7,6 +7,7 @@ import buildJwt from "@magda/typescript-common/dist/session/buildJwt";
 
 import createBaseProxy from "./createBaseProxy";
 import Authenticator from "./Authenticator";
+import { TenantMode } from "./setupTenantMode";
 
 export interface ProxyTarget {
     to: string;
@@ -21,10 +22,11 @@ export interface ApiRouterOptions {
     routes: {
         [localRoute: string]: ProxyTarget;
     };
+    tenantMode: TenantMode;
 }
 
 export default function createApiRouter(options: ApiRouterOptions): Router {
-    var proxy = createBaseProxy();
+    var proxy = createBaseProxy(options.tenantMode);
 
     const authenticator = options.authenticator;
     const jwtSecret = options.jwtSecret;
@@ -33,9 +35,12 @@ export default function createApiRouter(options: ApiRouterOptions): Router {
 
     proxy.on("proxyReq", (proxyReq, req: any, res, options) => {
         if (jwtSecret && req.user) {
+            console.log(
+                "req.user.session = " + JSON.stringify(req.user.session)
+            );
             proxyReq.setHeader(
                 "X-Magda-Session",
-                buildJwt(jwtSecret, req.user.id)
+                buildJwt(jwtSecret, req.user.id, { session: req.user.session })
             );
         }
     });

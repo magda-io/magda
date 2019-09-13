@@ -1,13 +1,16 @@
 import uuidv4 from "uuid/v4";
 
-import { Contact } from "Components/Editing/Editors/contactEditor";
-import { licenseLevel } from "constants/DatasetConstants";
+import { ContactPointDisplayOption } from "constants/DatasetConstants";
+import { fetchOrganization } from "api-clients/RegistryApis";
+import { config } from "config";
+import { User } from "reducers/userManagementReducer";
 
 export type File = {
     title: string;
     description?: string;
     issued?: string;
     modified: Date;
+    license?: string;
     rights?: string;
     accessURL?: string;
     accessNotes?: string;
@@ -22,7 +25,6 @@ export type File = {
     themes?: string[];
     temporalCoverage?: any;
     spatialCoverage?: any;
-    usage: Usage;
 
     similarFingerprint?: any;
     equalHash?: string;
@@ -38,7 +40,27 @@ export enum FileState {
     Ready
 }
 
-type Dataset = {
+export function fileStateToText(state: FileState) {
+    switch (state) {
+        case FileState.Added:
+            return "Added";
+        case FileState.Reading:
+            return "Reading";
+        case FileState.Processing:
+            return "Processing";
+        case FileState.Ready:
+            return "Ready";
+        default:
+            return "Unknown";
+    }
+}
+
+export type OrganisationAutocompleteChoice = {
+    existingId?: string;
+    name: string;
+};
+
+export type Dataset = {
     title: string;
     description?: string;
     issued?: Date;
@@ -46,27 +68,45 @@ type Dataset = {
     languages?: string[];
     keywords?: string[];
     themes?: string[];
-    contactPointFull?: Contact[];
+    owningOrgUnitId?: string;
     contactPointDisplay?: string;
-    publisher?: string;
+    publisher?: OrganisationAutocompleteChoice;
     landingPage?: string;
     importance?: string;
     accrualPeriodicity?: string;
-    creation_affiliatedOrganisation?: string[];
-    creation_sourceSystem?: string;
-    creation_mechanism?: string;
-    creation_isOpenData?: boolean;
+    accrualPeriodicityRecurrenceRule?: string;
     accessLevel?: string;
     accessNotesTemp?: string;
+    defaultLicense?: string;
 };
 
-type DatasetPublishing = {
+export type Provenance = {
+    mechanism?: string;
+    sourceSystem?: string;
+    derivedFrom?: string[];
+    affiliatedOrganizations?: OrganisationAutocompleteChoice[];
+    isOpenData?: boolean;
+};
+
+export type DatasetPublishing = {
     state: string;
     level: string;
+    notesToApprover?: string;
+    contactPointDisplay?: ContactPointDisplayOption;
 };
 
 type SpatialCoverage = {
     bbox?: [number, number, number, number];
+    lv1Id?: string;
+    lv2Id?: string;
+    lv3Id?: string;
+    lv4Id?: string;
+    lv5Id?: string;
+};
+
+type InformationSecurity = {
+    disseminationLimits?: string[];
+    classification?: string;
 };
 
 export type State = {
@@ -76,12 +116,17 @@ export type State = {
     processing: boolean;
     spatialCoverage: SpatialCoverage;
     temporalCoverage: TemporalCoverage;
-    datasetUsage: Usage;
     datasetAccess: Access;
-    _licenseLevel: string;
+    informationSecurity: InformationSecurity;
+    provenance: Provenance;
+
     _lastModifiedDate: string;
     _createdDate: string;
+
+    licenseLevel: "dataset" | "distribution";
+
     isPublishing: boolean;
+    error: Error | null;
 };
 
 type TemporalCoverage = {
@@ -93,65 +138,69 @@ export type Interval = {
     end?: Date;
 };
 
-type Usage = {
-    licenseLevel?: string;
-    license?: string;
-    disseminationLimits?: string[];
-    securityClassification?: string;
-};
-
 type Access = {
-    url?: string;
+    location?: string;
     notes?: string;
-    downloadURL?: string;
 };
 
-export function createBlankState(): State {
+function createBlankState(user: User): State {
     return {
         files: [],
         processing: false,
         dataset: {
             title: "Untitled",
             languages: ["eng"],
-            contactPointDisplay: "role"
+            owningOrgUnitId: user.orgUnitId,
+            defaultLicense: "world"
         },
         datasetPublishing: {
             state: "draft",
-            level: "agency"
+            level: "agency",
+            contactPointDisplay: "members"
         },
         spatialCoverage: {},
         temporalCoverage: {
             intervals: []
         },
-        datasetUsage: {
-            license: licenseLevel.government
-        },
         datasetAccess: {},
+        informationSecurity: {},
+        provenance: {},
+        licenseLevel: "dataset",
         isPublishing: false,
+        error: null,
         _createdDate: new Date().toISOString(),
-        _lastModifiedDate: new Date().toISOString(),
-        _licenseLevel: "dataset"
+        _lastModifiedDate: new Date().toISOString()
     };
 }
 
 // saving data in the local storage for now
-// TODO: consider whether it makes sense to store this in registery as a custom state or something
-export function loadState(id) {
-    let dataset = localStorage[id];
-    if (dataset) {
-        dataset = JSON.parse(dataset);
-        return dataset;
+// TODO: consider whether it makes sense to store this in registry as a custom state or something
+export async function loadState(id: string, user: User): Promise<State> {
+    const stateString = localStorage[id];
+    let state: State;
+    if (stateString) {
+        state = JSON.parse(stateString);
+    } else {
+        state = createBlankState(user);
     }
-    return {};
+
+    if (
+        !state.dataset.publisher &&
+        typeof config.defaultOrganizationId !== "undefined"
+    ) {
+        const org = await fetchOrganization(config.defaultOrganizationId);
+        state.dataset.publisher = {
+            name: org.name,
+            existingId: org.id
+        };
+    }
+
+    return state;
 }
 
 export function saveState(state: State, id = "") {
     id = id || `dataset-${uuidv4()}`;
     state = Object.assign({}, state);
-
-    if (state.files.length === 0 && state._licenseLevel !== "dataset") {
-        state._licenseLevel = "dataset";
-    }
 
     state._lastModifiedDate = new Date().toISOString();
     const dataset = JSON.stringify(state);

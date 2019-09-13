@@ -27,7 +27,8 @@ export function runConnectorTest(
                     `--sourceUrl=http://localhost:${catalogPort}`,
                     `--registryUrl=http://localhost:${registryPort}`,
                     "--jwtSecret=nerdgasm",
-                    "--userId=user"
+                    "--userId=user",
+                    "--tenantId=1"
                 ];
                 const proc = spawn("ts-node", command, {
                     stdio: "inherit"

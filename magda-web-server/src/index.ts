@@ -7,6 +7,7 @@ import request from "@magda/typescript-common/dist/request";
 
 import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
 import coerceJson from "@magda/typescript-common/dist/coerceJson";
+import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
 
 import buildSitemapRouter from "./buildSitemapRouter";
 import getIndexFileContent from "./getIndexFileContent";
@@ -120,6 +121,16 @@ const argv = yargs
         type: "string",
         coerce: coerceJson("vocabularyApiEndpoints"),
         default: "[]"
+    })
+    .option("defaultOrganizationId", {
+        describe: "The id of a default organization to use for new datasets",
+        type: "string",
+        required: false
+    })
+    .option("defaultContactEmail", {
+        describe:
+            "Default contact email for users to report magda system errors",
+        type: "string"
     }).argv;
 
 var app = express();
@@ -193,7 +204,9 @@ const webServerConfig = {
     fallbackUrl: argv.fallbackUrl,
     gapiIds: argv.gapiIds,
     featureFlags: argv.featureFlags || {},
-    vocabularyApiEndpoints: (argv.vocabularyApiEndpoints || []) as string[]
+    vocabularyApiEndpoints: (argv.vocabularyApiEndpoints || []) as string[],
+    defaultOrganizationId: argv.defaultOrganizationId,
+    defaultContactEmail: argv.defaultContactEmail
 };
 
 app.get("/server-config.js", function(req, res) {
@@ -293,12 +306,14 @@ app.use("/robots.txt", (_, res) => {
     res.status(200).send(robotsTxt);
 });
 
+// TODO: Use proper tenant id in multi-tenant mode.
 app.use(
     buildSitemapRouter({
         baseExternalUrl: argv.baseExternalUrl,
         registry: new Registry({
             baseUrl: argv.registryApiBaseUrlInternal,
-            maxRetries: 0
+            maxRetries: 0,
+            tenantId: MAGDA_ADMIN_PORTAL_ID
         })
     })
 );

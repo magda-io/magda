@@ -1,0 +1,17 @@
+{
+    "$schema": "http://json-schema.org/hyper-schema#",
+    "title": "An aspect with a single link",
+    "type": "object",
+    "properties": {
+        "someLink": {
+            "title": "A link to another record.",
+            "type": "string",
+            "links": [
+                {
+                    "href": "/api/v0/registry/records/{$}",
+                    "rel": "item"
+                }
+            ]
+        }
+    }
+}

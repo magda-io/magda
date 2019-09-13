@@ -11,7 +11,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives.complete
-import akka.http.scaladsl.server.{ MalformedQueryParamRejection, RejectionHandler }
+import akka.http.scaladsl.server.{MalformedQueryParamRejection, RejectionHandler}
 import akka.stream.ActorMaterializer
 import au.csiro.data61.magda.AppConfig
 import au.csiro.data61.magda.client.AuthApiClient
@@ -23,22 +23,24 @@ import scalikejdbc.config.DBs
 import com.typesafe.config.Config
 import scalikejdbc.LoggingSQLAndTimeSettings
 
+import scala.concurrent.ExecutionContextExecutor
+
 object RegistryApp extends App {
 
-  implicit val config = AppConfig.conf()
-  implicit val system = ActorSystem("registry-api", config)
-  implicit val executor = system.dispatcher
-  implicit val materializer = ActorMaterializer()
-  implicit def myRejectionHandler = RejectionHandler.newBuilder()
+  implicit val config: Config = AppConfig.conf()
+  implicit val system: ActorSystem = ActorSystem("registry-api", config)
+  implicit val executor: ExecutionContextExecutor = system.dispatcher
+  implicit val materializer: ActorMaterializer = ActorMaterializer()
+  implicit def myRejectionHandler: RejectionHandler = RejectionHandler.newBuilder()
     .handle {
       case MalformedQueryParamRejection(parameterName, errorMsg, cause) =>
-        complete(HttpResponse(StatusCodes.BadRequest, entity = s"The query parameter `${parameterName}` was malformed."))
+        complete(HttpResponse(StatusCodes.BadRequest, entity = s"The query parameter `$parameterName` was malformed. Details:\n$errorMsg \n$cause"))
     }
     .result()
 
   class Listener extends Actor with ActorLogging {
-    def receive = {
-      case d: DeadLetter => log.info(d.message.toString())
+    def receive: PartialFunction[Any, Unit] = {
+      case d: DeadLetter => log.info(d.message.toString)
     }
   }
 
@@ -46,7 +48,7 @@ object RegistryApp extends App {
 
   logger.info("Starting MAGDA Registry")
 
-  GlobalSettings.loggingSQLAndTime = new LoggingSQLAndTimeSettings(
+  GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(
     enabled = false,
     singleLineMode = true,
     logLevel = 'debug)
@@ -56,7 +58,7 @@ object RegistryApp extends App {
       with TypesafeConfig
       with EnvPrefix {
 
-    override val config = configToUse
+    override val config: Config = configToUse
   }
 
   DBsWithEnvSpecificConfig(config).setupAll()
@@ -68,7 +70,7 @@ object RegistryApp extends App {
 
   val webHookActorOpt = if (role == Full) {
     val actor = system.actorOf(WebHookActor.props(config.getString("http.externalUrl.v0")), name = "WebHookActor")
-    actor ! WebHookActor.Process(true)
+    actor ! WebHookActor.Process(ignoreWaitingForResponse = true)
     Some(actor)
   } else None
 

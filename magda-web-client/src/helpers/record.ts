@@ -133,10 +133,25 @@ export type ParsedDistribution = {
     ckanResource: any;
 };
 
+export type ParsedProvenance = {
+    mechanism?: string;
+    sourceSystem?: string;
+    derivedFrom?: string;
+    affiliatedOrganizationIds?: string[];
+    isOpenData?: boolean;
+};
+
+export type ParsedInformationSecurity = {
+    disseminationLimits: string[];
+    classification: string;
+};
+
 // all aspects become required and must have value
 export type ParsedDataset = {
     identifier?: string;
     title: string;
+    accrualPeriodicity?: string;
+    accrualPeriodicityRecurrenceRule?: string;
     issuedDate?: string;
     updatedDate?: string;
     landingPage: string;
@@ -151,14 +166,12 @@ export type ParsedDataset = {
     error?: FetchError;
     hasQuality?: boolean;
     sourceDetails?: any;
-    creation?: any;
+    provenance?: ParsedProvenance;
     publishingState?: string;
-    importance?: string;
-    creationAffiliatedOrganisation?: string;
     spatialCoverageBbox?: any;
     temporalExtent?: any;
     accessLevel?: string;
-    informationSecurity?: any;
+    informationSecurity?: ParsedInformationSecurity;
     accessControl?: {
         ownerId: string;
         orgUnitOwnerId: string;
@@ -166,7 +179,7 @@ export type ParsedDataset = {
     };
 };
 
-export const defaultPublisher: Publisher = {
+export const emptyPublisher: Publisher = {
     id: "",
     name: "",
     aspects: {
@@ -196,7 +209,7 @@ const defaultDatasetAspects = {
         distributions: []
     },
     "temporal-coverage": null,
-    "dataset-publisher": { publisher: defaultPublisher },
+    "dataset-publisher": { publisher: emptyPublisher },
     source: {
         url: "",
         name: "",
@@ -386,12 +399,9 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         datasetInfo.modified && getDateString(datasetInfo.modified);
 
     const publishing = aspects["publishing"] || {};
-
-    const creation = datasetInfo["creation"] || {};
-
     const publisher = aspects["dataset-publisher"]
         ? aspects["dataset-publisher"]["publisher"]
-        : defaultPublisher;
+        : emptyPublisher;
     const contactPoint: string = datasetInfo.contactPoint;
     const source: string | undefined = aspects["source"]
         ? aspects["source"]["type"] !== "csv-dataset"
@@ -482,14 +492,15 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         linkedDataRating,
         hasQuality,
         sourceDetails: aspects["source"],
-        creation: datasetInfo["creation"] || {},
-        importance: datasetInfo["importance"],
+        provenance: aspects["provenance"] || {},
         publishingState: publishing["state"],
-        creationAffiliatedOrganisation: creation["affiliatedOrganisation"],
         spatialCoverageBbox: spatialCoverage["bbox"],
         temporalExtent: datasetInfo["temporal"] || {},
         accessLevel: datasetInfo["accessLevel"],
-        informationSecurity: datasetInfo["informationSecurity"] || {},
-        accessControl
+        informationSecurity: aspects["information-security"] || {},
+        accessControl,
+        accrualPeriodicity: datasetInfo["accrualPeriodicity"] || "",
+        accrualPeriodicityRecurrenceRule:
+            datasetInfo["accrualPeriodicityRecurrenceRule"] || ""
     };
 }

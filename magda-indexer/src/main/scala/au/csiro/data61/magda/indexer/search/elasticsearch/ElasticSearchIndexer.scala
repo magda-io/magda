@@ -4,7 +4,6 @@ import java.time.{Instant, OffsetDateTime}
 
 import akka.NotUsed
 import akka.actor.{ActorSystem, Scheduler}
-import akka.stream.javadsl.SourceQueueWithComplete
 import akka.stream.scaladsl.{Sink, Source, SourceQueue}
 import akka.stream.{Materializer, OverflowStrategy, QueueOfferResult}
 import au.csiro.data61.magda.indexer.search.SearchIndexer
@@ -21,13 +20,11 @@ import com.sksamuel.elastic4s.http.delete.DeleteByQueryResponse
 import com.sksamuel.elastic4s.http.index.CreateIndexResponse
 import com.sksamuel.elastic4s.http.index.mappings.IndexMappings
 import com.sksamuel.elastic4s.http.search.SearchResponse
-import com.sksamuel.elastic4s.http.snapshots.{CreateSnapshotResponse, RestoreSnapshotResponse, Snapshot}
+import com.sksamuel.elastic4s.http.snapshots.{CreateSnapshotResponse, GetSnapshotResponse, RestoreSnapshotResponse, Snapshot}
 import com.sksamuel.elastic4s.http.{ElasticClient, ElasticDsl, RequestFailure, RequestSuccess}
 import com.sksamuel.elastic4s.indexes.IndexRequest
 import com.sksamuel.elastic4s.snapshots._
 import com.typesafe.config.Config
-import com.sksamuel.elastic4s.http.snapshots.GetSnapshotResponse
-import org.elasticsearch.snapshots.SnapshotInfo
 import spray.json._
 
 import scala.collection.JavaConversions._
@@ -105,7 +102,7 @@ class ElasticSearchIndexer(
           failures.foreach {
             case (results, (dataSet, promise, _)) =>
               results.filter(_.error.isDefined).foreach { failure =>
-                logger.warning("Failure when indexing {}: {}", dataSet.uniqueId, failure.error)
+                logger.warning("Failure when indexing {}: {}", dataSet.identifier, failure.error)
               }
 
               // The dataset result is always the first
@@ -123,7 +120,7 @@ class ElasticSearchIndexer(
             logger.info("Failed to index this batch", failures.size)
           }
 
-          successes.map(_._2).foreach { case (dataSet, promise, _) => promise.success(dataSet.uniqueId) }
+          successes.map(_._2).foreach { case (dataSet, promise, _) => promise.success(dataSet.identifier) }
       }
       .recover {
         case e: Throwable =>
@@ -232,7 +229,7 @@ class ElasticSearchIndexer(
     val geoFail = result.error.isDefined && result.error.exists(_.reason.contains("failed to parse [spatial.geoJson]"))
 
     if (geoFail) {
-      logger.info("Excluded dataset {} due to bad geojson - trying these again with spatial.geoJson excluded", dataSet.uniqueId)
+      logger.info("Excluded dataset {} due to bad geojson - trying these again with spatial.geoJson excluded", dataSet.identifier)
       val dataSetWithoutSpatial = dataSet.copy(spatial = dataSet.spatial.map(spatial => spatial.copy(geoJson = None)))
       // TODO: Make one indexing request only so that we can remove the source queue completely.
       index2(dataSetWithoutSpatial, promise)
@@ -246,7 +243,7 @@ class ElasticSearchIndexer(
    */
   private def getIndexDefinitions(client: ElasticClient) = {
     def indexNotFound(indexDef: IndexDefinition, inner: RuntimeException) = {
-      logger.warning("{} index was not present, if this is the first boot with a new index version this is fine: {}", indexDef.name, inner.getMessage)
+      logger.info("{} index was not present, if this is the first boot with a new index version this is fine: {}", indexDef.name, inner.getMessage)
       None
     }
 
@@ -474,8 +471,12 @@ class ElasticSearchIndexer(
 
   def delete(identifiers: Seq[String]): Future[Unit] = {
     setupFuture.flatMap { client =>
-      client.execute(bulk(identifiers.map(identifier =>
-        ElasticDsl.delete(identifier).from(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType)))))
+      client.execute(
+        bulk(
+          identifiers.map(identifier =>
+            ElasticDsl.delete(identifier).from(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType)))
+        )
+      )
     }.map {
       case results:RequestSuccess[BulkResponse] =>
         logger.info("Deleted {} datasets", results.result.successes.size)
@@ -537,7 +538,11 @@ class ElasticSearchIndexer(
       years = ElasticSearchIndexer.getYears(rawDataSet.temporal.flatMap(_.start.flatMap(_.date)), rawDataSet.temporal.flatMap(_.end.flatMap(_.date))),
       indexed = Some(OffsetDateTime.now))
 
-    val indexDataSet = ElasticDsl.indexInto(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType)).id(dataSet.uniqueId).source(dataSet.toJson)
+    val documentId = DataSet.uniqueEsDocumentId(rawDataSet.identifier, rawDataSet.tenantId)
+    val indexDataSet = ElasticDsl
+      .indexInto(indices.getIndex(config, Indices.DataSetsIndex) / indices.getType(Indices.DataSetsIndexType))
+      .id(documentId)
+      .source(dataSet.toJson)
 
     val indexPublisher = dataSet.publisher.flatMap(publisher => publisher.name.filter(!"".equals(_)).map(publisherName =>
       ElasticDsl.indexInto(indices.getIndex(config, Indices.PublishersIndex) / indices.getType(Indices.PublisherIndexType))
@@ -621,7 +626,7 @@ class ElasticSearchIndexer(
           failures.foreach {
             case (theResults, (dataSet, promise, _)) =>
               theResults.filter(_.error.isDefined).foreach { failure =>
-                logger.warning("Failure when indexing {}: {}", dataSet.uniqueId, failure.error)
+                logger.warning("Failure when indexing {}: {}", dataSet.identifier, failure.error)
               }
 
               // The dataset result is always the first
@@ -639,7 +644,7 @@ class ElasticSearchIndexer(
             logger.info("Failed to index this batch", failures.size)
           }
 
-          successes.map(_._2).foreach { case (dataSet, promise, _) => promise.success(dataSet.uniqueId) }
+          successes.map(_._2).foreach { case (dataSet, promise, _) => promise.success(dataSet.identifier) }
 
           (failures.toList.toString(), Future.successful(successes.size))
 

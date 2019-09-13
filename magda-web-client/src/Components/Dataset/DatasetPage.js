@@ -50,6 +50,7 @@ import { bboxEditor } from "Components/Editing/Editors/spatialEditor";
 import * as codelists from "constants/DatasetConstants";
 import { config } from "config";
 import RemoteTextContentBox from "../RemoteTextContentBox";
+import { RRule } from "rrule";
 
 class RecordHandler extends React.Component {
     constructor(props) {
@@ -190,6 +191,16 @@ class RecordHandler extends React.Component {
             "temporal-coverage"
         );
 
+        const provenanceChange = this.change(
+            this.props.dataset.identifier,
+            "provenance"
+        );
+
+        const informationSecurityChange = this.change(
+            this.props.dataset.identifier,
+            "information-security"
+        );
+
         const { dataset, hasEditPermissions } = this.props;
 
         if (this.props.match.params.distributionId) {
@@ -220,160 +231,187 @@ class RecordHandler extends React.Component {
                         <Medium>
                             <Breadcrumbs breadcrumbs={this.getBreadcrumbs()} />
                         </Medium>
-                        <span className="distribution-title">
-                            <img
-                                className="distribution-icon"
-                                src={getFormatIcon(this.props.distribution)}
-                                alt="distribution icon"
-                            />
-
-                            <h1>{this.props.distribution.title}</h1>
-                        </span>
-                        <div className="distribution-meta">
-                            <div className="publisher">
-                                <Link to={`/organisations/${publisherId}`}>
-                                    {dataset.publisher.name}
-                                </Link>
-                            </div>
-
-                            {defined(this.props.distribution.updatedDate) && (
-                                <span className="updated-date">
-                                    <span className="separator hidden-sm">
-                                        &nbsp;/&nbsp;
-                                    </span>
-                                    Updated{" "}
-                                    {this.props.distribution.updatedDate}
-                                </span>
-                            )}
-
-                            {defined(dataset.issuedDate) && (
-                                <span className="created-date">
-                                    <span className="separator hidden-sm">
-                                        &nbsp;/&nbsp;
-                                    </span>
-                                    Created {this.props.dataset.issuedDate}
-                                </span>
-                            )}
-                        </div>
-                        <div className="distribution-format">
-                            {this.props.distribution.format}
-                        </div>
-                        {defined(this.props.distribution.license) && (
-                            <span className="distribution-license">
-                                <span className="separator hidden-sm">
-                                    &nbsp;/&nbsp;
-                                </span>
-                                {this.props.distribution.license}
-                            </span>
-                        )}
-                        <br />
-                        {this.props.distribution.downloadURL ? (
-                            <a
-                                className="au-btn distribution-download-button"
-                                href={this.props.distribution.downloadURL}
-                                alt="distribution download button"
-                                onClick={() => {
-                                    // google analytics download tracking
-                                    const resource_url = encodeURIComponent(
-                                        this.props.distribution.downloadURL
-                                    );
-                                    if (resource_url) {
-                                        // legacy support
-                                        gapi.event({
-                                            category: "Resource",
-                                            action: "Download",
-                                            label: resource_url
-                                        });
-                                        // new events
-                                        gapi.event({
-                                            category: "Download by Dataset",
-                                            action: this.props.dataset.title,
-                                            label: resource_url
-                                        });
-                                        gapi.event({
-                                            category: "Download by Source",
-                                            action: this.props.dataset.source,
-                                            label: resource_url
-                                        });
-                                        gapi.event({
-                                            category: "Download by Publisher",
-                                            action: this.props.dataset.publisher
-                                                .name,
-                                            label: resource_url
-                                        });
-                                    }
-                                }}
-                            >
-                                <img
-                                    src={downloadWhiteIcon}
-                                    alt="download"
-                                    className="distribution-button-icon"
-                                />
-                                {"  "}
-                                Download
-                            </a>
-                        ) : null}{" "}
-                        {this.props.distribution.ckanResource &&
-                            this.props.distribution.ckanResource
-                                .datastore_active && (
-                                <a
-                                    className="download-button au-btn au-btn--secondary"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    href={
-                                        get(
-                                            this.props.distribution,
-                                            "sourceDetails.url"
-                                        )
-                                            ? get(
-                                                  this.props.distribution,
-                                                  "sourceDetails.url",
-                                                  ""
-                                              ).replace(
-                                                  "3/action/resource_show?",
-                                                  "1/util/snippet/api_info.html?resource_"
-                                              )
-                                            : "https://docs.ckan.org/en/latest/maintaining/datastore.html#the-datastore-api"
-                                    }
-                                >
+                        <div className="row">
+                            <div className="col-sm-12">
+                                <span className="distribution-title">
                                     <img
-                                        src={apiAccessIcon}
-                                        alt=""
-                                        className="distribution-button-icon"
-                                    />{" "}
-                                    Access Data API
-                                </a>
-                            )}{" "}
-                        <Small>
-                            <DescriptionBox
-                                content={this.props.distribution.description}
-                                truncateLength={200}
-                            />
-                        </Small>
-                        <Medium>
-                            <DescriptionBox
-                                content={this.props.distribution.description}
-                                truncateLength={500}
-                            />
-                        </Medium>
-                        <div className="tab-content">
-                            <Switch>
-                                <Route
-                                    path="/dataset/:datasetId/distribution/:distributionId/details"
-                                    component={DistributionDetails}
-                                />
-                                <Route
-                                    path="/dataset/:datasetId/distribution/:distributionId/preview"
-                                    component={DistributionPreview}
-                                />
-                                <Redirect
-                                    from="/dataset/:datasetId/distribution/:distributionId"
-                                    to={{
-                                        pathname: `${baseUrlDistribution}/details`,
-                                        search: `?q=${searchText}`
-                                    }}
-                                />
-                            </Switch>
+                                        className="distribution-icon"
+                                        src={getFormatIcon(
+                                            this.props.distribution
+                                        )}
+                                        alt="distribution icon"
+                                    />
+
+                                    <h1>{this.props.distribution.title}</h1>
+                                </span>
+                                <div className="distribution-meta">
+                                    <div className="publisher">
+                                        <Link
+                                            to={`/organisations/${publisherId}`}
+                                        >
+                                            {dataset.publisher.name}
+                                        </Link>
+                                    </div>
+
+                                    {defined(
+                                        this.props.distribution.updatedDate
+                                    ) && (
+                                        <span className="updated-date">
+                                            <span className="separator hidden-sm">
+                                                &nbsp;/&nbsp;
+                                            </span>
+                                            Updated{" "}
+                                            {
+                                                this.props.distribution
+                                                    .updatedDate
+                                            }
+                                        </span>
+                                    )}
+
+                                    {defined(dataset.issuedDate) && (
+                                        <span className="created-date">
+                                            <span className="separator hidden-sm">
+                                                &nbsp;/&nbsp;
+                                            </span>
+                                            Created{" "}
+                                            {this.props.dataset.issuedDate}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="distribution-format">
+                                    {this.props.distribution.format}
+                                </div>
+                                {defined(this.props.distribution.license) && (
+                                    <span className="distribution-license">
+                                        <span className="separator hidden-sm">
+                                            &nbsp;/&nbsp;
+                                        </span>
+                                        {this.props.distribution.license}
+                                    </span>
+                                )}
+                                <br />
+                                {this.props.distribution.downloadURL ? (
+                                    <a
+                                        className="au-btn distribution-download-button"
+                                        href={
+                                            this.props.distribution.downloadURL
+                                        }
+                                        alt="distribution download button"
+                                        onClick={() => {
+                                            // google analytics download tracking
+                                            const resource_url = encodeURIComponent(
+                                                this.props.distribution
+                                                    .downloadURL
+                                            );
+                                            if (resource_url) {
+                                                // legacy support
+                                                gapi.event({
+                                                    category: "Resource",
+                                                    action: "Download",
+                                                    label: resource_url
+                                                });
+                                                // new events
+                                                gapi.event({
+                                                    category:
+                                                        "Download by Dataset",
+                                                    action: this.props.dataset
+                                                        .title,
+                                                    label: resource_url
+                                                });
+                                                gapi.event({
+                                                    category:
+                                                        "Download by Source",
+                                                    action: this.props.dataset
+                                                        .source,
+                                                    label: resource_url
+                                                });
+                                                gapi.event({
+                                                    category:
+                                                        "Download by Publisher",
+                                                    action: this.props.dataset
+                                                        .publisher.name,
+                                                    label: resource_url
+                                                });
+                                            }
+                                        }}
+                                    >
+                                        <img
+                                            src={downloadWhiteIcon}
+                                            alt="download"
+                                            className="distribution-button-icon"
+                                        />
+                                        {"  "}
+                                        Download
+                                    </a>
+                                ) : null}{" "}
+                                {this.props.distribution.ckanResource &&
+                                    this.props.distribution.ckanResource
+                                        .datastore_active && (
+                                        <a
+                                            className="download-button au-btn au-btn--secondary"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            href={
+                                                get(
+                                                    this.props.distribution,
+                                                    "sourceDetails.url"
+                                                )
+                                                    ? get(
+                                                          this.props
+                                                              .distribution,
+                                                          "sourceDetails.url",
+                                                          ""
+                                                      ).replace(
+                                                          "3/action/resource_show?",
+                                                          "1/util/snippet/api_info.html?resource_"
+                                                      )
+                                                    : "https://docs.ckan.org/en/latest/maintaining/datastore.html#the-datastore-api"
+                                            }
+                                        >
+                                            <img
+                                                src={apiAccessIcon}
+                                                alt=""
+                                                className="distribution-button-icon"
+                                            />{" "}
+                                            Access Data API
+                                        </a>
+                                    )}{" "}
+                                <Small>
+                                    <DescriptionBox
+                                        content={
+                                            this.props.distribution.description
+                                        }
+                                        truncateLength={200}
+                                    />
+                                </Small>
+                                <Medium>
+                                    <DescriptionBox
+                                        content={
+                                            this.props.distribution.description
+                                        }
+                                        truncateLength={500}
+                                    />
+                                </Medium>
+                                <div className="tab-content">
+                                    <Switch>
+                                        <Route
+                                            path="/dataset/:datasetId/distribution/:distributionId/details"
+                                            component={DistributionDetails}
+                                        />
+                                        <Route
+                                            path="/dataset/:datasetId/distribution/:distributionId/preview"
+                                            component={DistributionPreview}
+                                        />
+                                        <Redirect
+                                            from="/dataset/:datasetId/distribution/:distributionId"
+                                            to={{
+                                                pathname: `${baseUrlDistribution}/details`,
+                                                search: `?q=${searchText}`
+                                            }}
+                                        />
+                                    </Switch>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 );
@@ -624,18 +662,25 @@ class RecordHandler extends React.Component {
                                                 updated?
                                             </h4>
                                             <div>
-                                                <ToggleEditor
-                                                    enabled={hasEditPermissions}
-                                                    value={
-                                                        dataset.accrualPeriodicity
-                                                    }
-                                                    onChange={datasetChange(
-                                                        "accrualPeriodicity"
-                                                    )}
-                                                    editor={codelistEditor(
-                                                        codelists.accrualPeriodicity
-                                                    )}
-                                                />
+                                                {(() => {
+                                                    if (
+                                                        !dataset.accrualPeriodicity
+                                                    )
+                                                        return "[NOT SET]";
+                                                    if (
+                                                        dataset.accrualPeriodicity !==
+                                                        "custom"
+                                                    )
+                                                        return dataset.accrualPeriodicity;
+                                                    if (
+                                                        !dataset.accrualPeriodicityRecurrenceRule
+                                                    )
+                                                        return "[NOT SET]";
+                                                    const r = RRule.fromString(
+                                                        dataset.accrualPeriodicityRecurrenceRule
+                                                    );
+                                                    return r.toText();
+                                                })()}
                                             </div>
                                             <h4>
                                                 What time period does the
@@ -693,10 +738,11 @@ class RecordHandler extends React.Component {
                                                 <ToggleEditor
                                                     enabled={hasEditPermissions}
                                                     value={
-                                                        dataset.creationAffiliatedOrganisation
+                                                        dataset.provenance
+                                                            .affiliatedOrganizationIds
                                                     }
-                                                    onChange={datasetChange(
-                                                        "creation/affiliatedOrganisation"
+                                                    onChange={provenanceChange(
+                                                        "affiliatedOrganizationIds"
                                                     )}
                                                     editor={multilineTextEditor}
                                                 />
@@ -708,11 +754,11 @@ class RecordHandler extends React.Component {
                                                 <ToggleEditor
                                                     enabled={hasEditPermissions}
                                                     value={
-                                                        dataset.creation
+                                                        dataset.provenance
                                                             .mechanism
                                                     }
-                                                    onChange={datasetChange(
-                                                        "creation/mechanism"
+                                                    onChange={provenanceChange(
+                                                        "mechanism"
                                                     )}
                                                     editor={multilineTextEditor}
                                                 />
@@ -722,11 +768,11 @@ class RecordHandler extends React.Component {
                                                 <ToggleEditor
                                                     enabled={hasEditPermissions}
                                                     value={
-                                                        dataset.creation
+                                                        dataset.provenance
                                                             .sourceSystem
                                                     }
-                                                    onChange={datasetChange(
-                                                        "creation/sourceSystem"
+                                                    onChange={provenanceChange(
+                                                        "sourceSystem"
                                                     )}
                                                     editor={textEditor}
                                                 />
@@ -748,8 +794,8 @@ class RecordHandler extends React.Component {
                                                             .informationSecurity
                                                             .disseminationLimits
                                                     }
-                                                    onChange={datasetChange(
-                                                        "informationSecurity/disseminationLimits"
+                                                    onChange={informationSecurityChange(
+                                                        "disseminationLimits"
                                                     )}
                                                     editor={multiCodelistEditor(
                                                         codelists.disseminationLimits
@@ -769,8 +815,8 @@ class RecordHandler extends React.Component {
                                                             .informationSecurity
                                                             .classification
                                                     }
-                                                    onChange={datasetChange(
-                                                        "informationSecurity/classification"
+                                                    onChange={informationSecurityChange(
+                                                        "classification"
                                                     )}
                                                     editor={codelistEditor(
                                                         codelists.classification

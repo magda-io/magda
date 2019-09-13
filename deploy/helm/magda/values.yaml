@@ -43,3 +43,5 @@ tags:
   web-server: false
   ingress: false
   connectors: false
+  tenant-api: false
+  tenant-db: false

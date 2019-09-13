@@ -27,7 +27,7 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
 
   /**
    * @apiGroup Registry Webhooks
-   * @api {get} /v0/registry-auth/hooks Get a list of all web hooks
+   * @api {get} /v0/registry/hooks Get a list of all web hooks
    *
    * @apiDescription Get a list of all web hooks
    * @apiHeader {string} X-Magda-Session Magda internal session id
@@ -91,7 +91,7 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
 
   /**
    * @apiGroup Registry Webhooks
-   * @api {post} /v0/registry-auth/hooks Create a new web hook
+   * @api {post} /v0/registry/hooks Create a new web hook
    *
    * @apiDescription Create a new web hook
    *
@@ -178,7 +178,7 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
 
   /**
    * @apiGroup Registry Webhooks
-   * @api {get} /v0/registry-auth/hooks/{id} Get a web hook by ID
+   * @api {get} /v0/registry/hooks/{id} Get a web hook by ID
    *
    * @apiDescription Get a web hook by ID
    * @apiHeader {string} X-Magda-Session Magda internal session id
@@ -244,7 +244,7 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
 
   /**
    * @apiGroup Registry Webhooks
-   * @api {put} /v0/registry-auth/hooks/{id} Modify a web hook by ID
+   * @api {put} /v0/registry/hooks/{id} Modify a web hook by ID
    *
    * @apiDescription Modifies the web hook with a given ID. If a web hook with the ID does not yet exist, it is created.
    *
@@ -347,7 +347,7 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
 
   /**
    * @apiGroup Registry Webhooks
-   * @api {delete} /v0/registry-auth/hooks/{id} Delete a web hook
+   * @api {delete} /v0/registry/hooks/{id} Delete a web hook
    *
    * @apiDescription Delete a web hook
    *
@@ -387,7 +387,7 @@ class HooksService(config: Config, webHookActor: ActorRef, authClient: AuthApiCl
 
   /**
    * @apiGroup Registry Webhooks
-   * @api {post} /v0/registry-auth/hooks/{id}/ack Acknowledge a previously-deferred web hook
+   * @api {post} /v0/registry/hooks/{id}/ack Acknowledge a previously-deferred web hook
    *
    * @apiDescription Acknowledges a previously-deferred web hook with a given ID. Acknowledging a previously-POSTed web hook will cause the next, if any, to be sent.
    *

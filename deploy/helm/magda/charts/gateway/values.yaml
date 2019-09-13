@@ -30,8 +30,11 @@ defaultRoutes:
     to: http://search-api/v0
     auth: true
   registry:
+    to: http://registry-api/v0
+    auth: true
+  registry-read-only:
     to: http://registry-api-read-only/v0
-  registry-auth:
+  registry-auth: #left here for legacy reasons - use /registry
     to: http://registry-api/v0
     auth: true
   auth:
@@ -52,7 +55,9 @@ defaultRoutes:
   apidocs:
     to: http://apidocs-server/
     redirectTrailingSlash: true
-helmet: {}
+  tenant:
+    to: http://tenant-api/v0
+    auth: true
 
 csp:
   browserSniff: false
