@@ -13,7 +13,7 @@ type CsvSourceType = CsvUrlType | ParsedDistribution;
 let Papa;
 
 const getPapaParse = async () => {
-    if (Papa) {
+    if (!Papa) {
         Papa = await import(/* webpackChunkName: "papa" */ "papaparse");
     }
     return Papa;
@@ -96,7 +96,7 @@ class CsvDataLoader {
         this.toBeAbort = true;
     }
 
-    async load(overrideNewLine = ""): Promise<DataLoadingResult> {
+    async load(overrideNewLine?: string): Promise<DataLoadingResult> {
         this.resetDownloadData();
         const Papa = await getPapaParse();
         const proxyUrl = config.proxyUrl + "_0d/" + this.url;
@@ -129,7 +129,7 @@ class CsvDataLoader {
                         } else if (results.errors.length >= 1) {
                             reject(new Error(results.errors[0].message));
                         } else {
-                            this.data.push(results.data);
+                            this.data.concat(this.data, results.data);
                             this.errors = results.errors;
                             if (!this.metaData) {
                                 this.metaData = results.meta;
