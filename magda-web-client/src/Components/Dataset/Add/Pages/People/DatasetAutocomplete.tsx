@@ -130,17 +130,8 @@ export default function DatasetAutocomplete(props: Props) {
                     options: [
                         {
                             label: `Add new: "${term}"`,
-                            onClick: (
-                                event: React.MouseEvent<
-                                    HTMLDivElement,
-                                    MouseEvent
-                                >
-                            ) => {
-                                event.preventDefault();
-                                event.stopPropagation();
-
-                                selectRef.current && selectRef.current.blur();
-
+                            isCustomItem: true,
+                            itemSelectHandler: () => {
                                 const newDatasetState = createBlankState(
                                     props.user
                                 );
@@ -166,17 +157,8 @@ export default function DatasetAutocomplete(props: Props) {
                     options: [
                         {
                             label: `Use name: "${term}"`,
-                            onClick: (
-                                event: React.MouseEvent<
-                                    HTMLDivElement,
-                                    MouseEvent
-                                >
-                            ) => {
-                                event.preventDefault();
-                                event.stopPropagation();
-
-                                selectRef.current && selectRef.current.blur();
-
+                            isCustomItem: true,
+                            itemSelectHandler: () => {
                                 addChoice({
                                     name: term
                                 });
@@ -198,9 +180,23 @@ export default function DatasetAutocomplete(props: Props) {
                 if (!rawValue) {
                     props.onDatasetSelected(undefined);
                 } else {
-                    props.onDatasetSelected(
-                        (rawValue as Choice[]).map(fromReactSelect)
-                    );
+                    const selectedItems = rawValue as any[];
+                    if (
+                        selectedItems.length &&
+                        selectedItems[selectedItems.length - 1] &&
+                        selectedItems[selectedItems.length - 1].isCustomItem ===
+                            true
+                    ) {
+                        selectedItems[
+                            selectedItems.length - 1
+                        ].itemSelectHandler();
+                        // --- itemSelectHandler will call onDatasetSelected to notify value changes
+                        // --- nothing here
+                    } else {
+                        props.onDatasetSelected(
+                            (rawValue as Choice[]).map(fromReactSelect)
+                        );
+                    }
                 }
             }}
             styles={{
