@@ -84,20 +84,17 @@ export default function arcgis(options: ArcGisOptions) {
                     }/sharing/rest/community/users/${
                         profile.username
                     }?f=json&token=${accessToken}`;
-                    // console.log("url = " + url);
                     fetch(url, { method: "get" })
                         .then(res => {
                             return res.json();
                         })
                         .then(jsObj => {
                             const theGroups: any[] = jsObj["groups"];
-                            // console.log("theGroups = " + JSON.stringify(theGroups));
                             const theGroupIds: string[] = theGroups.map(
                                 group => {
                                     return group["id"];
                                 }
                             );
-                            // console.log("theGroupIds = " + theGroupIds)
                             cb(null, {
                                 id: userToken.id,
                                 session: { esriGroups: theGroupIds }
