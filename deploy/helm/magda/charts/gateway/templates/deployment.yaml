@@ -39,6 +39,9 @@ spec:
 {{- if .Values.auth.arcgisClientId }}
             "--arcgisClientId", {{ .Values.auth.arcgisClientId | quote }},
 {{- end }}
+{{- if .Values.auth.arcgisInstanceBaseUrl }}
+            "--arcgisInstanceBaseUrl", {{ .Values.auth.arcgisInstanceBaseUrl | quote }},
+{{- end }}
 {{- if .Values.auth.googleClientId }}
             "--googleClientId", {{ .Values.auth.googleClientId | quote }},
 {{- end }}
