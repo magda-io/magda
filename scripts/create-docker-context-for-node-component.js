@@ -383,14 +383,19 @@ function getPackageDependencies(packagePath) {
     if (packageDependencyDataCache[packageJsonPath]) {
         return packageDependencyDataCache[packageJsonPath];
     }
-    const pkgData = fse.readJSONSync(packageJsonPath);
-    const depData = pkgData["dependencies"];
-    if (!depData) {
-        packageDependencyDataCache[packageJsonPath] = [];
+    if (fse.existsSync(packageJsonPath)) {
+        const pkgData = fse.readJSONSync(packageJsonPath);
+        const depData = pkgData["dependencies"];
+        if (!depData) {
+            packageDependencyDataCache[packageJsonPath] = [];
+        } else {
+            packageDependencyDataCache[packageJsonPath] = Object.keys(depData);
+        }
+        return packageDependencyDataCache[packageJsonPath];
     } else {
-        packageDependencyDataCache[packageJsonPath] = Object.keys(depData);
+        console.log(packageJsonPath);
+        return [];
     }
-    return packageDependencyDataCache[packageJsonPath];
 }
 
 function wrapConsoleOutput(process) {
