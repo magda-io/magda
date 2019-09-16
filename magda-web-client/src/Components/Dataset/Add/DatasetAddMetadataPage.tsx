@@ -335,9 +335,16 @@ class NewDataset extends React.Component<Props, State> {
                 },
                 currency: {
                     ...currency,
-                    supersededBy: preProcessDatasetAutocompleteChoices(
-                        currency.supersededBy
-                    )
+                    supersededBy:
+                        currency.status === "SUPERSEDED"
+                            ? preProcessDatasetAutocompleteChoices(
+                                  currency.supersededBy
+                              )
+                            : undefined,
+                    retireReason:
+                        currency.status === "RETIRED"
+                            ? currency.retireReason
+                            : undefined
                 },
                 provenance: {
                     mechanism: provenance.mechanism,
@@ -359,14 +366,6 @@ class NewDataset extends React.Component<Props, State> {
                 }
             }
         };
-
-        if (currency.status !== "SUPERSEDED") {
-            delete inputDataset.aspects.currency.supersededBy;
-        }
-
-        if (currency.status !== "RETIRED") {
-            delete inputDataset.aspects.currency.retireReason;
-        }
 
         if (!inputDataset.aspects["dataset-access-control"].orgUnitOwnerId) {
             delete inputDataset.aspects["dataset-access-control"];
