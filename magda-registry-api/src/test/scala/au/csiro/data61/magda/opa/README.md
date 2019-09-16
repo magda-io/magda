@@ -66,6 +66,25 @@ cd magda-authorization-api
 yarn dev
 ```
 
+### Create JWTs for Esri Policy Test
+
+(If Esri OPA test failed, follow the instructions in this session to re-build JWTs.)
+
+The current Java JWT library is not capable of creating custom claims that are json objects.
+The typescript library comes to help. The jwt tokens used in testing esri policy are created by
+magda-typescript-common/src/test/session/buildJwtForRegistryEsriOpaTest.ts.
+
+If necessary, follow the steps below to create them again.
+
+```
+cd magda-typescript-common
+yarn build
+yarn create_esri_jwt
+```
+
+The jwt for each testing user will be printed on screen. Replace JWTs with the newly created ones
+in method addJwtToken() of class opa/ApiWithOpaSpec.scala.
+
 ### Start the integration tests
 
 It is very convenient to debug the tests with IntelliJ IDEA.

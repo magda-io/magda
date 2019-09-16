@@ -89,12 +89,20 @@ export default function arcgis(options: ArcGisOptions) {
                         .then(res => {
                             return res.json();
                         })
-                        .then(jsObj =>
+                        .then(jsObj => {
+                            const theGroups: any[] = jsObj["groups"];
+                            // console.log("theGroups = " + JSON.stringify(theGroups));
+                            const theGroupIds: string[] = theGroups.map(
+                                group => {
+                                    return group["id"];
+                                }
+                            );
+                            // console.log("theGroupIds = " + theGroupIds)
                             cb(null, {
                                 id: userToken.id,
-                                groups: jsObj["groups"]
-                            })
-                        )
+                                session: { esriGroups: theGroupIds }
+                            });
+                        })
                         .catch(error => cb(error));
                 })
                 .catch(error => cb(error));

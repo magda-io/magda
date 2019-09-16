@@ -98,14 +98,27 @@ abstract class ApiWithOpaSpec
     val theRecordPolicyId = recordPolicyId
 
     if (theRecordPolicyId.endsWith("esri_groups")) {
+      /**
+        * The current Java JWT library is not capable of creating custom claims that are json objects.
+        * The typescript library comes to help. These jwt tokens are created by magda-typescript-common/src/test/session/buildJwtForRegistryEsriOpaTest.ts.
+        *
+        * Follow the steps below to create them.
+        *
+        *     cd magda-typescript-common
+        *     yarn build
+        *     yarn create_esri_jwt
+       */
       val jwtToken =
-        JWT
-          .create()
-          .withClaim("userId", userId)
-          .withArrayClaim("groups", esriUserGroupMap(userId))
-          .sign(Authentication.algorithm)
-      //      println(s"userId: $userId")
-      //      println(s"jwtToken: $jwtToken")
+        if (userId.equals("00000000-0000-1000-0000-000000000000"))
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwMDAwMDAwMC0wMDAwLTEwMDAtMDAwMC0wMDAwMDAwMDAwMDAiLCJzZXNzaW9uIjp7InNlc3Npb24iOnsiZXNyaUdyb3VwcyI6WyJEZXAuIEEiLCJCcmFuY2ggQSwgRGVwLiBBIiwiQnJhbmNoIEIsIERlcC4gQSIsIlNlY3Rpb24gQywgQnJhbmNoIEIsIERlcC4gQSJdfX0sImlhdCI6MTU2ODI4ODgzNn0.V8VzOqKKngc2Fykuy7C_oBjvJRhJeosLnN8a066ffuo"
+        else if (userId.equals("00000000-0000-1000-0001-000000000000"))
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwMDAwMDAwMC0wMDAwLTEwMDAtMDAwMS0wMDAwMDAwMDAwMDAiLCJzZXNzaW9uIjp7InNlc3Npb24iOnsiZXNyaUdyb3VwcyI6WyJCcmFuY2ggQSwgRGVwLiBBIl19fSwiaWF0IjoxNTY4Mjg4ODM2fQ.Vnr3KSmJI6A5CnkB9o7E_cHnz_FcU1RkS5HLQe5imnc"
+        else if (userId.equals("00000000-0000-1000-0002-000000000000"))
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwMDAwMDAwMC0wMDAwLTEwMDAtMDAwMi0wMDAwMDAwMDAwMDAiLCJzZXNzaW9uIjp7InNlc3Npb24iOnsiZXNyaUdyb3VwcyI6WyJCcmFuY2ggQiwgRGVwLiBBIiwiU2VjdGlvbiBDLCBCcmFuY2ggQiwgRGVwLiBBIl19fSwiaWF0IjoxNTY4Mjg4ODM2fQ.YOXKLCWuJJDuz43SNcLBRLYdnxmKNQsdm_DymPu4n14"
+        else if (userId.equals("00000000-0000-1000-0003-000000000000"))
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwMDAwMDAwMC0wMDAwLTEwMDAtMDAwMy0wMDAwMDAwMDAwMDAiLCJzZXNzaW9uIjp7InNlc3Npb24iOnsiZXNyaUdyb3VwcyI6WyJTZWN0aW9uIEMsIEJyYW5jaCBCLCBEZXAuIEEiXX19LCJpYXQiOjE1NjgyODg4MzZ9.5gLU6Tz_Q74r0NeyvrjlSsRe63eRR8NwZyCsPFIAEzg"
+        else
+          ""
       RawHeader(
         Authentication.headerName,
         jwtToken
@@ -172,18 +185,6 @@ abstract class ApiWithOpaSpec
   val userId2 = "00000000-0000-1000-0002-000000000000"
   val userId3 = "00000000-0000-1000-0003-000000000000"
   val anonymous = "anonymous"
-
-  val esriUserGroupMap: Map[String, Array[String]] = Map(
-    userId0 -> Array(
-      "Dep. A",
-      "Branch A, Dep. A",
-      "Branch B, Dep. A",
-      "Section C, Branch B, Dep. A"
-    ),
-    userId1 -> Array("Branch A, Dep. A"),
-    userId2 -> Array("Branch B, Dep. A", "Section C, Branch B, Dep. A"),
-    userId3 -> Array("Section C, Branch B, Dep. A")
-  )
 
   val userIdsAndExpectedRecordIdIndexesWithoutLink = List(
     (userId0, List(0, 1, 2, 3, 4, 5)),

@@ -3,9 +3,9 @@ import "mocha";
 import * as yargs from "yargs";
 import addJwtSecretFromEnvVar from "../../session/addJwtSecretFromEnvVar";
 import { getUserId } from "../../session/GetUserId";
-import { getUserGroups } from "../../session/GetUserGroups";
+import { getUserSession } from "../../session/GetUserSession";
+import buildJwt from "../../session/buildJwt";
 const { mockRequest } = require("mock-req-res");
-const jwt = require("jsonwebtoken");
 
 describe("Get authz claim from jwt token", () => {
     const argv = addJwtSecretFromEnvVar(
@@ -21,8 +21,7 @@ describe("Get authz claim from jwt token", () => {
 
     it("should get userId", function() {
         const aUserId = "aTestUserId";
-        const payload = `{"userId": "${aUserId}"}`;
-        const jwtToken = jwt.sign(payload, argv.jwtSecret);
+        const jwtToken = buildJwt(argv.jwtSecret, aUserId);
 
         const req = mockRequest({
             header(name: string) {
@@ -35,15 +34,11 @@ describe("Get authz claim from jwt token", () => {
         expect(actual).to.be.equal(aUserId);
     });
 
-    it("should get user groups", function() {
+    it("should get user session", function() {
         const aUserId = "aTestUserId";
         const groups = ["G1", "G2"];
-        const payload = {
-            userId: aUserId,
-            groups: groups
-        };
-
-        const jwtToken = jwt.sign(payload, argv.jwtSecret);
+        const session = { session: { esriGroups: groups } };
+        const jwtToken = buildJwt(argv.jwtSecret, aUserId, session);
 
         const req = mockRequest({
             header(name: string) {
@@ -52,7 +47,7 @@ describe("Get authz claim from jwt token", () => {
             }
         });
 
-        const actual = getUserGroups(req, argv.jwtSecret).valueOr([]);
-        expect(actual).to.be.deep.equal(groups);
+        const actual = getUserSession(req, argv.jwtSecret).valueOr({});
+        expect(actual.session.esriGroups).to.be.deep.equal(groups);
     });
 });

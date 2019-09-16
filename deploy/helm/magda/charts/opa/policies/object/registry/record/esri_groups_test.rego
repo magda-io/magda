@@ -12,7 +12,9 @@ test_allow_read_if_groups_and_permission_are_correct {
                    ]
                 }
             ],
-            "groups": ["G1", "G2"]
+            "session": {
+                "esriGroups": ["G1", "G2"]
+            }
         },
 
         "object": {
@@ -31,7 +33,9 @@ test_allow_read_if_groups_and_permission_are_correct {
 test_deny_read_if_groups_are_incorrect {
     not read with input as {
         "user": {
-            "groups": ["G1", "G2"],
+            "session": {
+                "esriGroups": ["G1", "G2"]
+            },
             "permissions": [
                 {
                    "operations": [
@@ -58,7 +62,9 @@ test_deny_read_if_groups_are_incorrect {
 test_deny_read_if_permission_is_incorrect {
     not read with input as {
         "user": {
-            "groups": ["G1", "G2"],
+            "session": {
+                "esriGroups": ["G1", "G2"],
+            },
             "permissions": [
                 {
                    "operations": [
