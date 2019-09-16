@@ -14149,6 +14149,11 @@ mocha@^5.1.1:
     mkdirp "0.5.1"
     supports-color "5.4.0"
 
+mock-req-res@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/mock-req-res/-/mock-req-res-1.1.1.tgz#1b1fe3999882e763677ce70ff2d74d94fe8e50d9"
+  integrity sha512-77Bu8kxlGqklpKndiL08qukbfpT1SE9MP64ij4BE0pZUNRy+qDx7fWzN+tbNBT7u9ImqhnQan2fAboRCpPih+g==
+
 modify-values@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/modify-values/-/modify-values-1.0.1.tgz#b3939fa605546474e3e3e3c63d64bd43b4ee6022"

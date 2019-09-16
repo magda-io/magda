@@ -3,6 +3,7 @@ import { Router } from "express";
 import * as _ from "lodash";
 import Database from "./Database";
 import { User } from "@magda/typescript-common/dist/authorization-api/model";
+import { getUserSession } from "@magda/typescript-common/dist/session/GetUserSession";
 import OpaCompileResponseParser from "@magda/typescript-common/dist/OpaCompileResponseParser";
 import * as request from "request-promise-native";
 import * as bodyParser from "body-parser";
@@ -156,7 +157,13 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
 
         reqData.input.user = userInfo;
 
+        const sessionClaim = getUserSession(req, jwtSecret).valueOr({});
+
+        reqData.input.user.session = sessionClaim.session;
+
         reqOpts.json = reqData;
+
+        //console.log(JSON.stringify(reqOpts, null, 2));
 
         try {
             // -- request's pipe api doesn't work well with chunked response
