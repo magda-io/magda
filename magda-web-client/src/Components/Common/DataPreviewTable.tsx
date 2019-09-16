@@ -36,7 +36,11 @@ export default class DataPreviewTable extends Component<PropsType> {
             !this.props.dataLoadingResult.isPartialData
         )
             return null;
-        return <div>* Only the first {rows.length} rows are shown.</div>;
+        return (
+            <div className="partial-data-message">
+                * Only the first {rows.length} rows are shown.
+            </div>
+        );
     }
 
     render() {

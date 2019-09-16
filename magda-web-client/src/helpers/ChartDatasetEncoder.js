@@ -375,8 +375,8 @@ class ChartDatasetEncoder {
         }
         this.distribution = distribution;
         this.data =
-            config.maxTableProcessingRows < dataLoadingResult.data.length
-                ? dataLoadingResult.data.slice(0, config.maxTableProcessingRows)
+            config.maxChartProcessingRows < dataLoadingResult.data.length
+                ? dataLoadingResult.data.slice(0, config.maxChartProcessingRows)
                 : dataLoadingResult.data;
         this.preProcessData();
     }

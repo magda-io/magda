@@ -184,6 +184,19 @@ class DataPreviewChart extends Component<PropsType, StateType> {
         this.props.onChangeTab("table");
     }
 
+    // --- tell user not all data rows is shown
+    renderPatialDataNotice() {
+        if (!this.state.chartOption || !this.props.dataLoadingResult)
+            return null;
+        if (!this.props.dataLoadingResult.isPartialData) return null;
+        return (
+            <div className="partial-data-message">
+                * Only the first {this.props.dataLoadingResult.data.length}{" "}
+                lines data are included in the chart.
+            </div>
+        );
+    }
+
     render() {
         if (this.state.error)
             return (
@@ -217,6 +230,7 @@ class DataPreviewChart extends Component<PropsType, StateType> {
                     ) : (
                         <div style={{ height: "450px" }}>&nbsp;</div>
                     )}
+                    {this.renderPatialDataNotice()}
                 </div>
                 <div className="col-sm-4 config-panel-container">
                     {this.state.isExpanded ? (

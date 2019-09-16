@@ -159,14 +159,8 @@ class CsvDataLoader {
                             // --- worker may not abort immediately, retry later to avoid troubles
                             resolve(retryLater(this.load.bind(this, "\n")));
                         } else {
-                            this.data = this.data.concat(
-                                this.data,
-                                results.data
-                            );
-                            this.errors = this.errors.concat(
-                                this.errors,
-                                results.errors
-                            );
+                            this.data = this.data.concat(results.data);
+                            this.errors = this.errors.concat(results.errors);
                             if (!this.metaData) {
                                 this.metaData = results.meta;
                             }
