@@ -69,4 +69,7 @@ csp:
     objectSrc:
     - "''none''"
 
-cors: {}
+cors: 
+  exposedHeaders:
+  - "Content-Range"
+  - "X-Content-Range"
