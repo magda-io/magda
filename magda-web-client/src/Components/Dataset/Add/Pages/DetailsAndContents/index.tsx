@@ -164,7 +164,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                 <h3 className="with-underline">Dates and updates</h3>
 
                 <div className="question-dataset-status">
-                    <h4>What is the status of the this dataset?</h4>
+                    <h4>What is the status of this dataset?</h4>
                     <div className="row">
                         <div className="col-sm-6">
                             <ReactSelect
