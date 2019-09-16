@@ -1,0 +1,59 @@
+{
+    "$schema": "http://json-schema.org/hyper-schema#",
+    "title": "Currency",
+    "description": "Describes how up-to-date the dataset is",
+    "type": "object",
+    "properties": {
+        "status": {
+            "description": "the status of the this dataset",
+            "type": "string",
+            "enum": ["CURRENT", "SUPERSEDED", "RETIRED"]
+        },
+        "supersededBy": {
+            "description": "What dataset(s) has it been superseded by?",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "description": "The dataset that this data has been superseded by - either a link to another record in Magda or a name if the dataset isn't in Magda",
+                "properties": {
+                    "id": {
+                        "type": "array",
+                        "maxItems": 1,
+                        "items": {
+                            "type": "string",
+                            "description": "This is an array because Magda doesn't properly support single values for links.",
+                            "links": [
+                                {
+                                    "href": "/api/v0/registry/records/{$}",
+                                    "rel": "item"
+                                }
+                            ]
+                        }
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "If the dataset isn't in Magda, the name of the dataset that the data has been superseded by."
+                    }
+                },
+                "oneOf": [
+                    {
+                        "required": ["id"],
+                        "not": {
+                            "required": ["name"]
+                        }
+                    },
+                    {
+                        "required": ["name"],
+                        "not": {
+                            "required": ["id"]
+                        }
+                    }
+                ]
+            }
+        },
+        "retireReason": {
+            "description": "Why was this dataset retired?",
+            "type": "string"
+        }
+    }
+}
