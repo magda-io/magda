@@ -181,6 +181,11 @@ export default function DatasetAutocomplete(props: Props) {
                     props.onDatasetSelected(undefined);
                 } else {
                     const selectedItems = rawValue as any[];
+                    
+                    // Assume that the last selected item is the one just added.
+                    // If the selected item is custom, let its "itemSelectHandler"
+                    // method handle the change. For non-custom elements just call
+                    // onDatasetSelected directly.
                     if (
                         selectedItems.length &&
                         selectedItems[selectedItems.length - 1] &&
@@ -190,8 +195,6 @@ export default function DatasetAutocomplete(props: Props) {
                         selectedItems[
                             selectedItems.length - 1
                         ].itemSelectHandler();
-                        // --- itemSelectHandler will call onDatasetSelected to notify value changes
-                        // --- nothing here
                     } else {
                         props.onDatasetSelected(
                             (rawValue as Choice[]).map(fromReactSelect)
