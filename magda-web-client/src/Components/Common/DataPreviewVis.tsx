@@ -11,6 +11,7 @@ type VisType = "chart" | "table";
 type StateType = {
     visType: VisType;
     isDataLoading: boolean;
+    dataLoadingError: Error | null;
     dataLoadingResult: DataLoadingResult | null;
 };
 
@@ -27,6 +28,7 @@ class DataPreviewVis extends Component<
         this.state = {
             visType: "chart",
             isDataLoading: true,
+            dataLoadingError: null,
             dataLoadingResult: null
         };
         this.onChangeTab = this.onChangeTab.bind(this);
@@ -52,24 +54,45 @@ class DataPreviewVis extends Component<
     }
 
     async loadData() {
-        // If none of chart & table compatiblePreviews option is false, no need to load data
-        const distribution = this.props.distribution;
-        if (
-            !distribution ||
-            !distribution.identifier ||
-            (!distribution.compatiblePreviews.chart &&
-                !distribution.compatiblePreviews.table)
-        ) {
-            return;
-        }
+        try {
+            // If none of chart & table compatiblePreviews option is false, no need to load data
+            const distribution = this.props.distribution;
+            if (
+                !distribution ||
+                !distribution.identifier ||
+                (!distribution.compatiblePreviews.chart &&
+                    !distribution.compatiblePreviews.table)
+            ) {
+                return;
+            }
 
-        this.dataLoader = new CsvDataLoader(this.props.distribution);
-        this.setState({ isDataLoading: true });
-        const result = await this.dataLoader.load();
-        this.setState({
-            isDataLoading: false,
-            dataLoadingResult: result
-        });
+            this.dataLoader = new CsvDataLoader(this.props.distribution);
+            this.setState({
+                isDataLoading: true,
+                dataLoadingError: null,
+                dataLoadingResult: null
+            });
+            const result = await this.dataLoader.load();
+
+            this.setState({
+                isDataLoading: false,
+                dataLoadingResult: result
+            });
+
+            // --- the CSV processing error could be caused by many reasons
+            // --- most them here should be source file problem
+            // --- But we might still want to keep monitor any rare non-source-file related issues here
+            if (result.errors.length) {
+                console.log("CSV data processing error: ", result.errors);
+            }
+        } catch (e) {
+            this.setState({
+                isDataLoading: false,
+                dataLoadingError: e,
+                dataLoadingResult: null
+            });
+            console.error("Failed to process CSV data file: ", e);
+        }
     }
 
     renderChart() {
@@ -77,6 +100,7 @@ class DataPreviewVis extends Component<
             <DataPreviewChart
                 distribution={this.props.distribution}
                 dataLoadingResult={this.state.dataLoadingResult}
+                dataLoadError={this.state.dataLoadingError}
                 isLodaing={this.state.isDataLoading}
                 onChangeTab={this.onChangeTab}
             />
@@ -87,6 +111,7 @@ class DataPreviewVis extends Component<
         return (
             <DataPreviewTable
                 dataLoadingResult={this.state.dataLoadingResult}
+                dataLoadError={this.state.dataLoadingError}
                 isLodaing={this.state.isDataLoading}
             />
         );

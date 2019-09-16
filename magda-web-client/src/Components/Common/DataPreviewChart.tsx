@@ -14,6 +14,7 @@ import { ParsedDistribution } from "helpers/record";
 import "./DataPreviewChart.scss";
 
 type PropsType = {
+    dataLoadError: Error | null;
     dataLoadingResult: DataLoadingResult | null;
     isLodaing: boolean;
     distribution: ParsedDistribution;
@@ -21,7 +22,7 @@ type PropsType = {
 };
 
 type StateType = {
-    error: Error;
+    error: Error | null;
     avlXCols: any[];
     avlYCols: any[];
     xAxis: any;
@@ -73,7 +74,32 @@ class DataPreviewChart extends Component<PropsType, StateType> {
         else return { ...options, ...extraOptions };
     }
 
-    initChartData() {
+    resetChartState(extraOptions: any = {}) {
+        this.setState(this.getResetState(extraOptions));
+    }
+
+    processChartDataUpdates(prevProps?: PropsType, prevState?: StateType) {
+        if (
+            prevProps &&
+            prevProps.dataLoadingResult === this.props.dataLoadingResult &&
+            prevState &&
+            prevState.chartTitle === this.state.chartTitle &&
+            prevState.chartType === this.state.chartType &&
+            prevState.xAxis === this.state.xAxis &&
+            prevState.yAxis === this.state.yAxis
+        ) {
+            return;
+        }
+
+        if (this.props.dataLoadError || !this.props.dataLoadingResult) {
+            this.resetChartState({
+                error: this.props.dataLoadError
+                    ? this.props.dataLoadError
+                    : null
+            });
+            return;
+        }
+
         this.chartDatasetEncoder.processData(
             this.props.distribution,
             this.props.dataLoadingResult
@@ -105,15 +131,14 @@ class DataPreviewChart extends Component<PropsType, StateType> {
 
     async componentDidMount() {
         try {
-            if (!ReactEcharts)
+            if (!ReactEcharts) {
                 ReactEcharts = (await import("echarts-for-react")).default;
-            this.initChartData();
+            }
+            this.processChartDataUpdates();
         } catch (e) {
-            this.setState(
-                this.getResetState({
-                    error: e
-                })
-            );
+            this.resetChartState({
+                error: e
+            });
 
             gapi.event({
                 category: "Error",
@@ -131,7 +156,7 @@ class DataPreviewChart extends Component<PropsType, StateType> {
 
     async componentDidUpdate(prevProps, prevState) {
         try {
-            this.initChartData();
+            this.processChartDataUpdates(prevProps, prevState);
         } catch (e) {
             // we do not automatically switch to table view here because chart has already successfully rendered.
             // for subsequent error cause the chart to not render, we will just display an error message
@@ -160,12 +185,7 @@ class DataPreviewChart extends Component<PropsType, StateType> {
     }
 
     render() {
-        if (
-            (this.props.dataLoadingResult &&
-                this.props.dataLoadingResult.errors &&
-                this.props.dataLoadingResult.errors.length) ||
-            this.state.error
-        )
+        if (this.state.error)
             return (
                 <AUpageAlert as="error" className="notification__inner">
                     <h3>Oops</h3>
@@ -186,13 +206,17 @@ class DataPreviewChart extends Component<PropsType, StateType> {
             <div className="row data-preview-chart">
                 <div className="col-sm-8 chart-panel-container">
                     <h4 className="chart-title">{this.state.chartTitle}</h4>
-                    <ReactEcharts
-                        className="data-preview-chart-container"
-                        style={{ height: "450px", color: "yellow" }}
-                        lazyUpdate={true}
-                        option={this.state.chartOption}
-                        theme="au_dga"
-                    />
+                    {this.state.chartOption ? (
+                        <ReactEcharts
+                            className="data-preview-chart-container"
+                            style={{ height: "450px", color: "yellow" }}
+                            lazyUpdate={true}
+                            option={this.state.chartOption}
+                            theme="au_dga"
+                        />
+                    ) : (
+                        <div style={{ height: "450px" }}>&nbsp;</div>
+                    )}
                 </div>
                 <div className="col-sm-4 config-panel-container">
                     {this.state.isExpanded ? (
