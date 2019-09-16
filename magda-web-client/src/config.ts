@@ -46,6 +46,7 @@ const serverConfig: {
     custodianOrgLevel: number;
     maxChartProcessingRows: number;
     maxTableProcessingRows: number;
+    csvLoaderChunkSize: number;
 } = window.magda_server_config || {};
 
 const registryReadOnlyApiUrl =
@@ -161,7 +162,12 @@ export const config = {
         : 15000,
     maxTableProcessingRows: serverConfig.maxTableProcessingRows
         ? serverConfig.maxTableProcessingRows
-        : 200
+        : 200,
+    // --- CSV loader download / processing chunk size
+    // --- default to 600KB
+    csvLoaderChunkSize: serverConfig.csvLoaderChunkSize
+        ? serverConfig.csvLoaderChunkSize
+        : 1024 * 600
 };
 
 export const defaultConfiguration = {
