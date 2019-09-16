@@ -275,7 +275,7 @@ export default class EsriPortal implements ConnectorSource {
                                 item.groups = undefined;
                             }
 
-                            // We're looking at an individual layer (coule be either map or feature service)
+                            // We're looking at an individual layer (could be either map or feature service)
                             // eg https://maps.six.nsw.gov.au/arcgis/rest/services/public/Valuation/MapServer/0
                             if (!isNaN(parseInt(distUri.segment(-1)))) {
                                 try {
@@ -395,6 +395,8 @@ export default class EsriPortal implements ConnectorSource {
             if (item.type === "Map Service") {
                 // Sometimes people don't populate the documentInfo
                 distName =
+                    distInfo.documentInfo &&
+                    distInfo.documentInfo.Title &&
                     distInfo.documentInfo.Title.length > 0
                         ? distInfo.documentInfo.Title
                         : distInfo.mapName;

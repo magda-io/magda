@@ -25,8 +25,5 @@ return {
     themes: undefined,
     keywords: dataset.tags,
     contactPoint: dataset.owner,
-    landingPage: esriPortal.getDatasetLandingPageUrl(dataset.id),
-
-    // additional portal information
-    groups: dataset.groups.length > 0 ? dataset.groups : undefined
+    landingPage: esriPortal.getDatasetLandingPageUrl(dataset.id)
 };
