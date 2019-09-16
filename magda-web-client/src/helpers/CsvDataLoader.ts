@@ -4,7 +4,9 @@ import { config } from "../config";
 import { Parser, ParseResult, ParseError, ParseMeta } from "papaparse";
 import { ParsedDistribution } from "./record";
 
-export type DataLoadingResult = ParseResult;
+export interface DataLoadingResult extends ParseResult {
+    isPartialData: boolean;
+}
 
 type CsvUrlType = string;
 
@@ -54,6 +56,8 @@ class CsvDataLoader {
     private errors: ParseError[] = [];
     private metaData: ParseMeta | null = null;
     private isLoading: boolean = false;
+    private isPartialData: boolean = false;
+
     /**
      * When download & parse process is aborted as result of user or client side event (e.g. component will be unmounted),
      * We set this marker and let loader know it should abort any unfinished processing.
@@ -99,6 +103,7 @@ class CsvDataLoader {
         this.metaData = null;
         this.isLoading = false;
         this.toBeAbort = false;
+        this.isPartialData = false;
     }
 
     abort() {
@@ -167,14 +172,8 @@ class CsvDataLoader {
                             }
                             if (this.data.length >= this.maxProcessRows) {
                                 // --- abort the download & parsing
+                                this.isPartialData = true;
                                 parser.abort();
-                                const result = {
-                                    data: this.data,
-                                    errors: this.errors,
-                                    meta: this.metaData as ParseMeta
-                                };
-                                this.resetDownloadData();
-                                resolve(result);
                             }
                         }
                     } catch (e) {
@@ -186,7 +185,8 @@ class CsvDataLoader {
                         const result = {
                             data: this.data,
                             errors: this.errors,
-                            meta: this.metaData as ParseMeta
+                            meta: this.metaData as ParseMeta,
+                            isPartialData: this.isPartialData
                         };
                         this.resetDownloadData();
                         resolve(result);

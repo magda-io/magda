@@ -9,6 +9,7 @@ import { DataLoadingResult } from "helpers/CsvDataLoader";
 
 type PropsType = {
     dataLoadingResult: DataLoadingResult | null;
+    dataLoadError: Error | null;
     isLodaing: boolean;
 };
 
@@ -26,12 +27,20 @@ export default class DataPreviewTable extends Component<PropsType> {
         );
     }
 
-    render() {
+    // --- tell user not all data rows is shown
+    renderPatialDataNotice(rows: any[]) {
+        if (!this.props.dataLoadingResult) return null;
         if (
-            this.props.dataLoadingResult &&
-            this.props.dataLoadingResult.errors &&
-            this.props.dataLoadingResult.errors.length
-        ) {
+            config.maxTableProcessingRows >
+                this.props.dataLoadingResult.data.length &&
+            !this.props.dataLoadingResult.isPartialData
+        )
+            return null;
+        return <div>* Only the first {rows.length} rows are shown.</div>;
+    }
+
+    render() {
+        if (this.props.dataLoadError) {
             return (
                 <AUpageAlert as="error" className="notification__inner">
                     <h3>Oops</h3>
@@ -90,6 +99,7 @@ export default class DataPreviewTable extends Component<PropsType> {
                             data={rows}
                             columns={columns}
                         />
+                        {this.renderPatialDataNotice(rows)}
                     </Medium>
                     <Small>
                         <ReactTable
@@ -100,6 +110,7 @@ export default class DataPreviewTable extends Component<PropsType> {
                             data={rows}
                             columns={columns}
                         />
+                        {this.renderPatialDataNotice(rows)}
                     </Small>
                 </div>
             </div>
