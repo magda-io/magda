@@ -42,6 +42,8 @@ class CsvDataLoader {
     /**
      * maxProcessRows is the max rows CsvDataLoader will attempt to process.
      * It's auto calcated from Math.max(`maxChartProcessingRows`,`maxTableProcessingRows`).
+     * Or if any of `maxChartProcessingRows` or `maxTableProcessingRows` === -1, `maxProcessRows` = -1
+     * When `maxProcessRows` = -1, `CsvDataLoader` will attempt to download the whole data file.
      * Please note: the actual rows produced by `CsvDataLoader` may larger than `maxProcessRows`,
      * as `CsvDataLoader` will not discard excess rows when processes the most recent chunk --- they are downloaded & processed anyway.
      *
@@ -72,10 +74,14 @@ class CsvDataLoader {
         this.maxChartProcessingRows = config.maxChartProcessingRows;
         this.maxTableProcessingRows = config.maxTableProcessingRows;
 
-        this.maxProcessRows = Math.max(
-            this.maxChartProcessingRows,
-            this.maxTableProcessingRows
-        );
+        this.maxProcessRows =
+            this.maxChartProcessingRows === -1 ||
+            this.maxTableProcessingRows === -1
+                ? -1
+                : Math.max(
+                      this.maxChartProcessingRows,
+                      this.maxTableProcessingRows
+                  );
 
         this.url = this.getSourceUrl(source);
     }
@@ -91,9 +97,7 @@ class CsvDataLoader {
             return source.accessURL;
         }
         throw new Error(
-            `Failed to determine CSV data source url for distribution id: ${
-                source.identifier
-            }`
+            `Failed to determine CSV data source url for distribution id: ${source.identifier}`
         );
     }
 
@@ -164,7 +168,10 @@ class CsvDataLoader {
                             if (!this.metaData) {
                                 this.metaData = results.meta;
                             }
-                            if (this.data.length >= this.maxProcessRows) {
+                            if (
+                                this.maxProcessRows !== -1 &&
+                                this.data.length >= this.maxProcessRows
+                            ) {
                                 // --- abort the download & parsing
                                 this.isPartialData = true;
                                 parser.abort();

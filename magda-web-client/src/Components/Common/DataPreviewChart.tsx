@@ -12,7 +12,6 @@ import { DataLoadingResult } from "helpers/CsvDataLoader";
 import { ParsedDistribution } from "helpers/record";
 
 import "./DataPreviewChart.scss";
-import { config } from "config";
 
 type PropsType = {
     dataLoadError: Error | null;
@@ -183,18 +182,6 @@ class DataPreviewChart extends Component<PropsType, StateType> {
         this.props.onChangeTab("table");
     }
 
-    isOverChartDataProcessingLimit() {
-        if (
-            this.props.dataLoadingResult &&
-            (config.maxChartProcessingRows <
-                this.props.dataLoadingResult.data.length ||
-                this.props.dataLoadingResult.isPartialData)
-        ) {
-            return true;
-        }
-        return false;
-    }
-
     render() {
         if (this.state.error)
             return (
@@ -213,7 +200,10 @@ class DataPreviewChart extends Component<PropsType, StateType> {
         if (!ReactEcharts)
             return <div>Unexpected Error: failed to load chart component.</div>;
 
-        if (this.isOverChartDataProcessingLimit()) {
+        if (
+            this.props.dataLoadingResult &&
+            this.props.dataLoadingResult.isPartialData
+        ) {
             return (
                 <AUpageAlert as="error" className="notification__inner">
                     <h3>Oops</h3>

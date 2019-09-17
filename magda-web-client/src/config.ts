@@ -159,10 +159,10 @@ export const config = {
         : 2,
     maxChartProcessingRows: serverConfig.maxChartProcessingRows
         ? serverConfig.maxChartProcessingRows
-        : 15000,
+        : 20000, // --- `-1` means no limit
     maxTableProcessingRows: serverConfig.maxTableProcessingRows
         ? serverConfig.maxTableProcessingRows
-        : 200,
+        : 200, // --- `-1` means no limit
     // --- CSV loader download / processing chunk size
     // --- default to 600KB
     csvLoaderChunkSize: serverConfig.csvLoaderChunkSize

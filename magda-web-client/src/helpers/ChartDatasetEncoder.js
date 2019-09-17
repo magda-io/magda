@@ -10,7 +10,6 @@ import concat from "lodash/concat";
 import takeRight from "lodash/takeRight";
 import sortBy from "lodash/sortBy";
 import * as d3 from "d3-collection";
-import { config } from "../config";
 import chrono from "chrono-node";
 
 const AVAILABLE_CHART_TYPES = ["bar", "pie", "scatter", "line"];
@@ -378,10 +377,7 @@ class ChartDatasetEncoder {
             return;
         }
         this.distribution = distribution;
-        this.data =
-            config.maxChartProcessingRows < dataLoadingResult.data.length
-                ? dataLoadingResult.data.slice(0, config.maxChartProcessingRows)
-                : dataLoadingResult.data;
+        this.data = dataLoadingResult.data;
         this.preProcessData();
     }
 
