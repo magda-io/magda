@@ -91,6 +91,10 @@ UI:
 -   Added the ability to add references to datasets that a new dataset was derived from.
 -   Fixed edit file panel text input layout
 -   Fixed a blank screen issue on dataset page
+-   Improve visualisation data processing:
+-   Use worker to download & process csv file
+-   Chart & table modules share the same data source to avoid unnecessary download
+-   Allow to set max. number of rows that accepted by the the visualisation module
 
 Gateway:
 
