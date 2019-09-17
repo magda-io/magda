@@ -143,9 +143,7 @@ class DataPreviewChart extends Component<PropsType, StateType> {
 
             gapi.event({
                 category: "Error",
-                action: `Failed to display chart for ${window.location.href}: ${
-                    e.message
-                }`,
+                action: `Failed to display chart for ${window.location.href}: ${e.message}`,
                 label: "Chart Display Failure",
                 nonInteraction: true
             });
@@ -185,23 +183,16 @@ class DataPreviewChart extends Component<PropsType, StateType> {
         this.props.onChangeTab("table");
     }
 
-    // --- tell user not all data rows is shown
-    renderPatialDataNotice() {
-        if (!this.state.chartOption || !this.props.dataLoadingResult)
-            return null;
+    isOverChartDataProcessingLimit() {
         if (
-            config.maxChartProcessingRows >=
-                this.props.dataLoadingResult.data.length &&
-            !this.props.dataLoadingResult.isPartialData
-        )
-            return null;
-        return (
-            <div className="partial-data-message">
-                * Only the first{" "}
-                {this.chartDatasetEncoder.getNumberOfRowsUsed()} lines data are
-                included in the chart.
-            </div>
-        );
+            this.props.dataLoadingResult &&
+            (config.maxChartProcessingRows <
+                this.props.dataLoadingResult.data.length ||
+                this.props.dataLoadingResult.isPartialData)
+        ) {
+            return true;
+        }
+        return false;
     }
 
     render() {
@@ -222,6 +213,24 @@ class DataPreviewChart extends Component<PropsType, StateType> {
         if (!ReactEcharts)
             return <div>Unexpected Error: failed to load chart component.</div>;
 
+        if (this.isOverChartDataProcessingLimit()) {
+            return (
+                <AUpageAlert as="error" className="notification__inner">
+                    <h3>Oops</h3>
+                    <p>
+                        Chart preview not available due to the overlimit data
+                        file size, please try table preview
+                    </p>
+                    <button
+                        onClick={this.onDismissError}
+                        className="switch-tab-btn"
+                    >
+                        Switch to table preview
+                    </button>
+                </AUpageAlert>
+            );
+        }
+
         return (
             <div className="row data-preview-chart">
                 <div className="col-sm-8 chart-panel-container">
@@ -237,7 +246,6 @@ class DataPreviewChart extends Component<PropsType, StateType> {
                     ) : (
                         <div style={{ height: "450px" }}>&nbsp;</div>
                     )}
-                    {this.renderPatialDataNotice()}
                 </div>
                 <div className="col-sm-4 config-panel-container">
                     {this.state.isExpanded ? (
