@@ -164,10 +164,10 @@ export const config = {
         ? serverConfig.maxTableProcessingRows
         : 200, // --- `-1` means no limit
     // --- CSV loader download / processing chunk size
-    // --- default to 600KB
+    // --- default to 2MB
     csvLoaderChunkSize: serverConfig.csvLoaderChunkSize
         ? serverConfig.csvLoaderChunkSize
-        : 1024 * 600
+        : 2097152
 };
 
 export const defaultConfiguration = {
