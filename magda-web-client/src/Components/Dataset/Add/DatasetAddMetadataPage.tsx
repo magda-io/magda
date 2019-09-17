@@ -1,17 +1,7 @@
 import React from "react";
 import { withRouter } from "react-router";
 import uuidv4 from "uuid/v4";
-import ReactSelect from "react-select";
-
-import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
-import {
-    textEditorEx,
-    MultilineTextEditor
-} from "Components/Editing/Editors/textEditor";
-import {
-    dateEditor,
-    multiDateIntervalEditor
-} from "Components/Editing/Editors/dateEditor";
+import { MultilineTextEditor } from "Components/Editing/Editors/textEditor";
 
 import ToolTip from "Components/Dataset/Add/ToolTip";
 
@@ -23,19 +13,16 @@ import {
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
 
-import ReactSelectStyles from "../../Common/react-select/ReactSelectStyles";
-import CustomMultiValueRemove from "../../Common/react-select/CustomMultiValueRemove";
 import { Steps as ProgressMeterStepsConfig } from "../../Common/AddDatasetProgressMeter";
 
-import * as codelists from "constants/DatasetConstants";
-import TagInput from "Components/Common/TagInput";
-import AccrualPeriodicityInput from "./AccrualPeriodicityInput";
 import {
     State,
     saveState,
     OrganisationAutocompleteChoice,
-    createId
+    createId,
+    DatasetAutocompleteChoice
 } from "./DatasetAddCommon";
+import DetailsAndContents from "./Pages/DetailsAndContents";
 import DatasetAddPeoplePage from "./Pages/People/DatasetAddPeoplePage";
 import { createPublisher, ensureAspectExists } from "api-clients/RegistryApis";
 import DatasetAddAccessAndUsePage from "./Pages/DatasetAddAccessAndUsePage";
@@ -53,17 +40,12 @@ import informationSecurityAspect from "@magda/registry-aspects/information-secur
 import datasetAccessControlAspect from "@magda/registry-aspects/dataset-access-control.schema.json";
 import organizationDetailsAspect from "@magda/registry-aspects/organization-details.schema.json";
 import datasetPublisherAspect from "@magda/registry-aspects/dataset-publisher.schema.json";
+import currencyAspect from "@magda/registry-aspects/currency.schema.json";
 
 import "./DatasetAddMetadataPage.scss";
 import "./DatasetAddFilesPage.scss";
 import "./DatasetAddCommon.scss";
 import { autocompletePublishers } from "api-clients/SearchApis";
-
-import SpatialAreaInput, {
-    InputMethod as SpatialAreaInputInputMethod
-} from "./SpatialAreaInput";
-
-import { BoundingBox } from "helpers/datasetSearch";
 
 import ReviewFilesList from "./ReviewFilesList";
 
@@ -83,7 +65,8 @@ const aspects = {
     provenance: provenanceAspect,
     "information-security": informationSecurityAspect,
     "dataset-access-control": datasetAccessControlAspect,
-    "dataset-publisher": datasetPublisherAspect
+    "dataset-publisher": datasetPublisherAspect,
+    currency: currencyAspect
 };
 
 type Props = {
@@ -115,7 +98,14 @@ class NewDataset extends React.Component<Props, State> {
     }
 
     steps: any = [
-        this.renderBasicDetails.bind(this),
+        () => (
+            <DetailsAndContents
+                edit={this.edit}
+                setState={this.setState.bind(this)}
+                stateData={this.state}
+                user={this.props.user}
+            />
+        ),
         () => (
             <DatasetAddPeoplePage
                 edit={this.edit}
@@ -227,236 +217,6 @@ class NewDataset extends React.Component<Props, State> {
         }
     }
 
-    renderBasicDetails() {
-        const { dataset, spatialCoverage, temporalCoverage } = this.state;
-        const editDataset = this.edit("dataset");
-        const editTemporalCoverage = this.edit("temporalCoverage");
-        return (
-            <div className="row dataset-details-and-contents-page">
-                <div className="col-sm-12">
-                    <h2>Details and Contents</h2>
-                    <h3 className="with-underline">Title and language</h3>
-                    <div className="question-title">
-                        <h4>What is the title of the dataset?</h4>
-                        <div>
-                            <AlwaysEditor
-                                value={dataset.title}
-                                onChange={editDataset("title")}
-                                editor={textEditorEx({ required: true })}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="question-language">
-                        <h4>What language(s) is the dataset available in?</h4>
-                        <div>
-                            <ReactSelect
-                                className="react-select"
-                                isMulti={true}
-                                isSearchable={true}
-                                components={{
-                                    MultiValueRemove: CustomMultiValueRemove
-                                }}
-                                options={codelists.languageOptions as any}
-                                onChange={values =>
-                                    editDataset("languages")(
-                                        Array.isArray(values)
-                                            ? values.map(item => item.value)
-                                            : []
-                                    )
-                                }
-                                styles={ReactSelectStyles}
-                                value={(dataset.languages
-                                    ? dataset.languages
-                                    : ["eng"]
-                                ).map(item => ({
-                                    label: codelists.languages[item],
-                                    value: item
-                                }))}
-                            />
-                        </div>
-                    </div>
-
-                    <h3 className="with-underline">Contents</h3>
-                    <div className="question-keyword">
-                        <h4>Which keywords best describe this dataset?</h4>
-                        <ToolTip>
-                            Keywords are specific words that your dataset
-                            contains, and they help people search for specific
-                            datasets. We recommend keywords and kept to 10-15
-                            words. We've identified the top keywords from your
-                            document.
-                        </ToolTip>
-                        <div className="clearfix">
-                            <TagInput
-                                value={dataset.keywords}
-                                onChange={editDataset("keywords")}
-                                placeHolderText="Enter a keyword"
-                                useVocabularyAutoCompleteInput={true}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="question-theme">
-                        <h4>Which themes does this dataset cover?</h4>
-                        <ToolTip>
-                            Themes are the topics your dataset covers and they
-                            help people find related datasets within a topic. We
-                            recommend themes are kept to 5-10 topics. We've
-                            identified themes from your document, that are
-                            consistent with similar datasets.
-                        </ToolTip>
-                        <div className="clearfix">
-                            <TagInput
-                                value={dataset.themes}
-                                onChange={editDataset("themes")}
-                                placeHolderText="Enter a theme"
-                                useVocabularyAutoCompleteInput={false}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="question-description">
-                        <h4>Please add a description for this dataset</h4>
-                        <ToolTip>
-                            A good dataset description clearly and succintly
-                            explains the contents, purpose and value of the
-                            dataset. This is how users primarily identify and
-                            select your dataset from others. Here you can also
-                            include information that you have not already
-                            covered in the metadata.
-                        </ToolTip>
-                        <div className="clearfix">
-                            <MultilineTextEditor
-                                value={dataset.description}
-                                placerHolder="Enter description text"
-                                limit={250}
-                                onChange={this.edit("dataset")("description")}
-                            />
-                        </div>
-                    </div>
-
-                    <h3 className="with-underline">Dates and updates</h3>
-
-                    <div className="row date-row">
-                        <div className="col-sm-4 question-issue-date">
-                            <h4>
-                                <span>When was the dataset first issued?</span>
-                                <span className="help-icon-container">
-                                    <img src={helpIcon} />
-                                </span>
-                            </h4>
-                            <AlwaysEditor
-                                value={dataset.issued}
-                                onChange={editDataset("issued")}
-                                editor={dateEditor}
-                            />
-                        </div>
-                        <div className="col-sm-4 question-recent-modify-date">
-                            <h4>
-                                When was the dataset most recently modified?
-                            </h4>
-                            <AlwaysEditor
-                                value={dataset.modified}
-                                onChange={editDataset("modified")}
-                                editor={dateEditor}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="question-update-frequency">
-                        <h4>How frequently is the dataset updated?</h4>
-                        <AccrualPeriodicityInput
-                            accrualPeriodicity={dataset.accrualPeriodicity}
-                            accrualPeriodicityRecurrenceRule={
-                                dataset.accrualPeriodicityRecurrenceRule
-                            }
-                            onAccrualPeriodicityChange={value =>
-                                editDataset("accrualPeriodicity")(
-                                    value ? value : ""
-                                )
-                            }
-                            onAccrualPeriodicityRecurrenceRuleChange={rule => {
-                                editDataset("accrualPeriodicityRecurrenceRule")(
-                                    rule
-                                );
-                            }}
-                        />
-                    </div>
-
-                    <div className="question-time-period">
-                        <h4>What time period(s) does the dataset cover?</h4>
-                        <AlwaysEditor
-                            value={temporalCoverage.intervals}
-                            onChange={editTemporalCoverage("intervals")}
-                            editor={multiDateIntervalEditor}
-                        />
-                    </div>
-                    <h3>Spatial area</h3>
-                    <div>
-                        <SpatialAreaInput
-                            countryId={spatialCoverage.lv1Id}
-                            territoryOrSteId={spatialCoverage.lv2Id}
-                            sa4Id={spatialCoverage.lv3Id}
-                            sa3Id={spatialCoverage.lv4Id}
-                            bbox={(() => {
-                                if (
-                                    !Array.isArray(spatialCoverage.bbox) ||
-                                    spatialCoverage.bbox.length < 4
-                                ) {
-                                    return undefined;
-                                }
-                                return {
-                                    west: spatialCoverage.bbox[0],
-                                    south: spatialCoverage.bbox[1],
-                                    east: spatialCoverage.bbox[2],
-                                    north: spatialCoverage.bbox[3]
-                                };
-                            })()}
-                            onChange={(
-                                method: SpatialAreaInputInputMethod,
-                                bbox?: BoundingBox,
-                                countryId?: string,
-                                territoryOrSteId?: string,
-                                sa4Id?: string,
-                                sa3Id?: string
-                            ) =>
-                                this.setState(state => {
-                                    const spatialCoverage: any = {
-                                        spatialDataInputMethod: method
-                                    };
-
-                                    if (bbox) {
-                                        // --- According to existing JSON schema:
-                                        // --- "Bounding box in order minlon (west), minlat (south), maxlon (east), maxlat (north)""
-                                        spatialCoverage.bbox = [
-                                            bbox.west,
-                                            bbox.south,
-                                            bbox.east,
-                                            bbox.north
-                                        ];
-                                    }
-
-                                    if (countryId)
-                                        spatialCoverage.lv1Id = countryId;
-                                    if (territoryOrSteId)
-                                        spatialCoverage.lv2Id = territoryOrSteId;
-                                    if (sa4Id) spatialCoverage.lv3Id = sa4Id;
-                                    if (sa3Id) spatialCoverage.lv4Id = sa3Id;
-
-                                    return {
-                                        ...state,
-                                        spatialCoverage
-                                    };
-                                })
-                            }
-                        />
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
     renderSubmitPage() {
         const { datasetPublishing } = this.state;
         return (
@@ -511,7 +271,8 @@ class NewDataset extends React.Component<Props, State> {
             licenseLevel,
             informationSecurity,
             datasetAccess,
-            provenance
+            provenance,
+            currency
         } = this.state;
 
         this.setState({
@@ -546,6 +307,15 @@ class NewDataset extends React.Component<Props, State> {
             };
         });
 
+        const preProcessDatasetAutocompleteChoices = (
+            choices?: DatasetAutocompleteChoice[]
+        ) =>
+            choices &&
+            choices.map(choice => ({
+                id: choice.existingId ? [choice.existingId] : undefined,
+                name: !choice.existingId ? choice.name : undefined
+            }));
+
         const inputDataset = {
             id: this.props.datasetId,
             name: dataset.title,
@@ -563,18 +333,25 @@ class NewDataset extends React.Component<Props, State> {
                     orgUnitOwnerId: dataset.owningOrgUnitId,
                     custodianOrgUnitId: dataset.custodianOrgUnitId
                 },
+                currency: {
+                    ...currency,
+                    supersededBy:
+                        currency.status === "SUPERSEDED"
+                            ? preProcessDatasetAutocompleteChoices(
+                                  currency.supersededBy
+                              )
+                            : undefined,
+                    retireReason:
+                        currency.status === "RETIRED"
+                            ? currency.retireReason
+                            : undefined
+                },
                 provenance: {
                     mechanism: provenance.mechanism,
-
                     sourceSystem: provenance.sourceSystem,
-                    derivedFrom:
-                        provenance.derivedFrom &&
-                        provenance.derivedFrom.map(choice => ({
-                            id: choice.existingId
-                                ? [choice.existingId]
-                                : undefined,
-                            name: !choice.existingId ? choice.name : undefined
-                        })),
+                    derivedFrom: preProcessDatasetAutocompleteChoices(
+                        provenance.derivedFrom
+                    ),
                     affiliatedOrganizationIds:
                         provenance.affiliatedOrganizations &&
                         (await Promise.all(
