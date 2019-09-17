@@ -7,7 +7,7 @@ import spray.json.{JsObject, JsonParser}
 import scala.io.BufferedSource
 import scala.io.Source.fromFile
 
-  class RegistryAspectsSpec extends ApiSpec {
+class RegistryAspectsSpec extends ApiSpec {
   val registryAspectsPath = "magda-registry-aspects"
   val testDataPath = "magda-registry-api/src/test/resources/data"
 

@@ -101,7 +101,7 @@ const CustomMultiValue = (props: MultiValueProps<Choice>) => {
     );
 };
 
-export default function OrganisationAutocomplete(props: Props) {
+export default function DatasetAutocomplete(props: Props) {
     const selectRef = React.createRef<Async<Choice>>();
 
     const query: (term: string) => Promise<any> = debouncePromise(
@@ -130,17 +130,8 @@ export default function OrganisationAutocomplete(props: Props) {
                     options: [
                         {
                             label: `Add new: "${term}"`,
-                            onClick: (
-                                event: React.MouseEvent<
-                                    HTMLDivElement,
-                                    MouseEvent
-                                >
-                            ) => {
-                                event.preventDefault();
-                                event.stopPropagation();
-
-                                selectRef.current && selectRef.current.blur();
-
+                            isCustomItem: true,
+                            itemSelectHandler: () => {
                                 const newDatasetState = createBlankState(
                                     props.user
                                 );
@@ -166,17 +157,8 @@ export default function OrganisationAutocomplete(props: Props) {
                     options: [
                         {
                             label: `Use name: "${term}"`,
-                            onClick: (
-                                event: React.MouseEvent<
-                                    HTMLDivElement,
-                                    MouseEvent
-                                >
-                            ) => {
-                                event.preventDefault();
-                                event.stopPropagation();
-
-                                selectRef.current && selectRef.current.blur();
-
+                            isCustomItem: true,
+                            itemSelectHandler: () => {
                                 addChoice({
                                     name: term
                                 });
@@ -198,9 +180,26 @@ export default function OrganisationAutocomplete(props: Props) {
                 if (!rawValue) {
                     props.onDatasetSelected(undefined);
                 } else {
-                    props.onDatasetSelected(
-                        (rawValue as Choice[]).map(fromReactSelect)
-                    );
+                    const selectedItems = rawValue as any[];
+                    
+                    // Assume that the last selected item is the one just added.
+                    // If the selected item is custom, let its "itemSelectHandler"
+                    // method handle the change. For non-custom elements just call
+                    // onDatasetSelected directly.
+                    if (
+                        selectedItems.length &&
+                        selectedItems[selectedItems.length - 1] &&
+                        selectedItems[selectedItems.length - 1].isCustomItem ===
+                            true
+                    ) {
+                        selectedItems[
+                            selectedItems.length - 1
+                        ].itemSelectHandler();
+                    } else {
+                        props.onDatasetSelected(
+                            (rawValue as Choice[]).map(fromReactSelect)
+                        );
+                    }
                 }
             }}
             styles={{
