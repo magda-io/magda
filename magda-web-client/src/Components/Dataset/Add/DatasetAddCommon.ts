@@ -116,6 +116,14 @@ type InformationSecurity = {
     classification?: string;
 };
 
+export type CurrentStatusType = "CURRENT" | "SUPERSEDED" | "RETIRED";
+
+type Currency = {
+    status: CurrentStatusType;
+    supersededBy?: DatasetAutocompleteChoice[];
+    retireReason?: string;
+};
+
 export type State = {
     files: File[];
     dataset: Dataset;
@@ -126,6 +134,7 @@ export type State = {
     datasetAccess: Access;
     informationSecurity: InformationSecurity;
     provenance: Provenance;
+    currency: Currency;
 
     _lastModifiedDate: string;
     _createdDate: string;
@@ -172,6 +181,9 @@ export function createBlankState(user: User): State {
         datasetAccess: {},
         informationSecurity: {},
         provenance: {},
+        currency: {
+            status: "CURRENT"
+        },
         licenseLevel: "dataset",
         isPublishing: false,
         error: null,

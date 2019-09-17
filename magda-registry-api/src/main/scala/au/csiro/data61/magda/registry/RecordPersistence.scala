@@ -15,16 +15,7 @@ import spray.json.lenses.JsonLenses._
 
 import scala.util.{Failure, Success, Try}
 
-// TODO: Not to filter results by tenant ID for magda internal use only functions.
-// For example, getByIdsWithAspects() is used by WebHookProcessor that may send records to Indexer.
-// In this case, those records should not be filtered by tenant ID.
 trait RecordPersistence {
-
-//  GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(
-//    enabled = true,
-//    singleLineMode = false,
-//    logLevel = 'info
-//  )
 
   def getAll(
       implicit session: DBSession,
@@ -445,8 +436,6 @@ object DefaultRecordPersistence
         : Seq[Option[SQLSyntax]] = recordSelector.toSeq ++ requiredAspectsAndOpaQueriesSelectors :+ Some(
       recordsFilteredByTenantClause
     )
-
-//    val whereClauseParts: Seq[Option[scalikejdbc.SQLSyntax]] = aspectIdsToWhereClause(aspectIds) ++ recordSelector
 
     sql"""SELECT sequence
         FROM
@@ -1209,7 +1198,7 @@ object DefaultRecordPersistence
           sqls"$name is not null"
       }.toSeq: _*))
 
-    val rawResult1: SQL[Nothing, NoExtractor] =
+    val rawResult: SQL[Nothing, NoExtractor] =
       sql"""select * from (
               select Records.sequence as sequence,
                      Records.recordId as recordId,
@@ -1228,7 +1217,7 @@ object DefaultRecordPersistence
             limit ${limit + 1}
         """
 
-    val rawResult: List[(Long, Record)] = rawResult1
+    val result = rawResult
       .map(rs => {
         (
           rs.long("sequence"),
@@ -1238,7 +1227,6 @@ object DefaultRecordPersistence
       .list
       .apply()
 
-    val result = rawResult
     val hasMore = result.length > limit
     val trimmed = result.take(limit)
     val lastSequence = if (hasMore) Some(trimmed.last._1) else None
@@ -1626,11 +1614,25 @@ object DefaultRecordPersistence
     )
   }
 
+  private val ALL_IN_ARRAY: String = "[_]"
+
   private def aspectQueryToWhereClause(tenantId: BigInt, query: AspectQuery) = {
+    val equalsOrContainsClause =
+      if (query.path.length == 2 && query.path(1).equals(ALL_IN_ARRAY)) {
+        val thePath = query.path.filter(!_.equals(ALL_IN_ARRAY))
+        sqls"""
+        (data #>> string_to_array(${thePath.mkString(",")}, ','))::jsonb ?? ${query.value}
+      """
+      } else {
+        sqls"""
+        data #>> string_to_array(${query.path.mkString(",")}, ',') = ${query.value}
+      """
+      }
+
     sqls"""EXISTS (
              SELECT 1 FROM recordaspects
              WHERE (aspectId, recordid, tenantId)=(${query.aspectId}, Records.recordId, Records.tenantId) AND
-             data #>> string_to_array(${query.path.mkString(",")}, ',') = ${query.value})
+             $equalsOrContainsClause)
       """
   }
 
@@ -1646,22 +1648,22 @@ object DefaultRecordPersistence
       else
         List(OpaQuerySkipAccessControl)
 
-    val accessControlAspectId = "dataset-access-control"
     theOpaQueries.map {
       case OpaQueryMatchValue(
           OpaRefObjectKey("object")
             :: OpaRefObjectKey("registry")
             :: OpaRefObjectKey("record")
-            :: OpaRefObjectKey(`accessControlAspectId`)
+            :: OpaRefObjectKey(accessAspectId)
             :: finalKey,
           _, // operation is not used at the moment. It is assumed to be eq.
           aValue
           ) =>
         val query = AspectQuery(
-          aspectId = accessControlAspectId,
+          aspectId = accessAspectId,
           path = finalKey.map {
             case OpaRefObjectKey(key) => key
-            case _                    => "[_]"
+            case OpaRefAllInArray     => ALL_IN_ARRAY
+            case x                    => throw new Exception("Could not understand " + x)
           },
           value = aValue match {
             case OpaValueString(string)   => string
@@ -1672,11 +1674,11 @@ object DefaultRecordPersistence
 
         aspectQueryToWhereClause(tenantId, query)
       case OpaQueryMatchNoAccessControl =>
-        sqls"""NOT EXISTS (
-               SELECT 1 FROM recordaspects
-               WHERE (recordaspects.recordid, recordaspects.tenantid)=(records.recordid, $tenantId) AND
-               aspectId = $accessControlAspectId)
-          """
+        sqls"""
+              EXISTS (
+              SELECT 1 FROM public_records
+              WHERE (recordid, tenantid)=(records.recordid, $tenantId))
+            """
       case OpaQuerySkipAccessControl => sqls"true"
       case OpaQueryMatchNone         => sqls"false"
       case unmatched =>

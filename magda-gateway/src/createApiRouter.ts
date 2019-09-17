@@ -37,7 +37,7 @@ export default function createApiRouter(options: ApiRouterOptions): Router {
         if (jwtSecret && req.user) {
             proxyReq.setHeader(
                 "X-Magda-Session",
-                buildJwt(jwtSecret, req.user.id)
+                buildJwt(jwtSecret, req.user.id, { session: req.user.session })
             );
         }
     });

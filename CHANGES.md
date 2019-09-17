@@ -3,7 +3,9 @@
 General:
 
 -   Add multi-tenant support. Deployed as single tenant by default.
--   Add access control capability to registry api, only applying to some read operations currently.
+-   Add access control capability to registry api, only applying to read operations currently.
+    The registry service can be configured to support either hierarchical organization based access
+    policy (default) or Esri groups based access policy.
 
 Registry:
 
@@ -89,12 +91,14 @@ UI:
 -   Make sure all publish new dataset errors are captured and shown to users on add dataset page
 -   Added Custodian field to the 'People and Production' page
 -   Added the ability to add references to datasets that a new dataset was derived from.
+-   Added `dataset status` question to 'Details and Contents' page
 -   Fixed edit file panel text input layout
 -   Fixed a blank screen issue on dataset page
 -   Improve visualisation data processing:
 -   Use worker to download & process csv file
 -   Chart & table modules share the same data source to avoid unnecessary download
 -   Allow to set max. number of rows that accepted by the the visualisation module
+-   Fixed "NOT SET" appears on the dataset page for non-admins
 
 Gateway:
 
