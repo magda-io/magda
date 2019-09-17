@@ -12,6 +12,7 @@ import { DataLoadingResult } from "helpers/CsvDataLoader";
 import { ParsedDistribution } from "helpers/record";
 
 import "./DataPreviewChart.scss";
+import { config } from "config";
 
 type PropsType = {
     dataLoadError: Error | null;
@@ -188,11 +189,17 @@ class DataPreviewChart extends Component<PropsType, StateType> {
     renderPatialDataNotice() {
         if (!this.state.chartOption || !this.props.dataLoadingResult)
             return null;
-        if (!this.props.dataLoadingResult.isPartialData) return null;
+        if (
+            config.maxChartProcessingRows >=
+                this.props.dataLoadingResult.data.length &&
+            !this.props.dataLoadingResult.isPartialData
+        )
+            return null;
         return (
             <div className="partial-data-message">
-                * Only the first {this.props.dataLoadingResult.data.length}{" "}
-                lines data are included in the chart.
+                * Only the first{" "}
+                {this.chartDatasetEncoder.getNumberOfRowsUsed()} lines data are
+                included in the chart.
             </div>
         );
     }

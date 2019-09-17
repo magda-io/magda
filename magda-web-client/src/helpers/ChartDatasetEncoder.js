@@ -365,6 +365,10 @@ class ChartDatasetEncoder {
         this.distribution = null;
     }
 
+    getNumberOfRowsUsed() {
+        return this.data && this.data.length ? this.data.length : 0;
+    }
+
     processData(distribution, dataLoadingResult) {
         if (
             this.distribution === distribution &&
