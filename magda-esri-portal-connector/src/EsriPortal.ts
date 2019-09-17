@@ -338,13 +338,7 @@ export default class EsriPortal implements ConnectorSource {
                                 }
                             }
                         }
-                        // We occassionally end up with Portal Data Items that we can't
-                        // effectively crawl for distributions so strip them out
-                        body.results = body.results.filter(function(
-                            result: any
-                        ) {
-                            return result.distributions.length > 0;
-                        });
+
                         resolve(body);
                     }
                 );
