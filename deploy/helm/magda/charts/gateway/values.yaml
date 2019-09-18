@@ -66,8 +66,12 @@ csp:
     - "''self''"
     - "''unsafe-inline''"
     - browser-update.org
+    - "blob:"
     objectSrc:
     - "''none''"
+    workerSrc:
+    - "''self''"
+    - "blob:"
 
 cors: 
   exposedHeaders:
