@@ -1,4 +1,5 @@
 import { config } from "../config";
+import URI from "urijs";
 // --- as we only import types here, no runtime code will be emitted.
 // --- And papaparse will not be included by the main js bundle
 import { Parser, ParseResult, ParseError, ParseMeta } from "papaparse";
@@ -97,7 +98,9 @@ class CsvDataLoader {
             return source.accessURL;
         }
         throw new Error(
-            `Failed to determine CSV data source url for distribution id: ${source.identifier}`
+            `Failed to determine CSV data source url for distribution id: ${
+                source.identifier
+            }`
         );
     }
 
@@ -115,10 +118,16 @@ class CsvDataLoader {
         this.toBeAbort = true;
     }
 
+    convertToAbsoluteUrl(url) {
+        if (url[0] !== "/") return url;
+        return URI(location.href).origin() + url;
+    }
+
     async load(overrideNewLine?: string): Promise<DataLoadingResult> {
         this.resetDownloadData();
         const Papa = await getPapaParse();
-        const proxyUrl = config.proxyUrl + "_0d/" + this.url;
+        const proxyUrl =
+            this.convertToAbsoluteUrl(config.proxyUrl) + "_0d/" + this.url;
         return new Promise((resolve, reject) => {
             const options = {
                 worker: true,
