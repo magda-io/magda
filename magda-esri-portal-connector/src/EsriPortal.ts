@@ -4,6 +4,10 @@ import formatServiceError from "@magda/typescript-common/dist/formatServiceError
 import { ConnectorSource } from "@magda/typescript-common/dist/JsonConnector";
 import retry from "@magda/typescript-common/dist/retry";
 import request from "@magda/typescript-common/dist/request";
+import {
+    ESRI_NSW_ORG,
+    ESRI_NSW_PORTAL
+} from "@magda/typescript-common/dist/session/SessionConsts";
 import * as URI from "urijs";
 
 export interface EsriPortalThing {
@@ -238,13 +242,20 @@ export default class EsriPortal implements ConnectorSource {
                         // An individual item may result in one or many additional requests
                         for (let i = 0; i < body.results.length; ++i) {
                             const item = body.results[i];
+
                             item.distributions = [];
 
                             const distUri = new URI(item.url);
 
-                            if (item.access !== "public") {
-                                // Let's get the group information for an item because that's how
-                                // access to the item is controlled
+                            // To determine how an item is shared you will have to look at the "access" attribute for
+                            // the item itself. If it is "private" then it is not shared and only the item owner can
+                            // see it; If it is "org" then anyone with a login can see it; If it is "public" anyone
+                            // whether they login or not can see it; If it is "shared" it will be shared to specific
+                            // groups and these will be listed under the groups endpoint.
+                            if (
+                                item.access === "shared" &&
+                                requestUrl.includes(ESRI_NSW_PORTAL)
+                            ) {
                                 const groupInfo = await that.requestGroupInformation(
                                     item.id
                                 );
@@ -268,11 +279,35 @@ export default class EsriPortal implements ConnectorSource {
                                         allGroups.indexOf(it) === idx
                                 );
                                 item.groups =
-                                    uniqueGroups.length > 0
-                                        ? uniqueGroups
-                                        : undefined;
-                            } else {
+                                    uniqueGroups.length > 0 ? uniqueGroups : [];
+                                if (item.groups === []) {
+                                    console.log(
+                                        `Shared item ${item.id}, ${
+                                            item.title
+                                        }, will not be accessible by any esri groups.`
+                                    );
+                                }
+                            } else if (
+                                item.access === "org" &&
+                                requestUrl.includes(ESRI_NSW_PORTAL)
+                            ) {
+                                item.groups = [ESRI_NSW_ORG];
+                            } else if (item.access === "private") {
+                                item.groups = [];
+                                console.log(
+                                    `Private item ${item.id}, ${
+                                        item.title
+                                    }, will not be accessible by any esri groups.`
+                                );
+                            } else if (item.access === "public") {
                                 item.groups = undefined;
+                            } else {
+                                console.log(
+                                    `Item ${item.id}, ${item.title}, ${
+                                        item.access
+                                    }, will not be harvested.`
+                                );
+                                continue;
                             }
 
                             // We're looking at an individual layer (could be either map or feature service)
