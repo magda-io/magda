@@ -138,7 +138,7 @@ const AddDatasetProgressMeter = (props: PropsType) => {
     const datasetId = determineDatasetId();
 
     return (
-        <div className="row add-dataset-progress-meter">
+        <div className="add-dataset-progress-meter">
             <div className="container">
                 <div className="col-sm-2 step-item-heading">
                     <div className="heading">Add a dataset</div>
