@@ -16,7 +16,7 @@ import "./DataPreviewChart.scss";
 type PropsType = {
     dataLoadError: Error | null;
     dataLoadingResult: DataLoadingResult | null;
-    isLodaing: boolean;
+    isLoading: boolean;
     distribution: ParsedDistribution;
     onChangeTab: (string) => void;
 };
@@ -108,8 +108,6 @@ class DataPreviewChart extends Component<PropsType, StateType> {
         let chartType = this.state.chartType;
         if (!this.state.xAxis || !this.state.yAxis) {
             this.chartDatasetEncoder.setDefaultParameters();
-            //if(this.chartDatasetEncoder.yAxis.isAggr) chartType = "pie";
-            // will not set to pie by default
         } else {
             this.chartDatasetEncoder.setX(this.state.xAxis);
             this.chartDatasetEncoder.setY(this.state.yAxis);
@@ -142,7 +140,9 @@ class DataPreviewChart extends Component<PropsType, StateType> {
 
             gapi.event({
                 category: "Error",
-                action: `Failed to display chart for ${window.location.href}: ${e.message}`,
+                action: `Failed to display chart for ${window.location.href}: ${
+                    e.message
+                }`,
                 label: "Chart Display Failure",
                 nonInteraction: true
             });
@@ -196,7 +196,7 @@ class DataPreviewChart extends Component<PropsType, StateType> {
                     </button>
                 </AUpageAlert>
             );
-        if (this.props.isLodaing) return <Spinner height="420px" />;
+        if (this.props.isLoading) return <Spinner height="420px" />;
         if (!ReactEcharts)
             return <div>Unexpected Error: failed to load chart component.</div>;
 

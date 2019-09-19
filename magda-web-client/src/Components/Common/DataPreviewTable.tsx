@@ -10,7 +10,7 @@ import { DataLoadingResult } from "helpers/CsvDataLoader";
 type PropsType = {
     dataLoadingResult: DataLoadingResult | null;
     dataLoadError: Error | null;
-    isLodaing: boolean;
+    isLoading: boolean;
 };
 
 export default class DataPreviewTable extends Component<PropsType> {
@@ -55,7 +55,7 @@ export default class DataPreviewTable extends Component<PropsType> {
                 </AUpageAlert>
             );
         }
-        if (this.props.isLodaing) {
+        if (this.props.isLoading) {
             return (
                 <div>
                     <Medium>

@@ -101,7 +101,7 @@ class DataPreviewVis extends Component<
                 distribution={this.props.distribution}
                 dataLoadingResult={this.state.dataLoadingResult}
                 dataLoadError={this.state.dataLoadingError}
-                isLodaing={this.state.isDataLoading}
+                isLoading={this.state.isDataLoading}
                 onChangeTab={this.onChangeTab}
             />
         );
@@ -112,7 +112,7 @@ class DataPreviewVis extends Component<
             <DataPreviewTable
                 dataLoadingResult={this.state.dataLoadingResult}
                 dataLoadError={this.state.dataLoadingError}
-                isLodaing={this.state.isDataLoading}
+                isLoading={this.state.isDataLoading}
             />
         );
     }
