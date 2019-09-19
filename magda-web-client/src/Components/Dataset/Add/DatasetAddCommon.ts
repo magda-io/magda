@@ -66,14 +66,19 @@ export type OrganisationAutocompleteChoice = {
     name: string;
 };
 
+export type KeywordsLike = {
+    keywords: string[];
+    derived: boolean;
+};
+
 export type Dataset = {
     title: string;
     description?: string;
     issued?: Date;
     modified?: Date;
     languages?: string[];
-    keywords?: string[];
-    themes?: string[];
+    keywords?: KeywordsLike;
+    themes?: KeywordsLike;
     owningOrgUnitId?: string;
     custodianOrgUnitId?: string;
     contactPointDisplay?: string;

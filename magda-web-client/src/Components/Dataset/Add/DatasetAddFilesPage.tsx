@@ -8,7 +8,13 @@ import DatasetFile from "Components/Dataset/Add/DatasetFile";
 
 import { getFiles } from "helpers/readFile";
 
-import { State, File, FileState, saveState } from "./DatasetAddCommon";
+import {
+    State,
+    File,
+    FileState,
+    saveState,
+    KeywordsLike
+} from "./DatasetAddCommon";
 import withAddDatasetState from "./withAddDatasetState";
 import uniq from "lodash/uniq";
 
@@ -125,9 +131,19 @@ class DatasetAddFilesPage extends React.Component<
                                     break;
                                 case "keywords":
                                 case "themes":
-                                    const value1: string[] = dataset[key] || [];
-                                    const value2: string[] = file[key] || [];
-                                    dataset[key] = uniq(value1.concat(value2));
+                                    const keywordsObj = {
+                                        keywords:
+                                            (dataset[key] as KeywordsLike)
+                                                .keywords || [],
+                                        derived: true
+                                    };
+                                    const fileKeywords: string[] =
+                                        file[key] || [];
+                                    keywordsObj.keywords = uniq(
+                                        keywordsObj.keywords.concat(
+                                            fileKeywords
+                                        )
+                                    );
                                     file[key] = undefined;
                                     break;
                                 case "spatialCoverage":
