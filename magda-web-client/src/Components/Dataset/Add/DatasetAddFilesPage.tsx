@@ -25,8 +25,8 @@ class DatasetAddFilesPage extends React.Component<
         this.addFiles(await getFiles("*.*"));
     }
 
-    async onDrop(fileList: FileList, event: any) {
-        this.addFiles(fileList, event);
+    async onDrop(fileList: FileList | null, event: any) {
+        if (fileList) this.addFiles(fileList, event);
     }
 
     updateLastModifyDate() {
@@ -338,9 +338,9 @@ async function processFile(thisFile: any, update: Function) {
 
     update({ _state: FileState.Processing });
 
-    const runExtractors = await import("Components/Dataset/MetadataExtraction").then(
-        mod => mod.runExtractors
-    );
+    const runExtractors = await import(
+        "Components/Dataset/MetadataExtraction"
+    ).then(mod => mod.runExtractors);
 
     await runExtractors(input, update);
 
