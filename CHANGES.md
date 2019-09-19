@@ -99,6 +99,7 @@ UI:
 -   Chart & table modules share the same data source to avoid unnecessary download
 -   Allow to set max. number of rows that accepted by the the visualisation module
 -   Fixed "NOT SET" appears on the dataset page for non-admins
+-   Made the datepicker for add dataset use the correct colours.
 
 Gateway:
 
