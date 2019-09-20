@@ -95,6 +95,7 @@ UI:
 -   Fixed edit file panel text input layout
 -   Fixed a blank screen issue on dataset page
 -   Fixed "NOT SET" appears on the dataset page for non-admins
+-   Made the add dataset flow only say it found keywords in the document if it actually did so.
 
 Gateway:
 

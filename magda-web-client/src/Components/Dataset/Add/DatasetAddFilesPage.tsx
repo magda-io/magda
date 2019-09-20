@@ -131,19 +131,25 @@ class DatasetAddFilesPage extends React.Component<
                                     break;
                                 case "keywords":
                                 case "themes":
-                                    const keywordsObj = {
-                                        keywords:
-                                            (dataset[key] as KeywordsLike)
-                                                .keywords || [],
-                                        derived: true
-                                    };
+                                    const existing = dataset[key]
+                                        ? (dataset[key] as KeywordsLike)
+                                        : {
+                                              keywords: [],
+                                              derived: false
+                                          };
                                     const fileKeywords: string[] =
                                         file[key] || [];
-                                    keywordsObj.keywords = uniq(
-                                        keywordsObj.keywords.concat(
-                                            fileKeywords
-                                        )
-                                    );
+
+                                    dataset[key] = {
+                                        keywords: uniq(
+                                            existing.keywords.concat(
+                                                fileKeywords
+                                            )
+                                        ),
+                                        derived:
+                                            existing.derived ||
+                                            fileKeywords.length > 0
+                                    };
                                     file[key] = undefined;
                                     break;
                                 case "spatialCoverage":
