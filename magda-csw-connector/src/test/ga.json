@@ -20,6 +20,27 @@
         },
         "sourceTag": "stag"
     },
+    "dist-connector-2aa9f797-13c6-9423-e053-12a3070ac8df-0": {
+        "aspects": {
+            "csw-distribution": {},
+            "dcat-distribution-strings": {
+                "accessURL": "http://services.ga.gov.au/gis/rest/services/AREMI_Buildings_WM/MapServer/WMTS/1.0.0/WMTSCapabilities.xml",
+                "description": "AREMI Buildings (Web Mercator) WMTS",
+                "format": "OGC:WMTS",
+                "license": "Creative Commons Attribution 4.0 International Licence",
+                "title": "AREMI Buildings (Web Mercator) WMTS"
+            },
+            "source": {
+                "id": "connector",
+                "name": "Connector",
+                "type": "csw-distribution",
+                "url": "SOURCE/?service=CSW&version=2.0.2&request=GetRecordById&elementsetname=full&outputschema=http%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&typeNames=gmd%3AMD_Metadata&id=2aa9f797-13c6-9423-e053-12a3070ac8df"
+            }
+        },
+        "id": "dist-connector-2aa9f797-13c6-9423-e053-12a3070ac8df-0",
+        "name": "AREMI Buildings (Web Mercator) WMTS",
+        "sourceTag": "stag"
+    },
     "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-1": {
         "id": "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-1",
         "name": "Download the Record (pdf)",
@@ -39,6 +60,51 @@
                 "name": "Connector"
             }
         },
+        "sourceTag": "stag"
+    },
+    "ds-connector-2aa9f797-13c6-9423-e053-12a3070ac8df": {
+        "aspects": {
+            "csw-dataset": {},
+            "dataset-distributions": {
+                "distributions": [
+                    "dist-connector-2aa9f797-13c6-9423-e053-12a3070ac8df-0"
+                ]
+            },
+            "dataset-publisher": {
+                "publisher": "org-connector-Geoscience Australia"
+            },
+            "dcat-dataset-strings": {
+                "accrualPeriodicity": "annually",
+                "contactPoint": "Commonwealth of Australia (Geoscience Australia), clientservices@ga.gov.au",
+                "description": "This web service shows areas or locations occupied by an existing high-density urban development or known individual building structures in peri-urban and remote locations. Data used in this service is of varying levels of coverage and quality since it is aggregated from a variety of sources.\n                            The intended purpose of the service is to provide preliminary, first-pass information about urban environment, building structures and their distribution in landscape, as one of constraints on future development. Users should carry out further and more detailed investigations because this information is not meant to be a definitive source or support engineering phase planning.\n                            The service has layer scale dependencies.",
+                "issued": "2016-01-01T00:00:00",
+                "keywords": [
+                    "web service",
+                    "National dataset",
+                    "topography",
+                    "buildings",
+                    "Australia",
+                    "web map service",
+                    "Earth Sciences",
+                    "WMTS",
+                    "Published_External"
+                ],
+                "languages": [],
+                "modified": "2017-12-07T23:52:09",
+                "publisher": "Geoscience Australia",
+                "spatial": "POLYGON((110 -45, 155 -45, 155 -8, 110 -8, 110 -45))",
+                "themes": ["geoscientificInformation"],
+                "title": "AREMI Buildings (Web Mercator) WMTS"
+            },
+            "source": {
+                "id": "connector",
+                "name": "Connector",
+                "type": "csw-dataset",
+                "url": "SOURCE/?service=CSW&version=2.0.2&request=GetRecordById&elementsetname=full&outputschema=http%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&typeNames=gmd%3AMD_Metadata&id=2aa9f797-13c6-9423-e053-12a3070ac8df"
+            }
+        },
+        "id": "ds-connector-2aa9f797-13c6-9423-e053-12a3070ac8df",
+        "name": "AREMI Buildings (Web Mercator) WMTS",
         "sourceTag": "stag"
     },
     "dist-connector-4fce6238-8d55-499c-bff5-98518552f4b4-2": {
