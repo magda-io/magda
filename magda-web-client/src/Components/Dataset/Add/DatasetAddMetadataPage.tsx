@@ -20,7 +20,8 @@ import {
     saveState,
     OrganisationAutocompleteChoice,
     createId,
-    DatasetAutocompleteChoice
+    DatasetAutocompleteChoice,
+    Dataset
 } from "./DatasetAddCommon";
 import DetailsAndContents from "./Pages/DetailsAndContents";
 import DatasetAddPeoplePage from "./Pages/People/DatasetAddPeoplePage";
@@ -321,7 +322,7 @@ class NewDataset extends React.Component<Props, State> {
             name: dataset.title,
             aspects: {
                 publishing: datasetPublishing,
-                "dcat-dataset-strings": denormalise(dataset),
+                "dcat-dataset-strings": buildDcatDatasetStrings(dataset),
                 "spatial-coverage": spatialCoverage,
                 "temporal-coverage": temporalCoverage,
                 "dataset-distributions": {
@@ -473,18 +474,17 @@ export default withAddDatasetState(
     )
 );
 
-function denormalise(values) {
-    const output = {};
-
-    for (let [key, value] of Object.entries(values)) {
-        const parts = key.split(/[_]+/g);
-        let parent = output;
-        while (parts.length > 1) {
-            const part = parts.splice(0, 1)[0];
-            parent = parent[part] || (parent[part] = {});
-        }
-        parent[parts[0]] = value;
-    }
-
-    return output;
+function buildDcatDatasetStrings(value: Dataset) {
+    return {
+        title: value.title,
+        description: value.description,
+        issued: value.issued && value.issued.toISOString(),
+        modified: value.modified && value.modified.toISOString(),
+        languages: value.languages,
+        publisher: value.publisher && value.publisher.name,
+        accrualPeriodicity: value.accrualPeriodicity,
+        themes: value.themes && value.themes.keywords,
+        keywords: value.keywords && value.keywords.keywords,
+        defaultLicense: value.defaultLicense
+    };
 }
