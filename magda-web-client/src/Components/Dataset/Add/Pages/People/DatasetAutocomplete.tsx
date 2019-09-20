@@ -181,7 +181,7 @@ export default function DatasetAutocomplete(props: Props) {
                     props.onDatasetSelected(undefined);
                 } else {
                     const selectedItems = rawValue as any[];
-                    
+
                     // Assume that the last selected item is the one just added.
                     // If the selected item is custom, let its "itemSelectHandler"
                     // method handle the change. For non-custom elements just call
