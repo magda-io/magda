@@ -1,6 +1,6 @@
 return {
     // item access groups
-    groups: dataset.groups.length > 0 ? dataset.groups : undefined,
+    groups: dataset.groups ? dataset.groups : undefined,
     // item owner
-    owner: dataset.esriOwner.length > 0 ? dataset.esriOwner : undefined
+    owner: dataset.esriOwner ? dataset.esriOwner : undefined
 };
