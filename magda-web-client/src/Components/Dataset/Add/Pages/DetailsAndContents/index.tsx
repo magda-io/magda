@@ -110,7 +110,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         Keywords are specific words that your dataset contains,
                         and they help people search for specific datasets.{" "}
                         {dataset!.keywords && dataset.keywords.derived
-                            ? "We recommend keywords and kept to 10-15 words. We've identified the top keywords from your file(s)."
+                            ? "We recommend keywords are kept to 10-15 words. We've identified the top keywords from your file(s)."
                             : null}
                     </ToolTip>
                     <div className="clearfix">
