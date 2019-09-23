@@ -6,6 +6,7 @@ General:
 -   Add access control capability to registry api, only applying to read operations currently.
     The registry service can be configured to support either hierarchical organization based access
     policy (default) or Esri groups based access policy.
+-   Add esri portal connector. Read its README.md file before use.
 
 Registry:
 
