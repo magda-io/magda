@@ -115,7 +115,6 @@ export default class EsriPortal implements ConnectorSource {
         let startIndex = startStart;
 
         return AsyncPage.create<EsriPortalDataSearchResponse>(previous => {
-            // console.log(previous)
             if (previous) {
                 startIndex = previous.nextStart;
                 if (previous.nextStart === -1) return undefined;
@@ -224,7 +223,9 @@ export default class EsriPortal implements ConnectorSource {
         const operation = async () =>
             new Promise<EsriPortalDataSearchResponse>((resolve, reject) => {
                 const requestUrl = pageUrl.toString();
-                console.log("Requesting " + requestUrl);
+                console.log(
+                    `Requesting start = ${startIndex}, num = ${this.pageSize}`
+                );
 
                 request(
                     requestUrl,
@@ -287,20 +288,21 @@ export default class EsriPortal implements ConnectorSource {
                                         }, will not be accessible by any esri groups.`
                                     );
                                 }
+                                item.esriOwner = item.owner;
                             } else if (
                                 item.access === "org" &&
                                 requestUrl.includes(ESRI_NSW_PORTAL)
                             ) {
                                 item.groups = [ESRI_NSW_ORG];
+                                item.esriOwner = item.owner;
                             } else if (item.access === "private") {
-                                item.groups = [];
-                                console.log(
-                                    `Private item ${item.id}, ${
-                                        item.title
-                                    }, will not be accessible by any esri groups.`
-                                );
-                            } else if (item.access === "public") {
                                 item.groups = undefined;
+                                item.esriOwner = item.owner;
+                            } else if (item.access === "public") {
+                                // Both groups and esriOwner are undefined so that we will
+                                // not add esri-access-control aspect to public items.
+                                item.groups = undefined;
+                                item.esriOwner = undefined;
                             } else {
                                 console.log(
                                     `Item ${item.id}, ${item.title}, ${
@@ -319,7 +321,11 @@ export default class EsriPortal implements ConnectorSource {
                                         distUri
                                     );
                                 } catch (err) {
-                                    console.log("Broke on ", item.url);
+                                    console.log(
+                                        `Broke on item url: ${
+                                            item.url
+                                        }, dist uri: ${distUri}`
+                                    );
                                     console.log(err);
                                 }
 
@@ -368,7 +374,11 @@ export default class EsriPortal implements ConnectorSource {
                                         );
                                     }
                                 } catch (err) {
-                                    console.log("Broke on ", item.url);
+                                    console.log(
+                                        `Broke on item url: ${
+                                            item.url
+                                        }, dist uri: ${distUri}`
+                                    );
                                     console.log(err);
                                 }
                             }
@@ -386,7 +396,9 @@ export default class EsriPortal implements ConnectorSource {
             (e, retriesLeft) =>
                 console.log(
                     formatServiceError(
-                        `Failed to GET ${pageUrl.toString()}.`,
+                        `Failed to GET start = ${startIndex}, num = ${
+                            this.pageSize
+                        }.`,
                         e,
                         retriesLeft
                     )
@@ -410,6 +422,7 @@ export default class EsriPortal implements ConnectorSource {
             };
             item.distributions.push(dist);
         } catch (err) {
+            console.log(`Broke on item url: ${item.url}, dist uri: ${distUri}`);
             console.log(err);
         }
     }
@@ -460,6 +473,7 @@ export default class EsriPortal implements ConnectorSource {
                 item.distributions.push(wmtsDist);
             }
         } catch (err) {
+            console.log(`Broke on item url: ${item.url}, dist uri: ${distUri}`);
             console.log(err);
         }
     }
@@ -488,6 +502,11 @@ export default class EsriPortal implements ConnectorSource {
             };
             item.distributions.push(subDist);
         } catch (err) {
+            console.log(
+                `Broke on item url: ${
+                    item.url
+                }, dist uri: ${distUri}, layer id: ${lyr.id}`
+            );
             console.log(err);
         }
     }

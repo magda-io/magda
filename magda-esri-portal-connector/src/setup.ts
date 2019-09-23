@@ -150,7 +150,7 @@ const datasetAspectBuilders: AspectBuilder[] = [
             jsonSchema: require("@magda/registry-aspects/esri-access-control.schema.json")
         },
         builderFunctionString: fs.readFileSync(
-            "aspect-templates/dataset-access-groups.js",
+            "aspect-templates/dataset-access-attributes.js",
             "utf8"
         )
     }
@@ -197,7 +197,7 @@ const distributionAspectBuilders: AspectBuilder[] = [
             jsonSchema: require("@magda/registry-aspects/esri-access-control.schema.json")
         },
         builderFunctionString: fs.readFileSync(
-            "aspect-templates/dataset-access-groups.js",
+            "aspect-templates/dataset-access-attributes.js",
             "utf8"
         )
     }

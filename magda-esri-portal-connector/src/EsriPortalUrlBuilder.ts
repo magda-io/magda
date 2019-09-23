@@ -98,7 +98,9 @@ export default class EsriPortalUrlBuilder {
         return this.baseUrl
             .clone()
             .segment("home/item.html")
-            .addQuery({ id: id })
+            .addQuery({
+                id: id
+            })
             .toString();
     }
 }

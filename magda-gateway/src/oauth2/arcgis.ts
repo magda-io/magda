@@ -106,7 +106,10 @@ export default function arcgis(options: ArcGisOptions) {
 
                             cb(null, {
                                 id: userToken.id,
-                                session: { esriGroups: theGroupIds }
+                                session: {
+                                    esriGroups: theGroupIds,
+                                    esriUser: profile.username
+                                }
                             });
                         })
                         .catch(error => cb(error));
