@@ -30,7 +30,7 @@ class ContactPoint extends React.Component {
                         <div className="heading">
                             {translate(["contactPointTitle", "Contact Point"])}:
                         </div>
-                        <div class="no-print">
+                        <div className="no-print">
                             {this.state.reveal ? (
                                 <MarkdownViewer
                                     markdown={this.props.contactPoint}
@@ -43,7 +43,7 @@ class ContactPoint extends React.Component {
                                 </ToggleButton>
                             )}
                         </div>
-                        <div class="print-only">
+                        <div className="print-only">
                             <MarkdownViewer
                                 markdown={this.props.contactPoint}
                             />
