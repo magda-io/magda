@@ -30,7 +30,7 @@ gateway:
 
 registry-api:
   skipAuthorization: false
-  recordPolicyId: "object.registry.record.esri_groups"
+  recordPolicyId: "object.registry.record.esri_owner_groups"
   
 correspondence-api:
   smtpPort: 2525
