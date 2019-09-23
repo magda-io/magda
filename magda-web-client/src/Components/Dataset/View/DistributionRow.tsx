@@ -105,7 +105,10 @@ class DistributionRow extends Component<PropType> {
                                         )
                                     </div>
                                 ) : (
-                                    <Link to={distributionLink}>
+                                    <Link
+                                        to={distributionLink}
+                                        itemProp="contentUrl"
+                                    >
                                         <span itemProp="name">
                                             {this.renderDistributionLink(
                                                 distribution.title
