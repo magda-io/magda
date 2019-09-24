@@ -196,7 +196,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                         <span className="fileBlock-text">
                                             {file.title}
                                         </span>
-                                        <div className="fileBlock-control col-sm-6">
+                                        <div className="fileBlock-control">
                                             <LicenseEditor
                                                 value={file.license || ""}
                                                 onChange={edit("license")}

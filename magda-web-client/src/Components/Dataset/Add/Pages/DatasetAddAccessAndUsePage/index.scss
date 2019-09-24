@@ -55,17 +55,20 @@
                 .fileBlock {
                     border: solid 1px #cccaca;
                     margin-bottom: 15px;
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: space-between;
+                    align-items: center;
                 }
 
                 .fileBlock-icon {
-                    float: left;
                     padding: 0.8em;
                     margin-top: 6px;
                 }
 
                 .fileBlock-control {
-                    float: right;
                     padding: 0.5em;
+                    flex: 1;
                 }
 
                 .fileBlock-text {
