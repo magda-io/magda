@@ -485,41 +485,33 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *      "errorMessage": "Not authorized"
      *    }
      */
-    router.get(
-        "/public/orgunits/bylevel/:orgLevel",
-        MUST_BE_ADMIN,
-        async (req, res) => {
-            try {
-                const orgLevel = req.params.orgLevel;
-                const relationshipOrgUnitId = req.query.relationshipOrgUnitId;
+    router.get("/public/orgunits/bylevel/:orgLevel", async (req, res) => {
+        try {
+            const orgLevel = req.params.orgLevel;
+            const relationshipOrgUnitId = req.query.relationshipOrgUnitId;
 
-                const levelNumber = parseInt(orgLevel);
+            const levelNumber = parseInt(orgLevel);
 
-                if (levelNumber < 1 || isNaN(levelNumber))
-                    throw new Error(`Invalid level number: ${orgLevel}.`);
+            if (levelNumber < 1 || isNaN(levelNumber))
+                throw new Error(`Invalid level number: ${orgLevel}.`);
 
-                const nodes = await orgQueryer.getAllNodesAtLevel(levelNumber);
+            const nodes = await orgQueryer.getAllNodesAtLevel(levelNumber);
 
-                if (relationshipOrgUnitId && nodes.length) {
-                    for (let i = 0; i < nodes.length; i++) {
-                        const r = await orgQueryer.compareNodes(
-                            nodes[i]["id"],
-                            relationshipOrgUnitId
-                        );
-                        nodes[i]["relationship"] = r;
-                    }
+            if (relationshipOrgUnitId && nodes.length) {
+                for (let i = 0; i < nodes.length; i++) {
+                    const r = await orgQueryer.compareNodes(
+                        nodes[i]["id"],
+                        relationshipOrgUnitId
+                    );
+                    nodes[i]["relationship"] = r;
                 }
-
-                res.status(200).json(nodes);
-            } catch (e) {
-                respondWithError(
-                    "GET /public/orgunits/bylevel/:orgLevel",
-                    res,
-                    e
-                );
             }
+
+            res.status(200).json(nodes);
+        } catch (e) {
+            respondWithError("GET /public/orgunits/bylevel/:orgLevel", res, e);
         }
-    );
+    });
 
     /**
      * @apiGroup Auth
@@ -543,7 +535,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *      "errorMessage": "Not authorized"
      *    }
      */
-    router.get("/public/orgunits", MUST_BE_ADMIN, async (req, res) => {
+    router.get("/public/orgunits", async (req, res) => {
         try {
             const nodeName: string = req.query.nodeName;
             const leafNodesOnly: string = req.query.leafNodesOnly;
@@ -577,7 +569,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *      "errorMessage": "Not authorized"
      *    }
      */
-    router.get("/public/orgunits/root", MUST_BE_ADMIN, async (req, res) => {
+    router.get("/public/orgunits/root", async (req, res) => {
         handleMaybePromise(
             res,
             orgQueryer.getRootNode(),
