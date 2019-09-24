@@ -3328,6 +3328,938 @@
                 <locService>/srv/en</locService>
             </geonet:info>
         </mdb:MD_Metadata>
+        <mdb:MD_Metadata xmlns:mdb="http://standards.iso.org/iso/19115/-3/mdb/1.0"
+                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                         xmlns:cat="http://standards.iso.org/iso/19115/-3/cat/1.0"
+                         xmlns:gfc="http://standards.iso.org/iso/19110/gfc/1.1"
+                         xmlns:cit="http://standards.iso.org/iso/19115/-3/cit/1.0"
+                         xmlns:gcx="http://standards.iso.org/iso/19115/-3/gcx/1.0"
+                         xmlns:gex="http://standards.iso.org/iso/19115/-3/gex/1.0"
+                         xmlns:lan="http://standards.iso.org/iso/19115/-3/lan/1.0"
+                         xmlns:srv="http://standards.iso.org/iso/19115/-3/srv/2.0"
+                         xmlns:mas="http://standards.iso.org/iso/19115/-3/mas/1.0"
+                         xmlns:mcc="http://standards.iso.org/iso/19115/-3/mcc/1.0"
+                         xmlns:mco="http://standards.iso.org/iso/19115/-3/mco/1.0"
+                         xmlns:mda="http://standards.iso.org/iso/19115/-3/mda/1.0"
+                         xmlns:mds="http://standards.iso.org/iso/19115/-3/mds/1.0"
+                         xmlns:mdt="http://standards.iso.org/iso/19115/-3/mdt/1.0"
+                         xmlns:mex="http://standards.iso.org/iso/19115/-3/mex/1.0"
+                         xmlns:mmi="http://standards.iso.org/iso/19115/-3/mmi/1.0"
+                         xmlns:mpc="http://standards.iso.org/iso/19115/-3/mpc/1.0"
+                         xmlns:mrc="http://standards.iso.org/iso/19115/-3/mrc/1.0"
+                         xmlns:mrd="http://standards.iso.org/iso/19115/-3/mrd/1.0"
+                         xmlns:mri="http://standards.iso.org/iso/19115/-3/mri/1.0"
+                         xmlns:mrl="http://standards.iso.org/iso/19115/-3/mrl/1.0"
+                         xmlns:mrs="http://standards.iso.org/iso/19115/-3/mrs/1.0"
+                         xmlns:msr="http://standards.iso.org/iso/19115/-3/msr/1.0"
+                         xmlns:mdq="http://standards.iso.org/iso/19157/-2/mdq/1.0"
+                         xmlns:mac="http://standards.iso.org/iso/19115/-3/mac/1.0"
+                         xmlns:gco="http://standards.iso.org/iso/19115/-3/gco/1.0"
+                         xmlns:gml="http://www.opengis.net/gml/3.2"
+                         xmlns:xlink="http://www.w3.org/1999/xlink"
+                         xsi:schemaLocation="http://standards.iso.org/iso/19115/-3/cat/1.0 http://standards.iso.org/iso/19115/-3/cat/1.0/cat.xsd http://standards.iso.org/iso/19115/-3/cit/1.0 http://standards.iso.org/iso/19115/-3/cit/1.0/cit.xsd http://standards.iso.org/iso/19115/-3/gcx/1.0 http://standards.iso.org/iso/19115/-3/gcx/1.0/gcx.xsd http://standards.iso.org/iso/19115/-3/gex/1.0 http://standards.iso.org/iso/19115/-3/gex/1.0/gex.xsd http://standards.iso.org/iso/19115/-3/lan/1.0 http://standards.iso.org/iso/19115/-3/lan/1.0/lan.xsd http://standards.iso.org/iso/19115/-3/srv/2.0 http://standards.iso.org/iso/19115/-3/srv/2.0/srv.xsd http://standards.iso.org/iso/19115/-3/mas/1.0 http://standards.iso.org/iso/19115/-3/mas/1.0/mas.xsd http://standards.iso.org/iso/19115/-3/mcc/1.0 http://standards.iso.org/iso/19115/-3/mcc/1.0/mcc.xsd http://standards.iso.org/iso/19115/-3/mco/1.0 http://standards.iso.org/iso/19115/-3/mco/1.0/mco.xsd http://standards.iso.org/iso/19115/-3/mda/1.0 http://standards.iso.org/iso/19115/-3/mda/1.0/mda.xsd http://standards.iso.org/iso/19115/-3/mdb/1.0 http://standards.iso.org/iso/19115/-3/mdb/1.0/mdb.xsd http://standards.iso.org/iso/19115/-3/mds/1.0 http://standards.iso.org/iso/19115/-3/mds/1.0/mds.xsd http://standards.iso.org/iso/19115/-3/mdt/1.0 http://standards.iso.org/iso/19115/-3/mdt/1.0/mdt.xsd http://standards.iso.org/iso/19115/-3/mex/1.0 http://standards.iso.org/iso/19115/-3/mex/1.0/mex.xsd http://standards.iso.org/iso/19115/-3/mmi/1.0 http://standards.iso.org/iso/19115/-3/mmi/1.0/mmi.xsd http://standards.iso.org/iso/19115/-3/mpc/1.0 http://standards.iso.org/iso/19115/-3/mpc/1.0/mpc.xsd http://standards.iso.org/iso/19115/-3/mrc/1.0 http://standards.iso.org/iso/19115/-3/mrc/1.0/mrc.xsd http://standards.iso.org/iso/19115/-3/mrd/1.0 http://standards.iso.org/iso/19115/-3/mrd/1.0/mrd.xsd http://standards.iso.org/iso/19115/-3/mri/1.0 http://standards.iso.org/iso/19115/-3/mri/1.0/mri.xsd http://standards.iso.org/iso/19115/-3/mrl/1.0 http://standards.iso.org/iso/19115/-3/mrl/1.0/mrl.xsd http://standards.iso.org/iso/19115/-3/mrs/1.0 http://standards.iso.org/iso/19115/-3/mrs/1.0/mrs.xsd http://standards.iso.org/iso/19115/-3/msr/1.0 http://standards.iso.org/iso/19115/-3/msr/1.0/msr.xsd http://standards.iso.org/iso/19157/-2/mdq/1.0 http://standards.iso.org/iso/19157/-2/mdq/1.0/mdq.xsd http://standards.iso.org/iso/19115/-3/mac/1.0 http://standards.iso.org/iso/19115/-3/mac/1.0/mac.xsd http://standards.iso.org/iso/19115/-3/gco/1.0 http://standards.iso.org/iso/19115/-3/gco/1.0/gco.xsd http://www.opengis.net/gml/3.2 http://schemas.opengis.net/gml/3.2.1/gml.xsd http://www.w3.org/1999/xlink http://www.w3.org/1999/xlink.xsd">
+            <mdb:metadataIdentifier>
+                <mcc:MD_Identifier>
+                    <mcc:authority>
+                        <cit:CI_Citation>
+                            <cit:title>
+                                <gco:CharacterString>GeoNetwork UUID</gco:CharacterString>
+                            </cit:title>
+                        </cit:CI_Citation>
+                    </mcc:authority>
+                    <mcc:code>
+                        <gco:CharacterString>2aa9f797-13c6-9423-e053-12a3070ac8df</gco:CharacterString>
+                    </mcc:code>
+                    <mcc:codeSpace>
+                        <gco:CharacterString>urn:uuid</gco:CharacterString>
+                    </mcc:codeSpace>
+                </mcc:MD_Identifier>
+            </mdb:metadataIdentifier>
+            <mdb:defaultLocale xmlns:csw="http://www.opengis.net/cat/csw/2.0.2"
+                               xmlns:geonet="http://www.fao.org/geonetwork">
+                <lan:PT_Locale id="EN">
+                    <lan:language>
+                        <lan:LanguageCode codeList="http://www.loc.gov/standards/iso639-2/" codeListValue="eng"/>
+                    </lan:language>
+                    <lan:characterEncoding>
+                        <lan:MD_CharacterSetCode codeList="codeListLocation#MD_CharacterSetCode" codeListValue="utf8"/>
+                    </lan:characterEncoding>
+                </lan:PT_Locale>
+            </mdb:defaultLocale>
+            <mdb:metadataScope xmlns:csw="http://www.opengis.net/cat/csw/2.0.2"
+                               xmlns:geonet="http://www.fao.org/geonetwork">
+                <mdb:MD_MetadataScope id="service">
+                    <mdb:resourceScope>
+                        <mcc:MD_ScopeCode codeList="codeListLocation#MD_ScopeCode" codeListValue="service"/>
+                    </mdb:resourceScope>
+                    <mdb:name>
+                        <gco:CharacterString>service</gco:CharacterString>
+                    </mdb:name>
+                </mdb:MD_MetadataScope>
+            </mdb:metadataScope>
+            <mdb:contact xmlns:csw="http://www.opengis.net/cat/csw/2.0.2"
+                         xmlns:geonet="http://www.fao.org/geonetwork">
+                <cit:CI_Responsibility>
+                    <cit:role>
+                        <cit:CI_RoleCode codeList="codeListLocation#CI_RoleCode" codeListValue="pointOfContact"/>
+                    </cit:role>
+                    <cit:party>
+                        <cit:CI_Organisation>
+                            <cit:name>
+                                <gco:CharacterString>Commonwealth of Australia (Geoscience Australia)</gco:CharacterString>
+                            </cit:name>
+                            <cit:contactInfo>
+                                <cit:CI_Contact>
+                                    <cit:phone>
+                                        <cit:CI_Telephone>
+                                            <cit:number>
+                                                <gco:CharacterString>02 6249 9966</gco:CharacterString>
+                                            </cit:number>
+                                            <cit:numberType>
+                                                <cit:CI_TelephoneTypeCode codeList="codeListLocation#CI_TelephoneTypeCode" codeListValue="voice"/>
+                                            </cit:numberType>
+                                        </cit:CI_Telephone>
+                                    </cit:phone>
+                                    <cit:phone>
+                                        <cit:CI_Telephone>
+                                            <cit:number>
+                                                <gco:CharacterString>02 6249 9960</gco:CharacterString>
+                                            </cit:number>
+                                            <cit:numberType>
+                                                <cit:CI_TelephoneTypeCode codeList="codeListLocation#CI_TelephoneTypeCode" codeListValue="facsimile"/>
+                                            </cit:numberType>
+                                        </cit:CI_Telephone>
+                                    </cit:phone>
+                                    <cit:address>
+                                        <cit:CI_Address>
+                                            <cit:deliveryPoint>
+                                                <gco:CharacterString>Cnr Jerrabomberra Ave and Hindmarsh Dr</gco:CharacterString>
+                                            </cit:deliveryPoint>
+                                            <cit:deliveryPoint>
+                                                <gco:CharacterString>GPO Box 378</gco:CharacterString>
+                                            </cit:deliveryPoint>
+                                            <cit:city>
+                                                <gco:CharacterString>Canberra</gco:CharacterString>
+                                            </cit:city>
+                                            <cit:administrativeArea>
+                                                <gco:CharacterString>ACT</gco:CharacterString>
+                                            </cit:administrativeArea>
+                                            <cit:postalCode>
+                                                <gco:CharacterString>2601</gco:CharacterString>
+                                            </cit:postalCode>
+                                            <cit:country>
+                                                <gco:CharacterString>Australia</gco:CharacterString>
+                                            </cit:country>
+                                            <cit:electronicMailAddress>
+                                                <gco:CharacterString>clientservices@ga.gov.au</gco:CharacterString>
+                                            </cit:electronicMailAddress>
+                                        </cit:CI_Address>
+                                    </cit:address>
+                                </cit:CI_Contact>
+                            </cit:contactInfo>
+                        </cit:CI_Organisation>
+                    </cit:party>
+                </cit:CI_Responsibility>
+            </mdb:contact>
+            <mdb:dateInfo xmlns:geonet="http://www.fao.org/geonetwork">
+                <cit:CI_Date>
+                    <cit:date>
+                        <gco:DateTime>2018-04-20T05:51:04</gco:DateTime>
+                    </cit:date>
+                    <cit:dateType>
+                        <cit:CI_DateTypeCode codeList="codeListLocation#CI_DateTypeCode" codeListValue="revision"/>
+                    </cit:dateType>
+                </cit:CI_Date>
+            </mdb:dateInfo>
+            <mdb:dateInfo xmlns:csw="http://www.opengis.net/cat/csw/2.0.2"
+                          xmlns:geonet="http://www.fao.org/geonetwork">
+                <cit:CI_Date>
+                    <cit:date>
+                        <gco:DateTime>2016-02-01T00:00:00</gco:DateTime>
+                    </cit:date>
+                    <cit:dateType>
+                        <cit:CI_DateTypeCode codeList="codeListLocation#CI_DateTypeCode" codeListValue="creation"/>
+                    </cit:dateType>
+                </cit:CI_Date>
+            </mdb:dateInfo>
+            <mdb:metadataStandard xmlns:gn="http://www.fao.org/geonetwork"
+                                  xmlns:gmd="http://standards.iso.org/iso/19115/-3/mdb/1.0"
+                                  xmlns:geonet="http://www.fao.org/geonetwork">
+                <cit:CI_Citation>
+                    <cit:title>
+                        <gco:CharacterString>AU/NZS ISO 19115-1:2014</gco:CharacterString>
+                    </cit:title>
+                </cit:CI_Citation>
+            </mdb:metadataStandard>
+            <mdb:metadataStandard xmlns:gn="http://www.fao.org/geonetwork"
+                                  xmlns:gmd="http://standards.iso.org/iso/19115/-3/mdb/1.0"
+                                  xmlns:geonet="http://www.fao.org/geonetwork">
+                <cit:CI_Citation>
+                    <cit:title>
+                        <gco:CharacterString>ISO 19115-1:2014</gco:CharacterString>
+                    </cit:title>
+                </cit:CI_Citation>
+            </mdb:metadataStandard>
+            <mdb:metadataStandard xmlns:gn="http://www.fao.org/geonetwork"
+                                  xmlns:gmd="http://standards.iso.org/iso/19115/-3/mdb/1.0"
+                                  xmlns:geonet="http://www.fao.org/geonetwork">
+                <cit:CI_Citation>
+                    <cit:title>
+                        <gco:CharacterString>ISO 19115-3</gco:CharacterString>
+                    </cit:title>
+                </cit:CI_Citation>
+            </mdb:metadataStandard>
+            <mdb:metadataProfile xmlns:gn="http://www.fao.org/geonetwork"
+                                 xmlns:gmd="http://standards.iso.org/iso/19115/-3/mdb/1.0"
+                                 xmlns:geonet="http://www.fao.org/geonetwork">
+                <cit:CI_Citation>
+                    <cit:title>
+                        <gco:CharacterString>Geoscience Australia Community Metadata Profile of ISO 19115-1:2014</gco:CharacterString>
+                    </cit:title>
+                    <cit:edition>
+                        <gco:CharacterString>Version 2.0, September 2018</gco:CharacterString>
+                    </cit:edition>
+                    <cit:identifier>
+                        <mcc:MD_Identifier>
+                            <mcc:code>
+                                <gco:CharacterString>http://pid.geoscience.gov.au/dataset/ga/122551</gco:CharacterString>
+                            </mcc:code>
+                        </mcc:MD_Identifier>
+                    </cit:identifier>
+                </cit:CI_Citation>
+            </mdb:metadataProfile>
+            <mdb:alternativeMetadataReference>
+                <cit:CI_Citation>
+                    <cit:title>
+                        <gco:CharacterString>Geoscience Australia - short identifier for metadata record with
+                            uuid</gco:CharacterString>
+                    </cit:title>
+                    <cit:identifier>
+                        <mcc:MD_Identifier>
+                            <mcc:code>
+                                <gco:CharacterString>89952</gco:CharacterString>
+                            </mcc:code>
+                            <mcc:codeSpace>
+                                <gco:CharacterString>eCatId</gco:CharacterString>
+                            </mcc:codeSpace>
+                        </mcc:MD_Identifier>
+                    </cit:identifier>
+                </cit:CI_Citation>
+            </mdb:alternativeMetadataReference>
+            <mdb:metadataLinkage xmlns:gn="http://www.fao.org/geonetwork"
+                                 xmlns:gmd="http://standards.iso.org/iso/19115/-3/mdb/1.0"
+                                 xmlns:geonet="http://www.fao.org/geonetwork">
+                <cit:CI_OnlineResource>
+                    <cit:linkage>
+                        <gco:CharacterString>https://ecat.ga.gov.au/geonetwork/srv/eng/catalog.search#/metadata/2aa9f797-13c6-9423-e053-12a3070ac8df</gco:CharacterString>
+                    </cit:linkage>
+                    <cit:protocol gco:nilReason="missing">
+                        <gco:CharacterString xsi:type="gco:CodeType"
+                                             codeSpace="http://pid.geoscience.gov.au/def/schema/ga/ISO19115-3-2016/codelist/ga_profile_codelists.xml#gapCI_ProtocolTypeCode"/>
+                    </cit:protocol>
+                    <cit:function>
+                        <cit:CI_OnLineFunctionCode codeList="codeListLocation#CI_OnLineFunctionCode"
+                                                   codeListValue="completeMetadata"/>
+                    </cit:function>
+                </cit:CI_OnlineResource>
+            </mdb:metadataLinkage>
+            <mdb:referenceSystemInfo xmlns:geonet="http://www.fao.org/geonetwork">
+                <mrs:MD_ReferenceSystem>
+                    <mrs:referenceSystemIdentifier>
+                        <mcc:MD_Identifier>
+                            <mcc:code>
+                                <gco:CharacterString>GDA94 (EPSG:4283)</gco:CharacterString>
+                            </mcc:code>
+                            <mcc:codeSpace>
+                                <gco:CharacterString>EPSG</gco:CharacterString>
+                            </mcc:codeSpace>
+                            <mcc:version>
+                                <gco:CharacterString>8.6</gco:CharacterString>
+                            </mcc:version>
+                        </mcc:MD_Identifier>
+                    </mrs:referenceSystemIdentifier>
+                </mrs:MD_ReferenceSystem>
+            </mdb:referenceSystemInfo>
+            <mdb:identificationInfo xmlns:csw="http://www.opengis.net/cat/csw/2.0.2"
+                                    xmlns:geonet="http://www.fao.org/geonetwork">
+                <srv:SV_ServiceIdentification>
+                    <mri:citation>
+                        <cit:CI_Citation>
+                            <cit:title>
+                                <gco:CharacterString>AREMI Buildings (Web Mercator) WMTS</gco:CharacterString>
+                            </cit:title>
+                            <cit:date>
+                                <cit:CI_Date>
+                                    <cit:date>
+                                        <gco:DateTime>2016-01-01T00:00:00</gco:DateTime>
+                                    </cit:date>
+                                    <cit:dateType>
+                                        <cit:CI_DateTypeCode codeList="codeListLocation#CI_DateTypeCode" codeListValue="creation"/>
+                                    </cit:dateType>
+                                </cit:CI_Date>
+                            </cit:date>
+                            <cit:date>
+                                <cit:CI_Date>
+                                    <cit:date>
+                                        <gco:DateTime>2016-01-01T00:00:00</gco:DateTime>
+                                    </cit:date>
+                                    <cit:dateType>
+                                        <cit:CI_DateTypeCode codeList="codeListLocation#CI_DateTypeCode" codeListValue="publication"/>
+                                    </cit:dateType>
+                                </cit:CI_Date>
+                            </cit:date>
+                            <cit:date>
+                                <cit:CI_Date>
+                                    <cit:date>
+                                        <gco:DateTime>2017-12-07T23:52:09</gco:DateTime>
+                                    </cit:date>
+                                    <cit:dateType>
+                                        <cit:CI_DateTypeCode codeList="codeListLocation#CI_DateTypeCode" codeListValue="revision"/>
+                                    </cit:dateType>
+                                </cit:CI_Date>
+                            </cit:date>
+                            <cit:identifier>
+                                <mcc:MD_Identifier>
+                                    <mcc:code>
+                                        <gco:CharacterString>http://pid.geoscience.gov.au/dataset/ga/89952</gco:CharacterString>
+                                    </mcc:code>
+                                    <mcc:codeSpace>
+                                        <gco:CharacterString>Geoscience Australia Persistent Identifier</gco:CharacterString>
+                                    </mcc:codeSpace>
+                                </mcc:MD_Identifier>
+                            </cit:identifier>
+                        </cit:CI_Citation>
+                    </mri:citation>
+                    <mri:abstract>
+                        <gco:CharacterString>This web service shows areas or locations occupied by an existing high-density urban development or known individual building structures in peri-urban and remote locations. Data used in this service is of varying levels of coverage and quality since it is aggregated from a variety of sources.
+                            The intended purpose of the service is to provide preliminary, first-pass information about urban environment, building structures and their distribution in landscape, as one of constraints on future development. Users should carry out further and more detailed investigations because this information is not meant to be a definitive source or support engineering phase planning.
+                            The service has layer scale dependencies.</gco:CharacterString>
+                    </mri:abstract>
+                    <mri:pointOfContact>
+                        <cit:CI_Responsibility uuid="urn:ga-authors:17c00d36-2364-4fab-be4e-a511cbfb8c4e">
+                            <cit:role>
+                                <cit:CI_RoleCode codeList="codeListLocation#CI_RoleCode" codeListValue="custodian"/>
+                            </cit:role>
+                            <cit:party>
+                                <cit:CI_Individual>
+                                    <cit:name>
+                                        <gco:CharacterString>Butrovski, D.</gco:CharacterString>
+                                    </cit:name>
+                                    <cit:contactInfo>
+                                        <cit:CI_Contact>
+                                            <cit:contactInstructions>
+                                                <gco:CharacterString>1</gco:CharacterString>
+                                            </cit:contactInstructions>
+                                        </cit:CI_Contact>
+                                    </cit:contactInfo>
+                                </cit:CI_Individual>
+                            </cit:party>
+                        </cit:CI_Responsibility>
+                    </mri:pointOfContact>
+                    <mri:pointOfContact>
+                        <cit:CI_Responsibility>
+                            <cit:role>
+                                <cit:CI_RoleCode codeList="codeListLocation#CI_RoleCode" codeListValue="pointOfContact"/>
+                            </cit:role>
+                            <cit:party>
+                                <cit:CI_Organisation>
+                                    <cit:name>
+                                        <gco:CharacterString>Commonwealth of Australia (Geoscience Australia)</gco:CharacterString>
+                                    </cit:name>
+                                    <cit:contactInfo>
+                                        <cit:CI_Contact>
+                                            <cit:phone>
+                                                <cit:CI_Telephone>
+                                                    <cit:number>
+                                                        <gco:CharacterString>1800 800 173</gco:CharacterString>
+                                                    </cit:number>
+                                                    <cit:numberType>
+                                                        <cit:CI_TelephoneTypeCode codeList="codeListLocation#CI_TelephoneTypeCode" codeListValue="voice"/>
+                                                    </cit:numberType>
+                                                </cit:CI_Telephone>
+                                            </cit:phone>
+                                            <cit:phone>
+                                                <cit:CI_Telephone>
+                                                    <cit:number>
+                                                        <gco:CharacterString>02 6249 9960</gco:CharacterString>
+                                                    </cit:number>
+                                                    <cit:numberType>
+                                                        <cit:CI_TelephoneTypeCode codeList="codeListLocation#CI_TelephoneTypeCode" codeListValue="facsimile"/>
+                                                    </cit:numberType>
+                                                </cit:CI_Telephone>
+                                            </cit:phone>
+                                            <cit:address>
+                                                <cit:CI_Address>
+                                                    <cit:deliveryPoint>
+                                                        <gco:CharacterString>Cnr Jerrabomberra Ave and Hindmarsh Dr GPO Box 378</gco:CharacterString>
+                                                    </cit:deliveryPoint>
+                                                    <cit:city>
+                                                        <gco:CharacterString>Canberra</gco:CharacterString>
+                                                    </cit:city>
+                                                    <cit:administrativeArea>
+                                                        <gco:CharacterString>ACT</gco:CharacterString>
+                                                    </cit:administrativeArea>
+                                                    <cit:postalCode>
+                                                        <gco:CharacterString>2601</gco:CharacterString>
+                                                    </cit:postalCode>
+                                                    <cit:country>
+                                                        <gco:CharacterString>Australia</gco:CharacterString>
+                                                    </cit:country>
+                                                    <cit:electronicMailAddress>
+                                                        <gco:CharacterString>clientservices@ga.gov.au</gco:CharacterString>
+                                                    </cit:electronicMailAddress>
+                                                </cit:CI_Address>
+                                            </cit:address>
+                                        </cit:CI_Contact>
+                                    </cit:contactInfo>
+                                    <cit:individual>
+                                        <cit:CI_Individual>
+                                            <cit:positionName>
+                                                <gco:CharacterString>Manager Client Services</gco:CharacterString>
+                                            </cit:positionName>
+                                        </cit:CI_Individual>
+                                    </cit:individual>
+                                </cit:CI_Organisation>
+                            </cit:party>
+                        </cit:CI_Responsibility>
+                    </mri:pointOfContact>
+                    <mri:topicCategory>
+                        <mri:MD_TopicCategoryCode>geoscientificInformation</mri:MD_TopicCategoryCode>
+                    </mri:topicCategory>
+                    <mri:extent>
+                        <gex:EX_Extent>
+                            <gex:geographicElement>
+                                <gex:EX_GeographicBoundingBox>
+                                    <gex:westBoundLongitude>
+                                        <gco:Decimal>110</gco:Decimal>
+                                    </gex:westBoundLongitude>
+                                    <gex:eastBoundLongitude>
+                                        <gco:Decimal>155</gco:Decimal>
+                                    </gex:eastBoundLongitude>
+                                    <gex:southBoundLatitude>
+                                        <gco:Decimal>-45</gco:Decimal>
+                                    </gex:southBoundLatitude>
+                                    <gex:northBoundLatitude>
+                                        <gco:Decimal>-8</gco:Decimal>
+                                    </gex:northBoundLatitude>
+                                </gex:EX_GeographicBoundingBox>
+                            </gex:geographicElement>
+                        </gex:EX_Extent>
+                    </mri:extent>
+                    <mri:resourceMaintenance>
+                        <mmi:MD_MaintenanceInformation>
+                            <mmi:maintenanceAndUpdateFrequency>
+                                <mmi:MD_MaintenanceFrequencyCode codeList="codeListLocation#MD_MaintenanceFrequencyCode"
+                                                                 codeListValue="annually"/>
+                            </mmi:maintenanceAndUpdateFrequency>
+                        </mmi:MD_MaintenanceInformation>
+                    </mri:resourceMaintenance>
+                    <mri:graphicOverview>
+                        <mcc:MD_BrowseGraphic>
+                            <mcc:fileName>
+                                <gco:CharacterString>https://ga-ecat3-thumbnails.s3.amazonaws.com/89952/89952.png</gco:CharacterString>
+                            </mcc:fileName>
+                            <mcc:fileDescription>
+                                <gco:CharacterString>Thumbnail</gco:CharacterString>
+                            </mcc:fileDescription>
+                        </mcc:MD_BrowseGraphic>
+                    </mri:graphicOverview>
+                    <mri:descriptiveKeywords>
+                        <mri:MD_Keywords>
+                            <mri:keyword>
+                                <gco:CharacterString>web service</gco:CharacterString>
+                            </mri:keyword>
+                        </mri:MD_Keywords>
+                    </mri:descriptiveKeywords>
+                    <mri:descriptiveKeywords>
+                        <mri:MD_Keywords>
+                            <mri:keyword>
+                                <gco:CharacterString>National dataset</gco:CharacterString>
+                            </mri:keyword>
+                            <mri:type>
+                                <mri:MD_KeywordTypeCode codeList="codeListLocation#MD_KeywordTypeCode" codeListValue="theme"/>
+                            </mri:type>
+                        </mri:MD_Keywords>
+                    </mri:descriptiveKeywords>
+                    <mri:descriptiveKeywords>
+                        <mri:MD_Keywords>
+                            <mri:keyword>
+                                <gco:CharacterString>topography</gco:CharacterString>
+                            </mri:keyword>
+                            <mri:type>
+                                <mri:MD_KeywordTypeCode codeList="codeListLocation#MD_KeywordTypeCode" codeListValue="theme"/>
+                            </mri:type>
+                        </mri:MD_Keywords>
+                    </mri:descriptiveKeywords>
+                    <mri:descriptiveKeywords>
+                        <mri:MD_Keywords>
+                            <mri:keyword>
+                                <gco:CharacterString>buildings</gco:CharacterString>
+                            </mri:keyword>
+                            <mri:type>
+                                <mri:MD_KeywordTypeCode codeList="codeListLocation#MD_KeywordTypeCode" codeListValue="theme"/>
+                            </mri:type>
+                        </mri:MD_Keywords>
+                    </mri:descriptiveKeywords>
+                    <mri:descriptiveKeywords>
+                        <mri:MD_Keywords>
+                            <mri:keyword>
+                                <gco:CharacterString>Australia</gco:CharacterString>
+                            </mri:keyword>
+                            <mri:type>
+                                <mri:MD_KeywordTypeCode codeList="codeListLocation#MD_KeywordTypeCode" codeListValue="theme"/>
+                            </mri:type>
+                        </mri:MD_Keywords>
+                    </mri:descriptiveKeywords>
+                    <mri:descriptiveKeywords>
+                        <mri:MD_Keywords>
+                            <mri:keyword>
+                                <gco:CharacterString>web map service</gco:CharacterString>
+                            </mri:keyword>
+                            <mri:type>
+                                <mri:MD_KeywordTypeCode codeList="codeListLocation#MD_KeywordTypeCode" codeListValue="theme"/>
+                            </mri:type>
+                        </mri:MD_Keywords>
+                    </mri:descriptiveKeywords>
+                    <mri:descriptiveKeywords>
+                        <mri:MD_Keywords>
+                            <mri:keyword>
+                                <gco:CharacterString>Earth Sciences</gco:CharacterString>
+                            </mri:keyword>
+                            <mri:thesaurusName>
+                                <cit:CI_Citation>
+                                    <cit:title>
+                                        <gco:CharacterString>Australian and New Zealand Standard Research Classification (ANZSRC)</gco:CharacterString>
+                                    </cit:title>
+                                    <cit:date>
+                                        <cit:CI_Date>
+                                            <cit:date>
+                                                <gco:DateTime>2008-03-31T00:00:00+11:00</gco:DateTime>
+                                            </cit:date>
+                                            <cit:dateType>
+                                                <cit:CI_DateTypeCode codeList="codeListLocation#CI_DateTypeCode" codeListValue="publication"/>
+                                            </cit:dateType>
+                                        </cit:CI_Date>
+                                    </cit:date>
+                                    <cit:citedResponsibleParty>
+                                        <cit:CI_Responsibility>
+                                            <cit:role>
+                                                <cit:CI_RoleCode codeList="codeListLocation#CI_RoleCode" codeListValue="owner"/>
+                                            </cit:role>
+                                            <cit:party>
+                                                <cit:CI_Organisation>
+                                                    <cit:name>
+                                                        <gco:CharacterString>Australian Bureau of Statistics (ABS)</gco:CharacterString>
+                                                    </cit:name>
+                                                    <cit:contactInfo>
+                                                        <cit:CI_Contact>
+                                                            <cit:onlineResource>
+                                                                <cit:CI_OnlineResource>
+                                                                    <cit:linkage>
+                                                                        <gco:CharacterString>http://www.abs.gov.au/ausstats/abs@.nsf/Latestproducts/1297.0Main%20Features32008?opendocument&amp;tabname=Summary&amp;prodno=1297.0&amp;issue=2008&amp;num=&amp;view=</gco:CharacterString>
+                                                                    </cit:linkage>
+                                                                    <cit:protocol gco:nilReason="missing">
+                                                                        <gco:CharacterString xsi:type="gco:CodeType"
+                                                                                             codeSpace="http://pid.geoscience.gov.au/def/schema/ga/ISO19115-3-2016/codelist/ga_profile_codelists.xml#gapCI_ProtocolTypeCode"/>
+                                                                    </cit:protocol>
+                                                                </cit:CI_OnlineResource>
+                                                            </cit:onlineResource>
+                                                        </cit:CI_Contact>
+                                                    </cit:contactInfo>
+                                                </cit:CI_Organisation>
+                                            </cit:party>
+                                        </cit:CI_Responsibility>
+                                    </cit:citedResponsibleParty>
+                                    <cit:ISBN>
+                                        <gco:CharacterString>9780642483584</gco:CharacterString>
+                                    </cit:ISBN>
+                                    <cit:onlineResource>
+                                        <cit:CI_OnlineResource>
+                                            <cit:linkage>
+                                                <gco:CharacterString>http://www.abs.gov.au/ausstats/abs@.nsf/Latestproducts/1297.0Main%20Features32008?opendocument&amp;tabname=Summary&amp;prodno=1297.0&amp;issue=2008&amp;num=&amp;view=</gco:CharacterString>
+                                            </cit:linkage>
+                                            <cit:protocol gco:nilReason="missing">
+                                                <gco:CharacterString xsi:type="gco:CodeType"
+                                                                     codeSpace="http://pid.geoscience.gov.au/def/schema/ga/ISO19115-3-2016/codelist/ga_profile_codelists.xml#gapCI_ProtocolTypeCode"/>
+                                            </cit:protocol>
+                                        </cit:CI_OnlineResource>
+                                    </cit:onlineResource>
+                                </cit:CI_Citation>
+                            </mri:thesaurusName>
+                        </mri:MD_Keywords>
+                    </mri:descriptiveKeywords>
+                    <mri:descriptiveKeywords>
+                        <mri:MD_Keywords>
+                            <mri:keyword>
+                                <gco:CharacterString>WMTS</gco:CharacterString>
+                            </mri:keyword>
+                            <mri:type>
+                                <mri:MD_KeywordTypeCode codeList="codeListLocation#MD_KeywordTypeCode" codeListValue="service"/>
+                            </mri:type>
+                        </mri:MD_Keywords>
+                    </mri:descriptiveKeywords>
+                    <mri:descriptiveKeywords>
+                        <mri:MD_Keywords>
+                            <mri:keyword>
+                                <gco:CharacterString>Published_External</gco:CharacterString>
+                            </mri:keyword>
+                        </mri:MD_Keywords>
+                    </mri:descriptiveKeywords>
+                    <mri:resourceConstraints>
+                        <mco:MD_LegalConstraints uuid="urn:ga-licences:232">
+                            <mco:reference>
+                                <cit:CI_Citation>
+                                    <cit:title>
+                                        <gco:CharacterString>Creative Commons Attribution 4.0 International Licence</gco:CharacterString>
+                                    </cit:title>
+                                    <cit:alternateTitle>
+                                        <gco:CharacterString>CC-BY</gco:CharacterString>
+                                    </cit:alternateTitle>
+                                    <cit:edition>
+                                        <gco:CharacterString>4.0</gco:CharacterString>
+                                    </cit:edition>
+                                    <cit:onlineResource>
+                                        <cit:CI_OnlineResource>
+                                            <cit:linkage>
+                                                <gco:CharacterString>http://creativecommons.org/licenses/</gco:CharacterString>
+                                            </cit:linkage>
+                                            <cit:protocol>
+                                                <gco:CharacterString xsi:type="gco:CodeType"
+                                                                     codeSpace="http://pid.geoscience.gov.au/def/schema/ga/ISO19115-3-2016/codelist/ga_profile_codelists.xml#gapCI_ProtocolTypeCode">WWW:LINK-1.0-http--link</gco:CharacterString>
+                                            </cit:protocol>
+                                        </cit:CI_OnlineResource>
+                                    </cit:onlineResource>
+                                </cit:CI_Citation>
+                            </mco:reference>
+                            <mco:accessConstraints>
+                                <mco:MD_RestrictionCode codeList="codeListLocation#MD_RestrictionCode" codeListValue="license"/>
+                            </mco:accessConstraints>
+                            <mco:useConstraints>
+                                <mco:MD_RestrictionCode codeList="codeListLocation#MD_RestrictionCode" codeListValue="license"/>
+                            </mco:useConstraints>
+                        </mco:MD_LegalConstraints>
+                    </mri:resourceConstraints>
+                    <mri:resourceConstraints>
+                        <mco:MD_SecurityConstraints>
+                            <mco:reference>
+                                <cit:CI_Citation>
+                                    <cit:title>
+                                        <gco:CharacterString>Australian Government Security ClassificationSystem</gco:CharacterString>
+                                    </cit:title>
+                                    <cit:editionDate>
+                                        <gco:DateTime>2018-11-01T00:00:00</gco:DateTime>
+                                    </cit:editionDate>
+                                    <cit:onlineResource>
+                                        <cit:CI_OnlineResource>
+                                            <cit:linkage>
+                                                <gco:CharacterString>https://www.protectivesecurity.gov.au/Pages/default.aspx</gco:CharacterString>
+                                            </cit:linkage>
+                                            <cit:protocol>
+                                                <gco:CharacterString xsi:type="gco:CodeType"
+                                                                     codeSpace="http://pid.geoscience.gov.au/def/schema/ga/ISO19115-3-2016/codelist/ga_profile_codelists.xml#gapCI_ProtocolTypeCode">WWW:LINK-1.0-http--link</gco:CharacterString>
+                                            </cit:protocol>
+                                        </cit:CI_OnlineResource>
+                                    </cit:onlineResource>
+                                </cit:CI_Citation>
+                            </mco:reference>
+                            <mco:classification>
+                                <mco:MD_ClassificationCode codeList="codeListLocation#MD_ClassificationCode" codeListValue="unclassified"/>
+                            </mco:classification>
+                        </mco:MD_SecurityConstraints>
+                    </mri:resourceConstraints>
+                    <srv:serviceType>
+                        <gco:ScopedName>OGC:WMTS</gco:ScopedName>
+                    </srv:serviceType>
+                    <srv:serviceTypeVersion>
+                        <gco:CharacterString>1.0.0</gco:CharacterString>
+                    </srv:serviceTypeVersion>
+                    <srv:couplingType>
+                        <srv:SV_CouplingType codeList="codeListLocation#SV_CouplingType" codeListValue="tight"/>
+                    </srv:couplingType>
+                    <srv:containsOperations>
+                        <srv:SV_OperationMetadata>
+                            <srv:operationName>
+                                <gco:CharacterString>GetCapabilities</gco:CharacterString>
+                            </srv:operationName>
+                            <srv:distributedComputingPlatform>
+                                <srv:DCPList codeList="codeListLocation#DCPList" codeListValue="WebServices"/>
+                            </srv:distributedComputingPlatform>
+                            <srv:connectPoint>
+                                <cit:CI_OnlineResource>
+                                    <cit:linkage>
+                                        <gco:CharacterString>http://services.ga.gov.au/gis/rest/services/AREMI_Buildings_WM/MapServer/WMTS/1.0.0/WMTSCapabilities.xml</gco:CharacterString>
+                                    </cit:linkage>
+                                    <cit:protocol>
+                                        <gco:CharacterString xsi:type="gco:CodeType"
+                                                             codeSpace="http://pid.geoscience.gov.au/def/schema/ga/ISO19115-3-2016/codelist/ga_profile_codelists.xml#gapCI_ProtocolTypeCode">OGC:WMTS</gco:CharacterString>
+                                    </cit:protocol>
+                                </cit:CI_OnlineResource>
+                            </srv:connectPoint>
+                            <srv:parameter>
+                                <srv:SV_Parameter>
+                                    <srv:name>
+                                        <gco:MemberName>
+                                            <gco:aName>
+                                                <gco:CharacterString>SERVICE</gco:CharacterString>
+                                            </gco:aName>
+                                            <gco:attributeType>
+                                                <gco:TypeName>
+                                                    <gco:aName>
+                                                        <gco:CharacterString>TEXT</gco:CharacterString>
+                                                    </gco:aName>
+                                                </gco:TypeName>
+                                            </gco:attributeType>
+                                        </gco:MemberName>
+                                    </srv:name>
+                                    <srv:direction>
+                                        <srv:SV_ParameterDirection>in</srv:SV_ParameterDirection>
+                                    </srv:direction>
+                                    <srv:description>
+                                        <gco:CharacterString>The mandatory SERVICE parameter indicates which of the available service types at a particular server is being invoked. When invoking GetCapabilities on a WMTS the value WMTS shall be used.</gco:CharacterString>
+                                    </srv:description>
+                                    <srv:optionality>
+                                        <gco:Boolean>true</gco:Boolean>
+                                    </srv:optionality>
+                                    <srv:repeatability>
+                                        <gco:Boolean>false</gco:Boolean>
+                                    </srv:repeatability>
+                                </srv:SV_Parameter>
+                            </srv:parameter>
+                            <srv:parameter>
+                                <srv:SV_Parameter>
+                                    <srv:name>
+                                        <gco:MemberName>
+                                            <gco:aName>
+                                                <gco:CharacterString>REQUEST</gco:CharacterString>
+                                            </gco:aName>
+                                            <gco:attributeType>
+                                                <gco:TypeName>
+                                                    <gco:aName>
+                                                        <gco:CharacterString>TEXT</gco:CharacterString>
+                                                    </gco:aName>
+                                                </gco:TypeName>
+                                            </gco:attributeType>
+                                        </gco:MemberName>
+                                    </srv:name>
+                                    <srv:direction>
+                                        <srv:SV_ParameterDirection>in</srv:SV_ParameterDirection>
+                                    </srv:direction>
+                                    <srv:description>
+                                        <gco:CharacterString>The mandatory REQUEST parameter indicates which service operation is being invoked. To invoke the GetCapabilities operation, the value GetCapabilities shall be used.</gco:CharacterString>
+                                    </srv:description>
+                                    <srv:optionality>
+                                        <gco:Boolean>true</gco:Boolean>
+                                    </srv:optionality>
+                                    <srv:repeatability>
+                                        <gco:Boolean>false</gco:Boolean>
+                                    </srv:repeatability>
+                                </srv:SV_Parameter>
+                            </srv:parameter>
+                            <srv:parameter>
+                                <srv:SV_Parameter>
+                                    <srv:name>
+                                        <gco:MemberName>
+                                            <gco:aName>
+                                                <gco:CharacterString>VERSION</gco:CharacterString>
+                                            </gco:aName>
+                                            <gco:attributeType>
+                                                <gco:TypeName>
+                                                    <gco:aName>
+                                                        <gco:CharacterString>TEXT</gco:CharacterString>
+                                                    </gco:aName>
+                                                </gco:TypeName>
+                                            </gco:attributeType>
+                                        </gco:MemberName>
+                                    </srv:name>
+                                    <srv:direction>
+                                        <srv:SV_ParameterDirection>in</srv:SV_ParameterDirection>
+                                    </srv:direction>
+                                    <srv:description>
+                                        <gco:CharacterString>The optional VERSION parameter indicates the service type version number to use. In response to a GetCapabilities request that does not specify a version number, the server shall respond with the highest version it supports.</gco:CharacterString>
+                                    </srv:description>
+                                    <srv:optionality>
+                                        <gco:Boolean>true</gco:Boolean>
+                                    </srv:optionality>
+                                    <srv:repeatability>
+                                        <gco:Boolean>false</gco:Boolean>
+                                    </srv:repeatability>
+                                </srv:SV_Parameter>
+                            </srv:parameter>
+                        </srv:SV_OperationMetadata>
+                    </srv:containsOperations>
+                    <srv:operatesOn uuidref="a05f7892-eae2-7506-e044-00144fdd4fa6"
+                                    xlink:href="https://ecat.ga.gov.au/geonetwork/srv/eng/csw?service=CSW&amp;request=GetRecordById&amp;version=2.0.2&amp;outputSchema=http://standards.iso.org/iso/19115/-3/mdb/1.0&amp;elementSetName=full&amp;id=a05f7892-eae2-7506-e044-00144fdd4fa6"/>
+                </srv:SV_ServiceIdentification>
+            </mdb:identificationInfo>
+            <mdb:distributionInfo xmlns:csw="http://www.opengis.net/cat/csw/2.0.2"
+                                  xmlns:geonet="http://www.fao.org/geonetwork">
+                <mrd:MD_Distribution>
+                    <mrd:distributor>
+                        <mrd:MD_Distributor>
+                            <mrd:distributorContact>
+                                <cit:CI_Responsibility>
+                                    <cit:role>
+                                        <cit:CI_RoleCode codeList="codeListLocation#CI_RoleCode" codeListValue="distributor"/>
+                                    </cit:role>
+                                    <cit:party>
+                                        <cit:CI_Organisation>
+                                            <cit:name>
+                                                <gco:CharacterString>Geoscience Australia</gco:CharacterString>
+                                            </cit:name>
+                                            <cit:contactInfo>
+                                                <cit:CI_Contact>
+                                                    <cit:phone>
+                                                        <cit:CI_Telephone>
+                                                            <cit:number>
+                                                                <gco:CharacterString>+61 2 6249 9966</gco:CharacterString>
+                                                            </cit:number>
+                                                            <cit:numberType>
+                                                                <cit:CI_TelephoneTypeCode codeList="codeListLocation#CI_TelephoneTypeCode" codeListValue="voice"/>
+                                                            </cit:numberType>
+                                                        </cit:CI_Telephone>
+                                                    </cit:phone>
+                                                    <cit:phone>
+                                                        <cit:CI_Telephone>
+                                                            <cit:number>
+                                                                <gco:CharacterString>+61 2 6249 9960</gco:CharacterString>
+                                                            </cit:number>
+                                                            <cit:numberType>
+                                                                <cit:CI_TelephoneTypeCode codeList="codeListLocation#CI_TelephoneTypeCode" codeListValue="facsimile"/>
+                                                            </cit:numberType>
+                                                        </cit:CI_Telephone>
+                                                    </cit:phone>
+                                                    <cit:address>
+                                                        <cit:CI_Address>
+                                                            <cit:deliveryPoint>
+                                                                <gco:CharacterString>GPO Box 378</gco:CharacterString>
+                                                            </cit:deliveryPoint>
+                                                            <cit:city>
+                                                                <gco:CharacterString>Canberra</gco:CharacterString>
+                                                            </cit:city>
+                                                            <cit:administrativeArea>
+                                                                <gco:CharacterString>ACT</gco:CharacterString>
+                                                            </cit:administrativeArea>
+                                                            <cit:postalCode>
+                                                                <gco:CharacterString>2601</gco:CharacterString>
+                                                            </cit:postalCode>
+                                                            <cit:country>
+                                                                <gco:CharacterString>Australia</gco:CharacterString>
+                                                            </cit:country>
+                                                            <cit:electronicMailAddress>
+                                                                <gco:CharacterString>clientservices@ga.gov.au</gco:CharacterString>
+                                                            </cit:electronicMailAddress>
+                                                        </cit:CI_Address>
+                                                    </cit:address>
+                                                </cit:CI_Contact>
+                                            </cit:contactInfo>
+                                        </cit:CI_Organisation>
+                                    </cit:party>
+                                </cit:CI_Responsibility>
+                            </mrd:distributorContact>
+                            <mrd:distributorTransferOptions>
+                                <mrd:MD_DigitalTransferOptions>
+                                    <mrd:onLine>
+                                        <cit:CI_OnlineResource>
+                                            <cit:linkage>
+                                                <gco:CharacterString>http://services.ga.gov.au/gis/rest/services/AREMI_Buildings_WM/MapServer/WMTS/1.0.0/WMTSCapabilities.xml</gco:CharacterString>
+                                            </cit:linkage>
+                                            <cit:protocol>
+                                                <gco:CharacterString xsi:type="gco:CodeType"
+                                                                     codeSpace="http://pid.geoscience.gov.au/def/schema/ga/ISO19115-3-2016/codelist/ga_profile_codelists.xml#gapCI_ProtocolTypeCode">OGC:WMTS</gco:CharacterString>
+                                            </cit:protocol>
+                                            <cit:name>
+                                                <gco:CharacterString>AREMI Buildings (Web Mercator) WMTS</gco:CharacterString>
+                                            </cit:name>
+                                            <cit:description>
+                                                <gco:CharacterString>AREMI Buildings (Web Mercator) WMTS</gco:CharacterString>
+                                            </cit:description>
+                                            <cit:function>
+                                                <cit:CI_OnLineFunctionCode codeList="codeListLocation#CI_OnLineFunctionCode" codeListValue="information"/>
+                                            </cit:function>
+                                        </cit:CI_OnlineResource>
+                                    </mrd:onLine>
+                                    <mrd:distributionFormat>
+                                        <mrd:MD_Format>
+                                            <mrd:formatSpecificationCitation>
+                                                <cit:CI_Citation>
+                                                    <cit:title>
+                                                        <gco:CharacterString>OGC:WMTS</gco:CharacterString>
+                                                    </cit:title>
+                                                    <cit:edition>
+                                                        <gco:CharacterString>1.0.0</gco:CharacterString>
+                                                    </cit:edition>
+                                                </cit:CI_Citation>
+                                            </mrd:formatSpecificationCitation>
+                                        </mrd:MD_Format>
+                                    </mrd:distributionFormat>
+                                </mrd:MD_DigitalTransferOptions>
+                            </mrd:distributorTransferOptions>
+                        </mrd:MD_Distributor>
+                    </mrd:distributor>
+                </mrd:MD_Distribution>
+            </mdb:distributionInfo>
+            <mdb:resourceLineage xmlns:csw="http://www.opengis.net/cat/csw/2.0.2"
+                                 xmlns:geonet="http://www.fao.org/geonetwork">
+                <mrl:LI_Lineage>
+                    <mrl:statement>
+                        <gco:CharacterString>All buildings have an assigned operational status and a primary function.
+                            At the scales smaller than 1:50,000 individual buildings and built-up areas (which are generalisation of dense urban environment) are depicted as potentially unsuitable locations or areas due to an existing development. Greater granularity is provided at map scales larger than 1:50,000 whereby individual buildings are portrayed by combining their operational status (operational, abandoned/ruin, or unknown) and the function (residential, community or commercial, health and welfare, emergency services, and other) attributes into 5 classes.
+                            About 5% of all buildings depicted in the web service were originally captured for purpose of generating topographic map products at small scales i.e. 1:250,000 or smaller. These features may have been generalised or offset from their true position for cartographic representation purposes. Therefore, positional uncertainty associated with these features is depicted as buffers from scale 1:144,000 or larger. The buffers indicate that actual real-world feature may be sighted anywhere within it. The remainder of buildings have much greater positional accuracy and hence smaller buffers, corresponding much closely to buildings visible on base imagery, such as that provided by Bing and Google.</gco:CharacterString>
+                    </mrl:statement>
+                    <mrl:scope>
+                        <mcc:MD_Scope>
+                            <mcc:level>
+                                <mcc:MD_ScopeCode codeList="codeListLocation#MD_ScopeCode" codeListValue="service"/>
+                            </mcc:level>
+                            <mcc:levelDescription>
+                                <mcc:MD_ScopeDescription>
+                                    <mcc:other>
+                                        <gco:CharacterString>Web Service</gco:CharacterString>
+                                    </mcc:other>
+                                </mcc:MD_ScopeDescription>
+                            </mcc:levelDescription>
+                        </mcc:MD_Scope>
+                    </mrl:scope>
+                    <mrl:source>
+                        <mrl:LI_Source>
+                            <mrl:description>
+                                <gco:CharacterString>No datasets for download</gco:CharacterString>
+                            </mrl:description>
+                        </mrl:LI_Source>
+                    </mrl:source>
+                </mrl:LI_Lineage>
+            </mdb:resourceLineage>
+            <mdb:metadataConstraints xmlns:gn="http://www.fao.org/geonetwork"
+                                     xmlns:gmd="http://standards.iso.org/iso/19115/-3/gmd/1.0"
+                                     xmlns:geonet="http://www.fao.org/geonetwork">
+                <mco:MD_SecurityConstraints>
+                    <mco:reference>
+                        <cit:CI_Citation>
+                            <cit:title>
+                                <gco:CharacterString>Australian Government Security ClassificationSystem</gco:CharacterString>
+                            </cit:title>
+                            <cit:editionDate>
+                                <gco:DateTime>2018-11-01T00:00:00</gco:DateTime>
+                            </cit:editionDate>
+                            <cit:onlineResource>
+                                <cit:CI_OnlineResource>
+                                    <cit:linkage>
+                                        <gco:CharacterString>https://www.protectivesecurity.gov.au/Pages/default.aspx</gco:CharacterString>
+                                    </cit:linkage>
+                                    <cit:protocol gco:nilReason="missing">
+                                        <gco:CharacterString xsi:type="gco:CodeType"
+                                                             codeSpace="http://pid.geoscience.gov.au/def/schema/ga/ISO19115-3-2016/codelist/ga_profile_codelists.xml#gapCI_ProtocolTypeCode"/>
+                                    </cit:protocol>
+                                </cit:CI_OnlineResource>
+                            </cit:onlineResource>
+                        </cit:CI_Citation>
+                    </mco:reference>
+                    <mco:classification>
+                        <mco:MD_ClassificationCode codeList="codeListLocation#MD_ClassificationCode" codeListValue="unclassified"/>
+                    </mco:classification>
+                </mco:MD_SecurityConstraints>
+            </mdb:metadataConstraints>
+        </mdb:MD_Metadata>
     </csw:SearchResults>
 </csw:GetRecordsResponse>
 

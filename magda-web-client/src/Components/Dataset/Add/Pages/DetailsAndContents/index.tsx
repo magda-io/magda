@@ -108,9 +108,10 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     <h4>Which keywords best describe this dataset?</h4>
                     <ToolTip>
                         Keywords are specific words that your dataset contains,
-                        and they help people search for specific datasets. We
-                        recommend keywords and kept to 10-15 words. We've
-                        identified the top keywords from your document.
+                        and they help people search for specific datasets.{" "}
+                        {dataset!.keywords && dataset.keywords.derived
+                            ? "We recommend keywords and kept to 10-15 words. We've identified the top keywords from your file(s)."
+                            : null}
                     </ToolTip>
                     <div className="clearfix">
                         <TagInput
@@ -127,9 +128,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     <ToolTip>
                         Themes are the topics your dataset covers and they help
                         people find related datasets within a topic. We
-                        recommend themes are kept to 5-10 topics. We've
-                        identified themes from your document, that are
-                        consistent with similar datasets.
+                        recommend themes are kept to 5-10 topics.
                     </ToolTip>
                     <div className="clearfix">
                         <TagInput

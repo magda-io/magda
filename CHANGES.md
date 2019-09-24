@@ -95,7 +95,13 @@ UI:
 -   Added `dataset status` question to 'Details and Contents' page
 -   Fixed edit file panel text input layout
 -   Fixed a blank screen issue on dataset page
+-   Improve visualisation data processing:
+-   Use worker to download & process csv file
+-   Chart & table modules share the same data source to avoid unnecessary download
+-   Allow to set max. number of rows that accepted by the the visualisation module
 -   Fixed "NOT SET" appears on the dataset page for non-admins
+-   Made the add dataset flow only say it found keywords in the document if it actually did so.
+-   Made the datepicker for add dataset use the correct colours.
 
 Gateway:
 
@@ -123,13 +129,10 @@ Others:
 -   Format minion will trust dcat format if other measures indicate a ZIP format
 -   Format minion will trust dcat format if other measures indicate a ESRI REST format
 -   Added ASC to 4 stars rating list
--   Made registry-api DB pool settings configurable via Helm
--   Make broken link sleuther recrawl period configurable via Helm
--   Format minion will trust dcat format if other measures indicate a ZIP format
--   Format minion will trust dcat format if other measures indicate a ESRI REST format
--   Added ASC to 4 stars rating list
 -   Removed Travis CI (Gitlab CI still remains)
 -   Disabled tenant-api & tenant-db when `enableMultiTenants` = false
+-   Excluded organisations that are owners of thesauruses (keyword taxonomies) from being considered as owners of datasets via CSW connector
+-   Fix data.json connector dcat-dataset-strings aspect so keywords are stored correctly
 
 ## 0.0.55
 

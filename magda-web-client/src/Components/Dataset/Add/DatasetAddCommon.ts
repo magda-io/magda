@@ -66,25 +66,31 @@ export type OrganisationAutocompleteChoice = {
     name: string;
 };
 
+export type KeywordsLike = {
+    keywords: string[];
+    derived: boolean;
+};
+
 export type Dataset = {
     title: string;
     description?: string;
     issued?: Date;
     modified?: Date;
     languages?: string[];
-    keywords?: string[];
-    themes?: string[];
+    publisher?: OrganisationAutocompleteChoice;
+    accrualPeriodicity?: string;
+    themes?: KeywordsLike;
+    keywords?: KeywordsLike;
+    defaultLicense?: string;
+
+    accrualPeriodicityRecurrenceRule?: string;
     owningOrgUnitId?: string;
     custodianOrgUnitId?: string;
     contactPointDisplay?: string;
-    publisher?: OrganisationAutocompleteChoice;
     landingPage?: string;
     importance?: string;
-    accrualPeriodicity?: string;
-    accrualPeriodicityRecurrenceRule?: string;
     accessLevel?: string;
     accessNotesTemp?: string;
-    defaultLicense?: string;
 };
 
 export type Provenance = {
@@ -136,8 +142,8 @@ export type State = {
     provenance: Provenance;
     currency: Currency;
 
-    _lastModifiedDate: string;
-    _createdDate: string;
+    _lastModifiedDate: Date;
+    _createdDate: Date;
 
     licenseLevel: "dataset" | "distribution";
 
@@ -187,8 +193,8 @@ export function createBlankState(user: User): State {
         licenseLevel: "dataset",
         isPublishing: false,
         error: null,
-        _createdDate: new Date().toISOString(),
-        _lastModifiedDate: new Date().toISOString()
+        _createdDate: new Date(),
+        _lastModifiedDate: new Date()
     };
 }
 
@@ -198,7 +204,15 @@ export async function loadState(id: string, user: User): Promise<State> {
     const stateString = localStorage[id];
     let state: State;
     if (stateString) {
-        state = JSON.parse(stateString);
+        const dehydrated = JSON.parse(stateString);
+        state = {
+            ...dehydrated,
+            dataset: {
+                ...dehydrated.dataset,
+                modified: dehydrated.modified && new Date(dehydrated.modified),
+                issued: dehydrated.issued && new Date(dehydrated.issued)
+            }
+        };
     } else {
         state = createBlankState(user);
     }
@@ -220,7 +234,7 @@ export async function loadState(id: string, user: User): Promise<State> {
 export function saveState(state: State, id = createId()) {
     state = Object.assign({}, state);
 
-    state._lastModifiedDate = new Date().toISOString();
+    state._lastModifiedDate = new Date();
     const dataset = JSON.stringify(state);
     localStorage[id] = dataset;
     return id;
