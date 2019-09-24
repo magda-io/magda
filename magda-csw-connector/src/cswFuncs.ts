@@ -11,6 +11,7 @@ function getResponsibleParties(dataset: any) {
                 "$..CI_Responsibility[?(@.party.CI_Organisation)]"
             )
         )
+        .filter(obj => !obj.path.includes("thesaurusName"))
         .map(obj => obj.value);
 }
 

@@ -10,7 +10,6 @@ import concat from "lodash/concat";
 import takeRight from "lodash/takeRight";
 import sortBy from "lodash/sortBy";
 import * as d3 from "d3-collection";
-import { config } from "../config";
 import chrono from "chrono-node";
 
 const AVAILABLE_CHART_TYPES = ["bar", "pie", "scatter", "line"];
@@ -89,57 +88,6 @@ noDelimiterParser.extract = function(text, ref, match, opt) {
 
 const customChrono = chrono.en_GB;
 customChrono.parsers.push(noDelimiterParser);
-
-const getPapaParse = (() => {
-    let Papa = null;
-
-    return async () => {
-        if (!Papa) {
-            Papa = await import(/* webpackChunkName: "papa" */ "papaparse");
-        }
-
-        return Papa;
-    };
-})();
-
-/** Fetches and parses a CSV */
-const fetchData = function(url, overrideNewLine) {
-    return getPapaParse().then(
-        Papa =>
-            new Promise((resolve, reject) => {
-                Papa.parse(config.proxyUrl + "_0d/" + url, {
-                    download: true,
-                    header: true,
-                    skipEmptyLines: true,
-                    newline: overrideNewLine,
-                    trimHeader: true,
-                    complete: results => {
-                        if (
-                            results.data.length <= 1 &&
-                            results.errors.length >= 1 &&
-                            overrideNewLine !== "\n"
-                        ) {
-                            // A lot of CSV GEO AUs have an issue where papa can't detect the newline - try again with it overridden
-                            resolve(fetchData(url, "\n"));
-                        } else if (results.errors.length >= 1) {
-                            reject(new Error(results.errors[0].message));
-                        } else {
-                            resolve(results);
-                        }
-                    },
-                    error: err => {
-                        let e;
-                        if (!err)
-                            e = new Error(
-                                "Failed to retrieve or parse the file."
-                            );
-                        else e = err;
-                        reject(e);
-                    }
-                });
-            })
-    );
-};
 
 const parseNumber = str => {
     let parsedResult = 0;
@@ -406,23 +354,31 @@ function getDefaultColumn(
 }
 
 class ChartDatasetEncoder {
-    constructor(distribution) {
+    constructor() {
         this.fields = null;
         this.data = null;
         this.encode = null;
         this.xAxis = null;
         this.yAxis = null;
         this.chartType = null;
-        this.isDataLoaded = false;
-        this.isDataLoading = false;
-        this.loadingUrl = null;
-        this.loadingPromise = null;
-        this.init(distribution);
+        this.distribution = null;
     }
 
-    init(distribution) {
-        ChartDatasetEncoder.validateDistributionData(distribution);
+    getNumberOfRowsUsed() {
+        return this.data && this.data.length ? this.data.length : 0;
+    }
+
+    processData(distribution, dataLoadingResult) {
+        if (
+            this.distribution === distribution &&
+            this.distribution.identifier === distribution.identifier &&
+            dataLoadingResult
+        ) {
+            return;
+        }
         this.distribution = distribution;
+        this.data = dataLoadingResult.data;
+        this.preProcessData();
     }
 
     getNumericColumns() {
@@ -482,33 +438,6 @@ class ChartDatasetEncoder {
                 (item, key) => (item[newFieldName] = `Row ${key + 1}`)
             );
         }
-    }
-
-    async performDataLoading(url) {
-        try {
-            this.isDataLoading = true;
-            const result = await fetchData(url);
-            //--- detect if another loading has started
-            if (this.loadingUrl !== url) return;
-            this.data = result.data;
-            this.preProcessData();
-            this.isDataLoaded = true;
-        } catch (e) {
-            this.isDataLoading = false;
-            throw e;
-        }
-    }
-
-    async loadData() {
-        const url = this.distribution.downloadURL;
-        if (this.isDataLoading && url === this.loadingUrl) {
-            if (this.loadingPromise) await this.loadingPromise;
-            return;
-        }
-        this.loadingUrl = url;
-        const loadingPromise = this.performDataLoading(url);
-        this.loadingPromise = loadingPromise;
-        await loadingPromise;
     }
 
     getAvailableXCols() {
@@ -828,10 +757,6 @@ ChartDatasetEncoder.validateDistributionData = function(distribution) {
     if (!distribution.identifier)
         throw new Error(
             "Cannot locate `identifier` field of the distribution data"
-        );
-    if (!distribution.downloadURL)
-        throw new Error(
-            "Cannot locate `downloadURL` field of the distribution data"
         );
 };
 

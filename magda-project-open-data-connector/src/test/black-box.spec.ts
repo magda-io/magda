@@ -13,6 +13,7 @@ const TEST_CASES = [
                     description: "dataset-desc",
                     title: "dataset-title",
                     license: "dataset-license-url",
+                    keyword: ["key", "words"],
                     distribution: [
                         {
                             "@type": "dcat:Distribution",
@@ -97,12 +98,14 @@ const TEST_CASES = [
                         identifier: "dataset-id",
                         description: "dataset-desc",
                         title: "dataset-title",
-                        license: "dataset-license-url"
+                        license: "dataset-license-url",
+                        keyword: ["key", "words"]
                     },
                     "dcat-dataset-strings": {
                         title: "dataset-title",
                         description: "dataset-desc",
-                        temporal: {}
+                        temporal: {},
+                        keywords: ["key", "words"]
                     },
                     source: {
                         type: "project-open-data-dataset",

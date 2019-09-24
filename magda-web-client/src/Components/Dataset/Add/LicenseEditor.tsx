@@ -50,7 +50,7 @@ export default function LicenseEditor({ value: license, onChange }: Props) {
                                       value: "custom"
                                   }
                         }
-                        onChange={item => {
+                        onChange={(item: any) => {
                             onChange(item.value === "custom" ? "" : item.value);
                         }}
                     />

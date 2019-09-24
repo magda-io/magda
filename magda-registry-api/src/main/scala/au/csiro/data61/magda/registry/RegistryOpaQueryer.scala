@@ -25,12 +25,20 @@ class RegistryOpaQueryer()(
       operationType: AuthOperations.OperationType
   ): Future[List[OpaQuery]] = {
 
-    if (skipOpaQuery)
+    if (skipOpaQuery) {
       Future.successful(List(OpaQuerySkipAccessControl))
-    else
+    } else {
+      val theRecordPolicyId =
+        if (config.hasPath("opa.recordPolicyId")) {
+          config.getString("opa.recordPolicyId")
+        } else {
+          throw new Exception("Error: Missing opa.recordPolicyId in the config.")
+        }
+
       super.queryRecord(
         jwt,
-        policyId = "object.registry.record.owner_orgunit." + operationType.id
+        policyId = theRecordPolicyId + "." + operationType.id
       )
+    }
   }
 }

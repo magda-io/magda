@@ -575,3 +575,9 @@ export const datasetLicenseLevel = {
     dataset: "Dataset level license",
     distribution: "Distribution (or file/URL) level license"
 };
+
+export const datasetCurrencyStatus = {
+    CURRENT: "Current",
+    SUPERSEDED: "Superseded",
+    RETIRED: "Retired"
+};

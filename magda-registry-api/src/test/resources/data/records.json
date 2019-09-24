@@ -3,9 +3,6 @@
         "id": "record-0",
         "name": "This record can only be viewed by Dep. A or higher.",
         "aspects": {
-            "dataset-access-control": {
-                "orgUnitOwnerId": "00000000-0000-2000-0001-000000000000"
-            },
             "organization": {
                 "name": "Dep. A",
                 "email": "dep.A@somewhere"
@@ -16,9 +13,6 @@
         "id": "record-1",
         "name": "This record can only be viewed by Branch A of Dep. A or higher.",
         "aspects": {
-            "dataset-access-control": {
-                "orgUnitOwnerId": "00000000-0000-2000-0002-000000000000"
-            },
             "organization": {
                 "name": "Branch A, Dep. A",
                 "email": "Branch.A@somewhere"
@@ -30,9 +24,6 @@
         "id": "record-2",
         "name": "This record can only be viewed by Branch B of Dep. A or higher.",
         "aspects": {
-            "dataset-access-control": {
-                "orgUnitOwnerId": "00000000-0000-2000-0003-000000000000"
-            },
             "organization": {
                 "name": "Branch B, Dep. A",
                 "email": "Branch.B@somewhere"
@@ -47,9 +38,6 @@
         "id": "record-3",
         "name": "This record can only be viewed by Section C of Branch B of Dep. A or higher.",
         "aspects": {
-            "dataset-access-control": {
-                "orgUnitOwnerId": "00000000-0000-2000-0006-000000000000"
-            },
             "organization": {
                 "name": "Section C, Branch B, Dep. A",
                 "email": "Section.C@somewhere"
@@ -78,9 +66,6 @@
         "id": "record-5",
         "name": "This record can only be viewed by Branch B of Dep. A or higher.",
         "aspects": {
-            "dataset-access-control": {
-                "orgUnitOwnerId": "00000000-0000-2000-0003-000000000000"
-            },
             "organization": {
                 "name": "Branch B, Dep. A",
                 "email": "Branch.B@somewhere"

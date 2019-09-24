@@ -135,6 +135,20 @@ const argv = yargs
     .option("custodianOrgLevel", {
         describe: "Data custodian org unit tree level",
         type: "number"
+    })
+    .option("maxChartProcessingRows", {
+        describe:
+            "Max number of CSV data file rows that chart preview will module process",
+        type: "number"
+    })
+    .option("maxTableProcessingRows", {
+        describe:
+            "Max number of CSV data file rows that table preview will module process",
+        type: "number"
+    })
+    .option("csvLoaderChunkSize", {
+        describe: "The size of the csv loader processing chunk (in bytes)",
+        type: "number"
     }).argv;
 
 var app = express();
@@ -211,7 +225,10 @@ const webServerConfig = {
     vocabularyApiEndpoints: (argv.vocabularyApiEndpoints || []) as string[],
     defaultOrganizationId: argv.defaultOrganizationId,
     defaultContactEmail: argv.defaultContactEmail,
-    custodianOrgLevel: argv.custodianOrgLevel
+    custodianOrgLevel: argv.custodianOrgLevel,
+    maxChartProcessingRows: argv.maxChartProcessingRows,
+    maxTableProcessingRows: argv.maxTableProcessingRows,
+    csvLoaderChunkSize: argv.csvLoaderChunkSize
 };
 
 app.get("/server-config.js", function(req, res) {

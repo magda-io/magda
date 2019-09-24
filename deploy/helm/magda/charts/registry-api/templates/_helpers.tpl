@@ -59,6 +59,7 @@ spec:
             "-Dscalikejdbc.global.loggingSQLAndTime.logLevel={{ .root.Values.global.logLevel | lower }}",
             "-Dauthorization.skip={{ .root.Values.skipAuthorization | default false }}",
             "-Dopa.baseUrl=http://authorization-api/v0/opa",
+            "-Dopa.recordPolicyId={{ .root.Values.recordPolicyId | default "object.registry.record.owner_orgunit" }}",
             "-Drole={{ .role }}"
         ]
 {{- if .root.Values.global.enableLivenessProbes }}

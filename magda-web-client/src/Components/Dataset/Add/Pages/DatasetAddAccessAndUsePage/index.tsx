@@ -147,7 +147,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                               }
                                             : null
                                     }
-                                    onChange={item =>
+                                    onChange={(item: any) =>
                                         props.editState("licenseLevel")(
                                             item.value
                                         )
@@ -277,7 +277,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                           }
                                         : null
                                 }
-                                onChange={item =>
+                                onChange={(item: any) =>
                                     editInformationSecurity("classification")(
                                         item.value
                                     )
@@ -382,7 +382,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                               )
                                             : []
                                     }
-                                    onChange={items =>
+                                    onChange={(items: any) =>
                                         editInformationSecurity(
                                             "disseminationLimits"
                                         )(items.map(item => item.value))
