@@ -33,6 +33,7 @@ Indexer:
 -   Index datasets with tenant ID.
 -   Fixed indexer throws an error when affiliatedOrganisation field is created
 -   Fixed indexer incorrect parsing bounding box data in spatialCoverage aspect
+-   Added auth when crawling the registry
 
 Cataloging:
 
@@ -101,6 +102,7 @@ UI:
 -   Fixed "NOT SET" appears on the dataset page for non-admins
 -   Made the add dataset flow only say it found keywords in the document if it actually did so.
 -   Made the datepicker for add dataset use the correct colours.
+-   Added a preview mode for add dataset, that allows all users to use add dataset but prevents them from submitting.
 
 Gateway:
 

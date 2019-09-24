@@ -16,7 +16,8 @@ declare global {
 const fallbackApiHost = "https://dev.magda.io/";
 
 const DEV_FEATURE_FLAGS = {
-    cataloguing: true
+    cataloguing: true,
+    previewAddDataset: true
 };
 
 const homePageConfig: {
