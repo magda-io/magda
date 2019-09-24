@@ -70,6 +70,7 @@ spec:
             "--ckanUrl", {{ .Values.auth.ckanAuthenticationUrl | quote }},
 {{- end }}
             "--proxyRoutesJson", "/etc/config/routes.json",
+            "--webProxyRoutesJson", "/etc/config/webRoutes.json",
             "--helmetJson", "/etc/config/helmet.json",
             "--cspJson", "/etc/config/csp.json",
             "--corsJson", "/etc/config/cors.json",

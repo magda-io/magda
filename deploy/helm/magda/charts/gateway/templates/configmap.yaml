@@ -11,6 +11,11 @@ data:
   {{- else }}
   routes.json: '{{ toJson .Values.defaultRoutes | indent 2 }}'
   {{- end }}
+  {{- if .Values.webRoutes }}
+  webRoutes.json: '{{ toJson .Values.webRoutes | indent 2 }}'
+  {{- else }}
+  webRoutes.json: {}
+  {{- end }}
   helmet.json: '{{ toJson .Values.helmet | indent 2 }}'
   cors.json: '{{ toJson .Values.cors | indent 2 }}'
   csp.json: '{{ toJson .Values.csp | indent 2 }}'
