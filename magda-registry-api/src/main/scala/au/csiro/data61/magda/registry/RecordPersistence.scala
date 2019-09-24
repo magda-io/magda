@@ -1676,7 +1676,7 @@ object DefaultRecordPersistence
       case OpaQueryMatchNoAccessControl =>
         sqls"""
               EXISTS (
-              SELECT 1 FROM public_records
+              SELECT 1 FROM records_without_access_control
               WHERE (recordid, tenantid)=(records.recordid, $tenantId))
             """
       case OpaQuerySkipAccessControl => sqls"true"

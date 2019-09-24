@@ -58,6 +58,34 @@ test_allow_read_if_owner_and_permission_are_correct {
     }
 }
 
+test_allow_read_if_public {
+    read with input as {
+        "object": {
+            "registry": {
+                "record": {
+                    "esri-access-control": {
+                        "access": "public"
+                    }
+                }
+            }
+        }
+    }
+}
+
+test_deny_read_if_no_access_attributes {
+    not read with input as {
+        "object": {
+            "registry": {
+                "record": {
+                    "esri-access-control": {
+                    }
+                }
+            }
+        }
+    }
+}
+
+
 test_allow_read_if_not_owner_but_groups_and_permission_are_correct {
     read with input as {
         "user": {

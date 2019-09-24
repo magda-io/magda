@@ -1,6 +1,8 @@
 return {
     // item access groups
-    groups: dataset.groups ? dataset.groups : undefined,
+    groups: dataset.esriGroups,
     // item owner
-    owner: dataset.esriOwner ? dataset.esriOwner : undefined
+    owner: dataset.esriOwner,
+    // item access attribute
+    access: dataset.esriAccess
 };

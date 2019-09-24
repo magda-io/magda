@@ -294,9 +294,29 @@ class OpaQueryer()(
             case List(RegoTermRef(RegoRefPartVar("input") :: path)) =>
               Some(OpaQueryExists(regoRefPathToOpaRefPath(path)))
             case List(RegoTermBoolean(false)) => Some(OpaQueryMatchNone)
-            case _                            => None
+            case List(
+                operation: RegoTermRef,
+                path: RegoTermRef,
+                value: RegoTermValue
+                ) =>
+              Some(
+                OpaQueryMatchValue(
+                  path = regoRefPathToOpaRefPath(path.value),
+                  operation = operation match {
+                    case RegoTermRef(
+                        List(RegoRefPartVar(opString: String))
+                        ) =>
+                      OpaOp(opString)
+                  },
+                  value = value match {
+                    case RegoTermBoolean(aValue) => OpaValueBoolean(aValue)
+                    case RegoTermString(aValue)  => OpaValueString(aValue)
+                    case RegoTermNumber(aValue)  => OpaValueNumber(aValue)
+                  }
+                )
+              )
+            case _ => None
           }
-
     }
 
     rulesOpt

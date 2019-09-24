@@ -279,9 +279,9 @@ export default class EsriPortal implements ConnectorSource {
                                     (it: any, idx: any) =>
                                         allGroups.indexOf(it) === idx
                                 );
-                                item.groups =
+                                item.esriGroups =
                                     uniqueGroups.length > 0 ? uniqueGroups : [];
-                                if (item.groups === []) {
+                                if (item.esriGroups === []) {
                                     console.log(
                                         `Shared item ${item.id}, ${
                                             item.title
@@ -289,20 +289,22 @@ export default class EsriPortal implements ConnectorSource {
                                     );
                                 }
                                 item.esriOwner = item.owner;
+                                item.esriAccess = "shared";
                             } else if (
                                 item.access === "org" &&
                                 requestUrl.includes(ESRI_NSW_PORTAL)
                             ) {
-                                item.groups = [ESRI_NSW_ORG];
+                                item.esriGroups = [ESRI_NSW_ORG];
                                 item.esriOwner = item.owner;
+                                item.esriAccess = "org";
                             } else if (item.access === "private") {
-                                item.groups = undefined;
+                                item.esriGroups = [];
                                 item.esriOwner = item.owner;
+                                item.esriAccess = "private";
                             } else if (item.access === "public") {
-                                // Both groups and esriOwner are undefined so that we will
-                                // not add esri-access-control aspect to public items.
-                                item.groups = undefined;
-                                item.esriOwner = undefined;
+                                item.esriGroups = undefined;
+                                item.esriOwner = item.owner;
+                                item.esriAccess = "public";
                             } else {
                                 console.log(
                                     `Item ${item.id}, ${item.title}, ${
@@ -361,11 +363,10 @@ export default class EsriPortal implements ConnectorSource {
                                         );
                                     }
 
-                                    for (
-                                        let ii = 0;
-                                        ii < distInfo.layers.length;
-                                        ++ii
-                                    ) {
+                                    const layersLength = distInfo.layers
+                                        ? distInfo.layers.length
+                                        : 0;
+                                    for (let ii = 0; ii < layersLength; ++ii) {
                                         const lyr = distInfo.layers[ii];
                                         await that.processLayerAsDistribution(
                                             lyr,
