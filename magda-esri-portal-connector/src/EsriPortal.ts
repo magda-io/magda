@@ -47,6 +47,7 @@ export interface EsriPortalOptions {
     arcgisUserId?: string;
     arcgisUserPassword?: string;
     pageSize?: number;
+    updateInterval?: number;
     maxRetries?: number;
     secondsBetweenRetries?: number;
 }
@@ -55,6 +56,7 @@ export default class EsriPortal implements ConnectorSource {
     public readonly id: string;
     public readonly name: string;
     public readonly pageSize: number;
+    public readonly updateInterval: number; // in milliseconds
     public readonly maxRetries: number;
     public readonly secondsBetweenRetries: number;
     public readonly urlBuilder: EsriPortalUrlBuilder;
@@ -65,12 +67,14 @@ export default class EsriPortal implements ConnectorSource {
         id,
         name,
         pageSize = 1000,
+        updateInterval = 12,
         maxRetries = 10,
         secondsBetweenRetries = 10
     }: EsriPortalOptions) {
         this.id = id;
         this.name = name;
         this.pageSize = pageSize;
+        this.updateInterval = updateInterval * 3600000;
         this.maxRetries = maxRetries;
         this.secondsBetweenRetries = secondsBetweenRetries;
         this.urlBuilder = new EsriPortalUrlBuilder({
@@ -290,6 +294,8 @@ export default class EsriPortal implements ConnectorSource {
                                 }
                                 item.esriOwner = item.owner;
                                 item.esriAccess = "shared";
+                                item.esriExpiration =
+                                    Date.now() + this.updateInterval;
                             } else if (
                                 item.access === "org" &&
                                 requestUrl.includes(ESRI_NSW_PORTAL)
@@ -297,14 +303,20 @@ export default class EsriPortal implements ConnectorSource {
                                 item.esriGroups = [ESRI_NSW_ORG];
                                 item.esriOwner = item.owner;
                                 item.esriAccess = "org";
+                                item.esriExpiration =
+                                    Date.now() + this.updateInterval;
                             } else if (item.access === "private") {
                                 item.esriGroups = [];
                                 item.esriOwner = item.owner;
                                 item.esriAccess = "private";
+                                item.esriExpiration =
+                                    Date.now() + this.updateInterval;
                             } else if (item.access === "public") {
                                 item.esriGroups = undefined;
                                 item.esriOwner = item.owner;
                                 item.esriAccess = "public";
+                                item.esriExpiration =
+                                    Date.now() + this.updateInterval;
                             } else {
                                 console.log(
                                     `Item ${item.id}, ${item.title}, ${

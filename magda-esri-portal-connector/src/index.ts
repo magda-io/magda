@@ -7,7 +7,8 @@ const esriPortal = new EsriPortal({
     baseUrl: argv.sourceUrl,
     id: argv.id,
     name: argv.name,
-    pageSize: argv.pageSize
+    pageSize: argv.pageSize,
+    updateInterval: argv.esriUpdateInterval
 });
 
 if (argv.arcgisUserId !== null) {

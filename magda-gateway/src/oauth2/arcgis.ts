@@ -108,7 +108,8 @@ export default function arcgis(options: ArcGisOptions) {
                                 id: userToken.id,
                                 session: {
                                     esriGroups: theGroupIds,
-                                    esriUser: profile.username
+                                    esriUser: profile.username,
+                                    esriTimestamp: Date.now()
                                 }
                             });
                         })

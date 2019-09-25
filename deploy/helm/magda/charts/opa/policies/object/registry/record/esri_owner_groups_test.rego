@@ -13,7 +13,8 @@ test_allow_read_if_groups_and_permission_are_correct {
                 }
             ],
             "session": {
-                "esriGroups": ["G1", "G2"]
+                "esriGroups": ["G1", "G2"],
+                "esriTimestamp": 99
             }
         },
 
@@ -21,7 +22,8 @@ test_allow_read_if_groups_and_permission_are_correct {
             "registry": {
                 "record": {
                     "esri-access-control": {
-                        "groups": ["G2", "G3"]
+                        "groups": ["G2", "G3"],
+                        "expiration": 100
                     }
                 }
             }
@@ -42,7 +44,8 @@ test_allow_read_if_owner_and_permission_are_correct {
                 }
             ],
             "session": {
-                "esriUser": "Person.A"
+                "esriUser": "Person.A",
+                "esriTimestamp": 99
             }
         },
 
@@ -50,7 +53,8 @@ test_allow_read_if_owner_and_permission_are_correct {
             "registry": {
                 "record": {
                     "esri-access-control": {
-                        "owner": "Person.A"
+                        "owner": "Person.A",
+                        "expiration": 100
                     }
                 }
             }
@@ -60,11 +64,17 @@ test_allow_read_if_owner_and_permission_are_correct {
 
 test_allow_read_if_public {
     read with input as {
+        "user": {
+            "session": {
+                "esriTimestamp": 99
+            }
+        },
         "object": {
             "registry": {
                 "record": {
                     "esri-access-control": {
-                        "access": "public"
+                        "access": "public",
+                        "expiration": 100
                     }
                 }
             }
@@ -100,7 +110,8 @@ test_allow_read_if_not_owner_but_groups_and_permission_are_correct {
             ],
             "session": {
                 "esriGroups": ["G1", "G2"],
-                "esriUser": "Person.A"
+                "esriUser": "Person.A",
+                "esriTimestamp": 99
             }
         },
 
@@ -109,7 +120,8 @@ test_allow_read_if_not_owner_but_groups_and_permission_are_correct {
                 "record": {
                     "esri-access-control": {
                         "groups": ["G2", "G3"],
-                        "owner": "Person.B"
+                        "owner": "Person.B",
+                        "expiration": 100
                     }
                 }
             }
@@ -131,7 +143,8 @@ test_allow_read_if_owner_but_groups_are_incorrect {
             ],
             "session": {
                 "esriGroups": ["G1", "G2"],
-                "esriUser": "Person.A"
+                "esriUser": "Person.A",
+                "esriTimestamp": 99
             }
         },
 
@@ -140,7 +153,8 @@ test_allow_read_if_owner_but_groups_are_incorrect {
                 "record": {
                     "esri-access-control": {
                         "groups": ["G4", "G5"],
-                        "owner": "Person.A"
+                        "owner": "Person.A",
+                        "expiration": 100
                     }
                 }
             }
@@ -162,7 +176,8 @@ test_deny_read_if_owner_and_groups_are_incorrect {
             ],
             "session": {
                 "esriGroups": ["G1", "G2"],
-                "esriUser": "Person.A"
+                "esriUser": "Person.A",
+                "esriTimestamp": 99
             }
         },
 
@@ -171,7 +186,8 @@ test_deny_read_if_owner_and_groups_are_incorrect {
                 "record": {
                     "esri-access-control": {
                         "groups": ["G4", "G5"],
-                        "owner": "Person.B"
+                        "owner": "Person.B",
+                        "expiration": 100
                     }
                 }
             }
@@ -183,7 +199,8 @@ test_deny_read_if_groups_are_incorrect {
     not read with input as {
         "user": {
             "session": {
-                "esriGroups": ["G1", "G2"]
+                "esriGroups": ["G1", "G2"],
+                "esriTimestamp": 99
             },
             "permissions": [
                 {
@@ -200,7 +217,8 @@ test_deny_read_if_groups_are_incorrect {
             "registry": {
                 "record": {
                     "esri-access-control": {
-                        "groups": ["G3", "G4"]
+                        "groups": ["G3", "G4"],
+                        "expiration": 100
                     }
                 }
             }
@@ -221,7 +239,8 @@ test_deny_read_if_owner_is_incorrect {
                 }
             ],
             "session": {
-                "esriUser": "Person.A"
+                "esriUser": "Person.A",
+                "esriTimestamp": 99
             }
         },
 
@@ -229,7 +248,8 @@ test_deny_read_if_owner_is_incorrect {
             "registry": {
                 "record": {
                     "esri-access-control": {
-                        "owner": "Person.B"
+                        "owner": "Person.B",
+                        "expiration": 100
                     }
                 }
             }
@@ -242,6 +262,7 @@ test_deny_read_if_permission_is_incorrect {
         "user": {
             "session": {
                 "esriGroups": ["G1", "G2"],
+                "esriTimestamp": 99
             },
             "permissions": [
                 {
@@ -258,7 +279,8 @@ test_deny_read_if_permission_is_incorrect {
             "registry": {
                 "record": {
                     "esri-access-control": {
-                        "orgUnitOwnerId": ["G1", "G2"]
+                        "orgUnitOwnerId": ["G1", "G2"],
+                        "expiration": 100
                     }
                 }
             }
