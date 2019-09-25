@@ -68,7 +68,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)
   }
 
   def getDataSetsToken(pageToken: String, number: Int): scala.concurrent.Future[(Option[String], List[DataSet])] = {
-    fetcher.get(path = s"$baseRecordsPath&dereference=true&pageToken=$pageToken&limit=$number", headers = Seq(systemIdHeader)).flatMap { response =>
+    fetcher.get(path = s"$baseRecordsPath&dereference=true&pageToken=$pageToken&limit=$number", headers = Seq(systemIdHeader, authHeader)).flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[RegistryRecordsResponse].map { registryResponse =>
           (registryResponse.nextPageToken, mapCatching[Record, DataSet](registryResponse.records,
@@ -81,7 +81,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)
   }
 
   def getDataSetsReturnToken(start: Long, number: Int): scala.concurrent.Future[(Option[String], List[DataSet])] = {
-    fetcher.get(path = s"$baseRecordsPath&dereference=true&start=$start&limit=$number", headers = Seq(systemIdHeader)).flatMap { response =>
+    fetcher.get(path = s"$baseRecordsPath&dereference=true&start=$start&limit=$number", headers = Seq(systemIdHeader, authHeader)).flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[RegistryRecordsResponse].map { registryResponse =>
           (registryResponse.nextPageToken, mapCatching[Record, DataSet](registryResponse.records,

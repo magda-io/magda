@@ -14,7 +14,7 @@ return {
         end: parsedTemporal[1]
     },
     themes: dataset.theme,
-    keyword: dataset.keyword,
+    keywords: dataset.keyword,
     contactPoint: dataset.contactPoint ? dataset.contactPoint.fn : undefined,
     landingPage: dataset.landingPage
 };

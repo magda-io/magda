@@ -33,6 +33,7 @@ Indexer:
 -   Index datasets with tenant ID.
 -   Fixed indexer throws an error when affiliatedOrganisation field is created
 -   Fixed indexer incorrect parsing bounding box data in spatialCoverage aspect
+-   Added auth when crawling the registry
 
 Cataloging:
 
@@ -103,6 +104,7 @@ UI:
 -   Made the datepicker for add dataset use the correct colours.
 -   Updated schema.org Dataset and DataDownload semantic markup for rich search results 
 -   Fixed typos in no-print styling and adding keywords tooltip
+-   Added a preview mode for add dataset, that allows all users to use add dataset but prevents them from submitting.
 
 Gateway:
 
@@ -133,6 +135,7 @@ Others:
 -   Removed Travis CI (Gitlab CI still remains)
 -   Disabled tenant-api & tenant-db when `enableMultiTenants` = false
 -   Excluded organisations that are owners of thesauruses (keyword taxonomies) from being considered as owners of datasets via CSW connector
+-   Fix data.json connector dcat-dataset-strings aspect so keywords are stored correctly
 
 ## 0.0.55
 
