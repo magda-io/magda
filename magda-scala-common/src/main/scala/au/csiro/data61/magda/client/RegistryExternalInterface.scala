@@ -54,7 +54,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)
   implicit val logger = Logging(system, getClass)
 
   val authHeader = RawHeader(Authentication.headerName, JWT.create().withClaim("userId", config.getString("auth.userId")).sign(Authentication.algorithm))
-  val systemIdHeader = RawHeader(MAGDA_TENANT_ID_HEADER, MAGDA_SYSTEM_ID.toString())
+  val defaultTenantIdHeader = RawHeader(MAGDA_TENANT_ID_HEADER, MAGDA_ADMIN_PORTAL_ID.toString())
   val aspectQueryString = RegistryConstants.aspects.map("aspect=" + _).mkString("&")
   val optionalAspectQueryString = RegistryConstants.optionalAspects.map("optionalAspect=" + _).mkString("&")
   val baseApiPath = "/v0"
@@ -68,7 +68,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)
   }
 
   def getDataSetsToken(pageToken: String, number: Int): scala.concurrent.Future[(Option[String], List[DataSet])] = {
-    fetcher.get(path = s"$baseRecordsPath&dereference=true&pageToken=$pageToken&limit=$number", headers = Seq(systemIdHeader, authHeader)).flatMap { response =>
+    fetcher.get(path = s"$baseRecordsPath&dereference=true&pageToken=$pageToken&limit=$number", headers = Seq(defaultTenantIdHeader, authHeader)).flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[RegistryRecordsResponse].map { registryResponse =>
           (registryResponse.nextPageToken, mapCatching[Record, DataSet](registryResponse.records,
@@ -81,7 +81,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)
   }
 
   def getDataSetsReturnToken(start: Long, number: Int): scala.concurrent.Future[(Option[String], List[DataSet])] = {
-    fetcher.get(path = s"$baseRecordsPath&dereference=true&start=$start&limit=$number", headers = Seq(systemIdHeader, authHeader)).flatMap { response =>
+    fetcher.get(path = s"$baseRecordsPath&dereference=true&start=$start&limit=$number", headers = Seq(defaultTenantIdHeader, authHeader)).flatMap { response =>
       response.status match {
         case OK => Unmarshal(response.entity).to[RegistryRecordsResponse].map { registryResponse =>
           (registryResponse.nextPageToken, mapCatching[Record, DataSet](registryResponse.records,
