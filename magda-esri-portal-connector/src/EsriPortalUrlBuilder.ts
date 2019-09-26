@@ -29,6 +29,21 @@ export default class EsriPortalUrlBuilder {
             .toString();
     }
 
+    // https://someportal/arcgis/sharing/rest/community/groups?q=orgid:0123456789ABCDEF -owner:esri_nav -owner:esri_livingatlas -owner:esri_boundaries -owner:esri_demographics&f=json&token=
+    public getPortalGroups(): string {
+        return this.apiBaseUrl
+            .clone()
+            .segment("community/groups")
+            .addSearch({
+                f: "json",
+                num: 1000,
+                q:
+                    "orgid:0123456789ABCDEF -owner:esri_nav -owner:esri_livingatlas -owner:esri_boundaries -owner:esri_demographics",
+                token: this.token
+            })
+            .toString();
+    }
+
     // https://someportal/arcgis/sharing/rest/search?f=pjson&q=(type:"Map Service" OR type:"Feature Service")
     public getDataSearchUrl(): string {
         return this.apiBaseUrl
@@ -98,6 +113,15 @@ export default class EsriPortalUrlBuilder {
         return this.baseUrl
             .clone()
             .segment("home/item.html")
+            .addQuery({ id: id })
+            .toString();
+    }
+
+    // https://someportal/arcgis/home/group.html?id=ea532dd8876b4646aa2ab49533e458aa
+    public getGroupLandingPageUrl(id: string): string {
+        return this.baseUrl
+            .clone()
+            .segment("home/group.html")
             .addQuery({ id: id })
             .toString();
     }

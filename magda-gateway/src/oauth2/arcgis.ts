@@ -3,6 +3,10 @@ import { Strategy as ArcGISStrategy } from "passport-arcgis";
 import { Authenticator, Profile } from "passport";
 
 import ApiClient from "@magda/typescript-common/dist/authorization-api/ApiClient";
+import {
+    ESRI_NSW_ORG,
+    ESRI_NSW_PORTAL
+} from "@magda/typescript-common/dist/session/SessionConsts";
 import createOrGetUserToken from "../createOrGetUserToken";
 import { redirectOnSuccess, redirectOnError } from "./redirect";
 
@@ -84,20 +88,22 @@ export default function arcgis(options: ArcGisOptions) {
                     }/sharing/rest/community/users/${
                         profile.username
                     }?f=json&token=${accessToken}`;
-                    // console.log("url = " + url);
                     fetch(url, { method: "get" })
                         .then(res => {
                             return res.json();
                         })
                         .then(jsObj => {
                             const theGroups: any[] = jsObj["groups"];
-                            // console.log("theGroups = " + JSON.stringify(theGroups));
-                            const theGroupIds: string[] = theGroups.map(
-                                group => {
-                                    return group["id"];
-                                }
-                            );
-                            // console.log("theGroupIds = " + theGroupIds)
+                            const groupIds: string[] = theGroups.map(group => {
+                                return group["id"];
+                            });
+
+                            const theGroupIds = options.arcgisInstanceBaseUrl.includes(
+                                ESRI_NSW_PORTAL
+                            )
+                                ? groupIds.concat([ESRI_NSW_ORG])
+                                : groupIds;
+
                             cb(null, {
                                 id: userToken.id,
                                 session: { esriGroups: theGroupIds }
