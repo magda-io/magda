@@ -28,6 +28,7 @@ gateway:
 
 registry-api:
   skipAuthorization: false
+  skipOpa: false
   recordPolicyId: "object.registry.record.esri_owner_groups"
   
 correspondence-api:
