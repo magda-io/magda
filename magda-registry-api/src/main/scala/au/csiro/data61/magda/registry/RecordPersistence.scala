@@ -1681,6 +1681,7 @@ object DefaultRecordPersistence
             """
       case OpaQuerySkipAccessControl => sqls"true"
       case OpaQueryMatchNone         => sqls"false"
+      case OpaQueryMatchAny          => sqls"true"
       case unmatched =>
         throw new Exception(
           "Could not convert query " + unmatched + " to where clause"

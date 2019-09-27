@@ -180,7 +180,8 @@ abstract class ApiWithOpaSpec
     *   +--------------------------------------------------------------+
     *
     */
-  val userId0 = "00000000-0000-1000-0000-000000000000" // admin user
+  val adminUser = "00000000-0000-1000-9999-000000000000"
+  val userId0 = "00000000-0000-1000-0000-000000000000"
   val userId1 = "00000000-0000-1000-0001-000000000000"
   val userId2 = "00000000-0000-1000-0002-000000000000"
   val userId3 = "00000000-0000-1000-0003-000000000000"
@@ -327,12 +328,12 @@ abstract class ApiWithOpaSpec
 
     aspectDefs.map(aspectDef => {
       Get(s"/v0/aspects/${aspectDef.id}") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        userId0,
+        adminUser,
         ""
       ) ~> param.api(Full).routes ~> check {
         if (status == StatusCodes.NotFound) {
           Post(s"/v0/aspects", aspectDef) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-            userId0,
+            adminUser,
             ""
           ) ~> param.api(Full).routes ~> check {
             status shouldBe StatusCodes.OK
@@ -407,12 +408,12 @@ abstract class ApiWithOpaSpec
 
     testRecords.map(record => {
       Get(s"/v0/records/${record.id}") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        userId0,
+        adminUser,
         ""
       ) ~> param.api(Full).routes ~> check {
         if (status == StatusCodes.NotFound) {
           Post(s"/v0/records", record) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-            userId0,
+            adminUser,
             ""
           ) ~> param.api(Full).routes ~> check {
             status shouldBe StatusCodes.OK
