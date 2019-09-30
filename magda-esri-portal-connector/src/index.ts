@@ -45,17 +45,26 @@ function runConnector() {
             );
         }
 
-        async createGroups() {
+        async createGroups(connectedDatasets: []) {
             const groups = await esriPortal.getPortalGroups();
-            groups.forEach((group: any) => {
-                this.createGroup(group);
-            });
+
+            for (var i = 0; i < groups.length; i++) {
+                const group = groups[i];
+                group.datasets = connectedDatasets.filter((d: any) => {
+                    if (d.esriGroups)
+                        return d.esriGroups.indexOf(group.id) > -1;
+                    return false;
+                });
+                await this.createGroup(group);
+            }
         }
 
         async run(): Promise<ConnectionResult> {
-            const r = await super.run();
-            await this.createGroups();
-            return r;
+            const result = await super.run();
+            console.log(result.summarize());
+            // @ts-ignore
+            await this.createGroups(this.source.harvestedDatasets);
+            return result;
         }
     }
 
@@ -66,9 +75,7 @@ function runConnector() {
     });
 
     if (!argv.interactive) {
-        connector.run().then(result => {
-            console.log(result.summarize());
-        });
+        connector.run();
     } else {
         connector.runInteractive({
             timeoutSeconds: argv.timeout,

@@ -57,6 +57,7 @@ export default class EsriPortal implements ConnectorSource {
     public readonly secondsBetweenRetries: number;
     public readonly urlBuilder: EsriPortalUrlBuilder;
     public readonly hasFirstClassOrganizations: boolean = false;
+    private harvestedDatasets: [];
 
     constructor({
         baseUrl,
@@ -78,6 +79,7 @@ export default class EsriPortal implements ConnectorSource {
             name: name,
             baseUrl
         });
+        this.harvestedDatasets = [];
     }
 
     public getToken(username: string, password: string) {
@@ -106,9 +108,8 @@ export default class EsriPortal implements ConnectorSource {
     }
 
     public getPortalGroups() {
-        const that = this;
         return new Promise<any>((resolve, reject) => {
-            const groupsUrl = that.urlBuilder.getPortalGroups();
+            const groupsUrl = this.urlBuilder.getPortalGroups();
             request(groupsUrl, { json: true }, (err, resp, body) => {
                 resolve(body.results);
             });
@@ -135,7 +136,11 @@ export default class EsriPortal implements ConnectorSource {
 
     public getJsonDatasets(): AsyncPage<any[]> {
         const packagePages = this.packageSearch({});
-        return packagePages.map(function(packagePage) {
+        return packagePages.map(packagePage => {
+            // @ts-ignore
+            this.harvestedDatasets = this.harvestedDatasets.concat(
+                packagePage.results
+            );
             return packagePage.results;
         });
     }
@@ -232,6 +237,7 @@ export default class EsriPortal implements ConnectorSource {
         const operation = async () =>
             new Promise<EsriPortalDataSearchResponse>((resolve, reject) => {
                 const requestUrl = pageUrl.toString();
+                console.log(requestUrl);
                 console.log(
                     `Requesting start = ${startIndex}, num = ${this.pageSize}`
                 );
