@@ -478,7 +478,7 @@ export default class JsonConnector {
         resetTimeout();
     }
 
-    private async putRecord(
+    public async putRecord(
         record: Record,
         recordType: RecordType
     ): Promise<Record | Error> {

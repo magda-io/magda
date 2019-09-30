@@ -105,6 +105,16 @@ export default class EsriPortal implements ConnectorSource {
         });
     }
 
+    public getPortalGroups() {
+        const that = this;
+        return new Promise<any>((resolve, reject) => {
+            const groupsUrl = that.urlBuilder.getPortalGroups();
+            request(groupsUrl, { json: true }, (err, resp, body) => {
+                resolve(body.results);
+            });
+        });
+    }
+
     private packageSearch(options?: {
         start?: number;
         title?: string;
@@ -178,7 +188,7 @@ export default class EsriPortal implements ConnectorSource {
         return undefined;
     }
 
-    private requestGroupInformation(contentId: string): Promise<any> {
+    private requestDatasetGroupInformation(contentId: string): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             request(
                 this.urlBuilder.getContentItemGroups(contentId),
@@ -257,7 +267,7 @@ export default class EsriPortal implements ConnectorSource {
                                 item.access === "shared" &&
                                 requestUrl.includes(ESRI_NSW_PORTAL)
                             ) {
-                                const groupInfo = await that.requestGroupInformation(
+                                const groupInfo = await that.requestDatasetGroupInformation(
                                     item.id
                                 );
 
