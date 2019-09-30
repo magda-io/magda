@@ -3,10 +3,6 @@ import { Strategy as ArcGISStrategy } from "passport-arcgis";
 import { Authenticator, Profile } from "passport";
 
 import ApiClient from "@magda/typescript-common/dist/authorization-api/ApiClient";
-import {
-    ESRI_NSW_ORG,
-    ESRI_NSW_PORTAL
-} from "@magda/typescript-common/dist/session/SessionConsts";
 import createOrGetUserToken from "../createOrGetUserToken";
 import { redirectOnSuccess, redirectOnError } from "./redirect";
 
@@ -16,7 +12,8 @@ export interface ArcGisOptions {
     clientId: string;
     clientSecret: string;
     externalAuthHome: string;
-    arcgisInstanceBaseUrl?: string;
+    arcgisInstanceBaseUrl: string;
+    esriOrgGroup: string;
 }
 
 interface StrategyOptions {
@@ -35,6 +32,7 @@ export default function arcgis(options: ArcGisOptions) {
     const clientSecret = options.clientSecret;
     const externalAuthHome = options.externalAuthHome;
     const loginBaseUrl = `${externalAuthHome}/login`;
+    const esriOrgGroup = options.esriOrgGroup;
 
     if (!clientId) {
         return undefined;
@@ -98,10 +96,8 @@ export default function arcgis(options: ArcGisOptions) {
                                 return group["id"];
                             });
 
-                            const theGroupIds = options.arcgisInstanceBaseUrl.includes(
-                                ESRI_NSW_PORTAL
-                            )
-                                ? groupIds.concat([ESRI_NSW_ORG])
+                            const theGroupIds = esriOrgGroup
+                                ? groupIds.concat([esriOrgGroup])
                                 : groupIds;
 
                             cb(null, {

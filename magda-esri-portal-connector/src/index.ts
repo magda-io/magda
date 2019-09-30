@@ -5,6 +5,7 @@ import { argv, transformer, transformerOptions } from "./setup";
 
 const esriPortal = new EsriPortal({
     baseUrl: argv.sourceUrl,
+    esriOrgGroup: argv.esriOrgGroup,
     id: argv.id,
     name: argv.name,
     pageSize: argv.pageSize

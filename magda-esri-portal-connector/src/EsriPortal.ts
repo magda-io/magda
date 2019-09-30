@@ -4,10 +4,6 @@ import formatServiceError from "@magda/typescript-common/dist/formatServiceError
 import { ConnectorSource } from "@magda/typescript-common/dist/JsonConnector";
 import retry from "@magda/typescript-common/dist/retry";
 import request from "@magda/typescript-common/dist/request";
-import {
-    ESRI_NSW_ORG,
-    ESRI_NSW_PORTAL
-} from "@magda/typescript-common/dist/session/SessionConsts";
 import * as URI from "urijs";
 
 export interface EsriPortalThing {
@@ -42,6 +38,7 @@ export interface EsriPortalOrganizationListResponse {
 
 export interface EsriPortalOptions {
     baseUrl: string;
+    esriOrgGroup: string;
     id: string;
     name: string;
     arcgisUserId?: string;
@@ -52,6 +49,7 @@ export interface EsriPortalOptions {
 }
 
 export default class EsriPortal implements ConnectorSource {
+    public readonly esriOrgGroup: string;
     public readonly id: string;
     public readonly name: string;
     public readonly pageSize: number;
@@ -62,12 +60,14 @@ export default class EsriPortal implements ConnectorSource {
 
     constructor({
         baseUrl,
+        esriOrgGroup,
         id,
         name,
         pageSize = 1000,
         maxRetries = 10,
         secondsBetweenRetries = 10
     }: EsriPortalOptions) {
+        this.esriOrgGroup = esriOrgGroup;
         this.id = id;
         this.name = name;
         this.pageSize = pageSize;
@@ -253,10 +253,7 @@ export default class EsriPortal implements ConnectorSource {
                             // see it; If it is "org" then anyone with a login can see it; If it is "public" anyone
                             // whether they login or not can see it; If it is "shared" it will be shared to specific
                             // groups and these will be listed under the groups endpoint.
-                            if (
-                                item.access === "shared" &&
-                                requestUrl.includes(ESRI_NSW_PORTAL)
-                            ) {
+                            if (item.access === "shared") {
                                 const groupInfo = await that.requestGroupInformation(
                                     item.id
                                 );
@@ -290,11 +287,8 @@ export default class EsriPortal implements ConnectorSource {
                                 }
                                 item.esriOwner = item.owner;
                                 item.esriAccess = "shared";
-                            } else if (
-                                item.access === "org" &&
-                                requestUrl.includes(ESRI_NSW_PORTAL)
-                            ) {
-                                item.esriGroups = [ESRI_NSW_ORG];
+                            } else if (item.access === "org") {
+                                item.esriGroups = [this.esriOrgGroup];
                                 item.esriOwner = item.owner;
                                 item.esriAccess = "org";
                             } else if (item.access === "private") {

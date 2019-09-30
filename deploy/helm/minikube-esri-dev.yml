@@ -24,6 +24,7 @@ gateway:
   auth:
     arcgisInstanceBaseUrl: "https://beta.portal.data.nsw.gov.au/arcgis"
     arcgisClientId: "xU0LNIvRZS2VUbFS"
+    esriOrgGroup: "esri-nsw-authenticated-user-group"
 
 
 registry-api:
@@ -48,6 +49,7 @@ connectors:
       id: esri-nsw
       name: "beta.portal.data.nsw.gov.au/arcgis"
       sourceUrl: "https://beta.portal.data.nsw.gov.au/arcgis"
+      esriOrgGroup: "esri-nsw-authenticated-user-group"
       pageSize: 1000
       registryUrl: "http://registry-api"
       arcgisUserId: "xxxxx"

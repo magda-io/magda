@@ -26,6 +26,12 @@ export const argv: any = addJwtSecretFromEnvVar(
             type: "string",
             demandOption: true
         })
+        .option("esriOrgGroup", {
+            describe:
+                "A unique group name representing authenticated users of the esri portal",
+            type: "string",
+            demandOption: true
+        })
         .option("pageSize", {
             describe:
                 "The number of datasets per page to request from the Esri Portal server.",
