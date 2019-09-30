@@ -234,6 +234,31 @@ const organizationAspectBuilders: AspectBuilder[] = [
     }
 ];
 
+const groupAspectBuilders: AspectBuilder[] = [
+    {
+        aspectDefinition: {
+            id: "group",
+            name: "Group",
+            jsonSchema: require("@magda/registry-aspects/group.schema.json")
+        },
+        builderFunctionString: fs.readFileSync(
+            "aspect-templates/esri-group.js",
+            "utf8"
+        )
+    },
+    {
+        aspectDefinition: {
+            id: "source",
+            name: "Source",
+            jsonSchema: require("@magda/registry-aspects/source.schema.json")
+        },
+        builderFunctionString: fs.readFileSync(
+            "aspect-templates/group-source.js",
+            "utf8"
+        )
+    }
+];
+
 export const transformerOptions = {
     id: argv.id,
     name: argv.name,
@@ -242,7 +267,8 @@ export const transformerOptions = {
     registryUrl: argv.registryUrl,
     datasetAspectBuilders,
     distributionAspectBuilders,
-    organizationAspectBuilders
+    organizationAspectBuilders,
+    groupAspectBuilders
 };
 
 export const transformer: any = createTransformer(transformerOptions);
