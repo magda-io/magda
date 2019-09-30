@@ -229,7 +229,6 @@ export default class EsriPortal implements ConnectorSource {
         const pageUrl = url.clone();
         pageUrl.addSearch("start", startIndex);
         pageUrl.addSearch("num", this.pageSize);
-        const that = this;
         const operation = async () =>
             new Promise<EsriPortalDataSearchResponse>((resolve, reject) => {
                 const requestUrl = pageUrl.toString();
@@ -264,7 +263,7 @@ export default class EsriPortal implements ConnectorSource {
                             // whether they login or not can see it; If it is "shared" it will be shared to specific
                             // groups and these will be listed under the groups endpoint.
                             if (item.access === "shared") {
-                                const groupInfo = await that.requestDatasetGroupInformation(
+                                const groupInfo = await this.requestDatasetGroupInformation(
                                     item.id
                                 );
 
@@ -310,7 +309,7 @@ export default class EsriPortal implements ConnectorSource {
                                 item.esriOwner = item.owner;
                                 item.esriAccess = "public";
                             } else {
-                                console.log(
+                                console.error(
                                     `Item ${item.id}, ${item.title}, ${
                                         item.access
                                     }, will not be harvested.`
@@ -327,12 +326,12 @@ export default class EsriPortal implements ConnectorSource {
                                         distUri
                                     );
                                 } catch (err) {
-                                    console.log(
+                                    console.error(
                                         `Broke on item url: ${
                                             item.url
                                         }, dist uri: ${distUri}`
                                     );
-                                    console.log(err);
+                                    console.error(err);
                                 }
 
                                 // We're looking at a group of layers which we may need to iterate over
@@ -340,7 +339,7 @@ export default class EsriPortal implements ConnectorSource {
                                 // eg https://maps.six.nsw.gov.au/arcgis/rest/services/public/Valuation/MapServer
                             } else {
                                 try {
-                                    const distInfo = await that.requestDistributionInformation(
+                                    const distInfo = await this.requestDistributionInformation(
                                         item.url
                                     );
                                     if (distInfo.error) continue;
@@ -350,7 +349,7 @@ export default class EsriPortal implements ConnectorSource {
                                         item.type !== "Feature Service" &&
                                         distInfo.singleFusedMapCache !== false
                                     ) {
-                                        await that.processTiledLayerAsDistribution(
+                                        await this.processTiledLayerAsDistribution(
                                             item,
                                             distInfo,
                                             distUri
@@ -360,7 +359,7 @@ export default class EsriPortal implements ConnectorSource {
 
                                     // For a MapServer treat the root as a distribution (eg the group of layers)
                                     if (distUri.segment(-1) === "MapServer") {
-                                        await that.processRootMapServiceAsDistribution(
+                                        await this.processRootMapServiceAsDistribution(
                                             item,
                                             distInfo,
                                             distUri
@@ -372,19 +371,19 @@ export default class EsriPortal implements ConnectorSource {
                                         : 0;
                                     for (let ii = 0; ii < layersLength; ++ii) {
                                         const lyr = distInfo.layers[ii];
-                                        await that.processLayerAsDistribution(
+                                        await this.processLayerAsDistribution(
                                             lyr,
                                             item,
                                             distUri
                                         );
                                     }
                                 } catch (err) {
-                                    console.log(
+                                    console.error(
                                         `Broke on item url: ${
                                             item.url
                                         }, dist uri: ${distUri}`
                                     );
-                                    console.log(err);
+                                    console.error(err);
                                 }
                             }
                         }
