@@ -213,7 +213,7 @@ class RecordsServiceSpec extends ApiSpec {
           }
         }
 
-        def insertAspectDefs(param: FixtureParam, tenantId: BigInt) {
+        def insertAspectDefs(param: FixtureParam, tenantId: TenantId) {
           val aspectDefinition1 = AspectDefinition(aspectId1, "test1", None)
           param.asAdmin(Post("/v0/aspects", aspectDefinition1)) ~> addTenantIdHeader(tenantId) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK

@@ -43,7 +43,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
   val tenant1: BigInt = 1
   val tenant2: BigInt = 2
 
-  def addTenantIdHeader(tenantId: BigInt): RawHeader = {
+  def addTenantIdHeader(tenantId: TenantId): RawHeader = {
     RawHeader(MAGDA_TENANT_ID_HEADER, tenantId.toString)
   }
 

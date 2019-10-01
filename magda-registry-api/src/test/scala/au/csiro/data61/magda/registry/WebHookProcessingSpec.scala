@@ -25,8 +25,8 @@ class WebHookProcessingSpec extends ApiSpec with BeforeAndAfterAll with BeforeAn
     Util.clearWebHookActorsCache()
   }
 
-  case class ExpectedEventIdAndTenantId(eventId: Int, tenantId: BigInt)
-  case class ExpectedRecordIdAndTenantId(recordId: String, tenantId: BigInt)
+  case class ExpectedEventIdAndTenantId(eventId: Int, tenantId: TenantId)
+  case class ExpectedRecordIdAndTenantId(recordId: String, tenantId: TenantId)
 
   describe("includes") {
     it("aspectDefinitions if events modified them") { param =>

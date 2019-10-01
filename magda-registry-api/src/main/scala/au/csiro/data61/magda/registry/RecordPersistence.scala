@@ -6,6 +6,7 @@ import akka.NotUsed
 import akka.event.LoggingAdapter
 import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.model.Registry._
+import au.csiro.data61.magda.model.TenantId._
 import au.csiro.data61.magda.opa.OpaTypes._
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
@@ -19,7 +20,7 @@ trait RecordPersistence {
 
   def getAll(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: TenantId,
       opaQueries: List[OpaQuery],
       pageToken: Option[String],
       start: Option[Int],
@@ -28,7 +29,7 @@ trait RecordPersistence {
 
   def getAllWithAspects(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: TenantId,
       aspectIds: Iterable[String],
       optionalAspectIds: Iterable[String],
       opaQuery: Seq[OpaQuery],
@@ -41,7 +42,7 @@ trait RecordPersistence {
 
   def getCount(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: TenantId,
       opaQueries: List[OpaQuery],
       aspectIds: Iterable[String],
       aspectQueries: Iterable[AspectQuery] = Nil
@@ -49,14 +50,14 @@ trait RecordPersistence {
 
   def getById(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: TenantId,
       opaQueries: List[OpaQuery],
       id: String
   ): Option[RecordSummary]
 
   def getByIdWithAspects(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: TenantId,
       id: String,
       opaQuery: Seq[OpaQuery],
       aspectIds: Iterable[String] = Seq(),
@@ -66,7 +67,7 @@ trait RecordPersistence {
 
   def getByIdsWithAspects(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: TenantId,
       ids: Iterable[String],
       opaQuery: Seq[OpaQuery],
       aspectIds: Iterable[String] = Seq(),
@@ -76,7 +77,7 @@ trait RecordPersistence {
 
   def getRecordsLinkingToRecordIds(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: TenantId,
       ids: Iterable[String],
       opaQuery: Seq[OpaQuery],
       idsToExclude: Iterable[String] = Seq(),
@@ -87,7 +88,7 @@ trait RecordPersistence {
 
   def getRecordAspectById(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: TenantId,
       recordId: String,
       aspectId: String,
       opaQueries: List[OpaQuery]
@@ -95,7 +96,7 @@ trait RecordPersistence {
 
   def getPageTokens(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: TenantId,
       aspectIds: Iterable[String],
       opaQuery: Seq[OpaQuery],
       limit: Option[Int] = None,
@@ -104,7 +105,7 @@ trait RecordPersistence {
 
   def putRecordById(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: SpecifiedTenantId,
       id: String,
       newRecord: Record,
       opaQueryUpdate: Seq[OpaQuery]
@@ -112,7 +113,7 @@ trait RecordPersistence {
 
   def patchRecordById(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: SpecifiedTenantId,
       id: String,
       recordPatch: JsonPatch,
       opaQuery: Seq[OpaQuery]
@@ -120,7 +121,7 @@ trait RecordPersistence {
 
   def patchRecordAspectById(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: SpecifiedTenantId,
       recordId: String,
       aspectId: String,
       aspectPatch: JsonPatch
@@ -128,7 +129,7 @@ trait RecordPersistence {
 
   def putRecordAspectById(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: SpecifiedTenantId,
       recordId: String,
       aspectId: String,
       newAspect: JsObject
@@ -136,18 +137,18 @@ trait RecordPersistence {
 
   def createRecord(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: SpecifiedTenantId,
       record: Record
   ): Try[Record]
 
   def deleteRecord(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: SpecifiedTenantId,
       recordId: String
   ): Try[Boolean]
 
   def trimRecordsBySource(
-      tenantId: BigInt,
+      tenantId: SpecifiedTenantId,
       sourceTagToPreserve: String,
       sourceId: String,
       logger: Option[LoggingAdapter] = None
@@ -155,7 +156,7 @@ trait RecordPersistence {
 
   def createRecordAspect(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: SpecifiedTenantId,
       recordId: String,
       aspectId: String,
       aspect: JsObject
@@ -163,7 +164,7 @@ trait RecordPersistence {
 
   def deleteRecordAspect(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: SpecifiedTenantId,
       recordId: String,
       aspectId: String
   ): Try[Boolean]
@@ -192,7 +193,7 @@ object DefaultRecordPersistence
 
   def getAll(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: TenantId,
       opaQueries: List[OpaQuery],
       pageToken: Option[String],
       start: Option[Int],
@@ -203,7 +204,7 @@ object DefaultRecordPersistence
 
   def getAllWithAspects(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: TenantId,
       aspectIds: Iterable[String],
       optionalAspectIds: Iterable[String],
       opaQuery: Seq[OpaQuery],
@@ -236,7 +237,7 @@ object DefaultRecordPersistence
   // See ticket https://github.com/magda-io/magda/issues/2360
   def getCount(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: TenantId,
       opaQueries: List[OpaQuery],
       aspectIds: Iterable[String],
       aspectQueries: Iterable[AspectQuery] = Nil
@@ -250,7 +251,7 @@ object DefaultRecordPersistence
 
   def getById(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: TenantId,
       opaQueries: List[OpaQuery],
       id: String
   ): Option[RecordSummary] = {
@@ -262,7 +263,7 @@ object DefaultRecordPersistence
 
   def getByIdWithAspects(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: TenantId,
       id: String,
       opaQuery: Seq[OpaQuery],
       aspectIds: Iterable[String] = Seq(),
@@ -288,7 +289,7 @@ object DefaultRecordPersistence
 
   def getByIdsWithAspects(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: TenantId,
       ids: Iterable[String],
       opaQuery: Seq[OpaQuery],
       aspectIds: Iterable[String] = Seq(),
@@ -314,7 +315,7 @@ object DefaultRecordPersistence
 
   def getRecordsLinkingToRecordIds(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: TenantId,
       ids: Iterable[String],
       opaQuery: Seq[OpaQuery],
       idsToExclude: Iterable[String] = Seq(),
@@ -394,7 +395,7 @@ object DefaultRecordPersistence
 
   def getRecordAspectById(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: TenantId,
       recordId: String,
       aspectId: String,
       opaQueries: List[OpaQuery] = List()
@@ -416,7 +417,7 @@ object DefaultRecordPersistence
 
   def getPageTokens(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: TenantId,
       aspectIds: Iterable[String],
       opaQuery: Seq[OpaQuery],
       limit: Option[Int] = None,
@@ -457,7 +458,7 @@ object DefaultRecordPersistence
 
   def putRecordById(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: SpecifiedTenantId,
       id: String,
       newRecord: Record,
       opaQueryUpdate: Seq[OpaQuery]
@@ -502,7 +503,12 @@ object DefaultRecordPersistence
               } match {
                 case Success(record) => Success(record)
                 case Failure(e) =>
-                  this.getByIdWithAspects(session, tenantId, id, opaQueryUpdate) match {
+                  this.getByIdWithAspects(
+                    session,
+                    tenantId,
+                    id,
+                    opaQueryUpdate
+                  ) match {
                     case Some(record) => Success(record)
                     case None         => Failure(e)
                   }
@@ -545,7 +551,7 @@ object DefaultRecordPersistence
 
   def patchRecordById(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: SpecifiedTenantId,
       id: String,
       recordPatch: JsonPatch,
       opaQuery: Seq[OpaQuery]
@@ -584,7 +590,7 @@ object DefaultRecordPersistence
         // Name is currently the only member of Record that should generate an event when changed.
         if (record.name != patchedRecord.name) {
           val event =
-            PatchRecordEvent(id, tenantId, recordOnlyPatch).toJson.compactPrint
+            PatchRecordEvent(id, tenantId.tenantId, recordOnlyPatch).toJson.compactPrint
           val eventId =
             sql"insert into Events (eventTypeId, userId, tenantId, data) values (${PatchRecordEvent.Id}, 0, $tenantId, $event::json)"
               .updateAndReturnGeneratedKey()
@@ -729,13 +735,13 @@ object DefaultRecordPersistence
         patchedRecord.id,
         patchedRecord.name,
         aspects,
-        tenantId = Some(tenantId)
+        tenantId = tenantId.tenantId
       )
   }
 
   def patchRecordAspectById(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: SpecifiedTenantId,
       recordId: String,
       aspectId: String,
       aspectPatch: JsonPatch
@@ -763,7 +769,7 @@ object DefaultRecordPersistence
         if (testRecordAspectPatch.ops.nonEmpty) {
           val event = PatchRecordAspectEvent(
             recordId,
-            tenantId,
+            tenantId.tenantId,
             aspectId,
             aspectPatch
           ).toJson.compactPrint
@@ -791,7 +797,7 @@ object DefaultRecordPersistence
 
   def putRecordAspectById(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: SpecifiedTenantId,
       recordId: String,
       aspectId: String,
       newAspect: JsObject
@@ -810,7 +816,13 @@ object DefaultRecordPersistence
         // we don't end up with an extraneous record creation event in the database.
         case None =>
           DB.localTx { nested =>
-            createRecordAspect(nested, tenantId, recordId, aspectId, newAspect)
+            createRecordAspect(
+              nested,
+              tenantId,
+              recordId,
+              aspectId,
+              newAspect
+            )
           } match {
             case Success(aspect) => Success(aspect)
             case Failure(e) =>
@@ -839,13 +851,13 @@ object DefaultRecordPersistence
 
   def createRecord(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: SpecifiedTenantId,
       record: Record
   ): Try[Record] = {
     for {
       eventId <- Try {
         val eventJson =
-          CreateRecordEvent(record.id, tenantId, record.name).toJson.compactPrint
+          CreateRecordEvent(record.id, tenantId.tenantId, record.name).toJson.compactPrint
         sql"insert into Events (eventTypeId, userId, tenantId, data) values (${CreateRecordEvent.Id}, 0, $tenantId, $eventJson::json)".updateAndReturnGeneratedKey
           .apply()
       }
@@ -876,14 +888,14 @@ object DefaultRecordPersistence
         )
         .find(_.isFailure) match {
         case Some(Failure(e)) => Failure(e)
-        case _                => Success(record.copy(tenantId = Some(tenantId)))
+        case _                => Success(record.copy(tenantId = tenantId.tenantId))
       }
     } yield hasAspectFailure
   }
 
   def deleteRecord(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: SpecifiedTenantId,
       recordId: String
   ): Try[Boolean] = {
     for {
@@ -903,7 +915,7 @@ object DefaultRecordPersistence
       }
       _ <- Try {
         val eventJson =
-          DeleteRecordEvent(recordId, tenantId).toJson.compactPrint
+          DeleteRecordEvent(recordId, tenantId.tenantId).toJson.compactPrint
         sql"insert into Events (eventTypeId, userId, tenantId, data) values (${DeleteRecordEvent.Id}, 0, $tenantId, $eventJson::json)".updateAndReturnGeneratedKey
           .apply()
       }
@@ -915,7 +927,7 @@ object DefaultRecordPersistence
   }
 
   def trimRecordsBySource(
-      tenantId: BigInt,
+      tenantId: SpecifiedTenantId,
       sourceTagToPreserve: String,
       sourceId: String,
       logger: Option[LoggingAdapter] = None
@@ -961,7 +973,7 @@ object DefaultRecordPersistence
 
   def createRecordAspect(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: SpecifiedTenantId,
       recordId: String,
       aspectId: String,
       aspect: JsObject
@@ -970,7 +982,7 @@ object DefaultRecordPersistence
       eventId <- Try {
         val eventJson = CreateRecordAspectEvent(
           recordId,
-          tenantId,
+          tenantId.tenantId,
           aspectId,
           aspect
         ).toJson.compactPrint
@@ -997,14 +1009,14 @@ object DefaultRecordPersistence
 
   def deleteRecordAspect(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: SpecifiedTenantId,
       recordId: String,
       aspectId: String
   ): Try[Boolean] = {
     for {
       _ <- Try {
         val eventJson =
-          DeleteRecordAspectEvent(recordId, tenantId, aspectId).toJson.compactPrint
+          DeleteRecordAspectEvent(recordId, tenantId.tenantId, aspectId).toJson.compactPrint
         sql"insert into Events (eventTypeId, userId, tenantId, data) values (${DeleteRecordAspectEvent.Id}, 0, $tenantId, $eventJson::json)".updateAndReturnGeneratedKey
           .apply()
       }
@@ -1085,7 +1097,7 @@ object DefaultRecordPersistence
   // See ticket https://github.com/magda-io/magda/issues/2359
   private def getSummaries(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: TenantId,
       opaQueries: List[OpaQuery],
       pageToken: Option[String],
       start: Option[Int],
@@ -1140,7 +1152,7 @@ object DefaultRecordPersistence
 
   private def getRecords(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: TenantId,
       aspectIds: Iterable[String],
       optionalAspectIds: Iterable[String],
       opaQuery: Seq[OpaQuery],
@@ -1237,7 +1249,7 @@ object DefaultRecordPersistence
 
   private def getCountInner(
       implicit session: DBSession,
-      tenantId: BigInt,
+      tenantId: TenantId,
       opaQueries: List[OpaQuery],
       aspectIds: Iterable[String],
       recordSelector: Iterable[Option[SQLSyntax]] = Iterable()
@@ -1300,7 +1312,7 @@ object DefaultRecordPersistence
       rs.arrayOpt("aspects")
         .map(_.getArray().asInstanceOf[Array[String]].toList)
         .getOrElse(List()),
-      Some(rs.bigInt("tenantId"))
+      rs.bigInt("tenantId")
     )
   }
 
@@ -1320,7 +1332,7 @@ object DefaultRecordPersistence
         }
         .toMap,
       rs.stringOpt("sourceTag"),
-      Option(rs.bigInt("tenantId"))
+      rs.bigInt("tenantId")
     )
   }
 
@@ -1413,7 +1425,7 @@ object DefaultRecordPersistence
   }
 
   private def aspectIdsAndOpaQueriesToWhereParts(
-      tenantId: BigInt,
+      tenantId: TenantId,
       aspectIds: Iterable[String],
       opaQueries: Seq[OpaQuery],
       operationType: AuthOperations.OperationType
@@ -1435,7 +1447,7 @@ object DefaultRecordPersistence
   }
 
   private def opaQueriesToWhereParts(
-      tenantId: BigInt,
+      tenantId: TenantId,
       opaQueries: Seq[OpaQuery],
       operationType: AuthOperations.OperationType
   ): Iterable[SQLSyntax] = {
@@ -1468,7 +1480,7 @@ object DefaultRecordPersistence
   }
 
   private def getOpaConditions(
-      tenantId: BigInt,
+      tenantId: TenantId,
       opaQueries: Seq[OpaQuery],
       operationType: AuthOperations.OperationType
   ) = {
@@ -1479,7 +1491,7 @@ object DefaultRecordPersistence
 
   private def aspectIdsToSelectClauses(
       session: DBSession,
-      tenantId: BigInt,
+      tenantId: TenantId,
       aspectIds: Iterable[String],
       operationType: AuthOperations.OperationType,
       opaQueries: Seq[OpaQuery],
@@ -1594,18 +1606,25 @@ object DefaultRecordPersistence
     result
   }
 
-  private def filterRecordsByTenantClause(tenantId: BigInt) = {
-    if (tenantId == MAGDA_SYSTEM_ID) sqls"true"
-    else sqls"Records.tenantId=$tenantId"
+  private def filterRecordsByTenantClause(tenantId: TenantId) = {
+    tenantId match {
+      case SpecifiedTenantId(inner) if (inner >= 0) =>
+        sqls"Records.tenantId=${inner}"
+      case AllTenantsId => sqls"true"
+      case _            => throw new Exception("Invalid tenant value " + tenantId)
+    }
   }
   private def aspectIdsToWhereClause(
-      tenantId: BigInt,
+      tenantId: TenantId,
       aspectIds: Iterable[String]
   ): Seq[Option[SQLSyntax]] = {
     aspectIds.map(aspectId => aspectIdToWhereClause(tenantId, aspectId)).toSeq
   }
 
-  private def aspectIdToWhereClause(tenantId: BigInt, aspectId: String) = {
+  private def aspectIdToWhereClause(
+      tenantId: TenantId,
+      aspectId: String
+  ) = {
     Some(
       sqls"""exists (
               select 1 from RecordAspects
@@ -1616,7 +1635,10 @@ object DefaultRecordPersistence
 
   private val ALL_IN_ARRAY: String = "[_]"
 
-  private def aspectQueryToWhereClause(tenantId: BigInt, query: AspectQuery) = {
+  private def aspectQueryToWhereClause(
+      tenantId: TenantId,
+      query: AspectQuery
+  ) = {
     val equalsOrContainsClause =
       if (query.path.length == 2 && query.path(1).equals(ALL_IN_ARRAY)) {
         val thePath = query.path.filter(!_.equals(ALL_IN_ARRAY))
@@ -1637,7 +1659,7 @@ object DefaultRecordPersistence
   }
 
   private def opaQueriesToWhereClauseParts(
-      tenantId: BigInt,
+      tenantId: TenantId,
       opaQueries: List[OpaQuery]
   ): List[SQLSyntax] = {
     // Assume that most records have no access control, making first SQL query

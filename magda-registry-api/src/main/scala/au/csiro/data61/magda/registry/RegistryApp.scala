@@ -49,9 +49,9 @@ object RegistryApp extends App {
   logger.info("Starting MAGDA Registry")
 
   GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(
-    enabled = false,
+    enabled = true,
     singleLineMode = true,
-    logLevel = 'debug)
+    logLevel = 'info)
 
   case class DBsWithEnvSpecificConfig(configToUse: Config) extends DBs
       with TypesafeConfigReader

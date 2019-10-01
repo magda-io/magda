@@ -1,6 +1,7 @@
 package au.csiro.data61.magda.registry
 
 import au.csiro.data61.magda.model.Registry._
+import au.csiro.data61.magda.model.TenantId._
 import akka.stream.scaladsl.Source
 import spray.json._
 import gnieh.diffson.sprayJson._
@@ -10,7 +11,7 @@ object EventPersistence extends Protocols with DiffsonProtocol {
   val eventStreamPageSize = 1000
   val recordPersistence = DefaultRecordPersistence
 
-  def streamEventsSince(sinceEventId: Long, recordId: Option[String] = None, aspectIds: Set[String] = Set(), tenantId: BigInt) = {
+  def streamEventsSince(sinceEventId: Long, recordId: Option[String] = None, aspectIds: Set[String] = Set(), tenantId: TenantId) = {
     Source.unfold(sinceEventId)(offset => {
       val events = DB readOnly { implicit session =>
         getEvents(
@@ -26,7 +27,7 @@ object EventPersistence extends Protocols with DiffsonProtocol {
     }).mapConcat(page => page.events)
   }
 
-  def streamEventsUpTo(lastEventId: Long, recordId: Option[String] = None, aspectIds: Set[String] = Set(), tenantId: BigInt) = {
+  def streamEventsUpTo(lastEventId: Long, recordId: Option[String] = None, aspectIds: Set[String] = Set(), tenantId: TenantId) = {
     Source.unfold(0L)(offset => {
       val events = DB readOnly { implicit session =>
         getEvents(
@@ -78,7 +79,7 @@ object EventPersistence extends Protocols with DiffsonProtocol {
                 recordId: Option[String] = None,
                 aspectIds: Set[String] = Set(),
                 eventTypes: Set[EventType] = Set(),
-                tenantId: BigInt): EventsPage = {
+                tenantId: TenantId): EventsPage = {
     val filters: Seq[Option[SQLSyntax]] = Seq(
       pageToken.map(v => sqls"eventId > $v"),
       lastEventId.map(v => sqls"eventId <= $v"),
@@ -121,7 +122,8 @@ object EventPersistence extends Protocols with DiffsonProtocol {
             eventTime,
             eventTypeId,
             userId,
-            data
+            data,
+            tenantId
           from Events
           $whereClause
           order by eventId asc
@@ -142,6 +144,7 @@ object EventPersistence extends Protocols with DiffsonProtocol {
       eventTime = rs.offsetDateTimeOpt("eventTime"),
       eventType = EventType.withValue(rs.int("eventTypeId")),
       userId = rs.int("userId"),
-      data = JsonParser(rs.string("data")).asJsObject)
+      data = JsonParser(rs.string("data")).asJsObject,
+      tenantId = rs.bigInt("tenantid"))
   }
 }

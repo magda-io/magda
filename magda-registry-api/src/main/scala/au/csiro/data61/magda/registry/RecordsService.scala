@@ -10,7 +10,7 @@ import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
-import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
+import au.csiro.data61.magda.directives.TenantDirectives.{requiresTenantId, requiresSpecifiedTenantId}
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
@@ -55,7 +55,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   def deleteById: Route = delete {
     path(Segment) { recordId: String =>
       requireIsAdmin(authClient)(system, config) { _ =>
-        requiresTenantId { tenantId =>
+        requiresSpecifiedTenantId { tenantId =>
           val theResult = DB localTx { session =>
             recordPersistence.deleteRecord(session, tenantId, recordId) match {
               case Success(result) => complete(DeleteResult(result))
@@ -102,7 +102,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   def trimBySourceTag: Route = delete {
     pathEnd {
       requireIsAdmin(authClient)(system, config) { _ =>
-        requiresTenantId { tenantId =>
+        requiresSpecifiedTenantId { tenantId =>
           parameters('sourceTagToPreserve, 'sourceId) { (sourceTagToPreserve, sourceId) =>
             val deleteFuture = Future {
               // --- DB session needs to be created within the `Future`
@@ -170,7 +170,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   def putById: Route = put {
     path(Segment) { id: String =>
       requireIsAdmin(authClient)(system, config) { _ => {
-        requiresTenantId { tenantId =>
+        requiresSpecifiedTenantId { tenantId =>
             entity(as[Record]) { recordIn =>
               val result = DB localTx { session =>
                 recordPersistence.putRecordById(session, tenantId, id, recordIn, Nil) match {
@@ -222,7 +222,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
   def patchById: Route = patch {
     path(Segment) { id: String =>
       requireIsAdmin(authClient)(system, config) { _ =>
-        requiresTenantId { tenantId =>
+        requiresSpecifiedTenantId { tenantId =>
           entity(as[JsonPatch]) { recordPatch =>
             val theResult = DB localTx { session =>
               recordPersistence.patchRecordById(session, tenantId, id, recordPatch, Nil) match {
@@ -276,7 +276,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
     new ApiResponse(code = 400, message = "A record already exists with the supplied ID, or the record includes an aspect that does not exist.", response = classOf[BadRequest])))
   def create: Route = post {
     requireIsAdmin(authClient)(system, config) { _ =>
-      requiresTenantId { tenantId =>
+      requiresSpecifiedTenantId { tenantId =>
         pathEnd {
           entity(as[Record]) { record =>
             val result = DB localTx { session =>

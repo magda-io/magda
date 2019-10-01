@@ -87,7 +87,7 @@ abstract class ApiWithOpaSpec
       config: Config
   )
 
-  def addTenantIdHeader(tenantId: BigInt): RawHeader = {
+  def addTenantIdHeader(tenantId: TenantId): RawHeader = {
     RawHeader(MAGDA_TENANT_ID_HEADER, tenantId.toString)
   }
 

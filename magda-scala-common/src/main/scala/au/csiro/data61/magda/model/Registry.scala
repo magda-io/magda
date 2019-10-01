@@ -52,7 +52,7 @@ trait RegistryProtocols
   }
 
   implicit val recordFormat = jsonFormat5(Record.apply)
-  implicit val registryEventFormat = jsonFormat5(RegistryEvent.apply)
+  implicit val registryEventFormat = jsonFormat6(RegistryEvent.apply)
   implicit val aspectFormat = jsonFormat3(AspectDefinition.apply)
   implicit val webHookPayloadFormat = jsonFormat6(WebHookPayload.apply)
   implicit val webHookConfigFormat = jsonFormat6(WebHookConfig.apply)
@@ -150,28 +150,27 @@ trait RegistryConverters extends RegistryProtocols {
   }
 
   def convertRegistryDataSet(
-      hit: Record,
+      record: Record,
       logger: Option[LoggingAdapter] = None
   )(implicit defaultOffset: ZoneOffset): DataSet = {
-    val dcatStrings = hit.aspects.getOrElse("dcat-dataset-strings", JsObject())
-    val source = hit.aspects.getOrElse("source", JsObject())
+    val dcatStrings = record.aspects.getOrElse("dcat-dataset-strings", JsObject())
+    val source = record.aspects.getOrElse("source", JsObject())
     val temporalCoverage =
-      hit.aspects.getOrElse("temporal-coverage", JsObject())
-    val distributions = hit.aspects.getOrElse(
+      record.aspects.getOrElse("temporal-coverage", JsObject())
+    val distributions = record.aspects.getOrElse(
       "dataset-distributions",
       JsObject("distributions" -> JsArray())
     )
-    val publisher: Option[Record] = hit.aspects
+    val publisher: Option[Record] = record.aspects
       .getOrElse("dataset-publisher", JsObject())
       .extract[JsObject]('publisher.?)
       .map((dataSet: JsObject) => {
         val theDataSet =
-          JsObject(dataSet.fields + ("tenantId" -> JsNumber(hit.tenantId.get)))
-        val record = theDataSet.convertTo[Record]
-        record
+          JsObject(dataSet.fields + ("tenantId" -> JsNumber(record.tenantId)))
+        theDataSet.convertTo[Record]
       })
 
-    val accessControl = hit.aspects.get("dataset-access-control") match {
+    val accessControl = record.aspects.get("dataset-access-control") match {
       case Some(JsObject(accessControlData)) =>
         Some(
           AccessControl(
@@ -196,9 +195,9 @@ trait RegistryConverters extends RegistryProtocols {
         )
       case _ => None
     }
-    val provenanceOpt = hit.aspects.get("provenance")
+    val provenanceOpt = record.aspects.get("provenance")
 
-    val qualityAspectOpt = hit.aspects.get("dataset-quality-rating")
+    val qualityAspectOpt = record.aspects.get("dataset-quality-rating")
 
     var hasQuality: Boolean = false
 
@@ -257,7 +256,7 @@ trait RegistryConverters extends RegistryProtocols {
     }
 
     val spatialData = (Try {
-      hit.aspects.get("spatial-coverage") match {
+      record.aspects.get("spatial-coverage") match {
         case Some(JsObject(spatialCoverage)) =>
           spatialCoverage.get("bbox") match {
             case Some(bbox: JsArray) =>
@@ -284,7 +283,7 @@ trait RegistryConverters extends RegistryProtocols {
       case Failure(e) =>
         if (logger.isDefined) {
           logger.get.error(
-            s"Failed to convert bounding box to spatial data for dataset ${hit.id}: ${e.getMessage}"
+            s"Failed to convert bounding box to spatial data for dataset ${record.id}: ${e.getMessage}"
           )
         }
         None
@@ -296,17 +295,17 @@ trait RegistryConverters extends RegistryProtocols {
           case Failure(e) =>
             if (logger.isDefined) {
               logger.get.error(
-                s"Failed to parse spatial data for dataset ${hit.id}: ${e.getMessage}"
+                s"Failed to parse spatial data for dataset ${record.id}: ${e.getMessage}"
               )
             }
             None
         }
     }
 
-    val publishing = hit.aspects.getOrElse("publishing", JsObject())
+    val publishing = record.aspects.getOrElse("publishing", JsObject())
 
     val accessNotes = Try {
-      hit.aspects.get("access") match {
+      record.aspects.get("access") match {
         case Some(JsObject(access)) =>
           Some(DataSetAccessNotes(notes = access.get("notes") match {
             case Some(JsString(notes)) => Some(notes)
@@ -322,15 +321,15 @@ trait RegistryConverters extends RegistryProtocols {
       case Failure(e) =>
         if (logger.isDefined) {
           logger.get.error(
-            s"Failed to convert dataset access notes aspect for dataset ${hit.id}: ${e.getMessage}"
+            s"Failed to convert dataset access notes aspect for dataset ${record.id}: ${e.getMessage}"
           )
         }
         None
     }
 
     DataSet(
-      identifier = hit.id,
-      tenantId = hit.tenantId.get,
+      identifier = record.id,
+      tenantId = record.tenantId,
       title = dcatStrings.extract[String]('title.?),
       catalog = source.extract[String]('name.?),
       description = getNullableStringField(dcatStrings, "description"),
@@ -351,12 +350,12 @@ trait RegistryConverters extends RegistryProtocols {
         dcatStrings.extract[String]('contactPoint.?).map(cp => Agent(Some(cp))),
       distributions = distributions
         .extract[JsObject]('distributions.? / *)
-        .map(convertDistribution(_, hit)),
+        .map(convertDistribution(_, record)),
       landingPage = dcatStrings.extract[String]('landingPage.?),
       quality = quality,
       hasQuality = hasQuality,
       score = None,
-      source = hit.aspects.get("source").map(_.convertTo[DataSouce]),
+      source = record.aspects.get("source").map(_.convertTo[DataSouce]),
       provenance = provenanceOpt
         .map(_.convertTo[Provenance]),
       publishingState = Some(
@@ -367,11 +366,11 @@ trait RegistryConverters extends RegistryProtocols {
     )
   }
 
-  private def convertDistribution(distribution: JsObject, hit: Record)(
+  private def convertDistribution(distribution: JsObject, record: Record)(
       implicit defaultOffset: ZoneOffset
   ): Distribution = {
     val theDistribution = JsObject(
-      distribution.fields + ("tenantId" -> JsNumber(hit.tenantId.get))
+      distribution.fields + ("tenantId" -> JsNumber(record.tenantId))
     )
     val distributionRecord: Record = theDistribution.convertTo[Record]
     val dcatStrings = distributionRecord.aspects
@@ -490,34 +489,18 @@ object Registry extends RegistryConverters {
       aspectDefinitions: Option[List[AspectDefinition]],
       deferredResponseUrl: Option[String]
   )
-
   case class RegistryEvent(
       id: Option[Long],
       eventTime: Option[OffsetDateTime],
       eventType: EventType,
       userId: Int,
-      data: JsObject
+      data: JsObject,
+      tenantId: BigInt
   )
-
-  object RegistryEvent {
-
-    def getTenantId(event: RegistryEvent): BigInt = {
-      // Events created in the old system (single tenant) do not have tenantId field in the data object.
-      // Newly created events always have tenantId field in the data object.
-      val maybeTenantId = event.data.getFields("tenantId")
-
-      if (maybeTenantId.nonEmpty)
-        ModelProtocols
-          .convertField[BigInt](fieldName = "tenantId", jsData = event.data)
-      else
-        MAGDA_ADMIN_PORTAL_ID
-    }
-  }
-
   sealed trait RecordType {
     val id: String
     val name: String
-    val tenantId: Option[BigInt]
+    val tenantId: BigInt
   }
 
   @ApiModel(
@@ -547,7 +530,7 @@ object Registry extends RegistryConverters {
       @(ApiModelProperty @field)(
         value = "The identifier of a tenant",
         required = false
-      ) tenantId: Option[BigInt] = None
+      ) tenantId: BigInt
   ) extends RecordType
 
   @ApiModel(
@@ -570,7 +553,7 @@ object Registry extends RegistryConverters {
       @(ApiModelProperty @field)(
         value = "The identifier of the tenant",
         required = false
-      ) tenantId: Option[BigInt]
+      ) tenantId: BigInt
   ) extends RecordType
 
   // This is used for the Swagger documentation, but not in the code.

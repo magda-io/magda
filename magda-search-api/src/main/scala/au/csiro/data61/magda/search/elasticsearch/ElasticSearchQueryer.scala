@@ -78,7 +78,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     start: Long,
     limit: Int,
     requestedFacetSize: Int,
-    tenantId: BigInt) = {
+    tenantId: TenantId) = {
     val inputRegionsList = inputQuery.regions.toList
 
     val publishingStatusQueryFuture = opaQueryer.publishingStateQuery(inputQuery.publishingState, jwtToken)
@@ -124,7 +124,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     field: String,
     input: Option[String],
     size: Option[Int],
-    tenantId: BigInt): Future[AutoCompleteQueryResult] = {
+    tenantId: TenantId): Future[AutoCompleteQueryResult] = {
 
     val inputString: String = input.getOrElse("").trim
 
@@ -322,7 +322,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   /** Builds an elastic search query out of the passed general magda Query */
   def buildQuery(
-    tenantId: BigInt,
+    tenantId: TenantId,
     query: Query,
     publishingStatusQuery: QueryDefinition,
     start: Long,
@@ -337,7 +337,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   /** Same as {@link #buildQuery} but also adds aggregations */
   def buildQueryWithAggregations(
-    tenantId: BigInt,
+    tenantId: TenantId,
     query: Query,
     publishingStatusQuery: QueryDefinition,
     start: Long,
@@ -363,7 +363,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   /** Adds standard aggregations to an elasticsearch query */
   def addAggregations(
-    tenantId: BigInt,
+    tenantId: TenantId,
     searchDef: SearchRequest,
     query: Query,
     publishingStatusQuery: QueryDefinition,
@@ -390,7 +390,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   /** Gets all applicable ES aggregations for the passed FacetType, given a Query */
   def aggsForFacetType(
-    tenantId: BigInt,
+    tenantId: TenantId,
     query: Query,
     publishingStatusQuery: QueryDefinition,
     facetType: FacetType,
@@ -419,7 +419,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     * this shows me other publishers I could search on instead
     */
   def alternativesAggregation(
-    tenantId: BigInt,
+    tenantId: TenantId,
     query: Query,
     publishingStatusQuery: QueryDefinition,
     facetDef: FacetDefinition,
@@ -447,7 +447,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       case x => Some(fn(x))
     }
 
-  private def buildEsQuery(tenantId: BigInt, query: Query, publishingStatusQuery: QueryDefinition, strategy: SearchStrategy) : QueryDefinition = {
+  private def buildEsQuery(tenantId: TenantId, query: Query, publishingStatusQuery: QueryDefinition, strategy: SearchStrategy) : QueryDefinition = {
     val geomScorerQuery = setToOption(query.boostRegions)(seq => should(seq.map(region => regionToGeoShapeQuery(region, indices))))
     val geomScorer: Option[ScoreFunctionDefinition] = geomScorerQuery.map(weightScore(1).filter(_))
     val qualityScorers = Seq(fieldFactorScore("quality")
@@ -580,7 +580,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     generalQuery: Query,
     start: Int,
     limit: Int,
-    tenantId: BigInt): Future[FacetSearchResult] = {
+    tenantId: TenantId): Future[FacetSearchResult] = {
     val facetDef = facetDefForType(facetType)
     val publishingStatusQueryFuture = opaQueryer.publishingStateQuery(generalQuery.publishingState, jwtToken)
 
@@ -674,7 +674,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     lv5Id: Option[String],
     start: Long,
     limit: Int,
-    tenantId: BigInt): Future[RegionSearchResult] = {
+    tenantId: TenantId): Future[RegionSearchResult] = {
 
     val otherFilters = (regionType.map(matchQuery("regionType", _)).toList ++
       lv1Id.map(matchQuery("lv1Id", _)).toList ++
@@ -731,7 +731,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
     queryString: Option[String],
     start: Int,
     limit: Int,
-    tenantId: BigInt): Future[OrganisationsSearchResult] = {
+    tenantId: TenantId): Future[OrganisationsSearchResult] = {
 
     clientFuture.flatMap { client =>
       val queryStringContent = queryString.getOrElse("*").trim
