@@ -50,11 +50,14 @@ function runConnector() {
 
             for (var i = 0; i < groups.length; i++) {
                 const group = groups[i];
-                group.datasets = connectedDatasets.filter((d: any) => {
-                    if (d.esriGroups)
-                        return d.esriGroups.indexOf(group.id) > -1;
-                    return false;
+                group.members = connectedDatasets.filter((d: any) => {
+                    if (d.esriGroups === undefined) return false;
+                    return d.esriGroups.indexOf(group.id) > -1;
                 });
+
+                group.members = group.members.map(
+                    (ds: any) => `ds-${esriPortal.name}-${ds.id}`
+                );
                 await this.createGroup(group);
             }
         }
