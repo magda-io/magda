@@ -342,22 +342,19 @@ export default class EsriPortal implements ConnectorSource {
                     return;
                 }
 
-                // For a MapServer treat the root as a distribution (eg the group of layers)
-                if (distUri.segment(-1) === "MapServer") {
-                    await this.processRootMapServiceAsDistribution(
-                        item,
-                        distInfo,
-                        distUri
-                    );
-                }
+                await this.processRootMapServiceAsDistribution(
+                    item,
+                    distInfo,
+                    distUri
+                );
 
-                const layersLength = distInfo.layers
-                    ? distInfo.layers.length
-                    : 0;
-                for (let ii = 0; ii < layersLength; ++ii) {
-                    const lyr = distInfo.layers[ii];
-                    await this.processLayerAsDistribution(lyr, item, distUri);
-                }
+                // const layersLength = distInfo.layers
+                //     ? distInfo.layers.length
+                //     : 0;
+                // for (let ii = 0; ii < layersLength; ++ii) {
+                //     const lyr = distInfo.layers[ii];
+                //     await this.processLayerAsDistribution(lyr, item, distUri);
+                // }
             } catch (err) {
                 console.error(
                     `Broke on item url: ${item.url}, dist uri: ${distUri}`
@@ -488,40 +485,40 @@ export default class EsriPortal implements ConnectorSource {
         }
     }
 
-    private async processLayerAsDistribution(
-        lyr: any,
-        item: any,
-        distUri: any
-    ) {
-        try {
-            const lyrUrl = distUri
-                .clone()
-                .segment(lyr.id.toString())
-                .toString();
-            const subDistInfo = await this.requestDistributionInformation(
-                lyrUrl
-            );
-            if (subDistInfo.error) {
-                return;
-            }
-            const subDist = {
-                accessURL: lyrUrl,
-                title: subDistInfo.name,
-                name: subDistInfo.name,
-                description: subDistInfo.description,
-                type: `Esri ${subDistInfo.type}`,
-                id: `${item.id}-c${lyr.id}`
-            };
-            item.distributions.push(subDist);
-        } catch (err) {
-            console.error(
-                `Broke on item url: ${
-                    item.url
-                }, dist uri: ${distUri}, layer id: ${lyr.id}`
-            );
-            console.error(err);
-        }
-    }
+    // private async processLayerAsDistribution(
+    //     lyr: any,
+    //     item: any,
+    //     distUri: any
+    // ) {
+    //     try {
+    //         const lyrUrl = distUri
+    //             .clone()
+    //             .segment(lyr.id.toString())
+    //             .toString();
+    //         const subDistInfo = await this.requestDistributionInformation(
+    //             lyrUrl
+    //         );
+    //         if (subDistInfo.error) {
+    //             return;
+    //         }
+    //         const subDist = {
+    //             accessURL: lyrUrl,
+    //             title: subDistInfo.name,
+    //             name: subDistInfo.name,
+    //             description: subDistInfo.description,
+    //             type: `Esri ${subDistInfo.type}`,
+    //             id: `${item.id}-c${lyr.id}`
+    //         };
+    //         item.distributions.push(subDist);
+    //     } catch (err) {
+    //         console.error(
+    //             `Broke on item url: ${
+    //                 item.url
+    //             }, dist uri: ${distUri}, layer id: ${lyr.id}`
+    //         );
+    //         console.error(err);
+    //     }
+    // }
 
     private async processRootMapServiceAsDistribution(
         item: any,
