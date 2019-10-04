@@ -4,7 +4,8 @@ import java.net.URLDecoder
 case class AspectQuery(
   aspectId: String,
   path: List[String],
-  value: String)
+  value: String,
+  operation: String = "=")
 
 object AspectQuery {
   def parse(string: String): AspectQuery = {

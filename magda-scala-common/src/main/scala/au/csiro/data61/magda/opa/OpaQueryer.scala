@@ -43,6 +43,7 @@ object OpaTypes {
   sealed trait OpaRef
   case object OpaRefAllInArray extends OpaRef
   case class OpaRefObjectKey(key: String) extends OpaRef
+  case class OpaRefObjectKey2(key: RegoRefPartString) extends OpaRef
 
   sealed trait OpaValue
   case class OpaValueString(value: String) extends OpaValue
@@ -55,10 +56,16 @@ object OpaTypes {
       operation: OpaOp,
       value: OpaValue
   ) extends OpaQuery
+  case class OpaQueryMatchValue2(
+     path: List[String],
+     operation: OpaOp,
+     value: OpaValue
+   ) extends OpaQuery
   case class OpaQueryExists(
       path: List[OpaRef]
   ) extends OpaQuery
   case object OpaQueryMatchAll extends OpaQuery
+  case object OpaQueryMatchAny extends OpaQuery
   case object OpaQueryMatchNone extends OpaQuery
   case object OpaQueryMatchNoAccessControl extends OpaQuery
   case object OpaQuerySkipAccessControl extends OpaQuery
@@ -151,13 +158,13 @@ class OpaQueryer()(
   def queryRecord(
       jwtToken: Option[String],
       policyId: String
-  ): Future[List[OpaQuery]] = {
+  ): Future[List[List[OpaQuery]]] = {
     queryPolicy(jwtToken, policyId)
   }
 
   def queryAsDefaultUser(
       policyId: String
-  ): Future[List[OpaQuery]] = {
+  ): Future[List[List[OpaQuery]]] = {
     val jwt = JWT
       .create()
       .withClaim("userId", config.getString("auth.userId"))
@@ -169,7 +176,7 @@ class OpaQueryer()(
   def queryPolicy(
       jwtToken: Option[String],
       policyId: String
-  ): Future[List[OpaQuery]] = {
+  ): Future[List[List[OpaQuery]]] = {
     val requestData: String = s"""{
                                  |  "query": "data.$policyId",
                                  |  "unknowns": ["input.object"]
@@ -191,7 +198,7 @@ class OpaQueryer()(
 
     Http()
       .singleRequest(httpRequest)
-      .flatMap(receiveOpaResponse[List[OpaQuery]](_) { json =>
+      .flatMap(receiveOpaResponse[List[List[OpaQuery]]](_) { json =>
         parseOpaResponse(json)
       })
   }
@@ -214,109 +221,96 @@ class OpaQueryer()(
     }
   }
 
-  def parseOpaResponse(json: JsValue): List[OpaQuery] = {
+  def parseOpaResponse(json: JsValue): List[List[OpaQuery]] = {
     val result = json.asJsObject.fields
       .get("result") match {
       case Some(aResult) => aResult
       case None          => throw new Exception("Got no result for opa query")
     }
 
-    val rulesOpt = result.asJsObject.fields
+    val rulesOpt: List[List[OpaQuery]] = result.asJsObject.fields
       .get("queries") match {
-      case None                    => List(OpaQueryMatchNone)
-      case Some(JsArray(Vector())) => List(OpaQueryMatchAll)
+      case None                    => List(List(OpaQueryMatchNone))
+      case Some(JsArray(Vector())) => List(List(OpaQueryMatchAll))
       case Some(JsArray(rules)) =>
-        val rulesFromRules = rules.flatMap(
-          rules => rules.asInstanceOf[JsArray].elements.toList
-        )
-        val supports = result.asJsObject.fields
-          .get("support")
-          .toList
-          .flatMap(support => support.asInstanceOf[JsArray].elements.toList)
-        val rulesFromSupports = supports
-          .flatMap(
-            _.asJsObject.fields.get("rules").map(_.asInstanceOf[JsArray])
-          )
-          .flatMap(_.elements.toList)
-          .flatMap { element =>
-            val fields = element.asJsObject.fields
-            val isDefault = fields
-              .getOrElse("default", JsFalse)
-              .asInstanceOf[JsBoolean]
-              .value
-            val headValue =
-              element.asJsObject
-                .fields("head")
-                .asJsObject
-                .fields("value")
+        val someRules: Seq[JsValue] = rules
 
-            headValue.asJsObject
-              .fields("value") match {
-              case JsBoolean(true) =>
-                element.asJsObject.fields
-                  .get("body")
-                  .map(_.asInstanceOf[JsArray])
-              case JsBoolean(false) if isDefault =>
-                Seq(JsArray(Vector(JsObject("terms" -> headValue))))
-              case _ =>
-                throw new Exception(
-                  "Found head value with value other than true that wasn't default"
-                )
-            }
+        // Having an empty rule indicates an OR rule condition is fully evaluated to true.
+        val hasEmptyRule = someRules.map(
+          theRules => theRules.asInstanceOf[JsArray].elements.toList
+        ).exists(r => r.isEmpty)
 
-          }
-          .flatMap(_.elements.toList)
+        if (hasEmptyRule) {
+          val r: List[List[OpaQuery]] = List(List(OpaQueryMatchAny))
+          r
+        }
+        else {
+          // The flatMap (here and after) logic may not work properly as it only supports
+          // partial evaluation of one item.
+          // E.g. if we need to check record owner and access expiration, it will make query
+          // for OR relationship instead of AND.
+          //
+          val rulesFromRules: Seq[List[JsValue]] = someRules.map(orRule => {
+            orRule.asInstanceOf[JsArray].elements.toList.flatMap(
+              andRules => andRules.asJsObject.fields.get("terms").toList
+            )
+          })
+          val supports = result.asJsObject.fields
+            .get("support")
+            .toList
+            .flatMap(support => support.asInstanceOf[JsArray].elements.toList)
 
-        (rulesFromRules ++ rulesFromSupports).toList
-          .map(parseRule)
-          .flatMap {
-            case List(
-                operation: RegoTermRef,
-                value: RegoTermValue,
-                path: RegoTermRef
-                ) =>
-              Some(
+          if (supports.nonEmpty)
+            throw new Exception(s"Don't know how to use supports ${supports.asInstanceOf[JsArray]}")
+
+          val rules: List[List[JsValue]] = rulesFromRules.toList
+          val theRules1: List[List[List[RegoTerm]]] = rules
+            .map(orRule => {
+              val theRules = orRule
+              theRules.map(parseRule)
+            })
+
+          val theRules: List[List[OpaQuery]] = theRules1.map(orRules => {
+            orRules.map({
+              case List(RegoTermRef(RegoRefPartVar("input") :: path)) => {
+                OpaQueryExists(regoRefPathToOpaRefPath(path))
+              }
+              case List(RegoTermBoolean(false)) => {
+                OpaQueryMatchNone
+              }
+              case List(RegoTermBoolean(true)) => {
+                OpaQueryMatchAll
+              }
+              case List(
+              operation: RegoTermVar,
+              path: RegoTermRef,
+              value: RegoTermValue
+              ) => {
+                val thePath: List[OpaRef] = regoRefPathToOpaRefPath(path.value)
+                val theOperation: OpaOp = operation match {
+                  case RegoTermVar(opString: String) =>
+                    OpaOp(opString)
+                }
+                val theValue = value match {
+                  case RegoTermBoolean(aValue) => OpaValueBoolean(aValue)
+                  case RegoTermString(aValue) => OpaValueString(aValue)
+                  case RegoTermNumber(aValue) => OpaValueNumber(aValue)
+                }
+
                 OpaQueryMatchValue(
-                  path = regoRefPathToOpaRefPath(path.value),
-                  operation = operation match {
-                    case RegoTermRef(
-                        List(RegoRefPartVar(opString: String))
-                        ) =>
-                      OpaOp(opString)
-                  },
-                  value = value match {
-                    case RegoTermBoolean(aValue) => OpaValueBoolean(aValue)
-                    case RegoTermString(aValue)  => OpaValueString(aValue)
-                    case RegoTermNumber(aValue)  => OpaValueNumber(aValue)
-                  }
+                  path = thePath,
+                  operation = theOperation,
+                  value = theValue
                 )
-              )
-            case List(RegoTermRef(RegoRefPartVar("input") :: path)) =>
-              Some(OpaQueryExists(regoRefPathToOpaRefPath(path)))
-            case List(RegoTermBoolean(false)) => Some(OpaQueryMatchNone)
-            case List(
-                operation: RegoTermRef,
-                path: RegoTermRef,
-                value: RegoTermValue
-                ) =>
-              Some(
-                OpaQueryMatchValue(
-                  path = regoRefPathToOpaRefPath(path.value),
-                  operation = operation match {
-                    case RegoTermRef(
-                        List(RegoRefPartVar(opString: String))
-                        ) =>
-                      OpaOp(opString)
-                  },
-                  value = value match {
-                    case RegoTermBoolean(aValue) => OpaValueBoolean(aValue)
-                    case RegoTermString(aValue)  => OpaValueString(aValue)
-                    case RegoTermNumber(aValue)  => OpaValueNumber(aValue)
-                  }
-                )
-              )
-            case _ => None
-          }
+              }
+              case x => {
+                throw new Exception(s"Don't know how to handle $x")
+              }
+            })
+          })
+
+          theRules
+        }
     }
 
     rulesOpt
@@ -325,40 +319,95 @@ class OpaQueryer()(
   private val allInArrayPattern = "\\$.*".r
   private def regoRefPathToOpaRefPath(path: List[RegoRefPart]): List[OpaRef] = {
     path.flatMap {
-      case RegoRefPartVar(allInArrayPattern()) => Some(OpaRefAllInArray)
-      case RegoRefPartString(value)            => Some(OpaRefObjectKey(value))
-      case RegoRefPartVar("input")             => None
-      case x                                   => throw new Exception("Could not understand " + x)
+      case RegoRefPartVar(allInArrayPattern()) =>
+        Some(OpaRefAllInArray)
+      case x:RegoRefPartString                 =>
+        val theValue: RegoRefPartString = x
+        Some(OpaRefObjectKey2(theValue))
+      case RegoRefPartVar("input")             =>
+        None
+      case x                                   =>
+        throw new Exception("Could not understand " + x)
     }
   }
 
-  private def parseRule(ruleJson: JsValue): List[RegoTerm] = {
-    ruleJson match {
-      case ruleJsonObject: JsObject =>
-        val terms = ruleJsonObject
-          .fields("terms")
-
-        terms match {
+  private def parseRule(terms: JsValue): List[RegoTerm] = {
+    // terms look like:
+    // [
+    //	{
+    //		"type":"ref","value":[{"type":"var","value":"gt"}]
+    //	},
+    //	{
+    //		"type":"ref","value":[{"type":"var","value":"input"},{"type":"string","value":"object"},{"type":"string","value":"registry"},{"type":"string","value":"record"},{"type":"string","value":"esri-access-control"},{"type":"string","value":"expiration"}]
+    //	},
+    //
+    //	{"type":"number","value":1570075939709}
+    // ]
+    //
+    // or
+    // [
+    //	{
+    //		"type":"ref","value":[{"type":"var","value":"eq"}]
+    //	},
+    //	{
+    //		"type":"string","value":"Dep. A"
+    //	},
+    //	{
+    //		"type":"ref","value":[{"type":"var","value":"input"},{"type":"string","value":"object"},{"type":"string","value":"registry"},{"type":"string","value":"record"},{"type":"string","value":"esri-access-control"},{"type":"string","value":"groups"},{"type":"var","value":"$06"}]
+    //	}
+    // ]
+    val theTerms = terms.asInstanceOf[JsArray].elements.toList
+    if (theTerms.length != 3){
+      throw new Exception(s"$theTerms must consist of 3 elements.")
+    }
+    else {
+      val regoTerms = theTerms.flatMap(term => {
+        term match {
           case termsObj: JsObject =>
             (termsObj.fields("type"), termsObj.fields("value")) match {
               case (JsString("ref"), array: JsArray) =>
                 array.elements.toList
                   .map(parseTerm)
-
               case (JsString("boolean"), value: JsBoolean) =>
                 List(RegoTermBoolean(value.value))
               case (JsString("number"), value: JsNumber) =>
                 List(RegoTermNumber(value.value))
               case (JsString("string"), value: JsString) =>
                 List(RegoTermString(value.value))
-              case _ => throw new Exception("Could not parse rule " + ruleJson)
+              case x => throw new Exception("Could not parse term " + x)
             }
-          case termsArr: JsArray =>
-            termsArr.elements.toList
-              .map(parseTerm)
-          case _ => throw new Exception("Could not parse rule " + ruleJson)
+          case other => throw new Exception("Could not parse term " + other)
         }
-      case _ => throw new Exception("Could not parse rule " + ruleJson)
+      })
+
+      val operation: RegoTermVar = regoTerms.head.asInstanceOf[RegoTermVar]
+      val value: RegoTerm = if (regoTerms(1) == RegoTermVar("input")) regoTerms.last else regoTerms(1)
+      val path: List[RegoRefPart] = if (regoTerms(1) == RegoTermVar("input")) {
+        regoTerms.slice(2, regoTerms.length - 1).map(term => {
+          val theTerm = term match {
+            case RegoTermString(v) => {
+              List(v)
+            }
+            case x =>
+              println(s"********* x = $x")
+              Nil
+          }
+          RegoRefPartString(theTerm.mkString(""))
+        })
+      }
+      else {
+        regoTerms.slice(3, regoTerms.length).map(term => {
+          val theTerm = term match {
+            case RegoTermString(v) => {
+              List(v)
+            }
+            case RegoTermVar(allInArrayPattern()) =>
+              List("[_]")
+          }
+          RegoRefPartString(theTerm.mkString(""))
+        })
+      }
+      List(operation, RegoTermRef(path), value)
     }
   }
 

@@ -1,12 +1,14 @@
 package au.csiro.data61.magda.registry
 
+import java.io
 import java.sql.SQLException
 
 import akka.NotUsed
 import akka.event.LoggingAdapter
 import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.model.Registry._
-import au.csiro.data61.magda.opa.OpaTypes._
+import au.csiro.data61.magda.opa.OpaTypes.{OpaRefObjectKey2, _}
+import au.csiro.data61.magda.opa.{RegoRefPartString, RegoTermString}
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import scalikejdbc._
@@ -20,7 +22,7 @@ trait RecordPersistence {
   def getAll(
       implicit session: DBSession,
       tenantId: BigInt,
-      opaQueries: List[OpaQuery],
+      opaQueries: List[List[OpaQuery]],
       pageToken: Option[String],
       start: Option[Int],
       limit: Option[Int]
@@ -31,7 +33,7 @@ trait RecordPersistence {
       tenantId: BigInt,
       aspectIds: Iterable[String],
       optionalAspectIds: Iterable[String],
-      opaQuery: Seq[OpaQuery],
+      opaQuery: Seq[List[OpaQuery]],
       pageToken: Option[Long] = None,
       start: Option[Int] = None,
       limit: Option[Int] = None,
@@ -42,7 +44,7 @@ trait RecordPersistence {
   def getCount(
       implicit session: DBSession,
       tenantId: BigInt,
-      opaQueries: List[OpaQuery],
+      opaQueries: List[List[OpaQuery]],
       aspectIds: Iterable[String],
       aspectQueries: Iterable[AspectQuery] = Nil
   ): Long
@@ -50,7 +52,7 @@ trait RecordPersistence {
   def getById(
       implicit session: DBSession,
       tenantId: BigInt,
-      opaQueries: List[OpaQuery],
+      opaQueries: List[List[OpaQuery]],
       id: String
   ): Option[RecordSummary]
 
@@ -58,7 +60,7 @@ trait RecordPersistence {
       implicit session: DBSession,
       tenantId: BigInt,
       id: String,
-      opaQuery: Seq[OpaQuery],
+      opaQuery: Seq[List[OpaQuery]],
       aspectIds: Iterable[String] = Seq(),
       optionalAspectIds: Iterable[String] = Seq(),
       dereference: Option[Boolean] = None
@@ -68,7 +70,7 @@ trait RecordPersistence {
       implicit session: DBSession,
       tenantId: BigInt,
       ids: Iterable[String],
-      opaQuery: Seq[OpaQuery],
+      opaQuery: Seq[List[OpaQuery]],
       aspectIds: Iterable[String] = Seq(),
       optionalAspectIds: Iterable[String] = Seq(),
       dereference: Option[Boolean] = None
@@ -78,7 +80,7 @@ trait RecordPersistence {
       implicit session: DBSession,
       tenantId: BigInt,
       ids: Iterable[String],
-      opaQuery: Seq[OpaQuery],
+      opaQuery: Seq[List[OpaQuery]],
       idsToExclude: Iterable[String] = Seq(),
       aspectIds: Iterable[String] = Seq(),
       optionalAspectIds: Iterable[String] = Seq(),
@@ -90,14 +92,14 @@ trait RecordPersistence {
       tenantId: BigInt,
       recordId: String,
       aspectId: String,
-      opaQueries: List[OpaQuery]
+      opaQueries: List[List[OpaQuery]]
   ): Option[JsObject]
 
   def getPageTokens(
       implicit session: DBSession,
       tenantId: BigInt,
       aspectIds: Iterable[String],
-      opaQuery: Seq[OpaQuery],
+      opaQuery: Seq[List[OpaQuery]],
       limit: Option[Int] = None,
       recordSelector: Iterable[Option[SQLSyntax]] = Iterable()
   ): List[String]
@@ -107,7 +109,7 @@ trait RecordPersistence {
       tenantId: BigInt,
       id: String,
       newRecord: Record,
-      opaQueryUpdate: Seq[OpaQuery]
+      opaQueryUpdate: Seq[List[OpaQuery]]
   ): Try[Record]
 
   def patchRecordById(
@@ -115,7 +117,7 @@ trait RecordPersistence {
       tenantId: BigInt,
       id: String,
       recordPatch: JsonPatch,
-      opaQuery: Seq[OpaQuery]
+      opaQuery: Seq[List[OpaQuery]]
   ): Try[Record]
 
   def patchRecordAspectById(
@@ -193,7 +195,7 @@ object DefaultRecordPersistence
   def getAll(
       implicit session: DBSession,
       tenantId: BigInt,
-      opaQueries: List[OpaQuery],
+      opaQueries: List[List[OpaQuery]],
       pageToken: Option[String],
       start: Option[Int],
       limit: Option[Int]
@@ -206,7 +208,7 @@ object DefaultRecordPersistence
       tenantId: BigInt,
       aspectIds: Iterable[String],
       optionalAspectIds: Iterable[String],
-      opaQuery: Seq[OpaQuery],
+      opaQuery: Seq[List[OpaQuery]],
       pageToken: Option[Long] = None,
       start: Option[Int] = None,
       limit: Option[Int] = None,
@@ -214,7 +216,7 @@ object DefaultRecordPersistence
       aspectQueries: Iterable[AspectQuery] = Nil
   ): RecordsPage[Record] = {
     val selectors = aspectQueries
-      .map(query => aspectQueryToWhereClause(tenantId, query))
+      .map(query => aspectQueryToWhereClause(query))
       .map(Some.apply)
 
     this.getRecords(
@@ -237,12 +239,12 @@ object DefaultRecordPersistence
   def getCount(
       implicit session: DBSession,
       tenantId: BigInt,
-      opaQueries: List[OpaQuery],
+      opaQueries: List[List[OpaQuery]],
       aspectIds: Iterable[String],
       aspectQueries: Iterable[AspectQuery] = Nil
   ): Long = {
     val selectors: Iterable[Some[SQLSyntax]] = aspectQueries
-      .map(query => aspectQueryToWhereClause(tenantId, query))
+      .map(query => aspectQueryToWhereClause(query))
       .map(Some.apply)
 
     this.getCountInner(session, tenantId, opaQueries, aspectIds, selectors)
@@ -251,7 +253,7 @@ object DefaultRecordPersistence
   def getById(
       implicit session: DBSession,
       tenantId: BigInt,
-      opaQueries: List[OpaQuery],
+      opaQueries: List[List[OpaQuery]],
       id: String
   ): Option[RecordSummary] = {
     this
@@ -264,7 +266,7 @@ object DefaultRecordPersistence
       implicit session: DBSession,
       tenantId: BigInt,
       id: String,
-      opaQuery: Seq[OpaQuery],
+      opaQuery: Seq[List[OpaQuery]],
       aspectIds: Iterable[String] = Seq(),
       optionalAspectIds: Iterable[String] = Seq(),
       dereference: Option[Boolean] = None
@@ -290,7 +292,7 @@ object DefaultRecordPersistence
       implicit session: DBSession,
       tenantId: BigInt,
       ids: Iterable[String],
-      opaQuery: Seq[OpaQuery],
+      opaQuery: Seq[List[OpaQuery]],
       aspectIds: Iterable[String] = Seq(),
       optionalAspectIds: Iterable[String] = Seq(),
       dereference: Option[Boolean] = None
@@ -316,7 +318,7 @@ object DefaultRecordPersistence
       implicit session: DBSession,
       tenantId: BigInt,
       ids: Iterable[String],
-      opaQuery: Seq[OpaQuery],
+      opaQuery: Seq[List[OpaQuery]],
       idsToExclude: Iterable[String] = Seq(),
       aspectIds: Iterable[String] = Seq(),
       optionalAspectIds: Iterable[String] = Seq(),
@@ -397,17 +399,16 @@ object DefaultRecordPersistence
       tenantId: BigInt,
       recordId: String,
       aspectId: String,
-      opaQueries: List[OpaQuery] = List()
+      opaQueries: List[List[OpaQuery]] = List()
   ): Option[JsObject] = {
-    val opaWhereClauseParts = opaQueriesToWhereClauseParts(tenantId, opaQueries)
+    val opaSql = getOpaConditions(tenantId, opaQueries, AuthOperations.read, recordId)
 
     sql"""select RecordAspects.aspectId as aspectId, Aspects.name as aspectName, data, RecordAspects.tenantId
           from RecordAspects
           inner join Aspects using (aspectId, tenantId)
           inner join Records using (recordId, tenantId)
           where (RecordAspects.recordId, RecordAspects.aspectId, RecordAspects.tenantId)=($recordId, $aspectId, $tenantId)
-	        ${if (opaWhereClauseParts.isEmpty) SQLSyntax.empty
-    else sqls"""and (${SQLSyntax.joinWithOr(opaWhereClauseParts: _*)})"""}
+	        and $opaSql
       """
       .map(rowToAspect)
       .single
@@ -418,7 +419,7 @@ object DefaultRecordPersistence
       implicit session: DBSession,
       tenantId: BigInt,
       aspectIds: Iterable[String],
-      opaQuery: Seq[OpaQuery],
+      opaQuery: Seq[List[OpaQuery]],
       limit: Option[Int] = None,
       recordSelector: Iterable[Option[SQLSyntax]] = Iterable()
   ): List[String] = {
@@ -460,7 +461,7 @@ object DefaultRecordPersistence
       tenantId: BigInt,
       id: String,
       newRecord: Record,
-      opaQueryUpdate: Seq[OpaQuery]
+      opaQueryUpdate: Seq[List[OpaQuery]]
   ): Try[Record] = {
     val newRecordWithoutAspects = newRecord.copy(aspects = Map())
 
@@ -548,7 +549,7 @@ object DefaultRecordPersistence
       tenantId: BigInt,
       id: String,
       recordPatch: JsonPatch,
-      opaQuery: Seq[OpaQuery]
+      opaQuery: Seq[List[OpaQuery]]
   ): Try[Record] = {
     for {
       record <- this.getByIdWithAspects(session, tenantId, id, opaQuery) match {
@@ -1086,7 +1087,7 @@ object DefaultRecordPersistence
   private def getSummaries(
       implicit session: DBSession,
       tenantId: BigInt,
-      opaQueries: List[OpaQuery],
+      opaQueries: List[List[OpaQuery]],
       pageToken: Option[String],
       start: Option[Int],
       rawLimit: Option[Int],
@@ -1143,7 +1144,7 @@ object DefaultRecordPersistence
       tenantId: BigInt,
       aspectIds: Iterable[String],
       optionalAspectIds: Iterable[String],
-      opaQuery: Seq[OpaQuery],
+      opaQuery: Seq[List[OpaQuery]],
       pageToken: Option[Long] = None,
       start: Option[Int] = None,
       rawLimit: Option[Int] = None,
@@ -1238,7 +1239,7 @@ object DefaultRecordPersistence
   private def getCountInner(
       implicit session: DBSession,
       tenantId: BigInt,
-      opaQueries: List[OpaQuery],
+      opaQueries: List[List[OpaQuery]],
       aspectIds: Iterable[String],
       recordSelector: Iterable[Option[SQLSyntax]] = Iterable()
   ): Long = {
@@ -1415,15 +1416,10 @@ object DefaultRecordPersistence
   private def aspectIdsAndOpaQueriesToWhereParts(
       tenantId: BigInt,
       aspectIds: Iterable[String],
-      opaQueries: Seq[OpaQuery],
+      opaQueries: Seq[List[OpaQuery]],
       operationType: AuthOperations.OperationType
   ): Iterable[SQLSyntax] = {
-    val theOpaQueries: List[OpaQuery] =
-      if (opaQueries.nonEmpty) opaQueries.toList
-      else List(OpaQuerySkipAccessControl)
-    val opaSql: SQLSyntax =
-      sqls"(${SQLSyntax
-        .joinWithOr(opaQueriesToWhereClauseParts(tenantId, theOpaQueries): _*)})"
+    val opaSql: SQLSyntax = getOpaConditions(tenantId, opaQueries, operationType)
 
     val aspectWhereClauses: Seq[Option[SQLSyntax]] = aspectIdsToWhereClause(
       tenantId,
@@ -1438,16 +1434,10 @@ object DefaultRecordPersistence
       tenantId: BigInt,
       opaQueries: Seq[OpaQuery],
       operationType: AuthOperations.OperationType
-  ): Iterable[SQLSyntax] = {
-    val theOpaQueries: List[OpaQuery] =
-      if (opaQueries.nonEmpty) opaQueries.toList
-      else List(OpaQuerySkipAccessControl)
-    val opaSql: SQLSyntax =
-      sqls"(${SQLSyntax
-        .joinWithOr(opaQueriesToWhereClauseParts(tenantId, theOpaQueries): _*)})"
-
-    val result = List(opaSql)
-    result
+  ): (String, Iterable[SQLSyntax]) = {
+    val theOpaQueries: List[OpaQuery] = opaQueries.toList
+    val opaSql = opaQueriesToWhereClauseParts(tenantId, theOpaQueries)
+    opaSql
   }
 
   private object ColumnNamePrefixType extends Enumeration {
@@ -1469,12 +1459,59 @@ object DefaultRecordPersistence
 
   private def getOpaConditions(
       tenantId: BigInt,
-      opaQueries: Seq[OpaQuery],
-      operationType: AuthOperations.OperationType
-  ) = {
-    SQLSyntax.joinWithAnd(
-      opaQueriesToWhereParts(tenantId, opaQueries, operationType).toSeq: _*
-    )
+      opaQueries: Seq[List[OpaQuery]],
+      operationType: AuthOperations.OperationType,
+      recordId: String = ""
+  ): SQLSyntax = {
+
+    val conditions = if (opaQueries.nonEmpty){
+      SQLSyntax.joinWithOr(
+        opaQueries.map(andTerms => {
+          SQLSyntax.joinWithAnd(
+            opaQueriesToWhereParts(tenantId, andTerms, operationType)._2.toSeq: _*
+          )
+        }): _*
+      )
+    }
+    else {
+      sqls"true"
+    }
+
+    val aspectId =
+      if (opaQueries.nonEmpty && opaQueries.head.nonEmpty){
+        val x: OpaQuery = opaQueries.head.head
+        opaQueriesToWhereParts(tenantId, List(x), operationType)._1
+      }
+      else {
+        ""
+      }
+    if (conditions.equals(sqls"true")){
+      conditions
+    }
+    else if (recordId.nonEmpty){
+      sqls"""
+          (EXISTS (
+            SELECT 1 FROM records_without_access_control
+            WHERE (recordid, tenantid)=($recordId, records.tenantId)) or
+          exists (
+            select 1 from recordaspects
+            where (RecordAspects.recordId, RecordAspects.aspectId, RecordAspects.tenantId)=($recordId, $aspectId, Records.tenantId) and
+            ($conditions)
+          ))
+        """
+    }
+    else{
+      sqls"""
+          (EXISTS (
+            SELECT 1 FROM records_without_access_control
+            WHERE (recordid, tenantid)=(Records.recordId, records.tenantId)) or
+          exists (
+            select 1 from recordaspects
+            where (RecordAspects.recordId, RecordAspects.aspectId, RecordAspects.tenantId)=(Records.recordId, $aspectId, Records.tenantId) and
+            ($conditions)
+          ))
+        """
+    }
   }
 
   private def aspectIdsToSelectClauses(
@@ -1482,7 +1519,7 @@ object DefaultRecordPersistence
       tenantId: BigInt,
       aspectIds: Iterable[String],
       operationType: AuthOperations.OperationType,
-      opaQueries: Seq[OpaQuery],
+      opaQueries: Seq[List[OpaQuery]],
       dereference: Boolean = false
   ): Iterable[scalikejdbc.SQLSyntax] = {
     val opaConditions = getOpaConditions(tenantId, opaQueries, operationType)
@@ -1616,75 +1653,167 @@ object DefaultRecordPersistence
 
   private val ALL_IN_ARRAY: String = "[_]"
 
-  private def aspectQueryToWhereClause(tenantId: BigInt, query: AspectQuery) = {
+  private def aspectQueryToWhereClause(query: AspectQuery) = {
+    val operation = SQLSyntax.createUnsafely(query.operation)
     val equalsOrContainsClause =
       if (query.path.length == 2 && query.path(1).equals(ALL_IN_ARRAY)) {
-        val thePath = query.path.filter(!_.equals(ALL_IN_ARRAY))
         sqls"""
-        (data #>> string_to_array(${thePath.mkString(",")}, ','))::jsonb ?? ${query.value}
-      """
-      } else {
+               jsonb_exists((data->>${query.path.head})::jsonb, ${query.value}::text)
+          """
+      }else {
         sqls"""
-        data #>> string_to_array(${query.path.mkString(",")}, ',') = ${query.value}
-      """
+               data #>> string_to_array(${query.path.mkString(",")}, ',') $operation ${query.value}
+          """
       }
 
     sqls"""EXISTS (
              SELECT 1 FROM recordaspects
              WHERE (aspectId, recordid, tenantId)=(${query.aspectId}, Records.recordId, Records.tenantId) AND
-             $equalsOrContainsClause)
+             $equalsOrContainsClause )
       """
   }
 
+  private def opaTermsToSqlTerms(queries: List[AspectQuery]): List[SQLSyntax] = {
+    val sqlTerms: List[SQLSyntax] = queries.map(query => {
+      val operation = SQLSyntax.createUnsafely(query.operation)
+      val equalsOrContainsClauses =
+        if (query.path.length == 2 && query.path(1).equals(ALL_IN_ARRAY)) {
+          sqls"""
+               jsonb_exists((data->>${query.path.head})::jsonb, ${query.value}::text)
+          """
+        }else {
+          sqls"""
+               data #>> string_to_array(${query.path.mkString(",")}, ',') $operation ${query.value}
+          """
+        }
+      equalsOrContainsClauses
+    })
+    sqlTerms
+//    sqls"""EXISTS (
+//             SELECT 1 FROM recordaspects
+//             WHERE (aspectId, recordid, tenantId)=(${query.aspectId}, Records.recordId, Records.tenantId) AND
+//             $equalsOrContainsClause )
+//      """
+  }
+  /**
+    * When tenantId equals SYSTEM_TENANT_ID, if the request also provides JWT that can prove
+    * that the requester has admin role, this function will return List(sqls"true"). In that
+    * case, the requester will have access to all records.
+    */
   private def opaQueriesToWhereClauseParts(
       tenantId: BigInt,
       opaQueries: List[OpaQuery]
-  ): List[SQLSyntax] = {
-    // Assume that most records have no access control, making first SQL query
-    // for OpaQueryMatchNoAccessControl may speed up the process.
+  ): (String, List[SQLSyntax]) = {
+
     val theOpaQueries =
-      if (opaQueries.nonEmpty)
-        List(OpaQueryMatchNoAccessControl) ++ opaQueries
-      else
+      if (opaQueries.nonEmpty) {
+        opaQueries
+      }
+      else {
         List(OpaQuerySkipAccessControl)
+      }
 
-    theOpaQueries.map {
-      case OpaQueryMatchValue(
-          OpaRefObjectKey("object")
-            :: OpaRefObjectKey("registry")
-            :: OpaRefObjectKey("record")
-            :: OpaRefObjectKey(accessAspectId)
-            :: finalKey,
-          _, // operation is not used at the moment. It is assumed to be eq.
-          aValue
-          ) =>
-        val query = AspectQuery(
-          aspectId = accessAspectId,
-          path = finalKey.map {
-            case OpaRefObjectKey(key) => key
-            case OpaRefAllInArray     => ALL_IN_ARRAY
-            case x                    => throw new Exception("Could not understand " + x)
-          },
-          value = aValue match {
-            case OpaValueString(string)   => string
-            case OpaValueBoolean(boolean) => boolean.toString
-            case OpaValueNumber(bigDec)   => bigDec.toString()
+    if (theOpaQueries.contains(OpaQueryMatchAny) || theOpaQueries.contains(OpaQuerySkipAccessControl)){
+      ("", List(sqls"true"))
+    }
+    else {
+      val opaQueriesToAspectQueries: List[AspectQuery] = theOpaQueries.map ({
+        case OpaQueryMatchValue(
+        OpaRefObjectKey2(RegoRefPartString("object"))
+          :: OpaRefObjectKey2(RegoRefPartString("registry"))
+          :: OpaRefObjectKey2(RegoRefPartString("record"))
+          :: OpaRefObjectKey2(RegoRefPartString(accessAspectId))
+          :: finalKey,
+        operation,
+        aValue
+        ) =>
+          val op =
+            if (operation == Eq) "="
+            else if (operation == Gt) ">"
+            else if (operation == Lt) "<"
+            else if (operation == Gte) ">="
+            else if (operation == Lte) "<="
+            else
+              throw new Exception("Could not understand " + operation)
+
+          AspectQuery(
+            aspectId = accessAspectId,
+            path = finalKey.map {
+              case OpaRefObjectKey2(RegoRefPartString(key)) => key
+              case x =>
+                throw new Exception("Could not understand " + x)
+            },
+            value = aValue match {
+              case OpaValueString(string) => string
+              case OpaValueBoolean(boolean) => boolean.toString
+              case OpaValueNumber(bigDec) => bigDec.toString()
+            },
+            operation = op
+          )
+        case OpaQueryMatchValue(
+        OpaRefObjectKey2(RegoRefPartString("object"))
+          :: OpaRefObjectKey2(RegoRefPartString("registry"))
+          :: OpaRefObjectKey2(RegoRefPartString("record"))
+          :: OpaRefObjectKey2(RegoRefPartString(accessAspectId))
+          :: OpaRefObjectKey2(RegoRefPartString(accessAttribute))
+          :: finalKey,
+        operation,
+        aValue
+        ) =>
+          val op =
+            if (operation == Eq) "="
+            else if (operation == Gt) ">"
+            else if (operation == Lt) "<"
+            else if (operation == Gte) ">="
+            else if (operation == Lte) "<="
+            else
+              throw new Exception("Could not understand " + operation)
+
+          val thePath: List[String] = List(accessAttribute) ++ finalKey.map {
+            case OpaRefAllInArray => ALL_IN_ARRAY
+            case x =>
+              throw new Exception("Could not understand " + x)
           }
-        )
 
-        aspectQueryToWhereClause(tenantId, query)
-      case OpaQueryMatchNoAccessControl =>
-        sqls"""
-              EXISTS (
-              SELECT 1 FROM records_without_access_control
-              WHERE (recordid, tenantid)=(records.recordid, $tenantId))
-            """
-      case OpaQuerySkipAccessControl => sqls"true"
-      case OpaQueryMatchNone         => sqls"false"
-      case unmatched =>
-        throw new Exception(
-          "Could not convert query " + unmatched + " to where clause"
-        )
+          AspectQuery(
+            aspectId = accessAspectId,
+            path = thePath,
+            value = aValue match {
+              case OpaValueString(string) => string
+              case OpaValueBoolean(boolean) => boolean.toString
+              case OpaValueNumber(bigDec) => bigDec.toString()
+            },
+            operation = op
+          )
+      })
+
+      val sqlTerms =
+        if (opaQueriesToAspectQueries.nonEmpty) {
+          val aspectId = opaQueriesToAspectQueries.head.aspectId
+          (aspectId, opaTermsToSqlTerms(opaQueriesToAspectQueries))
+        }
+        else {
+          ("", List(sqls"true"))
+//          theOpaQueries.map ({
+//            case OpaQueryMatchNoAccessControl =>
+//              sqls"""
+//              EXISTS (
+//              SELECT 1 FROM records_without_access_control
+//              WHERE (recordid, tenantid)=(records.recordid, records.tenantId))
+//            """
+//            case OpaQuerySkipAccessControl => sqls"true"
+//            case OpaQueryMatchNone => sqls"false"
+//            case unmatched =>
+//              if (unmatched.isInstanceOf[OpaQueryMatchValue]){
+//                println("**** yes")
+//              }
+//              throw new Exception(
+//                "Could not convert query " + unmatched + " to where clause"
+//              )
+//          })
+        }
+
+      sqlTerms
     }
   }
 
