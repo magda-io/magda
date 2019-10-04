@@ -2,13 +2,11 @@ package object.registry.record
 
 test_allow_public {
     esri_public with input as {
-        "timestamp": 1569385456740893300,
         "object": {
             "registry": {
                 "record": {
                     "esri-access-control": {
-                        "access": "public",
-                        "expiration": 9569380434535153100
+                        "access": "public"
                     }
                 }
             }

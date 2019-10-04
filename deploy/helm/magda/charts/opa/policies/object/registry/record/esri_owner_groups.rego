@@ -5,7 +5,12 @@ import data.object.registry.record.esri_groups
 import data.object.registry.record.esri_owner
 import data.object.registry.record.esri_public
 import data.object.registry.record.esri_expiration
+import data.object.registry.record.admin_role
 import data.object.registry.record.base
+
+read {
+    admin_role
+}
 
 read {
     has_permission.read
