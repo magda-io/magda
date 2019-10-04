@@ -374,7 +374,7 @@ class OpaQueryer()(
                 List(RegoTermNumber(value.value))
               case (JsString("string"), value: JsString) =>
                 List(RegoTermString(value.value))
-              case x => throw new Exception("Could not parse term " + x)
+              case e => throw new Exception("Could not parse term " + e)
             }
           case other => throw new Exception("Could not parse term " + other)
         }
@@ -385,12 +385,8 @@ class OpaQueryer()(
       val path: List[RegoRefPart] = if (regoTerms(1) == RegoTermVar("input")) {
         regoTerms.slice(2, regoTerms.length - 1).map(term => {
           val theTerm = term match {
-            case RegoTermString(v) => {
-              List(v)
-            }
-            case x =>
-              println(s"********* x = $x")
-              Nil
+            case RegoTermString(v) => List(v)
+            case e => throw new Exception(s"Don't know how to handle $e")
           }
           RegoRefPartString(theTerm.mkString(""))
         })
@@ -398,11 +394,9 @@ class OpaQueryer()(
       else {
         regoTerms.slice(3, regoTerms.length).map(term => {
           val theTerm = term match {
-            case RegoTermString(v) => {
-              List(v)
-            }
-            case RegoTermVar(allInArrayPattern()) =>
-              List("[_]")
+            case RegoTermString(v) => List(v)
+            case RegoTermVar(allInArrayPattern()) => List("[_]")
+            case e => throw new Exception(s"Don't know how to handle $e")
           }
           RegoRefPartString(theTerm.mkString(""))
         })
