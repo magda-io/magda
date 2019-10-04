@@ -7,11 +7,13 @@ test_allow_all_matched_groups {
             "esriGroups": ["G1", "G2"]
             }
         },
+        "timestamp": 1569385456740893300,
         "object": {
             "registry": {
                 "record": {
                     "esri-access-control": {
-                        "groups": ["G1", "G2"]
+                        "groups": ["G1", "G2"],
+                        "expiration": 9569380434535153100
                     }
                 }
             }
@@ -26,11 +28,13 @@ test_allow_any_matched_groups {
                 "esriGroups": ["G1", "G2"]
             }
         },
+        "timestamp": 1569385456740893300,
         "object": {
             "registry": {
                 "record": {
                     "esri-access-control": {
-                        "groups": ["G2", "G3"]
+                        "groups": ["G2", "G3"],
+                        "expiration": 9569380434535153100
                     }
                 }
             }

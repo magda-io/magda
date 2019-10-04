@@ -11,7 +11,8 @@ test_allow_owner {
             "registry": {
                 "record": {
                     "esri-access-control": {
-                        "owner": "personA"
+                        "owner": "personA",
+                        "expiration": 9569380434535153100
                     }
                 }
             }
