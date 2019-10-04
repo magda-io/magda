@@ -39,6 +39,7 @@ export interface EsriPortalOrganizationListResponse {
 export interface EsriPortalOptions {
     baseUrl: string;
     esriOrgGroup: string;
+    updateInterval?: number;
     id: string;
     name: string;
     arcgisUserId?: string;
@@ -50,6 +51,7 @@ export interface EsriPortalOptions {
 
 export default class EsriPortal implements ConnectorSource {
     public readonly esriOrgGroup: string;
+    public readonly updateInterval: number;
     public readonly id: string;
     public readonly name: string;
     public readonly pageSize: number;
@@ -65,6 +67,7 @@ export default class EsriPortal implements ConnectorSource {
         id,
         name,
         pageSize = 1000,
+        updateInterval = 12,
         maxRetries = 10,
         secondsBetweenRetries = 10
     }: EsriPortalOptions) {
@@ -72,6 +75,7 @@ export default class EsriPortal implements ConnectorSource {
         this.id = id;
         this.name = name;
         this.pageSize = pageSize;
+        this.updateInterval = updateInterval * 3600000;
         this.maxRetries = maxRetries;
         this.secondsBetweenRetries = secondsBetweenRetries;
         this.urlBuilder = new EsriPortalUrlBuilder({
@@ -385,6 +389,7 @@ export default class EsriPortal implements ConnectorSource {
         }
         item.esriOwner = item.owner;
         item.esriAccess = "shared";
+        item.esriExpiration = Date.now() + this.updateInterval;
         await this.processItem(item);
     }
 
@@ -392,6 +397,7 @@ export default class EsriPortal implements ConnectorSource {
         item.esriGroups = [this.esriOrgGroup];
         item.esriOwner = item.owner;
         item.esriAccess = "org";
+        item.esriExpiration = Date.now() + this.updateInterval;
         await this.processItem(item);
     }
 
@@ -399,6 +405,7 @@ export default class EsriPortal implements ConnectorSource {
         item.esriGroups = [];
         item.esriOwner = item.owner;
         item.esriAccess = "private";
+        item.esriExpiration = Date.now() + this.updateInterval;
         await this.processItem(item);
     }
 
@@ -406,6 +413,7 @@ export default class EsriPortal implements ConnectorSource {
         item.esriGroups = undefined;
         item.esriOwner = item.owner;
         item.esriAccess = "public";
+        item.esriExpiration = Date.now() + this.updateInterval;
         await this.processItem(item);
     }
 
