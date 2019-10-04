@@ -161,6 +161,8 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
 
         reqData.input.user.session = sessionClaim.session;
 
+        reqData.input.timestamp = Date.now();
+
         reqOpts.json = reqData;
 
         //console.log(JSON.stringify(reqOpts, null, 2));
