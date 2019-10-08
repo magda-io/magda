@@ -4,6 +4,7 @@ import formatServiceError from "@magda/typescript-common/dist/formatServiceError
 import { ConnectorSource } from "@magda/typescript-common/dist/JsonConnector";
 import retry from "@magda/typescript-common/dist/retry";
 import request from "@magda/typescript-common/dist/request";
+import fetch from "node-fetch";
 import * as URI from "urijs";
 
 export interface EsriPortalThing {
@@ -238,58 +239,53 @@ export default class EsriPortal implements ConnectorSource {
         const pageUrl = url.clone();
         pageUrl.addSearch("start", startIndex);
         pageUrl.addSearch("num", this.pageSize);
-        const operation = async () =>
-            new Promise<EsriPortalDataSearchResponse>((resolve, reject) => {
-                const requestUrl = pageUrl.toString();
-                console.log(requestUrl);
-                console.log(
-                    `Requesting start = ${startIndex}, num = ${this.pageSize}`
-                );
+        const operation = async () => {
+            const requestUrl = pageUrl.toString();
+            console.log(requestUrl);
+            console.log(
+                `Requesting start = ${startIndex}, num = ${this.pageSize}`
+            );
 
-                request(
-                    requestUrl,
-                    { json: true },
-                    async (error, response, body) => {
-                        if (error) {
-                            reject(error);
-                            return;
-                        }
+            try {
+                const res = await fetch(requestUrl);
+                let body = await res.json();
 
-                        // A single portal item only has one distribution in the form of a url.
-                        // That url however may represent a single layer, or a map (containing multiple layers)
-                        // The bulk of the distribution information needs to be retrieved
-                        // from the map or feature service endpoint
-                        // An individual item may result in one or many additional requests
-                        for (let i = 0; i < body.results.length; ++i) {
-                            const item = body.results[i];
+                // A single portal item only has one distribution in the form of a url.
+                // That url however may represent a single layer, or a map (containing multiple layers)
+                // The bulk of the distribution information needs to be retrieved
+                // from the map or feature service endpoint
+                // An individual item may result in one or many additional requests
+                for (let i = 0; i < body.results.length; ++i) {
+                    const item = body.results[i];
 
-                            item.distributions = [];
+                    item.distributions = [];
 
-                            // To determine how an item is shared you will have to look at the "access" attribute for
-                            // the item itself. If it is "private" then it is not shared and only the item owner can
-                            // see it; If it is "org" then anyone with a login can see it; If it is "public" anyone
-                            // whether they login or not can see it; If it is "shared" it will be shared to specific
-                            // groups and these will be listed under the groups endpoint.
-                            if (item.access === "shared") {
-                                await this.processSharedItem(item);
-                            } else if (item.access === "org") {
-                                await this.processOrgItem(item);
-                            } else if (item.access === "private") {
-                                await this.processPrivateItem(item);
-                            } else if (item.access === "public") {
-                                await this.processPublicItem(item);
-                            } else {
-                                console.error(
-                                    `Item ${item.id}, ${item.title}, ${
-                                        item.access
-                                    }, will not be harvested.`
-                                );
-                            }
-                        }
-                        resolve(body);
+                    // To determine how an item is shared you will have to look at the "access" attribute for
+                    // the item itself. If it is "private" then it is not shared and only the item owner can
+                    // see it; If it is "org" then anyone with a login can see it; If it is "public" anyone
+                    // whether they login or not can see it; If it is "shared" it will be shared to specific
+                    // groups and these will be listed under the groups endpoint.
+                    if (item.access === "shared") {
+                        await this.processSharedItem(item);
+                    } else if (item.access === "org") {
+                        await this.processOrgItem(item);
+                    } else if (item.access === "private") {
+                        await this.processPrivateItem(item);
+                    } else if (item.access === "public") {
+                        await this.processPublicItem(item);
+                    } else {
+                        console.error(
+                            `Item ${item.id}, ${item.title}, ${
+                                item.access
+                            }, will not be harvested.`
+                        );
                     }
-                );
-            });
+                }
+                return body;
+            } catch (error) {
+                return error;
+            }
+        };
 
         return retry(
             operation,
