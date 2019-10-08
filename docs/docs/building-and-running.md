@@ -24,7 +24,7 @@ You'll also need a Kubernetes cluster - to develop locally this means installing
 
 ## Trying it out locally
 
-If you just want to try it out locally without actually changing anything, it's much easier to just install [minikube](https://magda.io/docs/docs/installing-minikube.md) or [docker for desktop](https://github.com/magda-io/magda/blob/master/docs/docs/installing-docker-k8s.md), then following the instructions at https://github.com/magda-io/magda-config. What follows is instructions on how to build _everything_, code, databases and all, from scratch into a working application.
+If you just want to try it out locally without actually changing anything, it's much easier to just install [minikube](https://magda.io/docs/docs/installing-minikube.md) or [docker for desktop](https://github.com/magda-io/magda/blob/master/docs/docs/installing-docker-k8s.md), then following the instructions at [https://github.com/magda-io/magda-config](https://github.com/magda-io/magda-config). What follows is instructions on how to build _everything_, code, databases and all, from scratch into a working application.
 
 ## Building and running (just) the frontend
 
@@ -43,7 +43,7 @@ yarn install
 Once the above prerequisites are in place, and the npm dependencies are installed, building MAGDA is easy. From the MAGDA root directory, simply run:
 
 ```bash
-lerna run build --stream --concurrency=4 --include-filtered-dependencies
+lerna run build --stream --concurrency=1 --include-filtered-dependencies
 ```
 
 You can also run the same command in an individual component's directory (i.e. `magda-whatever/`) to build just that component.
