@@ -10,7 +10,7 @@ You need to install following in order to build MAGDA:
 -   [Java 8 JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) - To run the JVM components, and to build the small amount of Java code.
 -   [sbt](http://www.scala-sbt.org/) - To build the Scala components.
 -   [yarn](https://yarnpkg.com/) - Npm replacement that makes node deps in a monorepo much easier.
--   [lerna](https://lernajs.io/) - To manage our multiple-project repo. Once you have node.js/yarn installed, installing lerna is as simple as `yarn global add lerna`.
+-   [lerna](https://lerna.js.org/) - To manage our multiple-project repo. Once you have node.js/yarn installed, installing lerna is as simple as `yarn global add lerna`.
 -   [pancake](https://github.com/govau/pancake) - To manage design components. Once you have Node.js installed, installing pancake is as simple as `yarn global add @gov.au/pancake`.
 
 To push the images and run them on kubernetes, you'll need to install:
@@ -50,7 +50,7 @@ You can also run the same command in an individual component's directory (i.e. `
 
 ### Set up Helm
 
-Helm is the package manager for Kubernetes - we use it to make it so that you can install all the various services you need for MAGDA at once. To install, follow the instructions at https://github.com/kubernetes/helm/blob/master/docs/install.md.
+Helm is the package manager for Kubernetes - we use it to make it so that you can install all the various services you need for MAGDA at once. To install, follow the instructions at [https://github.com/kubernetes/helm/blob/master/docs/install.md](https://github.com/kubernetes/helm/blob/master/docs/install.md).
 
 In a nutshell, once you have helm installed, this is how you initialise helm and Tiller.
 
