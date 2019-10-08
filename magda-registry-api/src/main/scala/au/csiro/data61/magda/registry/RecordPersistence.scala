@@ -8,6 +8,7 @@ import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.opa.OpaConsts.ANY_IN_ARRAY
 import au.csiro.data61.magda.opa.OpaTypes._
+import au.csiro.data61.magda.registry.RegistryRecordOpaHelper.getOpaConditions
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import scalikejdbc._
@@ -364,7 +365,7 @@ object DefaultRecordPersistence
       opaQueries: List[List[OpaQuery]] = List()
   ): Option[JsObject] = {
     val opaSql =
-      getOpaConditions(tenantId, opaQueries, AuthOperations.read, recordId)
+      getOpaConditions(opaQueries, AuthOperations.read, recordId)
 
     sql"""select RecordAspects.aspectId as aspectId, Aspects.name as aspectName, data, RecordAspects.tenantId
           from RecordAspects
@@ -1064,7 +1065,7 @@ object DefaultRecordPersistence
       else Seq(Some(sqls"Records.tenantId=$tenantId"))
 
     val opaConditions =
-      getOpaConditions(tenantId, opaQueries, AuthOperations.read)
+      getOpaConditions(opaQueries, AuthOperations.read)
 
     val whereClauseParts = countWhereClauseParts :+ Option(opaConditions) :+ pageToken
       .map(
@@ -1208,7 +1209,7 @@ object DefaultRecordPersistence
   ): Long = {
     val recordsFilteredByTenantClause = filterRecordsByTenantClause(tenantId)
     val opaConditions =
-      getOpaConditions(tenantId, opaQueries, AuthOperations.read)
+      getOpaConditions(opaQueries, AuthOperations.read)
     val theRecordSelector = Iterable(Some(recordsFilteredByTenantClause)) ++ recordSelector ++ Iterable(
       Some(opaConditions)
     )
@@ -1383,7 +1384,7 @@ object DefaultRecordPersistence
       operationType: AuthOperations.OperationType
   ): Iterable[SQLSyntax] = {
     val opaSql: SQLSyntax =
-      getOpaConditions(tenantId, opaQueries, operationType)
+      getOpaConditions(opaQueries, operationType)
 
     val aspectWhereClauses: Seq[Option[SQLSyntax]] = aspectIdsToWhereClause(
       tenantId,
@@ -1392,16 +1393,6 @@ object DefaultRecordPersistence
     val aspectWhereParts: SQLSyntax = makeWhereParts(aspectWhereClauses)
     val result = List(aspectWhereParts, opaSql)
     result
-  }
-
-  private def opaQueriesToWhereParts(
-      tenantId: BigInt,
-      opaQueries: Seq[OpaQuery],
-      operationType: AuthOperations.OperationType
-  ): (String, Iterable[SQLSyntax]) = {
-    val theOpaQueries: List[OpaQuery] = opaQueries.toList
-    val opaSql = opaQueriesToWhereClauseParts(tenantId, theOpaQueries)
-    opaSql
   }
 
   private object ColumnNamePrefixType extends Enumeration {
@@ -1421,59 +1412,6 @@ object DefaultRecordPersistence
     SQLSyntax.createUnsafely(prefixStr + s"aspect$index")
   }
 
-  private def getOpaConditions(
-      tenantId: BigInt,
-      opaQueries: Seq[List[OpaQuery]],
-      operationType: AuthOperations.OperationType,
-      recordId: String = ""
-  ): SQLSyntax = {
-
-    val conditions = if (opaQueries.nonEmpty) {
-      SQLSyntax.joinWithOr(
-        opaQueries.map(andTerms => {
-          SQLSyntax.joinWithAnd(
-            opaQueriesToWhereParts(tenantId, andTerms, operationType)._2.toSeq: _*
-          )
-        }): _*
-      )
-    } else {
-      sqls"true"
-    }
-
-    val aspectId =
-      if (opaQueries.nonEmpty && opaQueries.head.nonEmpty) {
-        val x: OpaQuery = opaQueries.head.head
-        opaQueriesToWhereParts(tenantId, List(x), operationType)._1
-      } else {
-        ""
-      }
-    if (conditions.equals(sqls"true")) {
-      conditions
-    } else if (recordId.nonEmpty) {
-      sqls"""
-          (EXISTS (
-            SELECT 1 FROM records_without_access_control
-            WHERE (recordid, tenantid)=($recordId, records.tenantId)) or
-          exists (
-            select 1 from recordaspects
-            where (RecordAspects.recordId, RecordAspects.aspectId, RecordAspects.tenantId)=($recordId, $aspectId, Records.tenantId) and
-            ($conditions)
-          ))
-        """
-    } else {
-      sqls"""
-          (EXISTS (
-            SELECT 1 FROM records_without_access_control
-            WHERE (recordid, tenantid)=(Records.recordId, records.tenantId)) or
-          exists (
-            select 1 from recordaspects
-            where (RecordAspects.recordId, RecordAspects.aspectId, RecordAspects.tenantId)=(Records.recordId, $aspectId, Records.tenantId) and
-            ($conditions)
-          ))
-        """
-    }
-  }
-
   private def aspectIdsToSelectClauses(
       session: DBSession,
       tenantId: BigInt,
@@ -1482,7 +1420,7 @@ object DefaultRecordPersistence
       opaQueries: Seq[List[OpaQuery]],
       dereference: Boolean = false
   ): Iterable[scalikejdbc.SQLSyntax] = {
-    val opaConditions = getOpaConditions(tenantId, opaQueries, operationType)
+    val opaConditions = getOpaConditions(opaQueries, operationType)
     val referenceDetails =
       buildReferenceMap(session, aspectIds.toSeq)
 
@@ -1629,89 +1567,5 @@ object DefaultRecordPersistence
              WHERE (aspectId, recordid, tenantId)=(${query.aspectId}, Records.recordId, Records.tenantId) AND
              $equalsOrContainsClause )
       """
-  }
-
-  private def opaTermsToSqlTerms(
-      queries: List[AspectQuery]
-  ): List[SQLSyntax] = {
-    val sqlTerms: List[SQLSyntax] = queries.map(query => {
-      val operation = SQLSyntax.createUnsafely(query.operation)
-      val equalsOrContainsClauses =
-        if (query.path.length == 2 && query.path(1).equals(ANY_IN_ARRAY)) {
-          sqls"""
-               jsonb_exists((data->>${query.path.head})::jsonb, ${query.value}::text)
-          """
-        } else {
-          sqls"""
-               data #>> string_to_array(${query.path
-            .mkString(",")}, ',') $operation ${query.value}
-          """
-        }
-      equalsOrContainsClauses
-    })
-    sqlTerms
-  }
-
-  private def convertToSql(operation: OpaOp) = {
-    if (operation == Eq) "="
-    else if (operation == Gt) ">"
-    else if (operation == Lt) "<"
-    else if (operation == Gte) ">="
-    else if (operation == Lte) "<="
-    else
-      throw new Exception("Could not understand " + operation)
-  }
-
-  /**
-    * When tenantId equals SYSTEM_TENANT_ID, if the request also provides JWT that can prove
-    * that the requester has admin role, this function will return List(sqls"true"). In that
-    * case, the requester will have access to all records.
-    */
-  private def opaQueriesToWhereClauseParts(
-      tenantId: BigInt,
-      opaQueries: List[OpaQuery]
-  ): (String, List[SQLSyntax]) = {
-    val theOpaQueries =
-      if (opaQueries.nonEmpty) {
-        opaQueries
-      } else {
-        List(OpaQuerySkipAccessControl)
-      }
-
-    if (theOpaQueries.contains(OpaQueryMatchAny) || theOpaQueries.contains(
-          OpaQuerySkipAccessControl
-        )) {
-      ("", List(sqls"true"))
-    } else {
-      val opaQueriesToAspectQueries: List[AspectQuery] = theOpaQueries.map({
-        case OpaQueryMatchValue(
-            OpaRefObjectKey("object")
-              :: OpaRefObjectKey("registry")
-              :: OpaRefObjectKey("record")
-              :: OpaRefObjectKey(accessAspectId)
-              :: restOfKeys,
-            operation,
-            aValue
-            ) =>
-          AspectQuery(
-            aspectId = accessAspectId,
-            path = restOfKeys.map {
-              case OpaRefObjectKey(key) => key
-              case e =>
-                throw new Exception("Could not understand " + e)
-            },
-            value = aValue match {
-              case OpaValueString(string)   => string
-              case OpaValueBoolean(boolean) => boolean.toString
-              case OpaValueNumber(bigDec)   => bigDec.toString()
-            },
-            operation = convertToSql(operation)
-          )
-        case e => throw new Exception(s"Could not understand $e")
-      })
-
-      val aspectId = opaQueriesToAspectQueries.head.aspectId
-      (aspectId, opaTermsToSqlTerms(opaQueriesToAspectQueries))
-    }
   }
 }
