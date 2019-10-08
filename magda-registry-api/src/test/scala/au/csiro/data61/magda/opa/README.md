@@ -4,9 +4,9 @@ Follow the instructions below to perform the integration tests on your local dev
 
 ### Enable the integration tests
 
-Comment out the @Ignore annotation near the top of file opa/RecordsOpaSpec.scala. Do not commit
-the change as the tests are not fully automated yet. The tests will fail if they are run in the
-CI tests.
+Comment out the @Ignore annotation near the top of files like opa/RecordsWith\*Spec.scala. Do
+not commit the change as the tests are not fully automated yet. The tests will fail if they
+are run in the CI tests.
 
 ### Deploy combined-db with authorization-db and registry-db
 
@@ -89,15 +89,27 @@ in method addJwtToken() of class opa/ApiWithOpaSpec.scala.
 
 It is very convenient to debug the tests with IntelliJ IDEA.
 
-There are currently two suites of tests. One, `RecordsWithOwnerOrgUnitsOpaPoliciesSpec`, is configured to use the
-hierarchical organization based access control policy `object.registry.record.owner_orgunit` that corresponds to
-`dataset-access-control` aspect, the other, `RecordsWithEsriOpaPoliciesSpec`, is configured to use Esri groups based
-policy `object.registry.record.esri_groups` that corresponds to `esri-access-control` aspect.
+There are currently three suites of tests.
 
-Both suites perform tests under the same conditions described in `Relationship among users, organizations and records.`
+#### RecordsWithOwnerOrgUnitsOpaPoliciesSpec
+
+It is configured to use the hierarchical organization based access control policy `object.registry.record.owner_orgunit`
+that corresponds to `dataset-access-control` aspect.
+
+#### RecordsWithEsriOpaPoliciesSpec
+
+It is configured to use Esri groups based policy `object.registry.record.esri_groups` that corresponds to
+`esri-access-control` aspect. All of the access control aspects have NOT expired yet.
+
+#### RecordsWithEsriOpaPoliciesExpiredSpec
+
+It is configured to use Esri groups based policy `object.registry.record.esri_groups` that corresponds to
+`esri-access-control` aspect. All of the access control aspects have expired.
+
+All the suites perform tests under the same conditions described in `Relationship among users, organizations and records.`
 in the class of `ApiWithOpaSpec`.
 
-After running either of the two suites, the testing data are persisted in the database.
+After running one of the three suites, its testing data are persisted in the database.
 
 You may run RegistryApp with default config (using default policy `object.registry.record.owner_orgunit`) from
 the IntelliJ then query the registry api as different users. A user is identified by a jwt token in the request header.

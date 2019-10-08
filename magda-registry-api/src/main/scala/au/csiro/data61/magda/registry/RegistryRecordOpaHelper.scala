@@ -41,6 +41,7 @@ object RegistryRecordOpaHelper {
     } else {
       val theRecordId =
         if (recordId.nonEmpty) sqls"$recordId" else sqls"Records.recordId"
+
       val accessControlAspectId = getAccessAspectId(opaQueries.head.head)
 
       sqls"""
