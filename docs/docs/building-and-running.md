@@ -28,7 +28,10 @@ If you just want to try it out locally without actually changing anything, it's 
 
 ## Building and running (just) the frontend
 
-If you just want to edit the UI, you don't actually even need helm - just clone the repo, run `yarn install` at the root, then `cd magda-web-client` and run `yarn run dev`. This will build/run a local version of the client, connecting to the API at https://dev.magda.io/api. If you want to connect to a magda API hosted elsewhere you can modify the `config.js` file in the client.
+If you just want to edit the UI, you don't actually even need helm -
+just clone the repo, run `yarn install` at the root, then `cd magda-web-client` and run `yarn run dev`.
+This will build/run a local version of the client, connecting to the API at [https://dev.magda.io/api](https://dev.magda.io/api).
+If you want to connect to a magda API hosted elsewhere you can modify the `config.js` file in the client.
 
 ## Building and running the backend
 
@@ -136,7 +139,7 @@ minikube ip
 
 It's a good idea to add an entry for `minikube.data.gov.au` to your `hosts` file (`C:\Windows\System32\drivers\etc\hosts` on Windows), mapping it to your Minikube IP address. Some services may assume this is in place. For example:
 
-```
+```console
 192.168.99.100	minikube.data.gov.au
 ```
 
