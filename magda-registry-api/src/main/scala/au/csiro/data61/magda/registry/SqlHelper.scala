@@ -15,8 +15,7 @@ import au.csiro.data61.magda.opa.OpaTypes.{
 }
 import scalikejdbc._
 
-object RegistryRecordOpaHelper {
-  private val SQL_TRUE = sqls"true"
+object SqlHelper {
 
   /**
     * Translate multiple OPA queries into one SQL clause.
@@ -66,45 +65,59 @@ object RegistryRecordOpaHelper {
   }
 
   /**
-    * Convert a given aspect query into sql comparison clause.
+    * Convert a given aspect query into SQL comparison clause.
     *
-    * Limitation:
-    * It only supports string comparison (by converting any data into string), which might
-    * cause unexpected result. For example, if A = 12 and B = 9, by converting A and B
-    * into strings, it will evaluate A > B to false.
+    * It performs string comparison between the query json field and the query value,
+    * using the query comparator (=, >, >=, <, <=).
     *
-    * However, in the current application, the only usage of number ">" comparison is in
-    * the timestamp and expiration comparison for OPA residual evaluation, which will not
-    * cause problem in a few hundred years.
+    * Limitation
+    *
+    * It only supports string comparison, which might cause unexpected result. For example,
+    * if A = 12 and B = 9, the expression "A > B" will be evaluated to "false".
+    *
+    * However, in the current application, the comparator other than "=" is only used in
+    * the comparison between the expiration time and query time (numbers comparison, in
+    * access control query), which will not cause any problem in a few hundred years time.
     *
     * @param query a given aspect query
-    * @return a sql comparison clause
+    * @return SQL comparison clause
     */
   def aspectQueryToSql(
       query: AspectQuery
   ): SQLSyntax = {
-    val sqlTerm: SQLSyntax = {
-      val operation = SQLSyntax.createUnsafely(query.operation)
-      if (query.path.length == 2 && query.path(1).equals(ANY_IN_ARRAY)) {
+    query match {
+      case AspectQuery(
+          _,
+          List(fieldName, ANY_IN_ARRAY),
+          value,
+          SQL_EQ
+          ) =>
         sqls"""
-             jsonb_exists((data->>${query.path.head})::jsonb, ${query.value}::text)
+             jsonb_exists((data->>$fieldName)::jsonb, $value::text)
         """
-      } else {
+      case AspectQuery(
+          _,
+          path,
+          value,
+          sqlComparator
+          ) =>
         sqls"""
-             data #>> string_to_array(${query.path
-          .mkString(",")}, ',') $operation ${query.value}
+             data #>> string_to_array(${path
+          .mkString(",")}, ',') $sqlComparator $value
         """
-      }
+      case e => throw new Exception(s"Could not handle query $e")
     }
-    sqlTerm
   }
 
-  private def convertToSql(operation: OpaOp) = {
-    if (operation == Eq) "="
-    else if (operation == Gt) ">"
-    else if (operation == Lt) "<"
-    else if (operation == Gte) ">="
-    else if (operation == Lte) "<="
+  private val SQL_TRUE = sqls"true"
+  private val SQL_EQ = SQLSyntax.createUnsafely("=")
+
+  private def convertToSql(operation: OpaOp): SQLSyntax = {
+    if (operation == Eq) SQLSyntax.createUnsafely("=")
+    else if (operation == Gt) SQLSyntax.createUnsafely(">")
+    else if (operation == Lt) SQLSyntax.createUnsafely("<")
+    else if (operation == Gte) SQLSyntax.createUnsafely(">=")
+    else if (operation == Lte) SQLSyntax.createUnsafely("<=")
     else
       throw new Exception("Could not understand " + operation)
   }
@@ -171,7 +184,7 @@ object RegistryRecordOpaHelper {
               case OpaValueBoolean(boolean) => boolean.toString
               case OpaValueNumber(bigDec)   => bigDec.toString()
             },
-            operation = convertToSql(operation)
+            sqlComparator = convertToSql(operation)
           )
         case e => throw new Exception(s"Could not understand $e")
       })

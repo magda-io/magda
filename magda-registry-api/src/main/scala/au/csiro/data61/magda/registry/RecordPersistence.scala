@@ -7,7 +7,7 @@ import akka.event.LoggingAdapter
 import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.opa.OpaTypes._
-import au.csiro.data61.magda.registry.RegistryRecordOpaHelper.{
+import au.csiro.data61.magda.registry.SqlHelper.{
   getOpaConditions,
   aspectQueryToSql
 }
