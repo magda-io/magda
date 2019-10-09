@@ -26,6 +26,7 @@ Search:
 -   Prevent freeText query from being None which will cause score to be 0
 -   Add tenant specific search.
 -   Fixed facet options (publishers) API error: Invalid aggregation name
+-   Fixed Querying formats in upper case causes two formats to be selected
 
 Indexer:
 
@@ -102,7 +103,7 @@ UI:
 -   Fixed "NOT SET" appears on the dataset page for non-admins
 -   Made the add dataset flow only say it found keywords in the document if it actually did so.
 -   Made the datepicker for add dataset use the correct colours.
--   Updated schema.org Dataset and DataDownload semantic markup for rich search results 
+-   Updated schema.org Dataset and DataDownload semantic markup for rich search results
 -   Fixed typos in no-print styling and adding keywords tooltip
 -   Added a preview mode for add dataset, that allows all users to use add dataset but prevents them from submitting.
 
