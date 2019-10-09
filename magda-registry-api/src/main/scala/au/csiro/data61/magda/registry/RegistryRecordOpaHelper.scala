@@ -18,6 +18,14 @@ import scalikejdbc._
 object RegistryRecordOpaHelper {
   private val SQL_TRUE = sqls"true"
 
+  /**
+    * Translate multiple OPA queries into one SQL clause.
+    *
+    * @param opaQueries OPA queries
+    * @param operationType OPA operation type (E.g. read)
+    * @param recordId If non-empty, filter by this record ID.
+    * @return a single SQL clause
+    */
   def getOpaConditions(
       opaQueries: Seq[List[OpaQuery]],
       operationType: AuthOperations.OperationType,
@@ -57,6 +65,40 @@ object RegistryRecordOpaHelper {
     }
   }
 
+  /**
+    * Convert a given aspect query into sql comparison clause.
+    *
+    * Limitation:
+    * It only supports string comparison (by converting any data into string), which might
+    * cause unexpected result. For example, if A = 12 and B = 9, by converting A and B
+    * into strings, it will evaluate A > B to false.
+    *
+    * However, in the current application, the only usage of number ">" comparison is in
+    * the timestamp and expiration comparison for OPA residual evaluation, which will not
+    * cause problem in a few hundred years.
+    *
+    * @param query a given aspect query
+    * @return a sql comparison clause
+    */
+  def aspectQueryToSql(
+      query: AspectQuery
+  ): SQLSyntax = {
+    val sqlTerm: SQLSyntax = {
+      val operation = SQLSyntax.createUnsafely(query.operation)
+      if (query.path.length == 2 && query.path(1).equals(ANY_IN_ARRAY)) {
+        sqls"""
+             jsonb_exists((data->>${query.path.head})::jsonb, ${query.value}::text)
+        """
+      } else {
+        sqls"""
+             data #>> string_to_array(${query.path
+          .mkString(",")}, ',') $operation ${query.value}
+        """
+      }
+    }
+    sqlTerm
+  }
+
   private def convertToSql(operation: OpaOp) = {
     if (operation == Eq) "="
     else if (operation == Gt) ">"
@@ -67,23 +109,11 @@ object RegistryRecordOpaHelper {
       throw new Exception("Could not understand " + operation)
   }
 
-  private def opaAspectToSql(
+  private def aspectQueriesToSql(
       queries: List[AspectQuery]
   ): List[SQLSyntax] = {
     val sqlTerms: List[SQLSyntax] = queries.map(query => {
-      val operation = SQLSyntax.createUnsafely(query.operation)
-      val equalsOrContainsClauses =
-        if (query.path.length == 2 && query.path(1).equals(ANY_IN_ARRAY)) {
-          sqls"""
-               jsonb_exists((data->>${query.path.head})::jsonb, ${query.value}::text)
-          """
-        } else {
-          sqls"""
-               data #>> string_to_array(${query.path
-            .mkString(",")}, ',') $operation ${query.value}
-          """
-        }
-      equalsOrContainsClauses
+      aspectQueryToSql(query)
     })
     sqlTerms
   }
@@ -146,7 +176,7 @@ object RegistryRecordOpaHelper {
         case e => throw new Exception(s"Could not understand $e")
       })
 
-      opaAspectToSql(opaAspectQueries)
+      aspectQueriesToSql(opaAspectQueries)
     }
   }
 

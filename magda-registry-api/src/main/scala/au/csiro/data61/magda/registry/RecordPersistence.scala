@@ -6,9 +6,11 @@ import akka.NotUsed
 import akka.event.LoggingAdapter
 import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.model.Registry._
-import au.csiro.data61.magda.opa.OpaConsts.ANY_IN_ARRAY
 import au.csiro.data61.magda.opa.OpaTypes._
-import au.csiro.data61.magda.registry.RegistryRecordOpaHelper.getOpaConditions
+import au.csiro.data61.magda.registry.RegistryRecordOpaHelper.{
+  getOpaConditions,
+  aspectQueryToSql
+}
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import scalikejdbc._
@@ -1550,22 +1552,12 @@ object DefaultRecordPersistence
   }
 
   private def aspectQueryToWhereClause(query: AspectQuery) = {
-    val operation = SQLSyntax.createUnsafely(query.operation)
-    val equalsOrContainsClause =
-      if (query.path.length == 2 && query.path(1).equals(ANY_IN_ARRAY)) {
-        sqls"""
-               jsonb_exists((data->>${query.path.head})::jsonb, ${query.value}::text)
-          """
-      } else {
-        sqls"""
-               data #>> string_to_array(${query.path.mkString(",")}, ',') $operation ${query.value}
-          """
-      }
+    val comparisonClause = aspectQueryToSql(query)
 
     sqls"""EXISTS (
              SELECT 1 FROM recordaspects
              WHERE (aspectId, recordid, tenantId)=(${query.aspectId}, Records.recordId, Records.tenantId) AND
-             $equalsOrContainsClause )
+             $comparisonClause )
       """
   }
 }
