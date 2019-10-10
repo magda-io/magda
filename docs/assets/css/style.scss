@@ -1,12 +1,39 @@
 ---
 ---
 
+$magda-color: #0100f4;
+$magda-color-dark: #30384d;
+
+$header-bg-color: $magda-color;
+$header-bg-color-secondary: darken($magda-color, 10%);
+
+$section-headings-color: $magda-color;
+$body-link-color: darken($magda-color, 10%);
+$body-text-color: #484848;
+
 @import "{{ site.theme }}";
+
+body {
+    background: #fafafa;
+}
+
 .btn {
     margin-bottom: 0;
 }
+
+.btn-primary {
+    color: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.2);
+
+    &:hover,
+    &:focus {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.3);
+    }
+}
+
 .page-header {
-    padding: 3em 3em;
+    padding: 2em 2em;
 }
 .center {
     text-align: center;
@@ -17,4 +44,8 @@
             margin: 0 auto;
         }
     }
+}
+
+.project-tagline {
+    margin-top: 0;
 }
