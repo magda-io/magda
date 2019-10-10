@@ -33,7 +33,7 @@ Our current roadmap is available at https://magda.io/docs/roadmap
 
 Magda is built around a collection of microservices that are distributed as docker containers. This was done to provide easy extensibility - Magda can be customised by simply adding new services using any technology as docker images, and integrating them with the rest of the system via stable HTTP APIs. Using Helm and Kubernetes for orchestration means that configuration of a customised Magda instance can be stored and tracked as plain text, and instances with identical configuration can be quickly and easily reproduced.
 
-![Magda Architecture Diagram](docs/assets/marketecture.png)
+![Magda Architecture Diagram](docs/assets/marketecture.svg)
 
 ### Registry
 
