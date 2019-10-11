@@ -1637,6 +1637,7 @@ object DefaultRecordPersistence
   }
 
   /**
+    * // TODO: Make OPA query tenant independent. This will be done in PR https://github.com/magda-io/magda/pull/2521.
     * When tenantId equals SYSTEM_TENANT_ID, if the request also provides JWT that can prove
     * that the requester has admin role, this function will return List(sqls"true"). In that
     * case, the requester will have access to all records.
