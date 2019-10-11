@@ -5,7 +5,24 @@ import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.registry._
 import spray.json._
 
-abstract class RecordEsriOpaPolicyWithExpiredGroupsOnlySpec extends ApiWithOpa {
+abstract class RecordEsriOpaPolicyWithInvalidAccessControlAspectSpec extends ApiWithOpa {
+  override val userIdsAndExpectedRecordIdIndexesWithoutLink = List(
+    (adminUser, List(0, 1, 2, 3, 4, 5)),
+    (userId0, Nil),
+    (userId1, Nil),
+    (userId2, Nil),
+    (userId3, Nil),
+    (anonymous, Nil)
+  )
+
+  override val userIdsAndExpectedRecordIdIndexesWithSingleLink = List(
+    (adminUser, List(2)),
+    (userId0, Nil),
+    (userId1, Nil),
+    (userId2, Nil),
+    (userId3, Nil),
+    (anonymous, Nil)
+  )
 
   describe("should authorize non-link aspect query") {
     it(
