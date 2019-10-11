@@ -34,6 +34,7 @@ Indexer:
 -   Fixed indexer throws an error when affiliatedOrganisation field is created
 -   Fixed indexer incorrect parsing bounding box data in spatialCoverage aspect
 -   Added auth when crawling the registry
+-   Fixed Data.json spatial bounding box ordering not understood
 
 Cataloging:
 
