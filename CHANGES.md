@@ -106,6 +106,7 @@ UI:
 -   Fixed typos in no-print styling and adding keywords tooltip
 -   Added a preview mode for add dataset, that allows all users to use add dataset but prevents them from submitting.
 -   Added a new color (slightly grey) for preview screens
+-   Removed unnecessary margin in the filter facets
 
 Gateway:
 
