@@ -187,15 +187,17 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                 };
                                 return (
                                     <div className="fileBlock">
-                                        <span className="fileBlock-icon">
-                                            <img
-                                                className="file-icon"
-                                                src={getFormatIcon(file)}
-                                            />
-                                        </span>
-                                        <span className="fileBlock-text">
-                                            {file.title}
-                                        </span>
+                                        <div className="col-sm-6">
+                                            <span className="fileBlock-icon">
+                                                <img
+                                                    className="file-icon"
+                                                    src={getFormatIcon(file)}
+                                                />
+                                            </span>
+                                            <span className="fileBlock-text col-sm-10">
+                                                {file.title}
+                                            </span>
+                                        </div>
                                         <div className="fileBlock-control col-sm-6">
                                             <LicenseEditor
                                                 value={file.license || ""}
