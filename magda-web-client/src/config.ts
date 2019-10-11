@@ -121,8 +121,8 @@ export const config = {
             name: "Organisation"
         },
         { id: "region", component: Region },
-        { id: "temporal", component: Temporal },
-        { id: "format", component: Format }
+        { id: "format", component: Format },
+        { id: "temporal", component: Temporal }
     ],
     headerLogoUrl: `${contentApiURL}header/logo`,
     headerMobileLogoUrl: `${contentApiURL}header/logo-mobile`,

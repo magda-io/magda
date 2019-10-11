@@ -17,6 +17,7 @@ The following people have contributed to Magda:
     -   [Alyce Lythall](https://github.com/alyce)
     -   [Aneesha Govil](https://github.com/aneesha09)
     -   [Rowan Winsemius](https://github.com/rowanwins)
+    -   [Sajid Ibne Anower](https://github.com/sajidanower23)
 -   [Department of the Prime Minister and Cabinet](https://www.dpmc.gov.au/)
     -   [Toby Bellwood](https://github.com/tobybellwood)
 -   [CSIRO Land and Water](https://www.csiro.au/en/Research/LWF)
