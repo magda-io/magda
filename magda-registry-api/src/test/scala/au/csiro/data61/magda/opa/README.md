@@ -4,7 +4,7 @@ Follow the instructions below to perform the integration tests on your local dev
 
 ### Enable the integration tests
 
-Comment out the @Ignore annotation near the top of files like opa/RecordsWith\*Spec.scala. Do
+Comment out the @Ignore annotation near the top of files like opa/Test\*.scala. Do
 not commit the change as the tests are not fully automated yet. The tests will fail if they
 are run in the CI tests.
 
@@ -74,21 +74,21 @@ The current Java JWT library is not capable of creating custom claims that are j
 The typescript library comes to help. The jwt tokens used in testing esri policy are created by
 magda-typescript-common/src/test/session/buildJwtForRegistryEsri\*\*\*Test.ts.
 
-If necessary, follow the instructions in a relevant overridden addJwtToken() method.
+If necessary, follow the instructions in a relevant override addJwtToken() method.
 
 ### Start the integration tests
 
 It is very convenient to debug the tests with IntelliJ IDEA.
 
 All the suites perform tests under the same conditions described in `Relationship among users, organizations and records.`
-in the class of `ApiWithOpaSpec`.
+in the class of `ApiWithOpa`.
 
-After running one of the three suites, its testing data are persisted in the database.
+After running one of the suites, its testing data are persisted in the database.
 
 You may run RegistryApp with default config (using default policy `object.registry.record.owner_orgunit`) from
 the IntelliJ then query the registry api as different users. A user is identified by a jwt token in the request header.
 
-Here is an example query on behalf of user with ID of 00000000-0000-1000-0003-000000000000:
+Here is an example query on behalf of user with ID of 00000000-0000-1000-0003-000000000000
 (Do not forget to add tenant id header too.)
 
 ```
