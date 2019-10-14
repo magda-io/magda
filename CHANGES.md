@@ -34,6 +34,7 @@ Indexer:
 -   Fixed indexer throws an error when affiliatedOrganisation field is created
 -   Fixed indexer incorrect parsing bounding box data in spatialCoverage aspect
 -   Added auth when crawling the registry
+-   Fixed Data.json spatial bounding box ordering not understood
 
 Cataloging:
 
@@ -106,6 +107,7 @@ UI:
 -   Fixed typos in no-print styling and adding keywords tooltip
 -   Added a preview mode for add dataset, that allows all users to use add dataset but prevents them from submitting.
 -   Fixed text wrap around tooltip
+-   Fixed Add Dataset / License setting: Long file names should be wrapped to the next line
 -   Added a new color (slightly grey) for preview screens
 -   Removed unnecessary margin in the filter facets
 
