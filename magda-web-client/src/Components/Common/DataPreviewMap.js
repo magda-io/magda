@@ -23,6 +23,8 @@ export const isSupportedFormat = function(format) {
             if (typeof preferenceItem === "string") return preferenceItem;
             else if (Array.isArray(preferenceItem) && preferenceItem.length) {
                 return preferenceItem[0];
+            } else {
+                throw new Error("Invalid DataSourcePreference item type.");
             }
         }
     );
