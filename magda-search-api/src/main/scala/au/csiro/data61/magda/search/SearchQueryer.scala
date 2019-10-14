@@ -3,6 +3,7 @@ package au.csiro.data61.magda.search
 import au.csiro.data61.magda.api.Query
 import au.csiro.data61.magda.api.model.{ RegionSearchResult, SearchResult, OrganisationsSearchResult, AutoCompleteQueryResult }
 import au.csiro.data61.magda.model.misc._
+import au.csiro.data61.magda.model.TenantId._
 
 import scala.concurrent.Future
 

@@ -26,7 +26,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
     if (ids.isEmpty)
       List()
     else {
-      sql"""select aspectId, name, jsonSchema, tenantId from Aspects where ${if (tenantId == MAGDA_SYSTEM_ID) SQLSyntax.empty else sqls"tenantId = $tenantId and"} aspectId in ($ids)"""
+      sql"""select aspectId, name, jsonSchema, tenantId from Aspects where ${if (tenantId.isAllTenants) SQLSyntax.empty else sqls"tenantId = $tenantId and"} aspectId in ($ids)"""
         .map(rowToAspect).list.apply()
     }
   }

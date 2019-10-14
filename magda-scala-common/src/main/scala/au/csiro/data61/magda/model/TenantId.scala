@@ -1,17 +1,23 @@
 package au.csiro.data61.magda.model
 
 object TenantId {
-  sealed trait TenantId
+  sealed trait TenantId {
+    def specifiedOrThrow(): BigInt
+    def isAllTenants(): Boolean
+  }
   case object AllTenantsId extends TenantId {
-    override def toString: String = {
-      throw new Exception(
-        "Called toString() on AllTenants. This is not allowed because it probably means you've interpolated this into SQL as if it were a tenant id (WHICH IS IS NOT!!!111)"
-      )
-    }
+    override def specifiedOrThrow(): BigInt =
+      throw new Exception("Used specifiedOrThrow on unspecified tenant id")
+
+    override def isAllTenants(): Boolean = true
   }
   case class SpecifiedTenantId(tenantId: BigInt) extends TenantId {
+    override def specifiedOrThrow(): BigInt = tenantId;
+
     override def toString: String = {
       tenantId.toString
     }
+
+    override def isAllTenants(): Boolean = false
   }
 }

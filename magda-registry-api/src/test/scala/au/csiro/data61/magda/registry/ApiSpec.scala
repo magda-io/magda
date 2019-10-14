@@ -48,7 +48,7 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
 
   val databaseUrl = Option(System.getenv("POSTGRES_URL")).getOrElse("jdbc:postgresql://localhost:5432/postgres")
 
-  def addTenantIdHeader(tenantId: TenantId): RawHeader = {
+  def addTenantIdHeader(tenantId: BigInt): RawHeader = {
     RawHeader(MAGDA_TENANT_ID_HEADER, tenantId.toString)
   }
 

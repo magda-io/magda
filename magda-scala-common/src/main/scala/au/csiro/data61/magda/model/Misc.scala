@@ -111,7 +111,7 @@ package misc {
     // case, a record id is not unique, which should not be used as document ID in the ES database.
     // With this new version, regardless the deployment mode, all document IDs will consist of record identifier
     // and tenant id. The ES document IDs will be unique.
-    def uniqueEsDocumentId(registryId: String, tenantId: SpecifiedTenantId): String = {
+    def uniqueEsDocumentId(registryId: String, tenantId: BigInt): String = {
       val rawIdentifier = registryId + "---" + tenantId
       java.net.URLEncoder.encode(rawIdentifier, "UTF-8")
     }

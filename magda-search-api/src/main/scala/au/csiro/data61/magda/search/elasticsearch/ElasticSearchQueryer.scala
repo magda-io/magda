@@ -10,6 +10,7 @@ import au.csiro.data61.magda.api.{FilterValue, Query, Specified, Unspecified}
 import au.csiro.data61.magda.model.Temporal
 import au.csiro.data61.magda.model.Temporal.{ApiDate, PeriodOfTime}
 import au.csiro.data61.magda.model.misc._
+import au.csiro.data61.magda.model.TenantId._
 import au.csiro.data61.magda.search.SearchStrategy._
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.{ESGenericException, IllegalArgumentException}

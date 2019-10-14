@@ -735,7 +735,7 @@ object DefaultRecordPersistence
         patchedRecord.id,
         patchedRecord.name,
         aspects,
-        tenantId = tenantId.tenantId
+        tenantId = Some(tenantId.tenantId)
       )
   }
 
@@ -888,7 +888,7 @@ object DefaultRecordPersistence
         )
         .find(_.isFailure) match {
         case Some(Failure(e)) => Failure(e)
-        case _                => Success(record.copy(tenantId = tenantId.tenantId))
+        case _                => Success(record.copy(tenantId = Some(tenantId.tenantId)))
       }
     } yield hasAspectFailure
   }
@@ -1312,7 +1312,7 @@ object DefaultRecordPersistence
       rs.arrayOpt("aspects")
         .map(_.getArray().asInstanceOf[Array[String]].toList)
         .getOrElse(List()),
-      rs.bigInt("tenantId")
+      rs.bigIntOpt("tenantId").map(BigInt.apply)
     )
   }
 
@@ -1332,7 +1332,7 @@ object DefaultRecordPersistence
         }
         .toMap,
       rs.stringOpt("sourceTag"),
-      rs.bigInt("tenantId")
+      rs.bigIntOpt("tenantId").map(BigInt.apply)
     )
   }
 

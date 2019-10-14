@@ -5,12 +5,11 @@ import akka.http.scaladsl.model.StatusCodes.{Accepted, Conflict, OK}
 import akka.http.scaladsl.server.Directives._
 import au.csiro.data61.magda.api.BaseMagdaApi
 import au.csiro.data61.magda.indexer.search.SearchIndexer
-import au.csiro.data61.magda.model.RegistryProtocols
 import com.typesafe.config.Config
 
 import scala.util.{Failure, Success}
 
-class CrawlerApi(crawler: Crawler, indexer: SearchIndexer)(implicit system: ActorSystem, config: Config) extends BaseMagdaApi with RegistryProtocols {
+class CrawlerApi(crawler: Crawler, indexer: SearchIndexer)(implicit system: ActorSystem, config: Config) extends BaseMagdaApi {
   implicit val ec = system.dispatcher
   override def getLogger = system.log
 

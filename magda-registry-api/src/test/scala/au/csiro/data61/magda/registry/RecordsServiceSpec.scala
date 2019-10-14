@@ -3,6 +3,7 @@ package au.csiro.data61.magda.registry
 import akka.event.LoggingAdapter
 import akka.http.scaladsl.model.StatusCodes
 import au.csiro.data61.magda.model.Registry._
+import au.csiro.data61.magda.model.TenantId._
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import scalikejdbc.DBSession
@@ -213,7 +214,7 @@ class RecordsServiceSpec extends ApiSpec {
           }
         }
 
-        def insertAspectDefs(param: FixtureParam, tenantId: TenantId) {
+        def insertAspectDefs(param: FixtureParam, tenantId: BigInt) {
           val aspectDefinition1 = AspectDefinition(aspectId1, "test1", None)
           param.asAdmin(Post("/v0/aspects", aspectDefinition1)) ~> addTenantIdHeader(tenantId) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -2539,7 +2540,7 @@ class RecordsServiceSpec extends ApiSpec {
           val mockedRecordPersistence = mock[RecordPersistence]
           val mockedApi = new RecordsService(param.api(role).config, param.webHookActor, param.authClient, system, materializer, mockedRecordPersistence)
 
-          (mockedRecordPersistence.trimRecordsBySource(_: BigInt, _: String, _: String, _: Option[LoggingAdapter])(_: DBSession)).expects(*, *, *, *, *).onCall { (_: BigInt, _: String, _: String, _: Option[LoggingAdapter], _: DBSession) =>
+          (mockedRecordPersistence.trimRecordsBySource(_: SpecifiedTenantId, _: String, _: String, _: Option[LoggingAdapter])(_: DBSession)).expects(*, *, *, *, *).onCall { (_: SpecifiedTenantId, _: String, _: String, _: Option[LoggingAdapter], _: DBSession) =>
             Thread.sleep(600)
             Success(1)
           }
