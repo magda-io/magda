@@ -9,8 +9,9 @@ import akka.http.scaladsl.model.ContentTypes.`application/json`
 import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.server.Route
 import au.csiro.data61.magda.api.model.SearchResult
-import au.csiro.data61.magda.model.RegistryConverters
+
 import au.csiro.data61.magda.model.misc._
+import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.search.SearchStrategy.MatchAll
 import au.csiro.data61.magda.spatial.RegionSource
 import au.csiro.data61.magda.test.util.ApiGenerators.{queryGen, _}
@@ -23,7 +24,7 @@ import org.scalacheck.Arbitrary.{arbString, arbitrary}
 import org.scalacheck.{Gen, Shrink}
 
 
-class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
+class DataSetSearchSpec extends BaseSearchApiSpec {
 
   blockUntilNotRed()
 

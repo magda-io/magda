@@ -4,7 +4,7 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.marshalling.{ToEntityMarshaller, ToResponseMarshallable}
 import akka.http.scaladsl.model.HttpHeader
 import akka.http.scaladsl.model.StatusCodes._
-import au.csiro.data61.magda.client.RegistryExternalInterface
+import au.csiro.data61.magda.indexer.external.registry.RegistryExternalInterface
 import au.csiro.data61.magda.indexer.external.registry.RegisterWebhook
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.registry.{Full, ApiSpec => BaseRegistryApiSpec}

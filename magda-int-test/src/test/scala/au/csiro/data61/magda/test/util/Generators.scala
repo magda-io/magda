@@ -593,7 +593,7 @@ object Generators {
 
   def dataSetGen(
       inputCache: mutable.Map[String, List[_]],
-      tenantId: TenantId = MAGDA_ADMIN_PORTAL_ID
+      tenantId: BigInt = MAGDA_ADMIN_PORTAL_ID
   ) =
     for {
       identifier <- Gen.delay {

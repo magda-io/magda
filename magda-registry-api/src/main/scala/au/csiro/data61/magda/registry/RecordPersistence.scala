@@ -335,7 +335,7 @@ object DefaultRecordPersistence
                          from RecordAspects
                          where RecordAspects.recordId=Records.recordId
                          and aspectId=$aspectId
-                         and tenantId=$tenantId
+                         and ${SQLUtil.tenantIdToWhereClause(tenantId)}
                          and data->${propertyWithLink.propertyName} ??| ARRAY[$ids])"""
       }
 
@@ -406,7 +406,7 @@ object DefaultRecordPersistence
           from RecordAspects
           inner join Aspects using (aspectId, tenantId)
           inner join Records using (recordId, tenantId)
-          where (RecordAspects.recordId, RecordAspects.aspectId, RecordAspects.tenantId)=($recordId, $aspectId, $tenantId)
+          where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AND RecordAspects.${SQLUtil.tenantIdToWhereClause(tenantId)}
 	        ${if (opaWhereClauseParts.isEmpty) SQLSyntax.empty
     else sqls"""and (${SQLSyntax.joinWithOr(opaWhereClauseParts: _*)})"""}
       """
@@ -582,7 +582,7 @@ object DefaultRecordPersistence
       _ <- Try {
         // Sourcetag should not generate an event so updating it is done separately
         if (record.sourceTag != patchedRecord.sourceTag) {
-          sql"""update Records set sourcetag = ${patchedRecord.sourceTag} where (recordId, tenantId) = ($id, $tenantId)""".update
+          sql"""update Records set sourcetag = ${patchedRecord.sourceTag} where (recordId, tenantId) = ($id, ${tenantId.tenantId})""".update
             .apply()
         }
       }
@@ -592,10 +592,10 @@ object DefaultRecordPersistence
           val event =
             PatchRecordEvent(id, tenantId.tenantId, recordOnlyPatch).toJson.compactPrint
           val eventId =
-            sql"insert into Events (eventTypeId, userId, tenantId, data) values (${PatchRecordEvent.Id}, 0, $tenantId, $event::json)"
+            sql"insert into Events (eventTypeId, userId, tenantId, data) values (${PatchRecordEvent.Id}, 0, ${tenantId.tenantId}, $event::json)"
               .updateAndReturnGeneratedKey()
               .apply()
-          sql"""update Records set name = ${patchedRecord.name}, lastUpdate = $eventId where (recordId, tenantId) = ($id, $tenantId)""".update
+          sql"""update Records set name = ${patchedRecord.name}, lastUpdate = $eventId where (recordId, tenantId) = ($id, ${tenantId.tenantId})""".update
             .apply()
           eventId
         } else {
@@ -773,7 +773,7 @@ object DefaultRecordPersistence
             aspectId,
             aspectPatch
           ).toJson.compactPrint
-          sql"insert into Events (eventTypeId, userId, tenantId, data) values (${PatchRecordAspectEvent.Id}, 0, $tenantId, $event::json)"
+          sql"insert into Events (eventTypeId, userId, tenantId, data) values (${PatchRecordAspectEvent.Id}, 0, ${tenantId.tenantId}, $event::json)"
             .updateAndReturnGeneratedKey()
             .apply()
         } else {
@@ -784,7 +784,7 @@ object DefaultRecordPersistence
       _ <- Try {
         if (testRecordAspectPatch.ops.nonEmpty) {
           val jsonString = patchedAspect.compactPrint
-          sql"""insert into RecordAspects (recordId, tenantId, aspectId, lastUpdate, data) values ($recordId, $tenantId, $aspectId, $eventId, $jsonString::json)
+          sql"""insert into RecordAspects (recordId, tenantId, aspectId, lastUpdate, data) values ($recordId, ${tenantId.tenantId}, $aspectId, $eventId, $jsonString::json)
                on conflict (aspectId, recordId, tenantId) do update
                set lastUpdate = $eventId, data = $jsonString::json
                """.update.apply()
@@ -858,11 +858,11 @@ object DefaultRecordPersistence
       eventId <- Try {
         val eventJson =
           CreateRecordEvent(record.id, tenantId.tenantId, record.name).toJson.compactPrint
-        sql"insert into Events (eventTypeId, userId, tenantId, data) values (${CreateRecordEvent.Id}, 0, $tenantId, $eventJson::json)".updateAndReturnGeneratedKey
+        sql"insert into Events (eventTypeId, userId, tenantId, data) values (${CreateRecordEvent.Id}, 0, ${tenantId.tenantId}, $eventJson::json)".updateAndReturnGeneratedKey
           .apply()
       }
       _ <- Try {
-        sql"""insert into Records (recordId, tenantId, name, lastUpdate, sourcetag) values (${record.id}, $tenantId, ${record.name}, $eventId, ${record.sourceTag})""".update
+        sql"""insert into Records (recordId, tenantId, name, lastUpdate, sourcetag) values (${record.id}, ${tenantId.tenantId}, ${record.name}, $eventId, ${record.sourceTag})""".update
           .apply()
       } match {
         case Failure(e: SQLException)
@@ -900,7 +900,7 @@ object DefaultRecordPersistence
   ): Try[Boolean] = {
     for {
       aspects <- Try {
-        sql"select aspectId from RecordAspects where (recordId, tenantId)=($recordId, $tenantId)"
+        sql"select aspectId from RecordAspects where (recordId, tenantId)=($recordId, ${tenantId.tenantId})"
           .map(rs => rs.string("aspectId"))
           .list
           .apply()
@@ -916,11 +916,11 @@ object DefaultRecordPersistence
       _ <- Try {
         val eventJson =
           DeleteRecordEvent(recordId, tenantId.tenantId).toJson.compactPrint
-        sql"insert into Events (eventTypeId, userId, tenantId, data) values (${DeleteRecordEvent.Id}, 0, $tenantId, $eventJson::json)".updateAndReturnGeneratedKey
+        sql"insert into Events (eventTypeId, userId, tenantId, data) values (${DeleteRecordEvent.Id}, 0, ${tenantId.tenantId}, $eventJson::json)".updateAndReturnGeneratedKey
           .apply()
       }
       rowsDeleted <- Try {
-        sql"""delete from Records where (recordId, tenantId)=($recordId, $tenantId)""".update
+        sql"""delete from Records where (recordId, tenantId)=($recordId, ${tenantId.tenantId})""".update
           .apply()
       }
     } yield rowsDeleted > 0
@@ -933,7 +933,7 @@ object DefaultRecordPersistence
       logger: Option[LoggingAdapter] = None
   )(implicit session: DBSession): Try[Long] = {
     val recordIds = Try {
-      sql"select distinct records.recordId, sourcetag from Records INNER JOIN recordaspects ON (records.recordid, records.tenantId) = (recordaspects.recordid, recordaspects.tenantId) where (sourcetag != $sourceTagToPreserve OR sourcetag IS NULL) and recordaspects.aspectid = 'source' and recordaspects.data->>'id' = $sourceId and Records.tenantId = $tenantId"
+      sql"select distinct records.recordId, sourcetag from Records INNER JOIN recordaspects ON (records.recordid, records.tenantId) = (recordaspects.recordid, recordaspects.tenantId) where (sourcetag != $sourceTagToPreserve OR sourcetag IS NULL) and recordaspects.aspectid = 'source' and recordaspects.data->>'id' = $sourceId and Records.tenantId = ${tenantId.tenantId}"
         .map(rs => rs.string("recordId"))
         .list
         .apply()
@@ -986,12 +986,12 @@ object DefaultRecordPersistence
           aspectId,
           aspect
         ).toJson.compactPrint
-        sql"insert into Events (eventTypeId, userId, tenantId, data) values (${CreateRecordAspectEvent.Id}, 0, $tenantId, $eventJson::json)".updateAndReturnGeneratedKey
+        sql"insert into Events (eventTypeId, userId, tenantId, data) values (${CreateRecordAspectEvent.Id}, 0, ${tenantId.tenantId}, $eventJson::json)".updateAndReturnGeneratedKey
           .apply()
       }
       insertResult <- Try {
         val jsonData = aspect.compactPrint
-        sql"""insert into RecordAspects (recordId, tenantId, aspectId, lastUpdate, data) values ($recordId, $tenantId, $aspectId, $eventId, $jsonData::json)""".update
+        sql"""insert into RecordAspects (recordId, tenantId, aspectId, lastUpdate, data) values ($recordId, ${tenantId.tenantId}, $aspectId, $eventId, $jsonData::json)""".update
           .apply()
         aspect
       } match {
@@ -1017,11 +1017,11 @@ object DefaultRecordPersistence
       _ <- Try {
         val eventJson =
           DeleteRecordAspectEvent(recordId, tenantId.tenantId, aspectId).toJson.compactPrint
-        sql"insert into Events (eventTypeId, userId, tenantId, data) values (${DeleteRecordAspectEvent.Id}, 0, $tenantId, $eventJson::json)".updateAndReturnGeneratedKey
+        sql"insert into Events (eventTypeId, userId, tenantId, data) values (${DeleteRecordAspectEvent.Id}, 0, ${tenantId.tenantId}, $eventJson::json)".updateAndReturnGeneratedKey
           .apply()
       }
       rowsDeleted <- Try {
-        sql"""delete from RecordAspects where (aspectId, recordId, tenantId)=($aspectId, $recordId, $tenantId)""".update
+        sql"""delete from RecordAspects where (aspectId, recordId, tenantId)=($aspectId, $recordId, ${tenantId.tenantId})""".update
           .apply()
       }
     } yield rowsDeleted > 0
@@ -1107,9 +1107,9 @@ object DefaultRecordPersistence
     val countWhereClauseParts =
       if (recordId.nonEmpty)
         Seq(
-          recordId.map(id => sqls"recordId=$id and Records.tenantId=$tenantId")
+          recordId.map(id => sqls"recordId=$id and Records.${SQLUtil.tenantIdToWhereClause(tenantId)}")
         )
-      else Seq(Some(sqls"Records.tenantId=$tenantId"))
+      else Seq(Some(sqls"Records.${SQLUtil.tenantIdToWhereClause(tenantId)}"))
 
     val opaConditions =
       getOpaConditions(tenantId, opaQueries, AuthOperations.read)
@@ -1117,7 +1117,7 @@ object DefaultRecordPersistence
     val whereClauseParts = countWhereClauseParts :+ Option(opaConditions) :+ pageToken
       .map(
         token =>
-          sqls"Records.sequence > ${token.toLong} and Records.tenantId=$tenantId"
+          sqls"Records.sequence > ${token.toLong} and Records.${SQLUtil.tenantIdToWhereClause(tenantId)}"
       )
     val limit = rawLimit.getOrElse(defaultResultCount)
 
@@ -1125,7 +1125,7 @@ object DefaultRecordPersistence
       sql"""select Records.sequence as sequence,
                    Records.recordId as recordId,
                    Records.name as recordName,
-                   (select array_agg(aspectId) from RecordAspects where (recordId, tenantId)=(Records.recordId, $tenantId)) as aspects,
+                   (select array_agg(aspectId) from RecordAspects where recordId = Records.recordId and ${SQLUtil.tenantIdToWhereClause(tenantId)}) as aspects,
                    Records.tenantId as tenantId
             from Records
             ${makeWhereClause(whereClauseParts)}
@@ -1267,14 +1267,14 @@ object DefaultRecordPersistence
       val aspectIdsWhereClause = aspectIds
         .map(
           aspectId =>
-            sqls"RecordAspects.tenantId=$tenantId and RecordAspects.aspectId=$aspectId"
+            sqls"RecordAspects.${SQLUtil.tenantIdToWhereClause(tenantId)} and RecordAspects.aspectId=$aspectId"
         )
         .toSeq
       val recordSelectorWhereClause = theRecordSelector.flatten
         .map(
           recordSelectorInner => sqls"""EXISTS(
                      SELECT 1 FROM Records
-                     WHERE Records.tenantId=$tenantId AND RecordAspects.recordId=Records.recordId AND $recordSelectorInner)
+                     WHERE Records.${SQLUtil.tenantIdToWhereClause(tenantId)} AND RecordAspects.recordId=Records.recordId AND $recordSelectorInner)
               """
         )
         .toSeq
@@ -1699,7 +1699,7 @@ object DefaultRecordPersistence
         sqls"""
               EXISTS (
               SELECT 1 FROM public_records
-              WHERE (recordid, tenantid)=(records.recordid, $tenantId))
+              WHERE recordid = records.recordid and ${SQLUtil.tenantIdToWhereClause(tenantId)})
             """
       case OpaQuerySkipAccessControl => sqls"true"
       case OpaQueryMatchNone         => sqls"false"
