@@ -9,7 +9,7 @@ import Spinner from "Components/Common/Spinner";
 
 export const defaultDataSourcePreference = [
     "WMS",
-    "ESRI REST",
+    ["ESRI REST", /MapServer/],
     "GeoJSON",
     "WFS",
     "csv-geo-au",
@@ -18,8 +18,16 @@ export const defaultDataSourcePreference = [
 ];
 
 export const isSupportedFormat = function(format) {
+    const dataSourcePreference = defaultDataSourcePreference.map(
+        preferenceItem => {
+            if (typeof preferenceItem === "string") return preferenceItem;
+            else if (Array.isArray(preferenceItem) && preferenceItem.length) {
+                return preferenceItem[0];
+            }
+        }
+    );
     return (
-        defaultDataSourcePreference
+        dataSourcePreference
             .map(item => item.toLowerCase())
             .filter(item => format.trim() === item).length !== 0
     );
@@ -34,7 +42,6 @@ const determineDistribution = memoize(function determineDistribution(
     if (!dataSourcePreference || !dataSourcePreference.length) {
         dataSourcePreference = defaultDataSourcePreference;
     }
-    dataSourcePreference = dataSourcePreference.map(item => item.toLowerCase());
     let selectedDis = null,
         preferenceOrder = -1;
     distributions
@@ -45,10 +52,36 @@ const determineDistribution = memoize(function determineDistribution(
         )
         .forEach(dis => {
             const format = dis.format.toLowerCase();
-            const distributionPreferenceOrder = dataSourcePreference.indexOf(
-                format
+            const dataUrl = dis.downloadURL ? dis.downloadURL : dis.accessURL;
+            const distributionPreferenceOrder = dataSourcePreference.findIndex(
+                preferenceItem => {
+                    if (typeof preferenceItem === "string") {
+                        if (preferenceItem.toLowerCase() === format)
+                            return true;
+                        else return false;
+                    } else if (
+                        Array.isArray(preferenceItem) &&
+                        preferenceItem.length
+                    ) {
+                        if (
+                            typeof preferenceItem[0] !== "string" ||
+                            preferenceItem[0].toLowerCase() !== format
+                        )
+                            return false;
+                        if (preferenceItem.length <= 1) return true;
+                        if (dataUrl.match(preferenceItem[1])) return true;
+                        else return false;
+                    } else {
+                        return false;
+                    }
+                }
             );
             if (distributionPreferenceOrder === -1) return;
+            if (
+                dataSourcePreference[distributionPreferenceOrder] ===
+                "ESRI REST".toLocaleLowerCase()
+            ) {
+            }
             if (
                 preferenceOrder === -1 ||
                 distributionPreferenceOrder < preferenceOrder
