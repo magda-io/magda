@@ -264,6 +264,7 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
         *   tokens (f + offset) |                                           0
         */
       val expectedPageTokenOffsetMap = Map(
+        adminUser -> List(0, 1), // authorized to record-3, record-4, record-5
         userId0 -> List(0, 1), // authorized to record-3, record-4, record-5
         userId1 -> List(0), // authorized to record-4
         userId2 -> List(0, 1), // authorized to record-3, record-4, record-5
@@ -363,6 +364,7 @@ abstract class RecordsOpaSpec extends ApiWithOpaSpec {
         *   tokens (f + offset) |                                             0
         */
       val expectedPageTokenOffsetMap = Map(
+        adminUser -> List(0, 2, 5), // authorized to all 6 records
         userId0 -> List(0, 2, 5), // authorized to all 6 records
         userId1 -> List(0), // authorized to record-1, record-4
         userId2 -> List(0, 2), // authorized to record-2, record-3, record-4, record-5

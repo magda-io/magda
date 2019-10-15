@@ -39,6 +39,15 @@
     },
 
     {
+        "id": "record-4",
+        "aspects": {
+            "esri-access-control": {
+                "access": "public"
+            }
+        }
+    },
+
+    {
         "id": "record-5",
         "aspects": {
             "esri-access-control": {

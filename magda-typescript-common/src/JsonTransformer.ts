@@ -8,7 +8,7 @@ import createServiceError from "./createServiceError";
  * A transformer takes source data and transforms it to registry records and aspects.
  */
 export default abstract class JsonTransformer {
-    private sourceId: string;
+    public readonly sourceId: string;
     private datasetAspectBuilders: AspectBuilder[];
     private distributionAspectBuilders: AspectBuilder[];
     private organizationAspectBuilders: AspectBuilder[];
@@ -176,7 +176,7 @@ export default abstract class JsonTransformer {
         return record;
     }
 
-    private jsonToRecord(
+    public jsonToRecord(
         id: ConnectorRecordId,
         name: string,
         json: any,
@@ -236,7 +236,7 @@ export default abstract class JsonTransformer {
     }
 }
 
-function buildersToCompiledAspects(
+export function buildersToCompiledAspects(
     builders: AspectBuilder[],
     setupParameters: BuilderSetupFunctionParameters,
     buildParameters: BuilderFunctionParameters
@@ -287,7 +287,7 @@ export interface JsonTransformerOptions {
     tenantId: number;
 }
 
-interface CompiledAspects {
+export interface CompiledAspects {
     parameterNames: string[];
     parameters: BuilderFunctionParameters;
     aspects: CompiledAspect[];
@@ -313,7 +313,7 @@ interface ReportProblem {
     (title: string, message?: string, additionalInfo?: any): void;
 }
 
-interface BuilderSetupFunctionParameters {
+export interface BuilderSetupFunctionParameters {
     /**
      * The transformer that is building aspects.
      *
@@ -331,7 +331,7 @@ interface BuilderSetupFunctionParameters {
     libraries: object;
 }
 
-abstract class BuilderFunctionParameters {
+export abstract class BuilderFunctionParameters {
     /**
      * The result of invoking the {@link AspectBuilder#setupFunctionString}, or undefined if there is no
      * {@link AspectBuilder#setupFunctionString} defined for this builder.
