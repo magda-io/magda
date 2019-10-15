@@ -96,7 +96,7 @@ abstract class ApiSpec extends FunSpec with ScalatestRouteTest with Matchers wit
     val authClient = new AuthApiClient(httpFetcher)(testConfig, system, executor, materializer)
 
     GlobalSettings.loggingSQLAndTime = new LoggingSQLAndTimeSettings(
-      enabled = false,
+      enabled = true,
       singleLineMode = true,
       logLevel = 'debug)
 

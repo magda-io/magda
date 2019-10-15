@@ -4,8 +4,15 @@ import scalikejdbc._
 
 object SQLUtil {
 
-  def tenantIdToWhereClause(tenantId: TenantId) = tenantId match {
-    case SpecifiedTenantId(innerTenantId) => sqls"tenantId = $innerTenantId"
-    case AllTenantsId                     => sqls"true"
-  }
+  def tenantIdToWhereClause(
+      tenantId: TenantId,
+      tableName: Option[SQLSyntax] = None
+  ) =
+    tenantId match {
+      case SpecifiedTenantId(innerTenantId) =>
+        sqls"${tableName
+          .map(tableSql => SQLSyntax.createUnsafely(tableSql + "."))
+          .getOrElse(SQLSyntax.createUnsafely(""))}tenantId = $innerTenantId"
+      case AllTenantsId => sqls"true"
+    }
 }

@@ -41,7 +41,7 @@ object TenantDirectives {
   def requiresSpecifiedTenantId: Directive1[SpecifiedTenantId] = {
     requiresTenantId flatMap {
       case SpecifiedTenantId(tenantId) =>
-        provide(SpecifiedTenantId(MAGDA_ADMIN_PORTAL_ID))
+        provide(SpecifiedTenantId(tenantId))
       case AllTenantsId =>
         val msg =
           s"A specific tenant id header (i.e. NOT ${MAGDA_SYSTEM_ID}) is required"

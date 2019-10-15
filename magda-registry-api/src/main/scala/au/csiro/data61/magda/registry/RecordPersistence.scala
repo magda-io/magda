@@ -406,7 +406,11 @@ object DefaultRecordPersistence
           from RecordAspects
           inner join Aspects using (aspectId, tenantId)
           inner join Records using (recordId, tenantId)
-          where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AND RecordAspects.${SQLUtil.tenantIdToWhereClause(tenantId)}
+          where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AND ${SQLUtil
+      .tenantIdToWhereClause(
+        tenantId,
+        Some(SQLSyntax.createUnsafely("RecordAspects"))
+      )}
 	        ${if (opaWhereClauseParts.isEmpty) SQLSyntax.empty
     else sqls"""and (${SQLSyntax.joinWithOr(opaWhereClauseParts: _*)})"""}
       """
@@ -1107,9 +1111,17 @@ object DefaultRecordPersistence
     val countWhereClauseParts =
       if (recordId.nonEmpty)
         Seq(
-          recordId.map(id => sqls"recordId=$id and Records.${SQLUtil.tenantIdToWhereClause(tenantId)}")
+          recordId.map(
+            id =>
+              sqls"recordId=$id and ${SQLUtil.tenantIdToWhereClause(tenantId, Some(SQLSyntax.createUnsafely("Records")))}"
+          )
         )
-      else Seq(Some(sqls"Records.${SQLUtil.tenantIdToWhereClause(tenantId)}"))
+      else
+        Seq(
+          Some(
+            sqls"${SQLUtil.tenantIdToWhereClause(tenantId, Some(SQLSyntax.createUnsafely("Records")))}"
+          )
+        )
 
     val opaConditions =
       getOpaConditions(tenantId, opaQueries, AuthOperations.read)
@@ -1117,7 +1129,8 @@ object DefaultRecordPersistence
     val whereClauseParts = countWhereClauseParts :+ Option(opaConditions) :+ pageToken
       .map(
         token =>
-          sqls"Records.sequence > ${token.toLong} and Records.${SQLUtil.tenantIdToWhereClause(tenantId)}"
+          sqls"Records.sequence > ${token.toLong} and ${SQLUtil
+            .tenantIdToWhereClause(tenantId, Some(SQLSyntax.createUnsafely("Records")))}"
       )
     val limit = rawLimit.getOrElse(defaultResultCount)
 
@@ -1125,7 +1138,8 @@ object DefaultRecordPersistence
       sql"""select Records.sequence as sequence,
                    Records.recordId as recordId,
                    Records.name as recordName,
-                   (select array_agg(aspectId) from RecordAspects where recordId = Records.recordId and ${SQLUtil.tenantIdToWhereClause(tenantId)}) as aspects,
+                   (select array_agg(aspectId) from RecordAspects where recordId = Records.recordId and ${SQLUtil
+        .tenantIdToWhereClause(tenantId)}) as aspects,
                    Records.tenantId as tenantId
             from Records
             ${makeWhereClause(whereClauseParts)}
@@ -1267,14 +1281,19 @@ object DefaultRecordPersistence
       val aspectIdsWhereClause = aspectIds
         .map(
           aspectId =>
-            sqls"RecordAspects.${SQLUtil.tenantIdToWhereClause(tenantId)} and RecordAspects.aspectId=$aspectId"
+            sqls"${SQLUtil.tenantIdToWhereClause(tenantId, Some(SQLSyntax.createUnsafely("RecordAspects")))} and RecordAspects.aspectId=$aspectId"
         )
         .toSeq
       val recordSelectorWhereClause = theRecordSelector.flatten
         .map(
-          recordSelectorInner => sqls"""EXISTS(
+          recordSelectorInner =>
+            sqls"""EXISTS(
                      SELECT 1 FROM Records
-                     WHERE Records.${SQLUtil.tenantIdToWhereClause(tenantId)} AND RecordAspects.recordId=Records.recordId AND $recordSelectorInner)
+                     WHERE ${SQLUtil
+              .tenantIdToWhereClause(
+                tenantId,
+                Some(SQLSyntax.createUnsafely("Records"))
+              )} AND RecordAspects.recordId=Records.recordId AND $recordSelectorInner)
               """
         )
         .toSeq
@@ -1699,7 +1718,8 @@ object DefaultRecordPersistence
         sqls"""
               EXISTS (
               SELECT 1 FROM public_records
-              WHERE recordid = records.recordid and ${SQLUtil.tenantIdToWhereClause(tenantId)})
+              WHERE recordid = records.recordid and ${SQLUtil
+          .tenantIdToWhereClause(tenantId)})
             """
       case OpaQuerySkipAccessControl => sqls"true"
       case OpaQueryMatchNone         => sqls"false"

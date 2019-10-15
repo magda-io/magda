@@ -207,10 +207,7 @@ class RecordsServiceSpec extends ApiSpec {
           Get("/v0/records/summary") ~> addSystemTenantHeader ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
             val recordsSummary = responseAs[RecordsPage[RecordSummary]]
-            // The current implementation assumes this API is not used by the system tenant.
-            // Is this what we want?
-            // See ticket https://github.com/magda-io/magda/issues/2359
-            recordsSummary.records.length shouldEqual 0
+            recordsSummary.records.length shouldEqual 6
           }
         }
 
@@ -363,9 +360,7 @@ class RecordsServiceSpec extends ApiSpec {
           Get(s"/v0/records/count?aspect=$testAspectId") ~> addSystemTenantHeader ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
             val countResponse = responseAs[CountResponse]
-            // Is this what we want?
-            // See ticket https://github.com/magda-io/magda/issues/2360
-            countResponse.count shouldBe 0
+            countResponse.count shouldBe 1
           }
         }
 
