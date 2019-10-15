@@ -29,7 +29,7 @@ import scala.concurrent.duration._
 import scala.io.BufferedSource
 import scala.io.Source.fromFile
 
-abstract class ApiWithOpaSpec
+abstract class ApiWithOpa
     extends fixture.FunSpec
     with ScalatestRouteTest
     with Matchers
@@ -91,51 +91,21 @@ abstract class ApiWithOpaSpec
     RawHeader(MAGDA_TENANT_ID_HEADER, tenantId.toString)
   }
 
-  def addJwtToken(userId: String, recordPolicyId: String): RawHeader = {
+  def addJwtToken(userId: String): RawHeader = {
     if (userId.equals(anonymous))
       return RawHeader("", "")
 
-    val theRecordPolicyId = recordPolicyId
-
-    if (theRecordPolicyId.endsWith("esri_groups")) {
-      /**
-        * The current Java JWT library is not capable of creating custom claims that are json objects.
-        * The typescript library comes to help. These jwt tokens are created by magda-typescript-common/src/test/session/buildJwtForRegistryEsriOpaTest.ts.
-        *
-        * Follow the steps below to create them.
-        *
-        *     cd magda-typescript-common
-        *     yarn build
-        *     yarn create_esri_jwt
-       */
-      val jwtToken =
-        if (userId.equals("00000000-0000-1000-0000-000000000000"))
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwMDAwMDAwMC0wMDAwLTEwMDAtMDAwMC0wMDAwMDAwMDAwMDAiLCJzZXNzaW9uIjp7InNlc3Npb24iOnsiZXNyaUdyb3VwcyI6WyJEZXAuIEEiLCJCcmFuY2ggQSwgRGVwLiBBIiwiQnJhbmNoIEIsIERlcC4gQSIsIlNlY3Rpb24gQywgQnJhbmNoIEIsIERlcC4gQSJdfX0sImlhdCI6MTU2ODI4ODgzNn0.V8VzOqKKngc2Fykuy7C_oBjvJRhJeosLnN8a066ffuo"
-        else if (userId.equals("00000000-0000-1000-0001-000000000000"))
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwMDAwMDAwMC0wMDAwLTEwMDAtMDAwMS0wMDAwMDAwMDAwMDAiLCJzZXNzaW9uIjp7InNlc3Npb24iOnsiZXNyaUdyb3VwcyI6WyJCcmFuY2ggQSwgRGVwLiBBIl19fSwiaWF0IjoxNTY4Mjg4ODM2fQ.Vnr3KSmJI6A5CnkB9o7E_cHnz_FcU1RkS5HLQe5imnc"
-        else if (userId.equals("00000000-0000-1000-0002-000000000000"))
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwMDAwMDAwMC0wMDAwLTEwMDAtMDAwMi0wMDAwMDAwMDAwMDAiLCJzZXNzaW9uIjp7InNlc3Npb24iOnsiZXNyaUdyb3VwcyI6WyJCcmFuY2ggQiwgRGVwLiBBIiwiU2VjdGlvbiBDLCBCcmFuY2ggQiwgRGVwLiBBIl19fSwiaWF0IjoxNTY4Mjg4ODM2fQ.YOXKLCWuJJDuz43SNcLBRLYdnxmKNQsdm_DymPu4n14"
-        else if (userId.equals("00000000-0000-1000-0003-000000000000"))
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwMDAwMDAwMC0wMDAwLTEwMDAtMDAwMy0wMDAwMDAwMDAwMDAiLCJzZXNzaW9uIjp7InNlc3Npb24iOnsiZXNyaUdyb3VwcyI6WyJTZWN0aW9uIEMsIEJyYW5jaCBCLCBEZXAuIEEiXX19LCJpYXQiOjE1NjgyODg4MzZ9.5gLU6Tz_Q74r0NeyvrjlSsRe63eRR8NwZyCsPFIAEzg"
-        else
-          ""
-      RawHeader(
-        Authentication.headerName,
-        jwtToken
-      )
-    } else {
-      val jwtToken =
-        JWT
-          .create()
-          .withClaim("userId", userId)
-          .sign(Authentication.algorithm)
-      //      println(s"userId: $userId")
-      //      println(s"jwtToken: $jwtToken")
-      RawHeader(
-        Authentication.headerName,
-        jwtToken
-      )
-    }
+    val jwtToken =
+      JWT
+        .create()
+        .withClaim("userId", userId)
+        .sign(Authentication.algorithm)
+    //      println(s"userId: $userId")
+    //      println(s"jwtToken: $jwtToken")
+    RawHeader(
+      Authentication.headerName,
+      jwtToken
+    )
 
   }
 
@@ -180,13 +150,15 @@ abstract class ApiWithOpaSpec
     *   +--------------------------------------------------------------+
     *
     */
-  val userId0 = "00000000-0000-1000-0000-000000000000" // admin user
+  val adminUser = "00000000-0000-1000-9999-000000000000"
+  val userId0 = "00000000-0000-1000-0000-000000000000"
   val userId1 = "00000000-0000-1000-0001-000000000000"
   val userId2 = "00000000-0000-1000-0002-000000000000"
   val userId3 = "00000000-0000-1000-0003-000000000000"
   val anonymous = "anonymous"
 
   val userIdsAndExpectedRecordIdIndexesWithoutLink = List(
+    (adminUser, List(0, 1, 2, 3, 4, 5)),
     (userId0, List(0, 1, 2, 3, 4, 5)),
     (userId1, List(1, 4)),
     (userId2, List(2, 3, 4, 5)),
@@ -195,6 +167,7 @@ abstract class ApiWithOpaSpec
   )
 
   val userIdsAndExpectedRecordIdIndexesWithSingleLink = List(
+    (adminUser, List(2)),
     (userId0, List(2)),
     (userId1, List()),
     (userId2, List(2)),
@@ -327,13 +300,11 @@ abstract class ApiWithOpaSpec
 
     aspectDefs.map(aspectDef => {
       Get(s"/v0/aspects/${aspectDef.id}") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        userId0,
-        ""
+        adminUser
       ) ~> param.api(Full).routes ~> check {
         if (status == StatusCodes.NotFound) {
           Post(s"/v0/aspects", aspectDef) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-            userId0,
-            ""
+            adminUser
           ) ~> param.api(Full).routes ~> check {
             status shouldBe StatusCodes.OK
           }
@@ -407,13 +378,11 @@ abstract class ApiWithOpaSpec
 
     testRecords.map(record => {
       Get(s"/v0/records/${record.id}") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        userId0,
-        ""
+        adminUser
       ) ~> param.api(Full).routes ~> check {
         if (status == StatusCodes.NotFound) {
           Post(s"/v0/records", record) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-            userId0,
-            ""
+            adminUser
           ) ~> param.api(Full).routes ~> check {
             status shouldBe StatusCodes.OK
           }
@@ -426,11 +395,16 @@ abstract class ApiWithOpaSpec
 
   lazy val singleLinkRecordIdMapDereferenceIsFalse
       : Map[(String, String), String] =
-    Map((userId0, "record-2") -> "record-1", (userId2, "record-2") -> "")
+    Map(
+      (adminUser, "record-2") -> "record-1",
+      (userId0, "record-2") -> "record-1",
+      (userId2, "record-2") -> ""
+    )
 
   lazy val singleLinkRecordIdMapDereferenceIsTrue
       : Map[(String, String), JsObject] =
     Map(
+      (adminUser, "record-2") -> testRecords(1).toJson.asJsObject,
       (userId0, "record-2") -> testRecords(1).toJson.asJsObject,
       (userId2, "record-2") -> JsObject.empty
     )

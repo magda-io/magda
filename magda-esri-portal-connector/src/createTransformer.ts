@@ -12,6 +12,7 @@ export interface CreateTransformerOptions {
     datasetAspectBuilders: AspectBuilder[];
     distributionAspectBuilders: AspectBuilder[];
     organizationAspectBuilders: AspectBuilder[];
+    groupAspectBuilders: AspectBuilder[];
 }
 
 export default function createTransformer({
@@ -20,13 +21,15 @@ export default function createTransformer({
     sourceUrl,
     datasetAspectBuilders,
     distributionAspectBuilders,
-    organizationAspectBuilders
+    organizationAspectBuilders,
+    groupAspectBuilders
 }: CreateTransformerOptions) {
     return new EsriPortalTransformer({
         sourceId: id,
         datasetAspectBuilders: datasetAspectBuilders,
         distributionAspectBuilders: distributionAspectBuilders,
         organizationAspectBuilders: organizationAspectBuilders,
+        groupAspectBuilders: groupAspectBuilders,
         tenantId: 0,
         libraries: {
             cleanOrgTitle: cleanOrgTitle,

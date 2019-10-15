@@ -156,10 +156,13 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
         normaliseInputField(reqData);
 
         reqData.input.user = userInfo;
+        reqData.input.user.roles = userInfo.roles.map(role => role.id);
 
         const sessionClaim = getUserSession(req, jwtSecret).valueOr({});
 
         reqData.input.user.session = sessionClaim.session;
+
+        reqData.input.timestamp = Date.now();
 
         reqOpts.json = reqData;
 

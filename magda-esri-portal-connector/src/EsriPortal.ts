@@ -4,10 +4,7 @@ import formatServiceError from "@magda/typescript-common/dist/formatServiceError
 import { ConnectorSource } from "@magda/typescript-common/dist/JsonConnector";
 import retry from "@magda/typescript-common/dist/retry";
 import request from "@magda/typescript-common/dist/request";
-import {
-    ESRI_NSW_ORG,
-    ESRI_NSW_PORTAL
-} from "@magda/typescript-common/dist/session/SessionConsts";
+import fetch from "node-fetch";
 import * as URI from "urijs";
 
 export interface EsriPortalThing {
@@ -42,6 +39,8 @@ export interface EsriPortalOrganizationListResponse {
 
 export interface EsriPortalOptions {
     baseUrl: string;
+    esriOrgGroup: string;
+    updateInterval?: number;
     id: string;
     name: string;
     arcgisUserId?: string;
@@ -52,6 +51,8 @@ export interface EsriPortalOptions {
 }
 
 export default class EsriPortal implements ConnectorSource {
+    public readonly esriOrgGroup: string;
+    public readonly updateInterval: number;
     public readonly id: string;
     public readonly name: string;
     public readonly pageSize: number;
@@ -59,18 +60,23 @@ export default class EsriPortal implements ConnectorSource {
     public readonly secondsBetweenRetries: number;
     public readonly urlBuilder: EsriPortalUrlBuilder;
     public readonly hasFirstClassOrganizations: boolean = false;
+    private harvestedDatasets: [];
 
     constructor({
         baseUrl,
+        esriOrgGroup,
         id,
         name,
         pageSize = 1000,
+        updateInterval = 12,
         maxRetries = 10,
         secondsBetweenRetries = 10
     }: EsriPortalOptions) {
+        this.esriOrgGroup = esriOrgGroup;
         this.id = id;
         this.name = name;
         this.pageSize = pageSize;
+        this.updateInterval = updateInterval * 3600000;
         this.maxRetries = maxRetries;
         this.secondsBetweenRetries = secondsBetweenRetries;
         this.urlBuilder = new EsriPortalUrlBuilder({
@@ -78,6 +84,7 @@ export default class EsriPortal implements ConnectorSource {
             name: name,
             baseUrl
         });
+        this.harvestedDatasets = [];
     }
 
     public getToken(username: string, password: string) {
@@ -105,6 +112,15 @@ export default class EsriPortal implements ConnectorSource {
         });
     }
 
+    public getPortalGroups() {
+        return new Promise<any>((resolve, reject) => {
+            const groupsUrl = this.urlBuilder.getPortalGroups();
+            request(groupsUrl, { json: true }, (err, resp, body) => {
+                resolve(body.results);
+            });
+        });
+    }
+
     private packageSearch(options?: {
         start?: number;
         title?: string;
@@ -115,7 +131,6 @@ export default class EsriPortal implements ConnectorSource {
         let startIndex = startStart;
 
         return AsyncPage.create<EsriPortalDataSearchResponse>(previous => {
-            // console.log(previous)
             if (previous) {
                 startIndex = previous.nextStart;
                 if (previous.nextStart === -1) return undefined;
@@ -126,7 +141,11 @@ export default class EsriPortal implements ConnectorSource {
 
     public getJsonDatasets(): AsyncPage<any[]> {
         const packagePages = this.packageSearch({});
-        return packagePages.map(function(packagePage) {
+        return packagePages.map(packagePage => {
+            // @ts-ignore
+            this.harvestedDatasets = this.harvestedDatasets.concat(
+                packagePage.results
+            );
             return packagePage.results;
         });
     }
@@ -179,7 +198,7 @@ export default class EsriPortal implements ConnectorSource {
         return undefined;
     }
 
-    private requestGroupInformation(contentId: string): Promise<any> {
+    private requestDatasetGroupInformation(contentId: string): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             request(
                 this.urlBuilder.getContentItemGroups(contentId),
@@ -220,164 +239,53 @@ export default class EsriPortal implements ConnectorSource {
         const pageUrl = url.clone();
         pageUrl.addSearch("start", startIndex);
         pageUrl.addSearch("num", this.pageSize);
-        const that = this;
-        const operation = async () =>
-            new Promise<EsriPortalDataSearchResponse>((resolve, reject) => {
-                const requestUrl = pageUrl.toString();
-                console.log("Requesting " + requestUrl);
+        const operation = async () => {
+            const requestUrl = pageUrl.toString();
+            console.log(requestUrl);
+            console.log(
+                `Requesting start = ${startIndex}, num = ${this.pageSize}`
+            );
 
-                request(
-                    requestUrl,
-                    { json: true },
-                    async (error, response, body) => {
-                        if (error) {
-                            reject(error);
-                            return;
-                        }
+            try {
+                const res = await fetch(requestUrl);
+                let body = await res.json();
 
-                        // A single portal item only has one distribution in the form of a url.
-                        // That url however may represent a single layer, or a map (containing multiple layers)
-                        // The bulk of the distribution information needs to be retrieved
-                        // from the map or feature service endpoint
-                        // An individual item may result in one or many additional requests
-                        for (let i = 0; i < body.results.length; ++i) {
-                            const item = body.results[i];
+                // A single portal item only has one distribution in the form of a url.
+                // That url however may represent a single layer, or a map (containing multiple layers)
+                // The bulk of the distribution information needs to be retrieved
+                // from the map or feature service endpoint
+                // An individual item may result in one or many additional requests
+                for (let i = 0; i < body.results.length; ++i) {
+                    const item = body.results[i];
 
-                            item.distributions = [];
+                    item.distributions = [];
 
-                            const distUri = new URI(item.url);
-
-                            // To determine how an item is shared you will have to look at the "access" attribute for
-                            // the item itself. If it is "private" then it is not shared and only the item owner can
-                            // see it; If it is "org" then anyone with a login can see it; If it is "public" anyone
-                            // whether they login or not can see it; If it is "shared" it will be shared to specific
-                            // groups and these will be listed under the groups endpoint.
-                            if (
-                                item.access === "shared" &&
-                                requestUrl.includes(ESRI_NSW_PORTAL)
-                            ) {
-                                const groupInfo = await that.requestGroupInformation(
-                                    item.id
-                                );
-
-                                const adminGroupIds = groupInfo.admin.map(
-                                    (g: any) => g.id
-                                );
-                                const memberGroupIds = groupInfo.member.map(
-                                    (g: any) => g.id
-                                );
-                                const otherGroupIds = groupInfo.other.map(
-                                    (g: any) => g.id
-                                );
-
-                                const allGroups = adminGroupIds.concat(
-                                    memberGroupIds,
-                                    otherGroupIds
-                                );
-                                const uniqueGroups = allGroups.filter(
-                                    (it: any, idx: any) =>
-                                        allGroups.indexOf(it) === idx
-                                );
-                                item.groups =
-                                    uniqueGroups.length > 0 ? uniqueGroups : [];
-                                if (item.groups === []) {
-                                    console.log(
-                                        `Shared item ${item.id}, ${
-                                            item.title
-                                        }, will not be accessible by any esri groups.`
-                                    );
-                                }
-                            } else if (
-                                item.access === "org" &&
-                                requestUrl.includes(ESRI_NSW_PORTAL)
-                            ) {
-                                item.groups = [ESRI_NSW_ORG];
-                            } else if (item.access === "private") {
-                                item.groups = [];
-                                console.log(
-                                    `Private item ${item.id}, ${
-                                        item.title
-                                    }, will not be accessible by any esri groups.`
-                                );
-                            } else if (item.access === "public") {
-                                item.groups = undefined;
-                            } else {
-                                console.log(
-                                    `Item ${item.id}, ${item.title}, ${
-                                        item.access
-                                    }, will not be harvested.`
-                                );
-                                continue;
-                            }
-
-                            // We're looking at an individual layer (could be either map or feature service)
-                            // eg https://maps.six.nsw.gov.au/arcgis/rest/services/public/Valuation/MapServer/0
-                            if (!isNaN(parseInt(distUri.segment(-1)))) {
-                                try {
-                                    await this.processIndividualLayerAsDataset(
-                                        item,
-                                        distUri
-                                    );
-                                } catch (err) {
-                                    console.log("Broke on ", item.url);
-                                    console.log(err);
-                                }
-
-                                // We're looking at a group of layers which we may need to iterate over
-                                // to get multiple distributions
-                                // eg https://maps.six.nsw.gov.au/arcgis/rest/services/public/Valuation/MapServer
-                            } else {
-                                try {
-                                    const distInfo = await that.requestDistributionInformation(
-                                        item.url
-                                    );
-                                    if (distInfo.error) continue;
-
-                                    // We're dealing with a tiled layer that doesn't have crawlable sublayers
-                                    if (
-                                        item.type !== "Feature Service" &&
-                                        distInfo.singleFusedMapCache !== false
-                                    ) {
-                                        await that.processTiledLayerAsDistribution(
-                                            item,
-                                            distInfo,
-                                            distUri
-                                        );
-                                        continue;
-                                    }
-
-                                    // For a MapServer treat the root as a distribution (eg the group of layers)
-                                    if (distUri.segment(-1) === "MapServer") {
-                                        await that.processRootMapServiceAsDistribution(
-                                            item,
-                                            distInfo,
-                                            distUri
-                                        );
-                                    }
-
-                                    for (
-                                        let ii = 0;
-                                        ii < distInfo.layers.length;
-                                        ++ii
-                                    ) {
-                                        const lyr = distInfo.layers[ii];
-                                        await that.processLayerAsDistribution(
-                                            lyr,
-                                            item,
-                                            distUri
-                                        );
-                                    }
-                                } catch (err) {
-                                    console.log("Broke on ", item.url);
-                                    console.log(err);
-                                }
-                            }
-                        }
-
-                        resolve(body);
+                    // To determine how an item is shared you will have to look at the "access" attribute for
+                    // the item itself. If it is "private" then it is not shared and only the item owner can
+                    // see it; If it is "org" then anyone with a login can see it; If it is "public" anyone
+                    // whether they login or not can see it; If it is "shared" it will be shared to specific
+                    // groups and these will be listed under the groups endpoint.
+                    if (item.access === "shared") {
+                        await this.processSharedItem(item);
+                    } else if (item.access === "org") {
+                        await this.processOrgItem(item);
+                    } else if (item.access === "private") {
+                        await this.processPrivateItem(item);
+                    } else if (item.access === "public") {
+                        await this.processPublicItem(item);
+                    } else {
+                        console.error(
+                            `Item ${item.id}, ${item.title}, ${
+                                item.access
+                            }, will not be harvested.`
+                        );
                     }
-                );
-            });
+                }
+                return body;
+            } catch (error) {
+                return error;
+            }
+        };
 
         return retry(
             operation,
@@ -386,12 +294,123 @@ export default class EsriPortal implements ConnectorSource {
             (e, retriesLeft) =>
                 console.log(
                     formatServiceError(
-                        `Failed to GET ${pageUrl.toString()}.`,
+                        `Failed to GET start = ${startIndex}, num = ${
+                            this.pageSize
+                        }.`,
                         e,
                         retriesLeft
                     )
                 )
         );
+    }
+
+    private async processItem(item: any) {
+        const distUri = new URI(item.url);
+
+        // We're looking at an individual layer (could be either map or feature service)
+        // eg https://maps.six.nsw.gov.au/arcgis/rest/services/public/Valuation/MapServer/0
+        if (!isNaN(parseInt(distUri.segment(-1)))) {
+            try {
+                await this.processIndividualLayerAsDataset(item, distUri);
+            } catch (err) {
+                console.error(
+                    `Broke on item url: ${item.url}, dist uri: ${distUri}`
+                );
+                console.error(err);
+            }
+
+            // We're looking at a group of layers which we may need to iterate over
+            // to get multiple distributions
+            // eg https://maps.six.nsw.gov.au/arcgis/rest/services/public/Valuation/MapServer
+        } else {
+            try {
+                const distInfo = await this.requestDistributionInformation(
+                    item.url
+                );
+                if (distInfo.error) return;
+
+                // We're dealing with a tiled layer that doesn't have crawlable sublayers
+                if (
+                    item.type !== "Feature Service" &&
+                    distInfo.singleFusedMapCache !== false
+                ) {
+                    await this.processTiledLayerAsDistribution(
+                        item,
+                        distInfo,
+                        distUri
+                    );
+                    return;
+                }
+
+                await this.processRootMapServiceAsDistribution(
+                    item,
+                    distInfo,
+                    distUri
+                );
+
+                // const layersLength = distInfo.layers
+                //     ? distInfo.layers.length
+                //     : 0;
+                // for (let ii = 0; ii < layersLength; ++ii) {
+                //     const lyr = distInfo.layers[ii];
+                //     await this.processLayerAsDistribution(lyr, item, distUri);
+                // }
+            } catch (err) {
+                console.error(
+                    `Broke on item url: ${item.url}, dist uri: ${distUri}`
+                );
+                console.error(err);
+            }
+        }
+    }
+
+    private async processSharedItem(item: any) {
+        const groupInfo = await this.requestDatasetGroupInformation(item.id);
+
+        const adminGroupIds = groupInfo.admin.map((g: any) => g.id);
+        const memberGroupIds = groupInfo.member.map((g: any) => g.id);
+        const otherGroupIds = groupInfo.other.map((g: any) => g.id);
+
+        const allGroups = adminGroupIds.concat(memberGroupIds, otherGroupIds);
+        const uniqueGroups = allGroups.filter(
+            (it: any, idx: any) => allGroups.indexOf(it) === idx
+        );
+        item.esriGroups = uniqueGroups.length > 0 ? uniqueGroups : [];
+        if (item.esriGroups === []) {
+            console.log(
+                `Shared item ${item.id}, ${
+                    item.title
+                }, will not be accessible by any esri groups.`
+            );
+        }
+        item.esriOwner = item.owner;
+        item.esriAccess = "shared";
+        item.esriExpiration = Date.now() + this.updateInterval;
+        await this.processItem(item);
+    }
+
+    private async processOrgItem(item: any) {
+        item.esriGroups = [this.esriOrgGroup];
+        item.esriOwner = item.owner;
+        item.esriAccess = "org";
+        item.esriExpiration = Date.now() + this.updateInterval;
+        await this.processItem(item);
+    }
+
+    private async processPrivateItem(item: any) {
+        item.esriGroups = [];
+        item.esriOwner = item.owner;
+        item.esriAccess = "private";
+        item.esriExpiration = Date.now() + this.updateInterval;
+        await this.processItem(item);
+    }
+
+    private async processPublicItem(item: any) {
+        item.esriGroups = undefined;
+        item.esriOwner = item.owner;
+        item.esriAccess = "public";
+        item.esriExpiration = Date.now() + this.updateInterval;
+        await this.processItem(item);
     }
 
     private async processIndividualLayerAsDataset(item: any, distUri: any) {
@@ -410,7 +429,10 @@ export default class EsriPortal implements ConnectorSource {
             };
             item.distributions.push(dist);
         } catch (err) {
-            console.log(err);
+            console.error(
+                `Broke on item url: ${item.url}, dist uri: ${distUri}`
+            );
+            console.error(err);
         }
     }
 
@@ -460,37 +482,47 @@ export default class EsriPortal implements ConnectorSource {
                 item.distributions.push(wmtsDist);
             }
         } catch (err) {
-            console.log(err);
+            console.error(
+                `Broke on item url: ${item.url}, dist uri: ${distUri}`
+            );
+            console.error(err);
         }
     }
 
-    private async processLayerAsDistribution(
-        lyr: any,
-        item: any,
-        distUri: any
-    ) {
-        try {
-            const lyrUrl = distUri
-                .clone()
-                .segment(lyr.id.toString())
-                .toString();
-            const subDistInfo = await this.requestDistributionInformation(
-                lyrUrl
-            );
-            if (subDistInfo.error) return;
-            const subDist = {
-                accessURL: lyrUrl,
-                title: subDistInfo.name,
-                name: subDistInfo.name,
-                description: subDistInfo.description,
-                type: `Esri ${subDistInfo.type}`,
-                id: `${item.id}-c${lyr.id}`
-            };
-            item.distributions.push(subDist);
-        } catch (err) {
-            console.log(err);
-        }
-    }
+    // private async processLayerAsDistribution(
+    //     lyr: any,
+    //     item: any,
+    //     distUri: any
+    // ) {
+    //     try {
+    //         const lyrUrl = distUri
+    //             .clone()
+    //             .segment(lyr.id.toString())
+    //             .toString();
+    //         const subDistInfo = await this.requestDistributionInformation(
+    //             lyrUrl
+    //         );
+    //         if (subDistInfo.error) {
+    //             return;
+    //         }
+    //         const subDist = {
+    //             accessURL: lyrUrl,
+    //             title: subDistInfo.name,
+    //             name: subDistInfo.name,
+    //             description: subDistInfo.description,
+    //             type: `Esri ${subDistInfo.type}`,
+    //             id: `${item.id}-c${lyr.id}`
+    //         };
+    //         item.distributions.push(subDist);
+    //     } catch (err) {
+    //         console.error(
+    //             `Broke on item url: ${
+    //                 item.url
+    //             }, dist uri: ${distUri}, layer id: ${lyr.id}`
+    //         );
+    //         console.error(err);
+    //     }
+    // }
 
     private async processRootMapServiceAsDistribution(
         item: any,

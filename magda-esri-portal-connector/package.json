@@ -36,6 +36,7 @@
     "body-parser": "^1.18.1",
     "express": "^4.15.4",
     "moment": "^2.17.1",
+    "node-fetch": "^2.6.0",
     "read-pkg-up": "^3.0.0",
     "request": "^2.88.0",
     "urijs": "^1.18.12",

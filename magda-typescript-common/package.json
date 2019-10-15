@@ -9,7 +9,9 @@
     "watch": "tsc -p tsconfig-build.json --watch",
     "generate": "generate-registry-typescript ./src/generated/registry",
     "test": "nyc mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
-    "create_esri_jwt": "nyc mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/buildJwtForRegistryEsriOpaTest.ts\"",
+    "create_esri_groups_jwt": "nyc mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/buildJwtForRegistryEsriOpaGroupsTest.ts\"",
+    "create_esri_owner_jwt": "nyc mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/buildJwtForRegistryEsriOpaOwnerTest.ts\"",
+    "create_esri_groups_owner_jwt": "nyc mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/buildJwtForRegistryEsriOpaGroupsAndOwnerTest.ts\"",
     "dev": "yarn run watch"
   },
   "devDependencies": {
