@@ -61,9 +61,13 @@
                     align-items: center;
                 }
 
+                .fileBlock-file {
+                    width: 50%;
+                }
+
                 .fileBlock-icon {
                     padding: 0.8em;
-                    margin-top: 6px;
+                    vertical-align: -6px;
                 }
 
                 .fileBlock-control {
