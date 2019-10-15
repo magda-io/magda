@@ -12,6 +12,7 @@ import com.auth0.jwt.JWT
 import com.typesafe.config.Config
 import spray.json._
 
+import scala.collection.immutable
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -59,6 +60,7 @@ object OpaTypes {
       path: List[OpaRef]
   ) extends OpaQuery
   case object OpaQueryMatchAll extends OpaQuery
+  case object OpaQueryMatchAny extends OpaQuery
   case object OpaQueryMatchNone extends OpaQuery
   case object OpaQueryMatchNoAccessControl extends OpaQuery
   case object OpaQuerySkipAccessControl extends OpaQuery
@@ -226,77 +228,107 @@ class OpaQueryer()(
       case None                    => List(OpaQueryMatchNone)
       case Some(JsArray(Vector())) => List(OpaQueryMatchAll)
       case Some(JsArray(rules)) =>
-        val rulesFromRules = rules.flatMap(
+        val hasEmptyRule = rules.map(
           rules => rules.asInstanceOf[JsArray].elements.toList
-        )
-        val supports = result.asJsObject.fields
-          .get("support")
-          .toList
-          .flatMap(support => support.asInstanceOf[JsArray].elements.toList)
-        val rulesFromSupports = supports
-          .flatMap(
-            _.asJsObject.fields.get("rules").map(_.asInstanceOf[JsArray])
+        ).exists(r => r.isEmpty)
+
+        if (hasEmptyRule) {
+          List(OpaQueryMatchAny)
+        }
+        else {
+          val rulesFromRules = rules.flatMap(
+            rules => rules.asInstanceOf[JsArray].elements.toList
           )
-          .flatMap(_.elements.toList)
-          .flatMap { element =>
-            val fields = element.asJsObject.fields
-            val isDefault = fields
-              .getOrElse("default", JsFalse)
-              .asInstanceOf[JsBoolean]
-              .value
-            val headValue =
-              element.asJsObject
-                .fields("head")
-                .asJsObject
-                .fields("value")
+          val supports = result.asJsObject.fields
+            .get("support")
+            .toList
+            .flatMap(support => support.asInstanceOf[JsArray].elements.toList)
+          val rulesFromSupports = supports
+            .flatMap(
+              _.asJsObject.fields.get("rules").map(_.asInstanceOf[JsArray])
+            )
+            .flatMap(_.elements.toList)
+            .flatMap { element =>
+              val fields = element.asJsObject.fields
+              val isDefault = fields
+                .getOrElse("default", JsFalse)
+                .asInstanceOf[JsBoolean]
+                .value
+              val headValue =
+                element.asJsObject
+                  .fields("head")
+                  .asJsObject
+                  .fields("value")
 
-            headValue.asJsObject
-              .fields("value") match {
-              case JsBoolean(true) =>
-                element.asJsObject.fields
-                  .get("body")
-                  .map(_.asInstanceOf[JsArray])
-              case JsBoolean(false) if isDefault =>
-                Seq(JsArray(Vector(JsObject("terms" -> headValue))))
-              case _ =>
-                throw new Exception(
-                  "Found head value with value other than true that wasn't default"
-                )
+              headValue.asJsObject
+                .fields("value") match {
+                case JsBoolean(true) =>
+                  element.asJsObject.fields
+                    .get("body")
+                    .map(_.asInstanceOf[JsArray])
+                case JsBoolean(false) if isDefault =>
+                  Seq(JsArray(Vector(JsObject("terms" -> headValue))))
+                case _ =>
+                  throw new Exception(
+                    "Found head value with value other than true that wasn't default"
+                  )
+              }
+
             }
+            .flatMap(_.elements.toList)
 
-          }
-          .flatMap(_.elements.toList)
-
-        (rulesFromRules ++ rulesFromSupports).toList
-          .map(parseRule)
-          .flatMap {
-            case List(
-                operation: RegoTermRef,
-                value: RegoTermValue,
-                path: RegoTermRef
-                ) =>
-              Some(
-                OpaQueryMatchValue(
-                  path = regoRefPathToOpaRefPath(path.value),
-                  operation = operation match {
-                    case RegoTermRef(
-                        List(RegoRefPartVar(opString: String))
-                        ) =>
-                      OpaOp(opString)
-                  },
-                  value = value match {
-                    case RegoTermBoolean(aValue) => OpaValueBoolean(aValue)
-                    case RegoTermString(aValue)  => OpaValueString(aValue)
-                    case RegoTermNumber(aValue)  => OpaValueNumber(aValue)
-                  }
+          (rulesFromRules ++ rulesFromSupports).toList
+            .map(parseRule)
+            .flatMap {
+              case List(
+              operation: RegoTermRef,
+              value: RegoTermValue,
+              path: RegoTermRef
+              ) =>
+                Some(
+                  OpaQueryMatchValue(
+                    path = regoRefPathToOpaRefPath(path.value),
+                    operation = operation match {
+                      case RegoTermRef(
+                      List(RegoRefPartVar(opString: String))
+                      ) =>
+                        OpaOp(opString)
+                    },
+                    value = value match {
+                      case RegoTermBoolean(aValue) => OpaValueBoolean(aValue)
+                      case RegoTermString(aValue) => OpaValueString(aValue)
+                      case RegoTermNumber(aValue) => OpaValueNumber(aValue)
+                    }
+                  )
                 )
-              )
-            case List(RegoTermRef(RegoRefPartVar("input") :: path)) =>
-              Some(OpaQueryExists(regoRefPathToOpaRefPath(path)))
-            case List(RegoTermBoolean(false)) => Some(OpaQueryMatchNone)
-            case _                            => None
-          }
-
+              case List(RegoTermRef(RegoRefPartVar("input") :: path)) =>
+                Some(OpaQueryExists(regoRefPathToOpaRefPath(path)))
+              case List(RegoTermBoolean(false)) => Some(OpaQueryMatchNone)
+              case List(RegoTermBoolean(true)) => Some(OpaQueryMatchAll)
+              case List(
+              operation: RegoTermRef,
+              path: RegoTermRef,
+              value: RegoTermValue
+              ) =>
+                Some(
+                  OpaQueryMatchValue(
+                    path = regoRefPathToOpaRefPath(path.value),
+                    operation = operation match {
+                      case RegoTermRef(
+                      List(RegoRefPartVar(opString: String))
+                      ) =>
+                        OpaOp(opString)
+                    },
+                    value = value match {
+                      case RegoTermBoolean(aValue) => OpaValueBoolean(aValue)
+                      case RegoTermString(aValue) => OpaValueString(aValue)
+                      case RegoTermNumber(aValue) => OpaValueNumber(aValue)
+                    }
+                  )
+                )
+              case _ => None
+            }
+        }
     }
 
     rulesOpt

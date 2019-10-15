@@ -10,7 +10,7 @@ You need to install following in order to build MAGDA:
 -   [Java 8 JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) - To run the JVM components, and to build the small amount of Java code.
 -   [sbt](http://www.scala-sbt.org/) - To build the Scala components.
 -   [yarn](https://yarnpkg.com/) - Npm replacement that makes node deps in a monorepo much easier.
--   [lerna](https://lernajs.io/) - To manage our multiple-project repo. Once you have node.js/yarn installed, installing lerna is as simple as `yarn global add lerna`.
+-   [lerna](https://lerna.js.org/) - To manage our multiple-project repo. Once you have node.js/yarn installed, installing lerna is as simple as `yarn global add lerna`.
 -   [pancake](https://github.com/govau/pancake) - To manage design components. Once you have Node.js installed, installing pancake is as simple as `yarn global add @gov.au/pancake`.
 
 To push the images and run them on kubernetes, you'll need to install:
@@ -24,11 +24,14 @@ You'll also need a Kubernetes cluster - to develop locally this means installing
 
 ## Trying it out locally
 
-If you just want to try it out locally without actually changing anything, it's much easier to just install [minikube](https://magda.io/docs/docs/installing-minikube.md) or [docker for desktop](https://github.com/magda-io/magda/blob/master/docs/docs/installing-docker-k8s.md), then following the instructions at https://github.com/magda-io/magda-config. What follows is instructions on how to build _everything_, code, databases and all, from scratch into a working application.
+If you just want to try it out locally without actually changing anything, it's much easier to just install [minikube](https://magda.io/docs/installing-minikube.md) or [docker for desktop](https://github.com/magda-io/magda/blob/master/docs/docs/installing-docker-k8s.md), then following the instructions at [https://github.com/magda-io/magda-config](https://github.com/magda-io/magda-config). What follows is instructions on how to build _everything_, code, databases and all, from scratch into a working application.
 
 ## Building and running (just) the frontend
 
-If you just want to edit the UI, you don't actually even need helm - just clone the repo, run `yarn install` at the root, then `cd magda-web-client` and run `yarn run dev`. This will build/run a local version of the client, connecting to the API at https://dev.magda.io/api. If you want to connect to a magda API hosted elsewhere you can modify the `config.js` file in the client.
+If you just want to edit the UI, you don't actually even need helm -
+just clone the repo, run `yarn install` at the root, then `cd magda-web-client` and run `yarn run dev`.
+This will build/run a local version of the client, connecting to the API at [https://dev.magda.io/api](https://dev.magda.io/api).
+If you want to connect to a magda API hosted elsewhere you can modify the `config.js` file in the client.
 
 ## Building and running the backend
 
@@ -43,14 +46,14 @@ yarn install
 Once the above prerequisites are in place, and the npm dependencies are installed, building MAGDA is easy. From the MAGDA root directory, simply run:
 
 ```bash
-lerna run build --stream --concurrency=4 --include-filtered-dependencies
+lerna run build --stream --concurrency=1 --include-filtered-dependencies
 ```
 
 You can also run the same command in an individual component's directory (i.e. `magda-whatever/`) to build just that component.
 
 ### Set up Helm
 
-Helm is the package manager for Kubernetes - we use it to make it so that you can install all the various services you need for MAGDA at once. To install, follow the instructions at https://github.com/kubernetes/helm/blob/master/docs/install.md.
+Helm is the package manager for Kubernetes - we use it to make it so that you can install all the various services you need for MAGDA at once. To install, follow the instructions at [https://github.com/kubernetes/helm/blob/master/docs/install.md](https://github.com/kubernetes/helm/blob/master/docs/install.md).
 
 In a nutshell, once you have helm installed, this is how you initialise helm and Tiller.
 
@@ -136,7 +139,7 @@ minikube ip
 
 It's a good idea to add an entry for `minikube.data.gov.au` to your `hosts` file (`C:\Windows\System32\drivers\etc\hosts` on Windows), mapping it to your Minikube IP address. Some services may assume this is in place. For example:
 
-```
+```console
 192.168.99.100	minikube.data.gov.au
 ```
 

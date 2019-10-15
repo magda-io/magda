@@ -95,9 +95,10 @@ abstract class ApiWithOpaSpec
     if (userId.equals(anonymous))
       return RawHeader("", "")
 
+
     val theRecordPolicyId = recordPolicyId
 
-    if (theRecordPolicyId.endsWith("esri_groups")) {
+    if (theRecordPolicyId.endsWith("esri_owner_groups") && !userId.equals(adminUser)) {
       /**
         * The current Java JWT library is not capable of creating custom claims that are json objects.
         * The typescript library comes to help. These jwt tokens are created by magda-typescript-common/src/test/session/buildJwtForRegistryEsriOpaTest.ts.
@@ -180,13 +181,15 @@ abstract class ApiWithOpaSpec
     *   +--------------------------------------------------------------+
     *
     */
-  val userId0 = "00000000-0000-1000-0000-000000000000" // admin user
+  val adminUser = "00000000-0000-1000-9999-000000000000"
+  val userId0 = "00000000-0000-1000-0000-000000000000"
   val userId1 = "00000000-0000-1000-0001-000000000000"
   val userId2 = "00000000-0000-1000-0002-000000000000"
   val userId3 = "00000000-0000-1000-0003-000000000000"
   val anonymous = "anonymous"
 
   val userIdsAndExpectedRecordIdIndexesWithoutLink = List(
+    (adminUser, List(0, 1, 2, 3, 4, 5)),
     (userId0, List(0, 1, 2, 3, 4, 5)),
     (userId1, List(1, 4)),
     (userId2, List(2, 3, 4, 5)),
@@ -195,6 +198,7 @@ abstract class ApiWithOpaSpec
   )
 
   val userIdsAndExpectedRecordIdIndexesWithSingleLink = List(
+    (adminUser, List(2)),
     (userId0, List(2)),
     (userId1, List()),
     (userId2, List(2)),
@@ -327,12 +331,12 @@ abstract class ApiWithOpaSpec
 
     aspectDefs.map(aspectDef => {
       Get(s"/v0/aspects/${aspectDef.id}") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        userId0,
+        adminUser,
         ""
       ) ~> param.api(Full).routes ~> check {
         if (status == StatusCodes.NotFound) {
           Post(s"/v0/aspects", aspectDef) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-            userId0,
+            adminUser,
             ""
           ) ~> param.api(Full).routes ~> check {
             status shouldBe StatusCodes.OK
@@ -407,12 +411,12 @@ abstract class ApiWithOpaSpec
 
     testRecords.map(record => {
       Get(s"/v0/records/${record.id}") ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-        userId0,
+        adminUser,
         ""
       ) ~> param.api(Full).routes ~> check {
         if (status == StatusCodes.NotFound) {
           Post(s"/v0/records", record) ~> addTenantIdHeader(TENANT_0) ~> addJwtToken(
-            userId0,
+            adminUser,
             ""
           ) ~> param.api(Full).routes ~> check {
             status shouldBe StatusCodes.OK
@@ -426,18 +430,19 @@ abstract class ApiWithOpaSpec
 
   lazy val singleLinkRecordIdMapDereferenceIsFalse
       : Map[(String, String), String] =
-    Map((userId0, "record-2") -> "record-1", (userId2, "record-2") -> "")
+    Map((adminUser, "record-2") -> "record-1", (userId0, "record-2") -> "record-1", (userId2, "record-2") -> "")
 
   lazy val singleLinkRecordIdMapDereferenceIsTrue
       : Map[(String, String), JsObject] =
     Map(
+      (adminUser, "record-2") -> testRecords(1).toJson.asJsObject,
       (userId0, "record-2") -> testRecords(1).toJson.asJsObject,
       (userId2, "record-2") -> JsObject.empty
     )
 
   GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(
-    enabled = false,
-    singleLineMode = true,
+    enabled = true,
+    singleLineMode = false,
     logLevel = 'debug
   )
 

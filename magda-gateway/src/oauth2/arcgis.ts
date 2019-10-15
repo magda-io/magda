@@ -12,7 +12,8 @@ export interface ArcGisOptions {
     clientId: string;
     clientSecret: string;
     externalAuthHome: string;
-    arcgisInstanceBaseUrl?: string;
+    arcgisInstanceBaseUrl: string;
+    esriOrgGroup: string;
 }
 
 interface StrategyOptions {
@@ -31,6 +32,7 @@ export default function arcgis(options: ArcGisOptions) {
     const clientSecret = options.clientSecret;
     const externalAuthHome = options.externalAuthHome;
     const loginBaseUrl = `${externalAuthHome}/login`;
+    const esriOrgGroup = options.esriOrgGroup;
 
     if (!clientId) {
         return undefined;
@@ -90,14 +92,20 @@ export default function arcgis(options: ArcGisOptions) {
                         })
                         .then(jsObj => {
                             const theGroups: any[] = jsObj["groups"];
-                            const theGroupIds: string[] = theGroups.map(
-                                group => {
-                                    return group["id"];
-                                }
-                            );
+                            const groupIds: string[] = theGroups.map(group => {
+                                return group["id"];
+                            });
+
+                            const theGroupIds = esriOrgGroup
+                                ? groupIds.concat([esriOrgGroup])
+                                : groupIds;
+
                             cb(null, {
                                 id: userToken.id,
-                                session: { esriGroups: theGroupIds }
+                                session: {
+                                    esriGroups: theGroupIds,
+                                    esriUser: profile.username
+                                }
                             });
                         })
                         .catch(error => cb(error));

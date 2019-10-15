@@ -490,8 +490,14 @@ class RecordHandler extends React.Component {
                                     >
                                         <Link
                                             to={`/organisations/${publisherId}`}
+                                            itemProp="url"
                                         >
-                                            {this.props.dataset.publisher.name}
+                                            <span itemProp="name">
+                                                {
+                                                    this.props.dataset.publisher
+                                                        .name
+                                                }
+                                            </span>
                                         </Link>
                                     </span>
 
