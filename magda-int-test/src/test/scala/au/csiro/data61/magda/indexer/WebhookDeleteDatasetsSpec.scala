@@ -40,7 +40,7 @@ class WebhookDeleteDatasetsSpec extends WebhookSpecBase {
               eventType = EventType.DeleteRecord,
               userId = 0,
               data = JsObject("recordId" -> JsString(dataSet.identifier)),
-              tenantId = 1
+              tenantId = MAGDA_ADMIN_PORTAL_ID
             ))
 
           val payload = WebHookPayload(
