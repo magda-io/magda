@@ -17,6 +17,10 @@
                     }
                 ]
             }
+        },
+        "owner": {
+            "title": "Record owner id",
+            "type": "string"
         }
     }
 }

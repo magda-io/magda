@@ -1,22 +1,31 @@
-package object.registry.record.esri_groups
+package object.registry.record
 
-test_allow_read_if_groups_and_permission_are_correct {
-    read with input as {
+test_allow_all_matched_groups {
+    esri_groups with input as {
         "user": {
-            "permissions": [
-                {
-                   "operations": [
-                       {
-                           "uri": "object/registry/record/read"
-                       }
-                   ]
+            "session" : {
+            "esriGroups": ["G1", "G2"]
+            }
+        },
+        "object": {
+            "registry": {
+                "record": {
+                    "esri-access-control": {
+                        "groups": ["G1", "G2"]
+                    }
                 }
-            ],
-            "session": {
+            }
+        }
+    }
+}
+
+test_allow_any_matched_groups {
+    esri_groups with input as {
+        "user": {
+            "session" : {
                 "esriGroups": ["G1", "G2"]
             }
         },
-
         "object": {
             "registry": {
                 "record": {
@@ -29,24 +38,13 @@ test_allow_read_if_groups_and_permission_are_correct {
     }
 }
 
-
-test_deny_read_if_groups_are_incorrect {
-    not read with input as {
+test_deny_wrong_groups {
+    not esri_groups with input as {
         "user": {
-            "session": {
+            "session" : {
                 "esriGroups": ["G1", "G2"]
-            },
-            "permissions": [
-                {
-                   "operations": [
-                       {
-                           "uri": "object/registry/record/read"
-                       }
-                   ]
-                }
-            ]
+            }
         },
-
         "object": {
             "registry": {
                 "record": {
@@ -59,28 +57,34 @@ test_deny_read_if_groups_are_incorrect {
     }
 }
 
-test_deny_read_if_permission_is_incorrect {
-    not read with input as {
+test_deny_no_access_control_info {
+    not esri_groups with input as {
         "user": {
-            "session": {
-                "esriGroups": ["G1", "G2"],
-            },
-            "permissions": [
-                {
-                   "operations": [
-                       {
-                           "uri": "object/registry/record/not_read"
-                       }
-                   ]
-                }
-            ]
+            "session" : {
+                "esriGroups": ["G1", "G2"]
+            }
         },
+        "object": {
+            "registry": {
+                "record": {
+                }
+            }
+        }
+    }
+}
 
+test_deny_empty_user_groups {
+    not esri_groups with input as {
+        "user": {
+            "session" : {
+                "esriGroups": []
+            }
+        },
         "object": {
             "registry": {
                 "record": {
                     "esri-access-control": {
-                        "orgUnitOwnerId": ["G1", "G2"]
+                        "groups": ["G1", "G2"]
                     }
                 }
             }

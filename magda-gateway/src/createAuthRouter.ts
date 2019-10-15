@@ -15,6 +15,7 @@ export interface AuthRouterOptions {
     arcgisClientId: string;
     arcgisClientSecret: string;
     arcgisInstanceBaseUrl: string;
+    esriOrgGroup: string;
     ckanUrl: string;
     authorizationApi: string;
     externalUrl: string;
@@ -75,7 +76,8 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
                       clientId: options.arcgisClientId,
                       clientSecret: options.arcgisClientSecret,
                       arcgisInstanceBaseUrl: options.arcgisInstanceBaseUrl,
-                      externalAuthHome: `${options.externalUrl}/auth`
+                      externalAuthHome: `${options.externalUrl}/auth`,
+                      esriOrgGroup: options.esriOrgGroup
                   })
                 : null
         },
