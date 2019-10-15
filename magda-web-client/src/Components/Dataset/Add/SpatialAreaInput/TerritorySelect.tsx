@@ -50,8 +50,8 @@ const TerritorySelect: FunctionComponent<PropsType> = props => {
     const { countryRegion } = props;
 
     const placeHolderText = countryRegion
-        ? "Please select country..."
-        : "Please select a country option first.";
+        ? "Please select a state or a territory..."
+        : "Please select a state/territory option first.";
     const isDisabled = countryRegion ? false : true;
 
     return (
