@@ -7,26 +7,34 @@ import { config } from "config";
 import { Medium, Small } from "./Responsive";
 import Spinner from "Components/Common/Spinner";
 
-export const defaultDataSourcePreference = [
-    "WMS",
-    ["ESRI REST", /MapServer/],
-    "GeoJSON",
-    "WFS",
-    "csv-geo-au",
-    "KML",
-    "KMZ"
+const defaultDataSourcePreference = [
+    {
+        format: "WMS"
+    },
+    {
+        format: "ESRI REST",
+        urlRegex: /MapServer/
+    },
+    {
+        format: "GeoJSON"
+    },
+    {
+        format: "WFS"
+    },
+    {
+        format: "csv-geo-au"
+    },
+    {
+        format: "KML"
+    },
+    {
+        format: "KMZ"
+    }
 ];
 
 export const isSupportedFormat = function(format) {
     const dataSourcePreference = defaultDataSourcePreference.map(
-        preferenceItem => {
-            if (typeof preferenceItem === "string") return preferenceItem;
-            else if (Array.isArray(preferenceItem) && preferenceItem.length) {
-                return preferenceItem[0];
-            } else {
-                throw new Error("Invalid DataSourcePreference item type.");
-            }
-        }
+        preferenceItem => preferenceItem.format
     );
     return (
         dataSourcePreference
@@ -57,24 +65,17 @@ const determineDistribution = memoize(function determineDistribution(
             const dataUrl = dis.downloadURL ? dis.downloadURL : dis.accessURL;
             const distributionPreferenceOrder = dataSourcePreference.findIndex(
                 preferenceItem => {
-                    if (typeof preferenceItem === "string") {
-                        if (preferenceItem.toLowerCase() === format)
-                            return true;
-                        else return false;
-                    } else if (
-                        Array.isArray(preferenceItem) &&
-                        preferenceItem.length
-                    ) {
-                        if (
-                            typeof preferenceItem[0] !== "string" ||
-                            preferenceItem[0].toLowerCase() !== format
-                        )
-                            return false;
-                        if (preferenceItem.length <= 1) return true;
-                        if (dataUrl.match(preferenceItem[1])) return true;
-                        else return false;
-                    } else {
+                    if (preferenceItem.format.toLowerCase() !== format) {
                         return false;
+                    }
+                    if (preferenceItem.urlRegex) {
+                        if (dataUrl.match(preferenceItem.urlRegex)) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    } else {
+                        return true;
                     }
                 }
             );
