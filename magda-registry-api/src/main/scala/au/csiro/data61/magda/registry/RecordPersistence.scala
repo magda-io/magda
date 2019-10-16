@@ -1735,7 +1735,7 @@ object DefaultRecordPersistence
               EXISTS (
               SELECT 1 FROM records_without_access_control
               WHERE recordid = records.recordid and ${SQLUtil
-          .tenantIdToWhereClause(tenantId, SQL.createUnsafely("records"))})
+          .tenantIdToWhereClause(tenantId, Some(SQLSyntax.createUnsafely("records")))})
             """
         case OpaQuerySkipAccessControl => sqls"true"
         case OpaQueryMatchNone => sqls"false"
