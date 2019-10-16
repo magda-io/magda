@@ -6,6 +6,7 @@ General:
 -   Add access control capability to registry api, only applying to read operations currently.
     The registry service can be configured to support either hierarchical organization based access
     policy (default) or Esri groups based access policy.
+-   Add esri portal connector. Read its README.md file before use.
 
 Registry:
 
@@ -34,6 +35,7 @@ Indexer:
 -   Fixed indexer throws an error when affiliatedOrganisation field is created
 -   Fixed indexer incorrect parsing bounding box data in spatialCoverage aspect
 -   Added auth when crawling the registry
+-   Fixed Data.json spatial bounding box ordering not understood
 
 Cataloging:
 
@@ -105,10 +107,14 @@ UI:
 -   Updated schema.org Dataset and DataDownload semantic markup for rich search results
 -   Fixed typos in no-print styling and adding keywords tooltip
 -   Added a preview mode for add dataset, that allows all users to use add dataset but prevents them from submitting.
+-   Fixed text wrap around tooltip
 -   Fixed Add Dataset / License setting: Long file names should be wrapped to the next line
 -   Added a new color (slightly grey) for preview screens
 -   Removed unnecessary margin in the filter facets
 -   Map Preview: avoid selecting Esri feature server distribution for preview
+-   Fixed mobile views incorrect min. width
+-   Drafts should be ordered by date on Drafts list page
+-   Changed text to reflect state/territory/country accordingly
 
 Gateway:
 

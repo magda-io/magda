@@ -18,19 +18,19 @@ gateway:
   ckanRedirectionPath: ""
   enableCkanRedirection: true
   enableAuthEndpoint: true
-  arcgisInstanceBaseUrl: "https://beta.portal.data.nsw.gov.au/arcgis"
   cors:
     credentials: true
     origin: true
   auth:
-    facebookClientId: "173073926555600"
+    arcgisInstanceBaseUrl: "https://beta.portal.data.nsw.gov.au/arcgis"
     arcgisClientId: "xU0LNIvRZS2VUbFS"
-    googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
-    ckanAuthenticationUrl: https://data.gov.au/data
+    esriOrgGroup: "esri-nsw-authenticated-user-group"
+
 
 registry-api:
   skipAuthorization: false
-  recordPolicyId: "object.registry.record.esri_groups"
+  skipOpa: false
+  recordPolicyId: "object.registry.record.esri_owner_groups"
   
 correspondence-api:
   smtpPort: 2525
@@ -41,14 +41,19 @@ web-server:
   featureFlags:
     cataloguing: true
 
-#connectors:
-#  includeCronJobs: false
-#  config:
-#    - image:
-#        name: "magda-esri-connector"
-#      id: dga
-#      name: "data.gov.au"
-#      sourceUrl: "https://beta.portal.data.nsw.gov.au/arcgis"
-#      pageSize: 1000
-#      schedule: "0 * * * *"
-#      ignoreHarvestSources: ["*"]
+connectors:
+  includeCronJobs: false
+  config:
+    - image:
+        name: "magda-esri-portal-connector"
+      id: esri-nsw
+      name: "beta.portal.data.nsw.gov.au/arcgis"
+      sourceUrl: "https://beta.portal.data.nsw.gov.au/arcgis"
+      esriOrgGroup: "esri-nsw-authenticated-user-group"
+      pageSize: 1000
+      registryUrl: "http://registry-api"
+      arcgisUserId: "xxxxx"
+      arcgisUserPassword: "xxxxx"
+      userId: "00000000-0000-4000-8000-000000000000"
+      schedule: "0 * * * *"
+      ignoreHarvestSources: ["*"]
