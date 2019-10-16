@@ -5,8 +5,8 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "yarn run compile",
-    "test": "cd .. && sbt registryApi/test",
-    "compile": "cd .. && sbt registryApi/compile",
+    "test": "cd .. && sbt registryApi/scalaFmtCheck registryApi/test",
+    "compile": "cd .. && sbt registryApi/scalafmtCheckAll registryApi/compile",
     "docker-build-local": "cd .. && sbt \"-Drepository=localhost:5000\" registryApi/dockerBuildAndPush",
     "docker-build-prod": "cd .. && sbt registryApi/dockerBuildAndPush",
     "retag-and-push": "retag-and-push",

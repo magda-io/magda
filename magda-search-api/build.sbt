@@ -14,7 +14,4 @@ libraryDependencies ++= {
      )
 }
 
-EclipseKeys.withJavadoc := true
-EclipseKeys.withSource := true
-
 setupDocker(stage)

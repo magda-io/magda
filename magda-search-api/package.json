@@ -5,8 +5,8 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "yarn run compile",
-    "test": "cd .. && sbt searchApi/test",
-    "compile": "cd .. && sbt searchApi/compile",
+    "test": "cd .. && sbt searchApi/scalaFmtCheck searchApi/test",
+    "compile": "cd .. && sbt searchApi/scalafmtCheckAll searchApi/compile",
     "docker-build-local": "cd .. && sbt \"-Drepository=localhost:5000\" searchApi/dockerBuildAndPush",
     "docker-build-prod": "cd .. && sbt searchApi/dockerBuildAndPush",
     "retag-and-push": "retag-and-push",

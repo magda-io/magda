@@ -7,6 +7,7 @@ General:
     The registry service can be configured to support either hierarchical organization based access
     policy (default) or Esri groups based access policy.
 -   Add esri portal connector. Read its README.md file before use.
+-   Ran scalafmt over all scala code
 
 Registry:
 

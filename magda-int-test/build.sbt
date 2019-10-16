@@ -31,6 +31,3 @@ libraryDependencies ++= {
     "org.mock-server" % "mockserver-netty" % "5.5.1" % "test"
   )
 }
-
-EclipseKeys.withJavadoc := true
-EclipseKeys.withSource := true

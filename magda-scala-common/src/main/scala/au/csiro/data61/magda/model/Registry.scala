@@ -308,13 +308,18 @@ trait RegistryConverters extends RegistryProtocols {
     val accessNotes = Try {
       hit.aspects.get("access") match {
         case Some(JsObject(access)) =>
-          Some(DataSetAccessNotes(notes = access.get("notes") match {
-            case Some(JsString(notes)) => Some(notes)
-            case _ => None
-          }, location= access.get("location") match {
-            case Some(JsString(location)) => Some(location)
-            case _ => None
-          }))
+          Some(
+            DataSetAccessNotes(
+              notes = access.get("notes") match {
+                case Some(JsString(notes)) => Some(notes)
+                case _                     => None
+              },
+              location = access.get("location") match {
+                case Some(JsString(location)) => Some(location)
+                case _                        => None
+              }
+            )
+          )
         case _ => None
       }
     } match {

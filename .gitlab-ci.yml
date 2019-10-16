@@ -204,6 +204,7 @@ buildtest:ui:
 buildtest:registry:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  retry: 1
   cache:
     policy: pull-push
     key: $CI_JOB_NAME

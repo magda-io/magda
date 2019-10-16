@@ -4,8 +4,8 @@
   "description": "Indexes the registry for searching.",
   "scripts": {
     "build": "yarn run compile",
-    "test": "cd .. && sbt indexer/test",
-    "compile": "cd .. && sbt indexer/compile",
+    "test": "cd .. && sbt indexer/scalaFmtCheck indexer/test",
+    "compile": "cd .. && sbt indexer/scalafmtCheckAll indexer/compile",
     "docker-build-local": "cd .. && sbt \"-Drepository=localhost:5000\" indexer/dockerBuildAndPush",
     "docker-build-prod": "cd .. && sbt indexer/dockerBuildAndPush",
     "retag-and-push": "retag-and-push",

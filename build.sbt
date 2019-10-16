@@ -44,10 +44,6 @@ lazy val intTest = (project in file("magda-int-test"))
   .dependsOn(searchApi)
   .dependsOn(registryApi % "test->test;compile->compile")
 
-EclipseKeys.withJavadoc := true
-EclipseKeys.withSource := true
-EclipseKeys.withBundledScalaContainers := false
-
 Revolver.settings
 Revolver.enableDebugging(port = 8000, suspend = false)
 

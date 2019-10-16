@@ -4,8 +4,8 @@
   "description": "Integration tests",
   "scripts": {
     "build": "yarn run compile",
-    "test": "cd .. && sbt intTest/test",
-    "compile": "cd .. && sbt intTest/compile"
+    "test": "cd .. && sbt intTest/scalaFmtCheck intTest/test",
+    "compile": "cd .. && sbt intTest/scalafmtCheckAll intTest/compile"
   },
   "license": "Apache-2.0",
   "magda": {
