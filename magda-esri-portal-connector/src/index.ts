@@ -57,7 +57,7 @@ function runConnector() {
                 });
 
                 group.members = group.members.map(
-                    (ds: any) => `ds-${esriPortal.name}-${ds.id}`
+                    (ds: any) => `ds-${esriPortal.id}-${ds.id}`
                 );
                 await this.createGroup(group);
             }
