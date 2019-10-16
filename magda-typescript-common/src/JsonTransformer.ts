@@ -8,7 +8,7 @@ import createServiceError from "./createServiceError";
  * A transformer takes source data and transforms it to registry records and aspects.
  */
 export default abstract class JsonTransformer {
-    public sourceId: string;
+    public readonly sourceId: string;
     private datasetAspectBuilders: AspectBuilder[];
     private distributionAspectBuilders: AspectBuilder[];
     private organizationAspectBuilders: AspectBuilder[];

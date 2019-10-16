@@ -348,6 +348,8 @@ export default class EsriPortal implements ConnectorSource {
                     distUri
                 );
 
+                // Collect additional distributions - this is commented for now
+                // because it may be used in the future.
                 // const layersLength = distInfo.layers
                 //     ? distInfo.layers.length
                 //     : 0;
@@ -489,6 +491,9 @@ export default class EsriPortal implements ConnectorSource {
         }
     }
 
+    // Collect additional distributions - this is commented for now
+    // because it may be used in the future.
+    
     // private async processLayerAsDistribution(
     //     lyr: any,
     //     item: any,
