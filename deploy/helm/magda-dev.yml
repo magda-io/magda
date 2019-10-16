@@ -192,14 +192,6 @@ connectors:
       sourceUrl: http://www.marlin.csiro.au/geonetwork/srv/eng/csw
       pageSize: 50
     - image:
-        name: magda-ckan-connector
-      id: dga
-      name: data.gov.au
-      sourceUrl: https://data.gov.au/data
-      pageSize: 1000
-      ignoreHarvestSources:
-        - "*"
-    - image:
         name: magda-csw-connector
       id: environment
       name: Department of the Environment and Energy
