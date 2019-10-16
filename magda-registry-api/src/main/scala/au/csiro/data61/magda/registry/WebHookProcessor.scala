@@ -79,7 +79,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
               session,
               tenantId,
               recordIds,
-              this.opaQuerySkipAccessControl,
+              List(this.opaQuerySkipAccessControl),
               webHook.config.aspects.getOrElse(Nil),
               webHook.config.optionalAspects.getOrElse(Nil),
               webHook.config.dereference)
@@ -100,7 +100,7 @@ class WebHookProcessor(actorSystem: ActorSystem, val publicUrl: Uri, implicit va
               session,
               tenantId,
               recordIds,
-              this.opaQuerySkipAccessControl,
+              List(this.opaQuerySkipAccessControl),
               recordIdsExcluded,
               webHook.config.aspects.getOrElse(Nil),
               webHook.config.optionalAspects.getOrElse(Nil),
