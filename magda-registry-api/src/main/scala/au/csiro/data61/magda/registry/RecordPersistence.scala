@@ -215,7 +215,7 @@ object DefaultRecordPersistence
       aspectQueries: Iterable[AspectQuery] = Nil
   ): RecordsPage[Record] = {
     val selectors = aspectQueries
-      .map(query => aspectQueryToWhereClause(tenantId, query))
+      .map(query => aspectQueryToWhereClause(query))
       .map(Some.apply)
 
     this.getRecords(
@@ -243,7 +243,7 @@ object DefaultRecordPersistence
       aspectQueries: Iterable[AspectQuery] = Nil
   ): Long = {
     val selectors: Iterable[Some[SQLSyntax]] = aspectQueries
-      .map(query => aspectQueryToWhereClause(tenantId, query))
+      .map(query => aspectQueryToWhereClause(query))
       .map(Some.apply)
 
     this.getCountInner(session, tenantId, opaQueries, aspectIds, selectors)
@@ -1654,10 +1654,7 @@ object DefaultRecordPersistence
 
   private val ALL_IN_ARRAY: String = "[_]"
 
-  private def aspectQueryToWhereClause(
-      tenantId: TenantId,
-      query: AspectQuery
-  ) = {
+  private def aspectQueryToWhereClause(query: AspectQuery) = {
     val equalsOrContainsClause =
       if (query.path.length == 2 && query.path(1).equals(ALL_IN_ARRAY)) {
         val thePath = query.path.filter(!_.equals(ALL_IN_ARRAY))
@@ -1677,56 +1674,76 @@ object DefaultRecordPersistence
       """
   }
 
+  /**
+    * // TODO: Make OPA query tenant independent. This will be done in PR https://github.com/magda-io/magda/pull/2521.
+    * When tenantId equals SYSTEM_TENANT_ID, if the request also provides JWT that can prove
+    * that the requester has admin role, this function will return List(sqls"true"). In that
+    * case, the requester will have access to all records.
+    */
   private def opaQueriesToWhereClauseParts(
       tenantId: TenantId,
       opaQueries: List[OpaQuery]
   ): List[SQLSyntax] = {
-    // Assume that most records have no access control, making first SQL query
-    // for OpaQueryMatchNoAccessControl may speed up the process.
+
     val theOpaQueries =
-      if (opaQueries.nonEmpty)
+      if (tenantId == MAGDA_SYSTEM_ID){
+        // If the request is made by system, the first query in opaQueries usually is
+        // OpaQueryMatchAny. Let it be the first SQL query in theOpaQueries will speed
+        // up the process.
+        opaQueries ++ List(OpaQueryMatchNoAccessControl)
+      }
+      else if (opaQueries.nonEmpty) {
+        // If most records have no access control aspect, let OpaQueryMatchNoAccessControl
+        // be the first SQL query in theOpaQueries may speed up the process.
         List(OpaQueryMatchNoAccessControl) ++ opaQueries
-      else
+      }
+      else {
         List(OpaQuerySkipAccessControl)
+      }
 
-    theOpaQueries.map {
-      case OpaQueryMatchValue(
-          OpaRefObjectKey("object")
-            :: OpaRefObjectKey("registry")
-            :: OpaRefObjectKey("record")
-            :: OpaRefObjectKey(accessAspectId)
-            :: finalKey,
-          _, // operation is not used at the moment. It is assumed to be eq.
-          aValue
-          ) =>
-        val query = AspectQuery(
-          aspectId = accessAspectId,
-          path = finalKey.map {
-            case OpaRefObjectKey(key) => key
-            case OpaRefAllInArray     => ALL_IN_ARRAY
-            case x                    => throw new Exception("Could not understand " + x)
-          },
-          value = aValue match {
-            case OpaValueString(string)   => string
-            case OpaValueBoolean(boolean) => boolean.toString
-            case OpaValueNumber(bigDec)   => bigDec.toString()
-          }
-        )
+    if (theOpaQueries.contains(OpaQueryMatchAny)){
+      List(sqls"true")
+    }
+    else {
+      theOpaQueries.map {
+        case OpaQueryMatchValue(
+        OpaRefObjectKey("object")
+          :: OpaRefObjectKey("registry")
+          :: OpaRefObjectKey("record")
+          :: OpaRefObjectKey(accessAspectId)
+          :: finalKey,
+        _, // operation is not used at the moment. It is assumed to be eq.
+        aValue
+        ) =>
+          val query = AspectQuery(
+            aspectId = accessAspectId,
+            path = finalKey.map {
+              case OpaRefObjectKey(key) => key
+              case OpaRefAllInArray => ALL_IN_ARRAY
+              case x => throw new Exception("Could not understand " + x)
+            },
+            value = aValue match {
+              case OpaValueString(string) => string
+              case OpaValueBoolean(boolean) => boolean.toString
+              case OpaValueNumber(bigDec) => bigDec.toString()
+            }
+          )
 
-        aspectQueryToWhereClause(tenantId, query)
-      case OpaQueryMatchNoAccessControl =>
-        sqls"""
+          aspectQueryToWhereClause(query)
+        case OpaQueryMatchNoAccessControl =>
+          sqls"""
               EXISTS (
-              SELECT 1 FROM public_records
+              SELECT 1 FROM records_without_access_control
               WHERE recordid = records.recordid and ${SQLUtil
-          .tenantIdToWhereClause(tenantId)})
+          .tenantIdToWhereClause(tenantId, SQL.createUnsafely("records"))})
             """
-      case OpaQuerySkipAccessControl => sqls"true"
-      case OpaQueryMatchNone         => sqls"false"
-      case unmatched =>
-        throw new Exception(
-          "Could not convert query " + unmatched + " to where clause"
-        )
+        case OpaQuerySkipAccessControl => sqls"true"
+        case OpaQueryMatchNone => sqls"false"
+        case unmatched =>
+          throw new Exception(
+            "Could not convert query " + unmatched + " to where clause"
+          )
+      }
     }
   }
 

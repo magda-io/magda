@@ -39,14 +39,17 @@ spec:
 {{- if .Values.auth.arcgisClientId }}
             "--arcgisClientId", {{ .Values.auth.arcgisClientId | quote }},
 {{- end }}
-{{- if .Values.arcgisInstanceBaseUrl }}
-            "--arcgisInstanceBaseUrl", {{ .Values.arcgisInstanceBaseUrl | quote }},
-{{- end }}
-{{- if .Values.auth.googleClientId }}
-            "--googleClientId", {{ .Values.auth.googleClientId | quote }},
+{{- if .Values.auth.arcgisInstanceBaseUrl }}
+            "--arcgisInstanceBaseUrl", {{ .Values.auth.arcgisInstanceBaseUrl | quote }},
 {{- end }}
 {{- if .Values.auth.aafClientUri}}
             "--aafClientUri", {{ .Values.auth.aafClientUri| quote }},
+{{- end }}
+{{- if .Values.auth.esriOrgGroup}}
+            "--esriOrgGroup", {{ .Values.auth.esriOrgGroup| quote }},
+{{- end }}
+{{- if .Values.auth.googleClientId }}
+            "--googleClientId", {{ .Values.auth.googleClientId | quote }},
 {{- end }}
 {{- if .Values.auth.vanguardWsFedIdpUrl }}
             "--vanguardWsFedIdpUrl", {{ .Values.auth.vanguardWsFedIdpUrl | quote }},

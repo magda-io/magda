@@ -6,7 +6,7 @@ import org.scalatest.Ignore
 class RecordsWithEsriOpaPoliciesSpec extends RecordsOpaSpec {
   override def testConfigSource: String =
     s"""
-       |opa.recordPolicyId="object.registry.record.esri_groups"
+       |opa.recordPolicyId="object.registry.record.esri_owner_groups"
     """.stripMargin
 
   override def beforeAll(): Unit = {

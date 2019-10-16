@@ -223,7 +223,7 @@ const Routes = () => {
                 />
             )}
             {/*
-                We can't load header here. ProgressMeter needs to go into header 
+                We can't load header here. ProgressMeter needs to go into header
                 but the first route of the dataset route doesn't need a ProgressMeter.
              */}
             {config.featureFlags.cataloguing && (

@@ -179,7 +179,7 @@ package misc {
         case emptyPolygonPattern() => None
         case csvPattern(_) =>
           val latLongs = string.split(",").map(str => CoordinateFormat.convertStringToBigDecimal(str))
-          fromBoundingBox(Seq(BoundingBox(latLongs(0), latLongs(1), latLongs(2), latLongs(3))))
+          fromBoundingBox(Seq(BoundingBox(latLongs(3), latLongs(2), latLongs(1), latLongs(0))))
         case polygonPattern(polygonCoords, _) =>
           val coords = polygonCoords.split(",")
             .map { stringCoords =>
