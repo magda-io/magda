@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import moment from "moment";
 
 /**
  * Design infers the home page.
@@ -8,7 +9,7 @@ import { Link } from "react-router-dom";
  */
 class DatasetListPage extends React.Component<any, any> {
     render() {
-        const datasets: any[] = [];
+        let datasets: any[] = [];
         for (const [id, dataset] of Object.entries(localStorage)) {
             if (id.match(/^magda-ds-/)) {
                 try {
@@ -19,6 +20,17 @@ class DatasetListPage extends React.Component<any, any> {
                 } catch (e) {}
             }
         }
+
+        datasets = datasets.sort((d1, d2) => {
+            const m1 = moment(d1.dataset._lastModifiedDate);
+            const m2 = moment(d2.dataset._lastModifiedDate);
+            if (!m1.isValid() && !m2.isValid()) return 0;
+            if (m1.isValid() && !m2.isValid()) return -1;
+            if (!m1.isValid() && m2.isValid()) return 1;
+            if (m1.isAfter(m2)) return -1;
+            else if (m1.isSame(m2)) return 0;
+            else return 1;
+        });
 
         return (
             <div className="container-fluid">
