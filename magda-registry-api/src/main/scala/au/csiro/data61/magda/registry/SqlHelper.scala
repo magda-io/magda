@@ -28,7 +28,8 @@ object SqlHelper {
   def getOpaConditions(
       opaQueries: Seq[List[OpaQuery]],
       operationType: AuthOperations.OperationType,
-      recordId: String = ""
+      recordId: Option[String] = None,
+      tenantId: Option[BigInt] = None
   ): SQLSyntax = {
 
     val conditions: SQLSyntax = if (opaQueries.nonEmpty) {
@@ -47,17 +48,20 @@ object SqlHelper {
       conditions
     } else {
       val theRecordId =
-        if (recordId.nonEmpty) sqls"$recordId" else sqls"Records.recordId"
+        if (recordId.nonEmpty) sqls"${recordId.get}" else sqls"Records.recordId"
+
+      val theTenantId =
+        if (tenantId.nonEmpty) sqls"${tenantId.get}" else sqls"Records.tenantId"
 
       val accessControlAspectId = getAccessAspectId(opaQueries.head.head)
 
       sqls"""
           (EXISTS (
             SELECT 1 FROM records_without_access_control
-            WHERE (recordid, tenantid)=($theRecordId, records.tenantId)) or
+            WHERE (recordid, tenantid)=($theRecordId, $theTenantId)) or
           exists (
             select 1 from recordaspects
-            where (RecordAspects.recordId, RecordAspects.aspectId, RecordAspects.tenantId)=($theRecordId, $accessControlAspectId, Records.tenantId) and
+            where (RecordAspects.recordId, RecordAspects.aspectId, RecordAspects.tenantId)=($theRecordId, $accessControlAspectId, $theTenantId) and
             ($conditions)
           ))
         """

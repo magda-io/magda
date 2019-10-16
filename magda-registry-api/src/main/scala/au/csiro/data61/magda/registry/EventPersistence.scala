@@ -2,15 +2,20 @@ package au.csiro.data61.magda.registry
 
 import au.csiro.data61.magda.model.Registry._
 import akka.stream.scaladsl.Source
+import au.csiro.data61.magda.opa.OpaTypes.OpaQuery
+import au.csiro.data61.magda.registry.DefaultRecordPersistence.buildReferenceMap
+import au.csiro.data61.magda.registry.SqlHelper.getOpaConditions
 import spray.json._
 import gnieh.diffson.sprayJson._
 import scalikejdbc._
+
+import scala.collection.immutable
 
 object EventPersistence extends Protocols with DiffsonProtocol {
   val eventStreamPageSize = 1000
   val recordPersistence = DefaultRecordPersistence
 
-  def streamEventsSince(sinceEventId: Long, recordId: Option[String] = None, aspectIds: Set[String] = Set(), tenantId: BigInt) = {
+  def streamEventsSince(sinceEventId: Long, recordId: Option[String] = None, aspectIds: Set[String] = Set(), opaQueries: List[List[OpaQuery]], tenantId: BigInt) = {
     Source.unfold(sinceEventId)(offset => {
       val events = DB readOnly { implicit session =>
         getEvents(
@@ -18,15 +23,18 @@ object EventPersistence extends Protocols with DiffsonProtocol {
           pageToken = Some(offset),
           start = None,
           limit = Some(eventStreamPageSize),
+          lastEventId = None,
           recordId = recordId,
           aspectIds = aspectIds,
+          eventTypes = Set(),
+          opaQueries: List[List[OpaQuery]],
           tenantId = tenantId)
       }
       events.events.lastOption.map(last => (last.id.get, events))
     }).mapConcat(page => page.events)
   }
 
-  def streamEventsUpTo(lastEventId: Long, recordId: Option[String] = None, aspectIds: Set[String] = Set(), tenantId: BigInt) = {
+  def streamEventsUpTo(lastEventId: Long, recordId: Option[String] = None, aspectIds: Set[String] = Set(), opaQueries: List[List[OpaQuery]], tenantId: BigInt) = {
     Source.unfold(0L)(offset => {
       val events = DB readOnly { implicit session =>
         getEvents(
@@ -37,6 +45,8 @@ object EventPersistence extends Protocols with DiffsonProtocol {
           lastEventId = Some(lastEventId),
           recordId = recordId,
           aspectIds = aspectIds,
+          eventTypes = Set(),
+          opaQueries: List[List[OpaQuery]],
           tenantId = tenantId)
       }
       events.events.lastOption.map(last => (last.id.get, events))
@@ -78,11 +88,15 @@ object EventPersistence extends Protocols with DiffsonProtocol {
                 recordId: Option[String] = None,
                 aspectIds: Set[String] = Set(),
                 eventTypes: Set[EventType] = Set(),
+                opaQueries: List[List[OpaQuery]],
                 tenantId: BigInt): EventsPage = {
     val filters: Seq[Option[SQLSyntax]] = Seq(
       pageToken.map(v => sqls"eventId > $v"),
       lastEventId.map(v => sqls"eventId <= $v"),
       recordId.map(v => sqls"data->>'recordId' = $v"))
+
+    val opaConditions =
+      getOpaConditions(opaQueries, AuthOperations.read, recordId, Some(tenantId))
 
     val tenantFilter: Option[SQLSyntax] = if (tenantId == MAGDA_SYSTEM_ID) None else Some(sqls"tenantId = $tenantId")
     val theFilters = (filters ++ List(tenantFilter)).filter(_.isDefined)
@@ -96,11 +110,15 @@ object EventPersistence extends Protocols with DiffsonProtocol {
         if (propertyWithLink.isArray) {
           sqls"""$aspectId IN (select aspectId
                          from RecordAspects
-                         where RecordAspects.data->${propertyWithLink.propertyName} @> (Events.data->'recordId')::jsonb)"""
+                         where RecordAspects.data->${propertyWithLink.propertyName} @> (Events.data->'recordId')::jsonb
+                         and ($opaConditions))
+            """
         } else {
           sqls"""$aspectId IN (select aspectId
                          from RecordAspects
-                         where RecordAspects.data->>${propertyWithLink.propertyName} = Events.data->>'recordId')"""
+                         where RecordAspects.data->>${propertyWithLink.propertyName} = Events.data->>'recordId'
+                         and ($opaConditions))
+            """
         }
     }
 
@@ -121,27 +139,72 @@ object EventPersistence extends Protocols with DiffsonProtocol {
             eventTime,
             eventTypeId,
             userId,
-            data
+            data,
+            tenantId
           from Events
-          $whereClause
+          $whereClause and ($opaConditions)
           order by eventId asc
           offset ${start.getOrElse(0)}
           limit ${limit.getOrElse(1000)}"""
         .map(rs => {
           // Side-effectily track the sequence number of the very last result.
           lastEventIdInPage = Some(rs.long("eventId"))
-          rowToEvent(rs)
+          val tenantId = rs.bigInt("tenantId")
+          rowToEvent(session, rs, opaQueries, tenantId)
         }).list.apply()
 
     EventsPage(lastEventIdInPage.isDefined, lastEventIdInPage.map(_.toString), events)
   }
 
-  private def rowToEvent(rs: WrappedResultSet): RegistryEvent = {
+  private def rowToEvent(implicit session: DBSession, rs: WrappedResultSet, opaQueries: List[List[OpaQuery]], tenantId: BigInt): RegistryEvent = {
+    val data = JsonParser(rs.string("data")).asJsObject
+    val filteredData = filterLinks(session, data, opaQueries, tenantId)
     RegistryEvent(
       id = rs.longOpt("eventId"),
       eventTime = rs.offsetDateTimeOpt("eventTime"),
       eventType = EventType.withValue(rs.int("eventTypeId")),
       userId = rs.int("userId"),
-      data = JsonParser(rs.string("data")).asJsObject)
+      filteredData)
+  }
+
+  // TODO: Combined links filtering with the event query.
+  private def filterLinks(implicit session: DBSession, data: JsObject, opaQueries: List[List[OpaQuery]], tenantId: BigInt) = {
+    val aspectIds = data.getFields("aspectId").toList.map(aspectId => aspectId.convertTo[String])
+    val referenceDetails: Map[String, PropertyWithLink] = buildReferenceMap(session, aspectIds)
+    assert(referenceDetails.size <= 1)
+    val filteredData = referenceDetails.values.map {
+      case PropertyWithLink(propertyName, true) =>
+        val rawLinks = data.fields("aspect").asJsObject().fields(propertyName).asInstanceOf[JsArray]
+        val filteredLinks = rawLinks.elements.map(link => {
+          val recordId = link.convertTo[String]
+          val opaConditions = getOpaConditions(opaQueries, AuthOperations.read, Some(recordId), Some(tenantId))
+          sql"""
+              select recordId from records where (recordid, tenantid) = ($recordId, $tenantId) and ($opaConditions)
+            """
+            .map(rs => rs.string("recordId"))
+            .list.apply()
+        }).flatMap(links => links.map(link => JsString(link)))
+
+        JsObject(propertyName -> JsArray(filteredLinks))
+      case PropertyWithLink(propertyName, false) =>
+        val recordId = data.fields("aspect").asJsObject().fields(propertyName).convertTo[String]
+        val opaConditions = getOpaConditions(opaQueries, AuthOperations.read, Some(recordId), Some(tenantId))
+        val filteredLink =
+          sql"""
+              select recordId from records where (recordid, tenantid) = ($recordId, $tenantId) and ($opaConditions)
+            """
+            .map(rs => rs.string("recordId"))
+            .list.apply()
+            .map(link => JsString(link))
+
+        val theLink = if (filteredLink.nonEmpty) filteredLink.head else JsObject.empty
+        JsObject(propertyName -> theLink)
+    }
+
+    // TODO: Let the return filtered data aspect include all properties.
+    if (filteredData.nonEmpty)
+      JsObject("aspect" -> filteredData.head)
+    else
+      data
   }
 }

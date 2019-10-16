@@ -367,7 +367,7 @@ object DefaultRecordPersistence
       opaQueries: List[List[OpaQuery]] = List()
   ): Option[JsObject] = {
     val opaSql =
-      getOpaConditions(opaQueries, AuthOperations.read, recordId)
+      getOpaConditions(opaQueries, AuthOperations.read, Some(recordId))
 
     sql"""select RecordAspects.aspectId as aspectId, Aspects.name as aspectName, data, RecordAspects.tenantId
           from RecordAspects

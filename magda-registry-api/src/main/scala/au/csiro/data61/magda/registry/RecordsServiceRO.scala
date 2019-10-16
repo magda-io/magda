@@ -638,6 +638,6 @@ class RecordsServiceRO(
       getById ~
       getByIdSummary ~
       new RecordAspectsServiceRO(system, materializer, config).route ~
-      new RecordHistoryService(system, materializer).route
+      new RecordHistoryService(system, materializer, config).route
 
 }

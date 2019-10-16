@@ -396,6 +396,7 @@ object WebHookActor {
                   None,
                   (webHook.config.aspects ++ webHook.config.optionalAspects).flatten.toSet,
                   webHook.eventTypes,
+                  Nil,
                   MAGDA_SYSTEM_ID
                 )
               }

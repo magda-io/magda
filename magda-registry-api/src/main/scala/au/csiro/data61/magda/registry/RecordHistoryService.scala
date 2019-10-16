@@ -9,6 +9,8 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
 import au.csiro.data61.magda.model.Registry._
+import au.csiro.data61.magda.registry.Directives.withRecordOpaQuery
+import com.typesafe.config.Config
 import io.swagger.annotations._
 import javax.ws.rs.Path
 
@@ -36,7 +38,7 @@ import scalikejdbc.DB
   */
 @Path("/records/{recordId}/history")
 @io.swagger.annotations.Api(value = "record history", produces = "application/json")
-class RecordHistoryService(system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
+class RecordHistoryService(system: ActorSystem, materializer: Materializer, config: Config) extends Protocols with SprayJsonSupport {
   val recordPersistence = DefaultRecordPersistence
 
   @ApiOperation(value = "Get a list of all events affecting this record", nickname = "history", httpMethod = "GET", response = classOf[EventsPage])
@@ -47,10 +49,18 @@ class RecordHistoryService(system: ActorSystem, materializer: Materializer) exte
   def history: Route = get {
     path(Segment / "history") { id =>
       requiresTenantId { tenantId =>
-        parameters('pageToken.as[Long].?, 'start.as[Int].?, 'limit.as[Int].?) { (pageToken, start, limit) =>
-          complete {
-            DB readOnly { session =>
-              EventPersistence.getEvents(session, recordId = Some(id), pageToken = pageToken, start = start, limit = limit, tenantId = tenantId)
+        withRecordOpaQuery(AuthOperations.read)(
+          config,
+          system,
+          materializer,
+          system.dispatcher
+        ) { opaQueries =>
+          assert(opaQueries.nonEmpty)
+          parameters('pageToken.as[Long].?, 'start.as[Int].?, 'limit.as[Int].?) { (pageToken, start, limit) =>
+            complete {
+              DB readOnly { session =>
+                EventPersistence.getEvents(session = session, recordId = Some(id), pageToken = pageToken, start = start, limit = limit, opaQueries = opaQueries, tenantId = tenantId)
+              }
             }
           }
         }
@@ -98,15 +108,24 @@ class RecordHistoryService(system: ActorSystem, materializer: Materializer) exte
   @ApiResponses(Array(
     new ApiResponse(code = 404, message = "No record exists with the given ID, it does not have a CreateRecord event, or it has been deleted.", response = classOf[BadRequest])
   ))
-  def version = get { path(Segment / "history" / Segment) { (id, version) => requiresTenantId { tenantId => { parameters('aspect.*, 'optionalAspect.*) { (aspects: Iterable[String], optionalAspects: Iterable[String]) =>
-    DB readOnly { session =>
-      val events = EventPersistence.streamEventsUpTo(version.toLong, recordId = Some(id), tenantId = tenantId)
-      val recordSource = recordPersistence.reconstructRecordFromEvents(id, events, aspects, optionalAspects)
-      val sink = Sink.head[Option[Record]]
-      val future = recordSource.runWith(sink)(materializer)
-      Await.result[Option[Record]](future, 5 seconds) match {
-        case Some(record) => complete(record)
-        case None => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID, it does not have a CreateRecord event, or it has been deleted."))
+  def version = get { path(Segment / "history" / Segment) { (id, version) => requiresTenantId { tenantId => {
+    withRecordOpaQuery(AuthOperations.read)(
+      config,
+      system,
+      materializer,
+      system.dispatcher
+    ) { opaQueries =>
+      assert(opaQueries.nonEmpty)
+    parameters('aspect.*, 'optionalAspect.*) { (aspects: Iterable[String], optionalAspects: Iterable[String]) =>
+      DB readOnly { session =>
+        val events = EventPersistence.streamEventsUpTo(lastEventId = version.toLong, recordId = Some(id), opaQueries = opaQueries, tenantId = tenantId)
+        val recordSource = recordPersistence.reconstructRecordFromEvents(id, events, aspects, optionalAspects)
+        val sink = Sink.head[Option[Record]]
+        val future = recordSource.runWith(sink)(materializer)
+        Await.result[Option[Record]](future, 5 seconds) match {
+          case Some(record) => complete(record)
+          case None => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID, it does not have a CreateRecord event, or it has been deleted."))
+        }
       }
     }
   } } } } }
