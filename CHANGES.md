@@ -114,6 +114,7 @@ UI:
 -   Fixed mobile views incorrect min. width
 -   Drafts should be ordered by date on Drafts list page
 -   Changed text to reflect state/territory/country accordingly
+-   Fixed CSV loader didn't retry the different line ending correctly
 
 Gateway:
 

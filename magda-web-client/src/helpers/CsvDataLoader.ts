@@ -71,6 +71,16 @@ class CsvDataLoader {
      */
     private toBeAbort: boolean = false;
 
+    /**
+     * We set this property to skip the next `complete` call.
+     * This would be usuful when we want to retry the data downloading.
+     *
+     * @private
+     * @type {boolean}
+     * @memberof CsvDataLoader
+     */
+    private skipComplete: boolean = false;
+
     constructor(source: CsvSourceType) {
         this.maxChartProcessingRows = config.maxChartProcessingRows;
         this.maxTableProcessingRows = config.maxTableProcessingRows;
@@ -111,6 +121,7 @@ class CsvDataLoader {
         this.isLoading = false;
         this.toBeAbort = false;
         this.isPartialData = false;
+        this.skipComplete = false;
     }
 
     abort() {
@@ -167,8 +178,11 @@ class CsvDataLoader {
                             overrideNewLine !== "\n"
                         ) {
                             // A lot of CSV GEO AUs have an issue where papa can't detect the newline - try again with it overridden
+                            this.skipComplete = true;
                             parser.abort();
-                            console.error("retry new newline...");
+                            console.log(
+                                "retry CSV parsing with the different line ending setting..."
+                            );
                             // --- worker may not abort immediately, retry later to avoid troubles
                             resolve(retryLater(this.load.bind(this, "\n")));
                         } else {
@@ -192,6 +206,10 @@ class CsvDataLoader {
                 }).bind(this),
                 complete: (() => {
                     try {
+                        if (this.skipComplete) {
+                            this.skipComplete = true;
+                            return;
+                        }
                         const result = {
                             data: this.data,
                             errors: this.errors,
