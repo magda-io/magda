@@ -39,7 +39,8 @@ function runConnector() {
         }
 
         // @ts-ignore
-        async createGroup(groupJson: object): Promise<Record | Error> {
+        async createGroup(groupJson: any): Promise<Record | Error> {
+            groupJson.esriExpiration = Date.now() + esriPortal.updateInterval;
             return super.putRecord(
                 transformer.groupJsonToRecord(groupJson),
                 "Group"
