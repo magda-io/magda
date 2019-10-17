@@ -36,8 +36,8 @@ object GeoJsonFormats extends DefaultJsonProtocol {
       str.replaceAll("([\\d-+.]+)", "\"$1\"")
     }
 
-    def convertStringToBigDecimal(str: String): BigDecimal = {
-      BigDecimal(cleanNumberString(str))
+    def convertStringToDouble(str: String): Double = {
+      cleanNumberString(str).toDouble
     }
 
     def write(obj: Coordinate): JsValue = JsArray(
@@ -48,8 +48,8 @@ object GeoJsonFormats extends DefaultJsonProtocol {
     def read(json: JsValue): Coordinate = json match {
       case JsArray(is) =>
         Coordinate(
-          convertStringToBigDecimal(is(0).toJson.toString),
-          convertStringToBigDecimal(is(1).toJson.toString)
+          convertStringToDouble(is(0).toJson.toString),
+          convertStringToDouble(is(1).toJson.toString)
         )
       case _ => deserializationError(s"'$json' is not a valid Coordinate")
     }

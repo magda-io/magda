@@ -3,13 +3,13 @@ import DockerSetup._
 name := "magda-search-api"
 
 libraryDependencies ++= {
-  val akkaV       = "2.5.20"
-  val akkaHttpV   = "10.1.7"
+  val akkaV       = "2.5.25"
+  val akkaHttpV   = "10.1.10"
   val scalaTestV  = "3.0.1"
   Seq(
        "com.typesafe.akka" %% "akka-http-xml" % akkaHttpV,
-       "com.rockymadden.stringmetric" %% "stringmetric-core" % "0.27.4",
-       "com.monsanto.labs" %% "mwundo" % "0.1.0" exclude("xerces", "xercesImpl"),
+       "com.monsanto.labs" %% "mwundo-core" % "0.5.0" exclude("xerces", "xercesImpl"),
+       "com.monsanto.labs" %% "mwundo-spray" % "0.5.0",
        "org.scalaz" %% "scalaz-core" % "7.2.8"
      )
 }

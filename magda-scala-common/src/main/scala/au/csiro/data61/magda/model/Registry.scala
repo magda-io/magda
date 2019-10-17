@@ -3,37 +3,13 @@ package au.csiro.data61.magda.model
 import java.time.{OffsetDateTime, ZoneOffset}
 
 import akka.event.LoggingAdapter
-import au.csiro.data61.magda.model.Registry.{
-  AspectDefinition,
-  EventType,
-  QualityRatingAspect,
-  Record,
-  RecordSummary,
-  RecordType,
-  RegistryCountResponse,
-  RegistryEvent,
-  RegistryRecordsResponse,
-  WebHook,
-  WebHookAcknowledgement,
-  WebHookAcknowledgementResponse,
-  WebHookConfig,
-  WebHookPayload
-}
 import au.csiro.data61.magda.model.Temporal.{ApiDate, PeriodOfTime, Periodicity}
 import au.csiro.data61.magda.model.misc.{Protocols => ModelProtocols, _}
 import au.csiro.data61.magda.util.DateParser
 import enumeratum.values.{IntEnum, IntEnumEntry}
 import io.swagger.annotations.{ApiModel, ApiModelProperty}
 import spray.json.lenses.JsonLenses._
-import spray.json.{
-  DefaultJsonProtocol,
-  JsArray,
-  JsObject,
-  JsString,
-  JsValue,
-  RootJsonFormat,
-  _
-}
+import spray.json._
 
 import scala.annotation.meta.field
 import scala.util.{Failure, Success, Try}
@@ -42,6 +18,19 @@ trait RegistryProtocols
     extends DefaultJsonProtocol
     with au.csiro.data61.magda.model.Temporal.Protocols
     with ModelProtocols {
+  import au.csiro.data61.magda.model.Registry._
+
+  import scala.reflect.ClassTag
+
+  def jsonObjectFormat[A: ClassTag]: RootJsonFormat[A] = new RootJsonFormat[A] {
+    val ct = implicitly[ClassTag[A]]
+
+    def write(obj: A): JsValue =
+      JsObject("value" -> JsString(ct.runtimeClass.getSimpleName))
+
+    def read(json: JsValue): A = ct.runtimeClass.newInstance().asInstanceOf[A]
+  }
+
   implicit object EventTypeFormat extends RootJsonFormat[EventType] {
     def write(e: EventType) = JsString(e.toString)
 
@@ -54,8 +43,8 @@ trait RegistryProtocols
   implicit val recordFormat = jsonFormat5(Record.apply)
   implicit val registryEventFormat = jsonFormat5(RegistryEvent.apply)
   implicit val aspectFormat = jsonFormat3(AspectDefinition.apply)
-  implicit val webHookPayloadFormat = jsonFormat6(WebHookPayload.apply)
   implicit val webHookConfigFormat = jsonFormat6(WebHookConfig.apply)
+  implicit val webHookPayloadFormat = jsonFormat6(WebHookPayload.apply)
   implicit val webHookFormat = jsonFormat14(WebHook.apply)
   implicit val registryRecordsResponseFormat = jsonFormat3(
     RegistryRecordsResponse.apply
@@ -92,6 +81,7 @@ trait RegistryProtocols
 }
 
 trait RegistryConverters extends RegistryProtocols {
+  import au.csiro.data61.magda.model.Registry._
 
   def getAcronymFromPublisherName(
       publisherName: Option[String]
@@ -530,29 +520,31 @@ object Registry extends RegistryConverters {
       "A record in the registry, usually including data for one or more aspects, unique for a tenant."
   )
   case class Record(
-      @(ApiModelProperty @field)(
-        value = "The identifier of the record",
-        required = true
-      ) id: String,
-      @(ApiModelProperty @field)(
-        value = "The name of the record",
-        required = true
-      ) name: String,
-      @(ApiModelProperty @field)(
-        value = "The aspects included in this record",
-        required = true,
-        dataType = "object"
-      ) aspects: Map[String, JsObject],
-      @(ApiModelProperty @field)(
-        value = "A tag representing the action by the source of this record " +
-          "(e.g. an id for a individual crawl of a data portal).",
-        required = false,
-        allowEmptyValue = true
-      ) sourceTag: Option[String] = None,
-      @(ApiModelProperty @field)(
-        value = "The identifier of a tenant",
-        required = false
-      ) tenantId: Option[BigInt] = None
+      @(ApiModelProperty @field)(        value = "The identifier of the record",        required = true      )
+      id: String,
+      // @(ApiModelProperty @field)(
+      //   value = "The name of the record",
+      //   required = true
+      // )
+      name: String,
+      // @(ApiModelProperty @field)(
+      //   value = "The aspects included in this record",
+      //   required = true,
+      //   dataType = "object"
+      // )
+      aspects: Map[String, JsObject],
+      // @(ApiModelProperty @field)(
+      //   value = "A tag representing the action by the source of this record " +
+      //     "(e.g. an id for a individual crawl of a data portal).",
+      //   required = false,
+      //   allowEmptyValue = true
+      // )
+      sourceTag: Option[String] = None,
+      // @(ApiModelProperty @field)(
+      //   value = "The identifier of a tenant",
+      //   required = false
+      // )
+      tenantId: Option[BigInt] = None
   ) extends RecordType
 
   @ApiModel(

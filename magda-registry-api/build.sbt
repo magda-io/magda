@@ -4,8 +4,8 @@ import DockerSetup._
 name := "magda-registry-api"
 
 libraryDependencies ++= {
-  val akkaV       = "2.5.20"
-  val akkaHttpV   = "10.1.7"
+  val akkaV       = "2.5.25"
+  val akkaHttpV   = "10.1.10"
   val scalaTestV  = "3.0.1"
   Seq(
     "com.typesafe.akka" %% "akka-actor" % akkaV,

@@ -200,7 +200,7 @@ package misc {
           case csvPattern(_) =>
             val latLongs = string
               .split(",")
-              .map(str => CoordinateFormat.convertStringToBigDecimal(str))
+              .map(str => CoordinateFormat.convertStringToDouble(str))
             fromBoundingBox(
               Seq(
                 BoundingBox(latLongs(3), latLongs(2), latLongs(1), latLongs(0))
@@ -269,10 +269,10 @@ package misc {
     }
   }
   case class BoundingBox(
-      north: BigDecimal,
-      east: BigDecimal,
-      south: BigDecimal,
-      west: BigDecimal
+      north: Double,
+      east: Double,
+      south: Double,
+      west: Double
   )
 
   case class QueryRegion(regionType: String, regionId: String) {
@@ -489,7 +489,7 @@ package misc {
 
       def read(json: JsValue): Coordinate = json match {
         case JsArray(is) =>
-          Coordinate(is(0).convertTo[BigDecimal], is(1).convertTo[BigDecimal])
+          Coordinate(is(0).convertTo[Double], is(1).convertTo[Double])
       }
     }
 
@@ -519,7 +519,12 @@ package misc {
                     )
                   )
                   ) =>
-                BoundingBox(north, east, south, west)
+                BoundingBox(
+                  north.toDouble,
+                  east.toDouble,
+                  south.toDouble,
+                  west.toDouble
+                )
             }
         }
       }

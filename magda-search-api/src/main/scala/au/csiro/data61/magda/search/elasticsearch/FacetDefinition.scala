@@ -14,7 +14,6 @@ import com.sksamuel.elastic4s.searches.queries.{Query => QueryDefinition}
 import com.sksamuel.elastic4s.http.ElasticDsl._
 import org.elasticsearch.search.aggregations.Aggregation
 import au.csiro.data61.magda.search.elasticsearch.Queries._
-import com.rockymadden.stringmetric.similarity.WeightedLevenshteinMetric
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation
 import org.elasticsearch.search.aggregations.bucket.nested.InternalReverseNested
 
