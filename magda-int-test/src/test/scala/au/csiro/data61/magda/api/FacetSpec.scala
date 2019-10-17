@@ -13,6 +13,7 @@ import au.csiro.data61.magda.search.elasticsearch._
 import au.csiro.data61.magda.test.util.ApiGenerators.{queryGen, _}
 import au.csiro.data61.magda.test.util.Generators
 import org.scalacheck.{Shrink, _}
+import java.net.URLEncoder
 
 class FacetSpec extends BaseSearchApiSpec {
 
@@ -31,6 +32,41 @@ class FacetSpec extends BaseSearchApiSpec {
               inner(dataSets, facetSize)
             }
           }
+        }
+      } catch {
+        case e: Throwable =>
+          e.printStackTrace
+          throw e
+      }
+    }
+
+    def checkFacetsNoQueryWithFacetFilter(isUpperCase:Option[Boolean] = None,
+                                          // --- format facet needs to return a list of values
+                                          facetFieldGetter: DataSet => Seq[String],
+                                          facetQueryCreator: String => String,
+                                          indexGen: Gen[(String, List[DataSet], Route)] = smallIndexGen,
+                                          facetSizeGen: Gen[Int] = Gen.choose(1, 20))
+    (inner: (String, Seq[String]) ⇒ Unit) = {
+      try {
+        forAll(indexGen) { tuple ⇒
+          val (indexName, dataSets, routes) = tuple
+
+          val facetValueList = dataSets.flatMap(facetFieldGetter).map(value => isUpperCase match {
+            case Some(true) => value.toUpperCase
+            case Some(false) => value.toLowerCase
+            case None => value
+          }).distinct
+
+          whenever(facetValueList.size > 0){
+            forAll(Gen.oneOf(facetValueList)) { facetValue =>
+              val facetQueryString = facetQueryCreator(facetValue)
+              Get(s"/v0/datasets?query=*&${facetQueryString}&start=0&limit=100&facetSize=100") ~> addSingleTenantIdHeader ~> routes ~> check {
+                status shouldBe OK
+                inner(facetValue, facetValueList)
+              }
+            }
+          }
+
         }
       } catch {
         case e: Throwable =>
@@ -375,6 +411,37 @@ class FacetSpec extends BaseSearchApiSpec {
 
       }
 
+      describe("should return no duplicate facet options with facet filters") {
+
+        def checkFormatFilterWithCase(isUpper: Option[Boolean]): Unit ={
+
+          val testHeading = isUpper match {
+            case Some(true) => "uppercase"
+            case Some(false) => "lowercase"
+            case None => "original case"
+          }
+
+          it(s"filter with ${testHeading} facet value") {
+            checkFacetsNoQueryWithFacetFilter(
+              isUpper,
+              d => d.publisher.flatMap(_.name).toSeq,
+              facetValue => s"publisher=${URLEncoder.encode(facetValue, "UTF-8")}"
+            ){ (facetValue, facetValueList) =>
+              val result = responseAs[SearchResult]
+              val facetOptions = result.facets.get.find(_.id.equals(Publisher.id)).get.options.map(_.value)
+              facetOptions.size shouldEqual facetOptions.map(_.toLowerCase).distinct.size
+            }
+          }
+        }
+
+        //--- test uppercase
+        checkFormatFilterWithCase(Some(true))
+        //--- test lowercase
+        checkFormatFilterWithCase(Some(false))
+        //--- test as it is
+        checkFormatFilterWithCase(None)
+      }
+
     }
 
     describe("format") {
@@ -385,6 +452,37 @@ class FacetSpec extends BaseSearchApiSpec {
       def specificBiasedQueryGen(dataSets: List[DataSet]) = Query(formats = dataSets.flatMap(_.distributions.flatMap(_.format)).map(Specified.apply).toSet)
 
       genericFacetSpecs(Format, reducer, queryToInt, filterQueryGen, specificBiasedQueryGen)
+
+      describe("should return no duplicate facet options with facet filters") {
+
+        def checkFormatFilterWithCase(isUpper: Option[Boolean]): Unit ={
+
+          val testHeading = isUpper match {
+            case Some(true) => "uppercase"
+            case Some(false) => "lowercase"
+            case None => "original case"
+          }
+
+          it(s"filter with ${testHeading} facet value") {
+            checkFacetsNoQueryWithFacetFilter(
+              isUpper,
+              d => d.distributions.flatMap(_.format.toSeq),
+              facetValue => s"format=${URLEncoder.encode(facetValue, "UTF-8")}"
+            ){ (facetValue, facetValueList) =>
+              val result = responseAs[SearchResult]
+              val facetOptions = result.facets.get.find(_.id.equals(Format.id)).get.options.map(_.value)
+              facetOptions.size shouldEqual facetOptions.map(_.toLowerCase).distinct.size
+            }
+          }
+        }
+
+        //--- test uppercase
+        checkFormatFilterWithCase(Some(true))
+        //--- test lowercase
+        checkFormatFilterWithCase(Some(false))
+        //--- test as it is
+        checkFormatFilterWithCase(None)
+      }
     }
 
     describe("year") {
