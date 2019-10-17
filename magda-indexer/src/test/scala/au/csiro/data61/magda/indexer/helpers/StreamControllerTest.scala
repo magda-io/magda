@@ -11,7 +11,7 @@ import au.csiro.data61.magda.client.RegistryInterface
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.indexer.search.SearchIndexer.IndexResult
 import au.csiro.data61.magda.model.misc.DataSet
-import au.csiro.data61.magda.model.Registry.MAGDA_ADMIN_PORTAL_ID
+import au.csiro.data61.magda.model.RegistryModel.MAGDA_ADMIN_PORTAL_ID
 import au.csiro.data61.magda.search.elasticsearch.Indices
 import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest.{Assertion, AsyncFlatSpec, FlatSpec, Matchers}

@@ -1,7 +1,7 @@
 package au.csiro.data61.magda.opa
 
 import akka.http.scaladsl.model.headers.RawHeader
-import au.csiro.data61.magda.Authentication
+import _root_.au.csiro.data61.magda.Authentication
 
 trait GroupsJwtForRecordEsriOpaPolicyTest extends ApiWithOpa {
 

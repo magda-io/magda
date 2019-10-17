@@ -13,8 +13,8 @@ import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 import au.csiro.data61.magda.Authentication
-import au.csiro.data61.magda.model.Registry._
-import au.csiro.data61.magda.model.RegistryConverters
+import au.csiro.data61.magda.model.RegistryModel._
+import au.csiro.data61.magda.model.RegistryConverters._
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.util.Collections.mapCatching
 import com.auth0.jwt.JWT
@@ -52,8 +52,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)(
     implicit val system: ActorSystem,
     implicit val executor: ExecutionContext,
     implicit val materializer: Materializer
-) extends RegistryConverters
-    with RegistryInterface {
+) extends RegistryInterface {
   def this()(
       implicit config: Config,
       system: ActorSystem,

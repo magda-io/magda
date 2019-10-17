@@ -1,8 +1,12 @@
 package au.csiro.data61.magda.search.elasticsearch
 
 
+/**
+ * As per https://github.com/rockymadden/stringmetric/blob/master/core/src/main/scala/com/rockymadden/stringmetric/similarity/WeightedLevenshteinMetric.scala
+ */
 final case class WeightedLevenshteinMetric(delete: BigDecimal, insert: BigDecimal, substitute: BigDecimal) {
-
+    type CompareTuple[T] = (Array[T], Array[T])
+    
 	def compare(a: Array[Char], b: Array[Char]): Option[Double] =
 		if (a.length == 0 || b.length == 0) None
 		else if (a.sameElements(b)) Some(0d)

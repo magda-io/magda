@@ -11,8 +11,8 @@ import au.csiro.data61.magda.api.model.{SearchResult, Protocols => ApiProtocols}
 import au.csiro.data61.magda.indexer.external.registry.WebhookApi
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.indexer.search.elasticsearch.ElasticSearchIndexer
-import au.csiro.data61.magda.model.Registry.{Record, _}
-import au.csiro.data61.magda.model.RegistryConverters
+import au.csiro.data61.magda.model.RegistryModel.{Record, _}
+import au.csiro.data61.magda.model.RegistryConverters._
 import au.csiro.data61.magda.model.Temporal.{ApiDate, PeriodOfTime}
 import au.csiro.data61.magda.model.misc.{Protocols => ModelProtocols, _}
 import au.csiro.data61.magda.search.SearchQueryer
@@ -32,7 +32,6 @@ import scala.concurrent.duration._
 
 trait WebhookSpecBase
     extends BaseApiSpec
-    with RegistryConverters
     with ModelProtocols
     with ApiProtocols
     with ResponseDatasetAllowAll {

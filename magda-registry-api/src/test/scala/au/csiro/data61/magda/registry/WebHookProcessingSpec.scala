@@ -6,8 +6,7 @@ import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import akka.http.scaladsl.model.{StatusCode, StatusCodes}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import au.csiro.data61.magda.model.Registry
-import au.csiro.data61.magda.model.Registry._
+import _root_.au.csiro.data61.magda.model.RegistryModel._
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}

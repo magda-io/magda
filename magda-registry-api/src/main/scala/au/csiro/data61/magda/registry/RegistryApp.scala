@@ -15,8 +15,8 @@ import akka.http.scaladsl.server.{
   RejectionHandler
 }
 import akka.stream.ActorMaterializer
-import au.csiro.data61.magda.AppConfig
-import au.csiro.data61.magda.client.AuthApiClient
+import _root_.au.csiro.data61.magda.AppConfig
+import _root_.au.csiro.data61.magda.client.AuthApiClient
 import scalikejdbc.GlobalSettings
 import scalikejdbc.config.TypesafeConfig
 import scalikejdbc.config.TypesafeConfigReader

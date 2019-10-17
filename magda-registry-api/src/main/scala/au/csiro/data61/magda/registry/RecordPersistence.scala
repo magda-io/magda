@@ -5,9 +5,9 @@ import java.sql.SQLException
 import akka.NotUsed
 import akka.event.LoggingAdapter
 import akka.stream.scaladsl.Source
-import au.csiro.data61.magda.model.Registry._
-import au.csiro.data61.magda.opa.OpaTypes._
-import au.csiro.data61.magda.registry.SqlHelper.{
+import _root_.au.csiro.data61.magda.model.RegistryModel._
+import _root_.au.csiro.data61.magda.opa.OpaTypes._
+import _root_.au.csiro.data61.magda.registry.SqlHelper.{
   getOpaConditions,
   aspectQueryToSql
 }

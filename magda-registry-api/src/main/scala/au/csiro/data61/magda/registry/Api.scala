@@ -22,7 +22,7 @@ import scalikejdbc.config._
 import scalikejdbc._
 
 import scala.util.control.NonFatal
-import au.csiro.data61.magda.client.AuthApiClient
+import _root_.au.csiro.data61.magda.client.AuthApiClient
 
 /**
   * @apiDefine GenericError
@@ -60,7 +60,7 @@ class Api(
             .map(_.message)).mkString("\n")
         complete(
           StatusCodes.BadRequest,
-          au.csiro.data61.magda.registry.BadRequest(messages)
+          BadRequest(messages)
         )
       }
       .result()
@@ -71,8 +71,7 @@ class Api(
 
       complete(
         StatusCodes.InternalServerError,
-        au.csiro.data61.magda.registry
-          .BadRequest("The server encountered an unexpected error.")
+        BadRequest("The server encountered an unexpected error.")
       )
     }
   }

@@ -7,8 +7,8 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
-import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
-import au.csiro.data61.magda.model.Registry._
+import _root_.au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
+import _root_.au.csiro.data61.magda.model.RegistryModel._
 import io.swagger.annotations._
 import javax.ws.rs.Path
 

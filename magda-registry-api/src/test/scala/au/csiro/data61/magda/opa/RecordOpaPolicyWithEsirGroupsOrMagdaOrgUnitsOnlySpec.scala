@@ -1,8 +1,8 @@
 package au.csiro.data61.magda.opa
 
 import akka.http.scaladsl.model.StatusCodes
-import au.csiro.data61.magda.model.Registry._
-import au.csiro.data61.magda.registry._
+import _root_.au.csiro.data61.magda.model.RegistryModel._
+import _root_.au.csiro.data61.magda.registry._
 import spray.json._
 
 abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec

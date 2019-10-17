@@ -5,9 +5,9 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.stream.Materializer
-import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
-import au.csiro.data61.magda.model.Registry._
-import au.csiro.data61.magda.registry.Directives.withRecordOpaQuery
+import _root_.au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
+import _root_.au.csiro.data61.magda.model.RegistryModel._
+import _root_.au.csiro.data61.magda.registry.Directives.withRecordOpaQuery
 import com.typesafe.config.Config
 import io.swagger.annotations._
 import javax.ws.rs.Path

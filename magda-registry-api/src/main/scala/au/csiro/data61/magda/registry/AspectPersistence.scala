@@ -10,7 +10,7 @@ import java.sql.SQLException
 import spray.json._
 import gnieh.diffson.sprayJson._
 
-import au.csiro.data61.magda.model.Registry._
+import _root_.au.csiro.data61.magda.model.RegistryModel._
 
 object AspectPersistence extends Protocols with DiffsonProtocol {
 

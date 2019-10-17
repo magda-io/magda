@@ -6,15 +6,15 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
-import au.csiro.data61.magda.Authentication
-import au.csiro.data61.magda.client.AuthApiClient
-import au.csiro.data61.magda.model.Auth.AuthProtocols
-import au.csiro.data61.magda.model.Registry.{
+import _root_.au.csiro.data61.magda.Authentication
+import _root_.au.csiro.data61.magda.client.AuthApiClient
+import _root_.au.csiro.data61.magda.model.Auth.AuthProtocols
+import _root_.au.csiro.data61.magda.model.RegistryModel.{
   AspectDefinition,
   MAGDA_TENANT_ID_HEADER,
   Record
 }
-import au.csiro.data61.magda.registry._
+import _root_.au.csiro.data61.magda.registry._
 import com.auth0.jwt.JWT
 import com.typesafe.config.Config
 import org.scalamock.scalatest.MockFactory

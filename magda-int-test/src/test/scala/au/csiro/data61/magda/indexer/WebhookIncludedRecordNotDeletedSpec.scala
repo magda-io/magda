@@ -3,7 +3,7 @@ package au.csiro.data61.magda.indexer
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.StatusCodes.{Accepted, OK}
 import au.csiro.data61.magda.api.model.SearchResult
-import au.csiro.data61.magda.model.Registry._
+import au.csiro.data61.magda.model.RegistryModel._
 import au.csiro.data61.magda.test.util.Generators
 import spray.json.{JsObject, _}
 

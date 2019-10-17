@@ -8,8 +8,8 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
-import au.csiro.data61.magda.model.Registry._
-import au.csiro.data61.magda.opa.OpaTypes.OpaQuerySkipAccessControl
+import _root_.au.csiro.data61.magda.model.RegistryModel._
+import _root_.au.csiro.data61.magda.opa.OpaTypes.OpaQuerySkipAccessControl
 import scalikejdbc._
 import spray.json.JsString
 

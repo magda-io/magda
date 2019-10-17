@@ -11,16 +11,16 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.util.Timeout
 import io.swagger.annotations._
-import au.csiro.data61.magda.model.Registry.{
+import _root_.au.csiro.data61.magda.model.RegistryModel.{
   WebHook,
   WebHookAcknowledgement,
   WebHookAcknowledgementResponse
 }
-import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
+import _root_.au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
 
 import scala.util.{Failure, Success}
 import com.typesafe.config.Config
-import au.csiro.data61.magda.client.AuthApiClient
+import _root_.au.csiro.data61.magda.client.AuthApiClient
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}

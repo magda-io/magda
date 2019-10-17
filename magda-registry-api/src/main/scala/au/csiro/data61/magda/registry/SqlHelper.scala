@@ -1,7 +1,7 @@
 package au.csiro.data61.magda.registry
 
-import au.csiro.data61.magda.opa.OpaConsts.ANY_IN_ARRAY
-import au.csiro.data61.magda.opa.OpaTypes.{
+import _root_.au.csiro.data61.magda.opa.OpaConsts.ANY_IN_ARRAY
+import _root_.au.csiro.data61.magda.opa.OpaTypes.{
   OpaOp,
   OpaQuery,
   OpaQueryAllMatched,

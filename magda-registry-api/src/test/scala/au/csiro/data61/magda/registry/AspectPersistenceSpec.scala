@@ -1,6 +1,6 @@
 package au.csiro.data61.magda.registry
 
-import au.csiro.data61.magda.model.Registry.{
+import _root_.au.csiro.data61.magda.model.RegistryModel.{
   AspectDefinition,
   MAGDA_ADMIN_PORTAL_ID,
   MAGDA_SYSTEM_ID

@@ -2,7 +2,7 @@ package au.csiro.data61.magda.registry
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.util.Timeout
-import au.csiro.data61.magda.model.Registry.{EventType, WebHook, WebHookConfig}
+import _root_.au.csiro.data61.magda.model.RegistryModel.{EventType, WebHook, WebHookConfig}
 import org.scalatest.BeforeAndAfterEach
 import spray.json.RootJsonFormat
 

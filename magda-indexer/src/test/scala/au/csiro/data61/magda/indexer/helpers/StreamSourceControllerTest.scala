@@ -5,7 +5,7 @@ import akka.actor.{ActorRef, ActorSystem, PoisonPill}
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
 import au.csiro.data61.magda.model.misc.DataSet
-import au.csiro.data61.magda.model.Registry.MAGDA_ADMIN_PORTAL_ID
+import au.csiro.data61.magda.model.RegistryModel.MAGDA_ADMIN_PORTAL_ID
 import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest.concurrent.ScalaFutures._
 import org.scalatest.{FlatSpec, _}

@@ -1,7 +1,7 @@
 package au.csiro.data61.magda.registry
 
 import io.swagger.annotations.{ApiModel, ApiModelProperty}
-import au.csiro.data61.magda.model.Registry._
+import _root_.au.csiro.data61.magda.model.RegistryModel._
 
 import scala.annotation.meta.field
 

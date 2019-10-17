@@ -4,7 +4,7 @@ import java.util
 
 import akka.actor.{ActorRef, Kill}
 import akka.stream.Supervision.Stop
-import au.csiro.data61.magda.registry.WebHookActor.{
+import _root_.au.csiro.data61.magda.registry.WebHookActor.{
   processCount,
   webHookActors,
   webHooks

@@ -17,7 +17,7 @@ import akka.actor.{
 }
 import akka.stream.scaladsl.{Sink, Source, SourceQueueWithComplete}
 import akka.stream.{ActorMaterializer, Attributes, OverflowStrategy}
-import au.csiro.data61.magda.model.Registry._
+import _root_.au.csiro.data61.magda.model.RegistryModel._
 import com.typesafe.config.Config
 import scalikejdbc.DB
 

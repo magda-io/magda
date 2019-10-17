@@ -1,9 +1,9 @@
 package au.csiro.data61.magda.registry
 
-import au.csiro.data61.magda.model.Registry.{Record, RecordSummary, RecordType}
-import au.csiro.data61.magda.model.{
-  RegistryProtocols => CommonRegistryProtocols
+import _root_.au.csiro.data61.magda.model.{
+  RegistryProtocols => CommonRegistryProtocols,
 }
+import _root_.au.csiro.data61.magda.model.RegistryModel._
 import gnieh.diffson.sprayJson._
 
 final case class ReadyStatus(ready: Boolean = false)

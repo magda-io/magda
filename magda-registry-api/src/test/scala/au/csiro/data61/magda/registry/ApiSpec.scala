@@ -22,11 +22,11 @@ import akka.http.scaladsl.server.AuthenticationFailedRejection
 import akka.http.scaladsl.server.AuthorizationFailedRejection
 import akka.http.scaladsl.server.MethodRejection
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import au.csiro.data61.magda.Authentication
-import au.csiro.data61.magda.client.AuthApiClient
-import au.csiro.data61.magda.client.HttpFetcher
-import au.csiro.data61.magda.model.Auth.AuthProtocols
-import au.csiro.data61.magda.model.Auth.User
+import _root_.au.csiro.data61.magda.Authentication
+import _root_.au.csiro.data61.magda.client.AuthApiClient
+import _root_.au.csiro.data61.magda.client.HttpFetcher
+import _root_.au.csiro.data61.magda.model.Auth.AuthProtocols
+import _root_.au.csiro.data61.magda.model.Auth.User
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import scalikejdbc._
@@ -37,7 +37,7 @@ import scalikejdbc.config.TypesafeConfigReader
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import akka.pattern.gracefulStop
-import au.csiro.data61.magda.model.Registry.{
+import _root_.au.csiro.data61.magda.model.RegistryModel.{
   MAGDA_ADMIN_PORTAL_ID,
   MAGDA_TENANT_ID_HEADER,
   MAGDA_SYSTEM_ID

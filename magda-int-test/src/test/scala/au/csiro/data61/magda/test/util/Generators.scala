@@ -9,7 +9,7 @@ import akka.http.scaladsl.model.MediaTypes
 import au.csiro.data61.magda.model.Temporal._
 import au.csiro.data61.magda.model.misc.Protocols._
 import au.csiro.data61.magda.model.misc.{DataSet, _}
-import au.csiro.data61.magda.model.Registry.MAGDA_ADMIN_PORTAL_ID
+import au.csiro.data61.magda.model.RegistryModel.MAGDA_ADMIN_PORTAL_ID
 import au.csiro.data61.magda.spatial.RegionSource
 import au.csiro.data61.magda.util.MwundoJTSConversions._
 import com.monsanto.labs.mwundo.GeoJson._

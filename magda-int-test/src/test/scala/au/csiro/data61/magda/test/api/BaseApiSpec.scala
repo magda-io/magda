@@ -8,7 +8,7 @@ import akka.event.Logging
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import akka.stream.scaladsl.Source
-import au.csiro.data61.magda.model.Registry.{
+import au.csiro.data61.magda.model.RegistryModel.{
   MAGDA_ADMIN_PORTAL_ID,
   MAGDA_TENANT_ID_HEADER
 }

@@ -6,7 +6,7 @@ import akka.http.scaladsl.server.{
   MissingHeaderRejection,
   ValidationRejection
 }
-import au.csiro.data61.magda.model.Registry.{
+import au.csiro.data61.magda.model.RegistryModel.{
   MAGDA_ADMIN_PORTAL_ID,
   MAGDA_TENANT_ID_HEADER
 }

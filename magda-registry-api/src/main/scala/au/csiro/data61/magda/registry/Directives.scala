@@ -4,8 +4,8 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import akka.stream.Materializer
-import au.csiro.data61.magda.directives.AuthDirectives
-import au.csiro.data61.magda.opa.OpaTypes._
+import _root_.au.csiro.data61.magda.directives.AuthDirectives
+import _root_.au.csiro.data61.magda.opa.OpaTypes._
 import com.typesafe.config.Config
 
 import scala.concurrent.{ExecutionContext, Future}

@@ -5,7 +5,7 @@ import java.util.UUID
 import spray.json._
 import gnieh.diffson.sprayJson._
 import scalikejdbc._
-import au.csiro.data61.magda.model.Registry._
+import _root_.au.csiro.data61.magda.model.RegistryModel._
 
 import scala.util.{Failure, Success, Try}
 
