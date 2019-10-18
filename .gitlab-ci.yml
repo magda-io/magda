@@ -107,7 +107,7 @@ buildtest:search-with-index-cache:
     - docker-compose up -d
     - cd ..
     - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
-    - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.*Spec"
+    - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 -Dakka.http.host-connection-pool.max-open-requests=128 "intTest/testOnly au.csiro.data61.magda.api.*Spec"
     - cd magda-elastic-search
     - docker-compose down
   artifacts:
