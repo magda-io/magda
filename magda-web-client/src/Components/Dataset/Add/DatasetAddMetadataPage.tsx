@@ -305,8 +305,9 @@ class NewDataset extends React.Component<Props, State> {
 
         let publisherId;
         if (dataset.publisher) {
-            publisherId = getOrgIdFromAutocompleteChoice(dataset.publisher);
-
+            publisherId = await getOrgIdFromAutocompleteChoice(
+                dataset.publisher
+            );
             this.edit("dataset")("publisher")({
                 name: dataset.publisher.name,
                 publisherId
