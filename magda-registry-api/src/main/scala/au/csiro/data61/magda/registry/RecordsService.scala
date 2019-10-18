@@ -173,6 +173,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
         requiresTenantId { tenantId =>
             entity(as[Record]) { recordIn =>
               val result = DB localTx { session =>
+                AspectValidator.validateAspects(recordIn.aspects, tenantId)
                 recordPersistence.putRecordById(session, tenantId, id, recordIn, Nil) match {
                   case Success(recordOut) =>
                     complete(recordOut)
@@ -280,6 +281,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
         pathEnd {
           entity(as[Record]) { record =>
             val result = DB localTx { session =>
+              AspectValidator.validateAspects(record.aspects, tenantId)
               recordPersistence.createRecord(session, tenantId, record) match {
                 case Success(theResult) => complete(theResult)
                 case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
