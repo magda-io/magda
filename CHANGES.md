@@ -114,7 +114,8 @@ UI:
 -   Fixed mobile views incorrect min. width
 -   Drafts should be ordered by date on Drafts list page
 -   Changed text to reflect state/territory/country accordingly
--   Save publisher id in the database
+-   Saved publisher id in the database
+-   Added hover text for the tooltip beside the date-picker in the Add Dataset page
 
 Gateway:
 
