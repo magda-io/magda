@@ -1,0 +1,25 @@
+{
+    "extends": "../tsconfig-global.json",
+    "compilerOptions": {
+        "declaration": true,
+        "outDir": "dist",
+        "baseUrl": ".",
+        "allowJs": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "sourceMap": true,
+        "resolveJsonModule": true,
+        "moduleResolution": "node",
+        "experimentalDecorators": true,
+        "noUnusedLocals": false,
+        "noImplicitReturns": false,
+        "noEmitOnError": false,
+        "strict": false,
+        "typeRoots": [
+            "./node_modules/@types",
+            "../node_modules/@types",
+            "../terriajs/lib/ThirdParty"
+        ]
+    },
+    "include": ["src"]
+}

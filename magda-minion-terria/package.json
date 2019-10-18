@@ -1,0 +1,48 @@
+{
+  "name": "@magda/minion-terria",
+  "description": "MAGDA Terria Minion",
+  "version": "0.0.56-nsw-5",
+  "scripts": {
+    "build": "yarn run compile",
+    "compile": "tsc -p tsconfig-build.json",
+    "watch": "tsc -p tsconfig-build.json --watch",
+    "start": "node dist/index.js",
+    "dev": "run-typescript-in-nodemon src/index.ts",
+    "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
+    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto --repository asia.gcr.io/terriajs-automated-deployment",
+    "retag-and-push": "retag-and-push"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@magda/scripts": "^0.0.56-nsw-5",
+    "@types/cesium": "^1.59.1",
+    "ts-node": "^8.4.1",
+    "tsconfig-paths": "^3.9.0",
+    "typescript": "^3.6.3"
+  },
+  "dependencies": {
+    "@magda/minion-framework": "^0.0.56-nsw-5",
+    "@magda/registry-aspects": "^0.0.56-nsw-5",
+    "@magda/typescript-common": "^0.0.56-nsw-5",
+    "amd-loader": "^0.0.8",
+    "esm": "^3.2.25",
+    "terriajs": "^7.0.0",
+    "xmlhttprequest-ssl": "^1.6.0"
+  },
+  "config": {
+    "registryUrl": "http://localhost:6101/v0",
+    "docker": {
+      "name": "data61/magda-minion-visualization",
+      "include": "node_modules dist Dockerfile package.json"
+    },
+    "jwtSecret": "squirrel",
+    "userId": "00000000-0000-4000-8000-000000000000"
+  },
+  "magda": {
+    "language": "typescript",
+    "categories": {
+      "minion": true
+    }
+  }
+}

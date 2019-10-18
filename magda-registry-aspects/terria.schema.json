@@ -1,0 +1,11 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "title": "Aspect for capturing Terria catalog details",
+    "type": "object",
+    "properties": {
+        "type": {
+            "title": "The type of this catalog member.",
+            "type": "string"
+        }
+    }
+}
