@@ -220,7 +220,10 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         <h4>
                             <span>When was the dataset first issued?</span>
                             <span className="help-icon-container">
-                                <img src={helpIcon} />
+                                <img
+                                    src={helpIcon}
+                                    title="The date the dataset was first created or issued for release"
+                                />
                             </span>
                         </h4>
                         <AlwaysEditor
