@@ -13,9 +13,15 @@ import au.csiro.data61.magda.search.elasticsearch._
 import au.csiro.data61.magda.test.util.ApiGenerators.{queryGen, _}
 import au.csiro.data61.magda.test.util.Generators
 import org.scalacheck.{Shrink, _}
+import au.csiro.data61.magda.util.ErrorHandling
 import java.net.URLEncoder
+import scala.concurrent.duration._
+import akka.actor.{Scheduler}
+import scala.concurrent.{Future}
 
 class FacetSpec extends BaseSearchApiSpec {
+
+  implicit val scheduler: Scheduler = system.scheduler
 
   blockUntilNotRed()
 
@@ -44,7 +50,7 @@ class FacetSpec extends BaseSearchApiSpec {
                                           // --- format facet needs to return a list of values
                                           facetFieldGetter: DataSet => Seq[String],
                                           facetQueryCreator: String => String,
-                                          indexGen: Gen[(String, List[DataSet], Route)] = smallIndexGen,
+                                          indexGen: Gen[(String, List[DataSet], Route)] = mediumIndexGen,
                                           facetSizeGen: Gen[Int] = Gen.choose(1, 20))
     (inner: (String, Seq[String]) ⇒ Unit) = {
       try {
@@ -60,10 +66,21 @@ class FacetSpec extends BaseSearchApiSpec {
           whenever(facetValueList.size > 0){
             forAll(Gen.oneOf(facetValueList)) { facetValue =>
               val facetQueryString = facetQueryCreator(facetValue)
-              Get(s"/v0/datasets?query=*&${facetQueryString}&start=0&limit=100&facetSize=100") ~> addSingleTenantIdHeader ~> routes ~> check {
-                status shouldBe OK
-                inner(facetValue, facetValueList)
-              }
+              // --- the request processing speed might be slower than request speed
+              // --- Because of parameter `max-open-requests`, we might get `BufferOverflowException`
+              // --- we can increase the value `max-open-requests` but we should also put in a retry backOff logic to
+              // --- avoid adding too much pressure to the server side
+              // --- See here: https://doc.akka.io/docs/akka-http/current/client-side/pool-overflow.html?language=scala
+              val random = new scala.util.Random
+              val wait = ( 1 + random.nextInt(30)).seconds
+              ErrorHandling.retry(() => Future {
+                Get(s"/v0/datasets?query=*&${facetQueryString}&start=0&limit=100&facetSize=100") ~> addSingleTenantIdHeader ~> routes ~> check {
+                  status shouldBe OK
+                  inner(facetValue, facetValueList)
+                }
+              }, wait, 30, (retryCount: Int, e: Throwable) => {
+                logger.error(e, "Failed while sending request to search API, retries left: {}", retryCount + 1)
+              })
             }
           }
 
