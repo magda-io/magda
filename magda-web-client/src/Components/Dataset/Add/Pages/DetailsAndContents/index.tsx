@@ -11,6 +11,8 @@ import {
 } from "Components/Editing/Editors/dateEditor";
 
 import ToolTip from "Components/Dataset/Add/ToolTip";
+import PurpleToolTip from "Components/Common/TooltipWrapper";
+
 import SpatialAreaInput, {
     InputMethod as SpatialAreaInputInputMethod
 } from "../../SpatialAreaInput";
@@ -219,11 +221,23 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     <div className="col-sm-4 question-issue-date">
                         <h4>
                             <span>When was the dataset first issued?</span>
-                            <span className="help-icon-container">
-                                <img
-                                    src={helpIcon}
-                                    title="The date the dataset was first created or issued for release"
-                                />
+                            <span className="tooltip-container">
+                                <PurpleToolTip
+                                    className="tooltip no-print"
+                                    launcher={() => (
+                                        <div className="tooltip-launcher-icon help-icon">
+                                            <img
+                                                src={helpIcon}
+                                                alt="The date the dataset was first created or issued for release"
+                                            />
+                                        </div>
+                                    )}
+                                    innerElementClassName="inner"
+                                >
+                                    {() =>
+                                        "The date the dataset was first created or issued for release"
+                                    }
+                                </PurpleToolTip>
                             </span>
                         </h4>
                         <AlwaysEditor
