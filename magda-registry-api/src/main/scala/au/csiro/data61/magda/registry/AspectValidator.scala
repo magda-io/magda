@@ -14,7 +14,7 @@ object AspectValidator {
 
     def shouldValidate(config: Config) = {
       // --- if not set default value is true
-      if(!config.hasPath("validateJsonSchema")) true
+      if(!config.hasPath("validateJsonSchema")) false
       else config.getBoolean("validateJsonSchema")
     }
 
