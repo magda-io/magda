@@ -18,6 +18,7 @@ import spray.json._
 import spray.json.lenses.JsonLenses._
 
 import scala.util.{Failure, Success, Try}
+import com.typesafe.config.Config
 
 trait RecordPersistence {
 
@@ -111,7 +112,8 @@ trait RecordPersistence {
       tenantId: BigInt,
       id: String,
       newRecord: Record,
-      opaQueryUpdate: Seq[List[OpaQuery]]
+      opaQueryUpdate: Seq[List[OpaQuery]],
+      config: Config
   ): Try[Record]
 
   def patchRecordById(
@@ -119,7 +121,8 @@ trait RecordPersistence {
       tenantId: BigInt,
       id: String,
       recordPatch: JsonPatch,
-      opaQuery: Seq[List[OpaQuery]]
+      opaQuery: Seq[List[OpaQuery]],
+      config: Config
   ): Try[Record]
 
   def patchRecordAspectById(
@@ -127,7 +130,9 @@ trait RecordPersistence {
       tenantId: BigInt,
       recordId: String,
       aspectId: String,
-      aspectPatch: JsonPatch
+      aspectPatch: JsonPatch,
+      config: Config,
+      forceSkipAspectValidation: Boolean = false
   ): Try[JsObject]
 
   def putRecordAspectById(
@@ -135,13 +140,16 @@ trait RecordPersistence {
       tenantId: BigInt,
       recordId: String,
       aspectId: String,
-      newAspect: JsObject
+      newAspect: JsObject,
+      config: Config,
+      forceSkipAspectValidation: Boolean = false
   ): Try[JsObject]
 
   def createRecord(
       implicit session: DBSession,
       tenantId: BigInt,
-      record: Record
+      record: Record,
+      config: Config
   ): Try[Record]
 
   def deleteRecord(
@@ -162,7 +170,9 @@ trait RecordPersistence {
       tenantId: BigInt,
       recordId: String,
       aspectId: String,
-      aspect: JsObject
+      aspect: JsObject,
+      config: Config,
+      forceSkipAspectValidation: Boolean = false
   ): Try[JsObject]
 
   def deleteRecordAspect(
@@ -427,7 +437,8 @@ object DefaultRecordPersistence
       tenantId: BigInt,
       id: String,
       newRecord: Record,
-      opaQueryUpdate: Seq[List[OpaQuery]]
+      opaQueryUpdate: Seq[List[OpaQuery]],
+      config: Config
   ): Try[Record] = {
     val newRecordWithoutAspects = newRecord.copy(aspects = Map())
 
@@ -463,7 +474,7 @@ object DefaultRecordPersistence
               )
             case None =>
               DB.localTx { nested =>
-                createRecord(nested, tenantId, newRecord).map(
+                createRecord(nested, tenantId, newRecord, config).map(
                   _.copy(aspects = Map())
                 )
               } match {
@@ -488,14 +499,15 @@ object DefaultRecordPersistence
         tenantId,
         id,
         recordPatch,
-        opaQueryUpdate
+        opaQueryUpdate,
+        config
       )
       patchedAspects <- Try {
         newRecord.aspects.map {
           case (aspectId, data) =>
             (
               aspectId,
-              this.putRecordAspectById(session, tenantId, id, aspectId, data)
+              this.putRecordAspectById(session, tenantId, id, aspectId, data, config)
             )
         }
       }
@@ -515,7 +527,8 @@ object DefaultRecordPersistence
       tenantId: BigInt,
       id: String,
       recordPatch: JsonPatch,
-      opaQuery: Seq[List[OpaQuery]]
+      opaQuery: Seq[List[OpaQuery]],
+      config: Config
   ): Try[Record] = {
     for {
       record <- this.getByIdWithAspects(session, tenantId, id, opaQuery) match {
@@ -523,6 +536,13 @@ object DefaultRecordPersistence
         case None =>
           Failure(new RuntimeException("No record exists with that ID."))
       }
+
+      // --- validate Aspect data against JSON schema
+      // --- Check at the beginning to make sure no data is saved unless everything is valid
+      _ <- Try {
+        AspectValidator.validateWithRecordPatch(recordPatch, id, tenantId)(session, config)
+      }
+
       recordOnlyPatch <- Success(
         recordPatch.filter(
           op =>
@@ -535,6 +555,7 @@ object DefaultRecordPersistence
       patchedRecord <- Try {
         recordOnlyPatch(record)
       }
+
       _ <- if (id == patchedRecord.id) Success(patchedRecord)
       else
         Failure(
@@ -588,7 +609,9 @@ object DefaultRecordPersistence
                     tenantId,
                     id,
                     aspectId,
-                    aValue.asJsObject
+                    aValue.asJsObject,
+                    config,
+                    true
                   )
                 )
               else
@@ -599,7 +622,9 @@ object DefaultRecordPersistence
                     tenantId,
                     id,
                     aspectId,
-                    JsonPatch(Add(rest, aValue))
+                    JsonPatch(Add(rest, aValue)),
+                    config,
+                    true
                   )
                 )
             // We delete if there's exactly one REMOVE operation and it's removing an entire aspect.
@@ -618,7 +643,9 @@ object DefaultRecordPersistence
                     tenantId,
                     id,
                     aspectId,
-                    JsonPatch(Remove(rest, old))
+                    JsonPatch(Remove(rest, old)),
+                    config,
+                    true
                   )
                 )
               }
@@ -668,7 +695,9 @@ object DefaultRecordPersistence
                       throw new RuntimeException(
                         "The patch contains an unsupported operation for aspect " + aspectId
                       )
-                  }))
+                  })),
+                  config,
+                  true
                 )
               )
             case _ =>
@@ -705,20 +734,28 @@ object DefaultRecordPersistence
       tenantId: BigInt,
       recordId: String,
       aspectId: String,
-      aspectPatch: JsonPatch
+      aspectPatch: JsonPatch,
+      config: Config,
+      forceSkipAspectValidation: Boolean = false
   ): Try[JsObject] = {
     for {
-      aspect <- this.getRecordAspectById(session, tenantId, recordId, aspectId) match {
+      aspect <- (this.getRecordAspectById(session, tenantId, recordId, aspectId) match {
         case Some(aspect) => Success(aspect)
         case None =>
-          createRecordAspect(session, tenantId, recordId, aspectId, JsObject())
-      }
+          createRecordAspect(session, tenantId, recordId, aspectId, JsObject(), config)
+      })
 
       patchedAspect <- Try {
         aspectPatch(aspect).asJsObject
       }
 
+      // --- validate Aspect data against JSON schema
+      _ <- Try {
+        if(forceSkipAspectValidation != true) AspectValidator.validate(aspectId, patchedAspect, tenantId)(session, config)
+      }
+
       testRecordAspectPatch <- Try {
+
         // Diff the old record aspect and the patched one to see whether an event should be created
         val oldAspectJson = aspect.toJson
         val newAspectJson = patchedAspect.toJson
@@ -761,9 +798,15 @@ object DefaultRecordPersistence
       tenantId: BigInt,
       recordId: String,
       aspectId: String,
-      newAspect: JsObject
+      newAspect: JsObject,
+      config: Config,
+      forceSkipAspectValidation: Boolean = false
   ): Try[JsObject] = {
     for {
+      // --- validate Aspect data against JSON schema
+      _ <- Try {
+        if(forceSkipAspectValidation != true) AspectValidator.validate(aspectId, newAspect, tenantId)(session, config)
+      }
       oldAspect <- this.getRecordAspectById(
         session,
         tenantId,
@@ -777,7 +820,7 @@ object DefaultRecordPersistence
         // we don't end up with an extraneous record creation event in the database.
         case None =>
           DB.localTx { nested =>
-            createRecordAspect(nested, tenantId, recordId, aspectId, newAspect)
+            createRecordAspect(nested, tenantId, recordId, aspectId, newAspect, config, true)
           } match {
             case Success(aspect) => Success(aspect)
             case Failure(e) =>
@@ -799,7 +842,8 @@ object DefaultRecordPersistence
         tenantId,
         recordId,
         aspectId,
-        recordAspectPatch
+        recordAspectPatch,
+        config
       )
     } yield result
   }
@@ -807,9 +851,16 @@ object DefaultRecordPersistence
   def createRecord(
       implicit session: DBSession,
       tenantId: BigInt,
-      record: Record
+      record: Record,
+      config: Config
   ): Try[Record] = {
     for {
+
+      // --- validate aspects data against json schema
+      _ <- Try {
+        AspectValidator.validateAspects(record.aspects, tenantId)(session, config)
+      }
+
       eventId <- Try {
         val eventJson =
           CreateRecordEvent(record.id, tenantId, record.name).toJson.compactPrint
@@ -838,7 +889,9 @@ object DefaultRecordPersistence
               tenantId,
               record.id,
               aspect._1,
-              aspect._2
+              aspect._2,
+              config,
+              true
             )
         )
         .find(_.isFailure) match {
@@ -931,9 +984,16 @@ object DefaultRecordPersistence
       tenantId: BigInt,
       recordId: String,
       aspectId: String,
-      aspect: JsObject
+      aspect: JsObject,
+      config: Config,
+      forceSkipAspectValidation: Boolean = false
   ): Try[JsObject] = {
     for {
+
+      _ <- Try{
+        if(forceSkipAspectValidation != true) AspectValidator.validate(aspectId, aspect, tenantId)(session, config)
+      }
+
       eventId <- Try {
         val eventJson = CreateRecordAspectEvent(
           recordId,
