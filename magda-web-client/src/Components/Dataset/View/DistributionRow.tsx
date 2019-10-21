@@ -42,15 +42,18 @@ class DistributionRow extends Component<PropType> {
 
     render() {
         const { dataset, distribution } = this.props;
-        let distributionLink;
+
+        let distributionLink = `/dataset/${encodeURIComponent(
+            dataset.identifier
+        )}/distribution/${encodeURIComponent(distribution.identifier!)}/?q=${
+            this.props.searchText
+        }`;
+
+        let newTabLink;
         if (!distribution.downloadURL && distribution.accessURL) {
-            distributionLink = distribution.accessURL;
+            newTabLink = distribution.accessURL;
         } else {
-            distributionLink = `/dataset/${encodeURIComponent(
-                dataset.identifier
-            )}/distribution/${encodeURIComponent(
-                distribution.identifier!
-            )}/?q=${this.props.searchText}`;
+            newTabLink = distributionLink;
         }
 
         let apiUrl = "";
@@ -90,41 +93,25 @@ class DistributionRow extends Component<PropType> {
 
                         <div className="col-sm-11">
                             <div className="distribution-row-link">
-                                {!distribution.downloadURL &&
-                                distribution.accessURL ? (
-                                    <div>
-                                        <span itemProp="name">
-                                            {this.renderDistributionLink(
-                                                distribution.title
-                                            )}
-                                        </span>
-                                        (
-                                        <span itemProp="fileFormat">
-                                            {distribution.format}
-                                        </span>
-                                        )
-                                    </div>
-                                ) : (
-                                    <Link
-                                        to={distributionLink}
-                                        itemProp="contentUrl"
-                                    >
-                                        <span itemProp="name">
-                                            {this.renderDistributionLink(
-                                                distribution.title
-                                            )}
-                                        </span>
-                                        (
-                                        <span itemProp="fileFormat">
-                                            {distribution.format}
-                                        </span>
-                                        )
-                                    </Link>
-                                )}
+                                <Link
+                                    to={distributionLink}
+                                    itemProp="contentUrl"
+                                >
+                                    <span itemProp="name">
+                                        {this.renderDistributionLink(
+                                            distribution.title
+                                        )}
+                                    </span>
+                                    (
+                                    <span itemProp="fileFormat">
+                                        {distribution.format}
+                                    </span>
+                                    )
+                                </Link>
                                 <a
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    href={distributionLink}
+                                    href={newTabLink}
                                     className="new-tab-button"
                                 >
                                     <img src={newTabIcon} alt="new tab" />
