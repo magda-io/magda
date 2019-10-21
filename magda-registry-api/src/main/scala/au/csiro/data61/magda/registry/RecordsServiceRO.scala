@@ -42,6 +42,7 @@ class RecordsServiceRO(
     * @apiParam (query) {boolean} dereference true to automatically dereference links to other records; false to leave them as links. Dereferencing a link means including the record itself where the link would be. Dereferencing only happens one level deep, regardless of the value of this parameter.
     * @apiParam (query) {string[]} aspectQuery Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value’, url encoded. NOTE: This is an early stage API and may change greatly in the future
     * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
+    * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiSuccess (Success 200) {json} Response the record detail
     * @apiSuccessExample {json} Response:
     *  [
@@ -128,6 +129,13 @@ class RecordsServiceRO(
         dataType = "number",
         paramType = "header",
         value = "0"
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Session",
+        required = false,
+        dataType = "String",
+        paramType = "header",
+        value = "Magda internal session id"
       )
     )
   )
@@ -191,6 +199,7 @@ class RecordsServiceRO(
     * @apiParam (query) {number} start The index of the first record to retrieve. When possible, specify pageToken instead as it will result in better performance. If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve.
     * @apiParam (query) {number} limit The maximum number of records to receive. The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
     * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
+    * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiSuccess (Success 200) {json} Response the record summary
     * @apiSuccessExample {json} Response:
     *  [
@@ -244,6 +253,13 @@ class RecordsServiceRO(
         dataType = "number",
         paramType = "header",
         value = "0"
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Session",
+        required = false,
+        dataType = "String",
+        paramType = "header",
+        value = "Magda internal session id"
       )
     )
   )
@@ -279,6 +295,7 @@ class RecordsServiceRO(
     * @apiParam (query) {string[]} aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter. Only records that have all of these aspects will be included in the response.
     * @apiParam (query) {string[]} aspectQuery Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value’, url encoded. NOTE: This is an early stage API and may change greatly in the future
     * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
+    * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiSuccess (Success 200) {json} Response the record count
     * @apiSuccessExample {json} Response:
     *    {
@@ -320,6 +337,13 @@ class RecordsServiceRO(
         dataType = "number",
         paramType = "header",
         value = "0"
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Session",
+        required = false,
+        dataType = "String",
+        paramType = "header",
+        value = "Magda internal session id"
       )
     )
   )
@@ -359,6 +383,7 @@ class RecordsServiceRO(
     * @apiParam (query) {string[]} aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter. Only records that have all of these aspects will be included in the response.
     * @apiParam (query) {number} limit The size of each page to get tokens for.
     * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
+    * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiSuccess (Success 200) {json} Response a list of page token
     * @apiSuccessExample {json} Response:
     *   [
@@ -398,6 +423,13 @@ class RecordsServiceRO(
         dataType = "number",
         paramType = "header",
         value = "0"
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Session",
+        required = false,
+        dataType = "String",
+        paramType = "header",
+        value = "Magda internal session id"
       )
     )
   )
@@ -442,6 +474,7 @@ class RecordsServiceRO(
     * @apiParam (query) {string[]} optionalAspect The optional aspects for which to retrieve data, specified as multiple occurrences of this query parameter. These aspects will be included in a record if available, but a record will be included even if it is missing these aspects.
     * @apiParam (query) {boolean} dereference true to automatically dereference links to other records; false to leave them as links. Dereferencing a link means including the record itself where the link would be. Dereferencing only happens one level deep, regardless of the value of this parameter.
     * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
+    * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiSuccess (Success 200) {json} Response the record detail
     * @apiSuccessExample {json} Response:
     *      {
@@ -501,6 +534,13 @@ class RecordsServiceRO(
         dataType = "number",
         paramType = "header",
         value = "0"
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Session",
+        required = false,
+        dataType = "String",
+        paramType = "header",
+        value = "Magda internal session id"
       )
     )
   )
@@ -557,6 +597,7 @@ class RecordsServiceRO(
     * @apiDescription Gets a summary record, including all the aspect ids for which this record has data.
     * @apiParam (path) {string} id ID of the record to be fetched.
     * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
+    * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiSuccess (Success 200) {json} Response the record summary detail
     * @apiSuccessExample {json} Response:
     *      {
@@ -592,6 +633,13 @@ class RecordsServiceRO(
         dataType = "number",
         paramType = "header",
         value = "0"
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Session",
+        required = false,
+        dataType = "String",
+        paramType = "header",
+        value = "Magda internal session id"
       )
     )
   )

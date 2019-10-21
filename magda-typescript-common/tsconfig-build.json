@@ -5,7 +5,8 @@
         "resolveJsonModule": true,
         "outDir": "dist",
         "baseUrl": ".",
-        "lib": ["es2015", "es2017", "dom"]
+        "lib": ["es2015", "es2017", "dom"],
+        "types": ["node", "express", "passport"]
     },
     "include": ["src"]
 }
