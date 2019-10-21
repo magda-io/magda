@@ -116,6 +116,7 @@ UI:
 -   Changed text to reflect state/territory/country accordingly
 -   Saved publisher id in the database
 -   Added hover text for the tooltip beside the date-picker in the Add Dataset page
+-   Add a distribution hyperlink to the title of resource links
 
 Gateway:
 
