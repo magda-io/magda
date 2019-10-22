@@ -43,7 +43,7 @@ class DistributionRow extends Component<PropType> {
     render() {
         const { dataset, distribution } = this.props;
 
-        let distributionLink = `/dataset/${encodeURIComponent(
+        const distributionLink = `/dataset/${encodeURIComponent(
             dataset.identifier
         )}/distribution/${encodeURIComponent(distribution.identifier!)}/?q=${
             this.props.searchText
