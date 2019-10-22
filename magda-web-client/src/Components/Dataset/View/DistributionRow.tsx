@@ -49,13 +49,6 @@ class DistributionRow extends Component<PropType> {
             this.props.searchText
         }`;
 
-        let newTabLink;
-        if (!distribution.downloadURL && distribution.accessURL) {
-            newTabLink = distribution.accessURL;
-        } else {
-            newTabLink = distributionLink;
-        }
-
         let apiUrl = "";
 
         if (
@@ -108,14 +101,16 @@ class DistributionRow extends Component<PropType> {
                                     </span>
                                     )
                                 </Link>
-                                <a
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    href={newTabLink}
-                                    className="new-tab-button"
-                                >
-                                    <img src={newTabIcon} alt="new tab" />
-                                </a>
+                                {distribution.accessURL && (
+                                    <a
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        href={distribution.accessURL}
+                                        className="new-tab-button"
+                                    >
+                                        <img src={newTabIcon} alt="new tab" />
+                                    </a>
+                                )}
                             </div>
 
                             <div
