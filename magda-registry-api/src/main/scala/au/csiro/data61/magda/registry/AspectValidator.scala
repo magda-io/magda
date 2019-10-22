@@ -35,9 +35,9 @@ object AspectValidator {
       if(!aspectDef.jsonSchema.isDefined) {
         throw new Exception(s"Failed to validate aspect data: Cannot locate json schema for aspect id: ${aspectDef.id}")
       }
-      val rawSchema = new JSONObject(aspectDef.jsonSchema.get.toJson)
+      val rawSchema = new JSONObject(aspectDef.jsonSchema.get.toString())
       val schema = SchemaLoader.load(rawSchema)
-      schema.validate(new JSONObject(aspectData.toJson))
+      schema.validate(new JSONObject(aspectData.toString))
     }
 
     def validateWithAspectPatch(aspectPatch: JsonPatch, recordId: String, aspectId: String, tenantId: BigInt)(implicit session: DBSession, config: Config): Unit = {
