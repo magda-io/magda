@@ -22,7 +22,7 @@ import org.scalatest.{Matchers, Outcome, fixture}
 import scalikejdbc.{GlobalSettings, LoggingSQLAndTimeSettings}
 import scalikejdbc._
 import scalikejdbc.config.{DBs, EnvPrefix, TypesafeConfig, TypesafeConfigReader}
-import spray.json.{JsObject, JsString, JsonParser}
+import spray.json._
 
 import scala.concurrent.Await
 import scala.concurrent.duration._

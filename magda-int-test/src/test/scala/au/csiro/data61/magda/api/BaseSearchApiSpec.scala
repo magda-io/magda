@@ -3,6 +3,7 @@ package au.csiro.data61.magda.api
 import java.util.concurrent.{ConcurrentHashMap, ConcurrentLinkedQueue}
 import java.util.function.Consumer
 
+import akka.event.Logging
 import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.api.model.Protocols
@@ -47,10 +48,8 @@ trait BaseSearchApiSpec
           .shrink(dataSets)
           .map(shrunkDataSets ⇒ {
             // Have this on warn level so it keeps travis entertained in long shrinks.
-            logger.error(
-              "Shrunk datasets to size {} from {}",
-              shrunkDataSets.size,
-              dataSets.size
+            alert(
+              s"Shrunk datasets to size ${shrunkDataSets.size} from ${dataSets.size}"
             )
 
             val result = putDataSetsInIndex(shrunkDataSets)
@@ -139,12 +138,12 @@ trait BaseSearchApiSpec
         }
 
         BaseSearchApiSpec.genCache.put(cacheKey, future)
-        logger.debug("Cache miss for {}", cacheKey)
+        note(s"Cache miss for $cacheKey")
 
         future.await(INSERTION_WAIT_TIME)
 
       case (cacheKey, Some(cachedValue)) ⇒
-        logger.debug("Cache hit for {}", cacheKey)
+        note(s"Cache hit for $cacheKey")
         val value: (String, List[DataSet], Route) =
           cachedValue.await(INSERTION_WAIT_TIME)
         value
@@ -159,7 +158,7 @@ trait BaseSearchApiSpec
     //    else if (size < 100) size - size % 4
     //    else size - size % 25
     val cacheKey = size
-    logger.debug(cacheKey.toString)
+    note(cacheKey.toString)
     (cacheKey, Option(BaseSearchApiSpec.genCache.get(cacheKey)))
   }
 
@@ -177,7 +176,7 @@ trait BaseSearchApiSpec
     )
 
     val searchQueryer = new ElasticSearchQueryer(fakeIndices)
-    val api = new SearchApi(searchQueryer)(config, logger)
+    val api = new SearchApi(searchQueryer)(config, Logging(system, getClass))
     val indexer = new ElasticSearchIndexer(MockClientProvider, fakeIndices)
 
     val convertedDataSets = dataSets.map(
@@ -215,7 +214,7 @@ trait BaseSearchApiSpec
       .iterator()
       .forEachRemaining(new Consumer[String] {
         override def accept(indexName: String) = {
-          logger.debug(s"Deleting index $indexName")
+          note(s"Deleting index $indexName")
           client
             .execute(ElasticDsl.deleteIndex(indexName))
             .await(INSERTION_WAIT_TIME)

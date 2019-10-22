@@ -62,8 +62,7 @@ trait BaseApiSpec
       )
   override def createActorSystem(): ActorSystem =
     ActorSystem("BaseApiSpec", config)
-
-  val logger = Logging(system, getClass)
+  
   implicit val indexedRegions: List[(RegionSource, JsObject)] =
     BaseApiSpec.indexedRegions
 
@@ -103,11 +102,11 @@ trait BaseApiSpec
         Source.fromIterator(() => BaseApiSpec.indexedRegions.toIterator)
     }
 
-    logger.info("Setting up regions")
+    info("Setting up regions")
     IndexDefinition
       .setupRegions(client, fakeRegionLoader, DefaultIndices)
       .await(60 seconds)
-    logger.info("Finished setting up regions")
+    info("Finished setting up regions")
 
     System.gc()
   }
@@ -158,14 +157,14 @@ trait BaseApiSpec
         done = predicate()
 
         if (!done) {
-          logger.debug(s"Waiting another {}ms for {}", 500 * backoff, explain)
+          debug(s"Waiting another {}ms for {}", 500 * backoff, explain)
           Thread.sleep(500 * (backoff))
         } else {
-          logger.debug(s"{} is true, proceeding.", explain)
+          debug(s"{} is true, proceeding.", explain)
         }
       } catch {
         case e: Throwable ⇒
-          logger.error("", e)
+          error("", e)
           throw e
       }
     }

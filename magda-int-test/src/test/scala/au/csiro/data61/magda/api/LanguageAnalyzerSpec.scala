@@ -378,8 +378,7 @@ class LanguageAnalyzerSpec extends BaseSearchApiSpec {
           case (indexName, terms, route) ⇒
             Shrink.shrink(terms).map { shrunkTerms ⇒
               val x = putDataSetsInIndex(shrunkTerms.map(_._1))
-              logger
-                .error("Shrinking " + terms.size + " to " + shrunkTerms.size)
+              alert(s"Shrinking ${terms.size} to ${shrunkTerms.size}")
 
               (x._1, shrunkTerms, x._3)
             }

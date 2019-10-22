@@ -5,6 +5,7 @@ import java.time.temporal.ChronoUnit
 import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.model.Temporal.{PeriodOfTime, Periodicity}
 import au.csiro.data61.magda.model.misc._
+import au.csiro.data61.magda.model.RegistryConverters.getAcronymFromPublisherName
 import spray.json._
 
 class WebhookIndexNewDatasetsSpec extends WebhookSpecBase {

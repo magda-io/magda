@@ -1906,7 +1906,7 @@ class WebHookProcessingSpec
               WebHookAcknowledgement(succeeded = true, Some(lastEventId))
             )
           ) ~> param.api(Full).routes ~> check {
-            responseAs[Registry.WebHookAcknowledgementResponse].lastEventIdReceived shouldBe lastEventId
+            responseAs[WebHookAcknowledgementResponse].lastEventIdReceived shouldBe lastEventId
             status shouldEqual StatusCodes.OK
           }
 
@@ -2066,7 +2066,8 @@ class WebHookProcessingSpec
       payloadsSize: Int = 1
   ) = {
     Util.waitUntilAllDone(200)
-    payloads.length shouldBe payloadsSize
+
+    payloads.length.shouldBe(payloadsSize, )
     val events = payloads.foldLeft[List[RegistryEvent]](Nil)(
       (a, payload) => a ++ payload.events.get
     )
@@ -2274,7 +2275,7 @@ class WebHookProcessingSpec
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
-            responseAs[Registry.AspectDefinition].id shouldBe "testId"
+            responseAs[AspectDefinition].id shouldBe "testId"
           }
 
           assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
