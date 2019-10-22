@@ -81,9 +81,11 @@ class JsonSchemaValidationSpec extends ApiSpec {
       |}""".stripMargin
   )
 
+  val ASPECT_ID = "test-aspect"
+
 
   val testAspectDef = AspectDefinition(
-    id = "test-aspect",
+    id = ASPECT_ID,
     name = "Test Aspect",
     jsonSchema = Some(testJsonSchema.parseJson.convertTo[JsObject])
   )
@@ -108,7 +110,7 @@ class JsonSchemaValidationSpec extends ApiSpec {
           createTestAspectDef(param)
 
           val record = Record(s"test-record-${idx}", s"test record No: ${idx}", Map(
-            "test-aspect" -> jsonString.parseJson.convertTo[JsObject]
+            s"${ASPECT_ID}" -> jsonString.parseJson.convertTo[JsObject]
           ), Some("tag"))
 
           param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
@@ -127,7 +129,7 @@ class JsonSchemaValidationSpec extends ApiSpec {
           createTestAspectDef(param)
 
           val record = Record(s"test-record-${idx}", s"test record No: ${idx}", Map(
-            "test-aspect" -> jsonString.parseJson.convertTo[JsObject]
+            s"${ASPECT_ID}" -> jsonString.parseJson.convertTo[JsObject]
           ), Some("tag"))
 
           param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
@@ -160,7 +162,7 @@ class JsonSchemaValidationSpec extends ApiSpec {
           }
 
           val newRecord = record.copy(aspects = Map(
-            "test-aspect" -> jsonString.parseJson.convertTo[JsObject]
+            s"${ASPECT_ID}" -> jsonString.parseJson.convertTo[JsObject]
           ))
           param.asAdmin(Put(s"/v0/records/${record.id}", newRecord)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -186,7 +188,7 @@ class JsonSchemaValidationSpec extends ApiSpec {
           }
 
           val newRecord = record.copy(aspects = Map(
-            "test-aspect" -> jsonString.parseJson.convertTo[JsObject]
+            s"${ASPECT_ID}" -> jsonString.parseJson.convertTo[JsObject]
           ))
 
           param.asAdmin(Put(s"/v0/records/${record.id}", newRecord)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
@@ -214,7 +216,7 @@ class JsonSchemaValidationSpec extends ApiSpec {
           }
 
           val newRecord = record.copy(aspects = Map(
-            "test-aspect" -> jsonString.parseJson.convertTo[JsObject]
+            s"${ASPECT_ID}" -> jsonString.parseJson.convertTo[JsObject]
           ))
 
           val patch = JsonDiff.diff(record, newRecord, remember = false)
@@ -243,7 +245,7 @@ class JsonSchemaValidationSpec extends ApiSpec {
           }
 
           val newRecord = record.copy(aspects = Map(
-            "test-aspect" -> jsonString.parseJson.convertTo[JsObject]
+            s"${ASPECT_ID}" -> jsonString.parseJson.convertTo[JsObject]
           ))
 
           val patch = JsonDiff.diff(record, newRecord, remember = false)
@@ -257,6 +259,112 @@ class JsonSchemaValidationSpec extends ApiSpec {
 
   }
 
+
+
+  describe("Test Modify a record aspect by ID (PUT /v0/records/{recordId}/aspects/{aspectId})") {
+    describe("Test With Valid Aspect Data") {
+      testValidAspectData.zipWithIndex.foreach{ case (jsonString, idx) =>
+        it(s"Should process valid sample data no.${idx + 1} successfully"){ param =>
+
+          createTestAspectDef(param)
+
+          val record = Record(s"test-record-${idx}", s"test record No: ${idx}", Map(), Some("tag"))
+
+          param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            responseAs[Record] shouldEqual record.copy(tenantId = Some(TENANT_1))
+          }
+
+          val aspectData = jsonString.parseJson.convertTo[JsObject]
+
+          param.asAdmin(Put(s"/v0/records/${record.id}/aspects/${ASPECT_ID}", aspectData)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            responseAs[JsObject] shouldEqual aspectData
+          }
+
+        }
+      }
+    }
+
+
+    describe("Test With invalid Aspect Data") {
+      testinvalidAspectData.zipWithIndex.foreach{ case (jsonString, idx) =>
+        it(s"Should return 400 statusCode for invalid sample data no.${idx + 1}"){ param =>
+
+          createTestAspectDef(param)
+
+          val record = Record(s"test-record-${idx}", s"test record No: ${idx}", Map(), Some("tag"))
+
+          param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            responseAs[Record] shouldEqual record.copy(tenantId = Some(TENANT_1))
+          }
+
+          val aspectData = jsonString.parseJson.convertTo[JsObject]
+
+          param.asAdmin(Put(s"/v0/records/${record.id}/aspects/${ASPECT_ID}", aspectData)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.BadRequest
+          }
+
+        }
+      }
+    }
+  }
+
+
+  describe("Test Modify a record aspect by applying a JSON Patch (PATCH /v0/records/{recordId}/aspects/{aspectId})") {
+    describe("Test With Valid Aspect Data") {
+      testValidAspectData.zipWithIndex.foreach{ case (jsonString, idx) =>
+        it(s"Should process valid sample data no.${idx + 1} successfully"){ param =>
+
+          createTestAspectDef(param)
+
+          val record = Record(s"test-record-${idx}", s"test record No: ${idx}", Map(), Some("tag"))
+
+          param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            responseAs[Record] shouldEqual record.copy(tenantId = Some(TENANT_1))
+          }
+
+          val aspectData = jsonString.parseJson.convertTo[JsObject]
+
+          val patch = JsonDiff.diff(JsObject(), aspectData, remember = false)
+
+          param.asAdmin(Patch(s"/v0/records/${record.id}/aspects/${ASPECT_ID}", patch)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            responseAs[JsObject] shouldEqual aspectData
+          }
+
+        }
+      }
+    }
+
+
+    describe("Test With invalid Aspect Data") {
+      testinvalidAspectData.zipWithIndex.foreach{ case (jsonString, idx) =>
+        it(s"Should return 400 statusCode for invalid sample data no.${idx + 1}"){ param =>
+
+          createTestAspectDef(param)
+
+          val record = Record(s"test-record-${idx}", s"test record No: ${idx}", Map(), Some("tag"))
+
+          param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            responseAs[Record] shouldEqual record.copy(tenantId = Some(TENANT_1))
+          }
+
+          val aspectData = jsonString.parseJson.convertTo[JsObject]
+
+          val patch = JsonDiff.diff(JsObject(), aspectData, remember = false)
+
+          param.asAdmin(Patch(s"/v0/records/${record.id}/aspects/${ASPECT_ID}", patch)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.BadRequest
+          }
+
+        }
+      }
+    }
+  }
 
 
 }

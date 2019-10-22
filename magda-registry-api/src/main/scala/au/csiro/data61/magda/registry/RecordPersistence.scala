@@ -741,8 +741,8 @@ object DefaultRecordPersistence
     for {
       aspect <- (this.getRecordAspectById(session, tenantId, recordId, aspectId) match {
         case Some(aspect) => Success(aspect)
-        case None =>
-          createRecordAspect(session, tenantId, recordId, aspectId, JsObject(), config)
+        // --- should not create a default empty aspect: empty aspect will likely be invalid if schema requires certain fields
+        case None => Success(JsObject())
       })
 
       patchedAspect <- Try {
