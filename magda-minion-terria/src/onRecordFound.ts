@@ -66,6 +66,22 @@ export default async function onRecordFound(
                         console.error(e);
                     });
             }
+        } else {
+            await registry
+                .patchRecordAspect(
+                    record.id,
+                    "terria",
+                    [
+                        {
+                            op: "remove",
+                            path: "/underride"
+                        }
+                    ],
+                    record.tenantId
+                )
+                .catch(e => {
+                    console.error(e);
+                });
         }
     }
 }
