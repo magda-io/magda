@@ -1,15 +1,16 @@
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
-import MagdaReference from "terriajs/lib/Models/MagdaReference";
-import Terria from "terriajs/lib/Models/Terria";
-import CommonStrata from "terriajs/lib/Models/CommonStrata";
-import { JsonObject } from "terriajs/lib/Core/Json";
-import registerCatalogMembers from "terriajs/lib/Models/registerCatalogMembers";
-import saveStratumToJson from "terriajs/lib/Models/saveStratumToJson";
+import MagdaReference from "terriajs/dist/lib/Models/MagdaReference";
+import Terria from "terriajs/dist/lib/Models/Terria";
+import CommonStrata from "terriajs/dist/lib/Models/CommonStrata";
+import { JsonObject } from "terriajs/dist/lib/Core/Json";
+import registerCatalogMembers from "terriajs/dist/lib/Models/registerCatalogMembers";
+import saveStratumToJson from "terriajs/dist/lib/Models/saveStratumToJson";
 
 registerCatalogMembers();
 
 const terria = new Terria();
+const reference = new MagdaReference(undefined, terria);
 
 export default async function onRecordFound(
     record: Record,
@@ -20,7 +21,6 @@ export default async function onRecordFound(
     // We don't want the Terria aspect to influence how the record is intepreted.
     record.aspects.terria = undefined;
 
-    const reference = new MagdaReference(record.id, terria);
     reference.setTrait(
         CommonStrata.definition,
         "magdaRecord",

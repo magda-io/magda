@@ -19,7 +19,7 @@
     "@types/cesium": "^1.59.1",
     "ts-node": "^8.4.1",
     "tsconfig-paths": "^3.9.0",
-    "typescript": "^3.6.3"
+    "typescript": "^3.6.4"
   },
   "dependencies": {
     "@magda/minion-framework": "^0.0.56-nsw-5",
@@ -33,7 +33,7 @@
   "config": {
     "registryUrl": "http://localhost:6101/v0",
     "docker": {
-      "name": "data61/magda-minion-visualization",
+      "name": "data61/magda-minion-terria",
       "include": "node_modules dist Dockerfile package.json"
     },
     "jwtSecret": "squirrel",

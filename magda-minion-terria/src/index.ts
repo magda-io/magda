@@ -1,4 +1,3 @@
-/// <reference types="../../terriajs/lib/ThirdParty/terriajs-cesium" />
 import { XMLHttpRequest } from "xmlhttprequest-ssl";
 const anyGlobal: any = global;
 anyGlobal.window = global;
