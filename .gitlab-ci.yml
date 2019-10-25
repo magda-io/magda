@@ -4,7 +4,7 @@ variables:
   SBT_OPTS: "-Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy"
   # If you changed dependencies (especially for scala), you might want to prevent your branch from using old cache by increase the version blew
   # gitlab actually use the same technique when you click the `Clear Cache Button` 
-  CACHE_VERSION: 1
+  CACHE_VERSION: 2
 
 stages:
   - builders
@@ -49,15 +49,18 @@ registry-typescript-api:
     key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
       - "$CI_PROJECT_DIR/sbt-cache"
-      - "target"
-      - "*/target"
-      - "*/project/target"
   script:
     - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
     - lerna run generate --scope=@magda/typescript-common --stream
   artifacts:
     paths:
       - "magda-typescript-common/src/generated"
+      - "target"
+      - "project/target"
+      - "project/project/target"
+      - "*/target"
+      - "*/project/target"
+      - "*/project/project/target"
     expire_in: 30 days
 
 buildtest:search-with-index-cache:
@@ -82,9 +85,6 @@ buildtest:search-with-index-cache:
     key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
       - "$CI_PROJECT_DIR/sbt-cache"
-      - "target"
-      - "*/target"
-      - "*/project/target"
       - "$CI_PROJECT_DIR/pip-cache"
   services:
     - docker:dind
@@ -116,7 +116,11 @@ buildtest:search-with-index-cache:
   artifacts:
     paths:
       - "target"
+      - "project/target"
+      - "project/project/target"
       - "*/target"
+      - "*/project/target"
+      - "*/project/project/target"
     expire_in: 30 days
 
 buildtest:search-no-index-cache:
@@ -141,9 +145,6 @@ buildtest:search-no-index-cache:
     key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
       - "$CI_PROJECT_DIR/sbt-cache"
-      - "target"
-      - "*/target"
-      - "*/project/target"
       - "$CI_PROJECT_DIR/pip-cache"
   services:
     - postgres:9.6
@@ -180,7 +181,11 @@ buildtest:search-no-index-cache:
   artifacts:
     paths:
       - "target"
+      - "project/target"
+      - "project/project/target"
       - "*/target"
+      - "*/project/target"
+      - "*/project/project/target"
     expire_in: 30 days
 
 buildtest:ui:
@@ -212,9 +217,6 @@ buildtest:registry:
     key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
       - "$CI_PROJECT_DIR/sbt-cache"
-      - "target"
-      - "*/target"
-      - "*/project/target"
   services:
     - postgres:9.6
   variables:
@@ -230,7 +232,11 @@ buildtest:registry:
   artifacts:
     paths:
       - "target"
+      - "project/target"
+      - "project/project/target"
       - "*/target"
+      - "*/project/target"
+      - "*/project/project/target"
     expire_in: 30 days
 
 buildtest:map:
@@ -360,16 +366,12 @@ dockerize:scala:
     key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
       - "$CI_PROJECT_DIR/sbt-cache"
-      - "target"
-      - "*/target"
-      - "*/project/target"
   services:
     - docker:dind
   before_script:
     - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - sbt clean
     - cat /dev/null | sbt -Drepository=$CI_REGISTRY/magda-data/magda -Dversion=$CI_COMMIT_REF_SLUG dockerBuildAndPush
 
 dockerize:ui:
