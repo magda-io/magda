@@ -27,7 +27,7 @@ RUN set -x \
 	&& apk add --no-cache openjdk8="$JAVA_ALPINE_VERSION" \
 	&& [ "$JAVA_HOME" = "$(docker-java-home)" ]
 
-ENV SBT_VERSION 1.2.8
+ENV SBT_VERSION 1.3.3
 ENV SBT_OPTS "-Dsbt.ivy.home=/sbt-cache/ivy"
 ENV SBT_HOME /usr/local/sbt
 ENV SCALA_VERSION 2.12.10
