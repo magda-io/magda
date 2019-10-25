@@ -27,15 +27,15 @@ RUN set -x \
 	&& apk add --no-cache openjdk8="$JAVA_ALPINE_VERSION" \
 	&& [ "$JAVA_HOME" = "$(docker-java-home)" ]
 
-ENV SBT_VERSION 0.13.15
+ENV SBT_VERSION 1.2.8
 ENV SBT_OPTS "-Dsbt.ivy.home=/sbt-cache/ivy"
 ENV SBT_HOME /usr/local/sbt
-ENV SCALA_VERSION 2.11.12
+ENV SCALA_VERSION 2.12.8
 ENV PATH ${PATH}:${SBT_HOME}/bin
 
 # Install sbt
 RUN mkdir -p "$SBT_HOME" && \
     apk add --no-cache --update wget bash nss && \
-    wget -qO - --no-check-certificate "http://dl.bintray.com/sbt/native-packages/sbt/$SBT_VERSION/sbt-$SBT_VERSION.tgz" | tar xz -C $SBT_HOME --strip-components=1 && \
+    wget -qO - --no-check-certificate "https://piccolo.link/sbt-$SBT_VERSION.tgz" | tar xz -C $SBT_HOME --strip-components=1 && \
     apk del wget && \
 	sbt sbtVersion
