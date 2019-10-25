@@ -2,6 +2,9 @@ variables:
   CI: "true"
   DOCKER_DRIVER: overlay2
   SBT_OPTS: "-Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy"
+  # If you changed dependencies (especially for scala), you might want to prevent your branch from using old cache by increase the version blew
+  # gitlab actually use the same technique when you click the `Clear Cache Button` 
+  CACHE_VERSION: 1
 
 stages:
   - builders
@@ -19,7 +22,7 @@ builders-and-yarn:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:master
   retry: 1
   cache:
-    key: $CI_JOB_NAME-yarn-cache
+    key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
       - .yarn
       - "yarn.lock"
@@ -43,7 +46,7 @@ registry-typescript-api:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   retry: 1
   cache:
-    key: $CI_JOB_NAME
+    key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
       - "$CI_PROJECT_DIR/sbt-cache"
       - "target"
@@ -76,7 +79,7 @@ buildtest:search-with-index-cache:
     - pip3 install docker-compose
     - docker-compose --version
   cache:
-    key: $CI_JOB_NAME
+    key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
       - "$CI_PROJECT_DIR/sbt-cache"
       - "target"
@@ -135,7 +138,7 @@ buildtest:search-no-index-cache:
     - pip3 install docker-compose
     - docker-compose --version
   cache:
-    key: $CI_JOB_NAME
+    key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
       - "$CI_PROJECT_DIR/sbt-cache"
       - "target"
@@ -206,7 +209,7 @@ buildtest:registry:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   cache:
     policy: pull-push
-    key: $CI_JOB_NAME
+    key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
       - "$CI_PROJECT_DIR/sbt-cache"
       - "target"
@@ -269,7 +272,7 @@ buildtest:typescript-apis:
     - pip3 install docker-compose
     - docker-compose --version
   cache:
-    key: $CI_JOB_NAME
+    key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
       - "$CI_PROJECT_DIR/pip-cache"
   services:
@@ -354,7 +357,7 @@ dockerize:scala:
     - buildtest:search-with-index-cache
   cache:
     policy: pull-push
-    key: $CI_JOB_NAME
+    key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
       - "$CI_PROJECT_DIR/sbt-cache"
       - "target"
@@ -366,7 +369,6 @@ dockerize:scala:
     - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - sbt clean
     - cat /dev/null | sbt -Drepository=$CI_REGISTRY/magda-data/magda -Dversion=$CI_COMMIT_REF_SLUG dockerBuildAndPush
 
 dockerize:ui:
@@ -612,7 +614,7 @@ Publish Helm Chart:
   image:
     name: dtzar/helm-kubectl
   cache:
-    key: $CI_JOB_NAME
+    key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
       - deploy/helm/chart-repo
   retry: 1
