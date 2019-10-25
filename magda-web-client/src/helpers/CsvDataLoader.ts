@@ -207,7 +207,7 @@ class CsvDataLoader {
                 complete: (() => {
                     try {
                         if (this.skipComplete) {
-                            this.skipComplete = true;
+                            this.skipComplete = false;
                             return;
                         }
                         const result = {
