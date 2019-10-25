@@ -30,7 +30,7 @@ RUN set -x \
 ENV SBT_VERSION 1.2.8
 ENV SBT_OPTS "-Dsbt.ivy.home=/sbt-cache/ivy"
 ENV SBT_HOME /usr/local/sbt
-ENV SCALA_VERSION 2.12.8
+ENV SCALA_VERSION 2.12.10
 ENV PATH ${PATH}:${SBT_HOME}/bin
 
 # Install sbt
