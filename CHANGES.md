@@ -148,6 +148,7 @@ Others:
 -   Disabled tenant-api & tenant-db when `enableMultiTenants` = false
 -   Excluded organisations that are owners of thesauruses (keyword taxonomies) from being considered as owners of datasets via CSW connector
 -   Fix data.json connector dcat-dataset-strings aspect so keywords are stored correctly
+-   Upgrade Scala dependencies versions & added scalafmt support
 
 ## 0.0.55
 
