@@ -27,6 +27,7 @@ Search:
 -   Prevent freeText query from being None which will cause score to be 0
 -   Add tenant specific search.
 -   Fixed facet options (publishers) API error: Invalid aggregation name
+-   Fixed Querying formats in upper case causes two formats to be selected
 
 Indexer:
 
