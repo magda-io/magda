@@ -369,6 +369,7 @@ dockerize:scala:
     - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - sbt clean
     - cat /dev/null | sbt -Drepository=$CI_REGISTRY/magda-data/magda -Dversion=$CI_COMMIT_REF_SLUG dockerBuildAndPush
 
 dockerize:ui:
