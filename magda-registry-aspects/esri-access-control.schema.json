@@ -21,6 +21,10 @@
         "owner": {
             "title": "Record owner id",
             "type": "string"
+        },
+        "expiration": {
+            "title": "The access info expiration time in milliseconds since epoch",
+            "type": "number"
         }
     }
 }
