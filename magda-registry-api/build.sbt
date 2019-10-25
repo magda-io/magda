@@ -4,9 +4,9 @@ import DockerSetup._
 name := "magda-registry-api"
 
 libraryDependencies ++= {
-  val akkaV       = "2.5.20"
-  val akkaHttpV   = "10.1.7"
-  val scalaTestV  = "3.0.1"
+  val akkaV       = "2.5.23"
+  val akkaHttpV   = "10.1.8"
+  val scalaTestV  = "3.0.8"
   Seq(
     "com.typesafe.akka" %% "akka-actor" % akkaV,
     "com.typesafe.akka" %% "akka-stream" % akkaV,
@@ -33,9 +33,6 @@ libraryDependencies ++= {
 }
 
 mainClass in Compile := Some("au.csiro.data61.magda.registry.RegistryApp")
-
-EclipseKeys.withJavadoc := true
-EclipseKeys.withSource := true
 
 setupDocker(stage)
 
