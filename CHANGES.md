@@ -112,6 +112,7 @@ UI:
 -   Fixed Add Dataset / License setting: Long file names should be wrapped to the next line
 -   Added a new color (slightly grey) for preview screens
 -   Removed unnecessary margin in the filter facets
+-   Map Preview: avoid selecting Esri feature server distribution for preview
 -   Fixed mobile views incorrect min. width
 -   Drafts should be ordered by date on Drafts list page
 -   Changed text to reflect state/territory/country accordingly

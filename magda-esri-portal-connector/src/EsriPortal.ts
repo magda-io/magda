@@ -493,7 +493,7 @@ export default class EsriPortal implements ConnectorSource {
 
     // Collect additional distributions - this is commented for now
     // because it may be used in the future.
-    
+
     // private async processLayerAsDistribution(
     //     lyr: any,
     //     item: any,
