@@ -36,23 +36,22 @@ export default class EsriPortalUrlBuilder {
             .segment("community/groups")
             .addSearch({
                 f: "json",
-                num: 1000,
-                q:
-                    "orgid:0123456789ABCDEF -owner:esri_nav -owner:esri_livingatlas -owner:esri_boundaries -owner:esri_demographics",
+                num: 100,
+                q: "orgid:0123456789ABCDEF", // TODO: don't hard-code org ID
                 token: this.token
             })
             .toString();
     }
 
-    // https://someportal/arcgis/sharing/rest/search?f=pjson&q=(type:"Map Service" OR type:"Feature Service")
+    // https://someportal/arcgis/sharing/rest/search?f=pjson&q=1
     public getDataSearchUrl(): string {
         return this.apiBaseUrl
             .clone()
             .segment("search")
             .addSearch({
-                f: "pjson",
-                q:
-                    '(type:"Map Service" OR type:"Feature Service" OR type:"Image Service" OR type:"Scene Service")',
+                f: "json",
+                q: "1",
+                num: 100,
                 token: this.token
             })
             .toString();
@@ -64,7 +63,7 @@ export default class EsriPortalUrlBuilder {
             .clone()
             .segment("portals/self")
             .addSearch({
-                f: "pjson",
+                f: "json",
                 token: this.token
             })
             .toString();
@@ -77,7 +76,7 @@ export default class EsriPortalUrlBuilder {
             .segment("content/items")
             .segment(id)
             .addSearch({
-                f: "pjson",
+                f: "json",
                 token: this.token
             })
             .toString();
@@ -91,7 +90,7 @@ export default class EsriPortalUrlBuilder {
             .segment(id)
             .segment("groups")
             .addSearch({
-                f: "pjson",
+                f: "json",
                 token: this.token
             })
             .toString();

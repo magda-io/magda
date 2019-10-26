@@ -6,6 +6,7 @@ export default class ConnectionResult {
     public organizationsConnected = 0;
     public datasetsConnected = 0;
     public distributionsConnected = 0;
+    public groupsConnected = 0;
     public recordsTrimmed = 0;
     public trimStillProcessing = false;
 
@@ -13,6 +14,7 @@ export default class ConnectionResult {
     public organizationFailures = Array<RecordCreationFailure>();
     public datasetFailures = Array<RecordCreationFailure>();
     public distributionFailures = Array<RecordCreationFailure>();
+    public groupFailures = Array<RecordCreationFailure>();
 
     public summarize(): string {
         let result = "";
@@ -26,6 +28,7 @@ export default class ConnectionResult {
             "Distributions Connected: " + this.distributionsConnected + "\n";
         result +=
             "Organizations Connected: " + this.organizationsConnected + "\n";
+        result += "Groups Connected: " + this.groupsConnected + "\n";
         result += "Records Trimmed: " + this.recordsTrimmed + "\n";
         if (this.trimStillProcessing) {
             result += "(trim still processing) \n";
@@ -55,6 +58,12 @@ export default class ConnectionResult {
                 JSON.stringify(this.distributionFailures, undefined, "  ") +
                 "\n";
         }
+        if (this.groupFailures.length > 0) {
+            result +=
+                "Group Failures:\n" +
+                JSON.stringify(this.groupFailures, undefined, "  ") +
+                "\n";
+        }
 
         return result;
     }
@@ -68,6 +77,7 @@ export default class ConnectionResult {
             total.organizationsConnected += result.organizationsConnected;
             total.datasetsConnected += result.datasetsConnected;
             total.distributionsConnected += result.distributionsConnected;
+            total.groupsConnected += result.groupsConnected;
             total.recordsTrimmed += result.recordsTrimmed;
             total.trimStillProcessing =
                 result.trimStillProcessing || total.trimStillProcessing;
@@ -78,6 +88,7 @@ export default class ConnectionResult {
             total.organizationFailures.push(...result.organizationFailures);
             total.datasetFailures.push(...result.datasetFailures);
             total.distributionFailures.push(...result.distributionFailures);
+            total.groupFailures.push(...result.groupFailures);
         });
 
         return total;

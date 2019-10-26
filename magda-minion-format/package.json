@@ -1,7 +1,7 @@
 {
   "name": "@magda/minion-format",
   "description": "MAGDA Layering Minion",
-  "version": "0.0.56-nsw-5",
+  "version": "0.0.56-nsw-5b",
   "scripts": {
     "build": "yarn run compile",
     "compile": "tsc -p tsconfig-build.json",

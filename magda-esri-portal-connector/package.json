@@ -1,7 +1,7 @@
 {
   "name": "@magda/esri-portal-connector",
   "description": "MAGDA Esri Portal Connector",
-  "version": "0.0.56-nsw-5b",
+  "version": "0.0.56-nsw-5c",
   "scripts": {
     "build": "yarn run compile",
     "compile": "yarn run compile-node && yarn run compile-browser",

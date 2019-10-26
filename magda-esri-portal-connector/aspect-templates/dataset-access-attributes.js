@@ -1,10 +1,11 @@
-return {
-    // item access groups
-    groups: dataset.esriGroups,
-    // item owner
-    owner: dataset.esriOwner,
-    // item access attribute
-    access: dataset.esriAccess,
+const groupInfo = dataset.groups || {};
+const groups = (groupInfo.admin || [])
+    .concat(groupInfo.member || [])
+    .concat(groupInfo.other || []);
 
-    expiration: dataset.esriExpiration
+return {
+    groups: groups.map(group => group.id),
+    owner: dataset.owner,
+    access: dataset.access,
+    expiration: transformer.expiration
 };

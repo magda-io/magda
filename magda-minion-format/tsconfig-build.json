@@ -3,7 +3,9 @@
     "compilerOptions": {
         "declaration": true,
         "outDir": "dist",
-        "baseUrl": "."
+        "baseUrl": ".",
+        "sourceMap": true,
+        "types": ["mocha", "urijs"]
     },
     "include": ["src", "src/format-engine/synonyms.json"]
 }

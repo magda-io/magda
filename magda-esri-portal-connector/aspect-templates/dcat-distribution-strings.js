@@ -1,6 +1,5 @@
 var moment = libraries.moment;
 
-// The map service associated with the portal item
 return {
     title: distribution.name || distribution.id,
     license: undefined,
@@ -9,6 +8,6 @@ return {
     modified: undefined,
     downloadURL: undefined,
     mediaType: undefined,
-    accessURL: distribution.accessURL,
+    accessURL: distribution.url,
     format: distribution.type || undefined
 };

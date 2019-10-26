@@ -10,7 +10,6 @@ import saveStratumToJson from "terriajs/dist/lib/Models/saveStratumToJson";
 registerCatalogMembers();
 
 const terria = new Terria();
-const reference = new MagdaReference(undefined, terria);
 
 export default async function onRecordFound(
     record: Record,
@@ -20,6 +19,11 @@ export default async function onRecordFound(
 
     // We don't want the Terria aspect to influence how the record is intepreted.
     record.aspects.terria = undefined;
+
+    const reference = new MagdaReference(undefined, terria);
+    // const i3s = reference.addObject(CommonStrata.definition, "distributionFormats", "I3S");
+    // i3s.setTrait(CommonStrata.definition, "formatRegex", "");
+    // i3s.setTrait(CommonStrata.definition, "formatRegex", "");
 
     reference.setTrait(
         CommonStrata.definition,
@@ -44,6 +48,11 @@ export default async function onRecordFound(
                                 op: terriaAspect.underride ? "replace" : "add",
                                 path: "/underride",
                                 value: json
+                            },
+                            {
+                                op: terriaAspect.type ? "replace" : "add",
+                                path: "/type",
+                                value: reference.target.type
                             }
                         ],
                         record.tenantId
@@ -58,6 +67,7 @@ export default async function onRecordFound(
                         record.id,
                         "terria",
                         {
+                            type: reference.target.type,
                             underride: json
                         },
                         record.tenantId
@@ -66,17 +76,26 @@ export default async function onRecordFound(
                         console.error(e);
                     });
             }
-        } else {
+        } else if (terriaAspect && terriaAspect.underride) {
+            const patches = [
+                {
+                    op: "remove",
+                    path: "/underride"
+                }
+            ];
+
+            if (terriaAspect.type) {
+                patches.push({
+                    op: "remove",
+                    path: "/type"
+                });
+            }
+
             await registry
                 .patchRecordAspect(
                     record.id,
                     "terria",
-                    [
-                        {
-                            op: "remove",
-                            path: "/underride"
-                        }
-                    ],
+                    patches,
                     record.tenantId
                 )
                 .catch(e => {
