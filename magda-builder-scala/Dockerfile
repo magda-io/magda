@@ -28,7 +28,9 @@ RUN set -x \
 	&& [ "$JAVA_HOME" = "$(docker-java-home)" ]
 
 ENV SBT_VERSION 1.3.3
-ENV SBT_OPTS "-Dsbt.ivy.home=/sbt-cache/ivy"
+# make sure cache are captured completely
+ENV SBT_OPTS "-Dsbt.global.base=/sbt-cache/sbtboot -Dsbt.boot.directory=/sbt-cache/boot -Dsbt.ivy.home=/sbt-cache/ivy"
+ENV COURSIER_CACHE "/sbt-cache/coursier"
 ENV SBT_HOME /usr/local/sbt
 ENV SCALA_VERSION 2.12.10
 ENV PATH ${PATH}:${SBT_HOME}/bin
