@@ -292,7 +292,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
               )
 
             val notMatchedInputFacetOptions = inputFacetOptions
-              .filter(optionStr => !alternativeOptions.exists(_.value == optionStr))
+              .filter(optionStr => !alternativeOptions.exists(_.value.toLowerCase == optionStr.toLowerCase))
               .map(FacetOption(None, _, 0l, None, None, true))
 
             val allOptions = alternativeOptions ++ notMatchedInputFacetOptions
