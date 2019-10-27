@@ -45,12 +45,51 @@ export default class EsriPortalUrlBuilder {
 
     // https://someportal/arcgis/sharing/rest/search?f=pjson&q=1
     public getDataSearchUrl(): string {
+        const types = [
+            "Map Service",
+            "Feature Service",
+            "Web Mapping Application",
+            "CAD Drawing",
+            "WFS",
+            "Web Map",
+            //"Service Definition",
+            "CityEngine Web Scene",
+            "Shapefile",
+            "Scene Service",
+            "File Geodatabase",
+            //"Code Sample",
+            //"PDF",
+            //"Site Application",
+            //"Image",
+            //"Image Collection",
+            //"Map Template",
+            //"Microsoft Excel",
+            //"Mobile Application",
+            "Vector Tile Package",
+            //"Mobile Map Package",
+            //"Layer Template",
+            //"Style",
+            //"Content Category Set",
+            //"Desktop Application",
+            "Vector Tile Service",
+            "Web Scene",
+            "CSV",
+            "Scene Package",
+            //"Document Link",
+            "WMTS",
+            "KML",
+            //"Symbol Set",
+            "GeoJson",
+            //"Feature Collection Template",
+            "Image Service"
+        ];
+
         return this.apiBaseUrl
             .clone()
             .segment("search")
             .addSearch({
                 f: "json",
-                q: "1",
+                q: types.map(type => 'type:"' + type + '"').join(" OR "),
                 num: 100,
                 token: this.token
             })
