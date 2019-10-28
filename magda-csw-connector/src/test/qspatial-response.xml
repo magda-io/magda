@@ -2259,7 +2259,7 @@
                         </gmd:CI_Citation>
                     </gmd:citation>
                     <gmd:abstract>
-                        <gco:CharacterString>This basemap service displays a visually-enhanced mosaic of high resolution, authoritative, general reference imagery captured by CubeSat satellite space-crafts (Planet Labs Incorporated) over areas of Queensland. This service is designed to provide a performance imagery basemap (on demand cache) for clients that don’t support cached/tiled services. 
+                        <gco:CharacterString>This basemap service displays a visually-enhanced mosaic of high resolution, authoritative, general reference imagery captured by CubeSat satellite space-crafts (Planet Labs Incorporated) over areas of Queensland. This service is designed to provide a performance imagery basemap (on demand cache) for clients that don’t support cached/tiled services.
 
 This 2.4 metre resolution, orthorectified, visual mosaic product was originally acquired by Planet during 2017 Quarter 3, under the QSat initiative. The mosaic is made visually appealing for a wide variety of applications that require imagery with an accurate geolocation and cartographic projection. Optimal for simple and direct use of the imagery.</gco:CharacterString>
                     </gmd:abstract>
@@ -2690,9 +2690,9 @@ This 2.4 metre resolution, orthorectified, visual mosaic product was originally 
                     <gmd:lineage>
                         <gmd:LI_Lineage>
                             <gmd:statement>
-                                <gco:CharacterString>The mosaic contains a single-layer composite of multiple customised, PlanetScope ortho tiles (5 km x 5 km) where each tile is composed of the highest quality natural colour (RGB) PlanetScope Ortho Scene product imagery acquired between 1st July 2017 and 30th September 2017 (2017 Quarter 3).  Each PlanetScope scene used in the generation of a tile may have been originally captured at a Ground Sample Distance (GSD) of up to 3.7 metres (at reference altitude 475km).  
+                                <gco:CharacterString>The mosaic contains a single-layer composite of multiple customised, PlanetScope ortho tiles (5 km x 5 km) where each tile is composed of the highest quality natural colour (RGB) PlanetScope Ortho Scene product imagery acquired between 1st July 2017 and 30th September 2017 (2017 Quarter 3).  Each PlanetScope scene used in the generation of a tile may have been originally captured at a Ground Sample Distance (GSD) of up to 3.7 metres (at reference altitude 475km).
 
-Sensor-related effects are corrected using sensor telemetry and a sensor model, bands are co-registered, and spacecraft-related effects are corrected using attitude telemetry and best available ephemeris data. 
+Sensor-related effects are corrected using sensor telemetry and a sensor model, bands are co-registered, and spacecraft-related effects are corrected using attitude telemetry and best available ephemeris data.
 
 The PlanetScope tiles are orthorectified and colour-corrected (using a colour curve). This correction attempts to optimize colours as seen by the human eye providing images as they would look if viewed from the perspective of the satellite. The tiles are processed to remove distortions caused by terrain and can be used for cartographic mapping and visualization purposes. The image processing eliminates the perspective effect on the ground (not on buildings), restoring the geometry of a vertical shot. Additionally, a correction is made to the sun angle in each image to account for differences in latitude and time of acquisition.  The PlanetScope tiles are orthorectified using GCPs and fine DEMs (30 m to 90 m posting) to less than 10 m RMSE positional accuracy.
 
@@ -9233,7 +9233,7 @@ Check the metadata records of the respective layers for actual update dates.</gc
                         </gmd:CI_Citation>
                     </gmd:citation>
                     <gmd:abstract>
-                        <gco:CharacterString>Map Service showing whole of state geology data sets maintained by the Department of Natural Resources, Mines and Energy. The data sets are organised by layers including: 
+                        <gco:CharacterString>Map Service showing whole of state geology data sets maintained by the Department of Natural Resources, Mines and Energy. The data sets are organised by layers including:
 					State 1.2M (0)
 						State Structure (1)
 							State Geological Boundaries (2)
@@ -9704,7 +9704,7 @@ Check the metadata records of the respective layers for actual update dates.</gc
                         </gmd:CI_Citation>
                     </gmd:citation>
                     <gmd:abstract>
-                        <gco:CharacterString>Map Service showing the location of field sites where primary and tectonic structures have been measured, samples have been collected and isotopically dated, and fossils have been found during field studies in Queensland. The data sets are organised by layers including: 
+                        <gco:CharacterString>Map Service showing the location of field sites where primary and tectonic structures have been measured, samples have been collected and isotopically dated, and fossils have been found during field studies in Queensland. The data sets are organised by layers including:
 					Field Sites (0)
 					Primary Structures (1)
 					Tectonic Structures (2)
@@ -10165,7 +10165,7 @@ Check the metadata records of the respective layers for actual update dates.</gc
                     </gmd:citation>
                     <gmd:abstract>
                         <gco:CharacterString>A basemap image service that displays a mosaic comprised of the earliest digitised aerial film photography over various locations in Queensland. Copyright for this imagery has expired and is considered part of the public domain. When publishing it is requested to acknowledge the original owner: Commonwealth of Australia(Geoscience Australia). The source, digitally scanned aerial photo frames (unrectified) were produced by the State of Queensland (Department of Natural Resources, Mines and Energy) and are available through QImagery - https://qimagery.information.qld.gov.au
- 
+
 © State of Queensland (Department of Natural Resources, Mines and Energy) 2018. Includes material Commonwealth of Australia (Geoscience Australia). There are no use limitation on this service.</gco:CharacterString>
                     </gmd:abstract>
                     <gmd:pointOfContact>
@@ -10631,7 +10631,7 @@ Check the metadata records of the respective layers for actual update dates.</gc
                         </gmd:CI_Citation>
                     </gmd:citation>
                     <gmd:abstract>
-                        <gco:CharacterString>Map Service showing location and geographic extent of resource data sets maintained by the Department of Natural Resources, Mines and Energy. The data sets are organised by layers including: 
+                        <gco:CharacterString>Map Service showing location and geographic extent of resource data sets maintained by the Department of Natural Resources, Mines and Energy. The data sets are organised by layers including:
 					Coal Resource (0)
 						Coal Resource Site - Inferred (1)
 						Coal Mine Site (2)
@@ -11494,7 +11494,7 @@ Check the metadata records of the respective layers for actual update dates.</gc
                     </gmd:citation>
                     <gmd:abstract>
                         <gco:CharacterString>This service displays a complete state-wide digital land use map of Queensland.  It is based on the Queensland Land use Mapping Program (QLUMP) data product produced by the Queensland Government.  The service presents the most recent mapping of land use features for Queensland.
-				
+
 The service is cached to the standard Google / Bing Maps scale levels from 1:591,657,551 to 1:9,028.</gco:CharacterString>
                     </gmd:abstract>
                     <gmd:pointOfContact>
@@ -13235,7 +13235,7 @@ Survey control marks: Data derived from :- 1. Permanent Mark Sketch Plans 2. Con
                         </gmd:CI_Citation>
                     </gmd:citation>
                     <gmd:abstract>
-                        <gco:CharacterString>Map Service showing whole of state regional geology data sets maintained by the Department of Natural Resources, Mines and Energy. The data sets are organised by layers including: 
+                        <gco:CharacterString>Map Service showing whole of state regional geology data sets maintained by the Department of Natural Resources, Mines and Energy. The data sets are organised by layers including:
 					Regional 1:500k 1:1M (0)
 						Regional geology extent (1)
 							Regional Bowen Basin extent (2)
@@ -13782,7 +13782,7 @@ Survey control marks: Data derived from :- 1. Permanent Mark Sketch Plans 2. Con
                         </gmd:CI_Citation>
                     </gmd:citation>
                     <gmd:abstract>
-                        <gco:CharacterString>Map Service showing whole of state detailed geology data sets maintained by the Department of Natural Resources, Mines and Energy. The data sets are organised by layers including: 
+                        <gco:CharacterString>Map Service showing whole of state detailed geology data sets maintained by the Department of Natural Resources, Mines and Energy. The data sets are organised by layers including:
 					Field Site (0)
 					Detailed 1:100k (1)
 						Detailed Structure (2)
@@ -14306,7 +14306,7 @@ Survey control marks: Data derived from :- 1. Permanent Mark Sketch Plans 2. Con
                         </gmd:CI_Citation>
                     </gmd:citation>
                     <gmd:abstract>
-                        <gco:CharacterString>Map Service showing  whole of state structural framework data sets maintained by the Department of Natural Resources and Mines. The data sets are organised by layers including: 
+                        <gco:CharacterString>Map Service showing  whole of state structural framework data sets maintained by the Department of Natural Resources and Mines. The data sets are organised by layers including:
 					Structural Framework all (0)
 					Structural Framework by Age or Orogen (1)
 						Jurassic-Cretaceous Basins (2)
@@ -15474,7 +15474,7 @@ Survey control marks: Data derived from :- 1. Permanent Mark Sketch Plans 2. Con
                         </gmd:CI_Citation>
                     </gmd:citation>
                     <gmd:abstract>
-                        <gco:CharacterString>Map Service showing historic whole of state mines permit data sets maintained by the Department of Natural Resources, Mines and Energy. The data sets are organised by layers including: 
+                        <gco:CharacterString>Map Service showing historic whole of state mines permit data sets maintained by the Department of Natural Resources, Mines and Energy. The data sets are organised by layers including:
 					Historic Exploration Permits (0)
 						Mineral (1)
 							Historic EPM Prior to 1961 (2)
@@ -18104,7 +18104,7 @@ Survey control marks: Data derived from :- 1. Permanent Mark Sketch Plans 2. Con
                         </gmd:CI_Citation>
                     </gmd:citation>
                     <gmd:abstract>
-                        <gco:CharacterString>Map Service showing whole of state mines permit data sets maintained by the Department of Natural Resources, Mines and Energy. The data sets are organised by layers including: 
+                        <gco:CharacterString>Map Service showing whole of state mines permit data sets maintained by the Department of Natural Resources, Mines and Energy. The data sets are organised by layers including:
 					Exploration_Permits (0)
 						Mineral (1)
 							EPM_Application (2)
@@ -18715,7 +18715,7 @@ Survey control marks: Data derived from :- 1. Permanent Mark Sketch Plans 2. Con
                         </gmd:CI_Citation>
                     </gmd:citation>
                     <gmd:abstract>
-                        <gco:CharacterString>Map Service showing whole of state bore hole data sets maintained by the Department of Natural Resources, Mines and Energy. The data sets are organised by layers including: 
+                        <gco:CharacterString>Map Service showing whole of state bore hole data sets maintained by the Department of Natural Resources, Mines and Energy. The data sets are organised by layers including:
 					Boreholes Coal (0)
 					Boreholes CSG (1)
 					Boreholes Core Cutting or Sidewall Held (2)
@@ -19229,7 +19229,7 @@ Survey control marks: Data derived from :- 1. Permanent Mark Sketch Plans 2. Con
                         </gmd:CI_Citation>
                     </gmd:citation>
                     <gmd:abstract>
-                        <gco:CharacterString>Map Service showing geographic extents of geophysical data sets maintained by the Department of Natural Resources, Mines and Energy. The data sets are organised by layers including: 
+                        <gco:CharacterString>Map Service showing geographic extents of geophysical data sets maintained by the Department of Natural Resources, Mines and Energy. The data sets are organised by layers including:
 					Airborne Geophysical Survey (0)
 						Airborne Exploration Survey - Available (1)
 						Airborne Exploration Survey - Unavailable (2)
@@ -19762,7 +19762,7 @@ Survey control marks: Data derived from :- 1. Permanent Mark Sketch Plans 2. Con
                         </gmd:CI_Citation>
                     </gmd:citation>
                     <gmd:abstract>
-                        <gco:CharacterString>Map Service showing mining related administrative areas maintained by the Department of Natural Resources, Mines and Energy. The data sets are organised by group layers and include:   
+                        <gco:CharacterString>Map Service showing mining related administrative areas maintained by the Department of Natural Resources, Mines and Energy. The data sets are organised by group layers and include:
 					Blocks and Sub-blocks (0)
 						Block Identification Map Index (1)
 						Blocks (2)
@@ -20253,11 +20253,11 @@ Survey control marks: Data derived from :- 1. Permanent Mark Sketch Plans 2. Con
                     <gmd:abstract>
                         <gco:CharacterString>The Property Location Service Plus- Public version (PLSplus-Public) is available to anyone and used to validate Queensland addresses and property descriptions. The service can also supply location data from a geocode. The service does not offer interstate (non Queensland) address validation information. The service is free of charge and requires authentication.
 
-It replaces the PLS-Public address validation service due to be deprecated in early 2017. 
+It replaces the PLS-Public address validation service due to be deprecated in early 2017.
 
 
 To use the PLSplus-Public service an application utilising a file called a "WSDL" (Web Service Description Language) is required. The WSDL is an XML-based language that is used for describing the functionality offered by a web service.The WSDL description provides a machine-readable description of how the service can be called, what parameters it expects, and what data structures it returns. The wsdl is available (with service guidelines) at the online resources link of this record. The wsdl contains the required endpoint for the service.
-PLSplus-Public now requires authentication to use it but the wsdl can be viewed at https://information.qld.gov.au/service/Addressing/ValidationService/PLSplusPublic/soap?wsdl 
+PLSplus-Public now requires authentication to use it but the wsdl can be viewed at https://information.qld.gov.au/service/Addressing/ValidationService/PLSplusPublic/soap?wsdl
 Instructions to apply for username and password are contained in the Information document found at the online resources link.
 
 PLSplus-Public provides the following operations:- ValidateAddress- ValidateLotPlan- ValidateCoordinates- ParseAddress and AutoCompleteAddress
@@ -20271,7 +20271,7 @@ The ValidateLotPlan operation validates the existence of a Queensland "Lot on Pl
 
 The ValidateCoordinates operation provides a service to validate entered Latitude/Longitude coordinates within Queensland and return the closest addresses for the requested location. Search logic begins with a radius of of up to 250 metres. If no result is found the service locates the parcel or the coordinates and returns all addresses on that parcel. The coordinates elements is a rigid structure to be parsed by the application. Coordinates (in Degree.Decmial format ) with search box limited to - North Latitude: -9.0 West Longitude: 138.0- South Latitude: -29.5 East Longitude:155.0 - Coordinates will always be a negative Latitude and a positive Longitude.
 
-The AutoCompleteAddress operation returns up to 20 valid addresses based on the input of a text string. The longer the string typed the shorter the list of candidate addresses. Any address from returned candidates can be used as input to ParseAddress operation to return further information about the address. 
+The AutoCompleteAddress operation returns up to 20 valid addresses based on the input of a text string. The longer the string typed the shorter the list of candidate addresses. Any address from returned candidates can be used as input to ParseAddress operation to return further information about the address.
 
 The ParseAddress operation provides a service to parse (into address components) and validate any entered Queensland address and return any associated addresses, lot on plans, geocode and confidence for a requested address in a free form string field.eg. Unit 1 25B Smith Street East Earlsville Qld</gco:CharacterString>
                     </gmd:abstract>
@@ -20610,16 +20610,16 @@ The ParseAddress operation provides a service to parse (into address components)
                     <gmd:abstract>
                         <gco:CharacterString>The Property Location Service Plus- Queensland Government version (PLSplus-QG) is available to all Qld Government agencies and used to validate Australian addresses and Queensland property descriptions. The service can also supply location data from a geocode. The service does offer interstate (non Queensland) address validation information. The service is free of charge and requires authentication.
 
-It replaces the PLS-QG address validation service due to be deprecated on Sept 30th 2017. 
+It replaces the PLS-QG address validation service due to be deprecated on Sept 30th 2017.
 
 
 To use the PLSplus-QG service an application utilising a file called a "WSDL" (Web Service Description Language) is required. The WSDL is an XML-based language that is used for describing the functionality offered by a web service.The WSDL description provides a machine-readable description of how the service can be called, what parameters it expects, and what data structures it returns. The wsdl is available (with service guidelines) at the online resources link of this record. The wsdl contains the required endpoint for the service.
-PLSplus-QG requires authentication to use it. 
+PLSplus-QG requires authentication to use it.
 Instructions to apply for username and password are contained in the Information document found at the online resources link.
 
 PLSplus-QG provides the following operations:- ValidateAddress- ValidateLotPlan- ValidateCoordinates- ParseAddress and AutoCompleteAddress
 
-A successful validation of any of the address operations (for Australian locations) will also return other information, such as address, lot on plan (Qld only), coordinates, address type and a matching confidence level for each request. 
+A successful validation of any of the address operations (for Australian locations) will also return other information, such as address, lot on plan (Qld only), coordinates, address type and a matching confidence level for each request.
 Validation of LotPlan and Co-ordinates is only available for Qld locations. The validation returns other information as per the address functions.
 Further functionality within this services is to return Australian Bureau of Statistics meshblock information for an Australian address address or Queensland property.
 The AutoCompleteAddress operation can be used to find a correct Queensland address or used in conjunction with the two address validation functions above to retrieve other information about the address.
@@ -20630,7 +20630,7 @@ The ValidateLotPlan operation validates the existence of a Queensland "Lot on Pl
 
 The ValidateCoordinates operation provides a service to validate entered Latitude/Longitude coordinates within Queensland and return the closest addresses for the requested location. Search logic begins with a radius of of up to 250 metres. If no result is found the service locates the parcel or the coordinates and returns all addresses on that parcel. The coordinates elements is a rigid structure to be parsed by the application. Coordinates (in Degree.Decmial format ) with search box limited to - North Latitude: -9.0 West Longitude: 138.0- South Latitude: -29.5 East Longitude:155.0 - Coordinates will always be a negative Latitude and a positive Longitude.
 
-The AutoCompleteAddress operation returns up to 20 valid Queensland addresses based on the input of a text string. The longer the string typed the shorter the list of candidate addresses. Any address from returned candidates can be used as input to ParseAddress operation to return further information about the address. 
+The AutoCompleteAddress operation returns up to 20 valid Queensland addresses based on the input of a text string. The longer the string typed the shorter the list of candidate addresses. Any address from returned candidates can be used as input to ParseAddress operation to return further information about the address.
 
 The ParseAddress operation provides a service to parse (into address components) and validate any entered Australian address and return any associated addresses, lot on plans (Qld only), geocode and confidence for a requested address in a free form string field.eg. Unit 1 25B Smith Street East Earlsville Qld</gco:CharacterString>
                     </gmd:abstract>
@@ -21711,7 +21711,7 @@ The ParseAddress operation provides a service to parse (into address components)
                         </gmd:CI_Citation>
                     </gmd:citation>
                     <gmd:abstract>
-                        <gco:CharacterString>This web map service displays the watercourse network and areas of inland surface water in Queensland. Water areas include lakes,reservoir and man-made canals. 
+                        <gco:CharacterString>This web map service displays the watercourse network and areas of inland surface water in Queensland. Water areas include lakes,reservoir and man-made canals.
 This cached service is limited to display at scales between 1:4,622,324 and 1:4,514 and is designed to be used in conjunction with the WaterCoursesAndBodies service for large scale levels from 1:4513 to 1:1.</gco:CharacterString>
                     </gmd:abstract>
                     <gmd:pointOfContact>
@@ -22374,7 +22374,7 @@ Check the metadata records of the respective layers for actual update dates.</gc
                         </gmd:CI_Citation>
                     </gmd:citation>
                     <gmd:abstract>
-                        <gco:CharacterString>This web map service displays the watercourse network and areas of inland surface water in Queensland. Water areas include lakes,reservoir and man-made canals. 
+                        <gco:CharacterString>This web map service displays the watercourse network and areas of inland surface water in Queensland. Water areas include lakes,reservoir and man-made canals.
 This service is limited to display at scales between 1:4,513 and 1:1, and is designed to be used in conjunction with the WaterCoursesAndBodiesCache service for small scale levels from 1:4,622,325 to 1:4514 .</gco:CharacterString>
                     </gmd:abstract>
                     <gmd:pointOfContact>
@@ -23000,7 +23000,7 @@ Check the metadata records of the respective layers for actual update dates.</gc
                         </gmd:CI_Citation>
                     </gmd:citation>
                     <gmd:abstract>
-                        <gco:CharacterString>This web map service displays the road and street network of Queensland including passenger and vehicular ferry routes. 
+                        <gco:CharacterString>This web map service displays the road and street network of Queensland including passenger and vehicular ferry routes.
 This cached service is limited to display at scales between 1:9,244,649 and 1:4,514 and is designed to be used in conjunction with the Roads service for large scale levels from 1:4513 to 1:1.</gco:CharacterString>
                     </gmd:abstract>
                     <gmd:pointOfContact>
@@ -23588,7 +23588,7 @@ Check the metadata records of the respective layers for actual update dates.</gc
                         </gmd:CI_Citation>
                     </gmd:citation>
                     <gmd:abstract>
-                        <gco:CharacterString>This web map service displays the road and street network of Queensland including passenger and vehicular ferry routes. 
+                        <gco:CharacterString>This web map service displays the road and street network of Queensland including passenger and vehicular ferry routes.
 The service is limited to display at scales larger than 1:100,000 and is designed to be used in conjunction with the RoadsCache service for all other cached scale levels.</gco:CharacterString>
                     </gmd:abstract>
                     <gmd:pointOfContact>
@@ -24136,7 +24136,7 @@ Check the metadata records of the respective layers for actual update dates.</gc
                         </gmd:CI_Citation>
                     </gmd:citation>
                     <gmd:abstract>
-                        <gco:CharacterString>This web map service displays city and town locations sourced from the Queensland Place Names Gazetteer. 
+                        <gco:CharacterString>This web map service displays city and town locations sourced from the Queensland Place Names Gazetteer.
 The city or town location is symbolised and labelled to provide a general purpose reference for all cached scale levels.</gco:CharacterString>
                     </gmd:abstract>
                     <gmd:pointOfContact>
