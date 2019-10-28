@@ -50,77 +50,11 @@ object AspectValidator {
     }
 
     def validateWithRecordPatch(recordPatch: JsonPatch, recordId: String, tenantId: BigInt)(implicit session: DBSession, config: Config): Unit = {
-      recordPatch.ops
-        .groupBy(
-          op =>
-            op.path match {
-              case "aspects" / (name / _) => Some(name)
-              case _                      => None
-            }
-        )
-        .filterKeys(_.isDefined)
-        .map({
-          case (
-            Some(aspectId),
-            List(Add("aspects" / (_ / rest), aValue))
-            ) =>
-            if (rest == Pointer.Empty) {
-              validate(aspectId, aValue.asJsObject, tenantId)(session, config)
-            } else {
-              validateWithAspectPatch(JsonPatch(Add(rest, aValue)), recordId, aspectId, tenantId)(session, config)
-            }
-          case (
-            Some(aspectId),
-            List(Remove("aspects" / (_ / rest), old))
-            ) =>
-            if(rest != Pointer.Empty) {
-              validateWithAspectPatch(JsonPatch(Remove(rest, old)), recordId, aspectId, tenantId)(session, config)
-            }
-          // We patch in all other scenarios.
-          case (Some(aspectId), operations) =>
-            validateWithAspectPatch(JsonPatch(operations.map({
-              // Make paths in operations relative to the aspect instead of the record
-              case Add("aspects" / (_ / rest), aValue) =>
-                Add(rest, aValue)
-              case Remove("aspects" / (_ / rest), old) =>
-                Remove(rest, old)
-              case Replace("aspects" / (_ / rest), aValue, old) =>
-                Replace(rest, aValue, old)
-              case Move(
-              "aspects" / (sourceName / sourceRest),
-              "aspects" / (destName / destRest)
-              ) =>
-                if (sourceName != destName)
-                // We can relax this restriction, and the one on Copy below, by turning a cross-aspect
-                // Move into a Remove on one and an Add on the other.  But it's probably not worth
-                // the trouble.
-                  throw new RuntimeException(
-                    "A patch may not move values between two different aspects."
-                  )
-                else
-                  Move(sourceRest, destRest)
-              case Copy(
-              "aspects" / (sourceName / sourceRest),
-              "aspects" / (destName / destRest)
-              ) =>
-                if (sourceName != destName)
-                  throw new RuntimeException(
-                    "A patch may not copy values between two different aspects."
-                  )
-                else
-                  Copy(sourceRest, destRest)
-              case Test("aspects" / (_ / rest), aValue) =>
-                Test(rest, aValue)
-              case _ =>
-                throw new RuntimeException(
-                  "The patch contains an unsupported operation for aspect " + aspectId
-                )
-            })), recordId, aspectId, tenantId)(session, config)
-          case _ =>
-            throw new RuntimeException(
-              "Aspect ID is missing (this shouldn't be possible)."
-            )
-        })
+      DefaultRecordPersistence.processRecordPatchOperationsOnAspects(recordPatch, (aspectId: String, aspectData: JsObject) => {
+        validate(aspectId, aspectData, tenantId)(session, config)
+      }, (aspectId: String, aspectPatch: JsonPatch) => {
+        validateWithAspectPatch(aspectPatch, recordId, aspectId, tenantId)(session, config)
+      }, (aspectId: String) => Unit)
     }
 
 }
