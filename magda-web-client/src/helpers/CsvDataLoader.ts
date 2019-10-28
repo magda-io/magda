@@ -72,9 +72,11 @@ class CsvDataLoader {
     private toBeAbort: boolean = false;
 
     /**
-     * We set this property to skip the next `complete` call.
-     * This would be usuful when we want to retry the data downloading.
+     * Flag to skip handling the next call to `complete`.
      *
+     * This is necessary because even if we call `parser.abort()`, the parser `onComplete` event will still be triggered,
+     * causing the `complete` method to be called here.
+     * 
      * @private
      * @type {boolean}
      * @memberof CsvDataLoader
