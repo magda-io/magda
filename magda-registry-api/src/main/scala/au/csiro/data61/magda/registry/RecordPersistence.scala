@@ -113,7 +113,8 @@ trait RecordPersistence {
       id: String,
       newRecord: Record,
       opaQueryUpdate: Seq[List[OpaQuery]],
-      config: Config
+      config: Config,
+      forceSkipAspectValidation: Boolean = false
   ): Try[Record]
 
   def processRecordPatchOperationsOnAspects[T](
@@ -129,7 +130,8 @@ trait RecordPersistence {
       id: String,
       recordPatch: JsonPatch,
       opaQuery: Seq[List[OpaQuery]],
-      config: Config
+      config: Config,
+      forceSkipAspectValidation: Boolean = false
   ): Try[Record]
 
   def patchRecordAspectById(
@@ -156,7 +158,8 @@ trait RecordPersistence {
       implicit session: DBSession,
       tenantId: BigInt,
       record: Record,
-      config: Config
+      config: Config,
+      forceSkipAspectValidation: Boolean = false
   ): Try[Record]
 
   def deleteRecord(
@@ -445,7 +448,8 @@ object DefaultRecordPersistence
       id: String,
       newRecord: Record,
       opaQueryUpdate: Seq[List[OpaQuery]],
-      config: Config
+      config: Config,
+      forceSkipAspectValidation: Boolean = false
   ): Try[Record] = {
     val newRecordWithoutAspects = newRecord.copy(aspects = Map())
 
@@ -457,6 +461,12 @@ object DefaultRecordPersistence
             "The provided ID does not match the record's ID."
           )
         )
+
+      // --- validate aspects data against json schema
+      _ <- Try {
+        if(!forceSkipAspectValidation) AspectValidator.validateAspects(newRecord.aspects, tenantId)(session, config)
+      }
+
       oldRecordWithoutAspects <- this.getByIdWithAspects(
         session,
         tenantId,
@@ -481,7 +491,9 @@ object DefaultRecordPersistence
               )
             case None =>
               DB.localTx { nested =>
-                createRecord(nested, tenantId, newRecord, config).map(
+                // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
+                // --- as the aspect data has been validated (unless not required) in the beginning of current method
+                createRecord(nested, tenantId, newRecord, config, true).map(
                   _.copy(aspects = Map())
                 )
               } match {
@@ -501,20 +513,26 @@ object DefaultRecordPersistence
 
         JsonDiff.diff(oldRecordJson, newRecordJson, remember = false)
       }
+
+      // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
+      // --- as the aspect data has been validated (unless not required) in the beginning of current method
       result <- patchRecordById(
         session,
         tenantId,
         id,
         recordPatch,
         opaQueryUpdate,
-        config
+        config,
+        true
       )
       patchedAspects <- Try {
         newRecord.aspects.map {
           case (aspectId, data) =>
             (
               aspectId,
-              this.putRecordAspectById(session, tenantId, id, aspectId, data, config)
+              // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
+              // --- as the aspect data has been validated (unless not required) in the beginning of current method
+              this.putRecordAspectById(session, tenantId, id, aspectId, data, config, true)
             )
         }
       }
@@ -631,7 +649,8 @@ object DefaultRecordPersistence
       id: String,
       recordPatch: JsonPatch,
       opaQuery: Seq[List[OpaQuery]],
-      config: Config
+      config: Config,
+      forceSkipAspectValidation: Boolean = false
   ): Try[Record] = {
     for {
       record <- this.getByIdWithAspects(session, tenantId, id, opaQuery) match {
@@ -643,7 +662,7 @@ object DefaultRecordPersistence
       // --- validate Aspect data against JSON schema
       // --- Check at the beginning to make sure no data is saved unless everything is valid
       _ <- Try {
-        AspectValidator.validateWithRecordPatch(recordPatch, id, tenantId)(session, config)
+        if(!forceSkipAspectValidation) AspectValidator.validateWithRecordPatch(recordPatch, id, tenantId)(session, config)
       }
 
       recordOnlyPatch <- Success(
@@ -761,7 +780,7 @@ object DefaultRecordPersistence
 
       // --- validate Aspect data against JSON schema
       _ <- Try {
-        if(forceSkipAspectValidation != true) AspectValidator.validate(aspectId, patchedAspect, tenantId)(session, config)
+        if(!forceSkipAspectValidation) AspectValidator.validate(aspectId, patchedAspect, tenantId)(session, config)
       }
 
       testRecordAspectPatch <- Try {
@@ -815,7 +834,7 @@ object DefaultRecordPersistence
     for {
       // --- validate Aspect data against JSON schema
       _ <- Try {
-        if(forceSkipAspectValidation != true) AspectValidator.validate(aspectId, newAspect, tenantId)(session, config)
+        if(!forceSkipAspectValidation) AspectValidator.validate(aspectId, newAspect, tenantId)(session, config)
       }
       oldAspect <- this.getRecordAspectById(
         session,
@@ -830,6 +849,8 @@ object DefaultRecordPersistence
         // we don't end up with an extraneous record creation event in the database.
         case None =>
           DB.localTx { nested =>
+            // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
+            // --- as the aspect data has been validated (unless not required) in the beginning of current method
             createRecordAspect(nested, tenantId, recordId, aspectId, newAspect, config, true)
           } match {
             case Success(aspect) => Success(aspect)
@@ -847,13 +868,16 @@ object DefaultRecordPersistence
 
         JsonDiff.diff(oldAspectJson, newAspectJson, remember = false)
       }
+      // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
+      // --- as the aspect data has been validated (unless not required) in the beginning of current method
       result <- patchRecordAspectById(
         session,
         tenantId,
         recordId,
         aspectId,
         recordAspectPatch,
-        config
+        config,
+        true
       )
     } yield result
   }
@@ -862,13 +886,14 @@ object DefaultRecordPersistence
       implicit session: DBSession,
       tenantId: BigInt,
       record: Record,
-      config: Config
+      config: Config,
+      forceSkipAspectValidation: Boolean = false
   ): Try[Record] = {
     for {
 
       // --- validate aspects data against json schema
       _ <- Try {
-        AspectValidator.validateAspects(record.aspects, tenantId)(session, config)
+        if(!forceSkipAspectValidation) AspectValidator.validateAspects(record.aspects, tenantId)(session, config)
       }
 
       eventId <- Try {
@@ -891,6 +916,8 @@ object DefaultRecordPersistence
         case anythingElse => anythingElse
       }
 
+      // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
+      // --- as the aspect data has been validated (unless not required) in the beginning of current method
       hasAspectFailure <- record.aspects
         .map(
           aspect =>
@@ -1001,7 +1028,7 @@ object DefaultRecordPersistence
     for {
 
       _ <- Try{
-        if(forceSkipAspectValidation != true) AspectValidator.validate(aspectId, aspect, tenantId)(session, config)
+        if(!forceSkipAspectValidation) AspectValidator.validate(aspectId, aspect, tenantId)(session, config)
       }
 
       eventId <- Try {
