@@ -21,9 +21,21 @@ export default async function onRecordFound(
     record.aspects.terria = undefined;
 
     const reference = new MagdaReference(undefined, terria);
-    // const i3s = reference.addObject(CommonStrata.definition, "distributionFormats", "I3S");
-    // i3s.setTrait(CommonStrata.definition, "formatRegex", "");
-    // i3s.setTrait(CommonStrata.definition, "formatRegex", "");
+
+    const i3s = reference.addObject(
+        CommonStrata.definition,
+        "distributionFormats",
+        "I3S"
+    );
+    i3s.setTrait(CommonStrata.definition, "definition", {
+        type: "3d-tiles"
+    });
+    i3s.setTrait(CommonStrata.definition, "urlRegex", "SceneServer");
+    i3s.setTrait(
+        CommonStrata.definition,
+        "formatRegex",
+        "Scene\\s?(Service|Server)"
+    );
 
     reference.setTrait(
         CommonStrata.definition,
@@ -31,10 +43,27 @@ export default async function onRecordFound(
         (record as unknown) as JsonObject
     );
 
-    await reference.loadReference().catch(() => {});
+    try {
+        await reference.loadReference();
+    } catch (e) {
+        // Do nothing
+    }
 
-    if (reference.target) {
-        const underride = reference.target.strata.get("underride");
+    const target = reference.target;
+    if (target) {
+        if (
+            target.type === "3d-tiles" &&
+            target.url.indexOf("SceneServer") >= 0
+        ) {
+            // Use the i3s->3d tiles converter
+            target.setTrait(
+                CommonStrata.underride,
+                "url",
+                "https://nsw.dt.terria.io/i3s-to-3dtiles/" + target.url // TODO: don't hardcode URL
+            );
+        }
+
+        const underride = target.strata.get("underride");
         if (underride) {
             const json = saveStratumToJson(reference.target.traits, underride);
             if (terriaAspect) {

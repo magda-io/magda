@@ -104,7 +104,9 @@ export default function arcgis(options: ArcGisOptions) {
                                 id: userToken.id,
                                 session: {
                                     esriGroups: theGroupIds,
-                                    esriUser: profile.username
+                                    esriUser: profile.username,
+                                    accessToken: accessToken,
+                                    refreshToken: refreshToken
                                 }
                             });
                         })
@@ -121,6 +123,18 @@ export default function arcgis(options: ArcGisOptions) {
             state: req.query.redirect || externalAuthHome
         };
         passport.authenticate("arcgis", options)(req, res, next);
+    });
+
+    router.get("/token", (req, res) => {
+        if (!req.user || !req.user.session || !req.user.session.accessToken) {
+            res.status(403).send("Not logged in");
+            return;
+        }
+        // TODO: verify the token, use the refresh token to
+        // get a new one if it's invalid.
+        res.send({
+            accessToken: req.user.session.accessToken
+        });
     });
 
     router.get(
