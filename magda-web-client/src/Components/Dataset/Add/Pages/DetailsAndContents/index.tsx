@@ -304,7 +304,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         editor={multiDateIntervalEditor}
                     />
                 </div>
-                <h3>Spatial area</h3>
+                <h3>Spatial extent</h3>
                 <div>
                     <SpatialAreaInput
                         countryId={spatialCoverage.lv1Id}
