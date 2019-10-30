@@ -1,13 +1,12 @@
 import * as express from "express";
 import * as session from "express-session";
-import createPool from "./createPool";
+import * as pg from "pg";
 import * as passport from "passport";
 import * as URI from "urijs";
 
 export interface AuthenticatorOptions {
     sessionSecret: string;
-    dbHost: string;
-    dbPort: number;
+    dbPool: pg.Pool;
 }
 
 const DEFAULT_SESSION_COOKIE_NAME = "connect.sid";
@@ -55,7 +54,7 @@ export default class Authenticator {
         });
 
         const store = new (require("connect-pg-simple")(session))({
-            pool: createPool(options)
+            pool: options.dbPool
         });
 
         this.cookieParserMiddleware = require("cookie-parser")();
@@ -159,6 +158,6 @@ export default class Authenticator {
         // --- we always need cooker parser middle in place
         router.use(this.cookieParserMiddleware);
         // --- apply our wrapper as the delegate for other middlewares
-        router.use(this.authenticatorMiddleware);
+        router.use(this.authenticatorMiddleware.bind(this));
     }
 }
