@@ -1,12 +1,42 @@
 import * as express from "express";
+import * as session from "express-session";
 import createPool from "./createPool";
 import * as passport from "passport";
-const session = require("express-session");
+import * as URI from "urijs";
 
 export interface AuthenticatorOptions {
     sessionSecret: string;
     dbHost: string;
     dbPort: number;
+}
+
+const DEFAULT_SESSION_COOKIE_NAME = "connect.sid";
+const DEFAULT_SESSION_COOKIE_CONFIG = {
+    maxAge: 7 * 60 * 60 * 1000
+};
+
+/**
+ * Run a list of middlewares in order.
+ * It simulates express's middleware handling.
+ * i.e.: middlewares (other than the first one) will be executed if the middleware before it called next()
+ *
+ * @param {express.RequestHandler[]} middlewareList
+ * @param {express.Request} req
+ * @param {express.Response} res
+ * @param {express.NextFunction} next
+ */
+function runMiddlewareList(
+    middlewareList: express.RequestHandler[],
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+) {
+    function runNext() {
+        if (!middlewareList.length) return next();
+        const currentMiddleware = middlewareList.pop();
+        currentMiddleware(req, res, runNext);
+    }
+    runNext();
 }
 
 export default class Authenticator {
@@ -32,8 +62,11 @@ export default class Authenticator {
 
         this.sessionMiddleware = session({
             store,
+            // --- we don't have to set session cookie name
+            // --- but good to make sure it'd be only one value in our app
+            name: DEFAULT_SESSION_COOKIE_NAME,
             secret: options.sessionSecret,
-            cookie: { maxAge: 7 * 60 * 60 * 1000 },
+            cookie: { ...DEFAULT_SESSION_COOKIE_CONFIG },
             resave: false,
             saveUninitialized: false,
             rolling: true
@@ -43,10 +76,89 @@ export default class Authenticator {
         this.passportSessionMiddleware = passport.session();
     }
 
+    /**
+     * A middleware wraps all other cookie / session / passport related middlewares
+     * to achieve fine-gain session / cookie control in Magda.
+     * Generally, we want to:
+     * - user request won't carry a cookie in the header unless they are logged in
+     * - system won't mis/re-issue a new session for the same user whose request carries the session cookie
+     * See https://github.com/magda-io/magda/issues/2545 for more details
+     *
+     * @param {express.Request} req
+     * @param {express.Response} res
+     * @param {express.NextFunction} next
+     * @memberof Authenticator
+     */
+    authenticatorMiddleware(
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+    ) {
+        const uri = new URI(req.originalUrl);
+        const pathname = uri.pathname().toLowerCase();
+
+        if (pathname.indexOf("/auth/login/") === 0) {
+            // --- start session / passport here
+            return runMiddlewareList(
+                [
+                    this.sessionMiddleware,
+                    this.passportMiddleware,
+                    this.passportSessionMiddleware
+                ],
+                req,
+                res,
+                next
+            );
+        } else if (
+            pathname === "/auth/logout" ||
+            (pathname === "/sign-in-redirect" &&
+                uri.hasQuery("result", "failure"))
+        ) {
+            // --- end the session here
+            if (!req.cookies[DEFAULT_SESSION_COOKIE_NAME]) {
+                // --- session not started yet
+                return next();
+            }
+            // --- Only make session / store available
+            // --- passport midddleware should not be run
+            return runMiddlewareList([this.sessionMiddleware], req, res, () => {
+                // --- destroy session here
+                // --- any session data will be removed from session store
+                req.session.destroy(function(err) {
+                    // Failed to access session storage
+                    // Only log here still proceed to end the session (by delete cookie)
+                    console.log(err);
+                });
+                res.clearCookie(DEFAULT_SESSION_COOKIE_NAME, {
+                    ...DEFAULT_SESSION_COOKIE_CONFIG
+                });
+                return next();
+            });
+        } else {
+            // For other routes: only make session & passport data available if session has already started (cookie set)
+            if (!req.cookies[DEFAULT_SESSION_COOKIE_NAME]) {
+                // --- session not started yet
+                return next();
+            } else {
+                // --- start the session / passport here
+                return runMiddlewareList(
+                    [
+                        this.sessionMiddleware,
+                        this.passportMiddleware,
+                        this.passportSessionMiddleware
+                    ],
+                    req,
+                    res,
+                    next
+                );
+            }
+        }
+    }
+
     applyToRoute(router: express.Router) {
+        // --- we always need cooker parser middle in place
         router.use(this.cookieParserMiddleware);
-        router.use(this.sessionMiddleware);
-        router.use(this.passportMiddleware);
-        router.use(this.passportSessionMiddleware);
+        // --- apply our wrapper as the delegate for other middlewares
+        router.use(this.authenticatorMiddleware);
     }
 }
