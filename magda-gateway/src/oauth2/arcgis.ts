@@ -49,12 +49,12 @@ export default function arcgis(options: ArcGisOptions) {
         // Overrides 'https://www.arcgis.com/sharing/oauth2/authorize'
         strategyOptions.authorizationURL = `${
             options.arcgisInstanceBaseUrl
-        }/sharing/oauth2/authorize`;
+        }/sharing/rest/oauth2/authorize`;
 
         // Overrides 'https://www.arcgis.com/sharing/oauth2/token'
         strategyOptions.tokenURL = `${
             options.arcgisInstanceBaseUrl
-        }/sharing/oauth2/token`;
+        }/sharing/rest/oauth2/token`;
 
         // Overrides 'https://www.arcgis.com/sharing/rest/community/self?f=json'
         strategyOptions.userProfileURL = `${
@@ -125,13 +125,56 @@ export default function arcgis(options: ArcGisOptions) {
         passport.authenticate("arcgis", options)(req, res, next);
     });
 
-    router.get("/token", (req, res) => {
+    router.get("/token", async (req, res) => {
         if (!req.user || !req.user.session || !req.user.session.accessToken) {
             res.status(403).send("Not logged in");
             return;
         }
-        // TODO: verify the token, use the refresh token to
-        // get a new one if it's invalid.
+
+        // Verify that the token is still good
+        const baseUrl =
+            options.arcgisInstanceBaseUrl || "https://www.arcgis.com";
+        const url = `${baseUrl}/sharing/rest/community/self?f=json&token=${
+            req.user.session.accessToken
+        }`;
+
+        let tokenGood = false;
+
+        try {
+            const verifyResponse = await fetch(url, { method: "get" });
+            const verifyResponseJson = await verifyResponse.json();
+            if (verifyResponseJson.error) {
+                throw verifyResponseJson.error;
+            }
+            tokenGood = true;
+        } catch (e) {}
+
+        if (!tokenGood && req.user.session.refreshToken) {
+            try {
+                const tokenUrl = `${baseUrl}/sharing/rest/oauth2/token?client_id=${clientId}&grant_type=refresh_token&refresh_token=${
+                    req.user.session.refreshToken
+                }`;
+                const newTokenResponse = await fetch(tokenUrl, {
+                    method: "get"
+                });
+                const newToken = await newTokenResponse.json();
+                if (newToken.error) {
+                    throw newToken.error;
+                }
+                req.user.session.accessToken = newToken.access_token;
+                if (newToken.refresh_token) {
+                    req.user.session.refreshToken = newToken.refresh_token;
+                }
+                tokenGood = true;
+            } catch (e) {}
+        }
+
+        if (!tokenGood) {
+            // Can't get a token, so force the user to sign in again.
+            req.logout();
+            res.status(403).send("Not logged in");
+        }
+
         res.send({
             accessToken: req.user.session.accessToken
         });
