@@ -74,7 +74,11 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         <AlwaysEditor
                             value={dataset.title}
                             onChange={editDataset("title")}
-                            editor={textEditorEx({ required: true })}
+                            editor={textEditorEx({
+                                placeholder:
+                                    !dataset.title && "Enter dataset title",
+                                required: true
+                            })}
                         />
                     </div>
                 </div>
