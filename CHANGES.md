@@ -122,7 +122,6 @@ UI:
 -   Added a distribution hyperlink to the title of resource links
 -   Made the default name of a dataset blank
 -   Added a tooltip for dataset names
--   Add a distribution hyperlink to the title of resource links
 -   Rename "Spatial area" to "Spatial extent"
 
 Gateway:
