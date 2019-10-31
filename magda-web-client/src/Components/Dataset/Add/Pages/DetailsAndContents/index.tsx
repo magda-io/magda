@@ -37,8 +37,6 @@ import "../People/DatasetAutocomplete.scss";
 
 import "./index.scss";
 
-import LightBulbIcon from "assets/light-bulb.svg";
-
 type Props = {
     edit: <K extends keyof State>(
         aspectField: K
@@ -67,29 +65,11 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                 <h2>Details and Contents</h2>
                 <h3 className="with-underline">Title and language</h3>
                 <div className="question-title">
-                    <h4>
-                        <span>What is the title of the dataset?</span>
-                        <span className="tooltip-container">
-                            <PurpleToolTip
-                                className="tooltip no-print"
-                                launcher={() => (
-                                    <div className="tooltip-launcher-icon help-icon">
-                                        <img
-                                            src={LightBulbIcon}
-                                            height="20"
-                                            width="25"
-                                            alt="We recommend ensuring dataset file names are descriptive so users can easily understand the contents"
-                                        />
-                                    </div>
-                                )}
-                                innerElementClassName="inner"
-                            >
-                                {() =>
-                                    "We recommend ensuring dataset file names are descriptive so users can easily understand the contents"
-                                }
-                            </PurpleToolTip>
-                        </span>
-                    </h4>
+                    <h4>What is the title of the dataset?</h4>
+                    <ToolTip>
+                        We recommend ensuring dataset file names are descriptive
+                        so users can easily understand the contents.
+                    </ToolTip>
                     <div>
                         <AlwaysEditor
                             value={dataset.title}
