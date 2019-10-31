@@ -9,8 +9,8 @@ export interface AuthenticatorOptions {
     dbPool: pg.Pool;
 }
 
-const DEFAULT_SESSION_COOKIE_NAME = "connect.sid";
-const DEFAULT_SESSION_COOKIE_CONFIG = {
+export const DEFAULT_SESSION_COOKIE_NAME = "connect.sid";
+export const DEFAULT_SESSION_COOKIE_CONFIG = {
     maxAge: 7 * 60 * 60 * 1000
 };
 
@@ -32,7 +32,7 @@ function runMiddlewareList(
 ) {
     function runNext() {
         if (!middlewareList.length) return next();
-        const currentMiddleware = middlewareList.pop();
+        const currentMiddleware = middlewareList.shift();
         currentMiddleware(req, res, runNext);
     }
     runNext();
