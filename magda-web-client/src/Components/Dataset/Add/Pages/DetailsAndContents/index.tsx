@@ -37,6 +37,8 @@ import "../People/DatasetAutocomplete.scss";
 
 import "./index.scss";
 
+import LightBulbIcon from "assets/light-bulb.svg";
+
 type Props = {
     edit: <K extends keyof State>(
         aspectField: K
@@ -73,7 +75,9 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                 launcher={() => (
                                     <div className="tooltip-launcher-icon help-icon">
                                         <img
-                                            src={helpIcon}
+                                            src={LightBulbIcon}
+                                            height="20"
+                                            width="25"
                                             alt="We recommend ensuring dataset file names are descriptive so users can easily understand the contents"
                                         />
                                     </div>
