@@ -126,7 +126,9 @@ export default class Authenticator {
                 req.session.destroy(function(err) {
                     // Failed to access session storage
                     // Only log here still proceed to end the session (by delete cookie)
-                    console.log(err);
+                    if (err) {
+                        console.log(`Failed to destory session: ${err}`);
+                    }
                 });
                 const deleteCookieOptions = {
                     ...DEFAULT_SESSION_COOKIE_CONFIG

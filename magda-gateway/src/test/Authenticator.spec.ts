@@ -59,6 +59,12 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
         }
     });
 
+    beforeEach(async () => {
+        isNextHandlerCalled = false;
+        // -- clear up session table
+        await pool.query("DELETE FROM session");
+    });
+
     function setupTest() {
         const app: express.Application = express();
         const auth = new Authenticator({
@@ -144,9 +150,29 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
         return result.rows[0];
     }
 
-    beforeEach(() => {
-        isNextHandlerCalled = false;
-    });
+    async function getTotalStoreSessionNum() {
+        const result = await pool.query(
+            `SELECT COUNT(*) AS count FROM "session"`
+        );
+        if (!_.isArray(result.rows) || !result.rows.length) {
+            return 0;
+        }
+        if (!result.rows[0]["count"]) return 0;
+        try {
+            const count = parseInt(result.rows[0]["count"]);
+            if (isNaN(count)) return 0;
+            else return count;
+        } catch (e) {
+            return 0;
+        }
+    }
+
+    function wait(time: number = 0) {
+        time = time ? time : 1;
+        return new Promise((resolve, reject) => {
+            setTimeout(resolve, time);
+        });
+    }
 
     describe("Test path /auth/login/*", () => {
         it("Shoud start session if it has not started", async () => {
@@ -167,6 +193,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     const storeSession = await getStoreSessionById(sessionId);
                     expect(storeSession).not.to.be.null;
                     expect(storeSession.sid).to.equal(sessionId);
+                    expect(await getTotalStoreSessionNum()).to.equal(1);
                 });
         });
 
@@ -192,6 +219,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     const storeSession = await getStoreSessionById(sessionId);
                     expect(storeSession).not.to.be.null;
                     expect(storeSession.sid).to.equal(sessionId);
+                    expect(await getTotalStoreSessionNum()).to.equal(1);
                 });
 
             await request
@@ -213,6 +241,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     );
                     expect(sessionId2).not.to.be.null;
                     expect(sessionId2).to.equal(sessionId);
+                    expect(await getTotalStoreSessionNum()).to.equal(1);
                 });
         });
 
@@ -237,6 +266,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     const storeSession = await getStoreSessionById(sessionId);
                     expect(storeSession).not.to.be.null;
                     expect(storeSession.sid).to.equal(sessionId);
+                    expect(await getTotalStoreSessionNum()).to.equal(1);
                 });
 
             await request
@@ -258,6 +288,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     );
                     expect(sessionId2).not.to.be.null;
                     expect(sessionId2).to.equal(sessionId);
+                    expect(await getTotalStoreSessionNum()).to.equal(1);
                 });
         });
     });
@@ -283,6 +314,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     const storeSession = await getStoreSessionById(sessionId);
                     expect(storeSession).not.to.be.null;
                     expect(storeSession.sid).to.equal(sessionId);
+                    expect(await getTotalStoreSessionNum()).to.equal(1);
                 });
 
             await request
@@ -306,9 +338,10 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     expect(cookieOptions.Expires).to.equal(
                         "Thu, 01 Jan 1970 00:00:00 GMT"
                     );
+                    // --- give session store a chance to run before checking
+                    await wait(500);
                     // --- existing session also destroyed in store
-                    const storeSession = await getStoreSessionById(sessionId);
-                    expect(storeSession).to.be.null;
+                    expect(await getTotalStoreSessionNum()).to.equal(0);
                 });
         });
 
@@ -326,6 +359,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     );
                     expect(sessionId).to.be.null;
                     expect(cookieOptions).to.be.null;
+                    expect(await getTotalStoreSessionNum()).to.equal(0);
                 });
         });
     });
@@ -351,6 +385,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     const storeSession = await getStoreSessionById(sessionId);
                     expect(storeSession).not.to.be.null;
                     expect(storeSession.sid).to.equal(sessionId);
+                    expect(await getTotalStoreSessionNum()).to.equal(1);
                 });
 
             await request
@@ -374,9 +409,10 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     expect(cookieOptions.Expires).to.equal(
                         "Thu, 01 Jan 1970 00:00:00 GMT"
                     );
+                    // --- give session store a chance to run before checking
+                    await wait(500);
                     // --- existing session also destroyed in store
-                    const storeSession = await getStoreSessionById(sessionId);
-                    expect(storeSession).to.be.null;
+                    expect(await getTotalStoreSessionNum()).to.equal(0);
                 });
         });
 
@@ -400,6 +436,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     const storeSession = await getStoreSessionById(sessionId);
                     expect(storeSession).not.to.be.null;
                     expect(storeSession.sid).to.equal(sessionId);
+                    expect(await getTotalStoreSessionNum()).to.equal(1);
                 });
 
             await request
@@ -424,6 +461,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     const storeSession = await getStoreSessionById(sessionId);
                     expect(storeSession).not.to.be.null;
                     expect(storeSession.sid).to.equal(sessionId);
+                    expect(await getTotalStoreSessionNum()).to.equal(1);
                 });
         });
 
@@ -441,6 +479,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     );
                     expect(sessionId).to.be.null;
                     expect(cookieOptions).to.be.null;
+                    expect(await getTotalStoreSessionNum()).to.equal(0);
                 });
         });
 
@@ -458,6 +497,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     );
                     expect(sessionId).to.be.null;
                     expect(cookieOptions).to.be.null;
+                    expect(await getTotalStoreSessionNum()).to.equal(0);
                 });
         });
     });
@@ -472,6 +512,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                 .then(async res => {
                     expect(isNextHandlerCalled).to.equal(true);
                     expect(res.header["set-cookie"]).to.be.undefined;
+                    expect(await getTotalStoreSessionNum()).to.equal(0);
                 });
 
             await request
@@ -480,6 +521,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                 .then(async res => {
                     expect(isNextHandlerCalled).to.equal(true);
                     expect(res.header["set-cookie"]).to.be.undefined;
+                    expect(await getTotalStoreSessionNum()).to.equal(0);
                 });
         });
 
@@ -502,6 +544,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     const storeSession = await getStoreSessionById(sessionId);
                     expect(storeSession).not.to.be.null;
                     expect(storeSession.sid).to.equal(sessionId);
+                    expect(await getTotalStoreSessionNum()).to.equal(1);
                 });
 
             // --- access /xxxxx with session id created by previous request
@@ -524,6 +567,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     );
                     expect(sessionId2).not.to.be.null;
                     expect(sessionId2).to.equal(sessionId);
+                    expect(await getTotalStoreSessionNum()).to.equal(1);
                 });
         });
     });
