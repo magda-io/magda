@@ -66,11 +66,19 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                 <h3 className="with-underline">Title and language</h3>
                 <div className="question-title">
                     <h4>What is the title of the dataset?</h4>
+                    <ToolTip>
+                        We recommend ensuring dataset file names are descriptive
+                        so users can easily understand the contents.
+                    </ToolTip>
                     <div>
                         <AlwaysEditor
                             value={dataset.title}
                             onChange={editDataset("title")}
-                            editor={textEditorEx({ required: true })}
+                            editor={textEditorEx({
+                                placeholder:
+                                    !dataset.title && "Enter dataset title",
+                                required: true
+                            })}
                         />
                     </div>
                 </div>
