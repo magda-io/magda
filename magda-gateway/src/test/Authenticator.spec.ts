@@ -7,7 +7,11 @@ import { expect } from "chai";
 import * as cookie from "cookie";
 import * as _ from "lodash";
 import * as supertest from "supertest";
-import Authenticator, { DEFAULT_SESSION_COOKIE_NAME } from "../Authenticator";
+import * as randomstring from "randomstring";
+import Authenticator, {
+    DEFAULT_SESSION_COOKIE_NAME,
+    DEFAULT_SESSION_COOKIE_OPTIONS
+} from "../Authenticator";
 import getTestDBConfig from "@magda/typescript-common/dist/test/db/getTestDBConfig";
 import runMigrationSql, {
     deleteAllTables
@@ -23,7 +27,7 @@ https://github.com/magda-io/magda/issues/2545
 **/
 
 describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteCallbackContext) {
-    this.timeout(10000);
+    this.timeout(30000);
     let pool: pg.Pool = null;
     const dbConfig = getTestDBConfig();
     let isNextHandlerCalled = false;
@@ -65,11 +69,12 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
         await pool.query("DELETE FROM session");
     });
 
-    function setupTest() {
+    function setupTest(cookieOptions: express.CookieOptions = {}) {
         const app: express.Application = express();
         const auth = new Authenticator({
             dbPool: pool,
-            sessionSecret: SESSION_SECRET
+            sessionSecret: SESSION_SECRET,
+            cookieOptions
         });
 
         // --- attach auth routes to test app
@@ -570,68 +575,104 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     expect(await getTotalStoreSessionNum()).to.equal(1);
                 });
         });
-    });
 
-    /*
-    describe("`X-Forwarded-Proto` header is http", () => {
-        it("should forward request to next request handler if `enableHttpsRedirection` parameter is false", () => {
-            const testRequest = setupTest(false, "http");
-
-            return testRequest.expect(200).then(() => {
-                expect(isNextHandlerCalled).to.equal(true);
+        it("Shoud destroy expired sessions", async () => {
+            const request = setupTest({
+                // --- session will expire after 100 milseconds
+                maxAge: 100
             });
+            let sessionId: string = null;
+            let cookieOptions = {};
+
+            // --- access a `/auth/login/*` route to create the session
+            await request
+                .get("/auth/login/xxxxxx")
+                .expect(200)
+                .then(async res => {
+                    expect(isNextHandlerCalled).to.equal(true);
+                    isNextHandlerCalled = false;
+                    [sessionId, cookieOptions] = getSetCookie(
+                        res.header,
+                        DEFAULT_SESSION_COOKIE_NAME
+                    );
+                    expect(sessionId).not.to.be.null;
+                    const storeSession = await getStoreSessionById(sessionId);
+                    expect(storeSession).not.to.be.null;
+                    expect(storeSession.sid).to.equal(sessionId);
+                    expect(await getTotalStoreSessionNum()).to.equal(1);
+                });
+            // --- wait for 1s to make sure session has expired
+            await wait(2000);
+            // --- access /xxxxx with session id created by previous request
+            await request
+                .get("/xxxxx")
+                .set("Cookie", [
+                    createCookieData(
+                        DEFAULT_SESSION_COOKIE_NAME,
+                        sessionId,
+                        SESSION_SECRET,
+                        cookieOptions
+                    )
+                ])
+                .expect(200)
+                .then(async res => {
+                    expect(isNextHandlerCalled).to.equal(true);
+                    const [sessionId2, cookieOptions2] = getSetCookie(
+                        res.header,
+                        DEFAULT_SESSION_COOKIE_NAME
+                    );
+                    expect(sessionId2).to.equal("");
+                    expect(cookieOptions2.Expires).to.equal(
+                        "Thu, 01 Jan 1970 00:00:00 GMT"
+                    );
+                    // --- give session store a chance to run before checking
+                    await wait(500);
+                    // --- existing session also destroyed in store
+                    // --- we only destroy the newly created empty session
+                    // --- the original expried session is still in store and will be removed by session pruning process
+                    expect(await getTotalStoreSessionNum()).to.equal(1);
+                    const storeSession = await getStoreSessionById(sessionId);
+                    expect(storeSession).not.to.be.null;
+                    expect(storeSession.sid).to.equal(sessionId);
+                });
         });
 
-        it("should redirect to the same URL with HTTPS protocol if `enableHttpsRedirection` parameter is true", () => {
-            const testRequest = setupTest(true, "http");
+        it("Shoud destroy session if incoming session id is invalid", async () => {
+            const request = setupTest({
+                // --- session will expire after 100 milseconds
+                maxAge: 100
+            });
+            // --- random generate a non exist session id
+            // --- session store is empty
+            const sessionId: string = randomstring.generate();
+            let cookieOptions = { ...DEFAULT_SESSION_COOKIE_OPTIONS };
 
-            return testRequest
-                .expect(301)
-                .expect(function(res: supertest.Response) {
-                    expect(isNextHandlerCalled).to.equal(false);
-                    const location = res.header.location;
-                    const uri = new URI(location);
-                    expect(uri.protocol()).to.equal("https");
-                    expect(uri.host()).to.equal(testHost);
-                    expect(uri.pathname()).to.equal(urlPath);
-                    expect(uri.search(true)).to.deep.equal(urlQuery);
+            await request
+                .get("/xxxxx")
+                .set("Cookie", [
+                    createCookieData(
+                        DEFAULT_SESSION_COOKIE_NAME,
+                        sessionId,
+                        SESSION_SECRET,
+                        cookieOptions
+                    )
+                ])
+                .expect(200)
+                .then(async res => {
+                    expect(isNextHandlerCalled).to.equal(true);
+                    const [sessionId2, cookieOptions2] = getSetCookie(
+                        res.header,
+                        DEFAULT_SESSION_COOKIE_NAME
+                    );
+                    expect(sessionId2).to.equal("");
+                    expect(cookieOptions2.Expires).to.equal(
+                        "Thu, 01 Jan 1970 00:00:00 GMT"
+                    );
+                    // --- give session store a chance to run before checking
+                    await wait(500);
+                    // --- existing session also destroyed in store
+                    expect(await getTotalStoreSessionNum()).to.equal(0);
                 });
         });
     });
-
-    describe("`X-Forwarded-Proto` header is https", () => {
-        it("should forward request to next request handler if `enableHttpsRedirection` parameter is false", () => {
-            const testRequest = setupTest(false, "https");
-
-            return testRequest.expect(200).then(() => {
-                expect(isNextHandlerCalled).to.equal(true);
-            });
-        });
-
-        it("should forward request to next request handler if `enableHttpsRedirection` parameter is true", () => {
-            const testRequest = setupTest(true, "https");
-
-            return testRequest.expect(200).then(() => {
-                expect(isNextHandlerCalled).to.equal(true);
-            });
-        });
-    });
-
-    describe("`X-Forwarded-Proto` header is not set", () => {
-        it("should forward request to next request handler if `enableHttpsRedirection` parameter is false", () => {
-            const testRequest = setupTest(false, null);
-
-            return testRequest.expect(200).then(() => {
-                expect(isNextHandlerCalled).to.equal(true);
-            });
-        });
-
-        it("should forward request to next request handler if `enableHttpsRedirection` parameter is true", () => {
-            const testRequest = setupTest(true, "https");
-
-            return testRequest.expect(200).then(() => {
-                expect(isNextHandlerCalled).to.equal(true);
-            });
-        });
-    });*/
 });

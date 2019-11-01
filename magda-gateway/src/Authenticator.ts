@@ -3,14 +3,16 @@ import * as session from "express-session";
 import * as pg from "pg";
 import * as passport from "passport";
 import * as URI from "urijs";
+import * as signature from "cookie-signature";
 
 export interface AuthenticatorOptions {
     sessionSecret: string;
     dbPool: pg.Pool;
+    cookieOptions?: express.CookieOptions;
 }
 
-export const DEFAULT_SESSION_COOKIE_NAME = "connect.sid";
-export const DEFAULT_SESSION_COOKIE_CONFIG = {
+export const DEFAULT_SESSION_COOKIE_NAME: string = "connect.sid";
+export let DEFAULT_SESSION_COOKIE_OPTIONS: express.CookieOptions = {
     maxAge: 7 * 60 * 60 * 1000
 };
 
@@ -38,13 +40,43 @@ function runMiddlewareList(
     runNext();
 }
 
+function getSessionId(req: express.Request, secret: string = ""): string {
+    const sessionCookie = req.cookies[DEFAULT_SESSION_COOKIE_NAME] as string;
+    if (!sessionCookie) {
+        return null;
+    } else {
+        let cookieData: string | boolean = sessionCookie;
+        if (cookieData.substr(0, 2) === "s:") {
+            // --- process signed cookie
+            cookieData = signature.unsign(cookieData.slice(2), secret);
+            if (cookieData === false) {
+                return null;
+            }
+            return cookieData;
+        } else {
+            return cookieData;
+        }
+    }
+}
+
 export default class Authenticator {
     private cookieParserMiddleware: express.RequestHandler;
     private sessionMiddleware: express.RequestHandler;
     private passportMiddleware: express.RequestHandler;
     private passportSessionMiddleware: express.RequestHandler;
+    public sessionCookieOptions: express.CookieOptions;
+    private sessionSecret: string;
 
     constructor(options: AuthenticatorOptions) {
+        this.sessionCookieOptions = options.cookieOptions
+            ? {
+                  ...DEFAULT_SESSION_COOKIE_OPTIONS,
+                  ...options.cookieOptions
+              }
+            : {
+                  ...DEFAULT_SESSION_COOKIE_OPTIONS
+              };
+
         passport.serializeUser(function(user: any, cb) {
             cb(null, user);
         });
@@ -59,13 +91,15 @@ export default class Authenticator {
 
         this.cookieParserMiddleware = require("cookie-parser")();
 
+        this.sessionSecret = options.sessionSecret ? options.sessionSecret : "";
+
         this.sessionMiddleware = session({
             store,
             // --- we don't have to set session cookie name
             // --- but good to make sure it'd be only one value in our app
             name: DEFAULT_SESSION_COOKIE_NAME,
             secret: options.sessionSecret,
-            cookie: { ...DEFAULT_SESSION_COOKIE_CONFIG },
+            cookie: { ...this.sessionCookieOptions },
             resave: false,
             saveUninitialized: false,
             rolling: true
@@ -73,6 +107,39 @@ export default class Authenticator {
 
         this.passportMiddleware = passport.initialize();
         this.passportSessionMiddleware = passport.session();
+    }
+
+    /**
+     * destroy the session. Will do two things:
+     * - Delete session data from session store
+     * - Delete session cookie
+     *
+     * @param {express.Request} req
+     * @param {express.Response} res
+     * @returns {Promise<never>}
+     * @memberof Authenticator
+     */
+    destroySession(
+        req: express.Request,
+        res: express.Response
+    ): Promise<never> {
+        return new Promise((resolve, reject) => {
+            req.session.destroy(err => {
+                if (err) {
+                    // Failed to access session storage to delete session data
+                    reject(err);
+                } else {
+                    resolve();
+                }
+            });
+            const deleteCookieOptions = {
+                ...this.sessionCookieOptions
+            };
+            // --- `clearCookie` works in a way like it will fail to delete cookie if maxAge presents T_T
+            // --- https://github.com/expressjs/express/issues/3856#issuecomment-502397226
+            delete deleteCookieOptions.maxAge;
+            res.clearCookie(DEFAULT_SESSION_COOKIE_NAME, deleteCookieOptions);
+        });
     }
 
     /**
@@ -123,41 +190,56 @@ export default class Authenticator {
             return runMiddlewareList([this.sessionMiddleware], req, res, () => {
                 // --- destroy session here
                 // --- any session data will be removed from session store
-                req.session.destroy(function(err) {
-                    // Failed to access session storage
-                    // Only log here still proceed to end the session (by delete cookie)
-                    if (err) {
-                        console.log(`Failed to destory session: ${err}`);
-                    }
+                // --- No need to wait till `destroySession` complete
+                this.destroySession(req, res).catch(err => {
+                    // --- only log here if failed to delete session data from session store
+                    console.log(`Failed to destory session: ${err}`);
                 });
-                const deleteCookieOptions = {
-                    ...DEFAULT_SESSION_COOKIE_CONFIG
-                };
-                // --- `clearCookie` works in a way like it will fail to delete cookie if maxAge presents T_T
-                // --- https://github.com/expressjs/express/issues/3856#issuecomment-502397226
-                delete deleteCookieOptions.maxAge;
-                res.clearCookie(
-                    DEFAULT_SESSION_COOKIE_NAME,
-                    deleteCookieOptions
-                );
                 return next();
             });
         } else {
             // For other routes: only make session & passport data available if session has already started (cookie set)
             if (!req.cookies[DEFAULT_SESSION_COOKIE_NAME]) {
-                // --- session not started yet
+                // --- session not started yet & no incoming session id cookie
+                // --- proceed to other non auth middlewares
                 return next();
             } else {
-                // --- start the session / passport here
+                // --- run the session middleware only first
                 return runMiddlewareList(
-                    [
-                        this.sessionMiddleware,
-                        this.passportMiddleware,
-                        this.passportSessionMiddleware
-                    ],
+                    [this.sessionMiddleware],
                     req,
                     res,
-                    next
+                    () => {
+                        // --- check if the original incoming session id was invalid
+                        // --- here, we test session middleware's processing result
+                        // --- rather than accessing session store directly by ourself
+                        const sessionId = getSessionId(req, this.sessionSecret);
+                        if (req.session.id !== sessionId) {
+                            // --- a new session has been created
+                            // --- the original incoming session id must have been an invalid or expired one
+                            // --- we need to destroy this newly created empty session
+                            // --- destroy session here & no need to wait till `destroySession` complete
+                            this.destroySession(req, res).catch(err => {
+                                // --- only log here if failed to delete session data from session store
+                                console.log(
+                                    `Failed to destory session: ${err}`
+                                );
+                            });
+                            // --- proceed to other middleware & no need to run passport
+                            return next();
+                        } else {
+                            // --- if the session id is valid, run passport middleware
+                            return runMiddlewareList(
+                                [
+                                    this.passportMiddleware,
+                                    this.passportSessionMiddleware
+                                ],
+                                req,
+                                res,
+                                next
+                            );
+                        }
+                    }
                 );
             }
         }
