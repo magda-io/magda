@@ -53,7 +53,7 @@ You can also run the same command in an individual component's directory (i.e. `
 
 ### Set up Helm
 
-Helm is the package manager for Kubernetes - we use it to make it so that you can install all the various services you need for MAGDA at once. To install, follow the instructions at [https://github.com/kubernetes/helm/blob/master/docs/install.md](https://github.com/kubernetes/helm/blob/master/docs/install.md).
+Helm is the package manager for Kubernetes - we use it to make it so that you can install all the various services you need for MAGDA at once. To install, follow the instructions at [https://github.com/helm/helm#install](https://github.com/helm/helm#install).
 
 In a nutshell, once you have helm installed, this is how you initialise helm and Tiller.
 

@@ -27,6 +27,7 @@ Search:
 -   Prevent freeText query from being None which will cause score to be 0
 -   Add tenant specific search.
 -   Fixed facet options (publishers) API error: Invalid aggregation name
+-   Fixed Querying formats in upper case causes two formats to be selected
 
 Indexer:
 
@@ -111,11 +112,15 @@ UI:
 -   Fixed Add Dataset / License setting: Long file names should be wrapped to the next line
 -   Added a new color (slightly grey) for preview screens
 -   Removed unnecessary margin in the filter facets
+-   Map Preview: avoid selecting Esri feature server distribution for preview
 -   Fixed mobile views incorrect min. width
 -   Drafts should be ordered by date on Drafts list page
 -   Changed text to reflect state/territory/country accordingly
+-   Fixed CSV loader didn't retry the different line ending correctly
 -   Saved publisher id in the database
 -   Added hover text for the tooltip beside the date-picker in the Add Dataset page
+-   Add a distribution hyperlink to the title of resource links
+-   Rename "Spatial area" to "Spatial extent"
 
 Gateway:
 
