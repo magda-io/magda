@@ -13,6 +13,8 @@ import runMigrationSql, {
     deleteAllTables
 } from "@magda/typescript-common/dist/test/db/runMigrationSql";
 
+type PlainObject = { [key: string]: string };
+
 const SESSION_SECRET = "test-session-secret";
 
 /**
@@ -83,14 +85,14 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
      * - the second element is the cookie options
      * If not found will return [null, null]
      *
-     * @param {{ [key: string]: any }} header
+     * @param {PlainObject} header
      * @param {string} cookieName
-     * @returns {[string, { [key: string]: any }]}
+     * @returns {[string, PlainObject]}
      */
     function getSetCookie(
-        header: { [key: string]: any },
+        header: PlainObject,
         cookieName: string
-    ): [string, { [key: string]: any }] {
+    ): [string, PlainObject] {
         if (
             !header["set-cookie"] ||
             !_.isArray(header["set-cookie"]) ||
@@ -100,7 +102,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
         }
         for (let i = 0; i < header["set-cookie"].length; i++) {
             const data = cookie.parse(header["set-cookie"][i]);
-            if (data[cookieName]) {
+            if (typeof data[cookieName] !== "undefined") {
                 let cookieData: string | boolean = data[cookieName];
                 if (cookieData.substr(0, 2) === "s:") {
                     // --- signed
@@ -180,6 +182,8 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                 .expect(200)
                 .then(async res => {
                     expect(isNextHandlerCalled).to.equal(true);
+                    // reset isNextHandlerCalled: always check our middleware is not stuck
+                    isNextHandlerCalled = false;
                     [sessionId, cookieOptions] = getSetCookie(
                         res.header,
                         DEFAULT_SESSION_COOKIE_NAME
@@ -224,6 +228,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                 .expect(200)
                 .then(async res => {
                     expect(isNextHandlerCalled).to.equal(true);
+                    isNextHandlerCalled = false;
                     [sessionId, cookieOptions] = getSetCookie(
                         res.header,
                         DEFAULT_SESSION_COOKIE_NAME
@@ -253,6 +258,206 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     );
                     expect(sessionId2).not.to.be.null;
                     expect(sessionId2).to.equal(sessionId);
+                });
+        });
+    });
+
+    describe("Test path /auth/logout", () => {
+        it("Should destroy the existing session and delete the sessios cookie", async () => {
+            const request = setupTest();
+            let sessionId: string = null;
+            let cookieOptions: PlainObject = {};
+
+            // --- visit /auth/login to create a session first
+            await request
+                .post("/auth/login/xxxxxx")
+                .expect(200)
+                .then(async res => {
+                    expect(isNextHandlerCalled).to.equal(true);
+                    isNextHandlerCalled = false;
+                    [sessionId, cookieOptions] = getSetCookie(
+                        res.header,
+                        DEFAULT_SESSION_COOKIE_NAME
+                    );
+                    expect(sessionId).not.to.be.null;
+                    const storeSession = await getStoreSessionById(sessionId);
+                    expect(storeSession).not.to.be.null;
+                    expect(storeSession.sid).to.equal(sessionId);
+                });
+
+            await request
+                .get("/auth/logout")
+                .set("Cookie", [
+                    createCookieData(
+                        DEFAULT_SESSION_COOKIE_NAME,
+                        sessionId,
+                        SESSION_SECRET,
+                        cookieOptions
+                    )
+                ])
+                .expect(200)
+                .then(async res => {
+                    expect(isNextHandlerCalled).to.equal(true);
+                    [sessionId, cookieOptions] = getSetCookie(
+                        res.header,
+                        DEFAULT_SESSION_COOKIE_NAME
+                    );
+                    expect(sessionId).to.equal("");
+                    expect(cookieOptions.Expires).to.equal(
+                        "Thu, 01 Jan 1970 00:00:00 GMT"
+                    );
+                    // --- existing session also destroyed in store
+                    const storeSession = await getStoreSessionById(sessionId);
+                    expect(storeSession).to.be.null;
+                });
+        });
+
+        it("Should not set cookie header in response if request does not carry session cookie", async () => {
+            const request = setupTest();
+
+            await request
+                .get("/auth/logout")
+                .expect(200)
+                .then(async res => {
+                    expect(isNextHandlerCalled).to.equal(true);
+                    const [sessionId, cookieOptions] = getSetCookie(
+                        res.header,
+                        DEFAULT_SESSION_COOKIE_NAME
+                    );
+                    expect(sessionId).to.be.null;
+                    expect(cookieOptions).to.be.null;
+                });
+        });
+    });
+
+    describe("Test path /sign-in-redirect", () => {
+        it("Should destroy the existing session and delete the sessios cookie if result=failure", async () => {
+            const request = setupTest();
+            let sessionId: string = null;
+            let cookieOptions: PlainObject = {};
+
+            // --- visit /auth/login to create a session first
+            await request
+                .post("/auth/login/xxxxxx")
+                .expect(200)
+                .then(async res => {
+                    expect(isNextHandlerCalled).to.equal(true);
+                    isNextHandlerCalled = false;
+                    [sessionId, cookieOptions] = getSetCookie(
+                        res.header,
+                        DEFAULT_SESSION_COOKIE_NAME
+                    );
+                    expect(sessionId).not.to.be.null;
+                    const storeSession = await getStoreSessionById(sessionId);
+                    expect(storeSession).not.to.be.null;
+                    expect(storeSession.sid).to.equal(sessionId);
+                });
+
+            await request
+                .get("/sign-in-redirect?a=sss&b=ddd&result=failure")
+                .set("Cookie", [
+                    createCookieData(
+                        DEFAULT_SESSION_COOKIE_NAME,
+                        sessionId,
+                        SESSION_SECRET,
+                        cookieOptions
+                    )
+                ])
+                .expect(200)
+                .then(async res => {
+                    expect(isNextHandlerCalled).to.equal(true);
+                    [sessionId, cookieOptions] = getSetCookie(
+                        res.header,
+                        DEFAULT_SESSION_COOKIE_NAME
+                    );
+                    expect(sessionId).to.equal("");
+                    expect(cookieOptions.Expires).to.equal(
+                        "Thu, 01 Jan 1970 00:00:00 GMT"
+                    );
+                    // --- existing session also destroyed in store
+                    const storeSession = await getStoreSessionById(sessionId);
+                    expect(storeSession).to.be.null;
+                });
+        });
+
+        it("Should keep the existing session if result!=failure", async () => {
+            const request = setupTest();
+            let sessionId: string = null;
+            let cookieOptions: PlainObject = {};
+
+            // --- visit /auth/login to create a session first
+            await request
+                .post("/auth/login/xxxxxx")
+                .expect(200)
+                .then(async res => {
+                    expect(isNextHandlerCalled).to.equal(true);
+                    isNextHandlerCalled = false;
+                    [sessionId, cookieOptions] = getSetCookie(
+                        res.header,
+                        DEFAULT_SESSION_COOKIE_NAME
+                    );
+                    expect(sessionId).not.to.be.null;
+                    const storeSession = await getStoreSessionById(sessionId);
+                    expect(storeSession).not.to.be.null;
+                    expect(storeSession.sid).to.equal(sessionId);
+                });
+
+            await request
+                .get("/sign-in-redirect?a=sss&b=ddd&result=success")
+                .set("Cookie", [
+                    createCookieData(
+                        DEFAULT_SESSION_COOKIE_NAME,
+                        sessionId,
+                        SESSION_SECRET,
+                        cookieOptions
+                    )
+                ])
+                .expect(200)
+                .then(async res => {
+                    expect(isNextHandlerCalled).to.equal(true);
+                    const [sessionId2] = getSetCookie(
+                        res.header,
+                        DEFAULT_SESSION_COOKIE_NAME
+                    );
+                    // --- still the same session & cookie
+                    expect(sessionId).to.equal(sessionId2);
+                    const storeSession = await getStoreSessionById(sessionId);
+                    expect(storeSession).not.to.be.null;
+                    expect(storeSession.sid).to.equal(sessionId);
+                });
+        });
+
+        it("Should not set cookie header in response if request does not carry session cookie", async () => {
+            const request = setupTest();
+
+            await request
+                .get("/sign-in-redirect?a=sss&b=ddd&result=success")
+                .expect(200)
+                .then(async res => {
+                    expect(isNextHandlerCalled).to.equal(true);
+                    const [sessionId, cookieOptions] = getSetCookie(
+                        res.header,
+                        DEFAULT_SESSION_COOKIE_NAME
+                    );
+                    expect(sessionId).to.be.null;
+                    expect(cookieOptions).to.be.null;
+                });
+        });
+
+        it("Should not set cookie header in response if result!=failure", async () => {
+            const request = setupTest();
+
+            await request
+                .get("/sign-in-redirect?a=sss&b=ddd&result=failure")
+                .expect(200)
+                .then(async res => {
+                    expect(isNextHandlerCalled).to.equal(true);
+                    const [sessionId, cookieOptions] = getSetCookie(
+                        res.header,
+                        DEFAULT_SESSION_COOKIE_NAME
+                    );
+                    expect(sessionId).to.be.null;
+                    expect(cookieOptions).to.be.null;
                 });
         });
     });

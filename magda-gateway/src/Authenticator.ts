@@ -128,9 +128,16 @@ export default class Authenticator {
                     // Only log here still proceed to end the session (by delete cookie)
                     console.log(err);
                 });
-                res.clearCookie(DEFAULT_SESSION_COOKIE_NAME, {
+                const deleteCookieOptions = {
                     ...DEFAULT_SESSION_COOKIE_CONFIG
-                });
+                };
+                // --- `clearCookie` works in a way like it will fail to delete cookie if maxAge presents T_T
+                // --- https://github.com/expressjs/express/issues/3856#issuecomment-502397226
+                delete deleteCookieOptions.maxAge;
+                res.clearCookie(
+                    DEFAULT_SESSION_COOKIE_NAME,
+                    deleteCookieOptions
+                );
                 return next();
             });
         } else {
