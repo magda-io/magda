@@ -121,6 +121,7 @@ UI:
 -   Added hover text for the tooltip beside the date-picker in the Add Dataset page
 -   Add a distribution hyperlink to the title of resource links
 -   Rename "Spatial area" to "Spatial extent"
+-   Add tooltip to explain the difference between MB and MiB, KB and KiB, etc.
 
 Gateway:
 
