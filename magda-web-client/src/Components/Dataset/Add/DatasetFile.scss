@@ -96,6 +96,22 @@
             }
         }
     }
+    .tooltip-container {
+        position: relative;
+        .tooltip {
+            position: absolute;
+            padding-left: 4px;
+            top: -4px;
+        }
+        .inner {
+            a:hover {
+                color: #fff;
+            }
+            width: 200px;
+            text-align: left;
+            left: 15px;
+        }
+    }
 }
 .complete-processing.dataset-file-root {
     background-image: url("../../../assets/purple-box.svg");
