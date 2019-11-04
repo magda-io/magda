@@ -74,6 +74,10 @@ function getStateData() {
 }
 
 function shouldValidate(jsonPath: string) {
+    if (typeof stateDataGetter === "undefined") {
+        // --- if stateDataGetter is not set, Validation function should be turned off
+        return false;
+    }
     if (validationFieldList.indexOf(jsonPath) !== -1) {
         return true;
     }
@@ -209,4 +213,8 @@ export const getOffset = (el: RefObject<HTMLElement>) => {
         top: rect.top + document.body.scrollTop,
         left: rect.left + document.body.scrollLeft
     };
+};
+
+export const deregisterAllValidationItem = () => {
+    validationItems = [];
 };
