@@ -73,6 +73,8 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     <div>
                         <AlwaysEditor
                             value={dataset.title}
+                            validationFieldPath="$.dataset.title"
+                            validationFieldLabel="Dataset Title"
                             onChange={editDataset("title")}
                             editor={textEditorEx({
                                 placeholder:

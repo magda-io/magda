@@ -1,6 +1,7 @@
 import React, { ReactEventHandler, FunctionComponent } from "react";
 import Editor from "./Editor";
 import editIcon from "assets/edit.svg";
+import uuidv4 from "uuid/v4";
 
 import { ListMultiItemEditor } from "./multiItem";
 
@@ -28,21 +29,9 @@ export function textEditorEx(
             if (options.redrawOnEmpty && !value) {
                 options.key = Math.random();
             }
-            return InputComponent ? (
-                <InputComponent
-                    className={
-                        options.fullWidth
-                            ? "au-text-input full-width-ctrl textEditorEx"
-                            : "au-text-input non-full-width-ctrl textEditorEx"
-                    }
-                    defaultValue={value as string}
-                    onChange={callback}
-                    {...options}
-                    {...extraProps}
-                />
-            ) : (
-                <div className="textEditorEx-outter-container">
-                    <input
+            if (InputComponent) {
+                return (
+                    <InputComponent
                         className={
                             options.fullWidth
                                 ? "au-text-input full-width-ctrl textEditorEx"
@@ -53,11 +42,68 @@ export function textEditorEx(
                         {...options}
                         {...extraProps}
                     />
-                    <div className="edit-icon-container">
-                        <img className="edit-icon" src={editIcon} />
-                    </div>
-                </div>
-            );
+                );
+            } else {
+                const {
+                    isValidationError,
+                    validationErrorMessage
+                } = extraProps;
+
+                delete extraProps.isValidationError;
+                delete extraProps.validationErrorMessage;
+
+                if (isValidationError === true) {
+                    const errorMessageId = `input-error-text-${uuidv4()}`;
+                    return (
+                        <div className="textEditorEx-outter-container">
+                            <div>
+                                <span>{validationErrorMessage}</span>
+                                <span
+                                    className="au-error-text"
+                                    id={errorMessageId}
+                                >
+                                    {validationErrorMessage}
+                                </span>
+                            </div>
+                            <input
+                                className={
+                                    options.fullWidth
+                                        ? "au-text-input au-text-input--invalid full-width-ctrl textEditorEx"
+                                        : "au-text-input au-text-input--invalid non-full-width-ctrl textEditorEx"
+                                }
+                                aria-invalid="true"
+                                aria-describedby={errorMessageId}
+                                defaultValue={value as string}
+                                onChange={callback}
+                                {...options}
+                                {...extraProps}
+                            />
+                            <div className="edit-icon-container">
+                                <img className="edit-icon" src={editIcon} />
+                            </div>
+                        </div>
+                    );
+                } else {
+                    return (
+                        <div className="textEditorEx-outter-container">
+                            <input
+                                className={
+                                    options.fullWidth
+                                        ? "au-text-input full-width-ctrl textEditorEx"
+                                        : "au-text-input non-full-width-ctrl textEditorEx"
+                                }
+                                defaultValue={value as string}
+                                onChange={callback}
+                                {...options}
+                                {...extraProps}
+                            />
+                            <div className="edit-icon-container">
+                                <img className="edit-icon" src={editIcon} />
+                            </div>
+                        </div>
+                    );
+                }
+            }
         },
         view: (value: any) => {
             return <React.Fragment>{value ? value : "NOT SET"}</React.Fragment>;

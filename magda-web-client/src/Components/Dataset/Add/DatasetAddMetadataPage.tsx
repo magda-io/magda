@@ -56,6 +56,7 @@ import ErrorMessageBox from "./ErrorMessageBox";
 
 import helpIcon from "assets/help.svg";
 import { User } from "reducers/userManagementReducer";
+import * as ValidationManager from "../Add/ValidationManager";
 
 const aspects = {
     publishing: datasetPublishingAspect,
@@ -89,6 +90,13 @@ type Props = {
 
 class NewDataset extends React.Component<Props, State> {
     state: State = this.props.initialState;
+
+    constructor(props) {
+        super(props);
+        ValidationManager.setStateDataGetter(() => {
+            return this.state;
+        });
+    }
 
     componentDidMount() {
         if (this.props.isNewDataset) {

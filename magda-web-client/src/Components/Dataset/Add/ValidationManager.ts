@@ -37,19 +37,19 @@ export interface ValidationItem {
      * ValidationManager will call this function to set focus on the relavent input ctrl
      * that is belong to this `ValidationItem` when necessary
      */
-    focus: () => never;
+    focus: () => void;
 
     /**
      * ValidationManager will call this function to turn on the `Invalid` style of the input ctrl
      * that is belong to this `ValidationItem` when necessary
      */
-    setError: (errorMesssage: string) => never;
+    setError: (errorMesssage: string) => void;
 
     /**
      * ValidationManager will call this function to turn off the `Invalid` style of the input ctrl
      * that is belong to this `ValidationItem` when necessary
      */
-    clearError: () => never;
+    clearError: () => void;
 
     /**
      * A react reference of a DOM element that belongs to this `ValidationItem`.
