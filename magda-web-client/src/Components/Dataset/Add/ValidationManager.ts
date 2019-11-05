@@ -114,7 +114,7 @@ export const registerValidationItem = (vItem: ValidationItem) => {
 
 export const deregisterValidationItem = (jsonPath: string) => {
     validationItems = validationItems.filter(
-        item => item.jsonPath === jsonPath
+        item => item.jsonPath !== jsonPath
     );
 };
 
@@ -168,7 +168,7 @@ export const validateAll = () => {
     let offsetY: number;
     let elRef: RefObject<HTMLElement> | undefined;
 
-    const idx = validationItems.findIndex(item => {
+    validationItems.forEach(item => {
         if (!onInputFocusOut(item.jsonPath)) {
             if (!item.elRef.current) {
                 // --- if element ref is not ready
@@ -201,7 +201,7 @@ export const validateAll = () => {
         }
     }
 
-    if (idx === -1) {
+    if (typeof elRef === "undefined") {
         return true;
     } else {
         return false;

@@ -199,7 +199,7 @@ export const MultilineTextEditor: FunctionComponent<
                 );
             }
         };
-    });
+    }, [props.validationFieldPath, props.validationFieldLabel]);
 
     const isEditorMode = props.isEditorMode === false ? false : true;
     const placerHolder = props.placerHolder ? props.placerHolder : "";

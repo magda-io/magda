@@ -241,8 +241,12 @@ class NewDataset extends React.Component<Props, State> {
     async gotoStep(step) {
         try {
             await this.resetError();
-            saveState(this.state, this.props.datasetId);
-            this.props.history.push("../" + this.props.datasetId + "/" + step);
+            if (ValidationManager.validateAll()) {
+                saveState(this.state, this.props.datasetId);
+                this.props.history.push(
+                    "../" + this.props.datasetId + "/" + step
+                );
+            }
         } catch (e) {
             this.props.createNewDatasetError(e);
         }
