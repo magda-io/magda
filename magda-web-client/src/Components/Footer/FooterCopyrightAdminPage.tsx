@@ -20,9 +20,10 @@ class StoriesAdminPage extends Component<any, any> {
                 pattern={`${pathPrefix}/*`}
                 newContent={{
                     order: 999,
-                    logoSrc: "",
+                    logoSrc:
+                        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAKCAYAAAD2Fg1xAAAAI0lEQVR42u3PAREAMAgAoTe50bceHjRgXm0HjIiIiIiIiEh9iR0O99ylthgAAAAASUVORK5CYII=",
                     href: "http://magda.io",
-                    htmlContent: ""
+                    htmlContent: "Copyright"
                 }}
                 hasOrder={true}
                 edit={this.edit.bind(this)}
