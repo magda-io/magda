@@ -1,6 +1,7 @@
-import ObjectStoreClient from "./ObjectStoreClient";
 import { Bucket, Storage } from "@google-cloud/storage";
 import { Probe } from "@magda/typescript-common/dist/express/status";
+import ObjectFromStore from "./ObjectFromStore";
+import ObjectStoreClient from "./ObjectStoreClient";
 
 export default class GoogleCloudStorageClient implements ObjectStoreClient {
     private readonly bucket: Bucket;
@@ -22,8 +23,22 @@ export default class GoogleCloudStorageClient implements ObjectStoreClient {
         });
     };
 
-    getFile(name: string): NodeJS.ReadableStream {
+    getFile(name: string): ObjectFromStore {
         const file = this.bucket.file(name);
-        return file.createReadStream();
+        return {
+            createStream() {
+                return file.createReadStream();
+            },
+            headers() {
+                return file.getMetadata().then(([metadata]) => {
+                    return {
+                        "Content-Type": metadata.contentType,
+                        "Content-Encoding": metadata.contentEncoding,
+                        "Cache-Control": metadata.cacheControl,
+                        "Content-Length": metadata.size
+                    };
+                });
+            }
+        };
     }
 }

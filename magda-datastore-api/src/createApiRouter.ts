@@ -8,6 +8,7 @@ import RegistryClient from "@magda/typescript-common/dist/registry/RegistryClien
 import buildJwt from "@magda/typescript-common/dist/session/buildJwt";
 import { getUserId } from "@magda/typescript-common/dist/session/GetUserId";
 import * as express from "express";
+import { OutgoingHttpHeaders } from "http";
 import ObjectStoreClient from "./ObjectStoreClient";
 
 export interface ApiRouterOptions {
@@ -65,11 +66,20 @@ export default function createApiRouter(options: ApiRouterOptions) {
         // This user has access to this record, so grant them access to
         // this record's files.
         const encodedRootPath = encodeURIComponent(recordId);
-        const stream = options.objectStoreClient.getFile(
+        const object = options.objectStoreClient.getFile(
             encodedRootPath + "/" + req.params[0]
         );
 
-        stream.on("error", e => {
+        let headers: OutgoingHttpHeaders;
+        try {
+            headers = await object.headers();
+            Object.keys(headers).forEach(header => {
+                const value = headers[header];
+                if (value) {
+                    res.setHeader(header, headers[header]);
+                }
+            });
+        } catch (e) {
             if (e instanceof ApiError) {
                 if (e.code === 404) {
                     res.status(404).send(
@@ -82,7 +92,14 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 }
             }
             res.status(500).send("Unknown error");
+            return;
+        }
+
+        const stream = object.createStream();
+        stream.on("error", e => {
+            res.status(500).send("Unknown error");
         });
+
         stream.pipe(res);
     });
 
