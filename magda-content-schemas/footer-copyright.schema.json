@@ -11,7 +11,7 @@
         },
         "logoSrc": {
             "type": "string",
-            "minLength": 0
+            "minLength": 1
         },
         "logoClassName": {
             "type": "string",
@@ -23,7 +23,7 @@
         },
         "htmlContent": {
             "type": "string",
-            "minLength": 0
+            "minLength": 1
         }
     },
     "required": ["order", "href", "logoSrc", "htmlContent"]
