@@ -33,8 +33,32 @@
     border: solid 1px #cccaca;
 }
 
+.textEditorEx.au-text-input--invalid {
+    background-color: #fdf2f2;
+    border-color: #d60000;
+}
+
+.textEditorEx-outter-container {
+    .au-error-text {
+        font-size: 16px;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #d60000;
+        display: block;
+        margin-bottom: 10px;
+    }
+}
+
 .multilineTextEditor-outter-container {
     position: relative;
+    .au-error-text {
+        font-size: 16px;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #d60000;
+        display: block;
+        margin-bottom: 10px;
+    }
     .edit-icon-container {
         display: inline;
         .edit-icon {

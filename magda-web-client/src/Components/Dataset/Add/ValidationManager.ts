@@ -17,6 +17,13 @@ import { RefObject } from "react";
  */
 export type ValidationFieldList = string[];
 
+export type ElementType =
+    | HTMLInputElement
+    | HTMLTextAreaElement
+    | HTMLSelectElement
+    | HTMLDivElement
+    | HTMLSpanElement;
+
 export interface ValidationItem {
     /**
      * the json path will be used:
@@ -34,12 +41,6 @@ export interface ValidationItem {
     label: string;
 
     /**
-     * ValidationManager will call this function to set focus on the relavent input ctrl
-     * that is belong to this `ValidationItem` when necessary
-     */
-    focus: () => void;
-
-    /**
      * ValidationManager will call this function to turn on the `Invalid` style of the input ctrl
      * that is belong to this `ValidationItem` when necessary
      */
@@ -55,7 +56,7 @@ export interface ValidationItem {
      * A react reference of a DOM element that belongs to this `ValidationItem`.
      * ValidationManager will try move this Dom element into viewport when necessary
      */
-    elRef: RefObject<HTMLElement>;
+    elRef: RefObject<ElementType>;
 }
 
 const validationFieldList: ValidationFieldList = config.mandatoryFields;
@@ -195,6 +196,9 @@ export const validateAll = () => {
         // --- try to move into viewport
         // --- please note: we use [Scroll behavior polyfill](https://github.com/iamdustan/smoothscroll)
         elRef.current.scrollIntoView({ behavior: "smooth" });
+        if (typeof elRef.current.focus === "function") {
+            elRef.current.focus();
+        }
     }
 
     if (idx === -1) {

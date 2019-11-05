@@ -23,7 +23,7 @@ export class AlwaysEditor<V> extends React.Component<
     AlwaysEditorProps<V>,
     AlwaysEditorState
 > {
-    private ref: RefObject<HTMLElement> = createRef();
+    private ref: RefObject<ValidationManager.ElementType> = createRef();
 
     constructor(props) {
         super(props);
@@ -45,7 +45,6 @@ export class AlwaysEditor<V> extends React.Component<
                     ? this.props.validationFieldLabel
                     : "",
                 elRef: this.ref,
-                focus: () => {},
                 setError: errorMessage => {
                     this.setState({
                         isValidationError: true,

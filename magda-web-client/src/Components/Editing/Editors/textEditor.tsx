@@ -1,9 +1,16 @@
-import React, { ReactEventHandler, FunctionComponent } from "react";
+import React, {
+    ReactEventHandler,
+    FunctionComponent,
+    createRef,
+    useEffect,
+    useState,
+    RefObject
+} from "react";
 import Editor from "./Editor";
 import editIcon from "assets/edit.svg";
 import uuidv4 from "uuid/v4";
-
 import { ListMultiItemEditor } from "./multiItem";
+import * as ValidationManager from "../../Dataset/Add/ValidationManager";
 
 export type InputComponentParameter = React.ComponentType<{
     className?: string;
@@ -57,7 +64,6 @@ export function textEditorEx(
                     return (
                         <div className="textEditorEx-outter-container">
                             <div>
-                                <span>{validationErrorMessage}</span>
                                 <span
                                     className="au-error-text"
                                     id={errorMessageId}
@@ -119,6 +125,8 @@ interface MultilineTextEditorPropType {
     limit?: number;
     value?: string;
     placerHolder?: string;
+    validationFieldPath?: string;
+    validationFieldLabel?: string;
     onChange?: (value: string) => void;
 }
 
@@ -145,51 +153,123 @@ const truncateByWordsCount = (str: string, limit: number): string => {
     return newStrItems.join("");
 };
 
+interface MultilineTextEditorStateType {
+    ref: RefObject<HTMLTextAreaElement>;
+    isValidationError: boolean;
+    validationErrorMessage: string;
+}
+
 export const MultilineTextEditor: FunctionComponent<
     MultilineTextEditorPropType
 > = props => {
+    const [state, setState] = useState<MultilineTextEditorStateType>({
+        ref: createRef(),
+        isValidationError: false,
+        validationErrorMessage: ""
+    });
+
+    useEffect(() => {
+        if (props.validationFieldPath) {
+            ValidationManager.registerValidationItem({
+                jsonPath: props.validationFieldPath,
+                label: props.validationFieldLabel
+                    ? props.validationFieldLabel
+                    : "",
+                elRef: state.ref,
+                setError: errorMessage => {
+                    setState({
+                        ref: state.ref,
+                        isValidationError: true,
+                        validationErrorMessage: errorMessage
+                    });
+                },
+                clearError: () => {
+                    setState({
+                        ref: state.ref,
+                        isValidationError: false,
+                        validationErrorMessage: ""
+                    });
+                }
+            });
+        }
+        return () => {
+            if (props.validationFieldPath) {
+                ValidationManager.deregisterValidationItem(
+                    props.validationFieldPath
+                );
+            }
+        };
+    });
+
     const isEditorMode = props.isEditorMode === false ? false : true;
     const placerHolder = props.placerHolder ? props.placerHolder : "";
     const value = props.value ? props.value : "";
     const limit = props.limit ? props.limit : 0;
 
-    return isEditorMode ? (
-        <div className="multilineTextEditor-outter-container">
-            <textarea
-                className="au-text-input full-width-ctrl au-text-input--block"
-                onChange={event => {
-                    if (typeof props.onChange === "function") {
-                        let inputValue = event.target.value
-                            ? event.target.value
-                            : "";
-                        if (limit && wordsCount(inputValue) > limit) {
-                            inputValue = truncateByWordsCount(
-                                inputValue,
-                                limit
-                            );
+    if (isEditorMode) {
+        const errorMessageId = `input-error-text-${uuidv4()}`;
+        const extraProps: any = {
+            ref: state.ref
+        };
+        if (props.validationFieldPath) {
+            extraProps.onBlur = () => {
+                ValidationManager.onInputFocusOut(
+                    props.validationFieldPath as string
+                );
+            };
+        }
+        let inValidClass = "";
+        if (state.isValidationError) {
+            extraProps["aria-invalid"] = true;
+            extraProps["aria-describedby"] = errorMessageId;
+            inValidClass = "au-text-input--invalid";
+        }
+        return (
+            <div className="multilineTextEditor-outter-container">
+                {state.isValidationError ? (
+                    <div>
+                        <span className="au-error-text" id={errorMessageId}>
+                            {state.validationErrorMessage}
+                        </span>
+                    </div>
+                ) : null}
+                <textarea
+                    className={`au-text-input ${inValidClass} full-width-ctrl au-text-input--block`}
+                    onChange={event => {
+                        if (typeof props.onChange === "function") {
+                            let inputValue = event.target.value
+                                ? event.target.value
+                                : "";
+                            if (limit && wordsCount(inputValue) > limit) {
+                                inputValue = truncateByWordsCount(
+                                    inputValue,
+                                    limit
+                                );
+                            }
+                            props.onChange(inputValue);
                         }
-                        props.onChange(inputValue);
-                    }
-                }}
-                placeholder={placerHolder}
-                value={props.value as string}
-            />
-            <div className="edit-icon-container">
-                <img className="edit-icon" src={editIcon} />
-            </div>
-            {limit ? (
-                <div className="word-count-row">
-                    {(() => {
-                        let count = limit - wordsCount(value);
-                        return count < 0 ? 0 : count;
-                    })()}{" "}
-                    words remaining
+                    }}
+                    placeholder={placerHolder}
+                    value={props.value as string}
+                    {...extraProps}
+                />
+                <div className="edit-icon-container">
+                    <img className="edit-icon" src={editIcon} />
                 </div>
-            ) : null}
-        </div>
-    ) : (
-        <React.Fragment>{value ? value : "NOT SET"}</React.Fragment>
-    );
+                {limit ? (
+                    <div className="word-count-row">
+                        {(() => {
+                            let count = limit - wordsCount(value);
+                            return count < 0 ? 0 : count;
+                        })()}{" "}
+                        words remaining
+                    </div>
+                ) : null}
+            </div>
+        );
+    } else {
+        return <React.Fragment>{value ? value : "NOT SET"}</React.Fragment>;
+    }
 };
 
 export const multilineTextEditor: Editor<string> = {

@@ -173,7 +173,14 @@ export const config = {
         : 2097152,
     mandatoryFields: serverConfig.mandatoryFields
         ? serverConfig.mandatoryFields
-        : []
+        : [
+              "$.dataset.title",
+              "$.dataset.description",
+              "$.dataset.defaultLicense",
+              "$.files[*].name",
+              "$.files[*].format",
+              "$.files[*].license"
+          ]
 };
 
 export const defaultConfiguration = {

@@ -164,6 +164,8 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     </ToolTip>
                     <div className="clearfix">
                         <MultilineTextEditor
+                            validationFieldPath="$.dataset.description"
+                            validationFieldLabel="Dataset Description"
                             value={dataset.description}
                             placerHolder="Enter description text"
                             limit={250}
