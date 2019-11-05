@@ -14,16 +14,6 @@ const argv = addJwtSecretFromEnvVar(
             type: "number",
             default: 6121
         })
-        .option("authApiUrl", {
-            describe: "The base URL of the auth API",
-            type: "string",
-            default: "http://localhost:6104/v0"
-        })
-        .option("opaUrl", {
-            describe: "The base URL of the opa API",
-            type: "string",
-            default: "http://localhost:6104/v0/opa/"
-        })
         .option("registryApiUrl", {
             describe: "The access endpoint URL of the Registry API",
             type: "string",
@@ -51,8 +41,6 @@ var app = express();
 app.use(
     "/v0",
     createApiRouter({
-        authApiUrl: argv.authApiUrl,
-        opaUrl: argv.opaUrl,
         registryApiUrl: argv.registryApiUrl,
         jwtSecret: argv.jwtSecret,
         objectStoreClient: new GoogleCloudStorageClient(

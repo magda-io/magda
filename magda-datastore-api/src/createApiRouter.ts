@@ -12,8 +12,6 @@ import { OutgoingHttpHeaders } from "http";
 import ObjectStoreClient from "./ObjectStoreClient";
 
 export interface ApiRouterOptions {
-    authApiUrl: string;
-    opaUrl: string;
     registryApiUrl: string;
     objectStoreClient: ObjectStoreClient;
     jwtSecret: string;
@@ -30,7 +28,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
     };
     installStatusRouter(router, status);
 
-    router.get("/data/:recordid/*", async function(req, res) {
+    router.get("/:recordid/*", async function(req, res) {
         // Pass through the user and tenant to the registry API
         let tenantId = Number.parseInt(req.header("X-Magda-Tenant-Id"), 10);
         if (Number.isNaN(tenantId)) {
