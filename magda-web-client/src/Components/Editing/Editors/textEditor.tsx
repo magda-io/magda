@@ -47,62 +47,44 @@ export function textEditorEx(
             } else {
                 const {
                     isValidationError,
-                    validationErrorMessage
+                    validationErrorMessage,
+                    ...restExtraProps
                 } = extraProps;
 
-                delete extraProps.isValidationError;
-                delete extraProps.validationErrorMessage;
+                const errorMessageId = `input-error-text-${uuidv4()}`;
 
-                if (isValidationError === true) {
-                    const errorMessageId = `input-error-text-${uuidv4()}`;
-                    return (
-                        <div className="textEditorEx-outter-container">
-                            <div>
-                                <span
-                                    className="au-error-text"
-                                    id={errorMessageId}
-                                >
-                                    {validationErrorMessage}
-                                </span>
-                            </div>
-                            <input
-                                className={
-                                    options.fullWidth
-                                        ? "au-text-input au-text-input--invalid full-width-ctrl textEditorEx"
-                                        : "au-text-input au-text-input--invalid non-full-width-ctrl textEditorEx"
-                                }
-                                aria-invalid="true"
-                                aria-describedby={errorMessageId}
-                                defaultValue={value as string}
-                                onChange={callback}
-                                {...options}
-                                {...extraProps}
-                            />
-                            <div className="edit-icon-container">
-                                <img className="edit-icon" src={editIcon} />
-                            </div>
-                        </div>
-                    );
-                } else {
-                    return (
-                        <div className="textEditorEx-outter-container">
-                            <input
-                                className={
-                                    options.fullWidth
-                                        ? "au-text-input full-width-ctrl textEditorEx"
-                                        : "au-text-input non-full-width-ctrl textEditorEx"
-                                }
-                                defaultValue={value as string}
-                                onChange={callback}
-                                {...options}
-                                {...extraProps}
-                            />
-                            <div className="edit-icon-container">
-                                <img className="edit-icon" src={editIcon} />
-                            </div>
-                        </div>
-                    );
+                if (isValidationError) {
+                    extraProps["aria-invalid"] = true;
+                    extraProps["aria-describedby"] = errorMessageId;
                 }
+
+                return (
+                    <div className="textEditorEx-outter-container">
+                        <div>
+                            <span className="au-error-text" id={errorMessageId}>
+                                {validationErrorMessage}
+                            </span>
+                        </div>
+                        <input
+                            className={`textEditorEx au-text-input ${
+                                isValidationError
+                                    ? "au-text-input--invalid"
+                                    : ""
+                            } ${
+                                options.fullWidth
+                                    ? "full-width-ctrl"
+                                    : "non-full-width-ctrl"
+                            }`}
+                            defaultValue={value as string}
+                            onChange={callback}
+                            {...options}
+                            {...restExtraProps}
+                        />
+                        <div className="edit-icon-container">
+                            <img className="edit-icon" src={editIcon} />
+                        </div>
+                    </div>
+                );
             }
         },
         view: (value: any) => {
