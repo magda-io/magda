@@ -98,7 +98,12 @@ const FileEditView = ({
                 className={`au-btn dataset-file-save-button`}
                 arial-label="Save changes"
                 onClick={() => {
-                    if (ValidationManager.validateAll()) {
+                    if (
+                        ValidationManager.validateFields([
+                            `$.files[${idx}].title`,
+                            `$.files[${idx}].format`
+                        ])
+                    ) {
                         setEditMode(!editMode);
                     }
                 }}
