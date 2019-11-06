@@ -124,6 +124,7 @@ UI:
 -   Added a tooltip for dataset names
 -   Rename "Spatial area" to "Spatial extent"
 -   Fix issue with user manually typing dates
+-   Add tooltip to explain the difference between MB and MiB, KB and KiB, etc.
 
 Gateway:
 
