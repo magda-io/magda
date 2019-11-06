@@ -174,9 +174,14 @@ export default function DatasetFile({
                                         )}
                                         innerElementClassName="inner"
                                     >
-                                        {() =>
-                                            "Note: 1 KiB = 1024 Bytes, 1 MiB = 1024 KiB"
-                                        }
+                                        {() => {
+                                            return (
+                                                <div>
+                                                    Note: 1 KiB = 1024 Bytes, 1
+                                                    MiB = 1024 KiB
+                                                </div>
+                                            );
+                                        }}
                                     </PurpleToolTip>
                                 </span>
                             </div>
