@@ -321,8 +321,10 @@ class DatasetAddFilesPage extends React.Component<
     }
 
     reviewMetadata() {
-        const id = saveState(this.state, this.props.dataset);
-        this.props.history.push(`/dataset/add/metadata/${id}/0`);
+        if (ValidationManager.validateAll()) {
+            const id = saveState(this.state, this.props.dataset);
+            this.props.history.push(`/dataset/add/metadata/${id}/0`);
+        }
     }
 }
 

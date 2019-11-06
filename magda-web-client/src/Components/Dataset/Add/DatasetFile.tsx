@@ -13,6 +13,7 @@ import { FileState, File, fileStateToText } from "./DatasetAddCommon";
 import editIcon from "../../../assets/edit.svg";
 import dismissIcon from "../../../assets/dismiss.svg";
 import SlimTextInputWithValidation from "../Add/SlimTextInputWithValidation";
+import * as ValidationManager from "./ValidationManager";
 
 import "./DatasetFile.scss";
 
@@ -96,7 +97,11 @@ const FileEditView = ({
             <button
                 className={`au-btn dataset-file-save-button`}
                 arial-label="Save changes"
-                onClick={() => setEditMode(!editMode)}
+                onClick={() => {
+                    if (ValidationManager.validateAll()) {
+                        setEditMode(!editMode);
+                    }
+                }}
             >
                 Save
             </button>

@@ -2,6 +2,7 @@ import { config } from "config";
 import { State } from "./DatasetAddCommon";
 import * as JsonPath from "jsonpath";
 import { RefObject, useState, createRef, useEffect } from "react";
+import uniq from "lodash/uniq";
 
 /**
  * A global module to manage / coordinate validation workflow.
@@ -72,6 +73,46 @@ function getStateData() {
         throw new Error("State data getter function is not set yet!");
     }
     return stateDataGetter();
+}
+
+function findItemByExactJsonPathMatch(
+    jsonPath: string
+): ValidationItem | undefined {
+    if (!jsonPath) {
+        return undefined;
+    }
+    return validationItems.find(item => item.jsonPath === jsonPath);
+}
+
+function findItemsByJsonPath(jsonPath: string): ValidationItem[] {
+    if (!jsonPath) {
+        return [];
+    }
+    const item = findItemByExactJsonPathMatch(jsonPath);
+    if (typeof item !== "undefined") {
+        // --- we will stop if we find an exact matched item
+        return [item];
+    }
+
+    const items: ValidationItem[] = [];
+
+    const stateData = getStateData();
+    JsonPath.paths(stateData, jsonPath)
+        .map(item => JsonPath.stringify(item))
+        .forEach(resovledJsonPath => {
+            const item = findItemByExactJsonPathMatch(resovledJsonPath);
+            if (typeof item !== "undefined") {
+                items.push(item);
+            }
+        });
+    return items;
+}
+
+function findItemsByJsonPaths(jsonPaths: string[]): ValidationItem[] {
+    if (!jsonPaths || !jsonPaths.length) {
+        return [];
+    }
+    return uniq(jsonPaths.flatMap(jsonPath => findItemsByJsonPath(jsonPath)));
 }
 
 function shouldValidate(jsonPath: string) {
@@ -155,20 +196,20 @@ export const onInputFocusOut = (jsonPath: string) => {
 };
 
 /**
- * Validate all registered iputs.
- * This function should be called when user requests to move to next page.
+ * Validate a list of validation items
  * This function will:
  * - Re-validate all inputs
  * - Set/unset invalid status of the inputs
  * - Move first invalid input (if any) into the viewport
  *
+ * @param {ValidationItem[]} items
  * @returns {boolean} True = all fields are valid; False = there is at least one field is invalid;
  */
-export const validateAll = () => {
+function validateSelectedItems(items: ValidationItem[]) {
     let offsetY: number;
     let elRef: RefObject<HTMLElement> | undefined;
 
-    validationItems.forEach(item => {
+    items.forEach(item => {
         if (!onInputFocusOut(item.jsonPath)) {
             if (!item.elRef.current) {
                 // --- if element ref is not ready
@@ -206,6 +247,42 @@ export const validateAll = () => {
     } else {
         return false;
     }
+}
+
+/**
+ * Validate all registered iputs.
+ * This function should be called when user requests to move to next page.
+ * This function will:
+ * - Re-validate all inputs
+ * - Set/unset invalid status of the inputs
+ * - Move first invalid input (if any) into the viewport
+ *
+ * @returns {boolean} True = all fields are valid; False = there is at least one field is invalid;
+ */
+export const validateAll = () => validateSelectedItems(validationItems);
+
+/**
+ * Validate all iputs matching a list of json Paths.
+ * This function should be called when user requests to move to next page.
+ * This function will:
+ * - Re-validate all inputs
+ * - Set/unset invalid status of the inputs
+ * - Move first invalid input (if any) into the viewport
+ * @param {string[]} fieldPathList a list of json path for selecting inputs
+ * @returns {boolean} True = all fields are valid; False = there is at least one field is invalid;
+ */
+export const validateFields = (fieldPathList: string[] = []) => {
+    if (typeof stateDataGetter === "undefined") {
+        // --- if stateDataGetter is not set, Validation function should be turned off
+        return true;
+    }
+
+    const items = findItemsByJsonPaths(fieldPathList);
+    if (!items.length) {
+        return true;
+    }
+
+    return validateSelectedItems(items);
 };
 
 export const getOffset = (el: RefObject<HTMLElement>) => {
