@@ -68,7 +68,7 @@
         }
     }
     textarea {
-        border-radius: 8px;
+        border-radius: 8px !important;
         border: solid 1px #cccaca;
         display: inline !important;
         padding-right: 35px;
@@ -84,6 +84,9 @@
         color: #636363;
         max-width: none !important;
         height: 217px;
+    }
+    textarea.au-text-input--invalid {
+        background-color: #fdf2f2 !important;
     }
     .word-count-row {
         font-size: 14px;

@@ -177,7 +177,7 @@ export const config = {
               "$.dataset.title",
               "$.dataset.description",
               "$.dataset.defaultLicense",
-              "$.files[*].name",
+              "$.files[*].title",
               "$.files[*].format",
               "$.files[*].license"
           ]

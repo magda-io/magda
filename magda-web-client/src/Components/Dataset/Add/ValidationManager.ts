@@ -1,7 +1,7 @@
 import { config } from "config";
 import { State } from "./DatasetAddCommon";
 import * as JsonPath from "jsonpath";
-import { RefObject } from "react";
+import { RefObject, useState, createRef, useEffect } from "react";
 
 /**
  * A global module to manage / coordinate validation workflow.
@@ -221,4 +221,52 @@ export const getOffset = (el: RefObject<HTMLElement>) => {
 
 export const deregisterAllValidationItem = () => {
     validationItems = [];
+};
+
+interface ValidationHookStateType<T extends ElementType> {
+    ref: RefObject<T>;
+    isValidationError: boolean;
+    validationErrorMessage: string;
+}
+
+export const useValidation = <T extends ElementType = ElementType>(
+    fieldJsonPath: string | undefined,
+    fieldLabel: string | undefined
+) => {
+    const [state, setState] = useState<ValidationHookStateType<T>>({
+        ref: createRef(),
+        isValidationError: false,
+        validationErrorMessage: ""
+    });
+
+    useEffect(() => {
+        if (fieldJsonPath) {
+            registerValidationItem({
+                jsonPath: fieldJsonPath ? fieldJsonPath : "",
+                label: fieldLabel ? fieldLabel : "",
+                elRef: state.ref,
+                setError: errorMessage => {
+                    setState({
+                        ref: state.ref,
+                        isValidationError: true,
+                        validationErrorMessage: errorMessage
+                    });
+                },
+                clearError: () => {
+                    setState({
+                        ref: state.ref,
+                        isValidationError: false,
+                        validationErrorMessage: ""
+                    });
+                }
+            });
+        }
+        return () => {
+            if (fieldJsonPath) {
+                deregisterValidationItem(fieldJsonPath);
+            }
+        };
+    }, [fieldJsonPath, fieldLabel]);
+
+    return [state.isValidationError, state.validationErrorMessage, state.ref];
 };

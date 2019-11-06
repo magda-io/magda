@@ -1,16 +1,10 @@
-import React, {
-    ReactEventHandler,
-    FunctionComponent,
-    createRef,
-    useEffect,
-    useState,
-    RefObject
-} from "react";
+import React, { ReactEventHandler, FunctionComponent } from "react";
 import Editor from "./Editor";
 import editIcon from "assets/edit.svg";
 import uuidv4 from "uuid/v4";
 import { ListMultiItemEditor } from "./multiItem";
 import * as ValidationManager from "../../Dataset/Add/ValidationManager";
+const useValidation = ValidationManager.useValidation;
 
 export type InputComponentParameter = React.ComponentType<{
     className?: string;
@@ -153,53 +147,12 @@ const truncateByWordsCount = (str: string, limit: number): string => {
     return newStrItems.join("");
 };
 
-interface MultilineTextEditorStateType {
-    ref: RefObject<HTMLTextAreaElement>;
-    isValidationError: boolean;
-    validationErrorMessage: string;
-}
-
 export const MultilineTextEditor: FunctionComponent<
     MultilineTextEditorPropType
 > = props => {
-    const [state, setState] = useState<MultilineTextEditorStateType>({
-        ref: createRef(),
-        isValidationError: false,
-        validationErrorMessage: ""
-    });
-
-    useEffect(() => {
-        if (props.validationFieldPath) {
-            ValidationManager.registerValidationItem({
-                jsonPath: props.validationFieldPath,
-                label: props.validationFieldLabel
-                    ? props.validationFieldLabel
-                    : "",
-                elRef: state.ref,
-                setError: errorMessage => {
-                    setState({
-                        ref: state.ref,
-                        isValidationError: true,
-                        validationErrorMessage: errorMessage
-                    });
-                },
-                clearError: () => {
-                    setState({
-                        ref: state.ref,
-                        isValidationError: false,
-                        validationErrorMessage: ""
-                    });
-                }
-            });
-        }
-        return () => {
-            if (props.validationFieldPath) {
-                ValidationManager.deregisterValidationItem(
-                    props.validationFieldPath
-                );
-            }
-        };
-    }, [props.validationFieldPath, props.validationFieldLabel]);
+    const [isValidationError, validationErrorMessage, elRef] = useValidation<
+        HTMLTextAreaElement
+    >(props.validationFieldPath, props.validationFieldLabel);
 
     const isEditorMode = props.isEditorMode === false ? false : true;
     const placerHolder = props.placerHolder ? props.placerHolder : "";
@@ -209,7 +162,7 @@ export const MultilineTextEditor: FunctionComponent<
     if (isEditorMode) {
         const errorMessageId = `input-error-text-${uuidv4()}`;
         const extraProps: any = {
-            ref: state.ref
+            ref: elRef
         };
         if (props.validationFieldPath) {
             extraProps.onBlur = () => {
@@ -219,17 +172,17 @@ export const MultilineTextEditor: FunctionComponent<
             };
         }
         let inValidClass = "";
-        if (state.isValidationError) {
+        if (isValidationError) {
             extraProps["aria-invalid"] = true;
             extraProps["aria-describedby"] = errorMessageId;
             inValidClass = "au-text-input--invalid";
         }
         return (
             <div className="multilineTextEditor-outter-container">
-                {state.isValidationError ? (
+                {isValidationError ? (
                     <div>
                         <span className="au-error-text" id={errorMessageId}>
-                            {state.validationErrorMessage}
+                            {validationErrorMessage}
                         </span>
                     </div>
                 ) : null}
