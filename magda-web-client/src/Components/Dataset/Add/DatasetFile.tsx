@@ -177,8 +177,10 @@ export default function DatasetFile({
                                         {() => {
                                             return (
                                                 <div>
-                                                    Note: 1 KiB = 1024 Bytes, 1
-                                                    MiB = 1024 KiB
+                                                    <div>
+                                                        Note: 1 KiB = 1024 Bytes
+                                                    </div>
+                                                    <div>1 MiB = 1024 KiB</div>
                                                 </div>
                                             );
                                         }}
