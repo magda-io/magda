@@ -72,7 +72,7 @@ interface MultilineTextEditorPropType {
     isEditorMode?: boolean;
     limit?: number;
     value?: string;
-    placerHolder?: string;
+    placeHolder?: string;
     onChange?: (value: string) => void;
 }
 
@@ -103,7 +103,7 @@ export const MultilineTextEditor: FunctionComponent<
     MultilineTextEditorPropType
 > = props => {
     const isEditorMode = props.isEditorMode === false ? false : true;
-    const placerHolder = props.placerHolder ? props.placerHolder : "";
+    const placeHolder = props.placeHolder ? props.placeHolder : "";
     const value = props.value ? props.value : "";
     const limit = props.limit ? props.limit : 0;
 
@@ -125,7 +125,7 @@ export const MultilineTextEditor: FunctionComponent<
                         props.onChange(inputValue);
                     }
                 }}
-                placeholder={placerHolder}
+                placeholder={placeHolder}
                 value={props.value as string}
             />
             <div className="edit-icon-container">

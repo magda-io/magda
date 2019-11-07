@@ -96,7 +96,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     <div>
                         <MultilineTextEditor
                             value={datasetAccess.notes}
-                            placerHolder="Enter any access considerations for users, such as permissions or restrictions they should be aware of..."
+                            placeHolder="Enter any access considerations for users, such as permissions or restrictions they should be aware of..."
                             onChange={editDatasetAccess("notes")}
                         />
                     </div>
