@@ -93,9 +93,7 @@ class NewDataset extends React.Component<Props, State> {
     componentDidMount() {
         if (this.props.isNewDataset) {
             this.props.history.replace(
-                `/dataset/add/metadata/${this.props.datasetId}/${
-                    this.props.step
-                }`
+                `/dataset/add/metadata/${this.props.datasetId}/${this.props.step}`
             );
         }
     }
@@ -133,7 +131,7 @@ class NewDataset extends React.Component<Props, State> {
     edit = <K extends keyof State>(aspectField: K) => (field: string) => (
         newValue: any
     ) => {
-        this.setState(state => {
+        this.setState((state: any) => {
             return {
                 [aspectField]: { ...state[aspectField], [field]: newValue }
             } as Pick<State, K>;
@@ -305,8 +303,9 @@ class NewDataset extends React.Component<Props, State> {
 
         let publisherId;
         if (dataset.publisher) {
-            publisherId = getOrgIdFromAutocompleteChoice(dataset.publisher);
-
+            publisherId = await getOrgIdFromAutocompleteChoice(
+                dataset.publisher
+            );
             this.edit("dataset")("publisher")({
                 name: dataset.publisher.name,
                 publisherId

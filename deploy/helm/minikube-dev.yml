@@ -17,7 +17,7 @@ global:
 gateway:
   ckanRedirectionDomain: "ckan.data.gov.au"
   ckanRedirectionPath: ""
-  enableCkanRedirection: true
+  enableCkanRedirection: false
   enableAuthEndpoint: true
   cors:
     credentials: true
@@ -30,11 +30,11 @@ gateway:
 
 registry-api:
   skipAuthorization: false
-  
+
 correspondence-api:
   smtpPort: 2525
   smtpHostname: "smtp.mailgun.org"
-  
+
 web-server:
   fallbackUrl: "https://data.gov.au"
   featureFlags:

@@ -123,7 +123,7 @@ class DatasetAddFilesPage extends React.Component<
                                 case "datasetTitle":
                                     if (
                                         !dataset["title"] ||
-                                        dataset["title"] === "Untitled"
+                                        dataset["title"] === ""
                                     ) {
                                         dataset["title"] = file[key];
                                     }
