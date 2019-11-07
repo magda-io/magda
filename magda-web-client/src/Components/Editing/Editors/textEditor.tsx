@@ -59,7 +59,11 @@ export function textEditorEx(
                 }
 
                 return (
-                    <div className="textEditorEx-outter-container">
+                    <div
+                        className={`textEditorEx-outter-container ${
+                            isValidationError ? "invalid" : ""
+                        }`}
+                    >
                         <div>
                             <span className="au-error-text" id={errorMessageId}>
                                 {validationErrorMessage}
@@ -160,7 +164,11 @@ export const MultilineTextEditor: FunctionComponent<
             inValidClass = "au-text-input--invalid";
         }
         return (
-            <div className="multilineTextEditor-outter-container">
+            <div
+                className={`multilineTextEditor-outter-container ${
+                    isValidationError ? "invalid" : ""
+                }`}
+            >
                 {isValidationError ? (
                     <div>
                         <span className="au-error-text" id={errorMessageId}>

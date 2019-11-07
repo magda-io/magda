@@ -49,6 +49,12 @@
     }
 }
 
+.multilineTextEditor-outter-container.invalid {
+    .edit-icon {
+        top: 45px !important;
+    }
+}
+
 .multilineTextEditor-outter-container {
     position: relative;
     .au-error-text {
