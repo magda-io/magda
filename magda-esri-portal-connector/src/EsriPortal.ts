@@ -238,11 +238,49 @@ export default class EsriPortal implements ConnectorSource {
             // Add group info to the shared items, loading from up to 10 at a time.
             const singlePage = AsyncPage.single(body.results as any[]);
             await forEachAsync(singlePage, 10, (item: any) => {
-                if (item.access === "shared") {
+                if (item.access === "shared" || item.access === "org") {
                     const groupInfoPromise = this.requestDatasetGroupInformation(
                         item.id
                     );
-                    return groupInfoPromise.then(groupInfo => {
+
+                    return groupInfoPromise.then(groupInfoRaw => {
+                        // We record all "org" access items in the same way as "shared" access
+                        // items.
+                        //
+                        // We create an org group with id given by esriOrgGroup that is unique to
+                        // a specific esri portal. If an item's access attribute is "org", the
+                        // item will be accessible by the org group. We also create a group record
+                        // with "group" aspect whose data propery "members" contains all "org"
+                        // access items. The group record also has the same esri-access-control
+                        // aspect as those of "members".
+                        //
+                        // Note the group record's esri-access-control aspect's data property
+                        // "access" has value of "org" in stead of "shared", which is achieved by
+                        // setting
+                        //
+                        //    "other" --> "access": "any authenticated users"
+                        //
+                        // where "any authenticated users" is the value to be checked by
+                        // aspect-templates/group-esri-access-control.js.
+                        //
+                        // Currently the esri-access-control aspect data property "access" is
+                        // compulsory only if its value is "public".  Otherwise it is optional.
+                        const groupInfo =
+                            item.access === "org"
+                                ? {
+                                      admin: [],
+                                      member: [],
+                                      other: [
+                                          {
+                                              id: this.esriOrgGroup,
+                                              title:
+                                                  "For any portal authenticated users",
+                                              access: "any authenticated users"
+                                          }
+                                      ]
+                                  }
+                                : groupInfoRaw;
+
                         const groups = [
                             ...groupInfo.admin,
                             ...groupInfo.member,
