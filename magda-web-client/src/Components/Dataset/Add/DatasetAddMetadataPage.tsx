@@ -256,7 +256,7 @@ class NewDataset extends React.Component<Props, State> {
                     <div>
                         <MultilineTextEditor
                             value={datasetPublishing.notesToApprover}
-                            placeHolder="Enter additional notes"
+                            placeholder="Enter additional notes"
                             onChange={this.edit("datasetPublishing")(
                                 "notesToApprover"
                             )}

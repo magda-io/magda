@@ -164,7 +164,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     <div className="clearfix">
                         <MultilineTextEditor
                             value={dataset.description}
-                            placeHolder="Enter description text"
+                            placeholder="Enter description text"
                             limit={250}
                             onChange={props.edit("dataset")("description")}
                         />
@@ -220,7 +220,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         <h4>Why was this dataset retired?</h4>
                         <MultilineTextEditor
                             value={currency.retireReason}
-                            placeHolder="Enter dataset retire reason"
+                            placeholder="Enter dataset retire reason"
                             onChange={editCurrency("retireReason")}
                         />
                     </div>
