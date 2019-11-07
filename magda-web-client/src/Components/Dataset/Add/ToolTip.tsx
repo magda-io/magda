@@ -6,8 +6,8 @@ import "./ToolTip.scss";
 
 export default function ToolTip(props: any) {
     return (
-        <p className="tooltip-root">
-            <table>
+        <table className="tooltip-root">
+            <tbody>
                 <tr>
                     <td
                         style={{
@@ -25,7 +25,7 @@ export default function ToolTip(props: any) {
                         </span>
                     </td>
                 </tr>
-            </table>
-        </p>
+            </tbody>
+        </table>
     );
 }
