@@ -124,6 +124,7 @@ UI:
 -   Added a tooltip for dataset names
 -   Rename "Spatial area" to "Spatial extent"
 -   Fixed `validateDOMNesting` warning
+-   Fixed warning for placeholder text being a boolean value
 
 Gateway:
 
