@@ -119,9 +119,12 @@ UI:
 -   Fixed CSV loader didn't retry the different line ending correctly
 -   Saved publisher id in the database
 -   Added hover text for the tooltip beside the date-picker in the Add Dataset page
--   Add a distribution hyperlink to the title of resource links
+-   Added a distribution hyperlink to the title of resource links
+-   Made the default name of a dataset blank
+-   Added a tooltip for dataset names
 -   Rename "Spatial area" to "Spatial extent"
 -   Add tooltip to explain the difference between MB and MiB, KB and KiB, etc.
+-   Fixed `validateDOMNesting` warning
 
 Gateway:
 
@@ -153,6 +156,7 @@ Others:
 -   Disabled tenant-api & tenant-db when `enableMultiTenants` = false
 -   Excluded organisations that are owners of thesauruses (keyword taxonomies) from being considered as owners of datasets via CSW connector
 -   Fix data.json connector dcat-dataset-strings aspect so keywords are stored correctly
+-   Fixed doc to reflect [lerna deprecating an option](https://github.com/lerna/lerna/commit/f2c3a92fe41b6fdc5d11269f0f2c3e27761b4c85)
 
 ## 0.0.55
 
