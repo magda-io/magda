@@ -7,6 +7,7 @@ General:
     The registry service can be configured to support either hierarchical organization based access
     policy (default) or Esri groups based access policy.
 -   Add esri portal connector. Read its README.md file before use.
+-   Lock helm version in gitlab to 2.15.2 due to issue: https://github.com/helm/helm/issues/6894
 
 Registry:
 
@@ -123,6 +124,7 @@ UI:
 -   Made the default name of a dataset blank
 -   Added a tooltip for dataset names
 -   Rename "Spatial area" to "Spatial extent"
+-   Add tooltip to explain the difference between MB and MiB, KB and KiB, etc.
 -   Fixed `validateDOMNesting` warning
 -   Fixed warning for placeholder text being a boolean value
 
