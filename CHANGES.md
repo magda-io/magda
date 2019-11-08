@@ -7,6 +7,7 @@ General:
     The registry service can be configured to support either hierarchical organization based access
     policy (default) or Esri groups based access policy.
 -   Add esri portal connector. Read its README.md file before use.
+-   Lock helm version in gitlab to 2.15.2 due to issue: https://github.com/helm/helm/issues/6894
 
 Registry:
 
@@ -37,6 +38,7 @@ Indexer:
 -   Fixed indexer incorrect parsing bounding box data in spatialCoverage aspect
 -   Added auth when crawling the registry
 -   Fixed Data.json spatial bounding box ordering not understood
+-   Handle and log the exception "Object is missing required member 'id'"
 
 Cataloging:
 
@@ -124,6 +126,9 @@ UI:
 -   Added a tooltip for dataset names
 -   Rename "Spatial area" to "Spatial extent"
 -   Fix issue with user manually typing dates
+-   Add tooltip to explain the difference between MB and MiB, KB and KiB, etc.
+-   Fixed `validateDOMNesting` warning
+-   Fixed warning for placeholder text being a boolean value
 
 Gateway:
 
@@ -155,6 +160,7 @@ Others:
 -   Disabled tenant-api & tenant-db when `enableMultiTenants` = false
 -   Excluded organisations that are owners of thesauruses (keyword taxonomies) from being considered as owners of datasets via CSW connector
 -   Fix data.json connector dcat-dataset-strings aspect so keywords are stored correctly
+-   Fixed doc to reflect [lerna deprecating an option](https://github.com/lerna/lerna/commit/f2c3a92fe41b6fdc5d11269f0f2c3e27761b4c85)
 
 ## 0.0.55
 

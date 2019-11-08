@@ -43,9 +43,14 @@ Then install `npm` dependencies and set up the links between components by runni
 yarn install
 ```
 
-Once the above prerequisites are in place, and the npm dependencies are installed, building MAGDA is easy. From the MAGDA root directory, simply run:
+Once the above prerequisites are in place, and the npm dependencies are installed, building MAGDA is easy.
+From the MAGDA root directory, simply run the appropriate build command:
 
 ```bash
+# If using lerna v3.18.0 or higher
+lerna run build --stream --concurrency=1 --include-dependencies
+
+# If verison of lerna is lower than v3.18.0
 lerna run build --stream --concurrency=1 --include-filtered-dependencies
 ```
 
