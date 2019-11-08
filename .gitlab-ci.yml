@@ -484,7 +484,7 @@ dockerize:dockerExtensions:
   cache:
     paths: []
   image:
-    name: dtzar/helm-kubectl
+    name: dtzar/helm-kubectl:2.15.2
   retry: 1
   environment:
     name: preview/$CI_COMMIT_REF_NAME
@@ -550,7 +550,7 @@ Stop Preview: &stopPreview
   cache:
     paths: []
   image:
-    name: dtzar/helm-kubectl
+    name: dtzar/helm-kubectl:2.15.2
   retry: 1
   before_script: []
   environment:
@@ -568,7 +568,7 @@ Deploy Master To Dev:
     - master
   cache: {}
   image:
-    name: dtzar/helm-kubectl
+    name: dtzar/helm-kubectl:2.15.2
   retry: 1
   before_script: []
   environment:
@@ -609,7 +609,7 @@ Publish Helm Chart:
     - triggers
   dependencies: []
   image:
-    name: dtzar/helm-kubectl
+    name: dtzar/helm-kubectl:2.15.2
   cache:
     key: $CI_JOB_NAME
     paths:
