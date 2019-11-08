@@ -38,6 +38,7 @@ Indexer:
 -   Fixed indexer incorrect parsing bounding box data in spatialCoverage aspect
 -   Added auth when crawling the registry
 -   Fixed Data.json spatial bounding box ordering not understood
+-   Handle and log the exception "Object is missing required member 'id'"
 
 Cataloging:
 
