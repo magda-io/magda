@@ -162,6 +162,7 @@ Others:
 -   Disabled tenant-api & tenant-db when `enableMultiTenants` = false
 -   Excluded organisations that are owners of thesauruses (keyword taxonomies) from being considered as owners of datasets via CSW connector
 -   Fix data.json connector dcat-dataset-strings aspect so keywords are stored correctly
+-   Upgrade Scala dependencies versions & added scalafmt support
 -   Fixed doc to reflect [lerna deprecating an option](https://github.com/lerna/lerna/commit/f2c3a92fe41b6fdc5d11269f0f2c3e27761b4c85)
 -   Fix potential memory leak by deregistering listener when Header is unmounted
 
