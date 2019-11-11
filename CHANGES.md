@@ -163,6 +163,7 @@ Others:
 -   Excluded organisations that are owners of thesauruses (keyword taxonomies) from being considered as owners of datasets via CSW connector
 -   Fix data.json connector dcat-dataset-strings aspect so keywords are stored correctly
 -   Fixed doc to reflect [lerna deprecating an option](https://github.com/lerna/lerna/commit/f2c3a92fe41b6fdc5d11269f0f2c3e27761b4c85)
+-   Fix potential memory leak by explicitly defining `_isMounted` which marks a component as mounted
 
 ## 0.0.55
 
