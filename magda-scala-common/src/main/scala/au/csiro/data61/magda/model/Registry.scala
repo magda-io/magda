@@ -147,6 +147,16 @@ trait RegistryConverters extends RegistryProtocols {
         val record = theDataSet.convertTo[Registry.Record]
         record
       })
+    } match {
+        case Success(publisher) => publisher
+        case Failure(e) =>
+          if (logger.isDefined) {
+            logger.get.error(
+              s"Failed to parse dataset-publisher: ${e.getMessage}"
+            )
+          }
+          None
+      }
 
     val accessControl = hit.aspects.get("dataset-access-control") match {
       case Some(JsObject(accessControlData)) =>
