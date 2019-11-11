@@ -29,11 +29,9 @@ class Header extends Component {
     }
 
     toggleMenu() {
-        if (this._isMounted) {
-            this.setState({
-                isMobileMenuOpen: !this.state.isMobileMenuOpen
-            });
-        }
+        this.setState({
+            isMobileMenuOpen: !this.state.isMobileMenuOpen
+        });
     }
 
     render() {
