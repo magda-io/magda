@@ -19,9 +19,11 @@ class Header extends Component {
     componentDidMount() {
         this._isMounted = true;
         this.context.router.history.listen(() => {
-            this.setState({
-                isMobileMenuOpen: false
-            });
+            if (this._isMounted) {
+                this.setState({
+                    isMobileMenuOpen: false
+                });
+            }
         });
     }
 
@@ -30,9 +32,11 @@ class Header extends Component {
     }
 
     toggleMenu() {
-        this.setState({
-            isMobileMenuOpen: !this.state.isMobileMenuOpen
-        });
+        if (this._isMounted) {
+            this.setState({
+                isMobileMenuOpen: !this.state.isMobileMenuOpen
+            });
+        }
     }
 
     render() {
