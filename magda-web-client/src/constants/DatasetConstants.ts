@@ -564,16 +564,16 @@ export const publishingLevel = {
 export const licenseLevel = {
     world: "For the entire world use (Creative Commons CC BY4.0)",
     government:
-        "For all of government use (Whole of Australian Government license)",
-    agency: "For just my department use (Other organisation-specific license)",
-    section: "For just my section use (Other organisation-specific license)",
-    team: "For just my team use (Other organisation-specific license)",
-    custom: "Other custom license"
+        "For all of government use (Whole of Australian Government licence)",
+    agency: "For just my department use (Other organisation-specific licence)",
+    section: "For just my section use (Other organisation-specific licence)",
+    team: "For just my team use (Other organisation-specific licence)",
+    custom: "Other custom licence"
 };
 
 export const datasetLicenseLevel = {
-    dataset: "Dataset level license",
-    distribution: "Distribution (or file/URL) level license"
+    dataset: "Dataset level licence",
+    distribution: "Distribution (or file/URL) level licence"
 };
 
 export const datasetCurrencyStatus = {

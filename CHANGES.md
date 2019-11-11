@@ -111,7 +111,7 @@ UI:
 -   Fixed typos in no-print styling and adding keywords tooltip
 -   Added a preview mode for add dataset, that allows all users to use add dataset but prevents them from submitting.
 -   Fixed text wrap around tooltip
--   Fixed Add Dataset / License setting: Long file names should be wrapped to the next line
+-   Fixed Add Dataset / Licence setting: Long file names should be wrapped to the next line
 -   Added a new color (slightly grey) for preview screens
 -   Removed unnecessary margin in the filter facets
 -   Map Preview: avoid selecting Esri feature server distribution for preview
@@ -130,6 +130,7 @@ UI:
 -   Fixed `validateDOMNesting` warning
 -   Fixed warning for placeholder text being a boolean value
 -   Added unique key to the topmost `div` of `codelistEditor`
+-   Rename `license` to `licence` where appropriate
 
 Gateway:
 
@@ -232,7 +233,7 @@ Connectors:
 
 -   Allowed Ckan connector to pull datasets belongs to a specified organisation
 -   Added `presetRecordAspects` & `extra` parameters supports to all connectors
--   Improvements on CSW connector license info retrieve
+-   Improvements on CSW connector licence info retrieve
 
 Dataset Page:
 
@@ -338,7 +339,7 @@ Search:
 
 Others:
 
--   Download unknown project open data license URLs to extract human readable licence
+-   Download unknown project open data licence URLs to extract human readable licence
 -   Removed the .bin extension from the logo
 
 ## 0.0.50
@@ -457,7 +458,7 @@ Others:
 -   Switch apidocs root to `<host>`
 -   Removed unused jQuery dependency from format-minion
 -   Split the registry api into full and read only modes that can run separately in production
--   Take open data connector license from dataset level to distribution level and add basic black box test
+-   Take open data connector licence from dataset level to distribution level and add basic black box test
 -   Fix logo vertical alignment and partially hidden issue
 -   Made header padding even
 -   Made the broken link minion use `GET` for everything and ignore the data.

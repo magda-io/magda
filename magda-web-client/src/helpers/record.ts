@@ -328,7 +328,7 @@ export function parseDistribution(
     const accessURL = info.accessURL;
     const accessNotes = info.accessNotes;
     const updatedDate = info.modified && getDateString(info.modified);
-    const license = info.license || "License restrictions unknown";
+    const license = info.license || "Licence restrictions unknown";
     const description = info.description || "No description provided";
     const linkStatus = aspects["source-link-status"];
     const linkStatusAvailable = Boolean(linkStatus.status); // Link status is available if status is non-empty string
@@ -461,7 +461,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
             format,
             license:
                 !info.license || info.license === "notspecified"
-                    ? "License restrictions unknown"
+                    ? "Licence restrictions unknown"
                     : info.license,
             description: info.description || "No description provided",
             linkStatusAvailable: Boolean(linkStatus.status), // Link status is available if status is non-empty string

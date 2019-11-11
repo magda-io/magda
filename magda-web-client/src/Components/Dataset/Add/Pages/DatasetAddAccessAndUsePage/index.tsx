@@ -107,7 +107,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                 {files.length !== 0 && (
                     <div className="question-license-apply-type">
                         <h4>
-                            What type of license should be applied to these
+                            What type of licence should be applied to these
                             files?
                         </h4>
 
@@ -159,9 +159,9 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                 )}
 
                 <div className="question-license-restriction-type">
-                    <h4>What license restrictions should be applied?</h4>
+                    <h4>What licence restrictions should be applied?</h4>
                     <ToolTip>
-                        We recommend a Whole of Government License be applied to
+                        We recommend a Whole of Government Licence be applied to
                         encourage inter-department data sharing in the future.
                     </ToolTip>
                     {licenseLevel === "dataset" ? (
