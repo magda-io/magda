@@ -11,7 +11,7 @@
 | Access Level        | "dataset value" or "access"                                                                     |
 | Start Date          | "start date"                                                                                    |
 | End Date            | "end date"                                                                                      |
-| Licence             | "licence type" or "licensing"                                                                   |
+| License             | "license type" or "licensing"                                                                   |
 | Access URL          | "published location"                                                                            |
 | Access Notes        | "path" or "data available @"                                                                    |
 | Download URL        | "internal location"                                                                             |
