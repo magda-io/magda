@@ -128,6 +128,7 @@ UI:
 -   Add tooltip to explain the difference between MB and MiB, KB and KiB, etc.
 -   Fixed `validateDOMNesting` warning
 -   Fixed warning for placeholder text being a boolean value
+-   Added unique key to the topmost `div` of `codelistEditor`
 
 Gateway:
 
