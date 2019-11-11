@@ -17,18 +17,15 @@ class Header extends Component {
     }
 
     componentDidMount() {
-        this._isMounted = true;
-        this.context.router.history.listen(() => {
-            if (this._isMounted) {
-                this.setState({
-                    isMobileMenuOpen: false
-                });
-            }
+        this.unListen = this.context.router.history.listen(() => {
+            this.setState({
+                isMobileMenuOpen: false
+            });
         });
     }
 
     componentWillUnmount() {
-        this._isMounted = false;
+        this.unListen();
     }
 
     toggleMenu() {
