@@ -180,7 +180,12 @@ export const config = {
               "$.files[*].title",
               "$.files[*].format",
               "$.files[*].license",
-              "$.dataset.publisher"
+              "$.dataset.publisher",
+              "$.licenseLevel",
+              "$.dataset.defaultLicense",
+              "$.files[*].license",
+              "$.informationSecurity.classification",
+              "$.informationSecurity.disseminationLimits"
           ]
 };
 
