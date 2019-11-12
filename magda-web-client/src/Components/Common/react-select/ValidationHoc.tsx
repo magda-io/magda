@@ -3,7 +3,7 @@ import uuidv4 from "uuid/v4";
 import AsyncCreatable from "react-select/async-creatable";
 import Async, { AsyncProps } from "react-select/async";
 import Select, { Props as SelectProps } from "react-select/src/Select";
-import Creatable, { CreatableProps } from "react-select/Creatable";
+import Creatable, { CreatableProps } from "react-select/creatable";
 import CustomInputWithValidation from "Components/Common/react-select/CustomInputWithValidation";
 import ReactSelectStyles from "Components/Common/react-select/ReactSelectStyles";
 import * as ValidationManager from "../../Dataset/Add/ValidationManager";

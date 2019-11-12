@@ -13,7 +13,15 @@ import uniq from "lodash/uniq";
 /**
  * A global module to manage / coordinate validation workflow.
  * The overall workflow:
- * - every input (no matter it's type) should attempt to register itself to participant the validation
+ * - every UI component should attempt to register itself to participant the validation
+ * - ValidationManager will determine whether should get the component involved in the validation process based on config
+ * - UI components are also responsible for
+ *   - Register the component when componentDidMount and de-register itself when componentWillUnmount
+ *     - Supplie functions for updating component's valid / invalid status (see definition of `ValidationItem`)
+ *   - call `onInputFocusOut` when focus is removed from the component
+ *   - `ValidationManager` supplies `useValidation` hook to facilite this process
+ * - `ValidationManager` also provides function like `validateAll` to validate all active components on screen
+ * - To enable `ValidationManager`, `setStateDataGetter` should also be called when the page component is mounted so that `ValidationManager` has access to state data
  */
 
 /**
