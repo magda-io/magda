@@ -131,6 +131,7 @@ UI:
 -   Fixed warning for placeholder text being a boolean value
 -   Added unique key to the topmost `div` of `codelistEditor`
 -   Rename `license` to `licence` where appropriate
+-   Added Mandatory Field Validation to the Add Dataset Flow
 
 Gateway:
 
