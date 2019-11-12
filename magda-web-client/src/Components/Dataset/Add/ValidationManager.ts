@@ -1,7 +1,13 @@
 import { config } from "config";
 import { State } from "./DatasetAddCommon";
 import * as JsonPath from "jsonpath";
-import { RefObject, useState, createRef, useEffect } from "react";
+import {
+    RefObject,
+    useState,
+    useEffect,
+    useRef,
+    MutableRefObject
+} from "react";
 import uniq from "lodash/uniq";
 
 /**
@@ -18,14 +24,26 @@ import uniq from "lodash/uniq";
  */
 export type ValidationFieldList = string[];
 
+export type ElementLikeType = {
+    getBoundingClientRect: () => ClientRect | DOMRect | null;
+    scrollIntoView: (arg?: boolean | ScrollIntoViewOptions) => void;
+    blur: () => void;
+    focus: (options?: FocusOptions) => void;
+};
+
+export type RefType<T = ElementType> =
+    | MutableRefObject<T | null>
+    | RefObject<T>;
+
 export type ElementType =
     | HTMLInputElement
     | HTMLTextAreaElement
     | HTMLSelectElement
     | HTMLDivElement
-    | HTMLSpanElement;
+    | HTMLSpanElement
+    | ElementLikeType;
 
-export interface ValidationItem {
+export interface ValidationItem<T = ElementType> {
     /**
      * the json path will be used:
      * - as the id of the ValidationItem
@@ -57,7 +75,7 @@ export interface ValidationItem {
      * A react reference of a DOM element that belongs to this `ValidationItem`.
      * ValidationManager will try move this Dom element into viewport when necessary
      */
-    elRef: RefObject<ElementType>;
+    elRef: RefType<T>;
 }
 
 const validationFieldList: ValidationFieldList = config.mandatoryFields;
@@ -176,6 +194,22 @@ function getItemFromJsonPath(jsonPath: string) {
 }
 
 /**
+ * Execute validation logic on a validation item
+ *
+ * @param {ValidationItem} item
+ * @returns {boolean}
+ */
+function validateItem(item: ValidationItem) {
+    if (isEmptyValue(item.jsonPath)) {
+        item.setError(`\`${item.label}\` is a mandatory field.`);
+        return false;
+    } else {
+        item.clearError();
+        return true;
+    }
+}
+
+/**
  * Input should call this function when focus is removed from it
  *
  * @param {string} jsonPath
@@ -186,13 +220,7 @@ export const onInputFocusOut = (jsonPath: string) => {
     if (typeof item === "undefined") {
         return false;
     }
-    if (isEmptyValue(jsonPath)) {
-        item.setError(`\`${item.label}\` is a mandatory field.`);
-        return false;
-    } else {
-        item.clearError();
-        return true;
-    }
+    return validateItem(item);
 };
 
 /**
@@ -207,14 +235,17 @@ export const onInputFocusOut = (jsonPath: string) => {
  */
 function validateSelectedItems(items: ValidationItem[]) {
     let offsetY: number;
-    let elRef: RefObject<HTMLElement> | undefined;
+    let elRef: RefType<ElementType> | undefined;
+    let hasInvalidItem = false;
 
     items.forEach(item => {
-        if (!onInputFocusOut(item.jsonPath)) {
+        if (!validateItem(item)) {
+            hasInvalidItem = true;
+
             if (!item.elRef.current) {
                 // --- if element ref is not ready
                 // --- skip moving viewport
-                return true;
+                return;
             }
             const offset = getOffset(item.elRef);
             if (typeof offsetY === "undefined") {
@@ -226,9 +257,6 @@ function validateSelectedItems(items: ValidationItem[]) {
                 elRef = item.elRef;
                 offsetY = offset.top;
             }
-            return true;
-        } else {
-            return false;
         }
     });
 
@@ -242,11 +270,7 @@ function validateSelectedItems(items: ValidationItem[]) {
         }
     }
 
-    if (typeof elRef === "undefined") {
-        return true;
-    } else {
-        return false;
-    }
+    return !hasInvalidItem;
 }
 
 /**
@@ -285,11 +309,14 @@ export const validateFields = (fieldPathList: string[] = []) => {
     return validateSelectedItems(items);
 };
 
-export const getOffset = (el: RefObject<HTMLElement>) => {
+export const getOffset = (el: RefType<ElementType>) => {
     if (!el.current) {
         return null;
     }
     const rect = el.current.getBoundingClientRect();
+    if (!rect) {
+        return null;
+    }
     return {
         top: rect.top + document.body.scrollTop,
         left: rect.left + document.body.scrollLeft
@@ -301,7 +328,7 @@ export const deregisterAllValidationItem = () => {
 };
 
 interface ValidationHookStateType<T extends ElementType> {
-    ref: RefObject<T>;
+    ref: MutableRefObject<T | null>;
     isValidationError: boolean;
     validationErrorMessage: string;
 }
@@ -309,9 +336,9 @@ interface ValidationHookStateType<T extends ElementType> {
 export const useValidation = <T extends ElementType = ElementType>(
     fieldJsonPath: string | undefined,
     fieldLabel: string | undefined
-) => {
+): [boolean, string, MutableRefObject<T | null>] => {
     const [state, setState] = useState<ValidationHookStateType<T>>({
-        ref: createRef(),
+        ref: useRef<T>(null),
         isValidationError: false,
         validationErrorMessage: ""
     });

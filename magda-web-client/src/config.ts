@@ -179,7 +179,8 @@ export const config = {
               "$.dataset.defaultLicense",
               "$.files[*].title",
               "$.files[*].format",
-              "$.files[*].license"
+              "$.files[*].license",
+              "$.dataset.publisher"
           ]
 };
 

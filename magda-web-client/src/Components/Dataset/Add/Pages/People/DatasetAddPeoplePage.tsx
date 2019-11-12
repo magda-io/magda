@@ -55,6 +55,8 @@ export default function DatasetAddPeoplePage({
                         multi={false}
                         value={dataset.publisher}
                         onOrgSelected={editDataset("publisher")}
+                        validationFieldPath="$.dataset.publisher"
+                        validationFieldLabel="Responsible Organisation"
                     />
                 </div>
                 <h4>Which team is responsible for maintaining this dataset?</h4>

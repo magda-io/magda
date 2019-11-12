@@ -3,8 +3,7 @@ import debouncePromise from "debounce-promise";
 
 import { autocompletePublishers } from "api-clients/SearchApis";
 import { OrganisationAutocompleteChoice } from "../../DatasetAddCommon";
-import ASyncCreatableSelect from "react-select/async-creatable";
-import ReactSelectStyles from "Components/Common/react-select/ReactSelectStyles";
+import ASyncCreatableSelect from "../../../../Common/react-select/ASyncCreatableSelect";
 
 type Props =
     | {
@@ -13,6 +12,8 @@ type Props =
           ) => void;
           value?: OrganisationAutocompleteChoice;
           multi: false;
+          validationFieldPath?: string;
+          validationFieldLabel?: string;
       }
     | {
           onOrgSelected: (
@@ -20,6 +21,8 @@ type Props =
           ) => void;
           value?: OrganisationAutocompleteChoice[];
           multi: true;
+          validationFieldPath?: string;
+          validationFieldLabel?: string;
       };
 
 type Choice = {
@@ -58,7 +61,7 @@ export default function OrganisationAutocomplete(props: Props) {
     );
 
     return (
-        <ASyncCreatableSelect
+        <ASyncCreatableSelect<Choice>
             className="react-select"
             isMulti={props.multi}
             isSearchable={true}
@@ -73,7 +76,6 @@ export default function OrganisationAutocomplete(props: Props) {
                     props.onOrgSelected(fromReactSelect(rawValue as Choice));
                 }
             }}
-            styles={ReactSelectStyles}
             value={
                 props.value
                     ? props.multi
@@ -83,6 +85,8 @@ export default function OrganisationAutocomplete(props: Props) {
             }
             loadOptions={query}
             placeholder="Search for an organisation"
+            validationFieldPath={props.validationFieldPath}
+            validationFieldLabel={props.validationFieldLabel}
         />
     );
 }
