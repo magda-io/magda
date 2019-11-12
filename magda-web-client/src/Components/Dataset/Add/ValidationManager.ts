@@ -162,16 +162,20 @@ function shouldValidate(jsonPath: string) {
 
 export const registerValidationItem = (vItem: ValidationItem) => {
     if (!shouldValidate(vItem.jsonPath)) return;
-    if (
-        validationItems.findIndex(item => item.jsonPath === vItem.jsonPath) !==
-        -1
-    ) {
+    if (validationItems.findIndex(item => item === vItem) !== -1) {
         return;
     }
     validationItems.push(vItem);
 };
 
 export const deregisterValidationItem = (jsonPath: string) => {
+    // --- should clearError when deregister
+    validationItems
+        .filter(item => item.jsonPath === jsonPath)
+        .forEach(item => {
+            item.clearError();
+        });
+
     validationItems = validationItems.filter(
         item => item.jsonPath !== jsonPath
     );
