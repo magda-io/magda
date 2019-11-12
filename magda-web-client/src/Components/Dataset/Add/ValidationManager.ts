@@ -168,17 +168,27 @@ export const registerValidationItem = (vItem: ValidationItem) => {
     validationItems.push(vItem);
 };
 
-export const deregisterValidationItem = (jsonPath: string) => {
-    // --- should clearError when deregister
-    validationItems
-        .filter(item => item.jsonPath === jsonPath)
-        .forEach(item => {
-            item.clearError();
-        });
+export const deregisterValidationItem = (
+    jsonPathOrItem: string | ValidationItem
+) => {
+    if (typeof jsonPathOrItem === "string") {
+        const jsonPath = jsonPathOrItem;
+        // --- should clearError when deregister
+        validationItems
+            .filter(item => item.jsonPath === jsonPath)
+            .forEach(item => {
+                item.clearError();
+            });
 
-    validationItems = validationItems.filter(
-        item => item.jsonPath !== jsonPath
-    );
+        validationItems = validationItems.filter(
+            item => item.jsonPath !== jsonPath
+        );
+    } else {
+        jsonPathOrItem.clearError();
+        validationItems = validationItems.filter(
+            item => item !== jsonPathOrItem
+        );
+    }
 };
 
 function isEmptyValue(jsonPath: string) {
@@ -193,8 +203,8 @@ function isEmptyValue(jsonPath: string) {
     return false;
 }
 
-function getItemFromJsonPath(jsonPath: string) {
-    return validationItems.find(item => item.jsonPath === jsonPath);
+function getItemsFromJsonPath(jsonPath: string) {
+    return validationItems.filter(item => item.jsonPath === jsonPath);
 }
 
 /**
@@ -220,11 +230,15 @@ function validateItem(item: ValidationItem) {
  * @returns {boolean} True = the field is valid; False = the field is invalid;
  */
 export const onInputFocusOut = (jsonPath: string) => {
-    const item = getItemFromJsonPath(jsonPath);
-    if (typeof item === "undefined") {
+    const items = getItemsFromJsonPath(jsonPath);
+    if (!items || !items.length) {
         return false;
     }
-    return validateItem(item);
+    if (items.map(item => validateItem(item)).filter(r => !r).length) {
+        return false;
+    } else {
+        return true;
+    }
 };
 
 /**
@@ -348,30 +362,31 @@ export const useValidation = <T extends ElementType = ElementType>(
     });
 
     useEffect(() => {
+        const validationItem = {
+            jsonPath: fieldJsonPath ? fieldJsonPath : "",
+            label: fieldLabel ? fieldLabel : "",
+            elRef: state.ref,
+            setError: errorMessage => {
+                setState({
+                    ref: state.ref,
+                    isValidationError: true,
+                    validationErrorMessage: errorMessage
+                });
+            },
+            clearError: () => {
+                setState({
+                    ref: state.ref,
+                    isValidationError: false,
+                    validationErrorMessage: ""
+                });
+            }
+        };
         if (fieldJsonPath) {
-            registerValidationItem({
-                jsonPath: fieldJsonPath ? fieldJsonPath : "",
-                label: fieldLabel ? fieldLabel : "",
-                elRef: state.ref,
-                setError: errorMessage => {
-                    setState({
-                        ref: state.ref,
-                        isValidationError: true,
-                        validationErrorMessage: errorMessage
-                    });
-                },
-                clearError: () => {
-                    setState({
-                        ref: state.ref,
-                        isValidationError: false,
-                        validationErrorMessage: ""
-                    });
-                }
-            });
+            registerValidationItem(validationItem);
         }
         return () => {
             if (fieldJsonPath) {
-                deregisterValidationItem(fieldJsonPath);
+                deregisterValidationItem(validationItem);
             }
         };
     }, [fieldJsonPath, fieldLabel]);

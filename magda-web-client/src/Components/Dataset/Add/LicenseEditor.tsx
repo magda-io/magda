@@ -39,8 +39,6 @@ export default function LicenseEditor({
             <div className="row">
                 <div className="col-sm-12">
                     <ReactSelect
-                        validationFieldPath={validationFieldPath}
-                        validationFieldLabel={validationFieldLabel}
                         className="license-apply-type-select"
                         isSearchable={false}
                         menuPortalTarget={document.body}
