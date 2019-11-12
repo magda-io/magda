@@ -79,8 +79,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                             editor={textEditorEx({
                                 placeholder: dataset.title
                                     ? ""
-                                    : "Enter dataset title",
-                                required: true
+                                    : "Enter dataset title"
                             })}
                         />
                     </div>
