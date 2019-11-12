@@ -49,6 +49,9 @@
                 }
                 .edit-icon-container {
                     position: initial;
+                    .edit-icon {
+                        top: 45px !important;
+                    }
                 }
             }
             .license-distribution-option-container {
