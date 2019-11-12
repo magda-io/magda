@@ -3,7 +3,13 @@ import debouncePromise from "debounce-promise";
 
 import { autocompletePublishers } from "api-clients/SearchApis";
 import { OrganisationAutocompleteChoice } from "../../DatasetAddCommon";
-import ASyncCreatableSelect from "../../../../Common/react-select/ASyncCreatableSelect";
+
+import ASyncCreatableSelect from "react-select/async-creatable";
+import ValidationHoc from "Components/Common/react-select/ValidationHoc";
+
+const ASyncCreatableSelectWithValidation = ValidationHoc<Choice>(
+    ASyncCreatableSelect
+);
 
 type Props =
     | {
@@ -61,7 +67,7 @@ export default function OrganisationAutocomplete(props: Props) {
     );
 
     return (
-        <ASyncCreatableSelect<Choice>
+        <ASyncCreatableSelectWithValidation
             className="react-select"
             isMulti={props.multi}
             isSearchable={true}

@@ -11,7 +11,12 @@ const customStyles = {
                 minHeight: "44px",
                 backgroundColor: "#fdf2f2",
                 borderColor: "#d60000",
-                boxShadow: "none"
+                boxShadow: "none",
+                "&:hover": {
+                    backgroundColor: "#fdf2f2",
+                    borderColor: "#d60000",
+                    boxShadow: "none"
+                }
             };
         } else {
             return {
