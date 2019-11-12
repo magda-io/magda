@@ -141,7 +141,7 @@ class NewDataset extends React.Component<Props, State> {
     edit = <K extends keyof State>(aspectField: K) => (field: string) => (
         newValue: any
     ) => {
-        this.setState(state => {
+        this.setState((state: any) => {
             return {
                 [aspectField]: { ...state[aspectField], [field]: newValue }
             } as Pick<State, K>;
@@ -270,7 +270,7 @@ class NewDataset extends React.Component<Props, State> {
                     <div>
                         <MultilineTextEditor
                             value={datasetPublishing.notesToApprover}
-                            placerHolder="Enter additional notes"
+                            placeholder="Enter additional notes"
                             onChange={this.edit("datasetPublishing")(
                                 "notesToApprover"
                             )}

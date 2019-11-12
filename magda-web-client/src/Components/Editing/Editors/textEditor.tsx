@@ -104,7 +104,7 @@ interface MultilineTextEditorPropType {
     isEditorMode?: boolean;
     limit?: number;
     value?: string;
-    placerHolder?: string;
+    placeholder?: string;
     validationFieldPath?: string;
     validationFieldLabel?: string;
     onChange?: (value: string) => void;
@@ -141,7 +141,7 @@ export const MultilineTextEditor: FunctionComponent<
     >(props.validationFieldPath, props.validationFieldLabel);
 
     const isEditorMode = props.isEditorMode === false ? false : true;
-    const placerHolder = props.placerHolder ? props.placerHolder : "";
+    const placeholder = props.placeholder ? props.placeholder : "";
     const value = props.value ? props.value : "";
     const limit = props.limit ? props.limit : 0;
 
@@ -192,7 +192,7 @@ export const MultilineTextEditor: FunctionComponent<
                             props.onChange(inputValue);
                         }
                     }}
-                    placeholder={placerHolder}
+                    placeholder={placeholder}
                     value={props.value as string}
                     {...extraProps}
                 />
