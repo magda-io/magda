@@ -68,7 +68,10 @@ export default function DatasetAddPeoplePage({
                         onChange={editDataset("custodianOrgUnitId")}
                     />
                 </div>
-                <h4>Which team is responsible for maintaining this dataset?</h4>
+                <h4>
+                    Which business area is responsible for maintaining this
+                    dataset?
+                </h4>
                 <div>
                     <OrgUnitDropdown
                         orgUnitId={dataset.owningOrgUnitId}
