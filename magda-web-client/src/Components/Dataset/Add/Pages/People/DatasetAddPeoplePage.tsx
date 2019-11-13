@@ -57,13 +57,6 @@ export default function DatasetAddPeoplePage({
                         onOrgSelected={editDataset("publisher")}
                     />
                 </div>
-                <h4>Which team is responsible for maintaining this dataset?</h4>
-                <div>
-                    <OrgUnitDropdown
-                        orgUnitId={dataset.owningOrgUnitId}
-                        onChange={editDataset("owningOrgUnitId")}
-                    />
-                </div>
                 <h4>
                     Which area of the organisation should be referenced as the
                     data custodian?
@@ -73,6 +66,13 @@ export default function DatasetAddPeoplePage({
                         orgUnitId={dataset.custodianOrgUnitId}
                         teamOrgUnitId={dataset.owningOrgUnitId}
                         onChange={editDataset("custodianOrgUnitId")}
+                    />
+                </div>
+                <h4>Which team is responsible for maintaining this dataset?</h4>
+                <div>
+                    <OrgUnitDropdown
+                        orgUnitId={dataset.owningOrgUnitId}
+                        onChange={editDataset("owningOrgUnitId")}
                     />
                 </div>
                 <h4>

@@ -548,9 +548,9 @@ export const classification = {
 export type ContactPointDisplayOption = "team" | "custodian" | "organization";
 
 export const contactPointDisplay: Record<ContactPointDisplayOption, string> = {
-    team: "Display maintaining team name",
+    organization: "Display organisation name",
     custodian: "Display data custodian area name",
-    organization: "Display organisation name"
+    team: "Display maintaining team name"
 };
 
 export const publishingLevel = {
