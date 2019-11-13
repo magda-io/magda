@@ -138,15 +138,26 @@ trait RegistryConverters extends RegistryProtocols {
       "dataset-distributions",
       JsObject("distributions" -> JsArray())
     )
-    val publisher: Option[Registry.Record] = hit.aspects
-      .getOrElse("dataset-publisher", JsObject())
-      .extract[JsObject]('publisher.?)
-      .map((dataSet: JsObject) => {
-        val theDataSet =
-          JsObject(dataSet.fields + ("tenantId" -> JsNumber(hit.tenantId.get)))
-        val record = theDataSet.convertTo[Registry.Record]
-        record
-      })
+    val publisher: Option[Registry.Record] =  Try {
+        hit.aspects
+        .getOrElse("dataset-publisher", JsObject())
+        .extract[JsObject]('publisher.?)
+        .map((dataSet: JsObject) => {
+          val theDataSet =
+            JsObject(dataSet.fields + ("tenantId" -> JsNumber(hit.tenantId.get)))
+          val record = theDataSet.convertTo[Registry.Record]
+          record
+        })
+      } match {
+        case Success(publisher) => publisher
+        case Failure(e) =>
+          if (logger.isDefined) {
+            logger.get.error(
+              s"Failed to parse dataset-publisher: ${e.getMessage}"
+            )
+          }
+          None
+      }
 
     val accessControl = hit.aspects.get("dataset-access-control") match {
       case Some(JsObject(accessControlData)) =>

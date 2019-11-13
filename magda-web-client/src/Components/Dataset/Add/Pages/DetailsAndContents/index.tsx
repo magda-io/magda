@@ -66,11 +66,20 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                 <h3 className="with-underline">Title and language</h3>
                 <div className="question-title">
                     <h4>What is the title of the dataset?</h4>
+                    <ToolTip>
+                        We recommend ensuring dataset file names are descriptive
+                        so users can easily understand the contents.
+                    </ToolTip>
                     <div>
                         <AlwaysEditor
                             value={dataset.title}
                             onChange={editDataset("title")}
-                            editor={textEditorEx({ required: true })}
+                            editor={textEditorEx({
+                                placeholder: dataset.title
+                                    ? ""
+                                    : "Enter dataset title",
+                                required: true
+                            })}
                         />
                     </div>
                 </div>
@@ -155,7 +164,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     <div className="clearfix">
                         <MultilineTextEditor
                             value={dataset.description}
-                            placerHolder="Enter description text"
+                            placeholder="Enter description text"
                             limit={250}
                             onChange={props.edit("dataset")("description")}
                         />
@@ -211,7 +220,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         <h4>Why was this dataset retired?</h4>
                         <MultilineTextEditor
                             value={currency.retireReason}
-                            placerHolder="Enter dataset retire reason"
+                            placeholder="Enter dataset retire reason"
                             onChange={editCurrency("retireReason")}
                         />
                     </div>
@@ -284,7 +293,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         editor={multiDateIntervalEditor}
                     />
                 </div>
-                <h3>Spatial area</h3>
+                <h3>Spatial extent</h3>
                 <div>
                     <SpatialAreaInput
                         countryId={spatialCoverage.lv1Id}
