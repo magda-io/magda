@@ -554,9 +554,9 @@ export const contactPointDisplay: Record<ContactPointDisplayOption, string> = {
 };
 
 export const publishingLevel = {
-    agency: "Everyone in my organisation (recommended)",
+    agency: "Everyone in the department (recommended)",
+    division: "My division only",
     branch: "My branch only",
-    section: "My section only",
     team: "My team only"
 };
 
