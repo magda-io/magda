@@ -6,11 +6,12 @@ import spray.json._
 import org.everit.json.schema.loader.SchemaLoader
 import org.json.JSONObject
 import com.typesafe.config.Config
-import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 
 
 object AspectValidator {
+
+    def DEFAULT_META_SCHEMA_URI = "https://json-schema.org/draft-07/schema#"
 
     def shouldValidate(config: Config) = {
       // --- if not set default value is true
@@ -36,6 +37,11 @@ object AspectValidator {
         throw new Exception(s"Failed to validate aspect data: Cannot locate json schema for aspect id: ${aspectDef.id}")
       }
       val rawSchema = new JSONObject(aspectDef.jsonSchema.get.toString())
+      rawSchema.optString("$schema").trim.toLowerCase match {
+        case uri if uri.isEmpty || uri.contains("hyper-schema") || uri.contains("//json-schema.org/schema") =>
+          rawSchema.put("$schema", DEFAULT_META_SCHEMA_URI)
+        case _ =>
+      }
       val schema = SchemaLoader.load(rawSchema)
       schema.validate(new JSONObject(aspectData.toString))
     }
