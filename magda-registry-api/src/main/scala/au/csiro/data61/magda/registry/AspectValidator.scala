@@ -3,14 +3,24 @@ package au.csiro.data61.magda.registry
 import au.csiro.data61.magda.model.Registry._
 import scalikejdbc._
 import spray.json._
-import org.everit.json.schema.loader.SchemaLoader
-import org.json.JSONObject
 import com.typesafe.config.Config
-import gnieh.diffson._
 import gnieh.diffson.sprayJson._
+import com.networknt.schema.{JsonSchema, JsonSchemaFactory, ValidationMessage}
+import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
+import scala.collection.JavaConverters._
 
 
 object AspectValidator {
+
+    def getJsonSchemaFromStringContent(schemaContent: String):JsonSchema = {
+      val factory = JsonSchemaFactory.getInstance
+      factory.getSchema(schemaContent)
+    }
+
+    def getJsonNodeFromStringContent(jsonString:String):JsonNode = {
+      val mapper = new ObjectMapper()
+      mapper.readTree(jsonString)
+    }
 
     def shouldValidate(config: Config) = {
       // --- if not set default value is true
@@ -35,9 +45,17 @@ object AspectValidator {
       if(!aspectDef.jsonSchema.isDefined) {
         throw new Exception(s"Failed to validate aspect data: Cannot locate json schema for aspect id: ${aspectDef.id}")
       }
-      val rawSchema = new JSONObject(aspectDef.jsonSchema.get.toString())
-      val schema = SchemaLoader.load(rawSchema)
-      schema.validate(new JSONObject(aspectData.toString))
+      //val rawSchema = new JSONObject(aspectDef.jsonSchema.get.toString())
+      //val schema = SchemaLoader.load(rawSchema)
+      //schema.validate(new JSONObject(aspectData.toString))
+      val schema = getJsonSchemaFromStringContent(aspectDef.jsonSchema.get.toString())
+      val jsonNode = getJsonNodeFromStringContent(aspectData.toString)
+      val errors = schema.validate(jsonNode)
+      if(errors.size() > 0) {
+        val errorMessage = asScalaSet[ValidationMessage](errors).toList.map(_.getMessage).mkString("\n")
+        throw new Exception(errorMessage)
+      }
+
     }
 
     def validateWithAspectPatch(aspectPatch: JsonPatch, recordId: String, aspectId: String, tenantId: BigInt)(implicit session: DBSession, config: Config): Unit = {

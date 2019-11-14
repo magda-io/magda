@@ -28,7 +28,7 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpV % "test",
     "org.flywaydb" % "flyway-core" % "4.2.0" % "test",
     "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % "test",
-    "com.github.everit-org.json-schema" % "org.everit.json.schema" % "1.12.0"
+    "com.networknt" % "json-schema-validator" % "1.0.26"
   )
 }
 
