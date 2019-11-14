@@ -2,12 +2,13 @@ package au.csiro.data61.magda.registry
 
 import akka.http.scaladsl.model.StatusCodes
 import au.csiro.data61.magda.model.Registry._
-
 import spray.json._
 import scalikejdbc._
 import gnieh.diffson.sprayJson._
 
 class JsonSchemaValidationSpec extends ApiSpec {
+
+  val DEFAULT_MEATA_SCHEMA_URI = "http://json-schema.org/draft-07/schema#"
 
   override def testConfigSource =
     s"""
@@ -24,7 +25,34 @@ class JsonSchemaValidationSpec extends ApiSpec {
     """.stripMargin
 
 
-  val testJsonSchema: String =
+  def testJsonSchema(metaSchemaUri: String) = {
+
+    if(metaSchemaUri.isEmpty) {
+      testJsonSchemaTpl.replace("\"$schema\": \"http://json-schema.org/draft-07/schema#\",", metaSchemaUri)
+    } else {
+      var tpl = testJsonSchemaTpl.replace("http://json-schema.org/draft-07/schema#", metaSchemaUri)
+      if(metaSchemaUri.toLowerCase.contains("hyper-schema")){
+        // --- test magda `hyper-schema`
+        tpl = tpl.replace("\"items\": { \"type\": \"string\" }",
+          """
+            |"items": {
+            |  "type": "string",
+            |  "links":
+            |     [
+            |        {
+            |           "href": "/api/v0/registry/records/{$}",
+            |           "rel": "item"
+            |        }
+            |     ]
+            |}
+          """.stripMargin)
+      }
+      tpl
+    }
+  }
+
+
+  val testJsonSchemaTpl: String =
     """{
        |  "$id": "https://example.com/person.schema.json",
        |  "$schema": "http://json-schema.org/draft-07/schema#",
@@ -43,6 +71,11 @@ class JsonSchemaValidationSpec extends ApiSpec {
        |      "description": "Age in years which must be equal to or greater than zero.",
        |      "type": "integer",
        |      "minimum": 0
+       |    },
+       |    "tags": {
+       |      "title": "tags",
+       |      "type": "array",
+       |      "items": { "type": "string" }
        |    }
        |  },
        |  "required": ["lastName"]
@@ -53,6 +86,12 @@ class JsonSchemaValidationSpec extends ApiSpec {
       |  "firstName": "Joe",
       |  "lastName": "Bloggs",
       |  "age": 20
+      |}""".stripMargin,
+    """{
+      |  "firstName": "Joe",
+      |  "lastName": "Bloggs",
+      |  "age": 20,
+      |  "tags": ["tag1", "tag2", "tag3"]
       |}""".stripMargin,
     """{
       |  "lastName": "Bloggs"
@@ -84,10 +123,10 @@ class JsonSchemaValidationSpec extends ApiSpec {
   val ASPECT_ID = "test-aspect"
 
 
-  val testAspectDef = AspectDefinition(
+  def testAspectDef(uri: String) = AspectDefinition(
     id = ASPECT_ID,
     name = "Test Aspect",
-    jsonSchema = Some(testJsonSchema.parseJson.convertTo[JsObject])
+    jsonSchema = Some(testJsonSchema(uri).parseJson.convertTo[JsObject])
   )
 
 
@@ -97,17 +136,55 @@ class JsonSchemaValidationSpec extends ApiSpec {
     }
   }
 
-  def createTestAspectDef(param: FixtureParam): Unit = {
-    createAspectDef(param, testAspectDef)
+  def createTestAspectDef(param: FixtureParam, uri: String = DEFAULT_MEATA_SCHEMA_URI): Unit = {
+    createAspectDef(param, testAspectDef(uri))
   }
 
-
   describe("Test Create a New Record (POST /v0/records)") {
+
     describe("Test With Valid Aspect Data") {
       testValidAspectData.zipWithIndex.foreach{ case (jsonString, idx) =>
         it(s"Should process valid sample data no.${idx + 1} successfully"){ param =>
 
           createTestAspectDef(param)
+
+          val record = Record(s"test-record-${idx}", s"test record No: ${idx}", Map(
+            s"${ASPECT_ID}" -> jsonString.parseJson.convertTo[JsObject]
+          ), Some("tag"))
+
+          param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            responseAs[Record] shouldEqual record.copy(tenantId = Some(TENANT_1))
+          }
+        }
+      }
+    }
+
+    describe("Test With Valid Aspect Data (http://json-schema.org/schema#) ") {
+
+      testValidAspectData.zipWithIndex.foreach{ case (jsonString, idx) =>
+        it(s"Should process valid sample data no.${idx + 1} successfully"){ param =>
+
+          createTestAspectDef(param, "http://json-schema.org/schema#")
+
+          val record = Record(s"test-record-${idx}", s"test record No: ${idx}", Map(
+            s"${ASPECT_ID}" -> jsonString.parseJson.convertTo[JsObject]
+          ), Some("tag"))
+
+          param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            responseAs[Record] shouldEqual record.copy(tenantId = Some(TENANT_1))
+          }
+        }
+      }
+    }
+
+    describe("Test With Valid Aspect Data (http://json-schema.org/hyper-schema#) ") {
+
+      testValidAspectData.zipWithIndex.foreach{ case (jsonString, idx) =>
+        it(s"Should process valid sample data no.${idx + 1} successfully"){ param =>
+
+          createTestAspectDef(param, "http://json-schema.org/hyper-schema#")
 
           val record = Record(s"test-record-${idx}", s"test record No: ${idx}", Map(
             s"${ASPECT_ID}" -> jsonString.parseJson.convertTo[JsObject]
@@ -365,6 +442,5 @@ class JsonSchemaValidationSpec extends ApiSpec {
       }
     }
   }
-
 
 }
