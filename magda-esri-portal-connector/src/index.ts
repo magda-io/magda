@@ -11,7 +11,8 @@ const esriPortal = new EsriPortal({
     esriOrgGroup: argv.esriOrgGroup,
     id: argv.id,
     name: argv.name,
-    pageSize: argv.pageSize
+    pageSize: argv.pageSize,
+    updateInterval: argv.esriUpdateInterval
 });
 
 if (argv.arcgisUserId !== null) {
@@ -56,7 +57,7 @@ function runConnector() {
                 });
 
                 group.members = group.members.map(
-                    (ds: any) => `ds-${esriPortal.name}-${ds.id}`
+                    (ds: any) => `ds-${esriPortal.id}-${ds.id}`
                 );
                 await this.createGroup(group);
             }

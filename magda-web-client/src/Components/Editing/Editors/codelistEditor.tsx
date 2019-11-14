@@ -71,9 +71,12 @@ export function codelistRadioEditor(
             }
             return (
                 <div>
-                    {keys.map(val => {
+                    {keys.map((val, i) => {
                         return (
-                            <div className="au-control-input au-control-input--block">
+                            <div
+                                className="au-control-input au-control-input--block"
+                                key={i}
+                            >
                                 <input
                                     className="au-control-input__input"
                                     type="radio"

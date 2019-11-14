@@ -1,0 +1,61 @@
+[
+    {
+        "id": "record-0",
+        "aspects": {
+            "esri-access-control": {
+                "owner": "user0",
+                "expiration": 9569380434535
+            }
+        }
+    },
+    {
+        "id": "record-1",
+        "aspects": {
+            "esri-access-control": {
+                "owner": "user1",
+                "expiration": 9569380434535
+            }
+        }
+    },
+
+    {
+        "id": "record-2",
+        "aspects": {
+            "esri-access-control": {
+                "owner": "user2",
+                "expiration": 9569380434535
+            }
+        }
+    },
+
+    {
+        "id": "record-3",
+        "aspects": {
+            "esri-access-control": {
+                "owner": "user3",
+                "expiration": 9569380434535
+            }
+        }
+    },
+
+    {
+        "id": "record-4",
+        "aspects": {
+            "esri-access-control": {
+                "access": "public",
+                "owner": "user3",
+                "expiration": 9569380434535
+            }
+        }
+    },
+
+    {
+        "id": "record-5",
+        "aspects": {
+            "esri-access-control": {
+                "owner": "user2",
+                "expiration": 9569380434535
+            }
+        }
+    }
+]

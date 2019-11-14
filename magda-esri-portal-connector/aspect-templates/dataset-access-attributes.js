@@ -4,5 +4,7 @@ return {
     // item owner
     owner: dataset.esriOwner,
     // item access attribute
-    access: dataset.esriAccess
+    access: dataset.esriAccess,
+
+    expiration: dataset.esriExpiration
 };

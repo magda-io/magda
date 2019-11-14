@@ -7,6 +7,7 @@ General:
     The registry service can be configured to support either hierarchical organization based access
     policy (default) or Esri groups based access policy.
 -   Add esri portal connector. Read its README.md file before use.
+-   Lock helm version in gitlab to 2.15.2 due to issue: https://github.com/helm/helm/issues/6894
 
 Registry:
 
@@ -27,6 +28,7 @@ Search:
 -   Prevent freeText query from being None which will cause score to be 0
 -   Add tenant specific search.
 -   Fixed facet options (publishers) API error: Invalid aggregation name
+-   Fixed Querying formats in upper case causes two formats to be selected
 
 Indexer:
 
@@ -36,6 +38,7 @@ Indexer:
 -   Fixed indexer incorrect parsing bounding box data in spatialCoverage aspect
 -   Added auth when crawling the registry
 -   Fixed Data.json spatial bounding box ordering not understood
+-   Handle and log the exception "Object is missing required member 'id'"
 
 Cataloging:
 
@@ -108,12 +111,26 @@ UI:
 -   Fixed typos in no-print styling and adding keywords tooltip
 -   Added a preview mode for add dataset, that allows all users to use add dataset but prevents them from submitting.
 -   Fixed text wrap around tooltip
--   Fixed Add Dataset / License setting: Long file names should be wrapped to the next line
+-   Fixed Add Dataset / Licence setting: Long file names should be wrapped to the next line
 -   Added a new color (slightly grey) for preview screens
 -   Removed unnecessary margin in the filter facets
+-   Map Preview: avoid selecting Esri feature server distribution for preview
 -   Fixed mobile views incorrect min. width
 -   Drafts should be ordered by date on Drafts list page
 -   Changed text to reflect state/territory/country accordingly
+-   Fixed CSV loader didn't retry the different line ending correctly
+-   Saved publisher id in the database
+-   Added hover text for the tooltip beside the date-picker in the Add Dataset page
+-   Added a distribution hyperlink to the title of resource links
+-   Made the default name of a dataset blank
+-   Added a tooltip for dataset names
+-   Rename "Spatial area" to "Spatial extent"
+-   Fix issue with user manually typing dates
+-   Add tooltip to explain the difference between MB and MiB, KB and KiB, etc.
+-   Fixed `validateDOMNesting` warning
+-   Fixed warning for placeholder text being a boolean value
+-   Added unique key to the topmost `div` of `codelistEditor`
+-   Rename `license` to `licence` where appropriate
 
 Gateway:
 
@@ -145,6 +162,9 @@ Others:
 -   Disabled tenant-api & tenant-db when `enableMultiTenants` = false
 -   Excluded organisations that are owners of thesauruses (keyword taxonomies) from being considered as owners of datasets via CSW connector
 -   Fix data.json connector dcat-dataset-strings aspect so keywords are stored correctly
+-   Upgrade Scala dependencies versions & added scalafmt support
+-   Fixed doc to reflect [lerna deprecating an option](https://github.com/lerna/lerna/commit/f2c3a92fe41b6fdc5d11269f0f2c3e27761b4c85)
+-   Fix potential memory leak by deregistering listener when Header is unmounted
 
 ## 0.0.55
 
@@ -215,7 +235,7 @@ Connectors:
 
 -   Allowed Ckan connector to pull datasets belongs to a specified organisation
 -   Added `presetRecordAspects` & `extra` parameters supports to all connectors
--   Improvements on CSW connector license info retrieve
+-   Improvements on CSW connector licence info retrieve
 
 Dataset Page:
 
@@ -321,7 +341,7 @@ Search:
 
 Others:
 
--   Download unknown project open data license URLs to extract human readable licence
+-   Download unknown project open data licence URLs to extract human readable licence
 -   Removed the .bin extension from the logo
 
 ## 0.0.50
@@ -440,7 +460,7 @@ Others:
 -   Switch apidocs root to `<host>`
 -   Removed unused jQuery dependency from format-minion
 -   Split the registry api into full and read only modes that can run separately in production
--   Take open data connector license from dataset level to distribution level and add basic black box test
+-   Take open data connector licence from dataset level to distribution level and add basic black box test
 -   Fix logo vertical alignment and partially hidden issue
 -   Made header padding even
 -   Made the broken link minion use `GET` for everything and ignore the data.

@@ -97,6 +97,12 @@ export const argv: any = addJwtSecretFromEnvVar(
             type: "number",
             demand: true,
             default: 0
+        })
+        .option("esriUpdateInterval", {
+            describe: "Re-crawl esri portal interval in hours",
+            type: "number",
+            demand: true,
+            default: 12
         }).argv
 );
 

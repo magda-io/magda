@@ -29,7 +29,9 @@ function MagdaSingleDatePicker({
     const [focused, setFocused] = useState(false);
 
     const onDateChange = (moment: Moment.Moment | null) => {
-        callback(moment && moment.toDate());
+        if (moment) {
+            callback(moment && moment.toDate());
+        }
     };
 
     return (
