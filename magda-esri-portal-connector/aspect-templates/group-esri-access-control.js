@@ -1,5 +1,5 @@
 return {
     groups: [group.id],
-    access: "shared",
+    access: group.access === "any authenticated users" ? "org" : "shared",
     expiration: transformer.expiration
 };
