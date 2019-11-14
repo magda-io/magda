@@ -1,5 +1,5 @@
 {
-    "$schema": "http://json-schema.org/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "Aspect for capturing the source of a record",
     "type": "object",
     "properties": {
@@ -21,13 +21,11 @@
         },
         "extras": {
             "title": "Extra Metadata",
-            "description":
-                "Any extra metadata a connector may have. \nThis field is auto copied from connector configData.extras.",
+            "description": "Any extra metadata a connector may have. \nThis field is auto copied from connector configData.extras.",
             "type": "object"
         },
         "problems": {
-            "title":
-                "Problems encountered while creating this record from the source.",
+            "title": "Problems encountered while creating this record from the source.",
             "type": "array",
             "items": {
                 "title": "A problem report.",

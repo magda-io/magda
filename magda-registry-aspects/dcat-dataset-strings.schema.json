@@ -1,5 +1,5 @@
 {
-    "$schema": "http://json-schema.org/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "DCAT Dataset properties as strings",
     "description": "The [DCAT Dataset](https://www.w3.org/TR/vocab-dcat/#class-dataset) properties represented as strings.  This aspect is intended to be quite permissive of arbitrary property values, even those that may be difficult or impossible to interpret.",
     "type": "object",

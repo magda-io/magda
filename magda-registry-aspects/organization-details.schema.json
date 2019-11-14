@@ -1,5 +1,5 @@
 {
-    "$schema": "http://json-schema.org/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "Aspect for capturing basic details of an organization",
     "type": "object",
     "properties": {
@@ -20,8 +20,7 @@
             "type": "string"
         },
         "imageUrl": {
-            "title":
-                "The URL of an image representing the organization, such as its logo.",
+            "title": "The URL of an image representing the organization, such as its logo.",
             "type": "string"
         },
         "phone": {
