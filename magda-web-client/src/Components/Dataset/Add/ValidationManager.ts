@@ -25,7 +25,7 @@ import uniq from "lodash/uniq";
  */
 
 /**
- * A list of field json path (query against [add dataset page state](https://github.com/magda-io/magda/blob/5d9adef14f8aeea5bf3039ecad7c362601393307/magda-web-client/src/Components/Dataset/Add/DatasetAddCommon.ts#L133) that should be validated / Mandatory.
+ * A list of field json path (query against [add dataset page state](https://github.com/magda-io/magda/blob/master/magda-web-client/src/Components/Dataset/Add/DatasetAddCommon.ts#L133) that should be validated / Mandatory.
  * We currently don't use json path here to query any json data.
  * Use json path as a standard way to name the mandatory field only.
  * e.g. ["$.dataset.title", "$.files[1].license", "$.dataset.defaultLicense"]

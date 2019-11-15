@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useMemo } from "react";
 import uuidv4 from "uuid/v4";
 import AsyncCreatable from "react-select/async-creatable";
 import Async, { AsyncProps } from "react-select/async";
@@ -64,7 +64,12 @@ function ValidationHoc<OptionType>(
                 onBlur(event);
             }
         };
-        const errorMessageId = `input-error-text-${uuidv4()}`;
+
+        // --- only generate once
+        const errorMessageId = useMemo(
+            () => `input-error-text-${uuidv4()}`,
+            undefined
+        );
 
         const selectRef = useRef<ReactSelectComponent<OptionType>>(null);
         const containerDivRef = useRef<HTMLDivElement>(null);
