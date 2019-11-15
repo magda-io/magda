@@ -45,16 +45,18 @@ function getSessionId(req: express.Request, secret: string = ""): string {
     if (!sessionCookie) {
         return null;
     } else {
-        let cookieData: string | boolean = sessionCookie;
-        if (cookieData.substr(0, 2) === "s:") {
+        if (sessionCookie.substr(0, 2) === "s:") {
             // --- process signed cookie
-            cookieData = signature.unsign(cookieData.slice(2), secret);
-            if (cookieData === false) {
+            const unsignResult = signature.unsign(
+                sessionCookie.slice(2),
+                secret
+            );
+            if (unsignResult === false) {
                 return null;
             }
-            return cookieData;
+            return unsignResult;
         } else {
-            return cookieData;
+            return sessionCookie;
         }
     }
 }
