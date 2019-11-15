@@ -56,7 +56,7 @@ function ValidationHoc<OptionType>(
             validationErrorMessage,
             elRef
         ] = useValidation(validationFieldPath, validationFieldLabel);
-        const onBlurHanlder = (event: any) => {
+        const onBlurHandler = (event: any) => {
             if (validationFieldPath) {
                 ValidationManager.onInputFocusOut(validationFieldPath);
             }
@@ -116,7 +116,7 @@ function ValidationHoc<OptionType>(
                     ref={selectRef}
                     aria-label={validationErrorMessage}
                     styles={ReactSelectStyles}
-                    onBlur={onBlurHanlder}
+                    onBlur={onBlurHandler}
                     isValidationError={isValidationError}
                     validationErrorMessage={validationErrorMessage}
                     validationElRef={elRef}

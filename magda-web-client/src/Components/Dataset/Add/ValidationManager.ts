@@ -125,8 +125,8 @@ function findItemsByJsonPath(jsonPath: string): ValidationItem[] {
     const stateData = getStateData();
     JsonPath.paths(stateData, jsonPath)
         .map(item => JsonPath.stringify(item))
-        .forEach(resovledJsonPath => {
-            const item = findItemByExactJsonPathMatch(resovledJsonPath);
+        .forEach(resolvedJsonPath => {
+            const item = findItemByExactJsonPathMatch(resolvedJsonPath);
             if (typeof item !== "undefined") {
                 items.push(item);
             }
@@ -169,11 +169,12 @@ function shouldValidate(jsonPath: string) {
 }
 
 export const registerValidationItem = (vItem: ValidationItem) => {
-    if (!shouldValidate(vItem.jsonPath)) return;
-    if (validationItems.findIndex(item => item === vItem) !== -1) {
-        return;
+    if (
+        shouldValidate(vItem.jsonPath) &&
+        validationItems.indexOf(vItem) === -1
+    ) {
+        validationItems.push(vItem);
     }
-    validationItems.push(vItem);
 };
 
 export const deregisterValidationItem = (
@@ -300,7 +301,7 @@ function validateSelectedItems(items: ValidationItem[]) {
 }
 
 /**
- * Validate all registered iputs.
+ * Validate all registered inputs.
  * This function should be called when user requests to move to next page.
  * This function will:
  * - Re-validate all inputs
@@ -312,7 +313,7 @@ function validateSelectedItems(items: ValidationItem[]) {
 export const validateAll = () => validateSelectedItems(validationItems);
 
 /**
- * Validate all iputs matching a list of json Paths.
+ * Validate all inputs matching a list of json Paths.
  * This function should be called when user requests to move to next page.
  * This function will:
  * - Re-validate all inputs
