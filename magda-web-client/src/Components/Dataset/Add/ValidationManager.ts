@@ -86,9 +86,48 @@ export interface ValidationItem<T = ElementType> {
     elRef: RefType<T>;
 }
 
-const validationFieldList: ValidationFieldList = config.mandatoryFields;
+const validationFieldList: ValidationFieldList = config.mandatoryFields.map(
+    convertConfigFieldItem
+);
 let validationItems: ValidationItem[] = [];
 let stateDataGetter: () => State;
+
+/**
+ * Convert field name string in the config to json path that we use internally
+ *
+ * @param {string} field
+ * @returns {string[]}
+ */
+function convertConfigFieldItem(field: string): string {
+    switch (field) {
+        case "dataset.title":
+            return "$.dataset.title";
+        case "dataset.description":
+            return "$.dataset.description";
+        case "dataset.defaultLicense":
+            return "$.dataset.defaultLicense";
+        case "files.title":
+            return "$.files[*].title";
+        case "files.format":
+            return "$.files[*].format";
+        case "files.license":
+            return "$.files[*].license";
+        case "dataset.publisher":
+            return "$.dataset.publisher";
+        case "licenseLevel":
+            return "$.licenseLevel";
+        case "dataset.defaultLicense":
+            return "$.dataset.defaultLicense";
+        case "files.license":
+            return "$.files[*].license";
+        case "informationSecurity.classification":
+            return "$.informationSecurity.classification";
+        case "informationSecurity.disseminationLimits":
+            return "$.informationSecurity.disseminationLimits";
+        default:
+            throw new Error(`Unknown mandatory field config name: ${field}`);
+    }
+}
 
 export const setStateDataGetter = (getter: () => State) => {
     stateDataGetter = getter;
