@@ -262,7 +262,7 @@ class NestedSetModelQueryer {
         const tbl = this.tableName;
 
         const result = await (client ? client : this.pool).query(
-            `SELECT ${this.selectFields("Children", fields)}
+            `SELECT ${this.selectFields("Children", fields)} 
              FROM "${tbl}" AS Parents,  "${tbl}" AS Children
              WHERE Children."left" ${
                  includeMyself ? ">=" : ">"
@@ -295,7 +295,7 @@ class NestedSetModelQueryer {
     ): Promise<NodeRecord[]> {
         const tbl = this.tableName;
         const result = await (client ? client : this.pool).query(
-            `SELECT ${this.selectFields("Parents", fields)}
+            `SELECT ${this.selectFields("Parents", fields)} 
              FROM "${tbl}" AS Parents,  "${tbl}" AS Children
              WHERE Children."left" ${
                  includeMyself ? ">=" : ">"
@@ -325,13 +325,13 @@ class NestedSetModelQueryer {
     ): Promise<NodeRecord[]> {
         const tbl = this.tableName;
         const result = await (client ? client : this.pool).query(
-            `SELECT ${this.selectFields("Children", fields)}
+            `SELECT ${this.selectFields("Children", fields)} 
             FROM "${tbl}" AS Parents, "${tbl}" AS Children
-            WHERE Children."left" BETWEEN Parents."left" AND Parents."right"
+            WHERE Children."left" BETWEEN Parents."left" AND Parents."right" 
             AND Parents."left" = (
                 SELECT MAX(S."left") FROM "${tbl}" AS S
                 WHERE S."left" < Children."left" AND S."right" > Children."right"
-            )
+            ) 
             AND Parents."id" = $1
             ORDER BY Children."left" ASC`,
             [parentNodeId]
@@ -357,13 +357,13 @@ class NestedSetModelQueryer {
     ): Promise<Maybe<NodeRecord>> {
         const tbl = this.tableName;
         const result = await (client ? client : this.pool).query(
-            `SELECT ${this.selectFields("Parents", fields)}
+            `SELECT ${this.selectFields("Parents", fields)} 
             FROM "${tbl}" AS Parents, "${tbl}" AS Children
-            WHERE Children.left BETWEEN Parents.left AND Parents.right
+            WHERE Children.left BETWEEN Parents.left AND Parents.right 
             AND Parents.left = (
                 SELECT MAX(S.left) FROM "${tbl}" AS S
                 WHERE S.left < Children.left AND S.right > Children.right
-            )
+            ) 
             AND Children.id = $1`,
             [childNodeId]
         );
@@ -387,8 +387,8 @@ class NestedSetModelQueryer {
         const result = await this.pool.query(
             `SELECT ${this.selectFields("t2")}
             FROM "${tbl}" AS t1, "${tbl}" AS t2
-            WHERE t2.left BETWEEN t1.left AND t1.right
-            GROUP BY t2.id
+            WHERE t2.left BETWEEN t1.left AND t1.right 
+            GROUP BY t2.id 
             HAVING COUNT(t1.id) = $1`,
             [level]
         );
@@ -408,7 +408,7 @@ class NestedSetModelQueryer {
     async getLevelOfNode(nodeId: string): Promise<number> {
         const tbl = this.tableName;
         const result = await this.pool.query(
-            `SELECT COUNT(Parents.id) AS level
+            `SELECT COUNT(Parents.id) AS level 
             FROM "${tbl}" AS Parents, "${tbl}" AS Children
             WHERE Children.left BETWEEN Parents.left AND Parents.right AND Children.id = $1`,
             [nodeId]
@@ -434,12 +434,12 @@ class NestedSetModelQueryer {
     async getTreeHeight(): Promise<number> {
         const tbl = this.tableName;
         const result = await this.pool.query(
-            `SELECT MAX(level) AS height
+            `SELECT MAX(level) AS height 
              FROM(
                 SELECT COUNT(t1.id)
                 FROM "${tbl}" AS t1, "${tbl}" AS t2
-                WHERE t2.left BETWEEN t1.left AND t1.right
-                GROUP BY t2.id
+                WHERE t2.left BETWEEN t1.left AND t1.right 
+                GROUP BY t2.id 
              ) AS L(level)`
         );
         if (!result || !result.rows || !result.rows.length)
@@ -463,7 +463,7 @@ class NestedSetModelQueryer {
         const tbl = this.tableName;
         const result = await this.pool.query(
             `SELECT ${this.selectFields("Children")}
-            FROM "${tbl}" AS Parents, "${tbl}" AS Children
+            FROM "${tbl}" AS Parents, "${tbl}" AS Children 
             WHERE Children.left = Parents.left + 1 AND Parents.id = $1`,
             [parentNodeId]
         );
@@ -485,7 +485,7 @@ class NestedSetModelQueryer {
         const tbl = this.tableName;
         const result = await this.pool.query(
             `SELECT ${this.selectFields("Children")}
-            FROM "${tbl}" AS Parents, "${tbl}" AS Children
+            FROM "${tbl}" AS Parents, "${tbl}" AS Children 
             WHERE Children.right = Parents.right - 1 AND Parents.id = $1`,
             [parentNodeId]
         );
@@ -512,9 +512,9 @@ class NestedSetModelQueryer {
         const tbl = this.tableName;
         const result = await this.pool.query(
             `SELECT ${this.selectFields("t2")}
-            FROM "${tbl}" AS t1, "${tbl}" AS t2, "${tbl}" AS t3
+            FROM "${tbl}" AS t1, "${tbl}" AS t2, "${tbl}" AS t3 
             WHERE t1.id = $1 AND t3.id = $2
-            AND t2.left BETWEEN t1.left AND t1.right
+            AND t2.left BETWEEN t1.left AND t1.right 
             AND t3.left BETWEEN t2.left AND t2.right
             ORDER BY (t2.right-t2.left) DESC`,
             [higherNodeId, lowerNodeId]
@@ -548,11 +548,11 @@ class NestedSetModelQueryer {
                 CASE
                     WHEN CAST($1 AS varchar) = CAST($2 AS varchar)
                     THEN 0
-                    WHEN t1.left BETWEEN t2.left AND t2.right
+                    WHEN t1.left BETWEEN t2.left AND t2.right 
                     THEN -1
-                    WHEN t2.left BETWEEN t1.left AND t1.right
+                    WHEN t2.left BETWEEN t1.left AND t1.right 
                     THEN 1
-                    ELSE null
+                    ELSE null 
                 END
             ) AS "result"
             FROM "${tbl}" AS t1, "${tbl}" AS t2
@@ -669,7 +669,9 @@ class NestedSetModelQueryer {
             );
             if (result && isNonEmptyArray(result.rows)) {
                 throw new Error(
-                    `A root node with id: ${result.rows[0]["id"]} already exists`
+                    `A root node with id: ${
+                        result.rows[0]["id"]
+                    } already exists`
                 );
             }
             const countResult = await client.query(
@@ -762,8 +764,8 @@ class NestedSetModelQueryer {
             );
 
             await client.query(
-                `UPDATE "${tbl}"
-                SET
+                `UPDATE "${tbl}" 
+                SET 
                     "left" = CASE WHEN "left" > $1 THEN "left" + 2 ELSE "left" END,
                     "right" = CASE WHEN "right" >= $1 THEN "right" + 2 ELSE "right" END
                 WHERE "right" >= $1`,
@@ -841,8 +843,8 @@ class NestedSetModelQueryer {
             }
 
             await client.query(
-                `UPDATE "${tbl}"
-                SET
+                `UPDATE "${tbl}" 
+                SET 
                     "left" = CASE WHEN "left" < $1 THEN "left" ELSE "left" + 2 END,
                     "right" = CASE WHEN "right" < $1 THEN "right" ELSE "right" + 2 END
                 WHERE "right" > $1`,
@@ -936,11 +938,11 @@ class NestedSetModelQueryer {
 
             await client.query(
                 `
-            UPDATE "${tbl}"
-            SET
+            UPDATE "${tbl}" 
+            SET 
             "left" = "left" + CASE
                 WHEN $3::int4 < $1::int4
-                THEN CASE
+                THEN CASE 
                     WHEN "left" BETWEEN $1 AND $2
                     THEN $3 - $1
                     WHEN "left" BETWEEN $3 AND ($1 - 1)
@@ -956,7 +958,7 @@ class NestedSetModelQueryer {
                 ELSE 0 END,
             "right" = "right" + CASE
                 WHEN $3::int4 < $1::int4
-                THEN CASE
+                THEN CASE 
                     WHEN "right" BETWEEN $1 AND $2
                     THEN $3 - $1
                     WHEN "right" BETWEEN $3 AND ($1 - 1)
@@ -1028,10 +1030,10 @@ class NestedSetModelQueryer {
                 SET "left" = CASE
                         WHEN "left" > $1
                             THEN "left" - ($2 - $1 + 1)
-                        ELSE "left" END,
+                        ELSE "left" END, 
                     "right" = CASE
                         WHEN "right" > $1
-                            THEN "right" - ($2 - $1 + 1)
+                            THEN "right" - ($2 - $1 + 1) 
                         ELSE "right" END
                 WHERE "left" > $1 OR "right" > $1
                 `,
@@ -1091,7 +1093,7 @@ class NestedSetModelQueryer {
                             THEN "left" - 1
                         WHEN "left" > $1 AND "right" > $2
                             THEN "left" - 2
-                        ELSE "left" END,
+                        ELSE "left" END, 
                     "right" = CASE
                         WHEN "left" > $1 AND "right" < $2
                             THEN "right" - 1
