@@ -11,7 +11,7 @@ resolvers += "elasticsearch-releases" at "https://artifacts.elastic.co/maven"
 libraryDependencies ++= {
   val akkaV       = "2.5.20"
   val akkaHttpV   = "10.1.7"
-  val scalaTestV  = "2.2.6"
+  val scalaTestV  = "3.0.8"
   val LuceneVersion = "7.3.1"
   Seq(
     "org.scalatest"     %% "scalatest" % scalaTestV % "test",
@@ -32,5 +32,3 @@ libraryDependencies ++= {
   )
 }
 
-EclipseKeys.withJavadoc := true
-EclipseKeys.withSource := true
