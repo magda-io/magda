@@ -833,6 +833,48 @@ export default function createApiRouter(options: ApiRouterOptions) {
         }
     );
 
+    /**
+     * @apiGroup Auth
+     * @api {post} /public/opa/extra/input
+     * @apiDescription Admin users add extra input for OPA query.
+     *
+     * @apiParamExample (Body) {json}:
+     *     {
+     *       id: "esri portal last crawl expiration"
+     *       data: {"esri portal last crawl expiration": 1573760909442}
+     *     }
+     *
+     * @apiSuccessExample 200
+     *     {
+     *       "result": "OK"
+     *     }
+     *
+     * @apiErrorExample {json} 400/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 400, //--- or 500 depends on error type
+     *      "errorMessage": "Bad request"
+     *    }
+     */
+    router.post("/public/opa/extra/input", MUST_BE_ADMIN, async (req, res) => {
+        try {
+            //console.log(JSON.stringify(req.body))
+            const id = req.body.id;
+            const data = req.body.data;
+            const ok = await database.updateExtraInput(
+                req,
+                options.jwtSecret,
+                id,
+                data
+            );
+            const statusCode = ok ? 200 : 400;
+            res.status(statusCode);
+        } catch (e) {
+            respondWithError("/public/opa/extra/input", res, e);
+        }
+        res.end();
+    });
+
     // This is for getting a JWT in development so you can do fake authenticated requests to a local server.
     if (process.env.NODE_ENV !== "production") {
         router.get("public/jwt", function(req, res) {

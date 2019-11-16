@@ -84,6 +84,35 @@ export default class ApiClient {
         }
     }
 
+    async updateOpaExtraInput(extraInput: any): Promise<any> {
+        try {
+            const res = await fetch(
+                `${this.baseUrl}/public/opa/extra/input`,
+                this.getMergeRequestInitOption({
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(extraInput)
+                })
+            );
+            if (res.status >= 400) {
+                throw new Error(
+                    `Encountered error ${
+                        res.status
+                    } when POSTing opa extra input to ${
+                        this.baseUrl
+                    }/public/opa/extra/input`
+                );
+            }
+
+            return;
+        } catch (e) {
+            console.error(e);
+            throw e;
+        }
+    }
+
     private async handleGetResult(
         promise: Promise<Response>
     ): Promise<Maybe<User>> {

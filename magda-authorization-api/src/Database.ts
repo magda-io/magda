@@ -289,4 +289,51 @@ export default class Database {
         }
         return user;
     }
+
+    async updateExtraInput(
+        req: any,
+        jwtSecret: string,
+        id: string,
+        data: any
+    ): Promise<boolean> {
+        const userId = getUserId(req, jwtSecret).valueOr(null);
+        if (!userId || userId === "") {
+            return false;
+        }
+
+        const user = (await this.getUser(userId)).valueOr(null);
+        if (!user) {
+            throw new GenericError("Not Found User", 404);
+        }
+        const userRoles = await this.getUserRoles(userId);
+        const hasAdminRole =
+            userRoles.filter(role => role.id === ADMIN_USERS_ROLE) != [];
+
+        /*
+            Checking hasAdminRole is redundant as the calling of this function is restricted
+            to admin users in api router. The checking here is a second line defence.
+        */
+        if (hasAdminRole) {
+            await this.pool.query(
+                `INSERT INTO extra_input (id, data) VALUES ($1, $2) 
+                ON CONFLICT (id) DO UPDATE SET "data" = $2;`,
+                [id, data]
+            );
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    async getExtraInput(): Promise<any> {
+        let result: any = {};
+        await this.pool.query(`SELECT data FROM extra_input`).then(res => {
+            res.rows.forEach(item => {
+                result = { ...result, ...item.data };
+            });
+        });
+
+        return result;
+    }
 }

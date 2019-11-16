@@ -3,15 +3,15 @@ package au.csiro.data61.magda.client
 import akka.stream.Materializer
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
+
 import scala.concurrent.ExecutionContext
 import au.csiro.data61.magda.model.Auth.AuthProtocols
 import au.csiro.data61.magda.model.Auth.User
 import java.net.URL
-import akka.http.scaladsl.Http
+
 import scala.concurrent.Future
-import akka.http.scaladsl.model.HttpRequest
-import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 
 class AuthApiClient(httpFetcher: HttpFetcher)(implicit val config: Config, implicit val system: ActorSystem, implicit val executor: ExecutionContext, implicit val materializer: Materializer) extends AuthProtocols {
@@ -27,5 +27,4 @@ class AuthApiClient(httpFetcher: HttpFetcher)(implicit val config: Config, impli
       case _              => Unmarshal(response.entity).to[String].map(error => throw new Exception(error))
     })
   }
-
 }

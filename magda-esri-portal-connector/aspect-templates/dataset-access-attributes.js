@@ -6,6 +6,5 @@ const groups = (groupInfo.admin || [])
 return {
     groups: groups.map(group => group.id),
     owner: dataset.owner,
-    access: dataset.access,
-    expiration: transformer.expiration
+    access: dataset.access
 };

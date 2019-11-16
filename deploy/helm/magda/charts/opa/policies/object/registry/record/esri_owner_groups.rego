@@ -4,7 +4,7 @@ import data.object.registry.record.has_permission
 import data.object.registry.record.esri_groups
 import data.object.registry.record.esri_owner
 import data.object.registry.record.esri_public
-import data.object.registry.record.esri_expiration
+import data.input.registry.esri_expiration
 import data.object.registry.record.admin_role
 
 read {

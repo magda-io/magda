@@ -1,6 +1,7 @@
 import EsriPortal from "./EsriPortal";
 import JsonConnector from "@magda/typescript-common/dist/JsonConnector";
 import { JsonConnectorOptions } from "@magda/typescript-common/dist/JsonConnector";
+import ApiClient from "@magda/typescript-common/dist/authorization-api/ApiClient";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 import ConnectionResult from "@magda/typescript-common/dist/ConnectionResult";
 
@@ -84,8 +85,28 @@ function runConnector() {
         registry: registry
     });
 
+    const authApi = new ApiClient(
+        argv.authorizationApi,
+        argv.jwtSecret,
+        argv.userId
+    );
+
+    function saveLastCrawlExpiration() {
+        const expiration =
+            Date.now() + argv.esriUpdateInterval * 60 * 60 * 1000;
+        const extraInput = {
+            id: "esri portal last crawl expiration",
+            data: {
+                "esri portal last crawl expiration": expiration
+            }
+        };
+        authApi.updateOpaExtraInput(extraInput);
+
+        console.log(JSON.stringify(extraInput));
+    }
+
     if (!argv.interactive) {
-        connector.run();
+        connector.run().then(_ => saveLastCrawlExpiration());
     } else {
         connector.runInteractive({
             timeoutSeconds: argv.timeout,

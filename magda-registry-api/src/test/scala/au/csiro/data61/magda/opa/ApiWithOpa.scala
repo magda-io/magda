@@ -1,19 +1,18 @@
 package au.csiro.data61.magda.opa
 
+import java.net.URL
+
 import akka.pattern.gracefulStop
 import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.marshalling.ToEntityMarshaller
+import akka.http.scaladsl.model.{HttpHeader, HttpResponse, StatusCodes}
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import au.csiro.data61.magda.Authentication
-import au.csiro.data61.magda.client.AuthApiClient
+import au.csiro.data61.magda.client.{AuthApiClient, HttpFetcher, HttpFetcherImpl}
 import au.csiro.data61.magda.model.Auth.AuthProtocols
-import au.csiro.data61.magda.model.Registry.{
-  AspectDefinition,
-  MAGDA_TENANT_ID_HEADER,
-  Record
-}
+import au.csiro.data61.magda.model.Registry.{AspectDefinition, MAGDA_TENANT_ID_HEADER, Record}
 import au.csiro.data61.magda.registry._
 import com.auth0.jwt.JWT
 import com.typesafe.config.Config
@@ -24,7 +23,7 @@ import scalikejdbc._
 import scalikejdbc.config.{DBs, EnvPrefix, TypesafeConfig, TypesafeConfigReader}
 import spray.json.{JsObject, JsString, JsonParser}
 
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.io.BufferedSource
 import scala.io.Source.fromFile
@@ -107,6 +106,13 @@ abstract class ApiWithOpa
       jwtToken
     )
 
+  }
+
+  val httpFetcher: HttpFetcher = new HttpFetcherImpl(new URL("http://localhost:6104"))
+
+  def updateExtraInput(extraInput: JsObject) = {
+    val myHeaders: Seq[HttpHeader] = Seq(addJwtToken(adminUser))
+    httpFetcher.post(path = s"/v0/public/opa/extra/input", headers = myHeaders, payload = extraInput)
   }
 
   val TENANT_0: BigInt = 0

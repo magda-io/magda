@@ -8,12 +8,19 @@ import spray.json._
 abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
     extends ApiWithOpa {
 
+  def prepareData(param: FixtureParam): Unit ={
+    createAspectDefinitions(param)
+    createRecords(param)
+    import spray.json._
+    val notExpired = JsObject("id"-> JsString("esri portal last crawl expiration"), "data" -> JsObject("esri portal last crawl expiration" -> JsString("never expired")))
+    updateExtraInput(notExpired)
+  }
+
   describe("should authorize non-link aspect query") {
     it(
       "on specified record (as path param)"
     ) { param =>
-      createAspectDefinitions(param)
-      createRecords(param)
+      prepareData(param)
 
       userIdsAndExpectedRecordIdIndexesWithoutLink.map(
         userIdAndExpectedRecordIndexes => {
@@ -54,8 +61,7 @@ abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
     it(
       "on specified record (as query param)"
     ) { param =>
-      createAspectDefinitions(param)
-      createRecords(param)
+      prepareData(param)
 
       userIdsAndExpectedRecordIdIndexesWithoutLink.map(
         userIdAndExpectedRecordIndexes => {
@@ -96,8 +102,7 @@ abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
     it(
       "on all records"
     ) { param =>
-      createAspectDefinitions(param)
-      createRecords(param)
+      prepareData(param)
 
       userIdsAndExpectedRecordIdIndexesWithoutLink.map(
         userIdAndExpectedRecordIndexes => {
@@ -132,8 +137,7 @@ abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
     it(
       "on all records without specifying any aspects"
     ) { param =>
-      createAspectDefinitions(param)
-      createRecords(param)
+      prepareData(param)
 
       userIdsAndExpectedRecordIdIndexesWithoutLink.map(
         userIdAndExpectedRecordIndexes => {
@@ -162,8 +166,7 @@ abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
     it(
       "on all records with limit"
     ) { param =>
-      createAspectDefinitions(param)
-      createRecords(param)
+      prepareData(param)
 
       val limit = 3
       val userIdAndExpectedRecordIndexes = (userId0, List(0, 1, 2))
@@ -198,8 +201,7 @@ abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
     it(
       "and return different page tokens for different users (with-links aspect)"
     ) { param =>
-      createAspectDefinitions(param)
-      createRecords(param)
+      prepareData(param)
       val pageSize = 2
 
       /**
@@ -296,8 +298,7 @@ abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
     it(
       "and return different page tokens for different users (non-link aspect)"
     ) { param =>
-      createAspectDefinitions(param)
-      createRecords(param)
+      prepareData(param)
       val pageSize = 3
 
       /**
@@ -451,8 +452,7 @@ abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
     it(
       "of summary on all records"
     ) { param =>
-      createAspectDefinitions(param)
-      createRecords(param)
+      prepareData(param)
 
       userIdsAndExpectedRecordIdIndexesWithoutLink.map(
         userIdAndExpectedRecordIndexes => {
@@ -481,8 +481,7 @@ abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
     it(
       "of summary on specified record"
     ) { param =>
-      createAspectDefinitions(param)
-      createRecords(param)
+      prepareData(param)
 
       userIdsAndExpectedRecordIdIndexesWithoutLink.map(
         userIdAndExpectedRecordIndexes => {
@@ -519,8 +518,7 @@ abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
     it(
       "of count on all records"
     ) { param =>
-      createAspectDefinitions(param)
-      createRecords(param)
+      prepareData(param)
 
       userIdsAndExpectedRecordIdIndexesWithoutLink.map(
         userIdAndExpectedRecordIndexes => {
@@ -545,8 +543,7 @@ abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
     it(
       "and return link to authorized user (dereference=false)"
     ) { param =>
-      createAspectDefinitions(param)
-      createRecords(param)
+      prepareData(param)
 
       val referencingRecordId = "record-2"
       val referencedRecordId = "record-1"
@@ -568,8 +565,7 @@ abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
     it(
       "and return link to authorized user (dereference=true)"
     ) { param =>
-      createAspectDefinitions(param)
-      createRecords(param)
+      prepareData(param)
 
       val referencingRecordId = "record-2"
       val referencedRecordIndex = 1 // "record-1"
@@ -593,8 +589,7 @@ abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
     it(
       "and not return link to unauthorized user (dereference=false)"
     ) { param =>
-      createAspectDefinitions(param)
-      createRecords(param)
+      prepareData(param)
 
       val referencingRecordIndex = 2
       val referencingRecordId = "record-" + referencingRecordIndex
@@ -628,8 +623,7 @@ abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
     it(
       "and not return link to unauthorized user (dereference=true)"
     ) { param =>
-      createAspectDefinitions(param)
-      createRecords(param)
+      prepareData(param)
 
       val referencingRecordIndex = 2
       val referencingRecordId = "record-" + referencingRecordIndex
@@ -666,8 +660,7 @@ abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
     it(
       "for all users on all records (dereference=false)"
     ) { param =>
-      createAspectDefinitions(param)
-      createRecords(param)
+      prepareData(param)
 
       userIdsAndExpectedRecordIdIndexesWithSingleLink.map(
         userIdAndExpectedRecordIndexes => {
@@ -700,8 +693,7 @@ abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
     it(
       "for all users on all records (dereference=true)"
     ) { param =>
-      createAspectDefinitions(param)
-      createRecords(param)
+      prepareData(param)
 
       userIdsAndExpectedRecordIdIndexesWithSingleLink.map(
         userIdAndExpectedRecordIndexes => {
@@ -735,8 +727,7 @@ abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
     it(
       "and return record-5 with both record-1 and record-3 to userId0 (dereference=false)"
     ) { param =>
-      createAspectDefinitions(param)
-      createRecords(param)
+      prepareData(param)
 
       val referencingRecordId = "record-5"
 
@@ -758,8 +749,7 @@ abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
     it(
       "and return record-5 with both record-1 and record-3 to userId0 (dereference=true)"
     ) { param =>
-      createAspectDefinitions(param)
-      createRecords(param)
+      prepareData(param)
 
       val referencingRecordId = "record-5"
 
@@ -790,8 +780,7 @@ abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
     it(
       "and return record-5 with record-3 but not record-1 to userId2 (dereference=false)"
     ) { param =>
-      createAspectDefinitions(param)
-      createRecords(param)
+      prepareData(param)
 
       val referencingRecordId = "record-5"
 
@@ -812,8 +801,7 @@ abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
     it(
       "and return record-5 with record-3 but not record-1 to userId2 (dereference=true)"
     ) { param =>
-      createAspectDefinitions(param)
-      createRecords(param)
+      prepareData(param)
 
       val referencingRecordId = "record-5" // with links to record-1 and record-3
 
@@ -841,8 +829,7 @@ abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
     it(
       "and not return any links referenced by record-4 to anonymous user (dereference=false)"
     ) { param =>
-      createAspectDefinitions(param)
-      createRecords(param)
+      prepareData(param)
 
       val referencingRecordId = "record-4" // with links to record-1 and record-3
       val withLinksAspectId = "withLinks"
@@ -868,8 +855,7 @@ abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
     it(
       "and not return any links referenced by record-4 to anonymous user (dereference=true)"
     ) { param =>
-      createAspectDefinitions(param)
-      createRecords(param)
+      prepareData(param)
 
       val referencingRecordId = "record-4" // with links to record-1 and record-3
       val withLinksAspectId = "withLinks"
@@ -895,8 +881,7 @@ abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
     it(
       "and return record-3 with empty links to userId2 (dereference=false)"
     ) { param =>
-      createAspectDefinitions(param)
-      createRecords(param)
+      prepareData(param)
 
       val referencingRecordId = "record-3" // with links to nothing
 
@@ -921,8 +906,7 @@ abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
     it(
       "and return record-3 with empty links to userId2 (dereference=true)"
     ) { param =>
-      createAspectDefinitions(param)
-      createRecords(param)
+      prepareData(param)
 
       val referencingRecordId = "record-3" // with links to nothing
 
