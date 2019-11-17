@@ -3,7 +3,7 @@
 [![GitHub release](https://img.shields.io/github/release/magda-io/magda.svg)](https://github.com/TerriaJS/magda/releases)
 [![pipeline status](https://gitlab.com/magda-data/magda/badges/master/pipeline.svg)](https://gitlab.com/magda-data/magda/commits/master)
 [![Try it out](https://img.shields.io/badge/try%20it%20out-demo.dev.magda.io-blue.svg)](https://demo.dev.magda.io)
-[![Get help on Spectrum](https://withspectrum.github.io/badge/badge.svg)](https://spectrum.chat/magda)
+[![Get help or discuss on spectrum](https://img.shields.io/badge/Get%20help%20or%20discuss-on%20spectrum-7B16FF.svg?logoColor=white&logo=spectrum)](https://spectrum.chat/magda)
 
 Magda is a data catalog system that provides a single place where all of an organization's data can be catalogued, enriched, searched, tracked and prioritized - whether big or small, internally or externally sourced, available as files, databases or APIs. Magda is designed specifically around the concept of _federation_ - providing a single view across all data of interest to a user, regardless of where the data is stored or where it was sourced from. The system is able to quickly crawl external data sources, track changes, make automatic enhancements and push notifications when changes occur, giving data users a one-stop shop to discover all the data that's available to them.
 
@@ -69,8 +69,7 @@ https://magda.io/docs/building-and-running
 
 ## To get help with developing or running Magda
 
-Talk to us on Gitter!
-[![Join the chat at https://gitter.im/magda-data/Lobby](https://badges.gitter.im/magda-data/Lobby.svg)](https://gitter.im/magda-data/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+Start a discussion at https://spectrum.chat/magda. There's not a lot on there yet, but we monitor it closely :).
 
 ## Want to get help deploying it into your organisation?
 
