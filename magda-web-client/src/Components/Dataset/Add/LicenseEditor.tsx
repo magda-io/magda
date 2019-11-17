@@ -4,6 +4,7 @@ import { textEditorEx } from "Components/Editing/Editors/textEditor";
 import * as codelists from "constants/DatasetConstants";
 import ReactSelectOriginal from "react-select";
 import ValidationHoc from "Components/Common/react-select/ValidationHoc";
+import "./LicenseEditor.scss";
 
 //--- Added Validation Support to ReactSelect
 const ReactSelect = ValidationHoc(ReactSelectOriginal);
@@ -35,7 +36,7 @@ export default function LicenseEditor({
     const usingCustomLicense = isCustom(license);
 
     return (
-        <>
+        <div className="license-editor">
             <ReactSelect
                 className="license-apply-type-select"
                 isSearchable={false}
@@ -74,6 +75,6 @@ export default function LicenseEditor({
                     />
                 </div>
             )}
-        </>
+        </div>
     );
 }
