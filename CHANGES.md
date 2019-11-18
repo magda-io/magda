@@ -131,6 +131,9 @@ UI:
 -   Fixed warning for placeholder text being a boolean value
 -   Added unique key to the topmost `div` of `codelistEditor`
 -   Rename `license` to `licence` where appropriate
+-   Reworded `team` to `business area`
+-   Added tooltips to the `Production` section of the `People and Production` page
+-   Reworded the user access options
 
 Gateway:
 
