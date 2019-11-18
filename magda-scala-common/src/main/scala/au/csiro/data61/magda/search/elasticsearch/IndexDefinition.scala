@@ -26,7 +26,6 @@ import org.locationtech.spatial4j.context.jts.JtsSpatialContext
 import spray.json._
 
 import scala.concurrent.Future
-import scala.math.BigDecimal.double2bigDecimal
 
 case class IndexDefinition(
     name: String,

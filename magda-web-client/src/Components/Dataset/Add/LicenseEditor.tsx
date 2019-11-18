@@ -26,47 +26,41 @@ export default function LicenseEditor({ value: license, onChange }: Props) {
 
     return (
         <>
-            <div className="row">
-                <div className="col-sm-12">
-                    <ReactSelect
-                        className="license-apply-type-select"
-                        styles={ReactSelectStyles}
-                        isSearchable={false}
-                        menuPortalTarget={document.body}
-                        options={
-                            Object.keys(codelists.licenseLevel).map(key => ({
-                                label: codelists.licenseLevel[key],
-                                value: key
-                            })) as any
-                        }
-                        value={
-                            license && codelists.licenseLevel[license]
-                                ? {
-                                      label: codelists.licenseLevel[license],
-                                      value: license
-                                  }
-                                : {
-                                      label: codelists.licenseLevel["custom"],
-                                      value: "custom"
-                                  }
-                        }
-                        onChange={(item: any) => {
-                            onChange(item.value === "custom" ? "" : item.value);
-                        }}
-                    />
-                </div>
-            </div>
+            <ReactSelect
+                className="license-apply-type-select"
+                styles={ReactSelectStyles}
+                isSearchable={false}
+                menuPortalTarget={document.body}
+                options={
+                    Object.keys(codelists.licenseLevel).map(key => ({
+                        label: codelists.licenseLevel[key],
+                        value: key
+                    })) as any
+                }
+                value={
+                    license && codelists.licenseLevel[license]
+                        ? {
+                              label: codelists.licenseLevel[license],
+                              value: license
+                          }
+                        : {
+                              label: codelists.licenseLevel["custom"],
+                              value: "custom"
+                          }
+                }
+                onChange={(item: any) => {
+                    onChange(item.value === "custom" ? "" : item.value);
+                }}
+            />
             {usingCustomLicense && (
-                <div className="row">
-                    <div className="col-sm-12">
-                        <AlwaysEditor
-                            value={license}
-                            onChange={newLicense => onChange(newLicense!)}
-                            editor={textEditorEx({
-                                placeholder: "Please specify a license"
-                            })}
-                        />
-                    </div>
+                <div>
+                    <AlwaysEditor
+                        value={license}
+                        onChange={newLicense => onChange(newLicense!)}
+                        editor={textEditorEx({
+                            placeholder: "Please specify a license"
+                        })}
+                    />
                 </div>
             )}
         </>

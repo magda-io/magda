@@ -43,9 +43,14 @@ Then install `npm` dependencies and set up the links between components by runni
 yarn install
 ```
 
-Once the above prerequisites are in place, and the npm dependencies are installed, building MAGDA is easy. From the MAGDA root directory, simply run:
+Once the above prerequisites are in place, and the npm dependencies are installed, building MAGDA is easy.
+From the MAGDA root directory, simply run the appropriate build command:
 
 ```bash
+# If using lerna v3.18.0 or higher
+lerna run build --stream --concurrency=1 --include-dependencies
+
+# If verison of lerna is lower than v3.18.0
 lerna run build --stream --concurrency=1 --include-filtered-dependencies
 ```
 
@@ -53,7 +58,7 @@ You can also run the same command in an individual component's directory (i.e. `
 
 ### Set up Helm
 
-Helm is the package manager for Kubernetes - we use it to make it so that you can install all the various services you need for MAGDA at once. To install, follow the instructions at [https://github.com/kubernetes/helm/blob/master/docs/install.md](https://github.com/kubernetes/helm/blob/master/docs/install.md).
+Helm is the package manager for Kubernetes - we use it to make it so that you can install all the various services you need for MAGDA at once. To install, follow the instructions at [https://github.com/helm/helm#install](https://github.com/helm/helm#install).
 
 In a nutshell, once you have helm installed, this is how you initialise helm and Tiller.
 

@@ -45,11 +45,11 @@ gateway:
   csp:
     directives:
       scriptSrc:
-      - "''self''"
-      - browser-update.org
-      - "''unsafe-inline''"
+        - "''self''"
+        - browser-update.org
+        - "''unsafe-inline''"
       objectSrc:
-      - "''none''"
+        - "''none''"
       reportUri: https://sdga.report-uri.com/r/d/csp/enforce
 
 combined-db:
@@ -67,8 +67,8 @@ combined-db:
       requiredDuringSchedulingIgnoredDuringExecution:
         nodeSelectorTerms:
           - matchExpressions:
-            - key: cloud.google.com/gke-preemptible
-              operator: DoesNotExist
+              - key: cloud.google.com/gke-preemptible
+                operator: DoesNotExist
 
 elasticsearch:
   data:
@@ -78,8 +78,8 @@ elasticsearch:
         requiredDuringSchedulingIgnoredDuringExecution:
           nodeSelectorTerms:
             - matchExpressions:
-              - key: cloud.google.com/gke-preemptible
-                operator: DoesNotExist
+                - key: cloud.google.com/gke-preemptible
+                  operator: DoesNotExist
   backup:
     googleApplicationCreds:
       secretName: storage-account-credentials
@@ -97,7 +97,7 @@ web-server:
   fallbackUrl: "https://data.gov.au"
   featureFlags:
     cataloguing: true
-  vocabularyApiEndpoints: 
+  vocabularyApiEndpoints:
     - "https://vocabs.ands.org.au/repository/api/lda/abares/australian-land-use-and-management-classification/version-8/concept.json"
     - "https://vocabs.ands.org.au/repository/api/lda/neii/australian-landscape-water-balance/version-1/concept.json"
     - "https://vocabs.ands.org.au/repository/api/lda/ands-nc/controlled-vocabulary-for-resource-type-genres/version-1-1/concept.json"
@@ -115,88 +115,93 @@ minion-broken-link:
 
 connectors:
   config:
+    ## The service's image as per the global options under "global.image", but with a "name "
+    ## currently available are magda-ckan-connector, magda-project-open-data-connector and magda-csw-connector
+    - image:
+        name: "magda-ckan-connector"
+        # tag: vx.x.x
+        # pullPolicy: IfNotPresent
+        # imagePullSecret: ""
+
+      ## Unique id to identify this connector and records that are harvested from it
+      id: dga
+      ## Friendly readable name
+      name: "data.gov.au"
+      ## The base URL of the place to source data from
+      sourceUrl: "https://data.gov.au/data/"
+      ## When crawling through from beginning to end, how big should the individual requests be in records?
+      pageSize: 1000
+      ## Crontab schedule for how often this should happen.
+      ## CKAN-specific config: what harvest sources to ignore. * will ignore everything that's been harvested
+      ## from another portal
+      ignoreHarvestSources: ["*"]
     - image:
         name: magda-project-open-data-connector
       id: act
       name: ACT Government data.act.gov.au
-      sourceUrl: http://www.data.act.gov.au/data.json
-      tenantId: 0
+      sourceUrl: https://www.data.act.gov.au/data.json
+    - image:
+        name: magda-project-open-data-connector
+      id: actmapi
+      name: ACT Government ACTMAPi
+      sourceUrl: https://actmapi-actgov.opendata.arcgis.com/data.json
     - image:
         name: magda-csw-connector
       id: aims
       name: Australian Institute of Marine Science
       sourceUrl: https://geo.aims.gov.au/geonetwork/srv/eng/csw
       pageSize: 100
-      tenantId: 0
     - image:
         name: magda-csw-connector
       id: aodn
       name: Australian Oceans Data Network
-      sourceUrl: http://catalogue.aodn.org.au/geonetwork/srv/eng/csw
+      sourceUrl: https://catalogue.aodn.org.au/geonetwork/srv/eng/csw
       pageSize: 100
-      tenantId: 0
     - image:
         name: magda-csw-connector
       id: bom
       name: Bureau of Meteorology
       sourceUrl: http://www.bom.gov.au/geonetwork/srv/eng/csw
       pageSize: 100
-      tenantId: 0
+    - image:
+        name: magda-csw-connector
+      id: aurin
+      name: Australian Urban Research Infrastructure Network
+      sourceUrl: https://openapi.aurin.org.au/public/csw
+      pageSize: 100
     - image:
         name: magda-ckan-connector
       id: brisbane
       name: Brisbane City Council
       sourceUrl: https://www.data.brisbane.qld.gov.au/data/
       pageSize: 100
-      tenantId: 0
     - image:
         name: magda-project-open-data-connector
       id: hobart
       name: City of Hobart Open Data Portal
-      sourceUrl: http://data-1-hobartcc.opendata.arcgis.com/data.json
-      tenantId: 0
+      sourceUrl: https://data-1-hobartcc.opendata.arcgis.com/data.json
     - image:
         name: magda-project-open-data-connector
       id: launceston
       name: City of Launceston Open Data
       sourceUrl: https://data-launceston.opendata.arcgis.com/data.json
-      tenantId: 0
-    - image:
-        name: magda-dap-connector
-      id: dap
-      name: CSIRO
-      sourceUrl: https://data.csiro.au/dap/ws/v2/
-      pageSize: 100
-      tenantId: 0
     - image:
         name: magda-csw-connector
       id: marlin
       name: CSIRO Marlin
       sourceUrl: http://www.marlin.csiro.au/geonetwork/srv/eng/csw
       pageSize: 50
-      tenantId: 0
-    - image:
-        name: magda-ckan-connector
-      id: dga
-      name: data.gov.au
-      sourceUrl: https://data.gov.au/
-      pageSize: 1000
-      tenantId: 0
-      ignoreHarvestSources:
-        - "*"
     - image:
         name: magda-csw-connector
       id: environment
       name: Department of the Environment and Energy
       sourceUrl: http://www.environment.gov.au/fed/csw
       pageSize: 100
-      tenantId: 0
     - image:
         name: magda-project-open-data-connector
       id: esta
       name: ESTA Open Data
       sourceUrl: http://data-esta000.opendata.arcgis.com/data.json
-      tenantId: 0
     - image:
         name: magda-csw-connector
       id: ga
@@ -204,106 +209,109 @@ connectors:
       sourceUrl: https://ecat.ga.gov.au/geonetwork/srv/eng/csw
       outputSchema: http://standards.iso.org/iso/19115/-3/mdb/1.0
       pageSize: 100
-      tenantId: 0
     - image:
         name: magda-project-open-data-connector
       id: logan
       name: Logan City Council
-      sourceUrl: http://data-logancity.opendata.arcgis.com/data.json
-      tenantId: 0
+      sourceUrl: https://data-logancity.opendata.arcgis.com/data.json
+    - image:
+        name: magda-project-open-data-connector
+      id: melbournewater
+      name: Melbourne Water Corporation
+      sourceUrl: https://data-melbournewater.opendata.arcgis.com/data.json
     - image:
         name: magda-project-open-data-connector
       id: melbourne
       name: Melbourne Data
       sourceUrl: https://data.melbourne.vic.gov.au/data.json
-      tenantId: 0
     - image:
         name: magda-csw-connector
       id: mrt
       name: Mineral Resources Tasmania
       sourceUrl: http://www.mrt.tas.gov.au/web-catalogue/srv/eng/csw
       pageSize: 100
-      tenantId: 0
     - image:
         name: magda-project-open-data-connector
       id: moretonbay
       name: Moreton Bay Regional Council Data Portal
       sourceUrl: http://datahub.moretonbay.qld.gov.au/data.json
-      tenantId: 0
-    - image:
-        name: magda-csw-connector
-      id: metoc
-      name: 'Navy Meteorology and Oceanography (METOC) '
-      sourceUrl: http://www.metoc.gov.au/geonetwork/srv/en/csw
-      pageSize: 100
-      tenantId: 0
     - image:
         name: magda-csw-connector
       id: neii
       name: National Environmental Information Infrastructure
       sourceUrl: http://neii.bom.gov.au/services/catalogue/csw
       pageSize: 100
-      tenantId: 0
     - image:
         name: magda-ckan-connector
       id: nsw
       name: New South Wales Government
       sourceUrl: https://data.nsw.gov.au/data/
       pageSize: 100
-      tenantId: 0
     - image:
         name: magda-csw-connector
       id: sdinsw
       name: NSW Land and Property
       sourceUrl: https://sdi.nsw.gov.au/csw
       pageSize: 100
-      tenantId: 0
-    - image:
-        name: magda-csw-connector
-      id: qspatial
-      name: 'Queensland Spatial Catalogue - QSpatial '
-      sourceUrl: "http://qldspatial.information.qld.gov.au/catalogueadmin/csw"
-      pageSize: 100
-      tenantId: 0
     - image:
         name: magda-ckan-connector
       id: qld
       name: Queensland Government
       sourceUrl: https://data.qld.gov.au/
       pageSize: 100
-      tenantId: 0
     - image:
         name: magda-ckan-connector
       id: sa
       name: South Australia Government
       sourceUrl: https://data.sa.gov.au/data/
       pageSize: 100
-      tenantId: 0
+    - image:
+        name: magda-project-open-data-connector
+      id: southerngrampians
+      name: Southern Grampians Shire Council Smart City and Open Data portal
+      sourceUrl: https://www.connectgh.com.au/data.json
     - image:
         name: magda-csw-connector
       id: listtas
       name: Tasmania TheList
       sourceUrl: https://data.thelist.tas.gov.au:443/datagn/srv/eng/csw
       pageSize: 100
-      tenantId: 0
     - image:
         name: magda-csw-connector
       id: tern
       name: Terrestrial Ecosystem Research Network
       sourceUrl: http://data.auscover.org.au/geonetwork/srv/eng/csw
       pageSize: 100
-      tenantId: 0
     - image:
         name: magda-ckan-connector
       id: vic
       name: Victoria Government
-      sourceUrl: https://www.data.vic.gov.au/data/
+      sourceUrl: https://discover.data.vic.gov.au/
       pageSize: 100
-      tenantId: 0
     - image:
         name: magda-ckan-connector
       id: wa
       name: Western Australia Government
-      sourceUrl: http://catalogue.beta.data.wa.gov.au/
+      sourceUrl: https://catalogue.data.wa.gov.au/
       pageSize: 100
-      tenantId: 0
+    - image:
+        name: magda-dap-connector
+      id: dap
+      name: CSIRO
+      sourceUrl: https://data.csiro.au/dap/ws/v2/
+      pageSize: 100
+    - image:
+        name: magda-project-open-data-connector
+      id: vic-cardinia
+      name: Cardinia Shire Council
+      sourceUrl: https://data-cscgis.opendata.arcgis.com/data.json
+    - image:
+        name: magda-project-open-data-connector
+      id: nt-darwin
+      name: City of Darwin
+      sourceUrl: https://open-darwin.opendata.arcgis.com/data.json
+    - image:
+        name: magda-project-open-data-connector
+      id: southern-grampians
+      name: Southern Grampians Shire Council
+      sourceUrl: https://www.connectgh.com.au/data.json

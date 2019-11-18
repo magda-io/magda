@@ -33,7 +33,7 @@ trait BaseApiSpec extends FunSpec with Matchers with ScalatestRouteTest with Mag
     .withValue("opa.baseUrl", ConfigValueFactory.fromAnyRef(s"http://localhost:${mockServer.getLocalPort}/v0/opa/"))
   override def createActorSystem(): ActorSystem = ActorSystem("BaseApiSpec", config)
 
-  val logger = Logging(system, getClass)
+  val logger = system.log
   implicit val indexedRegions: List[(RegionSource, JsObject)] = BaseApiSpec.indexedRegions
 
   implicit val config: Config = buildConfig

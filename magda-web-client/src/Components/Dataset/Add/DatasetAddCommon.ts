@@ -170,7 +170,7 @@ export function createBlankState(user?: User): State {
         files: [],
         processing: false,
         dataset: {
-            title: "Untitled",
+            title: "",
             languages: ["eng"],
             owningOrgUnitId: user ? user.orgUnitId : undefined,
             defaultLicense: "world"

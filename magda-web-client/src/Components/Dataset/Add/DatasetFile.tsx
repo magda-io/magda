@@ -14,6 +14,9 @@ import { FileState, File, fileStateToText } from "./DatasetAddCommon";
 import editIcon from "../../../assets/edit.svg";
 import dismissIcon from "../../../assets/dismiss.svg";
 
+import PurpleToolTip from "Components/Common/TooltipWrapper";
+import helpIcon from "assets/help.svg";
+
 import "./DatasetFile.scss";
 
 function FileInProgress({
@@ -158,6 +161,31 @@ export default function DatasetFile({
                             <div>
                                 <b>Size:</b>{" "}
                                 {humanFileSize(file.byteSize, false)}
+                                <span className="tooltip-container">
+                                    <PurpleToolTip
+                                        className="tooltip tooltip-human-file-size"
+                                        launcher={() => (
+                                            <div className="tooltip-launcher-icon help-icon">
+                                                <img
+                                                    src={helpIcon}
+                                                    alt="Note: 1 KiB = 1024 Bytes, 1 MiB = 1024 KiB"
+                                                />
+                                            </div>
+                                        )}
+                                        innerElementClassName="inner"
+                                    >
+                                        {() => {
+                                            return (
+                                                <div>
+                                                    <div>
+                                                        Note: 1 KiB = 1024 Bytes
+                                                    </div>
+                                                    <div>1 MiB = 1024 KiB</div>
+                                                </div>
+                                            );
+                                        }}
+                                    </PurpleToolTip>
+                                </span>
                             </div>
                             <div>
                                 <b>Last Modified:</b>{" "}
