@@ -549,7 +549,7 @@ export type ContactPointDisplayOption = "team" | "custodian" | "organization";
 
 export const contactPointDisplay: Record<ContactPointDisplayOption, string> = {
     organization: "Display organisation name",
-    team: "Display maintaining team name",
+    team: "Display maintaining business area name",
     custodian: "Display data custodian area name"
 };
 
@@ -557,7 +557,7 @@ export const publishingLevel = {
     agency: "Everyone in the department (recommended)",
     division: "My division only",
     branch: "My branch only",
-    team: "My team only"
+    team: "My business area only"
 };
 
 // TODO: this is a preconfigured agency level configured license lookup feature being faked here
@@ -567,7 +567,7 @@ export const licenseLevel = {
         "For all of government use (Whole of Australian Government license)",
     agency: "For just my department use (Other organisation-specific license)",
     section: "For just my section use (Other organisation-specific license)",
-    team: "For just my team use (Other organisation-specific license)",
+    team: "For just my business area use (Other organisation-specific license)",
     custom: "Other custom license"
 };
 
