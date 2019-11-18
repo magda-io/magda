@@ -131,6 +131,7 @@ UI:
 -   Fixed warning for placeholder text being a boolean value
 -   Added unique key to the topmost `div` of `codelistEditor`
 -   Rename `license` to `licence` where appropriate
+-   Added unique keys to the props in `Stories.js`
 
 Gateway:
 
