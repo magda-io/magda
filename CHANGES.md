@@ -132,6 +132,9 @@ UI:
 -   Added unique key to the topmost `div` of `codelistEditor`
 -   Rename `license` to `licence` where appropriate
 -   Added unique keys to the props in `Stories.js`
+-   Reworded `team` to `business area`
+-   Added tooltips to the `Production` section of the `People and Production` page
+-   Reworded the user access options
 
 Gateway:
 

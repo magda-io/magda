@@ -63,7 +63,7 @@ export default function OrgUnitDropdown({
                     label: option.name,
                     value: option.id
                 }))}
-                placeholder="Select a team"
+                placeholder="Select a business area"
             />
         );
     }
