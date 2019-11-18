@@ -28,7 +28,9 @@ test_allow_read_if_groups_and_permission_are_correct {
         "timestamp": 1569385456740893300,
 
         "extra": {
-           "esri portal last crawl expiration": 9569380434535153100
+            "nsw-portal": {
+                "last crawl expiration": 9569380434535153100
+            }
         },
 
         "object": {
@@ -63,7 +65,9 @@ test_allow_read_if_owner_and_permission_are_correct {
         "timestamp": 1569385456740893300,
 
         "extra": {
-           "esri portal last crawl expiration": 9569380434535153100
+            "nsw-portal": {
+                "last crawl expiration": 9569380434535153100
+            }
         },
 
         "object": {
@@ -83,7 +87,9 @@ test_allow_read_if_public {
         "timestamp": 1569385456740893300,
 
         "extra": {
-            "esri portal last crawl expiration": 9569380434535153100
+            "nsw-portal": {
+                "last crawl expiration": 9569380434535153100
+            }
         },
 
         "object": {
@@ -103,7 +109,9 @@ test_deny_read_if_no_access_attributes {
         "timestamp": 1569385456740893300,
 
         "extra": {
-           "esri portal last crawl expiration": 9569380434535153100
+            "nsw-portal": {
+                "last crawl expiration": 9569380434535153100
+            }
         },
 
         "object": {
@@ -139,7 +147,9 @@ test_allow_read_if_not_owner_but_groups_and_permission_are_correct {
         "timestamp": 1569385456740893300,
 
         "extra": {
-           "esri portal last crawl expiration": 9569380434535153100
+            "nsw-portal": {
+                "last crawl expiration": 9569380434535153100
+            }
         },
 
         "object": {
@@ -176,7 +186,9 @@ test_allow_read_if_owner_but_groups_are_incorrect {
         "timestamp": 1569385456740893300,
 
         "extra": {
-            "esri portal last crawl expiration": 9569380434535153100
+            "nsw-portal": {
+                "last crawl expiration": 9569380434535153100
+            }
         },
 
         "object": {
@@ -213,7 +225,9 @@ test_deny_read_if_owner_and_groups_are_incorrect {
         "timestamp": 1569385456740893300,
 
         "extra": {
-            "esri portal last crawl expiration": 9569380434535153100
+            "nsw-portal": {
+                "last crawl expiration": 9569380434535153100
+            }
         },
 
         "object": {
@@ -249,7 +263,9 @@ test_deny_read_if_groups_are_incorrect {
         "timestamp": 1569385456740893300,
 
         "extra": {
-            "esri portal last crawl expiration": 9569380434535153100
+            "nsw-portal": {
+                "last crawl expiration": 9569380434535153100
+            }
         },
 
         "object": {
@@ -284,7 +300,9 @@ test_deny_read_if_owner_is_incorrect {
         "timestamp": 1569385456740893300,
 
         "extra": {
-            "esri portal last crawl expiration": 9569380434535153100
+            "nsw-portal": {
+                "last crawl expiration": 9569380434535153100
+            }
         },
 
         "object": {
@@ -319,7 +337,9 @@ test_deny_read_if_permission_is_incorrect {
         "timestamp": 1569385456740893300,
 
         "extra": {
-            "esri portal last crawl expiration": 9569380434535153100
+            "nsw-portal": {
+                "last crawl expiration": 9569380434535153100
+            }
         },
 
         "object": {

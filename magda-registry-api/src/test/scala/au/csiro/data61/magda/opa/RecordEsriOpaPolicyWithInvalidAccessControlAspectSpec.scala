@@ -28,7 +28,7 @@ abstract class RecordEsriOpaPolicyWithInvalidAccessControlAspectSpec extends Api
     createAspectDefinitions(param)
     createRecords(param)
     import spray.json._
-    val expiration = JsObject("id"-> JsString("esri portal last crawl expiration"), "data" -> JsObject("esri portal last crawl expiration" -> JsString("not expired")))
+    val expiration = JsObject("id"-> JsString("nsw-portal"), "data" -> JsObject("last crawl expiration" -> JsString("not expired")))
     updateExtraInput(expiration)
   }
 

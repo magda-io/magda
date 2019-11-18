@@ -12,7 +12,7 @@ abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
     createAspectDefinitions(param)
     createRecords(param)
     import spray.json._
-    val notExpired = JsObject("id"-> JsString("esri portal last crawl expiration"), "data" -> JsObject("esri portal last crawl expiration" -> JsString("never expired")))
+    val notExpired = JsObject("id"-> JsString("nsw-portal"), "data" -> JsObject("last crawl expiration" -> JsString("not expired")))
     updateExtraInput(notExpired)
   }
 

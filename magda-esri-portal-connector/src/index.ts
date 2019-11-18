@@ -92,17 +92,30 @@ function runConnector() {
     );
 
     function saveLastCrawlExpiration() {
-        const expiration =
-            Date.now() + argv.esriUpdateInterval * 60 * 60 * 1000;
+        const time_in_hours =
+            argv.esriUpdateInterval + argv.esriExpirationOverlap;
+        const expiration = Date.now() + time_in_hours * 60 * 60 * 1000;
         const extraInput = {
-            id: "esri portal last crawl expiration",
+            id: argv.id,
             data: {
-                "esri portal last crawl expiration": expiration
+                "last crawl expiration": expiration
             }
         };
-        authApi.updateOpaExtraInput(extraInput);
 
+        console.log(
+            `The last crawl expiration should be in ${time_in_hours} hours from ${new Date().toUTCString()}.`
+        );
         console.log(JSON.stringify(extraInput));
+        authApi
+            .updateOpaExtraInput(extraInput)
+            .then(_ => {
+                console.log(
+                    "Successfully updated the last crawl expiration as extra input to OPA."
+                );
+            })
+            .catch(error => {
+                console.error(error.message);
+            });
     }
 
     if (!argv.interactive) {

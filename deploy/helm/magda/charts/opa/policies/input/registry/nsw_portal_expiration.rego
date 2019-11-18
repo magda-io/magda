@@ -4,6 +4,8 @@ package input.registry
 # c) the esri portal crawl takes less than 4 hours to complete; d) the "last crawl expiration" is calculated by
 #    time of crawl completion + esriUpdateInterval + esriExpirationOverlap
 # The esri dataset access control will be up-to-date for at least 24 hours.
-esri_expiration {
-    input.extra["esri portal last crawl expiration"] > input.timestamp
+#
+# "nsw-portal" is a connector id.
+nsw_portal_expiration {
+    input.extra["nsw-portal"]["last crawl expiration"] > input.timestamp
 }

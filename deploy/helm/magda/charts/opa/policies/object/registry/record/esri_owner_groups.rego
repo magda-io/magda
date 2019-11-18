@@ -4,7 +4,7 @@ import data.object.registry.record.has_permission
 import data.object.registry.record.esri_groups
 import data.object.registry.record.esri_owner
 import data.object.registry.record.esri_public
-import data.input.registry.esri_expiration
+import data.input.registry.nsw_portal_expiration
 import data.object.registry.record.admin_role
 
 read {
@@ -14,16 +14,16 @@ read {
 read {
     has_permission.read
     esri_groups
-    esri_expiration
+    nsw_portal_expiration
 }
 
 read {
     has_permission.read
     esri_owner
-    esri_expiration
+    nsw_portal_expiration
 }
 
 read {
     esri_public
-    esri_expiration
+    nsw_portal_expiration
 }

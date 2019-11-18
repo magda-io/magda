@@ -10,7 +10,7 @@ abstract class RecordEsriOpaPolicyWithExpiredSpec extends RecordEsriOpaPolicyWit
     createAspectDefinitions(param)
     createRecords(param)
     import spray.json._
-    val expired = JsObject("id"-> JsString("esri portal last crawl expiration"), "data" -> JsObject("esri portal last crawl expiration" -> JsNumber(0)))
+    val expired = JsObject("id"-> JsString("nsw-portal"), "data" -> JsObject("last crawl expiration" -> JsNumber(0)))
     updateExtraInput(expired)
   }
 }

@@ -840,13 +840,12 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *
      * @apiParamExample (Body) {json}:
      *     {
-     *       id: "esri portal last crawl expiration"
-     *       data: {"esri portal last crawl expiration": 1573760909442}
+     *       id: "nsw-portal"
+     *       data: {"last crawl expiration": 1573760909442}
      *     }
      *
      * @apiSuccessExample 200
      *     {
-     *       "result": "OK"
      *     }
      *
      * @apiErrorExample {json} 400/500
@@ -856,9 +855,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *      "errorMessage": "Bad request"
      *    }
      */
-    router.post("/public/opa/extra/input", MUST_BE_ADMIN, async (req, res) => {
+    router.post("/private/opa/extra/input", MUST_BE_ADMIN, async (req, res) => {
         try {
-            //console.log(JSON.stringify(req.body))
             const id = req.body.id;
             const data = req.body.data;
             const ok = await database.updateExtraInput(
@@ -870,7 +868,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
             const statusCode = ok ? 200 : 400;
             res.status(statusCode);
         } catch (e) {
-            respondWithError("/public/opa/extra/input", res, e);
+            respondWithError("/private/opa/extra/input", res, e);
         }
         res.end();
     });

@@ -303,35 +303,39 @@ export default class Database {
 
         const user = (await this.getUser(userId)).valueOr(null);
         if (!user) {
-            throw new GenericError("Not Found User", 404);
-        }
-        const userRoles = await this.getUserRoles(userId);
-        const hasAdminRole =
-            userRoles.filter(role => role.id === ADMIN_USERS_ROLE) != [];
-
-        /*
-            Checking hasAdminRole is redundant as the calling of this function is restricted
-            to admin users in api router. The checking here is a second line defence.
-        */
-        if (hasAdminRole) {
-            await this.pool.query(
-                `INSERT INTO extra_input (id, data) VALUES ($1, $2) 
-                ON CONFLICT (id) DO UPDATE SET "data" = $2;`,
-                [id, data]
-            );
-
-            return true;
-        } else {
             return false;
         }
+
+        const userRoles = await this.getUserRoles(userId);
+        const hasAdminRole = userRoles.some(
+            role => role.id === ADMIN_USERS_ROLE
+        );
+
+        /**
+         * Checking hasAdminRole is redundant as the calling of this function is restricted
+         * to admin users by the api router. The checking here is a second line defence.
+         */
+        if (!hasAdminRole) {
+            return false;
+        }
+
+        /**
+         * Ideally the requester should be restricted to updating its own data only. In the
+         * current implementation, the requester is the system admin user.
+         */
+        await this.pool.query(
+            `INSERT INTO extra_input (id, data) VALUES ($1, $2) 
+            ON CONFLICT (id) DO UPDATE SET "data" = $2;`,
+            [id, data]
+        );
+
+        return true;
     }
 
     async getExtraInput(): Promise<any> {
         let result: any = {};
-        await this.pool.query(`SELECT data FROM extra_input`).then(res => {
-            res.rows.forEach(item => {
-                result = { ...result, ...item.data };
-            });
+        await this.pool.query(`SELECT id, data FROM extra_input`).then(res => {
+            res.rows.forEach(row => (result[row.id] = row.data));
         });
 
         return result;

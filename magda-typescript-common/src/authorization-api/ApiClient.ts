@@ -84,10 +84,11 @@ export default class ApiClient {
         }
     }
 
-    async updateOpaExtraInput(extraInput: any): Promise<any> {
+    async updateOpaExtraInput(extraInput: any): Promise<void> {
+        const extraInputEndpoint = `private/opa/extra/input`;
         try {
             const res = await fetch(
-                `${this.baseUrl}/public/opa/extra/input`,
+                `${this.baseUrl}/${extraInputEndpoint}`,
                 this.getMergeRequestInitOption({
                     method: "POST",
                     headers: {
@@ -96,17 +97,16 @@ export default class ApiClient {
                     body: JSON.stringify(extraInput)
                 })
             );
-            if (res.status >= 400) {
+
+            if (res.status !== 200) {
                 throw new Error(
                     `Encountered error ${
                         res.status
                     } when POSTing opa extra input to ${
                         this.baseUrl
-                    }/public/opa/extra/input`
+                    }/${extraInputEndpoint}`
                 );
             }
-
-            return;
         } catch (e) {
             console.error(e);
             throw e;
