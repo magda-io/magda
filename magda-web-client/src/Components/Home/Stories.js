@@ -108,12 +108,14 @@ class Stories extends Component {
                                         case 2:
                                         case 3:
                                             return (
-                                                <div className="stories-container">
+                                                <div
+                                                    className="stories-container"
+                                                    key={r}
+                                                >
                                                     {row.map((story, i) => (
                                                         <div
-                                                            className={`col-${
-                                                                row.length
-                                                            }`}
+                                                            className={`col-${row.length}`}
+                                                            key={i}
                                                         >
                                                             <StoryBox
                                                                 idx={r * 4 + i}
@@ -126,7 +128,10 @@ class Stories extends Component {
                                             );
                                         default:
                                             return (
-                                                <div className="stories-container">
+                                                <div
+                                                    className="stories-container"
+                                                    key={r}
+                                                >
                                                     <div className="col-3">
                                                         <StoryBox
                                                             idx={r * 4 + 0}
