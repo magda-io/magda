@@ -56,6 +56,7 @@ class Stories extends Component {
                                                 idx={index}
                                                 story={story}
                                                 className="story-box-{index}"
+                                                key={index}
                                             />
                                         ))}
                                     </div>
