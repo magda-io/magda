@@ -112,7 +112,7 @@ abstract class ApiWithOpa
 
   def updateExtraInput(extraInput: JsObject) = {
     val myHeaders: Seq[HttpHeader] = Seq(addJwtToken(adminUser))
-    httpFetcher.post(path = s"/v0/public/opa/extra/input", headers = myHeaders, payload = extraInput)
+    httpFetcher.post(path = s"/v0/private/opa/extra/input", headers = myHeaders, payload = extraInput)
   }
 
   val TENANT_0: BigInt = 0
