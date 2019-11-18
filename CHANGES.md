@@ -23,6 +23,7 @@ Gateway:
 -   Add tenant ID header to client requests.
 -   Add ArcGIS/ESRI Authentication provider, including support for on-premise instances of ArcGIS Portal.
 -   Add Vanguard (WS-FED) Authentication provider
+-   Add `webProxyRoutesJson` command-line argument, allowing non-API proxy routes to be configured.
 
 Search:
 
