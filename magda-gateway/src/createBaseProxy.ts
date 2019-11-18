@@ -55,7 +55,6 @@ export default function createBaseProxy(tenantMode: TenantMode): httpProxy {
     });
 
     proxy.on("proxyRes", function(proxyRes, req, res) {
-        // Add a default cache time of 60 seconds on GETs so the CDN can cache in times of high load.
         if (
             req.method === "GET" &&
             !proxyRes.headers["Cache-Control"] &&
@@ -63,7 +62,9 @@ export default function createBaseProxy(tenantMode: TenantMode): httpProxy {
             !req.headers["Cache-Control"] &&
             !req.headers["cache-control"]
         ) {
-            proxyRes.headers["Cache-Control"] = "public, max-age=60";
+            // TODO: we can't cache results that change per user, but this is an
+            // overly blunt way to do it.
+            proxyRes.headers["Cache-Control"] = "private, max-age=0";
         }
 
         /**

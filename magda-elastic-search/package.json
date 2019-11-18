@@ -1,12 +1,12 @@
 {
   "name": "@magda/elastic-search",
-  "version": "0.0.56-0",
+  "version": "0.0.56-nsw-5",
   "description": "MAGDA's custom elasticsearch docker image.",
   "scripts": {
     "dev": "docker-compose up",
     "dev-stop": "docker-compose down",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
-    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
+    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto --repository asia.gcr.io/terriajs-automated-deployment",
     "retag-and-push": "retag-and-push",
     "create-region-file": "create-region-synonym-file"
   },
@@ -70,7 +70,7 @@
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.56-0"
+    "@magda/scripts": "^0.0.56-nsw-5"
   },
   "magda": {
     "categories": {

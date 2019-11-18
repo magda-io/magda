@@ -1,14 +1,26 @@
 var moment = libraries.moment;
+var esriPortal = libraries.esriPortal;
+var URI = libraries.URI;
 
-// The map service associated with the portal item
+var accessURL;
+var downloadURL;
+
+if (distribution.url) {
+    accessURL = distribution.url;
+} else {
+    downloadURL = new URI(esriPortal.getContentItemUrl(distribution.id))
+        .segment("data")
+        .toString();
+}
+
 return {
     title: distribution.name || distribution.id,
     license: undefined,
     description: distribution.description || undefined,
     issued: undefined,
     modified: undefined,
-    downloadURL: undefined,
+    downloadURL: downloadURL,
     mediaType: undefined,
-    accessURL: distribution.accessURL,
+    accessURL: accessURL,
     format: distribution.type || undefined
 };

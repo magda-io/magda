@@ -1,7 +1,7 @@
 {
   "name": "@magda/minion-broken-link",
   "description": "MAGDA Broken Link Minion",
-  "version": "0.0.56-0",
+  "version": "0.0.56-nsw-5",
   "scripts": {
     "build": "yarn run compile",
     "compile": "tsc -p tsconfig-build.json",
@@ -9,14 +9,14 @@
     "start": "node dist/index.js",
     "dev": "run-typescript-in-nodemon src/index.ts",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
-    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
+    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto --repository asia.gcr.io/terriajs-automated-deployment",
     "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
     "retag-and-push": "retag-and-push"
   },
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@magda/scripts": "^0.0.56-0",
+    "@magda/scripts": "^0.0.56-nsw-5",
     "@types/chai": "^4.0.2",
     "@types/ftp": "^0.3.29",
     "@types/lodash": "^4.14.71",
@@ -36,9 +36,9 @@
     "typescript": "^3.2.0"
   },
   "dependencies": {
-    "@magda/minion-framework": "^0.0.56-0",
-    "@magda/registry-aspects": "^0.0.56-0",
-    "@magda/typescript-common": "^0.0.56-0",
+    "@magda/minion-framework": "^0.0.56-nsw-5",
+    "@magda/registry-aspects": "^0.0.56-nsw-5",
+    "@magda/typescript-common": "^0.0.56-nsw-5",
     "ftp": "^0.3.10",
     "lodash": "^4.17.4",
     "lru-cache": "4.0.2",

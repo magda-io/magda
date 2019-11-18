@@ -5,15 +5,20 @@ import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryC
 import ConnectionResult from "@magda/typescript-common/dist/ConnectionResult";
 
 import { argv, transformer, transformerOptions } from "./setup";
+import AsyncPage, {
+    forEachAsync
+} from "@magda/typescript-common/dist/AsyncPage";
+import RecordCreationFailure from "@magda/typescript-common/dist/RecordCreationFailure";
 
 const esriPortal = new EsriPortal({
     baseUrl: argv.sourceUrl,
     esriOrgGroup: argv.esriOrgGroup,
     id: argv.id,
     name: argv.name,
-    pageSize: argv.pageSize,
-    updateInterval: argv.esriUpdateInterval
+    pageSize: argv.pageSize
 });
+
+transformer.expiration = Date.now() + argv.esriUpdateInterval * 60 * 60 * 1000;
 
 if (argv.arcgisUserId !== null) {
     esriPortal
@@ -38,37 +43,38 @@ function runConnector() {
             super(options);
         }
 
-        // @ts-ignore
-        async createGroup(groupJson: object): Promise<Record | Error> {
-            return super.putRecord(
-                transformer.groupJsonToRecord(groupJson),
-                "Group"
-            );
-        }
+        async createGroups(): Promise<ConnectionResult> {
+            const result: any = new ConnectionResult();
 
-        async createGroups(connectedDatasets: []) {
-            const groups = await esriPortal.getPortalGroups();
-
-            for (var i = 0; i < groups.length; i++) {
-                const group = groups[i];
-                group.members = connectedDatasets.filter((d: any) => {
-                    if (d.esriGroups === undefined) return false;
-                    return d.esriGroups.indexOf(group.id) > -1;
-                });
-
-                group.members = group.members.map(
-                    (ds: any) => `ds-${esriPortal.id}-${ds.id}`
+            const groups = AsyncPage.single(esriPortal.getPortalGroups());
+            await forEachAsync(groups, this.maxConcurrency, async groupJson => {
+                const recordOrError = await this.putRecord(
+                    transformer.groupJsonToRecord(groupJson),
+                    "Group"
                 );
-                await this.createGroup(group);
-            }
+                if (recordOrError instanceof Error) {
+                    result.groupFailures.push(
+                        new RecordCreationFailure(
+                            transformer.getIdFromJsonGroup(
+                                groupJson,
+                                this.source.id
+                            ),
+                            undefined,
+                            recordOrError
+                        )
+                    );
+                } else {
+                    ++result.groupsConnected;
+                }
+            });
+
+            return result;
         }
 
-        async run(): Promise<ConnectionResult> {
-            const result = await super.run();
-            console.log(result.summarize());
-            // @ts-ignore
-            await this.createGroups(this.source.harvestedDatasets);
-            return result;
+        async createDatasetsAndDistributions(): Promise<ConnectionResult> {
+            const result = await super.createDatasetsAndDistributions();
+            const groupResult = await this.createGroups();
+            return ConnectionResult.combine(result, groupResult);
         }
     }
 

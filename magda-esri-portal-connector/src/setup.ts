@@ -262,6 +262,17 @@ const groupAspectBuilders: AspectBuilder[] = [
             "aspect-templates/group-source.js",
             "utf8"
         )
+    },
+    {
+        aspectDefinition: {
+            id: "esri-access-control",
+            name: "Esri data access control",
+            jsonSchema: require("@magda/registry-aspects/esri-access-control.schema.json")
+        },
+        builderFunctionString: fs.readFileSync(
+            "aspect-templates/group-esri-access-control.js",
+            "utf8"
+        )
     }
 ];
 

@@ -9,7 +9,7 @@ export default function createGenericProxy(
     const webRouter = express.Router();
     const proxy = createBaseProxy(tenantMode);
 
-    webRouter.get("*", (req: express.Request, res: express.Response) => {
+    webRouter.all("*", (req: express.Request, res: express.Response) => {
         proxy.web(req, res, { target });
     });
 

@@ -1,12 +1,12 @@
 {
   "name": "@magda/migrator-tenant-db",
-  "version": "0.0.56-0",
+  "version": "0.0.56-nsw-5",
   "description": "The MAGDA database for storing tenant data.",
   "license": "Apache-2.0",
   "scripts": {
     "dev": "echo \"No dev mode available, use helm instead.\"",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
-    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
+    "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto --repository asia.gcr.io/terriajs-automated-deployment",
     "retag-and-push": "retag-and-push"
   },
   "config": {
@@ -16,8 +16,8 @@
     }
   },
   "devDependencies": {
-    "@magda/db-migrator": "^0.0.56-0",
-    "@magda/scripts": "^0.0.56-0"
+    "@magda/db-migrator": "^0.0.56-nsw-5",
+    "@magda/scripts": "^0.0.56-nsw-5"
   },
   "magda": {
     "categories": {

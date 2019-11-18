@@ -10,7 +10,14 @@
         "x-msdownload",
         "WWW:DOWNLOAD-1.0-http--downloaddata"
     ],
-    "esri rest": ["esri rest", "ESRI ArcGIS"],
+    "esri mapserver": [
+        "esri rest",
+        "ESRI ArcGIS",
+        "map service",
+        "esri map service"
+    ],
+    "esri featureserver": ["feature service", "esri feature service"],
+    "esri sceneserver": ["scene service", "esri scene service"],
     "esri grid": ["ArcInfo GRID"],
     "relational database": ["relational database"],
     "wms": [
