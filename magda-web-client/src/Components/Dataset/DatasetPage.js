@@ -490,8 +490,14 @@ class RecordHandler extends React.Component {
                                     >
                                         <Link
                                             to={`/organisations/${publisherId}`}
+                                            itemProp="url"
                                         >
-                                            {this.props.dataset.publisher.name}
+                                            <span itemProp="name">
+                                                {
+                                                    this.props.dataset.publisher
+                                                        .name
+                                                }
+                                            </span>
                                         </Link>
                                     </span>
 
@@ -712,7 +718,7 @@ class RecordHandler extends React.Component {
                                                 </ToggleEditor>
                                             </div>
                                             <hr />
-                                            <h3>Spatial area</h3>
+                                            <h3>Spatial extent</h3>
                                             <h4>
                                                 We've determined that the
                                                 spatial extent of your data is:

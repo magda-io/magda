@@ -1,44 +1,39 @@
 # Magda
 
-[![GitHub release](https://img.shields.io/github/release/TerriaJS/magda.svg)](https://github.com/TerriaJS/magda/releases)
-[![GitLab Pipeline](https://gitlab.com/magda-data/magda/badges/master/pipeline.svg)](https://gitlab.com/magda-data/magda/pipelines)
-[![Try it out at search.data.gov.au](https://img.shields.io/badge/try%20it%20out%20at-search.data.gov.au-blue.svg)](https://search.data.gov.au)
-[![Join the chat at https://gitter.im/magda-data/Lobby](https://badges.gitter.im/magda-data/Lobby.svg)](https://gitter.im/magda-data/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![GitHub release](https://img.shields.io/github/release/magda-io/magda.svg)](https://github.com/TerriaJS/magda/releases)
+[![pipeline status](https://gitlab.com/magda-data/magda/badges/master/pipeline.svg)](https://gitlab.com/magda-data/magda/commits/master)
+[![Try it out](https://img.shields.io/badge/try%20it%20out-demo.dev.magda.io-blue.svg)](https://demo.dev.magda.io)
+[![Get help or discuss on spectrum](https://img.shields.io/badge/Get%20help%20or%20discuss-on%20spectrum-7B16FF.svg?logoColor=white&logo=spectrum)](https://spectrum.chat/magda)
 
-Magda is a modern platform built to power a new generation of data portals. Its goal is to improve on existing data portal and management solutions in a number of areas:
+Magda is a data catalog system that provides a single place where all of an organization's data can be catalogued, enriched, searched, tracked and prioritized - whether big or small, internally or externally sourced, available as files, databases or APIs. Magda is designed specifically around the concept of _federation_ - providing a single view across all data of interest to a user, regardless of where the data is stored or where it was sourced from. The system is able to quickly crawl external data sources, track changes, make automatic enhancements and push notifications when changes occur, giving data users a one-stop shop to discover all the data that's available to them.
 
--   Discoverability of high-quality and relevant data (particularly through search)
--   Automatic derivation, repair and/or enhancement of data and metadata
--   Seamless federation across multiple data sources
--   Collaboration between data providers and users, as well as between users themselves
--   Quick and effective previewing of datasets, so that the user never has to download a dataset only to find it's not useful
--   An ecosystem that allows extension in any programming language
--   An easy installation and setup process
+![Magda Search Demo](docs/assets/searchdemo420p.gif)
 
-Magda is a solution for any problem that involves a collection or collections of datasets that need to be searched over, discussed and/or viewed in a single place. It doesn't matter what format the data is in, how well-formed the metadata is, where the data is stored or in how many places, Magda can either work with it or be extended to do so.
+## Features
 
-The project was started by CSIRO Data61 and Australia's Department of Prime Minister and Cabinet as the future of [data.gov.au](https://data.gov.au), and is currently in alpha at [search.data.gov.au](https://search.data.gov.au). As a result it's ideal for powering open data portals, particularly those that involve federating over a number of other more focused portals - for example data.gov.au is a a federal government portal that publishes its own data and makes it available alongside data from department and state portals. However, it can just as easily be run on an organisational intranet as a central private data portal - and can even be set up to include relevant open data in search results alongside private data without exposing any private data to the internet.
+-   A heavily automated, quick and easy to use data cataloguing process intended to produce high-quality metadata for discovery
+-   Powerful and scalable search based on ElasticSearch
+-   Quick and reliable aggregation of external sources of datasets
+-   An unopinionated central store of metadata, able to cater for most metadata schemas
+-   Federated authentication via passport.js - log in via Google, Facebook, WSFed, AAF, CKAN, and easily create new providers.
+-   Easy, one-step (or close to) installation and upgrades
+-   Based on Kubernetes for cloud agnosticism - deployable nearly any cloud, or on-premises.
+-   Extensions are based on adding new docker images to the cluster, and hence can be developed in any language
 
-## Current Status
+### Currently Under Development
 
-Magda is currently being actively developed. It's now at the point where there is a reasonably stable, documented API, and it's stable in production at https://search.data.gov.au. Currently the developed features mainly center around its use as an open data search engine - we're currently developing features to allow it to host its own data and be usable for private data too.
-
-## Future
-
-Magda has been developed as a search tool for open data, but our ambition is to bring it inside government agencies as well, so that they can use have the same quality of tools for their own private data as they do for open data. We hope to make improvements in a number of areas:
-
--   An opinionated, highly guided publishing process intended to produce high-quality metadata, rather than simply encourage publishing with any quality of metadata
--   A robust mechanism for authorization that allows for tight controls over who can see what datasets
--   An easy to use administration interface so that the product can be run without needing to use the command line.
--   Workflows to facilitate data sharing and the opening of data, within the software itself
+-   A robust, policy-based authorization system built on Open Policy Agent - write flexible policies to restrict access to datasets and have them work across the system, including by restricting search results to what you're allowed to see.
+-   Refinements to the data catalog
+-   Storage of datasets
+-   Deduplication of datasets, without necessarily storing the underlying data
 
 Our current roadmap is available at https://magda.io/docs/roadmap
 
 ## Architecture
 
-Magda is built around a collection of microservices that are distributed as docker containers. This was done to provide easy extensibility - Magda can be customised by simply adding new services using any technology as docker images, and integrating them with the rest of the system via stable HTTP APIs. Using Kubernetes for orchestration means that configuration of a customised Magda instance can be stored and tracked as plain text, and instances with identical configuration can be quickly and easily reproduced.
+Magda is built around a collection of microservices that are distributed as docker containers. This was done to provide easy extensibility - Magda can be customised by simply adding new services using any technology as docker images, and integrating them with the rest of the system via stable HTTP APIs. Using Helm and Kubernetes for orchestration means that configuration of a customised Magda instance can be stored and tracked as plain text, and instances with identical configuration can be quickly and easily reproduced.
 
-![Magda Architecture Diagram](docs/docs/magda-basic-architecture.png)
+![Magda Architecture Diagram](docs/assets/marketecture.svg)
 
 ### Registry
 
@@ -74,13 +69,12 @@ https://magda.io/docs/building-and-running
 
 ## To get help with developing or running Magda
 
-Talk to us on Gitter!
-[![Join the chat at https://gitter.im/magda-data/Lobby](https://badges.gitter.im/magda-data/Lobby.svg)](https://gitter.im/magda-data/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+Start a discussion at https://spectrum.chat/magda. There's not a lot on there yet, but we monitor it closely :).
 
-## Want to talk about deploying this into your agency?
+## Want to get help deploying it into your organisation?
 
 Email us at contact@magda.io.
 
 ## Want to contribute?
 
-Great! Take a look at https://github.com/TerriaJS/magda/blob/master/.github/CONTRIBUTING.md :).
+Great! Take a look at https://github.com/magda-io/magda/blob/master/.github/CONTRIBUTING.md :).

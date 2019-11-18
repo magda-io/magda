@@ -165,14 +165,14 @@ type Access = {
     notes?: string;
 };
 
-export function createBlankState(user: User): State {
+export function createBlankState(user?: User): State {
     return {
         files: [],
         processing: false,
         dataset: {
-            title: "Untitled",
+            title: "",
             languages: ["eng"],
-            owningOrgUnitId: user.orgUnitId,
+            owningOrgUnitId: user ? user.orgUnitId : undefined,
             defaultLicense: "world"
         },
         datasetPublishing: {
@@ -200,7 +200,7 @@ export function createBlankState(user: User): State {
 
 // saving data in the local storage for now
 // TODO: consider whether it makes sense to store this in registry as a custom state or something
-export async function loadState(id: string, user: User): Promise<State> {
+export async function loadState(id: string, user?: User): Promise<State> {
     const stateString = localStorage[id];
     let state: State;
     if (stateString) {

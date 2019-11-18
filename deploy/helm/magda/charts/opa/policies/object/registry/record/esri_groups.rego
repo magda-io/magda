@@ -1,11 +1,6 @@
-package object.registry.record.esri_groups
+package object.registry.record
 
-import data.object.registry.record.has_permission
-import data.object.registry.record.esri_access_control
-import data.object.registry.record.base
-
-read {
-    has_permission.read
-    esri_access_control
+# "esri-access-control" is the aspect id defined in the registry database.
+esri_groups {
+    input.object.registry.record["esri-access-control"].groups[_] == input.user.session["esriGroups"][_]
 }
-

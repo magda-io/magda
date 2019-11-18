@@ -25,9 +25,11 @@ import {
 } from "./DatasetAddCommon";
 import DetailsAndContents from "./Pages/DetailsAndContents";
 import DatasetAddPeoplePage from "./Pages/People/DatasetAddPeoplePage";
+import DatasetAddEndPreviewPage from "./Pages/DatasetAddEndPreviewPage";
 import { createPublisher, ensureAspectExists } from "api-clients/RegistryApis";
 import DatasetAddAccessAndUsePage from "./Pages/DatasetAddAccessAndUsePage";
 import withAddDatasetState from "./withAddDatasetState";
+import { config } from "config";
 
 import datasetPublishingAspect from "@magda/registry-aspects/publishing.schema.json";
 import dcatDatasetStringsAspect from "@magda/registry-aspects/dcat-dataset-strings.schema.json";
@@ -91,9 +93,7 @@ class NewDataset extends React.Component<Props, State> {
     componentDidMount() {
         if (this.props.isNewDataset) {
             this.props.history.replace(
-                `/dataset/add/metadata/${this.props.datasetId}/${
-                    this.props.step
-                }`
+                `/dataset/add/metadata/${this.props.datasetId}/${this.props.step}`
             );
         }
     }
@@ -123,13 +123,15 @@ class NewDataset extends React.Component<Props, State> {
                 stateData={this.state}
             />
         ),
-        this.renderSubmitPage.bind(this)
+        config.featureFlags.previewAddDataset
+            ? () => <DatasetAddEndPreviewPage />
+            : this.renderSubmitPage.bind(this)
     ];
 
     edit = <K extends keyof State>(aspectField: K) => (field: string) => (
         newValue: any
     ) => {
-        this.setState(state => {
+        this.setState((state: any) => {
             return {
                 [aspectField]: { ...state[aspectField], [field]: newValue }
             } as Pick<State, K>;
@@ -148,6 +150,33 @@ class NewDataset extends React.Component<Props, State> {
         step = Math.max(Math.min(step, this.steps.length - 1), 0);
 
         const nextIsPublish = step + 1 >= this.steps.length;
+
+        const nextButtonCaption = () => {
+            if (nextIsPublish) {
+                if (config.featureFlags.previewAddDataset) {
+                    return "Send Us Your Thoughts";
+                } else if (this.state.isPublishing) {
+                    return "Publishing as draft...";
+                } else {
+                    return "Publish draft dataset";
+                }
+            } else {
+                return ProgressMeterStepsConfig[step + 2].title;
+            }
+        };
+
+        const nextButtonOnClick = () => {
+            if (nextIsPublish) {
+                if (config.featureFlags.previewAddDataset) {
+                    window.location.href =
+                        "mailto:magda@csiro.au?subject=Add Dataset Feedback";
+                } else {
+                    this.performPublishDataset();
+                }
+            } else {
+                this.gotoStep(step + 1);
+            }
+        };
 
         return (
             <div className="dataset-add-files-root dataset-add-meta-data-pages">
@@ -169,18 +198,9 @@ class NewDataset extends React.Component<Props, State> {
                     <div className="col-sm-12">
                         <button
                             className="au-btn next-button"
-                            onClick={
-                                nextIsPublish
-                                    ? this.performPublishDataset.bind(this)
-                                    : this.gotoStep.bind(this, step + 1)
-                            }
+                            onClick={nextButtonOnClick}
                         >
-                            Next:{" "}
-                            {nextIsPublish
-                                ? this.state.isPublishing
-                                    ? "Publishing as draft..."
-                                    : "Publish draft dataset"
-                                : ProgressMeterStepsConfig[step + 2].title}
+                            Next: {nextButtonCaption()}
                         </button>
                         <button
                             className="au-btn au-btn--secondary save-button"
@@ -230,13 +250,13 @@ class NewDataset extends React.Component<Props, State> {
                         Optional space to leave a note for the dataset Approver
                     </h3>
                     <ToolTip icon={helpIcon}>
-                        Leave any additional comments you feel relevant to this
-                        dataset
+                        Leave any additional comments you feel are relevant to
+                        this dataset
                     </ToolTip>
                     <div>
                         <MultilineTextEditor
                             value={datasetPublishing.notesToApprover}
-                            placerHolder="Enter additional notes"
+                            placeholder="Enter additional notes"
                             onChange={this.edit("datasetPublishing")(
                                 "notesToApprover"
                             )}
@@ -250,6 +270,7 @@ class NewDataset extends React.Component<Props, State> {
     async performPublishDataset() {
         try {
             await this.resetError();
+
             await this.publishDataset();
             this.props.history.push(`/dataset/${this.props.lastDatasetId}`);
         } catch (e) {
@@ -282,8 +303,9 @@ class NewDataset extends React.Component<Props, State> {
 
         let publisherId;
         if (dataset.publisher) {
-            publisherId = getOrgIdFromAutocompleteChoice(dataset.publisher);
-
+            publisherId = await getOrgIdFromAutocompleteChoice(
+                dataset.publisher
+            );
             this.edit("dataset")("publisher")({
                 name: dataset.publisher.name,
                 publisherId

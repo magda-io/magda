@@ -69,6 +69,7 @@ type Config = {
     arcgisClientId?: string;
     arcgisClientSecret?: string;
     arcgisInstanceBaseUrl?: string;
+    esriOrgGroup?: string;
     ckanUrl?: string;
     enableCkanRedirection?: boolean;
     ckanRedirectionDomain?: string;
@@ -178,6 +179,7 @@ export default function buildApp(config: Config) {
                 arcgisClientId: config.arcgisClientId,
                 arcgisClientSecret: config.arcgisClientSecret,
                 arcgisInstanceBaseUrl: config.arcgisInstanceBaseUrl,
+                esriOrgGroup: config.esriOrgGroup,
                 ckanUrl: config.ckanUrl,
                 authorizationApi: config.authorizationApi,
                 externalUrl: config.externalUrl,

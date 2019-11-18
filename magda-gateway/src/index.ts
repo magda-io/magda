@@ -150,6 +150,14 @@ const argv = addJwtSecretFromEnvVar(
                 process.env.ARCGIS_INSTANCE_BASE_URL ||
                 process.env.npm_package_config_arcgisInstanceBaseUrl
         })
+        .option("esriOrgGroup", {
+            describe:
+                "A unique group name representing authenticated users of the esri portal",
+            type: "string",
+            default:
+                process.env.ESRI_ORG_GROUP ||
+                process.env.npm_package_config_esriOrgGroup
+        })
         .option("vanguardWsFedCertificate", {
             describe:
                 "The certificate to use for Vanguard WS-FED Login. This can also be specified with the VANGUARD_CERTIFICATE environment variable.",

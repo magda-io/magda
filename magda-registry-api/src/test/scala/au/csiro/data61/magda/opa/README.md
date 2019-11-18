@@ -4,9 +4,9 @@ Follow the instructions below to perform the integration tests on your local dev
 
 ### Enable the integration tests
 
-Comment out the @Ignore annotation near the top of file opa/RecordsOpaSpec.scala. Do not commit
-the change as the tests are not fully automated yet. The tests will fail if they are run in the
-CI tests.
+Comment out the @Ignore annotation near the top of files like opa/Test\*.scala. Do
+not commit the change as the tests are not fully automated yet. The tests will fail if they
+are run in the CI tests.
 
 ### Deploy combined-db with authorization-db and registry-db
 
@@ -72,56 +72,23 @@ yarn dev
 
 The current Java JWT library is not capable of creating custom claims that are json objects.
 The typescript library comes to help. The jwt tokens used in testing esri policy are created by
-magda-typescript-common/src/test/session/buildJwtForRegistryEsriOpaTest.ts.
+magda-typescript-common/src/test/session/buildJwtForRegistryEsri\*\*\*Test.ts.
 
-If necessary, follow the steps below to create them again.
-
-```
-cd magda-typescript-common
-yarn build
-yarn create_esri_jwt
-```
-
-The jwt for each testing user will be printed on screen. Replace JWTs with the newly created ones
-in method addJwtToken() of class opa/ApiWithOpaSpec.scala.
+If necessary, follow the instructions in a relevant override addJwtToken() method.
 
 ### Start the integration tests
 
 It is very convenient to debug the tests with IntelliJ IDEA.
 
-There are currently two suites of tests. One, `RecordsWithOwnerOrgUnitsOpaPoliciesSpec`, is configured to use the
-hierarchical organization based access control policy `object.registry.record.owner_orgunit` that corresponds to
-`dataset-access-control` aspect, the other, `RecordsWithEsriOpaPoliciesSpec`, is configured to use Esri groups based
-policy `object.registry.record.esri_groups` that corresponds to `esri-access-control` aspect.
+All the suites perform tests under the same conditions described in `Relationship among users, organizations and records.`
+in the class of `ApiWithOpa`.
 
-Both suites perform tests under the same conditions described in `Relationship among users, organizations and records.`
-in the class of `ApiWithOpaSpec`.
-
-After running either of the two suites, the testing data are persisted in the database.
+After running one of the suites, its testing data are persisted in the database.
 
 You may run RegistryApp with default config (using default policy `object.registry.record.owner_orgunit`) from
 the IntelliJ then query the registry api as different users. A user is identified by a jwt token in the request header.
 
-To find out the jwt tokens for all testing users, uncomment the print statements in the method of addJwtToken in file
-opa/ApiWithOpaSpec.scala.
-
-Here are some jwt token examples when using policy `object.registry.record.owner_orgunit`:
-
-```
-userId: 00000000-0000-1000-0000-000000000000
-jwtToken: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiIwMDAwMDAwMC0wMDAwLTEwMDAtMDAwMC0wMDAwMDAwMDAwMDAifQ.2V0FqFp89olSyEHoVe7NNMHBTsA2TZ2_sc8FF90JcqA
-
-userId: 00000000-0000-1000-0001-000000000000
-jwtToken: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiIwMDAwMDAwMC0wMDAwLTEwMDAtMDAwMS0wMDAwMDAwMDAwMDAifQ.x26uJGh1HwYAKgINr_zR_OPPpS53gwqbqVh9mCyt57o
-
-userId: 00000000-0000-1000-0002-000000000000
-jwtToken: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiIwMDAwMDAwMC0wMDAwLTEwMDAtMDAwMi0wMDAwMDAwMDAwMDAifQ.JoO8QCmesnXzYmdZHSqwwZtaK_CpLUvjKL2I090DoYk
-
-userId: 00000000-0000-1000-0003-000000000000
-jwtToken: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiIwMDAwMDAwMC0wMDAwLTEwMDAtMDAwMy0wMDAwMDAwMDAwMDAifQ.cCCS3XqslU6ZQYlYhkJ9Fm4mFj7E_g4dmGnRGEgaZmA
-```
-
-Here is an example query on behalf of user with ID of 00000000-0000-1000-0003-000000000000:
+Here is an example query on behalf of user with ID of 00000000-0000-1000-0003-000000000000
 (Do not forget to add tenant id header too.)
 
 ```
