@@ -112,19 +112,15 @@ export default class Authenticator {
     }
 
     /**
-     * destroy the session. Will do two things:
-     * - Delete session data from session store
-     * - Delete session cookie
+     * destroy the session.
+     *  - will delete the session data from session store only.
+     * - will not delete session cookie (Call deleteCookie method for deleting cookie)
      *
      * @param {express.Request} req
-     * @param {express.Response} res
      * @returns {Promise<never>}
      * @memberof Authenticator
      */
-    destroySession(
-        req: express.Request,
-        res: express.Response
-    ): Promise<never> {
+    destroySession(req: express.Request): Promise<never> {
         return new Promise((resolve, reject) => {
             req.session.destroy(err => {
                 if (err) {
@@ -134,14 +130,23 @@ export default class Authenticator {
                     resolve();
                 }
             });
-            const deleteCookieOptions = {
-                ...this.sessionCookieOptions
-            };
-            // --- `clearCookie` works in a way like it will fail to delete cookie if maxAge presents T_T
-            // --- https://github.com/expressjs/express/issues/3856#issuecomment-502397226
-            delete deleteCookieOptions.maxAge;
-            res.clearCookie(DEFAULT_SESSION_COOKIE_NAME, deleteCookieOptions);
         });
+    }
+
+    /**
+     * Delete cookie from web browser
+     *
+     * @param {express.Response} res
+     * @memberof Authenticator
+     */
+    deleteCookie(res: express.Response) {
+        const deleteCookieOptions = {
+            ...this.sessionCookieOptions
+        };
+        // --- `clearCookie` works in a way like it will fail to delete cookie if maxAge presents T_T
+        // --- https://github.com/expressjs/express/issues/3856#issuecomment-502397226
+        delete deleteCookieOptions.maxAge;
+        res.clearCookie(DEFAULT_SESSION_COOKIE_NAME, deleteCookieOptions);
     }
 
     /**
@@ -189,16 +194,44 @@ export default class Authenticator {
             }
             // --- Only make session / store available
             // --- passport midddleware should not be run
-            return runMiddlewareList([this.sessionMiddleware], req, res, () => {
-                // --- destroy session here
-                // --- any session data will be removed from session store
-                // --- No need to wait till `destroySession` complete
-                this.destroySession(req, res).catch(err => {
-                    // --- only log here if failed to delete session data from session store
-                    console.log(`Failed to destory session: ${err}`);
-                });
-                return next();
-            });
+            return runMiddlewareList(
+                [this.sessionMiddleware],
+                req,
+                res,
+                async () => {
+                    // --- destroy session here
+                    // --- any session data will be removed from session store
+                    if (pathname === "/auth/logout") {
+                        // --- based on PR review feedback, we want to report any errors happened during session destroy
+                        // --- and only remove cookie from user agent when session data is destroyed successfully
+                        this.destroySession(req)
+                            .then(() => {
+                                // --- delete the cookie and continue middleware processing chain
+                                this.deleteCookie(res);
+                                res.status(200).send({
+                                    isError: false
+                                });
+                            })
+                            .catch(err => {
+                                const errorMessage = `Failed to destory session: ${err}`;
+                                console.log(errorMessage);
+                                res.status(500).send({
+                                    isError: true,
+                                    errorCode: 500,
+                                    errorMessage
+                                });
+                            });
+                    } else {
+                        // --- for non logout path, no need to wait till `destroySession` complete
+                        this.destroySession(req).catch(err => {
+                            // --- only log here if failed to delete session data from session store
+                            console.log(`Failed to destory session: ${err}`);
+                        });
+                        this.deleteCookie(res);
+                        return next();
+                    }
+                }
+            );
         } else {
             // For other routes: only make session & passport data available if session has already started (cookie set)
             if (!req.cookies[DEFAULT_SESSION_COOKIE_NAME]) {
@@ -221,12 +254,13 @@ export default class Authenticator {
                             // --- the original incoming session id must have been an invalid or expired one
                             // --- we need to destroy this newly created empty session
                             // --- destroy session here & no need to wait till `destroySession` complete
-                            this.destroySession(req, res).catch(err => {
+                            this.destroySession(req).catch(err => {
                                 // --- only log here if failed to delete session data from session store
                                 console.log(
                                     `Failed to destory session: ${err}`
                                 );
                             });
+                            this.deleteCookie(res);
                             // --- proceed to other middleware & no need to run passport
                             return next();
                         } else {

@@ -73,13 +73,20 @@ export function requestSignOut() {
             ...config.fetchOptions,
             credentials: "include"
         })
-            .then(response => {
-                if (response.status <= 400) {
+            .then(async response => {
+                if (response.status === 200) {
                     dispatch(completedSignOut());
                 } else {
+                    let errorMessage;
+                    try {
+                        const resData = await response.json();
+                        errorMessage = resData.errorMessage;
+                    } catch (e) {
+                        errorMessage = response.status;
+                    }
                     dispatch(
                         signOutError(
-                            new Error("Error signing out: " + response.status)
+                            new Error("Error signing out: " + errorMessage)
                         )
                     );
                 }
