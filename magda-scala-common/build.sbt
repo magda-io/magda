@@ -3,6 +3,7 @@ name := "magda-scala-common"
 resolvers += Resolver.bintrayRepo("monsanto", "maven")
 resolvers += Resolver.sonatypeRepo("releases")
 resolvers += "elasticsearch-releases" at "https://artifacts.elastic.co/maven"
+resolvers += "jitpack" at "https://jitpack.io"
 
 libraryDependencies ++= {
   val akkaV       = "2.5.23"
