@@ -8,6 +8,7 @@ General:
     policy (default) or Esri groups based access policy.
 -   Add esri portal connector. Read its README.md file before use.
 -   Lock helm version in gitlab to 2.15.2 due to issue: https://github.com/helm/helm/issues/6894
+-   Changed the way of `auth-secrets` to be created in gitlab
 
 Registry:
 
