@@ -1,7 +1,7 @@
 {
   "name": "@magda/minion-terria",
   "description": "MAGDA Terria Minion",
-  "version": "0.0.56-nsw-5c",
+  "version": "0.0.56-nsw-5d",
   "scripts": {
     "build": "yarn run compile",
     "compile": "tsc -p tsconfig-build.json",

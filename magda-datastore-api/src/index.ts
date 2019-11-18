@@ -33,6 +33,18 @@ const argv = addJwtSecretFromEnvVar(
         .option("jwtSecret", {
             describe: "The shared secret for intra-network communication",
             type: "string"
+        })
+        .option("accessCacheMaxItems", {
+            describe:
+                "The maximum number of Tenant ID / User ID / Record ID triplets for which to cache the result of the registry access check.",
+            type: "number",
+            default: 1000
+        })
+        .option("accessCacheMaxAgeMilliseconds", {
+            describe:
+                "The time, in milliseconds, for which to cache the result of a registry access check for a particular Tenant ID / User ID / Record ID triplet.",
+            type: "number",
+            default: 30000
         }).argv
 );
 
@@ -46,7 +58,9 @@ app.use(
         objectStoreClient: new GoogleCloudStorageClient(
             argv.gcsBucket,
             argv.gcsKeyFile
-        )
+        ),
+        accessCacheMaxItems: argv.accessCacheMaxItems,
+        accessCacheMaxAgeMilliseconds: argv.accessCacheMaxAgeMilliseconds
     })
 );
 
