@@ -60,42 +60,40 @@ export function receiveWhoAmIError(err: any): any {
 }
 
 export function requestSignOut() {
-    return (dispatch: Dispatch, getState: GetState) => {
-        if (getState().userManagement.isSigningOut) {
-            return false;
-        }
+    return async (dispatch: Dispatch, getState: GetState) => {
+        try {
+            if (getState().userManagement.isSigningOut) {
+                return;
+            }
 
-        dispatch({
-            type: actionTypes.REQUEST_SIGN_OUT
-        });
-
-        fetch(config.baseUrl + "auth/logout", {
-            ...config.fetchOptions,
-            credentials: "include"
-        })
-            .then(async response => {
-                if (response.status === 200) {
-                    dispatch(completedSignOut());
-                } else {
-                    let errorMessage;
-                    try {
-                        const resData = await response.json();
-                        errorMessage = resData.errorMessage;
-                    } catch (e) {
-                        errorMessage = response.status;
-                    }
-                    dispatch(
-                        signOutError(
-                            new Error("Error signing out: " + errorMessage)
-                        )
-                    );
-                }
-            })
-            .then(() => {
-                fetchContent()(dispatch, getState);
-                requestWhoAmI()(dispatch, getState);
+            dispatch({
+                type: actionTypes.REQUEST_SIGN_OUT
             });
-        return undefined;
+
+            const response = await fetch(config.baseUrl + "auth/logout", {
+                ...config.fetchOptions,
+                credentials: "include"
+            });
+
+            if (response.status === 200) {
+                dispatch(completedSignOut());
+            } else {
+                try {
+                    const resData = await response.json();
+                    throw new Error(resData.errorMessage);
+                } catch (e) {
+                    throw new Error(response.statusText);
+                }
+            }
+
+            fetchContent()(dispatch, getState);
+            requestWhoAmI()(dispatch, getState);
+        } catch (e) {
+            // --- notify user with a simply alert box
+            alert("Error signing out: " + e);
+            // --- leave existing `signOutError` action dispatch for future implementation
+            dispatch(signOutError(new Error("Error signing out: " + e)));
+        }
     };
 }
 
