@@ -34,7 +34,8 @@ object AspectValidator {
 
     def validateWithDefinition(aspectDef: AspectDefinition, aspectData: JsObject): Unit ={
       if(!aspectDef.jsonSchema.isDefined) {
-        throw new Exception(s"Failed to validate aspect data: Cannot locate json schema for aspect id: ${aspectDef.id}")
+        // --- json schema not set means skipping validation
+        return
       }
       val rawSchema = new JSONObject(aspectDef.jsonSchema.get.toString())
       rawSchema.optString("$schema").trim.toLowerCase match {
