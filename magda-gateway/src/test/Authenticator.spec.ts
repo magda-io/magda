@@ -334,7 +334,8 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                 ])
                 .expect(200)
                 .then(async res => {
-                    expect(isNextHandlerCalled).to.equal(true);
+                    expect(isNextHandlerCalled).to.equal(false);
+                    expect(res.body.isError).to.equal(false);
                     [sessionId, cookieOptions] = getSetCookie(
                         res.header,
                         DEFAULT_SESSION_COOKIE_NAME
