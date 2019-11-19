@@ -30,6 +30,8 @@ import ReactSelectStyles from "../../../../Common/react-select/ReactSelectStyles
 import { State } from "Components/Dataset/Add/DatasetAddCommon";
 import { User } from "reducers/userManagementReducer";
 
+import ValidationRequiredLabel from "../../ValidationRequiredLabel";
+
 import helpIcon from "assets/help.svg";
 
 import DatasetAutoComplete from "../People/DatasetAutocomplete";
@@ -65,7 +67,10 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                 <h2>Details and Contents</h2>
                 <h3 className="with-underline">Title and language</h3>
                 <div className="question-title">
-                    <h4>What is the title of the dataset?</h4>
+                    <h4>
+                        What is the title of the dataset?
+                        <ValidationRequiredLabel validationFieldPath="$.dataset.title" />
+                    </h4>
                     <ToolTip>
                         We recommend ensuring dataset file names are descriptive
                         so users can easily understand the contents.
@@ -153,7 +158,10 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                 </div>
 
                 <div className="question-description">
-                    <h4>Please add a description for this dataset</h4>
+                    <h4>
+                        Please add a description for this dataset
+                        <ValidationRequiredLabel validationFieldPath="$.dataset.title" />
+                    </h4>
                     <ToolTip>
                         A good dataset description clearly and succintly
                         explains the contents, purpose and value of the dataset.

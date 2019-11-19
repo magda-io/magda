@@ -18,6 +18,8 @@ import * as ValidationManager from "./ValidationManager";
 import PurpleToolTip from "Components/Common/TooltipWrapper";
 import helpIcon from "assets/help.svg";
 
+import ValidationRequiredLabel from "../../Dataset/Add/ValidationRequiredLabel";
+
 import "./DatasetFile.scss";
 
 function FileInProgress({
@@ -114,7 +116,12 @@ const FileEditView = ({
                 Save
             </button>
             <div>
-                <span>Name:&nbsp;&nbsp; </span>
+                <span>
+                    Name:&nbsp;&nbsp;{" "}
+                    <ValidationRequiredLabel
+                        validationFieldPath={`$.files[${idx}].title`}
+                    />
+                </span>
                 &nbsp;&nbsp;
                 <SlimTextInputWithValidation
                     validationFieldLabel="File Name"
@@ -125,7 +132,12 @@ const FileEditView = ({
                 />
             </div>
             <div>
-                <span>Format: </span>
+                <span>
+                    Format:{" "}
+                    <ValidationRequiredLabel
+                        validationFieldPath={`$.files[${idx}].format`}
+                    />
+                </span>
                 &nbsp;&nbsp;
                 <SlimTextInputWithValidation
                     validationFieldLabel="File Format"

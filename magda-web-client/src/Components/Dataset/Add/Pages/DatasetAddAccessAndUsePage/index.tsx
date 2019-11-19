@@ -20,6 +20,8 @@ import PurpleToolTip from "Components/Common/TooltipWrapper";
 import { config } from "config";
 import AUpageAlert from "@gov.au/page-alerts";
 
+import ValidationRequiredLabel from "../../ValidationRequiredLabel";
+
 import "./index.scss";
 
 //--- Added Validation Support to ReactSelect
@@ -163,7 +165,10 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                 )}
 
                 <div className="question-license-restriction-type">
-                    <h4>What licence restrictions should be applied?</h4>
+                    <h4>
+                        What licence restrictions should be applied?
+                        <ValidationRequiredLabel validationFieldPath="$.dataset.defaultLicense" />
+                    </h4>
                     <ToolTip>
                         We recommend a Whole of Government Licence be applied to
                         encourage inter-department data sharing in the future.
@@ -224,6 +229,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         <span>
                             What is the sensitivity or security classification
                             of this dataset?
+                            <ValidationRequiredLabel validationFieldPath="$.informationSecurity.classification" />
                         </span>
                         <span className="tooltip-container">
                             <PurpleToolTip
@@ -330,6 +336,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                             <span>
                                 What sensitivity markers should be added to this
                                 dataset?
+                                <ValidationRequiredLabel validationFieldPath="$.informationSecurity.disseminationLimits" />
                             </span>
                             <span className="tooltip-container">
                                 <PurpleToolTip

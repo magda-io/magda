@@ -180,7 +180,7 @@ function findItemsByJsonPaths(jsonPaths: string[]): ValidationItem[] {
     return uniq(jsonPaths.flatMap(jsonPath => findItemsByJsonPath(jsonPath)));
 }
 
-function shouldValidate(jsonPath: string) {
+export function shouldValidate(jsonPath: string) {
     if (typeof stateDataGetter === "undefined") {
         // --- if stateDataGetter is not set, Validation function should be turned off
         return false;
@@ -263,7 +263,7 @@ function getItemsFromJsonPath(jsonPath: string) {
  */
 function validateItem(item: ValidationItem) {
     if (isEmptyValue(item.jsonPath)) {
-        item.setError(`\`${item.label}\` is a mandatory field.`);
+        item.setError(`Error: \`${item.label}\` is a mandatory field.`);
         return false;
     } else {
         item.clearError();

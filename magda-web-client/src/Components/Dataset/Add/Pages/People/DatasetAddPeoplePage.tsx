@@ -16,6 +16,8 @@ import OrgUnitDropdown from "./OrgUnitDropdown";
 import CustodianDropdown from "./CustodianDropdown";
 import YesNoReveal from "../../YesNoReveal";
 
+import ValidationRequiredLabel from "../../ValidationRequiredLabel";
+
 import "./DatasetAddPeoplePage.scss";
 import { User } from "reducers/userManagementReducer";
 
@@ -49,6 +51,7 @@ export default function DatasetAddPeoplePage({
                 <h4>
                     Which organisation is responsible for publishing this
                     dataset?
+                    <ValidationRequiredLabel validationFieldPath="$.dataset.publisher" />
                 </h4>
                 <div>
                     <OrganisationAutoComplete
