@@ -16,6 +16,7 @@ Registry:
 -   Fixed PATCH request to registry won't trigger notification to webhook
 -   Moved provenance and information security information out of `dcat-dataset-strings`.
 -   Removed some unused fields from `dcat-dataset-strings` - it should now be back to looking more-or-less like DCAT.
+-   Added the feature of validating aspect data against JSON Schema (Default to off)
 
 Gateway:
 
@@ -132,6 +133,9 @@ UI:
 -   Added unique key to the topmost `div` of `codelistEditor`
 -   Rename `license` to `licence` where appropriate
 -   Added Mandatory Field Validation to the Add Dataset Flow
+-   Reworded `team` to `business area`
+-   Added tooltips to the `Production` section of the `People and Production` page
+-   Reworded the user access options
 
 Gateway:
 

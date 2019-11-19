@@ -18,6 +18,8 @@ import YesNoReveal from "../../YesNoReveal";
 
 import ValidationRequiredLabel from "../../ValidationRequiredLabel";
 
+import ToolTip from "Components/Dataset/Add/ToolTip";
+
 import "./DatasetAddPeoplePage.scss";
 import { User } from "reducers/userManagementReducer";
 
@@ -62,7 +64,10 @@ export default function DatasetAddPeoplePage({
                         validationFieldLabel="Responsible Organisation"
                     />
                 </div>
-                <h4>Which team is responsible for maintaining this dataset?</h4>
+                <h4>
+                    Which business area is responsible for maintaining this
+                    dataset?
+                </h4>
                 <div>
                     <OrgUnitDropdown
                         orgUnitId={dataset.owningOrgUnitId}
@@ -97,6 +102,11 @@ export default function DatasetAddPeoplePage({
                 <hr />
                 <h3>Production</h3>
                 <h4>How was this dataset produced?</h4>
+                <ToolTip>
+                    Briefly describe the methodology of producing this dataset
+                    or any other information that might assist consumers of the
+                    dataset.
+                </ToolTip>
                 <div>
                     <AlwaysEditor
                         value={provenance.mechanism}
@@ -105,6 +115,9 @@ export default function DatasetAddPeoplePage({
                     />
                 </div>
                 <h4>What system (if any) was used to produce the data?</h4>
+                <ToolTip>
+                    For example, internal systems, external sources, etc.
+                </ToolTip>
                 <div>
                     <AlwaysEditor
                         value={provenance.sourceSystem}
@@ -134,6 +147,12 @@ export default function DatasetAddPeoplePage({
                     </YesNoReveal>
                 </div>
                 <h4>What datasets (if any) was this data derived from?</h4>
+                <ToolTip>
+                    Derived data is obtained when you apply a process or
+                    transformation to one or more source datasets. Understanding
+                    how data is derived is useful in understanding the
+                    provenance of a dataset.
+                </ToolTip>
                 <div>
                     <DatasetAutoComplete
                         user={user}
