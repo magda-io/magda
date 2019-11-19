@@ -5,7 +5,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.stream.Materializer
-import au.csiro.data61.magda.api.{FilterValue, Specified, Unspecified} 
+import au.csiro.data61.magda.api.{FilterValue, Specified, Unspecified}
 import com.sksamuel.elastic4s.http.ElasticDsl.boolQuery
 import com.sksamuel.elastic4s.searches.queries.matches.{MatchAllQuery, MatchNoneQuery}
 import com.sksamuel.elastic4s.searches.queries.matches.MatchQuery
