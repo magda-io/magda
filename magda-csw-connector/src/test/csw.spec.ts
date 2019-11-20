@@ -2,6 +2,7 @@ import * as nock from "nock";
 
 import JsonConnector from "@magda/typescript-common/dist/JsonConnector";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
+import * as sinon from "sinon";
 
 import Csw from "../Csw";
 import createTransformer from "../createTransformer";
@@ -20,7 +21,20 @@ describe("csw connector", () => {
     let cswScope: nock.Scope;
     let registryScope: nock.Scope;
 
+    before(function() {
+        sinon.stub(console, "error").callsFake(() => {});
+        sinon.stub(console, "warn").callsFake(() => {});
+    });
+
+    after(function() {
+        (console.error as any).restore();
+        (console.warn as any).restore();
+    });
+
     beforeEach(() => {
+        console.log("called beforeEach...");
+        nock.disableNetConnect();
+
         const csw = new Csw({
             id: ID,
             baseUrl: BASE_CSW_URL,
@@ -59,6 +73,49 @@ describe("csw connector", () => {
         cswScope = nock(BASE_CSW_URL);
         registryScope = nock(REGISTRY_URL);
     });
+
+    afterEach(() => {
+        console.log("called afterEach...");
+        nock.cleanAll();
+        nock.abortPendingRequests();
+        nock.restore();
+    });
+
+    it("should parse aurin response with without crashing", async () => {
+        cswScope
+            .get(/.*/)
+            .query((query: any) => query.startPosition === "1")
+            .replyWithFile(200, require.resolve("./aurin-response.xml"))
+            .persist();
+
+        cswScope
+            .get(/.*/)
+            .query((query: any) => query.startPosition !== "1")
+            .replyWithFile(200, require.resolve("./no-record.xml"))
+            .persist();
+
+        registryScope
+            .put(/.*/)
+            .reply(200)
+            .persist();
+
+        registryScope
+            .post(/.*/)
+            .reply(200)
+            .persist();
+
+        registryScope
+            .delete(/.*/)
+            .reply(200, { count: 2 })
+            .persist();
+
+        try {
+            const results = await connector.run();
+            console.log(results.datasetFailures.length);
+        } catch (e) {
+            console.log(e);
+        }
+    }).timeout(30000);
 
     it("should parse qspatial response with missing ids without crashing", () => {
         cswScope
