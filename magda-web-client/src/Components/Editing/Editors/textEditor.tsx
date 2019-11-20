@@ -48,6 +48,7 @@ export function textEditorEx(
                 const {
                     isValidationError,
                     validationErrorMessage,
+                    ref,
                     ...restExtraProps
                 } = extraProps;
 
@@ -63,6 +64,7 @@ export function textEditorEx(
                         className={`textEditorEx-outter-container ${
                             isValidationError ? "invalid" : ""
                         }`}
+                        ref={ref}
                     >
                         <div>
                             <span className="au-error-text" id={errorMessageId}>
@@ -137,7 +139,7 @@ export const MultilineTextEditor: FunctionComponent<
     MultilineTextEditorPropType
 > = props => {
     const [isValidationError, validationErrorMessage, elRef] = useValidation<
-        HTMLTextAreaElement
+        HTMLDivElement
     >(props.validationFieldPath, props.validationFieldLabel);
 
     const isEditorMode = props.isEditorMode === false ? false : true;
@@ -147,9 +149,7 @@ export const MultilineTextEditor: FunctionComponent<
 
     if (isEditorMode) {
         const errorMessageId = `input-error-text-${uuidv4()}`;
-        const extraProps: any = {
-            ref: elRef
-        };
+        const extraProps: any = {};
         if (props.validationFieldPath) {
             extraProps.onBlur = () => {
                 ValidationManager.onInputFocusOut(
@@ -168,6 +168,7 @@ export const MultilineTextEditor: FunctionComponent<
                 className={`multilineTextEditor-outter-container ${
                     isValidationError ? "invalid" : ""
                 }`}
+                ref={elRef}
             >
                 {isValidationError ? (
                     <div>
