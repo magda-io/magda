@@ -7,7 +7,6 @@ General:
     The registry service can be configured to support either hierarchical organization based access
     policy (default) or Esri groups based access policy.
 -   Add esri portal connector. Read its README.md file before use.
--   Lock helm version in gitlab to 2.15.2 due to issue: https://github.com/helm/helm/issues/6894
 
 Registry:
 
@@ -159,6 +158,7 @@ Others:
 
 -   Made registry-api DB pool settings configurable via Helm
 -   Make broken link sleuther recrawl period configurable via Helm
+-   Set version of Helm used by GitLab CI to 2.16.1
 -   Format minion will trust dcat format if other measures indicate a ZIP format
 -   Format minion will trust dcat format if other measures indicate a ESRI REST format
 -   Added ASC to 4 stars rating list
