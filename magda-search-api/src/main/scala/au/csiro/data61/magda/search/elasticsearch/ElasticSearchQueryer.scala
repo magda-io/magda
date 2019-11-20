@@ -333,6 +333,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       .limit(limit)
       .start(start.toInt)
       .query(buildEsQuery(tenantId, query, publishingStatusQuery, strategy))
+      .sortBy (fieldSort("indexed") order SortOrder.DESC, scoreSort order SortOrder.DESC)
   }
 
   /** Same as {@link #buildQuery} but also adds aggregations */
