@@ -81,6 +81,8 @@ describe("csw connector", () => {
         nock.cleanAll();
     });
 
+    // --- aurin response is a sample xml response carries valid ID
+    // --- however, previous xml process logic will trigger xml parse error as namespaces are set on root element instead of <gmd:MD_Metadata>
     it("should parse aurin response without `put record with no id` error", async () => {
         cswScope
             .get(/.*/)
@@ -99,14 +101,17 @@ describe("csw connector", () => {
             .persist();
 
         const results = await connector.run();
-        const idx = results.datasetFailures.findIndex(
+        // --- there should be no `no id` error
+        const errors = results.datasetFailures.filter(
             err =>
-                err.error.message.indexOf("Tried to put record with no id:") ===
-                0
+                err.error.message.indexOf("Tried to put record with no id:") !==
+                -1
         );
-        expect(idx).to.equal(-1);
+        expect(errors.length).to.equal(0);
     }).timeout(30000);
 
+    // --- qspatial response is a sample xml response with missing ID
+    // --- it will not trigger any xml parse error as namespace are set on <gmd:MD_Metadata>
     it("should parse qspatial response with missing ids without crashing", async () => {
         cswScope
             .get(
@@ -121,6 +126,13 @@ describe("csw connector", () => {
 
         registryScope.delete(/.*/).reply(200, { count: 2 });
 
-        await connector.run();
+        const results = await connector.run();
+        const errors = results.datasetFailures.filter(
+            err =>
+                err.error.message.indexOf("Tried to put record with no id:") !==
+                -1
+        );
+        // --- there should ONLY be `no id` error
+        expect(errors.length).to.equal(results.datasetFailures.length);
     }).timeout(30000);
 });
