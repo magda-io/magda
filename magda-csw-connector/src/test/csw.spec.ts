@@ -3,6 +3,7 @@ import * as nock from "nock";
 import JsonConnector from "@magda/typescript-common/dist/JsonConnector";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 import * as sinon from "sinon";
+import { expect } from "chai";
 
 import Csw from "../Csw";
 import createTransformer from "../createTransformer";
@@ -22,19 +23,21 @@ describe("csw connector", () => {
     let registryScope: nock.Scope;
 
     before(function() {
+        if (!nock.isActive()) {
+            nock.activate();
+        }
+        nock.disableNetConnect();
         sinon.stub(console, "error").callsFake(() => {});
         sinon.stub(console, "warn").callsFake(() => {});
     });
 
     after(function() {
+        nock.restore();
         (console.error as any).restore();
         (console.warn as any).restore();
     });
 
     beforeEach(() => {
-        console.log("called beforeEach...");
-        nock.disableNetConnect();
-
         const csw = new Csw({
             id: ID,
             baseUrl: BASE_CSW_URL,
@@ -75,23 +78,14 @@ describe("csw connector", () => {
     });
 
     afterEach(() => {
-        console.log("called afterEach...");
         nock.cleanAll();
-        nock.abortPendingRequests();
-        nock.restore();
     });
 
-    it("should parse aurin response with without crashing", async () => {
+    it("should parse aurin response without `put record with no id` error", async () => {
         cswScope
             .get(/.*/)
             .query((query: any) => query.startPosition === "1")
             .replyWithFile(200, require.resolve("./aurin-response.xml"))
-            .persist();
-
-        cswScope
-            .get(/.*/)
-            .query((query: any) => query.startPosition !== "1")
-            .replyWithFile(200, require.resolve("./no-record.xml"))
             .persist();
 
         registryScope
@@ -100,24 +94,20 @@ describe("csw connector", () => {
             .persist();
 
         registryScope
-            .post(/.*/)
-            .reply(200)
-            .persist();
-
-        registryScope
             .delete(/.*/)
             .reply(200, { count: 2 })
             .persist();
 
-        try {
-            const results = await connector.run();
-            console.log(results.datasetFailures.length);
-        } catch (e) {
-            console.log(e);
-        }
+        const results = await connector.run();
+        const idx = results.datasetFailures.findIndex(
+            err =>
+                err.error.message.indexOf("Tried to put record with no id:") ===
+                0
+        );
+        expect(idx).to.equal(-1);
     }).timeout(30000);
 
-    it("should parse qspatial response with missing ids without crashing", () => {
+    it("should parse qspatial response with missing ids without crashing", async () => {
         cswScope
             .get(
                 "/?service=CSW&version=2.0.2&request=GetRecords&constraintLanguage=FILTER&constraint_language_version=1.1.0&resultType=results&elementsetname=full&outputschema=http%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&typeNames=gmd%3AMD_Metadata&startPosition=1&maxRecords=100"
@@ -131,6 +121,6 @@ describe("csw connector", () => {
 
         registryScope.delete(/.*/).reply(200, { count: 2 });
 
-        return connector.run();
+        await connector.run();
     }).timeout(30000);
 });

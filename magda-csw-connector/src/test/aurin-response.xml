@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><csw:GetRecordsResponse xmlns="http://www.opengis.net/cat/csw/apiso/1.0" xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.0.2" xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 http://openapi.aurin.org.au//public/schemas/csw/2.0.2/record.xsd">
   <csw:SearchStatus timestamp="2019-10-28T02:57:40.604Z"/>
-  <csw:SearchResults numberOfRecordsMatched="3624" numberOfRecordsReturned="2" nextRecord="3" recordSchema="http://www.isotc211.org/2005/gmd" elementSet="full">
+  <csw:SearchResults numberOfRecordsMatched="2" numberOfRecordsReturned="2" nextRecord="0" recordSchema="http://www.isotc211.org/2005/gmd" elementSet="full">
     <gmd:MD_Metadata>
       <gmd:fileIdentifier>
         <gco:CharacterString>aurin:datasource-ACFCGN-UoM_AURIN_DB_community_gardens_20181024</gco:CharacterString>
