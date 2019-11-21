@@ -54,9 +54,6 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         <span>
                             Who can see the dataset once it is published?
                         </span>
-                        <span className="help-icon-container">
-                            <img src={helpIcon} />
-                        </span>
                     </h4>
                     <ToolTip>
                         We recommend you publish your data to everyone in your
