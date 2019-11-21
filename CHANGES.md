@@ -23,6 +23,7 @@ Gateway:
 -   Add tenant ID header to client requests.
 -   Add ArcGIS/ESRI Authentication provider, including support for on-premise instances of ArcGIS Portal.
 -   Add Vanguard (WS-FED) Authentication provider
+-   Upgrade passport google strategy to 2.0.0 to solve the legacy API access issue
 
 Search:
 
