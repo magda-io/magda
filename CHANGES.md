@@ -23,6 +23,7 @@ Gateway:
 -   Add tenant ID header to client requests.
 -   Add ArcGIS/ESRI Authentication provider, including support for on-premise instances of ArcGIS Portal.
 -   Add Vanguard (WS-FED) Authentication provider
+-   Only start / keep sessions for logged-in users to make content cachable for non-logged-in users
 
 Search:
 
