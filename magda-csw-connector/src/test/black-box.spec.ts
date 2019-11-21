@@ -9,11 +9,6 @@ const path = require("path");
 const TEST_CASES = [
     /* basic CSW test file */
     {
-        input: fs.readFileSync(path.join(__dirname, "aurin-response.xml")),
-        output: JSON.parse(fs.readFileSync(path.join(__dirname, "aurin.json")))
-    },
-    /* basic CSW test file */
-    {
         input: fs.readFileSync(path.join(__dirname, "csw1.xml")),
         output: JSON.parse(fs.readFileSync(path.join(__dirname, "csw1.json")))
     },
@@ -41,6 +36,13 @@ const TEST_CASES = [
     {
         input: fs.readFileSync(path.join(__dirname, "env.xml")),
         output: JSON.parse(fs.readFileSync(path.join(__dirname, "env.json")))
+    },
+    /**
+     * Test for CSW data source: aurin
+     */
+    {
+        input: fs.readFileSync(path.join(__dirname, "aurin-response.xml")),
+        output: JSON.parse(fs.readFileSync(path.join(__dirname, "aurin.json")))
     }
 ];
 
