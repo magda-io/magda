@@ -15,6 +15,7 @@ Registry:
 -   Fixed PATCH request to registry won't trigger notification to webhook
 -   Moved provenance and information security information out of `dcat-dataset-strings`.
 -   Removed some unused fields from `dcat-dataset-strings` - it should now be back to looking more-or-less like DCAT.
+-   Added the feature of validating aspect data against JSON Schema (Default to off)
 
 Gateway:
 
@@ -37,6 +38,7 @@ Indexer:
 -   Fixed indexer incorrect parsing bounding box data in spatialCoverage aspect
 -   Added auth when crawling the registry
 -   Fixed Data.json spatial bounding box ordering not understood
+-   Handle and log the exception "Object is missing required member 'id'"
 
 Cataloging:
 
@@ -109,7 +111,7 @@ UI:
 -   Fixed typos in no-print styling and adding keywords tooltip
 -   Added a preview mode for add dataset, that allows all users to use add dataset but prevents them from submitting.
 -   Fixed text wrap around tooltip
--   Fixed Add Dataset / License setting: Long file names should be wrapped to the next line
+-   Fixed Add Dataset / Licence setting: Long file names should be wrapped to the next line
 -   Added a new color (slightly grey) for preview screens
 -   Removed unnecessary margin in the filter facets
 -   Map Preview: avoid selecting Esri feature server distribution for preview
@@ -123,6 +125,15 @@ UI:
 -   Made the default name of a dataset blank
 -   Added a tooltip for dataset names
 -   Rename "Spatial area" to "Spatial extent"
+-   Fix issue with user manually typing dates
+-   Add tooltip to explain the difference between MB and MiB, KB and KiB, etc.
+-   Fixed `validateDOMNesting` warning
+-   Fixed warning for placeholder text being a boolean value
+-   Added unique key to the topmost `div` of `codelistEditor`
+-   Rename `license` to `licence` where appropriate
+-   Reworded `team` to `business area`
+-   Added tooltips to the `Production` section of the `People and Production` page
+-   Reworded the user access options
 
 Gateway:
 
@@ -147,6 +158,7 @@ Others:
 
 -   Made registry-api DB pool settings configurable via Helm
 -   Make broken link sleuther recrawl period configurable via Helm
+-   Set version of Helm used by GitLab CI to 2.16.1
 -   Format minion will trust dcat format if other measures indicate a ZIP format
 -   Format minion will trust dcat format if other measures indicate a ESRI REST format
 -   Added ASC to 4 stars rating list
@@ -156,6 +168,9 @@ Others:
 -   Fix data.json connector dcat-dataset-strings aspect so keywords are stored correctly
 -   Fix CSW connector may process XML response incorrectly and report `no id` error
 -   Fix: CSW connector should look for alternative location for title, keywords & spatial extend for aurin data source
+-   Upgrade Scala dependencies versions & added scalafmt support
+-   Fixed doc to reflect [lerna deprecating an option](https://github.com/lerna/lerna/commit/f2c3a92fe41b6fdc5d11269f0f2c3e27761b4c85)
+-   Fix potential memory leak by deregistering listener when Header is unmounted
 
 ## 0.0.55
 
@@ -226,7 +241,7 @@ Connectors:
 
 -   Allowed Ckan connector to pull datasets belongs to a specified organisation
 -   Added `presetRecordAspects` & `extra` parameters supports to all connectors
--   Improvements on CSW connector license info retrieve
+-   Improvements on CSW connector licence info retrieve
 
 Dataset Page:
 
@@ -332,7 +347,7 @@ Search:
 
 Others:
 
--   Download unknown project open data license URLs to extract human readable licence
+-   Download unknown project open data licence URLs to extract human readable licence
 -   Removed the .bin extension from the logo
 
 ## 0.0.50
@@ -451,7 +466,7 @@ Others:
 -   Switch apidocs root to `<host>`
 -   Removed unused jQuery dependency from format-minion
 -   Split the registry api into full and read only modes that can run separately in production
--   Take open data connector license from dataset level to distribution level and add basic black box test
+-   Take open data connector licence from dataset level to distribution level and add basic black box test
 -   Fix logo vertical alignment and partially hidden issue
 -   Made header padding even
 -   Made the broken link minion use `GET` for everything and ignore the data.
