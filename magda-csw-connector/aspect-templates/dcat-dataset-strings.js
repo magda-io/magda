@@ -34,6 +34,14 @@ let issuedDate = jsonpath.value(
 if (!issuedDate) {
     issuedDate =
         jsonpath.value(dataset.json, "$.dateStamp[*].Date[*]._") || undefined;
+    // --- we actually have schema validation in black-box test
+    // --- replace possible `unknown` value with undefined to get test cases passed
+    if (
+        typeof issuedDate === "string" &&
+        issuedDate.toLowerCase() === "unknown"
+    ) {
+        issuedDate = undefined;
+    }
 }
 
 const modifiedDate =
