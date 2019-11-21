@@ -7,6 +7,7 @@ General:
     The registry service can be configured to support either hierarchical organization based access
     policy (default) or Esri groups based access policy.
 -   Add esri portal connector. Read its README.md file before use.
+-   Lock postgres docker image to 9.6.15 to avoid docker image build issue due to outdated patch file
 
 Registry:
 
