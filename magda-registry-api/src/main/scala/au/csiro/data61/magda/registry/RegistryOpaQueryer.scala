@@ -32,7 +32,9 @@ class RegistryOpaQueryer()(
         if (config.hasPath("opa.recordPolicyId")) {
           config.getString("opa.recordPolicyId")
         } else {
-          throw new Exception("Error: Missing opa.recordPolicyId in the config.")
+          throw new Exception(
+            "Error: Missing opa.recordPolicyId in the config."
+          )
         }
 
       super.queryRecord(
