@@ -2066,7 +2066,7 @@ class WebHookProcessingSpec
       expectedEventIdAndTenantIds: Seq[ExpectedEventIdAndTenantId],
       payloadsSize: Int = 1
   ) = {
-    Util.waitUntilAllDone(200)
+    Util.waitUntilAllDone(1000)
     payloads.length shouldBe payloadsSize
     val events = payloads.foldLeft[List[RegistryEvent]](Nil)(
       (a, payload) => a ++ payload.events.get
