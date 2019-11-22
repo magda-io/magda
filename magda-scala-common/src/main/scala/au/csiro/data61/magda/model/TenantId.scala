@@ -20,6 +20,5 @@ object TenantId {
 
     override def isAllTenants(): Boolean = false
 
-    
   }
 }

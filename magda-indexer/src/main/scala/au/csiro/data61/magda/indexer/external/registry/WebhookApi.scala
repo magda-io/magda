@@ -77,7 +77,10 @@ class WebhookApi(indexer: SearchIndexer)(
                 val dataSets = list.map(
                   record =>
                     try {
-                      Some(Conversions.convertRegistryDataSet(record, Some(system.log)))
+                      Some(
+                        Conversions
+                          .convertRegistryDataSet(record, Some(system.log))
+                      )
                     } catch {
                       case CausedBy(e: spray.json.DeserializationException) =>
                         system.log.error(e, "When converting {}", record.id)

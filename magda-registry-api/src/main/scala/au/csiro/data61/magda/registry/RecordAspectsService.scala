@@ -7,7 +7,10 @@ import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
-import au.csiro.data61.magda.directives.TenantDirectives.{requiresTenantId, requiresSpecifiedTenantId}
+import au.csiro.data61.magda.directives.TenantDirectives.{
+  requiresTenantId,
+  requiresSpecifiedTenantId
+}
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._

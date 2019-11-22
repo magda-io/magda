@@ -5,7 +5,7 @@ import akka.actor.ActorSystem
 import akka.stream.Materializer
 import com.typesafe.config.Config
 import scala.concurrent.ExecutionContext
-import au.csiro.data61.magda.model.Registry.{ WebHook, EventType, WebHookConfig }
+import au.csiro.data61.magda.model.Registry.{WebHook, EventType, WebHookConfig}
 import au.csiro.data61.magda.model.Registry.RegistryConstants
 import akka.event.LoggingAdapter
 import akka.event.Logging
@@ -16,30 +16,41 @@ object RegisterWebhook {
   case object ShouldNotCrawl extends InitResult
 
   def initWebhook(interface: RegistryExternalInterface)(
-    implicit config: Config,
-    system: ActorSystem,
-    executor: ExecutionContext,
-    materializer: Materializer): Future[InitResult] = {
+      implicit config: Config,
+      system: ActorSystem,
+      executor: ExecutionContext,
+      materializer: Materializer
+  ): Future[InitResult] = {
 
     val logger = Logging(system, getClass)
 
-    logger.info("Looking up existing webhook with id {}", config.getString("registry.webhookId"))
+    logger.info(
+      "Looking up existing webhook with id {}",
+      config.getString("registry.webhookId")
+    )
     interface.getWebhook(config.getString("registry.webhookId")).flatMap {
       case Some(existingHook) =>
         logger.info("Hook already exists, updating...")
-        registerIndexerWebhook(interface, RegistryConstants.aspects, RegistryConstants.optionalAspects, true)
-          .map { _ =>
+        registerIndexerWebhook(
+          interface,
+          RegistryConstants.aspects,
+          RegistryConstants.optionalAspects,
+          true
+        ).map { _ =>
             logger.info("Updated, attempting to resume...")
             interface.resumeWebhook(config.getString("registry.webhookId"))
           } map { _ =>
-            logger.info("Successfully resumed webhook")
+          logger.info("Successfully resumed webhook")
 
-            ShouldNotCrawl
-          }
+          ShouldNotCrawl
+        }
       case None =>
         logger.info("No hook exists, registering a new one")
-        registerIndexerWebhook(interface, RegistryConstants.aspects, RegistryConstants.optionalAspects)
-          .map { _ =>
+        registerIndexerWebhook(
+          interface,
+          RegistryConstants.aspects,
+          RegistryConstants.optionalAspects
+        ).map { _ =>
             logger.info("Successfully registered new webhook")
 
             ShouldCrawl
@@ -48,10 +59,16 @@ object RegisterWebhook {
   }
 
   private def registerIndexerWebhook(
-    interface: RegistryExternalInterface,
-    aspects: List[String],
-    optionalAspects: List[String],
-    isUpdate: Boolean = false)(implicit config: Config, system: ActorSystem, executor: ExecutionContext, materializer: Materializer): Future[Unit] = {
+      interface: RegistryExternalInterface,
+      aspects: List[String],
+      optionalAspects: List[String],
+      isUpdate: Boolean = false
+  )(
+      implicit config: Config,
+      system: ActorSystem,
+      executor: ExecutionContext,
+      materializer: Materializer
+  ): Future[Unit] = {
     val webhook = WebHook(
       id = Some(config.getString("registry.webhookId")),
       name = "Indexer",
@@ -61,18 +78,20 @@ object RegisterWebhook {
         EventType.DeleteRecord,
         EventType.CreateRecordAspect,
         EventType.PatchRecord,
-        EventType.DeleteRecordAspect),
+        EventType.DeleteRecordAspect
+      ),
       url = config.getString("registry.webhookUrl"),
       config = WebHookConfig(
         aspects = Some(aspects),
         optionalAspects = Some(optionalAspects),
         includeEvents = Some(true),
         includeRecords = Some(true),
-        dereference = Some(true)),
+        dereference = Some(true)
+      ),
       userId = Some(0), // TODO: Will have to change this when it becomes important
       isWaitingForResponse = None,
-      active = true)
-
+      active = true
+    )
 
     val doRegister = if (isUpdate) {
       interface.putWebhook(webhook)
@@ -80,14 +99,17 @@ object RegisterWebhook {
       interface.createWebhook(webhook)
     }
 
-    doRegister.map { _ =>
-      system.log.info("Successfully added webhook")
+    doRegister
+      .map { _ =>
+        system.log.info("Successfully added webhook")
 
-      Unit
-    }.recover {
-      case e: Throwable =>
-        system.log.error(e, "Failed to add webhook")
-        throw e
-    }.map(_ => Unit)
+        Unit
+      }
+      .recover {
+        case e: Throwable =>
+          system.log.error(e, "Failed to add webhook")
+          throw e
+      }
+      .map(_ => Unit)
   }
 }

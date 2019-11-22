@@ -130,12 +130,13 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)(
               registryResponse =>
                 (
                   registryResponse.nextPageToken,
-                  mapCatching[Record, DataSet](registryResponse.records, {
-                    hit =>
+                  mapCatching[Record, DataSet](
+                    registryResponse.records, { hit =>
                       Conversions.convertRegistryDataSet(hit, Some(logger))
-                  }, { (e, item) =>
-                    logger.error(e, "Could not parse item: {}", item.toString)
-                  })
+                    }, { (e, item) =>
+                      logger.error(e, "Could not parse item: {}", item.toString)
+                    }
+                  )
                 )
             }
           case _ =>
@@ -242,12 +243,13 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)(
               registryResponse =>
                 (
                   registryResponse.nextPageToken,
-                  mapCatching[Record, DataSet](registryResponse.records, {
-                    hit =>
+                  mapCatching[Record, DataSet](
+                    registryResponse.records, { hit =>
                       Conversions.convertRegistryDataSet(hit, Some(logger))
-                  }, { (e, item) =>
-                    logger.error(e, "Could not parse item: {}", item.toString)
-                  })
+                    }, { (e, item) =>
+                      logger.error(e, "Could not parse item: {}", item.toString)
+                    }
+                  )
                 )
             }
           case _ =>

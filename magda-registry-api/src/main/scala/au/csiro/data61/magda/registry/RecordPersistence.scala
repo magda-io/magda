@@ -395,10 +395,10 @@ object DefaultRecordPersistence
           inner join Aspects using (aspectId, tenantId)
           inner join Records using (recordId, tenantId)
 where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AND ${SQLUtil
-  .tenantIdToWhereClause(
-    tenantId,
-    Some(SQLSyntax.createUnsafely("RecordAspects"))
-  )}
+      .tenantIdToWhereClause(
+        tenantId,
+        Some(SQLSyntax.createUnsafely("RecordAspects"))
+      )}
 	        and $opaSql
       """
       .map(rowToAspect)
@@ -469,7 +469,11 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
 
       // --- validate aspects data against json schema
       _ <- Try {
-        if(!forceSkipAspectValidation) AspectValidator.validateAspects(newRecord.aspects, tenantId)(session, config)
+        if (!forceSkipAspectValidation)
+          AspectValidator.validateAspects(newRecord.aspects, tenantId)(
+            session,
+            config
+          )
       }
 
       oldRecordWithoutAspects <- this.getByIdWithAspects(
@@ -542,7 +546,15 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
               aspectId,
               // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
               // --- as the aspect data has been validated (unless not required) in the beginning of current method
-              this.putRecordAspectById(session, tenantId, id, aspectId, data, config, true)
+              this.putRecordAspectById(
+                session,
+                tenantId,
+                id,
+                aspectId,
+                data,
+                config,
+                true
+              )
             )
         }
       }
@@ -557,11 +569,12 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       result.copy(aspects = resultAspects, sourceTag = newRecord.sourceTag)
   }
 
-  def processRecordPatchOperationsOnAspects[T](recordPatch: JsonPatch,
-                                            onReplaceAspect: (String, JsObject) => T,
-                                            onPatchAspect: (String, JsonPatch) => T,
-                                            onDeleteAspect: String => T
-                                           ): Iterable[T] = {
+  def processRecordPatchOperationsOnAspects[T](
+      recordPatch: JsonPatch,
+      onReplaceAspect: (String, JsObject) => T,
+      onPatchAspect: (String, JsonPatch) => T,
+      onDeleteAspect: String => T
+  ): Iterable[T] = {
     recordPatch.ops
       .groupBy(
         op =>
@@ -571,13 +584,13 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
           }
       )
       .filterKeys(_.isDefined)
-      .map{
+      .map {
         // Create or patch each aspect.
         // We create if there's exactly one ADD operation and it's adding an entire aspect.
         case (
-          Some(aspectId),
-          List(Add("aspects" / (_ / rest), aValue))
-          ) =>
+            Some(aspectId),
+            List(Add("aspects" / (_ / rest), aValue))
+            ) =>
           if (rest == Pointer.Empty)
             onReplaceAspect(
               aspectId,
@@ -590,9 +603,9 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
             )
         // We delete if there's exactly one REMOVE operation and it's removing an entire aspect.
         case (
-          Some(aspectId),
-          List(Remove("aspects" / (_ / rest), old))
-          ) =>
+            Some(aspectId),
+            List(Remove("aspects" / (_ / rest), old))
+            ) =>
           if (rest == Pointer.Empty) {
             onDeleteAspect(aspectId)
           } else {
@@ -603,7 +616,6 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
           }
         // We patch in all other scenarios.
         case (Some(aspectId), operations) =>
-
           onPatchAspect(
             aspectId,
             JsonPatch(operations.map({
@@ -615,22 +627,22 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
               case Replace("aspects" / (_ / rest), aValue, old) =>
                 Replace(rest, aValue, old)
               case Move(
-              "aspects" / (sourceName / sourceRest),
-              "aspects" / (destName / destRest)
-              ) =>
+                  "aspects" / (sourceName / sourceRest),
+                  "aspects" / (destName / destRest)
+                  ) =>
                 if (sourceName != destName)
-                // We can relax this restriction, and the one on Copy below, by turning a cross-aspect
-                // Move into a Remove on one and an Add on the other.  But it's probably not worth
-                // the trouble.
+                  // We can relax this restriction, and the one on Copy below, by turning a cross-aspect
+                  // Move into a Remove on one and an Add on the other.  But it's probably not worth
+                  // the trouble.
                   throw new RuntimeException(
                     "A patch may not move values between two different aspects."
                   )
                 else
                   Move(sourceRest, destRest)
               case Copy(
-              "aspects" / (sourceName / sourceRest),
-              "aspects" / (destName / destRest)
-              ) =>
+                  "aspects" / (sourceName / sourceRest),
+                  "aspects" / (destName / destRest)
+                  ) =>
                 if (sourceName != destName)
                   throw new RuntimeException(
                     "A patch may not copy values between two different aspects."
@@ -672,7 +684,11 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       // --- validate Aspect data against JSON schema
       // --- Check at the beginning to make sure no data is saved unless everything is valid
       _ <- Try {
-        if(!forceSkipAspectValidation) AspectValidator.validateWithRecordPatch(recordPatch, id, tenantId)(session, config)
+        if (!forceSkipAspectValidation)
+          AspectValidator.validateWithRecordPatch(recordPatch, id, tenantId)(
+            session,
+            config
+          )
       }
 
       recordOnlyPatch <- Success(
@@ -718,32 +734,39 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       }
       aspectResults <- Try {
         // --- We have validate the Json Patch in the beginning. Thus, any aspect operations below should skip the validation
-        processRecordPatchOperationsOnAspects(recordPatch, (aspectId: String, aspectData: JsObject) => (
-          aspectId,
-          putRecordAspectById(
-            session,
-            tenantId,
-            id,
-            aspectId,
-            aspectData,
-            config,
-            true
-          )
-        ), (aspectId: String, aspectPatch: JsonPatch) => (
-          aspectId,
-          patchRecordAspectById(
-            session,
-            tenantId,
-            id,
-            aspectId,
-            aspectPatch,
-            config,
-            true
-          )
-        ), (aspectId: String) => {
-          deleteRecordAspect(session, tenantId, id, aspectId)
-          (aspectId, Success(JsNull))
-        })
+        processRecordPatchOperationsOnAspects(
+          recordPatch,
+          (aspectId: String, aspectData: JsObject) =>
+            (
+              aspectId,
+              putRecordAspectById(
+                session,
+                tenantId,
+                id,
+                aspectId,
+                aspectData,
+                config,
+                true
+              )
+            ),
+          (aspectId: String, aspectPatch: JsonPatch) =>
+            (
+              aspectId,
+              patchRecordAspectById(
+                session,
+                tenantId,
+                id,
+                aspectId,
+                aspectPatch,
+                config,
+                true
+              )
+            ),
+          (aspectId: String) => {
+            deleteRecordAspect(session, tenantId, id, aspectId)
+            (aspectId, Success(JsNull))
+          }
+        )
       }
       // Report the first failed aspect, if any
       _ <- aspectResults.find(_._2.isFailure) match {
@@ -790,7 +813,11 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
 
       // --- validate Aspect data against JSON schema
       _ <- Try {
-        if(!forceSkipAspectValidation) AspectValidator.validate(aspectId, patchedAspect, tenantId)(session, config)
+        if (!forceSkipAspectValidation)
+          AspectValidator.validate(aspectId, patchedAspect, tenantId)(
+            session,
+            config
+          )
       }
 
       testRecordAspectPatch <- Try {
@@ -844,7 +871,11 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
     for {
       // --- validate Aspect data against JSON schema
       _ <- Try {
-        if(!forceSkipAspectValidation) AspectValidator.validate(aspectId, newAspect, tenantId)(session, config)
+        if (!forceSkipAspectValidation)
+          AspectValidator.validate(aspectId, newAspect, tenantId)(
+            session,
+            config
+          )
       }
       oldAspect <- this.getRecordAspectById(
         session,
@@ -861,7 +892,15 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
           DB.localTx { nested =>
             // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
             // --- as the aspect data has been validated (unless not required) in the beginning of current method
-            createRecordAspect(nested, tenantId, recordId, aspectId, newAspect, config, true)
+            createRecordAspect(
+              nested,
+              tenantId,
+              recordId,
+              aspectId,
+              newAspect,
+              config,
+              true
+            )
           } match {
             case Success(aspect) => Success(aspect)
             case Failure(e) =>
@@ -903,7 +942,11 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
 
       // --- validate aspects data against json schema
       _ <- Try {
-        if(!forceSkipAspectValidation) AspectValidator.validateAspects(record.aspects, tenantId)(session, config)
+        if (!forceSkipAspectValidation)
+          AspectValidator.validateAspects(record.aspects, tenantId)(
+            session,
+            config
+          )
       }
 
       eventId <- Try {
@@ -1037,8 +1080,9 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
   ): Try[JsObject] = {
     for {
 
-      _ <- Try{
-        if(!forceSkipAspectValidation) AspectValidator.validate(aspectId, aspect, tenantId)(session, config)
+      _ <- Try {
+        if (!forceSkipAspectValidation)
+          AspectValidator.validate(aspectId, aspect, tenantId)(session, config)
       }
 
       eventId <- Try {
