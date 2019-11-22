@@ -23,10 +23,10 @@ class RegistryOpaQueryer()(
   def queryForRecord(
       jwt: Option[String],
       operationType: AuthOperations.OperationType
-  ): Future[List[OpaQuery]] = {
+  ): Future[List[List[OpaQuery]]] = {
 
     if (skipOpaQuery) {
-      Future.successful(List(OpaQuerySkipAccessControl))
+      Future.successful(List(List(OpaQuerySkipAccessControl)))
     } else {
       val theRecordPolicyId =
         if (config.hasPath("opa.recordPolicyId")) {

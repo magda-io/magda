@@ -1,10 +1,19 @@
 variables:
   CI: "true"
   DOCKER_DRIVER: overlay2
-  SBT_OPTS: "-Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy"
+  # Make sure sbt cache are captured completely
+  COURSIER_CACHE: $CI_PROJECT_DIR/sbt-cache/coursier
+  SBT_OPTS: >
+    -Dsbt.global.base=$CI_PROJECT_DIR/sbt-cache/sbtboot
+    -Dsbt.boot.directory=$CI_PROJECT_DIR/sbt-cache/boot
+    -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
+  # If you changed dependencies (especially for scala), you might want to prevent your branch from using old cache by increase the version blew
+  # gitlab actually use the same technique when you click the `Clear Cache Button` 
+  CACHE_VERSION: 3
 
 stages:
   - builders
+  - sbt-prebuild
   - prebuild
   - buildtest
   - dockerize
@@ -19,7 +28,7 @@ builders-and-yarn:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:master
   retry: 1
   cache:
-    key: $CI_JOB_NAME-yarn-cache
+    key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
       - .yarn
       - "yarn.lock"
@@ -36,38 +45,52 @@ builders-and-yarn:
       - "node_modules"
       - "*/node_modules"
       - "yarn.lock"
-    expire_in: 30 days
+    expire_in: 7 days
+
+# Make sure sbt depenencies, plugins are in place, cached (only for this job) and pass to following stage as artifacts
+sbt-prebuild:
+  stage: sbt-prebuild
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  cache:
+    key: $CI_JOB_NAME-$CACHE_VERSION
+    paths:
+      - "$CI_PROJECT_DIR/sbt-cache"
+  script:
+    - "ls sbt-cache || cp -R /sbt-cache sbt-cache"
+    - sbt update
+  artifacts:
+    paths:
+      - "sbt-cache"
+      - "target"
+      - "project/target"
+      - "project/project/target"
+      - "*/target"
+      - "*/project/target"
+      - "*/project/project/target"
+    expire_in: 7 days
 
 registry-typescript-api:
   stage: prebuild
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
-  retry: 1
-  cache:
-    key: $CI_JOB_NAME
-    paths:
-      - "$CI_PROJECT_DIR/sbt-cache"
-      - "target"
-      - "*/target"
-      - "*/project/target"
   script:
-    - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
     - lerna run generate --scope=@magda/typescript-common --stream
   artifacts:
     paths:
       - "magda-typescript-common/src/generated"
-    expire_in: 30 days
+    expire_in: 7 days
 
 buildtest:search-with-index-cache:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   retry: 2
-  dependencies: []
+  dependencies:
+    - builders-and-yarn
+    - sbt-prebuild
   before_script:
     - |
       if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
         export DOCKER_HOST='tcp://localhost:2375'
       fi
-    - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
     - docker info
     - apk update
     - apk upgrade
@@ -76,12 +99,8 @@ buildtest:search-with-index-cache:
     - pip3 install docker-compose
     - docker-compose --version
   cache:
-    key: $CI_JOB_NAME
+    key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
-      - "$CI_PROJECT_DIR/sbt-cache"
-      - "target"
-      - "*/target"
-      - "*/project/target"
       - "$CI_PROJECT_DIR/pip-cache"
   services:
     - docker:dind
@@ -99,6 +118,8 @@ buildtest:search-with-index-cache:
       -XX:MaxGCPauseMillis=1000
       -XX:+UseG1GC
       -XX:GCTimeRatio=3
+      -Dsbt.global.base=$CI_PROJECT_DIR/sbt-cache/sbtboot
+      -Dsbt.boot.directory=$CI_PROJECT_DIR/sbt-cache/boot
       -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
   tags:
     - heavy
@@ -106,27 +127,31 @@ buildtest:search-with-index-cache:
     - cd magda-elastic-search
     - docker-compose up -d
     - cd ..
-    - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
     - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 "intTest/testOnly au.csiro.data61.magda.api.*Spec"
     - cd magda-elastic-search
     - docker-compose down
   artifacts:
     paths:
       - "target"
+      - "project/target"
+      - "project/project/target"
       - "*/target"
-    expire_in: 30 days
+      - "*/project/target"
+      - "*/project/project/target"
+    expire_in: 7 days
 
 buildtest:search-no-index-cache:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   retry: 2
-  dependencies: []
+  dependencies:
+    - builders-and-yarn
+    - sbt-prebuild
   before_script:
     - |
       if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
         export DOCKER_HOST='tcp://localhost:2375'
       fi
-    - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
     - docker info
     - apk update
     - apk upgrade
@@ -135,12 +160,8 @@ buildtest:search-no-index-cache:
     - pip3 install docker-compose
     - docker-compose --version
   cache:
-    key: $CI_JOB_NAME
+    key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
-      - "$CI_PROJECT_DIR/sbt-cache"
-      - "target"
-      - "*/target"
-      - "*/project/target"
       - "$CI_PROJECT_DIR/pip-cache"
   services:
     - postgres:9.6
@@ -163,6 +184,8 @@ buildtest:search-no-index-cache:
       -XX:MaxGCPauseMillis=1000
       -XX:+UseG1GC
       -XX:GCTimeRatio=3
+      -Dsbt.global.base=$CI_PROJECT_DIR/sbt-cache/sbtboot
+      -Dsbt.boot.directory=$CI_PROJECT_DIR/sbt-cache/boot
       -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
   tags:
     - heavy
@@ -170,15 +193,18 @@ buildtest:search-no-index-cache:
     - cd magda-elastic-search
     - docker-compose up -d
     - cd ..
-    - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
     - sbt -DelasticSearch.serverUrl=elasticsearch://docker:9200 "intTest/testOnly au.csiro.data61.magda.crawler.*Spec au.csiro.data61.magda.indexer.*Spec au.csiro.data61.magda.spatial.*Spec"
     - cd magda-elastic-search
     - docker-compose down
   artifacts:
     paths:
       - "target"
+      - "project/target"
+      - "project/project/target"
       - "*/target"
-    expire_in: 30 days
+      - "*/project/target"
+      - "*/project/project/target"
+    expire_in: 7 days
 
 buildtest:ui:
   stage: buildtest
@@ -199,19 +225,14 @@ buildtest:ui:
     paths:
       - "*/build"
       - "*/dist"
-    expire_in: 30 days
+    expire_in: 7 days
 
 buildtest:registry:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
-  cache:
-    policy: pull-push
-    key: $CI_JOB_NAME
-    paths:
-      - "$CI_PROJECT_DIR/sbt-cache"
-      - "target"
-      - "*/target"
-      - "*/project/target"
+  dependencies:
+    - builders-and-yarn
+    - sbt-prebuild
   services:
     - postgres:9.6
   variables:
@@ -220,15 +241,18 @@ buildtest:registry:
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: ""
   script:
-    - "ls $CI_PROJECT_DIR/sbt-cache/ || cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/"
     # The tests in opa/RecordOpaSpec are not fully automated yet therefore skipped.
     # Please see opa/README.md for details.
     - sbt registryApi/test
   artifacts:
     paths:
       - "target"
+      - "project/target"
+      - "project/project/target"
       - "*/target"
-    expire_in: 30 days
+      - "*/project/target"
+      - "*/project/project/target"
+    expire_in: 7 days
 
 buildtest:map:
   stage: buildtest
@@ -247,7 +271,7 @@ buildtest:map:
       - "*/build"
       - "*/dist"
       - "magda-preview-map/wwwroot/build"
-    expire_in: 30 days
+    expire_in: 7 days
 
 buildtest:typescript-apis:
   stage: buildtest
@@ -269,7 +293,7 @@ buildtest:typescript-apis:
     - pip3 install docker-compose
     - docker-compose --version
   cache:
-    key: $CI_JOB_NAME
+    key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
       - "$CI_PROJECT_DIR/pip-cache"
   services:
@@ -293,7 +317,7 @@ buildtest:typescript-apis:
   artifacts:
     paths:
       - "*/dist"
-    expire_in: 30 days
+    expire_in: 7 days
 
 buildtest:minions:
   stage: buildtest
@@ -310,7 +334,7 @@ buildtest:minions:
   artifacts:
     paths:
       - "*/dist"
-    expire_in: 30 days
+    expire_in: 7 days
 
 buildtest:connectors:
   stage: buildtest
@@ -327,7 +351,7 @@ buildtest:connectors:
   artifacts:
     paths:
       - "*/dist"
-    expire_in: 30 days
+    expire_in: 7 days
 
 buildtest:opa-policies:
   stage: buildtest
@@ -348,22 +372,12 @@ dockerize:scala:
   retry: 2
   dependencies:
     - registry-typescript-api
-    - builders-and-yarn
+    - sbt-prebuild
     - buildtest:registry
     - buildtest:search-no-index-cache
     - buildtest:search-with-index-cache
-  cache:
-    policy: pull-push
-    key: $CI_JOB_NAME
-    paths:
-      - "$CI_PROJECT_DIR/sbt-cache"
-      - "target"
-      - "*/target"
-      - "*/project/target"
   services:
     - docker:dind
-  before_script:
-    - "cp -R /sbt-cache/* $CI_PROJECT_DIR/sbt-cache/ || :"
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - cat /dev/null | sbt -Drepository=$CI_REGISTRY/magda-data/magda -Dversion=$CI_COMMIT_REF_SLUG dockerBuildAndPush
@@ -484,7 +498,7 @@ dockerize:dockerExtensions:
   cache:
     paths: []
   image:
-    name: dtzar/helm-kubectl
+    name: dtzar/helm-kubectl:2.16.1
   retry: 1
   environment:
     name: preview/$CI_COMMIT_REF_NAME
@@ -507,7 +521,7 @@ dockerize:dockerExtensions:
     - kubectl get namespace $CI_COMMIT_REF_SLUG || kubectl create namespace $CI_COMMIT_REF_SLUG
 
     # Create kube secrets
-    - 'echo {\"apiVersion\": \"v1\", \"kind\": \"Secret\", \"metadata\": {\"name\": \"auth-secrets\"}, \"type\": \"Opaque\", \"data\": {\"jwt-secret\": \"${JWT_SECRET}\", \"session-secret\":\"${SESSION_SECRET}\"}} | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -'
+    - kubectl create secret generic auth-secrets --from-literal=jwt-secret=$JWT_SECRET --from-literal=session-secret=$SESSION_SECRET --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
     - kubectl create secret docker-registry regcred --namespace $CI_COMMIT_REF_SLUG --docker-server=registry.gitlab.com --docker-username=gitlab-ci-token --docker-password=$CI_JOB_TOKEN --docker-email=alex.gilleran@data61.csiro.au --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
     - kubectl create secret generic db-passwords --from-literal=combined-db=$DB_PASSWORD --from-literal=authorization-db=$DB_PASSWORD --from-literal=content-db=$DB_PASSWORD --from-literal=session-db=$DB_PASSWORD  --from-literal=registry-db=$DB_PASSWORD --from-literal=combined-db-client=$DB_PASSWORD --from-literal=authorization-db-client=$DB_PASSWORD --from-literal=content-db-client=$DB_PASSWORD --from-literal=session-db-client=$DB_PASSWORD --from-literal=registry-db-client=$DB_PASSWORD --from-literal=tenant-db=$DB_PASSWORD --from-literal=tenant-db-client=$DB_PASSWORD --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
     - kubectl create secret generic oauth-secrets --from-literal=facebook-client-secret=$FACEBOOK_CLIENT_SECRET --from-literal=google-client-secret=$GOOGLE_CLIENT_SECRET --from-literal arcgis-client-secret=$ARCGIS_CLIENT_SECRET --from-literal vanguard-certificate="$VANGUARD_CERT" --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
@@ -550,7 +564,7 @@ Stop Preview: &stopPreview
   cache:
     paths: []
   image:
-    name: dtzar/helm-kubectl
+    name: dtzar/helm-kubectl:2.16.1
   retry: 1
   before_script: []
   environment:
@@ -568,7 +582,7 @@ Deploy Master To Dev:
     - master
   cache: {}
   image:
-    name: dtzar/helm-kubectl
+    name: dtzar/helm-kubectl:2.16.1
   retry: 1
   before_script: []
   environment:
@@ -609,9 +623,9 @@ Publish Helm Chart:
     - triggers
   dependencies: []
   image:
-    name: dtzar/helm-kubectl
+    name: dtzar/helm-kubectl:2.16.1
   cache:
-    key: $CI_JOB_NAME
+    key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
       - deploy/helm/chart-repo
   retry: 1

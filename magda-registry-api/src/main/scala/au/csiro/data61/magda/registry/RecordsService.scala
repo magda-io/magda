@@ -173,7 +173,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
         requiresSpecifiedTenantId { tenantId =>
             entity(as[Record]) { recordIn =>
               val result = DB localTx { session =>
-                recordPersistence.putRecordById(session, tenantId, id, recordIn, Nil) match {
+                recordPersistence.putRecordById(session, tenantId, id, recordIn, Nil, config) match {
                   case Success(recordOut) =>
                     complete(recordOut)
                   case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
@@ -225,7 +225,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
         requiresSpecifiedTenantId { tenantId =>
           entity(as[JsonPatch]) { recordPatch =>
             val theResult = DB localTx { session =>
-              recordPersistence.patchRecordById(session, tenantId, id, recordPatch, Nil) match {
+              recordPersistence.patchRecordById(session, tenantId, id, recordPatch, Nil, config) match {
                 case Success(result) =>
                   complete(result)
                 case Failure(exception) =>
@@ -280,7 +280,7 @@ class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApi
         pathEnd {
           entity(as[Record]) { record =>
             val result = DB localTx { session =>
-              recordPersistence.createRecord(session, tenantId, record) match {
+              recordPersistence.createRecord(session, tenantId, record, config) match {
                 case Success(theResult) => complete(theResult)
                 case Failure(exception) => complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
               }

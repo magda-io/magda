@@ -19,11 +19,11 @@ object Directives {
       system: ActorSystem,
       materializer: Materializer,
       ec: ExecutionContext
-  ): Directive1[List[OpaQuery]] = {
+  ): Directive1[List[List[OpaQuery]]] = {
     val queryer = new RegistryOpaQueryer()(config, system, system.dispatcher, materializer)
 
     AuthDirectives.getJwt().flatMap { jwt =>
-      val recordFuture: Future[List[OpaQuery]] = queryer.queryForRecord(jwt, operationType)
+      val recordFuture: Future[List[List[OpaQuery]]] = queryer.queryForRecord(jwt, operationType)
 
       onSuccess(recordFuture).flatMap { queryResults =>
         provide(queryResults)

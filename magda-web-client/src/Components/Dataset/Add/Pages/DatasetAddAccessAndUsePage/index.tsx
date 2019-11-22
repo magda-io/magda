@@ -54,9 +54,6 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         <span>
                             Who can see the dataset once it is published?
                         </span>
-                        <span className="help-icon-container">
-                            <img src={helpIcon} />
-                        </span>
                     </h4>
                     <ToolTip>
                         We recommend you publish your data to everyone in your
@@ -96,7 +93,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     <div>
                         <MultilineTextEditor
                             value={datasetAccess.notes}
-                            placerHolder="Enter any access considerations for users, such as permissions or restrictions they should be aware of..."
+                            placeholder="Enter any access considerations for users, such as permissions or restrictions they should be aware of..."
                             onChange={editDatasetAccess("notes")}
                         />
                     </div>
@@ -107,7 +104,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                 {files.length !== 0 && (
                     <div className="question-license-apply-type">
                         <h4>
-                            What type of license should be applied to these
+                            What type of licence should be applied to these
                             files?
                         </h4>
 
@@ -159,9 +156,9 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                 )}
 
                 <div className="question-license-restriction-type">
-                    <h4>What license restrictions should be applied?</h4>
+                    <h4>What licence restrictions should be applied?</h4>
                     <ToolTip>
-                        We recommend a Whole of Government License be applied to
+                        We recommend a Whole of Government Licence be applied to
                         encourage inter-department data sharing in the future.
                     </ToolTip>
                     {licenseLevel === "dataset" ? (
@@ -187,18 +184,18 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                 };
                                 return (
                                     <div className="fileBlock">
-                                        <div className="col-sm-6">
+                                        <div className="fileBlock-file">
                                             <span className="fileBlock-icon">
                                                 <img
                                                     className="file-icon"
                                                     src={getFormatIcon(file)}
                                                 />
                                             </span>
-                                            <span className="fileBlock-text col-sm-10">
+                                            <span className="fileBlock-text">
                                                 {file.title}
                                             </span>
                                         </div>
-                                        <div className="fileBlock-control col-sm-6">
+                                        <div className="fileBlock-control">
                                             <LicenseEditor
                                                 value={file.license || ""}
                                                 onChange={edit("license")}

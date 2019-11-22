@@ -718,7 +718,7 @@ class RecordHandler extends React.Component {
                                                 </ToggleEditor>
                                             </div>
                                             <hr />
-                                            <h3>Spatial area</h3>
+                                            <h3>Spatial extent</h3>
                                             <h4>
                                                 We've determined that the
                                                 spatial extent of your data is:

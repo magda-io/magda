@@ -13,33 +13,44 @@ import scala.util.{Failure, Success, Try}
 import au.csiro.data61.magda.util.DateParser
 import java.time.{OffsetDateTime, ZoneOffset}
 
-
 object Conversions {
 
   def convertRegistryDataSet(
-      record: Record,
+      hit: Record,
       logger: Option[LoggingAdapter] = None
   )(implicit defaultOffset: ZoneOffset): DataSet = {
-    val dcatStrings =
-      record.aspects.getOrElse("dcat-dataset-strings", JsObject())
-    val source = record.aspects.getOrElse("source", JsObject())
+    val dcatStrings = hit.aspects.getOrElse("dcat-dataset-strings", JsObject())
+    val source = hit.aspects.getOrElse("source", JsObject())
     val temporalCoverage =
-      record.aspects.getOrElse("temporal-coverage", JsObject())
-    val distributions = record.aspects.getOrElse(
+      hit.aspects.getOrElse("temporal-coverage", JsObject())
+    val distributions = hit.aspects.getOrElse(
       "dataset-distributions",
       JsObject("distributions" -> JsArray())
     )
-    val publisher: Option[Record] = record.aspects
-      .getOrElse("dataset-publisher", JsObject())
-      .extract[JsObject]('publisher.?)
-      .map((publisher: JsObject) => {
-        val publisherWithTenantId =
-          JsObject(
-            publisher.fields + ("tenantId" -> JsNumber(record.tenantId.get))
+    val publisher: Option[Record] = Try {
+      hit.aspects
+        .getOrElse("dataset-publisher", JsObject())
+        .extract[JsObject]('publisher.?)
+        .map((dataSet: JsObject) => {
+          val theDataSet =
+            JsObject(
+              dataSet.fields + ("tenantId" -> JsNumber(hit.tenantId.get))
+            )
+          val record = theDataSet.convertTo[Record]
+          record
+        })
+    } match {
+      case Success(publisher) => publisher
+      case Failure(e) =>
+        if (logger.isDefined) {
+          logger.get.error(
+            s"Failed to parse dataset-publisher: ${e.getMessage}"
           )
-        publisherWithTenantId.convertTo[Record]
-      })
-    val accessControl = record.aspects.get("dataset-access-control") match {
+        }
+        None
+    }
+
+    val accessControl = hit.aspects.get("dataset-access-control") match {
       case Some(JsObject(accessControlData)) =>
         Some(
           AccessControl(
@@ -64,9 +75,9 @@ object Conversions {
         )
       case _ => None
     }
-    val provenanceOpt = record.aspects.get("provenance")
+    val provenanceOpt = hit.aspects.get("provenance")
 
-    val qualityAspectOpt = record.aspects.get("dataset-quality-rating")
+    val qualityAspectOpt = hit.aspects.get("dataset-quality-rating")
 
     var hasQuality: Boolean = false
 
@@ -125,7 +136,7 @@ object Conversions {
     }
 
     val spatialData = (Try {
-      record.aspects.get("spatial-coverage") match {
+      hit.aspects.get("spatial-coverage") match {
         case Some(JsObject(spatialCoverage)) =>
           spatialCoverage.get("bbox") match {
             case Some(bbox: JsArray) =>
@@ -152,7 +163,7 @@ object Conversions {
       case Failure(e) =>
         if (logger.isDefined) {
           logger.get.error(
-            s"Failed to convert bounding box to spatial data for dataset ${record.id}: ${e.getMessage}"
+            s"Failed to convert bounding box to spatial data for dataset ${hit.id}: ${e.getMessage}"
           )
         }
         None
@@ -164,17 +175,17 @@ object Conversions {
           case Failure(e) =>
             if (logger.isDefined) {
               logger.get.error(
-                s"Failed to parse spatial data for dataset ${record.id}: ${e.getMessage}"
+                s"Failed to parse spatial data for dataset ${hit.id}: ${e.getMessage}"
               )
             }
             None
         }
     }
 
-    val publishing = record.aspects.getOrElse("publishing", JsObject())
+    val publishing = hit.aspects.getOrElse("publishing", JsObject())
 
     val accessNotes = Try {
-      record.aspects.get("access") match {
+      hit.aspects.get("access") match {
         case Some(JsObject(access)) =>
           Some(
             DataSetAccessNotes(
@@ -195,15 +206,15 @@ object Conversions {
       case Failure(e) =>
         if (logger.isDefined) {
           logger.get.error(
-            s"Failed to convert dataset access notes aspect for dataset ${record.id}: ${e.getMessage}"
+            s"Failed to convert dataset access notes aspect for dataset ${hit.id}: ${e.getMessage}"
           )
         }
         None
     }
 
     DataSet(
-      identifier = record.id,
-      tenantId = record.tenantId.get,
+      identifier = hit.id,
+      tenantId = hit.tenantId.get,
       title = dcatStrings.extract[String]('title.?),
       catalog = source.extract[String]('name.?),
       description = getNullableStringField(dcatStrings, "description"),
@@ -224,12 +235,12 @@ object Conversions {
         dcatStrings.extract[String]('contactPoint.?).map(cp => Agent(Some(cp))),
       distributions = distributions
         .extract[JsObject]('distributions.? / *)
-        .map(convertDistribution(_, record)),
+        .map(convertDistribution(_, hit)),
       landingPage = dcatStrings.extract[String]('landingPage.?),
       quality = quality,
       hasQuality = hasQuality,
       score = None,
-      source = record.aspects.get("source").map(_.convertTo[DataSouce]),
+      source = hit.aspects.get("source").map(_.convertTo[DataSouce]),
       provenance = provenanceOpt
         .map(_.convertTo[Provenance]),
       publishingState = Some(
@@ -240,13 +251,14 @@ object Conversions {
     )
   }
 
-  private def convertDistribution(distribution: JsObject, record: Record)(
+  private def convertDistribution(distribution: JsObject, hit: Record)(
       implicit defaultOffset: ZoneOffset
   ): Distribution = {
-    val distributionWithTenantId = JsObject(
-      distribution.fields + ("tenantId" -> JsNumber(record.tenantId.get))
+    val theDistribution = JsObject(
+      distribution.fields + ("tenantId" -> JsNumber(hit.tenantId.get))
     )
-    val distributionRecord: Record = distributionWithTenantId.convertTo[Record]
+    val distributionRecord: Record =
+      theDistribution.convertTo[Record]
     val dcatStrings = distributionRecord.aspects
       .getOrElse("dcat-distribution-strings", JsObject())
     val datasetFormatAspect =

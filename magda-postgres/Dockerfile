@@ -1,4 +1,4 @@
-FROM postgres:9.6
+FROM postgres:9.6.15
 
 # Install wall-e
 RUN apt-get update && \
