@@ -123,7 +123,7 @@ class DatasetAddFilesPage extends React.Component<
                                 case "datasetTitle":
                                     if (
                                         !dataset["title"] ||
-                                        dataset["title"] === "Untitled"
+                                        dataset["title"] === ""
                                     ) {
                                         dataset["title"] = file[key];
                                     }
@@ -211,9 +211,9 @@ class DatasetAddFilesPage extends React.Component<
                     <div className="col-xs-12 top-text-area">
                         <h1>Add files to pre-populate metadata</h1>
                         <p>
-                            Upload all the files in your dataset so our
-                            Publishing Tool can review the file contents and
-                            pre-populate metadata.
+                            Add all the files in your dataset so our Publishing
+                            Tool can review the file contents and pre-populate
+                            metadata.
                         </p>
                         <p>
                             All our processing happens in your internet browser,
@@ -360,9 +360,9 @@ async function processFile(thisFile: any, update: Function) {
 
     update({ _state: FileState.Processing });
 
-    const runExtractors = await import(
-        "Components/Dataset/MetadataExtraction"
-    ).then(mod => mod.runExtractors);
+    const runExtractors = await import("Components/Dataset/MetadataExtraction").then(
+        mod => mod.runExtractors
+    );
 
     await runExtractors(input, update);
 

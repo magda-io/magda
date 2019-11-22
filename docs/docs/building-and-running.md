@@ -17,7 +17,7 @@ To push the images and run them on kubernetes, you'll need to install:
 
 -   [GNU tar](https://www.gnu.org/software/tar/) - (Mac only) MacOS ships with `BSD tar`. However, you will need `GNU tar` for docker images operations. On MacOS, you can install `GNU Tar` via [Homebrew](https://brew.sh/): `brew install gnu-tar`
 -   [gcloud](https://cloud.google.com/sdk/gcloud/) - For the `kubectl` tool used to control your Kubernetes cluster. You will also need to this to deploy to our test and production environment on Google Cloud.
--   [Helm](https://github.com/kubernetes/helm/blob/master/docs/install.md) to manage kubernetes deployments and config.
+-   [Helm 2](https://v2.helm.sh/docs/using_helm/#installing-helm) to manage kubernetes deployments and config.
 -   [Docker](https://docs.docker.com/install/) - Magda uses `docker` command line tool to build docker images.
 
 You'll also need a Kubernetes cluster - to develop locally this means installing either [minikube](./installing-minikube.md) or [docker](./installing-docker-k8s.md) (MacOS only at this stage). Potentially you could also do this with native Kubernetes, or with a cloud cluster, but we haven't tried it.
@@ -43,9 +43,14 @@ Then install `npm` dependencies and set up the links between components by runni
 yarn install
 ```
 
-Once the above prerequisites are in place, and the npm dependencies are installed, building MAGDA is easy. From the MAGDA root directory, simply run:
+Once the above prerequisites are in place, and the npm dependencies are installed, building MAGDA is easy.
+From the MAGDA root directory, simply run the appropriate build command:
 
 ```bash
+# If using lerna v3.18.0 or higher
+lerna run build --stream --concurrency=1 --include-dependencies
+
+# If verison of lerna is lower than v3.18.0
 lerna run build --stream --concurrency=1 --include-filtered-dependencies
 ```
 

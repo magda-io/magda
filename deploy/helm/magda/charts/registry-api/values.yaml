@@ -11,3 +11,4 @@ deployments:
   full: {}
   readOnly:
     enable: false
+validateJsonSchema: true

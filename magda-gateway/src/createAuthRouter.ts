@@ -165,10 +165,7 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
         }
     );
 
-    authRouter.get("/logout", function(req, res) {
-        req.logout();
-        res.redirect("/auth");
-    });
+    // --- /auth/logout route is now handled by Authenticator.ts
 
     return authRouter;
 }
