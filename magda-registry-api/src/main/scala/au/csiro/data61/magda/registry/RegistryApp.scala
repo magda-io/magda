@@ -62,7 +62,7 @@ object RegistryApp extends App {
   GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(
     enabled = true,
     singleLineMode = true,
-    logLevel = 'info
+    logLevel = 'debug
   )
 
   case class DBsWithEnvSpecificConfig(configToUse: Config)

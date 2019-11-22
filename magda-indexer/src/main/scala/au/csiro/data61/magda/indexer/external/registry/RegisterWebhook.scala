@@ -53,8 +53,8 @@ object RegisterWebhook {
         ).map { _ =>
             logger.info("Successfully registered new webhook")
 
-            ShouldCrawl
-          }
+          ShouldCrawl
+        }
     }
   }
 
