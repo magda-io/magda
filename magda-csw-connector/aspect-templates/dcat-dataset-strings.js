@@ -12,13 +12,13 @@ const serviceIdentification = jsonpath.query(
     dataset.json,
     "$.identificationInfo[*].SV_ServiceIdentification[*]"
 );
-const asbstractIdentification = jsonpath.query(
+const abstractIdentification = jsonpath.query(
     dataset.json,
     "$.identificationInfo[*].AbstractMD_Identification[*]"
 );
 const identification = dataIdentification
     .concat(serviceIdentification)
-    .concat(asbstractIdentification);
+    .concat(abstractIdentification);
 const citation = jsonpath.query(
     identification,
     "$[*].citation[*].CI_Citation[*]"
