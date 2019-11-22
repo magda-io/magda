@@ -119,9 +119,7 @@ const RegionPanel: FunctionComponent<PropsType> = props => {
                         regionId={props.countryId}
                         onChange={(option, notResetOtherRegions) =>
                             setState(state => {
-                                notResetOtherRegions = notResetOtherRegions
-                                    ? true
-                                    : false;
+                                notResetOtherRegions = !!notResetOtherRegions;
                                 const newState = {
                                     ...state,
                                     countryRegion: option
