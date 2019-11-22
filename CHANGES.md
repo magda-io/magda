@@ -137,6 +137,8 @@ UI:
 -   Added tooltips to the `Production` section of the `People and Production` page
 -   Reworded the user access options
 -   Removed help icons without content
+-   Mention that choosing state is optional
+-   Render map in the region select panel only when a country is selected
 
 Gateway:
 
