@@ -5,14 +5,27 @@ import * as passport from "passport";
 import * as URI from "urijs";
 import * as signature from "cookie-signature";
 
+/** This is present in the express-session types but not actually exported properly, so it needs to be copy-pasted here */
+type SessionCookieOptions = {
+    maxAge?: number;
+    signed?: boolean;
+    expires?: Date;
+    httpOnly?: boolean;
+    path?: string;
+    domain?: string;
+    secure?: boolean | "auto";
+    encode?: (val: string) => string;
+    sameSite?: boolean | "lax" | "strict" | "none";
+};
+
 export interface AuthenticatorOptions {
     sessionSecret: string;
     dbPool: pg.Pool;
-    cookieOptions?: express.CookieOptions;
+    cookieOptions?: SessionCookieOptions;
 }
 
 export const DEFAULT_SESSION_COOKIE_NAME: string = "connect.sid";
-export let DEFAULT_SESSION_COOKIE_OPTIONS: express.CookieOptions = {
+export let DEFAULT_SESSION_COOKIE_OPTIONS = {
     maxAge: 7 * 60 * 60 * 1000
 };
 
@@ -66,7 +79,7 @@ export default class Authenticator {
     private sessionMiddleware: express.RequestHandler;
     private passportMiddleware: express.RequestHandler;
     private passportSessionMiddleware: express.RequestHandler;
-    public sessionCookieOptions: express.CookieOptions;
+    public sessionCookieOptions: SessionCookieOptions;
     private sessionSecret: string;
 
     constructor(options: AuthenticatorOptions) {
