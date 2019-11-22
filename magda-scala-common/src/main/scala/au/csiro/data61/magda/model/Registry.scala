@@ -46,7 +46,9 @@ trait RegistryProtocols
     Registry.WebHookAcknowledgementResponse.apply
   )
   implicit val recordSummaryFormat = jsonFormat4(Registry.RecordSummary.apply)
-  implicit val recordPageFormat = jsonFormat1(Registry.RegistryCountResponse.apply)
+  implicit val recordPageFormat = jsonFormat1(
+    Registry.RegistryCountResponse.apply
+  )
 
   implicit object RecordTypeFormat extends RootJsonFormat[Registry.RecordType] {
 
@@ -138,26 +140,28 @@ trait RegistryConverters extends RegistryProtocols {
       "dataset-distributions",
       JsObject("distributions" -> JsArray())
     )
-    val publisher: Option[Registry.Record] =  Try {
-        hit.aspects
+    val publisher: Option[Registry.Record] = Try {
+      hit.aspects
         .getOrElse("dataset-publisher", JsObject())
         .extract[JsObject]('publisher.?)
         .map((dataSet: JsObject) => {
           val theDataSet =
-            JsObject(dataSet.fields + ("tenantId" -> JsNumber(hit.tenantId.get)))
+            JsObject(
+              dataSet.fields + ("tenantId" -> JsNumber(hit.tenantId.get))
+            )
           val record = theDataSet.convertTo[Registry.Record]
           record
         })
-      } match {
-        case Success(publisher) => publisher
-        case Failure(e) =>
-          if (logger.isDefined) {
-            logger.get.error(
-              s"Failed to parse dataset-publisher: ${e.getMessage}"
-            )
-          }
-          None
-      }
+    } match {
+      case Success(publisher) => publisher
+      case Failure(e) =>
+        if (logger.isDefined) {
+          logger.get.error(
+            s"Failed to parse dataset-publisher: ${e.getMessage}"
+          )
+        }
+        None
+    }
 
     val accessControl = hit.aspects.get("dataset-access-control") match {
       case Some(JsObject(accessControlData)) =>
@@ -296,13 +300,18 @@ trait RegistryConverters extends RegistryProtocols {
     val accessNotes = Try {
       hit.aspects.get("access") match {
         case Some(JsObject(access)) =>
-          Some(DataSetAccessNotes(notes = access.get("notes") match {
-            case Some(JsString(notes)) => Some(notes)
-            case _ => None
-          }, location= access.get("location") match {
-            case Some(JsString(location)) => Some(location)
-            case _ => None
-          }))
+          Some(
+            DataSetAccessNotes(
+              notes = access.get("notes") match {
+                case Some(JsString(notes)) => Some(notes)
+                case _                     => None
+              },
+              location = access.get("location") match {
+                case Some(JsString(location)) => Some(location)
+                case _                        => None
+              }
+            )
+          )
         case _ => None
       }
     } match {
@@ -361,7 +370,8 @@ trait RegistryConverters extends RegistryProtocols {
     val theDistribution = JsObject(
       distribution.fields + ("tenantId" -> JsNumber(hit.tenantId.get))
     )
-    val distributionRecord: Registry.Record = theDistribution.convertTo[Registry.Record]
+    val distributionRecord: Registry.Record =
+      theDistribution.convertTo[Registry.Record]
     val dcatStrings = distributionRecord.aspects
       .getOrElse("dcat-distribution-strings", JsObject())
     val datasetFormatAspect =

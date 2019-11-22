@@ -26,7 +26,6 @@ class RecordAspectsServiceRO(
     with SprayJsonSupport {
   private val recordPersistence = DefaultRecordPersistence
 
-
   /**
     * @apiGroup Registry Record Aspects
     * @api {get} /v0/registry/records/{recordId}/aspects/{aspectId} Get a record aspect by ID
@@ -88,9 +87,10 @@ class RecordAspectsServiceRO(
     )
   )
   def getById = get {
-      path(Segment / "aspects" / Segment) {
-        (recordId: String, aspectId: String) =>
-          requiresTenantId { tenantId => {
+    path(Segment / "aspects" / Segment) {
+      (recordId: String, aspectId: String) =>
+        requiresTenantId { tenantId =>
+          {
             withRecordOpaQuery(AuthOperations.read)(
               config,
               system,
@@ -108,13 +108,19 @@ class RecordAspectsServiceRO(
                     opaQueries
                   ) match {
                   case Some(recordAspect) => complete(recordAspect)
-                  case _ => complete(StatusCodes.NotFound, BadRequest("No record or aspect exists with the given IDs."))
+                  case _ =>
+                    complete(
+                      StatusCodes.NotFound,
+                      BadRequest(
+                        "No record or aspect exists with the given IDs."
+                      )
+                    )
                 }
               }
             }
           }
-          }
-      }
+        }
+    }
   }
 
   def route =
