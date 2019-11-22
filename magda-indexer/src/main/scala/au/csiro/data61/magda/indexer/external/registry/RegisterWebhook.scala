@@ -37,9 +37,9 @@ object RegisterWebhook {
           RegistryConstants.optionalAspects,
           true
         ).map { _ =>
-            logger.info("Updated, attempting to resume...")
-            interface.resumeWebhook(config.getString("registry.webhookId"))
-          } map { _ =>
+          logger.info("Updated, attempting to resume...")
+          interface.resumeWebhook(config.getString("registry.webhookId"))
+        } map { _ =>
           logger.info("Successfully resumed webhook")
 
           ShouldNotCrawl
@@ -51,7 +51,7 @@ object RegisterWebhook {
           RegistryConstants.aspects,
           RegistryConstants.optionalAspects
         ).map { _ =>
-            logger.info("Successfully registered new webhook")
+          logger.info("Successfully registered new webhook")
 
           ShouldCrawl
         }

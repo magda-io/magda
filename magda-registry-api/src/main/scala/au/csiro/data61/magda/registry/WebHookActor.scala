@@ -134,12 +134,12 @@ object WebHookActor {
             retryCount
           )
       ).recover {
-          case e: Throwable =>
-            log.error(e, "Failed to get webhooks for processing")
-            // This is a massive deal. Let it crash and let kubernetes deal with it.
-            System.exit(1)
-            throw e
-        }
+        case e: Throwable =>
+          log.error(e, "Failed to get webhooks for processing")
+          // This is a massive deal. Let it crash and let kubernetes deal with it.
+          System.exit(1)
+          throw e
+      }
     }
 
     private def updateWebHooksCacheF(

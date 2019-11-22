@@ -228,12 +228,11 @@ class WebHookProcessor(
         else None,
       records = records,
       aspectDefinitions = aspectDefinitions,
-      deferredResponseUrl =
-        Some(
-          Uri(
-            s"hooks/${java.net.URLEncoder.encode(webHook.id.get, "UTF-8")}/ack"
-          ).resolvedAgainst(publicUrl).toString()
-        )
+      deferredResponseUrl = Some(
+        Uri(
+          s"hooks/${java.net.URLEncoder.encode(webHook.id.get, "UTF-8")}/ack"
+        ).resolvedAgainst(publicUrl).toString()
+      )
     )
 
     Marshal(payload)

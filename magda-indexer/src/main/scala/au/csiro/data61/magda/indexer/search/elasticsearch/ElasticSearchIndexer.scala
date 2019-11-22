@@ -297,12 +297,12 @@ class ElasticSearchIndexer(
               }
             }
           ).flatMap { indexPairs =>
-              updateIndices(client, indexPairs)
-                .map { _ =>
-                  // If we've got to here everything has gone swimmingly - the index is all ready to have data loaded, so return the client for other methods to play with :)
-                  client
-                }
-            }
+            updateIndices(client, indexPairs)
+              .map { _ =>
+                // If we've got to here everything has gone swimmingly - the index is all ready to have data loaded, so return the client for other methods to play with :)
+                client
+              }
+          }
       )
       .recover {
         case t: Throwable =>
