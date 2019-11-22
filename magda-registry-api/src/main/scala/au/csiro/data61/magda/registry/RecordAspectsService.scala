@@ -124,7 +124,8 @@ class RecordAspectsService(
                   tenantId,
                   recordId,
                   aspectId,
-                  aspect
+                  aspect,
+                  config
                 ) match {
                   case Success(result) => complete(result)
                   case Failure(exception) =>
@@ -313,7 +314,8 @@ class RecordAspectsService(
                   tenantId,
                   recordId,
                   aspectId,
-                  aspectPatch
+                  aspectPatch,
+                  config
                 ) match {
                   case Success(result) => complete(result)
                   case Failure(exception) =>
