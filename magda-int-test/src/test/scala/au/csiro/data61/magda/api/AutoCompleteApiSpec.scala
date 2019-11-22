@@ -34,9 +34,11 @@ class AutoCompleteApiSpec
       .map {
         case (dataset, location) =>
           dataset.copy(
-            accessNotes = Some(DataSetAccessNotes(
-              location = Some(location)
-            ))
+            accessNotes = Some(
+              DataSetAccessNotes(
+                location = Some(location)
+              )
+            )
           )
       }
     putDataSetsInIndex(dataSets) match {
@@ -102,7 +104,9 @@ class AutoCompleteApiSpec
     }
   }
 
-  it("Should respond with Item 2 & 3 + last 2 items for input `/shareDriveb (Lowercase b)`") {
+  it(
+    "Should respond with Item 2 & 3 + last 2 items for input `/shareDriveb (Lowercase b)`"
+  ) {
 
     Get(s"/v0/autoComplete?field=accessNotes.location&input=/shareDriveB") ~> addSingleTenantIdHeader ~> routes ~> check {
       status shouldBe OK
@@ -135,13 +139,15 @@ class AutoCompleteApiSpec
     }
   }
 
-  it("Should respond with `/shareDriveC/d/e/f` (without duplication) & `/shareDriveC/e/f/d` for input `/shareDriveC`") {
+  it(
+    "Should respond with `/shareDriveC/d/e/f` (without duplication) & `/shareDriveC/e/f/d` for input `/shareDriveC`"
+  ) {
 
     Get(s"/v0/autoComplete?field=accessNotes.location&input=/shareDriveC") ~> addSingleTenantIdHeader ~> routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[AutoCompleteQueryResult]
-      response.suggestions.size shouldEqual(2) // --- should be no duplication. Thus, 2 rather than 3
+      response.suggestions.size shouldEqual (2) // --- should be no duplication. Thus, 2 rather than 3
       response.suggestions.contains(notes(6)) shouldBe true
       response.suggestions.contains(notes(8)) shouldBe true
     }
@@ -153,7 +159,7 @@ class AutoCompleteApiSpec
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[AutoCompleteQueryResult]
-      response.suggestions.size shouldEqual(2)
+      response.suggestions.size shouldEqual (2)
       response.suggestions.contains(notes(9)) shouldBe true
       response.suggestions.contains(notes(10)) shouldBe true
     }
@@ -165,7 +171,7 @@ class AutoCompleteApiSpec
       status shouldBe OK
       contentType shouldBe `application/json`
       val response = responseAs[AutoCompleteQueryResult]
-      response.suggestions.size shouldEqual(1)
+      response.suggestions.size shouldEqual (1)
       response.suggestions.contains(notes(10)) shouldBe true
     }
   }

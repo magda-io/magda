@@ -263,7 +263,14 @@ class RecordsServiceRO(
               complete {
                 DB readOnly { session =>
                   recordPersistence
-                    .getAll(session, tenantId, opaQueries, pageToken, start, limit)
+                    .getAll(
+                      session,
+                      tenantId,
+                      opaQueries,
+                      pageToken,
+                      start,
+                      limit
+                    )
                 }
               }
             }
@@ -341,7 +348,13 @@ class RecordsServiceRO(
               DB readOnly { session =>
                 CountResponse(
                   recordPersistence
-                    .getCount(session, tenantId, opaQueries, aspects, parsedAspectQueries)
+                    .getCount(
+                      session,
+                      tenantId,
+                      opaQueries,
+                      aspects,
+                      parsedAspectQueries
+                    )
                 )
               }
             }

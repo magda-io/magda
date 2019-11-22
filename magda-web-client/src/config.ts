@@ -2,6 +2,7 @@ import Publisher from "./Components/Dataset/Search/Facets/Publisher";
 import Format from "./Components/Dataset/Search/Facets/Format";
 import Region from "./Components/Dataset/Search/Facets/Region";
 import Temporal from "./Components/Dataset/Search/Facets/Temporal";
+import { ValidationFieldList } from "./Components/Dataset/Add/ValidationManager";
 
 declare global {
     interface Window {
@@ -48,6 +49,7 @@ const serverConfig: {
     maxChartProcessingRows: number;
     maxTableProcessingRows: number;
     csvLoaderChunkSize: number;
+    mandatoryFields: ValidationFieldList;
 } = window.magda_server_config || {};
 
 const registryReadOnlyApiUrl =
@@ -168,7 +170,23 @@ export const config = {
     // --- default to 2MB
     csvLoaderChunkSize: serverConfig.csvLoaderChunkSize
         ? serverConfig.csvLoaderChunkSize
-        : 2097152
+        : 2097152,
+    mandatoryFields: serverConfig.mandatoryFields
+        ? serverConfig.mandatoryFields
+        : [
+              "dataset.title",
+              "dataset.description",
+              "dataset.defaultLicense",
+              "files.title",
+              "files.format",
+              "files.license",
+              "dataset.publisher",
+              "licenseLevel",
+              "dataset.defaultLicense",
+              "files.license",
+              "informationSecurity.classification",
+              "informationSecurity.disseminationLimits"
+          ]
 };
 
 export const defaultConfiguration = {
