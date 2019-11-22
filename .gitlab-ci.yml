@@ -69,6 +69,12 @@ sbt-prebuild:
       - "*/project/project/target"
     expire_in: 7 days
 
+check-scala-formatting:
+  stage: prebuild
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  script:
+    - sbt scalafmtCheckAll
+
 registry-typescript-api:
   stage: prebuild
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
