@@ -176,7 +176,9 @@ const RegionPanel: FunctionComponent<PropsType> = props => {
                 <>
                     <div className="row">
                         <div className="col-sm-4 state-select-container">
-                            <div className="state-select-heading">State</div>
+                            <div className="state-select-heading">
+                                State <span> (optional)</span>
+                            </div>
                             <StateSelect
                                 value={state.territoryOrSteRegion}
                                 regionId={props.territoryOrSteId}
