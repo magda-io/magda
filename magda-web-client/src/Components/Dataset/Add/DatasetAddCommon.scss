@@ -83,4 +83,15 @@
         border-radius: 2px;
         border: solid 1px #979797;
     }
+
+    .react-select-with-validation-container {
+        .au-error-text {
+            font-size: 16px;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #d60000;
+            display: block;
+            margin-bottom: 10px;
+        }
+    }
 }
