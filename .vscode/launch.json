@@ -441,6 +441,34 @@
                 "tsconfig-paths/register",
                 "src/test/**/*.spec.ts"
             ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "name": "Launch Storage API",
+            "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
+            "cwd": "${workspaceRoot}/magda-storage-api",
+            "args": ["src/index.ts"],
+            "env": {
+                "PGUSER": "client",
+                "JWT_SECRET": "squirrel"
+            }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
+            "name": "Content API Test Cases",
+            "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+            "cwd": "${workspaceRoot}/magda-storage-api",
+            "args": [
+                "--compilers",
+                "ts:ts-node/register",
+                "--require",
+                "tsconfig-paths/register",
+                "src/test/**/*.spec.ts"
+            ]
         }
     ]
 }
