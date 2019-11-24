@@ -14,13 +14,18 @@ import * as codelists from "constants/DatasetConstants";
 import { getFormatIcon } from "../../../View/DistributionIcon";
 import helpIcon from "assets/help.svg";
 
-import ReactSelect from "react-select";
-import ReactSelectStyles from "../../../../Common/react-select/ReactSelectStyles";
+import ReactSelectOriginal from "react-select";
+import ValidationHoc from "Components/Common/react-select/ValidationHoc";
 import PurpleToolTip from "Components/Common/TooltipWrapper";
 import { config } from "config";
 import AUpageAlert from "@gov.au/page-alerts";
 
+import ValidationRequiredLabel from "../../ValidationRequiredLabel";
+
 import "./index.scss";
+
+//--- Added Validation Support to ReactSelect
+const ReactSelect = ValidationHoc(ReactSelectOriginal);
 
 type Props = {
     edit: <K extends keyof State>(
@@ -53,9 +58,6 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     <h4 className="with-icon">
                         <span>
                             Who can see the dataset once it is published?
-                        </span>
-                        <span className="help-icon-container">
-                            <img src={helpIcon} />
                         </span>
                     </h4>
                     <ToolTip>
@@ -121,8 +123,9 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         <div className="row">
                             <div className="col-sm-4">
                                 <ReactSelect
+                                    validationFieldPath="$.licenseLevel"
+                                    validationFieldLabel="Licence Type"
                                     className="license-apply-type-select"
-                                    styles={ReactSelectStyles}
                                     isSearchable={false}
                                     options={
                                         Object.keys(
@@ -159,7 +162,10 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                 )}
 
                 <div className="question-license-restriction-type">
-                    <h4>What licence restrictions should be applied?</h4>
+                    <h4>
+                        What licence restrictions should be applied?
+                        <ValidationRequiredLabel validationFieldPath="$.dataset.defaultLicense" />
+                    </h4>
                     <ToolTip>
                         We recommend a Whole of Government Licence be applied to
                         encourage inter-department data sharing in the future.
@@ -168,6 +174,8 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         <div className="license-dataset-option-container row">
                             <div className="col-sm-6">
                                 <LicenseEditor
+                                    validationFieldPath="$.dataset.defaultLicense"
+                                    validationFieldLabel="Dataset Level Licence"
                                     value={dataset.defaultLicense || ""}
                                     onChange={license => {
                                         props.editState("dataset")({
@@ -200,6 +208,8 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                         </div>
                                         <div className="fileBlock-control">
                                             <LicenseEditor
+                                                validationFieldPath={`$.files[${fileIndex}].license`}
+                                                validationFieldLabel="Distribution Licence"
                                                 value={file.license || ""}
                                                 onChange={edit("license")}
                                             />
@@ -216,6 +226,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         <span>
                             What is the sensitivity or security classification
                             of this dataset?
+                            <ValidationRequiredLabel validationFieldPath="$.informationSecurity.classification" />
                         </span>
                         <span className="tooltip-container">
                             <PurpleToolTip
@@ -255,7 +266,8 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     <div className="row">
                         <div className="col-sm-6">
                             <ReactSelect
-                                styles={ReactSelectStyles}
+                                validationFieldPath="$.informationSecurity.classification"
+                                validationFieldLabel="Dataset Sensitivity or Security Classification"
                                 isSearchable={false}
                                 options={
                                     Object.keys(codelists.classification).map(
@@ -321,6 +333,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                             <span>
                                 What sensitivity markers should be added to this
                                 dataset?
+                                <ValidationRequiredLabel validationFieldPath="$.informationSecurity.disseminationLimits" />
                             </span>
                             <span className="tooltip-container">
                                 <PurpleToolTip
@@ -354,7 +367,8 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         <div className="row">
                             <div className="col-sm-8">
                                 <ReactSelect
-                                    styles={ReactSelectStyles}
+                                    validationFieldPath="$.informationSecurity.disseminationLimits"
+                                    validationFieldLabel="Dataset Sensitivity Markers"
                                     isSearchable={false}
                                     isMulti={true}
                                     options={

@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import Moment from "moment";
 
 import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
-import { textEditor } from "Components/Editing/Editors/textEditor";
 import { dateEditor } from "Components/Editing/Editors/dateEditor";
 
 import { getFormatIcon } from "../View/DistributionIcon";
@@ -13,9 +12,13 @@ import { FileState, File, fileStateToText } from "./DatasetAddCommon";
 
 import editIcon from "../../../assets/edit.svg";
 import dismissIcon from "../../../assets/dismiss.svg";
+import SlimTextInputWithValidation from "../Add/SlimTextInputWithValidation";
+import * as ValidationManager from "./ValidationManager";
 
 import PurpleToolTip from "Components/Common/TooltipWrapper";
 import helpIcon from "assets/help.svg";
+
+import ValidationRequiredLabel from "../../Dataset/Add/ValidationRequiredLabel";
 
 import "./DatasetFile.scss";
 
@@ -74,11 +77,96 @@ function FileInProgress({
     );
 }
 
+const FileEditView = ({
+    idx,
+    file,
+    onChange,
+    editMode,
+    setEditMode
+}: {
+    idx: number;
+    file: File;
+    onChange: (file: File) => void;
+    editMode: boolean;
+    setEditMode: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
+    const editFormat = (newValue: string | undefined) =>
+        onChange({ ...file, format: newValue });
+    const editTitle = (newValue: string | undefined) =>
+        onChange({ ...file, title: newValue! });
+    const editModified = (newValue: Date | undefined) =>
+        onChange({ ...file, modified: newValue! });
+
+    return (
+        <div>
+            <button
+                className={`au-btn dataset-file-save-button`}
+                arial-label="Save changes"
+                onClick={() => {
+                    if (
+                        ValidationManager.validateFields([
+                            `$.files[${idx}].title`,
+                            `$.files[${idx}].format`
+                        ])
+                    ) {
+                        setEditMode(!editMode);
+                    }
+                }}
+            >
+                Save
+            </button>
+            <div>
+                <span>
+                    Name:&nbsp;&nbsp;{" "}
+                    <ValidationRequiredLabel
+                        validationFieldPath={`$.files[${idx}].title`}
+                    />
+                </span>
+                &nbsp;&nbsp;
+                <SlimTextInputWithValidation
+                    validationFieldLabel="File Name"
+                    validationFieldPath={`$.files[${idx}].title`}
+                    value={file.title}
+                    onChange={editTitle}
+                    placeholder="Please enter file name..."
+                />
+            </div>
+            <div>
+                <span>
+                    Format:{" "}
+                    <ValidationRequiredLabel
+                        validationFieldPath={`$.files[${idx}].format`}
+                    />
+                </span>
+                &nbsp;&nbsp;
+                <SlimTextInputWithValidation
+                    validationFieldLabel="File Format"
+                    validationFieldPath={`$.files[${idx}].format`}
+                    value={file.format}
+                    onChange={editFormat}
+                    placeholder="Please enter file format..."
+                />
+            </div>
+            <div>
+                <span>Last Modified: </span>
+                &nbsp;&nbsp;
+                <AlwaysEditor
+                    value={file.modified}
+                    onChange={editModified}
+                    editor={dateEditor}
+                />
+            </div>
+        </div>
+    );
+};
+
 export default function DatasetFile({
+    idx,
     file,
     onDelete,
     onChange
 }: {
+    idx: number;
     file: File;
     onDelete: () => void;
     onChange: (file: File) => void;
@@ -87,53 +175,18 @@ export default function DatasetFile({
         return <FileInProgress file={file} onDelete={onDelete} />;
     }
 
-    const editFormat = (newValue: string | undefined) =>
-        onChange({ ...file, format: newValue });
-    const editTitle = (newValue: string | undefined) =>
-        onChange({ ...file, title: newValue! });
-    const editModified = (newValue: Date | undefined) =>
-        onChange({ ...file, modified: newValue! });
     const [editMode, setEditMode] = useState(false);
 
     return (
         <div className="dataset-file-root complete-processing">
             {editMode ? (
-                <div>
-                    <button
-                        className={`au-btn dataset-file-save-button`}
-                        arial-label="Save changes"
-                        onClick={() => setEditMode(!editMode)}
-                    >
-                        Save
-                    </button>
-                    <div>
-                        <span>Name:&nbsp;&nbsp; </span>
-                        &nbsp;&nbsp;
-                        <AlwaysEditor
-                            value={file.title}
-                            onChange={editTitle}
-                            editor={textEditor}
-                        />
-                    </div>
-                    <div>
-                        <span>Format: </span>
-                        &nbsp;&nbsp;
-                        <AlwaysEditor
-                            value={file.format}
-                            onChange={editFormat}
-                            editor={textEditor}
-                        />
-                    </div>
-                    <div>
-                        <span>Last Modified: </span>
-                        &nbsp;&nbsp;
-                        <AlwaysEditor
-                            value={file.modified}
-                            onChange={editModified}
-                            editor={dateEditor}
-                        />
-                    </div>
-                </div>
+                <FileEditView
+                    idx={idx}
+                    file={file}
+                    onChange={onChange}
+                    editMode={editMode}
+                    setEditMode={setEditMode}
+                />
             ) : (
                 <React.Fragment>
                     <button
