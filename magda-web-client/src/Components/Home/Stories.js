@@ -115,7 +115,9 @@ class Stories extends Component {
                                                 >
                                                     {row.map((story, i) => (
                                                         <div
-                                                            className={`col-${row.length}`}
+                                                            className={`col-${
+                                                                row.length
+                                                            }`}
                                                             key={i}
                                                         >
                                                             <StoryBox
