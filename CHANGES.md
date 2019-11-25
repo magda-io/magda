@@ -17,6 +17,7 @@ Registry:
 -   Moved provenance and information security information out of `dcat-dataset-strings`.
 -   Removed some unused fields from `dcat-dataset-strings` - it should now be back to looking more-or-less like DCAT.
 -   Added the feature of validating aspect data against JSON Schema (Default to off)
+-   Fixed request for all tenant records returning `[]`.
 
 Gateway:
 
