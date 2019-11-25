@@ -1592,10 +1592,14 @@ object DefaultRecordPersistence
                                       select jsonb_object_agg(aspectId, data)
                                       from RecordAspects
                                       where tenantId=Records.tenantId and recordId=Records.recordId
-                                      ))))
+                                    )
+                                  )
+                                  order by ordinality
+                                )
+                              )
                               from Records
-                              inner join jsonb_array_elements_text(RecordAspects.data->$propertyName) as aggregatedId
-                              on aggregatedId=Records.recordId and RecordAspects.tenantId=Records.tenantId
+                              inner join jsonb_array_elements_text(RecordAspects.data->$propertyName) with ordinality as aggregatedId
+                              on aggregatedId.value=Records.recordId and RecordAspects.tenantId=Records.tenantId
                               where $opaConditions
                             )
                             ELSE (
