@@ -109,7 +109,6 @@ describe("Test ApiClient.ts", function() {
             argv.userId
         );
         const data = (await api.getUser(mockUserData[1].id)).valueOr(null);
-        debugger;
         expect(data).to.deep.equal(mockUserData[1]);
     });
 
