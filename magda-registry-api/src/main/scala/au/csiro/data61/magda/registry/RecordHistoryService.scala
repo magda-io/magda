@@ -35,24 +35,56 @@ import scalikejdbc.DB
   * @apiUse GenericError
   */
 @Path("/records/{recordId}/history")
-@io.swagger.annotations.Api(value = "record history", produces = "application/json")
-class RecordHistoryService(system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
+@io.swagger.annotations.Api(
+  value = "record history",
+  produces = "application/json"
+)
+class RecordHistoryService(system: ActorSystem, materializer: Materializer)
+    extends Protocols
+    with SprayJsonSupport {
   val recordPersistence = DefaultRecordPersistence
 
-  @ApiOperation(value = "Get a list of all events affecting this record", nickname = "history", httpMethod = "GET", response = classOf[EventsPage])
-  @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "X-Magda-Tenant-Id", required = true, dataType = "number", paramType = "header", value = "0"),
-    new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record for which to fetch history.")
-  ))
+  @ApiOperation(
+    value = "Get a list of all events affecting this record",
+    nickname = "history",
+    httpMethod = "GET",
+    response = classOf[EventsPage]
+  )
+  @ApiImplicitParams(
+    Array(
+      new ApiImplicitParam(
+        name = "X-Magda-Tenant-Id",
+        required = true,
+        dataType = "number",
+        paramType = "header",
+        value = "0"
+      ),
+      new ApiImplicitParam(
+        name = "recordId",
+        required = true,
+        dataType = "string",
+        paramType = "path",
+        value = "ID of the record for which to fetch history."
+      )
+    )
+  )
   def history: Route = get {
     path(Segment / "history") { id =>
       requiresTenantId { tenantId =>
-        parameters('pageToken.as[Long].?, 'start.as[Int].?, 'limit.as[Int].?) { (pageToken, start, limit) =>
-          complete {
-            DB readOnly { session =>
-              EventPersistence.getEvents(session, recordId = Some(id), pageToken = pageToken, start = start, limit = limit, tenantId = tenantId)
+        parameters('pageToken.as[Long].?, 'start.as[Int].?, 'limit.as[Int].?) {
+          (pageToken, start, limit) =>
+            complete {
+              DB readOnly { session =>
+                EventPersistence.getEvents(
+                  session,
+                  recordId = Some(id),
+                  pageToken = pageToken,
+                  start = start,
+                  limit = limit,
+                  tenantId = tenantId
+                )
+              }
             }
-          }
         }
       }
     }
@@ -89,29 +121,88 @@ class RecordHistoryService(system: ActorSystem, materializer: Materializer) exte
     * @apiUse GenericError
     */
   @Path("/{eventId}")
-  @ApiOperation(value = "Get the version of a record that existed after a given event was applied", nickname = "version", httpMethod = "GET", response = classOf[Record])
-  @ApiImplicitParams(Array(
-    new ApiImplicitParam(name = "X-Magda-Tenant-Id", required = true, dataType = "number", paramType = "header", value = "0"),
-    new ApiImplicitParam(name = "recordId", required = true, dataType = "string", paramType = "path", value = "ID of the record to fetch."),
-    new ApiImplicitParam(name = "eventId", required = true, dataType = "string", paramType = "path", value = "The ID of the last event to be applied to the record.  The event with this ID need not actually apply to the record, in which case that last event prior to this even that does apply will be used.")
-  ))
-  @ApiResponses(Array(
-    new ApiResponse(code = 404, message = "No record exists with the given ID, it does not have a CreateRecord event, or it has been deleted.", response = classOf[BadRequest])
-  ))
-  def version = get { path(Segment / "history" / Segment) { (id, version) => requiresTenantId { tenantId => { parameters('aspect.*, 'optionalAspect.*) { (aspects: Iterable[String], optionalAspects: Iterable[String]) =>
-    DB readOnly { session =>
-      val events = EventPersistence.streamEventsUpTo(version.toLong, recordId = Some(id), tenantId = tenantId)
-      val recordSource = recordPersistence.reconstructRecordFromEvents(id, events, aspects, optionalAspects)
-      val sink = Sink.head[Option[Record]]
-      val future = recordSource.runWith(sink)(materializer)
-      Await.result[Option[Record]](future, 5 seconds) match {
-        case Some(record) => complete(record)
-        case None => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID, it does not have a CreateRecord event, or it has been deleted."))
+  @ApiOperation(
+    value =
+      "Get the version of a record that existed after a given event was applied",
+    nickname = "version",
+    httpMethod = "GET",
+    response = classOf[Record]
+  )
+  @ApiImplicitParams(
+    Array(
+      new ApiImplicitParam(
+        name = "X-Magda-Tenant-Id",
+        required = true,
+        dataType = "number",
+        paramType = "header",
+        value = "0"
+      ),
+      new ApiImplicitParam(
+        name = "recordId",
+        required = true,
+        dataType = "string",
+        paramType = "path",
+        value = "ID of the record to fetch."
+      ),
+      new ApiImplicitParam(
+        name = "eventId",
+        required = true,
+        dataType = "string",
+        paramType = "path",
+        value =
+          "The ID of the last event to be applied to the record.  The event with this ID need not actually apply to the record, in which case that last event prior to this even that does apply will be used."
+      )
+    )
+  )
+  @ApiResponses(
+    Array(
+      new ApiResponse(
+        code = 404,
+        message =
+          "No record exists with the given ID, it does not have a CreateRecord event, or it has been deleted.",
+        response = classOf[BadRequest]
+      )
+    )
+  )
+  def version = get {
+    path(Segment / "history" / Segment) { (id, version) =>
+      requiresTenantId { tenantId =>
+        {
+          parameters('aspect.*, 'optionalAspect.*) {
+            (aspects: Iterable[String], optionalAspects: Iterable[String]) =>
+              DB readOnly { session =>
+                val events = EventPersistence.streamEventsUpTo(
+                  version.toLong,
+                  recordId = Some(id),
+                  tenantId = tenantId
+                )
+                val recordSource =
+                  recordPersistence.reconstructRecordFromEvents(
+                    id,
+                    events,
+                    aspects,
+                    optionalAspects
+                  )
+                val sink = Sink.head[Option[Record]]
+                val future = recordSource.runWith(sink)(materializer)
+                Await.result[Option[Record]](future, 5 seconds) match {
+                  case Some(record) => complete(record)
+                  case None =>
+                    complete(
+                      StatusCodes.NotFound,
+                      BadRequest(
+                        "No record exists with that ID, it does not have a CreateRecord event, or it has been deleted."
+                      )
+                    )
+                }
+              }
+          }
+        }
       }
     }
-  } } } } }
+  }
 
   val route =
     history ~
-    version
+      version
 }

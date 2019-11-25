@@ -54,7 +54,7 @@ body {
     select,
     textarea {
         &:focus {
-            outline-color: $AU-colordark-foreground-focus !important;
+            outline-color: $AU-colordark-foreground-focus;
         }
     }
 }

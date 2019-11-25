@@ -56,6 +56,7 @@ import ErrorMessageBox from "./ErrorMessageBox";
 
 import helpIcon from "assets/help.svg";
 import { User } from "reducers/userManagementReducer";
+import * as ValidationManager from "../Add/ValidationManager";
 
 const aspects = {
     publishing: datasetPublishingAspect,
@@ -90,10 +91,19 @@ type Props = {
 class NewDataset extends React.Component<Props, State> {
     state: State = this.props.initialState;
 
+    constructor(props) {
+        super(props);
+        ValidationManager.setStateDataGetter(() => {
+            return this.state;
+        });
+    }
+
     componentDidMount() {
         if (this.props.isNewDataset) {
             this.props.history.replace(
-                `/dataset/add/metadata/${this.props.datasetId}/${this.props.step}`
+                `/dataset/add/metadata/${this.props.datasetId}/${
+                    this.props.step
+                }`
             );
         }
     }
@@ -231,8 +241,12 @@ class NewDataset extends React.Component<Props, State> {
     async gotoStep(step) {
         try {
             await this.resetError();
-            saveState(this.state, this.props.datasetId);
-            this.props.history.push("../" + this.props.datasetId + "/" + step);
+            if (ValidationManager.validateAll()) {
+                saveState(this.state, this.props.datasetId);
+                this.props.history.push(
+                    "../" + this.props.datasetId + "/" + step
+                );
+            }
         } catch (e) {
             this.props.createNewDatasetError(e);
         }

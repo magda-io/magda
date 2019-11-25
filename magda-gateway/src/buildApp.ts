@@ -20,6 +20,7 @@ import Authenticator from "./Authenticator";
 import defaultConfig from "./defaultConfig";
 import { ProxyTarget } from "./createApiRouter";
 import setupTenantMode from "./setupTenantMode";
+import createPool from "./createPool";
 
 // Tell typescript about the semi-private __express field of ejs.
 declare module "ejs" {
@@ -89,10 +90,10 @@ export default function buildApp(config: Config) {
         ? defaultConfig.proxyRoutes
         : ((config.proxyRoutesJson as unknown) as Routes);
 
+    const dbPool = createPool(config);
     const authenticator = new Authenticator({
         sessionSecret: config.sessionSecret,
-        dbHost: config.dbHost,
-        dbPort: config.dbPort
+        dbPool
     });
 
     // Create a new Express application.

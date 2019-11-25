@@ -7,7 +7,7 @@ General:
     The registry service can be configured to support either hierarchical organization based access
     policy (default) or Esri groups based access policy.
 -   Add esri portal connector. Read its README.md file before use.
--   Lock helm version in gitlab to 2.15.2 due to issue: https://github.com/helm/helm/issues/6894
+-   Changed the way of `auth-secrets` to be created in gitlab
 
 Registry:
 
@@ -24,6 +24,7 @@ Gateway:
 -   Add ArcGIS/ESRI Authentication provider, including support for on-premise instances of ArcGIS Portal.
 -   Add Vanguard (WS-FED) Authentication provider
 -   Add `webProxyRoutesJson` command-line argument, allowing non-API proxy routes to be configured.
+-   Only start / keep sessions for logged-in users to make content cachable for non-logged-in users
 
 Search:
 
@@ -133,9 +134,11 @@ UI:
 -   Fixed warning for placeholder text being a boolean value
 -   Added unique key to the topmost `div` of `codelistEditor`
 -   Rename `license` to `licence` where appropriate
+-   Added Mandatory Field Validation to the Add Dataset Flow
 -   Reworded `team` to `business area`
 -   Added tooltips to the `Production` section of the `People and Production` page
 -   Reworded the user access options
+-   Removed help icons without content
 
 Gateway:
 
@@ -160,6 +163,7 @@ Others:
 
 -   Made registry-api DB pool settings configurable via Helm
 -   Make broken link sleuther recrawl period configurable via Helm
+-   Set version of Helm used by GitLab CI to 2.16.1
 -   Format minion will trust dcat format if other measures indicate a ZIP format
 -   Format minion will trust dcat format if other measures indicate a ESRI REST format
 -   Added ASC to 4 stars rating list
