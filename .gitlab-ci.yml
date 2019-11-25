@@ -318,6 +318,7 @@ buildtest:typescript-apis:
     - cd ../../../../..
     - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run build --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run test --include-filtered-dependencies
+    - cd magda-typescript-common && yarn test && cd ..
     - cd deploy/helm/magda/charts/opa
     - docker-compose down
   artifacts:
