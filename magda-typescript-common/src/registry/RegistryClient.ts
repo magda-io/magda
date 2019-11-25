@@ -39,6 +39,7 @@ export default class RegistryClient {
     protected maxRetries: number;
     protected secondsBetweenRetries: number;
     protected tenantId: number;
+    protected jwt: string | undefined;
 
     constructor({
         baseUrl,
@@ -103,7 +104,8 @@ export default class RegistryClient {
                 this.tenantId,
                 aspect,
                 optionalAspect,
-                dereference
+                dereference,
+                this.jwt
             );
         return <any>retry(
             operation(id),
@@ -136,7 +138,8 @@ export default class RegistryClient {
                 undefined,
                 limit,
                 dereference,
-                aspectQueries
+                aspectQueries,
+                this.jwt
             );
         return <any>retry(
             operation(pageToken),
@@ -156,7 +159,12 @@ export default class RegistryClient {
         limit?: number
     ): Promise<string[] | Error> {
         const operation = () =>
-            this.recordsApi.getPageTokens(this.tenantId, aspect, limit);
+            this.recordsApi.getPageTokens(
+                this.tenantId,
+                aspect,
+                limit,
+                this.jwt
+            );
         return <any>retry(
             operation,
             this.secondsBetweenRetries,
