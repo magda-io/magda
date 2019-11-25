@@ -184,7 +184,7 @@ class OpaQueryer()(
 
     val rulesOpt: List[List[OpaQuery]] = result.asJsObject.fields
       .get("queries") match {
-      case Some(JsArray(rules))    =>
+      case Some(JsArray(rules)) =>
         // It is assumed that a registry record level access OPA policy consists of outer and inner
         // sub-policies where all outer OPA policies are in logical OR relationship; All inner OPA
         // policies are in logical AND relationship. For example, an access policy document may look

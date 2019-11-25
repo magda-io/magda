@@ -20,6 +20,7 @@ import Authenticator from "./Authenticator";
 import defaultConfig from "./defaultConfig";
 import { ProxyTarget } from "./createApiRouter";
 import setupTenantMode from "./setupTenantMode";
+import createPool from "./createPool";
 
 // Tell typescript about the semi-private __express field of ejs.
 declare module "ejs" {
@@ -42,6 +43,9 @@ type Config = {
     dbPort: number;
     proxyRoutesJson: {
         [localRoute: string]: ProxyTarget;
+    };
+    webProxyRoutesJson: {
+        [localRoute: string]: string;
     };
     helmetJson: string;
     cspJson: string;
@@ -86,10 +90,10 @@ export default function buildApp(config: Config) {
         ? defaultConfig.proxyRoutes
         : ((config.proxyRoutesJson as unknown) as Routes);
 
+    const dbPool = createPool(config);
     const authenticator = new Authenticator({
         sessionSecret: config.sessionSecret,
-        dbHost: config.dbHost,
-        dbPort: config.dbPort
+        dbPool
     });
 
     // Create a new Express application.
@@ -197,6 +201,13 @@ export default function buildApp(config: Config) {
             tenantMode
         })
     );
+
+    if (config.webProxyRoutesJson) {
+        _.forEach(config.webProxyRoutesJson, (value: string, key: string) => {
+            app.use("/" + key, createGenericProxy(value, tenantMode));
+        });
+    }
+
     app.use("/preview-map", createGenericProxy(config.previewMap, tenantMode));
 
     if (config.enableCkanRedirection) {

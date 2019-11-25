@@ -149,6 +149,12 @@ const argv = yargs
     .option("csvLoaderChunkSize", {
         describe: "The size of the csv loader processing chunk (in bytes)",
         type: "number"
+    })
+    .option("mandatoryFields", {
+        describe: "Add dataset page mandatory fields list (in JSON path)",
+        type: "string",
+        coerce: coerceJson("mandatoryFields"),
+        default: "null"
     }).argv;
 
 var app = express();
@@ -228,7 +234,8 @@ const webServerConfig = {
     custodianOrgLevel: argv.custodianOrgLevel,
     maxChartProcessingRows: argv.maxChartProcessingRows,
     maxTableProcessingRows: argv.maxTableProcessingRows,
-    csvLoaderChunkSize: argv.csvLoaderChunkSize
+    csvLoaderChunkSize: argv.csvLoaderChunkSize,
+    mandatoryFields: argv.mandatoryFields
 };
 
 app.get("/server-config.js", function(req, res) {

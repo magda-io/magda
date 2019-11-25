@@ -26,13 +26,13 @@ class RecordAspectsServiceRO(
     with SprayJsonSupport {
   private val recordPersistence = DefaultRecordPersistence
 
-
   /**
     * @apiGroup Registry Record Aspects
     * @api {get} /v0/registry/records/{recordId}/aspects/{aspectId} Get a record aspect by ID
     * @apiDescription Get a list of all aspects of a record
     * @apiParam (path) {string} recordId ID of the record for which to fetch an aspect
     * @apiParam (path) {string} aspectId ID of the aspect to fetch
+    * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiSuccess (Success 200) {json} Response the aspect detail
     * @apiSuccessExample {json} Response:
     *    {
@@ -75,6 +75,13 @@ class RecordAspectsServiceRO(
         dataType = "string",
         paramType = "path",
         value = "ID of the aspect to fetch."
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Session",
+        required = false,
+        dataType = "String",
+        paramType = "header",
+        value = "Magda internal session id"
       )
     )
   )
@@ -88,9 +95,10 @@ class RecordAspectsServiceRO(
     )
   )
   def getById = get {
-      path(Segment / "aspects" / Segment) {
-        (recordId: String, aspectId: String) =>
-          requiresTenantId { tenantId => {
+    path(Segment / "aspects" / Segment) {
+      (recordId: String, aspectId: String) =>
+        requiresTenantId { tenantId =>
+          {
             withRecordOpaQuery(AuthOperations.read)(
               config,
               system,
@@ -108,13 +116,19 @@ class RecordAspectsServiceRO(
                     opaQueries
                   ) match {
                   case Some(recordAspect) => complete(recordAspect)
-                  case _ => complete(StatusCodes.NotFound, BadRequest("No record or aspect exists with the given IDs."))
+                  case _ =>
+                    complete(
+                      StatusCodes.NotFound,
+                      BadRequest(
+                        "No record or aspect exists with the given IDs."
+                      )
+                    )
                 }
               }
             }
           }
-          }
-      }
+        }
+    }
   }
 
   def route =
