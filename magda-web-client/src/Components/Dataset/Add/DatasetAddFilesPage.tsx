@@ -17,6 +17,7 @@ import {
 } from "./DatasetAddCommon";
 import withAddDatasetState from "./withAddDatasetState";
 import uniq from "lodash/uniq";
+import * as ValidationManager from "../Add/ValidationManager";
 
 import "./DatasetAddFilesPage.scss";
 import "./DatasetAddCommon.scss";
@@ -26,6 +27,13 @@ class DatasetAddFilesPage extends React.Component<
     State
 > {
     state = this.props.initialState;
+
+    constructor(props) {
+        super(props);
+        ValidationManager.setStateDataGetter(() => {
+            return this.state;
+        });
+    }
 
     async onBrowse() {
         this.addFiles(await getFiles("*.*"));
@@ -243,6 +251,7 @@ class DatasetAddFilesPage extends React.Component<
                                         className="col-xs-6 dataset-add-files-fileListItem"
                                     >
                                         <DatasetFile
+                                            idx={i}
                                             file={file}
                                             onChange={this.editFile(i)}
                                             onDelete={this.deleteFile(i)}
@@ -312,8 +321,10 @@ class DatasetAddFilesPage extends React.Component<
     }
 
     reviewMetadata() {
-        const id = saveState(this.state, this.props.dataset);
-        this.props.history.push(`/dataset/add/metadata/${id}/0`);
+        if (ValidationManager.validateAll()) {
+            const id = saveState(this.state, this.props.dataset);
+            this.props.history.push(`/dataset/add/metadata/${id}/0`);
+        }
     }
 }
 

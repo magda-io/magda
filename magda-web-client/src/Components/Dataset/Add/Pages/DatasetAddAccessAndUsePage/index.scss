@@ -51,6 +51,11 @@
                     position: initial;
                 }
             }
+            .invalid {
+                .edit-icon {
+                    top: 45px !important;
+                }
+            }
             .license-distribution-option-container {
                 .fileBlock {
                     border: solid 1px #cccaca;
