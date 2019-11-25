@@ -103,10 +103,14 @@ class DataSetSearchSpec extends BaseSearchApiSpec with RegistryConverters {
         }
       }
 
-      it("should sort results by score/quality, and then tie-break on indexed field") {
+      it(
+        "should sort results by score/quality, and then tie-break on indexed field"
+      ) {
         forAll(indexGen) {
           case (indexName, dataSets, routes) =>
-            Get(s"/v0/datasets?query=City%20of%20Ballarat&limit=${dataSets.length}") ~> addSingleTenantIdHeader ~> routes ~> check {
+            Get(
+              s"/v0/datasets?query=City%20of%20Ballarat&limit=${dataSets.length}"
+            ) ~> addSingleTenantIdHeader ~> routes ~> check {
               status shouldBe OK
               contentType shouldBe `application/json`
               val response = responseAs[SearchResult]
