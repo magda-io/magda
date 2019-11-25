@@ -1,5 +1,5 @@
 {
-    "listenPort": 6119,
+    "listenPort": 6120,
     "db": {
         "host": "minikube.data.gov.au",
         "port": 30545
