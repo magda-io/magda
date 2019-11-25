@@ -43,5 +43,6 @@ tags:
   web-server: false
   ingress: false
   connectors: false
+  storage-api: false
   tenant-api: false
   tenant-db: false
