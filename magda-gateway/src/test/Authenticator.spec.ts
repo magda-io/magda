@@ -69,7 +69,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
         await pool.query("DELETE FROM session");
     });
 
-    function setupTest(cookieOptions: express.CookieOptions = {}) {
+    function setupTest(cookieOptions: any = {}) {
         const app: express.Application = express();
         const auth = new Authenticator({
             dbPool: pool,
