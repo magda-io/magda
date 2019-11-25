@@ -135,6 +135,7 @@ UI:
 -   Fixed warning for placeholder text being a boolean value
 -   Added unique key to the topmost `div` of `codelistEditor`
 -   Rename `license` to `licence` where appropriate
+-   Added unique keys to the props in `Stories.js`
 -   Added Mandatory Field Validation to the Add Dataset Flow
 -   Reworded `team` to `business area`
 -   Added tooltips to the `Production` section of the `People and Production` page
