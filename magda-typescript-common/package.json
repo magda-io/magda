@@ -5,8 +5,8 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "yarn run compile",
-    "compile": "tsc -p tsconfig-build.json",
-    "watch": "tsc -p tsconfig-build.json --watch",
+    "compile": "tsc -b",
+    "watch": "tsc -b --watch",
     "generate": "generate-registry-typescript ./src/generated/registry",
     "test": "nyc mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
     "create_esri_groups_jwt": "nyc mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/buildJwtForRegistryEsriOpaGroupsTest.ts\"",
