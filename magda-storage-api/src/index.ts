@@ -13,7 +13,7 @@ const argv = addJwtSecretFromEnvVar(
             describe:
                 "The TCP/IP port on which the authorization-api should listen.",
             type: "number",
-            default: 6119
+            default: 6120
         })
         .option("dbHost", {
             describe: "The host running the auth database.",
