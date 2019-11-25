@@ -112,7 +112,8 @@ function installUpdater(options: OptionsIO) {
                         nextState.error = e.message;
                     }
                 }
-                if (typeof nextState !== "object") {
+                // --- Note: typeof null === "object"
+                if (!nextState || typeof nextState !== "object") {
                     nextState = {
                         ready: false
                     };

@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import "mocha";
-import * as nock from "nock";
+import nock from "nock";
 // import * as sinon from "sinon";
 
 import AsyncPage from "../AsyncPage";

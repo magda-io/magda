@@ -3,7 +3,7 @@ import ConnectorRecordId from "src/ConnectorRecordId";
 import { expect } from "chai";
 import "mocha";
 import AspectBuilder from "src/AspectBuilder";
-import * as fs from "fs";
+import fs from "fs";
 import { Record } from "src/generated/registry/api";
 
 describe("JsonTransformer", () => {
