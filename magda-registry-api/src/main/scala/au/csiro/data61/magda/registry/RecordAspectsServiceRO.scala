@@ -32,6 +32,7 @@ class RecordAspectsServiceRO(
     * @apiDescription Get a list of all aspects of a record
     * @apiParam (path) {string} recordId ID of the record for which to fetch an aspect
     * @apiParam (path) {string} aspectId ID of the aspect to fetch
+    * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiSuccess (Success 200) {json} Response the aspect detail
     * @apiSuccessExample {json} Response:
     *    {
@@ -74,6 +75,13 @@ class RecordAspectsServiceRO(
         dataType = "string",
         paramType = "path",
         value = "ID of the aspect to fetch."
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Session",
+        required = false,
+        dataType = "String",
+        paramType = "header",
+        value = "Magda internal session id"
       )
     )
   )
