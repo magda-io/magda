@@ -24,7 +24,7 @@ export function extractExtents(input, output) {
             }
 
             output.temporalCoverage = {
-                intervals: [aggregateDates(rows, headers)].filter(i => i)
+                intervals: aggregateDates(rows)
             };
             output.spatialCoverage = calculateSpatialExtent(rows, headers);
         }
@@ -79,7 +79,7 @@ type SpatialExtent = {
     maxLng: number;
 };
 
-function aggregateDates(rows: any[], headers: string[]) {
+function aggregateDates(rows: any[]) {
     let moments = rows.map(d => moment(d));
     const earliestStart = moment.min(moments).toDate();
     const latestEnd = moment.max(moments).toDate();
