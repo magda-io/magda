@@ -11,9 +11,7 @@ const dsExtent =
         : undefined;
 
 const theKeywords =
-    dataset.tags === undefined || dataset.tags.length === 0
-        ? ["undefined"]
-        : dataset.tags;
+    dataset.tags && dataset.tags.length === 0 ? undefined : dataset.tags;
 
 return {
     title: dataset.title || dataset.name,
