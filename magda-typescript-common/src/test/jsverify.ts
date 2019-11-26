@@ -1,3 +1,3 @@
-import * as jsc from "jsverify";
+import jsc from "jsverify";
 
 export default jsc;

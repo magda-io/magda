@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import "mocha";
 import nock from "nock";
-// import * as sinon from "sinon";
+// import sinon from "sinon";
 
 import AsyncPage from "../AsyncPage";
 // import { AspectDefinition } from "../generated/registry/api";

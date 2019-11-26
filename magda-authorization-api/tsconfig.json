@@ -1,11 +1,11 @@
 {
     "extends": "../tsconfig-global.json",
     "compilerOptions": {
-        "outDir": "dist",
+        "outDir": "./dist",
         "strictNullChecks": false,
-        "rootDir": "src",
+        "rootDir": "./src",
         "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
     },
     "references": [{ "path": "../magda-typescript-common" }],
-    "include": ["src"]
+    "include": ["./src"]
 }

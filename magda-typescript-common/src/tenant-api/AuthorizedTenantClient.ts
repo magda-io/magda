@@ -1,7 +1,7 @@
 require("isomorphic-fetch");
 import { MAGDA_ADMIN_PORTAL_ID } from "../registry/TenantConsts";
 import { Tenant } from "../tenant-api/Tenant";
-import * as lodash from "lodash";
+import lodash from "lodash";
 import retry from "../retry";
 import formatServiceError from "../formatServiceError";
 import createServiceError from "../createServiceError";
