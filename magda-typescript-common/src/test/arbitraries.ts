@@ -45,7 +45,10 @@ export const lcAlphaStringArbNe = jsc
 
 export const peopleNameArb = jsc
     .tuple([lcAlphaStringArbNe, lcAlphaStringArbNe])
-    .smap(strArr => strArr.join(" "), string => string.split(" "));
+    .smap(
+        strArr => strArr.join(" "),
+        string => string.split(" ") as [string, string]
+    );
 
 const uuidArb: jsc.Arbitrary<string> = jsc.bless({
     generator: jsc.generator.bless(x => uuid()),
