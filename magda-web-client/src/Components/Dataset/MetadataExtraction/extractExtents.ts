@@ -1,4 +1,4 @@
-const moment = require("moment");
+const moment = require("moment-timezone");
 import XLSX from "xlsx";
 
 /**
@@ -80,7 +80,7 @@ type SpatialExtent = {
 };
 
 function aggregateDates(rows: any[]) {
-    let moments = rows.map(d => moment(d));
+    let moments = rows.map(d => moment.tz(d, "UTC"));
     const earliestStart = moment.min(moments).toDate();
     const latestEnd = moment.max(moments).toDate();
 
