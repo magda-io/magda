@@ -7,7 +7,10 @@ import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
-import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
+import au.csiro.data61.magda.directives.TenantDirectives.{
+  requiresTenantId,
+  requiresSpecifiedTenantId
+}
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
@@ -84,7 +87,7 @@ class AspectsService(
   def create: Route = post {
     pathEnd {
       requireIsAdmin(authClient)(system, config) { _ =>
-        requiresTenantId { tenantId =>
+        requiresSpecifiedTenantId { tenantId =>
           entity(as[AspectDefinition]) { aspect =>
             val theResult = DB localTx { session =>
               AspectPersistence.create(session, aspect, tenantId) match {
@@ -176,7 +179,7 @@ class AspectsService(
     path(Segment) { id: String =>
       {
         requireIsAdmin(authClient)(system, config) { _ =>
-          requiresTenantId { tenantId =>
+          requiresSpecifiedTenantId { tenantId =>
             entity(as[AspectDefinition]) { aspect =>
               val theResult = DB localTx { session =>
                 AspectPersistence.putById(session, id, aspect, tenantId) match {
@@ -268,7 +271,7 @@ class AspectsService(
   def patchById: Route = patch {
     path(Segment) { id: String =>
       requireIsAdmin(authClient)(system, config) { _ =>
-        requiresTenantId { tenantId =>
+        requiresSpecifiedTenantId { tenantId =>
           entity(as[JsonPatch]) { aspectPatch =>
             val theResult = DB localTx { session =>
               AspectPersistence
