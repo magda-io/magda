@@ -2,7 +2,7 @@ const { curried2 } = require("jsverify/lib/utils");
 import { Record } from "../generated/registry/api";
 const lazyseq = require("lazy-seq");
 import uuid = require("uuid/v4");
-import * as _ from "lodash";
+import _ from "lodash";
 import jsc from "./jsverify";
 
 function fromCode(code: number) {

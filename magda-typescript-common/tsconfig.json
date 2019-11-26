@@ -2,9 +2,9 @@
     "extends": "../tsconfig-global.json",
     "compilerOptions": {
         "outDir": "dist",
-        "baseUrl": ".",
-        "strictNullChecks": false
+        "strictNullChecks": false,
+        "rootDir": "src",
+        "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
     },
-    "include": ["src"],
-    "exclude": ["src/test/*"]
+    "include": ["src/**/*", "src/**/*.json"]
 }

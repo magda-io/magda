@@ -13,9 +13,9 @@ import JsonConnector, {
     JsonConnectorConfigExtraMetaData,
     JsonConnectorConfigPresetAspect
 } from "../JsonConnector";
-import JsonTransformer, { JsonTransformerOptions } from "src/JsonTransformer";
-import ConnectorRecordId from "src/ConnectorRecordId";
-import { Record } from "src/generated/registry/api";
+import JsonTransformer, { JsonTransformerOptions } from "../JsonTransformer";
+import ConnectorRecordId from "../ConnectorRecordId";
+import { Record } from "../generated/registry/api";
 
 // ConnectorSource,
 
