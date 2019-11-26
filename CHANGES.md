@@ -176,6 +176,7 @@ Others:
 -   Upgrade Scala dependencies versions & added scalafmt support
 -   Fixed doc to reflect [lerna deprecating an option](https://github.com/lerna/lerna/commit/f2c3a92fe41b6fdc5d11269f0f2c3e27761b4c85)
 -   Fix potential memory leak by deregistering listener when Header is unmounted
+-   Use a "Year" column from a CSV file to extract a temporal extent
 
 ## 0.0.55
 
