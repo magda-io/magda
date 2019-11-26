@@ -1,4 +1,6 @@
-var moment = require("moment");
+const moment = require("moment");
+import XLSX from "xlsx";
+import { uniq } from "lodash";
 
 /**
  * Extract spatial and temporal extent of spreadsheet files
@@ -29,10 +31,6 @@ export function extractExtents(input, output) {
         }
     }
 }
-
-import XLSX from "xlsx";
-import { uniq } from "lodash";
-// const chrono = require("chrono-node");
 
 const DATE_REGEX_PART = ".*(date|dt|decade|year).*";
 const DATE_REGEX = new RegExp(DATE_REGEX_PART, "i");
