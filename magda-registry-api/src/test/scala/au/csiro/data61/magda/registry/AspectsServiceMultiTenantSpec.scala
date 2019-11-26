@@ -59,25 +59,26 @@ class AspectsServiceMultiTenantSpec extends ApiSpec {
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[AspectDefinition] shouldEqual aspectDefinition
+        }
 
-          Get("/v0/aspects") ~> addTenantIdHeader(TENANT_1) ~> param
+        Get("/v0/aspects") ~> addTenantIdHeader(TENANT_1) ~>
+          param
             .api(role)
             .routes ~> check {
-            status shouldEqual StatusCodes.OK
+          status shouldEqual StatusCodes.OK
 
-            val aspectDefinitions = responseAs[List[AspectDefinition]]
-            aspectDefinitions.length shouldEqual 1
-            aspectDefinitions.head shouldEqual aspectDefinition
-          }
+          val aspectDefinitions = responseAs[List[AspectDefinition]]
+          aspectDefinitions.length shouldEqual 1
+          aspectDefinitions.head shouldEqual aspectDefinition
+        }
 
-          Get("/v0/aspects") ~> addTenantIdHeader(TENANT_2) ~> param
-            .api(role)
-            .routes ~> check {
-            status shouldEqual StatusCodes.OK
+        Get("/v0/aspects") ~> addTenantIdHeader(TENANT_2) ~> param
+          .api(role)
+          .routes ~> check {
+          status shouldEqual StatusCodes.OK
 
-            val aspectDefinitions = responseAs[List[AspectDefinition]]
-            aspectDefinitions.length shouldEqual 0
-          }
+          val aspectDefinitions = responseAs[List[AspectDefinition]]
+          aspectDefinitions.length shouldEqual 0
         }
       }
 

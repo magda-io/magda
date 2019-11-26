@@ -3,6 +3,7 @@ package au.csiro.data61.magda.registry
 import akka.event.LoggingAdapter
 import akka.http.scaladsl.model.StatusCodes
 import au.csiro.data61.magda.model.Registry._
+import au.csiro.data61.magda.model.TenantId._
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import scalikejdbc.DBSession
@@ -128,6 +129,42 @@ class RecordsServiceSpec extends ApiSpec {
             status shouldEqual StatusCodes.NotFound
             responseAs[BadRequest].message should include("exist")
           }
+      }
+
+      it("returns all records when tenant id is -1") { param =>
+        for (i <- 1 to 5) {
+          val testAspectId = "test"
+          val testAspect = AspectDefinition(testAspectId, "test", None)
+
+          param.asAdmin(Post("/v0/aspects", testAspect)) ~> addTenantIdHeader(
+            i
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          val record = Record(
+            i.toString,
+            i.toString,
+            Map(testAspectId -> JsObject("value" -> JsNumber(i)))
+          )
+
+          param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(i) ~> param
+            .api(Full)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+        }
+
+        Get(s"/v0/records") ~> addTenantIdHeader(MAGDA_SYSTEM_ID) ~> param
+          .api(role)
+          .routes ~> check {
+          status shouldEqual StatusCodes.OK
+          val page = responseAs[RecordsPage[RecordType]]
+          val records = page.records
+          records.length shouldBe 5
+
+          records.map(_.id) shouldEqual (List(1, 2, 3, 4, 5).map(_.toString))
+        }
       }
 
       describe("summary") {
@@ -290,10 +327,7 @@ class RecordsServiceSpec extends ApiSpec {
             .routes ~> check {
             status shouldEqual StatusCodes.OK
             val recordsSummary = responseAs[RecordsPage[RecordSummary]]
-            // The current implementation assumes this API is not used by the system tenant.
-            // Is this what we want?
-            // See ticket https://github.com/magda-io/magda/issues/2359
-            recordsSummary.records.length shouldEqual 0
+            recordsSummary.records.length shouldEqual 6
           }
         }
 
@@ -514,9 +548,7 @@ class RecordsServiceSpec extends ApiSpec {
             .routes ~> check {
             status shouldEqual StatusCodes.OK
             val countResponse = responseAs[CountResponse]
-            // Is this what we want?
-            // See ticket https://github.com/magda-io/magda/issues/2360
-            countResponse.count shouldBe 0
+            countResponse.count shouldBe 1
           }
         }
 
@@ -4105,7 +4137,7 @@ class RecordsServiceSpec extends ApiSpec {
 
           (mockedRecordPersistence
             .trimRecordsBySource(
-              _: BigInt,
+              _: SpecifiedTenantId,
               _: String,
               _: String,
               _: Option[LoggingAdapter]
@@ -4113,7 +4145,7 @@ class RecordsServiceSpec extends ApiSpec {
             .expects(*, *, *, *, *)
             .onCall {
               (
-                  _: BigInt,
+                  _: SpecifiedTenantId,
                   _: String,
                   _: String,
                   _: Option[LoggingAdapter],

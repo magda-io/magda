@@ -7,7 +7,7 @@ import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.api.model.Protocols
 import au.csiro.data61.magda.indexer.search.elasticsearch.ElasticSearchIndexer
-import au.csiro.data61.magda.model.Registry.{MAGDA_ADMIN_PORTAL_ID}
+import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchQueryer
 import au.csiro.data61.magda.search.elasticsearch.Indices
@@ -20,7 +20,6 @@ import au.csiro.data61.magda.test.util.{Generators, TestActorSystem}
 import scala.collection.mutable
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
-import au.csiro.data61.magda.model.RegistryConverters
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.test.MockServer
 import au.csiro.data61.magda.test.opa.ResponseDatasetAllowAll
@@ -30,7 +29,6 @@ import org.scalacheck.{Gen, Shrink}
 
 trait BaseSearchApiSpec
     extends BaseApiSpec
-    with RegistryConverters
     with Protocols
     with ResponseDatasetAllowAll {
   val INSERTION_WAIT_TIME = 500 seconds

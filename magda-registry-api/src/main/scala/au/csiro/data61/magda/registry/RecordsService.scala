@@ -10,7 +10,10 @@ import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
-import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
+import au.csiro.data61.magda.directives.TenantDirectives.{
+  requiresTenantId,
+  requiresSpecifiedTenantId
+}
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
@@ -96,7 +99,7 @@ class RecordsService(
   def deleteById: Route = delete {
     path(Segment) { recordId: String =>
       requireIsAdmin(authClient)(system, config) { _ =>
-        requiresTenantId { tenantId =>
+        requiresSpecifiedTenantId { tenantId =>
           val theResult = DB localTx { session =>
             recordPersistence.deleteRecord(session, tenantId, recordId) match {
               case Success(result) => complete(DeleteResult(result))
@@ -192,7 +195,7 @@ class RecordsService(
   def trimBySourceTag: Route = delete {
     pathEnd {
       requireIsAdmin(authClient)(system, config) { _ =>
-        requiresTenantId { tenantId =>
+        requiresSpecifiedTenantId { tenantId =>
           parameters('sourceTagToPreserve, 'sourceId) {
             (sourceTagToPreserve, sourceId) =>
               val deleteFuture = Future {
@@ -314,7 +317,7 @@ class RecordsService(
     path(Segment) { id: String =>
       requireIsAdmin(authClient)(system, config) { _ =>
         {
-          requiresTenantId { tenantId =>
+          requiresSpecifiedTenantId { tenantId =>
             entity(as[Record]) { recordIn =>
               val result = DB localTx { session =>
                 recordPersistence.putRecordById(
@@ -413,7 +416,7 @@ class RecordsService(
   def patchById: Route = patch {
     path(Segment) { id: String =>
       requireIsAdmin(authClient)(system, config) { _ =>
-        requiresTenantId { tenantId =>
+        requiresSpecifiedTenantId { tenantId =>
           entity(as[JsonPatch]) { recordPatch =>
             val theResult = DB localTx { session =>
               recordPersistence.patchRecordById(
@@ -518,7 +521,7 @@ class RecordsService(
   )
   def create: Route = post {
     requireIsAdmin(authClient)(system, config) { _ =>
-      requiresTenantId { tenantId =>
+      requiresSpecifiedTenantId { tenantId =>
         pathEnd {
           entity(as[Record]) { record =>
             val result = DB localTx { session =>

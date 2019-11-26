@@ -61,6 +61,8 @@ defaultRoutes:
     to: http://tenant-api/v0
     auth: true
 
+webRoutes: {}
+
 csp:
   browserSniff: false
   directives:
