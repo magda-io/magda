@@ -10,9 +10,14 @@ const dsExtent =
           }, ${dataset.extent[1][1]}`
         : undefined;
 
+const theKeywords =
+    dataset.tags === undefined || dataset.tags.length === 0
+        ? ["undefined"]
+        : dataset.tags;
+
 return {
     title: dataset.title || dataset.name,
-    description: dataset.description,
+    description: dataset.description || undefined,
     issued: moment.utc(dataset.created).format(),
     modified: moment.utc(dataset.created).format(),
     languages: dataset.culture ? [dataset.culture] : [],
@@ -23,7 +28,7 @@ return {
 
     // What does this equate to?
     themes: undefined,
-    keywords: dataset.tags,
+    keywords: theKeywords,
     contactPoint: dataset.owner,
     landingPage: esriPortal.getDatasetLandingPageUrl(dataset.id)
 };
