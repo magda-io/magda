@@ -60,7 +60,7 @@ object RegistryApp extends App {
   logger.info("Starting MAGDA Registry")
 
   GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(
-    enabled = true,
+    enabled = false,
     singleLineMode = true,
     logLevel = 'debug
   )
