@@ -117,8 +117,14 @@ const isDownload =
     jsonpath.value(distribution, "$.function[*].CI_OnlineFunctionCode[*]._") ===
     "download";
 
-const issued =
+let issued =
     jsonpath.value(dataset.json, "$.dateStamp[*].Date[*]._") || undefined;
+
+// --- we actually have schema validation in black-box test
+// --- replace possible `unknown` value with undefined to get test cases passed
+if (typeof issued === "string" && issued.toLowerCase() === "unknown") {
+    issued = undefined;
+}
 
 return {
     title: title,
