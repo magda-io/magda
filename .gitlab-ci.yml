@@ -9,7 +9,7 @@ variables:
     -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
   # If you changed dependencies (especially for scala), you might want to prevent your branch from using old cache by increase the version blew
   # gitlab actually use the same technique when you click the `Clear Cache Button` 
-  CACHE_VERSION: fix-typescript-issue
+  CACHE_VERSION: 5
 
 stages:
   - builders
@@ -32,8 +32,7 @@ builders-and-yarn:
     paths:
       - .yarn
   before_script:
-    - yarn config set cache-folder .yarn
-    - yarn install --no-progress --child-concurrency 1
+    - yarn install --no-progress --child-concurrency 1 --cache-folder .yarn
   services:
     - docker:dind
   script:
@@ -297,7 +296,6 @@ buildtest:typescript-apis:
     - pip3 install --upgrade pip
     - pip3 install docker-compose
     - docker-compose --version
-    - yarn # Just to make sure the artifacts are in sync
   cache:
     key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
