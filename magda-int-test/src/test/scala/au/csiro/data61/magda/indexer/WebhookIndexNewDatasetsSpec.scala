@@ -6,6 +6,7 @@ import au.csiro.data61.magda.api.model.SearchResult
 import au.csiro.data61.magda.model.Temporal.{PeriodOfTime, Periodicity}
 import au.csiro.data61.magda.model.misc._
 import spray.json._
+import au.csiro.data61.magda.model.Registry._
 
 class WebhookIndexNewDatasetsSpec extends WebhookSpecBase {
 

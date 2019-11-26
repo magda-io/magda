@@ -7,6 +7,7 @@ import org.everit.json.schema.loader.SchemaLoader
 import org.json.JSONObject
 import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
+import au.csiro.data61.magda.model.TenantId._
 
 object AspectValidator {
 
@@ -18,7 +19,7 @@ object AspectValidator {
     else config.getBoolean("validateJsonSchema")
   }
 
-  def validate(aspectId: String, aspectData: JsObject, tenantId: BigInt)(
+  def validate(aspectId: String, aspectData: JsObject, tenantId: TenantId)(
       implicit session: DBSession,
       config: Config
   ) {
@@ -35,7 +36,7 @@ object AspectValidator {
 
   def validateAspects(
       aspects: Map[String, JsObject],
-      tenantId: BigInt
+      tenantId: TenantId
   )(implicit session: DBSession, config: Config): Unit = {
     aspects.foreach(aspect => validate(aspect._1, aspect._2, tenantId))
   }
@@ -65,7 +66,7 @@ object AspectValidator {
       aspectPatch: JsonPatch,
       recordId: String,
       aspectId: String,
-      tenantId: BigInt
+      tenantId: TenantId
   )(implicit session: DBSession, config: Config): Unit = {
     val originalAspect = (DefaultRecordPersistence.getRecordAspectById(
       session,
@@ -83,7 +84,7 @@ object AspectValidator {
   def validateWithRecordPatch(
       recordPatch: JsonPatch,
       recordId: String,
-      tenantId: BigInt
+      tenantId: TenantId
   )(implicit session: DBSession, config: Config): Unit = {
     DefaultRecordPersistence.processRecordPatchOperationsOnAspects(
       recordPatch,

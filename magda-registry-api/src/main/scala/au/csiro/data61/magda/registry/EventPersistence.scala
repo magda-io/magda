@@ -1,6 +1,7 @@
 package au.csiro.data61.magda.registry
 
 import au.csiro.data61.magda.model.Registry._
+import au.csiro.data61.magda.model.TenantId._
 import akka.stream.scaladsl.Source
 import spray.json._
 import gnieh.diffson.sprayJson._
@@ -14,7 +15,7 @@ object EventPersistence extends Protocols with DiffsonProtocol {
       sinceEventId: Long,
       recordId: Option[String] = None,
       aspectIds: Set[String] = Set(),
-      tenantId: BigInt
+      tenantId: TenantId
   ) = {
     Source
       .unfold(sinceEventId)(offset => {
@@ -38,7 +39,7 @@ object EventPersistence extends Protocols with DiffsonProtocol {
       lastEventId: Long,
       recordId: Option[String] = None,
       aspectIds: Set[String] = Set(),
-      tenantId: BigInt
+      tenantId: TenantId
   ) = {
     Source
       .unfold(0L)(offset => {
@@ -95,7 +96,7 @@ object EventPersistence extends Protocols with DiffsonProtocol {
       recordId: Option[String] = None,
       aspectIds: Set[String] = Set(),
       eventTypes: Set[EventType] = Set(),
-      tenantId: BigInt
+      tenantId: TenantId
   ): EventsPage = {
     val filters: Seq[Option[SQLSyntax]] = Seq(
       pageToken.map(v => sqls"eventId > $v"),
@@ -103,9 +104,7 @@ object EventPersistence extends Protocols with DiffsonProtocol {
       recordId.map(v => sqls"data->>'recordId' = $v")
     )
 
-    val tenantFilter: Option[SQLSyntax] =
-      if (tenantId == MAGDA_SYSTEM_ID) None
-      else Some(sqls"tenantId = $tenantId")
+    val tenantFilter = Some(SQLUtil.tenantIdToWhereClause(tenantId))
     val theFilters = (filters ++ List(tenantFilter)).filter(_.isDefined)
 
     val eventTypesFilter =
@@ -166,7 +165,8 @@ object EventPersistence extends Protocols with DiffsonProtocol {
             eventTime,
             eventTypeId,
             userId,
-            data
+            data,
+            tenantId
           from Events
           $whereClause
           order by eventId asc
@@ -193,7 +193,8 @@ object EventPersistence extends Protocols with DiffsonProtocol {
       eventTime = rs.offsetDateTimeOpt("eventTime"),
       eventType = EventType.withValue(rs.int("eventTypeId")),
       userId = rs.int("userId"),
-      data = JsonParser(rs.string("data")).asJsObject
+      data = JsonParser(rs.string("data")).asJsObject,
+      tenantId = rs.bigInt("tenantid")
     )
   }
 }

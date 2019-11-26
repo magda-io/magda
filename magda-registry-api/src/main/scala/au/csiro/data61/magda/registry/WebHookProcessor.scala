@@ -9,6 +9,7 @@ import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
 import au.csiro.data61.magda.model.Registry._
+import au.csiro.data61.magda.model.TenantId.{SpecifiedTenantId}
 import au.csiro.data61.magda.opa.OpaTypes.OpaQuerySkipAccessControl
 import scalikejdbc._
 import spray.json.JsString
@@ -17,6 +18,7 @@ import scala.collection.mutable
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
+import au.csiro.data61.magda.model.TenantId.AllTenantsId
 
 /**
   * The processor sends notifications to a subscriber via web hook.
@@ -46,7 +48,7 @@ class WebHookProcessor(
     val tenantRecordIdsMap = new mutable.HashMap[BigInt, Set[String]]
     events.foreach(event => {
       val recordId = event.data.fields("recordId").asInstanceOf[JsString].value
-      val tenantId = RegistryEvent.getTenantId(event)
+      val tenantId = event.tenantId
       val recordIds = tenantRecordIdsMap.getOrElse(tenantId, Set())
       tenantRecordIdsMap.put(tenantId, recordIds + recordId)
     })
@@ -100,7 +102,7 @@ class WebHookProcessor(
                 val recordIds = tenantRecordIdsMap(tenantId)
                 pages :+ recordPersistence.getByIdsWithAspects(
                   session,
-                  tenantId,
+                  SpecifiedTenantId(tenantId),
                   recordIds,
                   List(this.opaQuerySkipAccessControl),
                   webHook.config.aspects.getOrElse(Nil),
@@ -126,7 +128,7 @@ class WebHookProcessor(
                 val recordIds = tenantRecordIdsMap(tenantId)
                 pages :+ recordPersistence.getRecordsLinkingToRecordIds(
                   session,
-                  tenantId,
+                  SpecifiedTenantId(tenantId),
                   recordIds,
                   List(this.opaQuerySkipAccessControl),
                   recordIdsExcluded,
@@ -213,7 +215,7 @@ class WebHookProcessor(
         DB readOnly { implicit session =>
           Some(
             AspectPersistence
-              .getByIds(session, aspectDefinitionIds, MAGDA_SYSTEM_ID)
+              .getByIds(session, aspectDefinitionIds, AllTenantsId)
           )
         }
     }

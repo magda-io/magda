@@ -121,7 +121,7 @@ abstract class ApiSpec
       new AuthApiClient(httpFetcher)(testConfig, system, executor, materializer)
 
     GlobalSettings.loggingSQLAndTime = new LoggingSQLAndTimeSettings(
-      enabled = false,
+      enabled = true,
       singleLineMode = true,
       logLevel = 'debug
     )

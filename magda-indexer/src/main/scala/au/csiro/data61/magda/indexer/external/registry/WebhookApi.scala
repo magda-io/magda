@@ -11,13 +11,9 @@ import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.api.BaseMagdaApi
 import au.csiro.data61.magda.indexer.search.SearchIndexer
-import au.csiro.data61.magda.model.Registry.{
-  EventType,
-  RegistryEvent,
-  WebHookPayload
-}
-import au.csiro.data61.magda.model.RegistryConverters
+import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.model.misc.DataSet
+import au.csiro.data61.magda.model.TenantId.{SpecifiedTenantId}
 import au.csiro.data61.magda.util.ErrorHandling.CausedBy
 import com.typesafe.config.Config
 
@@ -26,8 +22,7 @@ import scala.concurrent.{ExecutionContextExecutor, Future}
 class WebhookApi(indexer: SearchIndexer)(
     implicit system: ActorSystem,
     config: Config
-) extends BaseMagdaApi
-    with RegistryConverters {
+) extends BaseMagdaApi {
   implicit val ec: ExecutionContextExecutor = system.dispatcher
   override def getLogger: LoggingAdapter = system.log
 
@@ -60,13 +55,13 @@ class WebhookApi(indexer: SearchIndexer)(
           val events = payload.events.getOrElse(List())
           val idsToDelete = events
             .filter(_.eventType == EventType.DeleteRecord)
-            .map(event => {
-              val recordId =
-                event.data.getFields("recordId").head.convertTo[String]
-              val tenantId = RegistryEvent.getTenantId(event)
-              (recordId, tenantId)
-            })
-            .map(result => DataSet.uniqueEsDocumentId(result._1, result._2))
+            .map(
+              event =>
+                DataSet.uniqueEsDocumentId(
+                  event.data.getFields("recordId").head.convertTo[String],
+                  event.tenantId
+                )
+            )
 
           val deleteOp = () =>
             idsToDelete match {
@@ -82,7 +77,10 @@ class WebhookApi(indexer: SearchIndexer)(
                 val dataSets = list.map(
                   record =>
                     try {
-                      Some(convertRegistryDataSet(record, Some(system.log)))
+                      Some(
+                        Conversions
+                          .convertRegistryDataSet(record, Some(system.log))
+                      )
                     } catch {
                       case CausedBy(e: spray.json.DeserializationException) =>
                         system.log.error(e, "When converting {}", record.id)

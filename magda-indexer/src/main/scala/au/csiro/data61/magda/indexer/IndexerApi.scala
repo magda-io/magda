@@ -6,14 +6,12 @@ import au.csiro.data61.magda.api.BaseMagdaApi
 import au.csiro.data61.magda.indexer.crawler.{Crawler, CrawlerApi}
 import au.csiro.data61.magda.indexer.external.registry.WebhookApi
 import au.csiro.data61.magda.indexer.search.SearchIndexer
-import au.csiro.data61.magda.model.RegistryConverters
 import com.typesafe.config.Config
 
 class IndexerApi(crawler: Crawler, indexer: SearchIndexer)(
     implicit system: ActorSystem,
     config: Config
-) extends BaseMagdaApi
-    with RegistryConverters {
+) extends BaseMagdaApi {
   implicit val ec = system.dispatcher
   override def getLogger = system.log
 

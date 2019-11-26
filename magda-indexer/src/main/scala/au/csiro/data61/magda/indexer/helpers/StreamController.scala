@@ -7,10 +7,10 @@ import akka.actor.{ActorRef, ActorSystem, PoisonPill, Scheduler}
 import akka.event.Logging
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
-import au.csiro.data61.magda.client.RegistryInterface
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.util.ErrorHandling
 import com.typesafe.config.Config
+import au.csiro.data61.magda.indexer.external.registry.RegistryInterface
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContextExecutor, Future}
