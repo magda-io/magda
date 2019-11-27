@@ -6,6 +6,7 @@ import akka.http.scaladsl.model.{MediaType, MediaTypes}
 import au.csiro.data61.magda.model.GeoJsonFormats._
 import au.csiro.data61.magda.model.Temporal._
 import au.csiro.data61.magda.spatial.GeoJsonValidator
+import au.csiro.data61.magda.model.TenantId._
 import com.monsanto.labs.mwundo.GeoJson._
 import spray.json._
 

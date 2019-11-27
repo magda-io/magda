@@ -37,6 +37,12 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             coerce: coerceJson
         })
+        .option("webProxyRoutesJson", {
+            describe:
+                "Path of the json that defines web (non-API) routes to proxy.",
+            type: "string",
+            coerce: coerceJson
+        })
         .option("helmetJson", {
             describe:
                 "Path of the json that defines node-helmet options, as per " +

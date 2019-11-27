@@ -1,14 +1,12 @@
 package au.csiro.data61.magda.registry
 
 import au.csiro.data61.magda.model.Registry.{Record, RecordSummary, RecordType}
-import au.csiro.data61.magda.model.{
-  RegistryProtocols => CommonRegistryProtocols
-}
+import au.csiro.data61.magda.model.Registry._
 import gnieh.diffson.sprayJson._
 
 final case class ReadyStatus(ready: Boolean = false)
 
-trait Protocols extends DiffsonProtocol with CommonRegistryProtocols {
+trait Protocols extends DiffsonProtocol {
   implicit val badRequestFormat = jsonFormat1(BadRequest.apply)
   implicit val recordsPageFormat = jsonFormat3(RecordsPage.apply[Record])
   implicit val recordSummariesPageFormat = jsonFormat3(

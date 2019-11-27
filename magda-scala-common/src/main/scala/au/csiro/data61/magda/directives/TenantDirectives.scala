@@ -8,19 +8,26 @@ import akka.http.scaladsl.server.{
 }
 import au.csiro.data61.magda.model.Registry.{
   MAGDA_ADMIN_PORTAL_ID,
-  MAGDA_TENANT_ID_HEADER
+  MAGDA_TENANT_ID_HEADER,
+  MAGDA_SYSTEM_ID
 }
+import au.csiro.data61.magda.model.TenantId._
 
 object TenantDirectives {
 
-  def requiresTenantId: Directive1[BigInt] = {
+  /**
+    * Requires some kind of tenant id header - "-1" to indicate ALL tenant ids is valid.
+    */
+  def requiresTenantId: Directive1[TenantId] = {
     extractRequest flatMap { request =>
       val tenantIdToken = request.headers.find(
         header => header.lowercaseName() == MAGDA_TENANT_ID_HEADER.toLowerCase()
       )
 
       tenantIdToken match {
-        case Some(header) => provide(BigInt(header.value()))
+        case Some(header) if header.value == MAGDA_SYSTEM_ID.toString =>
+          provide(AllTenantsId)
+        case Some(header) => provide(SpecifiedTenantId(BigInt(header.value())))
         case None =>
           val msg = s"Could not find $MAGDA_TENANT_ID_HEADER header in request"
           reject(MissingHeaderRejection(msg))
@@ -28,15 +35,31 @@ object TenantDirectives {
     }
   }
 
-  def requiresAdminTenantId: Directive1[BigInt] = {
-    requiresTenantId flatMap { tenantId =>
-      if (tenantId == MAGDA_ADMIN_PORTAL_ID) {
-        provide(tenantId)
-      } else {
+  /**
+    * Requires a real tenant id to be specified - "-1" to indicate all tenant ids is NOT valid.
+    */
+  def requiresSpecifiedTenantId: Directive1[SpecifiedTenantId] = {
+    requiresTenantId flatMap {
+      case SpecifiedTenantId(tenantId) =>
+        provide(SpecifiedTenantId(tenantId))
+      case AllTenantsId =>
         val msg =
-          s"The operation is not allowed because $tenantId is not a magda admin ID."
+          s"A specific tenant id header (i.e. NOT ${MAGDA_SYSTEM_ID}) is required"
         reject(ValidationRejection(msg))
-      }
+    }
+  }
+
+  /**
+    * Only the default or admin tenant id (0) is allowed
+    */
+  def requiresAdminTenantId: Directive1[TenantId] = {
+    requiresTenantId flatMap {
+      case SpecifiedTenantId(MAGDA_ADMIN_PORTAL_ID) =>
+        provide(SpecifiedTenantId(MAGDA_ADMIN_PORTAL_ID))
+      case otherValue =>
+        val msg =
+          s"The operation is not allowed because $otherValue is not a magda admin ID."
+        reject(ValidationRejection(msg))
     }
   }
 }

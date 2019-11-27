@@ -67,11 +67,16 @@ export default class CswTransformer extends JsonTransformer {
             jsonDataset.json,
             "$.identificationInfo[*].SV_ServiceIdentification[*]"
         );
+        const asbstractIdentification = jsonpath.query(
+            jsonDataset.json,
+            "$.identificationInfo[*].AbstractMD_Identification[*]"
+        );
         const identification =
             (dataIdentification.length > 0 && dataIdentification) ||
             (serviceIdentification.length > 0 && serviceIdentification) ||
             (alternateServiceIdentification.length > 0 &&
                 alternateServiceIdentification) ||
+            (asbstractIdentification.length > 0 && asbstractIdentification) ||
             [];
         const title =
             jsonpath.value(

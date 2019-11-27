@@ -13,6 +13,10 @@ import { merge } from "lodash";
 
 import cswFuncs from "./cswFuncs";
 
+type NamespaceMapType = {
+    [prefix: string]: string;
+};
+
 export default class Csw implements ConnectorSource {
     public readonly baseUrl: uri.URI;
     public readonly id: string;
@@ -118,10 +122,45 @@ export default class Csw implements ConnectorSource {
                 this.urlBuilder.GetRecordsParameters.typeNames.split(":")[1]
             );
 
+            if (!records.length) {
+                return [];
+            }
+
+            /**
+             * searchResults.getElementsByTagNameNS() will not retain the namespace inherited from parent node.
+             * e.g.
+             * <a xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gmd="http://www.isotc211.org/2005/gmd">
+             *  <gmd:b>
+             *    <gco:c>xxxx</gco:c>
+             *  </gmd:b>
+             * </a>
+             * Get `gmd:b` will get:
+             *  <gmd:b xmlns:gmd="http://www.isotc211.org/2005/gmd">
+             *    <gco:c>xxxx</gco:c>
+             *  </gmd:b>
+             * the namespace for prefix `gco` was lost (which will lead to invalid XML after serialization).
+             *
+             * To fix that, we manually set namespaced prefix on root elements of `records`.
+             */
+            const nsMap: NamespaceMapType = (pageXml.documentElement as any)
+                ._nsMap;
+            const nsList = Object.keys(nsMap).map(prefix => ({
+                prefix,
+                namespace: nsMap[prefix]
+            }));
+
             const result = [];
 
             for (let i = 0; i < records.length; ++i) {
                 const recordXml = records.item(i);
+
+                nsList.forEach(item => {
+                    recordXml.setAttribute(
+                        item.prefix ? `xmlns:${item.prefix}` : "xmlns",
+                        item.namespace
+                    );
+                });
+
                 result.push(this.xmlRecordToJsonRecord(recordXml));
             }
 

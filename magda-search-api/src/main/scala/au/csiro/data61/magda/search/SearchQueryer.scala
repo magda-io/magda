@@ -8,6 +8,7 @@ import au.csiro.data61.magda.api.model.{
   AutoCompleteQueryResult
 }
 import au.csiro.data61.magda.model.misc._
+import au.csiro.data61.magda.model.TenantId._
 
 import scala.concurrent.Future
 
@@ -19,7 +20,7 @@ trait SearchQueryer {
       start: Long,
       limit: Int,
       facetSize: Int,
-      tenantId: BigInt
+      tenantId: TenantId
   ): Future[SearchResult]
 
   def autoCompleteQuery(
@@ -27,7 +28,7 @@ trait SearchQueryer {
       field: String,
       inputString: Option[String],
       size: Option[Int],
-      tenantId: BigInt
+      tenantId: TenantId
   ): Future[AutoCompleteQueryResult]
 
   def searchFacets(
@@ -37,7 +38,7 @@ trait SearchQueryer {
       generalQuery: Query,
       start: Int,
       limit: Int,
-      tenantId: BigInt
+      tenantId: TenantId
   ): Future[FacetSearchResult]
 
   def searchRegions(
@@ -50,14 +51,14 @@ trait SearchQueryer {
       lv5Id: Option[String],
       start: Long,
       limit: Int,
-      tenantId: BigInt
+      tenantId: TenantId
   ): Future[RegionSearchResult]
 
   def searchOrganisations(
       query: Option[String],
       start: Int,
       limit: Int,
-      tenantId: BigInt
+      tenantId: TenantId
   ): Future[OrganisationsSearchResult]
 }
 

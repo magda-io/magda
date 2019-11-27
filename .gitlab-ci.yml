@@ -31,10 +31,8 @@ builders-and-yarn:
     key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
       - .yarn
-      - "yarn.lock"
   before_script:
-    - yarn config set cache-folder .yarn
-    - yarn install
+    - yarn install --no-progress --child-concurrency 1 --cache-folder .yarn
   services:
     - docker:dind
   script:

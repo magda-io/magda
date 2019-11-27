@@ -841,11 +841,13 @@ export class RecordAspectsApi {
      * @param xMagdaTenantId 0
      * @param recordId ID of the record for which to fetch an aspect.
      * @param aspectId ID of the aspect to fetch.
+     * @param xMagdaSession Magda internal session id
      */
     public getById(
         xMagdaTenantId: number,
         recordId: string,
-        aspectId: string
+        aspectId: string,
+        xMagdaSession?: string
     ): Promise<{ response: http.IncomingMessage; body: any }> {
         const localVarPath =
             this.basePath +
@@ -878,6 +880,8 @@ export class RecordAspectsApi {
         }
 
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+
+        headerParams["X-Magda-Session"] = xMagdaSession;
 
         let useFormData = false;
 
@@ -1537,6 +1541,7 @@ export class RecordsApi {
      * @param limit The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
      * @param dereference true to automatically dereference links to other records; false to leave them as links.  Dereferencing a link means including the record itself where the link would be.  Dereferencing only happens one level deep, regardless of the value of this parameter.
      * @param aspectQuery Filter the records returned by a value within the aspect JSON. Expressed as &#39;aspectId.path.to.field:value&#39;, url encoded. NOTE: This is an early stage API and may change greatly in the future
+     * @param xMagdaSession Magda internal session id
      */
     public getAll(
         xMagdaTenantId: number,
@@ -1546,7 +1551,8 @@ export class RecordsApi {
         start?: number,
         limit?: number,
         dereference?: boolean,
-        aspectQuery?: Array<string>
+        aspectQuery?: Array<string>,
+        xMagdaSession?: string
     ): Promise<{ response: http.IncomingMessage; body: Array<Record> }> {
         const localVarPath = this.basePath + "/records";
         let queryParameters: any = {};
@@ -1589,6 +1595,8 @@ export class RecordsApi {
         }
 
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+
+        headerParams["X-Magda-Session"] = xMagdaSession;
 
         let useFormData = false;
 
@@ -1637,12 +1645,14 @@ export class RecordsApi {
      * @param pageToken A token that identifies the start of a page of results.  This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results.
      * @param start The index of the first record to retrieve.  When possible, specify pageToken instead as it will result in better performance.  If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve.
      * @param limit The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
+     * @param xMagdaSession Magda internal session id
      */
     public getAllSummary(
         xMagdaTenantId: number,
         pageToken?: string,
         start?: number,
-        limit?: number
+        limit?: number,
+        xMagdaSession?: string
     ): Promise<{ response: http.IncomingMessage; body: Array<RecordSummary> }> {
         const localVarPath = this.basePath + "/records/summary";
         let queryParameters: any = {};
@@ -1669,6 +1679,8 @@ export class RecordsApi {
         }
 
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+
+        headerParams["X-Magda-Session"] = xMagdaSession;
 
         let useFormData = false;
 
@@ -1718,13 +1730,15 @@ export class RecordsApi {
      * @param aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response.
      * @param optionalAspect The optional aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  These aspects will be included in a record if available, but a record will be included even if it is missing these aspects.
      * @param dereference true to automatically dereference links to other records; false to leave them as links.  Dereferencing a link means including the record itself where the link would be.  Dereferencing only happens one level deep, regardless of the value of this parameter.
+     * @param xMagdaSession Magda internal session id
      */
     public getById(
         id: string,
         xMagdaTenantId: number,
         aspect?: Array<string>,
         optionalAspect?: Array<string>,
-        dereference?: boolean
+        dereference?: boolean,
+        xMagdaSession?: string
     ): Promise<{ response: http.IncomingMessage; body: Record }> {
         const localVarPath =
             this.basePath +
@@ -1760,6 +1774,8 @@ export class RecordsApi {
         }
 
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+
+        headerParams["X-Magda-Session"] = xMagdaSession;
 
         let useFormData = false;
 
@@ -1805,10 +1821,12 @@ export class RecordsApi {
      * Gets a summary record, including all the aspect ids for which this record has data.
      * @param id ID of the record to be fetched.
      * @param xMagdaTenantId 0
+     * @param xMagdaSession Magda internal session id
      */
     public getByIdSummary(
         id: string,
-        xMagdaTenantId: number
+        xMagdaTenantId: number,
+        xMagdaSession?: string
     ): Promise<{ response: http.IncomingMessage; body: RecordSummary }> {
         const localVarPath =
             this.basePath +
@@ -1832,6 +1850,8 @@ export class RecordsApi {
         }
 
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+
+        headerParams["X-Magda-Session"] = xMagdaSession;
 
         let useFormData = false;
 
@@ -1879,11 +1899,13 @@ export class RecordsApi {
      * @param xMagdaTenantId 0
      * @param aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response.
      * @param aspectQuery Filter the records returned by a value within the aspect JSON. Expressed as &#39;aspectId.path.to.field:value&#39;, url encoded. NOTE: This is an early stage API and may change greatly in the future
+     * @param xMagdaSession Magda internal session id
      */
     public getCount(
         xMagdaTenantId: number,
         aspect?: Array<string>,
-        aspectQuery?: Array<string>
+        aspectQuery?: Array<string>,
+        xMagdaSession?: string
     ): Promise<{ response: http.IncomingMessage; body: CountResponse }> {
         const localVarPath = this.basePath + "/records/count";
         let queryParameters: any = {};
@@ -1906,6 +1928,8 @@ export class RecordsApi {
         }
 
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+
+        headerParams["X-Magda-Session"] = xMagdaSession;
 
         let useFormData = false;
 
@@ -1953,11 +1977,13 @@ export class RecordsApi {
      * @param xMagdaTenantId 0
      * @param aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response.
      * @param limit The size of each page to get tokens for.
+     * @param xMagdaSession Magda internal session id
      */
     public getPageTokens(
         xMagdaTenantId: number,
         aspect?: Array<string>,
-        limit?: number
+        limit?: number,
+        xMagdaSession?: string
     ): Promise<{ response: http.IncomingMessage; body: Array<string> }> {
         const localVarPath = this.basePath + "/records/pagetokens";
         let queryParameters: any = {};
@@ -1980,6 +2006,8 @@ export class RecordsApi {
         }
 
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+
+        headerParams["X-Magda-Session"] = xMagdaSession;
 
         let useFormData = false;
 

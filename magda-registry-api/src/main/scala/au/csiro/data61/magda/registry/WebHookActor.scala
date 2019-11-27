@@ -24,6 +24,7 @@ import scalikejdbc.DB
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
+import au.csiro.data61.magda.model.TenantId.AllTenantsId
 
 object WebHookActor {
   case class Process(
@@ -495,7 +496,7 @@ object WebHookActor {
                   None,
                   (webHook.config.aspects ++ webHook.config.optionalAspects).flatten.toSet,
                   webHook.eventTypes,
-                  MAGDA_SYSTEM_ID
+                  AllTenantsId
                 )
               }
 

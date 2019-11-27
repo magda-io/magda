@@ -1,4 +1,4 @@
-package au.csiro.data61.magda.client
+package au.csiro.data61.magda.indexer.external.registry
 
 import java.io.IOException
 import java.net.URL
@@ -14,13 +14,26 @@ import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 import au.csiro.data61.magda.Authentication
 import au.csiro.data61.magda.model.Registry._
-import au.csiro.data61.magda.model.RegistryConverters
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.util.Collections.mapCatching
 import com.auth0.jwt.JWT
 import com.typesafe.config.Config
 
 import scala.concurrent.{ExecutionContext, Future}
+import java.time.{OffsetDateTime, ZoneOffset}
+
+import akka.event.LoggingAdapter
+import au.csiro.data61.magda.model.Temporal.{ApiDate, PeriodOfTime, Periodicity}
+import au.csiro.data61.magda.model.misc.{Protocols => ModelProtocols, _}
+import au.csiro.data61.magda.util.DateParser
+import enumeratum.values.{IntEnum, IntEnumEntry}
+import io.swagger.annotations.{ApiModel, ApiModelProperty}
+import spray.json.lenses.JsonLenses._
+import spray.json._
+
+import scala.annotation.meta.field
+import scala.util.{Failure, Success, Try}
+import au.csiro.data61.magda.client.HttpFetcher
 
 trait RegistryInterface {
 
@@ -33,6 +46,7 @@ trait RegistryInterface {
       token: String,
       size: Int
   ): Future[(Option[String], List[DataSet])]
+
 }
 
 /**
@@ -52,8 +66,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)(
     implicit val system: ActorSystem,
     implicit val executor: ExecutionContext,
     implicit val materializer: Materializer
-) extends RegistryConverters
-    with RegistryInterface {
+) extends RegistryInterface {
   def this()(
       implicit config: Config,
       system: ActorSystem,
@@ -117,42 +130,13 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)(
               registryResponse =>
                 (
                   registryResponse.nextPageToken,
-                  mapCatching[Record, DataSet](registryResponse.records, {
-                    hit =>
-                      convertRegistryDataSet(hit, Some(logger))
-                  }, { (e, item) =>
-                    logger.error(e, "Could not parse item: {}", item.toString)
-                  })
-                )
-            }
-          case _ =>
-            Unmarshal(response.entity).to[String].flatMap(onError(response))
-        }
-      }
-  }
-
-  def getDataSetsReturnToken(
-      start: Long,
-      number: Int
-  ): scala.concurrent.Future[(Option[String], List[DataSet])] = {
-    fetcher
-      .get(
-        path = s"$baseRecordsPath&dereference=true&start=$start&limit=$number",
-        headers = Seq(systemIdHeader, authHeader)
-      )
-      .flatMap { response =>
-        response.status match {
-          case OK =>
-            Unmarshal(response.entity).to[RegistryRecordsResponse].map {
-              registryResponse =>
-                (
-                  registryResponse.nextPageToken,
-                  mapCatching[Record, DataSet](registryResponse.records, {
-                    hit =>
-                      convertRegistryDataSet(hit, Some(logger))
-                  }, { (e, item) =>
-                    logger.error(e, "Could not parse item: {}", item.toString)
-                  })
+                  mapCatching[Record, DataSet](
+                    registryResponse.records, { hit =>
+                      Conversions.convertRegistryDataSet(hit, Some(logger))
+                    }, { (e, item) =>
+                      logger.error(e, "Could not parse item: {}", item.toString)
+                    }
+                  )
                 )
             }
           case _ =>
@@ -237,6 +221,37 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)(
         response.status match {
           case OK =>
             Unmarshal(response.entity).to[WebHookAcknowledgementResponse]
+          case _ =>
+            Unmarshal(response.entity).to[String].flatMap(onError(response))
+        }
+      }
+  }
+
+  def getDataSetsReturnToken(
+      start: Long,
+      number: Int
+  ): scala.concurrent.Future[(Option[String], List[DataSet])] = {
+    fetcher
+      .get(
+        path = s"$baseRecordsPath&dereference=true&start=$start&limit=$number",
+        headers = Seq(systemIdHeader, authHeader)
+      )
+      .flatMap { response =>
+        response.status match {
+          case OK =>
+            Unmarshal(response.entity).to[RegistryRecordsResponse].map {
+              registryResponse =>
+                (
+                  registryResponse.nextPageToken,
+                  mapCatching[Record, DataSet](
+                    registryResponse.records, { hit =>
+                      Conversions.convertRegistryDataSet(hit, Some(logger))
+                    }, { (e, item) =>
+                      logger.error(e, "Could not parse item: {}", item.toString)
+                    }
+                  )
+                )
+            }
           case _ =>
             Unmarshal(response.entity).to[String].flatMap(onError(response))
         }

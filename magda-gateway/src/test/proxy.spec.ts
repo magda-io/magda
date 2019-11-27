@@ -10,7 +10,9 @@ import buildApp from "../buildApp";
 
 const PROXY_ROOTS = {
     "/api/v0/registry": "http://registry",
-    "/preview-map": "http://preview-map/"
+    "/preview-map": "http://preview-map/",
+    "/map/": "http://map/",
+    "/other/foo/bar/": "http://otherplace/foo/bar"
 };
 
 describe("proxying", () => {
@@ -31,6 +33,10 @@ describe("proxying", () => {
                     to: "http://registry",
                     auth: true
                 }
+            },
+            webProxyRoutesJson: {
+                map: "http://map",
+                other: "http://otherplace"
             },
             helmetJson: "{}",
             cspJson: "{}",
