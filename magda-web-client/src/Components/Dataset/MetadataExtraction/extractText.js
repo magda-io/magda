@@ -62,7 +62,12 @@ async function extractSpreadsheetFile(input, output, bookType = "xlsx") {
     }
 
     // --- pass to keywords extractor for processing
+    skippedCellForKeywords = false;
     input.keywords = productKeywordsFromInput(input);
+    input.skippedCellForKeywords = skippedCellForKeywords;
+    if (skippedCellForKeywords) {
+        skippedCellForKeywords = false;
+    }
 
     input.text = Object.values(input.workbook.Sheets)
         .map(worksheet => {
@@ -75,6 +80,7 @@ async function extractSpreadsheetFile(input, output, bookType = "xlsx") {
 }
 
 const CONTAINS_LETTER = /[a-zA-Z]+/;
+let skippedCellForKeywords = false;
 
 function getKeywordsFromWorksheet(
     sheet,
@@ -127,6 +133,13 @@ function getKeywordsFromWorksheet(
             }
 
             if (!CONTAINS_LETTER.test(value)) {
+                return;
+            }
+
+            if (value.length > 100 || value.split(/\b/).length > 10) {
+                // --- will not capture very long content or more than 10 words
+                // --- leave to NLP
+                skippedCellForKeywords = true;
                 return;
             }
 

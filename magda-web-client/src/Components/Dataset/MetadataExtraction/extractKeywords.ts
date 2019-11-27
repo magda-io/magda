@@ -12,14 +12,26 @@ export const MAX_KEYWORDS = 10;
  * Extract keywords from text based file formats
  */
 export async function extractKeywords(
-    input: { text: string; keywords: string[] },
+    input: {
+        text: string;
+        keywords: string[];
+        skippedCellForKeywords: boolean;
+    },
     output: { keywords: string[] }
 ) {
     if (input.keywords && input.keywords.length) {
-        // --- exit if extractText has product keywords from headers
+        // --- if extractText has product keywords from headers, copy from input
         output.keywords = input.keywords;
+        // --- if no cells are skipped due to large content, no need to NLP
+        if (input.skippedCellForKeywords === false) {
+            return;
+        }
+    }
+
+    if (output.keywords.length >= MAX_KEYWORDS) {
         return;
     }
+
     if (input.text) {
         // Only take up to a certain length - anything longer results in massive delays and the browser
         // prompting with a "Should I stop this script?" warning.
