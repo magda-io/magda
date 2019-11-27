@@ -102,14 +102,6 @@ function aggregateDates(rows: any[]) {
     }
 }
 
-function getGreater(num1: number, num2: number) {
-    return num1 > num2 ? num1 : num2;
-}
-
-function getSmaller(num1: number, num2: number) {
-    return num1 <= num2 ? num1 : num2;
-}
-
 function calculateSpatialExtent(rows: any[], headers: string[]) {
     const latHeaders = tryFilterHeaders(headers, LAT_REGEX);
     const longHeaders = tryFilterHeaders(headers, LONG_REGEX);
@@ -138,7 +130,7 @@ function calculateSpatialExtent(rows: any[], headers: string[]) {
                     getBestCoordinateComponent(
                         MIN_POSSIBLE_LAT,
                         MAX_POSSIBLE_LAT,
-                        getGreater
+                        Math.max
                     ),
                     soFar.maxLat
                 ),
@@ -146,7 +138,7 @@ function calculateSpatialExtent(rows: any[], headers: string[]) {
                     getBestCoordinateComponent(
                         MIN_POSSIBLE_LAT,
                         MAX_POSSIBLE_LAT,
-                        getSmaller
+                        Math.min
                     ),
                     soFar.minLat
                 ),
@@ -154,7 +146,7 @@ function calculateSpatialExtent(rows: any[], headers: string[]) {
                     getBestCoordinateComponent(
                         MIN_POSSIBLE_LNG,
                         MAX_POSSIBLE_LNG,
-                        getGreater
+                        Math.max
                     ),
                     soFar.maxLng
                 ),
@@ -162,7 +154,7 @@ function calculateSpatialExtent(rows: any[], headers: string[]) {
                     getBestCoordinateComponent(
                         MIN_POSSIBLE_LNG,
                         MAX_POSSIBLE_LNG,
-                        getSmaller
+                        Math.min
                     ),
                     soFar.minLng
                 )
