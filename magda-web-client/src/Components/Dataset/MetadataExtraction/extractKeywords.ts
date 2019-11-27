@@ -6,15 +6,20 @@ import { isValidKeyword } from "api-clients/VocabularyApis";
 /** The maximum number of characters to feed into retext (input after this char length will be trimmed off) */
 const MAX_CHARACTERS_FOR_EXTRACTION = 150000;
 /** The maximum number of keywords to return */
-const MAX_KEYWORDS = 10;
+export const MAX_KEYWORDS = 10;
 
 /**
  * Extract keywords from text based file formats
  */
 export async function extractKeywords(
-    input: { text: string },
+    input: { text: string; keywords: string[] },
     output: { keywords: string[] }
 ) {
+    if (input.keywords && input.keywords.length) {
+        // --- exit if extractText has product keywords from headers
+        output.keywords = input.keywords;
+        return;
+    }
     if (input.text) {
         // Only take up to a certain length - anything longer results in massive delays and the browser
         // prompting with a "Should I stop this script?" warning.

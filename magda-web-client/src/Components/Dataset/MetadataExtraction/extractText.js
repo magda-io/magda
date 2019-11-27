@@ -2,6 +2,8 @@ import XLSX from "xlsx";
 import mammoth from "mammoth";
 import pdfjsLib from "pdfjs-dist/build/pdf";
 import PDFWorker from "pdfjs-dist/build/pdf.worker";
+import { MAX_KEYWORDS } from "./extractKeywords";
+import uniq from "lodash/uniq";
 window.pdfjsWorker = PDFWorker;
 
 /**
@@ -59,6 +61,9 @@ async function extractSpreadsheetFile(input, output, bookType = "xlsx") {
         }
     }
 
+    // --- pass to keywords extractor for processing
+    input.keywords = productKeywordsFromInput(input);
+
     input.text = Object.values(input.workbook.Sheets)
         .map(worksheet => {
             return XLSX.utils
@@ -67,6 +72,133 @@ async function extractSpreadsheetFile(input, output, bookType = "xlsx") {
                 .join("\n");
         })
         .join("\n\n");
+}
+
+const CONTAINS_LETTER = /[a-zA-Z]+/;
+
+function getKeywordsFromWorksheet(
+    sheet,
+    limit = 0,
+    skipFirstRow = false,
+    firstRowOnly = false
+) {
+    const keywords = [];
+    const cancelLoopToken = {};
+    try {
+        Object.keys(sheet).forEach(key => {
+            if (typeof key !== "string") {
+                // --- invalid key
+                return;
+            }
+
+            if (key[0] === "!") {
+                // --- skip meta data
+                return;
+            }
+
+            const rowNum = key.replace(/[^\d]/g, "");
+
+            if (skipFirstRow && rowNum === "1") {
+                // --- skip first row i.e. header row
+                return;
+            }
+
+            if (firstRowOnly && rowNum !== "1") {
+                // --- only first row i.e. header row
+                return;
+            }
+
+            if (!sheet[key]) {
+                return;
+            }
+
+            if (
+                (sheet[key].t && sheet[key].t !== "s") ||
+                typeof sheet[key].v !== "string"
+            ) {
+                // --- skip not text field
+                return;
+            }
+
+            const value = sheet[key].v.trim();
+
+            if (value === "") {
+                return;
+            }
+
+            if (!CONTAINS_LETTER.test(value)) {
+                return;
+            }
+
+            if (keywords.indexOf(value) !== -1) {
+                // --- will not create duplicated keywords
+                return;
+            }
+
+            keywords.push(value);
+
+            if (limit > 0 && keywords.length >= limit) {
+                throw cancelLoopToken;
+            }
+        });
+    } catch (e) {
+        // --- allow escape from loop earlier
+        if (e !== cancelLoopToken) {
+            throw e;
+        }
+    }
+
+    return keywords;
+}
+
+function productKeywordsFromInput(input) {
+    let keywords = [];
+
+    // --- we read the sheet data directly instead of `sheet_to_json` as:
+    // --- `sheet_to_json` return [] if there is only one row
+    // --- the type data & row num is lost during conversion
+    const allSheetsData = Object.values(
+        XLSX.read(input.array, {
+            type: "array"
+        }).Sheets
+    );
+
+    for (let i = 0; i < allSheetsData.length; i++) {
+        keywords = keywords.concat(
+            getKeywordsFromWorksheet(
+                allSheetsData[i],
+                MAX_KEYWORDS,
+                false,
+                true
+            )
+        );
+        keywords = uniq(keywords);
+        if (keywords.length >= MAX_KEYWORDS) {
+            return keywords.slice(0, MAX_KEYWORDS);
+        }
+    }
+
+    if (keywords.length >= MAX_KEYWORDS) {
+        return keywords.slice(0, MAX_KEYWORDS);
+    }
+
+    // --- start to process all cell as not enough keywords produced
+    for (let i = 0; i < allSheetsData.length; i++) {
+        keywords = keywords.concat(
+            getKeywordsFromWorksheet(
+                allSheetsData[i],
+                MAX_KEYWORDS,
+                true,
+                false
+            )
+        );
+        keywords = uniq(keywords);
+        if (keywords.length >= MAX_KEYWORDS) {
+            return keywords.slice(0, MAX_KEYWORDS);
+        }
+    }
+
+    return keywords.slice(0, MAX_KEYWORDS);
 }
 
 /**
