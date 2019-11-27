@@ -143,7 +143,7 @@ UI:
 -   Reworded the user access options
 -   Removed help icons without content
 -   Mention that choosing state is optional
--   Render map in the region select panel only when a country is selected
+-   Make spatial input default to Australia
 
 Gateway:
 
