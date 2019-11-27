@@ -28,7 +28,7 @@ export async function extractKeywords(
         }
     }
 
-    if (output.keywords.length >= MAX_KEYWORDS) {
+    if (output.keywords && output.keywords.length >= MAX_KEYWORDS) {
         return;
     }
 
