@@ -17,6 +17,7 @@ Registry:
 -   Moved provenance and information security information out of `dcat-dataset-strings`.
 -   Removed some unused fields from `dcat-dataset-strings` - it should now be back to looking more-or-less like DCAT.
 -   Added the feature of validating aspect data against JSON Schema (Default to off)
+-   Fixed request for all tenant records returning `[]`.
 
 Gateway:
 
@@ -135,6 +136,7 @@ UI:
 -   Fixed warning for placeholder text being a boolean value
 -   Added unique key to the topmost `div` of `codelistEditor`
 -   Rename `license` to `licence` where appropriate
+-   Added unique keys to the props in `Stories.js`
 -   Added Mandatory Field Validation to the Add Dataset Flow
 -   Reworded `team` to `business area`
 -   Added tooltips to the `Production` section of the `People and Production` page
@@ -172,6 +174,8 @@ Others:
 -   Disabled tenant-api & tenant-db when `enableMultiTenants` = false
 -   Excluded organisations that are owners of thesauruses (keyword taxonomies) from being considered as owners of datasets via CSW connector
 -   Fix data.json connector dcat-dataset-strings aspect so keywords are stored correctly
+-   Fix CSW connector may process XML response incorrectly and report `no id` error
+-   Fix: CSW connector should look for alternative location for title, keywords & spatial extend for aurin data source
 -   Upgrade Scala dependencies versions & added scalafmt support
 -   Fixed doc to reflect [lerna deprecating an option](https://github.com/lerna/lerna/commit/f2c3a92fe41b6fdc5d11269f0f2c3e27761b4c85)
 -   Fix potential memory leak by deregistering listener when Header is unmounted

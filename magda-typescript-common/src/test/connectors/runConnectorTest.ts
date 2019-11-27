@@ -1,5 +1,6 @@
 const spawn = require("cross-spawn");
 const assert = require("assert");
+const path = require("path");
 import { MockRegistry } from "./MockRegistry";
 import { MockExpressServer } from "./MockExpressServer";
 
@@ -30,9 +31,16 @@ export function runConnectorTest(
                     "--userId=user",
                     "--tenantId=1"
                 ];
-                const proc = spawn("ts-node", command, {
-                    stdio: "inherit"
-                });
+                const proc = spawn(
+                    path.resolve(
+                        __dirname,
+                        "../../../../node_modules/.bin/ts-node"
+                    ),
+                    command,
+                    {
+                        stdio: "inherit"
+                    }
+                );
                 proc.on("error", (err: any) => {
                     console.log("Failed to start subprocess.", err);
                     reject(err);

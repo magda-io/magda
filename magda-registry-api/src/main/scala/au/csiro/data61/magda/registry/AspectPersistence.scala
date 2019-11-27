@@ -11,14 +11,15 @@ import spray.json._
 import gnieh.diffson.sprayJson._
 
 import au.csiro.data61.magda.model.Registry._
+import au.csiro.data61.magda.model.TenantId._
 
 object AspectPersistence extends Protocols with DiffsonProtocol {
 
   def getAll(
       implicit session: DBSession,
-      tenantId: BigInt
+      tenantId: TenantId
   ): List[AspectDefinition] = {
-    sql"select aspectId, name, jsonSchema, tenantId from Aspects where tenantId = $tenantId"
+    sql"select aspectId, name, jsonSchema, tenantId from Aspects where ${SQLUtil.tenantIdToWhereClause(tenantId)}"
       .map(rowToAspect)
       .list
       .apply()
@@ -27,25 +28,22 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
   def getById(
       implicit session: DBSession,
       id: String,
-      tenantId: BigInt
+      tenantId: TenantId
   ): Option[AspectDefinition] = {
-    sql"""select aspectId, name, jsonSchema, tenantId from Aspects where aspectId=$id and tenantId=$tenantId"""
-      .map(rowToAspect)
-      .single
-      .apply()
+    sql"""select aspectId, name, jsonSchema, tenantId from Aspects where aspectId=$id and ${SQLUtil
+      .tenantIdToWhereClause(tenantId)}""".map(rowToAspect).single.apply()
   }
 
   def getByIds(
       implicit session: DBSession,
       ids: Iterable[String],
-      tenantId: BigInt
+      tenantId: TenantId
   ): List[AspectDefinition] = {
     if (ids.isEmpty)
       List()
     else {
-      sql"""select aspectId, name, jsonSchema, tenantId from Aspects where ${if (tenantId == MAGDA_SYSTEM_ID)
-        SQLSyntax.empty
-      else sqls"tenantId = $tenantId and"} aspectId in ($ids)"""
+      sql"""select aspectId, name, jsonSchema, tenantId from Aspects where ${SQLUtil
+        .tenantIdToWhereClause(tenantId)} and aspectId in ($ids)"""
         .map(rowToAspect)
         .list
         .apply()
@@ -56,7 +54,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
       implicit session: DBSession,
       id: String,
       newAspect: AspectDefinition,
-      tenantId: BigInt
+      tenantId: SpecifiedTenantId
   ): Try[AspectDefinition] = {
     for {
       _ <- if (id == newAspect.id) Success(newAspect)
@@ -85,7 +83,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
       implicit session: DBSession,
       id: String,
       aspectPatch: JsonPatch,
-      tenantId: BigInt
+      tenantId: SpecifiedTenantId
   ): Try[AspectDefinition] = {
     for {
       aspect <- this.getById(session, id, tenantId) match {
@@ -116,9 +114,12 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
 
       eventId <- Try {
         if (testAspectPatch.ops.length > 0) {
-          val event =
-            PatchAspectDefinitionEvent(id, aspectPatch, tenantId).toJson.compactPrint
-          sql"insert into Events (eventTypeId, userId, tenantId, data) values (${PatchAspectDefinitionEvent.Id}, 0, $tenantId, $event::json)"
+          val event = PatchAspectDefinitionEvent(
+            id,
+            aspectPatch,
+            tenantId.tenantId
+          ).toJson.compactPrint
+          sql"insert into Events (eventTypeId, userId, tenantId, data) values (${PatchAspectDefinitionEvent.Id}, 0, ${tenantId.tenantId}, $event::json)"
             .updateAndReturnGeneratedKey()
             .apply()
         } else {
@@ -132,7 +133,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
             case Some(jsonSchema) => jsonSchema.compactPrint
             case None             => null
           }
-          sql"""insert into Aspects (aspectId, tenantId, name, lastUpdate, jsonSchema) values (${patchedAspect.id}, $tenantId, ${patchedAspect.name}, $eventId, $jsonString::json)
+          sql"""insert into Aspects (aspectId, tenantId, name, lastUpdate, jsonSchema) values (${patchedAspect.id}, ${tenantId.tenantId}, ${patchedAspect.name}, $eventId, $jsonString::json)
                on conflict (aspectId, tenantId) do update
                set name = ${patchedAspect.name}, lastUpdate = $eventId, jsonSchema = $jsonString::json
                """.update.apply()
@@ -146,17 +147,17 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
   def create(
       implicit session: DBSession,
       aspect: AspectDefinition,
-      tenantId: BigInt
+      tenantId: SpecifiedTenantId
   ): Try[AspectDefinition] = {
     // Create a 'Create Aspect' event
     val eventJson = CreateAspectDefinitionEvent(
       aspect.id,
       aspect.name,
       aspect.jsonSchema,
-      tenantId
+      tenantId.tenantId
     ).toJson.compactPrint
     val eventId =
-      sql"insert into Events (eventTypeId, userId, tenantId, data) values (${CreateAspectDefinitionEvent.Id}, 0, $tenantId, $eventJson::json)"
+      sql"insert into Events (eventTypeId, userId, tenantId, data) values (${CreateAspectDefinitionEvent.Id}, 0, ${tenantId.tenantId}, $eventJson::json)"
         .updateAndReturnGeneratedKey()
         .apply()
 
@@ -166,7 +167,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
         case Some(jsonSchema) => jsonSchema.compactPrint
         case None             => null
       }
-      sql"insert into Aspects (aspectId, tenantId, name, lastUpdate, jsonSchema) values (${aspect.id}, $tenantId, ${aspect.name}, $eventId, $jsonString::json)".update
+      sql"insert into Aspects (aspectId, tenantId, name, lastUpdate, jsonSchema) values (${aspect.id}, ${tenantId.tenantId}, ${aspect.name}, $eventId, $jsonString::json)".update
         .apply()
       Success(aspect)
     } catch {

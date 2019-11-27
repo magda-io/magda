@@ -39,7 +39,8 @@ class WebhookIncludedRecordNotDeletedSpec extends WebhookSpecBase {
                 eventTime = None,
                 eventType = EventType.DeleteRecord,
                 userId = 0,
-                data = JsObject("recordId" -> JsString(dataSet.identifier))
+                data = JsObject("recordId" -> JsString(dataSet.identifier)),
+                tenantId = 1
               )
           )
 

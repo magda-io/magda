@@ -36,6 +36,13 @@ const TEST_CASES = [
     {
         input: fs.readFileSync(path.join(__dirname, "env.xml")),
         output: JSON.parse(fs.readFileSync(path.join(__dirname, "env.json")))
+    },
+    /**
+     * Test for CSW data source: aurin
+     */
+    {
+        input: fs.readFileSync(path.join(__dirname, "aurin-response.xml")),
+        output: JSON.parse(fs.readFileSync(path.join(__dirname, "aurin.json")))
     }
 ];
 
