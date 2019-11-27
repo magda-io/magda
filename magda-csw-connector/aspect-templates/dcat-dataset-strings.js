@@ -12,7 +12,13 @@ const serviceIdentification = jsonpath.query(
     dataset.json,
     "$.identificationInfo[*].SV_ServiceIdentification[*]"
 );
-const identification = dataIdentification.concat(serviceIdentification);
+const abstractIdentification = jsonpath.query(
+    dataset.json,
+    "$.identificationInfo[*].AbstractMD_Identification[*]"
+);
+const identification = dataIdentification
+    .concat(serviceIdentification)
+    .concat(abstractIdentification);
 const citation = jsonpath.query(
     identification,
     "$[*].citation[*].CI_Citation[*]"
@@ -28,6 +34,14 @@ let issuedDate = jsonpath.value(
 if (!issuedDate) {
     issuedDate =
         jsonpath.value(dataset.json, "$.dateStamp[*].Date[*]._") || undefined;
+    // --- we actually have schema validation in black-box test
+    // --- replace possible `unknown` value with undefined to get test cases passed
+    if (
+        typeof issuedDate === "string" &&
+        issuedDate.toLowerCase() === "unknown"
+    ) {
+        issuedDate = undefined;
+    }
 }
 
 const modifiedDate =
@@ -99,10 +113,10 @@ const fileIdentifier = jsonpath.value(
 );
 return {
     title: jsonpath.value(citation, "$[*].title[*].CharacterString[*]._"),
-    description: jsonpath.value(
+    description: jsonpath.query(
         identification,
         "$[*].abstract[*].CharacterString[*]._"
-    ),
+    )[0],
     issued: issuedDate,
     modified: modifiedDate,
     languages: jsonpath
@@ -196,22 +210,37 @@ function temporalExtentElementToProperty(extentElements) {
 }
 
 function spatialExtentElementToProperty(extentElements) {
-    const west = jsonpath.value(
+    let west = jsonpath.value(
         extentElements,
         "$[*].westBoundLongitude[*].Decimal[*]._"
     );
-    const south = jsonpath.value(
+    if (!west) {
+        west = jsonpath.value(extentElements, "$[*].westBoundLongitude[*]._");
+    }
+
+    let south = jsonpath.value(
         extentElements,
         "$[*].southBoundLatitude[*].Decimal[*]._"
     );
-    const east = jsonpath.value(
+    if (!south) {
+        south = jsonpath.value(extentElements, "$[*].southBoundLatitude[*]._");
+    }
+
+    let east = jsonpath.value(
         extentElements,
         "$[*].eastBoundLongitude[*].Decimal[*]._"
     );
-    const north = jsonpath.value(
+    if (!east) {
+        east = jsonpath.value(extentElements, "$[*].eastBoundLongitude[*]._");
+    }
+
+    let north = jsonpath.value(
         extentElements,
         "$[*].northBoundLatitude[*].Decimal[*]._"
     );
+    if (!north) {
+        north = jsonpath.value(extentElements, "$[*].northBoundLatitude[*]._");
+    }
 
     if (
         west !== undefined &&
