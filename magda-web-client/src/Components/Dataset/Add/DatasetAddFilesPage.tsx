@@ -85,11 +85,10 @@ class DatasetAddFilesPage extends React.Component<
         for (let i = 0; i < fileList.length; i++) {
             const thisFile = fileList.item(i);
 
-            if (this.isDirItem(i, event)) {
+            if (!thisFile || this.isDirItem(i, event)) {
                 // --- skip the directory item
                 continue;
             }
-            if (!thisFile) continue;
 
             const newFile = {
                 datasetTitle: toTitleCase(
