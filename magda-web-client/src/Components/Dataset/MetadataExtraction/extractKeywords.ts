@@ -19,25 +19,16 @@ export async function extractKeywords(
     },
     output: { keywords: string[] }
 ) {
-    if (input.keywords && input.keywords.length) {
-        // --- if extractText has product keywords from headers, copy from input
-        output.keywords = input.keywords;
-        // --- if no cells are skipped due to large content, no need to NLP
-        if (input.skippedCellForKeywords === false) {
-            return;
-        }
-    }
+    let keywords = [] as string[];
 
-    if (output.keywords && output.keywords.length >= MAX_KEYWORDS) {
-        return;
-    }
+    console.log(input.skippedCellForKeywords);
 
-    if (input.text) {
+    if (input.text && input.skippedCellForKeywords !== false) {
         // Only take up to a certain length - anything longer results in massive delays and the browser
         // prompting with a "Should I stop this script?" warning.
         const trimmedText = input.text.slice(0, MAX_CHARACTERS_FOR_EXTRACTION);
 
-        const candidateKeywords = (output.keywords || []).concat(
+        const candidateKeywords = keywords.concat(
             await getKeywordsFromText(trimmedText)
         );
 
@@ -50,7 +41,7 @@ export async function extractKeywords(
         }
 
         // Put the validated keywords first, if there's room fill it with the best candidate keywords.
-        output.keywords = [
+        keywords = [
             ...validatedKeywords,
             ...candidateKeywords.slice(
                 0,
@@ -58,6 +49,24 @@ export async function extractKeywords(
             )
         ].map(keyword => keyword.toLowerCase());
     }
+
+    console.log(keywords);
+
+    // --- Ignore headers keywords if already generate enough from NLP
+    // --- or header keywords not exists
+    if (
+        keywords.length >= MAX_KEYWORDS ||
+        (!input.keywords || !input.keywords.length)
+    ) {
+        output.keywords = keywords;
+        return;
+    }
+
+    // --- fill keywords with header / cell keywords
+    output.keywords = [
+        ...keywords,
+        ...input.keywords.slice(0, MAX_KEYWORDS - keywords.length)
+    ];
 }
 
 function getKeywordsFromText(

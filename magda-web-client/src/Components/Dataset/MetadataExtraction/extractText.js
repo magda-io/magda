@@ -126,7 +126,7 @@ function getKeywordsFromWorksheet(
                 return;
             }
 
-            const value = sheet[key].v.trim();
+            let value = sheet[key].v.trim();
 
             if (value === "") {
                 return;
@@ -142,6 +142,8 @@ function getKeywordsFromWorksheet(
                 skippedCellForKeywords = true;
                 return;
             }
+
+            value = value.toLowerCase().replace(/[,._;?@!^]/g, " ");
 
             if (keywords.indexOf(value) !== -1) {
                 // --- will not create duplicated keywords
