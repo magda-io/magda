@@ -1,9 +1,9 @@
-import AsyncPage from "@magda/typescript-common/dist/AsyncPage";
-import formatServiceError from "@magda/typescript-common/dist/formatServiceError";
-import { ConnectorSource } from "@magda/typescript-common/dist/JsonConnector";
-import retry from "@magda/typescript-common/dist/retry";
-import request from "@magda/typescript-common/dist/request";
-import TurndownService = require("turndown");
+import AsyncPage from "magda-typescript-common/src/AsyncPage";
+import formatServiceError from "magda-typescript-common/src/formatServiceError";
+import { ConnectorSource } from "magda-typescript-common/src/JsonConnector";
+import retry from "magda-typescript-common/src/retry";
+import request from "magda-typescript-common/src/request";
+import TurndownService from "turndown";
 
 export default class ProjectOpenData implements ConnectorSource {
     public readonly id: string;
