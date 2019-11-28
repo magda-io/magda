@@ -1,11 +1,11 @@
-import AspectBuilder from "@magda/typescript-common/dist/AspectBuilder";
-import cleanOrgTitle from "@magda/typescript-common/dist/util/cleanOrgTitle";
+import AspectBuilder from "magda-typescript-common/src/AspectBuilder";
+import cleanOrgTitle from "magda-typescript-common/src/util/cleanOrgTitle";
 import CswTransformer from "./CswTransformer";
 import CswUrlBuilder from "./CswUrlBuilder";
-import * as moment from "moment";
-import * as URI from "urijs";
-import * as lodash from "lodash";
-import * as jsonpath from "jsonpath";
+import moment from "moment";
+import URI from "urijs";
+import lodash from "lodash";
+import jsonpath from "jsonpath";
 import cswFuncs from "./cswFuncs";
 
 export interface CreateTransformerOptions {
