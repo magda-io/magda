@@ -62,25 +62,25 @@ async function extractSpreadsheetFile(input, output, bookType = "xlsx") {
     }
 
     // --- pass to keywords extractor for processing
-    skippedCellForKeywords = false;
+    largeTextBlockIdentified = false;
     input.keywords = productKeywordsFromInput(input);
-    input.skippedCellForKeywords = skippedCellForKeywords;
-    if (skippedCellForKeywords) {
-        skippedCellForKeywords = false;
+    input.largeTextBlockIdentified = largeTextBlockIdentified;
+    if (largeTextBlockIdentified) {
+        largeTextBlockIdentified = false;
+        // --- only generate text for NLP if large text block is detected
+        input.text = Object.values(input.workbook.Sheets)
+            .map(worksheet => {
+                return XLSX.utils
+                    .sheet_to_json(worksheet)
+                    .map(row => Object.values(row).join(","))
+                    .join("\n");
+            })
+            .join("\n\n");
     }
-
-    input.text = Object.values(input.workbook.Sheets)
-        .map(worksheet => {
-            return XLSX.utils
-                .sheet_to_json(worksheet)
-                .map(row => Object.values(row).join(","))
-                .join("\n");
-        })
-        .join("\n\n");
 }
 
 const CONTAINS_LETTER = /[a-zA-Z]+/;
-let skippedCellForKeywords = false;
+let largeTextBlockIdentified = false;
 
 function getKeywordsFromWorksheet(
     sheet,
@@ -136,10 +136,10 @@ function getKeywordsFromWorksheet(
                 return;
             }
 
-            if (value.length > 100 || value.split(/\b/).length > 10) {
+            if (value.length > 100 || value.split(/\s/).length > 10) {
                 // --- will not capture very long content or more than 10 words
                 // --- leave to NLP
-                skippedCellForKeywords = true;
+                largeTextBlockIdentified = true;
                 return;
             }
 
@@ -150,11 +150,19 @@ function getKeywordsFromWorksheet(
                 return;
             }
 
-            keywords.push(value);
-
             if (limit > 0 && keywords.length >= limit) {
-                throw cancelLoopToken;
+                // --- skip generating more keywords
+                // --- but we still want the loop keep going for large content block detection if not yet detected
+                if (largeTextBlockIdentified) {
+                    // --- large block detected. Quit loop
+                    throw cancelLoopToken;
+                } else {
+                    // --- not yet detected. Keep digging more data
+                    return;
+                }
             }
+
+            keywords.push(value);
         });
     } catch (e) {
         // --- allow escape from loop earlier
@@ -188,13 +196,18 @@ function productKeywordsFromInput(input) {
             )
         );
         keywords = uniq(keywords);
-        if (keywords.length >= MAX_KEYWORDS) {
+        if (keywords.length >= MAX_KEYWORDS && largeTextBlockIdentified) {
             return keywords.slice(0, MAX_KEYWORDS);
         }
     }
 
     if (keywords.length >= MAX_KEYWORDS) {
-        return keywords.slice(0, MAX_KEYWORDS);
+        keywords = keywords.slice(0, MAX_KEYWORDS);
+    }
+
+    // --- we still need to proceed to generate cell keywords if largeTextBlockIdentified not yet detected
+    if (largeTextBlockIdentified) {
+        return keywords;
     }
 
     // --- start to process all cell as not enough keywords produced
@@ -208,8 +221,8 @@ function productKeywordsFromInput(input) {
             )
         );
         keywords = uniq(keywords);
-        if (keywords.length >= MAX_KEYWORDS) {
-            return keywords.slice(0, MAX_KEYWORDS);
+        if (keywords.length >= MAX_KEYWORDS && largeTextBlockIdentified) {
+            break;
         }
     }
 

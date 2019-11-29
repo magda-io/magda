@@ -15,15 +15,15 @@ export async function extractKeywords(
     input: {
         text: string;
         keywords: string[];
-        skippedCellForKeywords: boolean;
+        largeTextBlockIdentified: boolean;
     },
     output: { keywords: string[] }
 ) {
     let keywords = [] as string[];
 
-    console.log(input.skippedCellForKeywords);
-
-    if (input.text && input.skippedCellForKeywords !== false) {
+    // --- please note: `largeTextBlockIdentified` can be undefined
+    // --- only spreadsheet like source will set this field
+    if (input.text && input.largeTextBlockIdentified !== false) {
         // Only take up to a certain length - anything longer results in massive delays and the browser
         // prompting with a "Should I stop this script?" warning.
         const trimmedText = input.text.slice(0, MAX_CHARACTERS_FOR_EXTRACTION);
@@ -49,8 +49,6 @@ export async function extractKeywords(
             )
         ].map(keyword => keyword.toLowerCase());
     }
-
-    console.log(keywords);
 
     // --- Ignore headers keywords if already generate enough from NLP
     // --- or header keywords not exists
