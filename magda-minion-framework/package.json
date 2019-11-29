@@ -3,9 +3,10 @@
   "description": "MAGDA Minion Framework",
   "version": "0.0.56-0",
   "scripts": {
+    "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
-    "compile": "tsc -p tsconfig-build.json",
-    "watch": "tsc -p tsconfig-build.json --watch",
+    "compile": "tsc -b",
+    "watch": "tsc -b --watch",
     "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
   },
   "author": "",
