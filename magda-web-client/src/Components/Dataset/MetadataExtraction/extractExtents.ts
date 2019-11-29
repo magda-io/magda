@@ -26,7 +26,7 @@ export function extractExtents(input, output) {
             }
 
             output.temporalCoverage = {
-                intervals: aggregateDates(rows, headers)
+                intervals: [aggregateDates(rows, headers)].filter(i => i)
             };
             output.spatialCoverage = calculateSpatialExtent(rows, headers);
         }
