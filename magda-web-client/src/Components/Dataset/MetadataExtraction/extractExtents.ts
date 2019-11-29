@@ -38,10 +38,10 @@ const DATE_REGEX = new RegExp(DATE_REGEX_PART, "i");
 const START_DATE_REGEX = new RegExp(".*(start|st)" + DATE_REGEX_PART, "i");
 const END_DATE_REGEX = new RegExp(".*(end)" + DATE_REGEX_PART, "i");
 
-const DATE_FORMAT = 'YYYY-MM-DD';
+const DATE_FORMAT = "YYYY-MM-DD";
 
-const maxDate: Moment = moment.tz(new Date(8640000000000000), 'UTC');
-const minDate: Moment = moment.tz(new Date(-8640000000000000), 'UTC');
+const maxDate: Moment = moment.tz(new Date(8640000000000000), "UTC");
+const minDate: Moment = moment.tz(new Date(-8640000000000000), "UTC");
 
 const buildSpatialRegex = (part: string) =>
     new RegExp(`.*(${part})($|[^a-z^A-Z])+.*`, "i");
@@ -107,31 +107,32 @@ function aggregateDates(rows: any[], headers: string[]) {
     let earliestDate = maxDate;
     let latestDate = minDate;
 
-    startDateHeadersInOrder.forEach((header) => {
-        rows.forEach((row) => {
+    startDateHeadersInOrder.forEach(header => {
+        rows.forEach(row => {
             var dateStr: string = row[header].toString();
-            var parsedDate: Moment = moment.tz(dateStr, 'utc');
-            if(parsedDate) {
-                if(parsedDate.isBefore(earliestDate)) {
+            var parsedDate: Moment = moment.tz(dateStr, "utc");
+            if (parsedDate) {
+                if (parsedDate.isBefore(earliestDate)) {
                     // Updating the current earliest date
                     earliestDate = parsedDate;
                 }
             }
-        })
-    })
+        });
+    });
 
-    endDateHeadersInOrder.forEach((header) => {
-        rows.forEach((row) => {
+    endDateHeadersInOrder.forEach(header => {
+        rows.forEach(row => {
             var dateStr: string = row[header].toString();
-            var parsedDate: Moment = moment.tz(dateStr, 'utc');
-            if(parsedDate) {
-                if(parsedDate.isAfter(latestDate)) {
+            var parsedDate: Moment = moment.tz(dateStr, "utc");
+            if (parsedDate) {
+                let extendedTime = extendIncompleteTime(parsedDate);
+                if (extendedTime.isAfter(latestDate)) {
                     // Updating the current latest date
-                    latestDate = parsedDate;
+                    latestDate = extendedTime;
                 }
             }
-        })
-    })
+        });
+    });
 
     const foundEarliest = !minDate.isSame(earliestDate);
     const foundLatest = !maxDate.isSame(latestDate);
@@ -139,13 +140,33 @@ function aggregateDates(rows: any[], headers: string[]) {
     if (foundEarliest || foundLatest) {
         return {
             start:
-                (foundEarliest && earliestDate.format(DATE_FORMAT)) || undefined,
-            end:
-                (foundLatest && latestDate.format(DATE_FORMAT)) || undefined
+                (foundEarliest && earliestDate.format(DATE_FORMAT)) ||
+                undefined,
+            end: (foundLatest && latestDate.format(DATE_FORMAT)) || undefined
         };
     } else {
         return undefined;
     }
+}
+
+/**
+ *
+ * @param m Extends an incomplete date to it's latest extent. For example, 2014 is 2014-12-31, 2014-05 is 2014-05-31
+ */
+function extendIncompleteTime(m: Moment): Moment {
+    const originalMoment = m.clone();
+    // YYYY, unless the original date was the very start of the year
+    if (originalMoment.isSame(m.startOf("year"))) {
+        return originalMoment.endOf("year");
+    }
+
+    // YYYY, unless the original date was the very start of the month
+    if (originalMoment.isSame(m.startOf("month"))) {
+        return originalMoment.endOf("month");
+    }
+
+    // If it was more precise than YYYY or YYYY-MM
+    return originalMoment;
 }
 
 function calculateSpatialExtent(rows: any[], headers: string[]) {
