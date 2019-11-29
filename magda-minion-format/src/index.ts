@@ -1,7 +1,7 @@
-import minion from "@magda/minion-framework/dist/index";
+import minion from "magda-minion-framework/src/index";
 import onRecordFound from "./onRecordFound";
 import formatAspectDef from "./formatAspectDef";
-import commonYargs from "@magda/minion-framework/dist/commonYargs";
+import commonYargs from "magda-minion-framework/src/commonYargs";
 
 const ID = "minion-format";
 
