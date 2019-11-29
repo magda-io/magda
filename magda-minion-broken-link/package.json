@@ -5,7 +5,7 @@
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
-    "compile": "tsc -b",
+    "compile": "tsc -b && babel dist -d dist",
     "watch": "tsc -b --watch",
     "start": "node dist/index.js",
     "dev": "run-typescript-in-nodemon src/index.ts",

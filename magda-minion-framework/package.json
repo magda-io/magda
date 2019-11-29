@@ -5,7 +5,7 @@
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
-    "compile": "tsc -b",
+    "compile": "tsc -b && babel dist -d dist",
     "watch": "tsc -b --watch",
     "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
   },
