@@ -1,5 +1,5 @@
-import * as Client from "ftp";
-import * as LRU from "lru-cache";
+import Client from "ftp";
+import LRU from "lru-cache";
 
 export default class FTPHandler {
     clientFactory: () => Client;
