@@ -134,8 +134,8 @@ function aggregateDates(rows: any[], headers: string[]) {
         });
     });
 
-    const foundEarliest = !minDate.isSame(earliestDate);
-    const foundLatest = !maxDate.isSame(latestDate);
+    const foundEarliest = !maxDate.isSame(earliestDate);
+    const foundLatest = !minDate.isSame(latestDate);
 
     if (foundEarliest || foundLatest) {
         return {
