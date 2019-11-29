@@ -1,5 +1,7 @@
 const moment = require("moment-timezone");
 import XLSX from "xlsx";
+import { uniq } from "lodash";
+import { Moment } from "moment-timezone";
 
 /**
  * Extract spatial and temporal extent of spreadsheet files
@@ -24,12 +26,22 @@ export function extractExtents(input, output) {
             }
 
             output.temporalCoverage = {
-                intervals: aggregateDates(rows)
+                intervals: aggregateDates(rows, headers)
             };
             output.spatialCoverage = calculateSpatialExtent(rows, headers);
         }
     }
 }
+
+const DATE_REGEX_PART = ".*(date|dt|year|decade).*";
+const DATE_REGEX = new RegExp(DATE_REGEX_PART, "i");
+const START_DATE_REGEX = new RegExp(".*(start|st)" + DATE_REGEX_PART, "i");
+const END_DATE_REGEX = new RegExp(".*(end)" + DATE_REGEX_PART, "i");
+
+const DATE_FORMAT = 'YYYY-MM-DD';
+
+const maxDate: Moment = moment.tz(new Date(8640000000000000), 'UTC');
+const minDate: Moment = moment.tz(new Date(-8640000000000000), 'UTC');
 
 const buildSpatialRegex = (part: string) =>
     new RegExp(`.*(${part})($|[^a-z^A-Z])+.*`, "i");
@@ -79,23 +91,57 @@ type SpatialExtent = {
     maxLng: number;
 };
 
-function aggregateDates(rows: any[]) {
-    let moments = rows.map(d => moment.tz(d, "UTC"));
-    const earliestStart = moment.min(moments).toDate();
-    const latestEnd = moment.max(moments).toDate();
+function aggregateDates(rows: any[], headers: string[]) {
+    const dateHeaders = tryFilterHeaders(headers, DATE_REGEX);
+    const startDateHeaders = uniq(tryFilterHeaders(headers, START_DATE_REGEX));
+    const endDateHeaders = uniq(tryFilterHeaders(headers, END_DATE_REGEX));
 
-    const earliestNotFound = earliestStart.toString() === "Invalid Date";
-    const latestNotFound = latestEnd.toString() === "Invalid Date";
+    const startDateHeadersInOrder = uniq(
+        startDateHeaders.concat(dateHeaders).concat(endDateHeaders)
+    );
 
-    if (!earliestNotFound || !latestNotFound) {
+    const endDateHeadersInOrder = uniq(
+        endDateHeaders.concat(dateHeaders).concat(startDateHeaders)
+    );
+
+    let earliestDate = maxDate;
+    let latestDate = minDate;
+
+    startDateHeadersInOrder.forEach((header) => {
+        rows.forEach((row) => {
+            var dateStr: string = row[header].toString();
+            var parsedDate: Moment = moment.tz(dateStr, 'utc');
+            if(parsedDate) {
+                if(parsedDate.isBefore(earliestDate)) {
+                    // Updating the current earliest date
+                    earliestDate = parsedDate;
+                }
+            }
+        })
+    })
+
+    endDateHeadersInOrder.forEach((header) => {
+        rows.forEach((row) => {
+            var dateStr: string = row[header].toString();
+            var parsedDate: Moment = moment.tz(dateStr, 'utc');
+            if(parsedDate) {
+                if(parsedDate.isAfter(latestDate)) {
+                    // Updating the current latest date
+                    latestDate = parsedDate;
+                }
+            }
+        })
+    })
+
+    const foundEarliest = !minDate.isSame(earliestDate);
+    const foundLatest = !maxDate.isSame(latestDate);
+
+    if (foundEarliest || foundLatest) {
         return {
             start:
-                (!earliestNotFound &&
-                    earliestStart.toISOString().substr(0, 10)) ||
-                undefined,
+                (foundEarliest && earliestDate.format(DATE_FORMAT)) || undefined,
             end:
-                (!latestNotFound && latestEnd.toISOString().substr(0, 10)) ||
-                undefined
+                (foundLatest && latestDate.format(DATE_FORMAT)) || undefined
         };
     } else {
         return undefined;
