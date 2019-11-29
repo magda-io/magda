@@ -1,10 +1,10 @@
-import * as _ from "lodash";
+import _ from "lodash";
 
-import { Record } from "@magda/typescript-common/dist/generated/registry/api";
-import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
-import AuthorizedRegistryClient from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
+import { Record } from "magda-typescript-common/src/generated/registry/api";
+import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable";
+import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 import linkedDataAspectDef from "./linkedDataAspectDef";
-import datasetQualityAspectDef from "@magda/minion-framework/dist/common-aspect-defs/datasetQualityAspectDef";
+import datasetQualityAspectDef from "magda-minion-framework/src/common-aspect-defs/datasetQualityAspectDef";
 import openLicenses from "./openLicenses";
 import formatStars from "./openFormats";
 
