@@ -87,7 +87,9 @@
     "randomstring": "^1.1.5",
     "sinon": "^2.4.1",
     "supertest": "^3.0.0",
-    "typescript": "^3.7.2"
+    "typescript": "^3.7.2",
+    "@babel/cli": "^7.7.4",
+    "babel-plugin-module-resolver": "^3.2.0"
   },
   "config": {
     "docker": {

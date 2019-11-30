@@ -34,7 +34,9 @@
     "mocha": "^3.5.0",
     "nock": "^9.0.14",
     "sinon": "^7.0.0",
-    "typescript": "^3.7.2"
+    "typescript": "^3.7.2",
+    "@babel/cli": "^7.7.4",
+    "babel-plugin-module-resolver": "^3.2.0"
   },
   "dependencies": {
     "@magda/minion-framework": "^0.0.56-0",

@@ -39,7 +39,9 @@
     "supertest": "^3.0.0",
     "typed-promisify": "^0.4.0",
     "typescript": "^3.7.2",
-    "xml2js": "^0.4.19"
+    "xml2js": "^0.4.19",
+    "@babel/cli": "^7.7.4",
+    "babel-plugin-module-resolver": "^3.2.0"
   },
   "dependencies": {
     "@magda/typescript-common": "^0.0.56-0",
