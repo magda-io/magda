@@ -110,6 +110,7 @@ export type DatasetPublishing = {
 
 type SpatialCoverage = {
     bbox?: [number, number, number, number];
+    spatialDataInputMethod?: string;
     lv1Id?: string;
     lv2Id?: string;
     lv3Id?: string;
@@ -180,7 +181,17 @@ export function createBlankState(user?: User): State {
             level: "agency",
             contactPointDisplay: "team"
         },
-        spatialCoverage: {},
+        spatialCoverage: {
+            // Australia, Mainland
+            lv1Id: "1",
+            bbox: [
+                109.951171875,
+                -45.398449976304086,
+                155.0390625,
+                -9.172601695217201
+            ],
+            spatialDataInputMethod: "region"
+        },
         temporalCoverage: {
             intervals: []
         },
