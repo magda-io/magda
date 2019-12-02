@@ -111,6 +111,19 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
+            "name": "CSV Connector Test Cases",
+            "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+            "cwd": "${workspaceRoot}/magda-csv-connector",
+            "args": [
+                "--require",
+                "tsconfig-paths/register",
+                "src/test/**/*.spec.ts"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
             "name": "Minion Format",
             "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
             "windows": {
