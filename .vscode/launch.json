@@ -115,6 +115,8 @@
             "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
             "cwd": "${workspaceRoot}/magda-csv-connector",
             "args": [
+                "--compilers",
+                "ts:ts-node/register",
                 "--require",
                 "tsconfig-paths/register",
                 "src/test/**/*.spec.ts"
