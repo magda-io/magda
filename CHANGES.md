@@ -145,6 +145,7 @@ UI:
 -   Improve keywords generation logic for Spreadsheet
 -   Mention that choosing state is optional
 -   Make spatial input default to Australia
+-   Render selected time intervals above the date picker so that nothing gets hidden
 
 Gateway:
 
