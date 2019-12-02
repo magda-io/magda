@@ -33,6 +33,8 @@ export function extractExtents(input, output) {
     }
 }
 
+moment.tz.setDefault("UTC");
+
 const DATE_REGEX_PART = ".*(date|dt|year|decade).*";
 const DATE_REGEX = new RegExp(DATE_REGEX_PART, "i");
 const START_DATE_REGEX = new RegExp(".*(start|st)" + DATE_REGEX_PART, "i");
@@ -40,8 +42,8 @@ const END_DATE_REGEX = new RegExp(".*(end)" + DATE_REGEX_PART, "i");
 
 const DATE_FORMAT = "YYYY-MM-DD";
 
-const maxDate: Moment = moment.tz(new Date(8640000000000000), "UTC");
-const minDate: Moment = moment.tz(new Date(-8640000000000000), "UTC");
+const maxDate: Moment = moment(new Date(8640000000000000));
+const minDate: Moment = moment(new Date(-8640000000000000));
 
 const buildSpatialRegex = (part: string) =>
     new RegExp(`.*(${part})($|[^a-z^A-Z])+.*`, "i");
@@ -110,7 +112,15 @@ function aggregateDates(rows: any[], headers: string[]) {
     startDateHeadersInOrder.forEach(header => {
         rows.forEach(row => {
             var dateStr: string = row[header].toString();
-            var parsedDate: Moment = moment.tz(dateStr, "utc");
+            var parsedDate: Moment = undefined;
+
+            // Special casing year: Explicitly specifying the year format for dates that only contain a year
+            // More context: https://github.com/moment/moment/issues/1407
+            if (header.toLowerCase() === "year") {
+                parsedDate = moment(dateStr, "YYYY");
+            } else {
+                parsedDate = moment(dateStr);
+            }
             if (parsedDate) {
                 if (parsedDate.isBefore(earliestDate)) {
                     // Updating the current earliest date
@@ -123,7 +133,12 @@ function aggregateDates(rows: any[], headers: string[]) {
     endDateHeadersInOrder.forEach(header => {
         rows.forEach(row => {
             var dateStr: string = row[header].toString();
-            var parsedDate: Moment = moment.tz(dateStr, "utc");
+            var parsedDate: Moment = undefined;
+            if (header.toLowerCase() === "year") {
+                parsedDate = moment(dateStr, "YYYY");
+            } else {
+                parsedDate = moment(dateStr);
+            }
             if (parsedDate) {
                 let extendedTime = extendIncompleteTime(parsedDate);
                 if (extendedTime.isAfter(latestDate)) {
