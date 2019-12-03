@@ -145,6 +145,7 @@ UI:
 -   Improve keywords generation logic for Spreadsheet
 -   Mention that choosing state is optional
 -   Make spatial input default to Australia
+-   User can't input a future date to date of last modification on add dataset page
 
 Gateway:
 
