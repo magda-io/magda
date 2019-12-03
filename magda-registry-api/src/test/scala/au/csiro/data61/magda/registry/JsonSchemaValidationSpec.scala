@@ -97,6 +97,12 @@ class JsonSchemaValidationSpec extends ApiSpec {
       |  "firstName": "Joe",
       |  "lastName": "Bloggs",
       |  "age": 20,
+      |  "tags": []
+      |}""".stripMargin,
+    """{
+      |  "firstName": "Joe",
+      |  "lastName": "Bloggs",
+      |  "age": 20,
       |  "tags": ["tag1", "tag2", "tag3"]
       |}""".stripMargin,
     """{
