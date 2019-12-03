@@ -11,6 +11,28 @@ declare global {
     }
 }
 
+// https://www.w3.org/TR/NOTE-datetime
+const dateFormats: string[] = [
+    // Year
+    "YYYY",
+    // Year and month (eg 1997-07)
+    "YYYY-MM",
+    "YYYY-MM",
+    // Complete date (eg 1997-07-16):
+    "YYYY-MM-DD",
+    "DD-MM-YYYY",
+    "MM-DD-YYYY",
+    // Complete date plus hours and minutes (eg 1997-07-16T19:20+01:00):
+    "YYYY-MM-DDThh:mmTZD",
+    // Complete date plus hours, minutes and seconds (eg 1997-07-16T19:20:30+01:00):
+    "YYYY-MM-DDThh:mm:ssTZD",
+    // Complete date plus hours, minutes, seconds and a decimal fraction of a second (eg 1997-07-16T19:20:30.45+01:00)
+    "YYYY-MM-DDThh:mm:ss.sTZD",
+    // Natural language date formats (eg 12 March, 1997)
+    "DD-MMM-YYYY",
+    "MMM-DD-YYYY"
+];
+
 // Local minikube/docker k8s cluster
 // const fallbackApiHost = "http://localhost:30100/";
 // Dev server
@@ -91,6 +113,7 @@ const vocabularyApiEndpoints =
 
 export const config = {
     fetchOptions,
+    dateFormats,
     homePageConfig: homePageConfig,
     baseUrl,
     baseExternalUrl,

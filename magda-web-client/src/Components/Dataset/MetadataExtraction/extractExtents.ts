@@ -1,7 +1,10 @@
-const moment = require("moment-timezone");
+const moment = require("moment");
+import { Moment } from "moment";
 import XLSX from "xlsx";
 import { uniq } from "lodash";
-import { Moment } from "moment-timezone";
+import { config } from "config";
+
+const dateFormats = config.dateFormats;
 
 /**
  * Extract spatial and temporal extent of spreadsheet files
@@ -32,8 +35,6 @@ export function extractExtents(input, output) {
         }
     }
 }
-
-moment.tz.setDefault("UTC");
 
 const DATE_REGEX_PART = ".*(date|dt|year|decade).*";
 const DATE_REGEX = new RegExp(DATE_REGEX_PART, "i");
@@ -112,15 +113,7 @@ function aggregateDates(rows: any[], headers: string[]) {
     startDateHeadersInOrder.forEach(header => {
         rows.forEach(row => {
             var dateStr: string = row[header].toString();
-            var parsedDate: Moment = undefined;
-
-            // Special casing year: Explicitly specifying the year format for dates that only contain a year
-            // More context: https://github.com/moment/moment/issues/1407
-            if (header.toLowerCase() === "year") {
-                parsedDate = moment(dateStr, "YYYY");
-            } else {
-                parsedDate = moment(dateStr);
-            }
+            var parsedDate: Moment = moment.utc(dateStr, dateFormats);
             if (parsedDate) {
                 if (parsedDate.isBefore(earliestDate)) {
                     // Updating the current earliest date
@@ -133,12 +126,7 @@ function aggregateDates(rows: any[], headers: string[]) {
     endDateHeadersInOrder.forEach(header => {
         rows.forEach(row => {
             var dateStr: string = row[header].toString();
-            var parsedDate: Moment = undefined;
-            if (header.toLowerCase() === "year") {
-                parsedDate = moment(dateStr, "YYYY");
-            } else {
-                parsedDate = moment(dateStr);
-            }
+            var parsedDate: Moment = moment.utc(dateStr, dateFormats);
             if (parsedDate) {
                 let extendedTime = extendIncompleteTime(parsedDate);
                 if (extendedTime.isAfter(latestDate)) {
