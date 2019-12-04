@@ -145,6 +145,7 @@ UI:
 -   Improve keywords generation logic for Spreadsheet
 -   Mention that choosing state is optional
 -   Make spatial input default to Australia
+-   Fixed the issue of modifying date string in text input using backspaces to an empty string will cause text input to reset text input
 
 Gateway:
 
