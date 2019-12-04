@@ -275,7 +275,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                             callback={editDataset("modified")}
                             date={dataset.modified}
                             isOutsideRange={(date: moment.Moment) =>
-                                date.isAfter(moment())
+                                date.isAfter(moment().endOf("day"))
                             }
                         />
                     </div>
