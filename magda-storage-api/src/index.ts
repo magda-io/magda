@@ -2,6 +2,7 @@ import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwt
 import * as express from "express";
 import * as yargs from "yargs";
 import createApiRouter from "./createApiRouter";
+import MagdaMinioClient from "./MagdaMinIOClient";
 // import GoogleCloudStorageClient from "./GoogleCloudStorageClient";
 
 const Minio = require("minio");
@@ -82,12 +83,13 @@ app.use(
     createApiRouter({
         registryApiUrl: argv.registryApiUrl,
         jwtSecret: argv.jwtSecret!,
-        objectStoreClient: new Minio.Client({
+        objectStoreClient: new MagdaMinioClient({
             endPoint: argv.minioServerHost,
             port: argv.minioServerPort,
             useSSL: argv.minioEnableSSL,
             accessKey: argv.minioAccessKey,
-            secretKey: argv.minioSecretKey
+            secretKey: argv.minioSecretKey,
+            bucket: argv.bucket
         }),
         accessCacheMaxItems: argv.accessCacheMaxItems,
         accessCacheMaxAgeMilliseconds: argv.accessCacheMaxAgeMilliseconds
