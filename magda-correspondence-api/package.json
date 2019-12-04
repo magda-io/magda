@@ -6,7 +6,7 @@
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
-    "compile": "tsc -b",
+    "compile": "tsc -b && ts-module-alias-transformer dist",
     "watch": "tsc -b --watch",
     "start": "node dist/index.js",
     "test": "mocha --no-deprecation --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
@@ -80,5 +80,8 @@
     "categories": {
       "api": true
     }
+  },
+  "_moduleMappings": {
+    "magda-typescript-common/src": "@magda/typescript-common/dist"
   }
 }

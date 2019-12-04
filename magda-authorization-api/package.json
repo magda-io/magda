@@ -4,7 +4,7 @@
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
-    "compile": "tsc -b",
+    "compile": "tsc -b && ts-module-alias-transformer dist",
     "watch": "tsc -b --watch",
     "start": "node dist/index.js",
     "dev": "export PGUSER=client && export JWT_SECRET=squirrel && run-typescript-in-nodemon src/index.ts",
@@ -76,5 +76,8 @@
     "exclude": [
       "src/test/**"
     ]
+  },
+  "_moduleMappings": {
+    "magda-typescript-common/src": "@magda/typescript-common/dist"
   }
 }

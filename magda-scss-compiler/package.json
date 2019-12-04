@@ -6,7 +6,7 @@
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
-    "compile": "tsc -b",
+    "compile": "tsc -b && ts-module-alias-transformer dist",
     "watch": "tsc -b --watch",
     "start": "node dist/index.js",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
@@ -68,5 +68,8 @@
     "categories": {
       "ui": true
     }
+  },
+  "_moduleMappings": {
+    "magda-typescript-common/src": "@magda/typescript-common/dist"
   }
 }

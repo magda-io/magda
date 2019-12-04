@@ -21833,6 +21833,11 @@ ts-loader@^6.2.1:
     micromatch "^4.0.0"
     semver "^6.0.0"
 
+ts-module-alias-transformer@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/ts-module-alias-transformer/-/ts-module-alias-transformer-1.0.4.tgz#d72f366b817a1977c8606c4773c2a015f59ed804"
+  integrity sha512-DuECFT/SNxLpW0WVatgAG0F4aA663J9YfAc8Ja/ee6omIvO65fLYdWCnc4WZo4iKXwf+gEgs9r6C//O21s5+XA==
+
 ts-node@^8.5.2:
   version "8.5.2"
   resolved "https://registry.yarnpkg.com/ts-node/-/ts-node-8.5.2.tgz#434f6c893bafe501a30b32ac94ee36809ba2adce"

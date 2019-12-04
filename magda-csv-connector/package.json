@@ -6,7 +6,7 @@
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
     "compile": "yarn run compile-node && yarn run compile-browser",
-    "compile-node": "tsc -b",
+    "compile-node": "tsc -b && ts-module-alias-transformer dist",
     "compile-browser": "webpack --config src/webpack.config.js",
     "watch": "tsc -b --watch",
     "start": "node dist/index.js",
@@ -58,5 +58,8 @@
     "categories": {
       "connector": true
     }
+  },
+  "_moduleMappings": {
+    "magda-typescript-common/src": "@magda/typescript-common/dist"
   }
 }

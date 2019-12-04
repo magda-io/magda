@@ -5,7 +5,7 @@
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
-    "compile": "tsc -b",
+    "compile": "tsc -b && ts-module-alias-transformer dist",
     "watch": "tsc -b --watch",
     "start": "node dist/index.js",
     "dev": "run-typescript-in-nodemon src/index.ts",
@@ -65,5 +65,9 @@
     "categories": {
       "minion": true
     }
+  },
+  "_moduleMappings": {
+    "magda-typescript-common/src": "@magda/typescript-common/dist",
+    "magda-minion-framework/src": "@magda/minion-framework/dist"
   }
 }
