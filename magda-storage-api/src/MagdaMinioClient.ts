@@ -22,62 +22,53 @@ export default class MagdaMinioClient implements ObjectStoreClient {
 
     readonly statusProbe: Probe = () => {
         return this.client
-            .bucketExists(this.bucket)
-            .then((err: Error, exists: boolean) => {
+            .bucketExists(this.bucket, (err: boolean | null, exists: boolean) => {
                 if (err) {
-                    return {
+                    return Promise.resolve({
                         ready: false,
                         error: "Bucket Probe returned an error."
-                    };
+                    });
                 }
                 if (exists) {
-                    return { ready: true };
+                    return Promise.resolve({ ready: true });
                 } else {
-                    return {
+                    return Promise.resolve({
                         ready: false,
                         error: "Bucket does not exist."
-                    };
+                    });
                 }
             });
     };
 
-    getFile(fileName: string): any {
-        let size = 0;
-        this.client.getObject(this.bucket, fileName, function(
+    getFile(fileName: string): ObjectFromStore {
+        const streamP = this.client.getObject(this.bucket, fileName, function(
             err: Error,
             dataStream: Stream
         ) {
             if (err) {
-                return console.log(err);
+                return Promise.reject('Encountered Error while getting file');
             }
-            dataStream.on("data", chunk => {
-                console.log("Here is chunk");
-                console.log(chunk);
-                size += chunk.length;
-            });
-            dataStream.on("end", () => {
-                console.log("End. Total size = " + size);
-            });
-            dataStream.on("error", (err: Error) => {
-                console.log(err);
-            });
+            return Promise.resolve(dataStream);
         });
-
-        // const file = this.bucket.file(name);
-        // return {
-        //     createStream() {
-        //         return file.createReadStream();
-        //     },
-        //     headers() {
-        //         return file.getMetadata().then(([metadata]) => {
-        //             return {
-        //                 "Content-Type": metadata.contentType,
-        //                 "Content-Encoding": metadata.contentEncoding,
-        //                 "Cache-Control": metadata.cacheControl,
-        //                 "Content-Length": metadata.size
-        //             };
-        //         });
-        //     }
-        // };
+        const statP = this.client.statObject(this.bucket, fileName, (err: Error, stat: any) => {
+            console.log('stat: ', stat);
+            return Promise.resolve(stat);
+        });
+        console.log('statP: ', statP);
+        return {
+            createStream() {
+                return streamP.then(function(stream: Stream) {
+                    return stream;
+                });
+            },
+            headers() {
+                return statP.then((stat: any) => Promise.resolve({
+                    "Content-Type": stat.metaData['content-type'],
+                    "Content-Encoding": stat.metaData['content-encoding'],
+                    "Cache-Control": stat.metaData['cache-control'],
+                    "Content-Length": stat.size
+                }));
+            }
+        }
     }
 }
