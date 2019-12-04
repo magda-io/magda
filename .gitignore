@@ -47,5 +47,3 @@ docker-context-*/
 #tenant-api specific
 magda-tenant-api/lib/
 
-terriajs
-terriajs-cesium

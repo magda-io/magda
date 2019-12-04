@@ -1,1 +1,0 @@
-An API for retrieving data stored in an object store, most likely a Google Cloud Storage bucket. Top-level directories in the object store are named by Magda registry record ID. This API grants access to the contents of the subdirectory to anyone who has access to the corresponding Magda registry record.

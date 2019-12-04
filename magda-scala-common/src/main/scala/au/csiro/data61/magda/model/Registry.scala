@@ -3,37 +3,13 @@ package au.csiro.data61.magda.model
 import java.time.{OffsetDateTime, ZoneOffset}
 
 import akka.event.LoggingAdapter
-import au.csiro.data61.magda.model.Registry.{
-  AspectDefinition,
-  EventType,
-  QualityRatingAspect,
-  Record,
-  RecordSummary,
-  RecordType,
-  RegistryCountResponse,
-  RegistryEvent,
-  RegistryRecordsResponse,
-  WebHook,
-  WebHookAcknowledgement,
-  WebHookAcknowledgementResponse,
-  WebHookConfig,
-  WebHookPayload
-}
 import au.csiro.data61.magda.model.Temporal.{ApiDate, PeriodOfTime, Periodicity}
 import au.csiro.data61.magda.model.misc.{Protocols => ModelProtocols, _}
 import au.csiro.data61.magda.util.DateParser
 import enumeratum.values.{IntEnum, IntEnumEntry}
 import io.swagger.annotations.{ApiModel, ApiModelProperty}
 import spray.json.lenses.JsonLenses._
-import spray.json.{
-  DefaultJsonProtocol,
-  JsArray,
-  JsObject,
-  JsString,
-  JsValue,
-  RootJsonFormat,
-  _
-}
+import spray.json._
 
 import scala.annotation.meta.field
 import scala.util.{Failure, Success, Try}
@@ -42,48 +18,49 @@ trait RegistryProtocols
     extends DefaultJsonProtocol
     with au.csiro.data61.magda.model.Temporal.Protocols
     with ModelProtocols {
-  implicit object EventTypeFormat extends RootJsonFormat[EventType] {
-    def write(e: EventType) = JsString(e.toString)
+
+  implicit object EventTypeFormat extends RootJsonFormat[Registry.EventType] {
+    def write(e: Registry.EventType) = JsString(e.toString)
 
     def read(value: JsValue) =
-      EventType.values
+      Registry.EventType.values
         .find(e => e.toString == value.asInstanceOf[JsString].value)
         .get
   }
 
-  implicit val recordFormat = jsonFormat5(Record.apply)
-  implicit val registryEventFormat = jsonFormat5(RegistryEvent.apply)
-  implicit val aspectFormat = jsonFormat3(AspectDefinition.apply)
-  implicit val webHookPayloadFormat = jsonFormat6(WebHookPayload.apply)
-  implicit val webHookConfigFormat = jsonFormat6(WebHookConfig.apply)
-  implicit val webHookFormat = jsonFormat14(WebHook.apply)
+  implicit val recordFormat = jsonFormat5(Registry.Record)
+  implicit val registryEventFormat = jsonFormat5(Registry.RegistryEvent.apply)
+  implicit val aspectFormat = jsonFormat3(Registry.AspectDefinition)
+  implicit val webHookPayloadFormat = jsonFormat6(Registry.WebHookPayload)
+  implicit val webHookConfigFormat = jsonFormat6(Registry.WebHookConfig)
+  implicit val webHookFormat = jsonFormat14(Registry.WebHook)
   implicit val registryRecordsResponseFormat = jsonFormat3(
-    RegistryRecordsResponse.apply
+    Registry.RegistryRecordsResponse.apply
   )
   implicit def qualityRatingAspectFormat =
-    jsonFormat2(QualityRatingAspect.apply)
+    jsonFormat2(Registry.QualityRatingAspect.apply)
   implicit val webHookAcknowledgementFormat = jsonFormat3(
-    WebHookAcknowledgement.apply
+    Registry.WebHookAcknowledgement.apply
   )
   implicit val webHookAcknowledgementResponse = jsonFormat1(
-    WebHookAcknowledgementResponse.apply
+    Registry.WebHookAcknowledgementResponse.apply
   )
-  implicit val recordSummaryFormat = jsonFormat4(RecordSummary.apply)
-  implicit val recordPageFormat = jsonFormat1(RegistryCountResponse.apply)
+  implicit val recordSummaryFormat = jsonFormat4(Registry.RecordSummary.apply)
+  implicit val recordPageFormat = jsonFormat1(Registry.RegistryCountResponse.apply)
 
-  implicit object RecordTypeFormat extends RootJsonFormat[RecordType] {
+  implicit object RecordTypeFormat extends RootJsonFormat[Registry.RecordType] {
 
-    def write(obj: RecordType) = obj match {
-      case x: Record ⇒ x.toJson
-      case y: RecordSummary ⇒ y.toJson
+    def write(obj: Registry.RecordType) = obj match {
+      case x: Registry.Record ⇒ x.toJson
+      case y: Registry.RecordSummary ⇒ y.toJson
       case unknown @ _ =>
         serializationError(s"Marshalling issue with ${unknown}")
     }
 
-    def read(value: JsValue): RecordType = {
+    def read(value: JsValue): Registry.RecordType = {
       value.asJsObject.getFields("aspects") match {
-        case Seq(aspectMap: JsObject) => value.convertTo[Record]
-        case Seq(aspectList: JsArray) => value.convertTo[RecordSummary]
+        case Seq(aspectMap: JsObject) => value.convertTo[Registry.Record]
+        case Seq(aspectList: JsArray) => value.convertTo[Registry.RecordSummary]
         case unknown @ _ =>
           deserializationError(s"Unmarshalling issue with ${unknown} ")
       }
@@ -108,7 +85,7 @@ trait RegistryConverters extends RegistryProtocols {
       )
   }
 
-  private def convertPublisher(publisher: Record): Agent = {
+  private def convertPublisher(publisher: Registry.Record): Agent = {
     val organizationDetails =
       publisher.aspects.getOrElse("organization-details", JsObject())
     val jurisdiction = organizationDetails.extract[String]('jurisdiction.?)
@@ -150,7 +127,7 @@ trait RegistryConverters extends RegistryProtocols {
   }
 
   def convertRegistryDataSet(
-      hit: Record,
+      hit: Registry.Record,
       logger: Option[LoggingAdapter] = None
   )(implicit defaultOffset: ZoneOffset): DataSet = {
     val dcatStrings = hit.aspects.getOrElse("dcat-dataset-strings", JsObject())
@@ -161,15 +138,26 @@ trait RegistryConverters extends RegistryProtocols {
       "dataset-distributions",
       JsObject("distributions" -> JsArray())
     )
-    val publisher: Option[Record] = hit.aspects
-      .getOrElse("dataset-publisher", JsObject())
-      .extract[JsObject]('publisher.?)
-      .map((dataSet: JsObject) => {
-        val theDataSet =
-          JsObject(dataSet.fields + ("tenantId" -> JsNumber(hit.tenantId.get)))
-        val record = theDataSet.convertTo[Record]
-        record
-      })
+    val publisher: Option[Registry.Record] =  Try {
+        hit.aspects
+        .getOrElse("dataset-publisher", JsObject())
+        .extract[JsObject]('publisher.?)
+        .map((dataSet: JsObject) => {
+          val theDataSet =
+            JsObject(dataSet.fields + ("tenantId" -> JsNumber(hit.tenantId.get)))
+          val record = theDataSet.convertTo[Registry.Record]
+          record
+        })
+      } match {
+        case Success(publisher) => publisher
+        case Failure(e) =>
+          if (logger.isDefined) {
+            logger.get.error(
+              s"Failed to parse dataset-publisher: ${e.getMessage}"
+            )
+          }
+          None
+      }
 
     val accessControl = hit.aspects.get("dataset-access-control") match {
       case Some(JsObject(accessControlData)) =>
@@ -207,7 +195,7 @@ trait RegistryConverters extends RegistryProtocols {
         hasQuality = true
         val ratings = qualityAspect.fields.map {
           case (key, value) =>
-            value.convertTo[QualityRatingAspect]
+            value.convertTo[Registry.QualityRatingAspect]
         }
         val totalWeighting = ratings.map(_.weighting).reduce(_ + _)
 
@@ -367,13 +355,13 @@ trait RegistryConverters extends RegistryProtocols {
     )
   }
 
-  private def convertDistribution(distribution: JsObject, hit: Record)(
+  private def convertDistribution(distribution: JsObject, hit: Registry.Record)(
       implicit defaultOffset: ZoneOffset
   ): Distribution = {
     val theDistribution = JsObject(
       distribution.fields + ("tenantId" -> JsNumber(hit.tenantId.get))
     )
-    val distributionRecord: Record = theDistribution.convertTo[Record]
+    val distributionRecord: Registry.Record = theDistribution.convertTo[Registry.Record]
     val dcatStrings = distributionRecord.aspects
       .getOrElse("dcat-distribution-strings", JsObject())
     val datasetFormatAspect =

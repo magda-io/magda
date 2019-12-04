@@ -203,14 +203,14 @@ object Generators {
 
   // We don't want our shapes to overlap the dateline or ES fixes them
   def longGen(min: Double = -89, max: Double = 89) =
-    Gen.chooseNum(min, max).map(BigDecimal.apply)
+    Gen.chooseNum(min, max)
 
   def latGen(min: Double = -90, max: Double = 90) =
-    Gen.chooseNum(min, max).map(BigDecimal.apply)
+    Gen.chooseNum(min, max)
 
   def coordGen(
-      xGen: Gen[BigDecimal] = longGen(),
-      yGen: Gen[BigDecimal] = latGen()
+      xGen: Gen[Double] = longGen(),
+      yGen: Gen[Double] = latGen()
   ) =
     for {
       x <- xGen

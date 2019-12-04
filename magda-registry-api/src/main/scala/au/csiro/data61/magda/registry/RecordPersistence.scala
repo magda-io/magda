@@ -18,6 +18,7 @@ import spray.json._
 import spray.json.lenses.JsonLenses._
 
 import scala.util.{Failure, Success, Try}
+import com.typesafe.config.Config
 
 trait RecordPersistence {
 
@@ -111,15 +112,26 @@ trait RecordPersistence {
       tenantId: BigInt,
       id: String,
       newRecord: Record,
-      opaQueryUpdate: Seq[List[OpaQuery]]
+      opaQueryUpdate: Seq[List[OpaQuery]],
+      config: Config,
+      forceSkipAspectValidation: Boolean = false
   ): Try[Record]
+
+  def processRecordPatchOperationsOnAspects[T](
+      recordPatch: JsonPatch,
+      onReplaceAspect: (String, JsObject) => T,
+      onPatchAspect: (String, JsonPatch) => T,
+      onDeleteAspect: String => T
+  ): Iterable[T]
 
   def patchRecordById(
       implicit session: DBSession,
       tenantId: BigInt,
       id: String,
       recordPatch: JsonPatch,
-      opaQuery: Seq[List[OpaQuery]]
+      opaQuery: Seq[List[OpaQuery]],
+      config: Config,
+      forceSkipAspectValidation: Boolean = false
   ): Try[Record]
 
   def patchRecordAspectById(
@@ -127,7 +139,9 @@ trait RecordPersistence {
       tenantId: BigInt,
       recordId: String,
       aspectId: String,
-      aspectPatch: JsonPatch
+      aspectPatch: JsonPatch,
+      config: Config,
+      forceSkipAspectValidation: Boolean = false
   ): Try[JsObject]
 
   def putRecordAspectById(
@@ -135,13 +149,17 @@ trait RecordPersistence {
       tenantId: BigInt,
       recordId: String,
       aspectId: String,
-      newAspect: JsObject
+      newAspect: JsObject,
+      config: Config,
+      forceSkipAspectValidation: Boolean = false
   ): Try[JsObject]
 
   def createRecord(
       implicit session: DBSession,
       tenantId: BigInt,
-      record: Record
+      record: Record,
+      config: Config,
+      forceSkipAspectValidation: Boolean = false
   ): Try[Record]
 
   def deleteRecord(
@@ -162,7 +180,9 @@ trait RecordPersistence {
       tenantId: BigInt,
       recordId: String,
       aspectId: String,
-      aspect: JsObject
+      aspect: JsObject,
+      config: Config,
+      forceSkipAspectValidation: Boolean = false
   ): Try[JsObject]
 
   def deleteRecordAspect(
@@ -427,7 +447,9 @@ object DefaultRecordPersistence
       tenantId: BigInt,
       id: String,
       newRecord: Record,
-      opaQueryUpdate: Seq[List[OpaQuery]]
+      opaQueryUpdate: Seq[List[OpaQuery]],
+      config: Config,
+      forceSkipAspectValidation: Boolean = false
   ): Try[Record] = {
     val newRecordWithoutAspects = newRecord.copy(aspects = Map())
 
@@ -439,6 +461,12 @@ object DefaultRecordPersistence
             "The provided ID does not match the record's ID."
           )
         )
+
+      // --- validate aspects data against json schema
+      _ <- Try {
+        if(!forceSkipAspectValidation) AspectValidator.validateAspects(newRecord.aspects, tenantId)(session, config)
+      }
+
       oldRecordWithoutAspects <- this.getByIdWithAspects(
         session,
         tenantId,
@@ -463,7 +491,9 @@ object DefaultRecordPersistence
               )
             case None =>
               DB.localTx { nested =>
-                createRecord(nested, tenantId, newRecord).map(
+                // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
+                // --- as the aspect data has been validated (unless not required) in the beginning of current method
+                createRecord(nested, tenantId, newRecord, config, true).map(
                   _.copy(aspects = Map())
                 )
               } match {
@@ -483,19 +513,26 @@ object DefaultRecordPersistence
 
         JsonDiff.diff(oldRecordJson, newRecordJson, remember = false)
       }
+
+      // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
+      // --- as the aspect data has been validated (unless not required) in the beginning of current method
       result <- patchRecordById(
         session,
         tenantId,
         id,
         recordPatch,
-        opaQueryUpdate
+        opaQueryUpdate,
+        config,
+        true
       )
       patchedAspects <- Try {
         newRecord.aspects.map {
           case (aspectId, data) =>
             (
               aspectId,
-              this.putRecordAspectById(session, tenantId, id, aspectId, data)
+              // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
+              // --- as the aspect data has been validated (unless not required) in the beginning of current method
+              this.putRecordAspectById(session, tenantId, id, aspectId, data, config, true)
             )
         }
       }
@@ -510,12 +547,110 @@ object DefaultRecordPersistence
       result.copy(aspects = resultAspects, sourceTag = newRecord.sourceTag)
   }
 
+  def processRecordPatchOperationsOnAspects[T](recordPatch: JsonPatch,
+                                            onReplaceAspect: (String, JsObject) => T,
+                                            onPatchAspect: (String, JsonPatch) => T,
+                                            onDeleteAspect: String => T
+                                           ): Iterable[T] = {
+    recordPatch.ops
+      .groupBy(
+        op =>
+          op.path match {
+            case "aspects" / (name / _) => Some(name)
+            case _                      => None
+          }
+      )
+      .filterKeys(_.isDefined)
+      .map{
+        // Create or patch each aspect.
+        // We create if there's exactly one ADD operation and it's adding an entire aspect.
+        case (
+          Some(aspectId),
+          List(Add("aspects" / (_ / rest), aValue))
+          ) =>
+          if (rest == Pointer.Empty)
+            onReplaceAspect(
+              aspectId,
+              aValue.asJsObject
+            )
+          else
+            onPatchAspect(
+              aspectId,
+              JsonPatch(Add(rest, aValue))
+            )
+        // We delete if there's exactly one REMOVE operation and it's removing an entire aspect.
+        case (
+          Some(aspectId),
+          List(Remove("aspects" / (_ / rest), old))
+          ) =>
+          if (rest == Pointer.Empty) {
+            onDeleteAspect(aspectId)
+          } else {
+            onPatchAspect(
+              aspectId,
+              JsonPatch(Remove(rest, old))
+            )
+          }
+        // We patch in all other scenarios.
+        case (Some(aspectId), operations) =>
+
+          onPatchAspect(
+            aspectId,
+            JsonPatch(operations.map({
+              // Make paths in operations relative to the aspect instead of the record
+              case Add("aspects" / (_ / rest), aValue) =>
+                Add(rest, aValue)
+              case Remove("aspects" / (_ / rest), old) =>
+                Remove(rest, old)
+              case Replace("aspects" / (_ / rest), aValue, old) =>
+                Replace(rest, aValue, old)
+              case Move(
+              "aspects" / (sourceName / sourceRest),
+              "aspects" / (destName / destRest)
+              ) =>
+                if (sourceName != destName)
+                // We can relax this restriction, and the one on Copy below, by turning a cross-aspect
+                // Move into a Remove on one and an Add on the other.  But it's probably not worth
+                // the trouble.
+                  throw new RuntimeException(
+                    "A patch may not move values between two different aspects."
+                  )
+                else
+                  Move(sourceRest, destRest)
+              case Copy(
+              "aspects" / (sourceName / sourceRest),
+              "aspects" / (destName / destRest)
+              ) =>
+                if (sourceName != destName)
+                  throw new RuntimeException(
+                    "A patch may not copy values between two different aspects."
+                  )
+                else
+                  Copy(sourceRest, destRest)
+              case Test("aspects" / (_ / rest), aValue) =>
+                Test(rest, aValue)
+              case _ =>
+                throw new RuntimeException(
+                  "The patch contains an unsupported operation for aspect " + aspectId
+                )
+            }))
+          )
+
+        case _ =>
+          throw new RuntimeException(
+            "Aspect ID is missing (this shouldn't be possible)."
+          )
+      }
+  }
+
   def patchRecordById(
       implicit session: DBSession,
       tenantId: BigInt,
       id: String,
       recordPatch: JsonPatch,
-      opaQuery: Seq[List[OpaQuery]]
+      opaQuery: Seq[List[OpaQuery]],
+      config: Config,
+      forceSkipAspectValidation: Boolean = false
   ): Try[Record] = {
     for {
       record <- this.getByIdWithAspects(session, tenantId, id, opaQuery) match {
@@ -523,6 +658,13 @@ object DefaultRecordPersistence
         case None =>
           Failure(new RuntimeException("No record exists with that ID."))
       }
+
+      // --- validate Aspect data against JSON schema
+      // --- Check at the beginning to make sure no data is saved unless everything is valid
+      _ <- Try {
+        if(!forceSkipAspectValidation) AspectValidator.validateWithRecordPatch(recordPatch, id, tenantId)(session, config)
+      }
+
       recordOnlyPatch <- Success(
         recordPatch.filter(
           op =>
@@ -535,6 +677,7 @@ object DefaultRecordPersistence
       patchedRecord <- Try {
         recordOnlyPatch(record)
       }
+
       _ <- if (id == patchedRecord.id) Success(patchedRecord)
       else
         Failure(
@@ -564,118 +707,33 @@ object DefaultRecordPersistence
         }
       }
       aspectResults <- Try {
-        recordPatch.ops
-          .groupBy(
-            op =>
-              op.path match {
-                case "aspects" / (name / _) => Some(name)
-                case _                      => None
-              }
+        // --- We have validate the Json Patch in the beginning. Thus, any aspect operations below should skip the validation
+        processRecordPatchOperationsOnAspects(recordPatch, (aspectId: String, aspectData: JsObject) => (
+          aspectId,
+          putRecordAspectById(
+            session,
+            tenantId,
+            id,
+            aspectId,
+            aspectData,
+            config,
+            true
           )
-          .filterKeys(_.isDefined)
-          .map({
-            // Create or patch each aspect.
-            // We create if there's exactly one ADD operation and it's adding an entire aspect.
-            case (
-                Some(aspectId),
-                List(Add("aspects" / (_ / rest), aValue))
-                ) =>
-              if (rest == Pointer.Empty)
-                (
-                  aspectId,
-                  putRecordAspectById(
-                    session,
-                    tenantId,
-                    id,
-                    aspectId,
-                    aValue.asJsObject
-                  )
-                )
-              else
-                (
-                  aspectId,
-                  patchRecordAspectById(
-                    session,
-                    tenantId,
-                    id,
-                    aspectId,
-                    JsonPatch(Add(rest, aValue))
-                  )
-                )
-            // We delete if there's exactly one REMOVE operation and it's removing an entire aspect.
-            case (
-                Some(aspectId),
-                List(Remove("aspects" / (_ / rest), old))
-                ) =>
-              if (rest == Pointer.Empty) {
-                deleteRecordAspect(session, tenantId, id, aspectId)
-                (aspectId, Success(JsNull))
-              } else {
-                (
-                  aspectId,
-                  patchRecordAspectById(
-                    session,
-                    tenantId,
-                    id,
-                    aspectId,
-                    JsonPatch(Remove(rest, old))
-                  )
-                )
-              }
-            // We patch in all other scenarios.
-            case (Some(aspectId), operations) =>
-              (
-                aspectId,
-                patchRecordAspectById(
-                  session,
-                  tenantId,
-                  id,
-                  aspectId,
-                  JsonPatch(operations.map({
-                    // Make paths in operations relative to the aspect instead of the record
-                    case Add("aspects" / (_ / rest), aValue) =>
-                      Add(rest, aValue)
-                    case Remove("aspects" / (_ / rest), old) =>
-                      Remove(rest, old)
-                    case Replace("aspects" / (_ / rest), aValue, old) =>
-                      Replace(rest, aValue, old)
-                    case Move(
-                        "aspects" / (sourceName / sourceRest),
-                        "aspects" / (destName / destRest)
-                        ) =>
-                      if (sourceName != destName)
-                        // We can relax this restriction, and the one on Copy below, by turning a cross-aspect
-                        // Move into a Remove on one and an Add on the other.  But it's probably not worth
-                        // the trouble.
-                        throw new RuntimeException(
-                          "A patch may not move values between two different aspects."
-                        )
-                      else
-                        Move(sourceRest, destRest)
-                    case Copy(
-                        "aspects" / (sourceName / sourceRest),
-                        "aspects" / (destName / destRest)
-                        ) =>
-                      if (sourceName != destName)
-                        throw new RuntimeException(
-                          "A patch may not copy values between two different aspects."
-                        )
-                      else
-                        Copy(sourceRest, destRest)
-                    case Test("aspects" / (_ / rest), aValue) =>
-                      Test(rest, aValue)
-                    case _ =>
-                      throw new RuntimeException(
-                        "The patch contains an unsupported operation for aspect " + aspectId
-                      )
-                  }))
-                )
-              )
-            case _ =>
-              throw new RuntimeException(
-                "Aspect ID is missing (this shouldn't be possible)."
-              )
-          })
+        ), (aspectId: String, aspectPatch: JsonPatch) => (
+          aspectId,
+          patchRecordAspectById(
+            session,
+            tenantId,
+            id,
+            aspectId,
+            aspectPatch,
+            config,
+            true
+          )
+        ), (aspectId: String) => {
+          deleteRecordAspect(session, tenantId, id, aspectId)
+          (aspectId, Success(JsNull))
+        })
       }
       // Report the first failed aspect, if any
       _ <- aspectResults.find(_._2.isFailure) match {
@@ -695,7 +753,7 @@ object DefaultRecordPersistence
       Record(
         patchedRecord.id,
         patchedRecord.name,
-        aspects,
+        aspects.toMap,
         tenantId = Some(tenantId)
       )
   }
@@ -705,20 +763,28 @@ object DefaultRecordPersistence
       tenantId: BigInt,
       recordId: String,
       aspectId: String,
-      aspectPatch: JsonPatch
+      aspectPatch: JsonPatch,
+      config: Config,
+      forceSkipAspectValidation: Boolean = false
   ): Try[JsObject] = {
     for {
-      aspect <- this.getRecordAspectById(session, tenantId, recordId, aspectId) match {
+      aspect <- (this.getRecordAspectById(session, tenantId, recordId, aspectId) match {
         case Some(aspect) => Success(aspect)
-        case None =>
-          createRecordAspect(session, tenantId, recordId, aspectId, JsObject())
-      }
+        // --- should not create a default empty aspect: empty aspect will likely be invalid if schema requires certain fields
+        case None => Success(JsObject())
+      })
 
       patchedAspect <- Try {
         aspectPatch(aspect).asJsObject
       }
 
+      // --- validate Aspect data against JSON schema
+      _ <- Try {
+        if(!forceSkipAspectValidation) AspectValidator.validate(aspectId, patchedAspect, tenantId)(session, config)
+      }
+
       testRecordAspectPatch <- Try {
+
         // Diff the old record aspect and the patched one to see whether an event should be created
         val oldAspectJson = aspect.toJson
         val newAspectJson = patchedAspect.toJson
@@ -761,9 +827,15 @@ object DefaultRecordPersistence
       tenantId: BigInt,
       recordId: String,
       aspectId: String,
-      newAspect: JsObject
+      newAspect: JsObject,
+      config: Config,
+      forceSkipAspectValidation: Boolean = false
   ): Try[JsObject] = {
     for {
+      // --- validate Aspect data against JSON schema
+      _ <- Try {
+        if(!forceSkipAspectValidation) AspectValidator.validate(aspectId, newAspect, tenantId)(session, config)
+      }
       oldAspect <- this.getRecordAspectById(
         session,
         tenantId,
@@ -777,7 +849,9 @@ object DefaultRecordPersistence
         // we don't end up with an extraneous record creation event in the database.
         case None =>
           DB.localTx { nested =>
-            createRecordAspect(nested, tenantId, recordId, aspectId, newAspect)
+            // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
+            // --- as the aspect data has been validated (unless not required) in the beginning of current method
+            createRecordAspect(nested, tenantId, recordId, aspectId, newAspect, config, true)
           } match {
             case Success(aspect) => Success(aspect)
             case Failure(e) =>
@@ -794,12 +868,16 @@ object DefaultRecordPersistence
 
         JsonDiff.diff(oldAspectJson, newAspectJson, remember = false)
       }
+      // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
+      // --- as the aspect data has been validated (unless not required) in the beginning of current method
       result <- patchRecordAspectById(
         session,
         tenantId,
         recordId,
         aspectId,
-        recordAspectPatch
+        recordAspectPatch,
+        config,
+        true
       )
     } yield result
   }
@@ -807,9 +885,17 @@ object DefaultRecordPersistence
   def createRecord(
       implicit session: DBSession,
       tenantId: BigInt,
-      record: Record
+      record: Record,
+      config: Config,
+      forceSkipAspectValidation: Boolean = false
   ): Try[Record] = {
     for {
+
+      // --- validate aspects data against json schema
+      _ <- Try {
+        if(!forceSkipAspectValidation) AspectValidator.validateAspects(record.aspects, tenantId)(session, config)
+      }
+
       eventId <- Try {
         val eventJson =
           CreateRecordEvent(record.id, tenantId, record.name).toJson.compactPrint
@@ -830,6 +916,8 @@ object DefaultRecordPersistence
         case anythingElse => anythingElse
       }
 
+      // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
+      // --- as the aspect data has been validated (unless not required) in the beginning of current method
       hasAspectFailure <- record.aspects
         .map(
           aspect =>
@@ -838,7 +926,9 @@ object DefaultRecordPersistence
               tenantId,
               record.id,
               aspect._1,
-              aspect._2
+              aspect._2,
+              config,
+              true
             )
         )
         .find(_.isFailure) match {
@@ -931,9 +1021,16 @@ object DefaultRecordPersistence
       tenantId: BigInt,
       recordId: String,
       aspectId: String,
-      aspect: JsObject
+      aspect: JsObject,
+      config: Config,
+      forceSkipAspectValidation: Boolean = false
   ): Try[JsObject] = {
     for {
+
+      _ <- Try{
+        if(!forceSkipAspectValidation) AspectValidator.validate(aspectId, aspect, tenantId)(session, config)
+      }
+
       eventId <- Try {
         val eventJson = CreateRecordAspectEvent(
           recordId,

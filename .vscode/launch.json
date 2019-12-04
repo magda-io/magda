@@ -111,35 +111,6 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
-            "name": "Minion Terria",
-            // "runtimeExecutable": "${workspaceRoot}/magda-minion-terria/node_modules/.bin/ts-node",
-            // "windows": {
-            //     "runtimeExecutable": "${workspaceRoot}/magda-minion-terria/node_modules/.bin/ts-node.cmd"
-            // },
-            "runtimeArgs": [
-                "-r",
-                "ts-node/register",
-                "-r",
-                "../node_modules/tsconfig-paths/register",
-                "-r",
-                "esm"
-            ],
-            "args": [
-                "src/index.ts",
-                "--userId",
-                "00000000-0000-4000-8000-000000000000",
-                "--jwtSecret",
-                "Voothooshoo3foix"
-            ],
-            "cwd": "${workspaceRoot}/magda-minion-terria",
-            "env": {
-                "TS_NODE_TRANSPILE_ONLY": "true"
-            }
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "protocol": "inspector",
             "name": "Minion Format",
             "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
             "windows": {

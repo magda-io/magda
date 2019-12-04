@@ -14,7 +14,7 @@ data:
   {{- if .Values.webRoutes }}
   webRoutes.json: '{{ toJson .Values.webRoutes | indent 2 }}'
   {{- else }}
-  webRoutes.json: {}
+  webRoutes.json: '{}'
   {{- end }}
   helmet.json: '{{ toJson .Values.helmet | indent 2 }}'
   cors.json: '{{ toJson .Values.cors | indent 2 }}'

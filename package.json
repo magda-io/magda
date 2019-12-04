@@ -3,9 +3,7 @@
   "workspaces": [
     "deploy",
     "magda-*",
-    "scripts",
-    "terriajs",
-    "terriajs-cesium"
+    "scripts"
   ],
   "eslintIgnore": [
     "src/pancake/**"
