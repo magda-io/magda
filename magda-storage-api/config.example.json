@@ -1,0 +1,9 @@
+{
+    "listenPort": 6120,
+    "registryApiUrl": "http://localhost:6101/v0", // maybe change?
+    "minioAccessKey": "",
+    "minioSecretKey": "",
+    "minioEnableSSL": false,
+    "minioServerHost": "localhost",
+    "minioServerPort": 9000
+}
