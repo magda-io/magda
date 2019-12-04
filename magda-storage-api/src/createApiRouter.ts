@@ -13,7 +13,6 @@ import * as LRU from "lru-cache";
 import ObjectStoreClient from "./ObjectStoreClient";
 
 export interface ApiRouterOptions {
-    registryApiUrl: string;
     objectStoreClient: ObjectStoreClient;
     jwtSecret: string;
     accessCacheMaxItems: number;
@@ -25,82 +24,13 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     const status = {
         probes: {
-            registry: createServiceProbe(options.registryApiUrl),
             objectStore: options.objectStoreClient.statusProbe
         }
     };
     installStatusRouter(router, status);
 
-    const userAccessCache = new LRU<string, boolean>({
-        max: options.accessCacheMaxItems,
-        maxAge: options.accessCacheMaxAgeMilliseconds
-    });
-
-    function computeCacheKey(
-        tenantId: number,
-        userId: string | undefined,
-        recordId: string
-    ) {
-        return JSON.stringify([tenantId, userId, recordId]);
-    }
-
     router.get("/:recordid/*", async function(req, res) {
-        const tenantHeader = req.header("X-Magda-Tenant-Id");
-        const tenantId =
-            tenantHeader !== undefined
-                ? Number.parseInt(tenantHeader, 10)
-                : undefined;
-        if (tenantId === undefined || Number.isNaN(tenantId)) {
-            res.status(400).send("X-Magda-Tenant-Id header is required.");
-            return;
-        }
-
-        const userId = getUserId(req, options.jwtSecret).caseOf({
-            just: userId => userId,
-            nothing: () => undefined
-        });
-
         const recordId = req.params.recordid;
-
-        const cacheKey = computeCacheKey(tenantId, userId, recordId);
-        const userHasAccess = userAccessCache.get(cacheKey);
-        if (userHasAccess === false) {
-            // We previously determined this user does not have access.
-            res.status(404).send(
-                "File does not exist or access is unauthorized."
-            );
-            return;
-        } else if (userHasAccess !== true) {
-            // Verify that this user has access to the corresponding registry record.
-            const registry =
-                userId === undefined
-                    ? new RegistryClient({
-                          baseUrl: options.registryApiUrl,
-                          tenantId: tenantId
-                      })
-                    : new AuthorizedRegistryClient({
-                          baseUrl: options.registryApiUrl,
-                          tenantId: tenantId,
-                          jwtSecret: options.jwtSecret,
-                          userId: userId
-                      });
-
-            const record = await registry.getRecord(recordId);
-
-            const hasAccess =
-                record && !(record instanceof Error) && record.id !== undefined;
-            userAccessCache.set(cacheKey, hasAccess);
-
-            if (!hasAccess) {
-                res.status(404).send(
-                    "File does not exist or access is unauthorized."
-                );
-                return;
-            }
-        }
-
-        // This user has access to this record, so grant them access to
-        // this record's files.
         const encodedRootPath = encodeURIComponent(recordId);
 
         const object = options.objectStoreClient.getFile(

@@ -17,11 +17,6 @@ const argv = addJwtSecretFromEnvVar(
             type: "number",
             default: 6120
         })
-        .option("registryApiUrl", {
-            describe: "The access endpoint URL of the Registry API",
-            type: "string",
-            default: "http://localhost:6101/v0"
-        })
         .option("bucket", {
             describe:
                 "The Google Cloud Storage bucket from which to serve data.",
@@ -81,7 +76,6 @@ var app = express();
 app.use(
     "/v0",
     createApiRouter({
-        registryApiUrl: argv.registryApiUrl,
         jwtSecret: argv.jwtSecret!,
         objectStoreClient: new MagdaMinioClient({
             endPoint: argv.minioServerHost,
