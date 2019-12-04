@@ -8,6 +8,7 @@ General:
     policy (default) or Esri groups based access policy.
 -   Add esri portal connector. Read its README.md file before use.
 -   Changed the way of `auth-secrets` to be created in gitlab
+-   Upgraded typescript to 3.7.2 & Use [Project References](https://www.typescriptlang.org/docs/handbook/project-references.html) to organize typescript project
 
 Registry:
 
