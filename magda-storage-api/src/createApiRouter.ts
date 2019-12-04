@@ -1,15 +1,8 @@
 import { ApiError } from "@google-cloud/common";
-import {
-    createServiceProbe,
-    installStatusRouter
-} from "@magda/typescript-common/dist/express/status";
-import AuthorizedRegistryClient from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
-import RegistryClient from "@magda/typescript-common/dist/registry/RegistryClient";
+import { installStatusRouter } from "@magda/typescript-common/dist/express/status";
 import buildJwt from "@magda/typescript-common/dist/session/buildJwt";
-import { getUserId } from "@magda/typescript-common/dist/session/GetUserId";
 import * as express from "express";
 import { OutgoingHttpHeaders } from "http";
-import * as LRU from "lru-cache";
 import ObjectStoreClient from "./ObjectStoreClient";
 
 export interface ApiRouterOptions {
