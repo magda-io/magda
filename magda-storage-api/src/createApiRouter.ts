@@ -22,13 +22,11 @@ export default function createApiRouter(options: ApiRouterOptions) {
     };
     installStatusRouter(router, status);
 
-    router.get("/:recordid/*", async function(req, res) {
+    router.get("/:recordid", async function(req, res) {
         const recordId = req.params.recordid;
         const encodedRootPath = encodeURIComponent(recordId);
 
-        const object = options.objectStoreClient.getFile(
-            encodedRootPath + "/" + req.params[0]
-        );
+        const object = options.objectStoreClient.getFile(encodedRootPath);
 
         let headers: OutgoingHttpHeaders;
         try {

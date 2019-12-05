@@ -21,8 +21,9 @@ export default class MagdaMinioClient implements ObjectStoreClient {
     }
 
     readonly statusProbe: Probe = () => {
-        return this.client
-            .bucketExists(this.bucket, (err: boolean | null, exists: boolean) => {
+        return this.client.bucketExists(
+            this.bucket,
+            (err: boolean | null, exists: boolean) => {
                 if (err) {
                     return Promise.resolve({
                         ready: false,
@@ -53,20 +54,20 @@ export default class MagdaMinioClient implements ObjectStoreClient {
                 }
                 return resolve(dataStream);
             });
-        })
+        });
         const statP = new Promise((resolve, reject) => {
             return self.client.statObject(
                 self.bucket,
                 fileName,
                 (err: Error, stat: any) => {
-                    if(err) {
+                    if (err) {
                         reject(err);
                     }
                     console.log("stat: ", stat);
                     return resolve(stat);
                 }
             );
-        })
+        });
 
         console.log("statP: ", statP);
         return {
