@@ -25,14 +25,15 @@ expected config file. Create a `config.json` file with the appropriate parameter
 If you do not have `yarn` installed, install `yarn` via:
 
 ```console
-sudo npm install yarn -g
-yarn -v
+$ sudo npm install yarn -g
+$ yarn -v
 ```
 
 From the `magda-storage-api` directory, run:
 
 ```console
-yarn run dev
+$ yarn run dev
+Datastore API started on port 6120
 ```
 
 ## API
