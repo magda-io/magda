@@ -5,8 +5,6 @@ import createApiRouter from "./createApiRouter";
 import MagdaMinioClient from "./MagdaMinioClient";
 // import GoogleCloudStorageClient from "./GoogleCloudStorageClient";
 
-const Minio = require("minio");
-
 const argv = addJwtSecretFromEnvVar(
     yargs
         .config()
