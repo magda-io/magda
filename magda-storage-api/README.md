@@ -44,8 +44,8 @@ that is stored in the bucket specified in config while starting the server.
 
 #### Example usage
 
-```curl
-curl -X GET localhost:6120/v0/myFavouriteCSV
+```console
+$ curl -X GET localhost:6120/v0/myFavouriteCSV
 column1,column2
 A,1234
 B,4321
@@ -59,8 +59,8 @@ if the upload is successfull.
 
 #### Example usage
 
-```curl
-curl -X POST -H "Content-Type:text/csv" localhost:6120/v0/myFavouriteCSV --data-binary '@favourite.csv'
+```console
+$ curl -X POST -H "Content-Type:text/csv" localhost:6120/v0/myFavouriteCSV --data-binary '@favourite.csv'
 {"message":"File uploaded successfully","etag":"<some hash value>"}
 ```
 
