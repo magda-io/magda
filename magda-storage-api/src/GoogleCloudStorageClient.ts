@@ -43,4 +43,12 @@ export default class GoogleCloudStorageClient implements ObjectStoreClient {
             }
         };
     }
+
+    postFile(
+        fileName: string,
+        content: any,
+        metaData?: object | undefined
+    ): Promise<any> {
+        throw new Error("Method not implemented.");
+    }
 }
