@@ -1,5 +1,9 @@
 ## 0.0.56
 
+Storage:
+
+-   Add an API for storing and streaming content
+
 General:
 
 -   Add multi-tenant support. Deployed as single tenant by default.
