@@ -1,17 +1,12 @@
 import { ApiError } from "@google-cloud/common";
 import { installStatusRouter } from "@magda/typescript-common/dist/express/status";
-import buildJwt from "@magda/typescript-common/dist/session/buildJwt";
 import * as express from "express";
 import { OutgoingHttpHeaders } from "http";
 import ObjectStoreClient from "./ObjectStoreClient";
 import * as bodyParser from "body-parser";
-import { Readable } from "stream";
 
 export interface ApiRouterOptions {
     objectStoreClient: ObjectStoreClient;
-    jwtSecret: string;
-    accessCacheMaxItems: number;
-    accessCacheMaxAgeMilliseconds: number;
 }
 
 export default function createApiRouter(options: ApiRouterOptions) {
@@ -97,21 +92,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 });
             });
     });
-
-    // This is for getting a JWT in development so you can do fake authenticated requests to a local server.
-    if (process.env.NODE_ENV !== "production") {
-        router.get("/public/jwt", function(req, res) {
-            res.status(200);
-            res.write(
-                "X-Magda-Session: " +
-                    buildJwt(
-                        options.jwtSecret,
-                        "00000000-0000-4000-8000-000000000000"
-                    )
-            );
-            res.send();
-        });
-    }
 
     return router;
 }
