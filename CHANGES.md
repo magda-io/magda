@@ -1,8 +1,12 @@
-## 0.0.56
+# CHANGELOG
+
+## 0.0.57
 
 Storage:
 
 -   Add an API for storing and streaming content
+
+## 0.0.56
 
 General:
 
