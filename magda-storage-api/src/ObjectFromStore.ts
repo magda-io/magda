@@ -1,6 +1,6 @@
 import { OutgoingHttpHeaders } from "http";
 
 export default interface ObjectFromStore {
-    createStream(): NodeJS.ReadableStream;
+    createStream(): Promise<NodeJS.ReadableStream>;
     headers(): Promise<OutgoingHttpHeaders>;
 }

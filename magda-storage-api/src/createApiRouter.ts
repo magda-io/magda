@@ -39,28 +39,26 @@ export default function createApiRouter(options: ApiRouterOptions) {
                     res.setHeader(header, value);
                 }
             });
-        } catch (e) {
-            if (e instanceof ApiError) {
-                if (e.code === 404) {
-                    res.status(404).send(
-                        "No such object for record ID " +
-                            recordId +
-                            ": " +
-                            req.params[0]
-                    );
-                    return;
+        } catch (err) {
+            if (err instanceof ApiError) {
+                if (err.code === 404) {
+                    return res
+                        .status(404)
+                        .send("No such object with recordId " + recordId);
                 }
             }
-            res.status(500).send("Unknown error");
-            return;
+            return res.status(500).send("Unknown error");
         }
 
-        const stream = object.createStream();
-        stream.on("error", e => {
-            res.status(500).send("Unknown error");
-        });
-
-        stream.pipe(res);
+        const streamP = object.createStream();
+        if (streamP) {
+            streamP.then(stream => {
+                stream.on("error", _e => {
+                    res.status(500).send("Unknown error");
+                });
+                stream.pipe(res);
+            });
+        }
     });
 
     // This is for getting a JWT in development so you can do fake authenticated requests to a local server.

@@ -37,38 +37,54 @@ export default class MagdaMinioClient implements ObjectStoreClient {
                         error: "Bucket does not exist."
                     });
                 }
-            });
+            }
+        );
     };
 
     getFile(fileName: string): ObjectFromStore {
-        const streamP = this.client.getObject(this.bucket, fileName, function(
-            err: Error,
-            dataStream: Stream
-        ) {
-            if (err) {
-                return Promise.reject('Encountered Error while getting file');
-            }
-            return Promise.resolve(dataStream);
-        });
-        const statP = this.client.statObject(this.bucket, fileName, (err: Error, stat: any) => {
-            console.log('stat: ', stat);
-            return Promise.resolve(stat);
-        });
-        console.log('statP: ', statP);
+        const self = this;
+        const streamP = new Promise((resolve, reject) => {
+            return this.client.getObject(this.bucket, fileName, function(
+                err: Error,
+                dataStream: Stream
+            ) {
+                if (err) {
+                    return reject("Encountered Error while getting file");
+                }
+                return resolve(dataStream);
+            });
+        })
+        const statP = new Promise((resolve, reject) => {
+            return self.client.statObject(
+                self.bucket,
+                fileName,
+                (err: Error, stat: any) => {
+                    if(err) {
+                        reject(err);
+                    }
+                    console.log("stat: ", stat);
+                    return resolve(stat);
+                }
+            );
+        })
+
+        console.log("statP: ", statP);
         return {
             createStream() {
-                return streamP.then(function(stream: Stream) {
+                return streamP.then(function(stream: any) {
                     return stream;
                 });
             },
             headers() {
-                return statP.then((stat: any) => Promise.resolve({
-                    "Content-Type": stat.metaData['content-type'],
-                    "Content-Encoding": stat.metaData['content-encoding'],
-                    "Cache-Control": stat.metaData['cache-control'],
-                    "Content-Length": stat.size
-                }));
+                return statP.then((stat: any) =>
+                    Promise.resolve({
+                        "Content-Type": stat.metaData["content-type"],
+                        "Content-Encoding": stat.metaData["content-encoding"],
+                        "Cache-Control": stat.metaData["cache-control"],
+                        "Content-Length": stat.size
+                    })
+                );
             }
-        }
+        };
     }
 }

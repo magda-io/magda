@@ -27,7 +27,9 @@ export default class GoogleCloudStorageClient implements ObjectStoreClient {
         const file = this.bucket.file(name);
         return {
             createStream() {
-                return file.createReadStream();
+                return new Promise((resolve, _reject) => {
+                    return resolve(file.createReadStream());
+                });
             },
             headers() {
                 return file.getMetadata().then(([metadata]) => {
