@@ -69,7 +69,7 @@ export default function parseSpreadsheet(inputBuffer: Buffer) {
                 if (sheet[cell] !== undefined) {
                     val = sheet[cell].w || sheet[cell].v;
                     if (val) {
-                        val = escape(val).trim();
+                        // val = escape(val).trim();
                         if (val !== "") {
                             if (val.match(/^\d+&#39;$/)) {
                                 val = val.replace("&#39;", "");
