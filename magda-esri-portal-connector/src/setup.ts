@@ -12,25 +12,29 @@ export const argv: any = addJwtSecretFromEnvVar(
             describe:
                 "The ID of this connector. Datasets created by this connector will have an ID prefixed with this ID.",
             type: "string",
-            demandOption: true
+            demandOption: true,
+            default: "nsw-portal"
         })
         .option("name", {
             describe:
                 "The name of this connector, to be displayed to users to indicate the source of datasets.",
             type: "string",
-            demandOption: true
+            demandOption: true,
+            default: "beta.portal.data.nsw.gov.au/arcgis"
         })
         .option("sourceUrl", {
             describe:
                 "The base URL of the Esri Portal server, without /sharing/rest/...",
             type: "string",
-            demandOption: true
+            demandOption: true,
+            default: "https://beta.portal.data.nsw.gov.au/arcgis"
         })
         .option("esriOrgGroup", {
             describe:
                 "A unique group name representing authenticated users of the esri portal",
             type: "string",
-            demandOption: true
+            demandOption: true,
+            default: "esri-nsw-authenticated-user-group"
         })
         .option("pageSize", {
             describe:
@@ -98,11 +102,23 @@ export const argv: any = addJwtSecretFromEnvVar(
             demand: true,
             default: 0
         })
+        .option("authorizationApi", {
+            describe: "The base URL of the authorization API.",
+            type: "string",
+            default: "http://localhost:6104/v0"
+        })
         .option("esriUpdateInterval", {
             describe: "Re-crawl esri portal interval in hours",
             type: "number",
             demand: true,
-            default: 12
+            default: 10
+        })
+        .option("esriExpirationOverlap", {
+            describe:
+                "The esri records expiration time is the sum of the last crawl completion time, the esriExpirationOverlap and the esriUpdateInterval",
+            type: "number",
+            demand: true,
+            default: 10
         }).argv
 );
 

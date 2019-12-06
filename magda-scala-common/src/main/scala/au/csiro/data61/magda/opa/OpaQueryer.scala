@@ -58,6 +58,7 @@ object OpaTypes {
   ) extends OpaQuery
   case object OpaQueryAllMatched extends OpaQuery
   case object OpaQuerySkipAccessControl extends OpaQuery
+  case object OpaQueryNotMatched extends OpaQuery
 
   case class OpaPartialResponse(
       queries: List[OpaQuery]
@@ -184,7 +185,7 @@ class OpaQueryer()(
 
     val rulesOpt: List[List[OpaQuery]] = result.asJsObject.fields
       .get("queries") match {
-      case Some(JsArray(rules))    =>
+      case Some(JsArray(rules)) =>
         // It is assumed that a registry record level access OPA policy consists of outer and inner
         // sub-policies where all outer OPA policies are in logical OR relationship; All inner OPA
         // policies are in logical AND relationship. For example, an access policy document may look
@@ -285,7 +286,8 @@ class OpaQueryer()(
               })
             })
         }
-      case e => throw new Exception(s"Could not understand $e")
+      case None => List(List(OpaQueryNotMatched))
+      case e    => throw new Exception(s"Could not understand $e")
     }
 
     rulesOpt

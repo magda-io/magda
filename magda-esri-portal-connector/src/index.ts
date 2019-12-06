@@ -1,6 +1,7 @@
 import EsriPortal from "./EsriPortal";
 import JsonConnector from "@magda/typescript-common/dist/JsonConnector";
 import { JsonConnectorOptions } from "@magda/typescript-common/dist/JsonConnector";
+import ApiClient from "@magda/typescript-common/dist/authorization-api/ApiClient";
 import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 import ConnectionResult from "@magda/typescript-common/dist/ConnectionResult";
 
@@ -84,8 +85,41 @@ function runConnector() {
         registry: registry
     });
 
+    const authApi = new ApiClient(
+        argv.authorizationApi,
+        argv.jwtSecret,
+        argv.userId
+    );
+
+    function saveLastCrawlExpiration() {
+        const time_in_hours =
+            argv.esriUpdateInterval + argv.esriExpirationOverlap;
+        const expiration = Date.now() + time_in_hours * 60 * 60 * 1000;
+        const extraInput = {
+            id: argv.id,
+            data: {
+                "last crawl expiration": expiration
+            }
+        };
+
+        console.log(
+            `The last crawl expiration should be in ${time_in_hours} hours from ${new Date().toUTCString()}.`
+        );
+        console.log(JSON.stringify(extraInput));
+        authApi
+            .updateOpaExtraInput(extraInput)
+            .then(_ => {
+                console.log(
+                    "Successfully updated the last crawl expiration as extra input to OPA."
+                );
+            })
+            .catch(error => {
+                console.error(error.message);
+            });
+    }
+
     if (!argv.interactive) {
-        connector.run();
+        connector.run().then(_ => saveLastCrawlExpiration());
     } else {
         connector.runInteractive({
             timeoutSeconds: argv.timeout,

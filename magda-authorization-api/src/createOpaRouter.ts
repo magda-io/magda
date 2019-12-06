@@ -43,7 +43,7 @@ const opaRoutes = [
 ];
 
 /**
- * 
+ *
  * @param options proxyReq: http.ClientRequest,
       req: http.IncomingMessage,
       res: http.ServerResponse,
@@ -164,9 +164,11 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
 
         reqData.input.timestamp = Date.now();
 
+        reqData.input.extra = await database.getExtraInput();
+
         reqOpts.json = reqData;
 
-        //console.log(JSON.stringify(reqOpts, null, 2));
+        // console.log(JSON.stringify(reqOpts, null, 2));
 
         try {
             // -- request's pipe api doesn't work well with chunked response

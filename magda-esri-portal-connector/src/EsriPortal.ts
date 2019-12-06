@@ -286,7 +286,10 @@ export default class EsriPortal implements ConnectorSource {
                             ...groupInfo.member,
                             ...groupInfo.other
                         ];
-                        groups.forEach(group => {
+                        groups.forEach(rawGroup => {
+                            const group = rawGroup.description
+                                ? rawGroup
+                                : { ...rawGroup, description: undefined };
                             const id = group.id;
                             if (!this.harvestedGroups.has(id)) {
                                 group.__members = [];

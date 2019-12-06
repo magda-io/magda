@@ -5,6 +5,7 @@ import au.csiro.data61.magda.opa.OpaTypes.{
   OpaOp,
   OpaQuery,
   OpaQueryAllMatched,
+  OpaQueryNotMatched,
   OpaQueryMatchValue,
   OpaQuerySkipAccessControl,
   OpaRefObjectKey,
@@ -43,23 +44,32 @@ object SqlHelper {
       SQL_TRUE
     }
 
+    val theRecordId =
+      if (recordId.nonEmpty) sqls"$recordId" else sqls"Records.recordId"
+
+    val recordsWithoutAccessControlConditions =
+      sqls"""
+        SELECT 1 FROM records_without_access_control
+        WHERE (recordid, tenantid)=($theRecordId, records.tenantId)
+        """
+
     if (conditions.equals(SQL_TRUE)) {
       conditions
+    } else if (conditions.equals(SQL_FALSE)) {
+      sqls"""
+        (EXISTS($recordsWithoutAccessControlConditions))
+        """
     } else {
-      val theRecordId =
-        if (recordId.nonEmpty) sqls"$recordId" else sqls"Records.recordId"
-
       val accessControlAspectId = getAccessAspectId(opaQueries.head.head)
+      val recordsSatisfyingAccessControlConditions =
+        sqls"""
+          select 1 from recordaspects
+          where (RecordAspects.recordId, RecordAspects.aspectId, RecordAspects.tenantId) =
+          ($theRecordId, $accessControlAspectId, Records.tenantId) and ($conditions)
+          """
 
       sqls"""
-          (EXISTS (
-            SELECT 1 FROM records_without_access_control
-            WHERE (recordid, tenantid)=($theRecordId, records.tenantId)) or
-          exists (
-            select 1 from recordaspects
-            where (RecordAspects.recordId, RecordAspects.aspectId, RecordAspects.tenantId)=($theRecordId, $accessControlAspectId, Records.tenantId) and
-            ($conditions)
-          ))
+        (EXISTS ($recordsWithoutAccessControlConditions) or exists ($recordsSatisfyingAccessControlConditions))
         """
     }
   }
@@ -110,6 +120,7 @@ object SqlHelper {
   }
 
   private val SQL_TRUE = sqls"true"
+  private val SQL_FALSE = sqls"false"
   private val SQL_EQ = SQLSyntax.createUnsafely("=")
 
   private def convertToSql(operation: OpaOp): SQLSyntax = {
@@ -161,6 +172,8 @@ object SqlHelper {
           OpaQuerySkipAccessControl
         )) {
       List(SQL_TRUE)
+    } else if (theOpaQueries.contains(OpaQueryNotMatched)) {
+      List(SQL_FALSE)
     } else {
       val opaAspectQueries: List[AspectQuery] = theOpaQueries.map({
         case OpaQueryMatchValue(

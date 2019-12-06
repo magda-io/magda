@@ -4,7 +4,7 @@ import org.scalatest.Ignore
 
 @Ignore
 class TestRecordEsriOpaPolicyWithExpiredGroupsOnly
-    extends RecordEsriOpaPolicyWithInvalidAccessControlAspectSpec
+    extends RecordEsriOpaPolicyWithExpiredSpec
     with GroupsJwtForRecordEsriOpaPolicyTest {
 
   override def beforeAll(): Unit = {
