@@ -1,3 +1,9 @@
+## 0.0.57
+
+General:
+
+-   CSV Connector can now process ampersand character properly
+
 ## 0.0.56
 
 General:
