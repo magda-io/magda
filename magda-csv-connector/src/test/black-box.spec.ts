@@ -27,13 +27,6 @@ const TEST_CASES = [
             data: fs.readFileSync(path.join(__dirname, "csv3.xlsx"))
         },
         output: JSON.parse(fs.readFileSync(path.join(__dirname, "csv3.json")))
-    },
-    {
-        input: {
-            mime: "text/csv",
-            data: fs.readFileSync(path.join(__dirname, "csv4.csv"))
-        },
-        output: JSON.parse(fs.readFileSync(path.join(__dirname, "csv4.json")))
     }
 ];
 
