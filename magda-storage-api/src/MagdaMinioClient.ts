@@ -63,13 +63,11 @@ export default class MagdaMinioClient implements ObjectStoreClient {
                     if (err) {
                         reject(err);
                     }
-                    console.log("stat: ", stat);
                     return resolve(stat);
                 }
             );
         });
 
-        console.log("statP: ", statP);
         return {
             createStream() {
                 return streamP.then((stream: any) => {

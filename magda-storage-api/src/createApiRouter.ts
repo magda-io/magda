@@ -68,7 +68,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
         const fileId = req.params.fileid;
         const encodedRootPath = encodeURIComponent(fileId);
         const content = req.body;
-        console.log("content: ", content);
         const metaData = {
             "Content-Type": req.headers["content-type"],
             "Content-Length": req.headers["content-length"]
@@ -76,7 +75,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
         return options.objectStoreClient
             .postFile(encodedRootPath, content, metaData)
             .then(etag => {
-                console.log("Here is result: ", etag);
                 return res.status(200).send({
                     message: "File uploaded successfully",
                     etag: etag
