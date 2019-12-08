@@ -2,7 +2,6 @@ import * as express from "express";
 import * as yargs from "yargs";
 import createApiRouter from "./createApiRouter";
 import MagdaMinioClient from "./MagdaMinioClient";
-// import GoogleCloudStorageClient from "./GoogleCloudStorageClient";
 
 const argv = yargs
     .config()
