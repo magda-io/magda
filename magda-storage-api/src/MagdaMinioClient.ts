@@ -43,21 +43,21 @@ export default class MagdaMinioClient implements ObjectStoreClient {
     };
 
     getFile(fileName: string): ObjectFromStore {
-        const self = this;
         const streamP = new Promise((resolve, reject) => {
-            return this.client.getObject(this.bucket, fileName, function(
-                err: Error,
-                dataStream: Stream
-            ) {
-                if (err) {
-                    return reject("Encountered Error while getting file");
+            return this.client.getObject(
+                this.bucket,
+                fileName,
+                (err: Error, dataStream: Stream) => {
+                    if (err) {
+                        return reject("Encountered Error while getting file");
+                    }
+                    return resolve(dataStream);
                 }
-                return resolve(dataStream);
-            });
+            );
         });
         const statP = new Promise((resolve, reject) => {
-            return self.client.statObject(
-                self.bucket,
+            return this.client.statObject(
+                this.bucket,
                 fileName,
                 (err: Error, stat: any) => {
                     if (err) {
@@ -72,7 +72,7 @@ export default class MagdaMinioClient implements ObjectStoreClient {
         console.log("statP: ", statP);
         return {
             createStream() {
-                return streamP.then(function(stream: any) {
+                return streamP.then((stream: any) => {
                     return stream;
                 });
             },
