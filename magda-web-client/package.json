@@ -50,7 +50,7 @@
     "react": "^16.8.6",
     "react-app-polyfill": "^0.2.1",
     "react-async-hook": "^3.4.0",
-    "react-dates": "^20.1.0",
+    "react-dates": "magda-io/react-dates#magda",
     "react-file-drop": "^0.2.7",
     "react-i18next": "^8.1.0",
     "react-leaflet": "^2.2.1",
