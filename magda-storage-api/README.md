@@ -38,9 +38,9 @@ Datastore API started on port 6120
 
 ## API
 
-### GET /:recordid
+### GET /:fileid
 
-Attempts to retrieve content with the name `<recordid>` from the MinIO server
+Attempts to retrieve content with the name `<fileid>` from the MinIO server
 that is stored in the bucket specified in config while starting the server.
 
 #### Example usage
@@ -53,9 +53,9 @@ B,4321
 C,2007
 ```
 
-### POST /:recordid
+### POST /:fileid
 
-Attempts to upload content to the MinIO bucket. Gives it a name `<recordid>` and returns a unique etag
+Attempts to upload content to the MinIO bucket. Gives it a name `<fileid>` and returns a unique etag
 if the upload is successfull.
 
 #### Example usage

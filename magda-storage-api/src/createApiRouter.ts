@@ -26,9 +26,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
     );
 
     // Download an object
-    router.get("/:recordid", async function(req, res) {
-        const recordId = req.params.recordid;
-        const encodedRootPath = encodeURIComponent(recordId);
+    router.get("/:fileid", async function(req, res) {
+        const fileId = req.params.fileid;
+        const encodedRootPath = encodeURIComponent(fileId);
 
         const object = options.objectStoreClient.getFile(encodedRootPath);
 
@@ -46,7 +46,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 if (err.code === 404) {
                     return res
                         .status(404)
-                        .send("No such object with recordId " + recordId);
+                        .send("No such object with fileId " + fileId);
                 }
             }
             return res.status(500).send("Unknown error");
@@ -64,9 +64,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
     });
 
     // Upload an object
-    router.post("/:recordid", async function(req, res) {
-        const recordId = req.params.recordid;
-        const encodedRootPath = encodeURIComponent(recordId);
+    router.post("/:fileid", async function(req, res) {
+        const fileId = req.params.fileid;
+        const encodedRootPath = encodeURIComponent(fileId);
         const content = req.body;
         console.log("content: ", content);
         const metaData = {
