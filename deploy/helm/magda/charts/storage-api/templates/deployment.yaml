@@ -23,11 +23,13 @@ spec:
         command: [
             "node",
             "/usr/src/app/component/dist/index.js",
-            "--authApiUrl", "http://authorization-api/v0",
-            "--opaUrl", "http://authorization-api/v0/opa/",
             "--listenPort", "80",
-            "--dbHost", "content-db",
-            "--dbPort", "5432"
+            "--bucket", "", # fill this in
+            "--minioAccessKey", "", # fill this in
+            "--minioSecretKey", "", # fill this in
+            "--minioEnableSSL", "true",
+            "--minioServerHost", "", # fill this in
+            "--minioServerPort", ""  # fill this in
         ]
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
@@ -44,26 +46,4 @@ spec:
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 10
-{{- end }}
-        resources:
-{{ toYaml .Values.resources | indent 10 }}
-        env:
-        - name: NODE_ENV
-          value: production
-        - name: JWT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: auth-secrets
-              key: jwt-secret
-{{- if .Values.global.noDbAuth }}
-        - name: PGUSER
-          value: client
-{{- else }}
-        - name: PGUSER
-          value: client
-        - name: PGPASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-passwords
-              key: content-db-client
 {{- end }}
