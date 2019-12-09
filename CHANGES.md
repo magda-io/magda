@@ -1,9 +1,12 @@
 ## 0.0.57
 
-UI: 
+UI:
 
 -   Fixed the issue of modifying date string in text input using backspaces to an empty string will cause text input to reset text input
 
+Others:
+
+-   Fixed broken link minion causes json schema validation error
 
 ## 0.0.56
 
