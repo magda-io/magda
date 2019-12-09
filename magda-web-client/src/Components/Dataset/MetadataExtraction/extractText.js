@@ -41,7 +41,8 @@ export async function extractText(input, output) {
  */
 async function extractSpreadsheetFile(input, output, bookType = "xlsx") {
     input.workbook = XLSX.read(input.array, {
-        type: "array"
+        type: "array",
+        cellDates: true
     });
 
     // excel files can have embedded properties; extract those

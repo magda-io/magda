@@ -17,11 +17,10 @@ const dateFormats: string[] = [
     "YYYY",
     // Year and month (eg 1997-07)
     "YYYY-MM",
-    "YYYY-MM",
     // Complete date (eg 1997-07-16):
-    "YYYY-MM-DD",
     "DD-MM-YYYY",
     "MM-DD-YYYY",
+    "YYYY-MM-DD",
     // Complete date plus hours and minutes (eg 1997-07-16T19:20+01:00):
     "YYYY-MM-DDThh:mmTZD",
     // Complete date plus hours, minutes and seconds (eg 1997-07-16T19:20:30+01:00):
