@@ -50,6 +50,7 @@ const serverConfig: {
     maxTableProcessingRows: number;
     csvLoaderChunkSize: number;
     mandatoryFields: ValidationFieldList;
+    addDatasetThemes?: string[];
 } = window.magda_server_config || {};
 
 const registryReadOnlyApiUrl =
@@ -186,7 +187,10 @@ export const config = {
               "files.license",
               "informationSecurity.classification",
               "informationSecurity.disseminationLimits"
-          ]
+          ],
+    addDatasetThemes: serverConfig.addDatasetThemes
+        ? serverConfig.addDatasetThemes
+        : []
 };
 
 export const defaultConfiguration = {

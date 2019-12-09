@@ -35,7 +35,7 @@ export default function MultiSelectAutoComplete<T>(
             isMulti={true}
             isSearchable={true}
             noOptionsMessage={x =>
-                props.query ? "No Options" : "Type to enter a new option"
+                props.query ? "Type to enter a new option" : "No Options"
             }
             components={{
                 MultiValueRemove: CustomMultiValueRemove
