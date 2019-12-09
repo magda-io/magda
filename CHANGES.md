@@ -9,6 +9,10 @@ UI:
 -   Fixed the issue of modifying date string in text input using backspaces to an empty string will cause text input to reset text input
 -   User can't input a future date to date of last modification on add dataset page
 
+Others:
+
+-   Use a "Year" column from a CSV file to extract a temporal extent
+
 ## 0.0.56
 
 General:
@@ -193,7 +197,6 @@ Others:
 -   Upgrade Scala dependencies versions & added scalafmt support
 -   Fixed doc to reflect [lerna deprecating an option](https://github.com/lerna/lerna/commit/f2c3a92fe41b6fdc5d11269f0f2c3e27761b4c85)
 -   Fix potential memory leak by deregistering listener when Header is unmounted
--   Use a "Year" column from a CSV file to extract a temporal extent
 
 ## 0.0.55
 
