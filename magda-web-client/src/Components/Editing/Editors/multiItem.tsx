@@ -166,7 +166,7 @@ export class ListMultiItemEditor<V> extends MultiItemEditor<V> {
                         onChange={onChange}
                         canBeAdded={canBeAdded}
                         addOnChange={addOnChange}
-                        renderAbove={!!renderAbove}
+                        renderAbove={renderAbove}
                     />
                 );
             },
@@ -179,7 +179,7 @@ export class ListMultiItemEditor<V> extends MultiItemEditor<V> {
                         createNewValue={createNewValue}
                         canBeAdded={canBeAdded}
                         addOnChange={addOnChange}
-                        renderAbove={!!renderAbove}
+                        renderAbove={renderAbove}
                     />
                 );
             }

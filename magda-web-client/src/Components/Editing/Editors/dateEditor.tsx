@@ -136,7 +136,7 @@ export const multiDateIntervalEditor = function(renderAbove: boolean) {
         },
         (value: Interval) => !!value.start && !!value.end,
         true,
-        !!renderAbove
+        renderAbove
     );
     return {
         edit: myMultiItemEditor.edit,
