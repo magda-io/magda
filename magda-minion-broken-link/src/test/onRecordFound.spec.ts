@@ -6,6 +6,7 @@ import jsc from "@magda/typescript-common/dist/test/jsverify";
 import * as _ from "lodash";
 import * as Client from "ftp";
 import * as URI from "urijs";
+import * as Ajv from "ajv";
 
 import { Record } from "@magda/typescript-common/dist/generated/registry/api";
 import { encodeURIComponentWithApost } from "@magda/typescript-common/dist/test/util";
@@ -35,6 +36,8 @@ import {
     setDefaultDomainWaitTime,
     getDefaultDomainWaitTime
 } from "../getUrlWaitTime";
+
+const schema = require("@magda/registry-aspects/source-link-status.schema.json");
 
 describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     this.timeout(20000);
@@ -156,6 +159,8 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
      * basis as a part of dataset quality.
      */
     it("Should correctly record link statuses", function() {
+        const ajv = new Ajv();
+        const validate = ajv.compile(schema);
         return jsc.assert(
             jsc.forall(recordArbWithSuccesses, jsc.integer(1, 100), function(
                 { record, successLookup, disallowHead },
@@ -273,6 +278,21 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                                 dist.id
                             )}/aspects/source-link-status`,
                             (body: BrokenLinkAspect) => {
+                                const validationResult = validate(body);
+                                if (!validationResult) {
+                                    throw new Error(
+                                        "Json schema validation error: \n" +
+                                            validate.errors
+                                                .map(
+                                                    error =>
+                                                        `${error.dataPath}: ${
+                                                            error.message
+                                                        }`
+                                                )
+                                                .join("\n")
+                                    );
+                                }
+
                                 const doesStatusMatch = body.status === result;
 
                                 const isDownloadUrlHttp = hasProtocol(

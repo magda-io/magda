@@ -17,6 +17,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@magda/scripts": "^0.0.56-0",
+    "@types/ajv": "^1.0.0",
     "@types/chai": "^4.0.2",
     "@types/ftp": "^0.3.29",
     "@types/lodash": "^4.14.71",
@@ -27,6 +28,7 @@
     "@types/request": "^2.48.1",
     "@types/sinon": "^2.3.3",
     "@types/urijs": "^1.15.34",
+    "ajv": "^6.10.2",
     "chai": "^4.1.0",
     "dns-proxy": "^0.5.0",
     "jsverify": "^0.8.2",
