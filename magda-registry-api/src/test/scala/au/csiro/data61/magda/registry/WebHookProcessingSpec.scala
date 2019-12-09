@@ -11,7 +11,7 @@ import au.csiro.data61.magda.model.Registry._
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
-import scalikejdbc.DB
+import scalikejdbc._
 import spray.json._
 
 import scala.collection.mutable.ArrayBuffer
@@ -482,6 +482,38 @@ class WebHookProcessingSpec
           payloads.head.events.get.head.eventType shouldBe EventType.CreateRecord
           assertRecordsInPayloads(
             List(ExpectedRecordIdAndTenantId(testId, TENANT_1))
+          )
+        }
+      }
+
+      it("record created, with legacy tenantId = NULL value") { param =>
+        val webHook =
+          defaultWebHook.copy(eventTypes = Set(EventType.CreateRecord))
+        val testId = "testId"
+        val record = Record(testId, "testName", Map())
+
+        // Generate and process event with ID of 2.
+        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+          MAGDA_ADMIN_PORTAL_ID
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        DB localTx { implicit session =>
+          sql"UPDATE events SET tenantid = NULL".update.apply()
+        }
+
+        param.webHookActor ! WebHookActor.Process(
+          ignoreWaitingForResponse = true
+        )
+
+        testWebHook(param, Some(webHook)) { (payloads, _) =>
+          println(payloads)
+
+          assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, MAGDA_ADMIN_PORTAL_ID)))
+          payloads.head.events.get.head.eventType shouldBe EventType.CreateRecord
+          assertRecordsInPayloads(
+            List(ExpectedRecordIdAndTenantId(testId, MAGDA_ADMIN_PORTAL_ID))
           )
         }
       }
