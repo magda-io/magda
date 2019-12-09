@@ -87,7 +87,7 @@ export default class MagdaMinioClient implements ObjectStoreClient {
         };
     }
 
-    postFile(fileName: string, content: any, metaData?: object): Promise<any> {
+    putFile(fileName: string, content: any, metaData?: object): Promise<any> {
         const contentSize = content.length;
         const contentStream = new Readable();
 

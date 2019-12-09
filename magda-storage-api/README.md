@@ -53,7 +53,7 @@ B,4321
 C,2007
 ```
 
-### POST /:fileid
+### PUT /:fileid
 
 Attempts to upload content to the MinIO bucket. Gives it a name `<fileid>` and returns a unique etag
 if the upload is successfull.
@@ -61,7 +61,7 @@ if the upload is successfull.
 #### Example usage
 
 ```console
-$ curl -X POST -H "Content-Type:text/csv" localhost:6120/v0/myFavouriteCSV --data-binary '@favourite.csv'
+$ curl -X PUT -H "Content-Type:text/csv" localhost:6120/v0/myFavouriteCSV --data-binary '@favourite.csv'
 {"message":"File uploaded successfully","etag":"<some hash value>"}
 ```
 

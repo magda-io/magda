@@ -64,7 +64,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
     });
 
     // Upload an object
-    router.post("/:fileid", async function(req, res) {
+    router.put("/:fileid", async function(req, res) {
         const fileId = req.params.fileid;
         const encodedRootPath = encodeURIComponent(fileId);
         const content = req.body;
@@ -73,7 +73,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
             "Content-Length": req.headers["content-length"]
         };
         return options.objectStoreClient
-            .postFile(encodedRootPath, content, metaData)
+            .putFile(encodedRootPath, content, metaData)
             .then(etag => {
                 return res.status(200).send({
                     message: "File uploaded successfully",

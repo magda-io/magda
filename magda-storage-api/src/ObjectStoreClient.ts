@@ -3,6 +3,6 @@ import ObjectFromStore from "./ObjectFromStore";
 
 export default interface ObjectStoreClient {
     getFile(name: string): ObjectFromStore;
-    postFile(fileName: string, content: any, metaData?: object): Promise<any>;
+    putFile(fileName: string, content: any, metaData?: object): Promise<any>;
     statusProbe: Probe;
 }
