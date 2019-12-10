@@ -2,11 +2,20 @@ import retext from "retext";
 import keywords from "retext-keywords";
 import toString from "nlcst-to-string";
 import { isValidKeyword } from "api-clients/VocabularyApis";
+import uniq from "lodash/uniq";
 
 /** The maximum number of characters to feed into retext (input after this char length will be trimmed off) */
 const MAX_CHARACTERS_FOR_EXTRACTION = 150000;
 /** The maximum number of keywords to return */
 export const MAX_KEYWORDS = 10;
+
+function standardliseWhitespace(keyword: string) {
+    return keyword.replace(/\s+/g, " ").trim();
+}
+
+function cleanUpKeywords(keywords: string[]) {
+    return uniq(keywords.map(standardliseWhitespace));
+}
 
 /**
  * Extract keywords from text based file formats
@@ -56,14 +65,16 @@ export async function extractKeywords(
         keywords.length >= MAX_KEYWORDS ||
         (!input.keywords || !input.keywords.length)
     ) {
-        output.keywords = keywords;
+        output.keywords = cleanUpKeywords(keywords);
         return;
     }
 
     // --- fill keywords with header / cell keywords
     output.keywords = [
         ...keywords,
-        ...input.keywords.slice(0, MAX_KEYWORDS - keywords.length)
+        ...cleanUpKeywords(
+            input.keywords.slice(0, MAX_KEYWORDS - keywords.length)
+        )
     ];
 }
 
