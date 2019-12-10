@@ -33,9 +33,9 @@ const defaultDateFormats: string[] = [
 ];
 
 // Local minikube/docker k8s cluster
-// const fallbackApiHost = "http://localhost:30100/";
+const fallbackApiHost = "http://192.168.99.110:30100/";
 // Dev server
-const fallbackApiHost = "https://dev.magda.io/";
+// const fallbackApiHost = "https://dev.magda.io/";
 
 const DEV_FEATURE_FLAGS = {
     cataloguing: true,
@@ -47,6 +47,15 @@ const homePageConfig: {
     backgroundImageUrls: Array<string>;
     stories: string[];
 } = window.magda_client_homepage_config || {};
+
+interface DateConfig {
+    dateFormats: string[];
+    dateRegexes: {
+        dateRegex: RegExp;
+        startDateRegex: RegExp;
+        endDateRegex: RegExp;
+    };
+}
 
 const serverConfig: {
     authApiBaseUrl?: string;
@@ -71,8 +80,56 @@ const serverConfig: {
     maxTableProcessingRows: number;
     csvLoaderChunkSize: number;
     mandatoryFields: ValidationFieldList;
-    dateFormats?: string[];
+    dateConfig?: DateConfig;
 } = window.magda_server_config || {};
+
+const DATE_REGEX = ".*(date|dt|year|decade).*";
+const START_DATE_REGEX = "(start|st).*(date|dt|year|decade)";
+const END_DATE_REGEX = "(end).*(date|dt|year|decade)";
+
+/**
+ * Given the server's date config object, tries to construct a date config object
+ * that also includes defaults for parts of the config that are not specified
+ * @param serverDateConfig Server's Date Config object
+ */
+function constructDateConfig(
+    serverDateConfig: DateConfig | undefined
+): DateConfig {
+    var dateConfig: DateConfig = {
+        dateFormats: defaultDateFormats,
+        dateRegexes: {
+            dateRegex: new RegExp(DATE_REGEX, "i"),
+            startDateRegex: new RegExp(START_DATE_REGEX, "i"),
+            endDateRegex: new RegExp(END_DATE_REGEX, "i")
+        }
+    };
+
+    // Overwriting config if there is config coming from the server
+    if (serverDateConfig) {
+        if (serverDateConfig.dateFormats) {
+            dateConfig.dateFormats = serverDateConfig.dateFormats;
+        }
+        // If the server date config exists, and regexes were also specified
+        if (serverDateConfig.dateRegexes) {
+            dateConfig["dateRegexes"] = {
+                dateRegex: new RegExp(
+                    serverDateConfig.dateRegexes.dateRegex || DATE_REGEX,
+                    "i"
+                ),
+                startDateRegex: new RegExp(
+                    serverDateConfig.dateRegexes.startDateRegex ||
+                        START_DATE_REGEX,
+                    "i"
+                ),
+                endDateRegex: new RegExp(
+                    serverDateConfig.dateRegexes.endDateRegex || END_DATE_REGEX,
+                    "i"
+                )
+            };
+        }
+    }
+    return dateConfig;
+}
 
 const registryReadOnlyApiUrl =
     serverConfig.registryApiBaseUrl ||
@@ -209,9 +266,7 @@ export const config = {
               "informationSecurity.classification",
               "informationSecurity.disseminationLimits"
           ],
-    dateFormats: serverConfig.dateFormats
-        ? serverConfig.dateFormats
-        : defaultDateFormats
+    dateConfig: constructDateConfig(serverConfig.dateConfig)
 };
 
 export const defaultConfiguration = {

@@ -4,7 +4,8 @@ import XLSX from "xlsx";
 import { uniq } from "lodash";
 import { config } from "config";
 
-const dateFormats = config.dateFormats;
+const { dateFormats, dateRegexes } = config.dateConfig;
+const { dateRegex, startDateRegex, endDateRegex } = dateRegexes;
 
 /**
  * Extract spatial and temporal extent of spreadsheet files
@@ -35,11 +36,6 @@ export function extractExtents(input, output) {
         }
     }
 }
-
-const DATE_REGEX_PART = ".*(date|dt|year|decade).*";
-const DATE_REGEX = new RegExp(DATE_REGEX_PART, "i");
-const START_DATE_REGEX = new RegExp(".*(start|st)" + DATE_REGEX_PART, "i");
-const END_DATE_REGEX = new RegExp(".*(end)" + DATE_REGEX_PART, "i");
 
 const DATE_FORMAT = "YYYY-MM-DD";
 
@@ -95,9 +91,9 @@ type SpatialExtent = {
 };
 
 function aggregateDates(rows: any[], headers: string[]) {
-    const dateHeaders = tryFilterHeaders(headers, DATE_REGEX);
-    const startDateHeaders = uniq(tryFilterHeaders(headers, START_DATE_REGEX));
-    const endDateHeaders = uniq(tryFilterHeaders(headers, END_DATE_REGEX));
+    const dateHeaders = tryFilterHeaders(headers, dateRegex);
+    const startDateHeaders = uniq(tryFilterHeaders(headers, startDateRegex));
+    const endDateHeaders = uniq(tryFilterHeaders(headers, endDateRegex));
 
     const startDateHeadersInOrder = uniq(
         startDateHeaders.concat(dateHeaders).concat(endDateHeaders)
