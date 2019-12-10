@@ -38,3 +38,14 @@ mandatoryFields:
   - files.license
   - informationSecurity.classification
   - informationSecurity.disseminationLimits
+dateFormats:
+  - YYYY
+  - YYYY-MM
+  - DD-MM-YYYY
+  - MM-DD-YYYY
+  - YYYY-MM-DD
+  - YYYY-MM-DDThh:mmTZD
+  - YYYY-MM-DDThh:mm:ssTZD
+  - YYYY-MM-DDThh:mm:ss.sTZD
+  - DD-MMM-YYYY
+  - MMM-DD-YYYY

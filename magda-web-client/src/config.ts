@@ -12,7 +12,7 @@ declare global {
 }
 
 // https://www.w3.org/TR/NOTE-datetime
-const dateFormats: string[] = [
+const defaultDateFormats: string[] = [
     // Year
     "YYYY",
     // Year and month (eg 1997-07)
@@ -71,6 +71,7 @@ const serverConfig: {
     maxTableProcessingRows: number;
     csvLoaderChunkSize: number;
     mandatoryFields: ValidationFieldList;
+    dateFormats?: string[];
 } = window.magda_server_config || {};
 
 const registryReadOnlyApiUrl =
@@ -112,7 +113,6 @@ const vocabularyApiEndpoints =
 
 export const config = {
     fetchOptions,
-    dateFormats,
     homePageConfig: homePageConfig,
     baseUrl,
     baseExternalUrl,
@@ -208,7 +208,10 @@ export const config = {
               "files.license",
               "informationSecurity.classification",
               "informationSecurity.disseminationLimits"
-          ]
+          ],
+    dateFormats: serverConfig.dateFormats
+        ? serverConfig.dateFormats
+        : defaultDateFormats
 };
 
 export const defaultConfiguration = {
