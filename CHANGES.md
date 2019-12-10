@@ -7,10 +7,14 @@ Storage:
 -   Add an API for storing and streaming content
 ## 0.0.57
 
-UI: 
+General:
+
+-   CSV Connector can now process ampersand character properly
+
+UI:
 
 -   Fixed the issue of modifying date string in text input using backspaces to an empty string will cause text input to reset text input
-
+-   User can't input a future date to date of last modification on add dataset page
 
 ## 0.0.56
 
