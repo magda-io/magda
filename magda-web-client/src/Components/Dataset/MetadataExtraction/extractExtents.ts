@@ -124,7 +124,7 @@ function aggregateDates(rows: any[], headers: string[]) {
             var dateStr: string = row[header].toString();
             var parsedDate: Moment = moment.utc(dateStr, dateFormats);
             if (parsedDate) {
-                let extendedTime = extendIncompleteTime(parsedDate);
+                let extendedTime = extendIncompleteTime(parsedDate.clone());
                 if (extendedTime.isAfter(latestDate)) {
                     // Updating the current latest date
                     latestDate = extendedTime;
@@ -154,13 +154,20 @@ function aggregateDates(rows: any[], headers: string[]) {
  */
 function extendIncompleteTime(m: Moment): Moment {
     const originalMoment = m.clone();
+    const creationData = m.creationData();
     // YYYY, unless the original date was the very start of the year
-    if (originalMoment.isSame(m.startOf("year"))) {
+    if (
+        creationData.format === "YYYY" &&
+        originalMoment.isSame(m.startOf("year"))
+    ) {
         return originalMoment.endOf("year");
     }
 
-    // YYYY, unless the original date was the very start of the month
-    if (originalMoment.isSame(m.startOf("month"))) {
+    // YYYY-MM, unless the original date was the very start of the month
+    if (
+        originalMoment.date() !== 0 &&
+        originalMoment.isSame(m.startOf("month"))
+    ) {
         return originalMoment.endOf("month");
     }
 
