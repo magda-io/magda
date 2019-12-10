@@ -19,12 +19,14 @@ function formatDateForOutput(date: Date | undefined | null) {
     return date ? Moment(date).format(FORMAT) : "Unknown";
 }
 
-function MagdaSingleDatePicker({
+export function MagdaSingleDatePicker({
     date,
-    callback
+    callback,
+    isOutsideRange
 }: {
     date?: Date;
     callback: Function;
+    isOutsideRange?: (date: any) => boolean;
 }) {
     const [focused, setFocused] = useState(false);
 
@@ -34,6 +36,8 @@ function MagdaSingleDatePicker({
         }
     };
 
+    isOutsideRange = isOutsideRange ? isOutsideRange : () => false;
+
     return (
         <span className="date-editor-wrapper">
             <SingleDatePicker
@@ -42,7 +46,7 @@ function MagdaSingleDatePicker({
                 id={Math.random().toString()}
                 focused={focused}
                 onFocusChange={state => setFocused(!!state.focused)}
-                isOutsideRange={() => false}
+                isOutsideRange={isOutsideRange}
                 displayFormat={FORMAT}
                 noBorder
                 small

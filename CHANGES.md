@@ -1,3 +1,15 @@
+## 0.0.57
+
+General:
+
+-   CSV Connector can now process ampersand character properly
+-   Upgraded typescript to 3.7.2 & Use [Project References](https://www.typescriptlang.org/docs/handbook/project-references.html) to organize typescript project
+
+UI:
+
+-   Fixed the issue of modifying date string in text input using backspaces to an empty string will cause text input to reset text input
+-   User can't input a future date to date of last modification on add dataset page
+
 ## 0.0.56
 
 General:
@@ -8,7 +20,6 @@ General:
     policy (default) or Esri groups based access policy.
 -   Add esri portal connector. Read its README.md file before use.
 -   Changed the way of `auth-secrets` to be created in gitlab
--   Upgraded typescript to 3.7.2 & Use [Project References](https://www.typescriptlang.org/docs/handbook/project-references.html) to organize typescript project
 
 Registry:
 

@@ -156,7 +156,7 @@
                 "accessNotes": "PATH/1",
                 "downloadURL": "INTERNAL DATABASE 2",
                 "format": "Shape File",
-                "description": "&lt;script&gt;alert(âDATASET DESCRIPTION 2â)&lt;/script&gt;"
+                "description": "<script>alert(âDATASET DESCRIPTION 2â)</script>"
             },
             "source": {
                 "type": "csv-distribution",
@@ -178,7 +178,7 @@
                 "accessNotes": "PATH/1",
                 "downloadURL": "INTERNAL DATABASE 2",
                 "format": "Other",
-                "description": "&lt;script&gt;alert(âDATASET DESCRIPTION 2â)&lt;/script&gt;"
+                "description": "<script>alert(âDATASET DESCRIPTION 2â)</script>"
             },
             "source": {
                 "type": "csv-distribution",
@@ -212,7 +212,7 @@
             "csv-dataset": {},
             "dcat-dataset-strings": {
                 "title": "DATASET TITLE 2",
-                "description": "&lt;script&gt;alert(âDATASET DESCRIPTION 2â)&lt;/script&gt;",
+                "description": "<script>alert(âDATASET DESCRIPTION 2â)</script>",
                 "accrualPeriodicity": "AsNeeded",
                 "themes": ["Location"],
                 "keywords": ["KW4", "Item", "Location"],
@@ -255,7 +255,7 @@
                 "accessNotes": "PATH/3",
                 "downloadURL": "file://external-3",
                 "format": "CSV",
-                "description": "DATASET &lt;b&gt;DESCRIPTION&lt;/b&gt; 3"
+                "description": "DATASET <b>DESCRIPTION</b> 3"
             },
             "source": {
                 "type": "csv-distribution",
@@ -277,7 +277,7 @@
                 "accessNotes": "PATH/3",
                 "downloadURL": "file://external-3",
                 "format": "Other",
-                "description": "DATASET &lt;b&gt;DESCRIPTION&lt;/b&gt; 3"
+                "description": "DATASET <b>DESCRIPTION</b> 3"
             },
             "source": {
                 "type": "csv-distribution",
@@ -311,7 +311,7 @@
             "csv-dataset": {},
             "dcat-dataset-strings": {
                 "title": "Ecological Communities of National Environmental Significance (Threatened Ecological Communities)",
-                "description": "DATASET &lt;b&gt;DESCRIPTION&lt;/b&gt; 3",
+                "description": "DATASET <b>DESCRIPTION</b> 3",
                 "accrualPeriodicity": "AsNeeded",
                 "themes": ["Resource"],
                 "keywords": ["Item", "Resource"],
