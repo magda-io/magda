@@ -155,6 +155,12 @@ const argv = yargs
         type: "string",
         coerce: coerceJson("mandatoryFields"),
         default: "null"
+    })
+    .option("addDatasetThemes", {
+        describe: "A list of pre-defined add data ",
+        type: "string",
+        coerce: coerceJson("addDatasetThemes"),
+        default: "[]"
     }).argv;
 
 var app = express();
@@ -235,7 +241,8 @@ const webServerConfig = {
     maxChartProcessingRows: argv.maxChartProcessingRows,
     maxTableProcessingRows: argv.maxTableProcessingRows,
     csvLoaderChunkSize: argv.csvLoaderChunkSize,
-    mandatoryFields: argv.mandatoryFields
+    mandatoryFields: argv.mandatoryFields,
+    addDatasetThemes: argv.addDatasetThemes
 };
 
 app.get("/server-config.js", function(req, res) {
