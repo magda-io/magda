@@ -1,6 +1,6 @@
-const spawn = require("cross-spawn");
-const assert = require("assert");
-const path = require("path");
+import spawn from "cross-spawn";
+import assert from "assert";
+import path from "path";
 import { MockRegistry } from "./MockRegistry";
 import { MockExpressServer } from "./MockExpressServer";
 
@@ -21,8 +21,13 @@ export function runConnectorTest(
 
         function run() {
             return new Promise((resolve, reject) => {
+                const tsconfigPath = path.resolve("tsconfig.json");
+                const tsNodeExec = require.resolve("ts-node/dist/bin.js");
+
                 const command = [
-                    "src",
+                    "-r",
+                    require.resolve("tsconfig-paths/register"),
+                    "./src",
                     "--id=connector",
                     "--name=Connector",
                     `--sourceUrl=http://localhost:${catalogPort}`,
@@ -31,16 +36,14 @@ export function runConnectorTest(
                     "--userId=user",
                     "--tenantId=1"
                 ];
-                const proc = spawn(
-                    path.resolve(
-                        __dirname,
-                        "../../../../node_modules/.bin/ts-node"
-                    ),
-                    command,
-                    {
-                        stdio: "inherit"
+                const proc = spawn(tsNodeExec, command, {
+                    stdio: "inherit",
+                    cwd: path.dirname(tsconfigPath),
+                    env: {
+                        ...(process.env ? process.env : {}),
+                        TS_NODE_PROJECT: tsconfigPath
                     }
-                );
+                });
                 proc.on("error", (err: any) => {
                     console.log("Failed to start subprocess.", err);
                     reject(err);

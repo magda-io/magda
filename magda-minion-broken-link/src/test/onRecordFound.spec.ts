@@ -1,22 +1,22 @@
 import {} from "mocha";
 import { expect } from "chai";
-import * as sinon from "sinon";
-import * as nock from "nock";
-import jsc from "@magda/typescript-common/dist/test/jsverify";
-import * as _ from "lodash";
-import * as Client from "ftp";
-import * as URI from "urijs";
-import * as Ajv from "ajv";
+import sinon from "sinon";
+import nock from "nock";
+import jsc from "magda-typescript-common/src/test/jsverify";
+import _ from "lodash";
+import Client from "ftp";
+import URI from "urijs";
+import Ajv from "ajv";
 
-import { Record } from "@magda/typescript-common/dist/generated/registry/api";
-import { encodeURIComponentWithApost } from "@magda/typescript-common/dist/test/util";
+import { Record } from "magda-typescript-common/src/generated/registry/api";
+import { encodeURIComponentWithApost } from "magda-typescript-common/src/test/util";
 import {
     specificRecordArb,
     distUrlArb,
     arrayOfSizeArb,
     arbFlatMap,
     recordArbWithDistArbs
-} from "@magda/typescript-common/dist/test/arbitraries";
+} from "magda-typescript-common/src/test/arbitraries";
 
 import onRecordFound from "../onRecordFound";
 import { BrokenLinkAspect } from "../brokenLinkAspectDef";
@@ -29,7 +29,7 @@ import {
     failureCodeArb
 } from "./arbitraries";
 import FtpHandler from "../FtpHandler";
-import AuthorizedRegistryClient from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
+import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 import parseUriSafe from "../parseUriSafe";
 import RandomStream from "./RandomStream";
 import {

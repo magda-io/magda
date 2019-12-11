@@ -1,12 +1,10 @@
-import AsyncPage, {
-    forEachAsync
-} from "@magda/typescript-common/dist/AsyncPage";
+import AsyncPage, { forEachAsync } from "magda-typescript-common/src/AsyncPage";
 import CkanUrlBuilder from "./CkanUrlBuilder";
-import formatServiceError from "@magda/typescript-common/dist/formatServiceError";
-import { ConnectorSource } from "@magda/typescript-common/dist/JsonConnector";
-import retry from "@magda/typescript-common/dist/retry";
-import request from "@magda/typescript-common/dist/request";
-import * as URI from "urijs";
+import formatServiceError from "magda-typescript-common/src/formatServiceError";
+import { ConnectorSource } from "magda-typescript-common/src/JsonConnector";
+import retry from "magda-typescript-common/src/retry";
+import request from "magda-typescript-common/src/request";
+import URI from "urijs";
 
 export interface CkanThing {
     id: string;

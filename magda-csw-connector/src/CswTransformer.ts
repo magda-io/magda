@@ -1,8 +1,8 @@
 import JsonTransformer, {
     JsonTransformerOptions
-} from "@magda/typescript-common/dist/JsonTransformer";
-import * as jsonpath from "jsonpath";
-import ConnectorRecordId from "@magda/typescript-common/dist/ConnectorRecordId";
+} from "magda-typescript-common/src/JsonTransformer";
+import jsonpath from "jsonpath";
+import ConnectorRecordId from "magda-typescript-common/src/ConnectorRecordId";
 
 export default class CswTransformer extends JsonTransformer {
     constructor(options: JsonTransformerOptions) {

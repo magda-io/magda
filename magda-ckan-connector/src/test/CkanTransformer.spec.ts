@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import "mocha";
-import { transformer } from "src/setup";
+import { transformer } from "../setup";
 
 describe("CkanTransformer", () => {
     describe("organizationJsonToRecord", () => {

@@ -1,9 +1,9 @@
-import * as express from "express";
-import * as session from "express-session";
-import * as pg from "pg";
-import * as passport from "passport";
-import * as URI from "urijs";
-import * as signature from "cookie-signature";
+import express from "express";
+import session from "express-session";
+import pg from "pg";
+import passport from "passport";
+import URI from "urijs";
+import signature from "cookie-signature";
 
 /** This is present in the express-session types but not actually exported properly, so it needs to be copy-pasted here */
 type SessionCookieOptions = {
