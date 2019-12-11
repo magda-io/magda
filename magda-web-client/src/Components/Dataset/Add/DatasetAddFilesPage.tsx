@@ -89,6 +89,7 @@ class DatasetAddFilesPage extends React.Component<
                 // --- skip the directory item
                 continue;
             }
+            if (!thisFile) continue;
 
             const newFile = {
                 datasetTitle: toTitleCase(
