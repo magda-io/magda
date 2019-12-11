@@ -1,6 +1,6 @@
-import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
-import { Record } from "@magda/typescript-common/dist/generated/registry/api";
-import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
+import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+import { Record } from "magda-typescript-common/src/generated/registry/api";
+import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable";
 
 import { FormatAspect } from "./formatAspectDef";
 

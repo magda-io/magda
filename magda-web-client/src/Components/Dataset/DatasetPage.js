@@ -704,9 +704,9 @@ class RecordHandler extends React.Component {
                                                     onChange={temporalChange(
                                                         "intervals"
                                                     )}
-                                                    editor={
-                                                        multiDateIntervalEditor
-                                                    }
+                                                    editor={multiDateIntervalEditor(
+                                                        true
+                                                    )}
                                                 >
                                                     <div className="dataset-details-temporal-coverage">
                                                         <TemporalAspectViewer

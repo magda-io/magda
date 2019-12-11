@@ -1,6 +1,6 @@
 import { CoreOptions } from "request";
-import request from "@magda/typescript-common/dist/request";
-import * as http from "http";
+import request from "magda-typescript-common/src/request";
+import http from "http";
 import DevNull from "./DevNull";
 
 /**
@@ -101,7 +101,7 @@ export async function doRequest(
 
     const [responseCode] = await Promise.all([reqPromise, streamPromise]);
 
-    return responseCode;
+    return responseCode as number;
 }
 
 export class BadHttpResponseError extends Error {

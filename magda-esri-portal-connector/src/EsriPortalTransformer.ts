@@ -1,17 +1,17 @@
-import ConnectorRecordId from "@magda/typescript-common/dist/ConnectorRecordId";
+import ConnectorRecordId from "magda-typescript-common/src/ConnectorRecordId";
 import {
     AspectDefinition,
     Record
-} from "@magda/typescript-common/dist/generated/registry/api";
-import JsonTransformer from "@magda/typescript-common/dist/JsonTransformer";
+} from "magda-typescript-common/src/generated/registry/api";
+import JsonTransformer from "magda-typescript-common/src/JsonTransformer";
 import {
     CompiledAspects,
     JsonTransformerOptions,
     BuilderSetupFunctionParameters,
     BuilderFunctionParameters,
     buildersToCompiledAspects
-} from "@magda/typescript-common/dist/JsonTransformer";
-import AspectBuilder from "@magda/typescript-common/dist/AspectBuilder";
+} from "magda-typescript-common/src/JsonTransformer";
+import AspectBuilder from "magda-typescript-common/src/AspectBuilder";
 
 type EsriJsonTransformerOptions = JsonTransformerOptions & {
     groupAspectBuilders: AspectBuilder[];

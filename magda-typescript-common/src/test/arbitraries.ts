@@ -2,7 +2,7 @@ const { curried2 } = require("jsverify/lib/utils");
 import { Record } from "../generated/registry/api";
 const lazyseq = require("lazy-seq");
 import uuid = require("uuid/v4");
-import * as _ from "lodash";
+import _ from "lodash";
 import jsc from "./jsverify";
 
 function fromCode(code: number) {
@@ -45,7 +45,10 @@ export const lcAlphaStringArbNe = jsc
 
 export const peopleNameArb = jsc
     .tuple([lcAlphaStringArbNe, lcAlphaStringArbNe])
-    .smap(strArr => strArr.join(" "), string => string.split(" "));
+    .smap(
+        strArr => strArr.join(" "),
+        string => string.split(" ") as [string, string]
+    );
 
 const uuidArb: jsc.Arbitrary<string> = jsc.bless({
     generator: jsc.generator.bless(x => uuid()),

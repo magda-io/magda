@@ -8,6 +8,7 @@ interface AlwaysEditorProps<V> {
     editor: Editor<V>;
     validationFieldPath?: string;
     validationFieldLabel?: string;
+    renderAbove?: boolean;
 }
 
 interface AlwaysEditorState {

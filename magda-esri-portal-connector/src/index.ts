@@ -1,8 +1,8 @@
 import EsriPortal from "./EsriPortal";
-import JsonConnector from "@magda/typescript-common/dist/JsonConnector";
-import { JsonConnectorOptions } from "@magda/typescript-common/dist/JsonConnector";
-import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
-import ConnectionResult from "@magda/typescript-common/dist/ConnectionResult";
+import JsonConnector from "magda-typescript-common/src/JsonConnector";
+import { JsonConnectorOptions } from "magda-typescript-common/src/JsonConnector";
+import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+import ConnectionResult from "magda-typescript-common/src/ConnectionResult";
 
 import { argv, transformer, transformerOptions } from "./setup";
 

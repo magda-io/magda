@@ -1,5 +1,5 @@
-import * as escapeStringRegexp from "escape-string-regexp";
-import * as _ from "lodash";
+import escapeStringRegexp from "escape-string-regexp";
+import _ from "lodash";
 /**
  * Tries and find the Magda-readable file format from this raw format
  * @param rawFormat The format collected directly from some datasource

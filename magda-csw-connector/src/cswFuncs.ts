@@ -1,5 +1,5 @@
-import * as jsonpath from "jsonpath";
-import * as lodash from "lodash";
+import jsonpath from "jsonpath";
+import lodash from "lodash";
 
 function getResponsibleParties(dataset: any) {
     return jsonpath
