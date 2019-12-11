@@ -1,9 +1,9 @@
-import * as pg from "pg";
-import * as fse from "fs-extra";
-import * as recursive from "recursive-readdir";
+import pg from "pg";
+import fse from "fs-extra";
+import recursive from "recursive-readdir";
 import getTestDBConfig from "./getTestDBConfig";
-import * as path from "path";
-import * as fs from "fs";
+import path from "path";
+import fs from "fs";
 
 function getVersionNumber(fileName: string) {
     const matches = fileName.match(/^V(\d+(_\d+)*)/i);

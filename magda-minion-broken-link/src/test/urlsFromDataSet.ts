@@ -1,5 +1,5 @@
-import { Record } from "@magda/typescript-common/dist/generated/registry/api";
-import * as _ from "lodash";
+import { Record } from "magda-typescript-common/src/generated/registry/api";
+import _ from "lodash";
 
 /**
  * Gets an array of the individual urls from every distribution inside a dataset record, including both downloadURL and accessURL.

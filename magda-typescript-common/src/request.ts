@@ -1,5 +1,5 @@
-import * as request from "request";
-import * as readPkgUp from "read-pkg-up";
+import request from "request";
+import readPkgUp from "read-pkg-up";
 const pkg = readPkgUp.sync().pkg;
 
 // include user agent derived from package.json in all http requests

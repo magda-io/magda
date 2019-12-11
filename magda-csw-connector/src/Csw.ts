@@ -1,14 +1,14 @@
-import { ConnectorSource } from "@magda/typescript-common/dist/JsonConnector";
-import * as URI from "urijs";
-import request from "@magda/typescript-common/dist/request";
-import AsyncPage from "@magda/typescript-common/dist/AsyncPage";
+import { ConnectorSource } from "magda-typescript-common/src/JsonConnector";
+import URI from "urijs";
+import request from "magda-typescript-common/src/request";
+import AsyncPage from "magda-typescript-common/src/AsyncPage";
 import CswUrlBuilder from "./CswUrlBuilder";
-import retry from "@magda/typescript-common/dist/retry";
-import formatServiceError from "@magda/typescript-common/dist/formatServiceError";
-import * as xmldom from "xmldom";
-import * as xml2js from "xml2js";
-import * as jsonpath from "jsonpath";
-import * as fs from "fs";
+import retry from "magda-typescript-common/src/retry";
+import formatServiceError from "magda-typescript-common/src/formatServiceError";
+import xmldom from "xmldom";
+import xml2js from "xml2js";
+import jsonpath from "jsonpath";
+import fs from "fs";
 import { merge } from "lodash";
 
 import cswFuncs from "./cswFuncs";

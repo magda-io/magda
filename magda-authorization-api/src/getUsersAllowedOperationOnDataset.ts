@@ -1,16 +1,16 @@
-import * as request from "request-promise-native";
-import * as _ from "lodash";
-import GenericError from "@magda/typescript-common/dist/authorization-api/GenericError";
-import isUuid from "@magda/typescript-common/dist/util/isUuid";
+import request from "request-promise-native";
+import _ from "lodash";
+import GenericError from "magda-typescript-common/src/authorization-api/GenericError";
+import isUuid from "magda-typescript-common/src/util/isUuid";
 import OpaCompileResponseParser, {
     RegoRef,
     RegoExp
-} from "@magda/typescript-common/dist/OpaCompileResponseParser";
+} from "magda-typescript-common/src/OpaCompileResponseParser";
 import {
     DatasetAccessControlMetaData,
     User
-} from "@magda/typescript-common/dist/authorization-api/model";
-import * as pg from "pg";
+} from "magda-typescript-common/src/authorization-api/model";
+import pg from "pg";
 
 const INVALID_CHAR_REGEX = /[^a-z_\d\.]/i;
 

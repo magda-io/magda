@@ -1,11 +1,12 @@
 {
   "name": "@magda/minion-format",
   "description": "MAGDA Layering Minion",
-  "version": "0.0.56-0",
+  "version": "0.0.57-0",
   "scripts": {
+    "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
-    "compile": "tsc -p tsconfig-build.json",
-    "watch": "tsc -p tsconfig-build.json --watch",
+    "compile": "tsc -b && ts-module-alias-transformer dist",
+    "watch": "tsc -b --watch",
     "start": "node dist/index.js",
     "dev": "run-typescript-in-nodemon src/index.ts",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
@@ -16,7 +17,7 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@magda/scripts": "^0.0.56-0",
+    "@magda/scripts": "^0.0.57-0",
     "@types/chai": "^4.0.2",
     "@types/ftp": "^0.3.29",
     "@types/lodash": "^4.14.88",
@@ -33,12 +34,12 @@
     "mocha": "^3.5.0",
     "nock": "^9.0.14",
     "sinon": "^3.0.0",
-    "typescript": "^3.2.0"
+    "typescript": "^3.7.2"
   },
   "dependencies": {
-    "@magda/minion-framework": "^0.0.56-0",
-    "@magda/registry-aspects": "^0.0.56-0",
-    "@magda/typescript-common": "^0.0.56-0",
+    "@magda/minion-framework": "^0.0.57-0",
+    "@magda/registry-aspects": "^0.0.57-0",
+    "@magda/typescript-common": "^0.0.57-0",
     "@types/escape-string-regexp": "^0.0.32",
     "@types/lodash": "^4.14.88",
     "escape-string-regexp": "^1.0.5",
@@ -64,5 +65,9 @@
     "categories": {
       "minion": true
     }
+  },
+  "_moduleMappings": {
+    "magda-typescript-common/src": "@magda/typescript-common/dist",
+    "magda-minion-framework/src": "@magda/minion-framework/dist"
   }
 }

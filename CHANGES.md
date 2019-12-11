@@ -3,6 +3,7 @@
 General:
 
 -   CSV Connector can now process ampersand character properly
+-   Upgraded typescript to 3.7.2 & Use [Project References](https://www.typescriptlang.org/docs/handbook/project-references.html) to organize typescript project
 
 UI:
 
@@ -160,6 +161,7 @@ UI:
 -   Improve keywords generation logic for Spreadsheet
 -   Mention that choosing state is optional
 -   Make spatial input default to Australia
+-   Render selected time intervals above the date picker so that nothing gets hidden
 
 Gateway:
 

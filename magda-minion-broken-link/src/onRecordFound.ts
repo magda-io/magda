@@ -1,10 +1,10 @@
-import * as _ from "lodash";
+import _ from "lodash";
 import { CoreOptions } from "request";
 
-import retryBackoff from "@magda/typescript-common/dist/retryBackoff";
-import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
-import { Record } from "@magda/typescript-common/dist/generated/registry/api";
-import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
+import retryBackoff from "magda-typescript-common/src/retryBackoff";
+import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+import { Record } from "magda-typescript-common/src/generated/registry/api";
+import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable";
 import { BrokenLinkAspect, RetrieveResult } from "./brokenLinkAspectDef";
 import FTPHandler from "./FtpHandler";
 import parseUriSafe from "./parseUriSafe";

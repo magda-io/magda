@@ -1,6 +1,6 @@
 import {} from "mocha";
-import * as _ from "lodash";
-import jsc from "@magda/typescript-common/dist/test/jsverify";
+import _ from "lodash";
+import jsc from "magda-typescript-common/src/test/jsverify";
 import { expect } from "chai";
 import wait from "../wait";
 import { shrink } from "jsverify";
@@ -23,7 +23,7 @@ describe("wait function", () => {
         return jsc.assert(
             jsc.forall(
                 { ...jsc.integer(1, 2000), shrink: shrink.noop },
-                async function(waitTime) {
+                async function(waitTime: number) {
                     const now = new Date().getTime();
                     await wait(waitTime);
                     const newTime = new Date().getTime();
