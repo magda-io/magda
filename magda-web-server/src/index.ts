@@ -155,6 +155,12 @@ const argv = yargs
         type: "string",
         coerce: coerceJson("mandatoryFields"),
         default: "null"
+    })
+    .option("dateFormats", {
+        describe: "A list of date formats supported by this Magda instance",
+        type: "string",
+        coerce: coerceJson("dateFormats"),
+        default: "[]"
     }).argv;
 
 var app = express();
@@ -235,7 +241,8 @@ const webServerConfig = {
     maxChartProcessingRows: argv.maxChartProcessingRows,
     maxTableProcessingRows: argv.maxTableProcessingRows,
     csvLoaderChunkSize: argv.csvLoaderChunkSize,
-    mandatoryFields: argv.mandatoryFields
+    mandatoryFields: argv.mandatoryFields,
+    dateFormats: argv.dateFormats
 };
 
 app.get("/server-config.js", function(req, res) {
