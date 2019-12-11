@@ -331,10 +331,12 @@ class RecordsService(
                 ) match {
                   case Success(recordOut) =>
                     complete(recordOut)
+                  // If the exception is from validation then reveal the message to the caller,
+                  // otherwise log it and return something generic.
                   case Failure(exception: ValidationException) =>
                     complete(
                       StatusCodes.BadRequest,
-                      BadRequest("Encountered an error")
+                      BadRequest(exception.getMessage)
                     )
                   case Failure(exception) =>
                     logger.error(
