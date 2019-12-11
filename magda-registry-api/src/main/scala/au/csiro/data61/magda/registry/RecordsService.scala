@@ -24,6 +24,7 @@ import scalikejdbc.DB
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
+import org.everit.json.schema.ValidationException
 
 @Path("/records")
 @io.swagger.annotations.Api(value = "records", produces = "application/json")
@@ -330,10 +331,19 @@ class RecordsService(
                 ) match {
                   case Success(recordOut) =>
                     complete(recordOut)
-                  case Failure(exception) =>
+                  case Failure(exception: ValidationException) =>
                     complete(
                       StatusCodes.BadRequest,
-                      BadRequest(exception.getMessage)
+                      BadRequest("Encountered an error")
+                    )
+                  case Failure(exception) =>
+                    logger.error(
+                      exception,
+                      "Encountered an exception when putting a record"
+                    )
+                    complete(
+                      StatusCodes.InternalServerError,
+                      BadRequest("Encountered an error")
                     )
                 }
               }

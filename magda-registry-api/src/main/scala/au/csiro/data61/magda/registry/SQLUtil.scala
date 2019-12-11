@@ -33,7 +33,7 @@ object SQLUtil {
         if (innerTenantId == MAGDA_ADMIN_PORTAL_ID) {
           // Assume that null values are the same as 0. Why not just set a default in the DB?
           // Because it'll take a whole day to process the migration.
-          sqls"${buildSqlQuery(sqls"IS NULL")} OR ${buildSqlQuery(sqls"= $innerTenantId")}"
+          sqls"(${buildSqlQuery(sqls"IS NULL")} OR ${buildSqlQuery(sqls"= $innerTenantId")})"
         } else {
           buildSqlQuery(sqls"= ${innerTenantId}")
         }
