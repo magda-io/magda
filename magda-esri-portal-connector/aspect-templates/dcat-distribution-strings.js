@@ -16,7 +16,7 @@ if (distribution.url) {
 return {
     title: distribution.name || distribution.id,
     license: undefined,
-    description: distribution.description || undefined,
+    description: undefined,
     issued: undefined,
     modified: undefined,
     downloadURL: downloadURL,
