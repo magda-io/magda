@@ -1,7 +1,6 @@
 import {} from "mocha";
 import * as sinon from "sinon";
 import * as express from "express";
-import * as nock from "nock";
 import * as _ from "lodash";
 import * as supertest from "supertest";
 
