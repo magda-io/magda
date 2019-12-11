@@ -21,6 +21,7 @@ data:
     "maxChartProcessingRows": {{ toJson .Values.maxChartProcessingRows | quote }},
     "maxTableProcessingRows": {{ toJson .Values.maxTableProcessingRows | quote }},
     "csvLoaderChunkSize": {{ toJson .Values.csvLoaderChunkSize | quote }},
+    "dateConfig": {{ toJson .Values.dateConfig | quote }},
     "addDatasetThemes": {{ toJson .Values.addDatasetThemes | quote }},
     {{- if .Values.mandatoryFields }}
     "mandatoryFields": {{ toJson .Values.mandatoryFields | quote }}

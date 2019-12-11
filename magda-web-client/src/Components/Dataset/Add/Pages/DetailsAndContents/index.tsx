@@ -309,7 +309,8 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     <AlwaysEditor
                         value={temporalCoverage.intervals}
                         onChange={editTemporalCoverage("intervals")}
-                        editor={multiDateIntervalEditor}
+                        editor={multiDateIntervalEditor(true)}
+                        renderAbove={true}
                     />
                 </div>
                 <h3>Spatial extent</h3>

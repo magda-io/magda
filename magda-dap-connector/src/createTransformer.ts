@@ -1,8 +1,8 @@
-import AspectBuilder from "@magda/typescript-common/dist/AspectBuilder";
+import AspectBuilder from "magda-typescript-common/src/AspectBuilder";
 import DapTransformer from "./DapTransformer";
 import DapUrlBuilder from "./DapUrlBuilder";
-import * as moment from "moment";
-import * as URI from "urijs";
+import moment from "moment";
+import URI from "urijs";
 
 export interface CreateTransformerOptions {
     name: string;

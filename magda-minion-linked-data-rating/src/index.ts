@@ -1,8 +1,8 @@
-import minion from "@magda/minion-framework/dist/index";
+import minion from "magda-minion-framework/src/index";
 import linkedDataAspectDef from "./linkedDataAspectDef";
-import datasetQualityAspectDef from "@magda/minion-framework/dist/common-aspect-defs/datasetQualityAspectDef";
+import datasetQualityAspectDef from "magda-minion-framework/src/common-aspect-defs/datasetQualityAspectDef";
 import onRecordFound from "./onRecordFound";
-import commonYargs from "@magda/minion-framework/dist/commonYargs";
+import commonYargs from "magda-minion-framework/src/commonYargs";
 
 const ID = "minion-linked-data-rating";
 const argv = commonYargs(6109, "http://localhost:6109");

@@ -129,16 +129,21 @@ export const dateIntervalEditor: Editor<Interval> = {
     }
 };
 
-export const multiDateIntervalEditor: Editor<
-    Interval[]
-> = ListMultiItemEditor.create(
-    dateIntervalEditor,
-    () => {
-        return {
-            start: undefined,
-            end: undefined
-        };
-    },
-    (value: Interval) => !!value.start && !!value.end,
-    true
-);
+export const multiDateIntervalEditor = function(renderAbove: boolean) {
+    const myMultiItemEditor = ListMultiItemEditor.create(
+        dateIntervalEditor,
+        () => {
+            return {
+                start: undefined,
+                end: undefined
+            };
+        },
+        (value: Interval) => !!value.start && !!value.end,
+        true,
+        renderAbove
+    );
+    return {
+        edit: myMultiItemEditor.edit,
+        view: myMultiItemEditor.view
+    };
+};

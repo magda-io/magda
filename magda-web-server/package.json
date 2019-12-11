@@ -4,9 +4,10 @@
   "version": "0.0.57-0",
   "license": "Apache-2.0",
   "scripts": {
+    "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
-    "compile": "tsc -p tsconfig-build.json",
-    "watch": "tsc -p tsconfig-build.json --watch",
+    "compile": "tsc -b && ts-module-alias-transformer dist",
+    "watch": "tsc -b --watch",
     "start": "node dist/index.js",
     "dev": "run-typescript-in-nodemon src/index.ts --baseExternalUrl=http://localhost:6107/ --baseUrl=http://dev.magda.io/",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
@@ -37,7 +38,7 @@
     "sinon": "^2.4.1",
     "supertest": "^3.0.0",
     "typed-promisify": "^0.4.0",
-    "typescript": "^3.2.0",
+    "typescript": "^3.7.2",
     "xml2js": "^0.4.19"
   },
   "dependencies": {
@@ -62,5 +63,8 @@
     "categories": {
       "ui": true
     }
+  },
+  "_moduleMappings": {
+    "magda-typescript-common/src": "@magda/typescript-common/dist"
   }
 }

@@ -1,9 +1,9 @@
 import {} from "mocha";
-import * as nock from "nock";
+import nock from "nock";
 import { expect } from "chai";
 
-import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
-import JsonConnector from "@magda/typescript-common/dist/JsonConnector";
+import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+import JsonConnector from "magda-typescript-common/src/JsonConnector";
 
 import createTransformer from "../createTransformer";
 import ProjectOpenData from "../ProjectOpenData";
