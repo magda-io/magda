@@ -41,5 +41,11 @@
       "name": "data61/magda-datastore-api",
       "include": "node_modules dist Dockerfile"
     }
+  },
+  "magda": {
+    "language": "typescript",
+    "categories": {
+      "api": true
+    }
   }
 }
