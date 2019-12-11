@@ -13,10 +13,6 @@ console.log(createApiRouter);
 describe("proxying", () => {
     let app: express.Application;
 
-    // after(() => {
-    //     nock.cleanAll();
-    // });
-
     beforeEach(() => {
         app = express();
         app.use(
@@ -26,8 +22,8 @@ describe("proxying", () => {
                     endPoint: "localhost",
                     port: 9000,
                     useSSL: false,
-                    accessKey: "magdaminioaccesskey",
-                    secretKey: "cricketmoroccobengreenturmeric",
+                    accessKey: "",
+                    secretKey: "",
                     bucket: "magda-test-1"
                 })
             })
