@@ -88,6 +88,9 @@ export default class MagdaMinioClient implements ObjectStoreClient {
     }
 
     putFile(fileName: string, content: any, metaData?: object): Promise<any> {
+        if (Object.keys(content).length === 0) {
+            return Promise.reject("Content type header not specified.");
+        }
         const contentSize = content.length;
         const contentStream = new Readable();
 

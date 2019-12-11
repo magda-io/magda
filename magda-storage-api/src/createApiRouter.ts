@@ -85,7 +85,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 // Sending 500 for everything for the moment
                 return res.status(500).send({
                     message:
-                        "Encountered error while uploading file." +
+                        "Encountered error while uploading file. " +
                         "This has been logged and we are looking into this."
                 });
             });
