@@ -38,6 +38,23 @@ Datastore API started on port 6120
 
 ## API
 
+### PUT /:fileid
+
+Attempts to upload content to the MinIO bucket. Gives it a name `<fileid>` and returns a unique etag
+if the upload is successfull.
+
+#### Example usage
+
+```console
+$ cat ./favourite.csv
+column1,column2
+A,1234
+B,4321
+C,2007
+$ curl -X PUT -H "Content-Type:text/csv" localhost:6120/v0/myFavouriteCSV --data-binary '@favourite.csv'
+{"message":"File uploaded successfully","etag":"<some hash value>"}
+```
+
 ### GET /:fileid
 
 Attempts to retrieve content with the name `<fileid>` from the MinIO server
@@ -51,18 +68,6 @@ column1,column2
 A,1234
 B,4321
 C,2007
-```
-
-### PUT /:fileid
-
-Attempts to upload content to the MinIO bucket. Gives it a name `<fileid>` and returns a unique etag
-if the upload is successfull.
-
-#### Example usage
-
-```console
-$ curl -X PUT -H "Content-Type:text/csv" localhost:6120/v0/myFavouriteCSV --data-binary '@favourite.csv'
-{"message":"File uploaded successfully","etag":"<some hash value>"}
 ```
 
 ### Note
