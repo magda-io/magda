@@ -161,9 +161,21 @@ const argv = yargs
         type: "string",
         coerce: coerceJson("addDatasetThemes"),
         default: "[]"
+    })
+    .option("noManualKeywords", {
+        describe:
+            "Whether manual keywords input should be allowed on add dataset page",
+        type: "boolean",
+        default: false
+    })
+    .option("noManualThemes", {
+        describe:
+            "Whether manual themes input should be allowed on add dataset page",
+        type: "boolean",
+        default: false
     }).argv;
 
-var app = express();
+const app = express();
 
 app.use(morgan("combined"));
 
@@ -242,7 +254,9 @@ const webServerConfig = {
     maxTableProcessingRows: argv.maxTableProcessingRows,
     csvLoaderChunkSize: argv.csvLoaderChunkSize,
     mandatoryFields: argv.mandatoryFields,
-    addDatasetThemes: argv.addDatasetThemes
+    addDatasetThemes: argv.addDatasetThemes,
+    noManualKeywords: argv.noManualKeywords,
+    noManualThemes: argv.noManualThemes
 };
 
 app.get("/server-config.js", function(req, res) {

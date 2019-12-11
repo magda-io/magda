@@ -39,3 +39,5 @@ mandatoryFields:
   - informationSecurity.classification
   - informationSecurity.disseminationLimits
 addDatasetThemes: []
+noManualThemes: false
+noManualKeywords: false
