@@ -11,6 +11,7 @@ interface TagInputProps {
     onChange: (value?: KeywordsLike) => void;
     useVocabularyAutoCompleteInput?: boolean;
     options?: string[];
+    noManualInput?: boolean;
 }
 
 async function optionsQuery(options: string[], str: string): Promise<string[]> {
@@ -23,6 +24,8 @@ async function optionsQuery(options: string[], str: string): Promise<string[]> {
 }
 
 export default (props: TagInputProps) => {
+    const noManualInput = props.noManualInput === true ? true : false;
+
     return (
         <MultiSelectAutoComplete<string>
             placeHolderText={props.placeHolderText}
@@ -37,6 +40,7 @@ export default (props: TagInputProps) => {
                         : undefined
                 )
             }
+            noManualInput={noManualInput}
             query={
                 props.useVocabularyAutoCompleteInput
                     ? query

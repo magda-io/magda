@@ -51,6 +51,8 @@ const serverConfig: {
     csvLoaderChunkSize: number;
     mandatoryFields: ValidationFieldList;
     addDatasetThemes?: string[];
+    noManualKeywords?: boolean;
+    noManualThemes?: boolean;
 } = window.magda_server_config || {};
 
 const registryReadOnlyApiUrl =
@@ -190,7 +192,13 @@ export const config = {
           ],
     addDatasetThemes: serverConfig.addDatasetThemes
         ? serverConfig.addDatasetThemes
-        : []
+        : [],
+    noManualKeywords: serverConfig.noManualKeywords
+        ? serverConfig.noManualKeywords
+        : false,
+    noManualThemes: serverConfig.noManualThemes
+        ? serverConfig.noManualThemes
+        : false
 };
 
 export const defaultConfiguration = {
