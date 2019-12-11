@@ -18,6 +18,7 @@ Registry:
 -   Removed some unused fields from `dcat-dataset-strings` - it should now be back to looking more-or-less like DCAT.
 -   Added the feature of validating aspect data against JSON Schema (Default to off)
 -   Fixed request for all tenant records returning `[]`.
+-   Made the registry treat tenant id `NULL` as equivalent to tenant id `0`
 
 Gateway:
 
