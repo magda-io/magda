@@ -1,6 +1,6 @@
 import { config } from "config";
 import { State } from "./DatasetAddCommon";
-import * as JsonPath from "jsonpath";
+import JsonPath from "jsonpath";
 import {
     RefObject,
     useState,

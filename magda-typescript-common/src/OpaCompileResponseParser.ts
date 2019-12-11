@@ -1,4 +1,4 @@
-import * as _ from "lodash";
+import _ from "lodash";
 
 export type RegoValue = string | boolean | number | Array<any> | Object;
 

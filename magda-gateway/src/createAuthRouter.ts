@@ -1,7 +1,7 @@
 import { Router } from "express";
-import ApiClient from "@magda/typescript-common/dist/authorization-api/ApiClient";
+import ApiClient from "magda-typescript-common/src/authorization-api/ApiClient";
 import Authenticator from "./Authenticator";
-import * as passport from "passport";
+import passport from "passport";
 
 export interface AuthRouterOptions {
     authenticator: Authenticator;

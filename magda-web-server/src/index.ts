@@ -1,13 +1,13 @@
-import * as express from "express";
-import * as path from "path";
-import * as URI from "urijs";
-import * as yargs from "yargs";
-import * as morgan from "morgan";
-import request from "@magda/typescript-common/dist/request";
+import express from "express";
+import path from "path";
+import URI from "urijs";
+import yargs from "yargs";
+import morgan from "morgan";
+import request from "magda-typescript-common/src/request";
 
-import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
-import coerceJson from "@magda/typescript-common/dist/coerceJson";
-import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
+import Registry from "magda-typescript-common/src/registry/RegistryClient";
+import coerceJson from "magda-typescript-common/src/coerceJson";
+import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts";
 
 import buildSitemapRouter from "./buildSitemapRouter";
 import getIndexFileContent from "./getIndexFileContent";
@@ -156,6 +156,12 @@ const argv = yargs
         coerce: coerceJson("mandatoryFields"),
         default: "null"
     })
+    .option("dateFormats", {
+        describe: "A list of date formats supported by this Magda instance",
+        type: "string",
+        coerce: coerceJson("dateFormats"),
+        default: "[]"
+    })
     .option("addDatasetThemes", {
         describe: "A list of pre-defined add data ",
         type: "string",
@@ -254,6 +260,7 @@ const webServerConfig = {
     maxTableProcessingRows: argv.maxTableProcessingRows,
     csvLoaderChunkSize: argv.csvLoaderChunkSize,
     mandatoryFields: argv.mandatoryFields,
+    dateFormats: argv.dateFormats,
     addDatasetThemes: argv.addDatasetThemes,
     noManualKeywords: argv.noManualKeywords,
     noManualThemes: argv.noManualThemes
@@ -387,9 +394,12 @@ app.use("/", function(req, res) {
 app.listen(argv.listenPort);
 console.log("Listening on port " + argv.listenPort);
 
-process.on("unhandledRejection", (reason: string, promise: any) => {
-    console.error(reason);
-});
+process.on(
+    "unhandledRejection",
+    (reason: {} | null | undefined, promise: Promise<any>) => {
+        console.error(reason);
+    }
+);
 
 function addTrailingSlash(url: string) {
     if (!url) {

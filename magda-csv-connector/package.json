@@ -3,17 +3,18 @@
   "description": "MAGDA Csv/Xlsx/Ods etc data catalog Connector",
   "version": "0.0.57-0",
   "scripts": {
+    "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
     "compile": "yarn run compile-node && yarn run compile-browser",
-    "compile-node": "tsc -p tsconfig-build.json",
+    "compile-node": "tsc -b && ts-module-alias-transformer dist",
     "compile-browser": "webpack --config src/webpack.config.js",
-    "watch": "tsc -p tsconfig-build.json --watch",
+    "watch": "tsc -b --watch",
     "start": "node dist/index.js",
     "dev": "run-typescript-in-nodemon src/index.ts",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
     "retag-and-push": "retag-and-push",
-    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
+    "test": "mocha --require ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
   },
   "license": "Apache-2.0",
   "devDependencies": {
@@ -26,9 +27,11 @@
     "@types/xml2js": "0.0.33",
     "@types/xmldom": "^0.1.29",
     "@types/yargs": "^12.0.8",
-    "ts-loader": "^2.3.7",
-    "typescript": "^3.2.0",
-    "webpack": "^3.6.0"
+    "ts-loader": "^6.2.1",
+    "tsconfig-paths-webpack-plugin": "^3.2.0",
+    "typescript": "^3.7.2",
+    "webpack": "^4.28.3",
+    "webpack-cli": "^3.3.10"
   },
   "dependencies": {
     "@magda/registry-aspects": "^0.0.57-0",
@@ -55,5 +58,8 @@
     "categories": {
       "connector": true
     }
+  },
+  "_moduleMappings": {
+    "magda-typescript-common/src": "@magda/typescript-common/dist"
   }
 }

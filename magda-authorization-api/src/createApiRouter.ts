@@ -1,23 +1,23 @@
-import * as express from "express";
+import express from "express";
 import { Maybe } from "tsmonad";
 
 import Database from "./Database";
 import {
     PublicUser,
     DatasetAccessControlMetaData
-} from "@magda/typescript-common/dist/authorization-api/model";
+} from "magda-typescript-common/src/authorization-api/model";
 import {
     getUserIdHandling,
     getUserId
-} from "@magda/typescript-common/dist/session/GetUserId";
-import GenericError from "@magda/typescript-common/dist/authorization-api/GenericError";
-import AuthError from "@magda/typescript-common/dist/authorization-api/AuthError";
-import { installStatusRouter } from "@magda/typescript-common/dist/express/status";
+} from "magda-typescript-common/src/session/GetUserId";
+import GenericError from "magda-typescript-common/src/authorization-api/GenericError";
+import AuthError from "magda-typescript-common/src/authorization-api/AuthError";
+import { installStatusRouter } from "magda-typescript-common/src/express/status";
 import { NodeNotFoundError } from "./NestedSetModelQueryer";
-import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
-import { AuthorizedRegistryOptions } from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
-import { Record } from "@magda/typescript-common/dist/generated/registry/api";
-import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
+import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+import { AuthorizedRegistryOptions } from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+import { Record } from "magda-typescript-common/src/generated/registry/api";
+import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable";
 import getUsersAllowedOperationOnDataset from "./getUsersAllowedOperationOnDataset";
 
 export interface ApiRouterOptions {

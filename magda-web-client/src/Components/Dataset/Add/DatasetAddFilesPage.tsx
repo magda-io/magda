@@ -86,135 +86,130 @@ class DatasetAddFilesPage extends React.Component<
         for (let i = 0; i < fileList.length; i++) {
             const thisFile = fileList.item(i);
 
-            if (this.isDirItem(i, event)) {
+            if (!thisFile || this.isDirItem(i, event)) {
                 // --- skip the directory item
                 continue;
             }
 
-            if (thisFile) {
-                const newFile = {
-                    datasetTitle: toTitleCase(
-                        turnPunctuationToSpaces(
-                            trimExtension(thisFile.name || "File Name")
-                        )
-                    ).trim(),
-                    title: thisFile.name,
-                    byteSize: thisFile.size,
-                    modified: new Date(thisFile.lastModified),
-                    format: fileFormat(thisFile),
-                    _state: FileState.Added,
-                    license: "world"
-                };
+            const newFile = {
+                datasetTitle: toTitleCase(
+                    turnPunctuationToSpaces(
+                        trimExtension(thisFile.name || "File Name")
+                    )
+                ).trim(),
+                title: thisFile.name,
+                byteSize: thisFile.size,
+                modified: new Date(thisFile.lastModified),
+                format: fileFormat(thisFile),
+                _state: FileState.Added,
+                license: "world"
+            };
 
-                processFile(thisFile, update => {
-                    this.setState(state => {
-                        let newState = Object.assign({}, state, {
-                            files: state.files.slice(0)
-                        });
-                        Object.assign(newFile, update);
-                        return newState;
-                    });
-                }).then(() => {
-                    this.setState(state => {
-                        let newState = Object.assign({}, state, {
-                            files: state.files.slice(0)
-                        });
-
-                        let file: any = newFile;
-                        const {
-                            dataset,
-                            temporalCoverage,
-                            spatialCoverage
-                        } = state;
-                        for (const key in file) {
-                            // these fields don't belong in a distribution
-                            switch (key) {
-                                case "datasetTitle":
-                                    if (
-                                        !dataset["title"] ||
-                                        dataset["title"] === ""
-                                    ) {
-                                        dataset["title"] = file[key];
-                                    }
-                                    file[key] = undefined;
-                                    break;
-                                case "keywords":
-                                case "themes":
-                                    const existing = dataset[key]
-                                        ? (dataset[key] as KeywordsLike)
-                                        : {
-                                              keywords: [],
-                                              derived: false
-                                          };
-                                    const fileKeywords: string[] =
-                                        file[key] || [];
-
-                                    dataset[key] = {
-                                        keywords: uniq(
-                                            existing.keywords.concat(
-                                                fileKeywords
-                                            )
-                                        ),
-                                        derived:
-                                            existing.derived ||
-                                            fileKeywords.length > 0
-                                    };
-                                    file[key] = undefined;
-                                    break;
-                                case "spatialCoverage":
-                                    Object.assign(spatialCoverage, file[key]);
-                                    file[key] = undefined;
-                                    break;
-                                case "temporalCoverage":
-                                    temporalCoverage.intervals = temporalCoverage.intervals.concat(
-                                        file[key].intervals
-                                    );
-                                    file[key] = undefined;
-                                    break;
-                            }
-                        }
-
-                        if (
-                            config.addDatasetThemes &&
-                            config.addDatasetThemes.length &&
-                            newState.dataset &&
-                            newState.dataset.keywords &&
-                            newState.dataset.keywords.keywords &&
-                            newState.dataset.keywords.keywords.length
-                        ) {
-                            const keywords = newState.dataset.keywords.keywords.map(
-                                item => item.toLowerCase()
-                            );
-                            const themesBasedOnKeywords = config.addDatasetThemes.filter(
-                                theme =>
-                                    keywords.indexOf(theme.toLowerCase()) !== -1
-                            );
-                            if (themesBasedOnKeywords.length) {
-                                const existingThemesKeywords = newState.dataset
-                                    .themes
-                                    ? newState.dataset.themes.keywords
-                                    : [];
-                                newState.dataset.themes = {
-                                    keywords: themesBasedOnKeywords.concat(
-                                        existingThemesKeywords
-                                    ),
-                                    derived: true
-                                };
-                            }
-                        }
-
-                        return newState;
-                    });
-                });
-
+            processFile(thisFile, update => {
                 this.setState(state => {
-                    let newState = {
+                    let newState = Object.assign({}, state, {
                         files: state.files.slice(0)
-                    };
-                    newState.files.push(newFile);
+                    });
+                    Object.assign(newFile, update);
                     return newState;
                 });
-            }
+            }).then(() => {
+                this.setState(state => {
+                    let newState = Object.assign({}, state, {
+                        files: state.files.slice(0)
+                    });
+
+                    let file: any = newFile;
+                    const {
+                        dataset,
+                        temporalCoverage,
+                        spatialCoverage
+                    } = state;
+                    for (const key in file) {
+                        // these fields don't belong in a distribution
+                        switch (key) {
+                            case "datasetTitle":
+                                if (
+                                    !dataset["title"] ||
+                                    dataset["title"] === ""
+                                ) {
+                                    dataset["title"] = file[key];
+                                }
+                                file[key] = undefined;
+                                break;
+                            case "keywords":
+                            case "themes":
+                                const existing = dataset[key]
+                                    ? (dataset[key] as KeywordsLike)
+                                    : {
+                                          keywords: [],
+                                          derived: false
+                                      };
+                                const fileKeywords: string[] = file[key] || [];
+
+                                dataset[key] = {
+                                    keywords: uniq(
+                                        existing.keywords.concat(fileKeywords)
+                                    ),
+                                    derived:
+                                        existing.derived ||
+                                        fileKeywords.length > 0
+                                };
+                                file[key] = undefined;
+                                break;
+                            case "spatialCoverage":
+                                Object.assign(spatialCoverage, file[key]);
+                                file[key] = undefined;
+                                break;
+                            case "temporalCoverage":
+                                temporalCoverage.intervals = temporalCoverage.intervals.concat(
+                                    file[key].intervals
+                                );
+                                file[key] = undefined;
+                                break;
+                        }
+                    }
+
+                    if (
+                        config.addDatasetThemes &&
+                        config.addDatasetThemes.length &&
+                        newState.dataset &&
+                        newState.dataset.keywords &&
+                        newState.dataset.keywords.keywords &&
+                        newState.dataset.keywords.keywords.length
+                    ) {
+                        const keywords = newState.dataset.keywords.keywords.map(
+                            item => item.toLowerCase()
+                        );
+                        const themesBasedOnKeywords = config.addDatasetThemes.filter(
+                            theme =>
+                                keywords.indexOf(theme.toLowerCase()) !== -1
+                        );
+                        if (themesBasedOnKeywords.length) {
+                            const existingThemesKeywords = newState.dataset
+                                .themes
+                                ? newState.dataset.themes.keywords
+                                : [];
+                            newState.dataset.themes = {
+                                keywords: themesBasedOnKeywords.concat(
+                                    existingThemesKeywords
+                                ),
+                                derived: true
+                            };
+                        }
+                    }
+
+                    return newState;
+                });
+            });
+
+            this.setState(state => {
+                let newState = {
+                    files: state.files.slice(0)
+                };
+                newState.files.push(newFile);
+                return newState;
+            });
         }
         this.updateLastModifyDate();
     };

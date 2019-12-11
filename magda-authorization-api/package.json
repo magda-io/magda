@@ -2,9 +2,10 @@
   "name": "@magda/authorization-api",
   "version": "0.0.57-0",
   "scripts": {
+    "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
-    "compile": "tsc -p tsconfig-build.json",
-    "watch": "tsc -p tsconfig-build.json --watch",
+    "compile": "tsc -b && ts-module-alias-transformer dist",
+    "watch": "tsc -b --watch",
     "start": "node dist/index.js",
     "dev": "export PGUSER=client && export JWT_SECRET=squirrel && run-typescript-in-nodemon src/index.ts",
     "test": "nyc mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
@@ -52,7 +53,7 @@
     "recursive-readdir": "^2.2.2",
     "sinon": "^7.3.1",
     "supertest": "^3.0.0",
-    "typescript": "^3.2.0"
+    "typescript": "^3.7.2"
   },
   "config": {
     "docker": {
@@ -75,5 +76,8 @@
     "exclude": [
       "src/test/**"
     ]
+  },
+  "_moduleMappings": {
+    "magda-typescript-common/src": "@magda/typescript-common/dist"
   }
 }

@@ -1,14 +1,14 @@
 import {} from "mocha";
-import jsc from "@magda/typescript-common/dist/test/jsverify";
+import jsc from "magda-typescript-common/src/test/jsverify";
 import getUrlWaitTime, {
     getHostWaitTime,
     defaultDomainWaitTime,
     clearDomainAccessTimeStore
 } from "../getUrlWaitTime";
-import * as sinon from "sinon";
-import * as URI from "urijs";
+import sinon from "sinon";
+import URI from "urijs";
 import { expect } from "chai";
-import { distUrlArb } from "@magda/typescript-common/dist/test/arbitraries";
+import { distUrlArb } from "magda-typescript-common/src/test/arbitraries";
 
 function randomInt(min: number, max: number) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
