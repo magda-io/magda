@@ -1,11 +1,11 @@
-import * as express from "express";
+import express from "express";
 
 import { MinionArguments } from "./commonYargs";
 import {
     Record,
     AspectDefinition
-} from "@magda/typescript-common/dist/generated/registry/api";
-import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
+} from "magda-typescript-common/src/generated/registry/api";
+import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 
 export default class MinionOptions {
     argv: MinionArguments;

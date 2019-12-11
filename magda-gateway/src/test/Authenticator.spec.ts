@@ -1,21 +1,21 @@
 import {} from "mocha";
-import * as pg from "pg";
-import * as path from "path";
-import * as express from "express";
-import * as signature from "cookie-signature";
+import pg from "pg";
+import path from "path";
+import express from "express";
+import signature from "cookie-signature";
 import { expect } from "chai";
-import * as cookie from "cookie";
-import * as _ from "lodash";
-import * as supertest from "supertest";
-import * as randomstring from "randomstring";
+import cookie from "cookie";
+import _ from "lodash";
+import supertest from "supertest";
+import randomstring from "randomstring";
 import Authenticator, {
     DEFAULT_SESSION_COOKIE_NAME,
     DEFAULT_SESSION_COOKIE_OPTIONS
 } from "../Authenticator";
-import getTestDBConfig from "@magda/typescript-common/dist/test/db/getTestDBConfig";
+import getTestDBConfig from "magda-typescript-common/src/test/db/getTestDBConfig";
 import runMigrationSql, {
     deleteAllTables
-} from "@magda/typescript-common/dist/test/db/runMigrationSql";
+} from "magda-typescript-common/src/test/db/runMigrationSql";
 
 type PlainObject = { [key: string]: string };
 

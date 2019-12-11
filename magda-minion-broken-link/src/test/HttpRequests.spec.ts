@@ -1,6 +1,6 @@
 import {} from "mocha";
-import * as nock from "nock";
-import jsc from "@magda/typescript-common/dist/test/jsverify";
+import nock from "nock";
+import jsc from "magda-typescript-common/src/test/jsverify";
 import { expect } from "chai";
 import { headRequest, getRequest, BadHttpResponseError } from "../HttpRequests";
 import RandomStream from "./RandomStream";
