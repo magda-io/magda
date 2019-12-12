@@ -1,4 +1,4 @@
-import * as URI from "urijs";
+import URI from "urijs";
 
 // --- for domain without specified wait time,
 // --- this default value (in second) will be used.

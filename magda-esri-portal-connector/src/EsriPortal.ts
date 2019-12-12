@@ -1,11 +1,11 @@
-import AsyncPage from "@magda/typescript-common/dist/AsyncPage";
+import AsyncPage from "magda-typescript-common/src/AsyncPage";
 import EsriPortalUrlBuilder from "./EsriPortalUrlBuilder";
-import formatServiceError from "@magda/typescript-common/dist/formatServiceError";
-import { ConnectorSource } from "@magda/typescript-common/dist/JsonConnector";
-import retry from "@magda/typescript-common/dist/retry";
-import request from "@magda/typescript-common/dist/request";
+import formatServiceError from "magda-typescript-common/src/formatServiceError";
+import { ConnectorSource } from "magda-typescript-common/src/JsonConnector";
+import retry from "magda-typescript-common/src/retry";
+import request from "magda-typescript-common/src/request";
 import fetch from "node-fetch";
-import * as URI from "urijs";
+import URI from "urijs";
 
 export interface EsriPortalThing {
     id: string;

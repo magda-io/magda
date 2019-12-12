@@ -1,12 +1,12 @@
-import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
+import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
 import Csv from "./Csv";
-import JsonConnector from "@magda/typescript-common/dist/JsonConnector";
-import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
+import JsonConnector from "magda-typescript-common/src/JsonConnector";
+import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 import createTransformer from "./createTransformer";
 import datasetAspectBuilders from "./datasetAspectBuilders";
 import distributionAspectBuilders from "./distributionAspectBuilders";
 import organizationAspectBuilders from "./organizationAspectBuilders";
-import * as yargs from "yargs";
+import yargs from "yargs";
 
 const argv = addJwtSecretFromEnvVar(
     yargs

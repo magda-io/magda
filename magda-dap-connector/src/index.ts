@@ -1,11 +1,11 @@
-import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
-import AspectBuilder from "@magda/typescript-common/dist/AspectBuilder";
+import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
+import AspectBuilder from "magda-typescript-common/src/AspectBuilder";
 import Dap from "./Dap";
 import createTransformer from "./createTransformer";
-import JsonConnector from "@magda/typescript-common/dist/JsonConnector";
-import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
-import * as fs from "fs";
-import * as yargs from "yargs";
+import JsonConnector from "magda-typescript-common/src/JsonConnector";
+import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+import fs from "fs";
+import yargs from "yargs";
 
 //npm run dev -- --config ../deploy/connector-config/csiro-dap.json --userId="00000000-0000-4000-8000-000000000000" --jwtSecret="squirrel"
 //npm run dev -- --config ../deploy/connector-config/csiro-dap.json --userId="00000000-0000-4000-8000-000000000000" --jwtSecret="squirrel" --registryUrl="http://192.168.137.107:30860/v0"

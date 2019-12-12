@@ -1,34 +1,34 @@
 import {} from "mocha";
 import { expect } from "chai";
-import * as sinon from "sinon";
+import sinon from "sinon";
 import onRecordFound from "../onRecordFound";
 
-import * as launcestonDist2 from "./sampleDataFiles/launceston-dist-2.json";
-import * as launcestonDist7 from "./sampleDataFiles/launceston-dist-7.json";
-import * as launcestonDist8 from "./sampleDataFiles/launceston-dist-8.json";
+import launcestonDist2 from "./sampleDataFiles/launceston-dist-2.json";
+import launcestonDist7 from "./sampleDataFiles/launceston-dist-7.json";
+import launcestonDist8 from "./sampleDataFiles/launceston-dist-8.json";
 
-import * as aodnDist1 from "./sampleDataFiles/aodn-dist-1.json";
-import * as aodnDist2 from "./sampleDataFiles/aodn-dist-2.json";
-import * as aodnDist3 from "./sampleDataFiles/aodn-dist-3.json";
-import * as aodnDist4 from "./sampleDataFiles/aodn-dist-4.json";
-import * as aodnDist5 from "./sampleDataFiles/aodn-dist-5.json";
-import * as aodnDist6 from "./sampleDataFiles/aodn-dist-6.json";
+import aodnDist1 from "./sampleDataFiles/aodn-dist-1.json";
+import aodnDist2 from "./sampleDataFiles/aodn-dist-2.json";
+import aodnDist3 from "./sampleDataFiles/aodn-dist-3.json";
+import aodnDist4 from "./sampleDataFiles/aodn-dist-4.json";
+import aodnDist5 from "./sampleDataFiles/aodn-dist-5.json";
+import aodnDist6 from "./sampleDataFiles/aodn-dist-6.json";
 
-import * as dapDist1 from "./sampleDataFiles/dap-dist-1.json";
-import * as dapDist28 from "./sampleDataFiles/dap-dist-28.json";
+import dapDist1 from "./sampleDataFiles/dap-dist-1.json";
+import dapDist28 from "./sampleDataFiles/dap-dist-28.json";
 
-import * as dgaDistSpss from "./sampleDataFiles/dga-dist-spss.json";
-import * as dsaDistCsv from "./sampleDataFiles/dsa-dist-csv.json";
+import dgaDistSpss from "./sampleDataFiles/dga-dist-spss.json";
+import dsaDistCsv from "./sampleDataFiles/dsa-dist-csv.json";
 
-import * as failingDocs from "./sampleDataFiles/failing-docs.json";
+import failingDocs from "./sampleDataFiles/failing-docs.json";
 
-import * as ascGridDist from "./sampleDataFiles/asc-grid-dist.json";
+import ascGridDist from "./sampleDataFiles/asc-grid-dist.json";
 
-import * as soilRiskMap1 from "./sampleDataFiles/soil-risk-map-1.json";
+import soilRiskMap1 from "./sampleDataFiles/soil-risk-map-1.json";
 
-import * as soilRiskMap2 from "./sampleDataFiles/soil-risk-map-2.json";
+import soilRiskMap2 from "./sampleDataFiles/soil-risk-map-2.json";
 
-import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
+import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 
 describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     async function testDistReturnsFormat(

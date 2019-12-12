@@ -5,9 +5,12 @@ import {
     textEditorEx,
     MultilineTextEditor
 } from "Components/Editing/Editors/textEditor";
+
+import moment from "moment";
 import {
     dateEditor,
-    multiDateIntervalEditor
+    multiDateIntervalEditor,
+    MagdaSingleDatePicker
 } from "Components/Editing/Editors/dateEditor";
 
 import ToolTip from "Components/Dataset/Add/ToolTip";
@@ -268,10 +271,12 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     </div>
                     <div className="col-sm-4 question-recent-modify-date">
                         <h4>When was the dataset most recently modified?</h4>
-                        <AlwaysEditor
-                            value={dataset.modified}
-                            onChange={editDataset("modified")}
-                            editor={dateEditor}
+                        <MagdaSingleDatePicker
+                            callback={editDataset("modified")}
+                            date={dataset.modified}
+                            isOutsideRange={(date: moment.Moment) =>
+                                date.isAfter(moment().endOf("day"))
+                            }
                         />
                     </div>
                 </div>
@@ -301,7 +306,8 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     <AlwaysEditor
                         value={temporalCoverage.intervals}
                         onChange={editTemporalCoverage("intervals")}
-                        editor={multiDateIntervalEditor}
+                        editor={multiDateIntervalEditor(true)}
+                        renderAbove={true}
                     />
                 </div>
                 <h3>Spatial extent</h3>

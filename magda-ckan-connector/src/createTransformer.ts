@@ -1,9 +1,9 @@
-import AspectBuilder from "@magda/typescript-common/dist/AspectBuilder";
-import cleanOrgTitle from "@magda/typescript-common/dist/util/cleanOrgTitle";
+import AspectBuilder from "magda-typescript-common/src/AspectBuilder";
+import cleanOrgTitle from "magda-typescript-common/src/util/cleanOrgTitle";
 import CkanTransformer from "./CkanTransformer";
 import CkanUrlBuilder from "./CkanUrlBuilder";
-import * as moment from "moment";
-import * as URI from "urijs";
+import moment from "moment";
+import URI from "urijs";
 
 export interface CreateTransformerOptions {
     name: string;

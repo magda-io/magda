@@ -1,6 +1,6 @@
 {
   "name": "@magda/scripts",
-  "version": "0.0.56-0",
+  "version": "0.0.57-0",
   "description": "Scripts for building, running, and deploying MAGDA",
   "license": "Apache-2.0",
   "bin": {
@@ -55,9 +55,9 @@
     "table": "^5.3.3",
     "tmp": "0.0.31",
     "toposort": "^1.0.6",
-    "ts-node": "^3.0.4",
-    "tsconfig-paths": "^2.2.0",
-    "typescript": "^3.2.0",
+    "ts-node": "^8.5.2",
+    "tsconfig-paths": "^3.9.0",
+    "typescript": "^3.7.2",
     "uniqid": "^5.0.3",
     "yargs": "^12.0.5"
   }

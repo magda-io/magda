@@ -1,3 +1,19 @@
+## 0.0.57
+
+General:
+
+-   CSV Connector can now process ampersand character properly
+-   Upgraded typescript to 3.7.2 & Use [Project References](https://www.typescriptlang.org/docs/handbook/project-references.html) to organize typescript project
+
+UI:
+
+-   Fixed the issue of modifying date string in text input using backspaces to an empty string will cause text input to reset text input
+-   User can't input a future date to date of last modification on add dataset page
+
+Others:
+
+-   Use a "Year" column from a CSV file to extract a temporal extent
+
 ## 0.0.56
 
 General:
@@ -145,6 +161,7 @@ UI:
 -   Improve keywords generation logic for Spreadsheet
 -   Mention that choosing state is optional
 -   Make spatial input default to Australia
+-   Render selected time intervals above the date picker so that nothing gets hidden
 
 Gateway:
 

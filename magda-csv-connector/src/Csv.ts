@@ -1,8 +1,6 @@
-import { ConnectorSource } from "@magda/typescript-common/dist/JsonConnector";
-import request from "@magda/typescript-common/dist/request";
-import AsyncPage, {
-    forEachAsync
-} from "@magda/typescript-common/dist/AsyncPage";
+import { ConnectorSource } from "magda-typescript-common/src/JsonConnector";
+import request from "magda-typescript-common/src/request";
+import AsyncPage, { forEachAsync } from "magda-typescript-common/src/AsyncPage";
 import CsvTransformer from "./CsvTransformer";
 import { similarity, findClosestFieldThreshold } from "./fuzzyMatch";
 

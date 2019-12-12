@@ -1,7 +1,7 @@
 import JsonTransformer, {
     JsonTransformerOptions
-} from "@magda/typescript-common/dist/JsonTransformer";
-import ConnectorRecordId from "@magda/typescript-common/dist/ConnectorRecordId";
+} from "magda-typescript-common/src/JsonTransformer";
+import ConnectorRecordId from "magda-typescript-common/src/ConnectorRecordId";
 import { findClosestField, findClosestFieldThreshold } from "./fuzzyMatch";
 const crypto = require("crypto");
 
@@ -26,7 +26,7 @@ export default class CsvTransformer extends JsonTransformer {
 
     getIdFromJsonDistribution(
         jsonDistribution: any,
-        jsonDataset: any,
+        _jsonDataset: any,
         sourceId: string
     ): ConnectorRecordId {
         // our row is our distribution
@@ -38,7 +38,7 @@ export default class CsvTransformer extends JsonTransformer {
 
     getNameFromJsonDistribution(
         jsonDistribution: any,
-        jsonDataset: any
+        _jsonDataset: any
     ): string {
         return this.getNameFromJsonDataset(jsonDistribution);
     }

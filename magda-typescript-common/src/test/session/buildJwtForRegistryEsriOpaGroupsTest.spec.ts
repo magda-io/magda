@@ -1,5 +1,5 @@
 import "mocha";
-import * as yargs from "yargs";
+import yargs from "yargs";
 import addJwtSecretFromEnvVar from "../../session/addJwtSecretFromEnvVar";
 import buildJwt from "../../session/buildJwt";
 

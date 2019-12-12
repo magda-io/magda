@@ -1,12 +1,13 @@
 {
   "name": "@magda/typescript-common",
   "description": "Common TypeScript code shared between components.",
-  "version": "0.0.56-0",
+  "version": "0.0.57-0",
   "license": "Apache-2.0",
   "scripts": {
+    "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
-    "compile": "tsc -p tsconfig-build.json",
-    "watch": "tsc -p tsconfig-build.json --watch",
+    "compile": "tsc -b",
+    "watch": "tsc -b --watch",
     "generate": "generate-registry-typescript ./src/generated/registry",
     "test": "nyc mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
     "create_esri_groups_jwt": "nyc mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/buildJwtForRegistryEsriOpaGroupsTest.ts\"",
@@ -15,10 +16,11 @@
     "dev": "yarn run watch"
   },
   "devDependencies": {
-    "@magda/registry-aspects": "^0.0.56-0",
-    "@magda/scripts": "^0.0.56-0",
+    "@magda/registry-aspects": "^0.0.57-0",
+    "@magda/scripts": "^0.0.57-0",
     "@types/chai": "^4.0.0",
     "@types/chai-as-promised": "^7.1.0",
+    "@types/cross-spawn": "^6.0.1",
     "@types/express": "^4.0.35",
     "@types/lodash": "^4.14.73",
     "@types/mocha": "^2.2.41",
@@ -36,11 +38,11 @@
     "jsverify": "^0.8.2",
     "lazy-seq": "^1.0.0",
     "mocha": "^3.4.2",
+    "mock-req-res": "^1.1.1",
     "nock": "^9.0.14",
     "nyc": "^13.1.0",
     "sinon": "^4.2.1",
-    "typescript": "^3.2.0",
-    "mock-req-res": "^1.1.1"
+    "typescript": "^3.7.2"
   },
   "dependencies": {
     "@types/request": "^2.48.1",

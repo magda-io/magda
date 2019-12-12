@@ -1,4 +1,4 @@
-import * as URI from "urijs";
+import URI from "urijs";
 
 export default function parseUriSafe(url: string): uri.URI | undefined {
     try {
