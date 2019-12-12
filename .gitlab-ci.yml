@@ -8,7 +8,7 @@ variables:
     -Dsbt.boot.directory=$CI_PROJECT_DIR/sbt-cache/boot
     -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
   # If you changed dependencies (especially for scala), you might want to prevent your branch from using old cache by increase the version blew
-  # gitlab actually use the same technique when you click the `Clear Cache Button` 
+  # gitlab actually use the same technique when you click the `Clear Cache Button`
   CACHE_VERSION: ts-6-scala-5
 
 stages:
@@ -314,8 +314,8 @@ buildtest:typescript-apis:
     - cd deploy/helm/magda/charts/opa
     - docker-compose up -d
     - cd ../../../../..
-    - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run build --include-filtered-dependencies
-    - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run test --include-filtered-dependencies
+    - yarn run in-submodules -- -f categories.api=true -f categories.testStandAlone=false -f language=typescript -- run build --include-filtered-dependencies
+    - yarn run in-submodules -- -f categories.api=true -f categories.testStandAlone=false -f language=typescript -- run test --include-filtered-dependencies
     - cd magda-typescript-common && yarn test && cd ..
     - cd deploy/helm/magda/charts/opa
     - docker-compose down
