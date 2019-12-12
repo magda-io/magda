@@ -355,8 +355,9 @@ buildtest:storage-api:
   script:
     - cd magda-storage-api
     - docker-compose up -d
-    - yarn run build --include-filtered-dependencies
-    - yarn run test --include-filtered-dependencies
+    - lerna run build --scope=@magda/storage-api --include-filtered-dependencies
+    - yarn run build
+    - yarn run test
     - docker-compose down
   artifacts:
     paths:
