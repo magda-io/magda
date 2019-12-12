@@ -1,6 +1,6 @@
 {
-  "name": "@magda/datastore-api",
-  "version": "0.0.57",
+  "name": "@magda/storage-api",
+  "version": "0.0.57-0",
   "scripts": {
     "build": "yarn run compile",
     "compile": "tsc -p tsconfig.json",
@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@google-cloud/storage": "^4.1.0",
-    "@magda/typescript-common": "0.0.56-terria-0",
+    "@magda/typescript-common": "0.0.57-0",
     "@types/superagent": "^4.1.4",
     "@types/xmldom": "^0.1.29",
     "express": "^4.13.1",
@@ -38,14 +38,15 @@
   },
   "config": {
     "docker": {
-      "name": "data61/magda-datastore-api",
+      "name": "data61/magda-storage-api",
       "include": "node_modules dist Dockerfile"
     }
   },
   "magda": {
     "language": "typescript",
     "categories": {
-      "api": true
+      "api": true,
+      "testStandAlone": true
     }
   }
 }
