@@ -84,6 +84,7 @@ const serverConfig: {
     addDatasetThemes?: string[];
     noManualKeywords?: boolean;
     noManualThemes?: boolean;
+    keywordsBlackList?: string[];
 } = window.magda_server_config || {};
 
 const DATE_REGEX = ".*(date|dt|year|decade).*";
@@ -278,7 +279,31 @@ export const config = {
         : false,
     noManualThemes: serverConfig.noManualThemes
         ? serverConfig.noManualThemes
-        : false
+        : false,
+    keywordsBlackList: serverConfig.keywordsBlackList
+        ? serverConfig.keywordsBlackList
+        : [
+              "Mr",
+              "Ms",
+              "Mrs",
+              "Miss",
+              "Dr",
+              "Hon",
+              "Jr",
+              "Prof",
+              "Sr",
+              "St",
+              "Mr.",
+              "Ms.",
+              "Mrs.",
+              "Miss.",
+              "Dr.",
+              "Hon.",
+              "Jr.",
+              "Prof.",
+              "Sr.",
+              "St."
+          ]
 };
 
 export const defaultConfiguration = {

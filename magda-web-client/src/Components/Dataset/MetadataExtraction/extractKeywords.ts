@@ -3,6 +3,7 @@ import keywords from "retext-keywords";
 import toString from "nlcst-to-string";
 import { isValidKeyword } from "api-clients/VocabularyApis";
 import uniq from "lodash/uniq";
+import { config } from "config";
 
 /** The maximum number of characters to feed into retext (input after this char length will be trimmed off) */
 const MAX_CHARACTERS_FOR_EXTRACTION = 150000;
@@ -14,7 +15,16 @@ function standardliseWhitespace(keyword: string) {
 }
 
 function cleanUpKeywords(keywords: string[]) {
-    return uniq(keywords.map(standardliseWhitespace));
+    let cleaned = keywords.map(standardliseWhitespace);
+    if (config.keywordsBlackList && config.keywordsBlackList.length) {
+        cleaned = cleaned.filter(
+            keyword =>
+                config.keywordsBlackList
+                    .map(str => str.toLowerCase())
+                    .indexOf(keyword.toLowerCase()) === -1
+        );
+    }
+    return uniq(cleaned);
 }
 
 /**
@@ -65,7 +75,7 @@ export async function extractKeywords(
         keywords.length >= MAX_KEYWORDS ||
         (!input.keywords || !input.keywords.length)
     ) {
-        output.keywords = cleanUpKeywords(keywords);
+        output.keywords = keywords;
         return;
     }
 
@@ -95,7 +105,7 @@ function getKeywordsFromText(
             file.data.keyphrases.forEach(function(phrase) {
                 keyphrases.push(phrase.matches[0].nodes.map(toString).join(""));
             });
-            resolve(keyphrases);
+            resolve(cleanUpKeywords(keyphrases));
         }
     });
 }
