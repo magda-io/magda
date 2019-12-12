@@ -238,7 +238,12 @@ export default class EsriPortal implements ConnectorSource {
             // Add group info to the shared items, loading from up to 10 at a time.
             const singlePage = AsyncPage.single(body.results as any[]);
             await forEachAsync(singlePage, 10, (item: any) => {
-                if (item.access === "shared" || item.access === "org") {
+                // An item could have both 'public' access attribute and group membership at the same time.
+                if (
+                    item.access === "shared" ||
+                    item.access === "public" ||
+                    item.access === "org"
+                ) {
                     const groupInfoPromise = this.requestDatasetGroupInformation(
                         item.id
                     );
