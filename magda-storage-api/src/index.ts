@@ -7,7 +7,7 @@ const argv = yargs
     .config()
     .help()
     .option("listenPort", {
-        describe: "The TCP/IP port on which the datastore-api should listen.",
+        describe: "The TCP/IP port on which the storage-api should listen.",
         type: "number",
         default: 6120
     })
