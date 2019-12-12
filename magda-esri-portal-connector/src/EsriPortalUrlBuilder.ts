@@ -50,6 +50,7 @@ export default class EsriPortalUrlBuilder {
             "Feature Service",
             "Web Mapping Application",
             "CAD Drawing",
+            "WMS",
             "WFS",
             "Web Map",
             //"Service Definition",
