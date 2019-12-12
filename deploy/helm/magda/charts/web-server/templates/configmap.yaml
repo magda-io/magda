@@ -25,6 +25,7 @@ data:
     "addDatasetThemes": {{ toJson .Values.addDatasetThemes | quote }},
     "noManualThemes": {{ .Values.noManualThemes }},
     "noManualKeywords": {{ .Values.noManualKeywords }},
+    "keywordsBlackList": {{ toJson .Values.keywordsBlackList | quote }},
     {{- if .Values.mandatoryFields }}
     "mandatoryFields": {{ toJson .Values.mandatoryFields | quote }}
     {{- end }}

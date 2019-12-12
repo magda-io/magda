@@ -57,3 +57,24 @@ dateConfig:
 addDatasetThemes: []
 noManualThemes: false
 noManualKeywords: false
+keywordsBlackList:
+  - Mr
+  - Ms
+  - Mrs
+  - Miss
+  - Dr
+  - Hon
+  - Jr
+  - Prof
+  - Sr
+  - St
+  - Mr.
+  - Ms.
+  - Mrs.
+  - Miss.
+  - Dr.
+  - Hon.
+  - Jr.
+  - Prof.
+  - Sr.
+  - St.

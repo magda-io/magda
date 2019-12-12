@@ -179,6 +179,13 @@ const argv = yargs
             "Whether manual themes input should be allowed on add dataset page",
         type: "boolean",
         default: false
+    })
+    .option("keywordsBlackList", {
+        describe:
+            "A list of pre-defined BlackList for auto keywords generation",
+        type: "string",
+        coerce: coerceJson("keywordsBlackList"),
+        default: "[]"
     }).argv;
 
 const app = express();
@@ -263,7 +270,8 @@ const webServerConfig = {
     dateFormats: argv.dateFormats,
     addDatasetThemes: argv.addDatasetThemes,
     noManualKeywords: argv.noManualKeywords,
-    noManualThemes: argv.noManualThemes
+    noManualThemes: argv.noManualThemes,
+    keywordsBlackList: argv.keywordsBlackList
 };
 
 app.get("/server-config.js", function(req, res) {
