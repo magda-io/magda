@@ -154,7 +154,9 @@ type CkanFuncTypes =
 async function getCkanResData<T = any>(res: Response): Promise<T> {
     if (res.status !== 200) {
         throw new Error(
-            `Status Code: ${res.status} ${res.statusText} \n ${res.body}`
+            `Status Code: ${res.status} ${
+                res.statusText
+            } \n ${await res.text()}`
         );
     }
     const resData = await res.json();
@@ -182,7 +184,7 @@ class CkanClient {
         }
     }
 
-    async callCkanFunc<T>(
+    async callCkanFunc<T = any>(
         funcName: CkanFuncTypes,
         params?: {
             [key: string]: any;
@@ -198,19 +200,26 @@ class CkanClient {
         }
         if (params) {
             options.body = JSON.stringify(params);
+            options.headers = {
+                ...(options.headers ? options.headers : {}),
+                "Content-Type": "application/json"
+            };
         }
 
-        const res = await fetch(`${this.serverUrl}/${funcName}`, options);
+        const res = await fetch(
+            `${this.serverUrl}/api/3/action/${funcName}`,
+            options
+        );
 
         return await getCkanResData<T>(res);
     }
 
     async createDataset() {
         let result = await this.callCkanFunc("package_create", {
-            name: "sdsds-sddssd-sddssd-dssdds",
+            name: "sdsds-sddssd-sddssd-dssdds-ss",
             title: "test push dataset"
         });
-        console.log(result);
+        return result;
     }
 }
 
