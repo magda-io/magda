@@ -1,5 +1,5 @@
 {
-  "name": "@magda/minion-linked-data-rating",
+  "name": "@magda/minion-ckan-sync",
   "description": "MAGDA Ckan Sync Minion",
   "version": "0.0.57-0",
   "scripts": {
@@ -9,6 +9,7 @@
     "watch": "tsc -b --watch",
     "start": "node dist/index.js",
     "dev": "run-typescript-in-nodemon src/index.ts",
+    "dev-run": "ts-node -r tsconfig-paths/register",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
     "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",

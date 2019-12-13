@@ -1,4 +1,6 @@
 import fetch from "isomorphic-fetch";
+import shortId from "shortid";
+import { v4 as uuidv4 } from "uuid";
 
 type CkanFuncTypes =
     | "site_read"
@@ -214,9 +216,59 @@ class CkanClient {
         return await getCkanResData<T>(res);
     }
 
+    async packageNameOrIdExist(nameOrId: string): Promise<boolean> {
+        try {
+            await this.callCkanFunc("package_show", {
+                id: nameOrId
+            });
+
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    /**
+     * Generate Ckan name from title
+     *
+     * @param {string} title
+     * @returns {Promise<string>}
+     * @memberof CkanClient
+     */
+    async getAvailablePackageName(title: string): Promise<string> {
+        if (!title.trim().length) {
+            throw new Error("title cannot be empty string.");
+        }
+
+        let name = title
+            .replace(/\s+/g, " ")
+            .trim()
+            .replace(/[^a-z0-9-]/gi, "-")
+            .replace(/-+/g, "-")
+            .substr(0, 100);
+        if (name.length < 2) {
+            name = name + "--";
+        }
+
+        if (!(await this.packageNameOrIdExist(name))) {
+            return name;
+        }
+
+        const randomStr = shortId().toLowerCase();
+
+        name = name.substr(0, 100 - randomStr.length - 1) + "-" + randomStr;
+
+        if (!(await this.packageNameOrIdExist(name))) {
+            return name;
+        }
+
+        return uuidv4();
+    }
+
     async createDataset() {
+        const title = "test push dataset";
         let result = await this.callCkanFunc("package_create", {
-            name: "sdsds-sddssd-sddssd-dssdds-ss",
+            name: await this.getAvailablePackageName(title),
             title: "test push dataset"
         });
         return result;
