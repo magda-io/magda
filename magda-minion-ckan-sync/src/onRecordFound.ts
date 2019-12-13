@@ -23,6 +23,15 @@ export default async function onRecordFound(
         ],
         true
     );
+
     console.log("record: ", JSON.stringify(record));
     console.log("recordData: ", JSON.stringify(recordData));
+
+    const ckanSyncData = record.aspects["dataset-distributions"];
+    if (!ckanSyncData) {
+        console.log(
+            "The dataset record has no ckan-sync aspect. Ignore webhook request."
+        );
+        return;
+    }
 }

@@ -51,6 +51,7 @@ import * as codelists from "constants/DatasetConstants";
 import { config } from "config";
 import RemoteTextContentBox from "../RemoteTextContentBox";
 import { RRule } from "rrule";
+import PublishToCkanButton from "./View/PublishToCkanButton";
 
 class RecordHandler extends React.Component {
     constructor(props) {
@@ -845,6 +846,13 @@ class RecordHandler extends React.Component {
                                     toggleMargin={this.toggleMargin}
                                     datasetId={this.props.dataset.identifier}
                                 />
+                            </div>
+                            <div
+                                className={` col-sm-4 ${
+                                    this.state.addMargin ? "form-margin" : ""
+                                }`}
+                            >
+                                <PublishToCkanButton />
                             </div>
                         </div>
                         <div className="tab-content">
