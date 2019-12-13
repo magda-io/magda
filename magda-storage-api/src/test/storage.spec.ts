@@ -9,8 +9,6 @@ import MagdaMinioClient from "../MagdaMinioClient";
 
 const Minio = require("minio");
 
-console.log(createApiRouter);
-
 describe("Storage API tests", () => {
     let app: express.Application;
     const minioClientOpts = {
