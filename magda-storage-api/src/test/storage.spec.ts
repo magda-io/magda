@@ -1,8 +1,8 @@
 import {} from "mocha";
-import * as sinon from "sinon";
-import * as express from "express";
-import * as _ from "lodash";
-import * as request from "supertest";
+import sinon from "sinon";
+import express from "express";
+import _ from "lodash";
+import request from "supertest";
 
 import createApiRouter from "../createApiRouter";
 import MagdaMinioClient from "../MagdaMinioClient";

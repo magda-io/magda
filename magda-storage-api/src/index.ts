@@ -1,5 +1,5 @@
-import * as express from "express";
-import * as yargs from "yargs";
+import express from "express";
+import yargs from "yargs";
 import createApiRouter from "./createApiRouter";
 import MagdaMinioClient from "./MagdaMinioClient";
 

@@ -1,9 +1,9 @@
-import { Probe } from "@magda/typescript-common/dist/express/status";
+import { Probe } from "magda-typescript-common/src/express/status";
 import ObjectFromStore from "./ObjectFromStore";
 import ObjectStoreClient from "./ObjectStoreClient";
 import { Stream, Readable } from "stream";
 
-const Minio = require("minio");
+import Minio from "minio";
 
 export default class MagdaMinioClient implements ObjectStoreClient {
     private readonly bucket: string;

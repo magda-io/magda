@@ -1,9 +1,9 @@
 import { ApiError } from "@google-cloud/common";
-import { installStatusRouter } from "@magda/typescript-common/dist/express/status";
-import * as express from "express";
+import { installStatusRouter } from "magda-typescript-common/src/express/status";
+import express from "express";
 import { OutgoingHttpHeaders } from "http";
 import ObjectStoreClient from "./ObjectStoreClient";
-import * as bodyParser from "body-parser";
+import bodyParser from "body-parser";
 
 export interface ApiRouterOptions {
     objectStoreClient: ObjectStoreClient;
@@ -56,11 +56,12 @@ export default function createApiRouter(options: ApiRouterOptions) {
         if (streamP) {
             streamP.then(stream => {
                 stream.on("error", _e => {
-                    res.status(500).send("Unknown error");
+                    return res.status(500).send("Unknown error");
                 });
-                stream.pipe(res);
+                return stream.pipe(res);
             });
         }
+        return res.status(500).send("Stream could not be created.");
     });
 
     // Upload an object
