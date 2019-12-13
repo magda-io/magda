@@ -351,6 +351,8 @@ buildtest:storage-api:
     - docker:dind
   variables:
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
+    MINIO_HOST: "docker"
+    MINIO_PORT: "9000"
     # OPA_URL: "http://docker:8181/"
   script:
     - cd magda-storage-api

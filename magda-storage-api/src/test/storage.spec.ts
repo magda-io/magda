@@ -15,13 +15,14 @@ describe("Storage API tests", () => {
     let app: express.Application;
     const minioClientOpts = {
         endPoint: process.env["MINIO_HOST"],
-        port: Number(process.env["MINIO_PORT"]),
+        port: process.env["MINIO_PORT"],
         useSSL: false,
         accessKey: process.env["MINIO_ACCESS_KEY"],
         secretKey: process.env["MINIO_SECRET_KEY"],
         bucket: "magda-test-1"
     };
     const minioClient = new Minio.Client(minioClientOpts);
+    console.log("The client opts: ", minioClientOpts);
 
     before(() => {
         minioClient.makeBucket(minioClientOpts.bucket, function(err: Error) {
