@@ -44,24 +44,21 @@ export default function createApiRouter(options: ApiRouterOptions) {
         } catch (err) {
             if (err instanceof ApiError) {
                 if (err.code === 404) {
-                    return res
-                        .status(404)
-                        .send("No such object with fileId " + fileId);
+                    res.status(404).send(
+                        "No such object with fileId " + fileId
+                    );
                 }
             }
-            return res.status(500).send("Unknown error");
+            res.status(500).send("Unknown error");
         }
 
-        const streamP = object.createStream();
-        if (streamP) {
-            streamP.then(stream => {
-                stream.on("error", _e => {
-                    return res.status(500).send("Unknown error");
-                });
-                return stream.pipe(res);
+        const stream = await object.createStream();
+        if (stream) {
+            stream.on("error", _e => {
+                res.status(500).send("Unknown error");
             });
+            stream.pipe(res);
         }
-        return res.status(500).send("Stream could not be created.");
     });
 
     // Upload an object
