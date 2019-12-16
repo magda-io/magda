@@ -194,7 +194,10 @@ object EventPersistence extends Protocols with DiffsonProtocol {
       eventType = EventType.withValue(rs.int("eventTypeId")),
       userId = rs.int("userId"),
       data = JsonParser(rs.string("data")).asJsObject,
-      tenantId = rs.bigInt("tenantid")
+      tenantId = rs
+        .bigIntOpt("tenantid")
+        .map(BigInt.apply)
+        .getOrElse(MAGDA_ADMIN_PORTAL_ID)
     )
   }
 }

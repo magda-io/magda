@@ -90,7 +90,7 @@ class RecordAspectsServiceRO(
       new ApiResponse(
         code = 404,
         message = "No record or aspect exists with the given IDs.",
-        response = classOf[BadRequest]
+        response = classOf[ApiError]
       )
     )
   )
@@ -119,7 +119,7 @@ class RecordAspectsServiceRO(
                   case _ =>
                     complete(
                       StatusCodes.NotFound,
-                      BadRequest(
+                      ApiError(
                         "No record or aspect exists with the given IDs."
                       )
                     )

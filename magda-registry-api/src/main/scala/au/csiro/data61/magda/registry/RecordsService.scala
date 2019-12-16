@@ -20,6 +20,7 @@ import gnieh.diffson.sprayJson._
 import io.swagger.annotations._
 import javax.ws.rs.Path
 import scalikejdbc.DB
+import org.everit.json.schema.ValidationException
 
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
@@ -92,7 +93,7 @@ class RecordsService(
         code = 400,
         message =
           "The record could not be deleted, possibly because it is used by another record.",
-        response = classOf[BadRequest]
+        response = classOf[ApiError]
       )
     )
   )
@@ -106,7 +107,7 @@ class RecordsService(
               case Failure(exception) =>
                 complete(
                   StatusCodes.BadRequest,
-                  BadRequest(exception.getMessage)
+                  ApiError(exception.getMessage)
                 )
             }
           }
@@ -188,7 +189,7 @@ class RecordsService(
         code = 400,
         message =
           "The records could not be deleted, possibly because they are used by other records.",
-        response = classOf[BadRequest]
+        response = classOf[ApiError]
       )
     )
   )
@@ -236,7 +237,7 @@ class RecordsService(
                   )
                   complete(
                     StatusCodes.BadRequest,
-                    BadRequest(
+                    ApiError(
                       "An error occurred while processing your request."
                     )
                   )
@@ -330,10 +331,21 @@ class RecordsService(
                 ) match {
                   case Success(recordOut) =>
                     complete(recordOut)
-                  case Failure(exception) =>
+                  // If the exception is from validation then reveal the message to the caller,
+                  // otherwise log it and return something generic.
+                  case Failure(exception: ValidationException) =>
                     complete(
                       StatusCodes.BadRequest,
-                      BadRequest(exception.getMessage)
+                      ApiError("Encountered an error - " + exception.getMessage)
+                    )
+                  case Failure(exception) =>
+                    logger.error(
+                      exception,
+                      "Encountered an exception when putting a record"
+                    )
+                    complete(
+                      StatusCodes.InternalServerError,
+                      ApiError("Encountered an error")
                     )
                 }
               }
@@ -438,7 +450,7 @@ class RecordsService(
                   )
                   complete(
                     StatusCodes.BadRequest,
-                    BadRequest(exception.getMessage)
+                    ApiError(exception.getMessage)
                   )
               }
             }
@@ -515,7 +527,7 @@ class RecordsService(
         code = 400,
         message =
           "A record already exists with the supplied ID, or the record includes an aspect that does not exist.",
-        response = classOf[BadRequest]
+        response = classOf[ApiError]
       )
     )
   )
@@ -531,7 +543,7 @@ class RecordsService(
                 case Failure(exception) =>
                   complete(
                     StatusCodes.BadRequest,
-                    BadRequest(exception.getMessage)
+                    ApiError(exception.getMessage)
                   )
               }
             }

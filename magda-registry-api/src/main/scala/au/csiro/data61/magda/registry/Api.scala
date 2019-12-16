@@ -60,7 +60,7 @@ class Api(
             .map(_.message)).mkString("\n")
         complete(
           StatusCodes.BadRequest,
-          au.csiro.data61.magda.registry.BadRequest(messages)
+          au.csiro.data61.magda.registry.ApiError(messages)
         )
       }
       .result()
@@ -72,7 +72,7 @@ class Api(
       complete(
         StatusCodes.InternalServerError,
         au.csiro.data61.magda.registry
-          .BadRequest("The server encountered an unexpected error.")
+          .ApiError("The server encountered an unexpected error.")
       )
     }
   }

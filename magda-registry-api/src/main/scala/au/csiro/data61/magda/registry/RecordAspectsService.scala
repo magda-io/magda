@@ -134,7 +134,7 @@ class RecordAspectsService(
                   case Failure(exception) =>
                     complete(
                       StatusCodes.BadRequest,
-                      BadRequest(exception.getMessage)
+                      ApiError(exception.getMessage)
                     )
                 }
               }
@@ -218,7 +218,7 @@ class RecordAspectsService(
                 case Failure(exception) =>
                   complete(
                     StatusCodes.BadRequest,
-                    BadRequest(exception.getMessage)
+                    ApiError(exception.getMessage)
                   )
               }
             }
@@ -324,7 +324,7 @@ class RecordAspectsService(
                   case Failure(exception) =>
                     complete(
                       StatusCodes.BadRequest,
-                      BadRequest(exception.getMessage)
+                      ApiError(exception.getMessage)
                     )
                 }
               }

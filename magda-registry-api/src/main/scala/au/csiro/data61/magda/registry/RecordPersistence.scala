@@ -17,6 +17,7 @@ import gnieh.diffson.sprayJson._
 import scalikejdbc._
 import spray.json._
 import spray.json.lenses.JsonLenses._
+import org.everit.json.schema.ValidationException
 
 import scala.util.{Failure, Success, Try}
 import com.typesafe.config.Config
@@ -462,7 +463,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       _ <- if (id == newRecord.id) Success(newRecord)
       else
         Failure(
-          new RuntimeException(
+          new ValidationException(
             "The provided ID does not match the record's ID."
           )
         )

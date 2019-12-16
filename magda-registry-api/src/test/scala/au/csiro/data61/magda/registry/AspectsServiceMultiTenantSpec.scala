@@ -43,7 +43,7 @@ class AspectsServiceMultiTenantSpec extends ApiSpec {
           .api(role)
           .routes ~> check {
           status shouldEqual StatusCodes.NotFound
-          responseAs[BadRequest].message should include("exist")
+          responseAs[ApiError].message should include("exist")
         }
       }
     }
@@ -112,7 +112,7 @@ class AspectsServiceMultiTenantSpec extends ApiSpec {
               TENANT_1
             ) ~> param.api(role).routes ~> check {
               status shouldEqual StatusCodes.BadRequest
-              responseAs[BadRequest].message should include("already exists")
+              responseAs[ApiError].message should include("already exists")
             }
           }
       }
@@ -172,7 +172,7 @@ class AspectsServiceMultiTenantSpec extends ApiSpec {
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.BadRequest
-            responseAs[BadRequest].message should include("ID")
+            responseAs[ApiError].message should include("ID")
           }
         }
       }
@@ -244,8 +244,8 @@ class AspectsServiceMultiTenantSpec extends ApiSpec {
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.BadRequest
-            responseAs[BadRequest].message should include("exists")
-            responseAs[BadRequest].message should include("ID")
+            responseAs[ApiError].message should include("exists")
+            responseAs[ApiError].message should include("ID")
           }
       }
 
@@ -278,7 +278,7 @@ class AspectsServiceMultiTenantSpec extends ApiSpec {
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.BadRequest
-            responseAs[BadRequest].message should include("ID")
+            responseAs[ApiError].message should include("ID")
           }
         }
       }

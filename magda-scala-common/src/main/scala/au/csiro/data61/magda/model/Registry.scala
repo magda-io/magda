@@ -116,7 +116,8 @@ object Registry
       ) sourceTag: Option[String] = None,
       @(ApiModelProperty @field)(
         value = "The identifier of a tenant",
-        required = false
+        required = false,
+        allowEmptyValue = true
       ) tenantId: Option[BigInt] = None
   ) extends RecordType
 
