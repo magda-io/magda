@@ -7004,16 +7004,6 @@ crc@^3.4.4:
   dependencies:
     buffer "^5.1.0"
 
-create-docker-context-for-node-component@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/create-docker-context-for-node-component/-/create-docker-context-for-node-component-1.0.1.tgz#4294d3ebcb19fd0c34ab9ae6465261cff95929f4"
-  integrity sha512-tcwoCeyHEvZfKTR9Cgmv8MY2IExI1Bv6x4GF2MBcvgcw3EdD/1gHYyEXciFaaCKW4E/i2qIvGzNEv70tX+DcsA==
-  dependencies:
-    fs-extra "^8.1.0"
-    is-subdir "^1.1.1"
-    lodash "^4.17.15"
-    yargs "^14.2.0"
-
 create-ecdh@^4.0.0:
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/create-ecdh/-/create-ecdh-4.0.3.tgz#c9111b6f33045c4697f144787f9254cdc77c45ff"
@@ -12381,13 +12371,6 @@ is-subdir@^1.0.2:
   dependencies:
     better-path-resolve "1.0.0"
 
-is-subdir@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/is-subdir/-/is-subdir-1.1.1.tgz#423e66902f9c5f159b9cc4826c820df083059538"
-  integrity sha512-VYpq0S7gPBVkkmfwkvGnx1EL9UVIo87NQyNcgMiNUdQCws3CJm5wj2nB+XPL7zigvjxhuZgp3bl2yBcKkSIj1w==
-  dependencies:
-    better-path-resolve "1.0.0"
-
 is-subset@^0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/is-subset/-/is-subset-0.1.1.tgz#8a59117d932de1de00f245fcdd39ce43f1e939a6"
@@ -14199,7 +14182,7 @@ lodash@4.17.4:
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
   integrity sha512-cQKh8igo5QUhZ7lg38DYWAxMvjSAKG0A8wGSVimP07SIUEK2UO+arSRKbRZWtelMtN5V0Hkwh5ryOto/SshYIg==
 
-lodash@^4.14.2, lodash@^4.17.15:
+lodash@^4.14.2:
   version "4.17.15"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
   integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
@@ -24304,14 +24287,6 @@ yargs-parser@^13.1.0:
     camelcase "^5.0.0"
     decamelize "^1.2.0"
 
-yargs-parser@^15.0.0:
-  version "15.0.0"
-  resolved "https://registry.yarnpkg.com/yargs-parser/-/yargs-parser-15.0.0.tgz#cdd7a97490ec836195f59f3f4dbe5ea9e8f75f08"
-  integrity sha512-xLTUnCMc4JhxrPEPUYD5IBR1mWCK/aT6+RJ/K29JY2y1vD+FhtgKK0AXRWvI262q3QSffAQuTouFIKUuHX89wQ==
-  dependencies:
-    camelcase "^5.0.0"
-    decamelize "^1.2.0"
-
 yargs-parser@^4.2.0:
   version "4.2.1"
   resolved "https://registry.yarnpkg.com/yargs-parser/-/yargs-parser-4.2.1.tgz#29cceac0dc4f03c6c87b4a9f217dd18c9f74871c"
@@ -24429,23 +24404,6 @@ yargs@^12.0.5:
     which-module "^2.0.0"
     y18n "^3.2.1 || ^4.0.0"
     yargs-parser "^11.1.1"
-
-yargs@^14.2.0:
-  version "14.2.2"
-  resolved "https://registry.yarnpkg.com/yargs/-/yargs-14.2.2.tgz#2769564379009ff8597cdd38fba09da9b493c4b5"
-  integrity sha512-/4ld+4VV5RnrynMhPZJ/ZpOCGSCeghMykZ3BhdFBDa9Wy/RH6uEGNWDJog+aUlq+9OM1CFTgtYRW5Is1Po9NOA==
-  dependencies:
-    cliui "^5.0.0"
-    decamelize "^1.2.0"
-    find-up "^3.0.0"
-    get-caller-file "^2.0.1"
-    require-directory "^2.1.1"
-    require-main-filename "^2.0.0"
-    set-blocking "^2.0.0"
-    string-width "^3.0.0"
-    which-module "^2.0.0"
-    y18n "^4.0.0"
-    yargs-parser "^15.0.0"
 
 yargs@^3.32.0:
   version "3.32.0"
