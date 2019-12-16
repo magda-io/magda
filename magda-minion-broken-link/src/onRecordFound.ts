@@ -114,12 +114,23 @@ function recordBrokenLinkAspect(
     result: BrokenLinkSleuthingResult
 ): Promise<Record> {
     const theTenantId = record.tenantId;
+    const { errorDetails, ...aspectDataWithNoErrorDetails } = result.aspect;
+    const aspectData = errorDetails
+        ? {
+              ...aspectDataWithNoErrorDetails,
+              errorDetails: `${
+                  errorDetails.httpStatusCode
+                      ? `Http Status Code: ${errorDetails.httpStatusCode}: `
+                      : ""
+              }${errorDetails}`
+          }
+        : aspectDataWithNoErrorDetails;
 
     return registry
         .putRecordAspect(
             result.distribution.id,
             "source-link-status",
-            result.aspect,
+            aspectData,
             theTenantId
         )
         .then(unionToThrowable);
