@@ -472,6 +472,7 @@ dockerize:typescript-apis:
     - builders-and-yarn
     - registry-typescript-api
     - buildtest:typescript-apis
+    - buildtest:storage-api
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
