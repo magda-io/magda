@@ -464,11 +464,7 @@
             "name": "Launch Storage API",
             "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
             "cwd": "${workspaceRoot}/magda-storage-api",
-            "args": ["src/index.ts"],
-            "env": {
-                "PGUSER": "client",
-                "JWT_SECRET": "squirrel"
-            }
+            "args": ["src/index.ts"]
         },
         {
             "type": "node",
