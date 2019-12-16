@@ -20,7 +20,6 @@ describe("Storage API tests", () => {
         bucket: "magda-test-1"
     };
     const minioClient = new Minio.Client(minioClientOpts);
-    console.log("The client opts: ", minioClientOpts);
 
     before(() => {
         minioClient.makeBucket(minioClientOpts.bucket, function(err: Error) {
@@ -28,15 +27,6 @@ describe("Storage API tests", () => {
                 return console.log("Error creating bucket.", err);
             }
             console.log('Bucket created successfully in "us-east-1".');
-        });
-    });
-
-    after(() => {
-        minioClient.removeBucket(minioClientOpts.bucket, function(err: Error) {
-            if (err) {
-                return console.log("unable to remove bucket: ", err);
-            }
-            console.log("Bucket removed successfully.");
         });
     });
 
@@ -59,7 +49,7 @@ describe("Storage API tests", () => {
     describe("Upload", () => {
         it("Uploading a simple file", () => {
             return request(app)
-                .put("/v0/test-file")
+                .put("/v0/upload-test-file")
                 .set("Accept", "application/json")
                 .set("Content-Type", "text/plain")
                 .send("LALALALALALALALALA")
@@ -70,18 +60,35 @@ describe("Storage API tests", () => {
     describe("Download", () => {
         it("Uploading and then downloading the simple file", function() {
             return request(app)
-                .put("/v0/test-file")
+                .put("/v0/download-test-file-1")
                 .set("Accept", "application/json")
                 .set("Content-Type", "text/csv")
                 .send("Testing download")
                 .expect(200)
                 .then(_res => {
                     return request(app)
-                        .get("/v0/test-file")
+                        .get("/v0/download-test-file-1")
                         .set("Accept", "application/json")
                         .set("Accept", "text/plain")
                         .expect(200)
                         .expect("Testing download");
+                });
+        });
+
+        it("Empty content", function() {
+            return request(app)
+                .put("/v0/download-test-file-2")
+                .set("Accept", "application/json")
+                .set("Content-Type", "text/plain")
+                .send("")
+                .expect(200)
+                .then(_res => {
+                    return request(app)
+                        .get("/v0/download-test-file-2")
+                        .set("Accept", "application/json")
+                        .set("Accept", "text/plain")
+                        .expect(200)
+                        .expect("");
                 });
         });
     });

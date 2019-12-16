@@ -87,9 +87,9 @@ export default class MagdaMinioClient implements ObjectStoreClient {
         };
     }
 
-    putFile(fileName: string, content: any, metaData?: object): Promise<any> {
-        if (Object.keys(content).length === 0) {
-            return Promise.reject("Content type header not specified.");
+    putFile(objectName: string, content: any, metaData?: object): Promise<any> {
+        if (typeof content === "object") {
+            return Promise.reject("Content in an unsupported format.");
         }
         const contentSize = content.length;
         const contentStream = new Readable();
@@ -108,7 +108,7 @@ export default class MagdaMinioClient implements ObjectStoreClient {
         return new Promise((resolve, reject) => {
             return this.client.putObject(
                 this.bucket,
-                fileName,
+                objectName,
                 contentStream,
                 contentSize,
                 metaData,
