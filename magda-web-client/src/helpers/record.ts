@@ -177,6 +177,7 @@ export type ParsedDataset = {
         orgUnitOwnerId: string;
         preAuthorisedPermissionIds: string[];
     };
+    ckanSync?: CkanSyncAspectType;
 };
 
 export const emptyPublisher: Publisher = {
@@ -376,6 +377,17 @@ export function parseDistribution(
     };
 }
 
+export interface CkanSyncAspectType {
+    status: "retain" | "withdraw" | undefined;
+    syncUserId?: string;
+    ckanId?: string;
+    hasCreated: boolean;
+    syncRequired: boolean;
+    syncAttempted: boolean;
+    lastSyncAttemptTime?: Date;
+    syncError?: string;
+}
+
 export function parseDataset(dataset?: RawDataset): ParsedDataset {
     let error;
     if (dataset && !dataset.id) {
@@ -421,6 +433,23 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         : 0;
     const hasQuality: boolean = aspects["dataset-quality-rating"]
         ? true
+        : false;
+
+    const ckanSync: CkanSyncAspectType = aspects["ckan-sync"]
+        ? aspects["ckan-sync"]
+        : {
+              status: undefined,
+              hasCreated: false,
+              syncRequired: false,
+              syncAttempted: false
+          };
+
+    ckanSync.hasCreated = ckanSync.hasCreated ? ckanSync.hasCreated : false;
+    ckanSync.syncRequired = ckanSync.syncRequired
+        ? ckanSync.syncRequired
+        : false;
+    ckanSync.syncAttempted = ckanSync.syncAttempted
+        ? ckanSync.syncAttempted
         : false;
 
     const distributions = distribution["distributions"].map(d => {
@@ -501,6 +530,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         accessControl,
         accrualPeriodicity: datasetInfo["accrualPeriodicity"] || "",
         accrualPeriodicityRecurrenceRule:
-            datasetInfo["accrualPeriodicityRecurrenceRule"] || ""
+            datasetInfo["accrualPeriodicityRecurrenceRule"] || "",
+        ckanSync
     };
 }

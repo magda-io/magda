@@ -847,13 +847,24 @@ class RecordHandler extends React.Component {
                                     datasetId={this.props.dataset.identifier}
                                 />
                             </div>
-                            <div
-                                className={` col-sm-4 ${
-                                    this.state.addMargin ? "form-margin" : ""
-                                }`}
-                            >
-                                <PublishToCkanButton />
-                            </div>
+                            {hasEditPermissions ? (
+                                <div
+                                    className={` col-sm-4 ${
+                                        this.state.addMargin
+                                            ? "form-margin"
+                                            : ""
+                                    }`}
+                                >
+                                    <PublishToCkanButton
+                                        ckanSyncData={
+                                            this.props.dataset.ckanSync
+                                        }
+                                        datasetId={
+                                            this.props.dataset.identifier
+                                        }
+                                    />
+                                </div>
+                            ) : null}
                         </div>
                         <div className="tab-content">
                             <Switch>
