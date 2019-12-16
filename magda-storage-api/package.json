@@ -2,6 +2,7 @@
   "name": "@magda/storage-api",
   "version": "0.0.57-0",
   "scripts": {
+    "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
     "compile": "tsc -b && ts-module-alias-transformer dist",
     "watch": "tsc -b --watch",
