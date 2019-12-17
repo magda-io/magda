@@ -81,9 +81,9 @@ const serverConfig: {
     csvLoaderChunkSize: number;
     mandatoryFields: ValidationFieldList;
     dateConfig?: DateConfig;
-    addDatasetThemes?: string[];
     noManualKeywords?: boolean;
     noManualThemes?: boolean;
+    datasetThemes?: string[];
 } = window.magda_server_config || {};
 
 const DATE_REGEX = ".*(date|dt|year|decade).*";
@@ -270,9 +270,7 @@ export const config = {
               "informationSecurity.disseminationLimits"
           ],
     dateConfig: constructDateConfig(serverConfig.dateConfig),
-    addDatasetThemes: serverConfig.addDatasetThemes
-        ? serverConfig.addDatasetThemes
-        : [],
+    datasetThemes: serverConfig.datasetThemes ? serverConfig.datasetThemes : [],
     noManualKeywords: serverConfig.noManualKeywords
         ? serverConfig.noManualKeywords
         : false,
