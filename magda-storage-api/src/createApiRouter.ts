@@ -20,7 +20,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
     installStatusRouter(router, status);
 
     // JSON files are interpreted as text
-    router.use(bodyParser.text({ type: "*/*" }));
+    router.use(bodyParser.text({ type: ["text/*", "application/json"] }));
     router.use(
         bodyParser.raw({ type: ["image/*", "application/octet-stream"] })
     );
