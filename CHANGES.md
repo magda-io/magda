@@ -10,6 +10,7 @@ Storage:
 General:
 
 -   CSV Connector can now process ampersand character properly
+-   Fixed broken link minion causes json schema validation error
 -   Upgraded typescript to 3.7.2 & Use [Project References](https://www.typescriptlang.org/docs/handbook/project-references.html) to organize typescript project
 
 UI:
