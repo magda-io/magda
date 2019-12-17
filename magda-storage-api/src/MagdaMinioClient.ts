@@ -88,9 +88,6 @@ export default class MagdaMinioClient implements ObjectStoreClient {
     }
 
     putFile(objectName: string, content: any, metaData?: object): Promise<any> {
-        if (typeof content === "object") {
-            return Promise.reject("Content in an unsupported format.");
-        }
         const contentSize = content.length;
         const contentStream = new Readable();
 
