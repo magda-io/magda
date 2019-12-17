@@ -161,6 +161,13 @@ const argv = yargs
         type: "string",
         coerce: coerceJson("dateFormats"),
         default: "[]"
+    })
+    .option("datasetThemes", {
+        describe:
+            "A list of pre-defined phrases for theme input on the `add dataset page`",
+        type: "string",
+        coerce: coerceJson("datasetThemes"),
+        default: "[]"
     }).argv;
 
 var app = express();
@@ -242,7 +249,8 @@ const webServerConfig = {
     maxTableProcessingRows: argv.maxTableProcessingRows,
     csvLoaderChunkSize: argv.csvLoaderChunkSize,
     mandatoryFields: argv.mandatoryFields,
-    dateFormats: argv.dateFormats
+    dateFormats: argv.dateFormats,
+    datasetThemes: argv.datasetThemes
 };
 
 app.get("/server-config.js", function(req, res) {

@@ -38,6 +38,9 @@ import ValidationRequiredLabel from "../../ValidationRequiredLabel";
 import helpIcon from "assets/help.svg";
 
 import DatasetAutoComplete from "../People/DatasetAutocomplete";
+
+import { config } from "config";
+
 import "../People/DatasetAutocomplete.scss";
 
 import "./index.scss";
@@ -155,7 +158,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                             value={dataset.themes}
                             onChange={editDataset("themes")}
                             placeHolderText="Enter a theme"
-                            useVocabularyAutoCompleteInput={false}
+                            options={config.datasetThemes}
                         />
                     </div>
                 </div>
