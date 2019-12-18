@@ -9,6 +9,8 @@ import MagdaMinioClient from "../MagdaMinioClient";
 
 const Minio = require("minio");
 
+import fs from "fs";
+
 describe("Storage API tests", () => {
     let app: express.Application;
     const minioClientOpts = {
@@ -22,7 +24,7 @@ describe("Storage API tests", () => {
     const minioClient = new Minio.Client(minioClientOpts);
 
     before(() => {
-        minioClient.makeBucket(minioClientOpts.bucket, function(err: Error) {
+        minioClient.makeBucket(minioClientOpts.bucket, (err: Error) => {
             if (err) {
                 return console.log("Error creating bucket.", err);
             }
@@ -89,6 +91,22 @@ describe("Storage API tests", () => {
                         .set("Accept", "text/plain")
                         .expect(200)
                         .expect("");
+                });
+        });
+        it("Binary content", function() {
+            const img: Buffer = fs.readFileSync("test_image.jpg");
+            return request(app)
+                .put("/v0/binary-content")
+                .set("Accept", "image/jpg")
+                .set("Content-Type", "image/jpg")
+                .send(img)
+                .expect(200)
+                .then(_res => {
+                    return request(app)
+                        .get("/v0/binary-content")
+                        .set("Accept", "image/jpg")
+                        .expect(200)
+                        .expect(img);
                 });
         });
     });
