@@ -18,6 +18,7 @@
     "@google-cloud/storage": "^4.1.0",
     "@magda/typescript-common": "0.0.57-0",
     "@types/cross-spawn": "^6.0.1",
+    "@types/minio": "^7.0.4",
     "@types/superagent": "^4.1.4",
     "@types/xmldom": "^0.1.29",
     "express": "^4.13.1",

@@ -3,7 +3,7 @@ import ObjectFromStore from "./ObjectFromStore";
 import ObjectStoreClient from "./ObjectStoreClient";
 import { Stream, Readable } from "stream";
 
-const Minio = require("minio");
+import * as Minio from "minio";
 
 export default class MagdaMinioClient implements ObjectStoreClient {
     private readonly bucket: string;
