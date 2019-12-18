@@ -1,0 +1,9 @@
+{
+    "listenPort": 6120,
+    "bucket": "",
+    "minioAccessKey": "",
+    "minioSecretKey": "",
+    "minioEnableSSL": true,
+    "minioHost": "localhost",
+    "minioPort": 9000
+}
