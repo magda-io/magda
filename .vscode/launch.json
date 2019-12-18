@@ -470,7 +470,7 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
-            "name": "Content API Test Cases",
+            "name": "Storage API Test Cases",
             "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
             "cwd": "${workspaceRoot}/magda-storage-api",
             "args": [
