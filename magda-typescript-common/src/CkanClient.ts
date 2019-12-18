@@ -153,21 +153,31 @@ type CkanFuncTypes =
     | "job_clear"
     | "job_cancel";
 
+export class CkanError extends Error {
+    public statusCode?: number;
+}
+
 async function getCkanResData<T = any>(res: Response): Promise<T> {
     if (res.status !== 200) {
-        throw new Error(
+        const error = new CkanError(
             `Status Code: ${res.status} ${
                 res.statusText
             } \n ${await res.text()}`
         );
+        error.statusCode = res.status;
+        throw error;
     }
     const resData = await res.json();
     if (!resData.success) {
-        throw new Error(
+        const error = new CkanError(
             `Error "${
                 resData.error.message
             }" happened when requested ckan function "${resData.help}"`
         );
+        if (resData.error && resData.error.__type === "Not Found Error") {
+            error.statusCode = 404;
+        }
+        throw error;
     }
     return resData.result;
 }
@@ -263,6 +273,20 @@ class CkanClient {
         }
 
         return uuidv4();
+    }
+
+    async getPackage(idOrName: string): Promise<{ [key: string]: any } | null> {
+        try {
+            const data = await this.callCkanFunc("package_show", {
+                id: idOrName
+            });
+            return data;
+        } catch (e) {
+            if (e.statusCode === 404) {
+                return null;
+            }
+            throw e;
+        }
     }
 
     async createDataset() {
