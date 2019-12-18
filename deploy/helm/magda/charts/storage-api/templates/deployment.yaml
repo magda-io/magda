@@ -24,13 +24,35 @@ spec:
             "node",
             "/usr/src/app/component/dist/index.js",
             "--listenPort", "80",
-            "--bucket", "", # fill this in
-            "--minioAccessKey", "", # fill this in
-            "--minioSecretKey", "", # fill this in
             "--minioEnableSSL", "true",
-            "--minioServerHost", "", # fill this in
-            "--minioServerPort", ""  # fill this in
         ]
+        env:
+        - name: MINIO_HOST
+            valueFrom:
+            secretKeyRef:
+                name: storage-secrets
+                key: minio-host
+        - name: MINIO_PORT
+            valueFrom:
+            secretKeyRef:
+                name: storage-secrets
+                key: minio-port
+        - name: MINIO_SECRET_KEY
+            valueFrom:
+            secretKeyRef:
+                name: storage-secrets
+                key: minio-secret-key
+        - name: MINIO_ACCESS_KEY
+            valueFrom:
+            secretKeyRef:
+                name: storage-secrets
+                key: minio-access-key
+        - name: BUCKET
+            valueFrom:
+            secretKeyRef:
+                name: storage-secrets
+                key: bucket
+
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           httpGet:
