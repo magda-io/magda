@@ -262,10 +262,9 @@ const webServerConfig = {
     csvLoaderChunkSize: argv.csvLoaderChunkSize,
     mandatoryFields: argv.mandatoryFields,
     dateFormats: argv.dateFormats,
-    datasetThemes: argv.datasetThemes
+    datasetThemes: argv.datasetThemes,
     noManualKeywords: argv.noManualKeywords,
     noManualThemes: argv.noManualThemes
-    datasetThemes: argv.datasetThemes
 };
 
 app.get("/server-config.js", function(req, res) {
