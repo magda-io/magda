@@ -94,7 +94,7 @@ describe("Storage API tests", () => {
                 });
         });
         it("Binary content", function() {
-            const img: Buffer = fs.readFileSync("test_image.jpg");
+            const img: Buffer = fs.readFileSync("src/test/test_image.jpg");
             return request(app)
                 .put("/v0/binary-content")
                 .set("Accept", "image/jpg")
