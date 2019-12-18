@@ -4,6 +4,6 @@
     "minioAccessKey": "",
     "minioSecretKey": "",
     "minioEnableSSL": true,
-    "minioServerHost": "localhost",
-    "minioServerPort": 9000
+    "minioHost": "localhost",
+    "minioPort": 9000
 }

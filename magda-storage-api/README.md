@@ -17,8 +17,8 @@ expected config file. Create a `config.json` file with the appropriate parameter
     minioAccessKey: "", // You would have specified this when creating the MinIO server
     minioSecretKey: "", // You would have specified this when creating the MinIO server
     minioEnableSSL: true,
-    minioServerHost: "localhost",
-    minioServerPort: 9000
+    minioHost: "localhost",
+    minioPort: 9000
 }
 ```
 

@@ -12,14 +12,9 @@ const argv = yargs
         default: 6120
     })
     .option("bucket", {
-        describe: "The Google Cloud Storage bucket from which to serve data.",
+        describe: "The name of the bucket to interact with",
         type: "string",
         demand: true
-    })
-    .option("gcsKeyFile", {
-        describe:
-            "The JSON key file to use to access the Google Cloud Storage bucket.",
-        type: "string"
     })
     .option("minioAccessKey", {
         describe: "The access key to your minio server.",
@@ -36,12 +31,12 @@ const argv = yargs
         type: "boolean",
         default: true
     })
-    .option("minioServerHost", {
+    .option("minioHost", {
         describe: "Host where MinIO server is running.",
         type: "string",
         default: "localhost"
     })
-    .option("minioServerPort", {
+    .option("minioPort", {
         describe: "Port where MinIO server is running.",
         type: "number",
         default: 9000
@@ -53,8 +48,8 @@ app.use(
     "/v0",
     createApiRouter({
         objectStoreClient: new MagdaMinioClient({
-            endPoint: argv.minioServerHost,
-            port: argv.minioServerPort,
+            endPoint: argv.minioHost,
+            port: argv.minioPort,
             useSSL: argv.minioEnableSSL,
             accessKey: argv.minioAccessKey,
             secretKey: argv.minioSecretKey,
