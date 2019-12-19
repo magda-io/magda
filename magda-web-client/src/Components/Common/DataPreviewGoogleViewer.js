@@ -8,9 +8,7 @@ function DataPreviewGoogleViewer({ distribution }) {
                 allowFullScreen=""
                 height="600px"
                 scrolling="auto"
-                src={`https://docs.google.com/viewer?embedded=true&toolbar=hide&url=${
-                    distribution.downloadURL
-                }`}
+                src={`https://docs.google.com/viewer?embedded=true&toolbar=hide&url=${distribution.downloadURL}`}
                 width="100%"
             />
         </div>

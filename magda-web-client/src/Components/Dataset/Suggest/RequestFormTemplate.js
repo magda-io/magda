@@ -245,10 +245,10 @@ export default class RequestFormTemplate extends React.Component {
                     disabled={
                         !this.state.message &&
                         this.state.message === "" &&
-                        (!this.state.senderName &&
-                            this.state.senderName === "") &&
-                        (!this.state.senderEmail &&
-                            this.state.senderEmail === "")
+                        !this.state.senderName &&
+                        this.state.senderName === "" &&
+                        !this.state.senderEmail &&
+                        this.state.senderEmail === ""
                             ? true
                             : false
                     }
