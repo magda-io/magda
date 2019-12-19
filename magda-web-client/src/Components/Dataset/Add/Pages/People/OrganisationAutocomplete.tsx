@@ -71,7 +71,7 @@ export default function OrganisationAutocomplete(props: Props) {
             className="react-select"
             isMulti={props.multi}
             isSearchable={true}
-            onChange={(rawValue, action) => {
+            onChange={(rawValue, _action) => {
                 if (!rawValue) {
                     props.onOrgSelected(undefined);
                 } else if (props.multi) {

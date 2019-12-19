@@ -48,7 +48,7 @@ export default function OrgUnitDropdown({
                 className="react-select"
                 isMulti={false}
                 isSearchable={false}
-                onChange={(rawValue, action) => {
+                onChange={(rawValue, _action) => {
                     const value = rawValue as (
                         | { value: string }
                         | undefined

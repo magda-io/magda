@@ -12,22 +12,22 @@ import {
 } from "api-clients/OrgUnitApis";
 
 type Props = {
-    orgUnitId?: string;
-    teamOrgUnitId?: string;
+    custodianId?: string;
+    businessAreaId?: string;
     onChange: (orgUnitId: string) => void;
 };
 
 export default function CustodianDropdown({
-    orgUnitId,
-    teamOrgUnitId,
+    custodianId,
+    businessAreaId,
     onChange: onChangeCallback
 }: Props) {
     // If we already have a value from orgUnitId we can assume the user already picked it.
-    const [hasUserSelected, setHasUserSelected] = useState(!!orgUnitId);
+    const [hasUserSelected, setHasUserSelected] = useState(!!custodianId);
 
     // Set up the call for loading custodian org units, but don't call it yet.
     const { loading, error, result, execute } = useAsyncCallback(() =>
-        listOrgUnitsAtLevel(config.custodianOrgLevel, teamOrgUnitId)
+        listOrgUnitsAtLevel(config.custodianOrgLevel, businessAreaId)
     );
 
     // We don't need to load org units unless we're starting up (!result) or
@@ -38,12 +38,12 @@ export default function CustodianDropdown({
         if (!result || !hasUserSelected) {
             execute();
         }
-    }, [config.custodianOrgLevel, teamOrgUnitId]);
+    }, [config.custodianOrgLevel, businessAreaId]);
 
     // If there's no org unit already set, when we know what org units exist, set it to the one
     // above the current user in the org tree
     useEffect(() => {
-        if (!hasUserSelected && result && teamOrgUnitId) {
+        if (!hasUserSelected && result && businessAreaId) {
             const relatedOrgUnit = find(
                 result,
                 option =>
@@ -54,7 +54,7 @@ export default function CustodianDropdown({
                 onChangeCallback(relatedOrgUnit.id);
             }
         }
-    }, [result, teamOrgUnitId]);
+    }, [result, businessAreaId]);
 
     if (loading) {
         return <span>Loading...</span>;
@@ -71,16 +71,17 @@ export default function CustodianDropdown({
             </div>
         );
     } else {
+        console.log('Result in CustodianDropdown: ', result);
         const selectedValue =
-            typeof orgUnitId !== "undefined" &&
-            find(result, option => option.id === orgUnitId);
+            typeof custodianId !== "undefined" &&
+            find(result, option => option.id === custodianId);
 
         return (
             <Select
                 className="react-select"
                 isMulti={false}
                 isSearchable={true}
-                onChange={(rawValue, action) => {
+                onChange={(rawValue, _action) => {
                     const value = rawValue as (
                         | { value: string }
                         | undefined
