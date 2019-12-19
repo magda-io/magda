@@ -5,6 +5,8 @@ import { RecordAction, RawDataset } from "../helpers/record";
 import { FetchError } from "../types";
 import { ensureAspectExists } from "api-clients/RegistryApis";
 import request from "helpers/request";
+import { CkanSyncAspectType } from "helpers/record";
+import ckanSyncAspect from "@magda/registry-aspects/ckan-sync.schema.json";
 
 export function requestDataset(id: string): RecordAction {
     return {
@@ -174,6 +176,34 @@ export function fetchDistributionFromRegistry(id: string): any {
     };
 }
 
+const DefaultCkanSyncData: CkanSyncAspectType = {
+    status: undefined,
+    hasCreated: false,
+    syncRequired: false,
+    syncAttempted: false
+};
+
+async function notifyCkanSyncMinion(datasetId: string) {
+    let ckanSyncData: CkanSyncAspectType;
+    try {
+        ckanSyncData = await request(
+            "GET",
+            `${config.registryReadOnlyApiUrl}records/${datasetId}/aspects/ckan-sync`
+        );
+    } catch (e) {
+        await ensureAspectExists("ckan-sync", ckanSyncAspect);
+        ckanSyncData = { ...DefaultCkanSyncData };
+    }
+
+    if (ckanSyncData.status === "retain") {
+        await request(
+            "PUT",
+            `${config.registryFullApiUrl}records/${datasetId}/aspects/ckan-sync`,
+            { ...ckanSyncData, syncRequired: true }
+        );
+    }
+}
+
 export function modifyRecordAspect(
     id: string,
     aspect: string,
@@ -208,6 +238,7 @@ export function modifyRecordAspect(
                 "Content-type": "application/json"
             }
         });
+
         return fetch(url, options)
             .then(response => {
                 if (!response.ok) {
@@ -221,7 +252,9 @@ export function modifyRecordAspect(
                 return response.json();
             })
             .then((json: any) => {
-                return dispatch(receiveAspectModified(aspect, json));
+                return notifyCkanSyncMinion(id).then(() => {
+                    return dispatch(receiveAspectModified(aspect, json));
+                });
             })
             .catch(error =>
                 dispatch(
@@ -249,8 +282,10 @@ export function createRecord(
         dispatch(createNewDataset(inputDataset));
         try {
             // make sure all the aspects exist (this should be improved at some point, but will do for now)
-            const aspectPromises = Object.entries(aspects).map(
-                ([aspect, definition]) => ensureAspectExists(aspect, definition)
+            const aspectPromises = Object.entries(
+                aspects
+            ).map(([aspect, definition]) =>
+                ensureAspectExists(aspect, definition)
             );
             await Promise.all(aspectPromises);
 

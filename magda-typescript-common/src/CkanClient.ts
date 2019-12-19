@@ -287,6 +287,7 @@ class CkanClient {
         }
 
         let name = title
+            .toLowerCase()
             .replace(/\s+/g, " ")
             .trim()
             .replace(/[^a-z0-9-]/gi, "-")

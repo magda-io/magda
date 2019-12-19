@@ -31,7 +31,8 @@ async function recordSuccessCkanSyncAction(
         ...ckanSyncData,
         syncRequired: false,
         syncAttempted: true,
-        lastSyncAttemptTime: new Date().toISOString()
+        lastSyncAttemptTime: new Date().toISOString(),
+        syncError: ""
     };
     if (ckanId) {
         data.ckanId = ckanId;
@@ -123,6 +124,8 @@ async function createDistributionData(
             ];
     }
 
+    /*
+
     if (distribution?.["aspects"]?.["dcat-distribution-strings"]?.["issued"]) {
         data.created =
             distribution?.["aspects"]?.["dcat-distribution-strings"]?.[
@@ -139,7 +142,7 @@ async function createDistributionData(
             distribution?.["aspects"]?.["dcat-distribution-strings"]?.[
                 "last_modified"
             ];
-    }
+    }*/
 
     return data;
 }
@@ -245,6 +248,8 @@ async function createCkanPackageDataFromDataset(
         }
     }
 
+    console.log("creating package data: ", data);
+
     return data;
 }
 
@@ -259,7 +264,7 @@ async function createCkanPackage(
         record
     );
 
-    const distributions = await await createCkanDistributionsFromDataset(
+    const distributions = await createCkanDistributionsFromDataset(
         ckanClient,
         externalUrl,
         record
@@ -295,7 +300,7 @@ async function updateCkanPackage(
         ...data
     };
 
-    const distributions = await await createCkanDistributionsFromDataset(
+    const distributions = await createCkanDistributionsFromDataset(
         ckanClient,
         externalUrl,
         record
@@ -349,6 +354,8 @@ export default async function onRecordFound(
             );
             return;
         }
+
+        console.log("Sync is required for: ", ckanSyncData);
 
         if (ckanSyncData.status === "withdraw") {
             if (!ckanSyncData.hasCreated || !ckanSyncData.ckanId) {
