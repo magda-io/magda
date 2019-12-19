@@ -2,6 +2,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: minion-ckan-sync
+spec:
   replicas: 1
   strategy:
     rollingUpdate:

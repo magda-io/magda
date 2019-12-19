@@ -99,6 +99,9 @@ dependencies:
   - name: minion-visualization
     tags:
       - minion-visualization
+  - name: minion-ckan-sync
+    tags:
+      - minion-ckan-sync
 
 # K8s misc
   - name: priorities
