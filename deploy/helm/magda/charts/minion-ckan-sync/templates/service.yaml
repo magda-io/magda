@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: minion-ckan-sync
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+{{- if .Values.global.exposeNodePorts }}
+    nodePort: 30109
+  type: NodePort
+{{- end }}
+  selector:
+    service: minion-ckan-sync

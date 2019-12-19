@@ -1,6 +1,11 @@
 import fetch from "isomorphic-fetch";
 import shortId from "shortid";
 import { v4 as uuidv4 } from "uuid";
+import URI from "urijs";
+
+interface PlainObjectType {
+    [key: string]: any;
+}
 
 type CkanFuncTypes =
     | "site_read"
@@ -170,9 +175,7 @@ async function getCkanResData<T = any>(res: Response): Promise<T> {
     const resData = await res.json();
     if (!resData.success) {
         const error = new CkanError(
-            `Error "${
-                resData.error.message
-            }" happened when requested ckan function "${resData.help}"`
+            `Error "${resData.error.message}" happened when requested ckan function "${resData.help}"`
         );
         if (resData.error && resData.error.__type === "Not Found Error") {
             error.statusCode = 404;
@@ -180,6 +183,36 @@ async function getCkanResData<T = any>(res: Response): Promise<T> {
         throw error;
     }
     return resData.result;
+}
+
+interface LicenseDataType {
+    status: string;
+    maintainer: string;
+    od_conformance: string;
+    family: string;
+    osd_conformance: string;
+    domain_data: string;
+    title: string;
+    url: string;
+    is_generic: string;
+    is_okd_compliant: boolean;
+    is_osi_compliant: boolean;
+    domain_content: string;
+    domain_software: string;
+    id: string;
+}
+
+interface OrgDataType {
+    id?: string;
+    name: string;
+    title?: string;
+    description?: string;
+    image_url?: string;
+    state?: string;
+    approval_status?: string;
+    extras?: PlainObjectType[];
+    packages?: PlainObjectType[];
+    users?: PlainObjectType[];
 }
 
 class CkanClient {
@@ -218,10 +251,13 @@ class CkanClient {
             };
         }
 
-        const res = await fetch(
-            `${this.serverUrl}/api/3/action/${funcName}`,
-            options
-        );
+        let uri = new URI(this.serverUrl)
+            .segment("api")
+            .segment("3")
+            .segment("action")
+            .segment(funcName);
+
+        const res = await fetch(uri.toString(), options);
 
         return await getCkanResData<T>(res);
     }
@@ -275,6 +311,16 @@ class CkanClient {
         return uuidv4();
     }
 
+    async searchLicense(licenseName: string) {
+        const licenseList = await this.callCkanFunc<LicenseDataType[]>(
+            "license_list"
+        );
+        const name = licenseName.trim().toLowerCase();
+        return licenseList.find(
+            license => license.title.trim().toLowerCase() === name
+        );
+    }
+
     async getPackage(idOrName: string): Promise<{ [key: string]: any } | null> {
         try {
             const data = await this.callCkanFunc("package_show", {
@@ -287,6 +333,21 @@ class CkanClient {
             }
             throw e;
         }
+    }
+
+    async searchAuthorizedOrgByName(orgName: string, permission: string) {
+        const orgs = await this.getAuthorizedOrgs(permission);
+        const name = orgName.trim().toLowerCase();
+        return orgs.find(orgs => orgs.title.trim().toLowerCase() === name);
+    }
+
+    async getAuthorizedOrgs(permission: string) {
+        return await this.callCkanFunc<OrgDataType[]>(
+            "organization_list_for_user",
+            {
+                permission
+            }
+        );
     }
 
     async createDataset() {
