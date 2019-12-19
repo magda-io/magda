@@ -35,7 +35,8 @@
     "@magda/minion-framework": "^0.0.57-0",
     "@magda/registry-aspects": "^0.0.57-0",
     "@magda/typescript-common": "^0.0.57-0",
-    "lodash": "^4.17.4"
+    "lodash": "^4.17.4",
+    "urijs": "^1.19.2"
   },
   "config": {
     "registryUrl": "http://localhost:6101/v0",
@@ -44,7 +45,10 @@
       "include": "node_modules dist Dockerfile"
     },
     "jwtSecret": "squirrel",
-    "userId": "00000000-0000-4000-8000-000000000000"
+    "userId": "00000000-0000-4000-8000-000000000000",
+    "ckanAPIKey": "49f1bfa8-5fa5-4a96-97d9-c86d4e822f5c",
+    "ckanServerUrl": "https://demo.ckan.org",
+    "externalUrl": "http://localhost"
   },
   "magda": {
     "language": "typescript",
