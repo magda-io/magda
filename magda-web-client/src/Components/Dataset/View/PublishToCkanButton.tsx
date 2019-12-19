@@ -59,20 +59,16 @@ const PublishToCkanButton: FunctionComponent<PropsType> = props => {
             try {
                 ckanSyncData = await request(
                     "GET",
-                    `${
-                        config.registryReadOnlyApiUrl
-                    }records/${datasetId}/aspects/ckan-sync`
+                    `${config.registryReadOnlyApiUrl}records/${datasetId}/aspects/ckan-sync`
                 );
             } catch (e) {
                 await ensureAspectExists("ckan-sync", ckanSyncAspect);
                 ckanSyncData = { ...DefaultCkanSyncData };
             }
-            ckanSyncData = { ...ckanSyncData, status };
+            ckanSyncData = { ...ckanSyncData, status, syncRequired: true };
             ckanSyncData = await request(
                 "PUT",
-                `${
-                    config.registryFullApiUrl
-                }records/${datasetId}/aspects/ckan-sync`,
+                `${config.registryFullApiUrl}records/${datasetId}/aspects/ckan-sync`,
                 ckanSyncData
             );
             setState(state => ({
@@ -97,9 +93,7 @@ const PublishToCkanButton: FunctionComponent<PropsType> = props => {
             }));
             const ckanSyncData = await request(
                 "GET",
-                `${
-                    config.registryReadOnlyApiUrl
-                }records/${datasetId}/aspects/ckan-sync`
+                `${config.registryReadOnlyApiUrl}records/${datasetId}/aspects/ckan-sync`
             );
             setState(state => ({
                 ...state,
