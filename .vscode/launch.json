@@ -479,7 +479,13 @@
                 "--require",
                 "tsconfig-paths/register",
                 "src/test/**/*.spec.ts"
-            ]
+            ],
+            "env": {
+                "MINIO_HOST": "localhost",
+                "MINIO_PORT": "9000",
+                "MINIO_ACCESS_KEY": "minio",
+                "MINIO_SECRET_KEY": "minio123"
+            }
         }
     ]
 }
