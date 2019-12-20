@@ -91,7 +91,10 @@ async function createDistributionData(
         ] ??
         new URI(externalUrl).path(`dataset/${record.id}/details`).toString();
     const data = {
-        name: record.name,
+        name:
+            distribution?.["aspects"]?.["dcat-distribution-strings"]?.[
+                "title"
+            ] ?? record.name,
         url
     } as any;
 
@@ -175,7 +178,8 @@ async function createCkanPackageDataFromDataset(
 ) {
     const data = {
         name: await ckanClient.getAvailablePackageName(record.name),
-        title: record.name
+        title:
+            record?.aspects?.["dcat-dataset-strings"]?.["title"] ?? record.name
     } as any;
 
     if (record?.aspects?.publishing?.state === "draft") {
