@@ -28,30 +28,21 @@ spec:
         ]
         env:
         - name: MINIO_HOST
-            valueFrom:
-            secretKeyRef:
-                name: storage-secrets
-                key: minio-host
+          value: "localhost"
         - name: MINIO_PORT
-            valueFrom:
-            secretKeyRef:
-                name: storage-secrets
-                key: minio-port
+          value: "9000"
+        - name: BUCKET
+          value: "magda-bucket"
         - name: MINIO_SECRET_KEY
             valueFrom:
             secretKeyRef:
-                name: storage-secrets
-                key: minio-secret-key
+              name: storage-secrets
+              key: minio-secret-key
         - name: MINIO_ACCESS_KEY
             valueFrom:
             secretKeyRef:
-                name: storage-secrets
-                key: minio-access-key
-        - name: BUCKET
-            valueFrom:
-            secretKeyRef:
-                name: storage-secrets
-                key: bucket
+              name: storage-secrets
+              key: minio-access-key
 
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
