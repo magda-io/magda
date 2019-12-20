@@ -5,11 +5,9 @@ import { Stream, Readable } from "stream";
 import * as Minio from "minio";
 
 export default class MagdaMinioClient implements ObjectStoreClient {
-    private readonly bucket: string;
     private readonly client: any;
 
-    constructor({ endPoint, port, useSSL, accessKey, secretKey, bucket }: any) {
-        this.bucket = bucket;
+    constructor({ endPoint, port, useSSL, accessKey, secretKey }: any) {
         this.client = new Minio.Client({
             endPoint,
             port,
@@ -22,7 +20,7 @@ export default class MagdaMinioClient implements ObjectStoreClient {
     getFile(bucket: string, fileName: string): ObjectFromStore {
         const streamP = new Promise((resolve, reject) => {
             return this.client.getObject(
-                this.bucket,
+                bucket,
                 fileName,
                 (err: Error, dataStream: Stream) => {
                     if (err) {
@@ -34,7 +32,7 @@ export default class MagdaMinioClient implements ObjectStoreClient {
         });
         const statP = new Promise((resolve, reject) => {
             return this.client.statObject(
-                this.bucket,
+                bucket,
                 fileName,
                 (err: Error, stat: any) => {
                     if (err) {
@@ -64,7 +62,12 @@ export default class MagdaMinioClient implements ObjectStoreClient {
         };
     }
 
-    putFile(objectName: string, content: any, metaData?: object): Promise<any> {
+    putFile(
+        bucket: string,
+        objectName: string,
+        content: any,
+        metaData?: object
+    ): Promise<any> {
         const contentSize = content.length;
         const contentStream = new Readable();
 
@@ -81,7 +84,7 @@ export default class MagdaMinioClient implements ObjectStoreClient {
 
         return new Promise((resolve, reject) => {
             return this.client.putObject(
-                this.bucket,
+                bucket,
                 objectName,
                 contentStream,
                 contentSize,

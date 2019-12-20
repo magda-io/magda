@@ -13,7 +13,6 @@ expected config file. Create a `config.json` file with the appropriate parameter
 // Example Config
 {
     listenPort: 6120,
-    bucket: "", // name of the bucket to do operations on
     minioAccessKey: "", // You would have specified this when creating the MinIO server
     minioSecretKey: "", // You would have specified this when creating the MinIO server
     minioEnableSSL: true,
@@ -38,9 +37,9 @@ Datastore API started on port 6120
 
 ## API
 
-### PUT /:fileid
+### PUT /:bucket/:fileid
 
-Attempts to upload content to the MinIO bucket. Gives it a name `<fileid>` and returns a unique etag
+Attempts to upload content to the MinIO `<bucket>`. Gives it a name `<fileid>` and returns a unique etag
 if the upload is successfull.
 
 #### Example usage
@@ -51,19 +50,19 @@ column1,column2
 A,1234
 B,4321
 C,2007
-$ curl -X PUT -H "Content-Type:text/csv" localhost:6120/v0/myFavouriteCSV --data-binary '@favourite.csv'
+$ curl -X PUT -H "Content-Type:text/csv" localhost:6120/v0/test-bucket/myFavouriteCSV --data-binary '@favourite.csv'
 {"message":"File uploaded successfully","etag":"<some hash value>"}
 ```
 
-### GET /:fileid
+### GET /:bucket/:fileid
 
 Attempts to retrieve content with the name `<fileid>` from the MinIO server
-that is stored in the bucket specified in config while starting the server.
+that is stored in `<bucket>` specified in config while starting the server.
 
 #### Example usage
 
 ```console
-$ curl -X GET localhost:6120/v0/myFavouriteCSV
+$ curl -X GET localhost:6120/v0/test-bucket/myFavouriteCSV
 column1,column2
 A,1234
 B,4321
@@ -76,5 +75,5 @@ The service does not come with authentication or authorization.
 
 ## Features in backlog
 
--   [ ] Bucket name to be specified in the request, not at startup
+-   [x] Bucket name to be specified in the request, not at startup
 -   [ ] Endpoint to delete an object

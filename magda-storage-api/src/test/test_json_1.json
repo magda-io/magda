@@ -1,6 +1,5 @@
 {
     "listenPort": 6120,
-    "bucket": "",
     "minioAccessKey": "",
     "minioSecretKey": "",
     "minioEnableSSL": true,

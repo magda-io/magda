@@ -13,18 +13,18 @@ import fs from "fs";
 
 describe("Storage API tests", () => {
     let app: express.Application;
+    const bucketName = "magda-test-bucket";
     const minioClientOpts = {
         endPoint: process.env["MINIO_HOST"],
         port: Number(process.env["MINIO_PORT"]),
         useSSL: false,
         accessKey: process.env["MINIO_ACCESS_KEY"],
-        secretKey: process.env["MINIO_SECRET_KEY"],
-        bucket: "magda-test-1"
+        secretKey: process.env["MINIO_SECRET_KEY"]
     };
     const minioClient = new Minio.Client(minioClientOpts);
 
     before(() => {
-        minioClient.makeBucket(minioClientOpts.bucket, (err: Error) => {
+        minioClient.makeBucket(bucketName, (err: Error) => {
             if (err) {
                 return console.log("Error creating bucket.", err);
             }
@@ -51,7 +51,7 @@ describe("Storage API tests", () => {
     describe("Upload", () => {
         it("Uploading a simple file", () => {
             return request(app)
-                .put("/v0/upload-test-file")
+                .put("/v0/" + bucketName + "/upload-test-file")
                 .set("Accept", "application/json")
                 .set("Content-Type", "text/plain")
                 .send("LALALALALALALALALA")
@@ -60,16 +60,16 @@ describe("Storage API tests", () => {
     });
 
     describe("Download", () => {
-        it("Uploading and then downloading the simple file", function() {
+        it("Uploading and then downloading the simple file", () => {
             return request(app)
-                .put("/v0/download-test-file-1")
+                .put("/v0/" + bucketName + "/download-test-file-1")
                 .set("Accept", "application/json")
                 .set("Content-Type", "text/plain")
                 .send("Testing download")
                 .expect(200)
                 .then(_res => {
                     return request(app)
-                        .get("/v0/download-test-file-1")
+                        .get("/v0/" + bucketName + "/download-test-file-1")
                         .set("Accept", "application/json")
                         .set("Accept", "text/plain")
                         .expect(200)
@@ -78,16 +78,16 @@ describe("Storage API tests", () => {
                 });
         });
 
-        it("Empty content", function() {
+        it("Empty content", () => {
             return request(app)
-                .put("/v0/download-test-file-2")
+                .put("/v0/" + bucketName + "/download-test-file-2")
                 .set("Accept", "application/json")
                 .set("Content-Type", "text/plain")
                 .send("")
                 .expect(200)
                 .then(_res => {
                     return request(app)
-                        .get("/v0/download-test-file-2")
+                        .get("/v0/" + bucketName + "/download-test-file-2")
                         .set("Accept", "application/json")
                         .set("Accept", "text/plain")
                         .expect(200)
@@ -96,55 +96,55 @@ describe("Storage API tests", () => {
                 });
         });
 
-        it("Binary content", function() {
+        it("Binary content", () => {
             const img: Buffer = fs.readFileSync("src/test/test_image.jpg");
             return request(app)
-                .put("/v0/binary-content")
+                .put("/v0/" + bucketName + "/binary-content")
                 .set("Accept", "image/jpg")
                 .set("Content-Type", "image/jpg")
                 .send(img)
                 .expect(200)
                 .then(_res => {
                     return request(app)
-                        .get("/v0/binary-content")
+                        .get("/v0/" + bucketName + "/binary-content")
                         .set("Accept", "image/jpg")
                         .expect(200)
                         .expect(img)
                         .expect("Content-Type", "image/jpg");
                 });
         });
-        it("CSV File", function() {
+        it("CSV File", () => {
             const csvContent = fs.readFileSync(
                 "src/test/test_csv_1.csv",
                 "utf-8"
             );
             return request(app)
-                .put("/v0/test-csv-1")
+                .put("/v0/" + bucketName + "/test-csv-1")
                 .set("Content-Type", "text/csv")
                 .send(csvContent)
                 .expect(200)
                 .then(_res => {
                     return request(app)
-                        .get("/v0/test-csv-1")
+                        .get("/v0/" + bucketName + "/test-csv-1")
                         .set("Accept", "text/csv")
                         .expect(200)
                         .expect(csvContent)
                         .expect("Content-Type", "text/csv");
                 });
         });
-        it("JSON File", function() {
+        it("JSON File", () => {
             const jsonContent = fs.readFileSync(
                 "src/test/test_json_1.json",
                 "utf-8"
             );
             return request(app)
-                .put("/v0/test-json-1")
+                .put("/v0/" + bucketName + "/test-json-1")
                 .set("Content-Type", "application/json")
                 .send(jsonContent)
                 .expect(200)
                 .then(_res => {
                     return request(app)
-                        .get("/v0/test-json-1")
+                        .get("/v0/" + bucketName + "/test-json-1")
                         .set("Accept", "application/json")
                         .expect(200)
                         .expect(jsonContent)

@@ -11,11 +11,6 @@ const argv = yargs
         type: "number",
         default: 6120
     })
-    .option("bucket", {
-        describe: "The name of the bucket to interact with",
-        type: "string",
-        demand: true
-    })
     .option("minioAccessKey", {
         describe: "The access key to your minio server.",
         type: "string",
@@ -52,8 +47,7 @@ app.use(
             port: argv.minioPort,
             useSSL: argv.minioEnableSSL,
             accessKey: argv.minioAccessKey,
-            secretKey: argv.minioSecretKey,
-            bucket: argv.bucket
+            secretKey: argv.minioSecretKey
         })
     })
 );

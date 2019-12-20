@@ -31,8 +31,6 @@ spec:
           value: "localhost"
         - name: MINIO_PORT
           value: "9000"
-        - name: BUCKET
-          value: "magda-bucket"
         - name: MINIO_SECRET_KEY
             valueFrom:
             secretKeyRef:

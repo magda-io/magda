@@ -18,11 +18,16 @@ export default function createApiRouter(options: ApiRouterOptions) {
     );
 
     // Download an object
-    router.get("/:fileid", async function(req, res) {
+    router.get("/:bucket/:fileid", async function(req, res) {
         const fileId = req.params.fileid;
-        const encodedRootPath = encodeURIComponent(fileId);
+        const bucket = req.params.bucket;
+        const encodedFilename = encodeURIComponent(fileId);
+        const encodeBucketname = encodeURIComponent(bucket);
 
-        const object = options.objectStoreClient.getFile(encodedRootPath);
+        const object = options.objectStoreClient.getFile(
+            encodeBucketname,
+            encodedFilename
+        );
 
         let headers: OutgoingHttpHeaders;
         try {
@@ -37,7 +42,10 @@ export default function createApiRouter(options: ApiRouterOptions) {
             if (err instanceof ApiError) {
                 if (err.code === 404) {
                     res.status(404).send(
-                        "No such object with fileId " + fileId
+                        "No such object with fileId " +
+                            fileId +
+                            " in bucket " +
+                            bucket
                     );
                 }
             }
@@ -54,16 +62,18 @@ export default function createApiRouter(options: ApiRouterOptions) {
     });
 
     // Upload an object
-    router.put("/:fileid", async function(req, res) {
+    router.put("/:bucket/:fileid", async function(req, res) {
         const fileId = req.params.fileid;
+        const bucket = req.params.bucket;
         const encodedRootPath = encodeURIComponent(fileId);
+        const encodeBucketname = encodeURIComponent(bucket);
         const content = req.body;
         const metaData = {
             "Content-Type": req.headers["content-type"],
             "Content-Length": req.headers["content-length"]
         };
         return options.objectStoreClient
-            .putFile(encodedRootPath, content, metaData)
+            .putFile(encodeBucketname, encodedRootPath, content, metaData)
             .then(etag => {
                 return res.status(200).send({
                     message: "File uploaded successfully",
