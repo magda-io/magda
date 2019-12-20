@@ -23,6 +23,8 @@ data:
     "csvLoaderChunkSize": {{ toJson .Values.csvLoaderChunkSize | quote }},
     "dateConfig": {{ toJson .Values.dateConfig | quote }},
     "datasetThemes": {{ toJson .Values.datasetThemes | quote }},
+    "noManualThemes": {{ .Values.noManualThemes }},
+    "noManualKeywords": {{ .Values.noManualKeywords }},
     {{- if .Values.mandatoryFields }}
     "mandatoryFields": {{ toJson .Values.mandatoryFields | quote }}
     {{- end }}
