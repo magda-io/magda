@@ -184,7 +184,7 @@ helm upgrade magda -f deploy/helm/minikube-dev.yml deploy/helm/magda
 
 Now when I go to `http://${minikube ip}/api/v0/search`, it'll be proxied to my local search rather than the one in minikube.
 
-Be aware that if your local service has to connect to the database or other microservices in minikube you'll have to use `kube-port-forward` to proxy from `localhost:{port}` to the appropriate service in minikube - you can find a list of ports at https://github.com/TerriaJS/magda/blob/master/doc/local-ports.md.
+Be aware that if your local service has to connect to the database or other microservices in minikube you'll have to use `kube-port-forward` to proxy from `localhost:{port}` to the appropriate service in minikube - you can find a list of ports at https://github.com/magda-io/magda/blob/master/doc/local-ports.md.
 
 In the likely even you need to figure out what the jwt shared secret is on your minikube, you can cheat by opening up a shell to a container that has that secret and echoing the environment variable:
 

@@ -159,7 +159,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                             value={dataset.themes}
                             onChange={editDataset("themes")}
                             placeHolderText="Enter a theme"
-                            options={config.addDatasetThemes}
+                            options={config.datasetThemes}
                             noManualInput={config.noManualThemes}
                         />
                     </div>

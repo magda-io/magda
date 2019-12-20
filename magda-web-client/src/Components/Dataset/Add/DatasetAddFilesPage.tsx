@@ -171,8 +171,8 @@ class DatasetAddFilesPage extends React.Component<
                     }
 
                     if (
-                        config.addDatasetThemes &&
-                        config.addDatasetThemes.length &&
+                        config.datasetThemes &&
+                        config.datasetThemes.length &&
                         newState.dataset &&
                         newState.dataset.keywords &&
                         newState.dataset.keywords.keywords &&
@@ -181,7 +181,7 @@ class DatasetAddFilesPage extends React.Component<
                         const keywords = newState.dataset.keywords.keywords.map(
                             item => item.toLowerCase()
                         );
-                        const themesBasedOnKeywords = config.addDatasetThemes.filter(
+                        const themesBasedOnKeywords = config.datasetThemes.filter(
                             theme =>
                                 keywords.indexOf(theme.toLowerCase()) !== -1
                         );

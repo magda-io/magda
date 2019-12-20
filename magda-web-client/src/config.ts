@@ -81,7 +81,7 @@ const serverConfig: {
     csvLoaderChunkSize: number;
     mandatoryFields: ValidationFieldList;
     dateConfig?: DateConfig;
-    addDatasetThemes?: string[];
+    datasetThemes?: string[];
     noManualKeywords?: boolean;
     noManualThemes?: boolean;
     keywordsBlackList?: string[];
@@ -271,9 +271,7 @@ export const config = {
               "informationSecurity.disseminationLimits"
           ],
     dateConfig: constructDateConfig(serverConfig.dateConfig),
-    addDatasetThemes: serverConfig.addDatasetThemes
-        ? serverConfig.addDatasetThemes
-        : [],
+    datasetThemes: serverConfig.datasetThemes ? serverConfig.datasetThemes : [],
     noManualKeywords: serverConfig.noManualKeywords
         ? serverConfig.noManualKeywords
         : false,

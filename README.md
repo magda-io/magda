@@ -1,6 +1,6 @@
 # Magda
 
-[![GitHub release](https://img.shields.io/github/release/magda-io/magda.svg)](https://github.com/TerriaJS/magda/releases)
+[![GitHub release](https://img.shields.io/github/release/magda-io/magda.svg)](https://github.com/magda-io/magda/releases)
 [![pipeline status](https://gitlab.com/magda-data/magda/badges/master/pipeline.svg)](https://gitlab.com/magda-data/magda/commits/master)
 [![Try it out](https://img.shields.io/badge/try%20it%20out-demo.dev.magda.io-blue.svg)](https://demo.dev.magda.io)
 [![Get help or discuss on spectrum](https://img.shields.io/badge/Get%20help%20or%20discuss-on%20spectrum-7B16FF.svg?logoColor=white&logo=spectrum)](https://spectrum.chat/magda)
