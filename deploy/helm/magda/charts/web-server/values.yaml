@@ -17,7 +17,9 @@ disableAuthenticationFeatures: false
 service: {}
 useLocalStyleSheet: false
 contentApiBaseUrlInternal: "http://content-api/v0/"
-featureFlags: {}
+featureFlags:
+ cataloguing: false
+ previewAddDataset: false
 vocabularyApiEndpoints: []
 defaultContactEmail: "mail@example.com"
 custodianOrgLevel: 2
