@@ -1,4 +1,3 @@
-import { Probe } from "magda-typescript-common/src/express/status";
 import ObjectFromStore from "./ObjectFromStore";
 import ObjectStoreClient from "./ObjectStoreClient";
 import { Stream, Readable } from "stream";
@@ -20,29 +19,7 @@ export default class MagdaMinioClient implements ObjectStoreClient {
         });
     }
 
-    readonly statusProbe: Probe = () => {
-        return this.client.bucketExists(
-            this.bucket,
-            (err: boolean | null, exists: boolean) => {
-                if (err) {
-                    return Promise.resolve({
-                        ready: false,
-                        error: "Bucket Probe returned an error."
-                    });
-                }
-                if (exists) {
-                    return Promise.resolve({ ready: true });
-                } else {
-                    return Promise.resolve({
-                        ready: false,
-                        error: "Bucket does not exist."
-                    });
-                }
-            }
-        );
-    };
-
-    getFile(fileName: string): ObjectFromStore {
+    getFile(bucket: string, fileName: string): ObjectFromStore {
         const streamP = new Promise((resolve, reject) => {
             return this.client.getObject(
                 this.bucket,

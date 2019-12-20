@@ -1,5 +1,4 @@
 import { ApiError } from "@google-cloud/common";
-import { installStatusRouter } from "magda-typescript-common/src/express/status";
 import express from "express";
 import { OutgoingHttpHeaders } from "http";
 import ObjectStoreClient from "./ObjectStoreClient";
@@ -11,13 +10,6 @@ export interface ApiRouterOptions {
 
 export default function createApiRouter(options: ApiRouterOptions) {
     const router: express.Router = express.Router();
-
-    const status = {
-        probes: {
-            objectStore: options.objectStoreClient.statusProbe
-        }
-    };
-    installStatusRouter(router, status);
 
     // JSON files are interpreted as text
     router.use(bodyParser.text({ type: ["text/*", "application/json"] }));
