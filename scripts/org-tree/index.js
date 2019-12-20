@@ -5,9 +5,7 @@ const program = require("commander");
 program
     .version(pkg.version)
     .description(
-        `A tool for managing magda authentication & access control data. Version: ${
-            pkg.version
-        }\n\n` +
+        `A tool for managing magda authentication & access control data. Version: ${pkg.version}\n\n` +
             `If a database connection is required, the following environment variables will be used to create a connection:\n` +
             `  POSTGRES_HOST: database host; If not available in env var, 'localhost' will be used.\n` +
             `  POSTGRES_DB: database name; If not available in env var, 'auth' will be used.\n` +

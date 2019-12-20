@@ -63,7 +63,8 @@ export async function extractKeywords(
     // --- or header keywords not exists
     if (
         keywords.length >= MAX_KEYWORDS ||
-        (!input.keywords || !input.keywords.length)
+        !input.keywords ||
+        !input.keywords.length
     ) {
         output.keywords = cleanUpKeywords(keywords);
         return;

@@ -285,9 +285,7 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                                             validate.errors
                                                 .map(
                                                     error =>
-                                                        `${error.dataPath}: ${
-                                                            error.message
-                                                        }`
+                                                        `${error.dataPath}: ${error.message}`
                                                 )
                                                 .join("\n")
                                     );
@@ -435,9 +433,10 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                  * after each inner array is finished a 429 will be returned, then the
                  * next array of error codes will be returned.
                  */
-                const failuresArb: jsc.Arbitrary<
+                const failuresArb: jsc.Arbitrary<FailuresArbResult> = arbFlatMap<
+                    number,
                     FailuresArbResult
-                > = arbFlatMap<number, FailuresArbResult>(
+                >(
                     retryCountArb,
                     (retryCount: number) => {
                         /** Generates how many 429 codes will be returned */

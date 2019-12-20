@@ -24,9 +24,7 @@ async function getIncludeHtml(contentApiBaseUrlInternal: string) {
             return response.text();
         } else {
             throw new Error(
-                `Received status ${response.status}: ${
-                    response.statusText
-                } from ${url} when getting dynamic content`
+                `Received status ${response.status}: ${response.statusText} from ${url} when getting dynamic content`
             );
         }
     } catch (e) {

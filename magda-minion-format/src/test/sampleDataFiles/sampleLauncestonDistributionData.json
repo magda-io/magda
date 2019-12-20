@@ -1,7 +1,6 @@
 [
     {
-        "id":
-            "dist-launceston-http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2-0",
+        "id": "dist-launceston-http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2-0",
         "name": "ArcGIS Open Dataset",
         "aspects": {
             "source": {
@@ -13,8 +12,7 @@
             "dcat-distribution-strings": {
                 "title": "ArcGIS Open Dataset",
                 "format": "Web page",
-                "accessURL":
-                    "http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2",
+                "accessURL": "http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2",
                 "mediaType": "text/html"
             },
             "source-link-status": {
@@ -28,16 +26,14 @@
             "project-open-data-distribution": {
                 "format": "Web page",
                 "mediaType": "text/html",
-                "accessURL":
-                    "http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2",
+                "accessURL": "http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2",
                 "@type": "dcat:Distribution",
                 "title": "ArcGIS Open Dataset"
             }
         }
     },
     {
-        "id":
-            "dist-launceston-http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2-1",
+        "id": "dist-launceston-http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2-1",
         "name": "Esri Rest API",
         "aspects": {
             "source": {
@@ -49,8 +45,7 @@
             "dcat-distribution-strings": {
                 "title": "Esri Rest API",
                 "format": "Esri REST",
-                "accessURL":
-                    "http://mapping.launceston.tas.gov.au/arcgis/rest/services/Public/DetailSurvey/MapServer/2",
+                "accessURL": "http://mapping.launceston.tas.gov.au/arcgis/rest/services/Public/DetailSurvey/MapServer/2",
                 "mediaType": "application/json"
             },
             "source-link-status": {
@@ -68,19 +63,16 @@
                         },
                         "request": {
                             "uri": {
-                                "path":
-                                    "/arcgis/rest/services/Public/DetailSurvey/MapServer/2",
+                                "path": "/arcgis/rest/services/Public/DetailSurvey/MapServer/2",
                                 "hostname": "mapping.launceston.tas.gov.au",
                                 "auth": null,
-                                "pathname":
-                                    "/arcgis/rest/services/Public/DetailSurvey/MapServer/2",
+                                "pathname": "/arcgis/rest/services/Public/DetailSurvey/MapServer/2",
                                 "host": "mapping.launceston.tas.gov.au",
                                 "query": null,
                                 "hash": null,
                                 "port": 80,
                                 "slashes": true,
-                                "href":
-                                    "http://mapping.launceston.tas.gov.au/arcgis/rest/services/Public/DetailSurvey/MapServer/2",
+                                "href": "http://mapping.launceston.tas.gov.au/arcgis/rest/services/Public/DetailSurvey/MapServer/2",
                                 "protocol": "http:",
                                 "search": null
                             },
@@ -102,16 +94,14 @@
             "project-open-data-distribution": {
                 "format": "Esri REST",
                 "mediaType": "application/json",
-                "accessURL":
-                    "http://mapping.launceston.tas.gov.au/arcgis/rest/services/Public/DetailSurvey/MapServer/2",
+                "accessURL": "http://mapping.launceston.tas.gov.au/arcgis/rest/services/Public/DetailSurvey/MapServer/2",
                 "@type": "dcat:Distribution",
                 "title": "Esri Rest API"
             }
         }
     },
     {
-        "id":
-            "dist-launceston-http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2-2",
+        "id": "dist-launceston-http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2-2",
         "name": "GeoJSON",
         "aspects": {
             "source": {
@@ -124,8 +114,7 @@
                 "title": "GeoJSON",
                 "format": "GeoJSON",
                 "mediaType": "application/vnd.geo+json",
-                "downloadURL":
-                    "http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2.geojson"
+                "downloadURL": "http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2.geojson"
             },
             "source-link-status": {
                 "status": "active",
@@ -138,16 +127,14 @@
             "project-open-data-distribution": {
                 "format": "GeoJSON",
                 "mediaType": "application/vnd.geo+json",
-                "downloadURL":
-                    "http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2.geojson",
+                "downloadURL": "http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2.geojson",
                 "@type": "dcat:Distribution",
                 "title": "GeoJSON"
             }
         }
     },
     {
-        "id":
-            "dist-launceston-http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2-3",
+        "id": "dist-launceston-http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2-3",
         "name": "CSV",
         "aspects": {
             "source": {
@@ -160,8 +147,7 @@
                 "title": "CSV",
                 "format": "CSV",
                 "mediaType": "text/csv",
-                "downloadURL":
-                    "http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2.csv"
+                "downloadURL": "http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2.csv"
             },
             "source-link-status": {
                 "status": "active",
@@ -229,16 +215,14 @@
             "project-open-data-distribution": {
                 "format": "CSV",
                 "mediaType": "text/csv",
-                "downloadURL":
-                    "http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2.csv",
+                "downloadURL": "http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2.csv",
                 "@type": "dcat:Distribution",
                 "title": "CSV"
             }
         }
     },
     {
-        "id":
-            "dist-launceston-http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2-4",
+        "id": "dist-launceston-http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2-4",
         "name": "KML",
         "aspects": {
             "source": {
@@ -251,8 +235,7 @@
                 "title": "KML",
                 "format": "KML",
                 "mediaType": "application/vnd.google-earth.kml+xml",
-                "downloadURL":
-                    "http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2.kml"
+                "downloadURL": "http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2.kml"
             },
             "source-link-status": {
                 "status": "active",
@@ -265,16 +248,14 @@
             "project-open-data-distribution": {
                 "format": "KML",
                 "mediaType": "application/vnd.google-earth.kml+xml",
-                "downloadURL":
-                    "http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2.kml",
+                "downloadURL": "http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2.kml",
                 "@type": "dcat:Distribution",
                 "title": "KML"
             }
         }
     },
     {
-        "id":
-            "dist-launceston-http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2-5",
+        "id": "dist-launceston-http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2-5",
         "name": "Shapefile",
         "aspects": {
             "source": {
@@ -287,8 +268,7 @@
                 "title": "Shapefile",
                 "format": "ZIP",
                 "mediaType": "application/zip",
-                "downloadURL":
-                    "http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2.zip"
+                "downloadURL": "http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2.zip"
             },
             "source-link-status": {
                 "status": "active",
@@ -301,16 +281,14 @@
             "project-open-data-distribution": {
                 "format": "ZIP",
                 "mediaType": "application/zip",
-                "downloadURL":
-                    "http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2.zip",
+                "downloadURL": "http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2.zip",
                 "@type": "dcat:Distribution",
                 "title": "Shapefile"
             }
         }
     },
     {
-        "id":
-            "dist-launceston-http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2-6",
+        "id": "dist-launceston-http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2-6",
         "name": "OGC WMS",
         "aspects": {
             "source": {
@@ -322,8 +300,7 @@
             "dcat-distribution-strings": {
                 "title": "OGC WMS",
                 "format": "OGC WMS",
-                "accessURL":
-                    "http://mapping.launceston.tas.gov.au/arcgis/services/Public/DetailSurvey/MapServer/WMSServer?request=GetCapabilities&service=WMS",
+                "accessURL": "http://mapping.launceston.tas.gov.au/arcgis/services/Public/DetailSurvey/MapServer/WMSServer?request=GetCapabilities&service=WMS",
                 "mediaType": "application/vnd.ogc.wms_xml"
             },
             "source-link-status": {
@@ -340,19 +317,16 @@
                         },
                         "request": {
                             "uri": {
-                                "path":
-                                    "/arcgis/services/Public/DetailSurvey/MapServer/WMSServer?request=GetCapabilities&service=WMS",
+                                "path": "/arcgis/services/Public/DetailSurvey/MapServer/WMSServer?request=GetCapabilities&service=WMS",
                                 "hostname": "mapping.launceston.tas.gov.au",
                                 "auth": null,
-                                "pathname":
-                                    "/arcgis/services/Public/DetailSurvey/MapServer/WMSServer",
+                                "pathname": "/arcgis/services/Public/DetailSurvey/MapServer/WMSServer",
                                 "host": "mapping.launceston.tas.gov.au",
                                 "query": "request=GetCapabilities&service=WMS",
                                 "hash": null,
                                 "port": 80,
                                 "slashes": true,
-                                "href":
-                                    "http://mapping.launceston.tas.gov.au/arcgis/services/Public/DetailSurvey/MapServer/WMSServer?request=GetCapabilities&service=WMS",
+                                "href": "http://mapping.launceston.tas.gov.au/arcgis/services/Public/DetailSurvey/MapServer/WMSServer?request=GetCapabilities&service=WMS",
                                 "protocol": "http:",
                                 "search": "?request=GetCapabilities&service=WMS"
                             },
@@ -374,16 +348,14 @@
             "project-open-data-distribution": {
                 "format": "OGC WMS",
                 "mediaType": "application/vnd.ogc.wms_xml",
-                "accessURL":
-                    "http://mapping.launceston.tas.gov.au/arcgis/services/Public/DetailSurvey/MapServer/WMSServer?request=GetCapabilities&service=WMS",
+                "accessURL": "http://mapping.launceston.tas.gov.au/arcgis/services/Public/DetailSurvey/MapServer/WMSServer?request=GetCapabilities&service=WMS",
                 "@type": "dcat:Distribution",
                 "title": "OGC WMS"
             }
         }
     },
     {
-        "id":
-            "dist-launceston-http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2-7",
+        "id": "dist-launceston-http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2-7",
         "name": "OGC WFS",
         "aspects": {
             "source": {
@@ -395,8 +367,7 @@
             "dcat-distribution-strings": {
                 "title": "OGC WFS",
                 "format": "OGC WFS",
-                "accessURL":
-                    "http://mapping.launceston.tas.gov.au/arcgis/services/Public/DetailSurvey/MapServer/WFSServer?request=GetCapabilities&service=WFS",
+                "accessURL": "http://mapping.launceston.tas.gov.au/arcgis/services/Public/DetailSurvey/MapServer/WFSServer?request=GetCapabilities&service=WFS",
                 "mediaType": "application/vnd.ogc.wfs_xml"
             },
             "source-link-status": {
@@ -413,19 +384,16 @@
                         },
                         "request": {
                             "uri": {
-                                "path":
-                                    "/arcgis/services/Public/DetailSurvey/MapServer/WFSServer?request=GetCapabilities&service=WFS",
+                                "path": "/arcgis/services/Public/DetailSurvey/MapServer/WFSServer?request=GetCapabilities&service=WFS",
                                 "hostname": "mapping.launceston.tas.gov.au",
                                 "auth": null,
-                                "pathname":
-                                    "/arcgis/services/Public/DetailSurvey/MapServer/WFSServer",
+                                "pathname": "/arcgis/services/Public/DetailSurvey/MapServer/WFSServer",
                                 "host": "mapping.launceston.tas.gov.au",
                                 "query": "request=GetCapabilities&service=WFS",
                                 "hash": null,
                                 "port": 80,
                                 "slashes": true,
-                                "href":
-                                    "http://mapping.launceston.tas.gov.au/arcgis/services/Public/DetailSurvey/MapServer/WFSServer?request=GetCapabilities&service=WFS",
+                                "href": "http://mapping.launceston.tas.gov.au/arcgis/services/Public/DetailSurvey/MapServer/WFSServer?request=GetCapabilities&service=WFS",
                                 "protocol": "http:",
                                 "search": "?request=GetCapabilities&service=WFS"
                             },
@@ -447,8 +415,7 @@
             "project-open-data-distribution": {
                 "format": "OGC WFS",
                 "mediaType": "application/vnd.ogc.wfs_xml",
-                "accessURL":
-                    "http://mapping.launceston.tas.gov.au/arcgis/services/Public/DetailSurvey/MapServer/WFSServer?request=GetCapabilities&service=WFS",
+                "accessURL": "http://mapping.launceston.tas.gov.au/arcgis/services/Public/DetailSurvey/MapServer/WFSServer?request=GetCapabilities&service=WFS",
                 "@type": "dcat:Distribution",
                 "title": "OGC WFS"
             }

@@ -49,9 +49,7 @@ export default class ApiClient {
     async lookupUser(source: string, sourceId: string): Promise<Maybe<User>> {
         return this.handleGetResult(
             fetch(
-                `${
-                    this.baseUrl
-                }/private/users/lookup?source=${source}&sourceId=${sourceId}`,
+                `${this.baseUrl}/private/users/lookup?source=${source}&sourceId=${sourceId}`,
                 this.getMergeRequestInitOption()
             )
         );
@@ -71,9 +69,7 @@ export default class ApiClient {
             );
             if (res.status >= 400) {
                 throw new Error(
-                    `Encountered error ${res.status} when POSTing new user to ${
-                        this.baseUrl
-                    }/private/users`
+                    `Encountered error ${res.status} when POSTing new user to ${this.baseUrl}/private/users`
                 );
             }
             const resData = await res.json();

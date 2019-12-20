@@ -59,9 +59,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             (e, retriesLeft) =>
                 console.log(
                     formatServiceError(
-                        `Failed to create aspect definition "${
-                            aspectDefinition.id
-                        }".`,
+                        `Failed to create aspect definition "${aspectDefinition.id}".`,
                         e,
                         retriesLeft
                     )
@@ -214,9 +212,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             (e, retriesLeft) =>
                 console.log(
                     formatServiceError(
-                        `Failed to PUT data registry record with ID "${
-                            record.id
-                        }".`,
+                        `Failed to PUT data registry record with ID "${record.id}".`,
                         e,
                         retriesLeft
                     )

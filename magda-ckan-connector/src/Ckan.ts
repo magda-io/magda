@@ -315,9 +315,9 @@ export default class Ckan implements ConnectorSource {
         });
 
         // CKAN (at least v2.5.2 currently on data.gov.au) doesn't honor the `limit` parameter.  So trim the results here.
-        const trimmedResults = AsyncPage.singlePromise<any[]>(promise).map(
-            organizations => organizations.slice(0, maxResults)
-        );
+        const trimmedResults = AsyncPage.singlePromise<any[]>(
+            promise
+        ).map(organizations => organizations.slice(0, maxResults));
 
         const result: any[] = [];
         return AsyncPage.singlePromise<any[]>(
