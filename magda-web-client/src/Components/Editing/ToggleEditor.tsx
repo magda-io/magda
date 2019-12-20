@@ -56,7 +56,7 @@ export class ToggleEditor<V> extends React.Component<ToggleEditorProps<V>> {
             value = this.props.value;
         }
 
-        enabled = enabled === undefined || enabled;
+        enabled = enabled ? true : false;
         const isEditing = enabled && this.state.isEditing;
 
         return (
