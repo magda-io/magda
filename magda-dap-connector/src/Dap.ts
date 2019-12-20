@@ -299,9 +299,7 @@ export default class Dap implements ConnectorSource {
                                                 // --- added access info to description
                                                 // --- so that we know why the dataset has no distribution
                                                 // --- and when the distribution will be available for public
-                                                detail.description = `${
-                                                    detail.description
-                                                }\n\n${detail.access}\n\n`;
+                                                detail.description = `${detail.description}\n\n${detail.access}\n\n`;
                                             }
                                             resolve2(detail);
                                         }
@@ -347,16 +345,10 @@ export default class Dap implements ConnectorSource {
                                                                 simpleData.id
                                                                     .identifier;
                                                             console.log(
-                                                                `** Unable to fetch files for collection: ${id}; url: ${
-                                                                    simpleData.data
-                                                                }`
+                                                                `** Unable to fetch files for collection: ${id}; url: ${simpleData.data}`
                                                             );
                                                             console.log(
-                                                                `** Reason: ${
-                                                                    detail
-                                                                        .errors[0]
-                                                                        .defaultMessage
-                                                                }`
+                                                                `** Reason: ${detail.errors[0].defaultMessage}`
                                                             );
                                                             resolve3({
                                                                 identifier: id,

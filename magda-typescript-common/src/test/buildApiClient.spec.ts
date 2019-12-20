@@ -171,22 +171,16 @@ describe("Test ApiClient.ts", function() {
         isAdmin: false
     };
 
-    it(`\`createUser\` should return 'Encountered error 401 when POSTing new user to ${
-        argv.authorizationApi
-    }' error if called without sepecifying user ID`, async function() {
+    it(`\`createUser\` should return 'Encountered error 401 when POSTing new user to ${argv.authorizationApi}' error if called without sepecifying user ID`, async function() {
         const api = new ApiClient(argv.authorizationApi);
         return expect(
             api.createUser(newUserDataToBeInserted)
         ).to.eventually.rejectedWith(
-            `Encountered error 401 when POSTing new user to ${
-                argv.authorizationApi
-            }`
+            `Encountered error 401 when POSTing new user to ${argv.authorizationApi}`
         );
     });
 
-    it(`\`createUser\` should return 'Encountered error 403 when POSTing new user to ${
-        argv.authorizationApi
-    }' error if called as a standard user`, async function() {
+    it(`\`createUser\` should return 'Encountered error 403 when POSTing new user to ${argv.authorizationApi}' error if called as a standard user`, async function() {
         const api = new ApiClient(
             argv.authorizationApi,
             argv.jwtSecret,
@@ -195,9 +189,7 @@ describe("Test ApiClient.ts", function() {
         return expect(
             api.createUser(newUserDataToBeInserted)
         ).to.eventually.rejectedWith(
-            `Encountered error 403 when POSTing new user to ${
-                argv.authorizationApi
-            }`
+            `Encountered error 403 when POSTing new user to ${argv.authorizationApi}`
         );
     });
 

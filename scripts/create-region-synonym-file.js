@@ -101,9 +101,7 @@ async function getRemoteDataFileStream(url) {
                         resolve(response.pipe(StreamArray.withParser()));
                     } else {
                         throw new Error(
-                            `Request failed ${url}, statusCode: ${
-                                response.statusCode
-                            }`
+                            `Request failed ${url}, statusCode: ${response.statusCode}`
                         );
                     }
                 } catch (e) {
