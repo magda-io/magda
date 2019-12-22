@@ -18,9 +18,7 @@ program
     .version(pkg.version)
     .usage("[options]")
     .description(
-        `A tool for setting magda runtime UI scss variables. Version: ${
-            pkg.version
-        }`
+        `A tool for setting magda runtime UI scss variables. Version: ${pkg.version}`
     )
     .option(
         "-n, --namespace [k8s namespace]",

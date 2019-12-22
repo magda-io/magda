@@ -80,8 +80,5 @@ const mapDispatchToProps = dispatch => {
 // therefore does not get updated when location change
 // we need to explicitly make it update by wrapping it in `withRouter`
 export default withRouter(
-    connect(
-        mapStateToProps,
-        mapDispatchToProps
-    )(AccountNavbar)
+    connect(mapStateToProps, mapDispatchToProps)(AccountNavbar)
 );

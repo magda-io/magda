@@ -5,6 +5,7 @@ General:
 -   CSV Connector can now process ampersand character properly
 -   Fixed broken link minion causes json schema validation error
 -   Upgraded typescript to 3.7.2 & Use [Project References](https://www.typescriptlang.org/docs/handbook/project-references.html) to organize typescript project
+-   Upgraded prettier to 1.19.1 to [support typescript 3.7 better](https://prettier.io/blog/2019/11/09/1.19.0.html)
 
 UI:
 

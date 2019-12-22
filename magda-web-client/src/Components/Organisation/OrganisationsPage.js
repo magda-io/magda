@@ -157,9 +157,7 @@ class OrganisationsPage extends Component {
                         this.props.keyword.trim().length > 0 &&
                         this.props.keyword.trim() !== "*" && (
                             <div className="result-count">
-                                {`Results matching "${this.props.keyword}" (${
-                                    this.props.hitCount
-                                })`}
+                                {`Results matching "${this.props.keyword}" (${this.props.hitCount})`}
                                 <button
                                     className="clear-btn au-btn au-btn--tertiary"
                                     type="button"

@@ -154,7 +154,7 @@ const argv = yargs
         describe: "Add dataset page mandatory fields list (in JSON path)",
         type: "string",
         coerce: coerceJson("mandatoryFields"),
-        default: "null"
+        default: "[]"
     })
     .option("dateFormats", {
         describe: "A list of date formats supported by this Magda instance",

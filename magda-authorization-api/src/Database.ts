@@ -278,14 +278,14 @@ export default class Database {
             user.managingOrgUnitIds = [];
             user.orgUnit = null;
         } else {
-            user.orgUnit = (await this.orgQueryer.getNodeById(
-                user.orgUnitId
-            )).valueOr(null);
-            user.managingOrgUnitIds = (await this.orgQueryer.getAllChildren(
-                user.orgUnitId,
-                true,
-                ["id"]
-            )).map(item => item.id);
+            user.orgUnit = (
+                await this.orgQueryer.getNodeById(user.orgUnitId)
+            ).valueOr(null);
+            user.managingOrgUnitIds = (
+                await this.orgQueryer.getAllChildren(user.orgUnitId, true, [
+                    "id"
+                ])
+            ).map(item => item.id);
         }
         return user;
     }

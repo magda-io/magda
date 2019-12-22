@@ -207,7 +207,10 @@ class NestedSetModelQueryer {
         fields: string[] = null,
         client: pg.Client = null
     ): Promise<Maybe<NodeRecord>> {
-        const result = await (client ? client : this.pool).query(
+        const result = await (client
+            ? client
+            : this.pool
+        ).query(
             `SELECT ${this.selectFields("", fields)} FROM "${
                 this.tableName
             }" WHERE "id" = $1`,
@@ -669,9 +672,7 @@ class NestedSetModelQueryer {
             );
             if (result && isNonEmptyArray(result.rows)) {
                 throw new Error(
-                    `A root node with id: ${
-                        result.rows[0]["id"]
-                    } already exists`
+                    `A root node with id: ${result.rows[0]["id"]} already exists`
                 );
             }
             const countResult = await client.query(
@@ -757,11 +758,9 @@ class NestedSetModelQueryer {
         let nodeId: string;
         try {
             await client.query("BEGIN");
-            const { right: parentRight } = await this.getNodeDataWithinTx(
-                client,
-                parentNodeId,
-                ["right"]
-            );
+            const {
+                right: parentRight
+            } = await this.getNodeDataWithinTx(client, parentNodeId, ["right"]);
 
             await client.query(
                 `UPDATE "${tbl}" 
@@ -930,11 +929,9 @@ class NestedSetModelQueryer {
                 throw new Error("Cannot move Tree root node as substree.");
             }
 
-            const { right: newParentRight } = await this.getNodeDataWithinTx(
-                client,
-                newParentId,
-                ["right"]
-            );
+            const {
+                right: newParentRight
+            } = await this.getNodeDataWithinTx(client, newParentId, ["right"]);
 
             await client.query(
                 `

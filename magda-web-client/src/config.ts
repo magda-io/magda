@@ -81,6 +81,8 @@ const serverConfig: {
     csvLoaderChunkSize: number;
     mandatoryFields: ValidationFieldList;
     dateConfig?: DateConfig;
+    noManualKeywords?: boolean;
+    noManualThemes?: boolean;
     datasetThemes?: string[];
     noManualKeywords?: boolean;
     noManualThemes?: boolean;
@@ -302,6 +304,7 @@ export const config = {
               "Sr.",
               "St."
           ]
+        : false
 };
 
 export const defaultConfiguration = {

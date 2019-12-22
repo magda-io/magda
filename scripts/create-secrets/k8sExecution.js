@@ -67,9 +67,7 @@ function doK8sExecution(config, shouldNotAsk = false) {
             promise = promise.then(function() {
                 // --- leave error to be handled at end of then chain. see above
                 throw new Error(
-                    `Namespace ${
-                        configData["cluster-namespace"]
-                    } doesn't exist. Please create and try again.`
+                    `Namespace ${configData["cluster-namespace"]} doesn't exist. Please create and try again.`
                 );
             });
         }
@@ -80,9 +78,7 @@ function doK8sExecution(config, shouldNotAsk = false) {
             .then(function(shouldCreateNamespace) {
                 if (!shouldCreateNamespace) {
                     throw new Error(
-                        `You need to create namespace \`${
-                            configData["cluster-namespace"]
-                        }\` before try again.`
+                        `You need to create namespace \`${configData["cluster-namespace"]}\` before try again.`
                     );
                 } else {
                     createNamespace(env, configData["cluster-namespace"]);

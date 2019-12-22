@@ -31,12 +31,8 @@ export default function aaf(options: aafOptions) {
         : ""
     ).trim();
 
-    const aafSuccessRedirect = `${
-        options.externalUrl
-    }/sign-in-redirect?redirectTo=/`;
-    const aafFailRedirect = `${
-        options.externalUrl
-    }/sign-in-redirect?redirectTo=/signin`;
+    const aafSuccessRedirect = `${options.externalUrl}/sign-in-redirect?redirectTo=/`;
+    const aafFailRedirect = `${options.externalUrl}/sign-in-redirect?redirectTo=/signin`;
 
     if (!aafClientUri) {
         return undefined;

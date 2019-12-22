@@ -292,9 +292,7 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
         ];
 
         CUSTOM_ROUTES.forEach(customRoute => {
-            it(`should upload and delete with custom routes ${
-                customRoute.route
-            }`, done => {
+            it(`should upload and delete with custom routes ${customRoute.route}`, done => {
                 admin(agent.put(customRoute.route))
                     .set("Content-Type", customRoute.mime)
                     .send(customRoute.content)
