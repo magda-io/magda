@@ -54,4 +54,6 @@ dateConfig:
       dateRegex: "(date|dt|year|decade)"
       startDateRegex: "(start|st).*(date|dt|year|decade)"
       endDateRegex: "(end).*(date|dt|year|decade)"
+noManualThemes: false
+noManualKeywords: false
 datasetThemes: []

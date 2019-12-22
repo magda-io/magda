@@ -81,6 +81,8 @@ const serverConfig: {
     csvLoaderChunkSize: number;
     mandatoryFields: ValidationFieldList;
     dateConfig?: DateConfig;
+    noManualKeywords?: boolean;
+    noManualThemes?: boolean;
     datasetThemes?: string[];
 } = window.magda_server_config || {};
 
@@ -268,7 +270,13 @@ export const config = {
               "informationSecurity.disseminationLimits"
           ],
     dateConfig: constructDateConfig(serverConfig.dateConfig),
-    datasetThemes: serverConfig.datasetThemes ? serverConfig.datasetThemes : []
+    datasetThemes: serverConfig.datasetThemes ? serverConfig.datasetThemes : [],
+    noManualKeywords: serverConfig.noManualKeywords
+        ? serverConfig.noManualKeywords
+        : false,
+    noManualThemes: serverConfig.noManualThemes
+        ? serverConfig.noManualThemes
+        : false
 };
 
 export const defaultConfiguration = {

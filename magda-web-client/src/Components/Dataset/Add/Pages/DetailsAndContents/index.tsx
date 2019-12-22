@@ -142,6 +142,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                             onChange={editDataset("keywords")}
                             placeHolderText="Enter a keyword"
                             useVocabularyAutoCompleteInput={true}
+                            noManualInput={config.noManualKeywords}
                         />
                     </div>
                 </div>
@@ -159,6 +160,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                             onChange={editDataset("themes")}
                             placeHolderText="Enter a theme"
                             options={config.datasetThemes}
+                            noManualInput={config.noManualThemes}
                         />
                     </div>
                 </div>
