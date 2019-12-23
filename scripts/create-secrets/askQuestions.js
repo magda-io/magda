@@ -524,7 +524,6 @@ const questions = [
         type: "input",
         name: "minio-access-key",
         message: "Please enter an access key for your MinIO server:",
-        when: answers => answers["manual-db-passwords"]["answer"] === true,
         validate: input => {
             const trimmedInput = trim(input);
             return trimmedInput.length && trimmedInput.length >= 5
@@ -536,7 +535,6 @@ const questions = [
         type: "input",
         name: "minio-secret-key",
         message: "Please enter a secret key for your MinIO server::",
-        when: answers => answers["manual-db-passwords"]["answer"] === true,
         validate: input => {
             const trimmedInput = trim(input);
             return trimmedInput.length && trimmedInput.length >= 8
