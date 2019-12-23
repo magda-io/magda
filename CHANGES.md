@@ -143,6 +143,7 @@ UI:
 -   Added tooltips to the `Production` section of the `People and Production` page
 -   Reworded the user access options
 -   Removed help icons without content
+-   Fixed: if featureFlags are not set, edit buttons are always shown on dataset page
 
 Gateway:
 
