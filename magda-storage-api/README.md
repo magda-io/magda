@@ -12,7 +12,7 @@ expected config file. Create a `config.json` file with the appropriate parameter
 ```json5
 // Example Config
 {
-    listenPort: 6120,
+    listenPort: 6121,
     minioAccessKey: "", // You would have specified this when creating the MinIO server
     minioSecretKey: "", // You would have specified this when creating the MinIO server
     minioEnableSSL: true,
@@ -32,7 +32,7 @@ From the `magda-storage-api` directory, run:
 
 ```console
 $ yarn run dev
-Datastore API started on port 6120
+Storage API started on port 6121
 ```
 
 ## API
@@ -50,7 +50,7 @@ column1,column2
 A,1234
 B,4321
 C,2007
-$ curl -X PUT -H "Content-Type:text/csv" localhost:6120/v0/test-bucket/myFavouriteCSV --data-binary '@favourite.csv'
+$ curl -X PUT -H "Content-Type:text/csv" localhost:6121/v0/test-bucket/myFavouriteCSV --data-binary '@favourite.csv'
 {"message":"File uploaded successfully","etag":"<some hash value>"}
 ```
 
@@ -62,7 +62,7 @@ that is stored in `<bucket>` specified in config while starting the server.
 #### Example usage
 
 ```console
-$ curl -X GET localhost:6120/v0/test-bucket/myFavouriteCSV
+$ curl -X GET localhost:6121/v0/test-bucket/myFavouriteCSV
 column1,column2
 A,1234
 B,4321

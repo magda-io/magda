@@ -9,7 +9,7 @@ const argv = yargs
     .option("listenPort", {
         describe: "The TCP/IP port on which the storage-api should listen.",
         type: "number",
-        default: 6120
+        default: 6121
     })
     .option("minioAccessKey", {
         describe: "The access key to your minio server.",

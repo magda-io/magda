@@ -1,5 +1,5 @@
 {
-    "listenPort": 6120,
+    "listenPort": 6121,
     "minioAccessKey": "",
     "minioSecretKey": "",
     "minioEnableSSL": true,
