@@ -562,7 +562,6 @@ dockerize:dockerExtensions:
     - MINIO_PORT="${MINIO_PORT:-9000}"
     - MINIO_ACCESS_KEY="${MINIO_ACCESS_KEY:-}"
     - MINIO_SECRET_KEY="${MINIO_SECRET_KEY:-}"
-    - BUCKET="${BUCKET:-magda-test-1}"
 
     # Kube Config
     - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
@@ -579,7 +578,7 @@ dockerize:dockerExtensions:
     - kubectl create secret generic smtp-secret --from-literal=username=$SMTP_USERNAME --from-literal=password=$SMTP_PASSWORD --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
     - echo "$DB_SERVICE_ACCOUNT_PRIVATE_KEY" > db-service-account-private-key.json
     - kubectl create secret generic storage-account-credentials --from-file db-service-account-private-key.json --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
-    - kubectl create secret generic storage-secrets --from-literal=minio-access-key=$MINIO_ACCESS_KEY --from-literal=minio-secret-key=$MINIO_SECRET_KEY --from-literal=minio-host=$MINIO_HOST --from-literal=minio-port=$MINIO_PORT --from-literal=bucket=$BUCKET --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
+    - kubectl create secret generic storage-secrets --from-literal=minio-access-key=$MINIO_ACCESS_KEY --from-literal=minio-secret-key=$MINIO_SECRET_KEY --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
 
     # Helm upgrade
     - helm init --upgrade
