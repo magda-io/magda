@@ -93,3 +93,8 @@ correspondence-api:
   alwaysSendToDefaultRecipient: true
   smtpHostname: "smtp.mailgun.org"
   smtpPort: 2525
+
+storage-api:
+  minio-server:
+    host: "localhost"
+    port: 9000
