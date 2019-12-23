@@ -14,12 +14,14 @@ const argv = yargs
     .option("minioAccessKey", {
         describe: "The access key to your minio server.",
         type: "string",
-        demand: true
+        demand: true,
+        default: process.env.MINIO_ACCESS_KEY
     })
     .option("minioSecretKey", {
         describe: "The secret key to your minio server.",
         type: "string",
-        demand: true
+        demand: true,
+        default: process.env.MINIO_SECRET_KEY
     })
     .option("minioEnableSSL", {
         describe: "Whether or not to use https over http. Defaults to true",
