@@ -56,7 +56,7 @@ app.use(
 
 app.listen(argv.listenPort);
 
-console.log("Datastore API started on port " + argv.listenPort);
+console.log("Storage API started on port " + argv.listenPort);
 
 process.on(
     "unhandledRejection",
