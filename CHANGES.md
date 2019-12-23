@@ -8,6 +8,7 @@ General:
     policy (default) or Esri groups based access policy.
 -   Add esri portal connector. Read its README.md file before use.
 -   Changed the way of `auth-secrets` to be created in gitlab
+-   Add horizontal pod autoscalers to crucial services
 
 Registry:
 
