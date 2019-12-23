@@ -32,15 +32,15 @@ spec:
         - name: MINIO_PORT
           value: "9000"
         - name: MINIO_SECRET_KEY
-            valueFrom:
-            secretKeyRef:
-              name: storage-secrets
-              key: minio-secret-key
+          valueFrom:
+          secretKeyRef:
+            name: storage-secrets
+            key: minio-secret-key
         - name: MINIO_ACCESS_KEY
-            valueFrom:
-            secretKeyRef:
-              name: storage-secrets
-              key: minio-access-key
+          valueFrom:
+          secretKeyRef:
+            name: storage-secrets
+            key: minio-access-key
 
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
