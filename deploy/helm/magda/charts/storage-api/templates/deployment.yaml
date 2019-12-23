@@ -35,12 +35,12 @@ spec:
           valueFrom:
           secretKeyRef:
             name: storage-secrets
-            key: minio-secret-key
+            key: secretkey
         - name: MINIO_ACCESS_KEY
           valueFrom:
           secretKeyRef:
             name: storage-secrets
-            key: minio-access-key
+            key: access-key
 
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:

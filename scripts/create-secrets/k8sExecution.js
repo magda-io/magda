@@ -343,8 +343,8 @@ function createDbPasswords(env, namespace, configData) {
 
 function createMinioCredentials(env, namespace, configData) {
     const data = {
-        "minio-access-key": configData["minio-access-key"],
-        "minio-secret-key": configData["minio-secret-key"]
+        accesskey: configData["accesskey"],
+        secretkey: configData["secretkey"]
     };
     createSecret(env, namespace, "storage-secrets", data);
 }

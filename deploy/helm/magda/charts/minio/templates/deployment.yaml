@@ -47,9 +47,6 @@ spec:
 {{- if .Values.podLabels }}
 {{ toYaml .Values.podLabels | indent 8 }}
 {{- end }}
-      annotations:
-        checksum/secrets: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
-        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
 {{- if .Values.podAnnotations }}
 {{ toYaml .Values.podAnnotations | trimSuffix "\n" | indent 8 }}
 {{- end }}
@@ -114,9 +111,6 @@ spec:
               {{- end }}
             {{- end }}
             {{- if .Values.gcsgateway.enabled }}
-            - name: minio-user
-              mountPath: "/etc/credentials"
-              readOnly: true
             {{- end }}
             - name: minio-config-dir
               mountPath: {{ .Values.configPath }}
@@ -132,12 +126,12 @@ spec:
               valueFrom:
               secretKeyRef:
                 name: storage-secrets
-                key: minio-access-key
+                key: accesskey
             - name: MINIO_SECRET_KEY
               valueFrom:
               secretKeyRef:
                 name: storage-secrets
-                key: minio-secret-key
+                key: secretkey
             {{- if .Values.gcsgateway.enabled }}
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: "/etc/credentials/gcs_key.json"
@@ -196,9 +190,6 @@ spec:
           emptyDir: {}
         {{- end }}
         {{- end }}
-        - name: minio-user
-          secret:
-            secretName: {{ if .Values.existingSecret }}{{ .Values.existingSecret }}{{ else }}{{ template "minio.fullname" . }}{{ end }}
         - name: minio-config-dir
           emptyDir: {}
         {{- if .Values.tls.enabled }}

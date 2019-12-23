@@ -24,6 +24,7 @@ export default class MagdaMinioClient implements ObjectStoreClient {
                 fileName,
                 (err: Error, dataStream: Stream) => {
                     if (err) {
+                        console.error(err);
                         return reject("Encountered Error while getting file");
                     }
                     return resolve(dataStream);

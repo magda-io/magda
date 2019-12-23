@@ -522,7 +522,7 @@ const questions = [
     },
     {
         type: "input",
-        name: "minio-access-key",
+        name: "accesskey",
         message: "Please enter an access key for your MinIO server:",
         validate: input => {
             const trimmedInput = trim(input);
@@ -533,7 +533,7 @@ const questions = [
     },
     {
         type: "input",
-        name: "minio-secret-key",
+        name: "secretkey",
         message: "Please enter a secret key for your MinIO server::",
         validate: input => {
             const trimmedInput = trim(input);
