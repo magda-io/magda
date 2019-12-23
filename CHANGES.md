@@ -143,6 +143,7 @@ UI:
 -   Added tooltips to the `Production` section of the `People and Production` page
 -   Reworded the user access options
 -   Removed help icons without content
+-   Made print button call `window.stop` before `window.print`.
 
 Gateway:
 
