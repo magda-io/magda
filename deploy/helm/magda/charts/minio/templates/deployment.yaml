@@ -190,6 +190,9 @@ spec:
           emptyDir: {}
         {{- end }}
         {{- end }}
+        - name: minio-user
+          secret:
+            secretName: storage-secrets
         - name: minio-config-dir
           emptyDir: {}
         {{- if .Values.tls.enabled }}

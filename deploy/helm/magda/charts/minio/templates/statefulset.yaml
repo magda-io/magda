@@ -102,12 +102,12 @@ spec:
             - name: MINIO_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
-                  name: {{ if .Values.existingSecret }}{{ .Values.existingSecret }}{{ else }}{{ template "minio.fullname" . }}{{ end }}
+                  name: storage-secrets
                   key: accesskey
             - name: MINIO_SECRET_KEY
               valueFrom:
                 secretKeyRef:
-                  name: {{ if .Values.existingSecret }}{{ .Values.existingSecret }}{{ else }}{{ template "minio.fullname" . }}{{ end }}
+                  name: storage-secrets
                   key: secretkey
             {{- range $key, $val := .Values.environment }}
             - name: {{ $key }}
@@ -142,6 +142,9 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+        - name: minio-user
+          secret:
+            secretName: storage-secrets
         - name: minio-config-dir
           emptyDir: {}
         {{- if .Values.tls.enabled }}
