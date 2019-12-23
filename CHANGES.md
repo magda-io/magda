@@ -144,6 +144,7 @@ UI:
 -   Reworded the user access options
 -   Removed help icons without content
 -   Made print button call `window.stop` before `window.print`.
+-   Fixed: if featureFlags are not set, edit buttons are always shown on dataset page
 
 Gateway:
 
