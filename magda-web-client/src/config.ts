@@ -84,8 +84,6 @@ const serverConfig: {
     noManualKeywords?: boolean;
     noManualThemes?: boolean;
     datasetThemes?: string[];
-    noManualKeywords?: boolean;
-    noManualThemes?: boolean;
     keywordsBlackList?: string[];
 } = window.magda_server_config || {};
 
@@ -304,7 +302,6 @@ export const config = {
               "Sr.",
               "St."
           ]
-        : false
 };
 
 export const defaultConfiguration = {
