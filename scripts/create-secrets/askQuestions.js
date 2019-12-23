@@ -521,6 +521,30 @@ const questions = [
             trim(input).length ? true : "password cannot be empty!"
     },
     {
+        type: "input",
+        name: "minio-access-key",
+        message: "Please enter an access key for your MinIO server:",
+        when: answers => answers["manual-db-passwords"]["answer"] === true,
+        validate: input => {
+            const trimmedInput = trim(input);
+            return trimmedInput.length && trimmedInput.length >= 5
+                ? true
+                : "MinIO access keys need to be at least 5 characters.";
+        }
+    },
+    {
+        type: "input",
+        name: "minio-secret-key",
+        message: "Please enter a secret key for your MinIO server::",
+        when: answers => answers["manual-db-passwords"]["answer"] === true,
+        validate: input => {
+            const trimmedInput = trim(input);
+            return trimmedInput.length && trimmedInput.length >= 8
+                ? true
+                : "MinIO secret keys need to be at least 8 characters.";
+        }
+    },
+    {
         type: "list",
         dataType: "boolean",
         name: "get-namespace-from-env",

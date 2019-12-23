@@ -123,6 +123,7 @@ function doK8sExecution(config, shouldNotAsk = false) {
         }
 
         createDbPasswords(env, namespace, configData);
+        createMinioCredentials(env, namespace, configData);
 
         createWebAccessPassword(env, namespace, configData);
 
@@ -338,6 +339,14 @@ function createDbPasswords(env, namespace, configData) {
         data[key] = configData["db-passwords"];
     });
     createSecret(env, namespace, "db-passwords", data);
+}
+
+function createMinioCredentials(env, namespace, configData) {
+    const data = {
+        "minio-access-key": configData["minio-access-key"],
+        "minio-secret-key": configData["minio-secret-key"]
+    };
+    createSecret(env, namespace, "storage-secrets", data);
 }
 
 function createWebAccessPassword(env, namespace, configData) {
