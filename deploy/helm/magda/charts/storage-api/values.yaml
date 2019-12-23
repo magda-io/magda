@@ -7,6 +7,6 @@ resources:
     cpu: 50m
 scssVars: '{}'
 
-minio-server:
-  host: "minio-server"
+minio:
+  host: "minio"
   port: 9000

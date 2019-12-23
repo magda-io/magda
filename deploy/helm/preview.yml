@@ -95,6 +95,6 @@ correspondence-api:
   smtpPort: 2525
 
 storage-api:
-  minio-server:
+  minio:
     host: "localhost"
     port: 9000
