@@ -24,23 +24,21 @@ spec:
             "node",
             "/usr/src/app/component/dist/index.js",
             "--listenPort", "80",
-            "--minioEnableSSL", "true",
+            "--minioEnableSSL", "false",
+            "--minioHost", "magda-minio",
+            "--minioPort", "9000",
         ]
         env:
-        - name: MINIO_HOST
-          value: "localhost"
-        - name: MINIO_PORT
-          value: "9000"
         - name: MINIO_SECRET_KEY
           valueFrom:
-          secretKeyRef:
-            name: storage-secrets
-            key: secretkey
+            secretKeyRef:
+              name: storage-secrets
+              key: secretkey
         - name: MINIO_ACCESS_KEY
           valueFrom:
-          secretKeyRef:
-            name: storage-secrets
-            key: access-key
+            secretKeyRef:
+              name: storage-secrets
+              key: accesskey
 
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
