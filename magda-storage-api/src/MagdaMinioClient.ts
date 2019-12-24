@@ -6,6 +6,7 @@ import * as Minio from "minio";
 
 export default class MagdaMinioClient implements ObjectStoreClient {
     private readonly client: any;
+    private readonly bucketName: string = "magda-bucket";
 
     constructor({ endPoint, port, useSSL, accessKey, secretKey }: any) {
         this.client = new Minio.Client({
@@ -14,6 +15,25 @@ export default class MagdaMinioClient implements ObjectStoreClient {
             useSSL,
             accessKey,
             secretKey
+        });
+        this.client.makeBucket(this.bucketName, "us-east-1", (err: Error) => {
+            if (err) {
+                if (
+                    err.message ===
+                    "Your previous request to create the named bucket succeeded and you already own it."
+                ) {
+                    return console.log(
+                        "Bucket " + this.bucketName + " already exists 👍"
+                    );
+                }
+            } else {
+                return console.log("😢 Error creating bucket.", err.message);
+            }
+            return console.log(
+                "Bucket " +
+                    this.bucketName +
+                    ' created successfully in "us-east-1" 🎉'
+            );
         });
     }
 
