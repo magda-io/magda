@@ -17,6 +17,16 @@ export default function createApiRouter(options: ApiRouterOptions) {
         bodyParser.raw({ type: ["image/*", "application/octet-stream"] })
     );
 
+    // Liveness probe
+    router.get("/status/live", function(_req, res) {
+        return res.status(200).send("OK");
+    });
+
+    // Readiness probe
+    router.get("/status/ready", function(_req, res) {
+        return res.status(200).send("OK");
+    });
+
     // Download an object
     router.get("/:bucket/:fileid", async function(req, res) {
         const fileId = req.params.fileid;
