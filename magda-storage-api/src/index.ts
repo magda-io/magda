@@ -26,7 +26,7 @@ const argv = yargs
     .option("minioEnableSSL", {
         describe: "Whether or not to use https over http. Defaults to true",
         type: "boolean",
-        default: true
+        default: false
     })
     .option("minioHost", {
         describe: "Host where MinIO server is running.",
