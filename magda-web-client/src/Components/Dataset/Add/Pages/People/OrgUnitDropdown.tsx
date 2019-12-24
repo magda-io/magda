@@ -1,30 +1,39 @@
 import React from "react";
-import { useAsync } from "react-async-hook";
+import { useAsyncCallback } from "react-async-hook";
 import Select from "react-select";
+import { config } from "config";
 
 import ReactSelectStyles from "Components/Common/react-select/ReactSelectStyles";
 
-import { OrgUnit, listOrgUnits } from "api-clients/OrgUnitApis";
+import { listOrgUnitsAtLevel } from "api-clients/OrgUnitApis";
 
 type Props = {
     orgUnitId?: string;
+    businessAreaId?: string;
     onChange: (orgUnitId: string) => void;
 };
 
-const getOrgUnits: () => Promise<OrgUnit[]> = async () => {
-    try {
-        return await listOrgUnits({ orgUnitsOnly: true });
-    } catch (e) {
-        console.error(e);
-        throw e;
-    }
-};
+// const getOrgUnits: () => Promise<OrgUnit[]> = async () => {
+//     try {
+//         return await listOrgUnits({ orgUnitsOnly: true });
+//     } catch (e) {
+//         console.error(e);
+//         throw e;
+//     }
+// };
 
 export default function OrgUnitDropdown({
     orgUnitId,
+    businessAreaId,
     onChange: onChangeCallback
 }: Props) {
-    const { loading, error, result, execute } = useAsync(getOrgUnits, []);
+    // const { loading, error, result, execute } = useAsync(getOrgUnits, []);
+
+    const { loading, error, result, execute } = useAsyncCallback(() =>
+        listOrgUnitsAtLevel(config.custodianOrgLevel, businessAreaId)
+    );
+    console.log("OrgUnitDropdown Header");
+    console.log("orgUnitId: ", orgUnitId);
 
     if (loading) {
         return <span>Loading...</span>;
@@ -41,6 +50,7 @@ export default function OrgUnitDropdown({
             </div>
         );
     } else {
+        console.log("OrgUnitDropdown: Result: ", result);
         const value = result.find(option => option.id === orgUnitId);
 
         return (

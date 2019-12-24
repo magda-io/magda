@@ -1,34 +1,47 @@
 import React, { useEffect, useState } from "react";
-import { useAsyncCallback } from "react-async-hook";
+import { useAsync } from "react-async-hook";
 import Select from "react-select";
 import { config } from "config";
 import find from "lodash/find";
 
 import ReactSelectStyles from "Components/Common/react-select/ReactSelectStyles";
 
-import {
-    listOrgUnitsAtLevel,
-    OrgUnitWithRelationship
-} from "api-clients/OrgUnitApis";
+import { OrgUnitWithRelationship } from "api-clients/OrgUnitApis";
+
+import { OrgUnit, listOrgUnits } from "api-clients/OrgUnitApis";
 
 type Props = {
     custodianId?: string;
-    businessAreaId?: string;
     onChange: (orgUnitId: string) => void;
+};
+
+const getOrgUnits: () => Promise<OrgUnit[]> = async () => {
+    try {
+        return await listOrgUnits({ orgUnitsOnly: true });
+    } catch (e) {
+        console.error(e);
+        throw e;
+    }
 };
 
 export default function CustodianDropdown({
     custodianId,
-    businessAreaId,
     onChange: onChangeCallback
 }: Props) {
+    console.log("CustodianDropdown Header");
+    console.log("custodianId: ", custodianId);
+    // console.log("businessAreaId: ", businessAreaId);
     // If we already have a value from orgUnitId we can assume the user already picked it.
     const [hasUserSelected, setHasUserSelected] = useState(!!custodianId);
 
     // Set up the call for loading custodian org units, but don't call it yet.
-    const { loading, error, result, execute } = useAsyncCallback(() =>
-        listOrgUnitsAtLevel(config.custodianOrgLevel, businessAreaId)
-    );
+    // const { loading, error, result, execute } = useAsync(getOrgUnits, []);
+
+    const { loading, error, result, execute } = useAsync(getOrgUnits, []);
+
+    // const { loading, error, result, execute } = useAsyncCallback(() =>
+    //     listOrgUnitsAtLevel(config.custodianOrgLevel, businessAreaId)
+    // );
 
     // We don't need to load org units unless we're starting up (!result) or
     // the user hasn't selected a custodian yet (which means we need to do another
@@ -38,23 +51,21 @@ export default function CustodianDropdown({
         if (!result || !hasUserSelected) {
             execute();
         }
-    }, [config.custodianOrgLevel, businessAreaId]);
+    }, [config.custodianOrgLevel, custodianId]);
 
     // If there's no org unit already set, when we know what org units exist, set it to the one
     // above the current user in the org tree
     useEffect(() => {
-        if (!hasUserSelected && result && businessAreaId) {
+        if (!hasUserSelected && result && custodianId) {
             const relatedOrgUnit = find(
                 result,
-                option =>
-                    option.relationship && option.relationship !== "unrelated"
+                option => option.id === custodianId
             ) as OrgUnitWithRelationship | undefined;
-
             if (relatedOrgUnit) {
                 onChangeCallback(relatedOrgUnit.id);
             }
         }
-    }, [result, businessAreaId]);
+    }, [result, custodianId]);
 
     if (loading) {
         return <span>Loading...</span>;
@@ -71,7 +82,7 @@ export default function CustodianDropdown({
             </div>
         );
     } else {
-        console.log('Result in CustodianDropdown: ', result);
+        console.log("Result in CustodianDropdown: ", result);
         const selectedValue =
             typeof custodianId !== "undefined" &&
             find(result, option => option.id === custodianId);

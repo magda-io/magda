@@ -71,7 +71,6 @@ export default function DatasetAddPeoplePage({
                 <div>
                     <CustodianDropdown
                         custodianId={dataset.custodianOrgUnitId}
-                        businessAreaId={dataset.owningOrgUnitId}
                         onChange={editDataset("custodianOrgUnitId")}
                     />
                 </div>
@@ -82,6 +81,7 @@ export default function DatasetAddPeoplePage({
                 <div>
                     <OrgUnitDropdown
                         orgUnitId={dataset.owningOrgUnitId}
+                        businessAreaId={dataset.owningOrgUnitId}
                         onChange={editDataset("owningOrgUnitId")}
                     />
                 </div>

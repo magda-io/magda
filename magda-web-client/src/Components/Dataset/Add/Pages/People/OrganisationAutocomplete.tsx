@@ -53,6 +53,7 @@ function toReactSelectValue(choice: OrganisationAutocompleteChoice): Choice {
 }
 
 export default function OrganisationAutocomplete(props: Props) {
+    console.log("OrganisationAutocomplete");
     const query: (term: string) => Promise<Choice[]> = debouncePromise(
         async (term: string) => {
             const apiResult = await autocompletePublishers({}, term);

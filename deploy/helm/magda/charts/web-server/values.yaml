@@ -20,7 +20,7 @@ contentApiBaseUrlInternal: "http://content-api/v0/"
 featureFlags: {}
 vocabularyApiEndpoints: []
 defaultContactEmail: "mail@example.com"
-custodianOrgLevel: 2
+custodianOrgLevel: 3
 maxChartProcessingRows: 20000
 maxTableProcessingRows: 200
 # default chunk size 2MB
