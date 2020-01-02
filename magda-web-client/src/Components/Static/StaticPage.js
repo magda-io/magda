@@ -119,8 +119,5 @@ const mapDispatchToProps = dispatch => {
 };
 
 export default withRouter(
-    connect(
-        mapStateToProps,
-        mapDispatchToProps
-    )(StaticPage)
+    connect(mapStateToProps, mapDispatchToProps)(StaticPage)
 );
