@@ -16,7 +16,7 @@ export default class MagdaMinioClient implements ObjectStoreClient {
             accessKey,
             secretKey
         });
-        this.client.makeBucket(this.bucketName, "us-east-1", (err: any) => {
+        this.client.makeBucket(this.bucketName, "us-east-1", (err: Error) => {
             if (err) {
                 if (
                     err.message ===
