@@ -18,6 +18,7 @@ import {
 import withAddDatasetState from "./withAddDatasetState";
 import uniq from "lodash/uniq";
 import * as ValidationManager from "../Add/ValidationManager";
+import { config } from "config";
 
 import "./DatasetAddFilesPage.scss";
 import "./DatasetAddCommon.scss";
@@ -167,6 +168,35 @@ class DatasetAddFilesPage extends React.Component<
                                 );
                                 file[key] = undefined;
                                 break;
+                        }
+                    }
+
+                    if (
+                        config.datasetThemes &&
+                        config.datasetThemes.length &&
+                        newState.dataset &&
+                        newState.dataset.keywords &&
+                        newState.dataset.keywords.keywords &&
+                        newState.dataset.keywords.keywords.length
+                    ) {
+                        const keywords = newState.dataset.keywords.keywords.map(
+                            item => item.toLowerCase()
+                        );
+                        const themesBasedOnKeywords = config.datasetThemes.filter(
+                            theme =>
+                                keywords.indexOf(theme.toLowerCase()) !== -1
+                        );
+                        if (themesBasedOnKeywords.length) {
+                            const existingThemesKeywords = newState.dataset
+                                .themes
+                                ? newState.dataset.themes.keywords
+                                : [];
+                            newState.dataset.themes = {
+                                keywords: themesBasedOnKeywords.concat(
+                                    existingThemesKeywords
+                                ),
+                                derived: true
+                            };
                         }
                     }
 

@@ -154,16 +154,35 @@ const argv = yargs
         describe: "Add dataset page mandatory fields list (in JSON path)",
         type: "string",
         coerce: coerceJson("mandatoryFields"),
-        default: "null"
+        default: "[]"
     })
     .option("dateFormats", {
         describe: "A list of date formats supported by this Magda instance",
         type: "string",
         coerce: coerceJson("dateFormats"),
         default: "[]"
+    })
+    .option("datasetThemes", {
+        describe:
+            "A list of pre-defined phrases for theme input on the `add dataset page`",
+        type: "string",
+        coerce: coerceJson("datasetThemes"),
+        default: "[]"
+    })
+    .option("noManualKeywords", {
+        describe:
+            "Whether manual keywords input should be allowed on add dataset page",
+        type: "boolean",
+        default: false
+    })
+    .option("noManualThemes", {
+        describe:
+            "Whether manual themes input should be allowed on add dataset page",
+        type: "boolean",
+        default: false
     }).argv;
 
-var app = express();
+const app = express();
 
 app.use(morgan("combined"));
 
@@ -242,7 +261,10 @@ const webServerConfig = {
     maxTableProcessingRows: argv.maxTableProcessingRows,
     csvLoaderChunkSize: argv.csvLoaderChunkSize,
     mandatoryFields: argv.mandatoryFields,
-    dateFormats: argv.dateFormats
+    dateFormats: argv.dateFormats,
+    datasetThemes: argv.datasetThemes,
+    noManualKeywords: argv.noManualKeywords,
+    noManualThemes: argv.noManualThemes
 };
 
 app.get("/server-config.js", function(req, res) {
