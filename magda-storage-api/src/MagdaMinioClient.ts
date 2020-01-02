@@ -25,9 +25,9 @@ export default class MagdaMinioClient implements ObjectStoreClient {
                     return console.log(
                         "Bucket " + this.bucketName + " already exists 👍"
                     );
+                } else {
+                    return console.log("😢 Error creating bucket: ", err);
                 }
-            } else {
-                return console.log("😢 Error creating bucket: ", err);
             }
             return console.log(
                 "Bucket " +
