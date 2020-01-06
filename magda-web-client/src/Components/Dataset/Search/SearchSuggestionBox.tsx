@@ -392,7 +392,7 @@ class SearchSuggestionBox extends Component<Props & any, any> {
                         role="listbox"
                         className="search-history-items"
                     >
-                        {recentSearchItems.map((item, idx) => (
+                        {recentSearchItems.map((item, idx: number) => (
                             <li
                                 key={idx}
                                 className={`search-item-container ${
