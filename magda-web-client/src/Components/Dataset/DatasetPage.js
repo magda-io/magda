@@ -475,7 +475,7 @@ class RecordHandler extends React.Component {
                             <div className="col-sm-8">
                                 <h1 itemProp="name">
                                     <ToggleEditor
-                                        enabled={hasEditPermissions}
+                                        editable={hasEditPermissions}
                                         value={this.props.dataset.title}
                                         onChange={datasetChange("title")}
                                         editor={textEditorFullWidth}
@@ -530,7 +530,7 @@ class RecordHandler extends React.Component {
                                     )}
                                     <div className="dataset-details-overview">
                                         <ToggleEditor
-                                            enabled={hasEditPermissions}
+                                            editable={hasEditPermissions}
                                             value={
                                                 this.props.dataset.description
                                             }
@@ -570,7 +570,7 @@ class RecordHandler extends React.Component {
                                         </div>
                                     ) : null}
                                     <ToggleEditor
-                                        enabled={hasEditPermissions}
+                                        editable={hasEditPermissions}
                                         value={dataset.contactPoint}
                                         onChange={datasetChange("contactPoint")}
                                         editor={multilineTextEditor}
@@ -587,7 +587,7 @@ class RecordHandler extends React.Component {
                                         )}
                                     </ToggleEditor>
                                     <ToggleEditor
-                                        enabled={hasEditPermissions}
+                                        editable={hasEditPermissions}
                                         value={this.props.dataset.tags}
                                         onChange={datasetChange("keywords")}
                                         editor={multiTextEditor}
@@ -682,7 +682,9 @@ class RecordHandler extends React.Component {
                                             </h4>
                                             <div>
                                                 <ToggleEditor
-                                                    enabled={hasEditPermissions}
+                                                    editable={
+                                                        hasEditPermissions
+                                                    }
                                                     value={
                                                         dataset.temporalCoverage
                                                             .intervals
@@ -711,7 +713,9 @@ class RecordHandler extends React.Component {
                                             </h4>
                                             <div>
                                                 <ToggleEditor
-                                                    enabled={hasEditPermissions}
+                                                    editable={
+                                                        hasEditPermissions
+                                                    }
                                                     value={
                                                         dataset.spatialCoverageBbox
                                                     }
@@ -745,7 +749,9 @@ class RecordHandler extends React.Component {
                                             </h4>
                                             <div>
                                                 <ToggleEditor
-                                                    enabled={hasEditPermissions}
+                                                    editable={
+                                                        hasEditPermissions
+                                                    }
                                                     value={
                                                         dataset.provenance
                                                             .mechanism
@@ -759,7 +765,9 @@ class RecordHandler extends React.Component {
                                             <h4>Source system:</h4>
                                             <div>
                                                 <ToggleEditor
-                                                    enabled={hasEditPermissions}
+                                                    editable={
+                                                        hasEditPermissions
+                                                    }
                                                     value={
                                                         dataset.provenance
                                                             .sourceSystem
@@ -781,7 +789,9 @@ class RecordHandler extends React.Component {
                                             </h4>
                                             <div>
                                                 <ToggleEditor
-                                                    enabled={hasEditPermissions}
+                                                    editable={
+                                                        hasEditPermissions
+                                                    }
                                                     value={
                                                         dataset
                                                             .informationSecurity
@@ -802,7 +812,9 @@ class RecordHandler extends React.Component {
                                             </h4>
                                             <div>
                                                 <ToggleEditor
-                                                    enabled={hasEditPermissions}
+                                                    editable={
+                                                        hasEditPermissions
+                                                    }
                                                     value={
                                                         dataset
                                                             .informationSecurity
@@ -953,7 +965,7 @@ function mapStateToProps(state) {
         distributionFetchError,
         datasetFetchError,
         strings: state.content.strings,
-        hasEditPermissions
+        hasEditPermissions: hasEditPermissions ? true : false
     };
 }
 

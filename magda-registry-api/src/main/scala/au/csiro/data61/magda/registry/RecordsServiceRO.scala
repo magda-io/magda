@@ -562,7 +562,7 @@ class RecordsServiceRO(
       new ApiResponse(
         code = 404,
         message = "No record exists with that ID.",
-        response = classOf[BadRequest]
+        response = classOf[ApiError]
       )
     )
   )
@@ -592,7 +592,7 @@ class RecordsServiceRO(
                   case None =>
                     complete(
                       StatusCodes.NotFound,
-                      BadRequest(
+                      ApiError(
                         "No record exists with that ID or it does not have the required aspects."
                       )
                     )
@@ -661,7 +661,7 @@ class RecordsServiceRO(
       new ApiResponse(
         code = 404,
         message = "No record exists with that ID.",
-        response = classOf[BadRequest]
+        response = classOf[ApiError]
       )
     )
   )
@@ -682,7 +682,7 @@ class RecordsServiceRO(
               case None =>
                 complete(
                   StatusCodes.NotFound,
-                  BadRequest("No record exists with that ID.")
+                  ApiError("No record exists with that ID.")
                 )
             }
           }

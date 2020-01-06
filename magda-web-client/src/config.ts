@@ -63,6 +63,7 @@ const serverConfig: {
     contentApiBaseUrl?: string;
     previewMapBaseUrl?: string;
     registryApiBaseUrl?: string;
+    registryApiReadOnlyBaseUrl?: string;
     searchApiBaseUrl?: string;
     correspondenceApiBaseUrl?: string;
     gapiIds?: Array<string>;
@@ -135,7 +136,7 @@ function constructDateConfig(
 }
 
 const registryReadOnlyApiUrl =
-    serverConfig.registryApiBaseUrl ||
+    serverConfig.registryApiReadOnlyBaseUrl ||
     fallbackApiHost + "api/v0/registry-read-only/";
 const registryFullApiUrl =
     serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry/";
