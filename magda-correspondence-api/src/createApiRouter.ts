@@ -186,9 +186,7 @@ export default function createApiRouter(
 
                 const validEmail = emails.length > 0;
                 if (!validEmail) {
-                    body.note = `You are getting this email because the contact point '${
-                        dcatDatasetStrings.contactPoint
-                    }' on the dataset and ‘${datasetPublisherEmail}’ on the organisation are not valid email addresses`;
+                    body.note = `You are getting this email because the contact point '${dcatDatasetStrings.contactPoint}' on the dataset and ‘${datasetPublisherEmail}’ on the organisation are not valid email addresses`;
                 }
 
                 const recipient = validEmail

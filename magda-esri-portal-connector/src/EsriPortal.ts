@@ -275,9 +275,7 @@ export default class EsriPortal implements ConnectorSource {
                         await this.processPublicItem(item);
                     } else {
                         console.error(
-                            `Item ${item.id}, ${item.title}, ${
-                                item.access
-                            }, will not be harvested.`
+                            `Item ${item.id}, ${item.title}, ${item.access}, will not be harvested.`
                         );
                     }
                 }
@@ -294,9 +292,7 @@ export default class EsriPortal implements ConnectorSource {
             (e, retriesLeft) =>
                 console.log(
                     formatServiceError(
-                        `Failed to GET start = ${startIndex}, num = ${
-                            this.pageSize
-                        }.`,
+                        `Failed to GET start = ${startIndex}, num = ${this.pageSize}.`,
                         e,
                         retriesLeft
                     )
@@ -380,9 +376,7 @@ export default class EsriPortal implements ConnectorSource {
         item.esriGroups = uniqueGroups.length > 0 ? uniqueGroups : [];
         if (item.esriGroups === []) {
             console.log(
-                `Shared item ${item.id}, ${
-                    item.title
-                }, will not be accessible by any esri groups.`
+                `Shared item ${item.id}, ${item.title}, will not be accessible by any esri groups.`
             );
         }
         item.esriOwner = item.owner;

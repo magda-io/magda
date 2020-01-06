@@ -180,9 +180,7 @@ baseSpec(
                                                 // telling it to give more events.
                                                 registryScope
                                                     .post(
-                                                        `/hooks/${
-                                                            options.id
-                                                        }/ack`,
+                                                        `/hooks/${options.id}/ack`,
                                                         {
                                                             succeeded:
                                                                 batch.overallSuccess,

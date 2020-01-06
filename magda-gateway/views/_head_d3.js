@@ -4699,8 +4699,8 @@
         var value00, value10, interpolate0;
         return function() {
             var value0 = styleValue(this, name),
-                value1 = (this.style.removeProperty(name),
-                styleValue(this, name));
+                value1 =
+                    (this.style.removeProperty(name), styleValue(this, name));
             return value0 === value1
                 ? null
                 : value0 === value00 && value1 === value10
@@ -4736,8 +4736,8 @@
             var value0 = styleValue(this, name),
                 value1 = value(this);
             if (value1 == null)
-                value1 = (this.style.removeProperty(name),
-                styleValue(this, name));
+                value1 =
+                    (this.style.removeProperty(name), styleValue(this, name));
             return value0 === value1
                 ? null
                 : value0 === value00 && value1 === value10
@@ -5244,7 +5244,12 @@
         name: "x",
         handles: ["e", "w"].map(type),
         input: function(x, e) {
-            return x && [[x[0], e[0][1]], [x[1], e[1][1]]];
+            return (
+                x && [
+                    [x[0], e[0][1]],
+                    [x[1], e[1][1]]
+                ]
+            );
         },
         output: function(xy) {
             return xy && [xy[0][0], xy[1][0]];
@@ -5255,7 +5260,12 @@
         name: "y",
         handles: ["n", "s"].map(type),
         input: function(y, e) {
-            return y && [[e[0][0], y[0]], [e[1][0], y[1]]];
+            return (
+                y && [
+                    [e[0][0], y[0]],
+                    [e[1][0], y[1]]
+                ]
+            );
         },
         output: function(xy) {
             return xy && [xy[0][1], xy[1][1]];
@@ -5341,7 +5351,10 @@
 
     function defaultExtent() {
         var svg = this.ownerSVGElement || this;
-        return [[0, 0], [svg.width.baseVal.value, svg.height.baseVal.value]];
+        return [
+            [0, 0],
+            [svg.width.baseVal.value, svg.height.baseVal.value]
+        ];
     }
 
     // Like d3.local, but with the name “__brush” rather than auto-generated.
@@ -5780,7 +5793,10 @@
                     selection$$1[1][0] !== e1 ||
                     selection$$1[1][1] !== s1
                 ) {
-                    state.selection = [[w1, n1], [e1, s1]];
+                    state.selection = [
+                        [w1, n1],
+                        [e1, s1]
+                    ];
                     redraw.call(that);
                     emit.brush();
                 }
@@ -6726,20 +6742,98 @@
 
     var cases = [
         [],
-        [[[1.0, 1.5], [0.5, 1.0]]],
-        [[[1.5, 1.0], [1.0, 1.5]]],
-        [[[1.5, 1.0], [0.5, 1.0]]],
-        [[[1.0, 0.5], [1.5, 1.0]]],
-        [[[1.0, 1.5], [0.5, 1.0]], [[1.0, 0.5], [1.5, 1.0]]],
-        [[[1.0, 0.5], [1.0, 1.5]]],
-        [[[1.0, 0.5], [0.5, 1.0]]],
-        [[[0.5, 1.0], [1.0, 0.5]]],
-        [[[1.0, 1.5], [1.0, 0.5]]],
-        [[[0.5, 1.0], [1.0, 0.5]], [[1.5, 1.0], [1.0, 1.5]]],
-        [[[1.5, 1.0], [1.0, 0.5]]],
-        [[[0.5, 1.0], [1.5, 1.0]]],
-        [[[1.0, 1.5], [1.5, 1.0]]],
-        [[[0.5, 1.0], [1.0, 1.5]]],
+        [
+            [
+                [1.0, 1.5],
+                [0.5, 1.0]
+            ]
+        ],
+        [
+            [
+                [1.5, 1.0],
+                [1.0, 1.5]
+            ]
+        ],
+        [
+            [
+                [1.5, 1.0],
+                [0.5, 1.0]
+            ]
+        ],
+        [
+            [
+                [1.0, 0.5],
+                [1.5, 1.0]
+            ]
+        ],
+        [
+            [
+                [1.0, 1.5],
+                [0.5, 1.0]
+            ],
+            [
+                [1.0, 0.5],
+                [1.5, 1.0]
+            ]
+        ],
+        [
+            [
+                [1.0, 0.5],
+                [1.0, 1.5]
+            ]
+        ],
+        [
+            [
+                [1.0, 0.5],
+                [0.5, 1.0]
+            ]
+        ],
+        [
+            [
+                [0.5, 1.0],
+                [1.0, 0.5]
+            ]
+        ],
+        [
+            [
+                [1.0, 1.5],
+                [1.0, 0.5]
+            ]
+        ],
+        [
+            [
+                [0.5, 1.0],
+                [1.0, 0.5]
+            ],
+            [
+                [1.5, 1.0],
+                [1.0, 1.5]
+            ]
+        ],
+        [
+            [
+                [1.5, 1.0],
+                [1.0, 0.5]
+            ]
+        ],
+        [
+            [
+                [0.5, 1.0],
+                [1.5, 1.0]
+            ]
+        ],
+        [
+            [
+                [1.0, 1.5],
+                [1.5, 1.0]
+            ]
+        ],
+        [
+            [
+                [0.5, 1.0],
+                [1.0, 1.5]
+            ]
+        ],
         []
     ];
 
@@ -7690,7 +7784,10 @@
             ? this.cover(+_[0][0], +_[0][1]).cover(+_[1][0], +_[1][1])
             : isNaN(this._x0)
             ? undefined
-            : [[this._x0, this._y0], [this._x1, this._y1]];
+            : [
+                  [this._x0, this._y0],
+                  [this._x1, this._y1]
+              ];
     }
 
     function Quad(node, x0, y0, x1, y1) {
@@ -9675,8 +9772,14 @@
         ranges = range = null;
 
         return lambda0$1 === Infinity || phi0 === Infinity
-            ? [[NaN, NaN], [NaN, NaN]]
-            : [[lambda0$1, phi0], [lambda1, phi1]];
+            ? [
+                  [NaN, NaN],
+                  [NaN, NaN]
+              ]
+            : [
+                  [lambda0$1, phi0],
+                  [lambda1, phi1]
+              ];
     }
 
     var W0,
@@ -11039,9 +11142,12 @@
             stream: function(stream) {
                 return cache && cacheStream === stream
                     ? cache
-                    : (cache = clipRectangle(x0, y0, x1, y1)(
-                          (cacheStream = stream)
-                      ));
+                    : (cache = clipRectangle(
+                          x0,
+                          y0,
+                          x1,
+                          y1
+                      )((cacheStream = stream)));
             },
             extent: function(_) {
                 return arguments.length
@@ -11051,7 +11157,10 @@
                       (y1 = +_[1][1]),
                       (cache = cacheStream = null),
                       clip)
-                    : [[x0, y0], [x1, y1]];
+                    : [
+                          [x0, y0],
+                          [x1, y1]
+                      ];
             }
         });
     }
@@ -11305,7 +11414,11 @@
         };
 
         graticule.extentMajor = function(_) {
-            if (!arguments.length) return [[X0, Y0], [X1, Y1]];
+            if (!arguments.length)
+                return [
+                    [X0, Y0],
+                    [X1, Y1]
+                ];
             (X0 = +_[0][0]), (X1 = +_[1][0]);
             (Y0 = +_[0][1]), (Y1 = +_[1][1]);
             if (X0 > X1) (_ = X0), (X0 = X1), (X1 = _);
@@ -11314,7 +11427,11 @@
         };
 
         graticule.extentMinor = function(_) {
-            if (!arguments.length) return [[x0, y0], [x1, y1]];
+            if (!arguments.length)
+                return [
+                    [x0, y0],
+                    [x1, y1]
+                ];
             (x0 = +_[0][0]), (x1 = +_[1][0]);
             (y0 = +_[0][1]), (y1 = +_[1][1]);
             if (x0 > x1) (_ = x0), (x0 = x1), (x1 = _);
@@ -11350,8 +11467,14 @@
         };
 
         return graticule
-            .extentMajor([[-180, -90 + epsilon$2], [180, 90 - epsilon$2]])
-            .extentMinor([[-180, -80 - epsilon$2], [180, 80 + epsilon$2]]);
+            .extentMajor([
+                [-180, -90 + epsilon$2],
+                [180, 90 - epsilon$2]
+            ])
+            .extentMinor([
+                [-180, -80 - epsilon$2],
+                [180, 80 + epsilon$2]
+            ]);
     }
 
     function graticule10() {
@@ -11458,7 +11581,10 @@
         polygonStart: noop$2,
         polygonEnd: noop$2,
         result: function() {
-            var bounds = [[x0$2, y0$2], [x1, y1]];
+            var bounds = [
+                [x0$2, y0$2],
+                [x1, y1]
+            ];
             x1 = y1 = -(y0$2 = x0$2 = Infinity);
             return bounds;
         }
@@ -12233,7 +12359,10 @@
                   reset())
                 : x0 == null
                 ? null
-                : [[x0, y0], [x1, y1]];
+                : [
+                      [x0, y0],
+                      [x1, y1]
+                  ];
         };
 
         projection.scale = function(_) {
@@ -12311,14 +12440,8 @@
                     alpha
                 );
             rotate = rotateRadians(deltaLambda, deltaPhi, deltaGamma);
-            projectTransform = compose(
-                project,
-                transform$$1
-            );
-            projectRotateTransform = compose(
-                rotate,
-                projectTransform
-            );
+            projectTransform = compose(project, transform$$1);
+            projectRotateTransform = compose(rotate, projectTransform);
             projectResample = resample(projectTransform, delta2);
             return reset();
         }
@@ -12660,7 +12783,10 @@
                   reclip())
                 : x0 == null
                 ? null
-                : [[x0, y0], [x1, y1]];
+                : [
+                      [x0, y0],
+                      [x1, y1]
+                  ];
         };
 
         function reclip() {
@@ -12668,7 +12794,10 @@
                 t = m(rotation(m.rotate()).invert([0, 0]));
             return clipExtent(
                 x0 == null
-                    ? [[t[0] - k, t[1] - k], [t[0] + k, t[1] + k]]
+                    ? [
+                          [t[0] - k, t[1] - k],
+                          [t[0] + k, t[1] + k]
+                      ]
                     : project === mercatorRaw
                     ? [
                           [Math.max(t[0] - k, x0), y0],
@@ -12875,7 +13004,10 @@
                       reset())
                     : x0 == null
                     ? null
-                    : [[x0, y0], [x1, y1]];
+                    : [
+                          [x0, y0],
+                          [x1, y1]
+                      ];
             },
             scale: function(_) {
                 return arguments.length
@@ -15028,23 +15160,27 @@
         }
 
         function scale(x) {
-            return (output ||
+            return (
+                output ||
                 (output = piecewise$$1(
                     domain,
                     range,
                     clamp ? deinterpolateClamp(deinterpolate) : deinterpolate,
                     interpolate$$1
-                )))(+x);
+                ))
+            )(+x);
         }
 
         scale.invert = function(y) {
-            return (input ||
+            return (
+                input ||
                 (input = piecewise$$1(
                     range,
                     domain,
                     deinterpolateLinear,
                     clamp ? reinterpolateClamp(reinterpolate) : reinterpolate
-                )))(+y);
+                ))
+            )(+y);
         };
 
         scale.domain = function(_) {
@@ -21039,7 +21175,10 @@
                 ? ((extent =
                       _ == null
                           ? null
-                          : [[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]),
+                          : [
+                                [+_[0][0], +_[0][1]],
+                                [+_[1][0], +_[1][1]]
+                            ]),
                   voronoi)
                 : extent && [
                       [extent[0][0], extent[0][1]],
@@ -21049,7 +21188,13 @@
 
         voronoi.size = function(_) {
             return arguments.length
-                ? ((extent = _ == null ? null : [[0, 0], [+_[0], +_[1]]]),
+                ? ((extent =
+                      _ == null
+                          ? null
+                          : [
+                                [0, 0],
+                                [+_[0], +_[1]]
+                            ]),
                   voronoi)
                 : extent && [
                       extent[1][0] - extent[0][0],
@@ -21170,7 +21315,10 @@
             w = e.clientWidth;
             h = e.clientHeight;
         }
-        return [[0, 0], [w, h]];
+        return [
+            [0, 0],
+            [w, h]
+        ];
     }
 
     function defaultTransform() {
@@ -21205,7 +21353,10 @@
             wheelDelta = defaultWheelDelta,
             touchable = defaultTouchable$1,
             scaleExtent = [0, Infinity],
-            translateExtent = [[-Infinity, -Infinity], [Infinity, Infinity]],
+            translateExtent = [
+                [-Infinity, -Infinity],
+                [Infinity, Infinity]
+            ],
             duration = 250,
             interpolate = interpolateZoom,
             gestures = [],
