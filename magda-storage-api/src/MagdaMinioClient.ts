@@ -8,15 +8,16 @@ export default class MagdaMinioClient implements ObjectStoreClient {
     private readonly client: any;
     private readonly bucketName: string = "magda-bucket";
 
-    constructor({ endPoint, port, useSSL, accessKey, secretKey }: any) {
+    constructor({ endPoint, port, useSSL, accessKey, secretKey, region }: any) {
         this.client = new Minio.Client({
             endPoint,
             port,
             useSSL,
             accessKey,
-            secretKey
+            secretKey,
+            region
         });
-        this.client.makeBucket(this.bucketName, "us-east-1", (err: Error) => {
+        this.client.makeBucket(this.bucketName, region, (err: Error) => {
             if (err) {
                 if (
                     err.message ===
@@ -32,7 +33,9 @@ export default class MagdaMinioClient implements ObjectStoreClient {
             return console.log(
                 "Bucket " +
                     this.bucketName +
-                    ' created successfully in "us-east-1" 🎉'
+                    " created successfully in  " +
+                    region +
+                    "🎉"
             );
         });
     }

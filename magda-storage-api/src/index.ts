@@ -37,6 +37,11 @@ const argv = yargs
         describe: "Port where MinIO server is running.",
         type: "number",
         default: 9000
+    })
+    .option("minioRegion", {
+        describe: "Region where the server is being created.",
+        type: "string",
+        default: "us-east-1"
     }).argv;
 
 var app = express();
@@ -49,7 +54,8 @@ app.use(
             port: argv.minioPort,
             useSSL: argv.minioEnableSSL,
             accessKey: argv.minioAccessKey,
-            secretKey: argv.minioSecretKey
+            secretKey: argv.minioSecretKey,
+            region: argv.minioRegion
         })
     })
 );
