@@ -3,7 +3,7 @@ image: {}
   #tag: latest
   #pullPolicy: Always#
 autoscaler:
-  enabled: true
+  enabled: false
   minReplicas: 1
   maxReplicas: 3
   targetCPUUtilizationPercentage: 80
@@ -17,7 +17,9 @@ disableAuthenticationFeatures: false
 service: {}
 useLocalStyleSheet: false
 contentApiBaseUrlInternal: "http://content-api/v0/"
-featureFlags: {}
+featureFlags:
+ cataloguing: false
+ previewAddDataset: false
 vocabularyApiEndpoints: []
 defaultContactEmail: "mail@example.com"
 custodianOrgLevel: 2

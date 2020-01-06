@@ -34,6 +34,7 @@ General:
     policy (default) or Esri groups based access policy.
 -   Add esri portal connector. Read its README.md file before use.
 -   Changed the way of `auth-secrets` to be created in gitlab
+-   Add horizontal pod autoscalers to crucial services
 
 Registry:
 
@@ -44,6 +45,7 @@ Registry:
 -   Removed some unused fields from `dcat-dataset-strings` - it should now be back to looking more-or-less like DCAT.
 -   Added the feature of validating aspect data against JSON Schema (Default to off)
 -   Fixed request for all tenant records returning `[]`.
+-   Made the registry treat tenant id `NULL` as equivalent to tenant id `0`
 
 Gateway:
 
@@ -168,6 +170,10 @@ UI:
 -   Added tooltips to the `Production` section of the `People and Production` page
 -   Reworded the user access options
 -   Removed help icons without content
+-   Made print button call `window.stop` before `window.print`.
+-   Made read-only calls to the registry api use `/registry-read-only`.
+-   Fixed: if featureFlags are not set, edit buttons are always shown on dataset page
+-   Add specific color to recent search item text
 -   Improve keywords generation logic for Spreadsheet
 -   Mention that choosing state is optional
 -   Make spatial input default to Australia

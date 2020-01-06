@@ -79,6 +79,11 @@ const argv = yargs
             "The base URL of the MAGDA Registry API.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
     })
+    .option("registryApiReadOnlyBaseUrl", {
+        describe:
+            "The base URL of the MAGDA Registry API for use for read-only operations.  If not specified, the URL is built from the apiBaseUrl.",
+        type: "string"
+    })
     .option("authApiBaseUrl", {
         describe:
             "The base URL of the MAGDA Auth API.  If not specified, the URL is built from the apiBaseUrl.",
@@ -220,6 +225,13 @@ const webServerConfig = {
             new URI(apiBaseUrl)
                 .segment("v0")
                 .segment("registry")
+                .toString()
+    ),
+    registryApiReadOnlyBaseUrl: addTrailingSlash(
+        argv.registryApiReadOnlyBaseUrl ||
+            new URI(apiBaseUrl)
+                .segment("v0")
+                .segment("registry-read-only")
                 .toString()
     ),
     authApiBaseUrl: addTrailingSlash(

@@ -96,7 +96,7 @@ class AspectsService(
                 case Failure(exception) =>
                   complete(
                     StatusCodes.BadRequest,
-                    BadRequest(exception.getMessage)
+                    ApiError(exception.getMessage)
                   )
               }
             }
@@ -188,7 +188,7 @@ class AspectsService(
                   case Failure(exception) =>
                     complete(
                       StatusCodes.BadRequest,
-                      BadRequest(exception.getMessage)
+                      ApiError(exception.getMessage)
                     )
                 }
               }
@@ -281,7 +281,7 @@ class AspectsService(
                 case Failure(exception) =>
                   complete(
                     StatusCodes.BadRequest,
-                    BadRequest(exception.getMessage)
+                    ApiError(exception.getMessage)
                   )
               }
             }

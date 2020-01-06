@@ -11,7 +11,7 @@ import au.csiro.data61.magda.model.Registry._
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
-import scalikejdbc.DB
+import scalikejdbc._
 import spray.json._
 
 import scala.collection.mutable.ArrayBuffer
@@ -486,6 +486,87 @@ class WebHookProcessingSpec
         }
       }
 
+      it("record created, with legacy tenantId = NULL value") { param =>
+        try {
+          // First make an inactive hook
+          val hook = defaultWebHook.copy(
+            url = "http://localhost:" + server.localAddress.getPort.toString + "/hook",
+            active = false,
+            enabled = true,
+            eventTypes = Set(EventType.CreateRecord)
+          )
+
+          val hookId = hook.id.get
+          Util.getWebHookActor(hookId) shouldBe None
+
+          param.asAdmin(Post("/v0/hooks", hook)) ~> param
+            .api(Full)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          // Make sure it's inactive.
+          Util.waitUntilAllDone(1000)
+          Util.getWebHookActor(hookId) shouldBe None
+
+          // Insert a record to put an event into the table
+          val testId = "testId"
+          val record = Record(testId, "testName", Map())
+
+          param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+            MAGDA_ADMIN_PORTAL_ID
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+
+          // By default this will have given the event a tenant id, set that tenant id back to NULL
+          DB localTx { implicit session =>
+            sql"UPDATE events SET tenantid = NULL".update.apply()
+          }
+
+          // Make sure we can see that event when we request history with the default tenant id
+          Get(s"/v0/records/${record.id}/history") ~> addTenantIdHeader(
+            MAGDA_ADMIN_PORTAL_ID
+          ) ~> param
+            .api(Full)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            responseAs[EventsPage].events.length shouldEqual 1
+          }
+
+          def response(): ToResponseMarshallable = {
+            StatusCodes.OK
+          }
+
+          this.currentResponse = Some(response)
+
+          Util.waitUntilAllDone()
+          payloads.length should be(0)
+
+          // Turn the hook on
+          val actor = param.webHookActor
+          actor ! WebHookActor.RetryInactiveHooks
+          Util.waitUntilAllDone(1000)
+
+          // Check the hook again to see if it's live now
+          Util.getWebHookActor(hookId) should not be None
+
+          // We should now get the event, and the tenant id should be the default
+          payloads.length should be(1)
+          payloads.last.lastEventId shouldBe 2
+
+          assertEventsInPayloads(
+            List(ExpectedEventIdAndTenantId(2, MAGDA_ADMIN_PORTAL_ID))
+          )
+          payloads.head.events.get.head.eventType shouldBe EventType.CreateRecord
+          assertRecordsInPayloads(
+            List(ExpectedRecordIdAndTenantId(testId, MAGDA_ADMIN_PORTAL_ID))
+          )
+        } finally {
+          payloads.clear()
+        }
+      }
+
       it("aspect definition created") { param =>
         val webHook = defaultWebHook.copy(
           eventTypes = Set(EventType.CreateAspectDefinition)
@@ -500,6 +581,7 @@ class WebHookProcessingSpec
           }
 
           assertEventsInPayloads(List(ExpectedEventIdAndTenantId(2, TENANT_1)))
+
           payloads.head.events.get.head.eventType shouldBe EventType.CreateAspectDefinition
           payloads.head.aspectDefinitions.get.length shouldBe 1
         }
