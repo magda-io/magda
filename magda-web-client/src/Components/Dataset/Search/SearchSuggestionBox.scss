@@ -38,6 +38,9 @@
             width: calc(100% - 50px);
             text-align: left;
             padding: 0px;
+            &.search-item-main-button {
+                color: $search-item-main-button-text;
+            }
             &.markdown {
                 margin-left: 0;
                 em {
