@@ -15,7 +15,6 @@ export default class MagdaMinioClient implements ObjectStoreClient {
             useSSL,
             accessKey,
             secretKey,
-            region
         });
         this.client.makeBucket(this.bucketName, region, (err: Error) => {
             if (err) {
