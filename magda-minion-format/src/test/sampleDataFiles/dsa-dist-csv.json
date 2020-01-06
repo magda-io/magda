@@ -4,10 +4,8 @@
     "aspects": {
         "dcat-distribution-strings": {
             "format": ".csv",
-            "downloadURL":
-                "http://gisdata-portenf.opendata.arcgis.com/datasets/dog_registrations_2018",
-            "description":
-                "Dog Registrations in 2017-2018 for City of Port Adelaide Enfield. Data includes Breed, Class, Gender, Colour, Desexed and Suburb.",
+            "downloadURL": "http://gisdata-portenf.opendata.arcgis.com/datasets/dog_registrations_2018",
+            "description": "Dog Registrations in 2017-2018 for City of Port Adelaide Enfield. Data includes Breed, Class, Gender, Colour, Desexed and Suburb.",
             "license": "Creative Commons Attribution-NonCommercial-NoDerivs",
             "issued": "2016-06-10T12:46:37Z",
             "title": "Dog Registrations in 2017- 2018"

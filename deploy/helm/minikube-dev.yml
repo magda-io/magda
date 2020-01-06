@@ -39,6 +39,22 @@ web-server:
   fallbackUrl: "https://data.gov.au"
   featureFlags:
     cataloguing: true
+  dateConfig:
+    dateFormats:
+      - YYYY
+      - YYYY-MM
+      - DD-MM-YYYY
+      - MM-DD-YYYY
+      - YYYY-MM-DD
+      - YYYY-MM-DDThh:mmTZD
+      - YYYY-MM-DDThh:mm:ssTZD
+      - YYYY-MM-DDThh:mm:ss.sTZD
+      - DD-MMM-YYYY
+      - MMM-DD-YYYY
+    dateRegexes:
+        dateRegex: "(date|dt|year|decade)"
+        startDateRegex: "(start|st).*(date|dt|year|decade)"
+        endDateRegex: "(end).*(date|dt|year|decade)"
 
 connectors:
   includeCronJobs: false

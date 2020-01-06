@@ -1,10 +1,10 @@
-import AsyncPage from "@magda/typescript-common/dist/AsyncPage";
+import AsyncPage from "magda-typescript-common/src/AsyncPage";
 import DapUrlBuilder from "./DapUrlBuilder";
-import formatServiceError from "@magda/typescript-common/dist/formatServiceError";
-import { ConnectorSource } from "@magda/typescript-common/dist/JsonConnector";
-import retry from "@magda/typescript-common/dist/retry";
-import request from "@magda/typescript-common/dist/request";
-import * as URI from "urijs";
+import formatServiceError from "magda-typescript-common/src/formatServiceError";
+import { ConnectorSource } from "magda-typescript-common/src/JsonConnector";
+import retry from "magda-typescript-common/src/retry";
+import request from "magda-typescript-common/src/request";
+import URI from "urijs";
 
 export interface DapThing {
     id: string;
@@ -299,9 +299,7 @@ export default class Dap implements ConnectorSource {
                                                 // --- added access info to description
                                                 // --- so that we know why the dataset has no distribution
                                                 // --- and when the distribution will be available for public
-                                                detail.description = `${
-                                                    detail.description
-                                                }\n\n${detail.access}\n\n`;
+                                                detail.description = `${detail.description}\n\n${detail.access}\n\n`;
                                             }
                                             resolve2(detail);
                                         }
@@ -347,16 +345,10 @@ export default class Dap implements ConnectorSource {
                                                                 simpleData.id
                                                                     .identifier;
                                                             console.log(
-                                                                `** Unable to fetch files for collection: ${id}; url: ${
-                                                                    simpleData.data
-                                                                }`
+                                                                `** Unable to fetch files for collection: ${id}; url: ${simpleData.data}`
                                                             );
                                                             console.log(
-                                                                `** Reason: ${
-                                                                    detail
-                                                                        .errors[0]
-                                                                        .defaultMessage
-                                                                }`
+                                                                `** Reason: ${detail.errors[0].defaultMessage}`
                                                             );
                                                             resolve3({
                                                                 identifier: id,
@@ -391,8 +383,7 @@ export default class Dap implements ConnectorSource {
                                                                 ];
                                                             distributionObj[
                                                                 "accessURL"
-                                                            ] =
-                                                                detail["self"];
+                                                            ] = detail["self"];
                                                             distributionObj[
                                                                 "downloadURL"
                                                             ] =
@@ -401,8 +392,7 @@ export default class Dap implements ConnectorSource {
                                                                 ];
                                                             distributionObj[
                                                                 "id"
-                                                            ] =
-                                                                file["id"];
+                                                            ] = file["id"];
                                                             distributionObj[
                                                                 "mediaType"
                                                             ] = mediaType;

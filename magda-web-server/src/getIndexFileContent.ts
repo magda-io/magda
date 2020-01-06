@@ -1,5 +1,5 @@
-import * as fs from "fs";
-import * as path from "path";
+import fs from "fs";
+import path from "path";
 import "isomorphic-fetch";
 import { throttle, memoize } from "lodash";
 
@@ -24,9 +24,7 @@ async function getIncludeHtml(contentApiBaseUrlInternal: string) {
             return response.text();
         } else {
             throw new Error(
-                `Received status ${response.status}: ${
-                    response.statusText
-                } from ${url} when getting dynamic content`
+                `Received status ${response.status}: ${response.statusText} from ${url} when getting dynamic content`
             );
         }
     } catch (e) {

@@ -11,6 +11,27 @@ declare global {
     }
 }
 
+// https://www.w3.org/TR/NOTE-datetime
+const defaultDateFormats: string[] = [
+    // Year
+    "YYYY",
+    // Year and month (eg 1997-07)
+    "YYYY-MM",
+    // Complete date (eg 1997-07-16):
+    "DD-MM-YYYY",
+    "MM-DD-YYYY",
+    "YYYY-MM-DD",
+    // Complete date plus hours and minutes (eg 1997-07-16T19:20+01:00):
+    "YYYY-MM-DDThh:mmTZD",
+    // Complete date plus hours, minutes and seconds (eg 1997-07-16T19:20:30+01:00):
+    "YYYY-MM-DDThh:mm:ssTZD",
+    // Complete date plus hours, minutes, seconds and a decimal fraction of a second (eg 1997-07-16T19:20:30.45+01:00)
+    "YYYY-MM-DDThh:mm:ss.sTZD",
+    // Natural language date formats (eg 12 March, 1997)
+    "DD-MMM-YYYY",
+    "MMM-DD-YYYY"
+];
+
 // Local minikube/docker k8s cluster
 // const fallbackApiHost = "http://localhost:30100/";
 // Dev server
@@ -26,6 +47,15 @@ const homePageConfig: {
     backgroundImageUrls: Array<string>;
     stories: string[];
 } = window.magda_client_homepage_config || {};
+
+interface DateConfig {
+    dateFormats: string[];
+    dateRegexes: {
+        dateRegex: RegExp;
+        startDateRegex: RegExp;
+        endDateRegex: RegExp;
+    };
+}
 
 const serverConfig: {
     authApiBaseUrl?: string;
@@ -51,7 +81,59 @@ const serverConfig: {
     maxTableProcessingRows: number;
     csvLoaderChunkSize: number;
     mandatoryFields: ValidationFieldList;
+    dateConfig?: DateConfig;
+    noManualKeywords?: boolean;
+    noManualThemes?: boolean;
+    datasetThemes?: string[];
 } = window.magda_server_config || {};
+
+const DATE_REGEX = ".*(date|dt|year|decade).*";
+const START_DATE_REGEX = "(start|st).*(date|dt|year|decade)";
+const END_DATE_REGEX = "(end).*(date|dt|year|decade)";
+
+/**
+ * Given the server's date config object, tries to construct a date config object
+ * that also includes defaults for parts of the config that are not specified
+ * @param serverDateConfig Server's Date Config object
+ */
+function constructDateConfig(
+    serverDateConfig: DateConfig | undefined
+): DateConfig {
+    var dateConfig: DateConfig = {
+        dateFormats: defaultDateFormats,
+        dateRegexes: {
+            dateRegex: new RegExp(DATE_REGEX, "i"),
+            startDateRegex: new RegExp(START_DATE_REGEX, "i"),
+            endDateRegex: new RegExp(END_DATE_REGEX, "i")
+        }
+    };
+
+    // Overwriting config if there is config coming from the server
+    if (serverDateConfig) {
+        if (serverDateConfig.dateFormats) {
+            dateConfig.dateFormats = serverDateConfig.dateFormats;
+        }
+        // If the server date config exists, and regexes were also specified
+        if (serverDateConfig.dateRegexes) {
+            dateConfig["dateRegexes"] = {
+                dateRegex: new RegExp(
+                    serverDateConfig.dateRegexes.dateRegex || DATE_REGEX,
+                    "i"
+                ),
+                startDateRegex: new RegExp(
+                    serverDateConfig.dateRegexes.startDateRegex ||
+                        START_DATE_REGEX,
+                    "i"
+                ),
+                endDateRegex: new RegExp(
+                    serverDateConfig.dateRegexes.endDateRegex || END_DATE_REGEX,
+                    "i"
+                )
+            };
+        }
+    }
+    return dateConfig;
+}
 
 const registryReadOnlyApiUrl =
     serverConfig.registryApiReadOnlyBaseUrl ||
@@ -187,7 +269,15 @@ export const config = {
               "files.license",
               "informationSecurity.classification",
               "informationSecurity.disseminationLimits"
-          ]
+          ],
+    dateConfig: constructDateConfig(serverConfig.dateConfig),
+    datasetThemes: serverConfig.datasetThemes ? serverConfig.datasetThemes : [],
+    noManualKeywords: serverConfig.noManualKeywords
+        ? serverConfig.noManualKeywords
+        : false,
+    noManualThemes: serverConfig.noManualThemes
+        ? serverConfig.noManualThemes
+        : false
 };
 
 export const defaultConfiguration = {

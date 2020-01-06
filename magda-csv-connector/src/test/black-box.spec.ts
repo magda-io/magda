@@ -1,6 +1,6 @@
 "use strict";
 
-import { runConnectorTest } from "@magda/typescript-common/dist/test/connectors/runConnectorTest";
+import { runConnectorTest } from "magda-typescript-common/src/test/connectors/runConnectorTest";
 import { MockCSVCatalog } from "./MockCSVCatalog";
 
 const fs = require("fs");

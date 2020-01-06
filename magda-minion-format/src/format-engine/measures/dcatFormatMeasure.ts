@@ -1,11 +1,11 @@
 /*
-* Tries to determine the format by deciphering DCAT-DISTRIBUTION-STRING -> format
-* TODO add more unit tests to test foundational function and more permutations of other functions
-*/
+ * Tries to determine the format by deciphering DCAT-DISTRIBUTION-STRING -> format
+ * TODO add more unit tests to test foundational function and more permutations of other functions
+ */
 import { getCommonFormat } from "../formats";
 import MeasureResult from "./MeasureResult";
 import { SelectedFormat } from "../formats";
-import * as _ from "lodash";
+import _ from "lodash";
 
 // list of functions that clean up the dcat-string so that magda can understand it
 // all functions must be executed in the order they appear in this file

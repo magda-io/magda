@@ -17,9 +17,7 @@ function preloadConfig(configStore, executeOption) {
             }
             console.log(
                 chalk.green(
-                    `Successfully loaded config data from \`${
-                        configStore.path
-                    }\`.`
+                    `Successfully loaded config data from \`${configStore.path}\`.`
                 )
             );
             return configData;

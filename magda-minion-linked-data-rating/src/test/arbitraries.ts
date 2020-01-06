@@ -1,16 +1,16 @@
-import jsc from "@magda/typescript-common/dist/test/jsverify";
+import jsc from "magda-typescript-common/src/test/jsverify";
 import {
     fuzzStringArbResult,
     arbFlatMap,
     distStringsArb,
     recordArbWithDists,
     stringArb
-} from "@magda/typescript-common/dist/test/arbitraries";
+} from "magda-typescript-common/src/test/arbitraries";
 import openLicenses from "../openLicenses";
 import openFormats from "../openFormats";
 import { ZERO_STAR_LICENSES } from "./examples";
-import { Record } from "@magda/typescript-common/dist/generated/registry/api";
-import * as _ from "lodash";
+import { Record } from "magda-typescript-common/src/generated/registry/api";
+import _ from "lodash";
 
 /** Generates strings with the words of open licenses embedded in them */
 export const openLicenseArb = fuzzStringArbResult(jsc.elements(openLicenses));

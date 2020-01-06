@@ -50,7 +50,7 @@
     "react": "^16.8.6",
     "react-app-polyfill": "^0.2.1",
     "react-async-hook": "^3.4.0",
-    "react-dates": "^20.1.0",
+    "react-dates": "magda-io/react-dates#magda",
     "react-file-drop": "^0.2.7",
     "react-i18next": "^8.1.0",
     "react-leaflet": "^2.2.1",
@@ -132,7 +132,7 @@
     "rss-parser": "^2.9.0",
     "smoothscroll-polyfill": "^0.4.4",
     "traverse": "^0.6.6",
-    "typescript": "^3.5.3",
+    "typescript": "^3.7.2",
     "uuid": "^3.0.1",
     "weighted-mean": "^1.0.2",
     "yaml-front-matter": "^4.0.0"

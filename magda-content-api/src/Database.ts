@@ -1,15 +1,15 @@
 import createPool from "./createPool";
 import { Maybe } from "tsmonad";
-import arrayToMaybe from "@magda/typescript-common/dist/util/arrayToMaybe";
+import arrayToMaybe from "magda-typescript-common/src/util/arrayToMaybe";
 import OpaCompileResponseParser, {
     CompleteRuleResult
-} from "@magda/typescript-common/dist/OpaCompileResponseParser";
-import SimpleOpaSQLTranslator from "@magda/typescript-common/dist/SimpleOpaSQLTranslator";
-import * as request from "request-promise-native";
-import * as pg from "pg";
-import * as _ from "lodash";
+} from "magda-typescript-common/src/OpaCompileResponseParser";
+import SimpleOpaSQLTranslator from "magda-typescript-common/src/SimpleOpaSQLTranslator";
+import request from "request-promise-native";
+import pg from "pg";
+import _ from "lodash";
 import { Content } from "./model";
-import AccessControlError from "@magda/typescript-common/dist/authorization-api/AccessControlError";
+import AccessControlError from "magda-typescript-common/src/authorization-api/AccessControlError";
 
 const ALLOWABLE_QUERY_FIELDS = ["id", "type"];
 const allowableQueryFieldLookup = _.keyBy(ALLOWABLE_QUERY_FIELDS, _.identity);

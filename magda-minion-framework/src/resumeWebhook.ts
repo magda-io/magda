@@ -1,4 +1,4 @@
-import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
+import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 
 import MinionOptions from "./MinionOptions";
 
@@ -17,8 +17,6 @@ export default async function resumeWebhook(
     }
 
     console.info(
-        `Successfully resumed webhook - last event id was ${
-            resumeResult.lastEventIdReceived
-        }`
+        `Successfully resumed webhook - last event id was ${resumeResult.lastEventIdReceived}`
     );
 }

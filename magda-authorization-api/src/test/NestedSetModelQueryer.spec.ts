@@ -1,8 +1,8 @@
 import "mocha";
-import * as pg from "pg";
-import * as _ from "lodash";
-import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
+import pg from "pg";
+import _ from "lodash";
+import chai from "chai";
+import chaiAsPromised from "chai-as-promised";
 import NestedSetModelQueryer, {
     NodeRecord,
     CompareNodeResult
@@ -732,9 +732,11 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         queryer.defaultSelectFieldList = ["id", "name", "left", "right"];
 
         expect(
-            (await queryer.getImmediateParent(
-                (await queryer.getNodes({ name: "Donna" }))[0]["id"]
-            )).valueOrThrow().name
+            (
+                await queryer.getImmediateParent(
+                    (await queryer.getNodes({ name: "Donna" }))[0]["id"]
+                )
+            ).valueOrThrow().name
         ).to.equal("Chuck");
 
         // --- move `Donna` to `Bert`: there is no path from Donna to Bert
@@ -757,9 +759,11 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
             "Fred"
         ]);
         expect(
-            (await queryer.getImmediateParent(
-                (await queryer.getNodes({ name: "Donna" }))[0]["id"]
-            )).valueOrThrow().name
+            (
+                await queryer.getImmediateParent(
+                    (await queryer.getNodes({ name: "Donna" }))[0]["id"]
+                )
+            ).valueOrThrow().name
         ).to.equal("Bert");
     });
 

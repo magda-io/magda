@@ -40,9 +40,7 @@ class MonthPicker extends Component {
     changeYear(value) {
         if (!this.checkYearValid(value)) {
             this.setState({
-                prompt: `Enter a year between ${this.props.yearLower}-${
-                    this.props.yearUpper
-                }`
+                prompt: `Enter a year between ${this.props.yearLower}-${this.props.yearUpper}`
             });
             //this.props.onInvalidInput(true);
         } else {

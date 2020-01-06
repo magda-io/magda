@@ -4,9 +4,10 @@
   "version": "0.0.57-0",
   "license": "Apache-2.0",
   "scripts": {
+    "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
-    "compile": "tsc -p tsconfig-build.json",
-    "watch": "tsc -p tsconfig-build.json --watch",
+    "compile": "tsc -b && ts-module-alias-transformer dist",
+    "watch": "tsc -b --watch",
     "start": "node dist/index.js",
     "test": "mocha --no-deprecation --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
     "dev": "run-typescript-in-nodemon src/index.ts --defaultRecipient magda@mailinator.com",
@@ -63,7 +64,7 @@
     "nock": "^9.2.5",
     "sinon": "^5.0.7",
     "supertest": "^3.0.0",
-    "typescript": "^3.2.0"
+    "typescript": "^3.7.2"
   },
   "config": {
     "docker": {
@@ -79,5 +80,8 @@
     "categories": {
       "api": true
     }
+  },
+  "_moduleMappings": {
+    "magda-typescript-common/src": "@magda/typescript-common/dist"
   }
 }

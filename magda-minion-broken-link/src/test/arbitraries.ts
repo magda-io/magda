@@ -1,15 +1,15 @@
-import jsc from "@magda/typescript-common/dist/test/jsverify";
-import { Record } from "@magda/typescript-common/dist/generated/registry/api";
+import jsc from "magda-typescript-common/src/test/jsverify";
+import { Record } from "magda-typescript-common/src/generated/registry/api";
 import {
     distUrlArb,
     arrayOfSizeArb,
     arbFlatMap,
     recordArbWithDistArbs,
     stringArb
-} from "@magda/typescript-common/dist/test/arbitraries";
+} from "magda-typescript-common/src/test/arbitraries";
 import urlsFromDataSet from "./urlsFromDataSet";
-import * as _ from "lodash";
-import * as URI from "urijs";
+import _ from "lodash";
+import URI from "urijs";
 
 export const KNOWN_PROTOCOLS = ["https", "http", "ftp"];
 
@@ -76,11 +76,11 @@ function getKnownProtocolUrls(record: Record) {
 }
 
 export type CheckResult = "success" | "error" | "notfound";
-export const checkResultArb: jsc.Arbitrary<CheckResult> = jsc.oneof([
-    "success" as "success",
-    "error" as "error",
-    "notfound" as "notfound"
-].map(jsc.constant) as jsc.Arbitrary<CheckResult>[]);
+export const checkResultArb: jsc.Arbitrary<CheckResult> = jsc.oneof(
+    ["success" as "success", "error" as "error", "notfound" as "notfound"].map(
+        jsc.constant
+    ) as jsc.Arbitrary<CheckResult>[]
+);
 
 /**
  * Record arbitrary that only generates datasets with HTTP or HTTPS urls, with

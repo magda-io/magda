@@ -1,11 +1,11 @@
-import AsyncPage from "@magda/typescript-common/dist/AsyncPage";
+import AsyncPage from "magda-typescript-common/src/AsyncPage";
 import EsriPortalUrlBuilder from "./EsriPortalUrlBuilder";
-import formatServiceError from "@magda/typescript-common/dist/formatServiceError";
-import { ConnectorSource } from "@magda/typescript-common/dist/JsonConnector";
-import retry from "@magda/typescript-common/dist/retry";
-import request from "@magda/typescript-common/dist/request";
+import formatServiceError from "magda-typescript-common/src/formatServiceError";
+import { ConnectorSource } from "magda-typescript-common/src/JsonConnector";
+import retry from "magda-typescript-common/src/retry";
+import request from "magda-typescript-common/src/request";
 import fetch from "node-fetch";
-import * as URI from "urijs";
+import URI from "urijs";
 
 export interface EsriPortalThing {
     id: string;
@@ -275,9 +275,7 @@ export default class EsriPortal implements ConnectorSource {
                         await this.processPublicItem(item);
                     } else {
                         console.error(
-                            `Item ${item.id}, ${item.title}, ${
-                                item.access
-                            }, will not be harvested.`
+                            `Item ${item.id}, ${item.title}, ${item.access}, will not be harvested.`
                         );
                     }
                 }
@@ -294,9 +292,7 @@ export default class EsriPortal implements ConnectorSource {
             (e, retriesLeft) =>
                 console.log(
                     formatServiceError(
-                        `Failed to GET start = ${startIndex}, num = ${
-                            this.pageSize
-                        }.`,
+                        `Failed to GET start = ${startIndex}, num = ${this.pageSize}.`,
                         e,
                         retriesLeft
                     )
@@ -380,9 +376,7 @@ export default class EsriPortal implements ConnectorSource {
         item.esriGroups = uniqueGroups.length > 0 ? uniqueGroups : [];
         if (item.esriGroups === []) {
             console.log(
-                `Shared item ${item.id}, ${
-                    item.title
-                }, will not be accessible by any esri groups.`
+                `Shared item ${item.id}, ${item.title}, will not be accessible by any esri groups.`
             );
         }
         item.esriOwner = item.owner;

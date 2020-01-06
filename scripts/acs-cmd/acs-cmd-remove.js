@@ -6,9 +6,7 @@ const chalk = require("chalk");
 program
     .version(pkg.version)
     .description(
-        `A tool for removing magda access control role / permission assignment. Version: ${
-            pkg.version
-        }`
+        `A tool for removing magda access control role / permission assignment. Version: ${pkg.version}`
     )
     .command(
         "permission <permissionId> <roleId>",

@@ -1,13 +1,13 @@
-import * as express from "express";
-import * as path from "path";
-import * as URI from "urijs";
-import * as yargs from "yargs";
-import * as morgan from "morgan";
-import request from "@magda/typescript-common/dist/request";
+import express from "express";
+import path from "path";
+import URI from "urijs";
+import yargs from "yargs";
+import morgan from "morgan";
+import request from "magda-typescript-common/src/request";
 
-import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
-import coerceJson from "@magda/typescript-common/dist/coerceJson";
-import { MAGDA_ADMIN_PORTAL_ID } from "@magda/typescript-common/dist/registry/TenantConsts";
+import Registry from "magda-typescript-common/src/registry/RegistryClient";
+import coerceJson from "magda-typescript-common/src/coerceJson";
+import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts";
 
 import buildSitemapRouter from "./buildSitemapRouter";
 import getIndexFileContent from "./getIndexFileContent";
@@ -159,10 +159,35 @@ const argv = yargs
         describe: "Add dataset page mandatory fields list (in JSON path)",
         type: "string",
         coerce: coerceJson("mandatoryFields"),
-        default: "null"
+        default: "[]"
+    })
+    .option("dateFormats", {
+        describe: "A list of date formats supported by this Magda instance",
+        type: "string",
+        coerce: coerceJson("dateFormats"),
+        default: "[]"
+    })
+    .option("datasetThemes", {
+        describe:
+            "A list of pre-defined phrases for theme input on the `add dataset page`",
+        type: "string",
+        coerce: coerceJson("datasetThemes"),
+        default: "[]"
+    })
+    .option("noManualKeywords", {
+        describe:
+            "Whether manual keywords input should be allowed on add dataset page",
+        type: "boolean",
+        default: false
+    })
+    .option("noManualThemes", {
+        describe:
+            "Whether manual themes input should be allowed on add dataset page",
+        type: "boolean",
+        default: false
     }).argv;
 
-var app = express();
+const app = express();
 
 app.use(morgan("combined"));
 
@@ -247,7 +272,11 @@ const webServerConfig = {
     maxChartProcessingRows: argv.maxChartProcessingRows,
     maxTableProcessingRows: argv.maxTableProcessingRows,
     csvLoaderChunkSize: argv.csvLoaderChunkSize,
-    mandatoryFields: argv.mandatoryFields
+    mandatoryFields: argv.mandatoryFields,
+    dateFormats: argv.dateFormats,
+    datasetThemes: argv.datasetThemes,
+    noManualKeywords: argv.noManualKeywords,
+    noManualThemes: argv.noManualThemes
 };
 
 app.get("/server-config.js", function(req, res) {
@@ -378,9 +407,12 @@ app.use("/", function(req, res) {
 app.listen(argv.listenPort);
 console.log("Listening on port " + argv.listenPort);
 
-process.on("unhandledRejection", (reason: string, promise: any) => {
-    console.error(reason);
-});
+process.on(
+    "unhandledRejection",
+    (reason: {} | null | undefined, promise: Promise<any>) => {
+        console.error(reason);
+    }
+);
 
 function addTrailingSlash(url: string) {
     if (!url) {

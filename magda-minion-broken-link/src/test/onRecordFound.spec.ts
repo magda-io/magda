@@ -1,21 +1,22 @@
 import {} from "mocha";
 import { expect } from "chai";
-import * as sinon from "sinon";
-import * as nock from "nock";
-import jsc from "@magda/typescript-common/dist/test/jsverify";
-import * as _ from "lodash";
-import * as Client from "ftp";
-import * as URI from "urijs";
+import sinon from "sinon";
+import nock from "nock";
+import jsc from "magda-typescript-common/src/test/jsverify";
+import _ from "lodash";
+import Client from "ftp";
+import URI from "urijs";
+import Ajv from "ajv";
 
-import { Record } from "@magda/typescript-common/dist/generated/registry/api";
-import { encodeURIComponentWithApost } from "@magda/typescript-common/dist/test/util";
+import { Record } from "magda-typescript-common/src/generated/registry/api";
+import { encodeURIComponentWithApost } from "magda-typescript-common/src/test/util";
 import {
     specificRecordArb,
     distUrlArb,
     arrayOfSizeArb,
     arbFlatMap,
     recordArbWithDistArbs
-} from "@magda/typescript-common/dist/test/arbitraries";
+} from "magda-typescript-common/src/test/arbitraries";
 
 import onRecordFound from "../onRecordFound";
 import { BrokenLinkAspect } from "../brokenLinkAspectDef";
@@ -28,13 +29,15 @@ import {
     failureCodeArb
 } from "./arbitraries";
 import FtpHandler from "../FtpHandler";
-import AuthorizedRegistryClient from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
+import AuthorizedRegistryClient from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 import parseUriSafe from "../parseUriSafe";
 import RandomStream from "./RandomStream";
 import {
     setDefaultDomainWaitTime,
     getDefaultDomainWaitTime
 } from "../getUrlWaitTime";
+
+const schema = require("@magda/registry-aspects/source-link-status.schema.json");
 
 describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
     this.timeout(20000);
@@ -156,6 +159,8 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
      * basis as a part of dataset quality.
      */
     it("Should correctly record link statuses", function() {
+        const ajv = new Ajv();
+        const validate = ajv.compile(schema);
         return jsc.assert(
             jsc.forall(recordArbWithSuccesses, jsc.integer(1, 100), function(
                 { record, successLookup, disallowHead },
@@ -273,6 +278,19 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                                 dist.id
                             )}/aspects/source-link-status`,
                             (body: BrokenLinkAspect) => {
+                                const validationResult = validate(body);
+                                if (!validationResult) {
+                                    throw new Error(
+                                        "Json schema validation error: \n" +
+                                            validate.errors
+                                                .map(
+                                                    error =>
+                                                        `${error.dataPath}: ${error.message}`
+                                                )
+                                                .join("\n")
+                                    );
+                                }
+
                                 const doesStatusMatch = body.status === result;
 
                                 const isDownloadUrlHttp = hasProtocol(
@@ -415,9 +433,10 @@ describe("onRecordFound", function(this: Mocha.ISuiteCallbackContext) {
                  * after each inner array is finished a 429 will be returned, then the
                  * next array of error codes will be returned.
                  */
-                const failuresArb: jsc.Arbitrary<
+                const failuresArb: jsc.Arbitrary<FailuresArbResult> = arbFlatMap<
+                    number,
                     FailuresArbResult
-                > = arbFlatMap<number, FailuresArbResult>(
+                >(
                     retryCountArb,
                     (retryCount: number) => {
                         /** Generates how many 429 codes will be returned */

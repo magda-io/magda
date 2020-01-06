@@ -1,4 +1,4 @@
-import * as _ from "lodash";
+import _ from "lodash";
 import { CompleteRuleResult } from "./OpaCompileResponseParser";
 
 /**
@@ -20,7 +20,7 @@ class SimpleOpaSQLTranslator {
             if (result.value === false) return "false";
             else return "true";
         }
-        if (!result.residualRules.length) {
+        if (!result.residualRules || !result.residualRules.length) {
             throw new Error("residualRules cannot be empty array!");
         }
         let ruleConditions = result.residualRules.map(r =>
@@ -59,9 +59,7 @@ class SimpleOpaSQLTranslator {
                                     op.getValue()
                                 );
                         });
-                        const expStr = `${identifiers[0]} ${operator} ${
-                            identifiers[1]
-                        }`;
+                        const expStr = `${identifiers[0]} ${operator} ${identifiers[1]}`;
                         if (e.isNegated) return `!(${expStr})`;
                         else return expStr;
                     } else {

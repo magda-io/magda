@@ -615,14 +615,7 @@ class RecordHandler extends React.Component {
                                                                     .accessControl
                                                                     .ownerId
                                                             }
-                                                            url={`${
-                                                                config.authApiUrl
-                                                            }users/${
-                                                                this.props
-                                                                    .dataset
-                                                                    .accessControl
-                                                                    .ownerId
-                                                            }`}
+                                                            url={`${config.authApiUrl}users/${this.props.dataset.accessControl.ownerId}`}
                                                             contentExtractor={user =>
                                                                 user.displayName
                                                             }
@@ -646,14 +639,7 @@ class RecordHandler extends React.Component {
                                                                     .accessControl
                                                                     .orgUnitOwnerId
                                                             }
-                                                            url={`${
-                                                                config.authApiUrl
-                                                            }orgUnits/${
-                                                                this.props
-                                                                    .dataset
-                                                                    .accessControl
-                                                                    .orgUnitOwnerId
-                                                            }`}
+                                                            url={`${config.authApiUrl}orgUnits/${this.props.dataset.accessControl.orgUnitOwnerId}`}
                                                             contentExtractor={orgUnit =>
                                                                 orgUnit.name
                                                             }
@@ -706,9 +692,9 @@ class RecordHandler extends React.Component {
                                                     onChange={temporalChange(
                                                         "intervals"
                                                     )}
-                                                    editor={
-                                                        multiDateIntervalEditor
-                                                    }
+                                                    editor={multiDateIntervalEditor(
+                                                        true
+                                                    )}
                                                 >
                                                     <div className="dataset-details-temporal-coverage">
                                                         <TemporalAspectViewer
@@ -918,9 +904,7 @@ class RecordHandler extends React.Component {
                 return (
                     <li key="datasetId">
                         <Link
-                            to={`/dataset/${this.props.match.params[p]}${
-                                this.props.location.search
-                            }`}
+                            to={`/dataset/${this.props.match.params[p]}${this.props.location.search}`}
                         >
                             {this.props.dataset.title}
                         </Link>
@@ -996,7 +980,4 @@ const mapDispatchToProps = dispatch => {
         dispatch
     );
 };
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(RecordHandler);
+export default connect(mapStateToProps, mapDispatchToProps)(RecordHandler);

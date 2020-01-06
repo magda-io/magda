@@ -3,9 +3,10 @@
   "description": "MAGDA Broken Link Minion",
   "version": "0.0.57-0",
   "scripts": {
+    "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
-    "compile": "tsc -p tsconfig-build.json",
-    "watch": "tsc -p tsconfig-build.json --watch",
+    "compile": "tsc -b && ts-module-alias-transformer dist",
+    "watch": "tsc -b --watch",
     "start": "node dist/index.js",
     "dev": "run-typescript-in-nodemon src/index.ts",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
@@ -17,6 +18,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@magda/scripts": "^0.0.57-0",
+    "@types/ajv": "^1.0.0",
     "@types/chai": "^4.0.2",
     "@types/ftp": "^0.3.29",
     "@types/lodash": "^4.14.71",
@@ -27,13 +29,14 @@
     "@types/request": "^2.48.1",
     "@types/sinon": "^2.3.3",
     "@types/urijs": "^1.15.34",
+    "ajv": "^6.10.2",
     "chai": "^4.1.0",
     "dns-proxy": "^0.5.0",
     "jsverify": "^0.8.2",
     "mocha": "^3.5.0",
     "nock": "^9.0.14",
     "sinon": "^7.0.0",
-    "typescript": "^3.2.0"
+    "typescript": "^3.7.2"
   },
   "dependencies": {
     "@magda/minion-framework": "^0.0.57-0",
@@ -60,5 +63,9 @@
     "categories": {
       "minion": true
     }
+  },
+  "_moduleMappings": {
+    "magda-typescript-common/src": "@magda/typescript-common/dist",
+    "magda-minion-framework/src": "@magda/minion-framework/dist"
   }
 }

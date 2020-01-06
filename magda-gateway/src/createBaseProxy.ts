@@ -1,5 +1,5 @@
-import * as httpProxy from "http-proxy";
-import * as express from "express";
+import httpProxy from "http-proxy";
+import express from "express";
 
 import { TenantMode } from "./setupTenantMode";
 
@@ -8,7 +8,7 @@ import groupBy = require("lodash/groupBy");
 import {
     MAGDA_TENANT_ID_HEADER,
     MAGDA_ADMIN_PORTAL_ID
-} from "@magda/typescript-common/dist/registry/TenantConsts";
+} from "magda-typescript-common/src/registry/TenantConsts";
 
 const DO_NOT_PROXY_HEADERS = [
     "Proxy-Authorization",

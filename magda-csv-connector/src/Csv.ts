@@ -1,8 +1,6 @@
-import { ConnectorSource } from "@magda/typescript-common/dist/JsonConnector";
-import request from "@magda/typescript-common/dist/request";
-import AsyncPage, {
-    forEachAsync
-} from "@magda/typescript-common/dist/AsyncPage";
+import { ConnectorSource } from "magda-typescript-common/src/JsonConnector";
+import request from "magda-typescript-common/src/request";
+import AsyncPage, { forEachAsync } from "magda-typescript-common/src/AsyncPage";
 import CsvTransformer from "./CsvTransformer";
 import { similarity, findClosestFieldThreshold } from "./fuzzyMatch";
 
@@ -52,9 +50,7 @@ export default class Csv implements ConnectorSource {
         function next() {
             const slice = data.splice(0, 100);
             console.log(
-                `Returning a slice of ${slice.length} rows of data from ${
-                    data.length
-                } more rows!`
+                `Returning a slice of ${slice.length} rows of data from ${data.length} more rows!`
             );
             return slice.length
                 ? new Promise(resolve => resolve(slice))

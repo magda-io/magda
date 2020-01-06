@@ -1,13 +1,13 @@
-import request from "@magda/typescript-common/dist/request";
-import * as URI from "urijs";
-import * as Papa from "papaparse";
-import * as moment from "moment";
+import request from "magda-typescript-common/src/request";
+import URI from "urijs";
+import Papa from "papaparse";
+import moment from "moment";
 import { Readable } from "stream";
 
-import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
-import retryBackoff from "@magda/typescript-common/dist/retryBackoff";
+import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+import retryBackoff from "magda-typescript-common/src/retryBackoff";
 
-import { Record } from "@magda/typescript-common/dist/generated/registry/api";
+import { Record } from "magda-typescript-common/src/generated/registry/api";
 
 const timeFormats = [
     moment.ISO_8601,
@@ -104,9 +104,7 @@ function processCsv(
                         .map(s => JSON.stringify(s))
                         .join(", "); // stringify to escape (and hence convert to printable representation) binary characters
                     console.log(
-                        `Distribution "${
-                            record.id
-                        }" points to a binary file (binary characters detected: ${badCharsStringified})`
+                        `Distribution "${record.id}" points to a binary file (binary characters detected: ${badCharsStringified})`
                     );
                     resolve({
                         format: "binary"
