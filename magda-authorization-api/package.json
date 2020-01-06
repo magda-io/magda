@@ -1,6 +1,6 @@
 {
   "name": "@magda/authorization-api",
-  "version": "0.0.55-RC1",
+  "version": "0.0.55",
   "scripts": {
     "build": "yarn run compile",
     "compile": "tsc -p tsconfig-build.json",
@@ -13,7 +13,7 @@
     "retag-and-push": "retag-and-push"
   },
   "dependencies": {
-    "@magda/typescript-common": "^0.0.55-RC1",
+    "@magda/typescript-common": "^0.0.55",
     "body-parser": "^1.13.2",
     "express": "^4.13.1",
     "jsonwebtoken": "^8.4.0",
@@ -23,7 +23,7 @@
     "yargs": "^12.0.5"
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.55-RC1",
+    "@magda/scripts": "^0.0.55",
     "@types/chai": "^4.1.2",
     "@types/express": "^4.0.35",
     "@types/lodash": "^4.14.96",

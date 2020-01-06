@@ -3,7 +3,7 @@
   "npmClient": "yarn",
   "useWorkspaces": true,
   "packages": ["deploy/", "magda-*", "scripts/"],
-  "version": "0.0.55-RC1",
+  "version": "0.0.55",
   "hoist": [
     "tsmonad",
     "urijs",
