@@ -212,9 +212,7 @@ async function ensureInteractiveConnectorOnce(
             setTimeout(resolve, 1000);
         });
 
-        connectorUrl = `http://${k8sApi.minikubeIP}:${
-            service.spec.ports[0].nodePort
-        }/v0`;
+        connectorUrl = `http://${k8sApi.minikubeIP}:${service.spec.ports[0].nodePort}/v0`;
     } else {
         // The Admin API is running inside the cluster.
         // We just need the IP address of the pod and we can talk to it directly.

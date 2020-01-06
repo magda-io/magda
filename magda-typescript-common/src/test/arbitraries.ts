@@ -19,29 +19,34 @@ const charArb = jsc.integer(32, 0xff).smap(fromCode, toCode);
  * Generates a random string with characters greater than code 32 (so no random
  * TTY crap that can't be matched by any regex
  */
-export const stringArb = jsc
-    .array(charArb)
-    .smap(chars => chars.join(""), string => string.split(""));
+export const stringArb = jsc.array(charArb).smap(
+    chars => chars.join(""),
+    string => string.split("")
+);
 
 export const lowerCaseAlphaCharArb = jsc
     .integer(97, 122)
     .smap(fromCode, toCode);
 export const numArb = jsc.integer(48, 57).smap(fromCode, toCode);
 export const lcAlphaNumCharArb = jsc.oneof([numArb, lowerCaseAlphaCharArb]);
-export const lcAlphaNumStringArb = jsc
-    .array(lcAlphaNumCharArb)
-    .smap((arr: any) => arr.join(""), (string: string) => string.split(""));
-export const lcAlphaNumStringArbNe = jsc
-    .nearray(lcAlphaNumCharArb)
-    .smap((arr: any) => arr.join(""), (string: string) => string.split(""));
+export const lcAlphaNumStringArb = jsc.array(lcAlphaNumCharArb).smap(
+    (arr: any) => arr.join(""),
+    (string: string) => string.split("")
+);
+export const lcAlphaNumStringArbNe = jsc.nearray(lcAlphaNumCharArb).smap(
+    (arr: any) => arr.join(""),
+    (string: string) => string.split("")
+);
 
-export const lcAlphaStringArb = jsc
-    .array(lowerCaseAlphaCharArb)
-    .smap(chars => chars.join(""), string => string.split(""));
+export const lcAlphaStringArb = jsc.array(lowerCaseAlphaCharArb).smap(
+    chars => chars.join(""),
+    string => string.split("")
+);
 
-export const lcAlphaStringArbNe = jsc
-    .nearray(lowerCaseAlphaCharArb)
-    .smap(chars => chars.join(""), string => string.split(""));
+export const lcAlphaStringArbNe = jsc.nearray(lowerCaseAlphaCharArb).smap(
+    chars => chars.join(""),
+    string => string.split("")
+);
 
 export const peopleNameArb = jsc
     .tuple([lcAlphaStringArbNe, lcAlphaStringArbNe])

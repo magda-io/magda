@@ -406,15 +406,16 @@
         function(e, t, o) {
             "use strict";
             var r = o(8),
-                n = (o(9),
-                function(e) {
-                    var t = this;
-                    if (t.instancePool.length) {
-                        var o = t.instancePool.pop();
-                        return t.call(o, e), o;
-                    }
-                    return new t(e);
-                }),
+                n =
+                    (o(9),
+                    function(e) {
+                        var t = this;
+                        if (t.instancePool.length) {
+                            var o = t.instancePool.pop();
+                            return t.call(o, e), o;
+                        }
+                        return new t(e);
+                    }),
                 i = function(e, t) {
                     var o = this;
                     if (o.instancePool.length) {
@@ -804,22 +805,23 @@
         function(e, t, o) {
             "use strict";
             function r(e, t) {}
-            var n = (o(12),
-            {
-                isMounted: function(e) {
-                    return !1;
-                },
-                enqueueCallback: function(e, t) {},
-                enqueueForceUpdate: function(e) {
-                    r(e, "forceUpdate");
-                },
-                enqueueReplaceState: function(e, t) {
-                    r(e, "replaceState");
-                },
-                enqueueSetState: function(e, t) {
-                    r(e, "setState");
-                }
-            });
+            var n =
+                (o(12),
+                {
+                    isMounted: function(e) {
+                        return !1;
+                    },
+                    enqueueCallback: function(e, t) {},
+                    enqueueForceUpdate: function(e) {
+                        r(e, "forceUpdate");
+                    },
+                    enqueueReplaceState: function(e, t) {
+                        r(e, "replaceState");
+                    },
+                    enqueueSetState: function(e, t) {
+                        r(e, "setState");
+                    }
+                });
             e.exports = n;
         },
         function(e, t, o) {

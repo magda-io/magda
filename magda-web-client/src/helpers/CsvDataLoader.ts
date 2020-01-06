@@ -110,9 +110,7 @@ class CsvDataLoader {
             return source.accessURL;
         }
         throw new Error(
-            `Failed to determine CSV data source url for distribution id: ${
-                source.identifier
-            }`
+            `Failed to determine CSV data source url for distribution id: ${source.identifier}`
         );
     }
 

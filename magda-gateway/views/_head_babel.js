@@ -35373,11 +35373,12 @@
                                                     } else {
                                                         var _bindingIdentifiers;
 
-                                                        bindingIdentifiers = ((_bindingIdentifiers = {}),
-                                                        (_bindingIdentifiers[
-                                                            _name
-                                                        ] = node.id),
-                                                        _bindingIdentifiers);
+                                                        bindingIdentifiers =
+                                                            ((_bindingIdentifiers = {}),
+                                                            (_bindingIdentifiers[
+                                                                _name
+                                                            ] = node.id),
+                                                            _bindingIdentifiers);
                                                     }
                                                 } else {
                                                     bindingIdentifiers = _declar.getBindingIdentifiers();
