@@ -5,6 +5,7 @@ import "./MonthPicker.scss";
 import helpIcon from "assets/help.svg";
 import defined from "helpers/defined";
 import TooltipWrapper from "./TooltipWrapper";
+import moment from "moment";
 
 const MONTH_NAMES = [
     ["Jan", "Feb", "Mar"],
@@ -38,11 +39,16 @@ class MonthPicker extends Component {
     }
 
     changeYear(value) {
-        if (!this.checkYearValid(value)) {
+        // Since yearLower and yearUpper are optional
+        const isYearValid = this.checkYearValid(value);
+        if (!isYearValid && this.props.yearLower && this.props.yearUpper) {
             this.setState({
                 prompt: `Enter a year between ${this.props.yearLower}-${this.props.yearUpper}`
             });
-            //this.props.onInvalidInput(true);
+        } else if (!isYearValid) {
+            this.setState({
+                prompt: "Please enter a valid year."
+            });
         } else {
             this.props.selectYear(+value);
         }
@@ -102,10 +108,18 @@ class MonthPicker extends Component {
     }
 
     checkYearValid(year) {
+        if (!year) {
+            return false;
+        }
+        // by the way,
+        // moment(undefined).isValid() === true
+        if (!moment(year).isValid()) {
+            return false;
+        }
         if (
-            !year ||
-            year < this.props.yearLower ||
-            year > this.props.yearUpper
+            this.props.yearLower &&
+            this.props.yearUpper &&
+            (year < this.props.yearLower || year > this.props.yearUpper)
         ) {
             return false;
         }

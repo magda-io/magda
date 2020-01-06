@@ -156,25 +156,19 @@ class FacetTemporal extends Component {
     }
 
     renderDatePicker() {
-        const temporalRangeStart = new Date(this.props.temporalRange[0]);
-        const temporalRangeEnd = new Date(this.props.temporalRange[1]);
-
-        const yearLower = temporalRangeStart.getUTCFullYear();
-        const monthLower = temporalRangeStart.getUTCMonth();
-
-        const yearUpper = temporalRangeEnd.getUTCFullYear();
-        const monthUpper = temporalRangeEnd.getUTCMonth();
-
+        if (
+            this.state.startYear > this.state.endYear ||
+            (this.state.startYear === this.state.endYear &&
+                this.state.startMonth > this.state.endMonth)
+        ) {
+            alert("End date is earlier than start date.");
+        }
         return (
             <div className="facet-temporal-month-picker">
                 <MonthPicker
                     showingDefault={!this.props.hasQuery}
                     year={this.state.startYear}
                     month={this.state.startMonth}
-                    yearLower={yearLower}
-                    yearUpper={this.state.endYear}
-                    monthLower={monthLower}
-                    monthUpper={this.state.endMonth}
                     selectYear={this.selectStartYear}
                     selectMonth={this.selectStartMonth}
                     startDate={true}
@@ -186,10 +180,6 @@ class FacetTemporal extends Component {
                     showingDefault={!this.props.hasQuery}
                     year={this.state.endYear}
                     month={this.state.endMonth}
-                    yearLower={this.state.startYear}
-                    yearUpper={yearUpper}
-                    monthLower={this.state.startMonth}
-                    monthUpper={monthUpper}
                     selectYear={this.selectEndYear}
                     selectMonth={this.selectEndMonth}
                     startDate={false}
