@@ -19,7 +19,8 @@ describe("Storage API tests", () => {
         port: Number(process.env["MINIO_PORT"]),
         useSSL: false,
         accessKey: process.env["MINIO_ACCESS_KEY"],
-        secretKey: process.env["MINIO_SECRET_KEY"]
+        secretKey: process.env["MINIO_SECRET_KEY"],
+        region: "us-east-1"
     };
     const minioClient = new Minio.Client(minioClientOpts);
 
