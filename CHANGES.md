@@ -146,6 +146,7 @@ UI:
 -   Removed help icons without content
 -   Made read-only calls to the registry api use `/registry-read-only`.
 -   Fixed: if featureFlags are not set, edit buttons are always shown on dataset page
+-   Add specific color to recent search item text
 
 Gateway:
 
