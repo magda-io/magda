@@ -56,6 +56,27 @@ dateConfig:
       dateRegex: "(date|dt|year|decade)"
       startDateRegex: "(start|st).*(date|dt|year|decade)"
       endDateRegex: "(end).*(date|dt|year|decade)"
+datasetThemes: []
 noManualThemes: false
 noManualKeywords: false
-datasetThemes: []
+keywordsBlackList:
+  - Mr
+  - Ms
+  - Mrs
+  - Miss
+  - Dr
+  - Hon
+  - Jr
+  - Prof
+  - Sr
+  - St
+  - Mr.
+  - Ms.
+  - Mrs.
+  - Miss.
+  - Dr.
+  - Hon.
+  - Jr.
+  - Prof.
+  - Sr.
+  - St.

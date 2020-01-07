@@ -15,6 +15,7 @@ UI:
 -   Added pre-specified options for themes on Add dataset page
 -   User can't input a future date to date of last modification on add dataset page
 -   Allow to config whether keywords / themes input can accept manual inputs (or only pre-defined phrases)
+-   Allow a blacklist of strings to be specified for automatic keyword generation
 
 Storage:
 
