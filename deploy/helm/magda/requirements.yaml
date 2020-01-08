@@ -1,86 +1,107 @@
 dependencies:
   - name: apidocs-server
+    version: 1.0.0
     tags:
       - all
       - apidocs-server
   - name: authorization-api
+    version: 1.0.0
     tags:
       - all
       - authorization-api
   - name: authorization-db
+    version: 1.0.0
     tags:
       - all
       - authorization-db
   - name: combined-db
+    version: 1.0.0
     tags:
       - all
       - combined-db
   - name: content-api
+    version: 1.0.0
     tags:
       - all
       - content-api
   - name: content-db
+    version: 1.0.0
     tags:
       - all
       - content-db
   - name: correspondence-api
+    version: 1.0.0
     tags:
       - all
       - correspondence-api
   - name: elasticsearch
+    version: 1.0.0
     tags:
       - all
       - elasticsearch
   - name: gateway
+    version: 1.0.0
     tags:
       - all
       - gateway
   - name: indexer
+    version: 1.0.0
     tags:
       - all
       - indexer
   - name: preview-map
+    version: 1.0.0
     tags:
       - all
       - preview-map
   - name: registry-api
+    version: 1.0.0
     tags:
       - all
       - registry-api
   - name: registry-db
+    version: 1.0.0
     tags:
       - all
       - registry-db
   - name: search-api
+    version: 1.0.0
     tags:
       - all
       - search-api
   - name: session-db
+    version: 1.0.0
     tags:
       - all
       - session-db
   - name: web-server
+    version: 1.0.0
     tags:
       - all
       - web-server
   - name: connectors
+    version: 1.0.0
     tags:
       - all
       - connectors
   - name: admin-api
+    version: 1.0.0
     tags:
       - all
       - admin-api
   - name: opa
+    version: 1.0.0
     tags:
       - all
       - opa
   - name: tenant-api
+    version: 1.0.0
     condition: global.enableMultiTenants
     tags:
       - all
       - tenant-api
   - name: tenant-db
+    version: 1.0.0
     condition: global.enableMultiTenants
     tags:
       - all
@@ -88,22 +109,28 @@ dependencies:
 
 # Minions
   - name: minion-broken-link
+    version: 1.0.0
     tags:
       - minion-broken-link
   - name: minion-format
+    version: 1.0.0
     tags:
       - minion-format
   - name: minion-linked-data-rating
+    version: 1.0.0
     tags:
       - minion-linked-data-rating
   - name: minion-visualization
+    version: 1.0.0
     tags:
       - minion-visualization
 
 # K8s misc
   - name: priorities
+    version: 1.0.0
     tags:
       - priorities
   - name: ingress
+    version: 1.0.0
     tags:
       - ingress
