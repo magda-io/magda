@@ -220,7 +220,7 @@ class HooksService(
           HookPersistence.create(session, hook) match {
             case Success(theResult) => complete(theResult)
             case Failure(exception) =>
-              complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+              complete(StatusCodes.BadRequest, ApiError(exception.getMessage))
           }
         }
         webHookActor ! WebHookActor.InvalidateWebHookCacheThenProcess()
@@ -320,7 +320,7 @@ class HooksService(
           case None =>
             complete(
               StatusCodes.NotFound,
-              BadRequest("No web hook exists with that ID.")
+              ApiError("No web hook exists with that ID.")
             )
         }
       }
@@ -434,7 +434,7 @@ class HooksService(
               case Failure(exception) =>
                 complete(
                   StatusCodes.BadRequest,
-                  BadRequest(exception.getMessage)
+                  ApiError(exception.getMessage)
                 )
             }
           }
@@ -508,7 +508,7 @@ class HooksService(
       new ApiResponse(
         code = 400,
         message = "The web hook could not be deleted.",
-        response = classOf[BadRequest]
+        response = classOf[ApiError]
       )
     )
   )
@@ -520,7 +520,7 @@ class HooksService(
             case Success(result) =>
               complete(DeleteResult(result))
             case Failure(exception) =>
-              complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+              complete(StatusCodes.BadRequest, ApiError(exception.getMessage))
           }
         }
         webHookActor ! WebHookActor.InvalidateWebhookCache
@@ -587,7 +587,7 @@ class HooksService(
             .acknowledgeRaisedHook(session, id, acknowledgement) match {
             case Success(theResult) => complete(theResult)
             case Failure(exception) =>
-              complete(StatusCodes.BadRequest, BadRequest(exception.getMessage))
+              complete(StatusCodes.BadRequest, ApiError(exception.getMessage))
           }
         }
 

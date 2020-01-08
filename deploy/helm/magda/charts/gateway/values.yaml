@@ -6,7 +6,7 @@ service:
   internalPort: 80
   
 autoscaler:
-  enabled: true
+  enabled: false
   minReplicas: 1
   maxReplicas: 3
   targetCPUUtilizationPercentage: 80
@@ -34,6 +34,7 @@ defaultRoutes:
     auth: true
   registry-read-only:
     to: http://registry-api-read-only/v0
+    auth: true
   registry-auth: #left here for legacy reasons - use /registry
     to: http://registry-api/v0
     auth: true

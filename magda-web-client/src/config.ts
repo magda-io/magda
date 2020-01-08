@@ -63,6 +63,7 @@ const serverConfig: {
     contentApiBaseUrl?: string;
     previewMapBaseUrl?: string;
     registryApiBaseUrl?: string;
+    registryApiReadOnlyBaseUrl?: string;
     searchApiBaseUrl?: string;
     correspondenceApiBaseUrl?: string;
     gapiIds?: Array<string>;
@@ -84,6 +85,7 @@ const serverConfig: {
     noManualKeywords?: boolean;
     noManualThemes?: boolean;
     datasetThemes?: string[];
+    keywordsBlackList?: string[];
 } = window.magda_server_config || {};
 
 const DATE_REGEX = ".*(date|dt|year|decade).*";
@@ -135,7 +137,7 @@ function constructDateConfig(
 }
 
 const registryReadOnlyApiUrl =
-    serverConfig.registryApiBaseUrl ||
+    serverConfig.registryApiReadOnlyBaseUrl ||
     fallbackApiHost + "api/v0/registry-read-only/";
 const registryFullApiUrl =
     serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry/";
@@ -276,7 +278,31 @@ export const config = {
         : false,
     noManualThemes: serverConfig.noManualThemes
         ? serverConfig.noManualThemes
-        : false
+        : false,
+    keywordsBlackList: serverConfig.keywordsBlackList
+        ? serverConfig.keywordsBlackList
+        : [
+              "Mr",
+              "Ms",
+              "Mrs",
+              "Miss",
+              "Dr",
+              "Hon",
+              "Jr",
+              "Prof",
+              "Sr",
+              "St",
+              "Mr.",
+              "Ms.",
+              "Mrs.",
+              "Miss.",
+              "Dr.",
+              "Hon.",
+              "Jr.",
+              "Prof.",
+              "Sr.",
+              "St."
+          ]
 };
 
 export const defaultConfiguration = {

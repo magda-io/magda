@@ -79,6 +79,11 @@ const argv = yargs
             "The base URL of the MAGDA Registry API.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
     })
+    .option("registryApiReadOnlyBaseUrl", {
+        describe:
+            "The base URL of the MAGDA Registry API for use for read-only operations.  If not specified, the URL is built from the apiBaseUrl.",
+        type: "string"
+    })
     .option("authApiBaseUrl", {
         describe:
             "The base URL of the MAGDA Auth API.  If not specified, the URL is built from the apiBaseUrl.",
@@ -180,6 +185,13 @@ const argv = yargs
             "Whether manual themes input should be allowed on add dataset page",
         type: "boolean",
         default: false
+    })
+    .option("keywordsBlackList", {
+        describe:
+            "A list of pre-defined BlackList for auto keywords generation",
+        type: "string",
+        coerce: coerceJson("keywordsBlackList"),
+        default: "[]"
     }).argv;
 
 const app = express();
@@ -220,6 +232,13 @@ const webServerConfig = {
             new URI(apiBaseUrl)
                 .segment("v0")
                 .segment("registry")
+                .toString()
+    ),
+    registryApiReadOnlyBaseUrl: addTrailingSlash(
+        argv.registryApiReadOnlyBaseUrl ||
+            new URI(apiBaseUrl)
+                .segment("v0")
+                .segment("registry-read-only")
                 .toString()
     ),
     authApiBaseUrl: addTrailingSlash(
@@ -264,7 +283,8 @@ const webServerConfig = {
     dateFormats: argv.dateFormats,
     datasetThemes: argv.datasetThemes,
     noManualKeywords: argv.noManualKeywords,
-    noManualThemes: argv.noManualThemes
+    noManualThemes: argv.noManualThemes,
+    keywordsBlackList: argv.keywordsBlackList
 };
 
 app.get("/server-config.js", function(req, res) {
