@@ -171,7 +171,7 @@ export const config = {
     // --- default to 2MB
     csvLoaderChunkSize: serverConfig.csvLoaderChunkSize
         ? serverConfig.csvLoaderChunkSize
-        : 2097152,
+        : 1000,
     mandatoryFields: serverConfig.mandatoryFields
         ? serverConfig.mandatoryFields
         : [

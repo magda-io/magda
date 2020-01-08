@@ -141,12 +141,17 @@ class CsvDataLoader {
             method: "HEAD"
         });
 
-        const contentLength = res.headers.get("Content-Length");
+        const contentLength =
+            res.headers.get("Content-Length") ||
+            res.headers.get("content-length");
+        debugger;
         if (contentLength) {
             return Number(contentLength);
         }
 
-        const contentRange = res.headers.get("Content-Range");
+        const contentRange =
+            res.headers.get("Content-Range") ||
+            res.headers.get("content-range");
         if (contentRange) {
             const split = contentRange.split("/");
             const length = split[1];
