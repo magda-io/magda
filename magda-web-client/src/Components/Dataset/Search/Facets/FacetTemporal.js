@@ -191,9 +191,7 @@ class FacetTemporal extends Component {
     renderPrompt() {
         if (this.state.prompt.length > 0) {
             return (
-                <span className="facet-temporal-prompt">
-                    {this.state.prompt}
-                </span>
+                <div className="facet-temporal-prompt">{this.state.prompt}</div>
             );
         }
         return null;
