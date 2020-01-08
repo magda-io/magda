@@ -15,11 +15,14 @@ class FacetTemporal extends Component {
         this.selectStartMonth = this.selectStartMonth.bind(this);
         this.selectEndMonth = this.selectEndMonth.bind(this);
         this.resetTemporalFacet = this.resetTemporalFacet.bind(this);
+        this.onFocus = this.onFocus.bind(this);
+        this.setPrompt = this.setPrompt.bind(this);
         this.state = {
             startYear: undefined,
             startMonth: undefined,
             endYear: undefined,
-            endMonth: undefined
+            endMonth: undefined,
+            prompt: ""
         };
     }
 
@@ -53,7 +56,8 @@ class FacetTemporal extends Component {
                         : undefined,
                     startMonth: undefined,
                     endYear: undefined,
-                    endMonth: undefined
+                    endMonth: undefined,
+                    prompt: ""
                 };
             }
         }
@@ -101,7 +105,8 @@ class FacetTemporal extends Component {
                     startYear: undefined,
                     startMonth: undefined,
                     endYear: undefined,
-                    endMonth: undefined
+                    endMonth: undefined,
+                    prompt: ""
                 };
             },
             //make sure the dates are cleared
@@ -131,38 +136,86 @@ class FacetTemporal extends Component {
         ]);
     }
 
+    onFocus() {
+        this.setState({
+            prompt: ""
+        });
+    }
+
     selectStartYear(startYear) {
+        const startBeforeEnd = this.checkStartAndEndDate();
+        if (!startBeforeEnd) {
+            this.setPrompt("End date is earlier than start date.");
+        }
         this.setState({
             startYear
         });
     }
 
     selectEndYear(endYear) {
+        const startBeforeEnd = this.checkStartAndEndDate();
+        if (!startBeforeEnd) {
+            this.setPrompt("End date is earlier than start date.");
+        }
         this.setState({
             endYear
         });
     }
 
     selectStartMonth(startMonth) {
+        const startBeforeEnd = this.checkStartAndEndDate();
+        if (!startBeforeEnd) {
+            this.setPrompt("End date is earlier than start date.");
+        }
         this.setState({
             startMonth
         });
     }
 
     selectEndMonth(endMonth) {
+        const startBeforeEnd = this.checkStartAndEndDate();
+        if (!startBeforeEnd) {
+            this.setPrompt("End date is earlier than start date.");
+        }
         this.setState({
             endMonth
         });
     }
 
-    renderDatePicker() {
+    setPrompt(prompt) {
+        this.setState({
+            prompt
+        });
+    }
+
+    renderPrompt() {
+        if (this.state.prompt.length > 0) {
+            return (
+                <span className="facet-temporal-prompt">
+                    {this.state.prompt}
+                </span>
+            );
+        }
+        return null;
+    }
+
+    /**
+     * Checks if end date is after start date
+     */
+    checkStartAndEndDate() {
         if (
             this.state.startYear > this.state.endYear ||
             (this.state.startYear === this.state.endYear &&
                 this.state.startMonth > this.state.endMonth)
         ) {
-            alert("End date is earlier than start date.");
+            return false;
         }
+
+        this.setPrompt("");
+        return true;
+    }
+
+    renderDatePicker() {
         return (
             <div className="facet-temporal-month-picker">
                 <MonthPicker
@@ -192,6 +245,7 @@ class FacetTemporal extends Component {
         return (
             <div>
                 <div className="clearfix facet-temporal facet-body">
+                    {this.renderPrompt()}
                     {this.renderDatePicker()}
                     <div className="facet-footer">
                         <button
