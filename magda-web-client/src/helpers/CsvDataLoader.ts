@@ -136,11 +136,43 @@ class CsvDataLoader {
         return URI(location.href).origin() + url;
     }
 
+    async getContentLength(url: string) {
+        const res = await fetch(url, {
+            method: "HEAD"
+        });
+
+        const contentLength = res.headers.get("Content-Length");
+        if (contentLength) {
+            return Number(contentLength);
+        }
+
+        const contentRange = res.headers.get("Content-Range");
+        if (contentRange) {
+            const split = contentRange.split("/");
+            const length = split[1];
+
+            if (length !== "*" && !Number.isNaN(Number.parseInt(length))) {
+                return Number.parseInt(length);
+            }
+        }
+
+        return null;
+    }
+
     async load(overrideNewLine?: string): Promise<DataLoadingResult> {
         this.resetDownloadData();
-        const Papa = await getPapaParse();
         const proxyUrl =
             this.convertToAbsoluteUrl(config.proxyUrl) + "_0d/" + this.url;
+
+        const contentLength = await this.getContentLength(proxyUrl);
+
+        if (!contentLength) {
+            throw new Error("Could not get a content length for " + proxyUrl);
+        }
+
+        const shouldChunk = contentLength > config.csvLoaderChunkSize;
+
+        const Papa = await getPapaParse();
         return new Promise((resolve, reject) => {
             const options = {
                 worker: true,
@@ -154,60 +186,72 @@ class CsvDataLoader {
                 trimHeader: true,
                 chunkSize: config.csvLoaderChunkSize,
                 // --- the `bind` is required here even for arrow function under worker mode
-                chunk: ((results: ParseResult, parser: Parser) => {
-                    try {
-                        if (this.toBeAbort) {
-                            parser.abort();
-                            reject(
-                                new Error("Data processing has been aborted.")
-                            );
-                            return;
-                        }
-                        if (
-                            results.errors.length >= 1 &&
-                            !results.data.length
-                        ) {
-                            // --- there are many reason that an error could be triggered
-                            // --- we only stop processing when no any row can be processed from this chunk
-                            reject(new Error(results.errors[0].message));
-                            // --- stop further process
-                            parser.abort();
-                            return;
-                        }
-                        if (
-                            results.data.length <= 1 &&
-                            results.errors.length >= 1 &&
-                            overrideNewLine !== "\n"
-                        ) {
-                            // A lot of CSV GEO AUs have an issue where papa can't detect the newline - try again with it overridden
-                            this.skipComplete = true;
-                            parser.abort();
-                            console.log(
-                                "retry CSV parsing with the different line ending setting..."
-                            );
-                            // --- worker may not abort immediately, retry later to avoid troubles
-                            resolve(retryLater(this.load.bind(this, "\n")));
-                        } else {
-                            this.data = this.data.concat(results.data);
-                            this.errors = this.errors.concat(results.errors);
-                            if (!this.metaData) {
-                                this.metaData = results.meta;
+                chunk:
+                    shouldChunk &&
+                    ((results: ParseResult, parser: Parser) => {
+                        try {
+                            if (this.toBeAbort) {
+                                parser.abort();
+                                reject(
+                                    new Error(
+                                        "Data processing has been aborted."
+                                    )
+                                );
+                                return;
                             }
                             if (
-                                this.maxProcessRows !== -1 &&
-                                this.data.length >= this.maxProcessRows
+                                results.errors.length >= 1 &&
+                                !results.data.length
                             ) {
-                                // --- abort the download & parsing
-                                this.isPartialData = true;
+                                // --- there are many reason that an error could be triggered
+                                // --- we only stop processing when no any row can be processed from this chunk
+                                reject(new Error(results.errors[0].message));
+                                // --- stop further process
                                 parser.abort();
+                                return;
                             }
+                            if (
+                                results.data.length <= 1 &&
+                                results.errors.length >= 1 &&
+                                overrideNewLine !== "\n"
+                            ) {
+                                // A lot of CSV GEO AUs have an issue where papa can't detect the newline - try again with it overridden
+                                this.skipComplete = true;
+                                parser.abort();
+                                console.log(
+                                    "retry CSV parsing with the different line ending setting..."
+                                );
+                                // --- worker may not abort immediately, retry later to avoid troubles
+                                resolve(retryLater(this.load.bind(this, "\n")));
+                            } else {
+                                this.data = this.data.concat(results.data);
+                                this.errors = this.errors.concat(
+                                    results.errors
+                                );
+                                if (!this.metaData) {
+                                    this.metaData = results.meta;
+                                }
+                                if (
+                                    this.maxProcessRows !== -1 &&
+                                    this.data.length >= this.maxProcessRows
+                                ) {
+                                    // --- abort the download & parsing
+                                    this.isPartialData = true;
+                                    parser.abort();
+                                }
+                            }
+                        } catch (e) {
+                            reject(e);
                         }
-                    } catch (e) {
-                        reject(e);
-                    }
-                }).bind(this),
-                complete: (() => {
+                    }).bind(this),
+                complete: ((results: ParseResult) => {
                     try {
+                        if (!shouldChunk) {
+                            this.data = results.data;
+                            this.metaData = results.meta;
+                            this.errors = results.errors;
+                        }
+
                         if (this.skipComplete) {
                             this.skipComplete = false;
                             return;
