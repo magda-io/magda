@@ -1,4 +1,3 @@
-import { ApiError } from "@google-cloud/common";
 import express from "express";
 import { OutgoingHttpHeaders } from "http";
 import ObjectStoreClient from "./ObjectStoreClient";
@@ -49,15 +48,13 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 }
             });
         } catch (err) {
-            if (err instanceof ApiError) {
-                if (err.code === 404) {
-                    res.status(404).send(
-                        "No such object with fileId " +
-                            fileId +
-                            " in bucket " +
-                            bucket
-                    );
-                }
+            if (err.code === "NotFound") {
+                res.status(404).send(
+                    "No such object with fileId " +
+                        fileId +
+                        " in bucket " +
+                        bucket
+                );
             }
             res.status(500).send("Unknown error");
         }
