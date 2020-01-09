@@ -16,6 +16,9 @@ class FacetTemporal extends Component {
         this.selectEndMonth = this.selectEndMonth.bind(this);
         this.resetTemporalFacet = this.resetTemporalFacet.bind(this);
         this.onFocus = this.onFocus.bind(this);
+        this.invalidStartEndDateWarning = this.invalidStartEndDateWarning.bind(
+            this
+        );
         this.setPrompt = this.setPrompt.bind(this);
         this.state = {
             startYear: undefined,
@@ -143,40 +146,28 @@ class FacetTemporal extends Component {
     }
 
     selectStartYear(startYear) {
-        const startBeforeEnd = this.checkStartAndEndDate();
-        if (!startBeforeEnd) {
-            this.setPrompt("End date is earlier than start date.");
-        }
+        this.invalidStartEndDateWarning();
         this.setState({
             startYear
         });
     }
 
     selectEndYear(endYear) {
-        const startBeforeEnd = this.checkStartAndEndDate();
-        if (!startBeforeEnd) {
-            this.setPrompt("End date is earlier than start date.");
-        }
+        this.invalidStartEndDateWarning();
         this.setState({
             endYear
         });
     }
 
     selectStartMonth(startMonth) {
-        const startBeforeEnd = this.checkStartAndEndDate();
-        if (!startBeforeEnd) {
-            this.setPrompt("End date is earlier than start date.");
-        }
+        this.invalidStartEndDateWarning();
         this.setState({
             startMonth
         });
     }
 
     selectEndMonth(endMonth) {
-        const startBeforeEnd = this.checkStartAndEndDate();
-        if (!startBeforeEnd) {
-            this.setPrompt("End date is earlier than start date.");
-        }
+        this.invalidStartEndDateWarning();
         this.setState({
             endMonth
         });
@@ -208,9 +199,18 @@ class FacetTemporal extends Component {
         ) {
             return false;
         }
-
-        this.setPrompt("");
         return true;
+    }
+
+    /**
+     * Wrapper over checkStartAndEndDate that sets the prompt accordingly
+     */
+    invalidStartEndDateWarning() {
+        const startBeforeEnd = this.checkStartAndEndDate();
+        if (!startBeforeEnd) {
+            return this.setPrompt("End date is earlier than start date.");
+        }
+        return this.setPrompt("");
     }
 
     renderDatePicker() {
