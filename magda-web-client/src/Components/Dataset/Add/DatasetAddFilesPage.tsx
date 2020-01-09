@@ -396,9 +396,9 @@ async function processFile(thisFile: any, update: Function) {
 
     update({ _state: FileState.Processing });
 
-    const runExtractors = await import("Components/Dataset/MetadataExtraction").then(
-        mod => mod.runExtractors
-    );
+    const runExtractors = await import(
+        "Components/Dataset/MetadataExtraction"
+    ).then(mod => mod.runExtractors);
 
     await runExtractors(input, update);
 

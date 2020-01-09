@@ -4,7 +4,7 @@ service:
   type: NodePort
   externalPort: 80
   internalPort: 80
-  
+
 autoscaler:
   enabled: false
   minReplicas: 1
@@ -51,6 +51,8 @@ defaultRoutes:
   content:
     to: http://content-api/v0
     auth: true
+  storage:
+    to: http://storage-api/v0
   correspondence:
     to: http://correspondence-api/v0/public
   apidocs:
@@ -76,7 +78,7 @@ csp:
     - "''self''"
     - "blob:"
 
-cors: 
+cors:
   exposedHeaders:
   - "Content-Range"
   - "X-Content-Range"

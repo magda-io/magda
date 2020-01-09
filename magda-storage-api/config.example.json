@@ -1,0 +1,9 @@
+{
+    "listenPort": 6121,
+    "minioAccessKey": "",
+    "minioSecretKey": "",
+    "minioEnableSSL": true,
+    "minioHost": "localhost",
+    "minioPort": 9000,
+    "minioRegion": "us-east-1"
+}

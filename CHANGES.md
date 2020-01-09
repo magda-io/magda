@@ -1,3 +1,5 @@
+# CHANGELOG
+
 ## 0.0.57
 
 General:
@@ -15,6 +17,10 @@ UI:
 -   Allow to config whether keywords / themes input can accept manual inputs (or only pre-defined phrases)
 -   Only check for validity in temporal filters (in the search dataset page)
 -   Allow a blacklist of strings to be specified for automatic keyword generation
+
+Storage:
+
+-   Add an API for storing and streaming content
 
 Others:
 
