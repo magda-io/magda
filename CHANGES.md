@@ -1,3 +1,5 @@
+# CHANGELOG
+
 ## 0.0.57
 
 General:
@@ -14,6 +16,10 @@ UI:
 -   User can't input a future date to date of last modification on add dataset page
 -   Allow to config whether keywords / themes input can accept manual inputs (or only pre-defined phrases)
 -   Allow a blacklist of strings to be specified for automatic keyword generation
+
+Storage:
+
+-   Add an API for storing and streaming content
 
 Others:
 
