@@ -1,11 +1,11 @@
 import React, { Component } from "react";
 import ReactTable from "react-table";
 import "./ReactTable.scss";
-import { config } from "config";
 import { Medium, Small } from "./Responsive";
 import Spinner from "Components/Common/Spinner";
 import AUpageAlert from "pancake/react/page-alerts";
 import { DataLoadingResult } from "helpers/CsvDataLoader";
+import FileTooBigError from "./FileTooBigError";
 
 type PropsType = {
     dataLoadingResult: DataLoadingResult | null;
@@ -28,19 +28,10 @@ export default class DataPreviewTable extends Component<PropsType> {
     }
 
     // --- tell user not all data rows is shown
-    renderPatialDataNotice(rows: any[]) {
+    renderPartialDataNotice(rows: any[]) {
         if (!this.props.dataLoadingResult) return null;
-        if (
-            config.maxTableProcessingRows >
-                this.props.dataLoadingResult.data.length &&
-            !this.props.dataLoadingResult.isPartialData
-        )
-            return null;
-        return (
-            <div className="partial-data-message">
-                * Only the first {rows.length} rows are shown.
-            </div>
-        );
+        if (!this.props.dataLoadingResult.failureReason) return null;
+        return <FileTooBigError />;
     }
 
     render() {
@@ -69,11 +60,12 @@ export default class DataPreviewTable extends Component<PropsType> {
         }
         if (
             !this.props.dataLoadingResult ||
-            !this.props.dataLoadingResult.meta ||
-            !this.props.dataLoadingResult.meta.fields
+            !this.props.dataLoadingResult.parseResult ||
+            !this.props.dataLoadingResult.parseResult.meta ||
+            !this.props.dataLoadingResult.parseResult.meta.fields
         )
             return <div>Data grid preview is not available</div>;
-        const fields = this.props.dataLoadingResult.meta.fields;
+        const fields = this.props.dataLoadingResult.parseResult!.meta.fields;
         const columns = fields
             .filter(f => f.length > 0)
             .map(item => ({
@@ -81,15 +73,7 @@ export default class DataPreviewTable extends Component<PropsType> {
                 accessor: item
             }));
 
-        const rows = this.removeEmptyRows(
-            config.maxTableProcessingRows <
-                this.props.dataLoadingResult.data.length
-                ? this.props.dataLoadingResult.data.slice(
-                      0,
-                      config.maxTableProcessingRows
-                  )
-                : this.props.dataLoadingResult.data
-        );
+        const rows = this.props.dataLoadingResult.parseResult!.data;
 
         return (
             <div className="clearfix">
@@ -103,7 +87,7 @@ export default class DataPreviewTable extends Component<PropsType> {
                             data={rows}
                             columns={columns}
                         />
-                        {this.renderPatialDataNotice(rows)}
+                        {this.renderPartialDataNotice(rows)}
                     </Medium>
                     <Small>
                         <ReactTable
@@ -114,7 +98,7 @@ export default class DataPreviewTable extends Component<PropsType> {
                             data={rows}
                             columns={columns}
                         />
-                        {this.renderPatialDataNotice(rows)}
+                        {this.renderPartialDataNotice(rows)}
                     </Small>
                 </div>
             </div>

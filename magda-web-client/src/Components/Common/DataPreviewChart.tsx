@@ -10,6 +10,7 @@ import memoize from "memoize-one";
 import { gapi } from "analytics/ga";
 import { DataLoadingResult } from "helpers/CsvDataLoader";
 import { ParsedDistribution } from "helpers/record";
+import FileTooBigError from "./FileTooBigError";
 
 import "./DataPreviewChart.scss";
 
@@ -91,7 +92,17 @@ class DataPreviewChart extends Component<PropsType, StateType> {
             return;
         }
 
-        if (this.props.dataLoadError || !this.props.dataLoadingResult) {
+        if (
+            this.props.isLoading ||
+            (this.props.dataLoadingResult &&
+                this.props.dataLoadingResult.failureReason)
+        ) {
+            return;
+        }
+
+        if (this.props.dataLoadError) {
+            console.error(this.props.dataLoadingResult);
+            console.error(this.props.dataLoadError);
             this.resetChartState({
                 error: this.props.dataLoadError
                     ? this.props.dataLoadError
@@ -134,6 +145,8 @@ class DataPreviewChart extends Component<PropsType, StateType> {
             }
             this.processChartDataUpdates();
         } catch (e) {
+            console.error(e);
+
             this.resetChartState({
                 error: e
             });
@@ -156,6 +169,7 @@ class DataPreviewChart extends Component<PropsType, StateType> {
         try {
             this.processChartDataUpdates(prevProps, prevState);
         } catch (e) {
+            console.error(e);
             // we do not automatically switch to table view here because chart has already successfully rendered.
             // for subsequent error cause the chart to not render, we will just display an error message
             this.setState(
@@ -198,27 +212,17 @@ class DataPreviewChart extends Component<PropsType, StateType> {
             );
         if (this.props.isLoading) return <Spinner height="420px" />;
         if (!ReactEcharts)
-            return <div>Unexpected Error: failed to load chart component.</div>;
+            return (
+                <AUpageAlert as="error" className="notification__inner">
+                    Unexpected Error: failed to load chart component.
+                </AUpageAlert>
+            );
 
         if (
             this.props.dataLoadingResult &&
-            this.props.dataLoadingResult.isPartialData
+            this.props.dataLoadingResult.failureReason
         ) {
-            return (
-                <AUpageAlert as="error" className="notification__inner">
-                    <h3>Oops</h3>
-                    <p>
-                        Chart preview not available due to the overlimit data
-                        file size, please try table preview
-                    </p>
-                    <button
-                        onClick={this.onDismissError}
-                        className="switch-tab-btn"
-                    >
-                        Switch to table preview
-                    </button>
-                </AUpageAlert>
-            );
+            return <FileTooBigError />;
         }
 
         return (

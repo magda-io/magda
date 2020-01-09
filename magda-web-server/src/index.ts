@@ -141,14 +141,9 @@ const argv = yargs
         describe: "Data custodian org unit tree level",
         type: "number"
     })
-    .option("maxChartProcessingRows", {
+    .option("maxCsvProcessingRows", {
         describe:
-            "Max number of CSV data file rows that chart preview will module process",
-        type: "number"
-    })
-    .option("maxTableProcessingRows", {
-        describe:
-            "Max number of CSV data file rows that table preview will module process",
+            "Max number of CSV data file rows to try to process for previews. This is important because some servers (CKAN) will return a full file even if only part of it is requested, which can mean the user's browser processing megabytes of CSV rows locally. Set to -1 for no limit",
         type: "number"
     })
     .option("csvLoaderChunkSize", {
@@ -244,8 +239,7 @@ const webServerConfig = {
     defaultOrganizationId: argv.defaultOrganizationId,
     defaultContactEmail: argv.defaultContactEmail,
     custodianOrgLevel: argv.custodianOrgLevel,
-    maxChartProcessingRows: argv.maxChartProcessingRows,
-    maxTableProcessingRows: argv.maxTableProcessingRows,
+    maxCsvProcessingRows: argv.maxCsvProcessingRows,
     csvLoaderChunkSize: argv.csvLoaderChunkSize,
     mandatoryFields: argv.mandatoryFields
 };

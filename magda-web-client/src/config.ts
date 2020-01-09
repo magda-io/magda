@@ -47,8 +47,7 @@ const serverConfig: {
     defaultOrganizationId?: string;
     defaultContactEmail?: string;
     custodianOrgLevel: number;
-    maxChartProcessingRows: number;
-    maxTableProcessingRows: number;
+    maxCsvProcessingRows: number;
     csvLoaderChunkSize: number;
     mandatoryFields: ValidationFieldList;
 } = window.magda_server_config || {};
@@ -161,17 +160,14 @@ export const config = {
     custodianOrgLevel: serverConfig.custodianOrgLevel
         ? serverConfig.custodianOrgLevel
         : 2,
-    maxChartProcessingRows: serverConfig.maxChartProcessingRows
-        ? serverConfig.maxChartProcessingRows
+    maxCsvProcessingRows: serverConfig.maxCsvProcessingRows
+        ? serverConfig.maxCsvProcessingRows
         : 20000, // --- `-1` means no limit
-    maxTableProcessingRows: serverConfig.maxTableProcessingRows
-        ? serverConfig.maxTableProcessingRows
-        : 200, // --- `-1` means no limit
     // --- CSV loader download / processing chunk size
     // --- default to 2MB
     csvLoaderChunkSize: serverConfig.csvLoaderChunkSize
         ? serverConfig.csvLoaderChunkSize
-        : 1000,
+        : 2000000,
     mandatoryFields: serverConfig.mandatoryFields
         ? serverConfig.mandatoryFields
         : [

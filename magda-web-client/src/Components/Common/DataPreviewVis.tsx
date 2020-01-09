@@ -73,6 +73,7 @@ class DataPreviewVis extends Component<
                 dataLoadingResult: null
             });
             const result = await this.dataLoader.load();
+            console.log(result);
 
             this.setState({
                 isDataLoading: false,
@@ -82,8 +83,11 @@ class DataPreviewVis extends Component<
             // --- the CSV processing error could be caused by many reasons
             // --- most them here should be source file problem
             // --- But we might still want to keep monitor any rare non-source-file related issues here
-            if (result.errors.length) {
-                console.log("CSV data processing error: ", result.errors);
+            if (result.parseResult && result.parseResult.errors.length) {
+                console.log(
+                    "CSV data processing error: ",
+                    result.parseResult.errors
+                );
             }
         } catch (e) {
             this.setState({

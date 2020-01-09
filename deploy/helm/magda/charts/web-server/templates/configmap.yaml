@@ -18,8 +18,7 @@ data:
     "defaultContactEmail": {{ toJson .Values.defaultContactEmail }},
     {{- end }}
     "custodianOrgLevel": {{ toJson .Values.custodianOrgLevel | quote }},
-    "maxChartProcessingRows": {{ toJson .Values.maxChartProcessingRows | quote }},
-    "maxTableProcessingRows": {{ toJson .Values.maxTableProcessingRows | quote }},
+    "maxCsvProcessingRows": {{ toJson .Values.maxCsvProcessingRows | quote }},
     "csvLoaderChunkSize": {{ toJson .Values.csvLoaderChunkSize | quote }},
     {{- if .Values.mandatoryFields }}
     "mandatoryFields": {{ toJson .Values.mandatoryFields | quote }}
