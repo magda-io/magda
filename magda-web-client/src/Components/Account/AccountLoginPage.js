@@ -15,9 +15,7 @@ export default function Login(props) {
         props.location.state.from.pathname
             ? props.location.state.from.pathname
             : "/account";
-    const baseRedirectUrl = `${window.location.protocol}//${
-        window.location.host
-    }`;
+    const baseRedirectUrl = `${window.location.protocol}//${window.location.host}`;
     const oauthRedirect = `${baseRedirectUrl}/sign-in-redirect?redirectTo=${previousUrl}`;
 
     const makeLoginUrl = type =>

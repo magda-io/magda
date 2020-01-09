@@ -39,7 +39,7 @@ spec:
         {{- template "magda.postgresLifecycle" . }}
         env:
 # whether turn on the debug module for plsql debug through pgAdmin
-# After that, you need to run `CREATE EXTENSION pldbgapi;` 
+# After that, you need to run `CREATE EXTENSION pldbgapi;`
 # in the database that you want to debug to turn it on database level
 {{- if .Values.debug }}
         - name: DEBUG

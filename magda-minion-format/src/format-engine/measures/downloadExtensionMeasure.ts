@@ -37,8 +37,8 @@ export default function getMeasureResults(
         if (!downloadURL || downloadURL.trim() === "") return null;
     }
 
-    const formatFromURL: [RegExp, string] = URL_REGEXES.find(
-        ([regex]) => (downloadURL.match(regex) ? true : false)
+    const formatFromURL: [RegExp, string] = URL_REGEXES.find(([regex]) =>
+        downloadURL.match(regex) ? true : false
     );
 
     if (formatFromURL) {

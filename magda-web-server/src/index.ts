@@ -79,6 +79,11 @@ const argv = yargs
             "The base URL of the MAGDA Registry API.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
     })
+    .option("registryApiReadOnlyBaseUrl", {
+        describe:
+            "The base URL of the MAGDA Registry API for use for read-only operations.  If not specified, the URL is built from the apiBaseUrl.",
+        type: "string"
+    })
     .option("authApiBaseUrl", {
         describe:
             "The base URL of the MAGDA Auth API.  If not specified, the URL is built from the apiBaseUrl.",
@@ -154,7 +159,7 @@ const argv = yargs
         describe: "Add dataset page mandatory fields list (in JSON path)",
         type: "string",
         coerce: coerceJson("mandatoryFields"),
-        default: "null"
+        default: "[]"
     })
     .option("dateFormats", {
         describe: "A list of date formats supported by this Magda instance",
@@ -168,9 +173,28 @@ const argv = yargs
         type: "string",
         coerce: coerceJson("datasetThemes"),
         default: "[]"
+    })
+    .option("noManualKeywords", {
+        describe:
+            "Whether manual keywords input should be allowed on add dataset page",
+        type: "boolean",
+        default: false
+    })
+    .option("noManualThemes", {
+        describe:
+            "Whether manual themes input should be allowed on add dataset page",
+        type: "boolean",
+        default: false
+    })
+    .option("keywordsBlackList", {
+        describe:
+            "A list of pre-defined BlackList for auto keywords generation",
+        type: "string",
+        coerce: coerceJson("keywordsBlackList"),
+        default: "[]"
     }).argv;
 
-var app = express();
+const app = express();
 
 app.use(morgan("combined"));
 
@@ -208,6 +232,13 @@ const webServerConfig = {
             new URI(apiBaseUrl)
                 .segment("v0")
                 .segment("registry")
+                .toString()
+    ),
+    registryApiReadOnlyBaseUrl: addTrailingSlash(
+        argv.registryApiReadOnlyBaseUrl ||
+            new URI(apiBaseUrl)
+                .segment("v0")
+                .segment("registry-read-only")
                 .toString()
     ),
     authApiBaseUrl: addTrailingSlash(
@@ -250,7 +281,10 @@ const webServerConfig = {
     csvLoaderChunkSize: argv.csvLoaderChunkSize,
     mandatoryFields: argv.mandatoryFields,
     dateFormats: argv.dateFormats,
-    datasetThemes: argv.datasetThemes
+    datasetThemes: argv.datasetThemes,
+    noManualKeywords: argv.noManualKeywords,
+    noManualThemes: argv.noManualThemes,
+    keywordsBlackList: argv.keywordsBlackList
 };
 
 app.get("/server-config.js", function(req, res) {

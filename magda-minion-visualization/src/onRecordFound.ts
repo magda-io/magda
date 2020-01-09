@@ -104,9 +104,7 @@ function processCsv(
                         .map(s => JSON.stringify(s))
                         .join(", "); // stringify to escape (and hence convert to printable representation) binary characters
                     console.log(
-                        `Distribution "${
-                            record.id
-                        }" points to a binary file (binary characters detected: ${badCharsStringified})`
+                        `Distribution "${record.id}" points to a binary file (binary characters detected: ${badCharsStringified})`
                     );
                     resolve({
                         format: "binary"

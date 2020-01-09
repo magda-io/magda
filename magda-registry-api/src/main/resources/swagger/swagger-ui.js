@@ -28,91 +28,88 @@
               require("react-remarkable")
           ))
         : "function" == typeof define && define.amd
-          ? define(
-                [
-                    "babel-polyfill",
-                    "deep-extend",
-                    "redux",
-                    "immutable",
-                    "redux-immutable",
-                    "serialize-error",
-                    "base64-js",
-                    "ieee754",
-                    "isarray",
-                    "shallowequal",
-                    "xml",
-                    "memoizee",
-                    "reselect",
-                    "js-yaml",
-                    "url-parse",
-                    "react",
-                    "react-dom",
-                    "react-redux",
-                    "yaml-js",
-                    "swagger-client",
-                    "react-split-pane",
-                    "react-immutable-proptypes",
-                    "react-addons-shallow-compare",
-                    "react-collapse",
-                    "react-remarkable"
-                ],
-                t
-            )
-          : "object" == typeof exports
-            ? (exports.SwaggerUICore = t(
-                  require("babel-polyfill"),
-                  require("deep-extend"),
-                  require("redux"),
-                  require("immutable"),
-                  require("redux-immutable"),
-                  require("serialize-error"),
-                  require("base64-js"),
-                  require("ieee754"),
-                  require("isarray"),
-                  require("shallowequal"),
-                  require("xml"),
-                  require("memoizee"),
-                  require("reselect"),
-                  require("js-yaml"),
-                  require("url-parse"),
-                  require("react"),
-                  require("react-dom"),
-                  require("react-redux"),
-                  require("yaml-js"),
-                  require("swagger-client"),
-                  require("react-split-pane"),
-                  require("react-immutable-proptypes"),
-                  require("react-addons-shallow-compare"),
-                  require("react-collapse"),
-                  require("react-remarkable")
-              ))
-            : (e.SwaggerUICore = t(
-                  e["babel-polyfill"],
-                  e["deep-extend"],
-                  e.redux,
-                  e.immutable,
-                  e["redux-immutable"],
-                  e["serialize-error"],
-                  e["base64-js"],
-                  e.ieee754,
-                  e.isarray,
-                  e.shallowequal,
-                  e.xml,
-                  e.memoizee,
-                  e.reselect,
-                  e["js-yaml"],
-                  e["url-parse"],
-                  e.react,
-                  e["react-dom"],
-                  e["react-redux"],
-                  e["yaml-js"],
-                  e["swagger-client"],
-                  e["react-split-pane"],
-                  e["react-immutable-proptypes"],
-                  e["react-addons-shallow-compare"],
-                  e["react-collapse"],
-                  e["react-remarkable"]
-              ));
+        ? define([
+              "babel-polyfill",
+              "deep-extend",
+              "redux",
+              "immutable",
+              "redux-immutable",
+              "serialize-error",
+              "base64-js",
+              "ieee754",
+              "isarray",
+              "shallowequal",
+              "xml",
+              "memoizee",
+              "reselect",
+              "js-yaml",
+              "url-parse",
+              "react",
+              "react-dom",
+              "react-redux",
+              "yaml-js",
+              "swagger-client",
+              "react-split-pane",
+              "react-immutable-proptypes",
+              "react-addons-shallow-compare",
+              "react-collapse",
+              "react-remarkable"
+          ], t)
+        : "object" == typeof exports
+        ? (exports.SwaggerUICore = t(
+              require("babel-polyfill"),
+              require("deep-extend"),
+              require("redux"),
+              require("immutable"),
+              require("redux-immutable"),
+              require("serialize-error"),
+              require("base64-js"),
+              require("ieee754"),
+              require("isarray"),
+              require("shallowequal"),
+              require("xml"),
+              require("memoizee"),
+              require("reselect"),
+              require("js-yaml"),
+              require("url-parse"),
+              require("react"),
+              require("react-dom"),
+              require("react-redux"),
+              require("yaml-js"),
+              require("swagger-client"),
+              require("react-split-pane"),
+              require("react-immutable-proptypes"),
+              require("react-addons-shallow-compare"),
+              require("react-collapse"),
+              require("react-remarkable")
+          ))
+        : (e.SwaggerUICore = t(
+              e["babel-polyfill"],
+              e["deep-extend"],
+              e.redux,
+              e.immutable,
+              e["redux-immutable"],
+              e["serialize-error"],
+              e["base64-js"],
+              e.ieee754,
+              e.isarray,
+              e.shallowequal,
+              e.xml,
+              e.memoizee,
+              e.reselect,
+              e["js-yaml"],
+              e["url-parse"],
+              e.react,
+              e["react-dom"],
+              e["react-redux"],
+              e["yaml-js"],
+              e["swagger-client"],
+              e["react-split-pane"],
+              e["react-immutable-proptypes"],
+              e["react-addons-shallow-compare"],
+              e["react-collapse"],
+              e["react-remarkable"]
+          ));
 })(this, function(
     e,
     t,
@@ -356,14 +353,14 @@
                     return (0, O.isObject)(e) && !(0, O.isArray)(e)
                         ? e
                         : (0, O.isFunc)(e)
-                          ? i(e(t), t)
-                          : (0, O.isArray)(e)
-                            ? e
-                                  .map(function(e) {
-                                      return i(e, t);
-                                  })
-                                  .reduce(s, {})
-                            : {};
+                        ? i(e(t), t)
+                        : (0, O.isArray)(e)
+                        ? e
+                              .map(function(e) {
+                                  return i(e, t);
+                              })
+                              .reduce(s, {})
+                        : {};
                 }
                 function s() {
                     var e =
@@ -945,7 +942,7 @@
                         return F(e)
                             ? e
                             : c(e)
-                              ? Array.isArray(e)
+                            ? Array.isArray(e)
                                 ? S.default
                                       .Seq(e)
                                       .map(u)
@@ -954,7 +951,7 @@
                                       .Seq(e)
                                       .map(u)
                                       .toOrderedMap()
-                              : e;
+                            : e;
                     }
                     function i(e, t) {
                         var r = {};
@@ -1169,14 +1166,14 @@
                                                 ][
                                                     h
                                                         ? h < 3
-                                                          ? 2
-                                                          : h > 6
+                                                            ? 2
+                                                            : h > 6
                                                             ? 4
                                                             : h > 3
-                                                              ? 3
-                                                              : +/^(a(bstract|lias|nd|rguments|rray|s(m|sert)?|uto)|b(ase|egin|ool(ean)?|reak|yte)|c(ase|atch|har|hecked|lass|lone|ompl|onst|ontinue)|de(bugger|cimal|clare|f(ault|er)?|init|l(egate|ete)?)|do|double|e(cho|ls?if|lse(if)?|nd|nsure|num|vent|x(cept|ec|p(licit|ort)|te(nds|nsion|rn)))|f(allthrough|alse|inal(ly)?|ixed|loat|or(each)?|riend|rom|unc(tion)?)|global|goto|guard|i(f|mp(lements|licit|ort)|n(it|clude(_once)?|line|out|stanceof|t(erface|ernal)?)?|s)|l(ambda|et|ock|ong)|m(icrolight|odule|utable)|NaN|n(amespace|ative|ext|ew|il|ot|ull)|o(bject|perator|r|ut|verride)|p(ackage|arams|rivate|rotected|rotocol|ublic)|r(aise|e(adonly|do|f|gister|peat|quire(_once)?|scue|strict|try|turn))|s(byte|ealed|elf|hort|igned|izeof|tatic|tring|truct|ubscript|uper|ynchronized|witch)|t(emplate|hen|his|hrows?|ransient|rue|ry|ype(alias|def|id|name|of))|u(n(checked|def(ined)?|ion|less|signed|til)|se|sing)|v(ar|irtual|oid|olatile)|w(char_t|hen|here|hile|ith)|xor|yield)$/[
-                                                                    o
-                                                                ](d)
+                                                            ? 3
+                                                            : +/^(a(bstract|lias|nd|rguments|rray|s(m|sert)?|uto)|b(ase|egin|ool(ean)?|reak|yte)|c(ase|atch|har|hecked|lass|lone|ompl|onst|ontinue)|de(bugger|cimal|clare|f(ault|er)?|init|l(egate|ete)?)|do|double|e(cho|ls?if|lse(if)?|nd|nsure|num|vent|x(cept|ec|p(licit|ort)|te(nds|nsion|rn)))|f(allthrough|alse|inal(ly)?|ixed|loat|or(each)?|riend|rom|unc(tion)?)|global|goto|guard|i(f|mp(lements|licit|ort)|n(it|clude(_once)?|line|out|stanceof|t(erface|ernal)?)?|s)|l(ambda|et|ock|ong)|m(icrolight|odule|utable)|NaN|n(amespace|ative|ext|ew|il|ot|ull)|o(bject|perator|r|ut|verride)|p(ackage|arams|rivate|rotected|rotocol|ublic)|r(aise|e(adonly|do|f|gister|peat|quire(_once)?|scue|strict|try|turn))|s(byte|ealed|elf|hort|igned|izeof|tatic|tring|truct|ubscript|uper|ynchronized|witch)|t(emplate|hen|his|hrows?|ransient|rue|ry|ype(alias|def|id|name|of))|u(n(checked|def(ined)?|ion|less|signed|til)|se|sing)|v(ar|irtual|oid|olatile)|w(char_t|hen|here|hile|ith)|xor|yield)$/[
+                                                                  o
+                                                              ](d)
                                                         : 0
                                                 ]
                                             ),
@@ -1348,58 +1345,62 @@
                         F = (t.isImmutable = function(e) {
                             return S.default.Iterable.isIterable(e);
                         }),
-                        J = ((t.memoize = N.default),
-                        (t.errorLog = function(e) {
-                            return function() {
-                                return function(t) {
-                                    return function(r) {
-                                        try {
-                                            t(r);
-                                        } catch (t) {
-                                            e().errActions.newThrownErr(t, r);
-                                        }
+                        J =
+                            ((t.memoize = N.default),
+                            (t.errorLog = function(e) {
+                                return function() {
+                                    return function(t) {
+                                        return function(r) {
+                                            try {
+                                                t(r);
+                                            } catch (t) {
+                                                e().errActions.newThrownErr(
+                                                    t,
+                                                    r
+                                                );
+                                            }
+                                        };
                                     };
                                 };
-                            };
-                        }),
-                        (t.propChecker = function(e, t) {
-                            var r =
-                                    arguments.length > 2 &&
-                                    void 0 !== arguments[2]
-                                        ? arguments[2]
-                                        : [],
-                                n =
-                                    arguments.length > 3 &&
-                                    void 0 !== arguments[3]
-                                        ? arguments[3]
-                                        : [];
-                            return (
-                                Object.keys(e).length !==
-                                    Object.keys(t).length ||
-                                ((0, U.default)(e, function(e, r) {
-                                    if (n.includes(r)) return !1;
-                                    var o = t[r];
-                                    return S.default.Iterable.isIterable(e)
-                                        ? !S.default.is(e, o)
-                                        : ("object" !==
-                                              ("undefined" == typeof e
-                                                  ? "undefined"
-                                                  : O(e)) ||
-                                              "object" !==
-                                                  ("undefined" == typeof o
+                            }),
+                            (t.propChecker = function(e, t) {
+                                var r =
+                                        arguments.length > 2 &&
+                                        void 0 !== arguments[2]
+                                            ? arguments[2]
+                                            : [],
+                                    n =
+                                        arguments.length > 3 &&
+                                        void 0 !== arguments[3]
+                                            ? arguments[3]
+                                            : [];
+                                return (
+                                    Object.keys(e).length !==
+                                        Object.keys(t).length ||
+                                    (0, U.default)(e, function(e, r) {
+                                        if (n.includes(r)) return !1;
+                                        var o = t[r];
+                                        return S.default.Iterable.isIterable(e)
+                                            ? !S.default.is(e, o)
+                                            : ("object" !==
+                                                  ("undefined" == typeof e
                                                       ? "undefined"
-                                                      : O(o))) &&
-                                              e !== o;
-                                }) ||
+                                                      : O(e)) ||
+                                                  "object" !==
+                                                      ("undefined" == typeof o
+                                                          ? "undefined"
+                                                          : O(o))) &&
+                                                  e !== o;
+                                    }) ||
                                     r.some(function(r) {
                                         return !(0, L.default)(e[r], t[r]);
-                                    }))
-                            );
-                        }),
-                        function(e) {
-                            if (!/^-?\d+(.?\d+)?$/.test(e))
-                                return "Value must be a number";
-                        }),
+                                    })
+                                );
+                            }),
+                            function(e) {
+                                if (!/^-?\d+(.?\d+)?$/.test(e))
+                                    return "Value must be a number";
+                            }),
                         V = function(e) {
                             if (!/^-?\d+$/.test(e))
                                 return "Value must be integer";
@@ -1535,11 +1536,11 @@
             function(e, t, r) {
                 (function(e) {
                     /*!
-	 * The buffer module from node.js, for the browser.
-	 *
-	 * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
-	 * @license  MIT
-	 */
+                     * The buffer module from node.js, for the browser.
+                     *
+                     * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
+                     * @license  MIT
+                     */
                     "use strict";
                     function n() {
                         try {
@@ -1594,7 +1595,9 @@
                         return "undefined" != typeof ArrayBuffer &&
                             t instanceof ArrayBuffer
                             ? d(e, t, r, n)
-                            : "string" == typeof t ? f(e, t, r) : h(e, t);
+                            : "string" == typeof t
+                            ? f(e, t, r)
+                            : h(e, t);
                     }
                     function s(e) {
                         if ("number" != typeof e)
@@ -1612,10 +1615,10 @@
                             t <= 0
                                 ? a(e, t)
                                 : void 0 !== r
-                                  ? "string" == typeof n
+                                ? "string" == typeof n
                                     ? a(e, t).fill(r, n)
                                     : a(e, t).fill(r)
-                                  : a(e, t)
+                                : a(e, t)
                         );
                     }
                     function c(e, t) {
@@ -1656,8 +1659,8 @@
                                 void 0 === r && void 0 === n
                                     ? new Uint8Array(t)
                                     : void 0 === n
-                                      ? new Uint8Array(t, r)
-                                      : new Uint8Array(t, r, n)),
+                                    ? new Uint8Array(t, r)
+                                    : new Uint8Array(t, r, n)),
                             u.TYPED_ARRAY_SUPPORT
                                 ? ((e = t), (e.__proto__ = u.prototype))
                                 : (e = p(e, t)),
@@ -1787,8 +1790,8 @@
                             ("string" == typeof r
                                 ? ((n = r), (r = 0))
                                 : r > 2147483647
-                                  ? (r = 2147483647)
-                                  : r < -2147483648 && (r = -2147483648),
+                                ? (r = 2147483647)
+                                : r < -2147483648 && (r = -2147483648),
                             (r = +r),
                             isNaN(r) && (r = o ? 0 : e.length - 1),
                             r < 0 && (r = e.length + r),
@@ -1812,16 +1815,16 @@
                                 "function" ==
                                     typeof Uint8Array.prototype.indexOf
                                     ? o
-                                      ? Uint8Array.prototype.indexOf.call(
-                                            e,
-                                            t,
-                                            r
-                                        )
-                                      : Uint8Array.prototype.lastIndexOf.call(
-                                            e,
-                                            t,
-                                            r
-                                        )
+                                        ? Uint8Array.prototype.indexOf.call(
+                                              e,
+                                              t,
+                                              r
+                                          )
+                                        : Uint8Array.prototype.lastIndexOf.call(
+                                              e,
+                                              t,
+                                              r
+                                          )
                                     : E(e, [t], r, n, o)
                             );
                         throw new TypeError(
@@ -2316,8 +2319,8 @@
                             return 0 === e
                                 ? ""
                                 : 0 === arguments.length
-                                  ? C(this, 0, e)
-                                  : b.apply(this, arguments);
+                                ? C(this, 0, e)
+                                : b.apply(this, arguments);
                         }),
                         (u.prototype.equals = function(e) {
                             if (!u.isBuffer(e))
@@ -3009,7 +3012,9 @@
             function(e, t, r) {
                 function n(e) {
                     return null == e
-                        ? void 0 === e ? s : i
+                        ? void 0 === e
+                            ? s
+                            : i
                         : ((e = Object(e)), l && l in e ? a(e) : u(e));
                 }
                 var o = r(22),
@@ -3912,10 +3917,12 @@
                     return "function" == typeof e
                         ? e
                         : null == e
-                          ? u
-                          : "object" == typeof e
-                            ? i(e) ? a(e[0], e[1]) : o(e)
-                            : s(e);
+                        ? u
+                        : "object" == typeof e
+                        ? i(e)
+                            ? a(e[0], e[1])
+                            : o(e)
+                        : s(e);
                 }
                 var o = r(85),
                     a = r(132),
@@ -4667,7 +4674,8 @@
                     return function(r) {
                         return (
                             null != r &&
-                            (r[e] === t && (void 0 !== t || e in Object(r)))
+                            r[e] === t &&
+                            (void 0 !== t || e in Object(r))
                         );
                     };
                 }
@@ -4736,9 +4744,9 @@
                             null != e &&
                             !a(e)
                         ) ||
-                        (i.test(e) ||
-                            !u.test(e) ||
-                            (null != t && e in Object(t)))
+                        i.test(e) ||
+                        !u.test(e) ||
+                        (null != t && e in Object(t))
                     );
                 }
                 var o = r(26),
@@ -5028,141 +5036,148 @@
                         return "array" === o
                             ? [e(l, { includeReadOnly: c })]
                             : t.enum
-                              ? t.default
+                            ? t.default
                                 ? t.default
                                 : (0, a.normalizeArray)(t.enum)[0]
-                              : f(t);
+                            : f(t);
                     }),
-                    d = ((t.inferSchema = function(e) {
-                        return (
-                            e.schema && (e = e.schema),
-                            e.properties && (e.type = "object"),
-                            e
-                        );
-                    }),
-                    (t.sampleXmlFromSchema = function e(t) {
-                        var r =
-                                arguments.length > 1 && void 0 !== arguments[1]
-                                    ? arguments[1]
-                                    : {},
-                            n = (0, a.objectify)(t),
-                            o = n.type,
-                            u = n.properties,
-                            i = n.additionalProperties,
-                            s = n.items,
-                            l = n.example,
-                            c = r.includeReadOnly,
-                            p = n.default,
-                            d = {},
-                            h = {},
-                            y = t.xml,
-                            m = y.name,
-                            v = y.prefix,
-                            b = y.namespace,
-                            g = n.enum,
-                            _ = void 0,
-                            E = void 0;
-                        if (!o)
-                            if (u || i) o = "object";
-                            else {
-                                if (!s) return;
-                                o = "array";
-                            }
-                        if (
-                            ((m = m || "notagname"),
-                            (_ = (v ? v + ":" : "") + m),
-                            b)
-                        ) {
-                            var w = v ? "xmlns:" + v : "xmlns";
-                            h[w] = b;
-                        }
-                        if ("array" === o && s) {
+                    d =
+                        ((t.inferSchema = function(e) {
+                            return (
+                                e.schema && (e = e.schema),
+                                e.properties && (e.type = "object"),
+                                e
+                            );
+                        }),
+                        (t.sampleXmlFromSchema = function e(t) {
+                            var r =
+                                    arguments.length > 1 &&
+                                    void 0 !== arguments[1]
+                                        ? arguments[1]
+                                        : {},
+                                n = (0, a.objectify)(t),
+                                o = n.type,
+                                u = n.properties,
+                                i = n.additionalProperties,
+                                s = n.items,
+                                l = n.example,
+                                c = r.includeReadOnly,
+                                p = n.default,
+                                d = {},
+                                h = {},
+                                y = t.xml,
+                                m = y.name,
+                                v = y.prefix,
+                                b = y.namespace,
+                                g = n.enum,
+                                _ = void 0,
+                                E = void 0;
+                            if (!o)
+                                if (u || i) o = "object";
+                                else {
+                                    if (!s) return;
+                                    o = "array";
+                                }
                             if (
-                                ((s.xml = s.xml || y || {}),
-                                (s.xml.name = s.xml.name || y.name),
-                                y.wrapped)
-                            )
+                                ((m = m || "notagname"),
+                                (_ = (v ? v + ":" : "") + m),
+                                b)
+                            ) {
+                                var w = v ? "xmlns:" + v : "xmlns";
+                                h[w] = b;
+                            }
+                            if ("array" === o && s) {
+                                if (
+                                    ((s.xml = s.xml || y || {}),
+                                    (s.xml.name = s.xml.name || y.name),
+                                    y.wrapped)
+                                )
+                                    return (
+                                        (d[_] = []),
+                                        Array.isArray(l)
+                                            ? l.forEach(function(t) {
+                                                  (s.example = t),
+                                                      d[_].push(e(s, r));
+                                              })
+                                            : Array.isArray(p)
+                                            ? p.forEach(function(t) {
+                                                  (s.default = t),
+                                                      d[_].push(e(s, r));
+                                              })
+                                            : (d[_] = [e(s, r)]),
+                                        h && d[_].push({ _attr: h }),
+                                        d
+                                    );
+                                var j = [];
+                                return Array.isArray(l)
+                                    ? (l.forEach(function(t) {
+                                          (s.example = t), j.push(e(s, r));
+                                      }),
+                                      j)
+                                    : Array.isArray(p)
+                                    ? (p.forEach(function(t) {
+                                          (s.default = t), j.push(e(s, r));
+                                      }),
+                                      j)
+                                    : e(s, r);
+                            }
+                            if ("object" === o) {
+                                var P = (0, a.objectify)(u);
+                                (d[_] = []), (l = l || {});
+                                for (var O in P)
+                                    if (!P[O].readOnly || c)
+                                        if (
+                                            ((P[O].xml = P[O].xml || {}),
+                                            P[O].xml.attribute)
+                                        ) {
+                                            var T =
+                                                    Array.isArray(P[O].enum) &&
+                                                    P[O].enum[0],
+                                                S = P[O].example,
+                                                x = P[O].default;
+                                            h[P[O].xml.name || O] =
+                                                (void 0 !== S && S) ||
+                                                (void 0 !== l[O] && l[O]) ||
+                                                (void 0 !== x && x) ||
+                                                T ||
+                                                f(P[O]);
+                                        } else {
+                                            (P[O].xml.name =
+                                                P[O].xml.name || O),
+                                                (P[O].example =
+                                                    void 0 !== P[O].example
+                                                        ? P[O].example
+                                                        : l[O]);
+                                            var C = e(P[O]);
+                                            Array.isArray(C)
+                                                ? (d[_] = d[_].concat(C))
+                                                : d[_].push(C);
+                                        }
                                 return (
-                                    (d[_] = []),
-                                    Array.isArray(l)
-                                        ? l.forEach(function(t) {
-                                              (s.example = t),
-                                                  d[_].push(e(s, r));
+                                    i === !0
+                                        ? d[_].push({
+                                              additionalProp:
+                                                  "Anything can be here"
                                           })
-                                        : Array.isArray(p)
-                                          ? p.forEach(function(t) {
-                                                (s.default = t),
-                                                    d[_].push(e(s, r));
-                                            })
-                                          : (d[_] = [e(s, r)]),
+                                        : i &&
+                                          d[_].push({ additionalProp: f(i) }),
                                     h && d[_].push({ _attr: h }),
                                     d
                                 );
-                            var j = [];
-                            return Array.isArray(l)
-                                ? (l.forEach(function(t) {
-                                      (s.example = t), j.push(e(s, r));
-                                  }),
-                                  j)
-                                : Array.isArray(p)
-                                  ? (p.forEach(function(t) {
-                                        (s.default = t), j.push(e(s, r));
-                                    }),
-                                    j)
-                                  : e(s, r);
-                        }
-                        if ("object" === o) {
-                            var P = (0, a.objectify)(u);
-                            (d[_] = []), (l = l || {});
-                            for (var O in P)
-                                if (!P[O].readOnly || c)
-                                    if (
-                                        ((P[O].xml = P[O].xml || {}),
-                                        P[O].xml.attribute)
-                                    ) {
-                                        var T =
-                                                Array.isArray(P[O].enum) &&
-                                                P[O].enum[0],
-                                            S = P[O].example,
-                                            x = P[O].default;
-                                        h[P[O].xml.name || O] =
-                                            (void 0 !== S && S) ||
-                                            (void 0 !== l[O] && l[O]) ||
-                                            (void 0 !== x && x) ||
-                                            T ||
-                                            f(P[O]);
-                                    } else {
-                                        (P[O].xml.name = P[O].xml.name || O),
-                                            (P[O].example =
-                                                void 0 !== P[O].example
-                                                    ? P[O].example
-                                                    : l[O]);
-                                        var C = e(P[O]);
-                                        Array.isArray(C)
-                                            ? (d[_] = d[_].concat(C))
-                                            : d[_].push(C);
-                                    }
+                            }
                             return (
-                                i === !0
-                                    ? d[_].push({
-                                          additionalProp: "Anything can be here"
-                                      })
-                                    : i && d[_].push({ additionalProp: f(i) }),
-                                h && d[_].push({ _attr: h }),
+                                (E =
+                                    void 0 !== l
+                                        ? l
+                                        : void 0 !== p
+                                        ? p
+                                        : Array.isArray(g)
+                                        ? g[0]
+                                        : f(t)),
+                                (d[_] = h ? [{ _attr: h }, E] : E),
                                 d
                             );
-                        }
-                        return (
-                            (E =
-                                void 0 !== l
-                                    ? l
-                                    : void 0 !== p
-                                      ? p
-                                      : Array.isArray(g) ? g[0] : f(t)),
-                            (d[_] = h ? [{ _attr: h }, E] : E),
-                            d
-                        );
-                    }));
+                        }));
                 (t.memoizedCreateXMLExample = (0, l.default)(o)),
                     (t.memoizedSampleFromSchema = (0, l.default)(p));
             },
@@ -5699,8 +5714,10 @@
                         return r === n.length - 1 && n.length > 1
                             ? e + "or " + t
                             : n[r + 1] && n.length > 2
-                              ? e + t + ", "
-                              : n[r + 1] ? e + t + " " : e + t;
+                            ? e + t + ", "
+                            : n[r + 1]
+                            ? e + t + " "
+                            : e + t;
                     }, "should be a");
                 }
                 Object.defineProperty(t, "__esModule", { value: !0 }),
@@ -5806,21 +5823,22 @@
                 Object.defineProperty(t, "__esModule", { value: !0 });
                 var o,
                     a = r(176);
-                t.default = ((o = {}),
-                n(o, a.UPDATE_LAYOUT, function(e, t) {
-                    return e.set("layout", t.payload);
-                }),
-                n(o, a.SHOW, function(e, t) {
-                    var r = t.payload.thing,
-                        n = t.payload.shown;
-                    return e.setIn(["shown"].concat(r), n);
-                }),
-                n(o, a.UPDATE_MODE, function(e, t) {
-                    var r = t.payload.thing,
-                        n = t.payload.mode;
-                    return e.setIn(["modes"].concat(r), (n || "") + "");
-                }),
-                o);
+                t.default =
+                    ((o = {}),
+                    n(o, a.UPDATE_LAYOUT, function(e, t) {
+                        return e.set("layout", t.payload);
+                    }),
+                    n(o, a.SHOW, function(e, t) {
+                        var r = t.payload.thing,
+                            n = t.payload.shown;
+                        return e.setIn(["shown"].concat(r), n);
+                    }),
+                    n(o, a.UPDATE_MODE, function(e, t) {
+                        var r = t.payload.thing,
+                            n = t.payload.mode;
+                        return e.setIn(["modes"].concat(r), (n || "") + "");
+                    }),
+                    o);
             },
             function(e, t, r) {
                 "use strict";
@@ -5873,15 +5891,16 @@
                     u = function(e) {
                         return e;
                     },
-                    i = ((t.current = function(e) {
-                        return e.get("layout");
-                    }),
-                    (t.isShown = function(e, t, r) {
-                        return (
-                            (t = (0, a.normalizeArray)(t)),
-                            Boolean(e.getIn(["shown"].concat(n(t)), r))
-                        );
-                    }));
+                    i =
+                        ((t.current = function(e) {
+                            return e.get("layout");
+                        }),
+                        (t.isShown = function(e, t, r) {
+                            return (
+                                (t = (0, a.normalizeArray)(t)),
+                                Boolean(e.getIn(["shown"].concat(n(t)), r))
+                            );
+                        }));
                 (t.whatMode = function(e, t) {
                     var r =
                         arguments.length > 2 && void 0 !== arguments[2]
@@ -5965,134 +5984,150 @@
                     l = r(11),
                     c = n(l),
                     f = r(180);
-                t.default = ((u = {}),
-                o(u, f.UPDATE_SPEC, function(e, t) {
-                    return "string" == typeof t.payload
-                        ? e.set("spec", t.payload)
-                        : e;
-                }),
-                o(u, f.UPDATE_URL, function(e, t) {
-                    return e.set("url", t.payload + "");
-                }),
-                o(u, f.UPDATE_JSON, function(e, t) {
-                    return e.set("json", (0, s.fromJSOrdered)(t.payload));
-                }),
-                o(u, f.UPDATE_RESOLVED, function(e, t) {
-                    return e.setIn(
-                        ["resolved"],
-                        (0, s.fromJSOrdered)(t.payload)
-                    );
-                }),
-                o(u, f.UPDATE_PARAM, function(e, t) {
-                    var r = t.payload,
-                        n = r.path,
-                        o = r.paramName,
-                        u = r.value,
-                        l = r.isXml;
-                    return e.updateIn(
-                        ["resolved", "paths"].concat(a(n), ["parameters"]),
-                        (0, i.fromJS)([]),
-                        function(e) {
-                            var t = e.findIndex(function(e) {
-                                return e.get("name") === o;
-                            });
-                            return (
-                                u instanceof c.default.File ||
-                                    (u = (0, s.fromJSOrdered)(u)),
-                                e.setIn([t, l ? "value_xml" : "value"], u)
-                            );
-                        }
-                    );
-                }),
-                o(u, f.VALIDATE_PARAMS, function(e, t) {
-                    var r = t.payload.pathMethod,
-                        n = e.getIn(["resolved", "paths"].concat(a(r))),
-                        o = /xml/i.test(n.get("consumes_value"));
-                    return e.updateIn(
-                        ["resolved", "paths"].concat(a(r), ["parameters"]),
-                        (0, i.fromJS)([]),
-                        function(e) {
-                            return e.withMutations(function(e) {
-                                for (var t = 0, r = e.count(); t < r; t++) {
-                                    var n = (0, s.validateParam)(e.get(t), o);
-                                    e.setIn([t, "errors"], (0, i.fromJS)(n));
-                                }
-                            });
-                        }
-                    );
-                }),
-                o(u, f.ClEAR_VALIDATE_PARAMS, function(e, t) {
-                    var r = t.payload.pathMethod;
-                    return e.updateIn(
-                        ["resolved", "paths"].concat(a(r), ["parameters"]),
-                        (0, i.fromJS)([]),
-                        function(e) {
-                            return e.withMutations(function(e) {
-                                for (var t = 0, r = e.count(); t < r; t++)
-                                    e.setIn([t, "errors"], (0, i.fromJS)({}));
-                            });
-                        }
-                    );
-                }),
-                o(u, f.SET_RESPONSE, function(e, t) {
-                    var r = t.payload,
-                        n = r.res,
-                        o = r.path,
-                        a = r.method,
-                        u = void 0;
-                    (u = n.error ? Object.assign({ error: !0 }, n.err) : n),
-                        (u.headers = u.headers || {});
-                    var i = e.setIn(
-                        ["responses", o, a],
-                        (0, s.fromJSOrdered)(u)
-                    );
-                    return (
-                        n.data instanceof c.default.Blob &&
-                            (i = i.setIn(["responses", o, a, "text"], n.data)),
-                        i
-                    );
-                }),
-                o(u, f.SET_REQUEST, function(e, t) {
-                    var r = t.payload,
-                        n = r.req,
-                        o = r.path,
-                        a = r.method;
-                    return e.setIn(["requests", o, a], (0, s.fromJSOrdered)(n));
-                }),
-                o(u, f.UPDATE_OPERATION_VALUE, function(e, t) {
-                    var r = t.payload,
-                        n = r.path,
-                        o = r.value,
-                        u = r.key,
-                        s = ["resolved", "paths"].concat(a(n));
-                    return e.getIn(s)
-                        ? e.setIn([].concat(a(s), [u]), (0, i.fromJS)(o))
-                        : e;
-                }),
-                o(u, f.CLEAR_RESPONSE, function(e, t) {
-                    var r = t.payload,
-                        n = r.path,
-                        o = r.method;
-                    return e.deleteIn(["responses", n, o]);
-                }),
-                o(u, f.CLEAR_REQUEST, function(e, t) {
-                    var r = t.payload,
-                        n = r.path,
-                        o = r.method;
-                    return e.deleteIn(["requests", n, o]);
-                }),
-                o(u, f.SET_SCHEME, function(e, t) {
-                    var r = t.payload,
-                        n = r.scheme,
-                        o = r.path,
-                        a = r.method;
-                    return o && a
-                        ? e.setIn(["scheme", o, a], n)
-                        : o || a
-                          ? void 0
-                          : e.setIn(["scheme", "_defaultScheme"], n);
-                }),
-                u);
+                t.default =
+                    ((u = {}),
+                    o(u, f.UPDATE_SPEC, function(e, t) {
+                        return "string" == typeof t.payload
+                            ? e.set("spec", t.payload)
+                            : e;
+                    }),
+                    o(u, f.UPDATE_URL, function(e, t) {
+                        return e.set("url", t.payload + "");
+                    }),
+                    o(u, f.UPDATE_JSON, function(e, t) {
+                        return e.set("json", (0, s.fromJSOrdered)(t.payload));
+                    }),
+                    o(u, f.UPDATE_RESOLVED, function(e, t) {
+                        return e.setIn(
+                            ["resolved"],
+                            (0, s.fromJSOrdered)(t.payload)
+                        );
+                    }),
+                    o(u, f.UPDATE_PARAM, function(e, t) {
+                        var r = t.payload,
+                            n = r.path,
+                            o = r.paramName,
+                            u = r.value,
+                            l = r.isXml;
+                        return e.updateIn(
+                            ["resolved", "paths"].concat(a(n), ["parameters"]),
+                            (0, i.fromJS)([]),
+                            function(e) {
+                                var t = e.findIndex(function(e) {
+                                    return e.get("name") === o;
+                                });
+                                return (
+                                    u instanceof c.default.File ||
+                                        (u = (0, s.fromJSOrdered)(u)),
+                                    e.setIn([t, l ? "value_xml" : "value"], u)
+                                );
+                            }
+                        );
+                    }),
+                    o(u, f.VALIDATE_PARAMS, function(e, t) {
+                        var r = t.payload.pathMethod,
+                            n = e.getIn(["resolved", "paths"].concat(a(r))),
+                            o = /xml/i.test(n.get("consumes_value"));
+                        return e.updateIn(
+                            ["resolved", "paths"].concat(a(r), ["parameters"]),
+                            (0, i.fromJS)([]),
+                            function(e) {
+                                return e.withMutations(function(e) {
+                                    for (var t = 0, r = e.count(); t < r; t++) {
+                                        var n = (0, s.validateParam)(
+                                            e.get(t),
+                                            o
+                                        );
+                                        e.setIn(
+                                            [t, "errors"],
+                                            (0, i.fromJS)(n)
+                                        );
+                                    }
+                                });
+                            }
+                        );
+                    }),
+                    o(u, f.ClEAR_VALIDATE_PARAMS, function(e, t) {
+                        var r = t.payload.pathMethod;
+                        return e.updateIn(
+                            ["resolved", "paths"].concat(a(r), ["parameters"]),
+                            (0, i.fromJS)([]),
+                            function(e) {
+                                return e.withMutations(function(e) {
+                                    for (var t = 0, r = e.count(); t < r; t++)
+                                        e.setIn(
+                                            [t, "errors"],
+                                            (0, i.fromJS)({})
+                                        );
+                                });
+                            }
+                        );
+                    }),
+                    o(u, f.SET_RESPONSE, function(e, t) {
+                        var r = t.payload,
+                            n = r.res,
+                            o = r.path,
+                            a = r.method,
+                            u = void 0;
+                        (u = n.error ? Object.assign({ error: !0 }, n.err) : n),
+                            (u.headers = u.headers || {});
+                        var i = e.setIn(
+                            ["responses", o, a],
+                            (0, s.fromJSOrdered)(u)
+                        );
+                        return (
+                            n.data instanceof c.default.Blob &&
+                                (i = i.setIn(
+                                    ["responses", o, a, "text"],
+                                    n.data
+                                )),
+                            i
+                        );
+                    }),
+                    o(u, f.SET_REQUEST, function(e, t) {
+                        var r = t.payload,
+                            n = r.req,
+                            o = r.path,
+                            a = r.method;
+                        return e.setIn(
+                            ["requests", o, a],
+                            (0, s.fromJSOrdered)(n)
+                        );
+                    }),
+                    o(u, f.UPDATE_OPERATION_VALUE, function(e, t) {
+                        var r = t.payload,
+                            n = r.path,
+                            o = r.value,
+                            u = r.key,
+                            s = ["resolved", "paths"].concat(a(n));
+                        return e.getIn(s)
+                            ? e.setIn([].concat(a(s), [u]), (0, i.fromJS)(o))
+                            : e;
+                    }),
+                    o(u, f.CLEAR_RESPONSE, function(e, t) {
+                        var r = t.payload,
+                            n = r.path,
+                            o = r.method;
+                        return e.deleteIn(["responses", n, o]);
+                    }),
+                    o(u, f.CLEAR_REQUEST, function(e, t) {
+                        var r = t.payload,
+                            n = r.path,
+                            o = r.method;
+                        return e.deleteIn(["requests", n, o]);
+                    }),
+                    o(u, f.SET_SCHEME, function(e, t) {
+                        var r = t.payload,
+                            n = r.scheme,
+                            o = r.path,
+                            a = r.method;
+                        return o && a
+                            ? e.setIn(["scheme", o, a], n)
+                            : o || a
+                            ? void 0
+                            : e.setIn(["scheme", "_defaultScheme"], n);
+                    }),
+                    u);
             },
             function(e, t, r) {
                 "use strict";
@@ -6111,8 +6146,8 @@
                     return e instanceof Error
                         ? { type: O, error: !0, payload: e }
                         : "string" == typeof e
-                          ? { type: O, payload: e.replace(/\t/g, "  ") || "" }
-                          : { type: O, payload: "" };
+                        ? { type: O, payload: e.replace(/\t/g, "  ") || "" }
+                        : { type: O, payload: "" };
                 }
                 function u(e) {
                     return { type: U, payload: e };
@@ -6229,49 +6264,53 @@
                         "spec_update_operation_value"),
                     U = (t.UPDATE_RESOLVED = "spec_update_resolved"),
                     z = (t.SET_SCHEME = "set_scheme"),
-                    L = ((t.parseToJson = function(e) {
-                        return function(t) {
-                            var r = t.specActions,
-                                n = t.specSelectors,
-                                o = t.errActions,
-                                a = n.specStr,
-                                u = null;
-                            try {
-                                (e = e || a()),
-                                    o.clear({ source: "parser" }),
-                                    (u = _.default.safeLoad(e));
-                            } catch (e) {
-                                return (
-                                    console.error(e),
-                                    o.newSpecErr({
-                                        source: "parser",
-                                        level: "error",
-                                        message: e.reason,
-                                        line:
-                                            e.mark && e.mark.line
-                                                ? e.mark.line + 1
-                                                : void 0
-                                    })
-                                );
-                            }
-                            return r.updateJsonSpec(u);
-                        };
-                    }),
-                    (t.resolveSpec = function(e, t) {
-                        return function(r) {
-                            var n = r.specActions,
-                                o = r.specSelectors,
-                                a = r.errActions,
-                                u = r.fn,
-                                i = u.fetch,
-                                s = u.resolve,
-                                l = u.AST;
-                            "undefined" == typeof e && (e = o.specJson()),
-                                "undefined" == typeof t && (t = o.url());
-                            var c = l.getLineNumberForPath,
-                                f = o.specStr();
-                            return s({ fetch: i, spec: e, baseDoc: t }).then(
-                                function(e) {
+                    L =
+                        ((t.parseToJson = function(e) {
+                            return function(t) {
+                                var r = t.specActions,
+                                    n = t.specSelectors,
+                                    o = t.errActions,
+                                    a = n.specStr,
+                                    u = null;
+                                try {
+                                    (e = e || a()),
+                                        o.clear({ source: "parser" }),
+                                        (u = _.default.safeLoad(e));
+                                } catch (e) {
+                                    return (
+                                        console.error(e),
+                                        o.newSpecErr({
+                                            source: "parser",
+                                            level: "error",
+                                            message: e.reason,
+                                            line:
+                                                e.mark && e.mark.line
+                                                    ? e.mark.line + 1
+                                                    : void 0
+                                        })
+                                    );
+                                }
+                                return r.updateJsonSpec(u);
+                            };
+                        }),
+                        (t.resolveSpec = function(e, t) {
+                            return function(r) {
+                                var n = r.specActions,
+                                    o = r.specSelectors,
+                                    a = r.errActions,
+                                    u = r.fn,
+                                    i = u.fetch,
+                                    s = u.resolve,
+                                    l = u.AST;
+                                "undefined" == typeof e && (e = o.specJson()),
+                                    "undefined" == typeof t && (t = o.url());
+                                var c = l.getLineNumberForPath,
+                                    f = o.specStr();
+                                return s({
+                                    fetch: i,
+                                    spec: e,
+                                    baseDoc: t
+                                }).then(function(e) {
                                     var t = e.spec,
                                         r = e.errors;
                                     if (
@@ -6304,115 +6343,118 @@
                                         a.newThrownErrBatch(o);
                                     }
                                     return n.updateResolved(t);
+                                });
+                            };
+                        }),
+                        (t.formatIntoYaml = function() {
+                            return function(e) {
+                                var t = e.specActions,
+                                    r = e.specSelectors,
+                                    n = r.specStr,
+                                    o = t.updateSpec;
+                                try {
+                                    var a = _.default.safeDump(
+                                        _.default.safeLoad(n()),
+                                        { indent: 2 }
+                                    );
+                                    o(a);
+                                } catch (e) {
+                                    o(e);
                                 }
-                            );
-                        };
-                    }),
-                    (t.formatIntoYaml = function() {
-                        return function(e) {
-                            var t = e.specActions,
-                                r = e.specSelectors,
-                                n = r.specStr,
-                                o = t.updateSpec;
-                            try {
-                                var a = _.default.safeDump(
-                                    _.default.safeLoad(n()),
-                                    { indent: 2 }
+                            };
+                        }),
+                        (t.setResponse = function(e, t, r) {
+                            return {
+                                payload: { path: e, method: t, res: r },
+                                type: A
+                            };
+                        }),
+                        (t.setRequest = function(e, t, r) {
+                            return {
+                                payload: { path: e, method: t, req: r },
+                                type: R
+                            };
+                        }),
+                        (t.logRequest = function(e) {
+                            return { payload: e, type: k };
+                        }),
+                        (t.executeRequest = function(e) {
+                            return function(t) {
+                                var r = t.fn,
+                                    n = t.specActions,
+                                    o = t.specSelectors,
+                                    a = e.pathName,
+                                    u = e.method;
+                                e.contextUrl = (0, w.default)(
+                                    o.url()
+                                ).toString();
+                                var i = Object.assign({}, e);
+                                return (
+                                    a &&
+                                        u &&
+                                        (i.operationId =
+                                            u.toLowerCase() + "-" + a),
+                                    (i = r.buildRequest(i)),
+                                    n.setRequest(e.pathName, e.method, i),
+                                    r
+                                        .execute(e)
+                                        .then(function(t) {
+                                            return n.setResponse(
+                                                e.pathName,
+                                                e.method,
+                                                t
+                                            );
+                                        })
+                                        .catch(function(t) {
+                                            return n.setResponse(
+                                                e.pathName,
+                                                e.method,
+                                                {
+                                                    error: !0,
+                                                    err: (0, P.default)(t)
+                                                }
+                                            );
+                                        })
                                 );
-                                o(a);
-                            } catch (e) {
-                                o(e);
-                            }
-                        };
-                    }),
-                    (t.setResponse = function(e, t, r) {
-                        return {
-                            payload: { path: e, method: t, res: r },
-                            type: A
-                        };
-                    }),
-                    (t.setRequest = function(e, t, r) {
-                        return {
-                            payload: { path: e, method: t, req: r },
-                            type: R
-                        };
-                    }),
-                    (t.logRequest = function(e) {
-                        return { payload: e, type: k };
-                    }),
-                    (t.executeRequest = function(e) {
-                        return function(t) {
-                            var r = t.fn,
-                                n = t.specActions,
-                                o = t.specSelectors,
-                                a = e.pathName,
-                                u = e.method;
-                            e.contextUrl = (0, w.default)(o.url()).toString();
-                            var i = Object.assign({}, e);
-                            return (
-                                a &&
-                                    u &&
-                                    (i.operationId = u.toLowerCase() + "-" + a),
-                                (i = r.buildRequest(i)),
-                                n.setRequest(e.pathName, e.method, i),
-                                r
-                                    .execute(e)
-                                    .then(function(t) {
-                                        return n.setResponse(
-                                            e.pathName,
-                                            e.method,
-                                            t
-                                        );
-                                    })
-                                    .catch(function(t) {
-                                        return n.setResponse(
-                                            e.pathName,
-                                            e.method,
-                                            {
-                                                error: !0,
-                                                err: (0, P.default)(t)
-                                            }
-                                        );
-                                    })
-                            );
-                        };
-                    }),
-                    function() {
-                        var e =
-                                arguments.length > 0 && void 0 !== arguments[0]
-                                    ? arguments[0]
-                                    : {},
-                            t = e.path,
-                            r = e.method,
-                            n = o(e, ["path", "method"]);
-                        return function(e) {
-                            var o = e.fn.fetch,
-                                a = e.specSelectors,
-                                u = e.specActions,
-                                i = a.spec().toJS(),
-                                s = a.operationScheme(t, r),
-                                l = a.contentTypeValues([t, r]).toJS(),
-                                c = l.requestContentType,
-                                f = l.responseContentType,
-                                p = /xml/i.test(c),
-                                d = a.parameterValues([t, r], p).toJS();
-                            return u.executeRequest(
-                                v(
-                                    {
-                                        fetch: o,
-                                        spec: i,
-                                        pathName: t,
-                                        method: r,
-                                        parameters: d,
-                                        requestContentType: c,
-                                        scheme: s,
-                                        responseContentType: f
-                                    },
-                                    n
-                                )
-                            );
-                        };
-                    });
+                            };
+                        }),
+                        function() {
+                            var e =
+                                    arguments.length > 0 &&
+                                    void 0 !== arguments[0]
+                                        ? arguments[0]
+                                        : {},
+                                t = e.path,
+                                r = e.method,
+                                n = o(e, ["path", "method"]);
+                            return function(e) {
+                                var o = e.fn.fetch,
+                                    a = e.specSelectors,
+                                    u = e.specActions,
+                                    i = a.spec().toJS(),
+                                    s = a.operationScheme(t, r),
+                                    l = a.contentTypeValues([t, r]).toJS(),
+                                    c = l.requestContentType,
+                                    f = l.responseContentType,
+                                    p = /xml/i.test(c),
+                                    d = a.parameterValues([t, r], p).toJS();
+                                return u.executeRequest(
+                                    v(
+                                        {
+                                            fetch: o,
+                                            spec: i,
+                                            pathName: t,
+                                            method: r,
+                                            parameters: d,
+                                            requestContentType: c,
+                                            scheme: s,
+                                            responseContentType: f
+                                        },
+                                        n
+                                    )
+                                );
+                            };
+                        });
                 t.execute = L;
             },
             function(e, t) {
@@ -6484,8 +6526,8 @@
                         a = i(o, "file")
                             ? "multipart/form-data"
                             : u(o, "formData")
-                              ? "application/x-www-form-urlencoded"
-                              : r.get("consumes_value");
+                            ? "application/x-www-form-urlencoded"
+                            : r.get("consumes_value");
                     return (0, d.fromJS)({
                         requestContentType: a,
                         responseContentType: r.get("produces_value")
@@ -6524,21 +6566,22 @@
                     m = function(e) {
                         return e || (0, d.Map)();
                     },
-                    v = ((t.lastError = (0, f.createSelector)(m, function(e) {
-                        return e.get("lastError");
-                    })),
-                    (t.url = (0, f.createSelector)(m, function(e) {
-                        return e.get("url");
-                    })),
-                    (t.specStr = (0, f.createSelector)(m, function(e) {
-                        return e.get("spec") || "";
-                    })),
-                    (t.specSource = (0, f.createSelector)(m, function(e) {
-                        return e.get("specSource") || "not-editor";
-                    })),
-                    (t.specJson = (0, f.createSelector)(m, function(e) {
-                        return e.get("json", (0, d.Map)());
-                    }))),
+                    v =
+                        ((t.lastError = (0, f.createSelector)(m, function(e) {
+                            return e.get("lastError");
+                        })),
+                        (t.url = (0, f.createSelector)(m, function(e) {
+                            return e.get("url");
+                        })),
+                        (t.specStr = (0, f.createSelector)(m, function(e) {
+                            return e.get("spec") || "";
+                        })),
+                        (t.specSource = (0, f.createSelector)(m, function(e) {
+                            return e.get("specSource") || "not-editor";
+                        })),
+                        (t.specJson = (0, f.createSelector)(m, function(e) {
+                            return e.get("json", (0, d.Map)());
+                        }))),
                     b = (t.specResolved = (0, f.createSelector)(m, function(e) {
                         return e.get("resolved", (0, d.Map)());
                     })),
@@ -6549,22 +6592,24 @@
                     _ = (t.info = (0, f.createSelector)(g, function(e) {
                         return c(e && e.get("info"));
                     })),
-                    E = ((t.externalDocs = (0, f.createSelector)(g, function(
-                        e
-                    ) {
-                        return c(e && e.get("externalDocs"));
-                    })),
-                    (t.version = (0, f.createSelector)(_, function(e) {
-                        return e && e.get("version");
-                    }))),
-                    w = ((t.semver = (0, f.createSelector)(E, function(e) {
-                        return /v?([0-9]*)\.([0-9]*)\.([0-9]*)/i
-                            .exec(e)
-                            .slice(1);
-                    })),
-                    (t.paths = (0, f.createSelector)(g, function(e) {
-                        return e.get("paths");
-                    }))),
+                    E =
+                        ((t.externalDocs = (0, f.createSelector)(g, function(
+                            e
+                        ) {
+                            return c(e && e.get("externalDocs"));
+                        })),
+                        (t.version = (0, f.createSelector)(_, function(e) {
+                            return e && e.get("version");
+                        }))),
+                    w =
+                        ((t.semver = (0, f.createSelector)(E, function(e) {
+                            return /v?([0-9]*)\.([0-9]*)\.([0-9]*)/i
+                                .exec(e)
+                                .slice(1);
+                        })),
+                        (t.paths = (0, f.createSelector)(g, function(e) {
+                            return e.get("paths");
+                        }))),
                     j = (t.operations = (0, f.createSelector)(w, function(e) {
                         if (!e || e.size < 1) return (0, d.List)();
                         var t = (0, d.List)();
@@ -6593,67 +6638,71 @@
                     O = (t.produces = (0, f.createSelector)(g, function(e) {
                         return (0, d.Set)(e.get("produces"));
                     })),
-                    T = ((t.security = (0, f.createSelector)(g, function(e) {
-                        return e.get("security", (0, d.List)());
-                    })),
-                    (t.securityDefinitions = (0, f.createSelector)(g, function(
-                        e
-                    ) {
-                        return e.get("securityDefinitions");
-                    })),
-                    (t.findDefinition = function(e, t) {
-                        return b(e).getIn(["definitions", t], null);
-                    }),
-                    (t.definitions = (0, f.createSelector)(g, function(e) {
-                        return e.get("definitions") || (0, d.Map)();
-                    })),
-                    (t.basePath = (0, f.createSelector)(g, function(e) {
-                        return e.get("basePath");
-                    })),
-                    (t.host = (0, f.createSelector)(g, function(e) {
-                        return e.get("host");
-                    })),
-                    (t.schemes = (0, f.createSelector)(g, function(e) {
-                        return e.get("schemes", (0, d.Map)());
-                    })),
-                    (t.operationsWithRootInherited = (0, f.createSelector)(
-                        j,
-                        P,
-                        O,
-                        function(e, t, r) {
-                            return e.map(function(e) {
-                                return e.update("operation", function(e) {
-                                    if (e) {
-                                        if (!d.Map.isMap(e)) return;
-                                        return e.withMutations(function(e) {
-                                            return (
-                                                e.get("consumes") ||
-                                                    e.update(
-                                                        "consumes",
-                                                        function(e) {
-                                                            return (0, d.Set)(
-                                                                e
-                                                            ).merge(t);
-                                                        }
-                                                    ),
-                                                e.get("produces") ||
-                                                    e.update(
-                                                        "produces",
-                                                        function(e) {
-                                                            return (0, d.Set)(
-                                                                e
-                                                            ).merge(r);
-                                                        }
-                                                    ),
-                                                e
-                                            );
-                                        });
-                                    }
-                                    return (0, d.Map)();
+                    T =
+                        ((t.security = (0, f.createSelector)(g, function(e) {
+                            return e.get("security", (0, d.List)());
+                        })),
+                        (t.securityDefinitions = (0, f.createSelector)(
+                            g,
+                            function(e) {
+                                return e.get("securityDefinitions");
+                            }
+                        )),
+                        (t.findDefinition = function(e, t) {
+                            return b(e).getIn(["definitions", t], null);
+                        }),
+                        (t.definitions = (0, f.createSelector)(g, function(e) {
+                            return e.get("definitions") || (0, d.Map)();
+                        })),
+                        (t.basePath = (0, f.createSelector)(g, function(e) {
+                            return e.get("basePath");
+                        })),
+                        (t.host = (0, f.createSelector)(g, function(e) {
+                            return e.get("host");
+                        })),
+                        (t.schemes = (0, f.createSelector)(g, function(e) {
+                            return e.get("schemes", (0, d.Map)());
+                        })),
+                        (t.operationsWithRootInherited = (0, f.createSelector)(
+                            j,
+                            P,
+                            O,
+                            function(e, t, r) {
+                                return e.map(function(e) {
+                                    return e.update("operation", function(e) {
+                                        if (e) {
+                                            if (!d.Map.isMap(e)) return;
+                                            return e.withMutations(function(e) {
+                                                return (
+                                                    e.get("consumes") ||
+                                                        e.update(
+                                                            "consumes",
+                                                            function(e) {
+                                                                return (0,
+                                                                d.Set)(e).merge(
+                                                                    t
+                                                                );
+                                                            }
+                                                        ),
+                                                    e.get("produces") ||
+                                                        e.update(
+                                                            "produces",
+                                                            function(e) {
+                                                                return (0,
+                                                                d.Set)(e).merge(
+                                                                    r
+                                                                );
+                                                            }
+                                                        ),
+                                                    e
+                                                );
+                                            });
+                                        }
+                                        return (0, d.Map)();
+                                    });
                                 });
-                            });
-                        }
-                    ))),
+                            }
+                        ))),
                     S = (t.tags = (0, f.createSelector)(g, function(e) {
                         return e.get("tags", (0, d.List)());
                     })),
@@ -6686,54 +6735,58 @@
                             }, (0, d.Map)());
                         }
                     )),
-                    A = ((t.taggedOperations = function(e) {
-                        return function(t) {
-                            var r = t.getConfigs,
-                                n = r(),
-                                o = n.operationsSorter;
-                            return C(e).map(function(t, r) {
-                                var n =
-                                        "function" == typeof o
-                                            ? o
-                                            : p.sorters.operationsSorter[o],
-                                    a = n ? t.sort(n) : t;
-                                return (0,
-                                d.Map)({ tagDetails: x(e, r), operations: a });
-                            });
-                        };
-                    }),
-                    (t.responses = (0, f.createSelector)(m, function(e) {
-                        return e.get("responses", (0, d.Map)());
-                    }))),
+                    A =
+                        ((t.taggedOperations = function(e) {
+                            return function(t) {
+                                var r = t.getConfigs,
+                                    n = r(),
+                                    o = n.operationsSorter;
+                                return C(e).map(function(t, r) {
+                                    var n =
+                                            "function" == typeof o
+                                                ? o
+                                                : p.sorters.operationsSorter[o],
+                                        a = n ? t.sort(n) : t;
+                                    return (0,
+                                    d.Map)({ tagDetails: x(e, r), operations: a });
+                                });
+                            };
+                        }),
+                        (t.responses = (0, f.createSelector)(m, function(e) {
+                            return e.get("responses", (0, d.Map)());
+                        }))),
                     R = (t.requests = (0, f.createSelector)(m, function(e) {
                         return e.get("requests", (0, d.Map)());
                     })),
-                    k = ((t.responseFor = function(e, t, r) {
-                        return A(e).getIn([t, r], null);
-                    }),
-                    (t.requestFor = function(e, t, r) {
-                        return R(e).getIn([t, r], null);
-                    }),
-                    (t.allowTryItOutFor = function() {
-                        return !0;
-                    }),
-                    (t.hasHost = (0, f.createSelector)(g, function(e) {
-                        var t = e.get("host");
-                        return (
-                            "string" == typeof t && t.length > 0 && "/" !== t[0]
-                        );
-                    })),
-                    (t.operationScheme = function(e, t, r) {
-                        var n = e.get("url"),
-                            o = n.match(/^([a-z][a-z0-9+\-.]*):/),
-                            a = Array.isArray(o) ? o[1] : null;
-                        return (
-                            e.getIn(["scheme", t, r]) ||
-                            e.getIn(["scheme", "_defaultScheme"]) ||
-                            a ||
-                            ""
-                        );
-                    }));
+                    k =
+                        ((t.responseFor = function(e, t, r) {
+                            return A(e).getIn([t, r], null);
+                        }),
+                        (t.requestFor = function(e, t, r) {
+                            return R(e).getIn([t, r], null);
+                        }),
+                        (t.allowTryItOutFor = function() {
+                            return !0;
+                        }),
+                        (t.hasHost = (0, f.createSelector)(g, function(e) {
+                            var t = e.get("host");
+                            return (
+                                "string" == typeof t &&
+                                t.length > 0 &&
+                                "/" !== t[0]
+                            );
+                        })),
+                        (t.operationScheme = function(e, t, r) {
+                            var n = e.get("url"),
+                                o = n.match(/^([a-z][a-z0-9+\-.]*):/),
+                                a = Array.isArray(o) ? o[1] : null;
+                            return (
+                                e.getIn(["scheme", t, r]) ||
+                                e.getIn(["scheme", "_defaultScheme"]) ||
+                                a ||
+                                ""
+                            );
+                        }));
                 (t.canExecuteScheme = function(e, t, r) {
                     return ["http", "https"].indexOf(k(e, t, r)) > -1;
                 }),
@@ -6987,58 +7040,63 @@
                             "function" == typeof a && a(r[o], n[o], e());
                         }
                     },
-                    E = ((t.makeMappedContainer = function(e, t, r, n, i, s) {
-                        return (function(t) {
-                            function n(t, r) {
-                                o(this, n);
-                                var u = a(
-                                    this,
-                                    (
-                                        n.__proto__ || Object.getPrototypeOf(n)
-                                    ).call(this, t, r)
+                    E =
+                        ((t.makeMappedContainer = function(e, t, r, n, i, s) {
+                            return (function(t) {
+                                function n(t, r) {
+                                    o(this, n);
+                                    var u = a(
+                                        this,
+                                        (
+                                            n.__proto__ ||
+                                            Object.getPrototypeOf(n)
+                                        ).call(this, t, r)
+                                    );
+                                    return _(e, s, t, {}), u;
+                                }
+                                return (
+                                    u(n, t),
+                                    l(n, [
+                                        {
+                                            key: "componentWillReceiveProps",
+                                            value: function(t) {
+                                                _(e, s, t, this.props);
+                                            }
+                                        },
+                                        {
+                                            key: "render",
+                                            value: function() {
+                                                var e = (0, m.default)(
+                                                        this.props,
+                                                        s ? Object.keys(s) : []
+                                                    ),
+                                                    t = r(i, "root");
+                                                return f.default.createElement(
+                                                    t,
+                                                    e
+                                                );
+                                            }
+                                        }
+                                    ]),
+                                    n
                                 );
-                                return _(e, s, t, {}), u;
-                            }
-                            return (
-                                u(n, t),
-                                l(n, [
-                                    {
-                                        key: "componentWillReceiveProps",
-                                        value: function(t) {
-                                            _(e, s, t, this.props);
-                                        }
-                                    },
-                                    {
-                                        key: "render",
-                                        value: function() {
-                                            var e = (0, m.default)(
-                                                    this.props,
-                                                    s ? Object.keys(s) : []
-                                                ),
-                                                t = r(i, "root");
-                                            return f.default.createElement(
-                                                t,
-                                                e
-                                            );
-                                        }
-                                    }
-                                ]),
-                                n
+                            })(c.Component);
+                        }),
+                        (t.render = function(e, t, r, n, o) {
+                            var a = document.querySelector(o),
+                                u = r(e, t, n, "App", "root");
+                            d.default.render(
+                                f.default.createElement(u, null),
+                                a
                             );
-                        })(c.Component);
-                    }),
-                    (t.render = function(e, t, r, n, o) {
-                        var a = document.querySelector(o),
-                            u = r(e, t, n, "App", "root");
-                        d.default.render(f.default.createElement(u, null), a);
-                    }),
-                    function(e) {
-                        return f.default.createClass({
-                            render: function() {
-                                return e(this.props);
-                            }
-                        });
-                    }),
+                        }),
+                        function(e) {
+                            return f.default.createClass({
+                                render: function() {
+                                    return e(this.props);
+                                }
+                            });
+                        }),
                     w = function(e) {
                         var t = e.name;
                         return f.default.createElement(
@@ -7095,7 +7153,11 @@
                         );
                     var a = r(n);
                     return a
-                        ? o ? ("root" === o ? g(e, a, t()) : g(e, a)) : j(a)
+                        ? o
+                            ? "root" === o
+                                ? g(e, a, t())
+                                : g(e, a)
+                            : j(a)
                         : (e().log.warn("Could not find component", n), null);
                 };
             },
@@ -7681,7 +7743,9 @@
                     for (r || (r = a), i || (i = []); ++s < l; ) {
                         var c = e[s];
                         t > 0 && r(c)
-                            ? t > 1 ? n(c, t - 1, r, u, i) : o(i, c)
+                            ? t > 1
+                                ? n(c, t - 1, r, u, i)
+                                : o(i, c)
                             : u || (i[i.length] = c);
                     }
                     return i;
@@ -7962,11 +8026,11 @@
                                       e.start_mark.column <= t.column &&
                                       e.end_mark.column >= t.column
                                 : t.line === e.start_mark.line
-                                  ? t.column >= e.start_mark.column
-                                  : t.line === e.end_mark.line
-                                    ? t.column <= e.end_mark.column
-                                    : e.start_mark.line < t.line &&
-                                      e.end_mark.line > t.line;
+                                ? t.column >= e.start_mark.column
+                                : t.line === e.end_mark.line
+                                ? t.column <= e.end_mark.column
+                                : e.start_mark.line < t.line &&
+                                  e.end_mark.line > t.line;
                         }
                         var a = 0;
                         if (!e || [v, b].indexOf(e.tag) === -1) return o;
@@ -8151,7 +8215,9 @@
                     var r = l.test(e);
                     return r || c.test(e)
                         ? f(e.slice(2), r ? 2 : 8)
-                        : s.test(e) ? u : +e;
+                        : s.test(e)
+                        ? u
+                        : +e;
                 }
                 var o = r(58),
                     a = r(27),
@@ -8358,59 +8424,61 @@
                     u = r(7),
                     i = r(12),
                     s = r(257);
-                t.default = ((o = {}),
-                n(o, s.SHOW_AUTH_POPUP, function(e, t) {
-                    var r = t.payload;
-                    return e.set("showDefinitions", r);
-                }),
-                n(o, s.AUTHORIZE, function(e, t) {
-                    var r = t.payload,
-                        n = (0, u.fromJS)(r),
-                        o = e.get("authorized") || (0, u.Map)();
-                    return (
-                        n.entrySeq().forEach(function(e) {
-                            var t = a(e, 2),
-                                r = t[0],
-                                n = t[1],
-                                u = n.getIn(["schema", "type"]);
-                            if ("apiKey" === u) o = o.set(r, n);
-                            else if ("basic" === u) {
-                                var s = n.getIn(["value", "username"]),
-                                    l = n.getIn(["value", "password"]);
-                                (o = o.setIn([r, "value"], {
-                                    username: s,
-                                    header: "Basic " + (0, i.btoa)(s + ":" + l)
-                                })),
-                                    (o = o.setIn(
-                                        [r, "schema"],
-                                        n.get("schema")
-                                    ));
-                            }
-                        }),
-                        e.set("authorized", o)
-                    );
-                }),
-                n(o, s.AUTHORIZE_OAUTH2, function(e, t) {
-                    var r = t.payload,
-                        n = r.auth,
-                        o = r.token,
-                        a = void 0;
-                    return (
-                        (n.token = o),
-                        (a = (0, u.fromJS)(n)),
-                        e.setIn(["authorized", a.get("name")], a)
-                    );
-                }),
-                n(o, s.LOGOUT, function(e, t) {
-                    var r = t.payload,
-                        n = e.get("authorized").withMutations(function(e) {
-                            r.forEach(function(t) {
-                                e.delete(t);
+                t.default =
+                    ((o = {}),
+                    n(o, s.SHOW_AUTH_POPUP, function(e, t) {
+                        var r = t.payload;
+                        return e.set("showDefinitions", r);
+                    }),
+                    n(o, s.AUTHORIZE, function(e, t) {
+                        var r = t.payload,
+                            n = (0, u.fromJS)(r),
+                            o = e.get("authorized") || (0, u.Map)();
+                        return (
+                            n.entrySeq().forEach(function(e) {
+                                var t = a(e, 2),
+                                    r = t[0],
+                                    n = t[1],
+                                    u = n.getIn(["schema", "type"]);
+                                if ("apiKey" === u) o = o.set(r, n);
+                                else if ("basic" === u) {
+                                    var s = n.getIn(["value", "username"]),
+                                        l = n.getIn(["value", "password"]);
+                                    (o = o.setIn([r, "value"], {
+                                        username: s,
+                                        header:
+                                            "Basic " + (0, i.btoa)(s + ":" + l)
+                                    })),
+                                        (o = o.setIn(
+                                            [r, "schema"],
+                                            n.get("schema")
+                                        ));
+                                }
+                            }),
+                            e.set("authorized", o)
+                        );
+                    }),
+                    n(o, s.AUTHORIZE_OAUTH2, function(e, t) {
+                        var r = t.payload,
+                            n = r.auth,
+                            o = r.token,
+                            a = void 0;
+                        return (
+                            (n.token = o),
+                            (a = (0, u.fromJS)(n)),
+                            e.setIn(["authorized", a.get("name")], a)
+                        );
+                    }),
+                    n(o, s.LOGOUT, function(e, t) {
+                        var r = t.payload,
+                            n = e.get("authorized").withMutations(function(e) {
+                                r.forEach(function(t) {
+                                    e.delete(t);
+                                });
                             });
-                        });
-                    return e.set("authorized", n);
-                }),
-                o);
+                        return e.set("authorized", n);
+                    }),
+                    o);
             },
             function(e, t, r) {
                 "use strict";
@@ -8441,8 +8509,9 @@
                     f = (t.SHOW_AUTH_POPUP = "show_popup"),
                     p = (t.AUTHORIZE = "authorize"),
                     d = (t.LOGOUT = "logout"),
-                    h = ((t.PRE_AUTHORIZE_OAUTH2 = "pre_authorize_oauth2"),
-                    (t.AUTHORIZE_OAUTH2 = "authorize_oauth2")),
+                    h =
+                        ((t.PRE_AUTHORIZE_OAUTH2 = "pre_authorize_oauth2"),
+                        (t.AUTHORIZE_OAUTH2 = "authorize_oauth2")),
                     y = ((t.VALIDATE = "validate"), " ");
                 (t.preAuthorizeImplicit = function(e) {
                     return function(t) {
@@ -8586,30 +8655,29 @@
                                     },
                                     l
                                 );
-                            r
-                                .fetch({
-                                    url: f,
-                                    method: "post",
-                                    headers: d,
-                                    query: i,
-                                    body: a
-                                })
+                            r.fetch({
+                                url: f,
+                                method: "post",
+                                headers: d,
+                                query: i,
+                                body: a
+                            })
                                 .then(function(e) {
                                     var t = JSON.parse(e.data),
                                         r = t && (t.error || ""),
                                         a = t && (t.parseError || "");
                                     return e.ok
                                         ? r || a
-                                          ? void o.newAuthErr({
-                                                authId: c,
-                                                level: "error",
-                                                source: "auth",
-                                                message: JSON.stringify(t)
-                                            })
-                                          : void n.authorizeOauth2({
-                                                auth: p,
-                                                token: t
-                                            })
+                                            ? void o.newAuthErr({
+                                                  authId: c,
+                                                  level: "error",
+                                                  source: "auth",
+                                                  message: JSON.stringify(t)
+                                              })
+                                            : void n.authorizeOauth2({
+                                                  auth: p,
+                                                  token: t
+                                              })
                                         : void o.newAuthErr({
                                               authId: c,
                                               level: "error",
@@ -9000,8 +9068,8 @@
                                     return e === d
                                         ? ((n.draggedSize = null), "0px")
                                         : e === h
-                                          ? ((n.draggedSize = null), "100%")
-                                          : n.draggedSize || t;
+                                        ? ((n.draggedSize = null), "100%")
+                                        : n.draggedSize || t;
                                 }),
                                 (u = r),
                                 a(n, u)
@@ -11340,39 +11408,39 @@
                     return "password" === d
                         ? void t.authorizePassword(e)
                         : "application" === d
-                          ? void t.authorizeApplication(e)
-                          : c
-                            ? (("implicit" !== d && "accessCode" !== d) ||
-                                  (h =
-                                      o.get("authorizationUrl") +
-                                      "?response_type=" +
-                                      ("implicit" === d ? "token" : "code")),
-                              (h +=
-                                  "&redirect_uri=" +
-                                  encodeURIComponent(c) +
-                                  "&scope=" +
-                                  encodeURIComponent(a.join(f)) +
-                                  "&state=" +
-                                  encodeURIComponent(p) +
-                                  "&client_id=" +
-                                  encodeURIComponent(l)),
-                              (u.default.swaggerUIRedirectOauth2 = {
-                                  auth: e,
-                                  state: p,
-                                  callback:
-                                      "implicit" === d
-                                          ? t.preAuthorizeImplicit
-                                          : t.authorizeAccessCode,
-                                  errCb: r.newAuthErr
-                              }),
-                              void u.default.open(h))
-                            : void r.newAuthErr({
-                                  authId: s,
-                                  source: "validation",
-                                  level: "error",
-                                  message:
-                                      "oauth2RedirectUri configuration is not passed. Oauth2 authorization cannot be performed."
-                              });
+                        ? void t.authorizeApplication(e)
+                        : c
+                        ? (("implicit" !== d && "accessCode" !== d) ||
+                              (h =
+                                  o.get("authorizationUrl") +
+                                  "?response_type=" +
+                                  ("implicit" === d ? "token" : "code")),
+                          (h +=
+                              "&redirect_uri=" +
+                              encodeURIComponent(c) +
+                              "&scope=" +
+                              encodeURIComponent(a.join(f)) +
+                              "&state=" +
+                              encodeURIComponent(p) +
+                              "&client_id=" +
+                              encodeURIComponent(l)),
+                          (u.default.swaggerUIRedirectOauth2 = {
+                              auth: e,
+                              state: p,
+                              callback:
+                                  "implicit" === d
+                                      ? t.preAuthorizeImplicit
+                                      : t.authorizeAccessCode,
+                              errCb: r.newAuthErr
+                          }),
+                          void u.default.open(h))
+                        : void r.newAuthErr({
+                              authId: s,
+                              source: "validation",
+                              level: "error",
+                              message:
+                                  "oauth2RedirectUri configuration is not passed. Oauth2 authorization cannot be performed."
+                          });
                 }
                 Object.defineProperty(t, "__esModule", { value: !0 }),
                     (t.default = o);
@@ -11878,39 +11946,39 @@
                                               this.state.url.indexOf(
                                                   "127.0.0.1"
                                               ) >= 0
-                                              ? null
-                                              : c.default.createElement(
-                                                    "span",
-                                                    {
-                                                        style: {
-                                                            float: "right"
-                                                        }
-                                                    },
-                                                    c.default.createElement(
-                                                        "a",
-                                                        {
-                                                            target: "_blank",
-                                                            href:
-                                                                this.state
-                                                                    .validatorUrl +
-                                                                "/debug?url=" +
-                                                                this.state.url
-                                                        },
-                                                        c.default.createElement(
-                                                            p,
-                                                            {
-                                                                src:
-                                                                    this.state
-                                                                        .validatorUrl +
-                                                                    "?url=" +
-                                                                    this.state
-                                                                        .url,
-                                                                alt:
-                                                                    "Online validator badge"
-                                                            }
-                                                        )
-                                                    )
-                                                );
+                                            ? null
+                                            : c.default.createElement(
+                                                  "span",
+                                                  {
+                                                      style: {
+                                                          float: "right"
+                                                      }
+                                                  },
+                                                  c.default.createElement(
+                                                      "a",
+                                                      {
+                                                          target: "_blank",
+                                                          href:
+                                                              this.state
+                                                                  .validatorUrl +
+                                                              "/debug?url=" +
+                                                              this.state.url
+                                                      },
+                                                      c.default.createElement(
+                                                          p,
+                                                          {
+                                                              src:
+                                                                  this.state
+                                                                      .validatorUrl +
+                                                                  "?url=" +
+                                                                  this.state
+                                                                      .url,
+                                                              alt:
+                                                                  "Online validator badge"
+                                                          }
+                                                      )
+                                                  )
+                                              );
                                     }
                                 }
                             ]),
@@ -11976,13 +12044,13 @@
                                               alt: "Error"
                                           })
                                         : this.state.loaded
-                                          ? c.default.createElement("img", {
-                                                src: this.props.src,
-                                                alt: this.props.alt
-                                            })
-                                          : c.default.createElement("img", {
-                                                alt: "Loading..."
-                                            });
+                                        ? c.default.createElement("img", {
+                                              src: this.props.src,
+                                              alt: this.props.alt
+                                          })
+                                        : c.default.createElement("img", {
+                                              alt: "Loading..."
+                                          });
                                 }
                             }
                         ]),
@@ -12525,10 +12593,10 @@
                                                 className: _
                                                     ? "opblock opblock-deprecated"
                                                     : z
-                                                      ? "opblock opblock-" +
-                                                        o +
-                                                        " is-open"
-                                                      : "opblock opblock-" + o,
+                                                    ? "opblock opblock-" +
+                                                      o +
+                                                      " is-open"
+                                                    : "opblock opblock-" + o,
                                                 id: t
                                             },
                                             c.default.createElement(
@@ -13374,15 +13442,15 @@
                                   })
                                   .toArray()
                             : e
-                              ? c.default.createElement(
-                                    "div",
-                                    null,
-                                    c.default.createElement(r, {
-                                        className: "example",
-                                        value: e
-                                    })
-                                )
-                              : null;
+                            ? c.default.createElement(
+                                  "div",
+                                  null,
+                                  c.default.createElement(r, {
+                                      className: "example",
+                                      value: e
+                                  })
+                              )
+                            : null;
                     },
                     h = (function(e) {
                         function t() {
@@ -14830,15 +14898,15 @@
                                                               )
                                                             : "spec" ===
                                                               e.get("type")
-                                                              ? c.default.createElement(
-                                                                    m,
-                                                                    {
-                                                                        key: r,
-                                                                        error: e,
-                                                                        jumpToLine: t
-                                                                    }
-                                                                )
-                                                              : void 0;
+                                                            ? c.default.createElement(
+                                                                  m,
+                                                                  {
+                                                                      key: r,
+                                                                      error: e,
+                                                                      jumpToLine: t
+                                                                  }
+                                                              )
+                                                            : void 0;
                                                     })
                                                 )
                                             )
@@ -14873,8 +14941,8 @@
                                           null,
                                           t.get("source") && t.get("level")
                                               ? i(t.get("source")) +
-                                                " " +
-                                                t.get("level")
+                                                    " " +
+                                                    t.get("level")
                                               : "",
                                           t.get("path")
                                               ? c.default.createElement(
@@ -15552,49 +15620,54 @@
                     h = n(d),
                     y = r(301),
                     m = n(y),
-                    v = ((t.Markdown = m.default),
-                    (t.Container = (function(e) {
-                        function t() {
+                    v =
+                        ((t.Markdown = m.default),
+                        (t.Container = (function(e) {
+                            function t() {
+                                return (
+                                    a(this, t),
+                                    u(
+                                        this,
+                                        (
+                                            t.__proto__ ||
+                                            Object.getPrototypeOf(t)
+                                        ).apply(this, arguments)
+                                    )
+                                );
+                            }
                             return (
-                                a(this, t),
-                                u(
-                                    this,
-                                    (
-                                        t.__proto__ || Object.getPrototypeOf(t)
-                                    ).apply(this, arguments)
-                                )
-                            );
-                        }
-                        return (
-                            i(t, e),
-                            c(t, [
-                                {
-                                    key: "render",
-                                    value: function() {
-                                        var e = this.props,
-                                            t = e.fullscreen,
-                                            r = e.full,
-                                            n = o(e, ["fullscreen", "full"]);
-                                        if (t)
+                                i(t, e),
+                                c(t, [
+                                    {
+                                        key: "render",
+                                        value: function() {
+                                            var e = this.props,
+                                                t = e.fullscreen,
+                                                r = e.full,
+                                                n = o(e, [
+                                                    "fullscreen",
+                                                    "full"
+                                                ]);
+                                            if (t)
+                                                return p.default.createElement(
+                                                    "section",
+                                                    n
+                                                );
+                                            var a =
+                                                "swagger-container" +
+                                                (r ? "-full" : "");
                                             return p.default.createElement(
                                                 "section",
-                                                n
+                                                l({}, n, {
+                                                    className: s(n.className, a)
+                                                })
                                             );
-                                        var a =
-                                            "swagger-container" +
-                                            (r ? "-full" : "");
-                                        return p.default.createElement(
-                                            "section",
-                                            l({}, n, {
-                                                className: s(n.className, a)
-                                            })
-                                        );
+                                        }
                                     }
-                                }
-                            ]),
-                            t
-                        );
-                    })(p.default.Component)));
+                                ]),
+                                t
+                            );
+                        })(p.default.Component)));
                 v.propTypes = {
                     fullscreen: f.PropTypes.bool,
                     full: f.PropTypes.bool,
@@ -15627,18 +15700,19 @@
                                         var e = this.props,
                                             t = e.hide,
                                             r = e.keepContents,
-                                            n = (e.mobile,
-                                            e.tablet,
-                                            e.desktop,
-                                            e.large,
-                                            o(e, [
-                                                "hide",
-                                                "keepContents",
-                                                "mobile",
-                                                "tablet",
-                                                "desktop",
-                                                "large"
-                                            ]));
+                                            n =
+                                                (e.mobile,
+                                                e.tablet,
+                                                e.desktop,
+                                                e.large,
+                                                o(e, [
+                                                    "hide",
+                                                    "keepContents",
+                                                    "mobile",
+                                                    "tablet",
+                                                    "desktop",
+                                                    "large"
+                                                ]));
                                         if (t && !r)
                                             return p.default.createElement(
                                                 "span",
@@ -15756,75 +15830,81 @@
                 })(p.default.Component));
                 (E.propTypes = { className: f.PropTypes.string }),
                     (E.defaultProps = { className: "" });
-                var w = ((t.TextArea = function(e) {
-                    return p.default.createElement("textarea", e);
-                }),
-                (t.Input = function(e) {
-                    return p.default.createElement("input", e);
-                }),
-                (t.Select = (function(e) {
-                    function t(e, r) {
-                        a(this, t);
-                        var n = u(
-                            this,
-                            (t.__proto__ || Object.getPrototypeOf(t)).call(
+                var w =
+                    ((t.TextArea = function(e) {
+                        return p.default.createElement("textarea", e);
+                    }),
+                    (t.Input = function(e) {
+                        return p.default.createElement("input", e);
+                    }),
+                    (t.Select = (function(e) {
+                        function t(e, r) {
+                            a(this, t);
+                            var n = u(
                                 this,
-                                e,
-                                r
-                            )
-                        );
-                        j.call(n);
-                        var o = void 0;
+                                (t.__proto__ || Object.getPrototypeOf(t)).call(
+                                    this,
+                                    e,
+                                    r
+                                )
+                            );
+                            j.call(n);
+                            var o = void 0;
+                            return (
+                                (o =
+                                    void 0 !== e.value
+                                        ? e.value
+                                        : e.multiple
+                                        ? [""]
+                                        : ""),
+                                (n.state = { value: o }),
+                                n
+                            );
+                        }
                         return (
-                            (o =
-                                void 0 !== e.value
-                                    ? e.value
-                                    : e.multiple ? [""] : ""),
-                            (n.state = { value: o }),
-                            n
-                        );
-                    }
-                    return (
-                        i(t, e),
-                        c(t, [
-                            {
-                                key: "render",
-                                value: function() {
-                                    var e = this.props,
-                                        t = e.allowedValues,
-                                        r = e.multiple,
-                                        n = e.allowEmptyValue,
-                                        o = this.state.value.toJS
-                                            ? this.state.value.toJS()
-                                            : this.state.value;
-                                    return p.default.createElement(
-                                        "select",
-                                        {
-                                            multiple: r,
-                                            value: o,
-                                            onChange: this.onChange
-                                        },
-                                        n
-                                            ? p.default.createElement(
-                                                  "option",
-                                                  { value: "" },
-                                                  "--"
-                                              )
-                                            : null,
-                                        t.map(function(e, t) {
-                                            return p.default.createElement(
-                                                "option",
-                                                { key: t, value: String(e) },
-                                                e
-                                            );
-                                        })
-                                    );
+                            i(t, e),
+                            c(t, [
+                                {
+                                    key: "render",
+                                    value: function() {
+                                        var e = this.props,
+                                            t = e.allowedValues,
+                                            r = e.multiple,
+                                            n = e.allowEmptyValue,
+                                            o = this.state.value.toJS
+                                                ? this.state.value.toJS()
+                                                : this.state.value;
+                                        return p.default.createElement(
+                                            "select",
+                                            {
+                                                multiple: r,
+                                                value: o,
+                                                onChange: this.onChange
+                                            },
+                                            n
+                                                ? p.default.createElement(
+                                                      "option",
+                                                      { value: "" },
+                                                      "--"
+                                                  )
+                                                : null,
+                                            t.map(function(e, t) {
+                                                return p.default.createElement(
+                                                    "option",
+                                                    {
+                                                        key: t,
+                                                        value: String(e)
+                                                    },
+                                                    e
+                                                );
+                                            })
+                                        );
+                                    }
                                 }
-                            }
-                        ]),
-                        t
-                    );
-                })(p.default.Component)));
+                            ]),
+                            t
+                        );
+                    })(p.default.Component)));
                 (w.propTypes = {
                     allowedValues: f.PropTypes.object,
                     value: f.PropTypes.any,
@@ -16557,11 +16637,14 @@
                                                           .handleOnChange
                                                   })
                                                 : g &&
-                                                  l.default.createElement(f, {
-                                                      className:
-                                                          "body-param__example",
-                                                      value: g
-                                                  }),
+                                                      l.default.createElement(
+                                                          f,
+                                                          {
+                                                              className:
+                                                                  "body-param__example",
+                                                              value: g
+                                                          }
+                                                      ),
                                             l.default.createElement(
                                                 "div",
                                                 {
@@ -17975,16 +18058,18 @@
                                         u = a && this.getModelName(a),
                                         i = void 0,
                                         l = void 0;
-                                    switch ((t &&
-                                    (t.get("type") || t.get("properties"))
-                                        ? (i = t)
-                                        : a && (i = this.getRefSchema(u)),
-                                    (l = i && i.get("type")),
-                                    !l &&
-                                        i &&
-                                        i.get("properties") &&
-                                        (l = "object"),
-                                    l)) {
+                                    switch (
+                                        (t &&
+                                        (t.get("type") || t.get("properties"))
+                                            ? (i = t)
+                                            : a && (i = this.getRefSchema(u)),
+                                        (l = i && i.get("type")),
+                                        !l &&
+                                            i &&
+                                            i.get("properties") &&
+                                            (l = "object"),
+                                        l)
+                                    ) {
                                         case "object":
                                             return p.default.createElement(
                                                 _,
@@ -19011,17 +19096,17 @@
                                         null,
                                         !f || f.count() < 1
                                             ? d.length
-                                              ? c.default.createElement(
-                                                    "span",
-                                                    {
-                                                        style: {
-                                                            color: "red",
-                                                            fortWeight: "bold"
-                                                        }
-                                                    },
-                                                    d[0]
-                                                )
-                                              : null
+                                                ? c.default.createElement(
+                                                      "span",
+                                                      {
+                                                          style: {
+                                                              color: "red",
+                                                              fortWeight: "bold"
+                                                          }
+                                                      },
+                                                      d[0]
+                                                  )
+                                                : null
                                             : f
                                                   .map(function(t, n) {
                                                       var o = Object.assign(

@@ -5,9 +5,7 @@ var esriPortal = libraries.esriPortal;
 
 const dsExtent =
     dataset.extent.length > 0
-        ? `${dataset.extent[0][0]}, ${dataset.extent[0][1]}, ${
-              dataset.extent[1][0]
-          }, ${dataset.extent[1][1]}`
+        ? `${dataset.extent[0][0]}, ${dataset.extent[0][1]}, ${dataset.extent[1][0]}, ${dataset.extent[1][1]}`
         : undefined;
 
 return {

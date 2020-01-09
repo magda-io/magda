@@ -19,9 +19,7 @@ function Tabs(props) {
                         <li role="presentation" key={item.id}>
                             <NavLink
                                 activeClassName="mainmenu--active"
-                                to={`${props.baseUrl}/${item.id}?${
-                                    props.params
-                                }`}
+                                to={`${props.baseUrl}/${item.id}?${props.params}`}
                                 onClick={() => {
                                     props.onTabChange(item.id);
                                 }}

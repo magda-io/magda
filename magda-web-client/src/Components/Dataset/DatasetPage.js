@@ -475,7 +475,7 @@ class RecordHandler extends React.Component {
                             <div className="col-sm-8">
                                 <h1 itemProp="name">
                                     <ToggleEditor
-                                        enabled={hasEditPermissions}
+                                        editable={hasEditPermissions}
                                         value={this.props.dataset.title}
                                         onChange={datasetChange("title")}
                                         editor={textEditorFullWidth}
@@ -530,7 +530,7 @@ class RecordHandler extends React.Component {
                                     )}
                                     <div className="dataset-details-overview">
                                         <ToggleEditor
-                                            enabled={hasEditPermissions}
+                                            editable={hasEditPermissions}
                                             value={
                                                 this.props.dataset.description
                                             }
@@ -570,7 +570,7 @@ class RecordHandler extends React.Component {
                                         </div>
                                     ) : null}
                                     <ToggleEditor
-                                        enabled={hasEditPermissions}
+                                        editable={hasEditPermissions}
                                         value={dataset.contactPoint}
                                         onChange={datasetChange("contactPoint")}
                                         editor={multilineTextEditor}
@@ -587,7 +587,7 @@ class RecordHandler extends React.Component {
                                         )}
                                     </ToggleEditor>
                                     <ToggleEditor
-                                        enabled={hasEditPermissions}
+                                        editable={hasEditPermissions}
                                         value={this.props.dataset.tags}
                                         onChange={datasetChange("keywords")}
                                         editor={multiTextEditor}
@@ -615,14 +615,7 @@ class RecordHandler extends React.Component {
                                                                     .accessControl
                                                                     .ownerId
                                                             }
-                                                            url={`${
-                                                                config.authApiUrl
-                                                            }users/${
-                                                                this.props
-                                                                    .dataset
-                                                                    .accessControl
-                                                                    .ownerId
-                                                            }`}
+                                                            url={`${config.authApiUrl}users/${this.props.dataset.accessControl.ownerId}`}
                                                             contentExtractor={user =>
                                                                 user.displayName
                                                             }
@@ -646,14 +639,7 @@ class RecordHandler extends React.Component {
                                                                     .accessControl
                                                                     .orgUnitOwnerId
                                                             }
-                                                            url={`${
-                                                                config.authApiUrl
-                                                            }orgUnits/${
-                                                                this.props
-                                                                    .dataset
-                                                                    .accessControl
-                                                                    .orgUnitOwnerId
-                                                            }`}
+                                                            url={`${config.authApiUrl}orgUnits/${this.props.dataset.accessControl.orgUnitOwnerId}`}
                                                             contentExtractor={orgUnit =>
                                                                 orgUnit.name
                                                             }
@@ -696,7 +682,9 @@ class RecordHandler extends React.Component {
                                             </h4>
                                             <div>
                                                 <ToggleEditor
-                                                    enabled={hasEditPermissions}
+                                                    editable={
+                                                        hasEditPermissions
+                                                    }
                                                     value={
                                                         dataset.temporalCoverage
                                                             .intervals
@@ -725,7 +713,9 @@ class RecordHandler extends React.Component {
                                             </h4>
                                             <div>
                                                 <ToggleEditor
-                                                    enabled={hasEditPermissions}
+                                                    editable={
+                                                        hasEditPermissions
+                                                    }
                                                     value={
                                                         dataset.spatialCoverageBbox
                                                     }
@@ -759,7 +749,9 @@ class RecordHandler extends React.Component {
                                             </h4>
                                             <div>
                                                 <ToggleEditor
-                                                    enabled={hasEditPermissions}
+                                                    editable={
+                                                        hasEditPermissions
+                                                    }
                                                     value={
                                                         dataset.provenance
                                                             .mechanism
@@ -773,7 +765,9 @@ class RecordHandler extends React.Component {
                                             <h4>Source system:</h4>
                                             <div>
                                                 <ToggleEditor
-                                                    enabled={hasEditPermissions}
+                                                    editable={
+                                                        hasEditPermissions
+                                                    }
                                                     value={
                                                         dataset.provenance
                                                             .sourceSystem
@@ -795,7 +789,9 @@ class RecordHandler extends React.Component {
                                             </h4>
                                             <div>
                                                 <ToggleEditor
-                                                    enabled={hasEditPermissions}
+                                                    editable={
+                                                        hasEditPermissions
+                                                    }
                                                     value={
                                                         dataset
                                                             .informationSecurity
@@ -816,7 +812,9 @@ class RecordHandler extends React.Component {
                                             </h4>
                                             <div>
                                                 <ToggleEditor
-                                                    enabled={hasEditPermissions}
+                                                    editable={
+                                                        hasEditPermissions
+                                                    }
                                                     value={
                                                         dataset
                                                             .informationSecurity
@@ -906,9 +904,7 @@ class RecordHandler extends React.Component {
                 return (
                     <li key="datasetId">
                         <Link
-                            to={`/dataset/${this.props.match.params[p]}${
-                                this.props.location.search
-                            }`}
+                            to={`/dataset/${this.props.match.params[p]}${this.props.location.search}`}
                         >
                             {this.props.dataset.title}
                         </Link>
@@ -969,7 +965,7 @@ function mapStateToProps(state) {
         distributionFetchError,
         datasetFetchError,
         strings: state.content.strings,
-        hasEditPermissions
+        hasEditPermissions: hasEditPermissions ? true : false
     };
 }
 
@@ -984,7 +980,4 @@ const mapDispatchToProps = dispatch => {
         dispatch
     );
 };
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(RecordHandler);
+export default connect(mapStateToProps, mapDispatchToProps)(RecordHandler);

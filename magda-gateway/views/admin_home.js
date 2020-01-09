@@ -21,10 +21,12 @@ addSection("Home Features", async function(body) {
             `/api/v0/content/all?id=home/highlights/*&inline=true`
         );
 
-        (await request(
-            "GET",
-            `/api/v0/content/all?id=home/highlight-images/*&inline=true`
-        )).forEach(img => {
+        (
+            await request(
+                "GET",
+                `/api/v0/content/all?id=home/highlight-images/*&inline=true`
+            )
+        ).forEach(img => {
             let id = img.id.replace("highlight-images", "highlights");
             id = id.substr(0, id.lastIndexOf("/"));
             if (files.filter(f => f.id === id).length === 0) {

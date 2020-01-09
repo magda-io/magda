@@ -78,7 +78,8 @@
   "magda": {
     "language": "typescript",
     "categories": {
-      "api": true
+      "api": true,
+      "testStandAlone": false
     }
   },
   "_moduleMappings": {

@@ -174,28 +174,30 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 requestContentId,
                 req.header("X-Magda-Session")
             );
-            const { content, format } = (await contentPromise.caseOf({
-                just: content =>
-                    Promise.resolve(
-                        Maybe.just({
-                            format: requestFormat,
-                            content
-                        })
-                    ),
-                nothing: async () => {
-                    const tempContentId = req.path.substr(1);
-                    const tempContentMaybe = await database.getContentById(
-                        tempContentId
-                    );
-
-                    return tempContentMaybe.map(content => ({
-                        format: tempContentId.substr(
-                            tempContentId.lastIndexOf(".") + 1
+            const { content, format } = (
+                await contentPromise.caseOf({
+                    just: content =>
+                        Promise.resolve(
+                            Maybe.just({
+                                format: requestFormat,
+                                content
+                            })
                         ),
-                        content
-                    }));
-                }
-            })).valueOrThrow(
+                    nothing: async () => {
+                        const tempContentId = req.path.substr(1);
+                        const tempContentMaybe = await database.getContentById(
+                            tempContentId
+                        );
+
+                        return tempContentMaybe.map(content => ({
+                            format: tempContentId.substr(
+                                tempContentId.lastIndexOf(".") + 1
+                            ),
+                            content
+                        }));
+                    }
+                })
+            ).valueOrThrow(
                 new GenericError(
                     `Unsupported configuration item requested: ${requestContentId}.${requestFormat}`,
                     404

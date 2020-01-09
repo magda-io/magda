@@ -111,9 +111,7 @@ class FacetHeader extends Component {
             } else {
                 return (
                     <span>
-                        {`${this.props.title}s : ${
-                            this.props.activeOptions.length
-                        }`}{" "}
+                        {`${this.props.title}s : ${this.props.activeOptions.length}`}{" "}
                     </span>
                 );
             }

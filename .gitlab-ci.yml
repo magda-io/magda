@@ -8,7 +8,7 @@ variables:
     -Dsbt.boot.directory=$CI_PROJECT_DIR/sbt-cache/boot
     -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
   # If you changed dependencies (especially for scala), you might want to prevent your branch from using old cache by increase the version blew
-  # gitlab actually use the same technique when you click the `Clear Cache Button` 
+  # gitlab actually use the same technique when you click the `Clear Cache Button`
   CACHE_VERSION: ts-6-scala-5
 
 stages:
@@ -314,10 +314,50 @@ buildtest:typescript-apis:
     - cd deploy/helm/magda/charts/opa
     - docker-compose up -d
     - cd ../../../../..
-    - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run build --include-filtered-dependencies
-    - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run test --include-filtered-dependencies
+    - yarn run in-submodules -- -f categories.api=true -f categories.testStandAlone=false -f language=typescript -- run build --include-filtered-dependencies
+    - yarn run in-submodules -- -f categories.api=true -f categories.testStandAlone=false -f language=typescript -- run test --include-filtered-dependencies
     - cd magda-typescript-common && yarn test && cd ..
     - cd deploy/helm/magda/charts/opa
+    - docker-compose down
+  artifacts:
+    paths:
+      - "*/dist"
+    expire_in: 7 days
+
+buildtest:storage-api:
+  stage: buildtest
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
+  retry: 1
+  dependencies:
+    - builders-and-yarn
+    - registry-typescript-api
+  before_script:
+    - |
+      if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
+        export DOCKER_HOST='tcp://localhost:2375'
+      fi
+    - docker info
+    - apk update
+    - apk upgrade
+    - apk add python3 python3-dev py3-pip build-base openssl-dev libffi-dev
+    - pip3 install --upgrade pip
+    - pip3 install docker-compose
+    - docker-compose --version
+  cache:
+    key: $CI_JOB_NAME-$CACHE_VERSION
+    paths:
+      - "$CI_PROJECT_DIR/pip-cache"
+  services:
+    - docker:dind
+  variables:
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
+    MINIO_HOST: "docker"
+    MINIO_PORT: "9000"
+  script:
+    - cd magda-storage-api
+    - docker-compose up -d
+    - yarn run build
+    - yarn run test
     - docker-compose down
   artifacts:
     paths:
@@ -431,6 +471,7 @@ dockerize:typescript-apis:
     - builders-and-yarn
     - registry-typescript-api
     - buildtest:typescript-apis
+    - buildtest:storage-api
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
@@ -517,6 +558,10 @@ dockerize:dockerExtensions:
     - JWT_SECRET="${JWT_SECRET:-$(pwgen 16 1)}"
     - SESSION_SECRET="${SESSION_SECRET:-$(pwgen 16 1)}"
     - DB_PASSWORD="${DB_PASSWORD:-p4ssw0rd}"
+    - MINIO_HOST="${MINIO_HOST:-localhost}"
+    - MINIO_PORT="${MINIO_PORT:-9000}"
+    - MINIO_ACCESS_KEY="${MINIO_ACCESS_KEY:-}"
+    - MINIO_SECRET_KEY="${MINIO_SECRET_KEY:-}"
 
     # Kube Config
     - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
@@ -530,9 +575,10 @@ dockerize:dockerExtensions:
     - kubectl create secret docker-registry regcred --namespace $CI_COMMIT_REF_SLUG --docker-server=registry.gitlab.com --docker-username=gitlab-ci-token --docker-password=$CI_JOB_TOKEN --docker-email=alex.gilleran@data61.csiro.au --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
     - kubectl create secret generic db-passwords --from-literal=combined-db=$DB_PASSWORD --from-literal=authorization-db=$DB_PASSWORD --from-literal=content-db=$DB_PASSWORD --from-literal=session-db=$DB_PASSWORD  --from-literal=registry-db=$DB_PASSWORD --from-literal=combined-db-client=$DB_PASSWORD --from-literal=authorization-db-client=$DB_PASSWORD --from-literal=content-db-client=$DB_PASSWORD --from-literal=session-db-client=$DB_PASSWORD --from-literal=registry-db-client=$DB_PASSWORD --from-literal=tenant-db=$DB_PASSWORD --from-literal=tenant-db-client=$DB_PASSWORD --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
     - kubectl create secret generic oauth-secrets --from-literal=facebook-client-secret=$FACEBOOK_CLIENT_SECRET --from-literal=google-client-secret=$GOOGLE_CLIENT_SECRET --from-literal arcgis-client-secret=$ARCGIS_CLIENT_SECRET --from-literal vanguard-certificate="$VANGUARD_CERT" --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
-    - "kubectl create secret generic smtp-secret --from-literal=username=$SMTP_USERNAME --from-literal=password=$SMTP_PASSWORD --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -"
+    - kubectl create secret generic smtp-secret --from-literal=username=$SMTP_USERNAME --from-literal=password=$SMTP_PASSWORD --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
     - echo "$DB_SERVICE_ACCOUNT_PRIVATE_KEY" > db-service-account-private-key.json
     - kubectl create secret generic storage-account-credentials --from-file db-service-account-private-key.json --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
+    - kubectl create secret generic storage-secrets --from-literal=accesskey=$MINIO_ACCESS_KEY --from-literal=secretkey=$MINIO_SECRET_KEY --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
 
     # Helm upgrade
     - helm init --upgrade
