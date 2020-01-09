@@ -153,4 +153,60 @@ describe("Storage API tests", () => {
                 });
         });
     });
+
+    describe("Delete", () => {
+        it("Uploading and then deleting a simple file", () => {
+            return request(app)
+                .put("/v0/" + bucketName + "/delete-test-file-1")
+                .set("Accept", "application/json")
+                .set("Content-Type", "text/plain")
+                .send("Testing delete")
+                .expect(200)
+                .then(_res => {
+                    return request(app)
+                        .delete("/v0/" + bucketName + "/delete-test-file-1")
+                        .expect(200)
+                        .expect({ message: "File deleted successfully" })
+                        .then(_res => {
+                            return request(app)
+                                .get(
+                                    "/v0/" + bucketName + "/delete-test-file-1"
+                                )
+                                .set("Accept", "application/json")
+                                .set("Accept", "text/plain")
+                                .expect(404);
+                        });
+                });
+        });
+
+        it("Uploading and then deleting : Empty content", () => {
+            return request(app)
+                .put("/v0/" + bucketName + "/delete-test-file-2")
+                .set("Accept", "application/json")
+                .set("Content-Type", "text/plain")
+                .send("")
+                .expect(200)
+                .then(_res => {
+                    return request(app)
+                        .delete("/v0/" + bucketName + "/delete-test-file-2")
+                        .expect(200)
+                        .expect({ message: "File deleted successfully" })
+                        .then(_res => {
+                            return request(app)
+                                .get(
+                                    "/v0/" + bucketName + "/delete-test-file-2"
+                                )
+                                .set("Accept", "application/json")
+                                .set("Accept", "text/plain")
+                                .expect(404);
+                        });
+                });
+        });
+
+        it("Deleting non-existent file", () => {
+            return request(app)
+                .delete("/v0/" + bucketName + "/nonexistent-file-dfijgy45")
+                .expect(200);
+        });
+    });
 });
