@@ -57,7 +57,7 @@ $ curl -X PUT -H "Content-Type:text/csv" localhost:6121/v0/test-bucket/myFavouri
 ### GET /:bucket/:fileid
 
 Attempts to retrieve content with the name `<fileid>` from the MinIO server
-that is stored in `<bucket>` specified in config while starting the server.
+that is stored in `<bucket>`.
 
 #### Example usage
 
@@ -67,6 +67,20 @@ column1,column2
 A,1234
 B,4321
 C,2007
+```
+
+### DELETE /:bucket/:fileid
+
+Deletes object with the name `<fileid>` from the MinIO server
+that is stored in `<bucket>`.
+
+_Note_ Does **not** throw an error if the object does not exist.
+
+#### Example usage
+
+```console
+$ curl -X DELETE localhost:6121/v0/test-bucket/myFavouriteCSV
+{ message: "File deleted successfully" }
 ```
 
 ### Note
