@@ -101,5 +101,28 @@ export default function createApiRouter(options: ApiRouterOptions) {
             });
     });
 
+    // Remove/Delete an object
+    router.delete("/:bucket/:fileid", async function(req, res) {
+        const fileId = req.params.fileid;
+        const bucket = req.params.bucket;
+        const encodedRootPath = encodeURIComponent(fileId);
+        const encodeBucketname = encodeURIComponent(bucket);
+        const deletionSuccess = await options.objectStoreClient.deleteFile(
+            encodeBucketname,
+            encodedRootPath
+        );
+        console.log("deletionSuccess: ", deletionSuccess);
+        if (deletionSuccess) {
+            return res.status(200).send({
+                message: "File deleted successfully"
+            });
+        }
+        return res.status(500).send({
+            message:
+                "Encountered error while deleting file." +
+                "This has been logged and we are looking into this."
+        });
+    });
+
     return router;
 }

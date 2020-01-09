@@ -8,4 +8,5 @@ export default interface ObjectStoreClient {
         content: any,
         metaData?: object
     ): Promise<any>;
+    deleteFile(bucket: string, name: string): Promise<boolean>;
 }

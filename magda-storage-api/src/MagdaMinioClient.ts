@@ -122,4 +122,26 @@ export default class MagdaMinioClient implements ObjectStoreClient {
             );
         });
     }
+
+    /**
+     *
+     * @param bucket Bucket to remove the object from
+     * @param objectName Name of the object in the bucket
+     * @returns Whether or not deletion has been successful
+     */
+    deleteFile(bucket: string, objectName: string): Promise<boolean> {
+        return new Promise((resolve, _reject) => {
+            return this.client.removeObject(bucket, objectName, function(
+                err: any
+            ) {
+                console.log(err);
+                if (err) {
+                    console.error("Unable to remove object: ", err);
+                    return resolve(false);
+                }
+                console.log("Removed the object " + objectName);
+                return resolve(true);
+            });
+        });
+    }
 }
