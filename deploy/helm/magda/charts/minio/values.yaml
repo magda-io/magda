@@ -1,10 +1,10 @@
 ## Provide a name in place of minio for `app:` labels
 ##
-nameOverride: ""
+nameOverride: "magda-minio"
 
 ## Provide a name to substitute for the full names of resources
 ##
-fullnameOverride: ""
+fullnameOverride: "magda-minio"
 
 ## set kubernetes cluster domain where minio is running
 ##

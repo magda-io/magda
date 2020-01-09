@@ -41,7 +41,7 @@ const argv = yargs
     .option("minioRegion", {
         describe: "Region where the server is being created.",
         type: "string",
-        default: "us-east-1"
+        default: "unspecified-region"
     }).argv;
 
 var app = express();
