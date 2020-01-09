@@ -160,7 +160,7 @@ class RecordHistoryService(system: ActorSystem, materializer: Materializer)
         code = 404,
         message =
           "No record exists with the given ID, it does not have a CreateRecord event, or it has been deleted.",
-        response = classOf[BadRequest]
+        response = classOf[ApiError]
       )
     )
   )
@@ -190,7 +190,7 @@ class RecordHistoryService(system: ActorSystem, materializer: Materializer)
                   case None =>
                     complete(
                       StatusCodes.NotFound,
-                      BadRequest(
+                      ApiError(
                         "No record exists with that ID, it does not have a CreateRecord event, or it has been deleted."
                       )
                     )

@@ -82,7 +82,7 @@ class RecordsServiceSpec extends ApiSpec {
           .api(role)
           .routes ~> check {
           status shouldEqual StatusCodes.NotFound
-          responseAs[BadRequest].message should include("exist")
+          responseAs[ApiError].message should include("exist")
         }
       }
 
@@ -127,7 +127,7 @@ class RecordsServiceSpec extends ApiSpec {
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.NotFound
-            responseAs[BadRequest].message should include("exist")
+            responseAs[ApiError].message should include("exist")
           }
       }
 
@@ -2893,7 +2893,7 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
-          responseAs[BadRequest].message should include("already exists")
+          responseAs[ApiError].message should include("already exists")
         }
 
         param.asAdmin(Post("/v0/records", updated)) ~> addTenantIdHeader(
@@ -3081,7 +3081,7 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
-          responseAs[BadRequest].message should include(
+          responseAs[ApiError].message should include(
             "does not match the record"
           )
         }
@@ -3230,8 +3230,8 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
-          responseAs[BadRequest].message should include("exists")
-          responseAs[BadRequest].message should include("ID")
+          responseAs[ApiError].message should include("exists")
+          responseAs[ApiError].message should include("ID")
         }
       }
 
@@ -3294,7 +3294,7 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
-          responseAs[BadRequest].message should include("ID")
+          responseAs[ApiError].message should include("ID")
         }
       }
 
@@ -3784,7 +3784,7 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
-          responseAs[BadRequest].message should include("test failed")
+          responseAs[ApiError].message should include("test failed")
         }
       }
 
@@ -3824,7 +3824,7 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
-          responseAs[BadRequest].message should include("two different aspects")
+          responseAs[ApiError].message should include("two different aspects")
         }
       }
 
@@ -3864,7 +3864,7 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
-          responseAs[BadRequest].message should include("two different aspects")
+          responseAs[ApiError].message should include("two different aspects")
         }
       }
 

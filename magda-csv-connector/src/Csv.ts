@@ -50,9 +50,7 @@ export default class Csv implements ConnectorSource {
         function next() {
             const slice = data.splice(0, 100);
             console.log(
-                `Returning a slice of ${slice.length} rows of data from ${
-                    data.length
-                } more rows!`
+                `Returning a slice of ${slice.length} rows of data from ${data.length} more rows!`
             );
             return slice.length
                 ? new Promise(resolve => resolve(slice))

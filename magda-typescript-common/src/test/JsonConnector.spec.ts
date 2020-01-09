@@ -93,9 +93,7 @@ describe("JsonConnector", () => {
 
             scope
                 .delete(
-                    `/records?sourceTagToPreserve=${
-                        connector.sourceTag
-                    }&sourceId=${connector.source.id}`
+                    `/records?sourceTagToPreserve=${connector.sourceTag}&sourceId=${connector.source.id}`
                 )
                 .reply(201, { count: 1 });
 

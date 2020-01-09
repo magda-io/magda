@@ -44,7 +44,7 @@ gateway:
       objectSrc:
       - "''none''"
       reportUri: https://sdga.report-uri.com/r/d/csp/enforce
-      
+
 combined-db:
   waleBackup:
     method: WAL
@@ -84,7 +84,7 @@ web-server:
   fallbackUrl: "https://data.gov.au"
   featureFlags:
     cataloguing: true
-  vocabularyApiEndpoints: 
+  vocabularyApiEndpoints:
     - "https://vocabs.ands.org.au/repository/api/lda/abares/australian-land-use-and-management-classification/version-8/concept.json"
     - "https://vocabs.ands.org.au/repository/api/lda/neii/australian-landscape-water-balance/version-1/concept.json"
     - "https://vocabs.ands.org.au/repository/api/lda/ands-nc/controlled-vocabulary-for-resource-type-genres/version-1-1/concept.json"
@@ -93,3 +93,8 @@ correspondence-api:
   alwaysSendToDefaultRecipient: true
   smtpHostname: "smtp.mailgun.org"
   smtpPort: 2525
+
+storage-api:
+  minio:
+    host: "localhost"
+    port: 9000

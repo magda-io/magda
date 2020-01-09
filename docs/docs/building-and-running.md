@@ -24,7 +24,7 @@ You'll also need a Kubernetes cluster - to develop locally this means installing
 
 ## Trying it out locally
 
-If you just want to try it out locally without actually changing anything, it's much easier to just install [minikube](https://magda.io/docs/installing-minikube.md) or [docker for desktop](https://github.com/magda-io/magda/blob/master/docs/docs/installing-docker-k8s.md), then following the instructions at [https://github.com/magda-io/magda-config](https://github.com/magda-io/magda-config). What follows is instructions on how to build _everything_, code, databases and all, from scratch into a working application.
+If you just want to try it out locally without actually changing anything, it's much easier to just install [minikube](https://magda.io/docs/installing-minikube.md) or [docker for desktop](https://github.com/magda-io/magda/blob/master/docs/docs/installing-docker-k8s.md), then following the instructions at [https://github.com/magda-io/magda-config/blob/master/legacy.md](https://github.com/magda-io/magda-config/blob/master/legacy.md). What follows is instructions on how to build _everything_, code, databases and all, from scratch into a working application.
 
 ## Building and running (just) the frontend
 
@@ -184,7 +184,7 @@ helm upgrade magda -f deploy/helm/minikube-dev.yml deploy/helm/magda
 
 Now when I go to `http://${minikube ip}/api/v0/search`, it'll be proxied to my local search rather than the one in minikube.
 
-Be aware that if your local service has to connect to the database or other microservices in minikube you'll have to use `kube-port-forward` to proxy from `localhost:{port}` to the appropriate service in minikube - you can find a list of ports at https://github.com/TerriaJS/magda/blob/master/doc/local-ports.md.
+Be aware that if your local service has to connect to the database or other microservices in minikube you'll have to use `kube-port-forward` to proxy from `localhost:{port}` to the appropriate service in minikube - you can find a list of ports at https://github.com/magda-io/magda/blob/master/doc/local-ports.md.
 
 In the likely even you need to figure out what the jwt shared secret is on your minikube, you can cheat by opening up a shell to a container that has that secret and echoing the environment variable:
 

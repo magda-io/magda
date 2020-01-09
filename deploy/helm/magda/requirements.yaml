@@ -75,6 +75,10 @@ dependencies:
     tags:
       - all
       - opa
+  - name: storage-api
+    tags:
+      - all
+      - storage-api
   - name: tenant-api
     condition: global.enableMultiTenants
     tags:

@@ -1,8 +1,10 @@
 import React from "react";
-import RequestFormLogic from "Components/Dataset/Suggest/RequestFormLogic";
-import "./DatasetPageSuggestForm.scss";
-import AUbutton from "pancake/react/buttons";
 import Modal from "react-modal";
+import AUbutton from "pancake/react/buttons";
+
+import RequestFormLogic from "Components/Dataset/Suggest/RequestFormLogic";
+
+import "./DatasetPageSuggestForm.scss";
 
 //This is the question/report on a dataset form on the
 //individual dataset page
@@ -57,6 +59,14 @@ export default class DatasetPageSuggestForm extends React.Component {
         this.props.toggleMargin(!this.state.showSuggest);
     };
 
+    printPage = () => {
+        // If the page isn't stopped, window.print will simply do nothing.
+        if (window.stop) {
+            window.stop();
+        }
+        window.print();
+    };
+
     render() {
         //parameters of the modal pop out
         const customStyles = {
@@ -96,10 +106,11 @@ export default class DatasetPageSuggestForm extends React.Component {
                         </AUbutton>
                     </div>
                 )}
+
                 <div className="dataset-button-container no-print">
                     <AUbutton
                         className="au-btn--secondary ask-question-button"
-                        onClick={() => window.print()}
+                        onClick={this.printPage}
                     >
                         Print this page
                     </AUbutton>
