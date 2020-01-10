@@ -233,6 +233,7 @@ buildtest:ui:
 
 buildtest:registry:
   stage: buildtest
+  retry: 1
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   dependencies:
     - builders-and-yarn
