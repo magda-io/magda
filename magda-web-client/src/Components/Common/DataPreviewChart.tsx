@@ -10,7 +10,6 @@ import memoize from "memoize-one";
 import { gapi } from "analytics/ga";
 import { DataLoadingResult } from "helpers/CsvDataLoader";
 import { ParsedDistribution } from "helpers/record";
-import FileTooBigError from "./FileTooBigError";
 
 import "./DataPreviewChart.scss";
 
@@ -220,9 +219,33 @@ class DataPreviewChart extends Component<PropsType, StateType> {
 
         if (
             this.props.dataLoadingResult &&
-            this.props.dataLoadingResult.failureReason
+            this.props.dataLoadingResult.failureReason &&
+            this.props.dataLoadingResult.failureReason === "toobig"
         ) {
-            return <FileTooBigError />;
+            return (
+                <AUpageAlert as="error" className="notification__inner">
+                    {/* <h3>Oops</h3> */}
+                    <p>
+                        This dataset is{" "}
+                        {this.props.dataLoadingResult.fileLength}. Do you still
+                        want to preview it?
+                    </p>
+                    <p>
+                        <button
+                            onClick={this.onDismissError}
+                            className="switch-tab-btn"
+                        >
+                            Preview Anyway
+                        </button>
+                        <button
+                            onClick={this.onDismissError}
+                            className="switch-tab-btn"
+                        >
+                            Switch to table view
+                        </button>
+                    </p>
+                </AUpageAlert>
+            );
         }
 
         return (

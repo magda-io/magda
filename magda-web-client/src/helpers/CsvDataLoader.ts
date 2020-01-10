@@ -9,6 +9,7 @@ export type CsvFailureReason = "toobig" | "sizeunknown" | null;
 export interface DataLoadingResult {
     parseResult?: ParseResult;
     failureReason?: CsvFailureReason;
+    fileLength?: number;
 }
 
 type CsvUrlType = string;
@@ -147,7 +148,7 @@ class CsvDataLoader {
         if (fileLength === null) {
             return { failureReason: "sizeunknown" };
         } else if (fileLength > config.csvLoaderChunkSize) {
-            return { failureReason: "toobig" };
+            return { failureReason: "toobig", fileLength };
         } else {
             csvRes = await fetch(proxyUrl);
         }
