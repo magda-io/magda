@@ -17,32 +17,32 @@ import DataPreviewSizeWarning from "./DataPreviewSizeWarning";
 const DATA_SOURCE_PREFERENCE = [
     {
         format: "WMS",
-        tiled: true
+        singleFile: false
     },
     {
         format: "ESRI REST",
         urlRegex: /MapServer/,
-        tiled: true
+        singleFile: false
     },
     {
         format: "WFS",
-        tiled: true
+        singleFile: false
     },
     {
         format: "GeoJSON",
-        tiled: false
+        singleFile: true
     },
     {
         format: "csv-geo-au",
-        tiled: false
+        singleFile: true
     },
     {
         format: "KML",
-        tiled: false
+        singleFile: true
     },
     {
         format: "KMZ",
-        tiled: false
+        singleFile: true
     }
 ];
 
@@ -152,7 +152,9 @@ function DataPreviewMap(props: { bestDist: BestDist }) {
         (async () => {
             setLoading(true);
 
-            if (!DATA_SOURCE_PREFERENCE[props.bestDist.index].tiled) {
+            // If previewing this data involves downloading a single (potentially massive)
+            // file, check the file size first. If it's a service, just display it.
+            if (DATA_SOURCE_PREFERENCE[props.bestDist.index].singleFile) {
                 setFileSizeCheckResult(
                     await checkFileForPreview(props.bestDist.dist)
                 );
