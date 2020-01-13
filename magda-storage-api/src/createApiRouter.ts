@@ -76,10 +76,12 @@ export default function createApiRouter(options: ApiRouterOptions) {
         const bucket = req.params.bucket;
         const encodedRootPath = encodeURIComponent(fileId);
         const encodeBucketname = encodeURIComponent(bucket);
+        const recordId = req.headers["X-Magda-Record-Id"];
         const content = req.body;
         const metaData = {
             "Content-Type": req.headers["content-type"],
-            "Content-Length": req.headers["content-length"]
+            "Content-Length": req.headers["content-length"],
+            "Magda-Record-Id": recordId
         };
         return options.objectStoreClient
             .putFile(encodeBucketname, encodedRootPath, content, metaData)
