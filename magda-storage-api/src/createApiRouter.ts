@@ -1,4 +1,3 @@
-import { ApiError } from "@google-cloud/common";
 import express from "express";
 import { OutgoingHttpHeaders } from "http";
 import ObjectStoreClient from "./ObjectStoreClient";
@@ -49,15 +48,13 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 }
             });
         } catch (err) {
-            if (err instanceof ApiError) {
-                if (err.code === 404) {
-                    res.status(404).send(
-                        "No such object with fileId " +
-                            fileId +
-                            " in bucket " +
-                            bucket
-                    );
-                }
+            if (err.code === "NotFound") {
+                res.status(404).send(
+                    "No such object with fileId " +
+                        fileId +
+                        " in bucket " +
+                        bucket
+                );
             }
             res.status(500).send("Unknown error");
         }
@@ -99,6 +96,29 @@ export default function createApiRouter(options: ApiRouterOptions) {
                         "This has been logged and we are looking into this."
                 });
             });
+    });
+
+    // Remove/Delete an object
+    router.delete("/:bucket/:fileid", async function(req, res) {
+        const fileId = req.params.fileid;
+        const bucket = req.params.bucket;
+        const encodedRootPath = encodeURIComponent(fileId);
+        const encodeBucketname = encodeURIComponent(bucket);
+        const deletionSuccess = await options.objectStoreClient.deleteFile(
+            encodeBucketname,
+            encodedRootPath
+        );
+        console.log("deletionSuccess: ", deletionSuccess);
+        if (deletionSuccess) {
+            return res.status(200).send({
+                message: "File deleted successfully"
+            });
+        }
+        return res.status(500).send({
+            message:
+                "Encountered error while deleting file." +
+                "This has been logged and we are looking into this."
+        });
     });
 
     return router;
