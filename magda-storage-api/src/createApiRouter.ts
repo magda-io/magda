@@ -4,7 +4,9 @@ import ObjectStoreClient from "./ObjectStoreClient";
 import bodyParser from "body-parser";
 
 export interface ApiRouterOptions {
+    registryApiUrl: string;
     objectStoreClient: ObjectStoreClient;
+    jwtSecret: string;
 }
 
 export default function createApiRouter(options: ApiRouterOptions) {
