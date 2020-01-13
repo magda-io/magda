@@ -24,8 +24,8 @@ vocabularyApiEndpoints: []
 defaultContactEmail: "mail@example.com"
 custodianOrgLevel: 2
 maxCsvProcessingRows: 20000
-# default chunk size 2MB
-csvLoaderChunkSize: 2097152
+# default max preview file size 2mib
+automaticPreviewMaxFileSize: 2097152
 mandatoryFields:
   - dataset.title
   - dataset.description

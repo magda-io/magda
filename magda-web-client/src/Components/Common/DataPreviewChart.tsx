@@ -217,37 +217,6 @@ class DataPreviewChart extends Component<PropsType, StateType> {
                 </AUpageAlert>
             );
 
-        if (
-            this.props.dataLoadingResult &&
-            this.props.dataLoadingResult.failureReason &&
-            this.props.dataLoadingResult.failureReason === "toobig"
-        ) {
-            return (
-                <AUpageAlert as="error" className="notification__inner">
-                    {/* <h3>Oops</h3> */}
-                    <p>
-                        This dataset is{" "}
-                        {this.props.dataLoadingResult.fileLength}. Do you still
-                        want to preview it?
-                    </p>
-                    <p>
-                        <button
-                            onClick={this.onDismissError}
-                            className="switch-tab-btn"
-                        >
-                            Preview Anyway
-                        </button>
-                        <button
-                            onClick={this.onDismissError}
-                            className="switch-tab-btn"
-                        >
-                            Switch to table view
-                        </button>
-                    </p>
-                </AUpageAlert>
-            );
-        }
-
         return (
             <div className="row data-preview-chart">
                 <div className="col-sm-8 chart-panel-container">

@@ -146,8 +146,9 @@ const argv = yargs
             "Max number of CSV data file rows to try to process for previews. This is important because some servers (CKAN) will return a full file even if only part of it is requested, which can mean the user's browser processing megabytes of CSV rows locally. Set to -1 for no limit",
         type: "number"
     })
-    .option("csvLoaderChunkSize", {
-        describe: "The size of the csv loader processing chunk (in bytes)",
+    .option("automaticPreviewMaxFileSize", {
+        describe:
+            "The maximum size (in bytes) to automatically preview a file in the UI. If the file is determined to be over this size the user will be prompted before previewing",
         type: "number"
     })
     .option("mandatoryFields", {
@@ -240,7 +241,7 @@ const webServerConfig = {
     defaultContactEmail: argv.defaultContactEmail,
     custodianOrgLevel: argv.custodianOrgLevel,
     maxCsvProcessingRows: argv.maxCsvProcessingRows,
-    csvLoaderChunkSize: argv.csvLoaderChunkSize,
+    automaticPreviewMaxFileSize: argv.automaticPreviewMaxFileSize,
     mandatoryFields: argv.mandatoryFields
 };
 

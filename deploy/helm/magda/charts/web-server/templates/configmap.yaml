@@ -19,7 +19,7 @@ data:
     {{- end }}
     "custodianOrgLevel": {{ toJson .Values.custodianOrgLevel | quote }},
     "maxCsvProcessingRows": {{ toJson .Values.maxCsvProcessingRows | quote }},
-    "csvLoaderChunkSize": {{ toJson .Values.csvLoaderChunkSize | quote }},
+    "automaticPreviewMaxFileSize": {{ toJson .Values.automaticPreviewMaxFileSize | quote }},
     {{- if .Values.mandatoryFields }}
     "mandatoryFields": {{ toJson .Values.mandatoryFields | quote }}
     {{- end }}

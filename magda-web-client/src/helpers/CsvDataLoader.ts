@@ -1,9 +1,10 @@
 import { config } from "../config";
-import URI from "urijs";
+
 // --- as we only import types here, no runtime code will be emitted.
 // --- And papaparse will not be included by the main js bundle
 import { Parser, ParseResult, ParseError, ParseMeta } from "papaparse";
 import { ParsedDistribution } from "./record";
+import { convertToAbsoluteUrl, getSourceUrl } from "./DistributionPreviewUtils";
 
 export type CsvFailureReason = "toobig" | "sizeunknown" | null;
 export interface DataLoadingResult {
@@ -70,24 +71,7 @@ class CsvDataLoader {
     private skipComplete: boolean = false;
 
     constructor(source: CsvSourceType) {
-        this.url = this.getSourceUrl(source);
-    }
-
-    private getSourceUrl(source: CsvSourceType): string {
-        if (typeof source === "string") {
-            return source;
-        }
-        if (source.downloadURL) {
-            return source.downloadURL;
-        }
-        if (source.accessURL) {
-            return source.accessURL;
-        }
-        throw new Error(
-            `Failed to determine CSV data source url for distribution id: ${
-                source.identifier
-            }`
-        );
+        this.url = getSourceUrl(source);
     }
 
     private resetDownloadData() {
@@ -104,54 +88,12 @@ class CsvDataLoader {
         this.toBeAborted = true;
     }
 
-    convertToAbsoluteUrl(url) {
-        if (url[0] !== "/") return url;
-        return URI(location.href).origin() + url;
-    }
-
-    /**
-     * Does a HEAD to get the length of the file at a URL
-     */
-    async getFileLength(url: string) {
-        const res = await fetch(url, {
-            method: "HEAD"
-        });
-
-        const contentLength = res.headers.get("content-length");
-        if (contentLength !== null) {
-            return Number(contentLength);
-        }
-
-        const contentRange = res.headers.get("content-range");
-        if (contentRange !== null) {
-            const split = contentRange.split("/");
-            const length = split[1];
-
-            if (length !== "*" && !Number.isNaN(Number.parseInt(length))) {
-                return Number.parseInt(length);
-            }
-        }
-
-        return null;
-    }
-
     async load(overrideNewLine?: string): Promise<DataLoadingResult> {
         this.resetDownloadData();
         const proxyUrl =
-            this.convertToAbsoluteUrl(config.proxyUrl) + "_0d/" + this.url;
+            convertToAbsoluteUrl(config.proxyUrl) + "_0d/" + this.url;
 
-        const fileLength = await this.getFileLength(proxyUrl);
-
-        console.log(fileLength);
-
-        let csvRes: Response;
-        if (fileLength === null) {
-            return { failureReason: "sizeunknown" };
-        } else if (fileLength > config.csvLoaderChunkSize) {
-            return { failureReason: "toobig", fileLength };
-        } else {
-            csvRes = await fetch(proxyUrl);
-        }
+        const csvRes = await fetch(proxyUrl);
 
         if (!csvRes.ok) {
             throw new Error("Could not retrieve csv: " + csvRes.statusText);
