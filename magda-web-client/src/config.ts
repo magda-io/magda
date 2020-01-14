@@ -47,7 +47,6 @@ const serverConfig: {
     defaultOrganizationId?: string;
     defaultContactEmail?: string;
     custodianOrgLevel: number;
-    maxCsvProcessingRows: number;
     automaticPreviewMaxFileSize: number;
     mandatoryFields: ValidationFieldList;
 } = window.magda_server_config || {};
@@ -160,9 +159,6 @@ export const config = {
     custodianOrgLevel: serverConfig.custodianOrgLevel
         ? serverConfig.custodianOrgLevel
         : 2,
-    maxCsvProcessingRows: serverConfig.maxCsvProcessingRows
-        ? serverConfig.maxCsvProcessingRows
-        : 20000, // --- `-1` means no limit
     // The maximum size that a file can be in order to be automatically previewed
     // by the ui as a map, graph or table.
     automaticPreviewMaxFileSize: serverConfig.automaticPreviewMaxFileSize

@@ -23,7 +23,6 @@ featureFlags:
 vocabularyApiEndpoints: []
 defaultContactEmail: "mail@example.com"
 custodianOrgLevel: 2
-maxCsvProcessingRows: 20000
 # default max preview file size 2mib
 automaticPreviewMaxFileSize: 2097152
 mandatoryFields:

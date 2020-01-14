@@ -141,11 +141,6 @@ const argv = yargs
         describe: "Data custodian org unit tree level",
         type: "number"
     })
-    .option("maxCsvProcessingRows", {
-        describe:
-            "Max number of CSV data file rows to try to process for previews. This is important because some servers (CKAN) will return a full file even if only part of it is requested, which can mean the user's browser processing megabytes of CSV rows locally. Set to -1 for no limit",
-        type: "number"
-    })
     .option("automaticPreviewMaxFileSize", {
         describe:
             "The maximum size (in bytes) to automatically preview a file in the UI. If the file is determined to be over this size the user will be prompted before previewing",
@@ -240,7 +235,6 @@ const webServerConfig = {
     defaultOrganizationId: argv.defaultOrganizationId,
     defaultContactEmail: argv.defaultContactEmail,
     custodianOrgLevel: argv.custodianOrgLevel,
-    maxCsvProcessingRows: argv.maxCsvProcessingRows,
     automaticPreviewMaxFileSize: argv.automaticPreviewMaxFileSize,
     mandatoryFields: argv.mandatoryFields
 };
