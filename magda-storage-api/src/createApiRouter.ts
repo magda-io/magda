@@ -26,7 +26,27 @@ export default function createApiRouter(options: ApiRouterOptions) {
         return res.status(200).send("OK");
     });
 
-    // Download an object
+    /**
+     * @apiGroup Storage API
+     *
+     * @api {get} /v0/{bucket}/{fieldid} Request to download an object in {bucket} with name {fieldid}
+     *
+     * @apiDescription Downloads an object
+     *
+     * @apiParam (Request body) {string} bucket The name of the bucket under which the requested object is
+     * @apiParam (Request body) {string} fieldid The name of the object being requested
+     *
+     * @apiSuccess {string} status OK
+     *
+     * @apiSuccessExample {text} 200
+     *    This is a test file
+     * @apiError {string} status NOT FOUND
+     *
+     * @apiErrorExample {json} 404
+     *    {
+     *         "status": "Not "Found"
+     *    }
+     */
     router.get("/:bucket/:fileid", async function(req, res) {
         const fileId = req.params.fileid;
         const bucket = req.params.bucket;
@@ -68,7 +88,31 @@ export default function createApiRouter(options: ApiRouterOptions) {
         }
     });
 
-    // Upload an object
+    /**
+     * @apiGroup Storage API
+     *
+     * @api {put} /v0/{bucket}/{fieldid} Request to upload an object to {bucket} with name {fieldid}
+     *
+     * @apiDescription Uploads an object
+     *
+     * @apiParam (Request body) {string} bucket The name of the bucket to which to upload to
+     * @apiParam (Request body) {string} fieldid The name of the object being uploaded
+     *
+     * @apiSuccess {string} status OK
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *        "message":"File uploaded successfully",
+     *        "etag":"edd88378a7900bf663a5fa386396b585-1"
+     *    }
+     *
+     * @apiError {string} Internal Server Error
+     *
+     * @apiErrorExample {json} 500
+     *    {
+     *        "message":"Encountered error while uploading file. This has been logged and we are looking into this."
+     *    }
+     */
     router.put("/:bucket/:fileid", async function(req, res) {
         const fileId = req.params.fileid;
         const bucket = req.params.bucket;
@@ -98,7 +142,31 @@ export default function createApiRouter(options: ApiRouterOptions) {
             });
     });
 
-    // Remove/Delete an object
+    /**
+     * @apiGroup Storage API
+     *
+     * @api {delete} /v0/{bucket}/{fieldid} Request to delete an object at {bucket} with name {fieldid}
+     *
+     * @apiDescription Deletes an object. This is a hard delete, and cannot be undone.
+     * Note that if the {fieldid} does not exist, the request will not fail.
+     *
+     * @apiParam (Request body) {string} bucket The name of the bucket where the object resides
+     * @apiParam (Request body) {string} fieldid The name of the object to be deleted
+     *
+     * @apiSuccess {string} {"message":"File deleted successfully"}
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *        "message":"File deleted successfully",
+     *    }
+     *
+     * @apiError {string} Internal Server Error
+     *
+     * @apiErrorExample {json} 500
+     *    {
+     *        "message":"Encountered error while uploading file. This has been logged and we are looking into this."
+     *    }
+     */
     router.delete("/:bucket/:fileid", async function(req, res) {
         const fileId = req.params.fileid;
         const bucket = req.params.bucket;
@@ -108,7 +176,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
             encodeBucketname,
             encodedRootPath
         );
-        console.log("deletionSuccess: ", deletionSuccess);
         if (deletionSuccess) {
             return res.status(200).send({
                 message: "File deleted successfully"
