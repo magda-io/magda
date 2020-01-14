@@ -123,7 +123,7 @@ export default function DataPreviewMapWrapper(props: {
                 <h3 className="section-heading">Map Preview</h3>
                 <Small>
                     <DataPreviewMapOpenInNationalMapButton
-                        distribution={bestDist}
+                        distribution={bestDist.dist}
                         style={{
                             position: "relative",
                             top: "10px",
