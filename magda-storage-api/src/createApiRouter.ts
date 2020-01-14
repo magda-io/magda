@@ -2,9 +2,12 @@ import express from "express";
 import { OutgoingHttpHeaders } from "http";
 import ObjectStoreClient from "./ObjectStoreClient";
 import bodyParser from "body-parser";
+import { mustBeAdmin } from "magda-typescript-common/src/authorization-api/authMiddleware";
 
 export interface ApiRouterOptions {
     objectStoreClient: ObjectStoreClient;
+    authApiUrl: string;
+    jwtSecret: string;
 }
 
 export default function createApiRouter(options: ApiRouterOptions) {
@@ -69,34 +72,38 @@ export default function createApiRouter(options: ApiRouterOptions) {
     });
 
     // Upload an object
-    router.put("/:bucket/:fileid", async function(req, res) {
-        const fileId = req.params.fileid;
-        const bucket = req.params.bucket;
-        const encodedRootPath = encodeURIComponent(fileId);
-        const encodeBucketname = encodeURIComponent(bucket);
-        const content = req.body;
-        const metaData = {
-            "Content-Type": req.headers["content-type"],
-            "Content-Length": req.headers["content-length"]
-        };
-        return options.objectStoreClient
-            .putFile(encodeBucketname, encodedRootPath, content, metaData)
-            .then(etag => {
-                return res.status(200).send({
-                    message: "File uploaded successfully",
-                    etag: etag
+    router.put(
+        "/:bucket/:fileid",
+        mustBeAdmin(options.authApiUrl, options.jwtSecret),
+        async function(req, res) {
+            const fileId = req.params.fileid;
+            const bucket = req.params.bucket;
+            const encodedRootPath = encodeURIComponent(fileId);
+            const encodeBucketname = encodeURIComponent(bucket);
+            const content = req.body;
+            const metaData = {
+                "Content-Type": req.headers["content-type"],
+                "Content-Length": req.headers["content-length"]
+            };
+            return options.objectStoreClient
+                .putFile(encodeBucketname, encodedRootPath, content, metaData)
+                .then(etag => {
+                    return res.status(200).send({
+                        message: "File uploaded successfully",
+                        etag: etag
+                    });
+                })
+                .catch((err: Error) => {
+                    console.error(err);
+                    // Sending 500 for everything for the moment
+                    return res.status(500).send({
+                        message:
+                            "Encountered error while uploading file. " +
+                            "This has been logged and we are looking into this."
+                    });
                 });
-            })
-            .catch((err: Error) => {
-                console.error(err);
-                // Sending 500 for everything for the moment
-                return res.status(500).send({
-                    message:
-                        "Encountered error while uploading file. " +
-                        "This has been logged and we are looking into this."
-                });
-            });
-    });
+        }
+    );
 
     // Remove/Delete an object
     router.delete("/:bucket/:fileid", async function(req, res) {
