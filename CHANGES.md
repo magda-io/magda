@@ -208,6 +208,7 @@ Others:
 -   Fixed Unable to use Google / Facebook Login on Preview Site
 -   Fixed warnings: `as` props is compulsory for AUpageAlert & boolean value was sent to `id` props
 -   Fixed docker build cache issue that causes DB image not build
+-   Added a mapping from "OGC:WFS" to "WFS" in the format minion.
 
 ## 0.0.54
 

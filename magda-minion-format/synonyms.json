@@ -21,7 +21,7 @@
         "OGC:WMS-2",
         "OGC WMS"
     ],
-    "wfs": ["OGC-WFS", "OGC:WFS-1", "OGC:WFS-2", "OGC WFS"],
+    "wfs": ["OGC-WFS", "OGC:WFS-1", "OGC:WFS-2", "OGC WFS", "OGC:WFS"],
     "docx": [
         "doc",
         "msword",
