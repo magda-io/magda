@@ -1,4 +1,5 @@
 @import "variables";
+@import "./pancake/sass/core.scss";
 
 .month-picker {
     width: calc(50% - 10px);
@@ -40,6 +41,10 @@
         border-bottom: 5px solid transparent;
         background-color: $AU-colordark-background;
         color: $AU-colordark-foreground-text;
+
+        // &:focus {
+        //     background-color: lighten($AU-colordark-background, 20%);
+        // }
     }
     .btn-month.is-active {
         border-bottom: 5px solid $AU-colordark-foreground-focus;
@@ -65,4 +70,5 @@
     display: inline-block;
     position: relative;
     overflow: visible;
+    margin-bottom: 5px;
 }

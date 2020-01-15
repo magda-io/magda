@@ -1,4 +1,5 @@
 @import "variables";
+@import "./pancake/sass/core.scss";
 
 .record--dataset {
     .au-page-alerts {
@@ -118,7 +119,7 @@
 }
 
 .distribution-download-button {
-    background: $AU-color-foreground-action !important;
+    // background: $AU-color-foreground-action !important;
     margin-top: 1em;
     margin-bottom: 1em;
 }

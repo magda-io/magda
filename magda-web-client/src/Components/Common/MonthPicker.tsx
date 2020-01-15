@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import "./MonthPicker.scss";
 import moment from "moment";
+import defined from "helpers/defined";
 
 const MONTH_NAMES = [
     ["Jan", "Feb", "Mar"],
@@ -12,42 +13,39 @@ const MONTH_NAMES = [
 type Props = {
     year?: number;
     month?: number;
-    placeholder?: string;
+    default?: Date;
     onChange: (year?: number, month?: number) => void;
     validationError?: string;
 };
 
-const checkYearValid = year => {
-    if (!year) {
-        return false;
-    }
+const checkYearValid = (year: number) => {
     // by the way,
     // moment(undefined).isValid() === true
-    if (!moment(year, "Y").isValid()) {
+    if (!moment({ year }).isValid()) {
         return false;
     }
     return true;
 };
 
 export function MonthPicker(props: Props) {
-    const [yearValid, setYearValid] = useState(
-        props.year === null || checkYearValid(props.year)
-    );
+    const yearValid =
+        typeof props.year !== "undefined" && checkYearValid(props.year);
 
     const onMonthChange = (month: number) => {
         props.onChange(props.year, month);
     };
 
     const onYearChange = (year: string) => {
-        if (checkYearValid(year)) {
-            setYearValid(true);
-            props.onChange(Number.parseInt(year), props.month);
-        } else {
-            setYearValid(false);
-        }
+        const yearNumber = Number.parseInt(year);
+        props.onChange(
+            !Number.isNaN(yearNumber) ? yearNumber : undefined,
+            props.month
+        );
     };
 
-    const monthIndex = (i, j) => i * MONTH_NAMES[0].length + j;
+    const monthIndex = (rowIndex: number, colIndex: number) =>
+        rowIndex * MONTH_NAMES[0].length + colIndex;
+
     return (
         <table className="month-picker">
             <tbody>
@@ -56,42 +54,57 @@ export function MonthPicker(props: Props) {
                         <div className={"year-input-container"}>
                             <input
                                 type="year"
-                                placeholder={props.placeholder}
+                                placeholder={
+                                    props.default &&
+                                    props.default.getFullYear().toString()
+                                }
                                 onChange={event =>
                                     onYearChange(event.target.value)
                                 }
                                 value={props.year || ""}
                                 className="au-text-input au-text-input--block"
                             />
-                            {!yearValid && (
+                            {defined(props.year) && !yearValid && (
                                 <span className="month-picker-prompt">
-                                    Error
+                                    Invalid year
                                 </span>
                             )}
                         </div>
                     </th>
                 </tr>
+
                 {MONTH_NAMES.map((row, rowIndex) => (
                     <tr key={rowIndex}>
-                        {row.map((monthAbbr, columnIndex) => (
-                            <td key={monthAbbr}>
-                                <button
-                                    onClick={() =>
-                                        onMonthChange(
-                                            monthIndex(rowIndex, columnIndex)
-                                        )
-                                    }
-                                    className={`au-btn btn-facet-option btn-month ${
-                                        props.month ===
-                                        monthIndex(rowIndex, columnIndex)
-                                            ? "is-active"
-                                            : ""
-                                    }`}
-                                >
-                                    {monthAbbr}
-                                </button>
-                            </td>
-                        ))}
+                        {row.map((monthAbbr, columnIndex) => {
+                            const thisMonthIndex = monthIndex(
+                                rowIndex,
+                                columnIndex
+                            );
+                            /** This month is active if it's the currently selected month, or if there's no valid selected year and it's the default month */
+                            const isActive =
+                                (typeof props.month !== "undefined" &&
+                                    props.month === thisMonthIndex) ||
+                                (!yearValid &&
+                                    props.default &&
+                                    thisMonthIndex ===
+                                        props.default.getMonth());
+
+                            return (
+                                <td key={monthAbbr}>
+                                    <button
+                                        onClick={() =>
+                                            onMonthChange(thisMonthIndex)
+                                        }
+                                        disabled={!yearValid}
+                                        className={`au-btn btn-facet-option btn-month ${
+                                            isActive ? "is-active" : ""
+                                        }`}
+                                    >
+                                        {monthAbbr}
+                                    </button>
+                                </td>
+                            );
+                        })}
                     </tr>
                 ))}
             </tbody>

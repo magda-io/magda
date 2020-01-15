@@ -18,7 +18,6 @@ import ReactSelectOriginal from "react-select";
 import ValidationHoc from "Components/Common/react-select/ValidationHoc";
 import PurpleToolTip from "Components/Common/TooltipWrapper";
 import { config } from "config";
-import AUpageAlert from "@gov.au/page-alerts";
 
 import ValidationRequiredLabel from "../../ValidationRequiredLabel";
 
@@ -302,12 +301,12 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     {informationSecurity.classification === "PROTECTED" ? (
                         <div className="row">
                             <div className="col-sm-12">
-                                <AUpageAlert as="warning">
+                                <div className="au-page-alerts au-page-alerts--warning">
                                     <div>
                                         Protected datasets must be stored within
                                         the Protected Enclave
                                     </div>
-                                </AUpageAlert>
+                                </div>
                             </div>
                         </div>
                     ) : null}
@@ -315,14 +314,14 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     informationSecurity.classification === "TOP SECRET" ? (
                         <div className="row">
                             <div className="col-sm-12">
-                                <AUpageAlert as="warning">
+                                <div className="au-page-alerts au-page-alerts--warning">
                                     <div>
                                         Secret or Top Secret classified data
                                         must not be stored on any departmental
                                         network, and must be managed as a
                                         physical asset
                                     </div>
-                                </AUpageAlert>
+                                </div>
                             </div>
                         </div>
                     ) : null}

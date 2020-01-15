@@ -1,5 +1,6 @@
 import "./FacetTemporal.scss";
 import React, { useState } from "react";
+
 import MonthPicker from "Components/Common/MonthPicker";
 import range from "assets/range.svg";
 
@@ -14,6 +15,8 @@ interface Props {
         endYear?: number,
         endMonth?: number
     ) => void;
+    earliestDate?: Date;
+    latestDate?: Date;
 }
 
 function FacetTemporal(props: Props) {
@@ -28,7 +31,6 @@ function FacetTemporal(props: Props) {
     const [endMonth, setEndMonth] = useState<number | undefined>(
         props.endMonth
     );
-
     /**
      * Makes sure that when clear button is called,
      * start year and end years are reset.
@@ -77,14 +79,14 @@ function FacetTemporal(props: Props) {
         return !(endYearBeforeStartYear || startMonthBeforeEndMonth);
     };
 
-    const onStartChange = (month?: number, year?: number) => {
+    const onStartChange = (year?: number, month?: number) => {
         invalidStartEndDateWarning();
 
         setStartMonth(month);
         setStartYear(year);
     };
 
-    const onEndChange = (month?: number, year?: number) => {
+    const onEndChange = (year?: number, month?: number) => {
         invalidStartEndDateWarning();
 
         setEndMonth(month);
@@ -113,6 +115,7 @@ function FacetTemporal(props: Props) {
                         year={startYear}
                         month={startMonth}
                         onChange={onStartChange}
+                        default={props.earliestDate}
                     />
                     <div className="facet-temporal-range-icon">
                         <img src={range} alt="date range" />
@@ -121,6 +124,7 @@ function FacetTemporal(props: Props) {
                         year={endYear}
                         month={endMonth}
                         onChange={onEndChange}
+                        default={props.latestDate}
                     />
                 </div>
 
