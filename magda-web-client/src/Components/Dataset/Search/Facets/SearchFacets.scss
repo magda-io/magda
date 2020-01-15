@@ -1,4 +1,5 @@
 @import "variables";
+@import "./pancake/sass/core.scss";
 .search-facets-desktop {
     display: flex;
     justify-content: flex-start;
@@ -139,9 +140,6 @@
     &:hover {
         background-color: $AU-color-foreground-action;
         color: $AU-color-background;
-    }
-    &:focus {
-        outline: none;
     }
 }
 
