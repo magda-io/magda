@@ -36,16 +36,12 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * @apiParam (Request body) {string} bucket The name of the bucket under which the requested object is
      * @apiParam (Request body) {string} fieldid The name of the object being requested
      *
-     * @apiSuccess {string} status OK
-     *
      * @apiSuccessExample {text} 200
-     *    This is a test file
+     *    Contents of a file
+     *
      * @apiError {string} status NOT FOUND
      *
-     * @apiErrorExample {json} 404
-     *    {
-     *         "status": "Not "Found"
-     *    }
+     * @apiErrorExample {string} No such object with fileId {fileid} in bucket {bucket}
      */
     router.get("/:bucket/:fileid", async function(req, res) {
         const fileId = req.params.fileid;
@@ -98,15 +94,11 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * @apiParam (Request body) {string} bucket The name of the bucket to which to upload to
      * @apiParam (Request body) {string} fieldid The name of the object being uploaded
      *
-     * @apiSuccess {string} status OK
-     *
      * @apiSuccessExample {json} 200
      *    {
      *        "message":"File uploaded successfully",
      *        "etag":"edd88378a7900bf663a5fa386396b585-1"
      *    }
-     *
-     * @apiError {string} Internal Server Error
      *
      * @apiErrorExample {json} 500
      *    {
@@ -152,8 +144,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *
      * @apiParam (Request body) {string} bucket The name of the bucket where the object resides
      * @apiParam (Request body) {string} fieldid The name of the object to be deleted
-     *
-     * @apiSuccess {string} File deleted successfully
      *
      * @apiSuccessExample {json} 200
      *    {
