@@ -153,7 +153,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * @apiParam (Request body) {string} bucket The name of the bucket where the object resides
      * @apiParam (Request body) {string} fieldid The name of the object to be deleted
      *
-     * @apiSuccess {string} {"message":"File deleted successfully"}
+     * @apiSuccess {string} File deleted successfully
      *
      * @apiSuccessExample {json} 200
      *    {
