@@ -1,10 +1,13 @@
 import "./FacetTemporal.scss";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useDebounce } from "use-debounce";
 
 import MonthPicker from "Components/Common/MonthPicker";
 import range from "assets/range.svg";
+import defined from "helpers/defined";
 
 interface Props {
+    open: boolean;
     startYear?: number;
     startMonth?: number;
     endYear?: number;
@@ -19,8 +22,28 @@ interface Props {
     latestDate?: Date;
 }
 
+function isEndBeforeStart(
+    startYear?: number,
+    startMonth?: number,
+    endYear?: number,
+    endMonth?: number
+) {
+    if (
+        startYear === undefined ||
+        startMonth === undefined ||
+        endYear === undefined ||
+        endMonth === undefined
+    ) {
+        return false;
+    } else {
+        return (
+            endYear < startYear ||
+            (endYear === startYear && endMonth < startMonth)
+        );
+    }
+}
+
 function FacetTemporal(props: Props) {
-    const [error, setError] = useState<string | undefined>(undefined);
     const [startYear, setStartYear] = useState<number | undefined>(
         props.startYear
     );
@@ -31,6 +54,26 @@ function FacetTemporal(props: Props) {
     const [endMonth, setEndMonth] = useState<number | undefined>(
         props.endMonth
     );
+
+    useEffect(() => {
+        setStartYear(props.startYear);
+        setStartMonth(props.startMonth);
+        setEndYear(props.endYear);
+        setEndMonth(props.endMonth);
+    }, [props.startYear, props.startMonth, props.endYear, props.endMonth]);
+
+    const endBeforeStart = isEndBeforeStart(
+        startYear,
+        startMonth,
+        endYear,
+        endMonth
+    );
+    /**
+     * Lags 500ms behind endBeforeStart, allowing us to wait until the user has
+     * stopped typing a year before we say it's wrong
+     */
+    const [debouncedEndBeforeStart] = useDebounce(endBeforeStart, 500);
+
     /**
      * Makes sure that when clear button is called,
      * start year and end years are reset.
@@ -44,111 +87,102 @@ function FacetTemporal(props: Props) {
         props.onApply();
     };
 
-    const onApplyFilter = () => {
-        // the month we get are 0 index, to convert to date string, we need to offset by 1
-        // const startDate = moment([startYear, startMonth, 1]).startOf("month")
-        // const dateFrom = new Date(
-        //     startYear,
-        //     startMonth + 1
-        // );
-        // const dateTo = new Date(endYear, endMonth + 1);
-        // this.props.onToggleOption([
-        //     dateFrom.toISOString(),
-        //     dateTo.toISOString()
-        // ]);
-
+    const onApply = () => {
         props.onApply(startYear, startMonth, endYear, endMonth);
     };
 
-    const canClear = startMonth || startYear || endMonth || endYear;
-
-    const canApply = (startMonth && startYear) || (endMonth && endYear);
+    /** We can clear if we have any value selected at all */
+    const canClear = startYear !== undefined || endYear !== undefined;
 
     /**
-     * Checks if end date is after start date
+     * We can apply if we have a valid month/year for start or end,
+     * and the start is before the end if both are present
      */
-    const checkStartAndEndDate = () => {
-        const endYearBeforeStartYear =
-            startYear && endYear && startYear > endYear;
-        const startMonthBeforeEndMonth =
-            startMonth &&
-            endMonth &&
-            startYear === endYear &&
-            startMonth > endMonth;
+    const canApply =
+        ((startMonth !== undefined && startYear !== undefined) ||
+            (endMonth !== undefined && endYear !== undefined)) &&
+        !endBeforeStart;
 
-        return !(endYearBeforeStartYear || startMonthBeforeEndMonth);
-    };
+    // If the picker gets closed and has a valid value (e.g. by clicking away),
+    // apply the current value
+    useEffect(() => {
+        const hasDateChanged = () =>
+            startYear !== props.startYear ||
+            startMonth !== props.startMonth ||
+            endYear !== props.endYear ||
+            endMonth !== props.endYear;
+        if (!props.open && canApply && hasDateChanged()) {
+            onApply();
+        }
+    }, [props.open]);
 
     const onStartChange = (year?: number, month?: number) => {
-        invalidStartEndDateWarning();
-
-        setStartMonth(month);
+        setStartMonth(defined(month) ? month : 0);
         setStartYear(year);
     };
 
     const onEndChange = (year?: number, month?: number) => {
-        invalidStartEndDateWarning();
-
-        setEndMonth(month);
+        setEndMonth(defined(month) ? month : 11);
         setEndYear(year);
     };
 
-    /**
-     * Wrapper over checkStartAndEndDate that sets the prompt accordingly
-     */
-    const invalidStartEndDateWarning = () => {
-        const startBeforeEnd = checkStartAndEndDate();
-        if (!startBeforeEnd) {
-            setError("End date is earlier than start date.");
-        } else {
-            setError(undefined);
-        }
-    };
+    if (props.open) {
+        return (
+            <div>
+                <div className="clearfix facet-temporal facet-body">
+                    <div className="facet-temporal-month-picker">
+                        <MonthPicker
+                            year={startYear}
+                            month={startMonth}
+                            onChange={onStartChange}
+                            default={props.earliestDate}
+                        />
+                        <div className="facet-temporal-range-icon">
+                            <img src={range} alt="date range" />
+                        </div>
+                        <MonthPicker
+                            year={endYear}
+                            month={endMonth}
+                            onChange={onEndChange}
+                            default={props.latestDate}
+                            // If there's a validation warning that affects both
+                            // month pickers, just make the first month picker display it
 
-    return (
-        <div>
-            <div className="clearfix facet-temporal facet-body">
-                {error && <div className="facet-temporal-prompt">{error}</div>}
-
-                <div className="facet-temporal-month-picker">
-                    <MonthPicker
-                        year={startYear}
-                        month={startMonth}
-                        onChange={onStartChange}
-                        default={props.earliestDate}
-                    />
-                    <div className="facet-temporal-range-icon">
-                        <img src={range} alt="date range" />
+                            validationError={
+                                // Make the error show if both debounced and non-debounced
+                                // value are true, so that it takes 500ms to appear
+                                // but hides instantly if the value becomes valid
+                                endBeforeStart && debouncedEndBeforeStart
+                                    ? "End date is before start date"
+                                    : undefined
+                            }
+                        />
                     </div>
-                    <MonthPicker
-                        year={endYear}
-                        month={endMonth}
-                        onChange={onEndChange}
-                        default={props.latestDate}
-                    />
-                </div>
 
-                <div className="facet-footer">
-                    <button
-                        className="au-btn au-btn--secondary"
-                        disabled={!canClear}
-                        onClick={resetTemporalFacet}
-                    >
-                        {" "}
-                        Clear{" "}
-                    </button>
-                    <button
-                        className="au-btn au-btn--primary"
-                        disabled={!canApply}
-                        onClick={onApplyFilter}
-                    >
-                        {" "}
-                        Apply{" "}
-                    </button>
+                    <div className="facet-footer">
+                        <button
+                            className="au-btn au-btn--secondary"
+                            disabled={!canClear}
+                            onClick={resetTemporalFacet}
+                        >
+                            {" "}
+                            Clear{" "}
+                        </button>
+                        <button
+                            className="au-btn au-btn--primary"
+                            disabled={!canApply}
+                            onClick={onApply}
+                        >
+                            {" "}
+                            Apply{" "}
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
-    );
+        );
+    } else {
+        return null;
+    }
 }
 
 export default FacetTemporal;

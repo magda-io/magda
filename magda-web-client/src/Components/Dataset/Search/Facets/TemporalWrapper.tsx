@@ -16,9 +16,12 @@ interface Props {
     isOpen: boolean;
     temporalRange?: [Date, Date];
     disableApply: boolean;
+    disableOpen: boolean;
 }
 
-//Wrapper for the facetHeader and facetTemporal components
+/**
+ * Wrapper for the facetHeader and facetTemporal components
+ */
 export default function TemporalWrapper(props: Props) {
     const [startDateString, endDateString] = props.activeDates;
 
@@ -35,6 +38,8 @@ export default function TemporalWrapper(props: Props) {
         undefined
     ];
 
+    console.log(props);
+
     return (
         <React.Fragment>
             <FacetHeader
@@ -45,45 +50,45 @@ export default function TemporalWrapper(props: Props) {
                 hasQuery={props.hasQuery}
                 onClick={props.toggleFacet}
                 isOpen={props.isOpen}
+                disabled={props.disableOpen}
             />
-            {props.isOpen && (
-                <FacetTemporal
-                    {...{
-                        startYear,
-                        startMonth,
-                        endYear,
-                        endMonth,
-                        earliestDate,
-                        latestDate
-                    }}
-                    onApply={(startYear, startMonth, endYear, endMonth) => {
-                        const start =
-                            defined(startYear) &&
-                            defined(startMonth) &&
-                            moment
-                                .utc({
-                                    year: startYear,
-                                    month: startMonth
-                                })
-                                .startOf("month");
+            <FacetTemporal
+                {...{
+                    startYear,
+                    startMonth,
+                    endYear,
+                    endMonth,
+                    earliestDate,
+                    latestDate
+                }}
+                open={props.isOpen}
+                onApply={(startYear, startMonth, endYear, endMonth) => {
+                    const start =
+                        defined(startYear) &&
+                        defined(startMonth) &&
+                        moment
+                            .utc({
+                                year: startYear,
+                                month: startMonth
+                            })
+                            .startOf("month");
 
-                        const end =
-                            defined(endYear) &&
-                            defined(endMonth) &&
-                            moment
-                                .utc({
-                                    year: endYear,
-                                    month: endMonth
-                                })
-                                .endOf("month");
+                    const end =
+                        defined(endYear) &&
+                        defined(endMonth) &&
+                        moment
+                            .utc({
+                                year: endYear,
+                                month: endMonth
+                            })
+                            .endOf("month");
 
-                        props.onToggleOption([
-                            start ? start.toISOString() : undefined,
-                            end ? end.toISOString() : undefined
-                        ]);
-                    }}
-                />
-            )}
+                    props.onToggleOption([
+                        start ? start.toISOString() : undefined,
+                        end ? end.toISOString() : undefined
+                    ]);
+                }}
+            />
         </React.Fragment>
     );
 }

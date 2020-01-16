@@ -156,11 +156,10 @@ export default class RequestFormTemplate extends React.Component {
                     )}
                 </label>
                 <textarea
-                    class="au-text-input au-text-input--block"
                     name="message"
                     id="message"
                     className={
-                        "correspondence-message-input au-text-input--block " +
+                        "au-text-input correspondence-message-input au-text-input--block " +
                         (this.state.messageValid
                             ? ""
                             : "au-text-input--invalid")

@@ -42,10 +42,12 @@
         background-color: $AU-colordark-background;
         color: $AU-colordark-foreground-text;
 
-        // &:focus {
-        //     background-color: lighten($AU-colordark-background, 20%);
-        // }
+        &:focus {
+            outline: 2px solid black;
+            outline-offset: 0px;
+        }
     }
+
     .btn-month.is-active {
         border-bottom: 5px solid $AU-colordark-foreground-focus;
         text-decoration: underline;

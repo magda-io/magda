@@ -122,6 +122,10 @@
     margin: 0;
 }
 
+.btn-facet {
+    @include remove-btn-underline;
+}
+
 .btn-facet-option {
     position: relative;
     width: 100%;

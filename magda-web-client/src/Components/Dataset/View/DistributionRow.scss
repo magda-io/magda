@@ -31,6 +31,8 @@
     }
 
     .download-button {
+        @include remove-btn-underline;
+
         padding: 5px 10px;
 
         .button-text {

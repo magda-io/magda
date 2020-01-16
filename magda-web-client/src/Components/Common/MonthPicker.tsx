@@ -41,6 +41,12 @@ export function MonthPicker(props: Props) {
     const monthIndex = (rowIndex: number, colIndex: number) =>
         rowIndex * MONTH_NAMES[0].length + colIndex;
 
+    const displayYearError = defined(props.year) && !yearValid;
+
+    const errorMessage = displayYearError
+        ? "Invalid year"
+        : props.validationError;
+
     return (
         <table className="month-picker">
             <tbody>
@@ -59,9 +65,9 @@ export function MonthPicker(props: Props) {
                                 value={props.year || ""}
                                 className="au-text-input au-text-input--block"
                             />
-                            {defined(props.year) && !yearValid && (
+                            {errorMessage && (
                                 <span className="month-picker-prompt">
-                                    Invalid year
+                                    {errorMessage}
                                 </span>
                             )}
                         </div>

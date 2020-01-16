@@ -1,5 +1,4 @@
 @import "variables";
-// @import "./pancake/sass/core.scss";
 @import "./pancake/sass/pancake.scss";
 
 body {
@@ -9,55 +8,6 @@ body {
 * {
     box-sizing: border-box;
 }
-// .au-body .au-grid {
-//     p,
-//     input,
-//     a,
-//     span {
-//         &::selection {
-//             background: $AU-color-foreground-action;
-//         }
-//     }
-//     a {
-//         color: $AU-color-foreground-action;
-//     }
-
-// button.au-btn,
-// a.au-btn {
-//     background: $AU-colordark-background;
-//     color: $AU-colordark-foreground-text;
-// }
-
-// .au-btn.au-btn--primary,
-// a.au-btn.au-btn--primary {
-//     background: $AU-colordark-background;
-//     color: $AU-colordark-foreground-text;
-//     border-color: $AU-color-foreground-action;
-// }
-
-// .au-btn.au-btn--tertiary,
-// a.au-btn.au-btn--tertiary {
-//     color: $AU-colordark-foreground-focus;
-//     background: transparent;
-//     border-color: transparent;
-// }
-
-// .au-btn.au-btn--secondary,
-// a.au-btn.au-btn--secondary {
-//     background: transparent;
-//     color: $AU-color-foreground-action;
-// }
-
-// a,
-// button,
-// input,
-// select,
-// textarea {
-//     &:focus {
-//         outline-color: $AU-colordark-foreground-focus;
-//     }
-// }
-// }
 
 //need to add these classes for modals as well
 form > input,
@@ -66,11 +16,6 @@ textarea {
         outline-color: $AU-colordark-foreground-focus !important;
     }
 }
-
-// .au-btn:hover:not(:disabled),
-// a.au-btn:hover:not(:disabled) {
-//     text-decoration: none;
-// }
 
 .sr-only {
     position: absolute;
@@ -122,14 +67,6 @@ textarea {
         opacity: 0;
     }
 }
-
-// .au-btn {
-//     font-weight: 400;
-//     text-transform: none;
-//     &:focus {
-//         outline: 3px solid $AU-color-foreground-focus;
-//     }
-// }
 
 button {
     background: transparent;
