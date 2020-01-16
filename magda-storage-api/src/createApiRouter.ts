@@ -27,7 +27,11 @@ export default function createApiRouter(options: ApiRouterOptions) {
     });
 
     /**
-     * @apiGroup Storage API
+     * @apiDefine Storage Storage API
+     */
+
+    /**
+     * @apiGroup Storage
      *
      * @api {get} /v0/{bucket}/{fieldid} Request to download an object in {bucket} with name {fieldid}
      *
@@ -36,11 +40,14 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * @apiParam (Request body) {string} bucket The name of the bucket under which the requested object is
      * @apiParam (Request body) {string} fieldid The name of the object being requested
      *
-     * @apiSuccessExample {text} 200
-     *    Contents of a file
+     * @apiSuccessExample {binary} 200
+     *      <Contents of a file>
      *
-     * @apiErrorExample {string} 404
-     *      No such object with fileId {fileid} in bucket {bucket}
+     * @apiErrorExample {text} 404
+     *      "No such object with fileId {fileid} in bucket {bucket}"
+     *
+     * @apiErrorExample {text} 500
+     *      "Unknown error"
      */
     router.get("/:bucket/:fileid", async function(req, res) {
         const fileId = req.params.fileid;
@@ -84,7 +91,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
     });
 
     /**
-     * @apiGroup Storage API
+     * @apiGroup Storage
      *
      * @api {put} /v0/{bucket}/{fieldid} Request to upload an object to {bucket} with name {fieldid}
      *
@@ -134,7 +141,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
     });
 
     /**
-     * @apiGroup Storage API
+     * @apiGroup Storage
      *
      * @api {delete} /v0/{bucket}/{fieldid} Request to delete an object at {bucket} with name {fieldid}
      *
@@ -151,7 +158,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *
      * @apiErrorExample {json} 500
      *    {
-     *        "message":"Encountered error while uploading file. This has been logged and we are looking into this."
+     *        "message": "Encountered error while deleting file. This has been logged and we are looking into this."
      *    }
      */
     router.delete("/:bucket/:fileid", async function(req, res) {
