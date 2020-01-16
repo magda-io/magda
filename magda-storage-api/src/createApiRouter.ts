@@ -41,7 +41,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *
      * @apiError {string} status NOT FOUND
      *
-     * @apiErrorExample {string} No such object with fileId {fileid} in bucket {bucket}
+     * @apiErrorExample {string} 404
+     *      No such object with fileId {fileid} in bucket {bucket}
      */
     router.get("/:bucket/:fileid", async function(req, res) {
         const fileId = req.params.fileid;
