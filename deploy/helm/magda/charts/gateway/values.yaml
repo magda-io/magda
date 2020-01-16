@@ -80,3 +80,5 @@ cors:
   exposedHeaders:
   - "Content-Range"
   - "X-Content-Range"
+  - "Accept-Ranges"
+  - "Content-Length"
