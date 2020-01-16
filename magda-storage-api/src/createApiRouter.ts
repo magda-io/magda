@@ -39,8 +39,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * @apiSuccessExample {text} 200
      *    Contents of a file
      *
-     * @apiError {string} status NOT FOUND
-     *
      * @apiErrorExample {string} 404
      *      No such object with fileId {fileid} in bucket {bucket}
      */
@@ -150,8 +148,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *    {
      *        "message":"File deleted successfully",
      *    }
-     *
-     * @apiError {string} Internal Server Error
      *
      * @apiErrorExample {json} 500
      *    {
