@@ -38,7 +38,9 @@ describe("Storage API tests", () => {
         app.use(
             "/v0",
             createApiRouter({
-                objectStoreClient: new MagdaMinioClient(minioClientOpts)
+                objectStoreClient: new MagdaMinioClient(minioClientOpts),
+                authApiUrl: "http://localhost:6104",
+                jwtSecret: process.env["JWT_SECRET"]
             })
         );
     });
