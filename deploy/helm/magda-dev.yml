@@ -114,6 +114,8 @@ minion-broken-link:
     data.act.gov.au: 30
 
 connectors:
+  includeInitialJobs: false
+
   config:
     ## The service's image as per the global options under "global.image", but with a "name "
     ## currently available are magda-ckan-connector, magda-project-open-data-connector and magda-csw-connector
