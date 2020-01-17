@@ -7,8 +7,11 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
+import au.csiro.data61.magda.client.AuthApiClient
+import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
 import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
 import au.csiro.data61.magda.model.Registry._
+import com.typesafe.config.Config
 import io.swagger.annotations._
 import javax.ws.rs.Path
 
@@ -36,7 +39,7 @@ import scalikejdbc.DB
   */
 @Path("/records/{recordId}/history")
 @io.swagger.annotations.Api(value = "record history", produces = "application/json")
-class RecordHistoryService(system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
+class RecordHistoryService(config: Config, authClient: AuthApiClient, system: ActorSystem, materializer: Materializer) extends Protocols with SprayJsonSupport {
   val recordPersistence = DefaultRecordPersistence
 
   @ApiOperation(value = "Get a list of all events affecting this record", nickname = "history", httpMethod = "GET", response = classOf[EventsPage])
@@ -46,11 +49,13 @@ class RecordHistoryService(system: ActorSystem, materializer: Materializer) exte
   ))
   def history: Route = get {
     path(Segment / "history") { id =>
-      requiresTenantId { tenantId =>
-        parameters('pageToken.as[Long].?, 'start.as[Int].?, 'limit.as[Int].?) { (pageToken, start, limit) =>
-          complete {
-            DB readOnly { session =>
-              EventPersistence.getEvents(session, recordId = Some(id), pageToken = pageToken, start = start, limit = limit, tenantId = tenantId)
+      requireIsAdmin(authClient)(system, config) { _ =>
+        requiresTenantId { tenantId =>
+          parameters('pageToken.as[Long].?, 'start.as[Int].?, 'limit.as[Int].?) { (pageToken, start, limit) =>
+            complete {
+              DB readOnly { session =>
+                EventPersistence.getEvents(session, recordId = Some(id), pageToken = pageToken, start = start, limit = limit, tenantId = tenantId)
+              }
             }
           }
         }
