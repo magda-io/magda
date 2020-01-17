@@ -9,7 +9,7 @@
     "compile": "tsc -b && ts-module-alias-transformer dist",
     "watch": "tsc -b --watch",
     "start": "node dist/index.js",
-    "dev": "run-typescript-in-nodemon src/index.ts --ckanUrl https://data.gov.au",
+    "dev": "run-typescript-in-nodemon src/index.ts --ckanUrl https://data.gov.au/data",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
     "retag-and-push": "retag-and-push",

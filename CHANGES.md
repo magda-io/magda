@@ -22,6 +22,11 @@ Storage:
 -   Add an API for storing and streaming content
 -   Add a DELETE endpoint
 -   Improves error handling (returns 404 from GET if the file doesn't exist)
+-   Add apidocs
+
+Gateway:
+
+-   Add /data to ckan URL, remove the `came_from` param
 
 Others:
 
