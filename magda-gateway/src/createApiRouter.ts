@@ -33,7 +33,7 @@ export default function createApiRouter(options: ApiRouterOptions): Router {
 
     const router: Router = express.Router();
 
-    proxy.on("proxyReq", (proxyReq, req: any, res, options) => {
+    proxy.on("proxyReq", (proxyReq, req: any, _res, _options) => {
         if (jwtSecret && req.user) {
             proxyReq.setHeader(
                 "X-Magda-Session",
