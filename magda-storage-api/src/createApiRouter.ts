@@ -32,7 +32,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Storage
      *
-     * @api {POST} /v0/new/bucket?bucket={bucket} Request to create a new bucket
+     * @api {POST} /v0/create/bucket?bucket={bucket} Request to create a new bucket
      *
      * @apiDescription Creates a new bucket with a specified name. Restricted to admins only.
      *
@@ -53,7 +53,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *    }
      */
     router.post(
-        "/new/bucket",
+        "/create/bucket",
         mustBeAdmin(options.authApiUrl, options.jwtSecret),
         async function(req, res) {
             const bucket = req.query.bucket;
