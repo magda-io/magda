@@ -42,7 +42,7 @@ describe("Storage API tests", () => {
         useSSL: false,
         accessKey: process.env["MINIO_ACCESS_KEY"],
         secretKey: process.env["MINIO_SECRET_KEY"],
-        region: "us-east-1"
+        region: "unspecified-region"
     };
     const minioClient = new Minio.Client(minioClientOpts);
     const authApiUrl = "http://example.com";
@@ -53,7 +53,9 @@ describe("Storage API tests", () => {
             if (err) {
                 return console.log("Error creating bucket.", err);
             }
-            console.log('Bucket created successfully in "us-east-1".');
+            console.log(
+                "Bucket created successfully in " + minioClientOpts.region
+            );
         });
     });
 
