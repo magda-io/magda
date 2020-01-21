@@ -27,6 +27,62 @@ export default function createApiRouter(options: ApiRouterOptions) {
     });
 
     /**
+     * @apiGroup Storage
+     *
+     * @api {POST} /v0/new/bucket?bucket={bucket} Request to create a new bucket
+     *
+     * @apiDescription Creates a new bucket with a specified name
+     *
+     * @apiParam (Request query) {string} bucket The name of the bucket to be created
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *        "message":"Bucket my-bucket created successfully in unspecified-region 🎉"
+     *    }
+     *
+     * @apiErrorExample {json} 400
+     *    {
+     *        "message": "Bucket my-bucket already exists 👍"
+     *    }
+     * @apiErrorExample {json} 500
+     *    {
+     *        "message": "Bucket creation failed. This has been logged and we are looking into this."
+     *    }
+     */
+    router.post("/new/bucket", async function(req, res) {
+        const bucket = req.query.bucket;
+        if (!bucket) {
+            return res
+                .status(400)
+                .send("Please specify a bucket name as a query parameter.");
+        }
+        const region = req.query.region || "unspecified-region";
+        const encodedBucketname = encodeURIComponent(bucket);
+        const encodedRegionname = encodeURIComponent(region);
+
+        const createBucketRes = await options.objectStoreClient.createBucket(
+            encodedBucketname,
+            encodedRegionname
+        );
+        if (createBucketRes.success) {
+            return res.status(200).send({
+                message: createBucketRes.message
+            });
+        } else {
+            if (createBucketRes.err) {
+                return res.status(500).send({
+                    message:
+                        "Bucket creation failed. This has been logged and we are looking into this."
+                });
+            } else {
+                return res.status(400).send({
+                    message: createBucketRes.message
+                });
+            }
+        }
+    });
+
+    /**
      * @apiDefine Storage Storage API
      */
 
