@@ -39,6 +39,11 @@ spec:
             secretKeyRef:
               name: storage-secrets
               key: accesskey
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: storage-secrets
+              key: jwt-secret
 
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
