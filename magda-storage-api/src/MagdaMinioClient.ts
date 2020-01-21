@@ -29,43 +29,38 @@ export default class MagdaMinioClient implements ObjectStoreClient {
         this.createBucket(this.bucketName);
     }
 
-    async createBucket(bucket: string): Promise<any> {
-        return await this.client.makeBucket(
-            bucket,
-            this.region,
-            (err: Error) => {
+    createBucket(bucket: string): Promise<any> {
+        return new Promise((resolve, _reject) => {
+            return this.client.makeBucket(bucket, this.region, (err: Error) => {
                 if (err) {
                     if (
                         err.message ===
                         "Your previous request to create the named bucket succeeded and you already own it."
                     ) {
-                        return {
-                            message:
-                                "Bucket " +
-                                this.bucketName +
-                                " already exists 👍",
+                        return resolve({
+                            message: "Bucket " + bucket + " already exists 👍",
                             success: false
-                        };
+                        });
                     } else {
                         console.log("😢 Error creating bucket: ", err);
-                        return {
+                        return resolve({
                             message: "😢 Error creating bucket",
                             err,
                             success: false
-                        };
+                        });
                     }
                 }
-                return {
+                return resolve({
                     message:
                         "Bucket " +
                         this.bucketName +
-                        " created successfully in  " +
+                        " created successfully in " +
                         this.region +
                         " 🎉",
                     success: true
-                };
-            }
-        );
+                });
+            });
+        });
     }
 
     getFile(bucket: string, fileName: string): ObjectFromStore {
