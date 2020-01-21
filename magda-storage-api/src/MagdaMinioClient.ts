@@ -7,8 +7,16 @@ import * as Minio from "minio";
 export default class MagdaMinioClient implements ObjectStoreClient {
     private readonly client: any;
     private readonly bucketName: string = "magda-bucket";
+    private readonly region: string;
 
-    constructor({ endPoint, port, useSSL, accessKey, secretKey, region }: any) {
+    constructor({
+        endPoint,
+        port,
+        useSSL,
+        accessKey,
+        secretKey,
+        region = "unspecified-region"
+    }: any) {
         this.client = new Minio.Client({
             endPoint,
             port,
@@ -17,27 +25,47 @@ export default class MagdaMinioClient implements ObjectStoreClient {
             secretKey,
             region
         });
-        this.client.makeBucket(this.bucketName, region, (err: Error) => {
-            if (err) {
-                if (
-                    err.message ===
-                    "Your previous request to create the named bucket succeeded and you already own it."
-                ) {
-                    return console.log(
-                        "Bucket " + this.bucketName + " already exists 👍"
-                    );
-                } else {
-                    return console.log("😢 Error creating bucket: ", err);
+        this.region = region;
+        this.createBucket(this.bucketName);
+    }
+
+    async createBucket(bucket: string): Promise<any> {
+        return await this.client.makeBucket(
+            bucket,
+            this.region,
+            (err: Error) => {
+                if (err) {
+                    if (
+                        err.message ===
+                        "Your previous request to create the named bucket succeeded and you already own it."
+                    ) {
+                        return {
+                            message:
+                                "Bucket " +
+                                this.bucketName +
+                                " already exists 👍",
+                            success: false
+                        };
+                    } else {
+                        console.log("😢 Error creating bucket: ", err);
+                        return {
+                            message: "😢 Error creating bucket",
+                            err,
+                            success: false
+                        };
+                    }
                 }
+                return {
+                    message:
+                        "Bucket " +
+                        this.bucketName +
+                        " created successfully in  " +
+                        this.region +
+                        " 🎉",
+                    success: true
+                };
             }
-            return console.log(
-                "Bucket " +
-                    this.bucketName +
-                    " created successfully in  " +
-                    region +
-                    "🎉"
-            );
-        });
+        );
     }
 
     getFile(bucket: string, fileName: string): ObjectFromStore {
