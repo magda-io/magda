@@ -42,7 +42,7 @@ describe("Storage API tests", () => {
         useSSL: false,
         accessKey: process.env["MINIO_ACCESS_KEY"],
         secretKey: process.env["MINIO_SECRET_KEY"],
-        region: "us-east-1"
+        region: "unspecified-region"
     };
     const minioClient = new Minio.Client(minioClientOpts);
     const authApiUrl = "http://example.com";
@@ -73,6 +73,49 @@ describe("Storage API tests", () => {
         if ((<sinon.SinonStub>console.error).restore) {
             (<sinon.SinonStub>console.error).restore();
         }
+    });
+
+    describe("Create bucket", () => {
+        // Random string
+        const dummyBucket =
+            Math.random()
+                .toString(36)
+                .substring(2, 15) +
+            Math.random()
+                .toString(36)
+                .substring(2, 15);
+        it("Not an admin", () => {
+            return mockAuthorization(
+                authApiUrl,
+                false,
+                jwtSecret,
+                request(app)
+                    .post("/v0/create/bucket")
+                    .query({
+                        bucket: dummyBucket
+                    })
+                    .expect(401, "Not authorized.")
+            );
+        });
+
+        it("As an admin", () => {
+            return mockAuthorization(
+                authApiUrl,
+                true,
+                jwtSecret,
+                request(app)
+                    .post("/v0/create/bucket")
+                    .query({
+                        bucket: dummyBucket
+                    })
+                    .expect(200, {
+                        message:
+                            "Bucket " +
+                            dummyBucket +
+                            " created successfully in unspecified-region 🎉"
+                    })
+            );
+        });
     });
 
     describe("Upload", () => {
