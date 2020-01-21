@@ -34,7 +34,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *
      * @api {POST} /v0/new/bucket?bucket={bucket} Request to create a new bucket
      *
-     * @apiDescription Creates a new bucket with a specified name
+     * @apiDescription Creates a new bucket with a specified name. Restricted to admins only.
      *
      * @apiParam (Request query) {string} bucket The name of the bucket to be created
      *
@@ -52,38 +52,42 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *        "message": "Bucket creation failed. This has been logged and we are looking into this."
      *    }
      */
-    router.post("/new/bucket", async function(req, res) {
-        const bucket = req.query.bucket;
-        if (!bucket) {
-            return res
-                .status(400)
-                .send("Please specify a bucket name as a query parameter.");
-        }
-        const region = req.query.region || "unspecified-region";
-        const encodedBucketname = encodeURIComponent(bucket);
-        const encodedRegionname = encodeURIComponent(region);
+    router.post(
+        "/new/bucket",
+        mustBeAdmin(options.authApiUrl, options.jwtSecret),
+        async function(req, res) {
+            const bucket = req.query.bucket;
+            if (!bucket) {
+                return res
+                    .status(400)
+                    .send("Please specify a bucket name as a query parameter.");
+            }
+            const region = req.query.region || "unspecified-region";
+            const encodedBucketname = encodeURIComponent(bucket);
+            const encodedRegionname = encodeURIComponent(region);
 
-        const createBucketRes = await options.objectStoreClient.createBucket(
-            encodedBucketname,
-            encodedRegionname
-        );
-        if (createBucketRes.success) {
-            return res.status(200).send({
-                message: createBucketRes.message
-            });
-        } else {
-            if (createBucketRes.err) {
-                return res.status(500).send({
-                    message:
-                        "Bucket creation failed. This has been logged and we are looking into this."
-                });
-            } else {
-                return res.status(400).send({
+            const createBucketRes = await options.objectStoreClient.createBucket(
+                encodedBucketname,
+                encodedRegionname
+            );
+            if (createBucketRes.success) {
+                return res.status(200).send({
                     message: createBucketRes.message
                 });
+            } else {
+                if (createBucketRes.err) {
+                    return res.status(500).send({
+                        message:
+                            "Bucket creation failed. This has been logged and we are looking into this."
+                    });
+                } else {
+                    return res.status(400).send({
+                        message: createBucketRes.message
+                    });
+                }
             }
         }
-    });
+    );
 
     /**
      * @apiDefine Storage Storage API
@@ -154,7 +158,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *
      * @api {put} /v0/{bucket}/{fieldid} Request to upload an object to {bucket} with name {fieldid}
      *
-     * @apiDescription Uploads an object
+     * @apiDescription Uploads an object. Restricted to admins only.
      *
      * @apiParam (Request body) {string} bucket The name of the bucket to which to upload to
      * @apiParam (Request body) {string} fieldid The name of the object being uploaded
@@ -162,7 +166,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * @apiSuccessExample {json} 200
      *    {
      *        "message":"File uploaded successfully",
-     *        "etag":"edd88378a7900bf663a5fa386396b585-1"
+     *        "etag":"edd88378a7900bf663a5fa386386b585-1"
      *    }
      *
      * @apiErrorExample {json} 500
