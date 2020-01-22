@@ -1,6 +1,5 @@
 import React from "react";
 import Modal from "react-modal";
-import AUbutton from "pancake/react/buttons";
 
 import RequestFormLogic from "Components/Dataset/Suggest/RequestFormLogic";
 
@@ -98,22 +97,22 @@ export default class DatasetPageSuggestForm extends React.Component {
                 {/* If the form is posted don't show the text in the below para*/}
                 {!this.state.showSuggest && (
                     <div className="dataset-button-container no-print">
-                        <AUbutton
-                            className="au-btn--secondary ask-question-button"
+                        <button
+                            className="au-btn au-btn--secondary ask-question-button"
                             onClick={this.toggleShowForm}
                         >
                             Ask a question about this dataset
-                        </AUbutton>
+                        </button>
                     </div>
                 )}
 
                 <div className="dataset-button-container no-print">
-                    <AUbutton
-                        className="au-btn--secondary ask-question-button"
+                    <button
+                        className="au-btn au-btn--secondary ask-question-button"
                         onClick={this.printPage}
                     >
                         Print this page
-                    </AUbutton>
+                    </button>
                 </div>
 
                 <React.Fragment>
