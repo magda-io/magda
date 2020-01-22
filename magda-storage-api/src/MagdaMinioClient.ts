@@ -33,9 +33,9 @@ export default class MagdaMinioClient implements ObjectStoreClient {
             return console.log(
                 "Bucket " +
                     this.bucketName +
-                    " created successfully in  " +
+                    " created successfully in " +
                     region +
-                    "🎉"
+                    " 🎉"
             );
         });
     }
