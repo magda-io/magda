@@ -82,7 +82,6 @@ indexer:
 
 web-server:
   fallbackUrl: "https://data.gov.au"
-  showNotificationBanner: false
   featureFlags:
     cataloguing: true
   vocabularyApiEndpoints:
