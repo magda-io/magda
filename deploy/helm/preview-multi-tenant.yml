@@ -21,7 +21,7 @@ ingress:
 
 registry-api:
   skipAuthorization: false
-  
+
 gateway:
   ckanRedirectionDomain: "ckan.data.gov.au"
   ckanRedirectionPath: ""
@@ -89,6 +89,7 @@ indexer:
 
 web-server:
   fallbackUrl: "https://data.gov.au"
+  showNotificationBanner: false
   featureFlags:
     cataloguing: true
 
