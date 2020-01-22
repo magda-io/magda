@@ -57,7 +57,9 @@ export function MonthPicker(props: Props) {
                                 type="year"
                                 placeholder={
                                     props.default &&
-                                    props.default.getFullYear().toString()
+                                    !Number.isNaN(props.default.getFullYear())
+                                        ? props.default.getFullYear().toString()
+                                        : ""
                                 }
                                 onChange={event =>
                                     onYearChange(event.target.value)
