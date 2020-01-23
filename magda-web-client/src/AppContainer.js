@@ -40,7 +40,7 @@ class AppContainer extends React.Component {
                                 Skip to main navigation
                             </a>
                         </nav>
-                        {config.fallbackUrl && (
+                        {config.fallbackUrl && config.showNotificationBanner && (
                             <Medium>
                                 <Banner fallbackUrl={config.fallbackUrl} />
                             </Medium>

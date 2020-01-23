@@ -21,7 +21,7 @@ ingress:
 
 registry-api:
   skipAuthorization: false
-  
+
 gateway:
   ckanRedirectionDomain: "ckan.data.gov.au"
   ckanRedirectionPath: ""
