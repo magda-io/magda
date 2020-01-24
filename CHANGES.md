@@ -31,6 +31,10 @@ Gateway:
 
 -   Add /data to ckan URL, remove the `came_from` param
 
+Authorization:
+
+-   Made integration tests for authorisation run automatically as part of CI.
+
 Others:
 
 -   Use a "Year" column from a CSV file to extract a temporal extent

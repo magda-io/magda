@@ -49,10 +49,10 @@ export default function OrgUnitDropdown({
                 isMulti={false}
                 isSearchable={false}
                 onChange={(rawValue, action) => {
-                    const value = rawValue as (
+                    const value = rawValue as
                         | { value: string }
                         | undefined
-                        | null);
+                        | null;
                     if (value) {
                         onChangeCallback(value.value);
                     }
