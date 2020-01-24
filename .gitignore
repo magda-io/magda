@@ -29,6 +29,7 @@ bin
 # VS Code
 .bloop
 .metals
+metals.sbt
 
 regions
 snapshots

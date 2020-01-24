@@ -53,6 +53,7 @@ defaultRoutes:
     auth: true
   storage:
     to: http://storage-api/v0
+    auth: true
   correspondence:
     to: http://correspondence-api/v0/public
   apidocs:
