@@ -31,11 +31,11 @@ registry-api:
   skipAuthorization: false
   skipOpa: false
   recordPolicyId: "object.registry.record.esri_owner_groups"
-  
+
 correspondence-api:
   smtpPort: 2525
   smtpHostname: "smtp.mailgun.org"
-  
+
 web-server:
   fallbackUrl: "https://data.gov.au"
   featureFlags:

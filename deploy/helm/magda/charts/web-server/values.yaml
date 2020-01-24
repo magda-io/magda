@@ -14,6 +14,7 @@ resources:
   limits:
     cpu: 100m
 disableAuthenticationFeatures: false
+showNotificationBanner: false
 service: {}
 useLocalStyleSheet: false
 contentApiBaseUrlInternal: "http://content-api/v0/"
