@@ -17,6 +17,7 @@ UI:
 -   Allow to config whether keywords / themes input can accept manual inputs (or only pre-defined phrases)
 -   Only check for validity in temporal filters (in the search dataset page)
 -   Allow a blacklist of strings to be specified for automatic keyword generation
+-   Make the global notification banner configurable
 -   Removed all references to the DTA Design System react components, so that all styles come through our SCSS compilation, which should make SCSS smaller and more consistent.
 
 Storage:

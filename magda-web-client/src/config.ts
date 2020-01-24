@@ -60,6 +60,7 @@ interface DateConfig {
 const serverConfig: {
     authApiBaseUrl?: string;
     baseUrl?: string;
+    showNotificationBanner?: boolean;
     contentApiBaseUrl?: string;
     previewMapBaseUrl?: string;
     registryApiBaseUrl?: string;
@@ -176,6 +177,7 @@ const vocabularyApiEndpoints =
 export const config = {
     fetchOptions,
     homePageConfig: homePageConfig,
+    showNotificationBanner: !!serverConfig.showNotificationBanner,
     baseUrl,
     baseExternalUrl,
     contentApiURL,
