@@ -484,7 +484,8 @@
                 "MINIO_HOST": "localhost",
                 "MINIO_PORT": "9000",
                 "MINIO_ACCESS_KEY": "minio",
-                "MINIO_SECRET_KEY": "minio123"
+                "MINIO_SECRET_KEY": "minio123",
+                "JWT_SECRET": "squirrel"
             }
         }
     ]

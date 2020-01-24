@@ -53,7 +53,9 @@ describe("Storage API tests", () => {
             if (err) {
                 return console.log("Error creating bucket.", err);
             }
-            console.log('Bucket created successfully in "us-east-1".');
+            console.log(
+                "Bucket created successfully in " + minioClientOpts.region
+            );
         });
     });
 
