@@ -52,7 +52,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *        "message": "Bucket creation failed. This has been logged and we are looking into this."
      *    }
      */
-    router.post(
+    router.put(
         "/create/bucket/:bucketid",
         mustBeAdmin(options.authApiUrl, options.jwtSecret),
         async function(req, res) {
