@@ -178,6 +178,7 @@ async function createCkanPackageDataFromDataset(
 ) {
     const data = {
         name: await ckanClient.getAvailablePackageName(record.name),
+        state: "active",
         title:
             record?.aspects?.["dcat-dataset-strings"]?.["title"] ?? record.name
     } as any;
@@ -380,14 +381,14 @@ export default async function onRecordFound(
                         e
                     );
                 }
-            } else {
-                await recordSuccessCkanSyncAction(
-                    recordData.id,
-                    tenantId,
-                    registry,
-                    ckanSyncData
-                );
             }
+
+            await recordSuccessCkanSyncAction(
+                recordData.id,
+                tenantId,
+                registry,
+                ckanSyncData
+            );
         } else if (ckanSyncData.status === "retain") {
             let ckanId: string;
             let error: Error;
