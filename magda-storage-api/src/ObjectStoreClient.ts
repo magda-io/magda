@@ -1,7 +1,16 @@
 import ObjectFromStore from "./ObjectFromStore";
 
+export type CreateBucketResponse = {
+    message: string;
+    err?: Error;
+    success: boolean;
+};
+
 export default interface ObjectStoreClient {
-    createBucket(bucket: string, region?: string): Promise<any>;
+    createBucket(
+        bucket: string,
+        region?: string
+    ): Promise<CreateBucketResponse>;
     getFile(bucket: string, name: string): ObjectFromStore;
     putFile(
         bucket: string,

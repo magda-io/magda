@@ -1,11 +1,12 @@
 import ObjectFromStore from "./ObjectFromStore";
 import ObjectStoreClient from "./ObjectStoreClient";
+import { CreateBucketResponse } from "./ObjectStoreClient";
 import { Stream, Readable } from "stream";
 
 import * as Minio from "minio";
 
 export default class MagdaMinioClient implements ObjectStoreClient {
-    private readonly client: any;
+    private readonly client: Minio.Client;
     private readonly bucketName: string = "magda-bucket";
     private readonly region: string;
 
