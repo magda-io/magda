@@ -5,10 +5,7 @@ import find from "lodash/find";
 
 import ReactSelectStyles from "Components/Common/react-select/ReactSelectStyles";
 
-import {
-    listOrgUnits,
-    OrgUnitWithRelationship
-} from "api-clients/OrgUnitApis";
+import { listOrgUnits, OrgUnitWithRelationship } from "api-clients/OrgUnitApis";
 
 type Props = {
     orgUnitId?: string;
@@ -26,10 +23,10 @@ export default function OrgUnitDropdown({
 
     // Set up the call for loading custodian org units, but don't call it yet.
     const { loading, error, result, execute } = useAsyncCallback(() =>
-    listOrgUnits({
-        orgUnitsOnly: true,
-        relationshipOrgUnitId: custodianOrgUnitId
-    })
+        listOrgUnits({
+            orgUnitsOnly: true,
+            relationshipOrgUnitId: custodianOrgUnitId
+        })
     );
 
     // We don't need to load org units unless we're starting up (!result) or
@@ -40,10 +37,12 @@ export default function OrgUnitDropdown({
         if (!result || !hasUserSelected) {
             execute();
         }
-    }, [{
-        orgUnitsOnly: true,
-        relationshipOrgUnitId: custodianOrgUnitId
-    }]);
+    }, [
+        {
+            orgUnitsOnly: true,
+            relationshipOrgUnitId: custodianOrgUnitId
+        }
+    ]);
 
     // If there's no org unit already set, when we know what org units exist, set it to the one
     // above the current user in the org tree
@@ -86,10 +85,10 @@ export default function OrgUnitDropdown({
                 isMulti={false}
                 isSearchable={true}
                 onChange={(rawValue, action) => {
-                    const value = rawValue as (
+                    const value = rawValue as
                         | { value: string }
                         | undefined
-                        | null);
+                        | null;
                     if (value) {
                         setHasUserSelected(true);
                         onChangeCallback(value.value);
