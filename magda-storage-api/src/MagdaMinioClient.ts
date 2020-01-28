@@ -29,8 +29,8 @@ export default class MagdaMinioClient implements ObjectStoreClient {
         this.createBucket(this.bucketName);
     }
 
-    createBucket(bucket: string): Promise<any> {
-        return new Promise((resolve, _reject) => {
+    createBucket(bucket: string): Promise<CreateBucketResponse> {
+        return new Promise((resolve, reject) => {
             return this.client.makeBucket(bucket, this.region, (err: Error) => {
                 if (err) {
                     if (
@@ -43,7 +43,7 @@ export default class MagdaMinioClient implements ObjectStoreClient {
                         });
                     } else {
                         console.log("😢 Error creating bucket: ", err);
-                        return resolve({
+                        return reject({
                             message: "😢 Error creating bucket",
                             err,
                             success: false
