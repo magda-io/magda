@@ -10,14 +10,20 @@ export type OrgUnit = {
 
 type ListOrgUnitParams = {
     orgUnitsOnly?: boolean;
+    relationshipOrgUnitId?: string;
 };
 
 export async function listOrgUnits({
-    orgUnitsOnly: leafNodesOnly
-}: ListOrgUnitParams): Promise<OrgUnit[]> {
-    const uri = URI(config.authApiUrl)
+    orgUnitsOnly: leafNodesOnly,
+    relationshipOrgUnitId
+}: ListOrgUnitParams): Promise<OrgUnitWithRelationship[]> {
+    let uri = URI(config.authApiUrl)
         .segment("orgunits")
         .addQuery("leafNodesOnly", leafNodesOnly || false);
+
+    if (relationshipOrgUnitId) {
+        uri = uri.addQuery("relationshipOrgUnitId", relationshipOrgUnitId);
+    }
 
     const res = await fetch(uri.toString(), config.fetchOptions);
 
