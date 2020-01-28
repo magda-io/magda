@@ -32,11 +32,11 @@ export default function createApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Storage
      *
-     * @api {POST} /v0/create/bucket?bucket={bucket} Request to create a new bucket
+     * @api {POST} /v0/create/bucket/{bucketid} Request to create a new bucket
      *
      * @apiDescription Creates a new bucket with a specified name. Restricted to admins only.
      *
-     * @apiParam (Request query) {string} bucket The name of the bucket to be created
+     * @apiParam (Request body) {string} bucketid The name of the bucket to be created
      *
      * @apiSuccessExample {json} 200
      *    {
@@ -53,22 +53,19 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *    }
      */
     router.post(
-        "/create/bucket",
+        "/create/bucket/:bucketid",
         mustBeAdmin(options.authApiUrl, options.jwtSecret),
         async function(req, res) {
-            const bucket = req.query.bucket;
-            if (!bucket) {
+            const bucketId = req.params.bucketid;
+            if (!bucketId) {
                 return res
                     .status(400)
                     .send("Please specify a bucket name as a query parameter.");
             }
-            const region = req.query.region || "unspecified-region";
-            const encodedBucketname = encodeURIComponent(bucket);
-            const encodedRegionname = encodeURIComponent(region);
 
+            const encodedBucketname = encodeURIComponent(bucketId);
             const createBucketRes = await options.objectStoreClient.createBucket(
-                encodedBucketname,
-                encodedRegionname
+                encodedBucketname
             );
             if (createBucketRes.success) {
                 return res.status(200).send({
