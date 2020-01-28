@@ -6,6 +6,6 @@ resources:
   limits:
     cpu: 100m
 # Ckan Server URL: e.g. https://demo.ckan.org
-#ckanServerUrl: https://demo.ckan.org
+ckanServerUrl: https://demo.ckan.org
 # Ckan default API key: e.g. 1222-xxx-xxxx-xxxxx
-#ckanDefaultAPIKey: 
+ckanDefaultAPIKey: 9e228d18-3342-4366-9bb6-45efebbd2eb2
