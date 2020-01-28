@@ -92,10 +92,7 @@ describe("Storage API tests", () => {
                 false,
                 jwtSecret,
                 request(app)
-                    .post("/v0/create/bucket")
-                    .query({
-                        bucket: dummyBucket
-                    })
+                    .put("/v0/create/bucket/" + dummyBucket)
                     .expect(401, "Not authorized.")
             );
         });
@@ -106,10 +103,7 @@ describe("Storage API tests", () => {
                 true,
                 jwtSecret,
                 request(app)
-                    .post("/v0/create/bucket")
-                    .query({
-                        bucket: dummyBucket
-                    })
+                    .put("/v0/create/bucket/" + dummyBucket)
                     .expect(200, {
                         message:
                             "Bucket " +
