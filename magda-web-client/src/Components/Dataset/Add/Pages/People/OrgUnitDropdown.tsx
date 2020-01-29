@@ -5,7 +5,7 @@ import find from "lodash/find";
 
 import ReactSelectStyles from "Components/Common/react-select/ReactSelectStyles";
 
-import { listOrgUnits, OrgUnitWithRelationship } from "api-clients/OrgUnitApis";
+import { listOrgUnits } from "api-clients/OrgUnitApis";
 
 type Props = {
     orgUnitId?: string;
@@ -37,28 +37,7 @@ export default function OrgUnitDropdown({
         if (!result || !hasUserSelected) {
             execute();
         }
-    }, [
-        {
-            orgUnitsOnly: true,
-            relationshipOrgUnitId: custodianOrgUnitId
-        }
-    ]);
-
-    // If there's no org unit already set, when we know what org units exist, set it to the one
-    // above the current user in the org tree
-    useEffect(() => {
-        if (!hasUserSelected && result && custodianOrgUnitId) {
-            const relatedOrgUnit = find(
-                result,
-                option =>
-                    option.relationship && option.relationship !== "unrelated"
-            ) as OrgUnitWithRelationship | undefined;
-
-            if (relatedOrgUnit) {
-                onChangeCallback(relatedOrgUnit.id);
-            }
-        }
-    }, [result, custodianOrgUnitId]);
+    }, [custodianOrgUnitId]);
 
     if (loading) {
         return <span>Loading...</span>;
@@ -78,6 +57,17 @@ export default function OrgUnitDropdown({
         const selectedValue =
             typeof orgUnitId !== "undefined" &&
             find(result, option => option.id === orgUnitId);
+
+        let sortedResult;
+        if (custodianOrgUnitId) {
+            sortedResult = result
+                .filter(item => item.relationship !== "unrelated")
+                .concat(
+                    result.filter(item => item.relationship === "unrelated")
+                );
+        } else {
+            sortedResult = result;
+        }
 
         return (
             <Select
@@ -103,7 +93,7 @@ export default function OrgUnitDropdown({
                           }
                         : undefined
                 }
-                options={result.map(option => ({
+                options={sortedResult.map(option => ({
                     label: option.name,
                     value: option.id
                 }))}
