@@ -19,6 +19,7 @@ UI:
 -   Allow a blacklist of strings to be specified for automatic keyword generation
 -   Make the global notification banner configurable
 -   Removed all references to the DTA Design System react components, so that all styles come through our SCSS compilation, which should make SCSS smaller and more consistent.
+-   Swap the order of custodian & team dropdown on add dataset page
 
 Storage:
 
