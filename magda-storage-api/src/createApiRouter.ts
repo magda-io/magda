@@ -181,9 +181,16 @@ export default function createApiRouter(options: ApiRouterOptions) {
             const encodedRootPath = encodeURIComponent(fileId);
             const encodeBucketname = encodeURIComponent(bucket);
             const content = req.body;
+            const contentType = req.headers["content-type"];
+            const contentLength = req.headers["content-length"];
+
+            if (!contentLength) {
+                return res.status(400).send("No Content.");
+            }
+
             const metaData = {
-                "Content-Type": req.headers["content-type"],
-                "Content-Length": req.headers["content-length"]
+                "Content-Type": contentType,
+                "Content-Length": contentLength
             };
             return options.objectStoreClient
                 .putFile(encodeBucketname, encodedRootPath, content, metaData)
