@@ -78,39 +78,68 @@ describe("Storage API tests", () => {
     });
 
     describe("Create bucket", () => {
-        // Random string
-        const dummyBucket =
-            Math.random()
-                .toString(36)
-                .substring(2, 15) +
-            Math.random()
-                .toString(36)
-                .substring(2, 15);
-        it("Not an admin", () => {
-            return mockAuthorization(
-                authApiUrl,
-                false,
-                jwtSecret,
-                request(app)
-                    .put("/v0/create/bucket/" + dummyBucket)
-                    .expect(401, "Not authorized.")
-            );
-        });
+        describe("Creating proper buckets", () => {
+            after(() => {
+                return minioClient.removeBucket(dummyBucket, function(
+                    err: Error
+                ) {
+                    if (err) {
+                        return console.log("Unable to remove bucket: ", err);
+                    }
+                    return console.log(
+                        "Bucket " + dummyBucket + " removed successfully."
+                    );
+                });
+            });
 
-        it("As an admin", () => {
-            return mockAuthorization(
-                authApiUrl,
-                true,
-                jwtSecret,
-                request(app)
-                    .put("/v0/create/bucket/" + dummyBucket)
-                    .expect(200, {
-                        message:
-                            "Bucket " +
-                            dummyBucket +
-                            " created successfully in unspecified-region 🎉"
-                    })
-            );
+            // Random string
+            const dummyBucket =
+                Math.random()
+                    .toString(36)
+                    .substring(2, 15) +
+                Math.random()
+                    .toString(36)
+                    .substring(2, 15);
+            it("Not an admin", () => {
+                return mockAuthorization(
+                    authApiUrl,
+                    false,
+                    jwtSecret,
+                    request(app)
+                        .put("/v0/" + dummyBucket)
+                        .expect(401, "Not authorized.")
+                );
+            });
+
+            it("As an admin", () => {
+                return mockAuthorization(
+                    authApiUrl,
+                    true,
+                    jwtSecret,
+                    request(app)
+                        .put("/v0/" + dummyBucket)
+                        .expect(201, {
+                            message:
+                                "Bucket " +
+                                dummyBucket +
+                                " created successfully in unspecified-region 🎉"
+                        })
+                );
+            });
+
+            it("Creating a bucket that already exists", () => {
+                return mockAuthorization(
+                    authApiUrl,
+                    true,
+                    jwtSecret,
+                    request(app)
+                        .put("/v0/" + dummyBucket)
+                        .expect(201, {
+                            message:
+                                "Bucket " + dummyBucket + " already exists 👍"
+                        })
+                );
+            });
         });
     });
 
