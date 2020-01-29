@@ -14,7 +14,10 @@ type Props = {
 
 const getCustodians: () => Promise<OrgUnit[]> = async () => {
     try {
-        return await listOrgUnitsAtLevel(config.custodianOrgLevel);
+        const result = await listOrgUnitsAtLevel(config.custodianOrgLevel);
+        // --- list Custodians alphabetically
+        result.sort((b, a) => (a.name > b.name ? -1 : b.name > a.name ? 1 : 0));
+        return result;
     } catch (e) {
         console.error(e);
         throw e;

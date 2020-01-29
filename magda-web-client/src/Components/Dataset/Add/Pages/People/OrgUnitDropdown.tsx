@@ -21,7 +21,7 @@ export default function OrgUnitDropdown({
     // If we already have a value from orgUnitId we can assume the user already picked it.
     const [hasUserSelected, setHasUserSelected] = useState(!!orgUnitId);
 
-    // Set up the call for loading custodian org units, but don't call it yet.
+    // Set up the call for loading org units, but don't call it yet.
     const { loading, error, result, execute } = useAsyncCallback(() =>
         listOrgUnits({
             orgUnitsOnly: true,
@@ -58,15 +58,18 @@ export default function OrgUnitDropdown({
             typeof orgUnitId !== "undefined" &&
             find(result, option => option.id === orgUnitId);
 
-        let sortedResult;
+        // --- default to list options alphabetically
+        let sortedResult = result.sort((b, a) =>
+            a.name > b.name ? -1 : b.name > a.name ? 1 : 0
+        );
         if (custodianOrgUnitId) {
-            sortedResult = result
+            sortedResult = sortedResult
                 .filter(item => item.relationship !== "unrelated")
                 .concat(
-                    result.filter(item => item.relationship === "unrelated")
+                    sortedResult.filter(
+                        item => item.relationship === "unrelated"
+                    )
                 );
-        } else {
-            sortedResult = result;
         }
 
         return (
