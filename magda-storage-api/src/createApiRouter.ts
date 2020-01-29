@@ -32,18 +32,18 @@ export default function createApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Storage
      *
-     * @api {POST} /v0/create/bucket/{bucketid} Request to create a new bucket
+     * @api {PUT} /v0/{bucketid} Request to create a new bucket
      *
      * @apiDescription Creates a new bucket with a specified name. Restricted to admins only.
      *
      * @apiParam (Request body) {string} bucketid The name of the bucket to be created
      *
-     * @apiSuccessExample {json} 200
+     * @apiSuccessExample {json} 201
      *    {
      *        "message":"Bucket my-bucket created successfully in unspecified-region 🎉"
      *    }
      *
-     * @apiErrorExample {json} 400
+     * @apiSuccessExample {json} 201
      *    {
      *        "message": "Bucket my-bucket already exists 👍"
      *    }
@@ -53,14 +53,14 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *    }
      */
     router.put(
-        "/create/bucket/:bucketid",
+        "/:bucketid",
         mustBeAdmin(options.authApiUrl, options.jwtSecret),
         async function(req, res) {
             const bucketId = req.params.bucketid;
             if (!bucketId) {
                 return res
                     .status(400)
-                    .send("Please specify a bucket name as a query parameter.");
+                    .send("Please specify a bucket name in the request URL.");
             }
 
             const encodedBucketname = encodeURIComponent(bucketId);
@@ -68,7 +68,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 encodedBucketname
             );
             if (createBucketRes.success) {
-                return res.status(200).send({
+                return res.status(201).send({
                     message: createBucketRes.message
                 });
             } else {
@@ -78,7 +78,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
                             "Bucket creation failed. This has been logged and we are looking into this."
                     });
                 } else {
-                    return res.status(400).send({
+                    // If bucket already exists
+                    return res.status(201).send({
                         message: createBucketRes.message
                     });
                 }
