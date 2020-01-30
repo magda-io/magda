@@ -1,11 +1,13 @@
-import React, { useEffect } from "react";
-import { useAsyncCallback } from "react-async-hook";
+import React from "react";
+import { useAsync } from "react-async-hook";
 import Select from "react-select";
 import find from "lodash/find";
+import partition from "lodash/partition";
+import union from "lodash/union";
 
 import ReactSelectStyles from "Components/Common/react-select/ReactSelectStyles";
 
-import { listOrgUnits } from "api-clients/OrgUnitApis";
+import { listOrgUnits, OrgUnitWithRelationship } from "api-clients/OrgUnitApis";
 
 type Props = {
     orgUnitId?: string;
@@ -18,18 +20,14 @@ export default function OrgUnitDropdown({
     custodianOrgUnitId,
     onChange: onChangeCallback
 }: Props) {
-    // Set up the call for loading org units, but don't call it yet.
-    const { loading, error, result, execute } = useAsyncCallback(() =>
-        listOrgUnits({
-            orgUnitsOnly: true,
-            relationshipOrgUnitId: custodianOrgUnitId
-        })
+    const { loading, error, result, execute } = useAsync(
+        async () =>
+            await listOrgUnits({
+                orgUnitsOnly: true,
+                relationshipOrgUnitId: custodianOrgUnitId
+            }),
+        [custodianOrgUnitId]
     );
-
-    // We don't need to load org units unless we're starting up (!result)
-    useEffect(() => {
-        execute();
-    }, [custodianOrgUnitId]);
 
     if (loading) {
         return <span>Loading...</span>;
@@ -40,7 +38,10 @@ export default function OrgUnitDropdown({
                     Could not retrieve data custodian list, or there are no data
                     custodians in the system.
                 </span>
-                <button className="au-btn au-btn--tertiary" onClick={execute}>
+                <button
+                    className="au-btn au-btn--tertiary"
+                    onClick={() => execute(custodianOrgUnitId)}
+                >
                     Try Again
                 </button>
             </div>
@@ -54,14 +55,15 @@ export default function OrgUnitDropdown({
         let sortedResult = result.sort((b, a) =>
             a.name > b.name ? -1 : b.name > a.name ? 1 : 0
         );
+        // --- if custodian is selected, list selected custodian's teams in the dropdown options first.
         if (custodianOrgUnitId) {
-            sortedResult = sortedResult
-                .filter(item => item.relationship !== "unrelated")
-                .concat(
-                    sortedResult.filter(
-                        item => item.relationship === "unrelated"
-                    )
-                );
+            sortedResult = union.apply(
+                null,
+                partition(
+                    sortedResult,
+                    item => item.relationship !== "unrelated"
+                )
+            ) as OrgUnitWithRelationship[];
         }
 
         return (
