@@ -23,7 +23,6 @@ libraryDependencies ++= {
     "io.circe" %% "circe-java8" % "0.8.0",
     "org.gnieh" %% "diffson-spray-json" % "2.1.2",
     "net.virtual-void" %%  "json-lenses" % "0.6.2",
-    "com.auth0" % "java-jwt" % "3.7.0",
     "com.typesafe.akka" %% "akka-testkit" % akkaV % "test",
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpV % "test",
     "org.flywaydb" % "flyway-core" % "4.2.0" % "test",

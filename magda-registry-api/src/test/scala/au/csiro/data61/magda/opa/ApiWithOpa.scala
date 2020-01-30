@@ -15,7 +15,6 @@ import au.csiro.data61.magda.model.Registry.{
   Record
 }
 import au.csiro.data61.magda.registry._
-import com.auth0.jwt.JWT
 import com.typesafe.config.Config
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Matchers, Outcome, fixture}
@@ -23,11 +22,16 @@ import scalikejdbc.{GlobalSettings, LoggingSQLAndTimeSettings}
 import scalikejdbc._
 import scalikejdbc.config.{DBs, EnvPrefix, TypesafeConfig, TypesafeConfigReader}
 import spray.json.{JsObject, JsString, JsonParser}
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Serializer
+import spray.json._
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.io.BufferedSource
 import scala.io.Source.fromFile
+import io.jsonwebtoken.SignatureAlgorithm
+import java.{util => ju}
 
 abstract class ApiWithOpa
     extends fixture.FunSpec
@@ -37,8 +41,15 @@ abstract class ApiWithOpa
     with SprayJsonSupport
     with MockFactory
     with AuthProtocols {
+
+  override def testConfigSource: String =
+    super.testConfigSource + s"""
+                                |opa.recordPolicyId="object.registry.record.esri_owner_groups"
+    """.stripMargin
+
   implicit def default(implicit system: ActorSystem): RouteTestTimeout =
     RouteTestTimeout(300 seconds)
+
   override def beforeAll(): Unit = {
     super.beforeAll()
   }
@@ -95,18 +106,17 @@ abstract class ApiWithOpa
     if (userId.equals(anonymous))
       return RawHeader("", "")
 
-    val jwtToken =
-      JWT
-        .create()
-        .withClaim("userId", userId)
-        .sign(Authentication.algorithm)
-    //      println(s"userId: $userId")
-    //      println(s"jwtToken: $jwtToken")
+    val jwtToken = Authentication.signToken(
+      Jwts
+        .builder()
+        .claim("userId", userId),
+      system.log
+    )
+
     RawHeader(
       Authentication.headerName,
       jwtToken
     )
-
   }
 
   val TENANT_0: BigInt = 0
@@ -412,7 +422,6 @@ abstract class ApiWithOpa
   GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(
     enabled = false,
     singleLineMode = true,
-    logLevel = 'debug
+    logLevel = 'info
   )
-
 }
