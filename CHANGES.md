@@ -26,6 +26,7 @@ Storage:
 -   Add a DELETE endpoint
 -   Improves error handling (returns 404 from GET if the file doesn't exist)
 -   Add apidocs
+-   Add endpoint to create a bucket
 -   Restrict file upload to admins only
 
 Gateway:
