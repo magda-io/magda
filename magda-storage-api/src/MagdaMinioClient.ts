@@ -34,10 +34,7 @@ export default class MagdaMinioClient implements ObjectStoreClient {
         return new Promise((resolve, reject) => {
             return this.client.makeBucket(bucket, this.region, (err: Error) => {
                 if (err) {
-                    if (
-                        err.message ===
-                        "Your previous request to create the named bucket succeeded and you already own it."
-                    ) {
+                    if ((err as any).code === "BucketAlreadyOwnedByYou") {
                         return resolve({
                             message: "Bucket " + bucket + " already exists 👍",
                             success: false
@@ -45,10 +42,6 @@ export default class MagdaMinioClient implements ObjectStoreClient {
                     } else {
                         console.error("😢 Error creating bucket: ", err);
                         return reject(err);
-                            message: "😢 Error creating bucket",
-                            err,
-                            success: false
-                        });
                     }
                 }
                 return resolve({
