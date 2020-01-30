@@ -38,24 +38,20 @@ object Authentication {
     Jwts
       .parser()
       .setSigningKey(
-        ju.Base64
-          .getEncoder()
-          .encodeToString(secret(logger).getBytes("utf-8"))
+        key(logger)
       )
 
   def signToken(jwtBuilder: JwtBuilder, logger: LoggingAdapter) = {
     jwtBuilder
       .serializeToJsonWith(jwtJsonSerializer)
       .signWith(
-        SignatureAlgorithm.HS256,
-        ju.Base64
-          .getEncoder()
-          .encodeToString(
-            Authentication.secret(logger).getBytes("utf-8")
-          )
+        key(logger)
       )
       .compact()
   }
+
+  def key(logger: LoggingAdapter) =
+    Keys.hmacShaKeyFor(Authentication.secret(logger).getBytes("utf-8"))
 
   private val jwtJsonSerializer = new Serializer[java.util.Map[String, _]] {
 
