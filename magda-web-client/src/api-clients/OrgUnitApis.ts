@@ -67,3 +67,23 @@ export async function listOrgUnitsAtLevel(
         return await res.json();
     }
 }
+
+/**
+ * Get Org Unit Details By Id
+ *
+ * @export
+ * @param {string} id
+ * @returns {Promise<OrgUnit>}
+ */
+export async function getOrgUnitById(id: string): Promise<OrgUnit> {
+    const res = await fetch(
+        `${config.authApiUrl}orgunits/${id}`,
+        config.fetchOptions
+    );
+
+    if (!res.ok) {
+        throw new Error("Rejected with " + res.statusText);
+    } else {
+        return await res.json();
+    }
+}
