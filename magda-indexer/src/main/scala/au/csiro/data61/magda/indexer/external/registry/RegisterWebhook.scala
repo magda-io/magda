@@ -9,6 +9,7 @@ import au.csiro.data61.magda.model.Registry.{WebHook, EventType, WebHookConfig}
 import au.csiro.data61.magda.model.Registry.RegistryConstants
 import akka.event.LoggingAdapter
 import akka.event.Logging
+import au.csiro.data61.magda.client.RegistryExternalInterface
 
 object RegisterWebhook {
   sealed trait InitResult

@@ -1,4 +1,4 @@
-package au.csiro.data61.magda.indexer.external.registry
+package au.csiro.data61.magda.client
 
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.model.misc._
