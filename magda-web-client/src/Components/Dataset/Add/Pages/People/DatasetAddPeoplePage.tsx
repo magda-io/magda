@@ -65,26 +65,24 @@ export default function DatasetAddPeoplePage({
                     />
                 </div>
                 <h4>
-                    Which business area is responsible for maintaining this
-                    dataset?
-                </h4>
-                <div>
-                    <OrgUnitDropdown
-                        orgUnitId={dataset.owningOrgUnitId}
-                        onChange={editDataset("owningOrgUnitId")}
-                    />
-                </div>
-                <h4>
                     Which area of the organisation should be referenced as the
                     data custodian?
                 </h4>
                 <div>
                     <CustodianDropdown
                         orgUnitId={dataset.custodianOrgUnitId}
-                        teamOrgUnitId={dataset.owningOrgUnitId}
                         onChange={editDataset("custodianOrgUnitId")}
                     />
                 </div>
+                <h4>Which team is responsible for maintaining this dataset?</h4>
+                <div>
+                    <OrgUnitDropdown
+                        orgUnitId={dataset.owningOrgUnitId}
+                        custodianOrgUnitId={dataset.custodianOrgUnitId}
+                        onChange={editDataset("owningOrgUnitId")}
+                    />
+                </div>
+
                 <h4>
                     How should the contact point(s) be referenced in the
                     metadata?
