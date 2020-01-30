@@ -64,25 +64,18 @@ export default function createApiRouter(options: ApiRouterOptions) {
             }
 
             const encodedBucketname = encodeURIComponent(bucketId);
-            const createBucketRes = await options.objectStoreClient.createBucket(
-                encodedBucketname
-            );
-            if (createBucketRes.success) {
+            try {
+                const createBucketRes = await options.objectStoreClient.createBucket(
+                    encodedBucketname
+                );
                 return res.status(201).send({
                     message: createBucketRes.message
                 });
-            } else {
-                if (createBucketRes.err) {
-                    return res.status(500).send({
-                        message:
-                            "Bucket creation failed. This has been logged and we are looking into this."
-                    });
-                } else {
-                    // If bucket already exists
-                    return res.status(201).send({
-                        message: createBucketRes.message
-                    });
-                }
+            } catch (err) {
+                return res.status(500).send({
+                    message:
+                        "Bucket creation failed. This has been logged and we are looking into this."
+                });
             }
         }
     );
