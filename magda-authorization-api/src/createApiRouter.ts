@@ -650,7 +650,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *      "errorMessage": "Not authorized"
      *    }
      */
-    router.get("/public/orgunits/:nodeId", MUST_BE_ADMIN, async (req, res) => {
+    router.get("/public/orgunits/:nodeId", async (req, res) => {
         const nodeId = req.params.nodeId;
         handleMaybePromise(
             res,
