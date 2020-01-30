@@ -59,5 +59,8 @@
   },
   "_moduleMappings": {
     "magda-typescript-common/src": "@magda/typescript-common/dist"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }
