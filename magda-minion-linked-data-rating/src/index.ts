@@ -1,6 +1,6 @@
 import minion from "magda-minion-framework/src/index";
 import linkedDataAspectDef from "./linkedDataAspectDef";
-import datasetQualityAspectDef from "magda-minion-framework/src/common-aspect-defs/datasetQualityAspectDef";
+import datasetQualityAspectDef from "./datasetQualityAspectDef";
 import onRecordFound from "./onRecordFound";
 import commonYargs from "magda-minion-framework/src/commonYargs";
 

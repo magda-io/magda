@@ -81,5 +81,8 @@
     "exclude": [
       "src/test/**"
     ]
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }
