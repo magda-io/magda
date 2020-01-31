@@ -20,12 +20,13 @@ module.exports = {
     },
     stats: "errors-only",
     optimization: {
-        minimize: true
+        minimize: false
     },
     resolve: {
         extensions: [".tsx", ".ts", ".js"]
     },
     output: {
+        libraryTarget: "umd",
         filename: "index.js",
         path: path.resolve(__dirname, "./dist")
     }
