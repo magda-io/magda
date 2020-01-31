@@ -1,6 +1,6 @@
 {
-  "name": "@magda/minion-sdk",
-  "description": "MAGDA Minion SDK",
+  "name": "@magda/utils",
+  "description": "MAGDA Common Utils",
   "version": "0.0.57-0-beta-0",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
@@ -18,9 +18,7 @@
     "webpack-cli": "^3.3.10"
   },
   "dependencies": {
-    "@types/express": "^4.0.36",
-    "@types/urijs": "^1.15.34",
-    "@types/yargs": "^12.0.8"
+    "@types/request": "^2.48.1"
   },
   "magda": {
     "language": "typescript",
