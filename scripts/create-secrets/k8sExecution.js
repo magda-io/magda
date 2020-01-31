@@ -170,7 +170,7 @@ function doK8sExecution(config, shouldNotAsk = false) {
         }
 
         createSecret(env, namespace, "auth-secrets", {
-            "jwt-secret": pwgen(512),
+            "jwt-secret": pwgen(64),
             "session-secret": pwgen()
         });
     });
