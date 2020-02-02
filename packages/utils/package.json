@@ -11,7 +11,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "devDependencies": {
-    "@magda/minion-framework": "^0.0.57-0",
+    "@magda/typescript-common": "^0.0.57-0",
     "@microsoft/api-extractor": "^7.7.8",
     "typescript": "^3.7.2",
     "webpack": "^4.41.2",
@@ -23,7 +23,7 @@
   "magda": {
     "language": "typescript",
     "categories": {
-      "package": true
+      "npmPackage": true
     }
   },
   "files": [

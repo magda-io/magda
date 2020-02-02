@@ -12,7 +12,11 @@
   },
   "magda": {
     "categories": {
-      "library": true
+      "library": true,
+      "npmPackage": true
     }
-  }
+  },
+  "files": [
+    "*.schema.json"
+  ]
 }

@@ -1,6 +1,6 @@
 {
-  "name": "@magda/arbitraries",
-  "description": "MAGDA jsverify property tests arbitraries definitions",
+  "name": "@magda/connector-sdk",
+  "description": "MAGDA Connector SDK",
   "version": "0.0.57-0-beta-0",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
@@ -11,14 +11,15 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "devDependencies": {
-    "@magda/minion-framework": "^0.0.57-0",
+    "@magda/typescript-common": "^0.0.57-0",
     "@microsoft/api-extractor": "^7.7.8",
     "typescript": "^3.7.2",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10"
   },
   "dependencies": {
-    "jsverify": "^0.8.2"
+    "@types/urijs": "^1.15.34",
+    "@types/yargs": "^12.0.8"
   },
   "magda": {
     "language": "typescript",

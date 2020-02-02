@@ -71,7 +71,8 @@
   "magda": {
     "language": "typescript",
     "categories": {
-      "library": true
+      "library": true,
+      "npmPackage": true
     }
   },
   "nyc": {

@@ -54,7 +54,8 @@
     "language": "typescript",
     "categories": {
       "minion": true,
-      "library": true
+      "library": true,
+      "npmPackage": true
     }
   },
   "_moduleMappings": {
