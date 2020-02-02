@@ -27,6 +27,12 @@
       "npmPackage": true
     }
   },
+  "keywords": [
+    "Magda",
+    "Connector",
+    "Test",
+    "SDK"
+  ],
   "files": [
     "dist"
   ]

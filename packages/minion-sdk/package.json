@@ -29,6 +29,11 @@
       "npmPackage": true
     }
   },
+  "keywords": [
+    "Magda",
+    "Minion",
+    "SDK"
+  ],
   "files": [
     "dist"
   ]

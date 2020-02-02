@@ -1,6 +1,6 @@
 {
   "name": "@magda/arbitraries",
-  "description": "MAGDA jsverify property tests arbitraries definitions",
+  "description": "MAGDA jsverify property-based testing arbitraries definitions",
   "version": "0.0.57-0-beta-0",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
