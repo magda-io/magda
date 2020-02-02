@@ -3,6 +3,7 @@ import assert from "assert";
 import path from "path";
 import { MockRegistry } from "./MockRegistry";
 import { MockExpressServer } from "./MockExpressServer";
+import resolvePkg from "resolve";
 
 /**
  * Hoping to re-use this functionality for all black-box style connector
@@ -22,11 +23,20 @@ export function runConnectorTest(
         function run() {
             return new Promise((resolve, reject) => {
                 const tsconfigPath = path.resolve("tsconfig.json");
-                const tsNodeExec = require.resolve("ts-node/dist/bin.js");
+                const tsNodeExec = path.resolve(
+                    path.dirname(
+                        resolvePkg.sync("ts-node", {
+                            basedir: __dirname
+                        })
+                    ),
+                    "./bin.js"
+                );
 
                 const command = [
                     "-r",
-                    require.resolve("tsconfig-paths/register"),
+                    resolvePkg.sync("tsconfig-paths/register", {
+                        basedir: __dirname
+                    }),
                     "./src",
                     "--id=connector",
                     "--name=Connector",
