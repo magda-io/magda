@@ -14,3 +14,4 @@ export { default as retry } from "@magda/typescript-common/dist/retry";
 export { default as retryBackoff } from "@magda/typescript-common/dist/retryBackoff";
 export { default as runLater } from "@magda/typescript-common/dist/runLater";
 export { default as buildJwt } from "@magda/typescript-common/dist/session/buildJwt";
+export { encodeURIComponentWithApost } from "@magda/typescript-common/dist/test/util";

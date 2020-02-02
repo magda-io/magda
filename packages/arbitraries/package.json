@@ -1,0 +1,32 @@
+{
+  "name": "@magda/arbitraries",
+  "description": "MAGDA jsverify property tests arbitraries definitions",
+  "version": "0.0.57-0-beta-0",
+  "scripts": {
+    "prebuild": "rimraf dist tsconfig.tsbuildinfo",
+    "build": "webpack && api-extractor run -l"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "devDependencies": {
+    "@magda/minion-framework": "^0.0.57-0",
+    "@microsoft/api-extractor": "^7.7.8",
+    "typescript": "^3.7.2",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
+  },
+  "dependencies": {
+    "@types/request": "^2.48.1"
+  },
+  "magda": {
+    "language": "typescript",
+    "categories": {
+      "package": true
+    }
+  },
+  "files": [
+    "dist"
+  ]
+}

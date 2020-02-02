@@ -3,7 +3,8 @@
   "workspaces": [
     "deploy",
     "magda-*",
-    "scripts"
+    "scripts",
+    "packages/*"
   ],
   "eslintIgnore": [
     "src/pancake/**"
