@@ -1,12 +1,12 @@
 {
   "name": "@magda/utils",
   "description": "MAGDA Common Utils",
-  "version": "0.0.57-0-beta-2",
+  "version": "0.0.57-0-beta-3",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
-    "compile": "webpack && api-extractor run -l",
-    "compile-web": "webpack --env.target=web && api-extractor run -c api-extractor-web.json -l",
-    "build": "yarn compile && yarn compile-web"
+    "compile": "webpack && webpack --env.target=web",
+    "dts-rollup": "api-extractor run -l && api-extractor run -c api-extractor-web.json -l",
+    "build": "yarn compile && yarn dts-rollup"
   },
   "author": "",
   "license": "Apache-2.0",
