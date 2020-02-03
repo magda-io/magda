@@ -176,7 +176,7 @@ describe("Storage API tests", () => {
             });
         });
 
-        describe.only("Upload from the browser", () => {
+        describe("Upload from the browser", () => {
             it("Upload some files", () => {
                 return mockAuthorization(
                     authApiUrl,
