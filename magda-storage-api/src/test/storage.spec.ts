@@ -175,6 +175,22 @@ describe("Storage API tests", () => {
                 );
             });
         });
+
+        describe("Upload from the browser", () => {
+            it("Upload some files", () => {
+                return mockAuthorization(
+                    authApiUrl,
+                    true,
+                    jwtSecret,
+                    request(app)
+                        .post("/v0/upload/" + bucketName)
+                        .field("originalname", "test-browser-upload-1")
+                        .attach("image", "src/test/test_image.jpg")
+                        .attach("text", "src/test/test_csv_1.csv")
+                        .expect(200)
+                );
+            });
+        });
     });
 
     describe("Download", () => {
