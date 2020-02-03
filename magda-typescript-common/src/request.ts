@@ -1,9 +1,10 @@
 const requestOriginal = require("request");
+import { RequestAPI, Request, CoreOptions, RequiredUriUrl } from "request";
 import readPkgUp from "read-pkg-up";
 const pkg = readPkgUp.sync().pkg;
 
 // include user agent derived from package.json in all http requests
-export default requestOriginal.defaults({
+const request = requestOriginal.defaults({
     headers: {
         "User-Agent": "".concat(
             pkg.name.replace("/", "-").replace("@", ""),
@@ -11,4 +12,6 @@ export default requestOriginal.defaults({
             pkg.version
         )
     }
-});
+}) as RequestAPI<Request, CoreOptions, RequiredUriUrl>;
+
+export default request;

@@ -1,21 +1,24 @@
 {
   "name": "@magda/connector-sdk",
   "description": "MAGDA Connector SDK",
-  "version": "0.0.57-0-beta-0",
+  "version": "0.0.57-0-beta-2",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
-    "build": "webpack && api-extractor run -l"
+    "compile": "webpack && api-extractor run -l",
+    "compile-web": "webpack --env.target=web && api-extractor run -c api-extractor-web.json -l",
+    "build": "yarn compile && yarn compile-web"
   },
   "author": "",
   "license": "Apache-2.0",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "browser": "dist/index-web.js",
   "devDependencies": {
     "@magda/typescript-common": "^0.0.57-0",
     "@microsoft/api-extractor": "^7.7.8",
     "typescript": "^3.7.2",
     "webpack": "^4.41.2",
-    "webpack-cli": "^3.3.10"
+    "webpack-cli": "^3.3.10",
+    "webpack-node-externals": "^1.7.2"
   },
   "dependencies": {
     "@types/urijs": "^1.15.34",
