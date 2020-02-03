@@ -176,7 +176,7 @@ describe("Storage API tests", () => {
             });
         });
 
-        describe("Upload from the browser", () => {
+        describe.only("Upload from the browser", () => {
             it("Upload some files", () => {
                 return mockAuthorization(
                     authApiUrl,
@@ -188,6 +188,18 @@ describe("Storage API tests", () => {
                         .attach("image", "src/test/test_image.jpg")
                         .attach("text", "src/test/test_csv_1.csv")
                         .expect(200)
+                );
+            });
+
+            it("Upload no files", () => {
+                return mockAuthorization(
+                    authApiUrl,
+                    true,
+                    jwtSecret,
+                    request(app)
+                        .post("/v0/upload/" + bucketName)
+                        .field("originalname", "test-browser-upload-1")
+                        .expect(400)
                 );
             });
         });
