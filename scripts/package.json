@@ -18,6 +18,9 @@
     "org-tree": "org-tree/index.js",
     "acs-cmd": "acs-cmd/index.js"
   },
+  "scripts": {
+    "build": "echo \"ok\""
+  },
   "devDependencies": {
     "@types/pg": "^7.4.14",
     "@types/request": "^2.48.1"
@@ -25,7 +28,8 @@
   "magda": {
     "language": "javascript",
     "categories": {
-      "library": true
+      "library": true,
+      "npmPackage": true
     }
   },
   "dependencies": {
@@ -60,5 +64,11 @@
     "typescript": "^3.7.2",
     "uniqid": "^5.0.3",
     "yargs": "^12.0.5"
-  }
+  },
+  "keywords": [
+    "Magda",
+    "Command-line",
+    "Scripts",
+    "Tools"
+  ]
 }
