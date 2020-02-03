@@ -146,9 +146,26 @@ export default function createApiRouter(options: ApiRouterOptions) {
     });
 
     // Browser uploads
+    /**
+     * @apiGroup Storage
+     *
+     * @api {post} /v0/upload/{bucket} Request to upload files to {bucket}
+     *
+     * @apiDescription Uploads a file. Restricted to admins only.
+     *
+     * @apiParam (Request body) {string} bucket The name of the bucket to which to upload to
+     *
+     * @apiSuccessExample {string} 200 Successfully uploaded 2 files.
+     * {
+     *      "message": "Successfully uploaded 2 files.",
+     *      "etags": ["cafbab71cd98120b777799598f0d4808-1","19a3cb5d5706549c2f1a57a27cf30e41-1"]}
+     *
+     * @apiErrorExample {string} 500 Internal server error.
+     */
     router.post(
         "/upload/:bucket",
         fileParser({ rawBodyOptions: { limit: "10mb" } }),
+        mustBeAdmin(options.authApiUrl, options.jwtSecret),
         (req, res) => {
             console.log(req.files);
             if (!req.files || req.files.length === 0) {
@@ -175,14 +192,12 @@ export default function createApiRouter(options: ApiRouterOptions) {
                     .then(etag => etag);
             });
             return Promise.all(promises)
-                .then(_etags => {
-                    return res
-                        .status(200)
-                        .send(
-                            "Successfully uploaded " +
-                                req.files.length +
-                                " files."
-                        );
+                .then(etags => {
+                    return res.status(200).send({
+                        message:
+                            "Successfully uploaded " + etags.length + " files.",
+                        etags
+                    });
                 })
                 .catch((err: Error) => {
                     console.error(err);
