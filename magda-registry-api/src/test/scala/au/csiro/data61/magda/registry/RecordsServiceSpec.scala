@@ -1893,12 +1893,12 @@ class RecordsServiceSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
         }
 
-        Get(s"/v0/records/${record.id}/history") ~> addTenantIdHeader(TENANT_1) ~> param.api(role).routes ~> check {
+        param.asAdmin(Get(s"/v0/records/${record.id}/history")) ~> addTenantIdHeader(TENANT_1) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[EventsPage].events.length shouldEqual 1
         }
 
-        Get(s"/v0/records/${record.id}/history") ~> addTenantIdHeader(TENANT_2) ~> param.api(role).routes ~> check {
+        param.asAdmin(Get(s"/v0/records/${record.id}/history")) ~> addTenantIdHeader(TENANT_2) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[EventsPage].events.length shouldEqual 0
         }
@@ -1919,7 +1919,7 @@ class RecordsServiceSpec extends ApiSpec {
           responseAs[Record].sourceTag shouldEqual Some("tag2")
         }
 
-        Get(s"/v0/records/${record.id}/history") ~> addTenantIdHeader(TENANT_1) ~> param.api(role).routes ~> check {
+        param.asAdmin(Get(s"/v0/records/${record.id}/history")) ~> addTenantIdHeader(TENANT_1) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[EventsPage].events.length shouldEqual 1
         }
@@ -1929,7 +1929,7 @@ class RecordsServiceSpec extends ApiSpec {
           responseAs[Record] shouldEqual newRecord.copy(tenantId = Some(TENANT_2))
         }
 
-        Get(s"/v0/records/${record.id}/history") ~> addTenantIdHeader(TENANT_2) ~> param.api(role).routes ~> check {
+        param.asAdmin(Get(s"/v0/records/${record.id}/history")) ~> addTenantIdHeader(TENANT_2) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[EventsPage].events.length shouldEqual 1
         }
@@ -2516,7 +2516,7 @@ class RecordsServiceSpec extends ApiSpec {
               status shouldEqual StatusCodes.NotFound
             }
 
-            Get(s"/v0/records/$recordId/history") ~> addTenantIdHeader(TENANT_1) ~> param.api(role).routes ~> check {
+            param.asAdmin(Get(s"/v0/records/$recordId/history")) ~> addTenantIdHeader(TENANT_1) ~> param.api(role).routes ~> check {
               status shouldEqual StatusCodes.OK
               val res = responseAs[EventsPage]
 

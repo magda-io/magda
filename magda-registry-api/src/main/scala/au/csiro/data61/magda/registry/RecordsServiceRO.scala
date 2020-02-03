@@ -7,6 +7,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
+import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.registry.Directives.withRecordOpaQuery
@@ -21,6 +22,7 @@ import scala.concurrent.ExecutionContext
 @io.swagger.annotations.Api(value = "records", produces = "application/json")
 class RecordsServiceRO(
     config: Config,
+    authClient: AuthApiClient,
     system: ActorSystem,
     materializer: Materializer,
     recordPersistence: RecordPersistence = DefaultRecordPersistence
@@ -686,6 +688,6 @@ class RecordsServiceRO(
       getById ~
       getByIdSummary ~
       new RecordAspectsServiceRO(system, materializer, config).route ~
-      new RecordHistoryService(system, materializer).route
+      new RecordHistoryService(config, authClient, system, materializer).route
 
 }

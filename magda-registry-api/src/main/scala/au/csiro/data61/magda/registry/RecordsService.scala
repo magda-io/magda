@@ -24,7 +24,7 @@ import scala.util.{Failure, Success}
 
 @Path("/records")
 @io.swagger.annotations.Api(value = "records", produces = "application/json")
-class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApiClient, system: ActorSystem, materializer: Materializer, recordPersistence: RecordPersistence = DefaultRecordPersistence) extends RecordsServiceRO(config, system, materializer, recordPersistence) {
+class RecordsService(config: Config, webHookActor: ActorRef, authClient: AuthApiClient, system: ActorSystem, materializer: Materializer, recordPersistence: RecordPersistence = DefaultRecordPersistence) extends RecordsServiceRO(config, authClient, system, materializer, recordPersistence) {
   val logger = Logging(system, getClass)
   implicit val ec: ExecutionContext = system.dispatcher
 
