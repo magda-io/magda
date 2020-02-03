@@ -3,6 +3,7 @@ import { OutgoingHttpHeaders } from "http";
 import ObjectStoreClient from "./ObjectStoreClient";
 import bodyParser from "body-parser";
 import { mustBeAdmin } from "magda-typescript-common/src/authorization-api/authMiddleware";
+const { fileParser } = require("express-multipart-file-parser");
 
 export interface ApiRouterOptions {
     objectStoreClient: ObjectStoreClient;
@@ -143,6 +144,52 @@ export default function createApiRouter(options: ApiRouterOptions) {
             stream.pipe(res);
         }
     });
+
+    // Browser uploads
+    router.post(
+        "/upload/:bucket",
+        fileParser({ rawBodyOptions: { limit: "10mb" } }),
+        (req, res) => {
+            console.log(req.files);
+            if (!req.files || req.files.length === 0) {
+                return res.status(400).send("No files were uploaded.");
+            }
+            const bucket = req.params.bucket;
+            const encodeBucketname = encodeURIComponent(bucket);
+            const contentType = req.headers["content-type"];
+            const contentLength = req.headers["content-length"];
+            const metaData = {
+                "Content-Type": contentType,
+                "Content-Length": contentLength
+            };
+            const promises = (req.files as Array<any>).map((file: any) => {
+                const fieldId = file.originalname;
+                const encodedRootPath = encodeURIComponent(fieldId);
+                return options.objectStoreClient
+                    .putFile(
+                        encodeBucketname,
+                        encodedRootPath,
+                        file.buffer,
+                        metaData
+                    )
+                    .then(etag => etag);
+            });
+            return Promise.all(promises)
+                .then(_etags => {
+                    return res
+                        .status(200)
+                        .send(
+                            "Successfully uploaded " +
+                                req.files.length +
+                                " files."
+                        );
+                })
+                .catch((err: Error) => {
+                    console.error(err);
+                    return res.status(500).send("Internal server error.");
+                });
+        }
+    );
 
     /**
      * @apiGroup Storage
