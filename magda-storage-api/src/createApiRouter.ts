@@ -160,7 +160,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *      "message": "Successfully uploaded 2 files.",
      *      "etags": ["cafbab71cd98120b777799598f0d4808-1","19a3cb5d5706549c2f1a57a27cf30e41-1"]}
      *
-     * @apiErrorExample {string} 500 Internal server error.
+     * @apiErrorExample {string} 500
+     *      Internal server error.
      */
     router.post(
         "/upload/:bucket",
