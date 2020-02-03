@@ -167,7 +167,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
         "/upload/:bucket",
         fileParser({ rawBodyOptions: { limit: "10mb" } }),
         mustBeAdmin(options.authApiUrl, options.jwtSecret),
-        (req, res) => {
+        (req: any, res) => {
             if (!req.files || req.files.length === 0) {
                 return res.status(400).send("No files were uploaded.");
             }
