@@ -168,7 +168,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
         fileParser({ rawBodyOptions: { limit: "10mb" } }),
         mustBeAdmin(options.authApiUrl, options.jwtSecret),
         (req, res) => {
-            console.log(req.files);
             if (!req.files || req.files.length === 0) {
                 return res.status(400).send("No files were uploaded.");
             }
@@ -196,7 +195,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 .then(etags => {
                     return res.status(200).send({
                         message:
-                            "Successfully uploaded " + etags.length + " files.",
+                            "Successfully uploaded " +
+                            etags.length +
+                            " file(s).",
                         etags
                     });
                 })
