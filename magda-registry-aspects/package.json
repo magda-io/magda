@@ -2,7 +2,9 @@
   "name": "@magda/registry-aspects",
   "version": "0.0.57-0",
   "description": "Common aspects for use with the registry.",
-  "scripts": {},
+  "scripts": {
+    "build": "echo \"ok\""
+  },
   "author": "",
   "license": "Apache-2.0",
   "config": {
@@ -16,6 +18,11 @@
       "npmPackage": true
     }
   },
+  "keywords": [
+    "Magda",
+    "Registry",
+    "Json Schema"
+  ],
   "files": [
     "*.schema.json"
   ]
