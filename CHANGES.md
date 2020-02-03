@@ -29,6 +29,7 @@ Storage:
 -   Add apidocs
 -   Add endpoint to create a bucket
 -   Restrict file upload to admins only
+-   Support multipart upload
 
 Gateway:
 
