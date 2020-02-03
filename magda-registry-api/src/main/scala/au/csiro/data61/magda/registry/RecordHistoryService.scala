@@ -103,18 +103,26 @@ class RecordHistoryService(config: Config, authClient: AuthApiClient, system: Ac
   @ApiResponses(Array(
     new ApiResponse(code = 404, message = "No record exists with the given ID, it does not have a CreateRecord event, or it has been deleted.", response = classOf[BadRequest])
   ))
-  def version = get { path(Segment / "history" / Segment) { (id, version) => requiresTenantId { tenantId => { parameters('aspect.*, 'optionalAspect.*) { (aspects: Iterable[String], optionalAspects: Iterable[String]) =>
-    DB readOnly { session =>
-      val events = EventPersistence.streamEventsUpTo(version.toLong, recordId = Some(id), tenantId = tenantId)
-      val recordSource = recordPersistence.reconstructRecordFromEvents(id, events, aspects, optionalAspects)
-      val sink = Sink.head[Option[Record]]
-      val future = recordSource.runWith(sink)(materializer)
-      Await.result[Option[Record]](future, 5 seconds) match {
-        case Some(record) => complete(record)
-        case None => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID, it does not have a CreateRecord event, or it has been deleted."))
+  def version = get {
+    path(Segment / "history" / Segment) { (id, version) =>
+      requireIsAdmin(authClient)(system, config) { _ =>
+        requiresTenantId { tenantId =>
+          parameters('aspect.*, 'optionalAspect.*) { (aspects: Iterable[String], optionalAspects: Iterable[String]) =>
+            DB readOnly { _ =>
+              val events = EventPersistence.streamEventsUpTo(version.toLong, recordId = Some(id), tenantId = tenantId)
+              val recordSource = recordPersistence.reconstructRecordFromEvents(id, events, aspects, optionalAspects)
+              val sink = Sink.head[Option[Record]]
+              val future = recordSource.runWith(sink)(materializer)
+              Await.result[Option[Record]](future, 5 seconds) match {
+                case Some(record) => complete(record)
+                case None => complete(StatusCodes.NotFound, BadRequest("No record exists with that ID, it does not have a CreateRecord event, or it has been deleted."))
+              }
+            }
+          }
+        }
       }
     }
-  } } } } }
+  }
 
   val route =
     history ~
