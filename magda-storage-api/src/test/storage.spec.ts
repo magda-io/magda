@@ -47,6 +47,7 @@ describe("Storage API tests", () => {
     const minioClient = new Minio.Client(minioClientOpts);
     const authApiUrl = "http://example.com";
     const jwtSecret = "squirrel";
+    const uploadLimit = "100mb";
 
     before(() => {
         minioClient.makeBucket(bucketName, (err: Error) => {
@@ -66,7 +67,8 @@ describe("Storage API tests", () => {
             createApiRouter({
                 objectStoreClient: new MagdaMinioClient(minioClientOpts),
                 authApiUrl,
-                jwtSecret
+                jwtSecret,
+                uploadLimit
             })
         );
     });

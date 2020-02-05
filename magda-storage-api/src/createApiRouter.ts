@@ -9,6 +9,7 @@ export interface ApiRouterOptions {
     objectStoreClient: ObjectStoreClient;
     authApiUrl: string;
     jwtSecret: string;
+    uploadLimit: string;
 }
 
 export default function createApiRouter(options: ApiRouterOptions) {
@@ -165,7 +166,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      */
     router.post(
         "/upload/:bucket",
-        fileParser({ rawBodyOptions: { limit: "10mb" } }),
+        fileParser({ rawBodyOptions: { limit: options.uploadLimit } }),
         mustBeAdmin(options.authApiUrl, options.jwtSecret),
         (req: any, res) => {
             if (!req.files || req.files.length === 0) {
