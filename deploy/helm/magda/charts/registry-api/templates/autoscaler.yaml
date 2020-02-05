@@ -5,7 +5,7 @@ metadata:
   name: registry-api-read-only
 spec:
   scaleTargetRef:
-    apiVersion: extensions/v1beta1
+    apiVersion: apps/v1
     kind: Deployment
     name: registry-api-read-only
   minReplicas: {{ .Values.autoscaler.minReplicas }}
