@@ -151,7 +151,6 @@ export default class MagdaMinioClient implements ObjectStoreClient {
             return this.client.removeObject(bucket, objectName, function(
                 err: any
             ) {
-                console.error(err);
                 if (err) {
                     console.error("Unable to remove object: ", err);
                     return resolve(false);
