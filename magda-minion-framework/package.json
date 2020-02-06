@@ -1,7 +1,7 @@
 {
   "name": "@magda/minion-framework",
   "description": "MAGDA Minion Framework",
-  "version": "0.0.57-0",
+  "version": "0.0.57-0-beta-0",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
@@ -54,7 +54,8 @@
     "language": "typescript",
     "categories": {
       "minion": true,
-      "library": true
+      "library": true,
+      "npmPackage": true
     }
   },
   "_moduleMappings": {
