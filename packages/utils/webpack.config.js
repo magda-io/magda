@@ -22,7 +22,7 @@ module.exports = (env, argv) => {
         },
         stats: "errors-only",
         optimization: {
-            minimize: true
+            minimize: false
         },
         resolve: {
             extensions: [".tsx", ".ts", ".js", ".json"]

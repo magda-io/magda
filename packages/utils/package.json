@@ -1,7 +1,7 @@
 {
   "name": "@magda/utils",
   "description": "MAGDA Common Utils",
-  "version": "0.0.57-0-beta-3",
+  "version": "0.0.57-0-beta-5",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "compile": "webpack && webpack --env.target=web",

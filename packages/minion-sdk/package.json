@@ -1,7 +1,7 @@
 {
   "name": "@magda/minion-sdk",
   "description": "MAGDA Minion SDK",
-  "version": "0.0.57-0-beta-0",
+  "version": "0.0.57-0-beta-2",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "webpack && api-extractor run -l"
