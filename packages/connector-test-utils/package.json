@@ -4,7 +4,9 @@
   "version": "0.0.57-0-beta-1",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
-    "build": "webpack && api-extractor run -l"
+    "build": "webpack && api-extractor run -l",
+    "npm-setup": "echo \"//registry.npmjs.org/:_authToken=${NPM_TOKEN}\" > .npmrc",
+    "release": "npm publish --dry-run || echo \"Skip releasing npm package @magda/connector-test-utils.\""
   },
   "author": "",
   "license": "Apache-2.0",
@@ -24,7 +26,8 @@
   "magda": {
     "language": "typescript",
     "categories": {
-      "npmPackage": true
+      "npmPackage": true,
+      "useCommonLib": true
     }
   },
   "keywords": [

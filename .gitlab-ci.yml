@@ -318,6 +318,8 @@ buildtest:typescript-apis:
     - yarn run in-submodules -- -f categories.api=true -f categories.testStandAlone=false -f language=typescript -- run build --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.api=true -f categories.testStandAlone=false -f language=typescript -- run test --include-filtered-dependencies
     - cd magda-typescript-common && yarn test && cd ..
+    - yarn run in-submodules -- -f categories.npmPackage=true -f categories.useCommonLib=true -- run build --include-filtered-dependencies
+    - yarn run in-submodules -- -f categories.npmPackage=true -f categories.useMinionLib=true -- run build --include-filtered-dependencies
     - cd deploy/helm/magda/charts/opa
     - docker-compose down
   artifacts:
@@ -628,6 +630,28 @@ Stop Preview: &stopPreview
     - helm del --purge $CI_COMMIT_REF_SLUG
     - kubectl delete namespace $CI_COMMIT_REF_SLUG
 
+Manual Release NPM Packages:
+  stage: preview
+  when: manual
+  only:
+    - branches
+  except:
+    - master
+    - /^v.*RC.*$/
+  dependencies: 
+    - builders-and-yarn
+    - registry-typescript-api
+    - buildtest:typescript-apis
+  cache:
+    paths: []
+  image:
+    name: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  before_script: []
+  script:
+    # Setup NPM token
+    - yarn run in-submodules -f categories.npmPackage=true run npm-setup
+    - yarn run in-submodules -f categories.npmPackage=true run release
+
 Deploy Master To Dev:
   stage: deploy-dev
   only:
@@ -665,6 +689,26 @@ Release Tags To Docker Hub:
     - docker login -u magdabot -p $DOCKER_HUB_PASSWORD
     - yarn install
     - yarn run retag-and-push -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG
+
+
+Publish NPM Packages:
+  stage: release
+  only:
+    - /^v.*\..*\..*$/
+  except:
+    - branches
+    - triggers
+  dependencies:
+    - builders-and-yarn
+    - registry-typescript-api
+    - buildtest:typescript-apis
+  image:
+    name: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  cache: {}
+  script:
+    # Setup NPM token
+    - yarn run in-submodules -f categories.npmPackage=true run npm-setup
+    - yarn run in-submodules -f categories.npmPackage=true run release
 
 Publish Helm Chart:
   stage: release
