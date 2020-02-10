@@ -196,7 +196,7 @@ describe("Storage API tests", () => {
                     );
                 });
 
-                it.only("As an admin", () => {
+                it("As an admin", () => {
                     const bananadance: Buffer = fs.readFileSync(
                         "src/test/bananadance.gif"
                     );
