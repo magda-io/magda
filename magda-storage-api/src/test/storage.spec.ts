@@ -46,6 +46,7 @@ describe("Storage API tests", () => {
     };
     const minioClient = new Minio.Client(minioClientOpts);
     const authApiUrl = "http://example.com";
+    const registryApiUrl = "http://localhost:6101/v0";
     const jwtSecret = "squirrel";
 
     before(() => {
@@ -66,6 +67,7 @@ describe("Storage API tests", () => {
             createApiRouter({
                 objectStoreClient: new MagdaMinioClient(minioClientOpts),
                 authApiUrl,
+                registryApiUrl,
                 jwtSecret
             })
         );
