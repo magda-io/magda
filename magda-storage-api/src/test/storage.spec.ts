@@ -51,7 +51,7 @@ describe("Storage API tests", () => {
 
     before(() => {
         minioClient.makeBucket(bucketName, (err: Error) => {
-            if (err) {
+            if (err && (err as any).code !== "BucketAlreadyOwnedByYou") {
                 return console.log("Error creating bucket.", err);
             }
             console.log(
@@ -187,14 +187,19 @@ describe("Storage API tests", () => {
                         jwtSecret,
                         request(app)
                             .post("/v0/upload/" + bucketName)
-                            .field("originalname", "test-browser-upload-no-admin")
+                            .field(
+                                "originalname",
+                                "test-browser-upload-no-admin"
+                            )
                             .attach("image", "src/test/test_image.jpg")
                             .expect(401, "Not authorized.")
                     );
                 });
 
                 it.only("As an admin", () => {
-                    const bananadance: Buffer = fs.readFileSync("src/test/bananadance.gif");
+                    const bananadance: Buffer = fs.readFileSync(
+                        "src/test/bananadance.gif"
+                    );
                     return mockAuthorization(
                         authApiUrl,
                         true,
@@ -206,16 +211,15 @@ describe("Storage API tests", () => {
                             .attach("image", bananadance, "bananadance.gif")
                             .accept("gif")
                             .expect(200)
-                    )
-                    .then(_res => {
+                    ).then(_res => {
                         return request(app)
                             .get("/v0/" + bucketName + "/bananadance.gif")
                             .accept("gif")
                             .expect(200)
-                            .expect(bananadance)
+                            .expect(bananadance);
                     });
                 });
-            })
+            });
 
             it("Upload no files", () => {
                 return mockAuthorization(
@@ -300,7 +304,9 @@ describe("Storage API tests", () => {
             });
 
             it("Bananadance GIF", () => {
-                const bananadance: Buffer = fs.readFileSync("src/test/bananadance.gif");
+                const bananadance: Buffer = fs.readFileSync(
+                    "src/test/bananadance.gif"
+                );
                 return mockAuthorization(
                     authApiUrl,
                     true,
