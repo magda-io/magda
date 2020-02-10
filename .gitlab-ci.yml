@@ -326,6 +326,7 @@ buildtest:typescript-apis:
   artifacts:
     paths:
       - "*/dist"
+      - "packages/*/dist"
     expire_in: 7 days
 
 buildtest:storage-api:
