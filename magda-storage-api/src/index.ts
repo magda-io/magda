@@ -3,7 +3,6 @@ import express from "express";
 import yargs from "yargs";
 import createApiRouter from "./createApiRouter";
 import MagdaMinioClient from "./MagdaMinioClient";
-import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
