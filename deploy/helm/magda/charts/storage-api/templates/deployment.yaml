@@ -27,6 +27,7 @@ spec:
             "--minioEnableSSL", "false",
             "--minioHost", "magda-minio",
             "--minioPort", "9000",
+            "--authApiUrl", "http://authorization-api/v0",
         ]
         env:
         - name: MINIO_SECRET_KEY
@@ -39,6 +40,11 @@ spec:
             secretKeyRef:
               name: storage-secrets
               key: accesskey
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: jwt-secret
 
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:

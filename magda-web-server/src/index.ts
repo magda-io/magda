@@ -25,6 +25,12 @@ const argv = yargs
         type: "boolean",
         default: false
     })
+    .option("showNotificationBanner", {
+        describe:
+            "Whether or not the global notification banner should be shown",
+        type: "boolean",
+        default: false
+    })
     .option("useLocalStyleSheet", {
         describe:
             "True to use prebuilt static stylesheet from web-client module.",
@@ -271,6 +277,7 @@ const webServerConfig = {
     ),
     fallbackUrl: argv.fallbackUrl,
     gapiIds: argv.gapiIds,
+    showNotificationBanner: argv.showNotificationBanner,
     featureFlags: argv.featureFlags || {},
     vocabularyApiEndpoints: (argv.vocabularyApiEndpoints || []) as string[],
     defaultOrganizationId: argv.defaultOrganizationId,

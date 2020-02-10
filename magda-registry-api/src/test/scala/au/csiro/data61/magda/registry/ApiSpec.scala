@@ -8,8 +8,8 @@ import org.scalatest.Matchers
 import org.scalatest.fixture.FunSpec
 import org.slf4j.LoggerFactory
 
-import com.auth0.jwt.JWT
 import com.typesafe.config.Config
+import io.jsonwebtoken.Jwts;
 
 import akka.actor.ActorRef
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
@@ -42,6 +42,8 @@ import au.csiro.data61.magda.model.Registry.{
   MAGDA_TENANT_ID_HEADER,
   MAGDA_SYSTEM_ID
 }
+import io.jsonwebtoken.SignatureAlgorithm
+import java.{util => ju}
 
 abstract class ApiSpec
     extends FunSpec
@@ -180,12 +182,13 @@ abstract class ApiSpec
   }
 
   def asUser(req: HttpRequest): HttpRequest = {
-    req.withHeaders(
-      new RawHeader(
-        "X-Magda-Session",
-        JWT.create().withClaim("userId", "1").sign(Authentication.algorithm)
-      )
+    val jws = Authentication.signToken(
+      Jwts
+        .builder()
+        .claim("userId", "1"),
+      system.log
     )
+    req.withHeaders(new RawHeader("X-Magda-Session", jws))
   }
 
   def expectAdminCheck(httpFetcher: HttpFetcher, isAdmin: Boolean) {

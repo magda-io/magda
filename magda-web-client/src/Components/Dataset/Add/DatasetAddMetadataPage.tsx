@@ -101,9 +101,7 @@ class NewDataset extends React.Component<Props, State> {
     componentDidMount() {
         if (this.props.isNewDataset) {
             this.props.history.replace(
-                `/dataset/add/metadata/${this.props.datasetId}/${
-                    this.props.step
-                }`
+                `/dataset/add/metadata/${this.props.datasetId}/${this.props.step}`
             );
         }
     }
@@ -502,12 +500,7 @@ const mapDispatchToProps = dispatch => {
 };
 
 export default withAddDatasetState(
-    withRouter(
-        connect(
-            mapStateToProps,
-            mapDispatchToProps
-        )(NewDataset)
-    )
+    withRouter(connect(mapStateToProps, mapDispatchToProps)(NewDataset))
 );
 
 function buildDcatDatasetStrings(value: Dataset) {

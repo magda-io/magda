@@ -3,6 +3,7 @@ import express from "express";
 import yargs from "yargs";
 import createApiRouter from "./createApiRouter";
 import MagdaMinioClient from "./MagdaMinioClient";
+import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
@@ -49,6 +50,11 @@ const argv = addJwtSecretFromEnvVar(
             describe: "Region where the server is being created.",
             type: "string",
             default: "unspecified-region"
+        })
+        .option("authApiUrl", {
+            describe: "Url of the authorization API.",
+            type: "string",
+            default: "http://localhost:6104/v0"
         }).argv
 );
 
@@ -66,6 +72,7 @@ app.use(
             region: argv.minioRegion
         }),
         registryApiUrl: argv.registryApiUrl,
+        authApiUrl: argv.authApiUrl,
         jwtSecret: argv.jwtSecret as string
     })
 );

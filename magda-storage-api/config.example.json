@@ -5,5 +5,6 @@
     "minioEnableSSL": true,
     "minioHost": "localhost",
     "minioPort": 9000,
-    "minioRegion": "us-east-1"
+    "minioRegion": "unspecified-region",
+    "authApiUrl": "http://localhost:6104"
 }

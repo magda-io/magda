@@ -82,8 +82,9 @@ export class AlwaysEditor<V> extends React.Component<
                 isValidationError: this.state.isValidationError,
                 validationErrorMessage: this.state.validationErrorMessage,
                 onBlur: () => {
-                    ValidationManager.onInputFocusOut(this.props
-                        .validationFieldPath as string);
+                    ValidationManager.onInputFocusOut(
+                        this.props.validationFieldPath as string
+                    );
                 }
             });
         } else {

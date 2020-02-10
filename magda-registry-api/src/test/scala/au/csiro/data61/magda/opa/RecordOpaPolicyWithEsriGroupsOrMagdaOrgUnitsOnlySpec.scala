@@ -5,7 +5,7 @@ import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.registry._
 import spray.json._
 
-abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
+abstract class RecordOpaPolicyWithEsriGroupsOrMagdaOrgUnitsOnlySpec
     extends ApiWithOpa {
 
   describe("should authorize non-link aspect query") {
@@ -31,6 +31,7 @@ abstract class RecordOpaPolicyWithEsirGroupsOrMagdaOrgUnitsOnlySpec
                 .api(Full)
                 .routes ~> check {
                 val theResponse = responseAs[Option[JsObject]]
+
                 if (expectedRecordIndexes.contains(recordIndex)) {
                   status shouldBe StatusCodes.OK
                   foundRecordsCounter = foundRecordsCounter + 1
