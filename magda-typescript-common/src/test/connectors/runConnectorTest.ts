@@ -26,7 +26,7 @@ export function runConnectorTest(
                 const tsNodeExec = path.resolve(
                     path.dirname(
                         resolvePkg.sync("ts-node", {
-                            basedir: __dirname
+                            basedir: process.cwd()
                         })
                     ),
                     "./bin.js"
@@ -35,7 +35,7 @@ export function runConnectorTest(
                 const command = [
                     "-r",
                     resolvePkg.sync("tsconfig-paths/register", {
-                        basedir: __dirname
+                        basedir: process.cwd()
                     }),
                     "./src",
                     "--id=connector",

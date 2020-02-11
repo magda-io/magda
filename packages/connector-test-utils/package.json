@@ -1,7 +1,7 @@
 {
   "name": "@magda/connector-test-utils",
   "description": "MAGDA Connector Utils for Test Cases",
-  "version": "0.0.57-0-beta-1",
+  "version": "0.0.57-0-beta-2",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "webpack && api-extractor run -l",
