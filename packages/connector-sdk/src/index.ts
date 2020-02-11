@@ -15,6 +15,7 @@ export {
     JsonConnectorRunInteractiveOptions,
     JsonConnectorConfig
 } from "@magda/typescript-common/dist/JsonConnector";
+export { default as ConnectionResult } from "@magda/typescript-common/dist/ConnectionResult";
 export {
     default as JsonTransformer,
     buildersToCompiledAspects,
