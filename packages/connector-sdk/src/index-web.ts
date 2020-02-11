@@ -1,4 +1,7 @@
-export { Record } from "@magda/typescript-common/dist/generated/registry/api";
+export {
+    Record,
+    AspectDefinition
+} from "@magda/typescript-common/dist/generated/registry/api";
 export { default as ConnectorRecordId } from "@magda/typescript-common/dist/ConnectorRecordId";
 export { default as cleanOrgTitle } from "@magda/typescript-common/dist/util/cleanOrgTitle";
 export {

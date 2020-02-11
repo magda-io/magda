@@ -5,7 +5,10 @@ export {
     default as commonYargs,
     MinionArguments
 } from "@magda/minion-framework/dist/commonYargs";
-export { default as AuthorizedRegistryClient } from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
+export {
+    default as AuthorizedRegistryClient,
+    AuthorizedRegistryOptions
+} from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
 export {
     Record,
     AspectDefinition
