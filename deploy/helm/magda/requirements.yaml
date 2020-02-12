@@ -1,0 +1,296 @@
+dependencies:
+  - name: magda
+    alias: magda-core
+    version: 0.0.56-RC6
+    repository: https://charts.magda.io
+  # Magda chart is always enabled.
+  # Thus, no tags or condition are reuqired.
+  # You should set its sub-chart to enabled or not.
+  
+  - name: minion-broken-link
+    version: 0.0.57-0
+    repository: https://charts.magda.io
+    tags:
+      - minion-broken-link
+
+  - name: minion-format
+    version: 0.0.57-0
+    repository: https://charts.magda.io
+    tags:
+      - minion-format
+
+  - name: minion-linked-data-rating
+    version: 0.0.57-0
+    repository: https://charts.magda.io
+    tags:
+      - minion-linked-data-rating
+
+  - name: minion-visualization
+    version: 0.0.57-0
+    repository: https://charts.magda.io
+    tags:
+      - minion-visualization
+
+  - name: magda-ckan-connector
+    version: 0.0.57-0
+    alias: connector-dga
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors
+
+  - name: magda-project-open-data-connector
+    version: 0.0.57-0
+    alias: connector-act
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors
+
+  - name: magda-project-open-data-connector
+    version: 0.0.57-0
+    alias: connector-actmapi
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors
+
+  - name: magda-csw-connector
+    version: 0.0.57-0
+    alias: connector-aims
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors
+
+  - name: magda-csw-connector
+    version: 0.0.57-0
+    alias: connector-aodn
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors
+
+  - name: magda-csw-connector
+    version: 0.0.57-0
+    alias: connector-bom
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors
+
+  - name: magda-csw-connector
+    version: 0.0.57-0
+    alias: connector-aurin
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors
+  
+  - name: magda-ckan-connector
+    version: 0.0.57-0
+    alias: connector-brisbane
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors
+
+  - name: magda-project-open-data-connector
+    version: 0.0.57-0
+    alias: connector-hobart
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors
+
+  - name: magda-project-open-data-connector
+    version: 0.0.57-0
+    alias: connector-launceston
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors
+
+  - name: magda-csw-connector
+    version: 0.0.57-0
+    alias: connector-marlin
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors
+
+  - name: magda-csw-connector
+    version: 0.0.57-0
+    alias: connector-environment
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors
+
+  - name: magda-project-open-data-connector
+    version: 0.0.57-0
+    alias: connector-esta
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors
+
+  - name: magda-csw-connector
+    version: 0.0.57-0
+    alias: connector-ga
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors
+
+  - name: magda-project-open-data-connector
+    version: 0.0.57-0
+    alias: connector-logan
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors
+
+  - name: magda-project-open-data-connector
+    version: 0.0.57-0
+    alias: connector-melbournewater
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors
+
+  - name: magda-project-open-data-connector
+    version: 0.0.57-0
+    alias: connector-melbourne
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors
+
+  - name: magda-csw-connector
+    version: 0.0.57-0
+    alias: connector-mrt
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors     
+
+  - name: magda-project-open-data-connector
+    version: 0.0.57-0
+    alias: connector-moretonbay
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors  
+
+  - name: magda-csw-connector
+    version: 0.0.57-0
+    alias: connector-neii
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors  
+
+  - name: magda-ckan-connector
+    version: 0.0.57-0
+    alias: connector-nsw
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors  
+
+  - name: magda-csw-connector
+    version: 0.0.57-0
+    alias: connector-sdinsw
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors 
+
+  - name: magda-ckan-connector
+    version: 0.0.57-0
+    alias: connector-qld
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors 
+
+  - name: magda-ckan-connector
+    version: 0.0.57-0
+    alias: connector-sa
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors 
+
+  - name: magda-project-open-data-connector
+    version: 0.0.57-0
+    alias: connector-southerngrampians
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors 
+
+  - name: magda-csw-connector
+    version: 0.0.57-0
+    alias: connector-listtas
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors 
+
+  - name: magda-csw-connector
+    version: 0.0.57-0
+    alias: connector-tern
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors 
+
+  - name: magda-ckan-connector
+    version: 0.0.57-0
+    alias: connector-vic
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors 
+
+  - name: magda-ckan-connector
+    version: 0.0.57-0
+    alias: connector-wa
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors
+
+  - name: magda-dap-connector
+    version: 0.0.57-0
+    alias: connector-dap
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors 
+
+  - name: magda-project-open-data-connector
+    version: 0.0.57-0
+    alias: connector-vic-cardinia
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors 
+
+  - name: magda-project-open-data-connector
+    version: 0.0.57-0
+    alias: connector-nt-darwin
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors 
+
+  - name: magda-project-open-data-connector
+    version: 0.0.57-0
+    alias: connector-southern-grampians
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - connectors 

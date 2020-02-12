@@ -63,10 +63,6 @@ dependencies:
     tags:
       - all
       - web-server
-  - name: connectors
-    tags:
-      - all
-      - connectors
   - name: admin-api
     tags:
       - all
@@ -89,20 +85,6 @@ dependencies:
     tags:
       - all
       - tenant-db
-
-# Minions
-  - name: minion-broken-link
-    tags:
-      - minion-broken-link
-  - name: minion-format
-    tags:
-      - minion-format
-  - name: minion-linked-data-rating
-    tags:
-      - minion-linked-data-rating
-  - name: minion-visualization
-    tags:
-      - minion-visualization
 
 # K8s misc
   - name: priorities

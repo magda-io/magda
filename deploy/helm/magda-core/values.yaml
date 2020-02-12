@@ -36,13 +36,8 @@ tags:
   registry-db: false
   search-api: false
   session-db: false
-  minion-broken-link: false
-  minion-linked-data-rating: false
-  minion-visualization: false
-  minion-format: false
   web-server: false
   ingress: false
-  connectors: false
   storage-api: false
   tenant-api: false
   tenant-db: false
