@@ -27,3 +27,5 @@ export {
     fuzzStringArbResult,
     dateStringArb
 } from "@magda/typescript-common/dist/test/arbitraries";
+
+export { Record } from "@magda/typescript-common/dist/generated/registry/api";
