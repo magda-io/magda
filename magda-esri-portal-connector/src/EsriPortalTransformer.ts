@@ -18,7 +18,6 @@ type EsriJsonTransformerOptions = JsonTransformerOptions & {
 };
 
 export default class EsriPortalTransformer extends JsonTransformer {
-    public expiration: number | undefined;
     private groupAspectBuilders: AspectBuilder[];
     private groupAspects: CompiledAspects;
 
