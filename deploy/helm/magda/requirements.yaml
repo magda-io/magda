@@ -38,6 +38,7 @@ dependencies:
     tags:
       - all
       - connectors
+      - connector-dga
 
   - name: magda-project-open-data-connector
     version: 0.0.57-0
@@ -46,6 +47,7 @@ dependencies:
     tags:
       - all
       - connectors
+      - connector-act
 
   - name: magda-project-open-data-connector
     version: 0.0.57-0
@@ -54,6 +56,7 @@ dependencies:
     tags:
       - all
       - connectors
+      - connector-actmapi
 
   - name: magda-csw-connector
     version: 0.0.57-0
@@ -62,6 +65,7 @@ dependencies:
     tags:
       - all
       - connectors
+      - connector-aims
 
   - name: magda-csw-connector
     version: 0.0.57-0
@@ -70,6 +74,7 @@ dependencies:
     tags:
       - all
       - connectors
+      - connector-aodn
 
   - name: magda-csw-connector
     version: 0.0.57-0
@@ -78,6 +83,7 @@ dependencies:
     tags:
       - all
       - connectors
+      - connector-bom
 
   - name: magda-csw-connector
     version: 0.0.57-0
@@ -86,6 +92,7 @@ dependencies:
     tags:
       - all
       - connectors
+      - connector-aurin
   
   - name: magda-ckan-connector
     version: 0.0.57-0
@@ -94,6 +101,7 @@ dependencies:
     tags:
       - all
       - connectors
+      - connector-brisbane
 
   - name: magda-project-open-data-connector
     version: 0.0.57-0
@@ -102,6 +110,7 @@ dependencies:
     tags:
       - all
       - connectors
+      - connector-hobart
 
   - name: magda-project-open-data-connector
     version: 0.0.57-0
@@ -110,6 +119,7 @@ dependencies:
     tags:
       - all
       - connectors
+      - connector-launceston
 
   - name: magda-csw-connector
     version: 0.0.57-0
@@ -118,6 +128,7 @@ dependencies:
     tags:
       - all
       - connectors
+      - connector-marlin
 
   - name: magda-csw-connector
     version: 0.0.57-0
@@ -126,6 +137,7 @@ dependencies:
     tags:
       - all
       - connectors
+      - connector-environment
 
   - name: magda-project-open-data-connector
     version: 0.0.57-0
@@ -134,6 +146,7 @@ dependencies:
     tags:
       - all
       - connectors
+      - connector-esta
 
   - name: magda-csw-connector
     version: 0.0.57-0
@@ -142,6 +155,7 @@ dependencies:
     tags:
       - all
       - connectors
+      - connector-ga
 
   - name: magda-project-open-data-connector
     version: 0.0.57-0
@@ -150,6 +164,7 @@ dependencies:
     tags:
       - all
       - connectors
+      - connector-logan
 
   - name: magda-project-open-data-connector
     version: 0.0.57-0
@@ -158,6 +173,7 @@ dependencies:
     tags:
       - all
       - connectors
+      - connector-melbournewater
 
   - name: magda-project-open-data-connector
     version: 0.0.57-0
@@ -166,6 +182,7 @@ dependencies:
     tags:
       - all
       - connectors
+      - connector-melbourne
 
   - name: magda-csw-connector
     version: 0.0.57-0
@@ -173,7 +190,8 @@ dependencies:
     repository: https://charts.magda.io
     tags:
       - all
-      - connectors     
+      - connectors
+      - connector-mrt
 
   - name: magda-project-open-data-connector
     version: 0.0.57-0
@@ -181,7 +199,8 @@ dependencies:
     repository: https://charts.magda.io
     tags:
       - all
-      - connectors  
+      - connectors
+      - connector-moretonbay
 
   - name: magda-csw-connector
     version: 0.0.57-0
@@ -189,7 +208,8 @@ dependencies:
     repository: https://charts.magda.io
     tags:
       - all
-      - connectors  
+      - connectors
+      - connector-neii
 
   - name: magda-ckan-connector
     version: 0.0.57-0
@@ -197,7 +217,8 @@ dependencies:
     repository: https://charts.magda.io
     tags:
       - all
-      - connectors  
+      - connectors
+      - connector-nsw
 
   - name: magda-csw-connector
     version: 0.0.57-0
@@ -205,7 +226,8 @@ dependencies:
     repository: https://charts.magda.io
     tags:
       - all
-      - connectors 
+      - connectors
+      - connector-sdinsw
 
   - name: magda-ckan-connector
     version: 0.0.57-0
@@ -213,7 +235,8 @@ dependencies:
     repository: https://charts.magda.io
     tags:
       - all
-      - connectors 
+      - connectors
+      - connector-qld
 
   - name: magda-ckan-connector
     version: 0.0.57-0
@@ -221,7 +244,8 @@ dependencies:
     repository: https://charts.magda.io
     tags:
       - all
-      - connectors 
+      - connectors
+      - connector-sa
 
   - name: magda-project-open-data-connector
     version: 0.0.57-0
@@ -229,7 +253,8 @@ dependencies:
     repository: https://charts.magda.io
     tags:
       - all
-      - connectors 
+      - connectors
+      - connector-southerngrampians
 
   - name: magda-csw-connector
     version: 0.0.57-0
@@ -237,7 +262,8 @@ dependencies:
     repository: https://charts.magda.io
     tags:
       - all
-      - connectors 
+      - connectors
+      - connector-listtas
 
   - name: magda-csw-connector
     version: 0.0.57-0
@@ -245,7 +271,8 @@ dependencies:
     repository: https://charts.magda.io
     tags:
       - all
-      - connectors 
+      - connectors
+      - connector-tern
 
   - name: magda-ckan-connector
     version: 0.0.57-0
@@ -253,7 +280,8 @@ dependencies:
     repository: https://charts.magda.io
     tags:
       - all
-      - connectors 
+      - connectors
+      - connector-vic
 
   - name: magda-ckan-connector
     version: 0.0.57-0
@@ -262,6 +290,7 @@ dependencies:
     tags:
       - all
       - connectors
+      - connector-wa
 
   - name: magda-dap-connector
     version: 0.0.57-0
@@ -269,7 +298,8 @@ dependencies:
     repository: https://charts.magda.io
     tags:
       - all
-      - connectors 
+      - connectors
+      - connector-dap
 
   - name: magda-project-open-data-connector
     version: 0.0.57-0
@@ -277,7 +307,8 @@ dependencies:
     repository: https://charts.magda.io
     tags:
       - all
-      - connectors 
+      - connectors
+      - connector-vic-cardinia
 
   - name: magda-project-open-data-connector
     version: 0.0.57-0
@@ -285,7 +316,8 @@ dependencies:
     repository: https://charts.magda.io
     tags:
       - all
-      - connectors 
+      - connectors
+      - connector-nt-darwin
 
   - name: magda-project-open-data-connector
     version: 0.0.57-0
@@ -293,4 +325,5 @@ dependencies:
     repository: https://charts.magda.io
     tags:
       - all
-      - connectors 
+      - connectors
+      - connector-southern-grampians
