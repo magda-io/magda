@@ -303,4 +303,4 @@ dependencies:
     alias: connector-esri-nsw
     repository: https://charts.magda.io
     tags:
-      - connector-southern-grampians
+      - connector-esri-nsw
