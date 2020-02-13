@@ -313,7 +313,7 @@ buildtest:typescript-apis:
     POSTGRES_PASSWORD: ""
     OPA_URL: "http://docker:8181/"
   script:
-    - cd deploy/helm/magda/charts/opa
+    - cd deploy/helm/magda-core/charts/opa
     - docker-compose up -d
     - cd ../../../../..
     - yarn run in-submodules -- -f categories.api=true -f categories.testStandAlone=false -f language=typescript -- run build --include-filtered-dependencies
@@ -321,7 +321,7 @@ buildtest:typescript-apis:
     - cd magda-typescript-common && yarn test && cd ..
     - yarn run in-submodules -- -f categories.npmPackage=true -f categories.useCommonLib=true -- run build --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.npmPackage=true -f categories.useMinionLib=true -- run build --include-filtered-dependencies
-    - cd deploy/helm/magda/charts/opa
+    - cd deploy/helm/magda-core/charts/opa
     - docker-compose down
   artifacts:
     paths:
@@ -380,7 +380,7 @@ buildtest:opa-policies:
   services:
     - docker:dind
   script:
-    - docker run -v $PWD/deploy/helm/magda/charts/opa/policies:/policies openpolicyagent/opa:0.10.7 test -v ./policies
+    - docker run -v $PWD/deploy/helm/magda-core/charts/opa/policies:/policies openpolicyagent/opa:0.10.7 test -v ./policies
 
 buildtest:helm-charts:
   stage: buildtest
