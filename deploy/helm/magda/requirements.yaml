@@ -1,7 +1,7 @@
 dependencies:
   - name: magda-core
     version: 0.0.57-0
-    repository: https://charts.magda.io
+    repository: file://../magda-core
   # magda-core chart is always enabled.
   # Thus, no tags or condition are required.
   # You should set its sub-chart to enabled or not.
