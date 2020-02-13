@@ -668,6 +668,7 @@ Publish Helm Chart:
 
     # Init helm
     - helm init --client-only
+    - helm repo add magda-io https://charts.magda.io
 
     # Run deploy
     - cd deploy/helm
