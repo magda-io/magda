@@ -673,6 +673,7 @@ Publish Helm Chart:
     - cd deploy/helm
     - mkdir -p chart-repo
     - aws s3 sync s3://magda-charts/ chart-repo
+    - helm package magda-core -d chart-repo
     - helm package magda -d chart-repo
     - helm repo index chart-repo
     - aws s3 sync chart-repo s3://magda-charts/ --acl public-read
