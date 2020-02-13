@@ -1,31 +1,34 @@
 dependencies:
-  - name: magda
-    alias: magda-core
-    version: 0.0.56-RC6
+  - name: magda-core
+    version: 0.0.57-0
     repository: https://charts.magda.io
-  # Magda chart is always enabled.
-  # Thus, no tags or condition are reuqired.
+  # magda-core chart is always enabled.
+  # Thus, no tags or condition are required.
   # You should set its sub-chart to enabled or not.
   
-  - name: minion-broken-link
+  - name: magda-minion-broken-link
+    alias: minion-broken-link
     version: 0.0.57-0
     repository: https://charts.magda.io
     tags:
       - minion-broken-link
 
-  - name: minion-format
+  - name: magda-minion-format
+    alias: minion-format
     version: 0.0.57-0
     repository: https://charts.magda.io
     tags:
       - minion-format
 
-  - name: minion-linked-data-rating
+  - name: magda-minion-linked-data-rating
+    alias: minion-linked-data-rating
     version: 0.0.57-0
     repository: https://charts.magda.io
     tags:
       - minion-linked-data-rating
 
-  - name: minion-visualization
+  - name: magda-minion-visualization
+    alias: minion-visualization
     version: 0.0.57-0
     repository: https://charts.magda.io
     tags:
