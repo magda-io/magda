@@ -11,9 +11,9 @@ global:
     includeInitialJobs: false
     includeCronJobs: true
 
-connector-act:
+connector-dga:
   config:
-    id: act
+    id: dga
     name: "data.gov.au"
     sourceUrl: "https://data.gov.au/data/"
     pageSize: 1000

@@ -39,7 +39,6 @@ dependencies:
     alias: connector-dga
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-dga
 
@@ -48,7 +47,6 @@ dependencies:
     alias: connector-act
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-act
 
@@ -57,7 +55,6 @@ dependencies:
     alias: connector-actmapi
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-actmapi
 
@@ -66,7 +63,6 @@ dependencies:
     alias: connector-aims
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-aims
 
@@ -75,7 +71,6 @@ dependencies:
     alias: connector-aodn
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-aodn
 
@@ -84,7 +79,6 @@ dependencies:
     alias: connector-bom
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-bom
 
@@ -93,7 +87,6 @@ dependencies:
     alias: connector-aurin
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-aurin
   
@@ -102,7 +95,6 @@ dependencies:
     alias: connector-brisbane
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-brisbane
 
@@ -111,7 +103,6 @@ dependencies:
     alias: connector-hobart
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-hobart
 
@@ -120,7 +111,6 @@ dependencies:
     alias: connector-launceston
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-launceston
 
@@ -129,7 +119,6 @@ dependencies:
     alias: connector-marlin
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-marlin
 
@@ -138,7 +127,6 @@ dependencies:
     alias: connector-environment
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-environment
 
@@ -147,7 +135,6 @@ dependencies:
     alias: connector-esta
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-esta
 
@@ -156,7 +143,6 @@ dependencies:
     alias: connector-ga
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-ga
 
@@ -165,7 +151,6 @@ dependencies:
     alias: connector-logan
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-logan
 
@@ -174,7 +159,6 @@ dependencies:
     alias: connector-melbournewater
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-melbournewater
 
@@ -183,7 +167,6 @@ dependencies:
     alias: connector-melbourne
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-melbourne
 
@@ -192,7 +175,6 @@ dependencies:
     alias: connector-mrt
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-mrt
 
@@ -201,7 +183,6 @@ dependencies:
     alias: connector-moretonbay
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-moretonbay
 
@@ -210,7 +191,6 @@ dependencies:
     alias: connector-neii
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-neii
 
@@ -219,7 +199,6 @@ dependencies:
     alias: connector-nsw
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-nsw
 
@@ -228,7 +207,6 @@ dependencies:
     alias: connector-sdinsw
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-sdinsw
 
@@ -237,7 +215,6 @@ dependencies:
     alias: connector-qld
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-qld
 
@@ -246,7 +223,6 @@ dependencies:
     alias: connector-sa
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-sa
 
@@ -255,7 +231,6 @@ dependencies:
     alias: connector-southerngrampians
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-southerngrampians
 
@@ -264,7 +239,6 @@ dependencies:
     alias: connector-listtas
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-listtas
 
@@ -273,7 +247,6 @@ dependencies:
     alias: connector-tern
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-tern
 
@@ -282,7 +255,6 @@ dependencies:
     alias: connector-vic
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-vic
 
@@ -291,7 +263,6 @@ dependencies:
     alias: connector-wa
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-wa
 
@@ -300,7 +271,6 @@ dependencies:
     alias: connector-dap
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-dap
 
@@ -309,7 +279,6 @@ dependencies:
     alias: connector-vic-cardinia
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-vic-cardinia
 
@@ -318,7 +287,6 @@ dependencies:
     alias: connector-nt-darwin
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
       - connector-nt-darwin
 
@@ -327,6 +295,12 @@ dependencies:
     alias: connector-southern-grampians
     repository: https://charts.magda.io
     tags:
-      - all
       - connectors
+      - connector-southern-grampians
+
+  - name: magda-esri-portal-connector
+    version: 0.0.57-0
+    alias: connector-esri-nsw
+    repository: https://charts.magda.io
+    tags:
       - connector-southern-grampians
