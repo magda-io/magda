@@ -8,11 +8,24 @@ global:
   enablePriorityClass: false
   defaultContactEmail: "magda-test@googlegroups.com"
   enableMultiTenants: false
+  connectors:
+    image:
+      repository: docker.io/data61
+      tag: 0.0.57-0
+      pullPolicy: IfNotPresent
+      imagePullSecret: false
+  minions:
+    image:
+      repository: docker.io/data61
+      tag: 0.0.57-0
+      pullPolicy: IfNotPresent
+      imagePullSecret: false
 
 tags:
   all: true
   ingress: true
   priorities: false
+  connectors: false
 
 magda-core:
   ingress:

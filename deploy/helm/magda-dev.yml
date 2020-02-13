@@ -12,10 +12,22 @@ global:
   connectors:
     includeInitialJobs: false
     includeCronJobs: true
+    image:
+      repository: docker.io/data61
+      tag: 0.0.57-0
+      pullPolicy: IfNotPresent
+      imagePullSecret: false
+  minions:
+    image:
+      repository: docker.io/data61
+      tag: 0.0.57-0
+      pullPolicy: IfNotPresent
+      imagePullSecret: false
 
 tags:
   all: true
   ingress: true
+  connectors: true
   minion-broken-link: true
   minion-linked-data-rating: true
   minion-visualization: true
