@@ -91,14 +91,15 @@ export default class MagdaMinioClient implements ObjectStoreClient {
                 });
             },
             headers() {
-                return statP.then((stat: any) =>
-                    Promise.resolve({
+                return statP.then((stat: any) => {
+                    return Promise.resolve({
                         "Content-Type": stat.metaData["content-type"],
                         "Content-Encoding": stat.metaData["content-encoding"],
                         "Cache-Control": stat.metaData["cache-control"],
-                        "Content-Length": stat.size
-                    })
-                );
+                        "Content-Length": stat.size,
+                        "Record-ID": stat.metaData["record-id"]
+                    });
+                });
             }
         };
     }

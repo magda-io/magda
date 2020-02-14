@@ -139,6 +139,29 @@ export default function createApiRouter(options: ApiRouterOptions) {
             }
             res.status(500).send("Unknown error");
         }
+        const recordId = res.getHeader("Record-ID").toString();
+        if (recordId) {
+            const maybeUserId = getUserId(req, options.jwtSecret);
+            const userId = maybeUserId.valueOr(undefined);
+            const registryOptions: AuthorizedRegistryOptions = {
+                baseUrl: options.registryApiUrl,
+                jwtSecret: options.jwtSecret,
+                userId: userId,
+                tenantId: options.tenantId
+            };
+            const registryClient = new Registry(registryOptions);
+            const record: any = await registryClient.getRecord(
+                recordId,
+                undefined,
+                ["publishing", "dataset-access-control"]
+            );
+            // If there is an error
+            if (record.e) {
+                res.status(404).send(
+                    "You don't have access to this dataset/This dataset doesn't exist."
+                );
+            }
+        }
 
         const stream = await object.createStream();
         if (stream) {
@@ -176,6 +199,11 @@ export default function createApiRouter(options: ApiRouterOptions) {
         async function(req, res) {
             const fileId = req.params.fileid;
             const bucket = req.params.bucket;
+            const recordId = req.query.recordId;
+            if (!recordId) {
+                return res.status(400).send("Record ID not set.");
+            }
+            const encodedRecordId = encodeURIComponent(recordId);
             const encodedRootPath = encodeURIComponent(fileId);
             const encodeBucketname = encodeURIComponent(bucket);
             const content = req.body;
@@ -188,7 +216,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
             const metaData = {
                 "Content-Type": contentType,
-                "Content-Length": contentLength
+                "Content-Length": contentLength,
+                "Record-ID": encodedRecordId
             };
             return options.objectStoreClient
                 .putFile(encodeBucketname, encodedRootPath, content, metaData)
