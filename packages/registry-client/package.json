@@ -1,12 +1,12 @@
 {
   "name": "@magda/registry-client",
   "description": "MAGDA Registry Client",
-  "version": "0.0.57-0-beta-2",
+  "version": "0.0.57-0",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "webpack && api-extractor run -l",
     "npm-setup": "echo \"//registry.npmjs.org/:_authToken=${NPM_TOKEN}\" > .npmrc",
-    "release": "npm publish --dry-run || echo \"Skip releasing npm package @magda/registry-client.\""
+    "release": "npm publish || echo \"Skip releasing npm package @magda/registry-client.\""
   },
   "author": "",
   "license": "Apache-2.0",

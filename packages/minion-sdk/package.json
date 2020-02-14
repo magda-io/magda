@@ -1,12 +1,12 @@
 {
   "name": "@magda/minion-sdk",
   "description": "MAGDA Minion SDK",
-  "version": "0.0.57-0-beta-3",
+  "version": "0.0.57-0",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "webpack && api-extractor run -l",
     "npm-setup": "echo \"//registry.npmjs.org/:_authToken=${NPM_TOKEN}\" > .npmrc",
-    "release": "npm publish --dry-run || echo \"Skip releasing npm package @magda/minion-sdk.\""
+    "release": "npm publish || echo \"Skip releasing npm package @magda/minion-sdk.\""
   },
   "author": "",
   "license": "Apache-2.0",

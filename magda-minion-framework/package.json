@@ -1,7 +1,7 @@
 {
   "name": "@magda/minion-framework",
   "description": "MAGDA Minion Framework",
-  "version": "0.0.57-0-beta-0",
+  "version": "0.0.57-0",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
@@ -9,7 +9,7 @@
     "watch": "tsc -b --watch",
     "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
     "npm-setup": "echo \"//registry.npmjs.org/:_authToken=${NPM_TOKEN}\" > .npmrc",
-    "release": "npm publish --dry-run || echo \"Skip releasing npm package @magda/minion-framework.\""
+    "release": "npm publish || echo \"Skip releasing npm package @magda/minion-framework.\""
   },
   "author": "",
   "license": "Apache-2.0",

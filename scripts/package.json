@@ -1,6 +1,6 @@
 {
   "name": "@magda/scripts",
-  "version": "0.0.57-0-beta-1",
+  "version": "0.0.57-0",
   "description": "Scripts for building, running, and deploying MAGDA",
   "license": "Apache-2.0",
   "bin": {
@@ -21,7 +21,7 @@
   "scripts": {
     "build": "echo \"ok\"",
     "npm-setup": "echo \"//registry.npmjs.org/:_authToken=${NPM_TOKEN}\" > .npmrc",
-    "release": "npm publish --dry-run || echo \"Skip releasing npm package @magda/scripts.\""
+    "release": "npm publish || echo \"Skip releasing npm package @magda/scripts.\""
   },
   "devDependencies": {
     "@types/pg": "^7.4.14",
