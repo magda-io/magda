@@ -16,6 +16,7 @@ import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.model.TenantId.{SpecifiedTenantId}
 import au.csiro.data61.magda.util.ErrorHandling.CausedBy
 import com.typesafe.config.Config
+import au.csiro.data61.magda.client.Conversions
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 

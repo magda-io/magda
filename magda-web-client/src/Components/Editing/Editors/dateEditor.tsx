@@ -69,10 +69,9 @@ function MagdaDateRangePicker(props: {
     value: Interval | undefined;
     onChange: Function;
 }) {
-    const [focusedInput, setFocusedInput] = useState(null as (
-        | "startDate"
-        | "endDate"
-        | null));
+    const [focusedInput, setFocusedInput] = useState(
+        null as "startDate" | "endDate" | null
+    );
 
     const onDatesChange = ({
         startDate,

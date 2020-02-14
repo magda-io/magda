@@ -77,6 +77,72 @@ describe("Storage API tests", () => {
         }
     });
 
+    describe("Create bucket", () => {
+        describe("Creating proper buckets", () => {
+            after(() => {
+                return minioClient.removeBucket(dummyBucket, function(
+                    err: Error
+                ) {
+                    if (err) {
+                        return console.log("Unable to remove bucket: ", err);
+                    }
+                    return console.log(
+                        "Bucket " + dummyBucket + " removed successfully."
+                    );
+                });
+            });
+
+            // Random string
+            const dummyBucket =
+                Math.random()
+                    .toString(36)
+                    .substring(2, 15) +
+                Math.random()
+                    .toString(36)
+                    .substring(2, 15);
+            it("Not an admin", () => {
+                return mockAuthorization(
+                    authApiUrl,
+                    false,
+                    jwtSecret,
+                    request(app)
+                        .put("/v0/" + dummyBucket)
+                        .expect(401, "Not authorized.")
+                );
+            });
+
+            it("As an admin", () => {
+                return mockAuthorization(
+                    authApiUrl,
+                    true,
+                    jwtSecret,
+                    request(app)
+                        .put("/v0/" + dummyBucket)
+                        .expect(201, {
+                            message:
+                                "Bucket " +
+                                dummyBucket +
+                                " created successfully in unspecified-region 🎉"
+                        })
+                );
+            });
+
+            it("Creating a bucket that already exists", () => {
+                return mockAuthorization(
+                    authApiUrl,
+                    true,
+                    jwtSecret,
+                    request(app)
+                        .put("/v0/" + dummyBucket)
+                        .expect(201, {
+                            message:
+                                "Bucket " + dummyBucket + " already exists 👍"
+                        })
+                );
+            });
+        });
+    });
+
     describe("Upload", () => {
         describe("Upload a simple file", () => {
             it("As an admin", () => {

@@ -1,14 +1,23 @@
 import ObjectFromStore from "./ObjectFromStore";
 import ObjectStoreClient from "./ObjectStoreClient";
+import { CreateBucketResponse } from "./ObjectStoreClient";
 import { Stream, Readable } from "stream";
 
 import * as Minio from "minio";
 
 export default class MagdaMinioClient implements ObjectStoreClient {
-    private readonly client: any;
+    private readonly client: Minio.Client;
     private readonly bucketName: string = "magda-bucket";
+    private readonly region: string;
 
-    constructor({ endPoint, port, useSSL, accessKey, secretKey, region }: any) {
+    constructor({
+        endPoint,
+        port,
+        useSSL,
+        accessKey,
+        secretKey,
+        region = "unspecified-region"
+    }: any) {
         this.client = new Minio.Client({
             endPoint,
             port,
@@ -17,26 +26,34 @@ export default class MagdaMinioClient implements ObjectStoreClient {
             secretKey,
             region
         });
-        this.client.makeBucket(this.bucketName, region, (err: Error) => {
-            if (err) {
-                if (
-                    err.message ===
-                    "Your previous request to create the named bucket succeeded and you already own it."
-                ) {
-                    return console.log(
-                        "Bucket " + this.bucketName + " already exists 👍"
-                    );
-                } else {
-                    return console.log("😢 Error creating bucket: ", err);
+        this.region = region;
+        this.createBucket(this.bucketName);
+    }
+
+    createBucket(bucket: string): Promise<CreateBucketResponse> {
+        return new Promise((resolve, reject) => {
+            return this.client.makeBucket(bucket, this.region, (err: Error) => {
+                if (err) {
+                    if ((err as any).code === "BucketAlreadyOwnedByYou") {
+                        return resolve({
+                            message: "Bucket " + bucket + " already exists 👍",
+                            success: false
+                        });
+                    } else {
+                        console.error("😢 Error creating bucket: ", err);
+                        return reject(err);
+                    }
                 }
-            }
-            return console.log(
-                "Bucket " +
-                    this.bucketName +
-                    " created successfully in " +
-                    region +
-                    " 🎉"
-            );
+                return resolve({
+                    message:
+                        "Bucket " +
+                        bucket +
+                        " created successfully in " +
+                        this.region +
+                        " 🎉",
+                    success: true
+                });
+            });
         });
     }
 

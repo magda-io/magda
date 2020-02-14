@@ -37,6 +37,19 @@ Storage API started on port 6121
 
 ## API
 
+### PUT /:bucketid
+
+Attempts to create a bucket with the name `<bucketid>`.
+
+_Note:_ If the bucket exists, the request will not fail.
+
+#### Example usage
+
+```console
+$ curl -X PUT localhost:6121/v0/test-bucket
+{"message":"Bucket test-bucket created successfully in unspecified region 🎉"}
+```
+
 ### PUT /:bucket/:fileid
 
 Attempts to upload content to the MinIO `<bucket>`. Gives it a name `<fileid>` and returns a unique etag

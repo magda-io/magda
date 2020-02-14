@@ -516,16 +516,22 @@ export default function createApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Auth
      * @api {get} /public/orgunits Get orgunits by name
-     * @apiDescription Gets org units matching a name
+     * @apiDescription
+     * Gets org units matching a name
+     * Optionally provide a test Org Unit Id that will be used to
+     * test the relationship with each of returned orgUnit item.
+     * Possible Value: 'ancestor', 'descendant', 'equal', 'unrelated'
      *
      * @apiParam (query) {string} nodeName the name of the org unit to look up
      * @apiParam (query) {boolean} leafNodesOnly Whether only leaf nodes should be returned
+     * @apiParam (Query) {string} relationshipOrgUnitId Optional; The org unit id that is used to test the relationship with each of returned orgUnit item.
      *
      * @apiSuccessExample {json} 200
      *    [{
-     *      id: "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
-     *      name: "other-team"
-     *      description: "The other teams"
+     *      "id": "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7",
+     *      "name": "other-team",
+     *      "description": "The other teams",
+     *      "relationship": "unrelated"
      *    }]
      *
      * @apiErrorExample {json} 401/500
@@ -539,11 +545,23 @@ export default function createApiRouter(options: ApiRouterOptions) {
         try {
             const nodeName: string = req.query.nodeName;
             const leafNodesOnly: string = req.query.leafNodesOnly;
+            const relationshipOrgUnitId = req.query.relationshipOrgUnitId;
 
             const nodes = await orgQueryer.getNodes({
                 name: nodeName,
                 leafNodesOnly: leafNodesOnly === "true"
             });
+
+            if (relationshipOrgUnitId && nodes.length) {
+                for (let i = 0; i < nodes.length; i++) {
+                    const r = await orgQueryer.compareNodes(
+                        nodes[i]["id"],
+                        relationshipOrgUnitId
+                    );
+                    nodes[i]["relationship"] = r;
+                }
+            }
+
             res.status(200).json(nodes);
         } catch (e) {
             respondWithError("/public/orgunits", res, e);
@@ -632,7 +650,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *      "errorMessage": "Not authorized"
      *    }
      */
-    router.get("/public/orgunits/:nodeId", MUST_BE_ADMIN, async (req, res) => {
+    router.get("/public/orgunits/:nodeId", async (req, res) => {
         const nodeId = req.params.nodeId;
         handleMaybePromise(
             res,
