@@ -29,10 +29,7 @@ Storage:
 -   Add apidocs
 -   Add endpoint to create a bucket
 -   Restrict file upload to admins only
-
-Gateway:
-
--   Add /data to ckan URL, remove the `came_from` param
+-   Add authorization to GET endpoint
 
 Gateway:
 
