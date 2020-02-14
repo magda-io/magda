@@ -3,12 +3,16 @@ import { OutgoingHttpHeaders } from "http";
 import ObjectStoreClient from "./ObjectStoreClient";
 import bodyParser from "body-parser";
 import { mustBeAdmin } from "magda-typescript-common/src/authorization-api/authMiddleware";
+import { getUserId } from "magda-typescript-common/src/session/GetUserId";
+import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+import { AuthorizedRegistryOptions } from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 
 export interface ApiRouterOptions {
     registryApiUrl: string;
     objectStoreClient: ObjectStoreClient;
     authApiUrl: string;
     jwtSecret: string;
+    tenantId: number;
 }
 
 export default function createApiRouter(options: ApiRouterOptions) {

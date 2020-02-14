@@ -68,7 +68,8 @@ describe("Storage API tests", () => {
                 objectStoreClient: new MagdaMinioClient(minioClientOpts),
                 authApiUrl,
                 registryApiUrl,
-                jwtSecret
+                jwtSecret,
+                tenantId: 0
             })
         );
     });

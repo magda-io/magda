@@ -54,6 +54,11 @@ const argv = addJwtSecretFromEnvVar(
             describe: "Url of the authorization API.",
             type: "string",
             default: "http://localhost:6104/v0"
+        })
+        .option("tenantId", {
+            describe: "The tenant id for intra-network communication",
+            type: "number",
+            default: 0
         }).argv
 );
 
@@ -72,7 +77,8 @@ app.use(
         }),
         registryApiUrl: argv.registryApiUrl,
         authApiUrl: argv.authApiUrl,
-        jwtSecret: argv.jwtSecret as string
+        jwtSecret: argv.jwtSecret as string,
+        tenantId: argv.tenantId
     })
 );
 
