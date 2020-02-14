@@ -405,6 +405,10 @@ buildtest:helm-charts:
     
     - echo "helm lint magda chart using preview-multi-tenant.yml"
     - helm lint -f deploy/helm/preview-multi-tenant.yml deploy/helm/magda
+  artifacts:
+    paths:
+      - "deploy/helm/magda/charts"
+    expire_in: 7 days
 
 dockerize:scala:
   stage: dockerize
@@ -557,7 +561,8 @@ inttest:registryAuth:
   except:
     - master
     - /^v.*RC.*$/
-  dependencies: []
+  dependencies:
+    - buildtest:helm-charts
   cache:
     paths: []
   image:
@@ -671,6 +676,8 @@ Deploy Master To Dev:
   only:
     - master
   cache: {}
+  dependencies:
+    - buildtest:helm-charts
   image:
     name: dtzar/helm-kubectl:2.16.1
   retry: 1
