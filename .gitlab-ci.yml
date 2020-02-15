@@ -169,7 +169,8 @@ buildtest:search-no-index-cache:
     paths:
       - "$CI_PROJECT_DIR/pip-cache"
   services:
-    - postgres:9.6
+  # postgres 9.6.17 (published on 15th Feb 2020) introduced an issue see here (https://gitlab.com/gitlab-com/support-forum/issues/5199)
+    - postgres:9.6.16
     - docker:dind
   variables:
     POSTGRES_URL: "jdbc:postgresql://postgres/postgres"
@@ -240,7 +241,8 @@ buildtest:registry:
     - builders-and-yarn
     - sbt-prebuild
   services:
-    - postgres:9.6
+  # postgres 9.6.17 (published on 15th Feb 2020) introduced an issue see here (https://gitlab.com/gitlab-com/support-forum/issues/5199)
+    - postgres:9.6.16
   variables:
     POSTGRES_URL: "jdbc:postgresql://postgres/postgres"
     POSTGRES_DB: postgres
@@ -303,7 +305,8 @@ buildtest:typescript-apis:
     paths:
       - "$CI_PROJECT_DIR/pip-cache"
   services:
-    - postgres:9.6
+  # postgres 9.6.17 (published on 15th Feb 2020) introduced an issue see here (https://gitlab.com/gitlab-com/support-forum/issues/5199)
+    - postgres:9.6.16
     - docker:dind
   variables:
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
