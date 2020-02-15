@@ -577,8 +577,8 @@ inttest:registryAuth:
     - apk add --update pwgen
 
     # Env vars
-    - JWT_SECRET="${JWT_SECRET:-$(pwgen 16 1)}"
-    - SESSION_SECRET="${SESSION_SECRET:-$(pwgen 16 1)}"
+    - JWT_SECRET="${JWT_SECRET:-$(pwgen 32 1)}"
+    - SESSION_SECRET="${SESSION_SECRET:-$(pwgen 32 1)}"
     - DB_PASSWORD="${DB_PASSWORD:-p4ssw0rd}"
     - MINIO_HOST="${MINIO_HOST:-localhost}"
     - MINIO_PORT="${MINIO_PORT:-9000}"
