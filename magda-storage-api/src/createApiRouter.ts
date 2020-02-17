@@ -174,11 +174,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
             }
             const bucket = req.params.bucket;
             const encodeBucketname = encodeURIComponent(bucket);
-            const contentLength = req.headers["content-length"];
             const promises = (req.files as Array<any>).map((file: any) => {
                 const metaData = {
-                    "Content-Type": file.mimetype,
-                    "Content-Length": contentLength,
+                    "Content-Type": file.mimetype
                 };
                 const fieldId = file.originalname;
                 const encodedRootPath = encodeURIComponent(fieldId);
