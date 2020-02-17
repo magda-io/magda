@@ -67,6 +67,12 @@ kubectl apply -f deploy/kubernetes/rbac-config.yaml
 helm init --service-account tiller
 ```
 
+Add Magda Helm Chart Repo:
+
+```bash
+helm repo add magda-io https://charts.magda.io
+```
+
 ### Install a local kube registry
 
 This gives you a local docker registry that you'll upload your built images to so you can use them locally, without having to go via DockerHub or some other external registry.
@@ -107,18 +113,43 @@ Note: If using docker desktop for Windows older than version 19, change the valu
 ### Install Magda on your minikube/docker-desktop cluster
 
 ```bash
+# update magda helm repo
+helm repo update
+# update magda chart dependencies
+helm dep up deploy/helm/magda
+# deploy the magda chart from magda helm repo
 helm upgrade --install --timeout 9999 --wait -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
-```
-
-If you're using Docker Desktop on Windows, add `-f deploy/helm/docker-desktop-windows.yml` too, i.e. do this instead of the above:
-
-```bash
-helm upgrade --install --timeout 9999 --wait -f deploy/helm/docker-desktop-windows.yml -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
 ```
 
 This can take a while as it does a lot - downloading all the docker images, starting them up and running database migration jobs. You can see what's happening by opening another tab and running `kubectl get pods -w`.
 
 Also note that by default there won't be any minions running, as some of them can be very CPU intensive. You can toggle them on by specifying `--set tags.minion-<minionname>=true` when you run `helm upgrade`.
+
+If you're using Docker Desktop on Windows, add `-f deploy/helm/docker-desktop-windows.yml` too, i.e. do this instead of the above:
+
+```bash
+# update magda helm repo
+helm repo update
+# update magda chart dependencies
+helm dep up deploy/helm/magda
+# deploy the magda chart from magda helm repo
+helm upgrade --install --timeout 9999 --wait -f deploy/helm/docker-desktop-windows.yml -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
+```
+
+If you want to deploy the packed & production ready helm chart in our helm repo:
+
+```bash
+# update magda helm repo
+helm repo update
+# deploy the local magda chart
+helm upgrade --install --timeout 9999 --wait -f deploy/helm/minikube-dev.yml magda magda-io/magda
+```
+
+**Please Note:**
+
+-   By default, helm will install the latest production version. This excludes development versions (e.g. 0.0.57-0)
+-   If you need the latest version (including the development version), please add a `--devel` switch to the `helm upgrade` command above.
+-   Alternatively, you can use `--version` to specify a specific version. e.g. `--version 0.0.57-0`
 
 ### Crawl Data
 
@@ -134,7 +165,7 @@ If you want to just start up individual pods (e.g. just the combined database) y
 helm install --name magda deploy/helm/magda -f deploy/helm/minikube-dev.yml --set tags.all=false --set tags.combined-db=true
 ```
 
-**You can find all available tags in [deploy/helm/magda/requirements.yaml](https://github.com/magda-io/magda/blob/master/deploy/helm/magda/requirements.yaml)**
+**You can find all available tags in [deploy/helm/magda-core/requirements.yaml](https://github.com/magda-io/magda/blob/master/deploy/helm/magda-core/requirements.yaml) and [deploy/helm/magda/requirements.yaml](https://github.com/magda-io/magda/blob/master/deploy/helm/magda/requirements.yaml)**
 
 Once everything starts up, you can access the web front end on http://192.168.99.100:30100. The IP address may be different on your system. Get the real IP address by running:
 
@@ -164,7 +195,7 @@ Now you can connect to the database in minikube as if it were running locally, w
 
 ### Running a microservice locally but still connecting through the gateway
 
-You might find yourself developing an API locally that depends on authentication, which is easiest done by just logging in through the web interface and connecting through the gateway. You can actually make this work by telling the gateway to proxy your service to `192.168.99.1` in `deploy/helm/magda/charts/gateway/templates/configmap.yaml`. For instance, if I wanted to run the search api locally, I'd change `configmap.yaml` like so:
+You might find yourself developing an API locally that depends on authentication, which is easiest done by just logging in through the web interface and connecting through the gateway. You can actually make this work by telling the gateway to proxy your service to `192.168.99.1` in `deploy/helm/magda-core/charts/gateway/templates/configmap.yaml`. For instance, if I wanted to run the search api locally, I'd change `configmap.yaml` like so:
 
 ```yaml
 data:
