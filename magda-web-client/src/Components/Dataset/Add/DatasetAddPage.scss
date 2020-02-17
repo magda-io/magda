@@ -103,14 +103,17 @@
 
     .choice-1 {
         .choice-Icon {
-            width: 54px;
+            width: 154px;
             height: 58px;
         }
         .choice-buttonHeading {
-            margin-left: 8px;
+            margin-left: 0px;
         }
         .choice-Button {
             background-color: $add-dataset-page-button-top-rows !important;
+        }
+        .text-content {
+            font-size: 18px;
         }
     }
 
@@ -135,6 +138,9 @@
         .choice-buttonHeading {
             margin-left: 8px;
         }
+        .text-content {
+            font-size: 18px;
+        }
     }
 
     .choice-4 {
@@ -144,6 +150,9 @@
         }
         .choice-buttonHeading {
             margin-left: 1px;
+        }
+        .text-content {
+            font-size: 18px;
         }
     }
     .main-body-row {
