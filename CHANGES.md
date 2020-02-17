@@ -8,6 +8,9 @@ General:
 -   Fixed broken link minion causes json schema validation error
 -   Upgraded typescript to 3.7.2 & Use [Project References](https://www.typescriptlang.org/docs/handbook/project-references.html) to organize typescript project
 -   Upgraded prettier to 1.19.1 to [support typescript 3.7 better](https://prettier.io/blog/2019/11/09/1.19.0.html)
+-   Moved out [connectors](https://github.com/magda-io?utf8=%E2%9C%93&q=magda+connector) & [minions](https://github.com/magda-io?utf8=%E2%9C%93&q=magda-minion) from main magda repostory
+-   Broke helm chart to `magda-core` (core magda components excluding `connectors` & `minions`) & `magda` (full magda chart) and adjusted CI pipeline accordingly
+-   Release [npm packages](https://www.npmjs.com/search?q=%40magda) for building `connectors` & `minions` without depending on main repo
 
 UI:
 
