@@ -175,18 +175,22 @@ export default function createApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Storage
      *
-     * @api {put} /v0/{bucket}/{fieldid} Request to upload an object to {bucket} with name {fieldid}
+     * @api {put} /v0/{bucket}/{fieldid}?{recordId} Request to upload an object to {bucket} with name {fieldid}
      *
      * @apiDescription Uploads an object. Restricted to admins only.
      *
      * @apiParam (Request body) {string} bucket The name of the bucket to which to upload to
      * @apiParam (Request body) {string} fieldid The name of the object being uploaded
+     * @apiParam (Request query) {string} recordId The record ID of the dataset
      *
      * @apiSuccessExample {json} 200
      *    {
      *        "message":"File uploaded successfully",
      *        "etag":"edd88378a7900bf663a5fa386386b585-1"
      *    }
+     *
+     * @apiErrorExample {string} 400
+     *    Record ID not set
      *
      * @apiErrorExample {json} 500
      *    {
