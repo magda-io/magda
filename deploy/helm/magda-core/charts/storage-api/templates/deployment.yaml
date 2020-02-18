@@ -28,6 +28,7 @@ spec:
             "--minioHost", "magda-minio",
             "--minioPort", "9000",
             "--authApiUrl", "http://authorization-api/v0",
+            "--uploadLimit", "100mb",
         ]
         env:
         - name: MINIO_SECRET_KEY

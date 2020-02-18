@@ -47,10 +47,11 @@ describe("Storage API tests", () => {
     const minioClient = new Minio.Client(minioClientOpts);
     const authApiUrl = "http://example.com";
     const jwtSecret = "squirrel";
+    const uploadLimit = "100mb";
 
     before(() => {
         minioClient.makeBucket(bucketName, (err: Error) => {
-            if (err) {
+            if (err && (err as any).code !== "BucketAlreadyOwnedByYou") {
                 return console.log("Error creating bucket.", err);
             }
             console.log(
@@ -66,7 +67,8 @@ describe("Storage API tests", () => {
             createApiRouter({
                 objectStoreClient: new MagdaMinioClient(minioClientOpts),
                 authApiUrl,
-                jwtSecret
+                jwtSecret,
+                uploadLimit
             })
         );
     });
@@ -175,6 +177,62 @@ describe("Storage API tests", () => {
                 );
             });
         });
+
+        describe("Upload from the browser", () => {
+            describe("Upload some files", () => {
+                it("Not as an admin", () => {
+                    return mockAuthorization(
+                        authApiUrl,
+                        false,
+                        jwtSecret,
+                        request(app)
+                            .post("/v0/upload/" + bucketName)
+                            .field(
+                                "originalname",
+                                "test-browser-upload-no-admin"
+                            )
+                            .attach("image", "src/test/test_image.jpg")
+                            .expect(401, "Not authorized.")
+                    );
+                });
+
+                it("As an admin", () => {
+                    const bananadance: Buffer = fs.readFileSync(
+                        "src/test/bananadance.gif"
+                    );
+                    return mockAuthorization(
+                        authApiUrl,
+                        true,
+                        jwtSecret,
+                        request(app)
+                            .post("/v0/upload/" + bucketName)
+                            .attach("text", "src/test/test_csv_1.csv")
+                            .accept("csv")
+                            .attach("image", bananadance, "bananadance.gif")
+                            .accept("gif")
+                            .expect(200)
+                    ).then(_res => {
+                        return request(app)
+                            .get("/v0/" + bucketName + "/bananadance.gif")
+                            .accept("gif")
+                            .expect(200)
+                            .expect(bananadance);
+                    });
+                });
+            });
+
+            it("Upload no files", () => {
+                return mockAuthorization(
+                    authApiUrl,
+                    true,
+                    jwtSecret,
+                    request(app)
+                        .post("/v0/upload/" + bucketName)
+                        .field("originalname", "test-browser-upload-1")
+                        .expect(400)
+                );
+            });
+        });
     });
 
     describe("Download", () => {
@@ -222,27 +280,54 @@ describe("Storage API tests", () => {
             });
         });
 
-        it("Binary content", () => {
-            const img: Buffer = fs.readFileSync("src/test/test_image.jpg");
-            return mockAuthorization(
-                authApiUrl,
-                true,
-                jwtSecret,
-                request(app)
-                    .put("/v0/" + bucketName + "/binary-content")
-                    .set("Accept", "image/jpg")
-                    .set("Content-Type", "image/jpg")
-                    .send(img)
-                    .expect(200)
-            ).then(_res => {
-                return request(app)
-                    .get("/v0/" + bucketName + "/binary-content")
-                    .set("Accept", "image/jpg")
-                    .expect(200)
-                    .expect(img)
-                    .expect("Content-Type", "image/jpg");
+        describe("Binary content", () => {
+            it("JPG Image", () => {
+                const img: Buffer = fs.readFileSync("src/test/test_image.jpg");
+                return mockAuthorization(
+                    authApiUrl,
+                    true,
+                    jwtSecret,
+                    request(app)
+                        .put("/v0/" + bucketName + "/binary-content-jpg")
+                        .set("Accept", "image/jpg")
+                        .set("Content-Type", "image/jpg")
+                        .send(img)
+                        .expect(200)
+                ).then(_res => {
+                    return request(app)
+                        .get("/v0/" + bucketName + "/binary-content-jpg")
+                        .set("Accept", "image/jpg")
+                        .expect(200)
+                        .expect(img)
+                        .expect("Content-Type", "image/jpg");
+                });
+            });
+
+            it("Bananadance GIF", () => {
+                const bananadance: Buffer = fs.readFileSync(
+                    "src/test/bananadance.gif"
+                );
+                return mockAuthorization(
+                    authApiUrl,
+                    true,
+                    jwtSecret,
+                    request(app)
+                        .put("/v0/" + bucketName + "/binary-content-gif")
+                        .set("Accept", "image/gif")
+                        .set("Content-Type", "image/gif")
+                        .send(bananadance)
+                        .expect(200)
+                ).then(_res => {
+                    return request(app)
+                        .get("/v0/" + bucketName + "/binary-content-gif")
+                        .set("Accept", "image/gif")
+                        .expect(200)
+                        .expect(bananadance)
+                        .expect("Content-Type", "image/gif");
+                });
             });
         });
+
         it("CSV File", () => {
             const csvContent = fs.readFileSync(
                 "src/test/test_csv_1.csv",

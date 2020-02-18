@@ -49,6 +49,11 @@ const argv = addJwtSecretFromEnvVar(
             describe: "Url of the authorization API.",
             type: "string",
             default: "http://localhost:6104/v0"
+        })
+        .option("uploadLimit", {
+            describe: "How large a file can be uploaded to be stored by Magda",
+            type: "string",
+            default: "100mb"
         }).argv
 );
 
@@ -66,7 +71,8 @@ app.use(
             region: argv.minioRegion
         }),
         authApiUrl: argv.authApiUrl,
-        jwtSecret: argv.jwtSecret as string
+        jwtSecret: argv.jwtSecret as string,
+        uploadLimit: argv.uploadLimit
     })
 );
 
