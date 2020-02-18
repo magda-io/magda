@@ -5,12 +5,12 @@ import _ from "lodash";
 import { Test, Response } from "supertest";
 import request from "supertest";
 import nock from "nock";
+
 const jwt = require("jsonwebtoken");
+const Minio = require("minio");
 
 import createApiRouter from "../createApiRouter";
 import MagdaMinioClient from "../MagdaMinioClient";
-
-const Minio = require("minio");
 
 import fs from "fs";
 
@@ -20,8 +20,9 @@ export default function mockAuthorization(
     jwtSecret: string,
     req: Test
 ): Promise<Response> {
-    const userId = "1";
-    const scope = nock(authApiUrl);
+    // A random UUID
+    const userId = "b1fddd6f-e230-4068-bd2c-1a21844f1598";
+    const scope = nock(authApiUrl, { allowUnmocked: true });
 
     scope.get(`/private/users/${userId}`).reply(200, { isAdmin });
 
@@ -29,6 +30,15 @@ export default function mockAuthorization(
 
     return req.set("X-Magda-Session", id).then(res => {
         scope.done();
+        return res;
+    });
+}
+
+function injectUserId(jwtSecret: string, req: Test): Promise<Response> {
+    // A random UUID
+    const userId = "b1fddd6f-e230-4068-bd2c-1a21844f1598";
+    const id = jwt.sign({ userId: userId }, jwtSecret);
+    return req.set("X-Magda-Session", id).then(res => {
         return res;
     });
 }
@@ -46,12 +56,13 @@ describe("Storage API tests", () => {
     };
     const minioClient = new Minio.Client(minioClientOpts);
     const authApiUrl = "http://example.com";
-    const registryApiUrl = "http://localhost:6101/v0";
+    const registryApiUrl = "http://registry.example.com";
     const jwtSecret = "squirrel";
+    let registryScope: nock.Scope;
 
     before(() => {
         minioClient.makeBucket(bucketName, (err: Error) => {
-            if (err) {
+            if (err && (err as any).code !== "BucketAlreadyOwnedByYou") {
                 return console.log("Error creating bucket.", err);
             }
             console.log(
@@ -157,6 +168,7 @@ describe("Storage API tests", () => {
                         .put("/v0/" + bucketName + "/upload-test-file-admin")
                         .set("Accept", "application/json")
                         .set("Content-Type", "text/plain")
+                        .query({ recordId: "storage-test-dataset-id-success" })
                         .send("LALALALALALALALALA")
                         .expect(200)
                 );
@@ -173,6 +185,7 @@ describe("Storage API tests", () => {
                         )
                         .set("Accept", "application/json")
                         .set("Content-Type", "text/plain")
+                        .query({ recordId: "storage-test-dataset-id-success" })
                         .send("LALALALALALALALALA")
                         .expect(401, "Not authorized.")
                 );
@@ -181,25 +194,95 @@ describe("Storage API tests", () => {
     });
 
     describe("Download", () => {
-        it("Uploading and then downloading the simple file", () => {
-            return mockAuthorization(
-                authApiUrl,
-                true,
-                jwtSecret,
-                request(app)
-                    .put("/v0/" + bucketName + "/download-test-file-1")
-                    .set("Accept", "application/json")
-                    .set("Content-Type", "text/plain")
-                    .send("Testing download")
-                    .expect(200)
-            ).then(_res => {
-                return request(app)
-                    .get("/v0/" + bucketName + "/download-test-file-1")
-                    .set("Accept", "application/json")
-                    .set("Accept", "text/plain")
-                    .expect(200)
-                    .expect("Testing download")
-                    .expect("Content-Type", "text/plain");
+        beforeEach(() => {
+            registryScope = nock(registryApiUrl);
+            registryScope
+                .get(
+                    "/records/storage-test-dataset-id-success?optionalAspect=publishing&optionalAspect=dataset-access-control"
+                )
+                .reply(200, {
+                    id: "DEFAULT_DATASET_ID",
+                    aspects: {
+                        "dcat-dataset-strings": {
+                            title: "DEFAULT_DATASET_TITLE",
+                            publisher: "DEFAULT_DATASET_PUBLISHER",
+                            contactPoint: "DEFAULT_DATASET_CONTACT_POINT"
+                        },
+                        "dataset-publisher": {}
+                    }
+                });
+            registryScope
+                .get(
+                    "/records/storage-test-dataset-id-failure?optionalAspect=publishing&optionalAspect=dataset-access-control"
+                )
+                .reply(404);
+        });
+
+        describe("Uploading and then downloading a simple file", () => {
+            it("With registry auth", () => {
+                console.log("running test 1");
+                return mockAuthorization(
+                    authApiUrl,
+                    true,
+                    jwtSecret,
+                    request(app)
+                        .put(
+                            "/v0/" +
+                                bucketName +
+                                "/download-registry-auth-test-file-1"
+                        )
+                        .set("Accept", "application/json")
+                        .set("Content-Type", "text/plain")
+                        .query({ recordId: "storage-test-dataset-id-success" })
+                        .send("Testing download")
+                        .expect(200)
+                ).then(_res => {
+                    return injectUserId(
+                        jwtSecret,
+                        request(app)
+                            .get(
+                                "/v0/" +
+                                    bucketName +
+                                    "/download-registry-auth-test-file-1"
+                            )
+                            .set("Accept", "application/json")
+                            .set("Accept", "text/plain")
+                            .expect(200)
+                            .expect("Testing download")
+                            .expect("Content-Type", "text/plain")
+                    );
+                });
+            });
+
+            it("Without registry auth", () => {
+                console.log("running test 2");
+                return mockAuthorization(
+                    authApiUrl,
+                    true,
+                    jwtSecret,
+                    request(app)
+                        .put(
+                            "/v0/" + bucketName + "/download-unauth-test-file-1"
+                        )
+                        .set("Accept", "application/json")
+                        .set("Content-Type", "text/plain")
+                        .query({ recordId: "storage-test-dataset-id-failure" })
+                        .send("Testing download without auth")
+                        .expect(200)
+                ).then(_res => {
+                    return injectUserId(
+                        jwtSecret,
+                        request(app)
+                            .get(
+                                "/v0/" +
+                                    bucketName +
+                                    "/download-unauth-test-file-1"
+                            )
+                            .set("Accept", "application/json")
+                            .set("Accept", "text/plain")
+                            .expect(404)
+                    );
+                });
             });
         });
 
@@ -212,16 +295,20 @@ describe("Storage API tests", () => {
                     .put("/v0/" + bucketName + "/download-test-file-2")
                     .set("Accept", "application/json")
                     .set("Content-Type", "text/plain")
+                    .query({ recordId: "storage-test-dataset-id-success" })
                     .send("")
                     .expect(200)
             ).then(_res => {
-                return request(app)
-                    .get("/v0/" + bucketName + "/download-test-file-2")
-                    .set("Accept", "application/json")
-                    .set("Accept", "text/plain")
-                    .expect(200)
-                    .expect("")
-                    .expect("Content-Type", "text/plain");
+                return injectUserId(
+                    jwtSecret,
+                    request(app)
+                        .get("/v0/" + bucketName + "/download-test-file-2")
+                        .set("Accept", "application/json")
+                        .set("Accept", "text/plain")
+                        .expect(200)
+                        .expect("")
+                        .expect("Content-Type", "text/plain")
+                );
             });
         });
 
@@ -235,17 +322,22 @@ describe("Storage API tests", () => {
                     .put("/v0/" + bucketName + "/binary-content")
                     .set("Accept", "image/jpg")
                     .set("Content-Type", "image/jpg")
+                    .query({ recordId: "storage-test-dataset-id-success" })
                     .send(img)
                     .expect(200)
             ).then(_res => {
-                return request(app)
-                    .get("/v0/" + bucketName + "/binary-content")
-                    .set("Accept", "image/jpg")
-                    .expect(200)
-                    .expect(img)
-                    .expect("Content-Type", "image/jpg");
+                return injectUserId(
+                    jwtSecret,
+                    request(app)
+                        .get("/v0/" + bucketName + "/binary-content")
+                        .set("Accept", "image/jpg")
+                        .expect(200)
+                        .expect(img)
+                        .expect("Content-Type", "image/jpg")
+                );
             });
         });
+
         it("CSV File", () => {
             const csvContent = fs.readFileSync(
                 "src/test/test_csv_1.csv",
@@ -258,15 +350,19 @@ describe("Storage API tests", () => {
                 request(app)
                     .put("/v0/" + bucketName + "/test-csv-1")
                     .set("Content-Type", "text/csv")
+                    .query({ recordId: "storage-test-dataset-id-success" })
                     .send(csvContent)
                     .expect(200)
             ).then(_res => {
-                return request(app)
-                    .get("/v0/" + bucketName + "/test-csv-1")
-                    .set("Accept", "text/csv")
-                    .expect(200)
-                    .expect(csvContent)
-                    .expect("Content-Type", "text/csv");
+                return injectUserId(
+                    jwtSecret,
+                    request(app)
+                        .get("/v0/" + bucketName + "/test-csv-1")
+                        .set("Accept", "text/csv")
+                        .expect(200)
+                        .expect(csvContent)
+                        .expect("Content-Type", "text/csv")
+                );
             });
         });
         it("JSON File", () => {
@@ -281,15 +377,19 @@ describe("Storage API tests", () => {
                 request(app)
                     .put("/v0/" + bucketName + "/test-json-1")
                     .set("Content-Type", "application/json")
+                    .query({ recordId: "storage-test-dataset-id-success" })
                     .send(jsonContent)
                     .expect(200)
             ).then(_res => {
-                return request(app)
-                    .get("/v0/" + bucketName + "/test-json-1")
-                    .set("Accept", "application/json")
-                    .expect(200)
-                    .expect(jsonContent)
-                    .expect("Content-Type", "application/json");
+                return injectUserId(
+                    jwtSecret,
+                    request(app)
+                        .get("/v0/" + bucketName + "/test-json-1")
+                        .set("Accept", "application/json")
+                        .expect(200)
+                        .expect(jsonContent)
+                        .expect("Content-Type", "application/json")
+                );
             });
         });
     });
@@ -304,6 +404,7 @@ describe("Storage API tests", () => {
                     .put("/v0/" + bucketName + "/delete-test-file-1")
                     .set("Accept", "application/json")
                     .set("Content-Type", "text/plain")
+                    .query({ recordId: "storage-test-dataset-id-success" })
                     .send("Testing delete")
                     .expect(200)
             ).then(_res => {
@@ -330,6 +431,7 @@ describe("Storage API tests", () => {
                     .put("/v0/" + bucketName + "/delete-test-file-2")
                     .set("Accept", "application/json")
                     .set("Content-Type", "text/plain")
+                    .query({ recordId: "storage-test-dataset-id-success" })
                     .send("")
                     .expect(200)
             ).then(_res => {
