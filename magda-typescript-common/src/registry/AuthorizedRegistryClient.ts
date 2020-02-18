@@ -13,6 +13,7 @@ import createServiceError from "../createServiceError";
 import buildJwt from "../session/buildJwt";
 import { IncomingMessage } from "http";
 import { Maybe } from "tsmonad";
+import isUuid from "magda-typescript-common/src/util/isUuid";
 
 export interface AuthorizedRegistryOptions extends RegistryOptions {
     jwtSecret: string;
@@ -24,18 +25,21 @@ export default class AuthorizedRegistryClient extends RegistryClient {
     protected jwt: string;
 
     constructor(options: AuthorizedRegistryOptions) {
-        if (options.tenantId === undefined) {
+        if (options.tenantId === undefined || options.tenantId === null) {
             throw Error("A tenant id must be defined.");
         }
 
-        if (options.userId === undefined) {
-            throw Error("A user id must be defined.");
+        if (
+            options.userId === undefined ||
+            options.userId === null ||
+            !isUuid(options.userId)
+        ) {
+            throw Error("A user id must be a valid UUID.");
         }
 
-        if (options.jwtSecret === undefined) {
+        if (options.jwtSecret === undefined || options.jwtSecret === null) {
             throw Error("Some jwt secret must be defined.");
         }
-
         super(options);
         this.options = options;
         this.jwt = buildJwt(options.jwtSecret, options.userId);
