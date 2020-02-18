@@ -142,7 +142,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
         const recordId = res.getHeader("Record-ID").toString();
         if (recordId) {
             const maybeUserId = getUserId(req, options.jwtSecret);
-            const userId = maybeUserId.valueOr(undefined);
+            const userId = maybeUserId.valueOrThrow();
             const registryOptions: AuthorizedRegistryOptions = {
                 baseUrl: options.registryApiUrl,
                 jwtSecret: options.jwtSecret,
