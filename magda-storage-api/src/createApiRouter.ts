@@ -144,7 +144,12 @@ export default function createApiRouter(options: ApiRouterOptions) {
         const recordId = res.getHeader("Record-ID").toString();
         if (recordId) {
             const maybeUserId = getUserId(req, options.jwtSecret);
-            const userId = maybeUserId.valueOrThrow();
+            let userId;
+            try {
+                userId = maybeUserId.valueOrThrow();
+            } catch (e) {
+                res.status(400).send("No User ID set.");
+            }
             const registryOptions: AuthorizedRegistryOptions = {
                 baseUrl: options.registryApiUrl,
                 jwtSecret: options.jwtSecret,
@@ -200,12 +205,18 @@ export default function createApiRouter(options: ApiRouterOptions) {
             if (!req.files || req.files.length === 0) {
                 return res.status(400).send("No files were uploaded.");
             }
+            const recordId = req.query.recordId;
+            if (!recordId) {
+                return res.status(400).send("Record ID not set.");
+            }
+            const encodedRecordId = encodeURIComponent(recordId);
             const bucket = req.params.bucket;
             const encodeBucketname = encodeURIComponent(bucket);
             const promises = (req.files as Array<any>).map((file: any) => {
                 const metaData = {
                     "Content-Type": file.mimetype,
-                    "Content-Length": file.buffer.byteLength
+                    "Content-Length": file.buffer.byteLength,
+                    "Record-ID": encodedRecordId
                 };
                 const fieldId = file.originalname;
                 const encodedRootPath = encodeURIComponent(fieldId);

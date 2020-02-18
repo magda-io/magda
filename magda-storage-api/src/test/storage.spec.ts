@@ -207,6 +207,9 @@ describe("Storage API tests", () => {
                                 "originalname",
                                 "test-browser-upload-no-admin"
                             )
+                            .query({
+                                recordId: "storage-test-dataset-id-success"
+                            })
                             .attach("image", "src/test/test_image.jpg")
                             .expect(401, "Not authorized.")
                     );
@@ -225,14 +228,20 @@ describe("Storage API tests", () => {
                             .attach("text", "src/test/test_csv_1.csv")
                             .accept("csv")
                             .attach("image", bananadance, "bananadance.gif")
+                            .query({
+                                recordId: "storage-test-dataset-id-success"
+                            })
                             .accept("gif")
                             .expect(200)
                     ).then(_res => {
-                        return request(app)
-                            .get("/v0/" + bucketName + "/bananadance.gif")
-                            .accept("gif")
-                            .expect(200)
-                            .expect(bananadance);
+                        return injectUserId(
+                            jwtSecret,
+                            request(app)
+                                .get("/v0/" + bucketName + "/bananadance.gif")
+                                .accept("gif")
+                                .expect(200)
+                                .expect(bananadance)
+                        );
                     });
                 });
             });
@@ -407,15 +416,19 @@ describe("Storage API tests", () => {
                         .put("/v0/" + bucketName + "/binary-content-jpg")
                         .set("Accept", "image/jpg")
                         .set("Content-Type", "image/jpg")
+                        .query({ recordId: "storage-test-dataset-id-success" })
                         .send(img)
                         .expect(200)
                 ).then(_res => {
-                    return request(app)
-                        .get("/v0/" + bucketName + "/binary-content-jpg")
-                        .set("Accept", "image/jpg")
-                        .expect(200)
-                        .expect(img)
-                        .expect("Content-Type", "image/jpg");
+                    return injectUserId(
+                        jwtSecret,
+                        request(app)
+                            .get("/v0/" + bucketName + "/binary-content-jpg")
+                            .set("Accept", "image/jpg")
+                            .expect(200)
+                            .expect(img)
+                            .expect("Content-Type", "image/jpg")
+                    );
                 });
             });
 
@@ -430,16 +443,20 @@ describe("Storage API tests", () => {
                     request(app)
                         .put("/v0/" + bucketName + "/binary-content-gif")
                         .set("Accept", "image/gif")
+                        .query({ recordId: "storage-test-dataset-id-success" })
                         .set("Content-Type", "image/gif")
                         .send(bananadance)
                         .expect(200)
                 ).then(_res => {
-                    return request(app)
-                        .get("/v0/" + bucketName + "/binary-content-gif")
-                        .set("Accept", "image/gif")
-                        .expect(200)
-                        .expect(bananadance)
-                        .expect("Content-Type", "image/gif");
+                    return injectUserId(
+                        jwtSecret,
+                        request(app)
+                            .get("/v0/" + bucketName + "/binary-content-gif")
+                            .set("Accept", "image/gif")
+                            .expect(200)
+                            .expect(bananadance)
+                            .expect("Content-Type", "image/gif")
+                    );
                 });
             });
         });
