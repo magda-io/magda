@@ -742,7 +742,8 @@ Publish Helm Chart:
   except:
     - branches
     - triggers
-  dependencies: []
+  dependencies:
+    - buildtest:helm-charts
   image:
     name: dtzar/helm-kubectl:2.16.1
   cache:
