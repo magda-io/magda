@@ -389,6 +389,7 @@ buildtest:opa-policies:
 buildtest:helm-charts:
   stage: buildtest
   image: dtzar/helm-kubectl:2.16.1
+  dependencies: []
   cache:
     paths: []
   script:
