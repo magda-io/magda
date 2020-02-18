@@ -18,7 +18,8 @@ expected config file. Create a `config.json` file with the appropriate parameter
     minioEnableSSL: true,
     minioHost: "localhost",
     minioPort: 9000,
-    tenantId: 0
+    tenantId: 0,
+    uploadLimit: "100mb"
 }
 ```
 

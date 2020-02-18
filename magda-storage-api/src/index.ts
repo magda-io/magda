@@ -59,6 +59,11 @@ const argv = addJwtSecretFromEnvVar(
             describe: "The tenant id for intra-network communication",
             type: "number",
             default: 0
+        })
+        .option("uploadLimit", {
+            describe: "How large a file can be uploaded to be stored by Magda",
+            type: "string",
+            default: "100mb"
         }).argv
 );
 
@@ -78,7 +83,8 @@ app.use(
         registryApiUrl: argv.registryApiUrl,
         authApiUrl: argv.authApiUrl,
         jwtSecret: argv.jwtSecret as string,
-        tenantId: argv.tenantId
+        tenantId: argv.tenantId,
+        uploadLimit: argv.uploadLimit
     })
 );
 
