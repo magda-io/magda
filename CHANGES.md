@@ -34,6 +34,7 @@ Storage:
 -   Add endpoint to create a bucket
 -   Restrict file upload to admins only
 -   Support multipart upload
+-   Fixed: minio chart will not be deployed if storage-api is not turned on
 
 Gateway:
 
