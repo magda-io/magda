@@ -74,7 +74,6 @@
     }
 
     .body-heading-row {
-        // p {
         margin-left: auto;
         margin-right: auto;
         margin-top: 85px;
@@ -89,72 +88,41 @@
         letter-spacing: normal;
         text-align: center;
         color: #484848;
-        // }
     }
 
     .preview-message-row {
         margin-bottom: 66px;
     }
 
-    .choice-Col:nth-child(2),
-    .choice-Col:nth-child(1) {
-        margin-bottom: 40px;
-    }
-
-    .choice-1 {
-        .choice-Icon {
-            width: 154px;
+    .choice-files {
+        .choice-icon {
+            width: 88px;
             height: 58px;
         }
-        .choice-buttonHeading {
-            margin-left: 0px;
-        }
-        .choice-Button {
-            background-color: $add-dataset-page-button-top-rows !important;
-        }
-        .text-content {
-            font-size: 18px;
-        }
     }
 
-    .choice-2 {
-        .choice-Icon {
+    .choice-no-files {
+        .choice-icon {
             width: 76px;
             height: 54px;
         }
-        .choice-buttonHeading {
-            margin-left: 8px;
-        }
-        .choice-Button {
-            background-color: $add-dataset-page-button-top-rows !important;
-        }
     }
 
-    .choice-3 {
-        .choice-Icon {
-            width: 65px;
-            height: 39px;
-        }
-        .choice-buttonHeading {
-            margin-left: 8px;
-        }
-        .text-content {
-            font-size: 18px;
-        }
-    }
-
-    .choice-4 {
-        .choice-Icon {
+    .choice-multiple {
+        .choice-icon {
             width: initial;
             height: 67px;
         }
-        .choice-buttonHeading {
-            margin-left: 1px;
-        }
-        .text-content {
-            font-size: 18px;
+    }
+
+    .choice-row {
+        margin-bottom: 58px;
+
+        &:last-child {
+            margin-bottom: 29px;
         }
     }
+
     .main-body-row {
         padding-left: 25px;
     }

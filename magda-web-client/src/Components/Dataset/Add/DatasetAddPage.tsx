@@ -128,20 +128,18 @@ class AddDataset extends React.Component<any, any> {
 
                     <div className="row main-body-row">
                         <div className="container">
-                            <div className="row">
-                                <div className="col-sm-12 col-sm-offset-3">
-                                    <Choice
-                                        className={"choice-1"}
-                                        heading="Have a single dataset comprised of multiple files or services?"
-                                        icon={iconUpload}
-                                        blurb="Add your dataset to pre-populate metadata using the Magda Publishing Tool"
-                                        href="/dataset/add/files"
-                                    />
-                                </div>
-                            </div>
-                            <div className="row">
+                            <div className="row choice-row">
                                 <Choice
-                                    className={"choice-3"}
+                                    className={"choice-files col-sm-offset-3"}
+                                    heading="Have a single dataset comprised of multiple files or services?"
+                                    icon={iconUpload}
+                                    blurb="Add your dataset to pre-populate metadata using the Magda Publishing Tool"
+                                    href="/dataset/add/files"
+                                />
+                            </div>
+                            <div className="row choice-row">
+                                <Choice
+                                    className={"choice-no-files"}
                                     heading="No files to upload?"
                                     icon={iconDataEntry}
                                     blurb="Manually add the dataset record and the metadata."
@@ -149,7 +147,7 @@ class AddDataset extends React.Component<any, any> {
                                     secondary
                                 />
                                 <Choice
-                                    className={"choice-4"}
+                                    className={"choice-multiple"}
                                     heading="Adding multiple datasets?"
                                     icon={iconMultiFiles}
                                     blurb="Add your entire dataset catalogue using our bulk CSV tool or open data catalogue"
