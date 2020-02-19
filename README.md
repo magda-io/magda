@@ -5,27 +5,28 @@
 [![Try it out](https://img.shields.io/badge/try%20it%20out-demo.dev.magda.io-blue.svg)](https://demo.dev.magda.io)
 [![Get help or discuss on spectrum](https://img.shields.io/badge/Get%20help%20or%20discuss-on%20spectrum-7B16FF.svg?logoColor=white&logo=spectrum)](https://spectrum.chat/magda)
 
-Magda is a data catalog system that provides a single place where all of an organization's data can be catalogued, enriched, searched, tracked and prioritized - whether big or small, internally or externally sourced, available as files, databases or APIs. Magda is designed specifically around the concept of _federation_ - providing a single view across all data of interest to a user, regardless of where the data is stored or where it was sourced from. The system is able to quickly crawl external data sources, track changes, make automatic enhancements and push notifications when changes occur, giving data users a one-stop shop to discover all the data that's available to them.
+Magda is a data catalog system that will provide a single place where all of an organization's data can be catalogued, enriched, searched, tracked and prioritized - whether big or small, internally or externally sourced, available as files, databases or APIs. Magda is designed specifically around the concept of _federation_ - providing a single view across all data of interest to a user, regardless of where the data is stored or where it was sourced from. The system is able to quickly crawl external data sources, track changes, make automatic enhancements and make notifications when changes occur, giving data users a one-stop shop to discover all the data that's available to them.
 
 ![Magda Search Demo](docs/assets/searchdemo420p.gif)
 
+## Current Status
+Magda is under active development. It's been used in production for over a year by [data.gov.au](https://data.gov.au), and is relatively mature for use as an open data search engine. Work over the past year has been to develop it into a more general-purpose data catalogue for use within organisations, and this is ongoing - you're welcome to try it for this use case, but expect some rough edges!
+
 ## Features
 
--   A heavily automated, quick and easy to use data cataloguing process intended to produce high-quality metadata for discovery
 -   Powerful and scalable search based on ElasticSearch
 -   Quick and reliable aggregation of external sources of datasets
 -   An unopinionated central store of metadata, able to cater for most metadata schemas
 -   Federated authentication via passport.js - log in via Google, Facebook, WSFed, AAF, CKAN, and easily create new providers.
--   Easy, one-step (or close to) installation and upgrades
--   Based on Kubernetes for cloud agnosticism - deployable nearly any cloud, or on-premises.
+-   Based on Kubernetes for cloud agnosticism - deployable to nearly any cloud, on-premises, or on a local machine.
+-   Easy (as long as you know Kubernetes) installation and upgrades
 -   Extensions are based on adding new docker images to the cluster, and hence can be developed in any language
 
 ### Currently Under Development
 
+-   A heavily automated, quick and easy to use data cataloguing process intended to produce high-quality metadata for discovery
 -   A robust, policy-based authorization system built on Open Policy Agent - write flexible policies to restrict access to datasets and have them work across the system, including by restricting search results to what you're allowed to see.
--   Refinements to the data catalog
 -   Storage of datasets
--   Deduplication of datasets, without necessarily storing the underlying data
 
 Our current roadmap is available at https://magda.io/docs/roadmap
 
