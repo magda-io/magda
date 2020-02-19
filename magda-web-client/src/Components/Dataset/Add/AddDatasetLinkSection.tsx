@@ -34,9 +34,10 @@ const AddDatasetLinkSection = (props: Props) => {
                 creationSource: FileSource.DatasetUrl,
                 title: "",
                 modified: new Date(),
-                datasetTitle: "",
+                datasetTitle: url,
                 format: "",
-                _state: FileState.Reading
+                _state: FileState.Processing,
+                _progress: 50
             };
 
             props.addFile(newFile);
