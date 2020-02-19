@@ -3,11 +3,13 @@ import { OutgoingHttpHeaders } from "http";
 import ObjectStoreClient from "./ObjectStoreClient";
 import bodyParser from "body-parser";
 import { mustBeAdmin } from "magda-typescript-common/src/authorization-api/authMiddleware";
+const { fileParser } = require("express-multipart-file-parser");
 
 export interface ApiRouterOptions {
     objectStoreClient: ObjectStoreClient;
     authApiUrl: string;
     jwtSecret: string;
+    uploadLimit: string;
 }
 
 export default function createApiRouter(options: ApiRouterOptions) {
@@ -143,6 +145,67 @@ export default function createApiRouter(options: ApiRouterOptions) {
             stream.pipe(res);
         }
     });
+
+    // Browser uploads
+    /**
+     * @apiGroup Storage
+     *
+     * @api {post} /v0/upload/{bucket} Request to upload files to {bucket}
+     *
+     * @apiDescription Uploads a file. Restricted to admins only.
+     *
+     * @apiParam (Request body) {string} bucket The name of the bucket to which to upload to
+     *
+     * @apiSuccessExample {string} 200 Successfully uploaded 2 files.
+     * {
+     *      "message": "Successfully uploaded 2 files.",
+     *      "etags": ["cafbab71cd98120b777799598f0d4808-1","19a3cb5d5706549c2f1a57a27cf30e41-1"]}
+     *
+     * @apiErrorExample {string} 500
+     *      Internal server error.
+     */
+    router.post(
+        "/upload/:bucket",
+        fileParser({ rawBodyOptions: { limit: options.uploadLimit } }),
+        mustBeAdmin(options.authApiUrl, options.jwtSecret),
+        (req: any, res) => {
+            if (!req.files || req.files.length === 0) {
+                return res.status(400).send("No files were uploaded.");
+            }
+            const bucket = req.params.bucket;
+            const encodeBucketname = encodeURIComponent(bucket);
+            const promises = (req.files as Array<any>).map((file: any) => {
+                const metaData = {
+                    "Content-Type": file.mimetype,
+                    "Content-Length": file.buffer.byteLength
+                };
+                const fieldId = file.originalname;
+                const encodedRootPath = encodeURIComponent(fieldId);
+                return options.objectStoreClient
+                    .putFile(
+                        encodeBucketname,
+                        encodedRootPath,
+                        file.buffer,
+                        metaData
+                    )
+                    .then(etag => etag);
+            });
+            return Promise.all(promises)
+                .then(etags => {
+                    return res.status(200).send({
+                        message:
+                            "Successfully uploaded " +
+                            etags.length +
+                            " file(s).",
+                        etags
+                    });
+                })
+                .catch((err: Error) => {
+                    console.error(err);
+                    return res.status(500).send("Internal server error.");
+                });
+        }
+    );
 
     /**
      * @apiGroup Storage
