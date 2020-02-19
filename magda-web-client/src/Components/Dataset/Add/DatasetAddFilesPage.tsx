@@ -260,19 +260,33 @@ class DatasetAddFilesPage extends React.Component<
             <div className="container-fluid dataset-add-file-page">
                 <div className="row top-area-row">
                     <div className="col-xs-12 top-text-area">
-                        <h1>Add files to pre-populate metadata</h1>
+                        <h1>Add your dataset to pre-populate metadata</h1>
                         <p>
-                            Add all the files in your dataset so our Publishing
-                            Tool can review the file contents and pre-populate
-                            metadata.
+                            Our Publishing Tool can review your dataset contents
+                            and pre-populate metadata. Just add all the files or
+                            services that make up your dataset.
+                        </p>
+                        <p>
+                            You can upload your dataset as files, add a link to
+                            files already hosted online, or add a link to a web
+                            service, or any combination of the three.
                         </p>
                         <p>
                             All our processing happens in your internet browser,
-                            so do not store a copy of your files, and you can
-                            edit or delete the metadata at any time.
+                            we only store a copy of your files if you ask us to,
+                            and you can edit or delete the metadata at any time.
+                        </p>
+                        <p>
+                            Want to upload your entire data catalogue in one go?
+                            Use our <a>Bulk Upload tool</a>
                         </p>
                     </div>
+                </div>
 
+                <div className="row add-files-heading">
+                    <div className="col-xs-12">
+                        <h3>Add files</h3>
+                    </div>
                     {localFiles.length > 0 && (
                         <div className="col-xs-12 tip-area">
                             <ToolTip>
@@ -288,10 +302,18 @@ class DatasetAddFilesPage extends React.Component<
                     <div className="col-xs-12">
                         <div className="row">
                             {localFiles.map((file: File, i) => {
+                                let isLastRow;
+                                if (localFiles.length % 2) {
+                                    isLastRow = i >= localFiles.length - 1;
+                                } else {
+                                    isLastRow = i >= localFiles.length - 2;
+                                }
                                 return (
                                     <div
                                         key={i}
-                                        className="col-xs-6 dataset-add-files-fileListItem"
+                                        className={`col-xs-6 dataset-add-files-fileListItem ${
+                                            isLastRow ? "last-row" : ""
+                                        }`}
                                     >
                                         <DatasetFile
                                             idx={i}
