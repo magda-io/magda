@@ -22,7 +22,12 @@ const DatasetLinkItemProcessing = (props: { file: File }) => {
                 <div className="file-icon-area">
                     <img
                         className="format-icon"
-                        src={getFormatIcon(file.downloadURL)}
+                        src={getFormatIcon(
+                            {
+                                downloadURL: file.downloadURL
+                            },
+                            "gis"
+                        )}
                     />
                     <div className="format-text">{file.format}</div>
                 </div>

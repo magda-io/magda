@@ -62,16 +62,24 @@ const AddDatasetLinkSection = (props: Props) => {
                     (and/or) Link to a dataset already hosted online
                 </h2>
                 {files.length ? (
-                    <div className="row link-items-section">
-                        <div className="col-sm-12">
-                            {files.map(item => (
-                                <DatasetLinkItem
-                                    file={item.file}
-                                    editFile={props.editFile(item.idx)}
-                                />
-                            ))}
+                    <>
+                        <div className="row link-items-section">
+                            <div className="col-sm-12">
+                                {files.map(item => (
+                                    <DatasetLinkItem
+                                        key={item.idx}
+                                        file={item.file}
+                                        editFile={props.editFile(item.idx)}
+                                    />
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                        <div className="row link-items-section-heading">
+                            <div className="col-sm-12">
+                                <h2>More web services to add?</h2>
+                            </div>
+                        </div>
+                    </>
                 ) : null}
                 <h4>What is the download URL?</h4>
 
