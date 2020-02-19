@@ -10,7 +10,7 @@ export default function mockAuthorization(
     jwtSecret: string,
     req: Test
 ): Promise<Response> {
-    const userId = "1";
+    const userId = "b1fddd6f-e230-4068-bd2c-1a21844f1598";
     const scope = nock(adminApiUrl);
 
     if (!isAdmin)
