@@ -740,7 +740,7 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
             pullPolicy: "pullPolicy",
             namespace,
             jwtSecret: "secret",
-            userId: "user",
+            userId: "b1fddd6f-e230-4068-bd2c-1a21844f1598",
             tenantId: 0
         });
 

@@ -318,7 +318,7 @@ describe("JsonConnector", () => {
             const registry = new AuthRegistryClient({
                 baseUrl: "http://example.com",
                 jwtSecret: "squirrel",
-                userId: "1",
+                userId: "b1fddd6f-e230-4068-bd2c-1a21844f1598",
                 maxRetries: 0,
                 tenantId: tenant_id_1
             });
