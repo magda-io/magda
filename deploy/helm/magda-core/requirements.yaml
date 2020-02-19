@@ -71,6 +71,10 @@ dependencies:
     tags:
       - all
       - opa
+  - name: minio
+    tags:
+      - all
+      - storage-api
   - name: storage-api
     tags:
       - all
