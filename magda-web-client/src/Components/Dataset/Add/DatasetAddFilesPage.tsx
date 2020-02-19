@@ -5,6 +5,7 @@ import FileDrop from "react-file-drop";
 
 import ToolTip from "Components/Dataset/Add/ToolTip";
 import DatasetFile from "Components/Dataset/Add/DatasetFile";
+import AddDatasetLinkSection from "Components/Dataset/Add/AddDatasetLinkSection";
 
 import { getFiles } from "helpers/readFile";
 
@@ -12,6 +13,7 @@ import {
     State,
     File,
     FileState,
+    FileSource,
     saveState,
     KeywordsLike
 } from "./DatasetAddCommon";
@@ -31,6 +33,8 @@ class DatasetAddFilesPage extends React.Component<
 
     constructor(props) {
         super(props);
+        this.addFile = this.addFile.bind(this);
+        this.editFile = this.editFile.bind(this);
         ValidationManager.setStateDataGetter(() => {
             return this.state;
         });
@@ -91,7 +95,7 @@ class DatasetAddFilesPage extends React.Component<
                 continue;
             }
 
-            const newFile = {
+            const newFile: File = {
                 datasetTitle: toTitleCase(
                     turnPunctuationToSpaces(
                         trimExtension(thisFile.name || "File Name")
@@ -102,7 +106,8 @@ class DatasetAddFilesPage extends React.Component<
                 modified: new Date(thisFile.lastModified),
                 format: fileFormat(thisFile),
                 _state: FileState.Added,
-                license: "world"
+                license: "world",
+                creationSource: FileSource.File
             };
 
             processFile(thisFile, update => {
@@ -214,6 +219,15 @@ class DatasetAddFilesPage extends React.Component<
         this.updateLastModifyDate();
     };
 
+    addFile = (file: File) => {
+        this.setState(state => {
+            const newFiles = state.files.concat(file);
+            return {
+                files: newFiles
+            };
+        });
+    };
+
     editFile = (index: number) => (file: File) => {
         this.setState(state => {
             const newFiles = state.files.concat();
@@ -238,6 +252,10 @@ class DatasetAddFilesPage extends React.Component<
     };
 
     render() {
+        const localFiles = this.state.files.filter(
+            file => file.creationSource === FileSource.File
+        );
+
         return (
             <div className="container-fluid dataset-add-file-page">
                 <div className="row top-area-row">
@@ -255,7 +273,7 @@ class DatasetAddFilesPage extends React.Component<
                         </p>
                     </div>
 
-                    {this.state.files.length > 0 && (
+                    {localFiles.length > 0 && (
                         <div className="col-xs-12 tip-area">
                             <ToolTip>
                                 We recommend ensuring dataset file names are
@@ -269,7 +287,7 @@ class DatasetAddFilesPage extends React.Component<
                 <div className="row files-area">
                     <div className="col-xs-12">
                         <div className="row">
-                            {this.state.files.map((file: File, i) => {
+                            {localFiles.map((file: File, i) => {
                                 return (
                                     <div
                                         key={i}
@@ -285,7 +303,7 @@ class DatasetAddFilesPage extends React.Component<
                                 );
                             })}
                         </div>
-                        {this.state.files.length > 0 && (
+                        {localFiles.length > 0 && (
                             <div className="more-files-to-add-text">
                                 More files to add?
                             </div>
@@ -311,14 +329,20 @@ class DatasetAddFilesPage extends React.Component<
                     </div>
                 </div>
 
+                <AddDatasetLinkSection
+                    files={this.state.files}
+                    addFile={this.addFile}
+                    editFile={this.editFile}
+                />
+
                 <div
                     className="row next-save-button-row"
                     style={{ marginTop: "6em" }}
                 >
                     <div className="col-xs-12">
-                        {this.state.files.filter(
+                        {localFiles.filter(
                             (file: File) => file._state === FileState.Ready
-                        ).length === this.state.files.length && (
+                        ).length === localFiles.length && (
                             <React.Fragment>
                                 <button
                                     className="au-btn next-button"

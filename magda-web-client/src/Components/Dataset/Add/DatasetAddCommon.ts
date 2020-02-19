@@ -29,9 +29,18 @@ export type File = {
     similarFingerprint?: any;
     equalHash?: string;
 
+    // --- An UUID for identify a file during the processing. array index is not a reliable id.
+    id?: string;
+    creationSource?: FileSource;
     _state: FileState;
     _progress?: number;
 };
+
+export enum FileSource {
+    File,
+    DatasetUrl,
+    Api
+}
 
 export enum FileState {
     Added,
