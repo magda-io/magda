@@ -10,7 +10,13 @@ Magda is a data catalog system that will provide a single place where all of an 
 ![Magda Search Demo](docs/assets/searchdemo420p.gif)
 
 ## Current Status
-Magda is under active development. It's been used in production for over a year by [data.gov.au](https://data.gov.au), and is relatively mature for use as an open data search engine. Work over the past year has been to develop it into a more general-purpose data catalogue for use within organisations, and this is ongoing - you're welcome to try it for this use case, but expect some rough edges!
+Magda is under active development by a small team - we often have to prioritise between making the open-source side of the project more robust and adding features to our own deployments, which can mean newer features aren't documented well, or require specific configuration to work. If you run into problems using Magda, we're always happy to help on [Spectrum](https://spectrum.chat/magda).
+
+### As an open data search engine
+Magda has been used in production for over a year by [data.gov.au](https://data.gov.au), and is relatively mature for use in this use case.
+
+### As a data catalogue
+Over the past 18 months, our focus has been to develop Magda into a more general-purpose data catalogue for use within organisations. If you want to use it as a data catalog, please do, but expect some rough edges! If you'd like to contribute to the project with issues or PRs, we love to recieve them.
 
 ## Features
 
