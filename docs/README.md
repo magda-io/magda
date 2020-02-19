@@ -152,6 +152,10 @@ A demo site exists at [demo.dev.magda.io](https://demo.dev.magda.io). This is ho
 
 [Try the latest version](https://github.com/magda-io/magda-config), or [build and run from source](https://magda.io/docs/building-and-running)
 
+## Want to build your connectors / minions?
+
+You can extend Madga's functionality by [building your own customised connectors / minions](https://magda.io/docs/how-to-build-your-own-connectors-minions).
+
 ## Latest Release
 
 <a href="{{ site.github.url}}">{{ site.github.latest_release.tag_name }}</a>, released at {{ site.github.latest_release.published_at}}
