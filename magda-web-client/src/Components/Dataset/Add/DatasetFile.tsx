@@ -86,16 +86,20 @@ const FileEditView = ({
 }: {
     idx: number;
     file: File;
-    onChange: (file: File) => void;
+    onChange: (updater: (file: File) => File) => void;
     editMode: boolean;
     setEditMode: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
     const editFormat = (newValue: string | undefined) =>
-        onChange({ ...file, format: newValue });
+        onChange(file => ({ ...file, format: newValue }));
     const editTitle = (newValue: string | undefined) =>
-        onChange({ ...file, title: newValue! });
+        onChange(file => ({ ...file, title: newValue ? newValue : "" }));
     const editModified = (newValue: Date | undefined) =>
-        onChange({ ...file, modified: newValue! });
+        onChange(file =>
+            typeof newValue === "undefined"
+                ? file
+                : { ...file, modified: newValue }
+        );
 
     return (
         <div>
@@ -169,13 +173,13 @@ export default function DatasetFile({
     idx: number;
     file: File;
     onDelete: () => void;
-    onChange: (file: File) => void;
+    onChange: (updater: (file: File) => File) => void;
 }) {
+    const [editMode, setEditMode] = useState(false);
+
     if (file._state !== FileState.Ready) {
         return <FileInProgress file={file} onDelete={onDelete} />;
     }
-
-    const [editMode, setEditMode] = useState(false);
 
     return (
         <div className="dataset-file-root complete-processing">

@@ -25,6 +25,7 @@ UI:
 -   Swap the order of custodian & team dropdown on add dataset page
 -   Updated text & margin of add files page to match the new design
 -   Updated Add Dataset Welcome screen options UI design
+-   Added UI for "Link to dataset already hosted online" box
 
 Storage:
 

@@ -28,23 +28,23 @@
             }
         }
 
-        input {
+        input.url-input {
             border-radius: 8px;
             border: solid 1px #cccaca;
             margin-right: 10px;
         }
 
-        input.invalid {
+        input.url-input.invalid {
             border: solid 1px #d60000;
         }
 
-        button {
+        button.fetch-button {
             border-radius: 10px;
             border: solid 2px #30384d;
             background-color: #30384d;
         }
 
-        h4 {
+        h4.url-input-heading {
             font-size: 16px;
             font-weight: normal;
             font-stretch: normal;

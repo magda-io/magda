@@ -19,7 +19,7 @@ export type File = {
     mediaType?: string;
     format?: string;
 
-    datasetTitle: string;
+    datasetTitle?: string;
     author?: string;
     keywords?: string[];
     themes?: string[];

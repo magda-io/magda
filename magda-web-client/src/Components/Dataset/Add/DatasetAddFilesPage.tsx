@@ -228,10 +228,10 @@ class DatasetAddFilesPage extends React.Component<
         });
     };
 
-    editFile = (index: number) => (file: File) => {
+    editFile = (index: number) => (updater: (file: File) => File) => {
         this.setState(state => {
             const newFiles = state.files.concat();
-            newFiles[index] = file;
+            newFiles[index] = updater(newFiles[index]);
             return {
                 files: newFiles
             };

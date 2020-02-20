@@ -13,7 +13,7 @@ import DatasetLinkItem from "./DatasetLinkItem";
 type Props = {
     files: File[];
     addFile: (file: File) => void;
-    editFile: (index: number) => (file: File) => void;
+    editFile: (index: number) => (updater: (file: File) => File) => void;
 };
 
 const AddDatasetLinkSection = (props: Props) => {
@@ -28,30 +28,17 @@ const AddDatasetLinkSection = (props: Props) => {
             setValidationErrorMessage("Please input an valid URL!");
         } else {
             setValidationErrorMessage("");
-            const newFile: File = {
+
+            props.addFile({
                 id: uuid.v4(),
                 downloadURL: url,
                 creationSource: FileSource.DatasetUrl,
-                title: "",
+                title: url,
                 modified: new Date(),
-                datasetTitle: url,
                 format: "",
                 _state: FileState.Processing,
                 _progress: 50
-            };
-
-            props.addFile(newFile);
-
-            setTimeout(() => {
-                const fileItem = files.find(
-                    item => item.file.id === newFile.id
-                );
-                if (!fileItem) {
-                    return;
-                }
-                const file = { ...fileItem.file, _state: FileState.Ready };
-                props.editFile(fileItem.idx)(file);
-            }, 20000);
+            });
         }
     };
 
@@ -67,6 +54,7 @@ const AddDatasetLinkSection = (props: Props) => {
                             <div className="col-sm-12">
                                 {files.map(item => (
                                     <DatasetLinkItem
+                                        idx={item.idx}
                                         key={item.idx}
                                         file={item.file}
                                         editFile={props.editFile(item.idx)}
@@ -81,7 +69,7 @@ const AddDatasetLinkSection = (props: Props) => {
                         </div>
                     </>
                 ) : null}
-                <h4>What is the download URL?</h4>
+                <h4 className="url-input-heading">What is the download URL?</h4>
 
                 <div>
                     <span className="au-error-text">
@@ -90,7 +78,7 @@ const AddDatasetLinkSection = (props: Props) => {
                 </div>
 
                 <input
-                    className={`au-text-input ${
+                    className={`au-text-input url-input ${
                         validationErrorMessage ? "invalid" : ""
                     }`}
                     placeholder="Enter the download URL"
