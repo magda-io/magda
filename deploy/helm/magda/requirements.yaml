@@ -5,7 +5,7 @@ dependencies:
   # magda-core chart is always enabled.
   # Thus, no tags or condition are required.
   # You should set its sub-chart to enabled or not.
-  
+
   - name: magda-minion-broken-link
     alias: minion-broken-link
     version: 0.0.57-0
@@ -89,7 +89,7 @@ dependencies:
     tags:
       - connectors
       - connector-aurin
-  
+
   - name: magda-ckan-connector
     version: 0.0.57-0
     alias: connector-brisbane

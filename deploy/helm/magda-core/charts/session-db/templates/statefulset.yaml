@@ -1,5 +1,5 @@
 {{- if and (not .Values.global.useCombinedDb) (not .Values.global.useCloudSql) }}
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: session-db
