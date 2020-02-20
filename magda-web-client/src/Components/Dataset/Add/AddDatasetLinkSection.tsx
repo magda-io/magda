@@ -39,6 +39,8 @@ const AddDatasetLinkSection = (props: Props) => {
                 _state: FileState.Processing,
                 _progress: 50
             });
+
+            setUrl("");
         }
     };
 
