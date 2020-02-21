@@ -359,6 +359,14 @@ class DatasetAddFilesPage extends React.Component<
                 </div>
 
                 <AddDatasetLinkSection
+                    type={DistributionSource.DatasetUrl}
+                    distributions={this.state.distributions}
+                    addDistribution={this.addDistribution}
+                    editDistribution={this.editDistribution}
+                />
+
+                <AddDatasetLinkSection
+                    type={DistributionSource.Api}
                     distributions={this.state.distributions}
                     addDistribution={this.addDistribution}
                     editDistribution={this.editDistribution}

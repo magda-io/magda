@@ -11,6 +11,7 @@ import uuid from "uuid";
 import DatasetLinkItem from "./DatasetLinkItem";
 
 type Props = {
+    type: DistributionSource.DatasetUrl | DistributionSource.Api;
     distributions: Distribution[];
     addDistribution: (distribution: Distribution) => void;
     editDistribution: (
@@ -19,15 +20,12 @@ type Props = {
 };
 
 const AddDatasetLinkSection = (props: Props) => {
+    const { type } = props;
     const [url, setUrl] = useState("");
     const [validationErrorMessage, setValidationErrorMessage] = useState("");
     const distributions = props.distributions
         .map((item, idx) => ({ distribution: item, idx }))
-        .filter(
-            item =>
-                item.distribution.creationSource ===
-                DistributionSource.DatasetUrl
-        );
+        .filter(item => item.distribution.creationSource === props.type);
 
     const fetchUrl = () => {
         if (!isUrl(url)) {
@@ -38,7 +36,7 @@ const AddDatasetLinkSection = (props: Props) => {
             props.addDistribution({
                 id: uuid.v4(),
                 downloadURL: url,
-                creationSource: DistributionSource.DatasetUrl,
+                creationSource: type,
                 title: url,
                 modified: new Date(),
                 format: "",
@@ -51,10 +49,18 @@ const AddDatasetLinkSection = (props: Props) => {
     };
 
     return (
-        <div className="row add-dataset-link-section">
+        <div
+            className={`row add-dataset-link-section ${
+                type === DistributionSource.DatasetUrl
+                    ? "source-dataset-url"
+                    : "source-api"
+            }`}
+        >
             <div className="col-sm-12">
                 <h2 className="section-heading">
-                    (and/or) Link to a dataset already hosted online
+                    {type === DistributionSource.DatasetUrl
+                        ? "(and/or) Link to a dataset already hosted online"
+                        : "(and/or) Link to an API or web service"}
                 </h2>
                 {distributions.length ? (
                     <>
@@ -74,12 +80,16 @@ const AddDatasetLinkSection = (props: Props) => {
                         </div>
                         <div className="row link-items-section-heading">
                             <div className="col-sm-12">
-                                <h2>More web services to add?</h2>
+                                <h2>
+                                    {type === DistributionSource.DatasetUrl
+                                        ? "More dataset URL to add?"
+                                        : "More web services to add?"}
+                                </h2>
                             </div>
                         </div>
                     </>
                 ) : null}
-                <h4 className="url-input-heading">What is the download URL?</h4>
+                <h4 className="url-input-heading">What is the URL?</h4>
 
                 <div>
                     <span className="au-error-text">
