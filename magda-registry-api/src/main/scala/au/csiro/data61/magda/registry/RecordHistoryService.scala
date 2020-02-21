@@ -39,10 +39,13 @@ import scalikejdbc.DB
   value = "record history",
   produces = "application/json"
 )
-class RecordHistoryService(system: ActorSystem, materializer: Materializer)
-    extends Protocols
+class RecordHistoryService(
+    system: ActorSystem,
+    materializer: Materializer,
+    recordPersistence: RecordPersistence,
+    eventPersistence: EventPersistence
+) extends Protocols
     with SprayJsonSupport {
-  val recordPersistence = DefaultRecordPersistence
 
   @ApiOperation(
     value = "Get a list of all events affecting this record",
@@ -75,7 +78,7 @@ class RecordHistoryService(system: ActorSystem, materializer: Materializer)
           (pageToken, start, limit) =>
             complete {
               DB readOnly { session =>
-                EventPersistence.getEvents(
+                eventPersistence.getEvents(
                   session,
                   recordId = Some(id),
                   pageToken = pageToken,
@@ -171,7 +174,7 @@ class RecordHistoryService(system: ActorSystem, materializer: Materializer)
           parameters('aspect.*, 'optionalAspect.*) {
             (aspects: Iterable[String], optionalAspects: Iterable[String]) =>
               DB readOnly { session =>
-                val events = EventPersistence.streamEventsUpTo(
+                val events = eventPersistence.streamEventsUpTo(
                   version.toLong,
                   recordId = Some(id),
                   tenantId = tenantId

@@ -118,7 +118,12 @@ object Registry
         value = "The identifier of a tenant",
         required = false,
         allowEmptyValue = true
-      ) tenantId: Option[BigInt] = None
+      ) tenantId: Option[BigInt] = None,
+      @(ApiModelProperty @field)(
+        value = "The read authorization policy id of a record",
+        required = false,
+        allowEmptyValue = true
+      ) authnReadPolicyId: Option[String] = None
   ) extends RecordType
 
   @ApiModel(
@@ -282,7 +287,7 @@ object Registry
         .get
   }
 
-  implicit val recordFormat = jsonFormat5(Registry.Record)
+  implicit val recordFormat = jsonFormat6(Registry.Record)
   implicit val registryEventFormat = jsonFormat6(Registry.RegistryEvent)
   implicit val aspectFormat = jsonFormat3(Registry.AspectDefinition)
   implicit val webHookPayloadFormat = jsonFormat6(Registry.WebHookPayload)

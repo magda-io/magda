@@ -289,7 +289,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                     const data = e.toData();
                     res.status(data.errorCode).json(data);
                 } else {
-                    respondWithError("/public/users/whoami", res, e);
+                    respondWithError("/public/users/allowed/dataset", res, e);
                 }
             }
         }

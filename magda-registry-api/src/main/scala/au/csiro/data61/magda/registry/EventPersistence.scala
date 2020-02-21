@@ -6,17 +6,51 @@ import akka.stream.scaladsl.Source
 import spray.json._
 import gnieh.diffson.sprayJson._
 import scalikejdbc._
+import akka.NotUsed
 
-object EventPersistence extends Protocols with DiffsonProtocol {
-  val eventStreamPageSize = 1000
-  val recordPersistence = DefaultRecordPersistence
+trait EventPersistence {
 
   def streamEventsSince(
       sinceEventId: Long,
       recordId: Option[String] = None,
       aspectIds: Set[String] = Set(),
       tenantId: TenantId
-  ) = {
+  ): Source[RegistryEvent, NotUsed]
+
+  def streamEventsUpTo(
+      lastEventId: Long,
+      recordId: Option[String] = None,
+      aspectIds: Set[String] = Set(),
+      tenantId: TenantId
+  ): Source[RegistryEvent, NotUsed]
+
+  def getLatestEventId(implicit session: DBSession): Option[Long]
+
+  def getEvents(
+      implicit session: DBSession,
+      pageToken: Option[Long] = None,
+      start: Option[Int] = None,
+      limit: Option[Int] = None,
+      lastEventId: Option[Long] = None,
+      recordId: Option[String] = None,
+      aspectIds: Set[String] = Set(),
+      eventTypes: Set[EventType] = Set(),
+      tenantId: TenantId
+  ): EventsPage
+}
+
+class DefaultEventPersistence(recordPersistence: RecordPersistence)
+    extends Protocols
+    with DiffsonProtocol
+    with EventPersistence {
+  val eventStreamPageSize = 1000
+
+  def streamEventsSince(
+      sinceEventId: Long,
+      recordId: Option[String] = None,
+      aspectIds: Set[String] = Set(),
+      tenantId: TenantId
+  ): Source[RegistryEvent, NotUsed] = {
     Source
       .unfold(sinceEventId)(offset => {
         val events = DB readOnly { implicit session =>
@@ -33,6 +67,7 @@ object EventPersistence extends Protocols with DiffsonProtocol {
         events.events.lastOption.map(last => (last.id.get, events))
       })
       .mapConcat(page => page.events)
+
   }
 
   def streamEventsUpTo(

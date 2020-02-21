@@ -17,7 +17,7 @@ spec:
 {{- end }}
       containers:
       - name: opa
-        image: openpolicyagent/opa:0.10.7
+        image: openpolicyagent/opa:0.17.1
         imagePullPolicy: IfNotPresent
         args:
         - "run"

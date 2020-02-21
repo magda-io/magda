@@ -33,7 +33,7 @@ import au.csiro.data61.magda.client.AuthApiClient
 
 class Api(
     val webHookActorOption: Option[ActorRef],
-    val authClient: AuthApiClient,
+    val authApiClient: RegistryAuthApiClient,
     implicit val config: Config,
     implicit val system: ActorSystem,
     implicit val ec: ExecutionContext,
@@ -81,12 +81,15 @@ class Api(
 
   implicit val timeout = Timeout(FiniteDuration(1, TimeUnit.SECONDS))
 
+  val recordPersistence = new DefaultRecordPersistence(config)
+  val eventPersistence = new DefaultEventPersistence(recordPersistence)
+
   val roleDependentRoutes = webHookActorOption match {
     case Some(webHookActor) =>
       pathPrefix("aspects") {
         new AspectsService(
           config,
-          authClient,
+          authApiClient,
           webHookActor,
           system,
           materializer
@@ -96,26 +99,35 @@ class Api(
           new RecordsService(
             config,
             webHookActor,
-            authClient,
+            authApiClient,
             system,
-            materializer
+            materializer,
+            recordPersistence,
+            eventPersistence
           ).route
         } ~
         pathPrefix("hooks") {
           new HooksService(
             config,
             webHookActor,
-            authClient,
+            authApiClient,
             system,
             materializer
           ).route
         }
     case None =>
       pathPrefix("aspects") {
-        new AspectsServiceRO(config, authClient, system, materializer).route
+        new AspectsServiceRO(config, authApiClient, system, materializer).route
       } ~
         pathPrefix("records") {
-          new RecordsServiceRO(config, system, materializer).route
+          new RecordsServiceRO(
+            authApiClient,
+            config,
+            system,
+            materializer,
+            recordPersistence,
+            eventPersistence
+          ).route
         }
   }
 

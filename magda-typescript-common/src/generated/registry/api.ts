@@ -119,6 +119,10 @@ export class Record {
      * The identifier of a tenant
      */
     "tenantId": number;
+    /**
+     * The read authorization policy id of a record
+     */
+    "authnReadPolicyId": string;
 }
 
 /**

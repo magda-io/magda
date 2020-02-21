@@ -15,7 +15,7 @@ export function runConnectorTest(
     options: any = {}
 ) {
     describe("connector", function() {
-        this.timeout(15000);
+        this.timeout(30000);
 
         const registryPort = 5000 + Math.round(5000 * Math.random());
         const catalogPort = registryPort + 1;

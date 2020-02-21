@@ -249,8 +249,6 @@ buildtest:registry:
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: ""
   script:
-    # The tests in opa/RecordOpaSpec are not fully automated yet therefore skipped.
-    # Please see opa/README.md for details.
     - sbt "registryApi/testOnly au.csiro.data61.magda.registry.*"
   artifacts:
     paths:
