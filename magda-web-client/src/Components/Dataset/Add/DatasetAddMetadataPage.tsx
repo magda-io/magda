@@ -151,7 +151,7 @@ class NewDataset extends React.Component<Props, State> {
     };
 
     render() {
-        const { files } = this.state;
+        const { distributions } = this.state;
 
         let { step } = this.props;
 
@@ -192,7 +192,7 @@ class NewDataset extends React.Component<Props, State> {
                     <div className="col-sm-12">
                         <ReviewFilesList
                             key={step}
-                            files={files}
+                            files={distributions}
                             isOpen={step < 1 ? true : false}
                         />
                     </div>
@@ -301,7 +301,7 @@ class NewDataset extends React.Component<Props, State> {
             datasetPublishing,
             spatialCoverage,
             temporalCoverage,
-            files,
+            distributions,
             licenseLevel,
             informationSecurity,
             datasetAccess,
@@ -324,18 +324,18 @@ class NewDataset extends React.Component<Props, State> {
             });
         }
 
-        const inputDistributions = files.map(file => {
+        const inputDistributions = distributions.map(distribution => {
             const aspect =
                 licenseLevel === "dataset"
                     ? {
-                          ...file,
+                          ...distribution,
                           license: dataset.defaultLicense
                       }
-                    : file;
+                    : distribution;
 
             return {
                 id: createId("dist"),
-                name: file.title,
+                name: distribution.title,
                 aspects: {
                     "dcat-distribution-strings": aspect
                 }

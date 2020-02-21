@@ -36,7 +36,7 @@ type Props = {
 
 export default function DatasetAddAccessAndUsePage(props: Props) {
     let {
-        files,
+        distributions,
         dataset,
         datasetAccess,
         licenseLevel,
@@ -105,18 +105,18 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
 
                 <h3 className="with-underline">Dataset use</h3>
 
-                {files.length !== 0 && (
+                {distributions.length !== 0 && (
                     <div className="question-license-apply-type">
                         <h4>
                             What type of licence should be applied to these
-                            files?
+                            distributions?
                         </h4>
 
                         <ToolTip>
                             By default, Magda adds Licenses at the Dataset Level
-                            (i.e. to all files), but this can be overriden to
-                            apply at a Distribution (each file or URL) level if
-                            desired.
+                            (i.e. to all distributions), but this can be
+                            overriden to apply at a Distribution (each file or
+                            URL) level if desired.
                         </ToolTip>
 
                         <div className="row">
@@ -187,10 +187,12 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         </div>
                     ) : (
                         <div className="license-distribution-option-container">
-                            {files.map((file, fileIndex) => {
+                            {distributions.map((file, fileIndex) => {
                                 const edit = field => value => {
                                     file[field] = value;
-                                    props.editState("files")(files);
+                                    props.editState("distributions")(
+                                        distributions
+                                    );
                                 };
                                 return (
                                     <div className="fileBlock">
@@ -207,7 +209,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                         </div>
                                         <div className="fileBlock-control">
                                             <LicenseEditor
-                                                validationFieldPath={`$.files[${fileIndex}].license`}
+                                                validationFieldPath={`$.distributions[${fileIndex}].license`}
                                                 validationFieldLabel="Distribution Licence"
                                                 value={file.license || ""}
                                                 onChange={edit("license")}

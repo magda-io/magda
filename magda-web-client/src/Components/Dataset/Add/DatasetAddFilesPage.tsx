@@ -11,9 +11,9 @@ import { getFiles } from "helpers/readFile";
 
 import {
     State,
-    File,
-    FileState,
-    FileSource,
+    Distribution,
+    DistributionState,
+    DistributionSource,
     saveState,
     KeywordsLike
 } from "./DatasetAddCommon";
@@ -33,8 +33,8 @@ class DatasetAddFilesPage extends React.Component<
 
     constructor(props) {
         super(props);
-        this.addFile = this.addFile.bind(this);
-        this.editFile = this.editFile.bind(this);
+        this.addDistribution = this.addDistribution.bind(this);
+        this.editDistribution = this.editDistribution.bind(this);
         ValidationManager.setStateDataGetter(() => {
             return this.state;
         });
@@ -50,7 +50,7 @@ class DatasetAddFilesPage extends React.Component<
 
     updateLastModifyDate() {
         this.setState(state => {
-            const modifiedDates = state.files
+            const modifiedDates = state.distributions
                 .filter(f => f.modified)
                 .map(f => new Date(f.modified))
                 .filter(d => !isNaN(d.getTime()))
@@ -95,7 +95,7 @@ class DatasetAddFilesPage extends React.Component<
                 continue;
             }
 
-            const newFile: File = {
+            const newFile: Distribution = {
                 datasetTitle: toTitleCase(
                     turnPunctuationToSpaces(
                         trimExtension(thisFile.name || "File Name")
@@ -105,15 +105,15 @@ class DatasetAddFilesPage extends React.Component<
                 byteSize: thisFile.size,
                 modified: new Date(thisFile.lastModified),
                 format: fileFormat(thisFile),
-                _state: FileState.Added,
+                _state: DistributionState.Added,
                 license: "world",
-                creationSource: FileSource.File
+                creationSource: DistributionSource.File
             };
 
             processFile(thisFile, update => {
                 this.setState(state => {
-                    let newState = Object.assign({}, state, {
-                        files: state.files.slice(0)
+                    let newState: State = Object.assign({}, state, {
+                        distributions: state.distributions.slice(0)
                     });
                     Object.assign(newFile, update);
                     return newState;
@@ -121,7 +121,7 @@ class DatasetAddFilesPage extends React.Component<
             }).then(() => {
                 this.setState(state => {
                     let newState = Object.assign({}, state, {
-                        files: state.files.slice(0)
+                        distributions: state.distributions.slice(0)
                     });
 
                     let file: any = newFile;
@@ -210,50 +210,55 @@ class DatasetAddFilesPage extends React.Component<
 
             this.setState(state => {
                 let newState = {
-                    files: state.files.slice(0)
+                    distributions: state.distributions.slice(0)
                 };
-                newState.files.push(newFile);
+                newState.distributions.push(newFile);
                 return newState;
             });
         }
         this.updateLastModifyDate();
     };
 
-    addFile = (file: File) => {
+    addDistribution = (distribution: Distribution) => {
         this.setState(state => {
-            const newFiles = state.files.concat(file);
+            const newDistribution = state.distributions.concat(distribution);
             return {
-                files: newFiles
+                ...state,
+                distributions: newDistribution
             };
         });
     };
 
-    editFile = (index: number) => (updater: (file: File) => File) => {
+    editDistribution = (index: number) => (
+        updater: (distribution: Distribution) => Distribution
+    ) => {
         this.setState(state => {
-            const newFiles = state.files.concat();
-            newFiles[index] = updater(newFiles[index]);
+            const newDistributions = state.distributions.concat();
+            newDistributions[index] = updater(newDistributions[index]);
             return {
-                files: newFiles
+                ...state,
+                distributions: newDistributions
             };
         });
         this.updateLastModifyDate();
     };
 
-    deleteFile = (index: number) => () => {
+    deleteDistribution = (index: number) => () => {
         this.setState(state => {
-            const newFiles = state.files.filter((item, idx) => {
+            const newDistributions = state.distributions.filter((item, idx) => {
                 if (idx === index) return false;
                 return true;
             });
             return {
-                files: newFiles
+                ...state,
+                distributions: newDistributions
             };
         });
     };
 
     render() {
-        const localFiles = this.state.files.filter(
-            file => file.creationSource === FileSource.File
+        const localFiles = this.state.distributions.filter(
+            file => file.creationSource === DistributionSource.File
         );
 
         return (
@@ -301,7 +306,7 @@ class DatasetAddFilesPage extends React.Component<
                 <div className="row files-area">
                     <div className="col-xs-12">
                         <div className="row">
-                            {localFiles.map((file: File, i) => {
+                            {localFiles.map((file: Distribution, i) => {
                                 let isLastRow;
                                 if (localFiles.length % 2) {
                                     isLastRow = i >= localFiles.length - 1;
@@ -318,8 +323,10 @@ class DatasetAddFilesPage extends React.Component<
                                         <DatasetFile
                                             idx={i}
                                             file={file}
-                                            onChange={this.editFile(i)}
-                                            onDelete={this.deleteFile(i)}
+                                            onChange={this.editDistribution(i)}
+                                            onDelete={this.deleteDistribution(
+                                                i
+                                            )}
                                         />
                                     </div>
                                 );
@@ -352,9 +359,9 @@ class DatasetAddFilesPage extends React.Component<
                 </div>
 
                 <AddDatasetLinkSection
-                    files={this.state.files}
-                    addFile={this.addFile}
-                    editFile={this.editFile}
+                    distributions={this.state.distributions}
+                    addDistribution={this.addDistribution}
+                    editDistribution={this.editDistribution}
                 />
 
                 <div
@@ -363,7 +370,8 @@ class DatasetAddFilesPage extends React.Component<
                 >
                     <div className="col-xs-12">
                         {localFiles.filter(
-                            (file: File) => file._state === FileState.Ready
+                            (file: Distribution) =>
+                                file._state === DistributionState.Ready
                         ).length === localFiles.length && (
                             <React.Fragment>
                                 <button
@@ -431,7 +439,7 @@ function readFileAsArrayBuffer(file: any): Promise<ArrayBuffer> {
 }
 
 async function processFile(thisFile: any, update: Function) {
-    update({ _state: FileState.Reading });
+    update({ _state: DistributionState.Reading });
 
     const input: any = {
         file: thisFile
@@ -440,7 +448,7 @@ async function processFile(thisFile: any, update: Function) {
     input.arrayBuffer = await readFileAsArrayBuffer(thisFile);
     input.array = new Uint8Array(input.arrayBuffer);
 
-    update({ _state: FileState.Processing });
+    update({ _state: DistributionState.Processing });
 
     const runExtractors = await import(
         "Components/Dataset/MetadataExtraction"
@@ -448,7 +456,7 @@ async function processFile(thisFile: any, update: Function) {
 
     await runExtractors(input, update);
 
-    update({ _state: FileState.Ready });
+    update({ _state: DistributionState.Ready });
 }
 
 function mapStateToProps(state, old) {

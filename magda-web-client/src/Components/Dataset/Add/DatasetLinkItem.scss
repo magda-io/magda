@@ -3,11 +3,11 @@
         margin-top: 30px !important;
     }
     .dataset-link-item-container {
-        .file-in-progress {
+        .distribution-in-progress {
             height: 105px;
             display: flex;
             align-items: center;
-            .file-icon-area {
+            .distribution-icon-area {
                 margin-right: 52px;
                 .format-icon {
                     width: 48px;
@@ -17,9 +17,9 @@
                     text-align: center;
                 }
             }
-            .file-info {
+            .distribution-info {
                 float: left;
-                .file-name-size {
+                .distribution-name-size {
                     font-size: 15px;
                     font-weight: normal;
                     font-style: normal;
@@ -31,14 +31,14 @@
                         float: left;
                     }
                 }
-                .file-name {
+                .distribution-name {
                     width: 325px;
                     text-overflow: ellipsis;
                     overflow-wrap: break-word;
                     white-space: nowrap;
                     overflow: hidden;
                 }
-                .file-status {
+                .distribution-status {
                     font-size: 14px;
                     font-weight: 300;
                     font-style: normal;
@@ -47,7 +47,7 @@
                     letter-spacing: normal;
                     color: #636363;
                 }
-                .file-progress-bar {
+                .distribution-progress-bar {
                     position: relative;
                     height: 24px;
                     border-radius: 8px;
@@ -56,7 +56,7 @@
                     width: 330px;
                     border: 1px solid #c0bebe;
 
-                    .file-progress-bar-content {
+                    .distribution-progress-bar-content {
                         position: absolute;
                         border-radius: 8px;
                         height: 24px;

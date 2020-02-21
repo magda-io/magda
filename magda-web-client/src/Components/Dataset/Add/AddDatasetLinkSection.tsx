@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import {
-    File,
-    FileState,
-    FileSource
+    Distribution,
+    DistributionState,
+    DistributionSource
 } from "Components/Dataset/Add/DatasetAddCommon";
 import "./AddDatasetLinkSection.scss";
 
@@ -11,17 +11,23 @@ import uuid from "uuid";
 import DatasetLinkItem from "./DatasetLinkItem";
 
 type Props = {
-    files: File[];
-    addFile: (file: File) => void;
-    editFile: (index: number) => (updater: (file: File) => File) => void;
+    distributions: Distribution[];
+    addDistribution: (distribution: Distribution) => void;
+    editDistribution: (
+        index: number
+    ) => (updater: (distribution: Distribution) => Distribution) => void;
 };
 
 const AddDatasetLinkSection = (props: Props) => {
     const [url, setUrl] = useState("");
     const [validationErrorMessage, setValidationErrorMessage] = useState("");
-    const files = props.files
-        .map((item, idx) => ({ file: item, idx }))
-        .filter(item => item.file.creationSource === FileSource.DatasetUrl);
+    const distributions = props.distributions
+        .map((item, idx) => ({ distribution: item, idx }))
+        .filter(
+            item =>
+                item.distribution.creationSource ===
+                DistributionSource.DatasetUrl
+        );
 
     const fetchUrl = () => {
         if (!isUrl(url)) {
@@ -29,14 +35,14 @@ const AddDatasetLinkSection = (props: Props) => {
         } else {
             setValidationErrorMessage("");
 
-            props.addFile({
+            props.addDistribution({
                 id: uuid.v4(),
                 downloadURL: url,
-                creationSource: FileSource.DatasetUrl,
+                creationSource: DistributionSource.DatasetUrl,
                 title: url,
                 modified: new Date(),
                 format: "",
-                _state: FileState.Processing,
+                _state: DistributionState.Processing,
                 _progress: 50
             });
 
@@ -50,16 +56,18 @@ const AddDatasetLinkSection = (props: Props) => {
                 <h2 className="section-heading">
                     (and/or) Link to a dataset already hosted online
                 </h2>
-                {files.length ? (
+                {distributions.length ? (
                     <>
                         <div className="row link-items-section">
                             <div className="col-sm-12">
-                                {files.map(item => (
+                                {distributions.map(item => (
                                     <DatasetLinkItem
                                         idx={item.idx}
                                         key={item.idx}
-                                        file={item.file}
-                                        editFile={props.editFile(item.idx)}
+                                        distribution={item.distribution}
+                                        editDistribution={props.editDistribution(
+                                            item.idx
+                                        )}
                                     />
                                 ))}
                             </div>

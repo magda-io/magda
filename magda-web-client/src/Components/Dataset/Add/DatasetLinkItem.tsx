@@ -2,7 +2,10 @@ import React, { useState } from "react";
 import { useAsync } from "react-async-hook";
 import defer from "helpers/defer";
 import moment from "moment";
-import { File, FileState } from "Components/Dataset/Add/DatasetAddCommon";
+import {
+    Distribution,
+    DistributionState
+} from "Components/Dataset/Add/DatasetAddCommon";
 import "./DatasetLinkItem.scss";
 
 import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
@@ -16,32 +19,36 @@ import ValidationRequiredLabel from "../../Dataset/Add/ValidationRequiredLabel";
 import { MultilineTextEditor } from "Components/Editing/Editors/textEditor";
 
 type Props = {
-    file: File;
+    distribution: Distribution;
     idx: number;
-    editFile: (updater: (file: File) => File) => void;
+    editDistribution: (
+        updater: (distribution: Distribution) => Distribution
+    ) => void;
     className?: string;
 };
 
 type ProcessingProps = {
-    file: File;
+    distribution: Distribution;
 };
 
 type EditViewProps = {
-    file: File;
+    distribution: Distribution;
     idx: number;
-    editFile: (updater: (file: File) => File) => void;
+    editDistribution: (
+        updater: (distribution: Distribution) => Distribution
+    ) => void;
     editMode: boolean;
     setEditMode: (editMode: boolean) => void;
 };
 
 type CompleteViewProps = {
-    file: File;
+    distribution: Distribution;
     editMode: boolean;
     setEditMode: (editMode: boolean) => void;
 };
 
 const DatasetLinkItemComplete = (props: CompleteViewProps) => {
-    const file = props.file;
+    const distribution = props.distribution;
 
     const setEditMode = props.setEditMode;
     const editMode = props.editMode;
@@ -50,27 +57,30 @@ const DatasetLinkItemComplete = (props: CompleteViewProps) => {
         <div className="dataset-link-item-complete">
             <button
                 className={`edit-button au-btn au-btn--secondary`}
-                arial-label="Edit file metadata"
+                arial-label="Edit distribution metadata"
                 onClick={() => setEditMode(!editMode)}
             >
                 <img src={editIcon} />
             </button>
             <div>
-                <h3 className="link-item-title">{file.title}</h3>
+                <h3 className="link-item-title">{distribution.title}</h3>
                 <div className="link-item-details">
                     <div>
-                        <b>Format:</b> {file.format ? file.format : "N/A"}
+                        <b>Format:</b>{" "}
+                        {distribution.format ? distribution.format : "N/A"}
                     </div>
                     <div>
                         <b>Last Modified:</b>{" "}
-                        {moment(file.modified).format("DD/MM/YYYY")}
+                        {moment(distribution.modified).format("DD/MM/YYYY")}
                     </div>
                     <div>
-                        <b>URL:</b> {file.downloadURL}
+                        <b>URL:</b> {distribution.downloadURL}
                     </div>
                     <div>
                         <b>Service description:</b>{" "}
-                        {file.description ? file.description : "N/A"}
+                        {distribution.description
+                            ? distribution.description
+                            : "N/A"}
                     </div>
                 </div>
             </div>
@@ -79,47 +89,49 @@ const DatasetLinkItemComplete = (props: CompleteViewProps) => {
 };
 
 const DatasetLinkItemProcessing = (props: ProcessingProps) => {
-    const file = props.file;
+    const distribution = props.distribution;
 
-    const progress = file._progress ? file._progress : 0;
+    const progress = distribution._progress ? distribution._progress : 0;
     let width = Math.ceil((progress / 100) * 330);
     if (width < 5) width = 5;
 
     return (
         <div className="processing-item">
-            <div className="file-in-progress">
-                <div className="file-icon-area">
+            <div className="distribution-in-progress">
+                <div className="distribution-icon-area">
                     <img
                         className="format-icon"
                         src={getFormatIcon(
                             {
-                                downloadURL: file.downloadURL
+                                downloadURL: distribution.downloadURL
                             },
                             "gis"
                         )}
                     />
-                    <div className="format-text">{file.format}</div>
+                    <div className="format-text">{distribution.format}</div>
                 </div>
-                <div className="file-info">
-                    <div className="file-name">
-                        <div className="file-name">{file.title}</div>
+                <div className="distribution-info">
+                    <div className="distribution-name">
+                        <div className="distribution-name">
+                            {distribution.title}
+                        </div>
                     </div>
-                    <div className="file-progress-bar">
+                    <div className="distribution-progress-bar">
                         <div
-                            className="file-progress-bar-content"
+                            className="distribution-progress-bar-content"
                             style={{ width: `${width}px` }}
                         >
                             &nbsp;
                         </div>
                         <div
-                            className="file-progress-bar-box"
+                            className="distribution-progress-bar-box"
                             style={{ width: `${width}px` }}
                         >
                             &nbsp;
                         </div>
                     </div>
-                    <div className="file-status">
-                        Reviewing service - {file._progress}% complete
+                    <div className="distribution-status">
+                        Reviewing service - {distribution._progress}% complete
                     </div>
                 </div>
             </div>
@@ -128,21 +140,33 @@ const DatasetLinkItemProcessing = (props: ProcessingProps) => {
 };
 
 const DatasetLinkItemEditing = (props: EditViewProps) => {
-    const { idx, setEditMode, editMode, file, editFile } = props;
+    const {
+        idx,
+        setEditMode,
+        editMode,
+        distribution,
+        editDistribution
+    } = props;
 
     const editFormat = (newValue: string | undefined) =>
-        editFile(file => ({ ...file, format: newValue }));
+        editDistribution(distribution => ({
+            ...distribution,
+            format: newValue
+        }));
     const editTitle = (newValue: string | undefined) =>
-        editFile(file => ({ ...file, title: newValue ? newValue : "" }));
+        editDistribution(distribution => ({
+            ...distribution,
+            title: newValue ? newValue : ""
+        }));
     const editModified = (newValue: Date | undefined) =>
-        editFile(file =>
+        editDistribution(fidistributionle =>
             typeof newValue === "undefined"
-                ? file
-                : { ...file, modified: newValue }
+                ? distribution
+                : { ...distribution, modified: newValue }
         );
     const editDescription = (newValue: string | undefined) =>
-        editFile(file => ({
-            ...file,
+        editDistribution(distribution => ({
+            ...distribution,
             description: newValue ? newValue : ""
         }));
 
@@ -154,8 +178,8 @@ const DatasetLinkItemEditing = (props: EditViewProps) => {
                 onClick={() => {
                     if (
                         ValidationManager.validateFields([
-                            `$.files[${idx}].title`,
-                            `$.files[${idx}].format`
+                            `$.distributions[${idx}].title`,
+                            `$.distributions[${idx}].format`
                         ])
                     ) {
                         setEditMode(!editMode);
@@ -169,14 +193,14 @@ const DatasetLinkItemEditing = (props: EditViewProps) => {
                     <span>
                         Title:&nbsp;&nbsp;{" "}
                         <ValidationRequiredLabel
-                            validationFieldPath={`$.files[${idx}].title`}
+                            validationFieldPath={`$.distributions[${idx}].title`}
                         />
                     </span>
                     &nbsp;&nbsp;
                     <SlimTextInputWithValidation
                         validationFieldLabel="Title"
-                        validationFieldPath={`$.files[${idx}].title`}
-                        value={file.title}
+                        validationFieldPath={`$.distributions[${idx}].title`}
+                        value={distribution.title}
                         onChange={editTitle}
                         placeholder="Please enter title..."
                     />
@@ -185,14 +209,14 @@ const DatasetLinkItemEditing = (props: EditViewProps) => {
                     <span>
                         Format:{" "}
                         <ValidationRequiredLabel
-                            validationFieldPath={`$.files[${idx}].format`}
+                            validationFieldPath={`$.distributions[${idx}].format`}
                         />
                     </span>
                     &nbsp;&nbsp;
                     <SlimTextInputWithValidation
                         validationFieldLabel="Format"
-                        validationFieldPath={`$.files[${idx}].format`}
-                        value={file.format}
+                        validationFieldPath={`$.distributions[${idx}].format`}
+                        value={distribution.format}
                         onChange={editFormat}
                         placeholder="Please enter format..."
                     />
@@ -203,7 +227,7 @@ const DatasetLinkItemEditing = (props: EditViewProps) => {
                     <span>Last Modified: </span>
                     &nbsp;&nbsp;
                     <AlwaysEditor
-                        value={file.modified}
+                        value={distribution.modified}
                         onChange={editModified}
                         editor={dateEditor}
                     />
@@ -212,9 +236,9 @@ const DatasetLinkItemEditing = (props: EditViewProps) => {
             <div className="row">
                 <div className="col-sm-12 description-input-area">
                     <MultilineTextEditor
-                        validationFieldPath={`$.files[${idx}].description`}
+                        validationFieldPath={`$.distributions[${idx}].description`}
                         validationFieldLabel="Service Description"
-                        value={file.description}
+                        value={distribution.description}
                         placeholder="Enter service description text..."
                         onChange={editDescription}
                     />
@@ -229,18 +253,21 @@ const DatasetLinkItem = (props: Props) => {
 
     useAsync(async () => {
         await defer(2000);
-        props.editFile(file => ({ ...file, _state: FileState.Ready }));
+        props.editDistribution(distribution => ({
+            ...distribution,
+            _state: DistributionState.Ready
+        }));
         return {};
-    }, [props.file.id]);
+    }, [props.distribution.id]);
 
-    if (props.file._state !== FileState.Ready) {
+    if (props.distribution._state !== DistributionState.Ready) {
         return (
             <div
                 className={`dataset-link-item-container ${
                     props.className ? props.className : ""
                 }`}
             >
-                <DatasetLinkItemProcessing file={props.file} />
+                <DatasetLinkItemProcessing distribution={props.distribution} />
             </div>
         );
     } else if (editMode) {
@@ -248,8 +275,8 @@ const DatasetLinkItem = (props: Props) => {
             <div className="dataset-link-item-container">
                 <DatasetLinkItemEditing
                     idx={props.idx}
-                    file={props.file}
-                    editFile={props.editFile}
+                    distribution={props.distribution}
+                    editDistribution={props.editDistribution}
                     setEditMode={setEditMode}
                     editMode={editMode}
                 />
@@ -259,7 +286,7 @@ const DatasetLinkItem = (props: Props) => {
         return (
             <div className="dataset-link-item-container">
                 <DatasetLinkItemComplete
-                    file={props.file}
+                    distribution={props.distribution}
                     setEditMode={setEditMode}
                     editMode={editMode}
                 />
