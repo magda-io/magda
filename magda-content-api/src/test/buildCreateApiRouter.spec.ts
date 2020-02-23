@@ -122,7 +122,7 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
                 }));
 
                 agent
-                    .get("/all?id=1")
+                    .get("/all?id=*")
                     .expect(200, expectedContent)
                     .end(done);
             });
