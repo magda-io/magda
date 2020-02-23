@@ -41,13 +41,10 @@ Gateway:
 
 -   Add /data to ckan URL, remove the `came_from` param
 
-Gateway:
-
--   Add /data to ckan URL, remove the `came_from` param
-
 Authorization:
 
 -   Made integration tests for authorisation run automatically as part of CI.
+-   Added ability to set per-record authorization policies in the registry
 
 Others:
 
