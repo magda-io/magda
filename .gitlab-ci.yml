@@ -382,7 +382,7 @@ buildtest:opa-policies:
   services:
     - docker:dind
   script:
-    - docker run -v $PWD/deploy/helm/magda-core/charts/opa/policies:/policies openpolicyagent/opa:0.10.7 test -v ./policies
+    - docker run -v $PWD/deploy/helm/magda-core/charts/opa/policies:/policies openpolicyagent/opa:0.17.1 test -v ./policies
 
 buildtest:helm-charts:
   stage: buildtest

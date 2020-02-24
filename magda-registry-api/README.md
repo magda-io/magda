@@ -131,31 +131,3 @@ And the response might look like:
 
 If the above jwt token is incorrect (e.g. typo), the user will be considered unauthenticated and only
 get "record-4" that has no access restriction.
-
-### SCRIPTING THIS
-
-curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/v0.5.1/kind-$(uname)-amd64
-chmod +x ./kind
-
-./kind create cluster
-export KUBECONFIG="\$(./kind get kubeconfig-path --name="kind")"
-
-kubectl apply -f deploy/kubernetes/rbac-config.yaml
-helm init --service-account tiller --wait
-
-export JWT_SECRET=udIsbcYaKs1G4n6AdiMSIvPx5KpxQAy8FA2aIcD46iCipNAZvds4jeXFLZKhVvSJZvhYb5Pvgvmtonk7UFfhGnYcd3DXM7KzHG7gBmGO8PCsOZ4t7icqZoJbpdDqYWMmd9XnrVXtJhR6HVFBmEmbk9AmFJ1Gz9ipYPGYLoFcavPs9iZ63KPXgdt4aBdWQcmICkGPYiY8CQOvqOoiU7hUhKDTkJgRRTSaax6UQDOveTQvQnd5uyXuV4os0tlahzRX
-
-kubectl create ns test2
-echo {\"apiVersion\": \"v1\", \"kind\": \"Secret\", \"metadata\": {\"name\": \"auth-secrets\"}, \"type\": \"Opaque\", \"data\": {\"jwt-secret\": \"dWRJc2JjWWFLczFHNG42QWRpTVNJdlB4NUtweFFBeThGQTJhSWNENDZpQ2lwTkFadmRzNGplWEZMWktoVnZTSlp2aFliNVB2Z3ZtdG9uazdVRmZoR25ZY2QzRFhNN0t6SEc3Z0JtR084UENzT1o0dDdpY3Fab0picGREcVlXTW1kOVhuclZYdEpoUjZIVkZCbUVtYms5QW1GSjFHejlpcFlQR1lMb0ZjYXZQczlpWjYzS1BYZ2R0NGFCZFdRY21JQ2tHUFlpWThDUU92cU9vaVU3aFVoS0RUa0pnUlJUU2FheDZVUURPdmVUUXZRbmQ1dXlYdVY0b3MwdGxhaHpSWA==\", \"session-secret\":\"squirrel\"}} | kubectl apply --namespace test2 -f -
-
-echo "{ \"apiVersion\": \"v1\", \"kind\": \"Secret\", \"metadata\": {\"name\": \"regcred\"}, \"type\": \"kubernetes.io/dockerconfigjson\", \"data\": { \".dockerconfigjson\": \"\$DOCKERCONFIGJSON\" }}" | kubectl apply --namespace test2 -f -
-
-helm upgrade test2 deploy/helm/magda --namespace test2 --install -f deploy/helm/local-auth-test.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=master,global.image.tag=\$CI_COMMIT_REF_SLUG
-
-setsid kubectl port-forward combined-db-0 5432 --namespace test2 >/dev/null 2>&1 < /dev/null &
-setsid kubectl port-forward deployment/authorization-api 6104:80 --namespace test2 >/dev/null 2>&1 < /dev/null &
-
-psql -h 127.0.0.1 -p 5432 -U postgres -d auth -f magda-registry-api/src/test/resources/data/organizations.sql
-psql -h 127.0.0.1 -p 5432 -U postgres -d auth -f magda-registry-api/src/test/resources/data/users.sql
-
-sbt "registryApi/testOnly au.csiro.data61.magda.opa.\*"
