@@ -23,6 +23,10 @@ import scalikejdbc.DB
   * @apiDescription Get the version of a record that existed after a given event was applied
   * @apiParam (path) {string} recordId ID of the record to fetch.
   * @apiParam (path) {string} eventId The ID of the last event to be applied to the record. The event with this ID need not actually apply to the record, in which case that last event prior to this even that does apply will be used.
+  * 
+  * @apiParam (query) {string} pageToken A token that identifies the start of a page of results. This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results.
+  * @apiParam (query) {number} start The index of the first event to retrieve. When possible, specify pageToken instead as it will result in better performance. If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve.
+  * @apiParam (query) {number} limit The maximum number of records to receive. The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
   *
   * @apiSuccess (Success 200) {json} Response the record detail
   * @apiSuccessExample {json} Response:

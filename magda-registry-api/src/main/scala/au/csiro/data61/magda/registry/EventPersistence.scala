@@ -62,7 +62,7 @@ object EventPersistence extends Protocols with DiffsonProtocol {
 
   def getLatestEventId(implicit session: DBSession): Option[Long] = {
     sql"""select
-          eventId,            
+          eventId,
           from Events
           order by eventId desc
           limit 1""".map(rs => rs.long("eventId")).headOption().apply()
@@ -169,7 +169,7 @@ object EventPersistence extends Protocols with DiffsonProtocol {
             tenantId
           from Events
           $whereClause
-          order by eventId asc
+          order by eventTime asc
           offset ${start.getOrElse(0)}
           limit ${limit.getOrElse(1000)}"""
         .map(rs => {
