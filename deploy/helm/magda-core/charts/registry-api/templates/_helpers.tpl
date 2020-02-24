@@ -56,8 +56,7 @@ spec:
 {{- end }}
             "-Dakka.loglevel={{ .root.Values.logLevel | default .root.Values.global.logLevel }}",
             "-DauthApi.baseUrl=http://authorization-api",
-            "-Dscalikejdbc.global.loggingSQLAndTime.logLevel=info",
-            "-Dscalikejdbc.global.loggingSQLAndTime.enabled=true",
+            "-Dscalikejdbc.global.loggingSQLAndTime.logLevel={{ .root.Values.global.logLevel | lower }}",
             "-Dauthorization.skip={{ .root.Values.skipAuthorization | default false }}",
             "-Dauthorization.skipOpaQuery={{ .root.Values.skipOpa | default false }}",
             "-Dopa.baseUrl=http://authorization-api/v0/opa",
