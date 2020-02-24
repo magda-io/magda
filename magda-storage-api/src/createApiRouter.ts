@@ -132,14 +132,16 @@ export default function createApiRouter(options: ApiRouterOptions) {
             });
         } catch (err) {
             if (err.code === "NotFound") {
-                res.status(404).send(
-                    "No such object with fileId " +
-                        fileId +
-                        " in bucket " +
-                        bucket
-                );
+                return res
+                    .status(404)
+                    .send(
+                        "No such object with fileId " +
+                            fileId +
+                            " in bucket " +
+                            bucket
+                    );
             }
-            res.status(500).send("Unknown error");
+            return res.status(500).send("Unknown error");
         }
         const recordId = res.getHeader("Record-ID").toString();
         if (recordId) {
@@ -148,7 +150,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
             try {
                 userId = maybeUserId.valueOrThrow();
             } catch (e) {
-                res.status(400).send("No User ID set.");
+                return res.status(400).send("No User ID set.");
             }
             const registryOptions: AuthorizedRegistryOptions = {
                 baseUrl: options.registryApiUrl,
@@ -164,19 +166,22 @@ export default function createApiRouter(options: ApiRouterOptions) {
             );
             // If there is an error
             if (record.e) {
-                res.status(404).send(
-                    "You don't have access to this dataset/This dataset doesn't exist."
-                );
+                return res
+                    .status(404)
+                    .send(
+                        "You don't have access to this dataset/This dataset doesn't exist."
+                    );
             }
         }
 
         const stream = await object.createStream();
         if (stream) {
             stream.on("error", _e => {
-                res.status(500).send("Unknown error");
+                return res.status(500).send("Unknown error");
             });
             stream.pipe(res);
         }
+        return undefined;
     });
 
     // Browser uploads
@@ -206,10 +211,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 return res.status(400).send("No files were uploaded.");
             }
             const recordId = req.query.recordId;
-            if (!recordId) {
-                return res.status(400).send("Record ID not set.");
-            }
-            const encodedRecordId = encodeURIComponent(recordId);
+            const encodedRecordId = recordId
+                ? encodeURIComponent(recordId)
+                : undefined;
             const bucket = req.params.bucket;
             const encodeBucketname = encodeURIComponent(bucket);
             const promises = (req.files as Array<any>).map((file: any) => {
@@ -278,10 +282,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
             const fileId = req.params.fileid;
             const bucket = req.params.bucket;
             const recordId = req.query.recordId;
-            if (!recordId) {
-                return res.status(400).send("Record ID not set.");
-            }
-            const encodedRecordId = encodeURIComponent(recordId);
+            const encodedRecordId = recordId
+                ? encodeURIComponent(recordId)
+                : undefined;
             const encodedRootPath = encodeURIComponent(fileId);
             const encodeBucketname = encodeURIComponent(bucket);
             const content = req.body;
