@@ -5,6 +5,9 @@ metadata:
 spec:
   replicas: 1
   revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      service: nginx-ingress-controller
   template:
     metadata:
       labels:

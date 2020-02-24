@@ -10,6 +10,9 @@ spec:
   strategy:
     rollingUpdate:
       maxUnavailable: {{ .root.Values.global.rollingUpdate.maxUnavailable | default 0 }}
+  selector:
+    matchLabels:
+      service: {{ .name }}
   template:
     metadata:
       labels:

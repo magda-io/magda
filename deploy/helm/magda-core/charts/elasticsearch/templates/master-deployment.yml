@@ -11,6 +11,9 @@ spec:
     rollingUpdate:
       maxUnavailable: 0
   replicas: 3
+  selector:
+    matchLabels:
+      service: es-master
   template:
     metadata:
       labels:

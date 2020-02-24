@@ -8,6 +8,9 @@ spec:
   strategy:
     rollingUpdate:
       maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
+  selector:
+    matchLabels:
+      service: cloud-sql-proxy
   template:
     metadata:
       labels:

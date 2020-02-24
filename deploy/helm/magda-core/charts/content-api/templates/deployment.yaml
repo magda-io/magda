@@ -8,6 +8,9 @@ spec:
     type: RollingUpdate
     rollingUpdate:
       maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
+  selector:
+    matchLabels:
+      service: content-api
   template:
     metadata:
       labels:

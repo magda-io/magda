@@ -11,6 +11,9 @@ spec:
   strategy:
     rollingUpdate:
       maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
+  selector:
+    matchLabels:
+      service: es-client
   template:
     metadata:
       labels:

@@ -6,6 +6,9 @@ spec:
   strategy:
     rollingUpdate:
       maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
+  selector:
+    matchLabels:
+      service: admin-api
   template:
     metadata:
       labels:
