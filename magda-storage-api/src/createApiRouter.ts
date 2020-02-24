@@ -143,8 +143,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
             }
             return res.status(500).send("Unknown error");
         }
-        const recordId = res.getHeader("Record-ID").toString();
-        if (recordId) {
+        const recordIdNum = res.getHeader("Record-ID"); //.toString();
+        if (recordIdNum) {
+            const recordId = recordIdNum.toString();
             const maybeUserId = getUserId(req, options.jwtSecret);
             let userId;
             try {
@@ -217,11 +218,13 @@ export default function createApiRouter(options: ApiRouterOptions) {
             const bucket = req.params.bucket;
             const encodeBucketname = encodeURIComponent(bucket);
             const promises = (req.files as Array<any>).map((file: any) => {
-                const metaData = {
+                const metaData: any = {
                     "Content-Type": file.mimetype,
-                    "Content-Length": file.buffer.byteLength,
-                    "Record-ID": encodedRecordId
+                    "Content-Length": file.buffer.byteLength
                 };
+                if (encodedRecordId) {
+                    metaData["Record-ID"] = encodedRecordId;
+                }
                 const fieldId = file.originalname;
                 const encodedRootPath = encodeURIComponent(fieldId);
                 return options.objectStoreClient
@@ -295,11 +298,13 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 return res.status(400).send("No Content.");
             }
 
-            const metaData = {
+            const metaData: any = {
                 "Content-Type": contentType,
-                "Content-Length": contentLength,
-                "Record-ID": encodedRecordId
+                "Content-Length": contentLength
             };
+            if (encodedRecordId) {
+                metaData["Record-ID"] = encodedRecordId;
+            }
             return options.objectStoreClient
                 .putFile(encodeBucketname, encodedRootPath, content, metaData)
                 .then(etag => {
