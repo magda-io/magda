@@ -96,14 +96,27 @@
                 width: 26px;
                 height: 26px;
                 border: none;
-                left: 740px;
+                right: 38px;
                 top: 5px;
                 padding: 1px 0px 0px 0px;
 
                 border: 1px solid transparent;
                 border-radius: 4px;
                 background-color: transparent !important;
+            }
 
+            .delete-button {
+                position: absolute;
+                width: 26px;
+                height: 26px;
+                border: none;
+                right: 10px;
+                top: 14px;
+                padding: 1px 0px 0px 0px;
+            }
+
+            .edit-button,
+            .delete-button {
                 &:hover {
                     border: 1px solid #cccaca;
                 }

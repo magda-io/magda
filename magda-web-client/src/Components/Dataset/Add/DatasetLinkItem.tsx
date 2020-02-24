@@ -12,6 +12,7 @@ import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
 import { dateEditor } from "Components/Editing/Editors/dateEditor";
 import { getFormatIcon } from "../View/DistributionIcon";
 import editIcon from "../../../assets/edit.svg";
+import dismissIcon from "../../../assets/dismiss.svg";
 
 import SlimTextInputWithValidation from "../Add/SlimTextInputWithValidation";
 import * as ValidationManager from "./ValidationManager";
@@ -24,6 +25,7 @@ type Props = {
     editDistribution: (
         updater: (distribution: Distribution) => Distribution
     ) => void;
+    deleteDistribution: () => void;
     className?: string;
 };
 
@@ -45,13 +47,11 @@ type CompleteViewProps = {
     distribution: Distribution;
     editMode: boolean;
     setEditMode: (editMode: boolean) => void;
+    deleteDistribution: () => void;
 };
 
 const DatasetLinkItemComplete = (props: CompleteViewProps) => {
-    const distribution = props.distribution;
-
-    const setEditMode = props.setEditMode;
-    const editMode = props.editMode;
+    const { distribution, setEditMode, editMode, deleteDistribution } = props;
 
     return (
         <div className="dataset-link-item-complete">
@@ -61,6 +61,13 @@ const DatasetLinkItemComplete = (props: CompleteViewProps) => {
                 onClick={() => setEditMode(!editMode)}
             >
                 <img src={editIcon} />
+            </button>
+            <button
+                className={`delete-button au-btn au-btn--secondary`}
+                arial-label="Delete distribution metadata"
+                onClick={() => deleteDistribution()}
+            >
+                <img src={dismissIcon} />
             </button>
             <div>
                 <h3 className="link-item-title">{distribution.title}</h3>
@@ -289,6 +296,7 @@ const DatasetLinkItem = (props: Props) => {
                     distribution={props.distribution}
                     setEditMode={setEditMode}
                     editMode={editMode}
+                    deleteDistribution={props.deleteDistribution}
                 />
             </div>
         );

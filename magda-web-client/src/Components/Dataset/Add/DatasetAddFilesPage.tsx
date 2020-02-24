@@ -35,6 +35,7 @@ class DatasetAddFilesPage extends React.Component<
         super(props);
         this.addDistribution = this.addDistribution.bind(this);
         this.editDistribution = this.editDistribution.bind(this);
+        this.deleteDistribution = this.deleteDistribution.bind(this);
         ValidationManager.setStateDataGetter(() => {
             return this.state;
         });
@@ -363,6 +364,7 @@ class DatasetAddFilesPage extends React.Component<
                     distributions={this.state.distributions}
                     addDistribution={this.addDistribution}
                     editDistribution={this.editDistribution}
+                    deleteDistribution={this.deleteDistribution}
                 />
 
                 <AddDatasetLinkSection
@@ -370,6 +372,7 @@ class DatasetAddFilesPage extends React.Component<
                     distributions={this.state.distributions}
                     addDistribution={this.addDistribution}
                     editDistribution={this.editDistribution}
+                    deleteDistribution={this.deleteDistribution}
                 />
 
                 <div

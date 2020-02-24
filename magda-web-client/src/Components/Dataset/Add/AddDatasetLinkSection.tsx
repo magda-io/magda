@@ -17,6 +17,7 @@ type Props = {
     editDistribution: (
         index: number
     ) => (updater: (distribution: Distribution) => Distribution) => void;
+    deleteDistribution: (index: number) => () => void;
 };
 
 const AddDatasetLinkSection = (props: Props) => {
@@ -72,6 +73,9 @@ const AddDatasetLinkSection = (props: Props) => {
                                         key={item.idx}
                                         distribution={item.distribution}
                                         editDistribution={props.editDistribution(
+                                            item.idx
+                                        )}
+                                        deleteDistribution={props.deleteDistribution(
                                             item.idx
                                         )}
                                     />
