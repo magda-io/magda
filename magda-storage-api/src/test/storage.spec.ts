@@ -332,7 +332,7 @@ describe("Storage API tests", () => {
                         .set("Accept", "application/json")
                         .set("Content-Type", "text/plain")
                         .query({ recordId: "storage-test-dataset-id-failure" })
-                        .send("Testing download without auth")
+                        .send("Testing download with unsuccessful auth")
                         .expect(200)
                 ).then(_res => {
                     return injectUserId(
@@ -347,6 +347,31 @@ describe("Storage API tests", () => {
                             .set("Accept", "text/plain")
                             .expect(404)
                     );
+                });
+            });
+
+            it("Without any record id", () => {
+                return mockAuthorization(
+                    authApiUrl,
+                    true,
+                    jwtSecret,
+                    request(app)
+                        .put(
+                            "/v0/" + bucketName + "/download-noauth-test-file-1"
+                        )
+                        .set("Accept", "application/json")
+                        .set("Content-Type", "text/plain")
+                        .send("Testing download without auth")
+                        .expect(200)
+                ).then(_res => {
+                    return request(app)
+                        .get(
+                            "/v0/" + bucketName + "/download-noauth-test-file-1"
+                        )
+                        .set("Accept", "application/json")
+                        .set("Accept", "text/plain")
+                        .expect(200)
+                        .expect("Testing download without auth");
                 });
             });
         });
