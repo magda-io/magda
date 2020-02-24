@@ -5,13 +5,15 @@ import FileDrop from "react-file-drop";
 
 import ToolTip from "Components/Dataset/Add/ToolTip";
 import DatasetFile from "Components/Dataset/Add/DatasetFile";
+import AddDatasetLinkSection from "Components/Dataset/Add/AddDatasetLinkSection";
 
 import { getFiles } from "helpers/readFile";
 
 import {
     State,
-    File,
-    FileState,
+    Distribution,
+    DistributionState,
+    DistributionSource,
     saveState,
     KeywordsLike
 } from "./DatasetAddCommon";
@@ -31,6 +33,8 @@ class DatasetAddFilesPage extends React.Component<
 
     constructor(props) {
         super(props);
+        this.addDistribution = this.addDistribution.bind(this);
+        this.editDistribution = this.editDistribution.bind(this);
         ValidationManager.setStateDataGetter(() => {
             return this.state;
         });
@@ -46,7 +50,7 @@ class DatasetAddFilesPage extends React.Component<
 
     updateLastModifyDate() {
         this.setState(state => {
-            const modifiedDates = state.files
+            const modifiedDates = state.distributions
                 .filter(f => f.modified)
                 .map(f => new Date(f.modified))
                 .filter(d => !isNaN(d.getTime()))
@@ -91,7 +95,7 @@ class DatasetAddFilesPage extends React.Component<
                 continue;
             }
 
-            const newFile = {
+            const newFile: Distribution = {
                 datasetTitle: toTitleCase(
                     turnPunctuationToSpaces(
                         trimExtension(thisFile.name || "File Name")
@@ -101,14 +105,15 @@ class DatasetAddFilesPage extends React.Component<
                 byteSize: thisFile.size,
                 modified: new Date(thisFile.lastModified),
                 format: fileFormat(thisFile),
-                _state: FileState.Added,
-                license: "world"
+                _state: DistributionState.Added,
+                license: "world",
+                creationSource: DistributionSource.File
             };
 
             processFile(thisFile, update => {
                 this.setState(state => {
-                    let newState = Object.assign({}, state, {
-                        files: state.files.slice(0)
+                    let newState: State = Object.assign({}, state, {
+                        distributions: state.distributions.slice(0)
                     });
                     Object.assign(newFile, update);
                     return newState;
@@ -116,7 +121,7 @@ class DatasetAddFilesPage extends React.Component<
             }).then(() => {
                 this.setState(state => {
                     let newState = Object.assign({}, state, {
-                        files: state.files.slice(0)
+                        distributions: state.distributions.slice(0)
                     });
 
                     let file: any = newFile;
@@ -205,57 +210,89 @@ class DatasetAddFilesPage extends React.Component<
 
             this.setState(state => {
                 let newState = {
-                    files: state.files.slice(0)
+                    distributions: state.distributions.slice(0)
                 };
-                newState.files.push(newFile);
+                newState.distributions.push(newFile);
                 return newState;
             });
         }
         this.updateLastModifyDate();
     };
 
-    editFile = (index: number) => (file: File) => {
+    addDistribution = (distribution: Distribution) => {
         this.setState(state => {
-            const newFiles = state.files.concat();
-            newFiles[index] = file;
+            const newDistribution = state.distributions.concat(distribution);
             return {
-                files: newFiles
+                ...state,
+                distributions: newDistribution
+            };
+        });
+    };
+
+    editDistribution = (index: number) => (
+        updater: (distribution: Distribution) => Distribution
+    ) => {
+        this.setState(state => {
+            const newDistributions = state.distributions.concat();
+            newDistributions[index] = updater(newDistributions[index]);
+            return {
+                ...state,
+                distributions: newDistributions
             };
         });
         this.updateLastModifyDate();
     };
 
-    deleteFile = (index: number) => () => {
+    deleteDistribution = (index: number) => () => {
         this.setState(state => {
-            const newFiles = state.files.filter((item, idx) => {
+            const newDistributions = state.distributions.filter((item, idx) => {
                 if (idx === index) return false;
                 return true;
             });
             return {
-                files: newFiles
+                ...state,
+                distributions: newDistributions
             };
         });
     };
 
     render() {
+        const localFiles = this.state.distributions.filter(
+            file => file.creationSource === DistributionSource.File
+        );
+
         return (
             <div className="container-fluid dataset-add-file-page">
                 <div className="row top-area-row">
                     <div className="col-xs-12 top-text-area">
-                        <h1>Add files to pre-populate metadata</h1>
+                        <h1>Add your dataset to pre-populate metadata</h1>
                         <p>
-                            Add all the files in your dataset so our Publishing
-                            Tool can review the file contents and pre-populate
-                            metadata.
+                            Our Publishing Tool can review your dataset contents
+                            and pre-populate metadata. Just add all the files or
+                            services that make up your dataset.
+                        </p>
+                        <p>
+                            You can upload your dataset as files, add a link to
+                            files already hosted online, or add a link to a web
+                            service, or any combination of the three.
                         </p>
                         <p>
                             All our processing happens in your internet browser,
-                            so do not store a copy of your files, and you can
-                            edit or delete the metadata at any time.
+                            we only store a copy of your files if you ask us to,
+                            and you can edit or delete the metadata at any time.
+                        </p>
+                        <p>
+                            Want to upload your entire data catalogue in one go?
+                            Use our <a>Bulk Upload tool</a>
                         </p>
                     </div>
+                </div>
 
-                    {this.state.files.length > 0 && (
+                <div className="row add-files-heading">
+                    <div className="col-xs-12">
+                        <h3>Add files</h3>
+                    </div>
+                    {localFiles.length > 0 && (
                         <div className="col-xs-12 tip-area">
                             <ToolTip>
                                 We recommend ensuring dataset file names are
@@ -269,23 +306,33 @@ class DatasetAddFilesPage extends React.Component<
                 <div className="row files-area">
                     <div className="col-xs-12">
                         <div className="row">
-                            {this.state.files.map((file: File, i) => {
+                            {localFiles.map((file: Distribution, i) => {
+                                let isLastRow;
+                                if (localFiles.length % 2) {
+                                    isLastRow = i >= localFiles.length - 1;
+                                } else {
+                                    isLastRow = i >= localFiles.length - 2;
+                                }
                                 return (
                                     <div
                                         key={i}
-                                        className="col-xs-6 dataset-add-files-fileListItem"
+                                        className={`col-xs-6 dataset-add-files-fileListItem ${
+                                            isLastRow ? "last-row" : ""
+                                        }`}
                                     >
                                         <DatasetFile
                                             idx={i}
                                             file={file}
-                                            onChange={this.editFile(i)}
-                                            onDelete={this.deleteFile(i)}
+                                            onChange={this.editDistribution(i)}
+                                            onDelete={this.deleteDistribution(
+                                                i
+                                            )}
                                         />
                                     </div>
                                 );
                             })}
                         </div>
-                        {this.state.files.length > 0 && (
+                        {localFiles.length > 0 && (
                             <div className="more-files-to-add-text">
                                 More files to add?
                             </div>
@@ -311,14 +358,21 @@ class DatasetAddFilesPage extends React.Component<
                     </div>
                 </div>
 
+                <AddDatasetLinkSection
+                    distributions={this.state.distributions}
+                    addDistribution={this.addDistribution}
+                    editDistribution={this.editDistribution}
+                />
+
                 <div
                     className="row next-save-button-row"
                     style={{ marginTop: "6em" }}
                 >
                     <div className="col-xs-12">
-                        {this.state.files.filter(
-                            (file: File) => file._state === FileState.Ready
-                        ).length === this.state.files.length && (
+                        {localFiles.filter(
+                            (file: Distribution) =>
+                                file._state === DistributionState.Ready
+                        ).length === localFiles.length && (
                             <React.Fragment>
                                 <button
                                     className="au-btn next-button"
@@ -385,7 +439,7 @@ function readFileAsArrayBuffer(file: any): Promise<ArrayBuffer> {
 }
 
 async function processFile(thisFile: any, update: Function) {
-    update({ _state: FileState.Reading });
+    update({ _state: DistributionState.Reading });
 
     const input: any = {
         file: thisFile
@@ -394,7 +448,7 @@ async function processFile(thisFile: any, update: Function) {
     input.arrayBuffer = await readFileAsArrayBuffer(thisFile);
     input.array = new Uint8Array(input.arrayBuffer);
 
-    update({ _state: FileState.Processing });
+    update({ _state: DistributionState.Processing });
 
     const runExtractors = await import(
         "Components/Dataset/MetadataExtraction"
@@ -402,7 +456,7 @@ async function processFile(thisFile: any, update: Function) {
 
     await runExtractors(input, update);
 
-    update({ _state: FileState.Ready });
+    update({ _state: DistributionState.Ready });
 }
 
 function mapStateToProps(state, old) {
