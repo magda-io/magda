@@ -1,5 +1,5 @@
 {{- if and .Values.enableTls (not .Values.useDefaultCertificate) }}
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
   name: magda-cert
@@ -13,12 +13,4 @@ spec:
   {{- range .Values.domains }}
   - {{ . | quote }}
   {{- end }}
-  acme:
-    config:
-    - dns01:
-        provider: prod-dns
-      domains:
-      {{- range .Values.domains }}
-      - {{ . | quote }}
-      {{- end }}
 {{- end }}
