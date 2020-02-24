@@ -28,7 +28,7 @@ import uniq from "lodash/uniq";
  * A list of field json path (query against [add dataset page state](https://github.com/magda-io/magda/blob/master/magda-web-client/src/Components/Dataset/Add/DatasetAddCommon.ts#L133) that should be validated / Mandatory.
  * We currently don't use json path here to query any json data.
  * Use json path as a standard way to name the mandatory field only.
- * e.g. ["$.dataset.title", "$.files[1].license", "$.dataset.defaultLicense"]
+ * e.g. ["$.dataset.title", "$.distributions[1].license", "$.dataset.defaultLicense"]
  */
 export type ValidationFieldList = string[];
 
@@ -107,19 +107,23 @@ function convertConfigFieldItem(field: string): string {
         case "dataset.defaultLicense":
             return "$.dataset.defaultLicense";
         case "files.title":
-            return "$.files[*].title";
+            return "$.distributions[*].title";
         case "files.format":
-            return "$.files[*].format";
+            return "$.distributions[*].format";
         case "files.license":
-            return "$.files[*].license";
+            return "$.distributions[*].license";
+        case "distributions.title":
+            return "$.distributions[*].title";
+        case "distributions.format":
+            return "$.distributions[*].format";
+        case "distributions.license":
+            return "$.distributions[*].license";
         case "dataset.publisher":
             return "$.dataset.publisher";
         case "licenseLevel":
             return "$.licenseLevel";
         case "dataset.defaultLicense":
             return "$.dataset.defaultLicense";
-        case "files.license":
-            return "$.files[*].license";
         case "informationSecurity.classification":
             return "$.informationSecurity.classification";
         case "informationSecurity.disseminationLimits":

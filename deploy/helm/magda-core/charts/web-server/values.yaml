@@ -32,13 +32,12 @@ mandatoryFields:
   - dataset.title
   - dataset.description
   - dataset.defaultLicense
-  - files.title
-  - files.format
-  - files.license
+  - distributions.title
+  - distributions.format
+  - distributions.license
   - dataset.publisher
   - licenseLevel
   - dataset.defaultLicense
-  - files.license
   - informationSecurity.classification
   - informationSecurity.disseminationLimits
 dateConfig:

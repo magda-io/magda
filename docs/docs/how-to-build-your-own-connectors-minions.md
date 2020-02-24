@@ -41,14 +41,15 @@ git push origin gh-pages
 ```
 
 2. Add the following information to the Github repository secret settings section:
+
     - `GITHUB_ACCESS_TOKEN`: Github person access token
     - `DOCKER_HUB_PASSWORD`: Your Docker Hub Account Password.
 
 3. Watch the script run. It will:
-    -   Build & push docker image to docker hub - you can control the docker image name with `config.docker.name` field of your package.json ( here is [a sample config](https://github.com/magda-io/magda-ckan-connector/blob/4b08982718efa4af63470ed7bbf48db912a1b50a/package.json#L61) )
-    -   Package & push helm chart to Github Page (`gh-pages` branch of your Github repository). Your helm repo access url will be:
-        -   `https://<user>.github.io/<repository>`
-        -   Or `https://<organization>.github.io/<repository>`
+    - Build & push docker image to docker hub - you can control the docker image name with `config.docker.name` field of your package.json ( here is [a sample config](https://github.com/magda-io/magda-ckan-connector/blob/4b08982718efa4af63470ed7bbf48db912a1b50a/package.json#L61) )
+    - Package & push helm chart to Github Page (`gh-pages` branch of your Github repository). Your helm repo access url will be:
+        - `https://<user>.github.io/<repository>`
+        - Or `https://<organization>.github.io/<repository>`
 
 ### Develop a Magda Connector
 
