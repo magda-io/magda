@@ -103,6 +103,11 @@ const AddDatasetLinkSection = (props: Props) => {
                     }`}
                     placeholder="Enter the download URL"
                     onChange={e => setUrl(e.target.value)}
+                    onKeyUp={e => {
+                        if (e.keyCode === 13) {
+                            fetchUrl();
+                        }
+                    }}
                     value={url}
                 />
 
