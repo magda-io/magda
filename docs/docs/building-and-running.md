@@ -110,6 +110,20 @@ kubectl apply -f deploy/kubernetes/local-storage-volume.yaml
 
 Note: If using docker desktop for Windows older than version 19, change the value from "docker-desktop" to "docker-for-desktop" in nodeAffinity in file deploy/kubernetes/local-storage-volume.yaml
 
+### Install the CKAN connector
+
+The Magda CKAN connector (as of v0.0.57) lives outside of the core repository, at https://github.com/magda-io/magda-ckan-connector.
+To get the CKAN connector running,
+
+```bash
+git clone https://github.com/magda-io/magda-ckan-connector
+cd magda-ckan-connector
+yarn install
+yarn run build
+eval $(minikube docker-env)
+yarn run docker-build-local
+```
+
 ### Install Magda on your minikube/docker-desktop cluster
 
 ```bash
