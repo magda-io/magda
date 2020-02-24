@@ -140,8 +140,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
                             " in bucket " +
                             bucket
                     );
+            } else {
+                return res.status(500).send("Unknown error");
             }
-            return res.status(500).send("Unknown error");
         }
         const recordIdNum = res.getHeader("Record-ID"); //.toString();
         if (recordIdNum) {
