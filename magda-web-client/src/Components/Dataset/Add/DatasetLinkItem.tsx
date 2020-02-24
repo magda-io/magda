@@ -57,7 +57,7 @@ const DatasetLinkItemComplete = (props: CompleteViewProps) => {
         <div className="dataset-link-item-complete">
             <button
                 className={`edit-button au-btn au-btn--secondary`}
-                arial-label="Edit distribution metadata"
+                aria-label="Edit distribution metadata"
                 onClick={() => setEditMode(!editMode)}
             >
                 <img src={editIcon} />
