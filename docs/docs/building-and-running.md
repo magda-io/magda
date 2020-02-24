@@ -145,9 +145,9 @@ If you're using Docker Desktop on Windows, add `-f deploy/helm/docker-desktop-wi
 # update magda helm repo
 helm repo update
 # update magda chart dependencies
-helm dep build deploy/helm/magda
+helm dep up deploy/helm/magda
 # deploy the magda chart from magda helm repo
-helm upgrade --install --timeout 9999 --wait -f deploy/helm/docker-desktop-windows.yml -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
+helm upgrade --install --timeout 9999m --wait -f deploy/helm/docker-desktop-windows.yml -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
 ```
 
 If you want to deploy the packed & production ready helm chart in our helm repo:
