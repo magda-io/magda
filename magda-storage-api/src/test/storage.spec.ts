@@ -286,8 +286,7 @@ describe("Storage API tests", () => {
         });
 
         describe("Uploading and then downloading a simple file", () => {
-            it("With registry auth", () => {
-                console.log("running test 1");
+            it("With successful registry auth", () => {
                 return mockAuthorization(
                     authApiUrl,
                     true,
@@ -321,8 +320,7 @@ describe("Storage API tests", () => {
                 });
             });
 
-            it("Without registry auth", () => {
-                console.log("running test 2");
+            it("With unsuccessful registry auth", () => {
                 return mockAuthorization(
                     authApiUrl,
                     true,
