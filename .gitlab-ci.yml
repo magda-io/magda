@@ -389,13 +389,14 @@ buildtest:opa-policies:
 buildtest:helm-charts:
   stage: buildtest
   image: dtzar/helm-kubectl:2.16.1
+  dependencies: []
   cache:
     paths: []
   script:
     # Init helm
     - helm init --client-only
     - helm repo add magda-io https://charts.magda.io
-    - helm dep up deploy/helm/magda
+    - helm dep build deploy/helm/magda
 
     - echo "helm lint magda chart using magda-dev.yml"
     - helm lint -f deploy/helm/magda-dev.yml deploy/helm/magda
@@ -741,7 +742,8 @@ Publish Helm Chart:
   except:
     - branches
     - triggers
-  dependencies: []
+  dependencies:
+    - buildtest:helm-charts
   image:
     name: dtzar/helm-kubectl:2.16.1
   cache:

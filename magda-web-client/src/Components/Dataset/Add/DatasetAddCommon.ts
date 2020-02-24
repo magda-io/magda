@@ -5,7 +5,7 @@ import { fetchOrganization } from "api-clients/RegistryApis";
 import { config } from "config";
 import { User } from "reducers/userManagementReducer";
 
-export type File = {
+export type Distribution = {
     title: string;
     description?: string;
     issued?: string;
@@ -19,7 +19,7 @@ export type File = {
     mediaType?: string;
     format?: string;
 
-    datasetTitle: string;
+    datasetTitle?: string;
     author?: string;
     keywords?: string[];
     themes?: string[];
@@ -29,26 +29,35 @@ export type File = {
     similarFingerprint?: any;
     equalHash?: string;
 
-    _state: FileState;
+    // --- An UUID for identify a file during the processing. array index is not a reliable id.
+    id?: string;
+    creationSource?: DistributionSource;
+    _state: DistributionState;
     _progress?: number;
 };
 
-export enum FileState {
+export enum DistributionSource {
+    File,
+    DatasetUrl,
+    Api
+}
+
+export enum DistributionState {
     Added,
     Reading,
     Processing,
     Ready
 }
 
-export function fileStateToText(state: FileState) {
+export function distributionStateToText(state: DistributionState) {
     switch (state) {
-        case FileState.Added:
+        case DistributionState.Added:
             return "Added";
-        case FileState.Reading:
+        case DistributionState.Reading:
             return "Reading";
-        case FileState.Processing:
+        case DistributionState.Processing:
             return "Processing";
-        case FileState.Ready:
+        case DistributionState.Ready:
             return "Ready";
         default:
             return "Unknown";
@@ -132,7 +141,7 @@ type Currency = {
 };
 
 export type State = {
-    files: File[];
+    distributions: Distribution[];
     dataset: Dataset;
     datasetPublishing: DatasetPublishing;
     processing: boolean;
@@ -168,7 +177,7 @@ type Access = {
 
 export function createBlankState(user?: User): State {
     return {
-        files: [],
+        distributions: [],
         processing: false,
         dataset: {
             title: "",

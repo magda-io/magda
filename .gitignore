@@ -50,3 +50,6 @@ magda-tenant-api/lib/
 
 #typescript
 tsconfig.tsbuildinfo
+
+# Ignore Magda helm chart auto build dependencies
+deploy/helm/magda/charts
