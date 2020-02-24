@@ -6,6 +6,7 @@ import FileDrop from "react-file-drop";
 import ToolTip from "Components/Dataset/Add/ToolTip";
 import DatasetFile from "Components/Dataset/Add/DatasetFile";
 import AddDatasetLinkSection from "Components/Dataset/Add/AddDatasetLinkSection";
+import StorageOptionsSection from "Components/Dataset/Add/StorageOptionsSection";
 
 import { getFiles } from "helpers/readFile";
 
@@ -333,9 +334,12 @@ class DatasetAddFilesPage extends React.Component<
                             })}
                         </div>
                         {localFiles.length > 0 && (
-                            <div className="more-files-to-add-text">
-                                More files to add?
-                            </div>
+                            <>
+                                <StorageOptionsSection />
+                                <div className="more-files-to-add-text">
+                                    More files to add?
+                                </div>
+                            </>
                         )}
                     </div>
                 </div>
