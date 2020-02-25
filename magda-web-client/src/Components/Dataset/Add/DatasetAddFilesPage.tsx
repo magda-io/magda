@@ -333,13 +333,49 @@ class DatasetAddFilesPage extends React.Component<
                                 );
                             })}
                         </div>
+
+                        <StorageOptionsSection
+                            files={localFiles}
+                            shouldUploadToStorageApi={
+                                this.state.shouldUploadToStorageApi
+                            }
+                            setShouldUploadToStorageApi={value => {
+                                this.setState(state => {
+                                    const newState = {
+                                        ...state,
+                                        shouldUploadToStorageApi: value
+                                    };
+                                    if (value) {
+                                        // --- delete dataset location data when upload to storage api is selected
+                                        const {
+                                            location: originalLocation,
+                                            ...newDatasetAccess
+                                        } = { ...state.datasetAccess };
+                                        newState.datasetAccess = newDatasetAccess;
+                                    }
+                                    return newState;
+                                });
+                            }}
+                            dataAccessLocation={
+                                this.state.datasetAccess.location
+                                    ? this.state.datasetAccess.location
+                                    : ""
+                            }
+                            setDataAccessLocation={value =>
+                                this.setState(state => ({
+                                    ...state,
+                                    datasetAccess: {
+                                        ...state.datasetAccess,
+                                        location: value
+                                    }
+                                }))
+                            }
+                        />
+
                         {localFiles.length > 0 && (
-                            <>
-                                <StorageOptionsSection />
-                                <div className="more-files-to-add-text">
-                                    More files to add?
-                                </div>
-                            </>
+                            <div className="more-files-to-add-text">
+                                More files to add?
+                            </div>
                         )}
                     </div>
                 </div>

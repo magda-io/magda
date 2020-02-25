@@ -157,7 +157,7 @@ export type State = {
 
     licenseLevel: "dataset" | "distribution";
 
-    uploadToStorageApi: boolean;
+    shouldUploadToStorageApi: boolean;
 
     isPublishing: boolean;
     error: Error | null;
@@ -214,7 +214,7 @@ export function createBlankState(user?: User): State {
         },
         licenseLevel: "dataset",
         isPublishing: false,
-        uploadToStorageApi: false,
+        shouldUploadToStorageApi: false,
         error: null,
         _createdDate: new Date(),
         _lastModifiedDate: new Date()
