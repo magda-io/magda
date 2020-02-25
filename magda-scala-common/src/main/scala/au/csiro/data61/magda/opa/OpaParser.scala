@@ -1,9 +1,7 @@
 package au.csiro.data61.magda.opa
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.headers.RawHeader
 import akka.stream.Materializer
 import akka.util.ByteString
 import au.csiro.data61.magda.opa.OpaTypes._
@@ -12,6 +10,7 @@ import spray.json._
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
+import au.csiro.data61.magda.client.AuthApiClient
 
 object OpaTypes {
   case class OpaQueryPair(policyId: String, queries: List[OpaQuery])
@@ -56,7 +55,12 @@ object OpaTypes {
   case class OpaQueryExists(
       path: List[OpaRef]
   ) extends OpaQuery
+
+  /** A no-op query that occurs when OPA has determined that the query should be resolved regardless of unknowns */
   case object OpaQueryAllMatched extends OpaQuery
+
+  /** A no-op query that occurs when OPA has determined that the query cannot be resolved regardless of unknowns */
+  case object OpaQueryNoneMatched extends OpaQuery
   case object OpaQuerySkipAccessControl extends OpaQuery
 
   case class OpaPartialResponse(
@@ -112,68 +116,7 @@ object OpaConsts {
   val ANY_IN_ARRAY: String = "[_]"
 }
 
-class OpaQueryer()(
-    implicit val config: Config,
-    implicit val system: ActorSystem,
-    implicit val ec: ExecutionContext,
-    implicit val materializer: Materializer
-) {
-
-  private val opaUrl: String = config.getConfig("opa").getString("baseUrl")
-  private val logger = system.log
-
-  def queryRecord(
-      jwtToken: Option[String],
-      policyId: String
-  ): Future[List[List[OpaQuery]]] = {
-    queryPolicy(jwtToken, policyId)
-  }
-
-  def queryPolicy(
-      jwtToken: Option[String],
-      policyId: String
-  ): Future[List[List[OpaQuery]]] = {
-    val requestData: String = s"""{
-                                 |  "query": "data.$policyId",
-                                 |  "unknowns": ["input.object"]
-                                 |}""".stripMargin
-
-    val headers = jwtToken match {
-      case Some(jwt) => List(RawHeader("X-Magda-Session", jwt))
-      case None      => List()
-    }
-
-    val httpRequest = HttpRequest(
-      uri = s"$opaUrl/compile",
-      method = HttpMethods.POST,
-      entity = HttpEntity(ContentTypes.`application/json`, requestData),
-      headers = headers
-    )
-
-    Http()
-      .singleRequest(httpRequest)
-      .flatMap(receiveOpaResponse[List[List[OpaQuery]]](_) { json =>
-        parseOpaResponse(json)
-      })
-  }
-
-  def receiveOpaResponse[T](res: HttpResponse)(fn: JsValue => T): Future[T] = {
-    if (res.status.intValue() != 200) {
-      res.entity.dataBytes.runFold(ByteString(""))(_ ++ _).flatMap { body =>
-        logger
-          .error(s"OPA failed to process the request: {}", body.utf8String)
-        Future.failed(
-          new Exception(
-            s"Failed to retrieve access control decision from OPA: ${body.utf8String}"
-          )
-        )
-      }
-    } else {
-      res.entity.toStrict(10.seconds).map { entity =>
-        fn(entity.data.utf8String.parseJson)
-      }
-    }
-  }
+object OpaParser {
 
   def parseOpaResponse(json: JsValue): List[List[OpaQuery]] = {
     val result = json.asJsObject.fields
@@ -285,6 +228,9 @@ class OpaQueryer()(
               })
             })
         }
+      case None =>
+        // This happens if access is always disallowed for the input given to OPA
+        List(List(OpaQueryNoneMatched))
       case e => throw new Exception(s"Could not understand $e")
     }
 
@@ -388,5 +334,4 @@ class OpaQueryer()(
   }
 
   private def parseTerm(termJson: JsValue): RegoTerm = RegoTerm(termJson)
-
 }

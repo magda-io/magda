@@ -156,7 +156,8 @@ baseSpec(
                             name: "",
                             aspects: {},
                             sourceTag: "",
-                            tenantId: MAGDA_ADMIN_PORTAL_ID
+                            tenantId: MAGDA_ADMIN_PORTAL_ID,
+                            authnReadPolicyId: undefined
                         })
                     );
                     return { recordsTestTable, registryRecords };
@@ -241,7 +242,8 @@ baseSpec(
                             name: "",
                             aspects: {},
                             sourceTag: "",
-                            tenantId: MAGDA_ADMIN_PORTAL_ID
+                            tenantId: MAGDA_ADMIN_PORTAL_ID,
+                            authnReadPolicyId: undefined
                         }));
                     return {
                         totalCrawledRecordsNumber,

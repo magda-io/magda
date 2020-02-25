@@ -249,8 +249,6 @@ buildtest:registry:
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: ""
   script:
-    # The tests in opa/RecordOpaSpec are not fully automated yet therefore skipped.
-    # Please see opa/README.md for details.
     - sbt "registryApi/testOnly au.csiro.data61.magda.registry.*"
   artifacts:
     paths:
@@ -384,7 +382,7 @@ buildtest:opa-policies:
   services:
     - docker:dind
   script:
-    - docker run -v $PWD/deploy/helm/magda-core/charts/opa/policies:/policies openpolicyagent/opa:0.10.7 test -v ./policies
+    - docker run -v $PWD/deploy/helm/magda-core/charts/opa/policies:/policies openpolicyagent/opa:0.17.1 test -v ./policies
 
 buildtest:helm-charts:
   stage: buildtest

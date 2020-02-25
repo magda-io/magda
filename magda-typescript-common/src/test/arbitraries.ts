@@ -68,7 +68,8 @@ export const recordArb = jsc.record<Record>({
     name: stringArb,
     aspects: jsc.suchthat(jsc.array(jsc.json), arr => arr.length <= 10),
     sourceTag: jsc.constant(undefined),
-    tenantId: intArb
+    tenantId: intArb,
+    authnReadPolicyId: jsc.constant(undefined)
 });
 
 export const specificRecordArb = (aspectArbs: {
@@ -79,7 +80,8 @@ export const specificRecordArb = (aspectArbs: {
         name: stringArb,
         aspects: jsc.record(aspectArbs),
         sourceTag: jsc.constant(undefined),
-        tenantId: intArb
+        tenantId: intArb,
+        authnReadPolicyId: jsc.constant(undefined)
     });
 
 const defaultSchemeArb = jsc.oneof([

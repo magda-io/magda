@@ -31,11 +31,19 @@ import scala.util.{Failure, Success}
 class RecordsService(
     config: Config,
     webHookActor: ActorRef,
-    authClient: AuthApiClient,
+    authClient: RegistryAuthApiClient,
     system: ActorSystem,
     materializer: Materializer,
-    recordPersistence: RecordPersistence = DefaultRecordPersistence
-) extends RecordsServiceRO(config, system, materializer, recordPersistence) {
+    recordPersistence: RecordPersistence,
+    eventPersistence: EventPersistence
+) extends RecordsServiceRO(
+      authClient,
+      config,
+      system,
+      materializer,
+      recordPersistence,
+      eventPersistence
+    ) {
   val logger = Logging(system, getClass)
   implicit val ec: ExecutionContext = system.dispatcher
 
@@ -326,8 +334,7 @@ class RecordsService(
                   tenantId,
                   id,
                   recordIn,
-                  Nil,
-                  config
+                  Nil
                 ) match {
                   case Success(recordOut) =>
                     complete(recordOut)
@@ -436,8 +443,7 @@ class RecordsService(
                 tenantId,
                 id,
                 recordPatch,
-                Nil,
-                config
+                Nil
               ) match {
                 case Success(result) =>
                   complete(result)
@@ -538,7 +544,7 @@ class RecordsService(
           entity(as[Record]) { record =>
             val result = DB localTx { session =>
               recordPersistence
-                .createRecord(session, tenantId, record, config) match {
+                .createRecord(session, tenantId, record) match {
                 case Success(theResult) => complete(theResult)
                 case Failure(exception) =>
                   complete(
@@ -570,7 +576,8 @@ class RecordsService(
         authClient,
         system,
         materializer,
-        config
+        config,
+        recordPersistence
       ).route
 
 }
