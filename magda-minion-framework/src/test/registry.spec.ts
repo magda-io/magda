@@ -237,7 +237,7 @@ function buildWebHook(
         name: id,
         url: `${internalUrl}/hook`,
         active: true,
-        userId: "b1fddd6f-e230-4068-bd2c-1a21844f1598",
+        userId,
         eventTypes: [
             "CreateRecord",
             "CreateAspectDefinition",
