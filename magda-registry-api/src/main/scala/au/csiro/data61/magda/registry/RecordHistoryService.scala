@@ -19,23 +19,20 @@ import scalikejdbc.DB
 /**
   * @apiGroup Registry Record History
   * @api {get} /v0/registry/records/{recordId}/history/{eventId} Get the version of a record that existed after a given event was applied
-  *
   * @apiDescription Get the version of a record that existed after a given event was applied
   * @apiParam (path) {string} recordId ID of the record to fetch.
   * @apiParam (path) {string} eventId The ID of the last event to be applied to the record. The event with this ID need not actually apply to the record, in which case that last event prior to this even that does apply will be used.
-  * 
   * @apiParam (query) {string} pageToken A token that identifies the start of a page of results. This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results.
   * @apiParam (query) {number} start The index of the first event to retrieve. When possible, specify pageToken instead as it will result in better performance. If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve.
   * @apiParam (query) {number} limit The maximum number of records to receive. The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
-  *
   * @apiSuccess (Success 200) {json} Response the record detail
   * @apiSuccessExample {json} Response:
-  *  {
-  *      "id": "string",
-  *      "name": "string",
-  *      "aspects": {},
-  *      "sourceTag": "string"
-  *  }
+  *                    {
+  *                    "id": "string",
+  *                    "name": "string",
+  *                    "aspects": {},
+  *                    "sourceTag": "string"
+  *                    }
   * @apiUse GenericError
   */
 @Path("/records/{recordId}/history")
@@ -47,6 +44,10 @@ class RecordHistoryService(system: ActorSystem, materializer: Materializer)
     extends Protocols
     with SprayJsonSupport {
   val recordPersistence = DefaultRecordPersistence
+
+  val route =
+    history ~
+      version
 
   @ApiOperation(
     value = "Get a list of all events affecting this record",
@@ -97,31 +98,29 @@ class RecordHistoryService(system: ActorSystem, materializer: Materializer)
   /**
     * @apiGroup Registry Record History
     * @api {get} /v0/registry/records/{recordId}/history Get a list of all events affecting this record
-    *
     * @apiDescription Get a list of all aspects of a record
     * @apiParam (path) {string} recordId ID of the record to fetch.
-    *
     * @apiSuccess (Success 200) {json} Response the event list
     * @apiSuccessExample {json} Response:
-    *  {
-    *    "hasMore": true,
-    *    "nextPageToken": "string",
-    *    "events": [
-    *        {
-    *            "id": {},
-    *            "eventTime": "2018-08-29T07:45:48.011Z",
-    *            "eventType": "CreateRecord",
-    *            "userId": 0,
-    *            "data": {
-    *                "fields": {
-    *                  "additionalProp1": {},
-    *                  "additionalProp2": {},
-    *                  "additionalProp3": {}
-    *                }
-    *            }
-    *        }
-    *    ]
-    *  }
+    *                    {
+    *                    "hasMore": true,
+    *                    "nextPageToken": "string",
+    *                    "events": [
+    *                    {
+    *                    "id": {},
+    *                    "eventTime": "2018-08-29T07:45:48.011Z",
+    *                    "eventType": "CreateRecord",
+    *                    "userId": 0,
+    *                    "data": {
+    *                    "fields": {
+    *                    "additionalProp1": {},
+    *                    "additionalProp2": {},
+    *                    "additionalProp3": {}
+    *                    }
+    *                    }
+    *                    }
+    *                    ]
+    *                    }
     * @apiUse GenericError
     */
   @Path("/{eventId}")
@@ -205,8 +204,4 @@ class RecordHistoryService(system: ActorSystem, materializer: Materializer)
       }
     }
   }
-
-  val route =
-    history ~
-      version
 }
