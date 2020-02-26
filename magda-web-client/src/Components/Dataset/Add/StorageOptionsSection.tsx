@@ -17,9 +17,9 @@ type Props = {
 
 const StorageOptionsSection = (props: Props) => {
     return (
-        <div className="row">
+        <div className="row storage-options-section">
             <div className="col-sm-12">
-                <div>
+                <div className="storage-option-heading">
                     Would you like a copy of the files in this dataset to be
                     stored by Magda?
                 </div>
@@ -30,26 +30,30 @@ const StorageOptionsSection = (props: Props) => {
                     on your internal storage system or shared drive .{" "}
                 </ToolTip>
 
-                <AlwaysEditor
-                    value={props.shouldUploadToStorageApi ? "true" : "false"}
-                    onChange={value =>
-                        props.setShouldUploadToStorageApi(
-                            value === "true" ? true : false
-                        )
-                    }
-                    editor={codelistRadioEditor(
-                        "file-storage-option-selection",
-                        {
-                            true: "Yes, store a copy of this file on Magda",
-                            false:
-                                "No, I want to use my existing shared drive or storage systems"
+                <div className="storage-option-input-area">
+                    <AlwaysEditor
+                        value={
+                            props.shouldUploadToStorageApi ? "true" : "false"
                         }
-                    )}
-                />
+                        onChange={value =>
+                            props.setShouldUploadToStorageApi(
+                                value === "true" ? true : false
+                            )
+                        }
+                        editor={codelistRadioEditor(
+                            "file-storage-option-selection",
+                            {
+                                true: "Yes, store a copy of this file on Magda",
+                                false:
+                                    "No, I want to use my existing shared drive or storage systems"
+                            }
+                        )}
+                    />
+                </div>
 
                 {props.shouldUploadToStorageApi ? null : (
-                    <div>
-                        <div>
+                    <div className="access-location-area">
+                        <div className="access-location-heading">
                             What internal storage location can internal users
                             access the dataset files from?
                         </div>
