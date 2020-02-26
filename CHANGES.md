@@ -53,6 +53,7 @@ Authorization:
 Others:
 
 -   Use a "Year" column from a CSV file to extract a temporal extent
+-   Fixed Registry History API Performance Issue when limit=1 & Updated Registry History API Document
 
 ## 0.0.56
 
