@@ -22,6 +22,23 @@
 
     .storage-option-input-area {
         padding-left: 20px;
+        position: relative;
+
+        &:hover {
+            .tooltip-container {
+                display: block;
+            }
+        }
+    }
+
+    .au-control-input__text {
+        font-size: 15px;
+        font-weight: 300;
+        font-stretch: normal;
+        font-style: normal;
+        line-height: 1.33;
+        letter-spacing: -0.1px;
+        color: #484848;
     }
 
     .au-control-input__text:before,
@@ -29,9 +46,43 @@
         border: 9px solid transparent;
     }
 
+    .au-control-input__input[type="radio"]:focus
+        + .au-control-input__text:before {
+        box-shadow: none;
+    }
+
     .access-location-area {
         .tooltip-root {
             margin-bottom: 34px;
+        }
+    }
+
+    .tooltip-container {
+        position: absolute;
+        left: 9px;
+        bottom: -56px;
+        border-radius: 2px;
+        background-color: #042330;
+        font-size: 14px;
+        font-weight: normal;
+        font-stretch: normal;
+        font-style: normal;
+        line-height: 1.29;
+        letter-spacing: normal;
+        color: #ffffff;
+        padding: 15px;
+        z-index: 10;
+        display: none;
+
+        .triangle {
+            position: absolute;
+            left: 17px;
+            top: -8px;
+            width: 19px;
+            height: 19px;
+            transform: rotate(135deg);
+            border-radius: 2px;
+            background-color: #042330;
         }
     }
 }

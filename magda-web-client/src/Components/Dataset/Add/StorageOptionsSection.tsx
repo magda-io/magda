@@ -16,6 +16,8 @@ type Props = {
 };
 
 const StorageOptionsSection = (props: Props) => {
+    const shouldDisableInput = props.files.length > 0 ? true : false;
+
     return (
         <div className="row storage-options-section">
             <div className="col-sm-12">
@@ -31,6 +33,15 @@ const StorageOptionsSection = (props: Props) => {
                 </ToolTip>
 
                 <div className="storage-option-input-area">
+                    {shouldDisableInput ? (
+                        <div className="tooltip-container">
+                            <div className="triangle">&nbsp;</div>
+                            <div>
+                                All files must be deleted in order to change
+                                whether they should be uploaded or not.
+                            </div>
+                        </div>
+                    ) : null}
                     <AlwaysEditor
                         value={
                             props.shouldUploadToStorageApi ? "true" : "false"
@@ -46,7 +57,9 @@ const StorageOptionsSection = (props: Props) => {
                                 true: "Yes, store a copy of this file on Magda",
                                 false:
                                     "No, I want to use my existing shared drive or storage systems"
-                            }
+                            },
+                            false,
+                            shouldDisableInput
                         )}
                     />
                 </div>
@@ -76,17 +89,5 @@ const StorageOptionsSection = (props: Props) => {
         </div>
     );
 };
-
-/*
-
-<AccessLocationAutoComplete
-                        placeholder="Start typing a file location name..."
-                        defaultValue={
-                            datasetAccess.location ? datasetAccess.location : ""
-                        }
-                        onChange={editDatasetAccess("location")}
-                    />
-
-*/
 
 export default StorageOptionsSection;
