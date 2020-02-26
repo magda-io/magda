@@ -29,7 +29,7 @@ baseSpec(
     "registry interactions:",
     (
         expressApp: () => express.Express,
-        expressServer: () => Server,
+        _expressServer: () => Server,
         listenPort: () => number,
         beforeEachProperty: () => void
     ) => {
