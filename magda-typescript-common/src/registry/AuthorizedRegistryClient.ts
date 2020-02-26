@@ -13,7 +13,7 @@ import createServiceError from "../createServiceError";
 import buildJwt from "../session/buildJwt";
 import { IncomingMessage } from "http";
 import { Maybe } from "tsmonad";
-import isUuid from "magda-typescript-common/src/util/isUuid";
+import isUuid from "../util/isUuid";
 
 export interface AuthorizedRegistryOptions extends RegistryOptions {
     jwtSecret: string;
