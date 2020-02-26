@@ -115,6 +115,9 @@ export type DatasetPublishing = {
     level: string;
     notesToApprover?: string;
     contactPointDisplay?: ContactPointDisplayOption;
+    publishAsOpenData?: {
+        [key: string]: boolean;
+    };
 };
 
 type SpatialCoverage = {
