@@ -27,6 +27,7 @@ UI:
 -   Updated Add Dataset Welcome screen options UI design
 -   Added UI for "Link to dataset already hosted online" box
 -   Added UI for "Link to an API or web service" box
+-   Added UI for storing files
 
 Storage:
 
