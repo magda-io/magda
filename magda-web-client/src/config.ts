@@ -270,7 +270,8 @@ export const config = {
               "licenseLevel",
               "dataset.defaultLicense",
               "informationSecurity.classification",
-              "informationSecurity.disseminationLimits"
+              "informationSecurity.disseminationLimits",
+              "publishToDga"
           ],
     dateConfig: constructDateConfig(serverConfig.dateConfig),
     datasetThemes: serverConfig.datasetThemes ? serverConfig.datasetThemes : [],

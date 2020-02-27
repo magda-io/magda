@@ -1,6 +1,7 @@
 import React, { createRef, RefObject } from "react";
 import Editor from "./Editors/Editor";
 import * as ValidationManager from "../Dataset/Add/ValidationManager";
+import { CustomValidatorType } from "../Dataset/Add/ValidationManager";
 
 interface AlwaysEditorProps<V> {
     value: V | undefined;
@@ -8,6 +9,7 @@ interface AlwaysEditorProps<V> {
     editor: Editor<V>;
     validationFieldPath?: string;
     validationFieldLabel?: string;
+    customValidator?: CustomValidatorType;
     renderAbove?: boolean;
 }
 
@@ -46,6 +48,7 @@ export class AlwaysEditor<V> extends React.Component<
                     ? this.props.validationFieldLabel
                     : "",
                 elRef: this.ref,
+                customValidator: this.props.customValidator,
                 setError: errorMessage => {
                     this.setState({
                         isValidationError: true,

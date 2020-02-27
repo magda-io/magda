@@ -52,9 +52,11 @@ export type ElementType =
     | ElementLikeType;
 
 /**
- * A custom validator will called with two parameters:
+ * A custom validator will called with the following parameters:
  * - fieldValue: current input value
  * - state: the whole add dataset state data
+ * - fieldJsonPath: the json path of the current field
+ * - fieldLabel: the human readable label of the field
  *
  * The custom validator can return a boolean value to indicate whether the field value is valid (true) or not (false).
  * Or return a string to flag it's a invalid value and the returned string will be used as error message.
@@ -63,7 +65,9 @@ export type ElementType =
  */
 export type CustomValidatorType = (
     fieldValue: any,
-    state: State
+    state: State,
+    fieldLabel: string,
+    fieldJsonPath: string
 ) => string | boolean;
 
 export interface ValidationItem<T = ElementType> {
@@ -148,6 +152,8 @@ function convertConfigFieldItem(field: string): string {
             return "$.informationSecurity.classification";
         case "informationSecurity.disseminationLimits":
             return "$.informationSecurity.disseminationLimits";
+        case "publishToDga":
+            return "$.datasetPublishing.publishAsOpenData.dga";
         default:
             throw new Error(`Unknown mandatory field config name: ${field}`);
     }
@@ -291,7 +297,12 @@ function validateItem(item: ValidationItem): boolean | string {
     const value = JsonPath.query(stateData, jsonPath)[0];
 
     if (typeof item.customValidator === "function") {
-        const result = item.customValidator(value, stateData);
+        const result = item.customValidator(
+            value,
+            stateData,
+            item.label,
+            jsonPath
+        );
         if (result === true) {
             item.clearError();
             return true;
@@ -299,7 +310,9 @@ function validateItem(item: ValidationItem): boolean | string {
             item.setError(`Error: \`${item.label}\` is invalid.`);
             return false;
         } else if (typeof result === "string") {
-            item.setError(`\`${item.label}\` is invalid: ${result}`);
+            item.setError(
+                result ? result : `Error: \`${item.label}\` is invalid.`
+            );
             return false;
         } else {
             throw new Error(

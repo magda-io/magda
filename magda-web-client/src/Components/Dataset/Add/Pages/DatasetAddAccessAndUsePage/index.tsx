@@ -32,8 +32,6 @@ type Props = {
     stateData: State;
 };
 
-const CONFIG_KEY = "data.gov.au";
-
 export default function DatasetAddAccessAndUsePage(props: Props) {
     let {
         distributions,
@@ -54,7 +52,8 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     ...(state.datasetPublishing.publishAsOpenData
                         ? state.datasetPublishing.publishAsOpenData
                         : {}),
-                    [CONFIG_KEY]: shouldPublishToDga === "true" ? true : false
+                    dga:
+                        shouldPublishToDga === "true" ? true : false
                 }
             }
         }));
@@ -62,7 +61,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
 
     const shouldPublishToDga: boolean = !datasetPublishing.publishAsOpenData
         ? false
-        : datasetPublishing.publishAsOpenData[CONFIG_KEY]
+        : datasetPublishing.publishAsOpenData.dga
         ? true
         : false;
 
@@ -111,6 +110,9 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         <AlwaysEditor
                             value={shouldPublishToDga ? "true" : "false"}
                             onChange={editPublishToDga}
+                            validationFieldPath="$.datasetPublishing.publishAsOpenData.dga"
+                            validationFieldLabel="Publish as Open Data (data.gov.au)"
+                            customValidator={() => false}
                             editor={codelistRadioEditor(
                                 "dataset-publishing-as-open-data",
                                 {

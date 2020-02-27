@@ -40,6 +40,7 @@ mandatoryFields:
   - dataset.defaultLicense
   - informationSecurity.classification
   - informationSecurity.disseminationLimits
+  - publishToDga
 dateConfig:
   dateFormats:
     - YYYY
