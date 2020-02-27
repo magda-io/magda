@@ -6,6 +6,7 @@ import FileDrop from "react-file-drop";
 import ToolTip from "Components/Dataset/Add/ToolTip";
 import DatasetFile from "Components/Dataset/Add/DatasetFile";
 import AddDatasetLinkSection from "Components/Dataset/Add/AddDatasetLinkSection";
+import StorageOptionsSection from "Components/Dataset/Add/StorageOptionsSection";
 
 import { getFiles } from "helpers/readFile";
 
@@ -292,7 +293,45 @@ class DatasetAddFilesPage extends React.Component<
                 <div className="row add-files-heading">
                     <div className="col-xs-12">
                         <h3>Add files</h3>
+                        <StorageOptionsSection
+                            files={localFiles}
+                            shouldUploadToStorageApi={
+                                this.state.shouldUploadToStorageApi
+                            }
+                            setShouldUploadToStorageApi={value => {
+                                this.setState(state => {
+                                    const newState = {
+                                        ...state,
+                                        shouldUploadToStorageApi: value
+                                    };
+                                    if (value) {
+                                        // --- delete dataset location data when upload to storage api is selected
+                                        const {
+                                            location: originalLocation,
+                                            ...newDatasetAccess
+                                        } = { ...state.datasetAccess };
+                                        newState.datasetAccess = newDatasetAccess;
+                                    }
+                                    return newState;
+                                });
+                            }}
+                            dataAccessLocation={
+                                this.state.datasetAccess.location
+                                    ? this.state.datasetAccess.location
+                                    : ""
+                            }
+                            setDataAccessLocation={value =>
+                                this.setState(state => ({
+                                    ...state,
+                                    datasetAccess: {
+                                        ...state.datasetAccess,
+                                        location: value
+                                    }
+                                }))
+                            }
+                        />
                     </div>
+
                     {localFiles.length > 0 && (
                         <div className="col-xs-12 tip-area">
                             <ToolTip>
@@ -333,6 +372,7 @@ class DatasetAddFilesPage extends React.Component<
                                 );
                             })}
                         </div>
+
                         {localFiles.length > 0 && (
                             <div className="more-files-to-add-text">
                                 More files to add?
