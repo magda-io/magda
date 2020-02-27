@@ -20,6 +20,15 @@
             "title": "What should be shown for the contact point(s) of a dataset",
             "type": "string",
             "enum": ["team", "organization", "custodian"]
+        },
+        "publishAsOpenData": {
+            "title": "whether the database can be published as open data on a external open data platform",
+            "type": "object",
+            "patternProperties": {
+                ".{1,}": {
+                    "type": "boolean"
+                }
+            }
         }
     }
 }
