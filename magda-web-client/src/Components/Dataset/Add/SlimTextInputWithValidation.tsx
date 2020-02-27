@@ -1,10 +1,11 @@
 import React, { FunctionComponent } from "react";
 import uuidv4 from "uuid/v4";
 import * as ValidationManager from "../Add/ValidationManager";
-const useValidation = ValidationManager.useValidation;
 
 import editIcon from "assets/edit.svg";
 import "./SlimTextInputWithValidation.scss";
+
+const useValidation = ValidationManager.useValidation;
 
 interface PropsType {
     validationFieldPath: string;

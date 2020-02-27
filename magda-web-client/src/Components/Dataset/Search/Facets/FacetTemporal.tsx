@@ -79,10 +79,10 @@ function FacetTemporal(props: Props) {
      * start year and end years are reset.
      */
     const resetTemporalFacet = () => {
-        setStartYear(undefined),
-            setStartMonth(undefined),
-            setEndYear(undefined),
-            setEndMonth(undefined);
+        setStartYear(undefined);
+        setStartMonth(undefined);
+        setEndYear(undefined);
+        setEndMonth(undefined);
 
         props.onApply();
     };

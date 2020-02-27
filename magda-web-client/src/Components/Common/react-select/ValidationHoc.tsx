@@ -45,7 +45,7 @@ type ReactSelectComponentType =
 function ValidationHoc<OptionType>(
     ReactSelectKindComponent: ReactSelectComponentType
 ) {
-    return (props: PropsType<OptionType>) => {
+    const NewComponent = (props: PropsType<OptionType>) => {
         const {
             validationFieldPath,
             validationFieldLabel,
@@ -144,6 +144,8 @@ function ValidationHoc<OptionType>(
             </div>
         );
     };
+
+    return NewComponent;
 }
 
 export default ValidationHoc;

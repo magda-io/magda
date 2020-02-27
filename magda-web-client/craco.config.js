@@ -1,6 +1,9 @@
 const { isEqual } = require("lodash");
 
 module.exports = {
+    typescript: {
+        enableTypeChecking: true
+    },
     webpack: {
         configure(webpackConfig) {
             // For reasons that are not entirely clear, production builds take

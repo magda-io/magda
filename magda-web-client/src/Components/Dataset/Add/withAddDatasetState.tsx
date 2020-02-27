@@ -16,7 +16,7 @@ function mapStateToProps(state: any) {
 }
 
 export default <T extends Props>(Component: React.ComponentType<T>) => {
-    const withAddDatasetState = (props: T) => {
+    const WithAddDatasetState = (props: T) => {
         const [state, updateData] = useState<State | undefined>(undefined);
 
         useEffect(() => {
@@ -47,5 +47,5 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
         }
     };
 
-    return connect(mapStateToProps)(withRouter(withAddDatasetState));
+    return connect(mapStateToProps)(withRouter(WithAddDatasetState));
 };

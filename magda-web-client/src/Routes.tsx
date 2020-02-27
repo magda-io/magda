@@ -20,6 +20,8 @@ import OrganisationPage from "Components/Organisation/OrganisationPage";
 import withHeader from "Components/Header/withHeader";
 import { makeAsync } from "Components/AsyncComponent";
 
+import { config } from "./config";
+
 const AdminPage = makeAsync(() =>
     import("Components/Admin/AdminPage").then(module => module.default)
 );
@@ -83,8 +85,6 @@ const DatasetRoutes = makeAsync(() =>
 const CatalogRoutes = makeAsync(() =>
     import("Components/Catalog/Routes").then(module => module.default)
 );
-
-import { config } from "./config";
 
 const Routes = () => {
     return (

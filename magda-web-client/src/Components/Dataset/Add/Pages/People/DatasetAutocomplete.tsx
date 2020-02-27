@@ -60,7 +60,6 @@ const CustomOption = (props: OptionProps<Choice>) => (
             ...props.innerProps,
             onClick: event => {
                 if (props.data.onClick) {
-                    props.innerRef;
                     props.data.onClick(event);
                 } else {
                     props.innerProps.onClick(event);
