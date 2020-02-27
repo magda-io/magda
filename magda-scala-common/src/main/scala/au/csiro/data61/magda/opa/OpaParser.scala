@@ -69,7 +69,7 @@ object OpaTypes {
 }
 
 sealed trait RegoTerm
-case class RegoTermRef(value: List[RegoRefPart]) extends RegoTerm
+case class RegoTermRef(value: List[RegoTerm]) extends RegoTerm
 case class RegoTermVar(value: String) extends RegoTerm
 sealed trait RegoTermValue extends RegoTerm
 case class RegoTermString(value: String) extends RegoTermValue
@@ -82,7 +82,7 @@ object RegoTerm {
     val jsObj = termJson.asJsObject
     (jsObj.fields("type"), jsObj.fields("value")) match {
       case (JsString("ref"), JsArray(value: Vector[JsValue])) =>
-        RegoTermRef(value.toList.map(RegoRefPart(_)))
+        RegoTermRef(value.toList.map(RegoTerm(_)))
       case (JsString("string"), JsString(value: String)) =>
         RegoTermString(value)
       case (JsString("number"), JsNumber(value: BigDecimal)) =>
@@ -90,25 +90,6 @@ object RegoTerm {
       case (JsString("var"), JsString(value: String)) => RegoTermVar(value)
       case _                                          => throw new Exception("Could not parse value " + jsObj)
     }
-  }
-}
-
-sealed trait RegoRefPart
-case class RegoRefPartString(value: String) extends RegoRefPart
-case class RegoRefPartVar(value: String) extends RegoRefPart
-
-object RegoRefPart {
-
-  def apply(refJson: JsValue): RegoRefPart = refJson match {
-    case JsObject(ref) =>
-      (ref.get("type"), ref.get("value")) match {
-        case (Some(JsString("var")), Some(value: JsString)) =>
-          RegoRefPartVar(value.value)
-        case (Some(JsString("string")), Some(value: JsString)) =>
-          RegoRefPartString(value.value)
-        case _ => throw new Error("Could not parse" + refJson.toString())
-      }
-    case _ => throw new Error("Could not parse" + refJson.toString())
   }
 }
 
@@ -198,32 +179,48 @@ object OpaParser {
             })
             .toList
 
+          def processThreeParter(
+              operation: String,
+              path: RegoTermRef,
+              value: RegoTermValue
+          ) = {
+            val thePath: List[OpaRef] =
+              regoRefPathToOpaRefPath(path.value)
+            val theOperation: OpaOp = operation match {
+              case opString: String =>
+                OpaOp(opString)
+            }
+            val theValue = value match {
+              case RegoTermBoolean(aValue) => OpaValueBoolean(aValue)
+              case RegoTermString(aValue)  => OpaValueString(aValue)
+              case RegoTermNumber(aValue)  => OpaValueNumber(aValue)
+            }
+
+            OpaQueryMatchValue(
+              path = thePath,
+              operation = theOperation,
+              value = theValue
+            )
+          }
+
           rawRules
             .map(outerRule => outerRule.map(parseRule))
             .map(outerRule => {
               outerRule.map({
                 case List(
-                    operation: RegoTermVar,
+                    RegoTermRef(List(RegoTermVar(operation))),
+                    value: RegoTermValue,
+                    path: RegoTermRef
+                    ) =>
+                  processThreeParter(operation, path, value)
+                case List(
+                    RegoTermRef(List(RegoTermVar(operation))),
                     path: RegoTermRef,
                     value: RegoTermValue
                     ) =>
-                  val thePath: List[OpaRef] =
-                    regoRefPathToOpaRefPath(path.value)
-                  val theOperation: OpaOp = operation match {
-                    case RegoTermVar(opString: String) =>
-                      OpaOp(opString)
-                  }
-                  val theValue = value match {
-                    case RegoTermBoolean(aValue) => OpaValueBoolean(aValue)
-                    case RegoTermString(aValue)  => OpaValueString(aValue)
-                    case RegoTermNumber(aValue)  => OpaValueNumber(aValue)
-                  }
-
-                  OpaQueryMatchValue(
-                    path = thePath,
-                    operation = theOperation,
-                    value = theValue
-                  )
+                  processThreeParter(operation, path, value)
+                case List(path: RegoTermRef) =>
+                  OpaQueryExists(regoRefPathToOpaRefPath(path.value))
                 case e => throw new Exception(s"Could not understand $e")
               })
             })
@@ -237,10 +234,11 @@ object OpaParser {
     rulesOpt
   }
 
-  private def regoRefPathToOpaRefPath(path: List[RegoRefPart]): List[OpaRef] = {
-    path.map {
-      case pathSegment: RegoRefPartString =>
-        OpaRefObjectKey(pathSegment.value)
+  private def regoRefPathToOpaRefPath(path: List[RegoTerm]): List[OpaRef] = {
+    path.flatMap {
+      case RegoTermVar("input") => None
+      case pathSegment: RegoTermString =>
+        Some(OpaRefObjectKey(pathSegment.value))
       case e =>
         throw new Exception(s"Could not understand $e")
     }
@@ -276,61 +274,42 @@ object OpaParser {
     //		"type":"ref","value":[{"type":"var","value":"input"},{"type":"string","value":"object"},{"type":"string","value":"registry"},{"type":"string","value":"record"},{"type":"string","value":"esri-access-control"},{"type":"string","value":"groups"},{"type":"var","value":"$06"}]
     //	}
     // ]
-    val theTerms = terms.asInstanceOf[JsArray].elements.toList
-    if (theTerms.length != 3) {
-      throw new Exception(s"$theTerms must consist of 3 elements.")
-    } else {
-      val regoTerms: List[RegoTerm] = theTerms.flatMap(term => {
-        term match {
-          case termsObj: JsObject =>
-            (termsObj.fields("type"), termsObj.fields("value")) match {
-              case (JsString("ref"), array: JsArray) =>
+    def translateTerm(term: JsValue): RegoTerm = {
+      term match {
+        case termsObj: JsObject =>
+          (termsObj.fields("type"), termsObj.fields("value")) match {
+            case (JsString("ref"), array: JsArray) =>
+              RegoTermRef(
                 array.elements.toList
                   .map(parseTerm)
-              case (JsString("boolean"), value: JsBoolean) =>
-                List(RegoTermBoolean(value.value))
-              case (JsString("number"), value: JsNumber) =>
-                List(RegoTermNumber(value.value))
-              case (JsString("string"), value: JsString) =>
-                List(RegoTermString(value.value))
-              case e => throw new Exception("Could not parse term " + e)
-            }
-          case other => throw new Exception("Could not parse term " + other)
-        }
-      })
-
-      val operation: RegoTermVar = regoTerms.head.asInstanceOf[RegoTermVar]
-      val value: RegoTerm =
-        if (regoTerms(1) == RegoTermVar("input")) regoTerms.last
-        else regoTerms(1)
-      val path: List[RegoRefPart] = if (regoTerms(1) == RegoTermVar("input")) {
-        val pathStartIndex = 2
-        val pathEndIndex = regoTerms.length - 1
-        regoTerms
-          .slice(pathStartIndex, pathEndIndex)
-          .map(term => {
-            val theTerm = term match {
-              case RegoTermString(v) => v
-              case e                 => throw new Exception(s"Could not understand $e")
-            }
-            RegoRefPartString(theTerm)
-          })
-      } else {
-        val pathStartIndex = 3
-        val pathEndIndex = regoTerms.length
-        regoTerms
-          .slice(pathStartIndex, pathEndIndex)
-          .map(term => {
-            val aPathSegment = term match {
-              case RegoTermString(v)                => v
-              case RegoTermVar(anyInArrayPattern()) => OpaConsts.ANY_IN_ARRAY
-              case e                                => throw new Exception(s"Could not understand $e")
-            }
-            RegoRefPartString(aPathSegment)
-          })
+              )
+            case (JsString("boolean"), value: JsBoolean) =>
+              RegoTermBoolean(value.value)
+            case (JsString("number"), value: JsNumber) =>
+              RegoTermNumber(value.value)
+            case (JsString("string"), value: JsString) =>
+              RegoTermString(value.value)
+            case e => throw new Exception("Could not parse term " + e)
+          }
+        case other => throw new Exception("Could not parse term " + other)
       }
-      List(operation, RegoTermRef(path), value)
     }
+
+    def parsePathSegment(term: RegoTerm) = {
+      val aPathSegment = term match {
+        case RegoTermString(v) => v
+        case RegoTermVar(anyInArrayPattern()) =>
+          throw new Exception(
+            "Can't yet match 'any in array' pattern in policies"
+          )
+        case e => throw new Exception(s"Could not understand $e")
+      }
+      RegoTermString(aPathSegment)
+    }
+
+    val theTerms = terms.asInstanceOf[JsArray].elements.toList
+
+    theTerms.map(translateTerm)
   }
 
   private def parseTerm(termJson: JsValue): RegoTerm = RegoTerm(termJson)

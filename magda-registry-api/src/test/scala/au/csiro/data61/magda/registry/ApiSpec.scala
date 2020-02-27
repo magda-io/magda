@@ -115,12 +115,6 @@ abstract class ApiSpec
         materializer
       )
 
-    GlobalSettings.loggingSQLAndTime = new LoggingSQLAndTimeSettings(
-      enabled = false,
-      singleLineMode = true,
-      logLevel = 'info
-    )
-
     case class DBsWithEnvSpecificConfig(configToUse: Config)
         extends DBs
         with TypesafeConfigReader

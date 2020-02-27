@@ -101,24 +101,21 @@ object SqlHelper {
       query: AspectQuery
   ): SQLSyntax = {
     query match {
-      case AspectQuery(
-          aspectId,
-          List(fieldName, ANY_IN_ARRAY),
-          value,
-          SQL_EQ
-          ) =>
+      case AspectQueryExists(aspectId, path) =>
         sqls"""
-             aspectid = $aspectId AND jsonb_exists((data->>$fieldName)::jsonb, $value::text)
+             aspectid = $aspectId AND (data #> string_to_array(${path.mkString(
+          ","
+        )}, ',')) IS NOT NULL
         """
-      case AspectQuery(
+      case AspectQueryWithValue(
           aspectId,
           path,
           value,
           sqlComparator
           ) =>
         sqls"""
-             aspectid = $aspectId AND data #>> string_to_array(${path
-          .mkString(",")}, ',') $sqlComparator $value
+             aspectid = $aspectId AND (data #>> string_to_array(${path
+          .mkString(",")}, ','))::${value.postgresType} $sqlComparator ${value.value}
         """
       case e => throw new Exception(s"Could not handle query $e")
     }
@@ -171,6 +168,18 @@ object SqlHelper {
     case List(OpaQueryNoneMatched) => List(SQL_FALSE)
     case _ =>
       val opaAspectQueries: List[AspectQuery] = opaQueries.map({
+        case OpaQueryExists(
+            OpaRefObjectKey("object")
+              :: OpaRefObjectKey("registry")
+              :: OpaRefObjectKey("record")
+              :: OpaRefObjectKey(accessAspectId)
+              :: restOfKeys
+            ) =>
+          AspectQueryExists(aspectId = accessAspectId, path = restOfKeys.map {
+            case OpaRefObjectKey(key) => key
+            case e =>
+              throw new Exception("Could not understand " + e)
+          })
         case OpaQueryMatchValue(
             OpaRefObjectKey("object")
               :: OpaRefObjectKey("registry")
@@ -180,7 +189,7 @@ object SqlHelper {
             operation,
             aValue
             ) =>
-          AspectQuery(
+          AspectQueryWithValue(
             aspectId = accessAspectId,
             path = restOfKeys.map {
               case OpaRefObjectKey(key) => key
@@ -188,9 +197,9 @@ object SqlHelper {
                 throw new Exception("Could not understand " + e)
             },
             value = aValue match {
-              case OpaValueString(string)   => string
-              case OpaValueBoolean(boolean) => boolean.toString
-              case OpaValueNumber(bigDec)   => bigDec.toString()
+              case OpaValueString(string)   => AspectQueryString(string)
+              case OpaValueBoolean(boolean) => AspectQueryBoolean(boolean)
+              case OpaValueNumber(bigDec)   => AspectQueryBigDecimal(bigDec)
             },
             sqlComparator = convertToSql(operation)
           )
