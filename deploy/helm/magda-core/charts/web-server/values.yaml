@@ -21,6 +21,7 @@ contentApiBaseUrlInternal: "http://content-api/v0/"
 featureFlags:
  cataloguing: false
  previewAddDataset: false
+ publishToDga: false
 vocabularyApiEndpoints: []
 defaultContactEmail: "mail@example.com"
 custodianOrgLevel: 2

@@ -49,7 +49,10 @@ const publishToDgaValidator: CustomValidatorType = (
     ) {
         return true;
     }
-    if (state.informationSecurity.classification !== "UNOFFICIAL") {
+    if (
+        state.informationSecurity.classification &&
+        state.informationSecurity.classification !== "UNOFFICIAL"
+    ) {
         return (
             "Validation Error: Only unoffical data can be published to data.gov.au. " +
             "Please update `Pubish to data.gov.au` or `Security classification` selection accordingly."
@@ -125,74 +128,77 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                 <h2>Access and Use</h2>
                 <h3 className="with-underline">Sharing</h3>
 
-                <div className="question-publish-to-dga">
-                    <h4 className="with-icon">
-                        <span>
-                            Do you want to publish this dataset to{" "}
-                            <a href="https://data.gov.au" target="__blank">
-                                data.gov.au
-                            </a>{" "}
-                            as open data? (*)
-                        </span>
-                        <span className="tooltip-container">
-                            <PurpleToolTip
-                                className="tooltip no-print"
-                                launcher={() => (
-                                    <div className="tooltip-launcher-icon help-icon">
-                                        <img
-                                            src={helpIcon}
-                                            alt="Publish to data.gov.au, click for more information"
-                                        />
-                                    </div>
-                                )}
-                                innerElementClassName="inner"
-                            >
-                                {() => (
-                                    <>
-                                        Publishing to data.gov.au will mean the
-                                        dataset will be available publicly via
-                                        the data.gov.au website as open data.
-                                        Please ensure your dataset has the
-                                        appropriate security classification and
-                                        license if selecting Yes
-                                    </>
-                                )}
-                            </PurpleToolTip>
-                        </span>
-                    </h4>
-                    <div className="input-area">
-                        <AlwaysEditor
-                            value={shouldPublishToDga ? "true" : "false"}
-                            onChange={value => {
-                                editPublishToDga(value);
-                                if (
-                                    ValidationManager.shouldValidate(
-                                        "$.informationSecurity.classification"
-                                    )
-                                ) {
-                                    // --- trigger classifcation validtion as well
-                                    setTimeout(() => {
-                                        ValidationManager.onInputFocusOut(
+                {config.featureFlags.publishToDga ? (
+                    <div className="question-publish-to-dga">
+                        <h4 className="with-icon">
+                            <span>
+                                Do you want to publish this dataset to{" "}
+                                <a href="https://data.gov.au" target="__blank">
+                                    data.gov.au
+                                </a>{" "}
+                                as open data? (*)
+                            </span>
+                            <span className="tooltip-container">
+                                <PurpleToolTip
+                                    className="tooltip no-print"
+                                    launcher={() => (
+                                        <div className="tooltip-launcher-icon help-icon">
+                                            <img
+                                                src={helpIcon}
+                                                alt="Publish to data.gov.au, click for more information"
+                                            />
+                                        </div>
+                                    )}
+                                    innerElementClassName="inner"
+                                >
+                                    {() => (
+                                        <>
+                                            Publishing to data.gov.au will mean
+                                            the dataset will be available
+                                            publicly via the data.gov.au website
+                                            as open data. Please ensure your
+                                            dataset has the appropriate security
+                                            classification and license if
+                                            selecting Yes
+                                        </>
+                                    )}
+                                </PurpleToolTip>
+                            </span>
+                        </h4>
+                        <div className="input-area">
+                            <AlwaysEditor
+                                value={shouldPublishToDga ? "true" : "false"}
+                                onChange={value => {
+                                    editPublishToDga(value);
+                                    if (
+                                        ValidationManager.shouldValidate(
                                             "$.informationSecurity.classification"
-                                        );
-                                    }, 1);
-                                }
-                            }}
-                            validationFieldPath="$.datasetPublishing.publishAsOpenData.dga"
-                            validationFieldLabel="Publish as Open Data (data.gov.au)"
-                            customValidator={publishToDgaValidator}
-                            editor={codelistRadioEditor(
-                                "dataset-publishing-as-open-data",
-                                {
-                                    true:
-                                        "Yes, publish this as open data to data.gov.au",
-                                    false:
-                                        "No, share it internally within my organisation only"
-                                }
-                            )}
-                        />
+                                        )
+                                    ) {
+                                        // --- trigger classifcation validtion as well
+                                        setTimeout(() => {
+                                            ValidationManager.onInputFocusOut(
+                                                "$.informationSecurity.classification"
+                                            );
+                                        }, 1);
+                                    }
+                                }}
+                                validationFieldPath="$.datasetPublishing.publishAsOpenData.dga"
+                                validationFieldLabel="Publish as Open Data (data.gov.au)"
+                                customValidator={publishToDgaValidator}
+                                editor={codelistRadioEditor(
+                                    "dataset-publishing-as-open-data",
+                                    {
+                                        true:
+                                            "Yes, publish this as open data to data.gov.au",
+                                        false:
+                                            "No, share it internally within my organisation only"
+                                    }
+                                )}
+                            />
+                        </div>
                     </div>
-                </div>
+                ) : null}
 
                 <div className="question-who-can-see-dataset">
                     <h4 className="with-icon">
