@@ -50,7 +50,7 @@ function ValidationHoc<OptionType>(
             validationFieldPath,
             validationFieldLabel,
             customValidator,
-            onBlur,
+            onChange,
             ...restProps
         } = props;
 
@@ -63,12 +63,15 @@ function ValidationHoc<OptionType>(
             validationFieldLabel,
             customValidator
         );
-        const onBlurHandler = (event: any) => {
-            if (validationFieldPath) {
-                ValidationManager.onInputFocusOut(validationFieldPath);
+
+        const onChangeHandler = (event, action) => {
+            if (onChange && typeof onChange === "function") {
+                onChange(event, action);
             }
-            if (onBlur && typeof onBlur === "function") {
-                onBlur(event);
+            if (validationFieldPath) {
+                setTimeout(() => {
+                    ValidationManager.onInputFocusOut(validationFieldPath);
+                }, 1);
             }
         };
 
@@ -128,7 +131,7 @@ function ValidationHoc<OptionType>(
                     ref={selectRef}
                     aria-label={validationErrorMessage}
                     styles={ReactSelectStyles}
-                    onBlur={onBlurHandler}
+                    onChange={onChangeHandler}
                     isValidationError={isValidationError}
                     validationErrorMessage={validationErrorMessage}
                     validationElRef={elRef}
