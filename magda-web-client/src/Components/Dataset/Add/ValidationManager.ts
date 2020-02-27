@@ -55,20 +55,21 @@ export type ElementType =
  * A custom validator will called with the following parameters:
  * - fieldValue: current input value
  * - state: the whole add dataset state data
- * - fieldJsonPath: the json path of the current field
- * - fieldLabel: the human readable label of the field
+ * - validationItem: an object contains information like field label, json path that might useful for generating custom error message
  *
- * The custom validator can return a boolean value to indicate whether the field value is valid (true) or not (false).
+ * The custom validator may return a boolean value to indicate whether the field value is valid (true) or not (false).
+ * Or If return `undefined`, the default `isEmpty` validator will be used to re-validate the field
  * Or return a string to flag it's a invalid value and the returned string will be used as error message.
- * If custom validator doesn't return a string and the field value is invalid, a standard error message will be displayed:
+ * In this case, if custom validator doesn't return a string and the field value is invalid, a standard error message will be displayed:
  * "The [field name] is invalid."
+ *
+ * A custom validator should not produce any side effects
  */
 export type CustomValidatorType = (
     fieldValue: any,
     state: State,
-    fieldLabel: string,
-    fieldJsonPath: string
-) => string | boolean;
+    validationItem: ValidationItem
+) => string | boolean | undefined;
 
 export interface ValidationItem<T = ElementType> {
     /**
@@ -296,13 +297,18 @@ function validateItem(item: ValidationItem): boolean | string {
     const stateData = getStateData();
     const value = JsonPath.query(stateData, jsonPath)[0];
 
+    const defaultValidationAction = () => {
+        if (isEmptyValue(value)) {
+            item.setError(`Error: \`${item.label}\` is a mandatory field.`);
+            return false;
+        } else {
+            item.clearError();
+            return true;
+        }
+    };
+
     if (typeof item.customValidator === "function") {
-        const result = item.customValidator(
-            value,
-            stateData,
-            item.label,
-            jsonPath
-        );
+        const result = item.customValidator(value, stateData, item);
         if (result === true) {
             item.clearError();
             return true;
@@ -314,19 +320,15 @@ function validateItem(item: ValidationItem): boolean | string {
                 result ? result : `Error: \`${item.label}\` is invalid.`
             );
             return false;
+        } else if (typeof result === "undefined") {
+            return defaultValidationAction();
         } else {
             throw new Error(
                 `Invalid return value from customValidator for \`${jsonPath}\``
             );
         }
     } else {
-        if (isEmptyValue(value)) {
-            item.setError(`Error: \`${item.label}\` is a mandatory field.`);
-            return false;
-        } else {
-            item.clearError();
-            return true;
-        }
+        return defaultValidationAction();
     }
 }
 

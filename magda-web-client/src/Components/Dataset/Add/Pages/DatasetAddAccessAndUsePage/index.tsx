@@ -17,6 +17,8 @@ import PurpleToolTip from "Components/Common/TooltipWrapper";
 import { config } from "config";
 
 import ValidationRequiredLabel from "../../ValidationRequiredLabel";
+import * as ValidationManager from "../../ValidationManager";
+import { CustomValidatorType } from "../../ValidationManager";
 
 import "./index.scss";
 
@@ -30,6 +32,59 @@ type Props = {
     editState: <K extends keyof State>(field: K) => (newValue: any) => void;
     editStateWithUpdater: (updater: (state: State) => void) => void;
     stateData: State;
+};
+
+const publishToDgaValidator: CustomValidatorType = (
+    value,
+    state,
+    validationItem
+) => {
+    if (value !== true) {
+        return true;
+    }
+    if (
+        !ValidationManager.shouldValidate(
+            "$.informationSecurity.classification"
+        )
+    ) {
+        return true;
+    }
+    if (state.informationSecurity.classification !== "UNOFFICIAL") {
+        return (
+            "Validation Error: Only unoffical data can be published to data.gov.au. " +
+            "Please update `Pubish to data.gov.au` or `Security classification` selection accordingly."
+        );
+    }
+    return true;
+};
+
+const classificationValidator: CustomValidatorType = (
+    value,
+    state,
+    validationItem
+) => {
+    //return false;
+    if (
+        !ValidationManager.shouldValidate(
+            "$.datasetPublishing.publishAsOpenData.dga"
+        )
+    ) {
+        // --- ask ValidationManager fall back to default validator (`isEmpty`)
+        return undefined;
+    }
+    const result = publishToDgaValidator(
+        state.datasetPublishing &&
+            state.datasetPublishing.publishAsOpenData &&
+            state.datasetPublishing.publishAsOpenData.dga,
+        state,
+        validationItem
+    );
+    if (result === true) {
+        // --- ask ValidationManager fall back to default validator (`isEmpty`)
+        return undefined;
+    } else {
+        return result;
+    }
 };
 
 export default function DatasetAddAccessAndUsePage(props: Props) {
@@ -52,8 +107,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     ...(state.datasetPublishing.publishAsOpenData
                         ? state.datasetPublishing.publishAsOpenData
                         : {}),
-                    dga:
-                        shouldPublishToDga === "true" ? true : false
+                    dga: shouldPublishToDga === "true" ? true : false
                 }
             }
         }));
@@ -109,10 +163,24 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     <div className="input-area">
                         <AlwaysEditor
                             value={shouldPublishToDga ? "true" : "false"}
-                            onChange={editPublishToDga}
+                            onChange={value => {
+                                editPublishToDga(value);
+                                if (
+                                    ValidationManager.shouldValidate(
+                                        "$.informationSecurity.classification"
+                                    )
+                                ) {
+                                    // --- trigger classifcation validtion as well
+                                    setTimeout(() => {
+                                        ValidationManager.onInputFocusOut(
+                                            "$.informationSecurity.classification"
+                                        );
+                                    }, 1);
+                                }
+                            }}
                             validationFieldPath="$.datasetPublishing.publishAsOpenData.dga"
                             validationFieldLabel="Publish as Open Data (data.gov.au)"
-                            customValidator={() => false}
+                            customValidator={publishToDgaValidator}
                             editor={codelistRadioEditor(
                                 "dataset-publishing-as-open-data",
                                 {
@@ -316,6 +384,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                             <ReactSelect
                                 validationFieldPath="$.informationSecurity.classification"
                                 validationFieldLabel="Dataset Sensitivity or Security Classification"
+                                customValidator={classificationValidator}
                                 isSearchable={false}
                                 options={
                                     Object.keys(codelists.classification).map(
@@ -339,11 +408,23 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                           }
                                         : null
                                 }
-                                onChange={(item: any) =>
+                                onChange={(item: any) => {
                                     editInformationSecurity("classification")(
                                         item.value
-                                    )
-                                }
+                                    );
+                                    if (
+                                        ValidationManager.shouldValidate(
+                                            "$.datasetPublishing.publishAsOpenData.dga"
+                                        )
+                                    ) {
+                                        // --- trigger publish to dga validtion as well
+                                        setTimeout(() => {
+                                            ValidationManager.onInputFocusOut(
+                                                "$.datasetPublishing.publishAsOpenData.dga"
+                                            );
+                                        }, 1);
+                                    }
+                                }}
                             />
                         </div>
                     </div>
