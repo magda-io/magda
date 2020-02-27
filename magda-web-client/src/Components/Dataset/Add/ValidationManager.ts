@@ -52,16 +52,18 @@ export type ElementType =
     | ElementLikeType;
 
 /**
- * A custom validator will called with the following parameters:
- * - fieldValue: current input value
+ * Type for a custom validator. It accepts these parameters:
+ * - fieldValue: The current value of the input
  * - state: the whole add dataset state data
- * - validationItem: an object contains information like field label, json path that might useful for generating custom error message
+ * - validationItem: a ValidationItem, containing information like field label and json path, that might useful for generating a custom error message
  *
- * The custom validator may return a boolean value to indicate whether the field value is valid (true) or not (false).
- * Or If return `undefined`, the default `isEmpty` validator will be used to re-validate the field
- * Or return a string to flag it's a invalid value and the returned string will be used as error message.
- * In this case, if custom validator doesn't return a string and the field value is invalid, a standard error message will be displayed:
- * "The [field name] is invalid."
+ * The custom validator may return:
+ *    - a boolean value to indicate whether the field value is valid (true) or not (false).
+ *    - `undefined`, indicating that the default `isEmpty` validator should be used to re-validate the field
+ *    - a string, indicating that validation has failed - the returned string should be used as an error message.
+ *
+ * If the custom validator doesn't return a string and the field value is invalid, a standard error message will be displayed:
+ *  "The [field name] is invalid."
  *
  * A custom validator should not produce any side effects
  */
@@ -88,7 +90,7 @@ export interface ValidationItem<T = ElementType> {
     label: string;
 
     /**
-     * If customValidator exists, it will be used for validate the current input
+     * If customValidator exists, it will be used to validate the current input
      */
     customValidator?: CustomValidatorType;
 
@@ -286,8 +288,7 @@ function getItemsFromJsonPath(jsonPath: string) {
 
 /**
  * Execute validation logic on a validation item
- * If a customValitor exists for the field, it will be used.
- * Otherwise, the default isEmptyValue validator will be used.
+ * If a customValidator exists for the field, it will be used,  otherwise, the default `isEmptyValue` validator will be used.
  *
  * @param {ValidationItem} item
  * @returns {(boolean | string)}
