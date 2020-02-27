@@ -55,7 +55,7 @@ const publishToDgaValidator: CustomValidatorType = (
     ) {
         return (
             "Validation Error: Only unofficial data can be published to data.gov.au. " +
-            "Please update `Pubish to data.gov.au` or `Security classification` selection accordingly."
+            "Please update the \"Publish to data.gov.au\" or \"Security classification\" section accordingly."
         );
     }
     return true;
