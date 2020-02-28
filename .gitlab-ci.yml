@@ -628,10 +628,13 @@ inttest:registryAuth:
     - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
 Update scripts:
   <<: *runAsPreview
+  dependencies:
+    - builders-and-yarn
   before_script:
     - yarn global add pkg
   script:
     - cd scripts/.
+    - yarn install # i don't think this is necessary?
     - pkg create-secrets/index.js --out-path create-secrets/build
     - ls create-secrets/build
     - echo "Successfully compiled bins"
