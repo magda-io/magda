@@ -27,6 +27,7 @@ UI:
 -   Updated Add Dataset Welcome screen options UI design
 -   Added UI for "Link to dataset already hosted online" box
 -   Added UI for "Link to an API or web service" box
+-   Added UI for storing files
 
 Storage:
 
@@ -51,6 +52,7 @@ Authorization:
 Others:
 
 -   Use a "Year" column from a CSV file to extract a temporal extent
+-   Fixed Registry History API Performance Issue when limit=1 & Updated Registry History API Document
 
 ## 0.0.56
 
