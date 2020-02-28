@@ -404,7 +404,7 @@ buildtest:helm-charts:
 
     - echo "helm lint magda chart using preview.yml"
     - helm lint -f deploy/helm/preview.yml deploy/helm/magda
-    
+
     - echo "helm lint magda chart using preview-multi-tenant.yml"
     - helm lint -f deploy/helm/preview-multi-tenant.yml deploy/helm/magda
   artifacts:
@@ -554,7 +554,7 @@ inttest:registryAuth:
     - psql -h localhost -p 5432 -U postgres -d auth -f magda-registry-api/src/test/resources/data/users.sql
     # Test!
     - sbt "registryApi/testOnly au.csiro.data61.magda.opa.*"
-    
+
 (Full) Run As Preview: &runAsPreview
   stage: preview
   when: manual
@@ -626,6 +626,32 @@ inttest:registryAuth:
   script:
     - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview-multi-tenant.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,magda-core.combined-db.waleBackup.method=NONE,magda-core.elasticsearch.useGcsSnapshots=false,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,global.magdaAdminPortalName=admin-$CI_COMMIT_REF_SLUG.dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600 --wait
     - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
+Update scripts:
+  # stage: preview
+  when: manual
+  # only:
+  #   - branches
+  # except:
+  #   - master
+  #   - /^v.*RC.*$/
+  # dependencies:
+  #   - buildtest:helm-charts
+  # cache:
+  #   paths: []
+  # image:
+  #   name: dtzar/helm-kubectl:2.16.1
+  # retry: 1
+  # environment:
+  #   name: preview/$CI_COMMIT_REF_NAME
+  #   url: https://$CI_COMMIT_REF_SLUG.dev.magda.io
+  #   on_stop: Stop Preview
+  before_script:
+    - yarn global add pkg
+  script:
+    - cd scripts/.
+    - pkg create-secrets/index.js --out-path create-secrets/build
+    - ls create-secrets/build
+    - echo "Successfully compiled bins"
 
 Stop Preview: &stopPreview
   stage: preview
@@ -659,7 +685,7 @@ Manual Release NPM Packages:
   except:
     - master
     - /^v.*RC.*$/
-  dependencies: 
+  dependencies:
     - builders-and-yarn
     - registry-typescript-api
     - buildtest:typescript-apis
