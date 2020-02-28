@@ -181,9 +181,16 @@ export default function createApiRouter(options: ApiRouterOptions) {
             stream.on("error", _e => {
                 return res.status(500).send("Unknown error");
             });
-            stream.pipe(res);
+            return stream.pipe(res);
         }
-        return undefined;
+
+        // Shouldn't get here
+        console.error("Stream is undefined. Here is the request: ", req);
+        return res
+            .status(500)
+            .send(
+                "Stream not found. Object may be corrupted. We are looking into this."
+            );
     });
 
     // Browser uploads
