@@ -144,7 +144,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 return res.status(500).send("Unknown error");
             }
         }
-        const recordIdNum = res.getHeader("Record-ID"); //.toString();
+        const recordIdNum = res.getHeader("Record-ID");
         if (recordIdNum) {
             const recordId = recordIdNum.toString();
             const maybeUserId = getUserId(req, options.jwtSecret);
