@@ -55,7 +55,7 @@ const publishToDgaValidator: CustomValidatorType = (
     ) {
         return (
             "Validation Error: Only unofficial data can be published to data.gov.au. " +
-            "Please update the \"Publish to data.gov.au\" or \"Security classification\" section accordingly."
+            'Please update the "Publish to data.gov.au" or "Security classification" section accordingly.'
         );
     }
     return true;
@@ -66,7 +66,6 @@ const classificationValidator: CustomValidatorType = (
     state,
     validationItem
 ) => {
-    //return false;
     if (
         !ValidationManager.shouldValidate(
             "$.datasetPublishing.publishAsOpenData.dga"
