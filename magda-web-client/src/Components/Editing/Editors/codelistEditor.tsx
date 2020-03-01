@@ -1,4 +1,4 @@
-import React from "react";
+import React, { RefObject } from "react";
 import Editor from "./Editor";
 import uuidv4 from "uuid/v4";
 import { ListMultiItemEditor } from "./multiItem";
@@ -66,7 +66,7 @@ export function codelistRadioEditor(
             value: any,
             onChange: Function,
             multiValues: any = undefined,
-            extraProps: any = {}
+            extraProps = {}
         ) => {
             const callback = event => {
                 onChange(event.target.value);
@@ -97,7 +97,7 @@ export function codelistRadioEditor(
                     className={`code-list-radio-editor ${
                         isValidationError ? "invalid" : ""
                     }`}
-                    ref={ref}
+                    ref={ref as RefObject<HTMLDivElement>}
                 >
                     {isValidationError ? (
                         <div className="error-message-container">
