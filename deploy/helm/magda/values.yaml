@@ -12,6 +12,16 @@ global:
     includeInitialJobs: false
     includeCronJobs: true
 
+openfaas:
+  operator: 
+    create: true
+    createCRD: true
+  serviceType: ClusterIP
+  basic_auth: false
+  ingress:
+    enabled: false
+
+
 connector-dga:
   config:
     id: dga

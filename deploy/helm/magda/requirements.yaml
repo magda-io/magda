@@ -5,6 +5,10 @@ dependencies:
   # magda-core chart is always enabled.
   # Thus, no tags or condition are required.
   # You should set its sub-chart to enabled or not.
+
+  - name: openfaas
+    version: 5.5.4
+    repository: https://openfaas.github.io/faas-netes/
   
   - name: magda-minion-broken-link
     alias: minion-broken-link

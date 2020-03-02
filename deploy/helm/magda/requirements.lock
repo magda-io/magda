@@ -2,6 +2,9 @@ dependencies:
 - name: magda-core
   repository: file://../magda-core
   version: 0.0.57-0
+- name: openfaas
+  repository: https://openfaas.github.io/faas-netes/
+  version: 5.5.4
 - name: magda-minion-broken-link
   repository: https://charts.magda.io
   version: 0.0.57-0
@@ -116,5 +119,5 @@ dependencies:
 - name: magda-esri-portal-connector
   repository: https://charts.magda.io
   version: 0.0.57-0
-digest: sha256:c5d2a2670f1d927954123e020518da4188cf567360840019ecedc34a2dbbe017
-generated: "2020-02-18T13:18:14.540352+11:00"
+digest: sha256:aa12bd0454678f51391233f258e99dd0613c6283dade5ed58efd33da85f6a017
+generated: "2020-03-02T14:11:17.148719+11:00"
