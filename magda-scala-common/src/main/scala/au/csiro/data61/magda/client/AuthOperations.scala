@@ -1,4 +1,4 @@
-package au.csiro.data61.magda.registry
+package au.csiro.data61.magda.client
 
 object AuthOperations {
   case class OperationType private (id: String)

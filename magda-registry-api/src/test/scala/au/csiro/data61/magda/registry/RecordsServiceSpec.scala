@@ -4126,13 +4126,15 @@ class RecordsServiceSpec extends ApiSpec {
 
         it("returns Accepted HTTP code if delete is taking too long") { param =>
           val mockedRecordPersistence = mock[RecordPersistence]
+          val mockedEventPersistence = mock[EventPersistence]
           val mockedApi = new RecordsService(
             param.api(role).config,
             param.webHookActor,
             param.authClient,
             system,
             materializer,
-            mockedRecordPersistence
+            mockedRecordPersistence,
+            mockedEventPersistence
           )
 
           (mockedRecordPersistence

@@ -27,7 +27,9 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpV % "test",
     "org.flywaydb" % "flyway-core" % "4.2.0" % "test",
     "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % "test",
-    "com.github.everit-org.json-schema" % "org.everit.json.schema" % "1.12.0"
+    "com.github.everit-org.json-schema" % "org.everit.json.schema" % "1.12.0",
+    "jakarta.xml.bind" % "jakarta.xml.bind-api" % "2.3.2",
+    "org.glassfish.jaxb" % "jaxb-runtime" % "2.3.2"
   )
 }
 

@@ -27,6 +27,7 @@ UI:
 -   Updated Add Dataset Welcome screen options UI design
 -   Added UI for "Link to dataset already hosted online" box
 -   Added UI for "Link to an API or web service" box
+-   Added UI for storing files
 
 Storage:
 
@@ -44,17 +45,17 @@ Gateway:
 
 -   Add /data to ckan URL, remove the `came_from` param
 
-Gateway:
-
--   Add /data to ckan URL, remove the `came_from` param
-
 Authorization:
 
 -   Made integration tests for authorisation run automatically as part of CI.
+-   Added ability to set per-record authorization policies in the registry (for getting a single record)
+-   Added ability to set per-record authorization policies in the registry (for getting multiple records)
+-   Added ability to use OPA policies that use data types other than strings in the registry
 
 Others:
 
 -   Use a "Year" column from a CSV file to extract a temporal extent
+-   Fixed Registry History API Performance Issue when limit=1 & Updated Registry History API Document
 
 ## 0.0.56
 
