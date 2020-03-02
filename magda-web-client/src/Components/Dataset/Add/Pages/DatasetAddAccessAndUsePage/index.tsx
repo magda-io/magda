@@ -40,25 +40,33 @@ const publishToDgaValidator: CustomValidatorType = (
     validationItem
 ) => {
     if (value !== true) {
-        return true;
+        return {
+            valid: true
+        };
     }
     if (
         !ValidationManager.shouldValidate(
             "$.informationSecurity.classification"
         )
     ) {
-        return true;
+        return {
+            valid: true
+        };
     }
     if (
         state.informationSecurity.classification &&
         state.informationSecurity.classification !== "UNOFFICIAL"
     ) {
-        return (
-            "Validation Error: Only unofficial data can be published to data.gov.au. " +
-            'Please update the "Publish to data.gov.au" or "Security classification" section accordingly.'
-        );
+        return {
+            valid: false,
+            validationMessage:
+                "Validation Error: Only unofficial data can be published to data.gov.au. " +
+                'Please update the "Publish to data.gov.au" or "Security classification" section accordingly.'
+        };
     }
-    return true;
+    return {
+        valid: true
+    };
 };
 
 const classificationValidator: CustomValidatorType = (
@@ -72,7 +80,9 @@ const classificationValidator: CustomValidatorType = (
         )
     ) {
         // --- ask ValidationManager fall back to default validator (`isEmpty`)
-        return undefined;
+        return {
+            useDefaultValidator: true
+        };
     }
     const result = publishToDgaValidator(
         state.datasetPublishing &&
@@ -81,9 +91,11 @@ const classificationValidator: CustomValidatorType = (
         state,
         validationItem
     );
-    if (result === true) {
+    if (result.valid === true) {
         // --- ask ValidationManager fall back to default validator (`isEmpty`)
-        return undefined;
+        return {
+            useDefaultValidator: true
+        };
     } else {
         return result;
     }

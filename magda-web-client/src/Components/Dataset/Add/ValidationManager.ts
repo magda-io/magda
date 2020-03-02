@@ -57,8 +57,8 @@ export type ElementType =
  * - state: the whole add dataset state data
  * - validationItem: a ValidationItem, containing information like field label and json path, that might useful for generating a custom error message
  *
- * The custom validator may return:
- *    - a boolean value to indicate whether the field value is valid (true) or not (false).
+ * The custom validator may return an object the following fields
+ *    - useDefaultValidator: a boolean value to indicate whether the field value is valid (true) or not (false).
  *    - `undefined`, indicating that the default `isEmpty` validator should be used to re-validate the field
  *    - a string, indicating that validation has failed - the returned string should be used as an error message.
  *
@@ -67,11 +67,35 @@ export type ElementType =
  *
  * A custom validator should not produce any side effects
  */
+
+/**
+ * @typedef CustomValidatorType Type for a custom validator function.
+ *
+ * The custom validator may return an object the following fields：
+ *    - useDefaultValidator: (Optional, boolean). Default to `false`.
+ *        If `false`, the custom validator's validation result will be used.
+ *        If `true`, the built-in validator `isEmpty` will be used.
+ *    - valid: (Optional, boolean) a boolean value to indicate whether the field value is valid (true) or not (false).
+ *    - validationMessage: (Optional, string) Custom error message. If this field doesn't exist, the standard error message ("The [field name] is invalid.") will be used.
+ *
+ * @param {*} fieldValue The current value of the input
+ * @param {State} state the whole add dataset state data
+ * @param {ValidationItem} validationItem  a ValidationItem, containing information like field label and json path, that might useful for generating a custom error message
+ * @returns {{
+ *     useDefaultValidator?: boolean;
+ *     valid?: boolean;
+ *     validationMessage?: string;
+ * }}
+ */
 export type CustomValidatorType = (
     fieldValue: any,
     state: State,
     validationItem: ValidationItem
-) => string | boolean | undefined;
+) => {
+    valid?: boolean;
+    validationMessage?: string;
+    useDefaultValidator?: boolean;
+};
 
 export interface ValidationItem<T = ElementType> {
     /**
@@ -310,19 +334,18 @@ function validateItem(item: ValidationItem): boolean | string {
 
     if (typeof item.customValidator === "function") {
         const result = item.customValidator(value, stateData, item);
-        if (result === true) {
+
+        if (result.useDefaultValidator === true) {
+            return defaultValidationAction();
+        } else if (result.valid === true) {
             item.clearError();
             return true;
-        } else if (result === false) {
+        } else if (result.valid === false && !result.validationMessage) {
             item.setError(`Error: \`${item.label}\` is invalid.`);
             return false;
-        } else if (typeof result === "string") {
-            item.setError(
-                result ? result : `Error: \`${item.label}\` is invalid.`
-            );
+        } else if (result.valid === false && result.validationMessage) {
+            item.setError(result.validationMessage);
             return false;
-        } else if (typeof result === "undefined") {
-            return defaultValidationAction();
         } else {
             throw new Error(
                 `Invalid return value from customValidator for \`${jsonPath}\``
