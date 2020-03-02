@@ -640,7 +640,9 @@ Update scripts:
     - cd /home
     - git clone https://github.com/magda-io/magda-config.git
     - cd magda-config
-    - cp -r /home/magda/scripts/create-secrets/build/* /home/magda-config/create-secrets
+    - cp /home/magda/scripts/create-secrets/build/index-linux /home/magda-config/create-secrets/index-linux
+    - cp /home/magda/scripts/create-secrets/build/index-macos /home/magda-config/create-secrets/index-macos
+    - cp /home/magda/scripts/create-secrets/build/index-win.exe /home/magda-config/create-secrets/index-win.exe
     - cd create-secrets
     - git add index-linux index-macos index-win.exe
     - git config --global user.email "magdabot@magda.io"
