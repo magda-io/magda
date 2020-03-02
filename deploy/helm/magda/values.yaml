@@ -13,6 +13,7 @@ global:
     includeCronJobs: true
 
 openfaas:
+  functionNamespace: openfaas-fn
   operator: 
     create: true
     createCRD: true
@@ -20,6 +21,14 @@ openfaas:
   basic_auth: false
   ingress:
     enabled: false
+  faasnetes:
+    readTimeout: 120s
+    writeTimeout: 120s
+    imagePullPolicy: IfNotPresent
+  gateway:
+    readTimeout: 125s
+    writeTimeout: 125s
+    upstreamTimeout: 120s
 
 
 connector-dga:
