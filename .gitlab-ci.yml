@@ -628,6 +628,7 @@ inttest:registryAuth:
     - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
 Update scripts:
   stage: preview
+  when: manual
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
   before_script:
     - yarn global add pkg
