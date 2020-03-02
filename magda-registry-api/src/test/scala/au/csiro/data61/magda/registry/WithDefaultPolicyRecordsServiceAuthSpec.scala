@@ -84,7 +84,7 @@ class WithDefaultPolicyRecordsServiceAuthSpec
                   recordId,
                   "foo",
                   Map(
-                    "example" -> JsObject(
+                    "stringExample" -> JsObject(
                       "nested" -> JsObject("public" -> JsString("true"))
                     )
                   )
@@ -94,7 +94,7 @@ class WithDefaultPolicyRecordsServiceAuthSpec
               expectOpaQueryForPolicy(
                 param,
                 "default.policy.read",
-                defaultPolicyResponse
+                policyResponseForStringExampleAspect
               )
 
               Get(s"/v0/records/foo") ~> addTenantIdHeader(
@@ -115,7 +115,7 @@ class WithDefaultPolicyRecordsServiceAuthSpec
                   recordId,
                   "foo",
                   Map(
-                    "example" -> JsObject(
+                    "stringExample" -> JsObject(
                       "nested" -> JsObject("public" -> JsString("false"))
                     )
                   )
@@ -124,7 +124,7 @@ class WithDefaultPolicyRecordsServiceAuthSpec
               expectOpaQueryForPolicy(
                 param,
                 "default.policy.read",
-                defaultPolicyResponse
+                policyResponseForStringExampleAspect
               )
 
               Get(s"/v0/records/foo") ~> addTenantIdHeader(
@@ -150,7 +150,7 @@ class WithDefaultPolicyRecordsServiceAuthSpec
               expectOpaQueryForPolicy(
                 param,
                 "default.policy.read",
-                defaultPolicyResponse
+                policyResponseForStringExampleAspect
               )
 
               Get(s"/v0/records/foo") ~> addTenantIdHeader(

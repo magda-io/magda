@@ -94,13 +94,14 @@ class AuthApiClient(authHttpFetcher: HttpFetcher)(
         HttpEntity(ContentTypes.`application/json`, requestData),
         headers
       )
-      .flatMap(receiveOpaResponse[List[List[OpaQuery]]](_) { json =>
+      .flatMap(receiveOpaResponse[List[List[OpaQuery]]](_, policyId) { json =>
         OpaParser.parseOpaResponse(json)
       })
   }
 
   private def receiveOpaResponse[T](
-      res: HttpResponse
+      res: HttpResponse,
+      policyId: String
   )(fn: JsValue => T): Future[T] = {
     if (res.status.intValue() != 200) {
       res.entity.dataBytes.runFold(ByteString(""))(_ ++ _).flatMap { body =>
@@ -108,7 +109,7 @@ class AuthApiClient(authHttpFetcher: HttpFetcher)(
           .error(s"OPA failed to process the request: {}", body.utf8String)
         Future.failed(
           new Exception(
-            s"Failed to retrieve access control decision from OPA: ${body.utf8String}"
+            s"Failed to retrieve access control decision from OPA for $policyId: ${body.utf8String}"
           )
         )
       }
