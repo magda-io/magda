@@ -404,7 +404,7 @@ buildtest:helm-charts:
 
     - echo "helm lint magda chart using preview.yml"
     - helm lint -f deploy/helm/preview.yml deploy/helm/magda
-    
+
     - echo "helm lint magda chart using preview-multi-tenant.yml"
     - helm lint -f deploy/helm/preview-multi-tenant.yml deploy/helm/magda
   artifacts:
@@ -554,7 +554,7 @@ inttest:registryAuth:
     - psql -h localhost -p 5432 -U postgres -d auth -f magda-registry-api/src/test/resources/data/users.sql
     # Test!
     - sbt "registryApi/testOnly au.csiro.data61.magda.opa.*"
-    
+
 (Full) Run As Preview: &runAsPreview
   stage: preview
   when: manual
@@ -568,7 +568,7 @@ inttest:registryAuth:
   cache:
     paths: []
   image:
-    name: dtzar/helm-kubectl:2.16.1
+    name: dtzar/helm-kubectl:3.1.1
   retry: 1
   environment:
     name: preview/$CI_COMMIT_REF_NAME
@@ -603,11 +603,12 @@ inttest:registryAuth:
     - echo "$DB_SERVICE_ACCOUNT_PRIVATE_KEY" > db-service-account-private-key.json
     - kubectl create secret generic storage-account-credentials --from-file db-service-account-private-key.json --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
     - kubectl create secret generic storage-secrets --from-literal=accesskey=$MINIO_ACCESS_KEY --from-literal=secretkey=$MINIO_SECRET_KEY --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
-
+    - helm version
+    - helm dep build deploy/helm/magda
     # Helm upgrade
     - helm init --upgrade
   script:
-    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600 --wait
+    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600m --wait
     - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
 
 (UI) Run As Preview:
@@ -659,7 +660,7 @@ Manual Release NPM Packages:
   except:
     - master
     - /^v.*RC.*$/
-  dependencies: 
+  dependencies:
     - builders-and-yarn
     - registry-typescript-api
     - buildtest:typescript-apis
