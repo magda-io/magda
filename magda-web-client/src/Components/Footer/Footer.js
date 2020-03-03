@@ -84,7 +84,7 @@ function Copyright({ href, logoSrc, logoClassName, logoAlt, htmlContent }) {
 function Footer({ footerMediumNavs, footerSmallNavs, footerCopyRightItems }) {
     return (
         <footer
-            class="au-footer au-body au-body--dark footer"
+            className="au-footer au-body au-body--dark footer"
             role="contentinfo"
             aria-label="footer"
         >

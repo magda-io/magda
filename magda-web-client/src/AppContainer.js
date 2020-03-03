@@ -30,13 +30,13 @@ class AppContainer extends React.Component {
                 <div className="au-grid wrapper">
                     <div>
                         <nav
-                            class="au-skip-link"
+                            className="au-skip-link"
                             aria-label="skip links navigation"
                         >
-                            <a class="au-skip-link__link" href="#content">
+                            <a className="au-skip-link__link" href="#content">
                                 Skip to main content
                             </a>
-                            <a class="au-skip-link__link" href="#nav">
+                            <a className="au-skip-link__link" href="#nav">
                                 Skip to main navigation
                             </a>
                         </nav>

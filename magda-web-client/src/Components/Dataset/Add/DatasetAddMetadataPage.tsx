@@ -129,6 +129,7 @@ class NewDataset extends React.Component<Props, State> {
                 edit={this.edit}
                 editState={this.editState}
                 stateData={this.state}
+                editStateWithUpdater={this.setState.bind(this)}
             />
         ),
         config.featureFlags.previewAddDataset
