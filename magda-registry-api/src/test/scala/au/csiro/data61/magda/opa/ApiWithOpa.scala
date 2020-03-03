@@ -40,13 +40,6 @@ abstract class ApiWithOpa
     with SprayJsonSupport
     with MockFactory
     with AuthProtocols {
-
-  GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(
-    enabled = false,
-    singleLineMode = true,
-    logLevel = 'info
-  )
-
   override def testConfigSource: String =
     super.testConfigSource + s"""
                                 |opa.recordPolicyId="object.registry.record.esri_owner_groups"

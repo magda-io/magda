@@ -41,16 +41,6 @@
         color: #484848;
     }
 
-    .au-control-input__text:before,
-    .au-control-input__text:after {
-        border: 9px solid transparent;
-    }
-
-    .au-control-input__input[type="radio"]:focus
-        + .au-control-input__text:before {
-        box-shadow: none;
-    }
-
     .access-location-area {
         .tooltip-root {
             margin-bottom: 34px;
