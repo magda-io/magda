@@ -8,16 +8,16 @@ export default interface Editor<V> {
         value: V | undefined,
         onChange: (value: V | undefined) => void,
         multiValues?: any,
-        extraProps?: extraPropsType
+        extraProps?: ExtraPropsType
     ) => JSX.Element;
     view: (value: V | undefined) => JSX.Element;
 }
 
-type extraPropsType = {
+type ExtraPropsType = {
     isValidationError?: boolean;
     validationErrorMessage?: string;
     ref?: RefObject<ValidationManager.ElementType>;
     onBlur?: () => void;
-    // --- We used `extraProps` to pass on props value to underneath input ctrl when used with AlwaysEditor
+    // --- We use `extraProps` to pass on props value to underneath input ctrl when used with AlwaysEditor
     [otherKeys: string]: any;
 };
