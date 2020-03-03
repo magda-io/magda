@@ -127,11 +127,9 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
         }));
     };
 
-    const shouldPublishToDga: boolean = !datasetPublishing.publishAsOpenData
-        ? false
-        : datasetPublishing.publishAsOpenData.dga
-        ? true
-        : false;
+    const shouldPublishToDga: boolean = datasetPublishing.publishAsOpenData
+        ? !!datasetPublishing.publishAsOpenData.dga
+        : false
 
     return (
         <div className="row dataset-access-and-use-page">
