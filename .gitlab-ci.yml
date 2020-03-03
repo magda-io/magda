@@ -633,11 +633,8 @@ Update scripts:
   before_script:
     - yarn global add pkg
   script:
-    - pwd
     - cd scripts/.
     - pkg create-secrets/index.js --out-path create-secrets/build
-    - ls create-secrets/build
-    - echo "Successfully compiled bins"
     - cd ../../
     - git clone https://github.com/magda-io/magda-config.git
     - cp magda/scripts/create-secrets/build/index-linux magda-config/create-secrets/index-linux
