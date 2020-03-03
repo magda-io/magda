@@ -8,11 +8,13 @@ tags:
   minion-format: false
 
 global:
+  deployOpenfaas: false
   connectors:
     includeInitialJobs: false
     includeCronJobs: true
 
 openfaas:
+  gatewayNamespace: openfaas
   functionNamespace: openfaas-fn
   operator: 
     create: true
