@@ -1,5 +1,6 @@
-import React from "react";
+import React, { RefObject } from "react";
 import Editor from "./Editor";
+import uuidv4 from "uuid/v4";
 import { ListMultiItemEditor } from "./multiItem";
 
 export function codelistEditor(
@@ -61,7 +62,12 @@ export function codelistRadioEditor(
     disabled = false
 ): Editor<string> {
     return {
-        edit: (value: any, onChange: Function) => {
+        edit: (
+            value: any,
+            onChange: Function,
+            multiValues: any = undefined,
+            extraProps = {}
+        ) => {
             const callback = event => {
                 onChange(event.target.value);
             };
@@ -70,33 +76,69 @@ export function codelistRadioEditor(
             if (reorder) {
                 keys = keys.sort(alphaLabelSort(options));
             }
+
+            const {
+                isValidationError,
+                validationErrorMessage,
+                ref,
+                onBlur
+            } = extraProps;
+
+            const errorMessageId = `input-error-text-${uuidv4()}`;
+
+            const extraRadioInputProps = {};
+            if (isValidationError) {
+                extraRadioInputProps["aria-invalid"] = true;
+                extraRadioInputProps["aria-describedby"] = errorMessageId;
+            }
+
             return (
-                <div>
-                    {keys.map((val, i) => {
-                        return (
-                            <div
-                                className="au-control-input au-control-input--block"
-                                key={i}
-                            >
-                                <input
-                                    className="au-control-input__input"
-                                    type="radio"
-                                    value={val}
-                                    name={val}
-                                    id={idNamespace + "-" + val}
-                                    onChange={callback}
-                                    checked={value === val}
-                                    disabled={disabled}
-                                />{" "}
-                                <label
-                                    className="au-control-input__text"
-                                    htmlFor={idNamespace + "-" + val}
+                <div
+                    className={`code-list-radio-editor ${
+                        isValidationError ? "invalid" : ""
+                    }`}
+                    ref={ref as RefObject<HTMLDivElement>}
+                >
+                    {isValidationError ? (
+                        <div className="error-message-container">
+                            <span className="au-error-text" id={errorMessageId}>
+                                {validationErrorMessage}
+                            </span>
+                        </div>
+                    ) : null}
+                    <div className="code-list-radio-editor-input-container">
+                        {keys.map((val, i) => {
+                            return (
+                                <div
+                                    className="au-control-input au-control-input--block"
+                                    key={i}
                                 >
-                                    {options[val]}
-                                </label>
-                            </div>
-                        );
-                    })}
+                                    <input
+                                        className="au-control-input__input"
+                                        type="radio"
+                                        value={val}
+                                        name={val}
+                                        id={idNamespace + "-" + val}
+                                        onChange={e => {
+                                            callback(e);
+                                            if (onBlur) {
+                                                setTimeout(onBlur, 1);
+                                            }
+                                        }}
+                                        checked={value === val}
+                                        disabled={disabled}
+                                        {...extraRadioInputProps}
+                                    />{" "}
+                                    <label
+                                        className="au-control-input__text"
+                                        htmlFor={idNamespace + "-" + val}
+                                    >
+                                        {options[val]}
+                                    </label>
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
             );
         },

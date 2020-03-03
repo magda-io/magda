@@ -143,7 +143,7 @@ export default function Login(props) {
                     <p>
                         To register a new data.gov.au account,{" "}
                         <a
-                            class="au-cta-link"
+                            className="au-cta-link"
                             href="https://data.gov.au/user/register"
                             target="_blank"
                             rel="noopener noreferrer"

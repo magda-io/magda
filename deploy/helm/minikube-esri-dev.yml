@@ -44,6 +44,7 @@ magda-core:
     fallbackUrl: "https://data.gov.au"
     featureFlags:
       cataloguing: true
+      publishToDga: true
 
 tags:
   all: true
