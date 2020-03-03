@@ -9,6 +9,8 @@ dependencies:
   - name: openfaas
     version: 5.5.4
     repository: https://openfaas.github.io/faas-netes/
+    tags: 
+      - openfaas
   
   - name: magda-minion-broken-link
     alias: minion-broken-link
