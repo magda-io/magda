@@ -27,16 +27,19 @@ test_deny_non_owner {
             }
         },
         "object": {
-            "record": {
-                "esri-access-control": {
-                    "owner": "personB"
+            "registry": {
+                "record": {
+                    "esri-access-control": {
+                        "owner": "personB",
+                        "access": "private"
+                    }
                 }
             }
         }
     }
 }
 
-test_deny_no_access_control_info {
+test_deny_if_missing_owner_property_when_access_is_private {
     not esri_owner with input as {
         "user": {
             "session": {
@@ -44,9 +47,12 @@ test_deny_no_access_control_info {
             }
         },
         "object": {
-            "record": {
-                "esri-access-control": {
-                    "someOtherKey": "personA"
+            "registry": {
+                "record": {
+                    "esri-access-control": {
+                        "someOtherKey": "personA",
+                        "access": "private"
+                    }
                 }
             }
         }

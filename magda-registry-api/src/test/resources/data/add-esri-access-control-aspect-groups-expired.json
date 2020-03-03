@@ -3,7 +3,8 @@
         "id": "record-0",
         "aspects": {
             "esri-access-control": {
-                "groups": ["Dep. A"]
+                "groups": ["Dep. A"],
+                "access": "shared"
             }
         }
     },
@@ -11,7 +12,8 @@
         "id": "record-1",
         "aspects": {
             "esri-access-control": {
-                "groups": ["Dep. A", "Branch A, Dep. A"]
+                "groups": ["Dep. A", "Branch A, Dep. A"],
+                "access": "shared"
             }
         }
     },
@@ -20,7 +22,8 @@
         "id": "record-2",
         "aspects": {
             "esri-access-control": {
-                "groups": ["Dep. A", "Branch B, Dep. A"]
+                "groups": ["Dep. A", "Branch B, Dep. A"],
+                "access": "shared"
             }
         }
     },
@@ -33,7 +36,8 @@
                     "Dep. A",
                     "Branch B, Dep. A",
                     "Section C, Branch B, Dep. A"
-                ]
+                ],
+                "access": "shared"
             }
         }
     },
@@ -51,7 +55,8 @@
         "id": "record-5",
         "aspects": {
             "esri-access-control": {
-                "groups": ["Dep. A", "Branch B, Dep. A"]
+                "groups": ["Dep. A", "Branch B, Dep. A"],
+                "access": "shared"
             }
         }
     }

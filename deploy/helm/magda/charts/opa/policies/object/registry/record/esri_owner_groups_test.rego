@@ -37,7 +37,8 @@ test_allow_read_if_groups_and_permission_are_correct {
             "registry": {
                 "record": {
                     "esri-access-control": {
-                        "groups": ["G2", "G3"]
+                        "groups": ["G2", "G3"],
+                        "access": "shared"
                     }
                 }
             }
@@ -157,7 +158,8 @@ test_allow_read_if_not_owner_but_groups_and_permission_are_correct {
                 "record": {
                     "esri-access-control": {
                         "groups": ["G2", "G3"],
-                        "owner": "Person.B"
+                        "owner": "Person.B",
+                        "access": "shared"
                     }
                 }
             }

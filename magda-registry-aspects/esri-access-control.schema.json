@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/hyper-schema#",
     "title": "Group-based access Control information of an Esri data item",
-    "description": "Group-based access Control information of an Esri data item. Including: group IDs that are allowed to read the data item.",
+    "description": "Attribute-based access Control information of an Esri data item. Including: access, owner and group IDs that are allowed to read the data item.",
     "type": "object",
     "properties": {
         "groups": {
@@ -20,6 +20,10 @@
         },
         "owner": {
             "title": "Record owner id",
+            "type": "string"
+        },
+        "access": {
+            "title": "Esri access attribute: private, shared, org or public",
             "type": "string"
         }
     }
