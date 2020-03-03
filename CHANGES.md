@@ -28,6 +28,7 @@ UI:
 -   Added UI for "Link to dataset already hosted online" box
 -   Added UI for "Link to an API or web service" box
 -   Added UI for storing files
+-   Added UI for "Publish as Open Data to data.gov.au"
 
 Storage:
 

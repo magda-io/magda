@@ -7,12 +7,14 @@ import Creatable, { CreatableProps } from "react-select/creatable";
 import CustomInputWithValidation from "Components/Common/react-select/CustomInputWithValidation";
 import ReactSelectStyles from "Components/Common/react-select/ReactSelectStyles";
 import * as ValidationManager from "../../Dataset/Add/ValidationManager";
+import { CustomValidatorType } from "../../Dataset/Add/ValidationManager";
 import StateManager from "react-select";
 const useValidation = ValidationManager.useValidation;
 
 interface SelectExtraPropsType {
     validationFieldPath?: string;
     validationFieldLabel?: string;
+    customValidator?: CustomValidatorType;
 }
 
 type PropsType<OptionType> =
@@ -47,7 +49,8 @@ function ValidationHoc<OptionType>(
         const {
             validationFieldPath,
             validationFieldLabel,
-            onBlur,
+            customValidator,
+            onChange,
             ...restProps
         } = props;
 
@@ -55,13 +58,20 @@ function ValidationHoc<OptionType>(
             isValidationError,
             validationErrorMessage,
             elRef
-        ] = useValidation(validationFieldPath, validationFieldLabel);
-        const onBlurHandler = (event: any) => {
-            if (validationFieldPath) {
-                ValidationManager.onInputFocusOut(validationFieldPath);
+        ] = useValidation(
+            validationFieldPath,
+            validationFieldLabel,
+            customValidator
+        );
+
+        const onChangeHandler = (event, action) => {
+            if (onChange && typeof onChange === "function") {
+                onChange(event, action);
             }
-            if (onBlur && typeof onBlur === "function") {
-                onBlur(event);
+            if (validationFieldPath) {
+                setTimeout(() => {
+                    ValidationManager.onInputFocusOut(validationFieldPath);
+                }, 1);
             }
         };
 
@@ -121,7 +131,7 @@ function ValidationHoc<OptionType>(
                     ref={selectRef}
                     aria-label={validationErrorMessage}
                     styles={ReactSelectStyles}
-                    onBlur={onBlurHandler}
+                    onChange={onChangeHandler}
                     isValidationError={isValidationError}
                     validationErrorMessage={validationErrorMessage}
                     validationElRef={elRef}

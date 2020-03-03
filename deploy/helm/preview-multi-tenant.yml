@@ -105,6 +105,7 @@ magda-core:
     fallbackUrl: "https://data.gov.au"
     featureFlags:
       cataloguing: true
+      publishToDga: true
 
   correspondence-api:
     alwaysSendToDefaultRecipient: true
