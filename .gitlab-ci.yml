@@ -638,7 +638,7 @@ Update scripts:
     - cd scripts/.
     - pkg create-secrets/index.js --out-path create-secrets/build
     - cd ../../
-    - git clone https://github.com/magda-io/magda-config.git
+    - if [ ! -d magda-config/ ]; then git clone https://github.com/magda-io/magda-config.git; else cd magda-config && git pull && cd ..; fi
     - cp magda/scripts/create-secrets/build/index-linux magda-config/create-secrets/index-linux
     - cp magda/scripts/create-secrets/build/index-macos magda-config/create-secrets/index-macos
     - cp magda/scripts/create-secrets/build/index-win.exe magda-config/create-secrets/index-win.exe
