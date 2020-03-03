@@ -285,7 +285,6 @@ abstract class RecordOpaPolicyWithEsriGroupsOrMagdaOrgUnitsOnlySpec
               offset => if (offset == 0) 0 else firstRecordToken + offset
             )
 
-            //            println(s"----- $userId, $firstRecordToken, $actualPageTokens")
             actualPageTokens
               .map(Integer.parseInt) shouldEqual expectedPageTokens
           }

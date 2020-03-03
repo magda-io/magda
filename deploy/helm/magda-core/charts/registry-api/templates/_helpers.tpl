@@ -63,7 +63,7 @@ spec:
             "-Dauthorization.skip={{ .root.Values.skipAuthorization | default false }}",
             "-Dauthorization.skipOpaQuery={{ .root.Values.skipOpa | default false }}",
             "-Dopa.baseUrl=http://authorization-api/v0/opa",
-            "-Dopa.recordPolicyId={{ .root.Values.recordPolicyId | default "object.registry.record.owner_orgunit" }}",
+            "-Dopa.recordPolicyId={{ .root.Values.recordPolicyId | default "object.registry.record.public" }}",
             "-Drole={{ .role }}",
             "-DvalidateJsonSchema={{ .root.Values.validateJsonSchema | default false }}"
         ]

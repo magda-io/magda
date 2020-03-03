@@ -28,12 +28,18 @@ import scala.util.{Failure, Success}
 )
 class RecordAspectsService(
     webHookActor: ActorRef,
-    authClient: AuthApiClient,
+    authClient: RegistryAuthApiClient,
     system: ActorSystem,
     materializer: Materializer,
-    config: Config
-) extends RecordAspectsServiceRO(system, materializer, config) {
-  private val recordPersistence = DefaultRecordPersistence
+    config: Config,
+    recordPersistence: RecordPersistence
+) extends RecordAspectsServiceRO(
+      authClient,
+      system,
+      materializer,
+      config,
+      recordPersistence
+    ) {
 
   /**
     * @apiGroup Registry Record Aspects
@@ -127,8 +133,7 @@ class RecordAspectsService(
                   tenantId,
                   recordId,
                   aspectId,
-                  aspect,
-                  config
+                  aspect
                 ) match {
                   case Success(result) => complete(result)
                   case Failure(exception) =>
@@ -317,8 +322,7 @@ class RecordAspectsService(
                   tenantId,
                   recordId,
                   aspectId,
-                  aspectPatch,
-                  config
+                  aspectPatch
                 ) match {
                   case Success(result) => complete(result)
                   case Failure(exception) =>

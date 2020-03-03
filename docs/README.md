@@ -137,7 +137,7 @@ Magda is also completely open-source and can be used for free - to get it runnin
 -   [CSIRO Land and Water](https://www.csiro.au/en/Research/LWF) - [Knowledge Network V2](https://knowledgenet.co/)
 -   [Department of Agriculture](http://www.agriculture.gov.au/) - Private Instance
 -   [Department of the Environment and Energy](https://www.environment.gov.au/) - Private Instance
--   [NSW Department of Customer Service](https://www.customerservice.nsw.gov.au/) - Under Development
+-   [NSW Department of Customer Service](https://www.customerservice.nsw.gov.au/) - [NSW Spatial Digital Twin](https://nsw.digitaltwin.terria.io/)
 -   [QLD Department of Natural Resources, Mines and Energy](https://www.dnrme.qld.gov.au/) - Under Development
 
 <p class="center">

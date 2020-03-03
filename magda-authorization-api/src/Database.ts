@@ -264,6 +264,7 @@ export default class Database {
 
     async getCurrentUserInfo(req: any, jwtSecret: string): Promise<User> {
         const userId = getUserId(req, jwtSecret).valueOr(null);
+
         if (!userId || userId === "") {
             return await this.getDefaultAnonymousUserInfo();
         }

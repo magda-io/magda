@@ -2,11 +2,8 @@ import React from "react";
 
 import ToolTip from "Components/Dataset/Add/ToolTip";
 import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
-import { MultilineTextEditor } from "Components/Editing/Editors/textEditor";
 import { codelistRadioEditor } from "Components/Editing/Editors/codelistEditor";
 import LicenseEditor from "Components/Dataset/Add/LicenseEditor";
-
-import AccessLocationAutoComplete from "./AccessLocationAutoComplete";
 
 import { State } from "Components/Dataset/Add/DatasetAddCommon";
 import * as codelists from "constants/DatasetConstants";
@@ -38,14 +35,12 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
     let {
         distributions,
         dataset,
-        datasetAccess,
         licenseLevel,
         datasetPublishing,
         informationSecurity
     } = props.stateData;
 
     const editDatasetPublishing = props.edit("datasetPublishing");
-    const editDatasetAccess = props.edit("datasetAccess");
     const editInformationSecurity = props.edit("informationSecurity");
 
     return (
@@ -71,34 +66,6 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                 "dataset-publishing-level",
                                 codelists.publishingLevel
                             )}
-                        />
-                    </div>
-                </div>
-
-                <div className="question-access-notes">
-                    <h4>Where can users access this dataset from?</h4>
-                    <ToolTip>
-                        Select the best location for this dataset based on its
-                        contents and your organisation file structure.
-                    </ToolTip>
-                    <h4>Dataset location:</h4>
-                    <div className="access-location-input-container">
-                        <AccessLocationAutoComplete
-                            placeholder="Start typing a file location name..."
-                            defaultValue={
-                                datasetAccess.location
-                                    ? datasetAccess.location
-                                    : ""
-                            }
-                            onChange={editDatasetAccess("location")}
-                        />
-                    </div>
-                    <h4>Dataset access notes:</h4>
-                    <div>
-                        <MultilineTextEditor
-                            value={datasetAccess.notes}
-                            placeholder="Enter any access considerations for users, such as permissions or restrictions they should be aware of..."
-                            onChange={editDatasetAccess("notes")}
                         />
                     </div>
                 </div>

@@ -57,7 +57,8 @@ export function codelistEditor(
 export function codelistRadioEditor(
     idNamespace: string,
     options: any,
-    reorder = false
+    reorder = false,
+    disabled = false
 ): Editor<string> {
     return {
         edit: (value: any, onChange: Function) => {
@@ -85,6 +86,7 @@ export function codelistRadioEditor(
                                     id={idNamespace + "-" + val}
                                     onChange={callback}
                                     checked={value === val}
+                                    disabled={disabled}
                                 />{" "}
                                 <label
                                     className="au-control-input__text"
