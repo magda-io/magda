@@ -568,7 +568,7 @@ inttest:registryAuth:
   cache:
     paths: []
   image:
-    name: dtzar/helm-kubectl:3.1.1
+    name: dtzar/helm-kubectl:3.0.0
   retry: 1
   environment:
     name: preview/$CI_COMMIT_REF_NAME
