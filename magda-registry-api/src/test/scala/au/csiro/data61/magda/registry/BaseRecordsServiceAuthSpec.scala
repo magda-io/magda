@@ -195,6 +195,17 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
           )
       }
 
+      it(
+        "a policy that involves checking if one array and another array have a value in common (a la esri)"
+      ) { param =>
+        doPolicyTest(
+          param,
+          "arrayComparisonExample",
+          addArrayComparisonExampleRecords,
+          policyResponseForArrayComparisonAspect
+        )
+      }
+
       def doPolicyTest(
           param: FixtureParam,
           exampleId: String,
@@ -474,6 +485,41 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
     )
   }
 
+  def addArrayComparisonExampleRecords(param: FixtureParam) {
+    addRecord(
+      param,
+      Record(
+        "allowArrayComparisonExample",
+        "allowArrayComparisonExample",
+        Map(
+          "arrayComparisonExample" -> JsObject(
+            "array" -> JsArray(
+              JsString("one"),
+              JsString("two")
+            )
+          )
+        ),
+        authnReadPolicyId = Some("arrayComparisonExample.policy")
+      )
+    )
+    addRecord(
+      param,
+      Record(
+        "denyArrayComparisonExample",
+        "denyArrayComparisonExample",
+        Map(
+          "arrayComparisonExample" -> JsObject(
+            "array" -> JsArray(
+              JsString("three"),
+              JsString("four")
+            )
+          )
+        ),
+        authnReadPolicyId = Some("arrayComparisonExample.policy")
+      )
+    )
+  }
+
   val policyResponseForStringExampleAspect = """
       {
         "result": {
@@ -739,4 +785,118 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
       }
   """
 
+  val policyResponseForArrayComparisonAspect = """
+        {
+        "result": {
+          "queries": [
+            [
+              {
+                "index": 0,
+                "terms": [
+                    {
+                        "type": "ref",
+                        "value": [
+                            {
+                                "type": "var",
+                                "value": "eq"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "string",
+                        "value": "two"
+                    },
+                    {
+                        "type": "ref",
+                        "value": [
+                            {
+                                "type": "var",
+                                "value": "input"
+                            },
+                            {
+                                "type": "string",
+                                "value": "object"
+                            },
+                            {
+                                "type": "string",
+                                "value": "registry"
+                            },
+                            {
+                                "type": "string",
+                                "value": "record"
+                            },
+                            {
+                                "type": "string",
+                                "value": "arrayComparisonExample"
+                            },
+                            {
+                                "type": "string",
+                                "value": "array"
+                            },
+                            {
+                                "type": "var",
+                                "value": "$06"
+                            }
+                        ]
+                    }
+                ]
+              }
+            ],
+            [
+              {
+                  "index": 0,
+                  "terms": [
+                      {
+                          "type": "ref",
+                          "value": [
+                              {
+                                  "type": "var",
+                                  "value": "eq"
+                              }
+                          ]
+                      },
+                      {
+                          "type": "string",
+                          "value": "two"
+                      },
+                      {
+                          "type": "ref",
+                          "value": [
+                              {
+                                  "type": "var",
+                                  "value": "input"
+                              },
+                              {
+                                  "type": "string",
+                                  "value": "object"
+                              },
+                              {
+                                  "type": "string",
+                                  "value": "registry"
+                              },
+                              {
+                                  "type": "string",
+                                  "value": "record"
+                              },
+                              {
+                                  "type": "string",
+                                  "value": "esri-access-control"
+                              },
+                              {
+                                  "type": "string",
+                                  "value": "groups"
+                              },
+                              {
+                                  "type": "var",
+                                  "value": "$06"
+                              }
+                          ]
+                      }
+                  ]
+              }
+            ]
+          ]
+        }
+      }
+  """
 }
