@@ -264,14 +264,18 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
   def addExampleAspectDef(param: FixtureParam) =
     addAspectDef(param, "stringExample")
 
-  def addAspectDef(param: FixtureParam, id: String) =
+  def addAspectDef(
+      param: FixtureParam,
+      id: String,
+      schema: Option[JsObject] = None
+  ) =
     param.asAdmin(
       Post(
         "/v0/aspects",
         AspectDefinition(
           id,
           id,
-          None
+          schema
         )
       )
     ) ~> addTenantIdHeader(

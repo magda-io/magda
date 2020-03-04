@@ -21,6 +21,7 @@ import scala.concurrent.{ExecutionContextExecutor, Future, Promise}
 
 import org.scalatest.concurrent.ScalaFutures._
 import scala.concurrent.duration._
+import au.csiro.data61.magda.client.RegistryExternalInterface
 
 class StreamControllerTest extends FlatSpec with Matchers {
 

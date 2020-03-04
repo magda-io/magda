@@ -70,7 +70,8 @@ class AspectValidator(config: Config, recordPersistence: RecordPersistence) {
       session,
       tenantId,
       recordId,
-      aspectId
+      aspectId,
+      None
     ) match {
       case Some(aspect) => aspect
       case None         => JsObject()

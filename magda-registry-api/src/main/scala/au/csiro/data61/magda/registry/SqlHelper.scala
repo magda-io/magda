@@ -27,12 +27,12 @@ object SqlHelper {
     * @return a single SQL clause
     */
   def getOpaConditions(
-      opaQueries: List[(String, List[List[OpaQuery]])],
+      opaQueries: Option[List[(String, List[List[OpaQuery]])]],
       operationType: AuthOperations.OperationType,
       defaultPolicyId: Option[String]
   ): SQLSyntax = opaQueries match {
-    case Nil => SQL_TRUE
-    case _ =>
+    case None => SQL_TRUE
+    case Some(opaQueries) =>
       val queries = opaQueries.flatMap {
         case (policyId, Nil) =>
           None
