@@ -628,6 +628,29 @@ inttest:registryAuth:
     - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview-multi-tenant.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,magda-core.combined-db.waleBackup.method=NONE,magda-core.elasticsearch.useGcsSnapshots=false,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,global.magdaAdminPortalName=admin-$CI_COMMIT_REF_SLUG.dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600 --wait
     - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
 
+Update scripts:
+  stage: preview
+  only:
+    - /^v[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}$/
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  before_script:
+    - yarn global add pkg
+  script:
+    - cd scripts/.
+    - pkg create-secrets/index.js --out-path create-secrets/build
+    - cd ../../
+    - if [ ! -d magda-config/ ]; then git clone https://github.com/magda-io/magda-config.git; else cd magda-config && git pull && cd ..; fi
+    - cp magda/scripts/create-secrets/build/index-linux magda-config/create-secrets/index-linux
+    - cp magda/scripts/create-secrets/build/index-macos magda-config/create-secrets/index-macos
+    - cp magda/scripts/create-secrets/build/index-win.exe magda-config/create-secrets/index-win.exe
+    - cd magda-config
+    - cd create-secrets
+    - git add index-linux index-macos index-win.exe
+    - git config --global user.email "magdabot@magda.io"
+    - git config --global user.name "magdabot"
+    - git commit -m "Update create-secrets scripts `date`"
+    - git push "https://x-access-token:$GITHUB_ACCESS_TOKEN@github.com/magda-io/magda-config" master
+
 Stop Preview: &stopPreview
   stage: preview
   when: manual
