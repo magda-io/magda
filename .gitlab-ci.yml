@@ -392,7 +392,7 @@ buildtest:helm-charts:
     paths: []
   script:
     # Init helm
-    - helm init --client-only
+    # - helm init --client-only
     - helm repo add magda-io https://charts.magda.io
     - helm dep build deploy/helm/magda
 
