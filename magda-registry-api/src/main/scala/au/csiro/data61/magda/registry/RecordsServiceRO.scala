@@ -179,8 +179,6 @@ class RecordsServiceRO(
             ) { opaQueries =>
               opaQueries match {
                 case (recordQueries, linkedRecordQueries) =>
-                  // println(linkedRecordQueries)
-
                   complete {
                     DB readOnly { session =>
                       recordPersistence.getAllWithAspects(

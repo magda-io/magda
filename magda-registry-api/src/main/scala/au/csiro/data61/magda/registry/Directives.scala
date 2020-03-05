@@ -19,6 +19,18 @@ object Directives {
       "authorization.skipOpaQuery"
     )
 
+  /**
+    * Determines OPA policies that apply, queries OPA and parses the policies for translation to SQL or some other query language.
+    *
+    * @param operationType The operation being performed (read, edit etc)
+    * @param recordPersistence A RecordPersistence instance to look up record policies etc through
+    * @param authApiClient An auth api client to query OPA through
+    * @param recordId A record id - optional, will be used to narrow down the policies returned to only those that apply to this record.
+    * @return - If no auth should be applied, None
+    *         - If auth should be applied, Some, with a List of tuples - _1 in the tuple is the id of the policy, _2 is the parsed query
+    *              that pertain to that policy. So a query can be made along the lines of
+    *              (policyId = $policy1 AND (<policy1 details)) OR (policyId = $policy2 AND (<policy2 details>))
+    */
   def withRecordOpaQuery(
       operationType: AuthOperations.OperationType,
       recordPersistence: RecordPersistence,
@@ -30,7 +42,6 @@ object Directives {
       materializer: Materializer,
       ec: ExecutionContext
   ): Directive1[Option[List[(String, List[List[OpaQuery]])]]] = {
-
     AuthDirectives.getJwt().flatMap { jwt =>
       if (skipOpaQuery) {
         provide(None)
@@ -42,11 +53,10 @@ object Directives {
 
         val recordFuture =
           authApiClient
-            .queryForRecords(
+            .queryRecord(
               jwt,
               operationType,
-              recordPolicyIds.toList,
-              recordId
+              recordPolicyIds.toList
             )
 
         onSuccess(recordFuture).flatMap { queryResults =>
@@ -60,6 +70,24 @@ object Directives {
     }
   }
 
+  /**
+    * Determines OPA policies that apply, queries OPA and parses the policies for translation to SQL or some other query language.
+    * As opposed to withRecordOpaQuery, this also takes into account links within records.
+    *
+    * @param operationType The operation being performed (read, edit etc)
+    * @param recordPersistence A RecordPersistence instance to look up record policies etc through
+    * @param authApiClient An auth api client to query OPA through
+    * @param recordId A record id - optional, will be used to narrow down the policies returned to only those that apply to this record.
+    * @param aspectIds An optional iterable of the aspects being requested, to narrow down the total scope of potential policies to query
+    * @return A tuple with two values, both matching the following structure:
+    *         - If no auth should be applied, None
+    *         - If auth should be applied, Some, with a List of tuples - _1 in the tuple is the id of the policy, _2 is the parsed query
+    *           that pertain to that policy. So a query can be made along the lines of
+    *           (policyId = $policy1 AND (<policy1 details)) OR (policyId = $policy2 AND (<policy2 details>))
+    *
+    *           The first value in the tuple is to be applied for outer records, the second value is to be supplied for records that the
+    *           outer record links to.
+    */
   def withRecordOpaQueryIncludingLinks(
       operationType: AuthOperations.OperationType,
       recordPersistence: RecordPersistence,
@@ -95,8 +123,6 @@ object Directives {
           )
         } get
 
-        println(recordPolicyIds)
-
         val linkedRecordPolicyIds =
           if (linkedRecordIds.isEmpty) List()
           else
@@ -109,18 +135,14 @@ object Directives {
                 )
             } get
 
-        // println(linkedRecordPolicyIds)
-
         val allPolicyIds = recordPolicyIds.toSet ++ linkedRecordPolicyIds
-        println(allPolicyIds)
 
         val recordFuture =
           authApiClient
-            .queryForRecords(
+            .queryRecord(
               jwt,
               operationType,
-              allPolicyIds.toList,
-              recordId
+              allPolicyIds.toList
             )
 
         onSuccess(recordFuture).flatMap { queryResults =>
@@ -132,8 +154,6 @@ object Directives {
               .map(policyId => (policyId, queryResultLookup(policyId)))
             val fullLinkedRecordPolicyIds = linkedRecordPolicyIds
               .map(policyId => (policyId, queryResultLookup(policyId)))
-
-            println(fullLinkedRecordPolicyIds)
 
             provide(
               (Some(fullRecordPolicyIds), Some(fullLinkedRecordPolicyIds))

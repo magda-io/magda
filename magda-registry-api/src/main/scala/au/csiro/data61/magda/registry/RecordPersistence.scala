@@ -198,6 +198,11 @@ trait RecordPersistence {
       optionalAspects: Iterable[String]
   ): Source[Option[Record], NotUsed]
 
+  /**
+    * Gets a list of all potential policy ids for a given operation and (optional) set of records.
+    * Will return the config default policy id as part of the list if any record within the scope
+    * has a policy id of NULL.
+    */
   def getPolicyIds(
       implicit session: DBSession,
       operation: AuthOperations.OperationType,
@@ -1228,11 +1233,11 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       operation: AuthOperations.OperationType,
       recordIds: Option[Set[String]] = None
   ): Try[List[String]] = {
-    val recordIdClause = recordIds match {
+    val whereClause = recordIds match {
       case Some(recordIds) if !recordIds.isEmpty =>
-        SQLSyntax.joinWithOr(
+        sqls"""WHERE ${SQLSyntax.joinWithOr(
           recordIds.map(recordId => sqls"""recordid = ${recordId}""").toSeq: _*
-        )
+        )}"""
       case _ => SQLSyntax.empty
     }
 
@@ -1247,13 +1252,16 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
     Try {
       sql"""SELECT DISTINCT ${column}
       FROM records
-      WHERE ${SQLSyntax.joinWithAnd(
-        sqls"${column} IS NOT NULL",
-        recordIdClause
-      )}"""
-        .map(rs => rs.string(column))
+      $whereClause
+      """
+        .map(
+          rs =>
+            // If the column is null, replace it with the default opa policy id
+            rs.stringOpt(column).orElse(defaultOpaPolicyId)
+        )
         .list()
         .apply()
+        .flatten
     }
   }
 
