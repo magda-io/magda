@@ -113,6 +113,11 @@ Note: If using docker desktop for Windows older than version 19, change the valu
 ### Install the CKAN connector
 
 The Magda CKAN connector (as of v0.0.57) lives outside of the core repository, at https://github.com/magda-io/magda-ckan-connector.
+
+This is necessary if you want your magda instance already populated with an initial
+set of datasets from [data.gov.au](data.gov.au). If you don't want to get datasets from
+data.gov.au, then you can skip this and set `global.connectors.includeInitialJobs` to `false`.
+
 To get the CKAN connector running,
 
 ```bash
