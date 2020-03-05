@@ -7,6 +7,7 @@ import { getUserId } from "magda-typescript-common/src/session/GetUserId";
 import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 import { AuthorizedRegistryOptions } from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 const { fileParser } = require("express-multipart-file-parser");
+import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable";
 
 export interface ApiRouterOptions {
     registryApiUrl: string;
@@ -161,18 +162,15 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 tenantId: options.tenantId
             };
             const registryClient = new Registry(registryOptions);
-            const record: any = await registryClient.getRecord(
+            const recordP = await registryClient.getRecord(
                 recordId,
                 undefined,
                 ["publishing", "dataset-access-control"]
             );
-            // If there is an error
-            if (record.e) {
-                return res
-                    .status(404)
-                    .send(
-                        "You don't have access to this dataset/This dataset doesn't exist."
-                    );
+            try {
+                unionToThrowable(recordP);
+            } catch (e) {
+                return res.status(404).send("Could not retrieve the file.");
             }
         }
 
