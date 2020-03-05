@@ -160,6 +160,30 @@ describe("Storage API tests", () => {
     });
 
     describe("Upload", () => {
+        beforeEach(() => {
+            registryScope = nock(registryApiUrl);
+            registryScope
+                .get(
+                    "/records/storage-test-dataset-id-success?optionalAspect=publishing&optionalAspect=dataset-access-control"
+                )
+                .reply(200, {
+                    id: "DEFAULT_DATASET_ID",
+                    aspects: {
+                        "dcat-dataset-strings": {
+                            title: "DEFAULT_DATASET_TITLE",
+                            publisher: "DEFAULT_DATASET_PUBLISHER",
+                            contactPoint: "DEFAULT_DATASET_CONTACT_POINT"
+                        },
+                        "dataset-publisher": {}
+                    }
+                });
+            registryScope
+                .get(
+                    "/records/storage-test-dataset-id-failure?optionalAspect=publishing&optionalAspect=dataset-access-control"
+                )
+                .reply(404);
+        });
+
         describe("Upload a simple file", () => {
             it("As an admin", () => {
                 return mockAuthorization(
