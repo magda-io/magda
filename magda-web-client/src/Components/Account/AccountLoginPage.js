@@ -149,7 +149,8 @@ export default function Login(props) {
                             rel="noopener noreferrer"
                         >
                             click here
-                        </a>.
+                        </a>
+                        .
                     </p>
                 </div>
             )}
