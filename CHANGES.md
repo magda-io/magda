@@ -53,6 +53,7 @@ Authorization:
 -   Added ability to set per-record authorization policies in the registry (for getting a single record)
 -   Added ability to set per-record authorization policies in the registry (for getting multiple records)
 -   Added ability to use OPA policies that use data types other than strings in the registry
+-   Added authorization inside links with dereferencing on or off, for the records/<id> endpoint
 
 Others:
 
