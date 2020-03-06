@@ -9,6 +9,8 @@ global:
   defaultContactEmail: "magda-test@googlegroups.com"
   enableMultiTenants: false
   connectors:
+    includeInitialJobs: true
+    includeCronJobs: false
     image:
       repository: docker.io/data61
       tag: 0.0.57-0
@@ -26,6 +28,7 @@ tags:
   ingress: true
   priorities: false
   connectors: false
+  connector-dga: true
 
 magda-core:
   ingress:
@@ -98,6 +101,7 @@ magda-core:
     fallbackUrl: "https://data.gov.au"
     featureFlags:
       cataloguing: true
+      previewAddDataset: true
     vocabularyApiEndpoints:
       - "https://vocabs.ands.org.au/repository/api/lda/abares/australian-land-use-and-management-classification/version-8/concept.json"
       - "https://vocabs.ands.org.au/repository/api/lda/neii/australian-landscape-water-balance/version-1/concept.json"
