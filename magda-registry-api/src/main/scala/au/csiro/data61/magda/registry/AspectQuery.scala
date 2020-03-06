@@ -18,6 +18,12 @@ case class AspectQueryWithValue(
     sqlComparator: SQLSyntax = SQLSyntax.createUnsafely("=")
 ) extends AspectQuery
 
+case class AspectQueryAnyInArray(
+    val aspectId: String,
+    val path: List[String],
+    value: AspectQueryValue
+) extends AspectQuery
+
 sealed trait AspectQueryValue {
   val value: Any
   val postgresType: SQLSyntax
