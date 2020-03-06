@@ -62,6 +62,8 @@ defaultRoutes:
   tenant:
     to: http://tenant-api/v0
     auth: true
+  openfaas:
+    to: http://gateway.openfaas.svc.cluster.local:8080
 
 webRoutes: {}
 

@@ -12,6 +12,9 @@ global:
   connectors:
     includeInitialJobs: false
     includeCronJobs: true
+  openfaas:
+    gatewayNamespace: openfaas
+    functionNamespace: openfaas-fn
 
 openfaas:
   gatewayNamespace: openfaas
