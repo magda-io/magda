@@ -5,7 +5,7 @@
             "esri-access-control": {
                 "groups": ["Dep. A"],
                 "owner": "user0",
-                "access": "shared"
+                "access": "private"
             }
         }
     },
@@ -15,7 +15,7 @@
             "esri-access-control": {
                 "groups": ["Dep. A", "Branch A, Dep. A"],
                 "owner": "user1",
-                "access": "shared"
+                "access": "private"
             }
         }
     },
@@ -26,7 +26,7 @@
             "esri-access-control": {
                 "groups": ["Dep. A", "Branch B, Dep. A"],
                 "owner": "user2",
-                "access": "shared"
+                "access": "private"
             }
         }
     },
@@ -41,7 +41,7 @@
                     "Section C, Branch B, Dep. A"
                 ],
                 "owner": "user3",
-                "access": "shared"
+                "access": "private"
             }
         }
     },
@@ -50,9 +50,8 @@
         "id": "record-4",
         "aspects": {
             "esri-access-control": {
-                "access": "public",
-                "owner": "user3",
-                "access": "shared"
+                "access": "private",
+                "owner": "user3"
             }
         }
     },
@@ -63,7 +62,7 @@
             "esri-access-control": {
                 "groups": ["Dep. A", "Branch B, Dep. A"],
                 "owner": "user2",
-                "access": "shared"
+                "access": "private"
             }
         }
     }

@@ -129,6 +129,7 @@ object SqlHelper {
     else if (operation == Lt) SQLSyntax.createUnsafely("<")
     else if (operation == Gte) SQLSyntax.createUnsafely(">=")
     else if (operation == Lte) SQLSyntax.createUnsafely("<=")
+    else if (operation == Neq) SQLSyntax.createUnsafely("!=")
     else
       throw new Exception("Could not understand " + operation)
   }

@@ -268,8 +268,8 @@ export default class EsriPortal implements ConnectorSource {
                         // where "any authenticated users" is the value to be checked by
                         // aspect-templates/group-esri-access-control.js.
                         //
-                        // Currently the esri-access-control aspect data property "access" is
-                        // compulsory only if its value is "public".  Otherwise it is optional.
+                        // The esri-access-control aspect data property "access" is
+                        // compulsory -- its value is "public", "private", "shared" or "org".
                         const groupInfo =
                             item.access === "org"
                                 ? {
