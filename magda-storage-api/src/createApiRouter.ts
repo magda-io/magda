@@ -147,6 +147,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
         }
         const recordIdNum = res.getHeader("Record-ID");
         if (recordIdNum) {
+            console.log("lmao");
             const recordId = recordIdNum.toString();
             const maybeUserId = getUserId(req, options.jwtSecret);
             let userId;
@@ -170,6 +171,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
             try {
                 unionToThrowable(recordP);
             } catch (e) {
+                console.error("Error'd out: ", e);
                 return res.status(404).send("Could not retrieve the file.");
             }
         }
