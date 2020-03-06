@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAsync } from "react-async-hook";
 import moment from "moment";
+import uuid from "uuid";
 import fetch from "isomorphic-fetch";
 import { config } from "config";
 import {
@@ -347,6 +348,8 @@ const DatasetLinkItem = (props: Props) => {
             data.distributions.slice(1).forEach(item => {
                 props.addDistribution({
                     ...item.aspects["dcat-distribution-strings"],
+                    id: uuid.v4(),
+                    creationSource: DistributionSource.DatasetUrl,
                     _state: DistributionState.Ready
                 });
             });
