@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { useAsync } from "react-async-hook";
-import defer from "helpers/defer";
 import moment from "moment";
+import fetch from "isomorphic-fetch";
+import { config } from "config";
 import {
     Distribution,
-    DistributionState
+    DistributionState,
+    DistributionSource
 } from "Components/Dataset/Add/DatasetAddCommon";
 import "./DatasetLinkItem.scss";
 
@@ -18,10 +20,12 @@ import SlimTextInputWithValidation from "../Add/SlimTextInputWithValidation";
 import * as ValidationManager from "./ValidationManager";
 import ValidationRequiredLabel from "../../Dataset/Add/ValidationRequiredLabel";
 import { MultilineTextEditor } from "Components/Editing/Editors/textEditor";
+import promiseAny from "helpers/promiseAny";
 
 type Props = {
     distribution: Distribution;
     idx: number;
+    addDistribution: (distribution: Distribution) => void;
     editDistribution: (
         updater: (distribution: Distribution) => Distribution
     ) => void;
@@ -255,16 +259,98 @@ const DatasetLinkItemEditing = (props: EditViewProps) => {
     );
 };
 
+async function getAllDataUrlProcessorsFromOpenfaasGateway() {
+    const res = await fetch(
+        `${config.openfaasBaseUrl}/system/functions`,
+        config.fetchOptions
+    );
+    if (res.status !== 200) {
+        throw new Error(
+            "Failed to contact openfaas gateway: " + res.statusText
+        );
+    }
+    const data: any[] = await res.json();
+    if (!data || !data.length) {
+        return [];
+    }
+    return data.filter(
+        item => item.labels && item.labels.magdaType === "data-url-processor"
+    );
+}
+
 const DatasetLinkItem = (props: Props) => {
     const [editMode, setEditMode] = useState(false);
 
     useAsync(async () => {
-        await defer(2000);
-        props.editDistribution(distribution => ({
-            ...distribution,
-            _state: DistributionState.Ready
-        }));
-        return {};
+        const processors = await getAllDataUrlProcessorsFromOpenfaasGateway();
+        if (!processors || !processors.length) {
+            throw new Error(
+                "There is no data url processor has been deployed and available for service."
+            );
+        }
+
+        const data = await promiseAny(
+            processors.map(async item => {
+                const res = await fetch(
+                    `${config.openfaasBaseUrl}/function/${item.name}`,
+                    {
+                        ...config.fetchOptions,
+                        method: "post",
+                        body: props.distribution.downloadURL
+                    }
+                );
+                if (res.status !== 200) {
+                    throw new Error(
+                        `Failed to request function ${item.name}` +
+                            res.statusText
+                    );
+                }
+
+                const data = await res.json();
+                if (
+                    !data ||
+                    !data.distributions ||
+                    !data.distributions.length
+                ) {
+                    throw new Error(
+                        `Process result contains less than 1 distribution`
+                    );
+                }
+
+                data.distributions = data.distributions.filter(
+                    item =>
+                        item.aspects &&
+                        item.aspects["dcat-distribution-strings"]
+                );
+
+                if (!data.distributions.length) {
+                    throw new Error(
+                        `Process result contains less than 1 distribution with valid "dcat-distribution-strings" aspect`
+                    );
+                }
+
+                return data;
+            })
+        );
+
+        props.editDistribution(distribution => {
+            return {
+                ...distribution,
+                ...data.distributions[0].aspects["dcat-distribution-strings"],
+                creationSource: DistributionSource.DatasetUrl,
+                _state: DistributionState.Ready
+            };
+        });
+
+        // --- if there are more than one distribution returned, added to the list
+        if (data.distributions.length > 1) {
+            data.distributions.slice(1).forEach(item => {
+                props.addDistribution({
+                    ...item.aspects["dcat-distribution-strings"],
+                    _state: DistributionState.Ready
+                });
+            });
+        }
     }, [props.distribution.id]);
 
     if (props.distribution._state !== DistributionState.Ready) {
