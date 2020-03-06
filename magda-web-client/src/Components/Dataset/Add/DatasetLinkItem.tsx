@@ -87,7 +87,7 @@ const DatasetLinkItemComplete = (props: CompleteViewProps) => {
                     <div>
                         <b>URL:</b> {distribution.downloadURL}
                     </div>
-                    <div>
+                    <div className="description-area">
                         <b>Service description:</b>{" "}
                         {distribution.description
                             ? distribution.description
