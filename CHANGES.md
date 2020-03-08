@@ -11,6 +11,7 @@ General:
 -   Moved out [connectors](https://github.com/magda-io?utf8=%E2%9C%93&q=magda+connector) & [minions](https://github.com/magda-io?utf8=%E2%9C%93&q=magda-minion) from main magda repostory
 -   Broke helm chart to `magda-core` (core magda components excluding `connectors` & `minions`) & `magda` (full magda chart) and adjusted CI pipeline accordingly
 -   Release [npm packages](https://www.npmjs.com/search?q=%40magda) for building `connectors` & `minions` without depending on main repo
+-   Upgrade charts to use with Helm 3, Kubernetes 1.17 and Minikube 1.7.2
 -   Make recompiling and updating create secrets scripts an action in the CI
 
 UI:
@@ -52,6 +53,7 @@ Authorization:
 -   Added ability to set per-record authorization policies in the registry (for getting a single record)
 -   Added ability to set per-record authorization policies in the registry (for getting multiple records)
 -   Added ability to use OPA policies that use data types other than strings in the registry
+-   Added authorization inside links with dereferencing on or off, for the records/<id> endpoint
 
 Others:
 
