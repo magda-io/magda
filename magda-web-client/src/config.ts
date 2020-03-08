@@ -307,7 +307,7 @@ export const config = {
           ],
     openfaasBaseUrl: serverConfig.openfaasBaseUrl
         ? serverConfig.openfaasBaseUrl
-        : fallbackApiHost + "api/v0/openfaas"
+        : baseUrl + "api/v0/openfaas"
 };
 
 export const defaultConfiguration = {
