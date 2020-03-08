@@ -80,8 +80,8 @@ This gives you a local docker registry that you'll upload your built images to s
 ```bash
 helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
 helm repo update
-helm install --name docker-registry -f deploy/helm/docker-registry.yml stable/docker-registry
-helm install --name kube-registry-proxy -f deploy/helm/kube-registry-proxy.yml incubator/kube-registry-proxy
+helm install docker-registry -f deploy/helm/docker-registry.yml stable/docker-registry
+helm install kube-registry-proxy -f deploy/helm/kube-registry-proxy.yml magda-io/kube-registry-proxy
 ```
 
 ### Build local docker images
@@ -110,6 +110,25 @@ kubectl apply -f deploy/kubernetes/local-storage-volume.yaml
 
 Note: If using docker desktop for Windows older than version 19, change the value from "docker-desktop" to "docker-for-desktop" in nodeAffinity in file deploy/kubernetes/local-storage-volume.yaml
 
+### Install the CKAN connector
+
+The Magda CKAN connector (as of v0.0.57) lives outside of the core repository, at https://github.com/magda-io/magda-ckan-connector.
+
+This is necessary if you want your magda instance already populated with an initial
+set of datasets from [data.gov.au](data.gov.au). If you don't want to get datasets from
+data.gov.au, then you can skip this and set `global.connectors.includeInitialJobs` to `false`.
+
+To get the CKAN connector running,
+
+```bash
+git clone https://github.com/magda-io/magda-ckan-connector
+cd magda-ckan-connector
+yarn install
+yarn run build
+eval $(minikube docker-env)
+yarn run docker-build-local
+```
+
 ### Install Magda on your minikube/docker-desktop cluster
 
 ```bash
@@ -118,7 +137,7 @@ helm repo update
 # update magda chart dependencies
 helm dep build deploy/helm/magda
 # deploy the magda chart from magda helm repo
-helm upgrade --install --timeout 9999 --wait -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
+helm upgrade --install --timeout 9999m --wait -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
 ```
 
 This can take a while as it does a lot - downloading all the docker images, starting them up and running database migration jobs. You can see what's happening by opening another tab and running `kubectl get pods -w`.
@@ -131,9 +150,9 @@ If you're using Docker Desktop on Windows, add `-f deploy/helm/docker-desktop-wi
 # update magda helm repo
 helm repo update
 # update magda chart dependencies
-helm dep build deploy/helm/magda
+helm dep up deploy/helm/magda
 # deploy the magda chart from magda helm repo
-helm upgrade --install --timeout 9999 --wait -f deploy/helm/docker-desktop-windows.yml -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
+helm upgrade --install --timeout 9999m --wait -f deploy/helm/docker-desktop-windows.yml -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
 ```
 
 If you want to deploy the packed & production ready helm chart in our helm repo:
@@ -142,7 +161,7 @@ If you want to deploy the packed & production ready helm chart in our helm repo:
 # update magda helm repo
 helm repo update
 # deploy the local magda chart
-helm upgrade --install --timeout 9999 --wait -f deploy/helm/minikube-dev.yml magda magda-io/magda
+helm upgrade --install --timeout 9999m --wait -f deploy/helm/minikube-dev.yml magda magda-io/magda
 ```
 
 **Please Note:**
