@@ -1274,6 +1274,10 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
 
     /** For aspects that have links to other aspects, a map of the ids of those aspects to the location (first-level, not path) in their JSON where the link is  */
     val referenceMap = this.buildReferenceMap(session, aspectIds)
+    val recordIdClause = recordId match {
+      case Some(recordId) => sqls"AND recordId = ${recordId}"
+      case none           => SQLSyntax.empty
+    }
 
     Try {
       (referenceMap
@@ -1286,7 +1290,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
 
             sql"""SELECT DISTINCT $selectClause AS recordId
               FROM recordaspects
-              WHERE aspectId = ${aspectId} AND recordId = ${recordId}"""
+              WHERE aspectId = ${aspectId} ${recordIdClause}"""
               .map(
                 rs => rs.stringOpt("recordId").toList
               )

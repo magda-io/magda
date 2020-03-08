@@ -990,6 +990,757 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
     }
   }
 
+  /**
+    * Does tests for getting multiple records via /record that have links in them
+    *
+    * @param policyA
+    * @param policyB
+    * @param expectedRequestedPolicyA
+    * @param expectedRequestedPolicyB
+    */
+  def doLinkTestsOnRecordsEndpoint(
+      policyA: Option[String],
+      policyB: Option[String],
+      expectedRequestedPolicyA: String,
+      expectedRequestedPolicyB: String
+  ) = {
+    describe("with single linked records") {
+      describe("with dereference=false") {
+        it(
+          "should only display a linked record if that record's policy allows access"
+        ) { param =>
+          setup(param)
+
+          val addedInnerRecords = addRecords(param)
+
+          Get(
+            s"/v0/records?aspect=aspect-with-link&dereference=false"
+          ) ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+
+            val response = responseAs[RecordsPage[Record]]
+            response.records.map(_.id) shouldBe List(
+              "record-outer-1",
+              "record-outer-2",
+              "record-outer-3",
+              "record-outer-4"
+            )
+
+            val innerRecords = response.records.map(
+              record =>
+                record
+                  .aspects("aspect-with-link")
+                  .fields("innerId")
+            )
+
+            for (number <- 0 to 1) {
+              (innerRecords(number)) shouldEqual JsString(
+                addedInnerRecords(
+                  number
+                ).id
+              )
+            }
+
+            for (number <- 2 to 3) {
+              innerRecords(number) shouldEqual JsNull
+            }
+          }
+        }
+      }
+
+      describe("with dereference=true") {
+        it(
+          "should only display a linked record if that record's policy allows access"
+        ) { param =>
+          setup(param)
+
+          val addedInnerRecords = addRecords(param)
+
+          Get(
+            s"/v0/records?aspect=aspect-with-link&dereference=true"
+          ) ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+
+            val response = responseAs[RecordsPage[Record]]
+            response.records.map(_.id) shouldBe List(
+              "record-outer-1",
+              "record-outer-2",
+              "record-outer-3",
+              "record-outer-4"
+            )
+
+            val innerRecords = response.records.map(
+              record =>
+                record
+                  .aspects("aspect-with-link")
+                  .fields("innerId")
+            )
+
+            for (number <- 0 to 1) {
+              (innerRecords(number)
+                .convertTo[Record]) shouldEqual addedInnerRecords(
+                number
+              ).copy(
+                authnReadPolicyId = None
+              )
+            }
+
+            for (number <- 2 to 3) {
+              innerRecords(number) shouldEqual JsNull
+            }
+          }
+        }
+      }
+
+      it(
+        "being able to see inner records should NOT grant visibility to outer records"
+      ) { param =>
+        setup(param)
+
+        // add the inner record
+        addRecord(
+          param,
+          Record(
+            "record-1",
+            "foo",
+            Map(
+              "booleanExample" -> JsObject(
+                "boolean" -> JsTrue
+              )
+            ),
+            authnReadPolicyId = policyA
+          )
+        )
+
+        // add the outer record
+        addRecord(
+          param,
+          Record(
+            "record-2",
+            "foo",
+            Map(
+              "aspect-with-link" -> JsObject(
+                "innerId" -> JsString("record-1")
+              ),
+              "stringExample" -> JsObject(
+                "nested" -> JsObject("public" -> JsString("false"))
+              )
+            ),
+            authnReadPolicyId = policyB
+          )
+        )
+
+        Get(
+          s"/v0/records?aspect=aspect-with-link&dereference=false"
+        ) ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          val response = responseAs[RecordsPage[Record]]
+
+          response.records.size shouldEqual 1
+        }
+
+        // Call again with dereference=true, this means more calls to OPA
+        expectOpaQueryForPolicy(
+          param,
+          expectedRequestedPolicyA,
+          policyResponseForBooleanExampleAspect
+        )
+        expectOpaQueryForPolicy(
+          param,
+          expectedRequestedPolicyB,
+          policyResponseForStringExampleAspect
+        )
+
+        Get(
+          s"/v0/records?aspect=aspect-with-link&dereference=true"
+        ) ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          val response = responseAs[RecordsPage[Record]]
+
+          response.records.size shouldEqual 1
+        }
+      }
+
+      def setup(param: FixtureParam) = {
+        expectOpaQueryForPolicy(
+          param,
+          expectedRequestedPolicyB,
+          policyResponseForStringExampleAspect
+        )
+        expectOpaQueryForPolicy(
+          param,
+          expectedRequestedPolicyA,
+          policyResponseForBooleanExampleAspect
+        )
+
+        addAspectDef(
+          param,
+          "stringExample"
+        )
+        addAspectDef(
+          param,
+          "booleanExample"
+        )
+
+        // add an aspect def with a link in it
+        addAspectDef(
+          param,
+          "aspect-with-link",
+          Some(
+            JsObject(
+              "$schema" -> JsString(
+                "http://json-schema.org/hyper-schema#"
+              ),
+              "title" -> JsString("Test"),
+              "description" -> JsString("Test"),
+              "type" -> JsString("object"),
+              "properties" -> JsObject(
+                "innerId" -> JsObject(
+                  "title" -> JsString("A name given to the dataset."),
+                  "type" -> JsString("string"),
+                  "links" -> JsArray(
+                    JsObject(
+                      "href" -> JsString("/api/v0/registry/records/{$}"),
+                      "rel" -> JsString("item")
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      }
+
+      // /**
+      //   * Adds two records with inner records that aren't allowed to be seen according to their policies
+      //   */
+      // def addRecordsInnerNotAllowed(param: FixtureParam) = {
+      //   // add inner records
+      //   addRecord(
+      //     param,
+      //     Record(
+      //       "record-inner-1",
+      //       "foo",
+      //       Map(
+      //         "booleanExample" -> JsObject(
+      //           "boolean" -> JsFalse
+      //         )
+      //       ),
+      //       authnReadPolicyId = policyA
+      //     )
+      //   )
+      //   addRecord(
+      //     param,
+      //     Record(
+      //       "record-inner-2",
+      //       "foo",
+      //       Map(
+      //         "stringExample" -> JsObject(
+      //           "nested" -> JsObject("public" -> JsString("false"))
+      //         )
+      //       ),
+      //       authnReadPolicyId = policyB
+      //     )
+      //   )
+
+      //   // add outer records
+      //   addRecord(
+      //     param,
+      //     Record(
+      //       "record-outer-1",
+      //       "foo",
+      //       Map(
+      //         "aspect-with-link" -> JsObject(
+      //           "innerId" -> JsString("record-inner-1")
+      //         ),
+      //         "stringExample" -> JsObject(
+      //           "nested" -> JsObject("public" -> JsString("true"))
+      //         )
+      //       ),
+      //       authnReadPolicyId = policyB
+      //     )
+      //   )
+      //   addRecord(
+      //     param,
+      //     Record(
+      //       "record-outer-2",
+      //       "foo",
+      //       Map(
+      //         "aspect-with-link" -> JsObject(
+      //           "innerId" -> JsString("record-inner-2")
+      //         ),
+      //         "booleanExample" -> JsObject(
+      //           "boolean" -> JsTrue
+      //         )
+      //       ),
+      //       authnReadPolicyId = policyA
+      //     )
+      //   )
+      // }
+
+      /**
+        * Adds two records that link to inner records, with the inner records being allowed by their policies
+        *
+        * @return The two inner records that are allowed
+        */
+      def addRecords(param: FixtureParam) = {
+        val inner1 = Record(
+          "record-inner-allowed-1",
+          "foo",
+          Map(
+            "booleanExample" -> JsObject(
+              "boolean" -> JsTrue
+            )
+          ),
+          authnReadPolicyId = policyA
+        )
+
+        // add inner records
+        addRecord(
+          param,
+          inner1
+        )
+
+        val inner2 = Record(
+          "record-inner-allowed-2",
+          "foo",
+          Map(
+            "stringExample" -> JsObject(
+              "nested" -> JsObject("public" -> JsString("true"))
+            )
+          ),
+          authnReadPolicyId = policyB
+        )
+
+        addRecord(
+          param,
+          inner2
+        )
+
+        addRecord(
+          param,
+          Record(
+            "record-inner-not-allowed-1",
+            "foo",
+            Map(
+              "booleanExample" -> JsObject(
+                "boolean" -> JsFalse
+              )
+            ),
+            authnReadPolicyId = policyA
+          )
+        )
+        addRecord(
+          param,
+          Record(
+            "record-inner-not-allowed-2",
+            "foo",
+            Map(
+              "stringExample" -> JsObject(
+                "nested" -> JsObject("public" -> JsString("false"))
+              )
+            ),
+            authnReadPolicyId = policyB
+          )
+        )
+
+        // add outer records
+        addRecord(
+          param,
+          Record(
+            "record-outer-1",
+            "foo",
+            Map(
+              "aspect-with-link" -> JsObject(
+                "innerId" -> JsString("record-inner-allowed-1")
+              ),
+              "stringExample" -> JsObject(
+                "nested" -> JsObject("public" -> JsString("true"))
+              )
+            ),
+            authnReadPolicyId = policyB
+          )
+        )
+        addRecord(
+          param,
+          Record(
+            "record-outer-2",
+            "foo",
+            Map(
+              "aspect-with-link" -> JsObject(
+                "innerId" -> JsString("record-inner-allowed-2")
+              ),
+              "booleanExample" -> JsObject(
+                "boolean" -> JsTrue
+              )
+            ),
+            authnReadPolicyId = policyA
+          )
+        )
+        addRecord(
+          param,
+          Record(
+            "record-outer-3",
+            "foo",
+            Map(
+              "aspect-with-link" -> JsObject(
+                "innerId" -> JsString("record-inner-allowed-3")
+              ),
+              "booleanExample" -> JsObject(
+                "boolean" -> JsTrue
+              )
+            ),
+            authnReadPolicyId = policyA
+          )
+        )
+        addRecord(
+          param,
+          Record(
+            "record-outer-4",
+            "foo",
+            Map(
+              "aspect-with-link" -> JsObject(
+                "innerId" -> JsString("record-inner-not-allowed-4")
+              ),
+              "stringExample" -> JsObject(
+                "nested" -> JsObject("public" -> JsString("true"))
+              )
+            ),
+            authnReadPolicyId = policyB
+          )
+        )
+
+        List(inner1, inner2)
+      }
+    }
+
+    describe("with an array of linked records") {
+      describe("with dereference=false") {
+        it("only shows inner records that the user is authorised to see") {
+          param =>
+            setup(param)
+
+            addInnerRecords(param)
+
+            // add the outer record
+            addRecord(
+              param,
+              Record(
+                "record-2",
+                "foo",
+                Map(
+                  "aspect-with-link" -> JsObject(
+                    "innerIds" -> JsArray(
+                      JsString("booleanTrue"),
+                      JsString("booleanFalse"),
+                      JsString("stringTrue"),
+                      JsString("stringFalse")
+                    )
+                  ),
+                  "stringExample" -> JsObject(
+                    "nested" -> JsObject("public" -> JsString("true"))
+                  )
+                ),
+                authnReadPolicyId = policyB
+              )
+            )
+
+            // Get the results
+            Get(
+              s"/v0/records/record-2?aspect=aspect-with-link&dereference=false"
+            ) ~> addTenantIdHeader(
+              TENANT_1
+            ) ~> param.api(Full).routes ~> check {
+              status shouldEqual StatusCodes.OK
+
+              val response = responseAs[Record]
+
+              response.aspects
+                .get("aspect-with-link")
+                .isDefined shouldBe true
+
+              val links = response
+                .aspects("aspect-with-link")
+                .fields("innerIds")
+                .convertTo[JsArray]
+                .elements
+                .map {
+                  case JsString(string) => string
+                  case _ =>
+                    throw new Error("Had a link that wasn't a string")
+                }
+
+              links shouldEqual Vector("booleanTrue", "stringTrue")
+            }
+        }
+      }
+
+      describe("with dereference=true") {
+        it("only shows inner records that the user is authorised to see") {
+          param =>
+            setup(param)
+
+            val matchingInnerRecords = addInnerRecords(param)
+
+            // add the outer record
+            addRecord(
+              param,
+              Record(
+                "record-2",
+                "foo",
+                Map(
+                  "aspect-with-link" -> JsObject(
+                    "innerIds" -> JsArray(
+                      JsString("booleanTrue"),
+                      JsString("booleanFalse"),
+                      JsString("stringTrue"),
+                      JsString("stringFalse")
+                    )
+                  ),
+                  "stringExample" -> JsObject(
+                    "nested" -> JsObject("public" -> JsString("true"))
+                  )
+                ),
+                authnReadPolicyId = policyB
+              )
+            )
+
+            // Get the results
+            Get(
+              s"/v0/records/record-2?aspect=aspect-with-link&dereference=true"
+            ) ~> addTenantIdHeader(
+              TENANT_1
+            ) ~> param.api(Full).routes ~> check {
+              status shouldEqual StatusCodes.OK
+
+              val response = responseAs[Record]
+
+              response.aspects
+                .get("aspect-with-link")
+                .isDefined shouldBe true
+
+              val records = response
+                .aspects("aspect-with-link")
+                .fields("innerIds")
+                .convertTo[List[Record]]
+
+              records shouldEqual matchingInnerRecords.map(
+                _.copy(authnReadPolicyId = None)
+              )
+            }
+        }
+      }
+
+      it(
+        "being able to see an inner record does NOT grant visibility on the outer record"
+      ) { param =>
+        setup(param)
+
+        // add some inner records
+        addRecord(
+          param,
+          Record(
+            "booleanTrue",
+            "foo",
+            Map(
+              "booleanExample" -> JsObject(
+                "boolean" -> JsTrue
+              )
+            ),
+            authnReadPolicyId = policyA
+          )
+        )
+        addRecord(
+          param,
+          Record(
+            "booleanFalse",
+            "foo",
+            Map(
+              "booleanExample" -> JsObject(
+                "boolean" -> JsFalse
+              )
+            ),
+            authnReadPolicyId = policyA
+          )
+        )
+
+        // add the outer record
+        addRecord(
+          param,
+          Record(
+            "record-2",
+            "foo",
+            Map(
+              "aspect-with-link" -> JsObject(
+                "innerIds" -> JsArray(
+                  JsString("booleanTrue"),
+                  JsString("booleanFalse")
+                )
+              ),
+              "stringExample" -> JsObject(
+                "nested" -> JsObject("public" -> JsString("false"))
+              )
+            ),
+            authnReadPolicyId = policyB
+          )
+        )
+
+        // Get the results
+        Get(
+          s"/v0/records/record-2?aspect=aspect-with-link&dereference=false"
+        ) ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.NotFound
+        }
+
+        // Try again with dereference = true (should be the same result). Expect the OPA calls to happen again.
+        expectOpaQueryForPolicy(
+          param,
+          expectedRequestedPolicyB,
+          policyResponseForStringExampleAspect
+        )
+        expectOpaQueryForPolicy(
+          param,
+          expectedRequestedPolicyA,
+          policyResponseForBooleanExampleAspect
+        )
+        Get(
+          s"/v0/records/record-2?aspect=aspect-with-link&dereference=true"
+        ) ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.NotFound
+        }
+      }
+
+      def setup(param: FixtureParam) = {
+        expectOpaQueryForPolicy(
+          param,
+          expectedRequestedPolicyB,
+          policyResponseForStringExampleAspect
+        )
+        expectOpaQueryForPolicy(
+          param,
+          expectedRequestedPolicyA,
+          policyResponseForBooleanExampleAspect
+        )
+
+        addAspectDef(
+          param,
+          "stringExample"
+        )
+        addAspectDef(
+          param,
+          "booleanExample"
+        )
+
+        // add an aspect def with an array link in it
+        addAspectDef(
+          param,
+          "aspect-with-link",
+          Some(
+            JsObject(
+              "$schema" -> JsString(
+                "http://json-schema.org/hyper-schema#"
+              ),
+              "title" -> JsString("Test"),
+              "description" -> JsString("Test"),
+              "type" -> JsString("object"),
+              "properties" -> JsObject(
+                "innerIds" -> JsObject(
+                  "title" -> JsString("array of inner ids"),
+                  "type" -> JsString("array"),
+                  "items" -> JsObject(
+                    "title" -> JsString("inner id"),
+                    "type" -> JsString("string"),
+                    "links" -> JsArray(
+                      JsObject(
+                        "href" -> JsString("/api/v0/registry/records/{$}"),
+                        "rel" -> JsString("item")
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      }
+
+      /** Adds two inner records that should be shown, and two that don't, and returns the two that do */
+      def addInnerRecords(param: FixtureParam) = {
+        val booleanTrue = Record(
+          "booleanTrue",
+          "foo",
+          Map(
+            "booleanExample" -> JsObject(
+              "boolean" -> JsTrue
+            )
+          ),
+          authnReadPolicyId = policyA
+        )
+
+        // add some inner records
+        addRecord(
+          param,
+          booleanTrue
+        )
+        addRecord(
+          param,
+          Record(
+            "booleanFalse",
+            "foo",
+            Map(
+              "booleanExample" -> JsObject(
+                "boolean" -> JsFalse
+              )
+            ),
+            authnReadPolicyId = policyA
+          )
+        )
+
+        val stringTrue = Record(
+          "stringTrue",
+          "foo",
+          Map(
+            "stringExample" -> JsObject(
+              "nested" -> JsObject("public" -> JsString("true"))
+            )
+          ),
+          authnReadPolicyId = policyB
+        )
+        addRecord(
+          param,
+          stringTrue
+        )
+        addRecord(
+          param,
+          Record(
+            "stringFalse",
+            "foo",
+            Map(
+              "stringExample" -> JsObject(
+                "nested" -> JsObject("public" -> JsString("false"))
+              )
+            ),
+            authnReadPolicyId = policyB
+          )
+        )
+
+        List(booleanTrue, stringTrue)
+      }
+    }
+  }
+
   def addExampleAspectDef(param: FixtureParam) =
     addAspectDef(param, "stringExample")
 
