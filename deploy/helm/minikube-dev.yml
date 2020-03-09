@@ -68,6 +68,11 @@ tags:
   connector-dga: true
 
 connector-dga:
+  image:
+    repository: docker.io/data61
+    tag: 0.0.57-0-openfaas
+    pullPolicy: IfNotPresent
+    imagePullSecret: false
   config:
     id: dga
     name: "data.gov.au"
