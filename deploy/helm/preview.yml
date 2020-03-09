@@ -11,6 +11,11 @@ global:
   connectors:
     includeInitialJobs: true
     includeCronJobs: false
+    image:
+      repository: docker.io/data61
+      tag: 0.0.57-0-openfaas
+      pullPolicy: IfNotPresent
+      imagePullSecret: false
   minions:
     image:
       repository: docker.io/data61
