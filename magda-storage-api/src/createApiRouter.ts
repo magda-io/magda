@@ -173,7 +173,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
             try {
                 unionToThrowable(recordP);
             } catch (e) {
-                console.error("Error'd out: ", e);
                 return res.status(404).send("Could not retrieve the file.");
             }
         }
