@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gateway
@@ -7,6 +7,9 @@ spec:
     rollingUpdate:
       maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
   replicas: {{ .Values.replicas | default 1 }}
+  selector:
+    matchLabels:
+      service: gateway
   template:
     metadata:
       labels:

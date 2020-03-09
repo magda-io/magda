@@ -150,7 +150,7 @@ export default function Login(props) {
                         >
                             click here
                         </a>
-                        /> .
+                        .
                     </p>
                 </div>
             )}

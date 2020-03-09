@@ -1,7 +1,7 @@
 {{/* vim: set filetype=mustache: */}}
 
 {{- define "magda.registry-deployment" -}}
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .name }}
@@ -10,6 +10,9 @@ spec:
   strategy:
     rollingUpdate:
       maxUnavailable: {{ .root.Values.global.rollingUpdate.maxUnavailable | default 0 }}
+  selector:
+    matchLabels:
+      service: {{ .name }}
   template:
     metadata:
       labels:
