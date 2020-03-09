@@ -4,8 +4,9 @@ import ObjectStoreClient from "./ObjectStoreClient";
 import bodyParser from "body-parser";
 import { mustBeAdmin } from "magda-typescript-common/src/authorization-api/authMiddleware";
 import { getUserId } from "magda-typescript-common/src/session/GetUserId";
-import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
-import { AuthorizedRegistryOptions } from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+import AuthorizedRegistryClient, {
+    AuthorizedRegistryOptions
+} from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 const { fileParser } = require("express-multipart-file-parser");
 import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable";
 
@@ -147,7 +148,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
         }
         const recordIdNum = res.getHeader("Record-ID");
         if (recordIdNum) {
-            console.log("lmao");
             const recordId = recordIdNum.toString();
             const maybeUserId = getUserId(req, options.jwtSecret);
             let userId;
@@ -162,7 +162,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 userId: userId,
                 tenantId: options.tenantId
             };
-            const registryClient = new Registry(registryOptions);
+            const registryClient = new AuthorizedRegistryClient(
+                registryOptions
+            );
             const recordP = await registryClient.getRecord(
                 recordId,
                 undefined,
@@ -220,9 +222,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 return res.status(400).send("No files were uploaded.");
             }
             const recordId = req.query.recordId;
-            const encodedRecordId = recordId
-                ? encodeURIComponent(recordId)
-                : undefined;
             const bucket = req.params.bucket;
             const encodeBucketname = encodeURIComponent(bucket);
             const promises = (req.files as Array<any>).map((file: any) => {
@@ -230,8 +229,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
                     "Content-Type": file.mimetype,
                     "Content-Length": file.buffer.byteLength
                 };
-                if (encodedRecordId) {
-                    metaData["Record-ID"] = encodedRecordId;
+                if (recordId) {
+                    metaData["Record-ID"] = recordId;
                 }
                 const fieldId = file.originalname;
                 const encodedRootPath = encodeURIComponent(fieldId);
@@ -293,9 +292,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
             const fileId = req.params.fileid;
             const bucket = req.params.bucket;
             const recordId = req.query.recordId;
-            const encodedRecordId = recordId
-                ? encodeURIComponent(recordId)
-                : undefined;
             const encodedRootPath = encodeURIComponent(fileId);
             const encodeBucketname = encodeURIComponent(bucket);
             const content = req.body;
@@ -310,8 +306,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 "Content-Type": contentType,
                 "Content-Length": contentLength
             };
-            if (encodedRecordId) {
-                metaData["Record-ID"] = encodedRecordId;
+            if (recordId) {
+                metaData["Record-ID"] = recordId;
             }
             return options.objectStoreClient
                 .putFile(encodeBucketname, encodedRootPath, content, metaData)
