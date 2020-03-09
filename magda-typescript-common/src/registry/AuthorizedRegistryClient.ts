@@ -38,7 +38,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         }
 
         if (options.jwtSecret === undefined || options.jwtSecret === null) {
-            throw Error("Some jwt secret must be defined.");
+            throw Error("JWT secret must be defined.");
         }
         super(options);
         this.options = options;
