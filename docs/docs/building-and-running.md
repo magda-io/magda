@@ -60,14 +60,7 @@ You can also run the same command in an individual component's directory (i.e. `
 
 Helm is the package manager for Kubernetes - we use it to make it so that you can install all the various services you need for MAGDA at once. To install, follow the instructions at [https://github.com/helm/helm#install](https://github.com/helm/helm#install).
 
-In a nutshell, once you have helm installed, this is how you initialise helm and Tiller.
-
-```bash
-kubectl apply -f deploy/kubernetes/rbac-config.yaml
-helm init --service-account tiller
-```
-
-Add Magda Helm Chart Repo:
+Once you have helm installed, add Magda Helm Chart Repo:
 
 ```bash
 helm repo add magda-io https://charts.magda.io
