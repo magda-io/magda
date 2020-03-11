@@ -31,6 +31,7 @@ UI:
 -   Added UI for "Link to an API or web service" box
 -   Added UI for storing files
 -   Added UI for "Publish as Open Data to data.gov.au"
+-   Clarify tooltip text
 
 Storage:
 
@@ -53,7 +54,7 @@ Authorization:
 -   Added ability to set per-record authorization policies in the registry (for getting a single record)
 -   Added ability to set per-record authorization policies in the registry (for getting multiple records)
 -   Added ability to use OPA policies that use data types other than strings in the registry
--   Added authorization inside links with dereferencing on or off, for the records/<id> endpoint
+-   Added authorization inside links with dereferencing on or off, for the `records/<id>` endpoint
 
 Others:
 
@@ -1001,7 +1002,7 @@ Others:
 -   Formatted existing typescript source code using `prettier`
 -   Updated `building-and-running.md`
 -   Added preview map support for geojson data type
--   Merged latest changes (commits on or before 1st Feb 2018) from TerrisMap to `magda-preview-map` module
+-   Merged latest changes (commits on or before 1st Feb 2018) from TerriaMap to `magda-preview-map` module
 -   Map previewer will zoom to dataset (except KML data)
 -   Removed `year` facet from search results, replaced it with a temporal field with earliest and latest dates in search results.
 -   Added Google Analytics Tag Manager Code / VWO code to `<head>`
