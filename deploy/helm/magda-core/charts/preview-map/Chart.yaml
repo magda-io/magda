@@ -1,5 +1,0 @@
-apiVersion: v1
-description: A Helm chart for Kubernetes
-name: preview-map
-version: 0.0.57-0
-
