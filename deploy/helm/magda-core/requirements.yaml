@@ -39,10 +39,10 @@ dependencies:
     tags:
       - all
       - indexer
-  - name: preview-map
-    tags:
-      - all
-      - preview-map
+  # - name: preview-map
+  #   tags:
+  #     - all
+  #     - preview-map
   - name: registry-api
     tags:
       - all
