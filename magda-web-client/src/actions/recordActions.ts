@@ -5,6 +5,7 @@ import { RecordAction, RawDataset } from "../helpers/record";
 import { FetchError } from "../types";
 import { ensureAspectExists } from "api-clients/RegistryApis";
 import request from "helpers/request";
+import { fetchDataset } from "../api-clients/RegistryApis";
 
 export function requestDataset(id: string): RecordAction {
     return {
@@ -98,36 +99,10 @@ export function createNewDatasetReset(error: FetchError): RecordAction {
 export function fetchDatasetFromRegistry(id: string): Function {
     return (dispatch: Function) => {
         dispatch(requestDataset(id));
-        let parameters =
-            "dereference=true&aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&" +
-            "optionalAspect=usage&optionalAspect=access&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=source-link-status&optionalAspect=dataset-quality-rating&" +
-            "optionalAspect=spatial-coverage&optionalAspect=publishing&optionalAspect=dataset-access-control&optionalAspect=provenance&optionalAspect=information-security&optionalAspect=currency";
-        const url =
-            config.registryReadOnlyApiUrl +
-            `records/${encodeURIComponent(id)}?${parameters}`;
 
-        return fetch(url, config.fetchOptions)
-            .then(response => {
-                if (!response.ok) {
-                    let statusText = response.statusText;
-                    // response.statusText are different in different browser, therefore we unify them here
-                    if (response.status === 404) {
-                        statusText = "Not Found";
-                    }
-                    throw Error(statusText);
-                }
-                return response.json();
-            })
-            .then((json: any) => {
-                if (json.records) {
-                    if (json.records.length > 0) {
-                        return dispatch(receiveDataset(json.records[0]));
-                    } else {
-                        throw new Error("Not Found");
-                    }
-                } else {
-                    return dispatch(receiveDataset(json));
-                }
+        return fetchDataset(id)
+            .then((data: any) => {
+                return dispatch(receiveDataset(data));
             })
             .catch(error =>
                 dispatch(

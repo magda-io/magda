@@ -6,6 +6,7 @@ import DatasetAddPage from "Components/Dataset/Add/DatasetAddPage";
 import DatasetAddFilesPage from "Components/Dataset/Add/DatasetAddFilesPage";
 import DatasetListPage from "Components/Dataset/Add/DatasetListPage";
 import DatasetAddMetadataPage from "Components/Dataset/Add/DatasetAddMetadataPage";
+import DatasetEditMetadataPage from "Components/Dataset/Edit/DatasetEditMetadataPage";
 
 const Routes = () => {
     return (
@@ -42,6 +43,14 @@ const Routes = () => {
                 exact
                 path="/dataset/add/bulk"
                 component={withHeader(DatasetAddPage)}
+            />
+            <Route
+                path="/dataset/edit/:datasetId"
+                component={withHeader(DatasetEditMetadataPage, false, true)}
+            />
+            <Route
+                path="/dataset/edit/:datasetId/:step"
+                component={withHeader(DatasetEditMetadataPage, false, true)}
             />
         </Switch>
     );

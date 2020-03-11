@@ -227,7 +227,10 @@ const Routes = () => {
                 but the first route of the dataset route doesn't need a ProgressMeter.
              */}
             {config.featureFlags.cataloguing && (
-                <Route path="/dataset/(add|list)" component={DatasetRoutes} />
+                <Route
+                    path="/dataset/(add|list|edit)"
+                    component={DatasetRoutes}
+                />
             )}
 
             <Route

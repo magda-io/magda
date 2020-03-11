@@ -4,6 +4,7 @@ import { ContactPointDisplayOption } from "constants/DatasetConstants";
 import { fetchOrganization } from "api-clients/RegistryApis";
 import { config } from "config";
 import { User } from "reducers/userManagementReducer";
+import { RawDataset } from "helpers/record";
 
 export type Distribution = {
     title: string;
@@ -179,6 +180,61 @@ type Access = {
     location?: string;
     notes?: string;
 };
+
+export function rawDatasetDataToState(data: RawDataset): State {
+    const state = createBlankState();
+    /* 
+    
+    export type Dataset = {
+    title: string;
+    description?: string;
+    issued?: Date;
+    modified?: Date;
+    languages?: string[];
+    publisher?: OrganisationAutocompleteChoice;
+    accrualPeriodicity?: string;
+    themes?: KeywordsLike;
+    keywords?: KeywordsLike;
+    defaultLicense?: string;
+
+    accrualPeriodicityRecurrenceRule?: string;
+    owningOrgUnitId?: string;
+    custodianOrgUnitId?: string;
+    contactPointDisplay?: string;
+    landingPage?: string;
+    importance?: string;
+    accessLevel?: string;
+    accessNotesTemp?: string;
+};
+    
+    */
+    const datasetDcatString = data.aspects["dcat-dataset-strings"];
+    const publisher = data.aspects["dataset-publisher"];
+    if (datasetDcatString) {
+        state.dataset = {
+            ...state.dataset,
+            title: datasetDcatString.title,
+            description: datasetDcatString.description
+        };
+        if (datasetDcatString.languages && datasetDcatString.languages.length) {
+            state.dataset.languages = datasetDcatString.languages;
+        }
+        if (datasetDcatString.issued) {
+        }
+    }
+    state.dataset = {
+        title: data.aspects["dcat-dataset-strings"].title,
+        description: value.description,
+        issued: value.issued && value.issued.toISOString(),
+        modified: value.modified && value.modified.toISOString(),
+        languages: value.languages,
+        publisher: value.publisher && value.publisher.name,
+        accrualPeriodicity: value.accrualPeriodicity,
+        themes: value.themes && value.themes.keywords,
+        keywords: value.keywords && value.keywords.keywords,
+        defaultLicense: value.defaultLicense
+    };
+}
 
 export function createBlankState(user?: User): State {
     return {

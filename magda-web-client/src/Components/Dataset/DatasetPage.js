@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import { Link, Route, Switch, Redirect } from "react-router-dom";
+import { Link, Route, Switch, Redirect, withRouter } from "react-router-dom";
 import ProgressBar from "Components/Common/ProgressBar";
 import MagdaDocumentTitle from "Components/i18n/MagdaDocumentTitle";
 import Breadcrumbs from "Components/Common/Breadcrumbs";
@@ -849,6 +849,19 @@ class RecordHandler extends React.Component {
                                     toggleMargin={this.toggleMargin}
                                     datasetId={this.props.dataset.identifier}
                                 />
+
+                                <div className="dataset-button-container no-print">
+                                    <button
+                                        className="au-btn au-btn--secondary ask-question-button"
+                                        onClick={() => {
+                                            this.props.history.push({
+                                                pathname: `/dataset/edit/${this.props.dataset.identifier}`
+                                            });
+                                        }}
+                                    >
+                                        Edit the Dataset
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <div className="tab-content">
@@ -986,4 +999,6 @@ const mapDispatchToProps = dispatch => {
         dispatch
     );
 };
-export default connect(mapStateToProps, mapDispatchToProps)(RecordHandler);
+export default withRouter(
+    connect(mapStateToProps, mapDispatchToProps)(RecordHandler)
+);

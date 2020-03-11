@@ -34,6 +34,7 @@ type DcatDatasetStrings = {
     title: string;
     issued: string;
     modified: string;
+    languages: string[];
 };
 
 export type Publisher = {
