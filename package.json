@@ -1,11 +1,17 @@
 {
   "private": true,
-  "workspaces": [
-    "deploy",
-    "magda-*",
-    "scripts",
-    "packages/*"
-  ],
+  "workspaces": {
+    "packages": [
+      "deploy",
+      "magda-*",
+      "scripts",
+      "packages/*"
+    ],
+    "nohoist": [
+      "**/react-scripts",
+      "**/react-scripts/**"
+    ]
+  },
   "eslintIgnore": [
     "src/pancake/**"
   ],
