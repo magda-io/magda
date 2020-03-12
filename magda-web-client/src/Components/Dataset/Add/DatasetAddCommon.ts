@@ -181,6 +181,18 @@ type Access = {
     notes?: string;
 };
 
+function isValidDateString(str) {
+    if (!str) {
+        return false;
+    }
+    const d = new Date(str);
+    if (isNaN(d.getTime())) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
 export function rawDatasetDataToState(data: RawDataset): State {
     const state = createBlankState();
     /* 
@@ -209,20 +221,32 @@ export function rawDatasetDataToState(data: RawDataset): State {
     
     */
     const datasetDcatString = data.aspects["dcat-dataset-strings"];
-    const publisher = data.aspects["dataset-publisher"];
+    const publisher = data.aspects?.["dataset-publisher"]?.publisher;
     if (datasetDcatString) {
         state.dataset = {
             ...state.dataset,
             title: datasetDcatString.title,
             description: datasetDcatString.description
         };
-        if (datasetDcatString.languages && datasetDcatString.languages.length) {
+        if (datasetDcatString?.languages?.length) {
             state.dataset.languages = datasetDcatString.languages;
         }
-        if (datasetDcatString.issued) {
+        if (isValidDateString(datasetDcatString.issued)) {
+            state.dataset.issued = new Date(datasetDcatString.issued);
+        }
+        if (isValidDateString(datasetDcatString.modified)) {
+            state.dataset.modified = new Date(datasetDcatString.modified);
+        }
+        if (publisher) {
+            state.dataset.publisher = {
+                name: publisher.name,
+                existingId: publisher.id
+            };
         }
     }
-    state.dataset = {
+
+    console.log((publisher as any)?.a?.b);
+    /*state.dataset = {
         title: data.aspects["dcat-dataset-strings"].title,
         description: value.description,
         issued: value.issued && value.issued.toISOString(),
@@ -233,7 +257,9 @@ export function rawDatasetDataToState(data: RawDataset): State {
         themes: value.themes && value.themes.keywords,
         keywords: value.keywords && value.keywords.keywords,
         defaultLicense: value.defaultLicense
-    };
+    };*/
+
+    return state;
 }
 
 export function createBlankState(user?: User): State {
