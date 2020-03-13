@@ -243,7 +243,7 @@ class NewDataset extends React.Component<Props, State> {
             if (ValidationManager.validateAll()) {
                 saveState(this.state, this.props.datasetId);
                 this.props.history.push(
-                    "../" + this.props.datasetId + "/" + step
+                    `/dataset/edit/${this.props.datasetId}/${step}`
                 );
             }
         } catch (e) {

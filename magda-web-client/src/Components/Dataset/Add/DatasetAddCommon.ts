@@ -205,7 +205,10 @@ function populateDcatDatasetStringAspect(data: RawDataset, state: State) {
         title: datasetDcatString.title,
         description: datasetDcatString.description
     };
-    if (datasetDcatString?.languages?.length) {
+
+    if (typeof datasetDcatString?.languages === "string") {
+        state.dataset.languages = [datasetDcatString.languages];
+    } else if (datasetDcatString?.languages?.length) {
         state.dataset.languages = datasetDcatString.languages;
     }
 
