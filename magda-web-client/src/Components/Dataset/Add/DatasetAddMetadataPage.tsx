@@ -463,7 +463,7 @@ async function getOrgIdFromAutocompleteChoice(
 }
 
 function mapStateToProps(state, old) {
-    let datasetId = old.match.params.dataset;
+    let datasetId = old.match.params.datasetId;
     let isNewDataset = false;
     if (!datasetId || datasetId === "-") {
         datasetId = "dataset-" + uuidv4();

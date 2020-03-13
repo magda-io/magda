@@ -511,7 +511,7 @@ async function processFile(thisFile: any, update: Function) {
 }
 
 function mapStateToProps(state, old) {
-    let dataset = old.match.params.dataset;
+    let dataset = old.match.params.datasetId;
     return {
         dataset
     };

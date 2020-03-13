@@ -22,7 +22,7 @@ const Routes = () => {
                 component={withHeader(DatasetAddFilesPage, false, true)}
             />
             <Route
-                path="/dataset/add/files/:dataset"
+                path="/dataset/add/files/:datasetId"
                 component={withHeader(DatasetAddFilesPage, false, true)}
             />
             <Route
@@ -36,7 +36,7 @@ const Routes = () => {
                 component={withHeader(DatasetAddPage)}
             />
             <Route
-                path="/dataset/add/metadata/:dataset/:step"
+                path="/dataset/add/metadata/:datasetId/:step"
                 component={withHeader(DatasetAddMetadataPage, false, true)}
             />
             <Route

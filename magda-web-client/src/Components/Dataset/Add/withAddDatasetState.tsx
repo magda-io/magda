@@ -21,7 +21,7 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
 
         useEffect(() => {
             // Once redux has finished getting a logged in user, load the state (we need to pass the current user in to populate default state)
-            loadState(props.match.params.dataset, props.user).then(state => {
+            loadState(props.match.params.datasetId, props.user).then(state => {
                 updateData(state);
             });
         }, [props.user]);
