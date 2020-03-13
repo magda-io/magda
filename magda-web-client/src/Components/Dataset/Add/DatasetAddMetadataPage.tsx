@@ -513,6 +513,8 @@ function buildDcatDatasetStrings(value: Dataset) {
         languages: value.languages,
         publisher: value.publisher && value.publisher.name,
         accrualPeriodicity: value.accrualPeriodicity,
+        accrualPeriodicityRecurrenceRule:
+            value.accrualPeriodicityRecurrenceRule,
         themes: value.themes && value.themes.keywords,
         keywords: value.keywords && value.keywords.keywords,
         defaultLicense: value.defaultLicense

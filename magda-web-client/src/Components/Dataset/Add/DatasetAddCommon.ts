@@ -1,7 +1,7 @@
 import uuidv4 from "uuid/v4";
 
 import { ContactPointDisplayOption } from "constants/DatasetConstants";
-import { fetchOrganization } from "api-clients/RegistryApis";
+import { fetchOrganization, fetchDataset } from "api-clients/RegistryApis";
 import { config } from "config";
 import { User } from "reducers/userManagementReducer";
 import { RawDataset } from "helpers/record";
@@ -181,83 +181,238 @@ type Access = {
     notes?: string;
 };
 
-function isValidDateString(str) {
-    if (!str) {
-        return false;
+function dateStringToDate(dateInput: any): Date | null {
+    if (dateInput instanceof Date && !isNaN(dateInput.getTime())) {
+        return dateInput;
     }
-    const d = new Date(str);
+    if (!dateInput || typeof dateInput !== "string") {
+        return null;
+    }
+    const d = new Date(dateInput);
     if (isNaN(d.getTime())) {
-        return false;
-    } else {
-        return true;
+        return null;
+    }
+    return d;
+}
+
+function populateDcatDatasetStringAspect(data: RawDataset, state: State) {
+    const datasetDcatString = data?.aspects["dcat-dataset-strings"];
+    if (!datasetDcatString) {
+        return;
+    }
+    state.dataset = {
+        ...state.dataset,
+        title: datasetDcatString.title,
+        description: datasetDcatString.description
+    };
+    if (datasetDcatString?.languages?.length) {
+        state.dataset.languages = datasetDcatString.languages;
+    }
+
+    if (datasetDcatString?.accrualPeriodicity) {
+        state.dataset.accrualPeriodicity = datasetDcatString.accrualPeriodicity;
+    }
+
+    if (datasetDcatString?.accrualPeriodicityRecurrenceRule) {
+        state.dataset.accrualPeriodicityRecurrenceRule =
+            datasetDcatString.accrualPeriodicityRecurrenceRule;
+    }
+
+    const issuedDate = dateStringToDate(datasetDcatString?.issued);
+    if (issuedDate) {
+        state.dataset.issued = issuedDate;
+    }
+
+    const modifiedDate = dateStringToDate(datasetDcatString?.modified);
+    if (modifiedDate) {
+        state.dataset.modified = modifiedDate;
+    }
+
+    if (datasetDcatString?.keywords?.length) {
+        state.dataset.keywords = {
+            derived: false,
+            keywords: datasetDcatString?.keywords
+        };
+    }
+
+    if (datasetDcatString?.themes?.length) {
+        state.dataset.themes = {
+            derived: false,
+            keywords: datasetDcatString?.themes
+        };
+    }
+
+    if (datasetDcatString?.defaultLicense) {
+        state.dataset.defaultLicense = datasetDcatString?.defaultLicense;
+    }
+
+    if (data.aspects?.["dataset-access-control"]?.orgUnitOwnerId) {
+        state.dataset.owningOrgUnitId =
+            data.aspects?.["dataset-access-control"]?.orgUnitOwnerId;
+    }
+
+    if (data.aspects?.["dataset-access-control"]?.custodianOrgUnitId) {
+        state.dataset.custodianOrgUnitId =
+            data.aspects?.["dataset-access-control"]?.custodianOrgUnitId;
     }
 }
 
-export function rawDatasetDataToState(data: RawDataset): State {
-    const state = createBlankState();
-    /* 
-    
-    export type Dataset = {
-    title: string;
-    description?: string;
-    issued?: Date;
-    modified?: Date;
-    languages?: string[];
-    publisher?: OrganisationAutocompleteChoice;
-    accrualPeriodicity?: string;
-    themes?: KeywordsLike;
-    keywords?: KeywordsLike;
-    defaultLicense?: string;
-
-    accrualPeriodicityRecurrenceRule?: string;
-    owningOrgUnitId?: string;
-    custodianOrgUnitId?: string;
-    contactPointDisplay?: string;
-    landingPage?: string;
-    importance?: string;
-    accessLevel?: string;
-    accessNotesTemp?: string;
-};
-    
-    */
-    const datasetDcatString = data.aspects["dcat-dataset-strings"];
+function populateDatasetPublisherAspect(data: RawDataset, state: State) {
     const publisher = data.aspects?.["dataset-publisher"]?.publisher;
-    if (datasetDcatString) {
-        state.dataset = {
-            ...state.dataset,
-            title: datasetDcatString.title,
-            description: datasetDcatString.description
+
+    if (publisher) {
+        state.dataset.publisher = {
+            name: publisher.name,
+            existingId: publisher.id
         };
-        if (datasetDcatString?.languages?.length) {
-            state.dataset.languages = datasetDcatString.languages;
-        }
-        if (isValidDateString(datasetDcatString.issued)) {
-            state.dataset.issued = new Date(datasetDcatString.issued);
-        }
-        if (isValidDateString(datasetDcatString.modified)) {
-            state.dataset.modified = new Date(datasetDcatString.modified);
-        }
-        if (publisher) {
-            state.dataset.publisher = {
-                name: publisher.name,
-                existingId: publisher.id
-            };
-        }
+    }
+}
+
+function populateTemporalCoverageAspect(data: RawDataset, state: State) {
+    if (!data.aspects?.["temporal-coverage"]?.intervals?.length) {
+        return;
+    }
+    const intervals = data.aspects["temporal-coverage"].intervals
+        .map(item => ({
+            start: dateStringToDate(item.start),
+            end: dateStringToDate(item.end)
+        }))
+        .filter(item => item.start || item.end);
+
+    if (intervals.length) {
+        state.temporalCoverage = {
+            intervals: intervals as Interval[]
+        };
+    }
+}
+
+function populateProvenanceAspect(data: RawDataset, state: State) {
+    if (
+        !data.aspects?.["provenance"] ||
+        !Object.keys(data.aspects?.["provenance"])
+    ) {
+        return;
     }
 
-    console.log((publisher as any)?.a?.b);
-    /*state.dataset = {
-        title: data.aspects["dcat-dataset-strings"].title,
-        description: value.description,
-        issued: value.issued && value.issued.toISOString(),
-        modified: value.modified && value.modified.toISOString(),
-        languages: value.languages,
-        publisher: value.publisher && value.publisher.name,
-        accrualPeriodicity: value.accrualPeriodicity,
-        themes: value.themes && value.themes.keywords,
-        keywords: value.keywords && value.keywords.keywords,
-        defaultLicense: value.defaultLicense
-    };*/
+    const provenance = { ...data.aspects?.["provenance"] };
+    if (provenance?.derivedFrom?.length) {
+        provenance.derivedFrom = provenance.derivedFrom
+            .filter(item => item?.id?.length || item?.name)
+            .map(item => {
+                if (!item?.id?.length || typeof item?.id[0] !== "string") {
+                    return {
+                        name: item.name
+                    };
+                } else {
+                    return {
+                        existingId: item.id[0],
+                        name: item.name
+                    };
+                }
+            });
+    } else {
+        provenance.derivedFrom = [];
+    }
+}
+
+async function getDatasetNameById(id): Promise<string> {
+    try {
+        const data = await fetchDataset(id, []);
+        if (data?.aspects?.["dcat-dataset-strings"]?.title) {
+            return data.aspects["dcat-dataset-strings"].title;
+        } else {
+            return data.name;
+        }
+    } catch (e) {
+        console.log(e);
+        return "";
+    }
+}
+
+async function populateCurrencyAspect(data: RawDataset, state: State) {
+    if (
+        !data?.aspects?.["currency"] ||
+        !Object.keys(data?.aspects?.["currency"])
+    ) {
+        return;
+    }
+
+    const { supersededBy, ...restCurrencyProps } = data.aspects["currency"];
+    const currency = { ...restCurrencyProps };
+    if (supersededBy?.length) {
+        const items: DatasetAutocompleteChoice[] = [];
+        for (let i = 0; i < supersededBy.length; i++) {
+            if (!supersededBy[0]?.name && !supersededBy[0]?.id) {
+                continue;
+            }
+            let name = supersededBy[0]?.name;
+            if (!name) {
+                name = await getDatasetNameById(supersededBy[0].id);
+            }
+            const item: DatasetAutocompleteChoice = { name };
+            if (supersededBy[0]?.id) {
+                item.existingId = supersededBy[0].id;
+            }
+            items.push(item);
+        }
+        if (items.length) {
+            currency.supersededBy = items;
+        }
+    }
+    state.currency = currency;
+}
+
+function populateDistributions(data: RawDataset, state: State) {
+    if (!data?.aspects?.["dataset-distributions"]?.distributions?.length) {
+        return;
+    }
+    const distributions = data.aspects["dataset-distributions"].distributions
+        .filter(item => item?.aspects?.["dcat-distribution-strings"])
+        .map(item => {
+            const modified = dateStringToDate(
+                item.aspects["dcat-distribution-strings"].modified
+            );
+            const dis = {
+                ...item.aspects["dcat-distribution-strings"],
+                modified: modified ? modified : new Date(),
+                _state: DistributionState.Ready
+            };
+            return dis;
+        });
+
+    if (distributions.length) {
+        state.distributions = distributions;
+    }
+}
+
+export async function rawDatasetDataToState(data: RawDataset): Promise<State> {
+    const state = createBlankState();
+
+    populateDcatDatasetStringAspect(data, state);
+    populateDatasetPublisherAspect(data, state);
+
+    if (data.aspects?.["publishing"]) {
+        state.datasetPublishing = data.aspects?.["publishing"];
+    }
+
+    if (data.aspects?.["spatial-coverage"]) {
+        state.spatialCoverage = data.aspects?.["spatial-coverage"];
+    }
+
+    populateTemporalCoverageAspect(data, state);
+
+    if (data.aspects?.["access"]?.location || data.aspects?.["access"]?.note) {
+        state.datasetAccess = data.aspects?.["access"];
+    }
+
+    if (data.aspects?.["information-security"]?.classification) {
+        state.informationSecurity = data.aspects?.["information-security"];
+    }
+
+    populateTemporalCoverageAspect(data, state);
+    populateProvenanceAspect(data, state);
+    await populateCurrencyAspect(data, state);
+    populateDistributions(data, state);
 
     return state;
 }

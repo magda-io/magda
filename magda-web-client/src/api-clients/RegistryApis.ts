@@ -35,15 +35,50 @@ export async function ensureAspectExists(id: string, jsonSchema: any) {
     });
 }
 
-export async function fetchDataset(id: string): Promise<RawDataset> {
-    const parameters =
-        "dereference=true&aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&" +
-        "optionalAspect=usage&optionalAspect=access&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=source-link-status&optionalAspect=dataset-quality-rating&" +
-        "optionalAspect=spatial-coverage&optionalAspect=publishing&optionalAspect=dataset-access-control&optionalAspect=provenance&optionalAspect=information-security&optionalAspect=currency";
+export async function fetchDataset(
+    id: string,
+    optionalAspects: string[] = [
+        "dcat-distribution-strings",
+        "dataset-distributions",
+        "temporal-coverage&",
+        "usage",
+        "access",
+        "dataset-publisher",
+        "source",
+        "source-link-status",
+        "dataset-quality-rating",
+        "spatial-coverage",
+        "publishing",
+        "dataset-access-control",
+        "provenance",
+        "information-security",
+        "currency"
+    ],
+    aspects: string[] = ["dcat-dataset-strings"],
+    dereference: boolean = true
+): Promise<RawDataset> {
+    const parameters: string[] = [];
+
+    if (dereference) {
+        parameters.push("dereference=true");
+    }
+    if (aspects?.length) {
+        parameters.push(aspects.map(item => `aspect=${item}`).join("&"));
+    }
+    if (optionalAspects?.length) {
+        parameters.push(
+            optionalAspects.map(item => `optionalAspect=${item}`).join("&")
+        );
+    }
+
     const url =
         config.registryReadOnlyApiUrl +
-        `records/${encodeURIComponent(id)}?${parameters}`;
+        `records/${encodeURIComponent(id)}${
+            parameters.length ? `?${parameters.join("&")}` : ""
+        }`;
+
     const response = await fetch(url, config.fetchOptions);
+
     if (!response.ok) {
         let statusText = response.statusText;
         // response.statusText are different in different browser, therefore we unify them here

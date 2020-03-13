@@ -13,9 +13,12 @@ export type RecordAction = {
 };
 
 type TemporalCoverage = {
-    data: {
-        intervals?: Array<any>;
-    };
+    intervals: {
+        start?: string;
+        end?: string;
+        startIndeterminate?: "unknown" | "now" | "before" | "after";
+        endIndeterminate?: "unknown" | "now" | "before" | "after";
+    }[];
 };
 
 type dcatDistributionStrings = {
@@ -25,16 +28,28 @@ type dcatDistributionStrings = {
     modified: string;
     license: string;
     description: string;
+    title: string;
 };
 
 type DcatDatasetStrings = {
-    description: string;
-    keywords: Array<string>;
-    landingPage: string;
     title: string;
-    issued: string;
-    modified: string;
-    languages: string[];
+    description: string;
+    issued?: string;
+    modified?: string;
+    languages?: string[];
+    publisher?: string;
+    accrualPeriodicity?: string;
+    accrualPeriodicityRecurrenceRule?: string;
+    spatial?: string;
+    temporal?: {
+        start?: string;
+        end?: string;
+    };
+    themes?: string[];
+    keywords?: Array<string>;
+    contactPoint?: string;
+    landingPage?: string;
+    defaultLicense?: string;
 };
 
 export type Publisher = {
@@ -95,6 +110,17 @@ export type RawDistribution = {
     };
 };
 
+type Provenance = {
+    mechanism?: string;
+    sourceSystem?: string;
+    derivedFrom?: {
+        id?: string[];
+        name?: string;
+    }[];
+    isOpenData?: boolean;
+    affiliatedOrganizationIds?: string[];
+};
+
 export type RawDataset = {
     id: string;
     name: string;
@@ -111,6 +137,7 @@ export type RawDataset = {
             distributions: Array<RawDistribution>;
         };
         "temporal-coverage"?: TemporalCoverage;
+        provenance?: Provenance;
     };
 };
 

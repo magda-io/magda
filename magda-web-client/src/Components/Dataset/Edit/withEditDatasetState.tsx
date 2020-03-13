@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { RouterProps, withRouter } from "react-router-dom";
 import { connect } from "react-redux";
 import { useAsync } from "react-async-hook";
-import { State, createBlankState } from "../Add/DatasetAddCommon";
+import { State, rawDatasetDataToState } from "../Add/DatasetAddCommon";
 import { User } from "reducers/userManagementReducer";
 import { config } from "config";
 import { fetchDataset } from "api-clients/RegistryApis";
@@ -25,55 +25,22 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
                 props.user.id === "" ||
                 props.user.isAdmin !== true);
 
-        const { loading, error, result } = useAsync(async () => {
+        const { loading, error } = useAsync(async () => {
             if (isDisabled || !props.match.params.datasetId) {
-                return undefined;
+                return;
             }
             const data = await fetchDataset(props.match.params.datasetId);
-            console.log(data);
+            const loadedStateData = await rawDatasetDataToState(data);
 
-            const datasetData = createBlankState();
+            console.log(data, loadedStateData);
 
-            /* 
-            export type State = {
-    distributions: Distribution[];
-    dataset: Dataset;
-    datasetPublishing: DatasetPublishing;
-    processing: boolean;
-    spatialCoverage: SpatialCoverage;
-    temporalCoverage: TemporalCoverage;
-    datasetAccess: Access;
-    informationSecurity: InformationSecurity;
-    provenance: Provenance;
-    currency: Currency;
+            updateData(loadedStateData);
+        }, [isDisabled, props.match.params.datasetId]);
 
-    _lastModifiedDate: Date;
-    _createdDate: Date;
-
-    licenseLevel: "dataset" | "distribution";
-
-    shouldUploadToStorageApi: boolean;
-
-    isPublishing: boolean;
-    error: Error | null;
-};
-            
-            */
-
-            return datasetData;
-        }, [props.user, props.match.params.datasetId]);
-
-        console.log(loading, error, result, updateData);
-
-        useEffect(() => {
-            // Once redux has finished getting a logged in user, load the state (we need to pass the current user in to populate default state)
-            /*loadState(props.match.params.dataset, props.user).then(state => {
-                updateData(state);
-            });*/
-        }, [props.user]);
-
-        if (!state || props.isFetchingWhoAmI) {
+        if ((!state || props.isFetchingWhoAmI || loading) && !error) {
             return <div>Loading...</div>;
+        } else if (error) {
+            return <div>Failed to load dataset data: {"" + error}</div>;
         } else if (
             !config.featureFlags.previewAddDataset &&
             (!props.user || props.user.id === "" || props.user.isAdmin !== true)

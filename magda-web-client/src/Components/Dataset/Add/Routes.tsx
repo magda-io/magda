@@ -45,11 +45,7 @@ const Routes = () => {
                 component={withHeader(DatasetAddPage)}
             />
             <Route
-                path="/dataset/edit/:datasetId"
-                component={withHeader(DatasetEditMetadataPage, false, true)}
-            />
-            <Route
-                path="/dataset/edit/:datasetId/:step"
+                path="/dataset/edit/:datasetId/:step?"
                 component={withHeader(DatasetEditMetadataPage, false, true)}
             />
         </Switch>
