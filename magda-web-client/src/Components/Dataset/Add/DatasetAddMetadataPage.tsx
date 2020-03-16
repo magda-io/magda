@@ -58,6 +58,8 @@ import helpIcon from "assets/help.svg";
 import { User } from "reducers/userManagementReducer";
 import * as ValidationManager from "../Add/ValidationManager";
 
+import { fetchDataset } from "api-clients/RegistryApis";
+
 const aspects = {
     publishing: datasetPublishingAspect,
     "dcat-dataset-strings": dcatDatasetStringsAspect,
@@ -240,6 +242,7 @@ class NewDataset extends React.Component<Props, State> {
     async gotoStep(step) {
         try {
             await this.resetError();
+            console.log(this.state);
             if (ValidationManager.validateAll()) {
                 saveState(this.state, this.props.datasetId);
                 this.props.history.push(
@@ -294,6 +297,42 @@ class NewDataset extends React.Component<Props, State> {
         }
     }
 
+    async ensureBlankDatasetIsSavedToRegistry(id: string, name: string) {
+        try {
+            await fetchDataset(id, [], [], false);
+        } catch (e) {
+            if (e.statusCode !== 404) {
+                throw e;
+            }
+            const { dataset, datasetPublishing } = this.state;
+            // --- if the dataset not exist in registry, save it now
+            // --- the dataset should have the same visibility as the current one
+            // --- but always be a draft one
+            await this.props.createRecord(
+                {
+                    id,
+                    name,
+                    aspects: {
+                        publishing: {
+                            ...datasetPublishing,
+                            state: "draft",
+                            publishAsOpenData: {}
+                        },
+                        "dataset-access-control": {
+                            orgUnitOwnerId: dataset.owningOrgUnitId,
+                            custodianOrgUnitId: dataset.custodianOrgUnitId
+                        }
+                    }
+                },
+                [],
+                {
+                    publishing: datasetPublishingAspect,
+                    "dataset-access-control": datasetAccessControlAspect
+                }
+            );
+        }
+    }
+
     async publishDataset() {
         saveState(this.state, this.props.datasetId);
 
@@ -343,14 +382,38 @@ class NewDataset extends React.Component<Props, State> {
             };
         });
 
-        const preProcessDatasetAutocompleteChoices = (
+        const preProcessDatasetAutocompleteChoices = async (
             choices?: DatasetAutocompleteChoice[]
-        ) =>
-            choices &&
-            choices.map(choice => ({
-                id: choice.existingId ? [choice.existingId] : undefined,
-                name: !choice.existingId ? choice.name : undefined
-            }));
+        ) => {
+            if (!choices?.length) {
+                return;
+            }
+            const result: {
+                id?: string[];
+                name?: string;
+            }[] = [];
+            for (let i; i < choices.length; i++) {
+                const id = choices[i]?.existingId;
+                const name = choices[i]?.name;
+                if (!id && !name) {
+                    continue;
+                }
+                if (choices[i]?.existingId) {
+                    await this.ensureBlankDatasetIsSavedToRegistry(
+                        id as string,
+                        name
+                    );
+                }
+                result.push({
+                    id: id ? [id] : undefined,
+                    name: !id ? name : undefined
+                });
+            }
+            if (result.length) {
+                return;
+            }
+            return result;
+        };
 
         const inputDataset = {
             id: this.props.datasetId,
@@ -373,7 +436,7 @@ class NewDataset extends React.Component<Props, State> {
                     ...currency,
                     supersededBy:
                         currency.status === "SUPERSEDED"
-                            ? preProcessDatasetAutocompleteChoices(
+                            ? await preProcessDatasetAutocompleteChoices(
                                   currency.supersededBy
                               )
                             : undefined,
@@ -385,7 +448,7 @@ class NewDataset extends React.Component<Props, State> {
                 provenance: {
                     mechanism: provenance.mechanism,
                     sourceSystem: provenance.sourceSystem,
-                    derivedFrom: preProcessDatasetAutocompleteChoices(
+                    derivedFrom: await preProcessDatasetAutocompleteChoices(
                         provenance.derivedFrom
                     ),
                     affiliatedOrganizationIds:
@@ -406,6 +469,9 @@ class NewDataset extends React.Component<Props, State> {
         if (!inputDataset.aspects["dataset-access-control"].orgUnitOwnerId) {
             delete inputDataset.aspects["dataset-access-control"];
         }
+
+        console.log("inputDataset:", inputDataset);
+        debugger;
 
         await this.props.createRecord(
             inputDataset,

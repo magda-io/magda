@@ -2,6 +2,7 @@ import { config } from "config";
 import request from "helpers/request";
 import { Publisher } from "helpers/record";
 import { RawDataset } from "helpers/record";
+import ServerError from "./ServerError";
 
 export function createPublisher(inputRecord: Publisher) {
     return createRecord(inputRecord);
@@ -85,14 +86,14 @@ export async function fetchDataset(
         if (response.status === 404) {
             statusText = "Not Found";
         }
-        throw Error(statusText);
+        throw new ServerError(statusText, response.status);
     }
     const data = await response.json();
     if (data.records) {
         if (data.records.length > 0) {
             return data.records[0];
         } else {
-            throw new Error("Not Found");
+            throw new ServerError("Not Found", 404);
         }
     } else {
         return data;

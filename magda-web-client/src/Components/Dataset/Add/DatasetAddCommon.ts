@@ -289,35 +289,6 @@ function populateTemporalCoverageAspect(data: RawDataset, state: State) {
     }
 }
 
-function populateProvenanceAspect(data: RawDataset, state: State) {
-    if (
-        !data.aspects?.["provenance"] ||
-        !Object.keys(data.aspects?.["provenance"])
-    ) {
-        return;
-    }
-
-    const provenance = { ...data.aspects?.["provenance"] };
-    if (provenance?.derivedFrom?.length) {
-        provenance.derivedFrom = provenance.derivedFrom
-            .filter(item => item?.id?.length || item?.name)
-            .map(item => {
-                if (!item?.id?.length || typeof item?.id[0] !== "string") {
-                    return {
-                        name: item.name
-                    };
-                } else {
-                    return {
-                        existingId: item.id[0],
-                        name: item.name
-                    };
-                }
-            });
-    } else {
-        provenance.derivedFrom = [];
-    }
-}
-
 async function getDatasetNameById(id): Promise<string> {
     try {
         const data = await fetchDataset(id, []);
@@ -332,6 +303,51 @@ async function getDatasetNameById(id): Promise<string> {
     }
 }
 
+async function convertToDatasetAutoCompleteData(
+    items: { id?: string[]; name?: string }[] | undefined
+): Promise<DatasetAutocompleteChoice[] | undefined> {
+    if (items?.length) {
+        const result: DatasetAutocompleteChoice[] = [];
+        for (let i = 0; i < items.length; i++) {
+            let name = items[i]?.name;
+            const id = items[i]?.id?.[0];
+            if (!name && !id) {
+                continue;
+            }
+            if (!name) {
+                name = await getDatasetNameById(id);
+            }
+            const item: DatasetAutocompleteChoice = { name };
+            if (id) {
+                item.existingId = id;
+            }
+            result.push(item);
+        }
+        if (result.length) {
+            return result;
+        }
+    }
+    return;
+}
+
+async function populateProvenanceAspect(data: RawDataset, state: State) {
+    if (
+        !data?.aspects?.["provenance"] ||
+        !Object.keys(data.aspects?.["provenance"])?.length
+    ) {
+        return;
+    }
+
+    const provenance = {
+        ...data.aspects?.["provenance"],
+        derivedFrom: await convertToDatasetAutoCompleteData(
+            data.aspects?.["provenance"]?.derivedFrom
+        )
+    };
+
+    state.provenance = provenance as any;
+}
+
 async function populateCurrencyAspect(data: RawDataset, state: State) {
     if (
         !data?.aspects?.["currency"] ||
@@ -341,27 +357,10 @@ async function populateCurrencyAspect(data: RawDataset, state: State) {
     }
 
     const { supersededBy, ...restCurrencyProps } = data.aspects["currency"];
-    const currency = { ...restCurrencyProps };
-    if (supersededBy?.length) {
-        const items: DatasetAutocompleteChoice[] = [];
-        for (let i = 0; i < supersededBy.length; i++) {
-            if (!supersededBy[0]?.name && !supersededBy[0]?.id) {
-                continue;
-            }
-            let name = supersededBy[0]?.name;
-            if (!name) {
-                name = await getDatasetNameById(supersededBy[0].id);
-            }
-            const item: DatasetAutocompleteChoice = { name };
-            if (supersededBy[0]?.id) {
-                item.existingId = supersededBy[0].id;
-            }
-            items.push(item);
-        }
-        if (items.length) {
-            currency.supersededBy = items;
-        }
-    }
+    const currency = {
+        ...restCurrencyProps,
+        supersededBy: await convertToDatasetAutoCompleteData(supersededBy)
+    };
     state.currency = currency;
 }
 
