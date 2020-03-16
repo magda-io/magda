@@ -98,14 +98,6 @@ class NewDataset extends React.Component<Props, State> {
         });
     }
 
-    componentDidMount() {
-        /*if (this.props.isNewDataset) {
-            this.props.history.replace(
-                `/dataset/edit/metadata/${this.props.datasetId}/${this.props.step}`
-            );
-        }*/
-    }
-
     steps: any = [
         () => (
             <DetailsAndContents
@@ -165,12 +157,12 @@ class NewDataset extends React.Component<Props, State> {
                 if (config.featureFlags.previewAddDataset) {
                     return "Send Us Your Thoughts";
                 } else if (this.state.isPublishing) {
-                    return "Publishing as draft...";
+                    return "Submitting Dataset Change...";
                 } else {
-                    return "Publish draft dataset";
+                    return "Submit Dataset Changes";
                 }
             } else {
-                return ProgressMeterStepsConfig[step + 2].title;
+                return "Next: " + ProgressMeterStepsConfig[step + 2].title;
             }
         };
 
@@ -209,14 +201,18 @@ class NewDataset extends React.Component<Props, State> {
                             className="au-btn next-button"
                             onClick={nextButtonOnClick}
                         >
-                            Next: {nextButtonCaption()}
+                            {nextButtonCaption()}
                         </button>
-                        <button
-                            className="au-btn au-btn--secondary save-button"
-                            onClick={this.saveAndExit.bind(this)}
-                        >
-                            Save and exit
-                        </button>
+                        {nextIsPublish ? null : (
+                            <button
+                                className="au-btn au-btn--secondary save-button"
+                                onClick={() =>
+                                    this.gotoStep(this.steps.length - 1)
+                                }
+                            >
+                                Review &amp; Save
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
