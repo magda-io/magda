@@ -319,8 +319,12 @@ class NewDataset extends React.Component<Props, State> {
                             publishAsOpenData: {}
                         },
                         "dataset-access-control": {
-                            orgUnitOwnerId: dataset.owningOrgUnitId,
+                            orgUnitOwnerId: dataset.owningOrgUnitId
+                                ? dataset.owningOrgUnitId
+                                : undefined,
                             custodianOrgUnitId: dataset.custodianOrgUnitId
+                                ? dataset.custodianOrgUnitId
+                                : undefined
                         }
                     }
                 },
@@ -392,13 +396,13 @@ class NewDataset extends React.Component<Props, State> {
                 id?: string[];
                 name?: string;
             }[] = [];
-            for (let i; i < choices.length; i++) {
+            for (let i = 0; i < choices.length; i++) {
                 const id = choices[i]?.existingId;
                 const name = choices[i]?.name;
                 if (!id && !name) {
                     continue;
                 }
-                if (choices[i]?.existingId) {
+                if (id && name) {
                     await this.ensureBlankDatasetIsSavedToRegistry(
                         id as string,
                         name
@@ -409,7 +413,7 @@ class NewDataset extends React.Component<Props, State> {
                     name: !id ? name : undefined
                 });
             }
-            if (result.length) {
+            if (!result.length) {
                 return;
             }
             return result;
@@ -429,8 +433,12 @@ class NewDataset extends React.Component<Props, State> {
                 access: datasetAccess,
                 "information-security": informationSecurity,
                 "dataset-access-control": {
-                    orgUnitOwnerId: dataset.owningOrgUnitId,
+                    orgUnitOwnerId: dataset.owningOrgUnitId
+                        ? dataset.owningOrgUnitId
+                        : undefined,
                     custodianOrgUnitId: dataset.custodianOrgUnitId
+                        ? dataset.custodianOrgUnitId
+                        : undefined
                 },
                 currency: {
                     ...currency,

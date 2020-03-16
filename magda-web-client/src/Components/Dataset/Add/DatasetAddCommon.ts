@@ -291,7 +291,7 @@ function populateTemporalCoverageAspect(data: RawDataset, state: State) {
 
 async function getDatasetNameById(id): Promise<string> {
     try {
-        const data = await fetchDataset(id, []);
+        const data = await fetchDataset(id, ["dcat-dataset-strings"], []);
         if (data?.aspects?.["dcat-dataset-strings"]?.title) {
             return data.aspects["dcat-dataset-strings"].title;
         } else {
