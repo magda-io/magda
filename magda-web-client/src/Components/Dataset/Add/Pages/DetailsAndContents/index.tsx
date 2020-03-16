@@ -106,7 +106,10 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                             components={{
                                 MultiValueRemove: CustomMultiValueRemove
                             }}
-                            options={codelists.languageOptions as any}
+                            options={codelists.languageOptions}
+                            getOptionLabel={option =>
+                                option?.label ? option.label : option.value
+                            }
                             onChange={values =>
                                 editDataset("languages")(
                                     Array.isArray(values)
