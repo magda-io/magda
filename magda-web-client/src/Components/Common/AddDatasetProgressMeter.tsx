@@ -136,7 +136,24 @@ const AddDatasetProgressMeter = (props: PropsType) => {
             return (
                 <Link
                     key={idx}
-                    className={`col-sm-2 step-item-container past-item`}
+                    className={`col-sm-2 step-item-container past-item ${
+                        isEdit ? "is-edit" : ""
+                    }`}
+                    to={createStepUrl(datasetId, item)}
+                    onClick={() => {
+                        props.createNewDatasetReset();
+                    }}
+                >
+                    {inner}
+                </Link>
+            );
+        } else if (status.class === "future-item" && isEdit) {
+            return (
+                <Link
+                    key={idx}
+                    className={`col-sm-2 step-item-container future-item ${
+                        isEdit ? "is-edit" : ""
+                    }`}
                     to={createStepUrl(datasetId, item)}
                     onClick={() => {
                         props.createNewDatasetReset();
@@ -149,7 +166,9 @@ const AddDatasetProgressMeter = (props: PropsType) => {
             return (
                 <div
                     key={idx}
-                    className={`col-sm-2 step-item-container ${status.class}`}
+                    className={`col-sm-2 step-item-container ${status.class}  ${
+                        isEdit ? "is-edit" : ""
+                    }`}
                 >
                     {inner}
                 </div>
