@@ -58,7 +58,7 @@ import helpIcon from "assets/help.svg";
 import { User } from "reducers/userManagementReducer";
 import * as ValidationManager from "../Add/ValidationManager";
 
-import { fetchDataset } from "api-clients/RegistryApis";
+import { fetchRecord } from "api-clients/RegistryApis";
 
 const aspects = {
     publishing: datasetPublishingAspect,
@@ -299,7 +299,7 @@ class NewDataset extends React.Component<Props, State> {
 
     async ensureBlankDatasetIsSavedToRegistry(id: string, name: string) {
         try {
-            await fetchDataset(id, [], [], false);
+            await fetchRecord(id, [], [], false);
         } catch (e) {
             if (e.statusCode !== 404) {
                 throw e;

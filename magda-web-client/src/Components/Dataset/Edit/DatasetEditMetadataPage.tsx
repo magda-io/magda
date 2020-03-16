@@ -6,9 +6,9 @@ import { MultilineTextEditor } from "Components/Editing/Editors/textEditor";
 import ToolTip from "Components/Dataset/Add/ToolTip";
 
 import {
-    createRecord,
-    createNewDatasetReset,
-    createNewDatasetError
+    updateRecord,
+    updateNewDatasetReset,
+    updateNewDatasetError
 } from "actions/recordActions";
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
@@ -75,9 +75,9 @@ const aspects = {
 
 type Props = {
     initialState: State;
-    createRecord: Function;
-    createNewDatasetReset: Function;
-    createNewDatasetError: Function;
+    updateRecord: Function;
+    updateNewDatasetReset: Function;
+    updateNewDatasetError: Function;
     isCreating: boolean;
     creationError: any;
     lastDatasetId: string;
@@ -224,7 +224,7 @@ class NewDataset extends React.Component<Props, State> {
     }
 
     resetError() {
-        this.props.createNewDatasetReset();
+        this.props.updateNewDatasetReset();
     }
 
     async saveAndExit() {
@@ -233,7 +233,7 @@ class NewDataset extends React.Component<Props, State> {
             saveState(this.state, this.props.datasetId);
             this.props.history.push(`/dataset/list`);
         } catch (e) {
-            this.props.createNewDatasetError(e);
+            this.props.updateNewDatasetError(e);
         }
     }
 
@@ -247,7 +247,7 @@ class NewDataset extends React.Component<Props, State> {
                 );
             }
         } catch (e) {
-            this.props.createNewDatasetError(e);
+            this.props.updateNewDatasetError(e);
         }
     }
 
@@ -290,7 +290,7 @@ class NewDataset extends React.Component<Props, State> {
             this.setState({
                 isPublishing: false
             });
-            this.props.createNewDatasetError(e);
+            this.props.updateNewDatasetError(e);
         }
     }
 
@@ -407,7 +407,8 @@ class NewDataset extends React.Component<Props, State> {
             delete inputDataset.aspects["dataset-access-control"];
         }
 
-        await this.props.createRecord(
+        await this.props.updateRecord(
+            inputDataset.id,
             inputDataset,
             inputDistributions,
             aspects
@@ -489,9 +490,9 @@ function mapStateToProps(state, old) {
 const mapDispatchToProps = dispatch => {
     return bindActionCreators(
         {
-            createRecord: createRecord,
-            createNewDatasetReset: createNewDatasetReset,
-            createNewDatasetError: createNewDatasetError
+            updateRecord: updateRecord,
+            updateNewDatasetReset: updateNewDatasetReset,
+            updateNewDatasetError: updateNewDatasetError
         },
         dispatch
     );

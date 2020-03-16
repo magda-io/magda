@@ -5,7 +5,7 @@ import { useAsync } from "react-async-hook";
 import { State, rawDatasetDataToState } from "../Add/DatasetAddCommon";
 import { User } from "reducers/userManagementReducer";
 import { config } from "config";
-import { fetchDataset } from "api-clients/RegistryApis";
+import { fetchRecord } from "api-clients/RegistryApis";
 
 type Props = { initialState: State; user: User } & RouterProps;
 
@@ -29,7 +29,7 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
             if (isDisabled || !props.match.params.datasetId) {
                 return;
             }
-            const data = await fetchDataset(props.match.params.datasetId);
+            const data = await fetchRecord(props.match.params.datasetId);
             const loadedStateData = await rawDatasetDataToState(data);
 
             console.log(data, loadedStateData);

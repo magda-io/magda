@@ -36,7 +36,7 @@ export async function ensureAspectExists(id: string, jsonSchema: any) {
     });
 }
 
-export async function fetchDataset(
+export async function fetchRecord(
     id: string,
     optionalAspects: string[] = [
         "dcat-distribution-strings",
@@ -100,7 +100,19 @@ export async function fetchDataset(
     }
 }
 
-type Record = {
+export async function doesRecordExist(id: string) {
+    try {
+        await fetchRecord(id, [], [], false);
+        return true;
+    } catch (e) {
+        if (e.statusCode === 404) {
+            return false;
+        }
+        throw e;
+    }
+}
+
+export type Record = {
     id: string;
     name: string;
     aspects: { [aspectId: string]: any };

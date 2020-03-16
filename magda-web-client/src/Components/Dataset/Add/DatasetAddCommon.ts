@@ -1,7 +1,7 @@
 import uuidv4 from "uuid/v4";
 
 import { ContactPointDisplayOption } from "constants/DatasetConstants";
-import { fetchOrganization, fetchDataset } from "api-clients/RegistryApis";
+import { fetchOrganization, fetchRecord } from "api-clients/RegistryApis";
 import { config } from "config";
 import { User } from "reducers/userManagementReducer";
 import { RawDataset } from "helpers/record";
@@ -291,7 +291,7 @@ function populateTemporalCoverageAspect(data: RawDataset, state: State) {
 
 async function getDatasetNameById(id): Promise<string> {
     try {
-        const data = await fetchDataset(id, ["dcat-dataset-strings"], []);
+        const data = await fetchRecord(id, ["dcat-dataset-strings"], []);
         if (data?.aspects?.["dcat-dataset-strings"]?.title) {
             return data.aspects["dcat-dataset-strings"].title;
         } else {
