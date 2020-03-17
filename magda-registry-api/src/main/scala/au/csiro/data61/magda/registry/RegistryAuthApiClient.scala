@@ -38,32 +38,4 @@ class RegistryAuthApiClient(
       materializer
     )
   }
-
-  def queryForRecords(
-      jwt: Option[String],
-      operationType: AuthOperations.OperationType,
-      opaPolicyIds: List[String],
-      recordId: Option[String] = None
-  ): Future[List[(String, List[List[OpaQuery]])]] = {
-
-    /** Is this query for a single record that already has a policy? */
-    val singleRecordWithPolicySet = recordId.isDefined && !opaPolicyIds.isEmpty
-    val defaultPolicyIdOpt =
-      if (!singleRecordWithPolicySet && config.hasPath("opa.recordPolicyId"))
-        Some(config.getString("opa.recordPolicyId"))
-      else None
-
-    val allPolicyIds = defaultPolicyIdOpt match {
-      case (Some(defaultPolicyId)) =>
-        opaPolicyIds :+ defaultPolicyId
-      case (None) => opaPolicyIds
-    }
-
-    super.queryRecord(
-      jwt,
-      operationType,
-      allPolicyIds
-    )
-
-  }
 }
