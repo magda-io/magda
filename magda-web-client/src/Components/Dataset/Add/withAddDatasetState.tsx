@@ -19,6 +19,12 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
     const withAddDatasetState = (props: T) => {
         const [state, updateData] = useState<State | undefined>(undefined);
 
+        const isDisabled =
+            !config.featureFlags.previewAddDataset &&
+            (!props.user ||
+                props.user.id === "" ||
+                props.user.isAdmin !== true);
+
         useEffect(() => {
             // Once redux has finished getting a logged in user, load the state (we need to pass the current user in to populate default state)
             loadState(props.match.params.datasetId, props.user).then(state => {
@@ -26,12 +32,7 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
             });
         }, [props.user]);
 
-        if (!state || props.isFetchingWhoAmI) {
-            return <div>Loading...</div>;
-        } else if (
-            !config.featureFlags.previewAddDataset &&
-            (!props.user || props.user.id === "" || props.user.isAdmin !== true)
-        ) {
+        if (isDisabled) {
             return (
                 <div
                     className="au-body au-page-alerts au-page-alerts--error"
@@ -42,6 +43,8 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
                     </span>
                 </div>
             );
+        } else if (!state || props.isFetchingWhoAmI) {
+            return <div>Loading...</div>;
         } else {
             return <Component {...props} initialState={state} />;
         }

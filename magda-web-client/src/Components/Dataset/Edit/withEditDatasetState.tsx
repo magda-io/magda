@@ -37,14 +37,7 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
             updateData(loadedStateData);
         }, [isDisabled, props.match.params.datasetId]);
 
-        if ((!state || props.isFetchingWhoAmI || loading) && !error) {
-            return <div>Loading...</div>;
-        } else if (error) {
-            return <div>Failed to load dataset data: {"" + error}</div>;
-        } else if (
-            !config.featureFlags.previewAddDataset &&
-            (!props.user || props.user.id === "" || props.user.isAdmin !== true)
-        ) {
+        if (isDisabled) {
             return (
                 <div
                     className="au-body au-page-alerts au-page-alerts--error"
@@ -55,6 +48,10 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
                     </span>
                 </div>
             );
+        } else if ((!state || props.isFetchingWhoAmI || loading) && !error) {
+            return <div>Loading...</div>;
+        } else if (error) {
+            return <div>Failed to load dataset data: {"" + error}</div>;
         } else {
             return <Component {...props} initialState={state} />;
         }
