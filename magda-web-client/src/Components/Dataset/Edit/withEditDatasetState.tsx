@@ -32,8 +32,6 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
             const data = await fetchRecord(props.match.params.datasetId);
             const loadedStateData = await rawDatasetDataToState(data);
 
-            console.log(data, loadedStateData);
-
             updateData(loadedStateData);
         }, [isDisabled, props.match.params.datasetId]);
 

@@ -21,11 +21,13 @@ import {
     OrganisationAutocompleteChoice,
     createId,
     DatasetAutocompleteChoice,
-    Dataset
+    Dataset,
+    DistributionState
 } from "../Add/DatasetAddCommon";
 import DetailsAndContents from "../Add/Pages/DetailsAndContents";
 import DatasetAddPeoplePage from "../Add/Pages/People/DatasetAddPeoplePage";
 import DatasetAddEndPreviewPage from "../Add/Pages/DatasetAddEndPreviewPage";
+import DatasetAddFilesPage from "../Add/Pages/AddFiles";
 import { createPublisher, ensureAspectExists } from "api-clients/RegistryApis";
 import DatasetAddAccessAndUsePage from "../Add/Pages/DatasetAddAccessAndUsePage";
 import withEditDatasetState from "./withEditDatasetState";
@@ -97,6 +99,14 @@ class NewDataset extends React.Component<Props, State> {
 
     steps: any = [
         () => (
+            <DatasetAddFilesPage
+                edit={this.edit}
+                setState={this.setState.bind(this)}
+                stateData={this.state}
+                user={this.props.user}
+            />
+        ),
+        () => (
             <DetailsAndContents
                 edit={this.edit}
                 setState={this.setState.bind(this)}
@@ -141,6 +151,7 @@ class NewDataset extends React.Component<Props, State> {
     };
 
     render() {
+        const { distributions } = this.state;
         let { step } = this.props;
 
         step = Math.max(Math.min(step, this.steps.length - 1), 0);
@@ -157,7 +168,7 @@ class NewDataset extends React.Component<Props, State> {
                     return "Submit Dataset Changes";
                 }
             } else {
-                return "Next: " + ProgressMeterStepsConfig[step + 2].title;
+                return "Next: " + ProgressMeterStepsConfig[step + 1].title;
             }
         };
 
@@ -181,26 +192,32 @@ class NewDataset extends React.Component<Props, State> {
                 <br />
                 <ErrorMessageBox />
                 <br />
-                <div className="row next-save-button-row">
-                    <div className="col-sm-12">
-                        <button
-                            className="au-btn next-button"
-                            onClick={nextButtonOnClick}
-                        >
-                            {nextButtonCaption()}
-                        </button>
-                        {nextIsPublish ? null : (
-                            <button
-                                className="au-btn au-btn--secondary save-button"
-                                onClick={() =>
-                                    this.gotoStep(this.steps.length - 1)
-                                }
-                            >
-                                Review &amp; Save
-                            </button>
-                        )}
-                    </div>
-                </div>
+                {distributions.filter(
+                    item => item._state !== DistributionState.Ready
+                ).length ? null : (
+                    <>
+                        <div className="row next-save-button-row">
+                            <div className="col-sm-12">
+                                <button
+                                    className="au-btn next-button"
+                                    onClick={nextButtonOnClick}
+                                >
+                                    {nextButtonCaption()}
+                                </button>
+                                {nextIsPublish ? null : (
+                                    <button
+                                        className="au-btn au-btn--secondary save-button"
+                                        onClick={() =>
+                                            this.gotoStep(this.steps.length - 1)
+                                        }
+                                    >
+                                        Review &amp; Save
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
         );
     }

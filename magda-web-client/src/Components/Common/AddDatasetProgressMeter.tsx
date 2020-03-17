@@ -49,20 +49,24 @@ export const Steps: StepItem[] = [
 
 export const EditSteps: StepItem[] = [
     {
-        title: "Details and Contents",
+        title: "Your Files and Distributions",
         url: "/dataset/edit/${datasetId}/0"
     },
     {
-        title: "People and Production",
+        title: "Details and Contents",
         url: "/dataset/edit/${datasetId}/1"
     },
     {
-        title: "Access and User",
+        title: "People and Production",
         url: "/dataset/edit/${datasetId}/2"
     },
     {
-        title: "Submit for Approval",
+        title: "Access and User",
         url: "/dataset/edit/${datasetId}/3"
+    },
+    {
+        title: "Submit for Approval",
+        url: "/dataset/edit/${datasetId}/4"
     }
 ];
 
