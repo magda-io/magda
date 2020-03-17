@@ -849,19 +849,20 @@ class RecordHandler extends React.Component {
                                     toggleMargin={this.toggleMargin}
                                     datasetId={this.props.dataset.identifier}
                                 />
-
-                                <div className="dataset-button-container no-print">
-                                    <button
-                                        className="au-btn au-btn--secondary ask-question-button"
-                                        onClick={() => {
-                                            this.props.history.push({
-                                                pathname: `/dataset/edit/${this.props.dataset.identifier}`
-                                            });
-                                        }}
-                                    >
-                                        Edit the Dataset
-                                    </button>
-                                </div>
+                                {hasEditPermissions ? (
+                                    <div className="dataset-button-container no-print">
+                                        <button
+                                            className="au-btn au-btn--secondary ask-question-button"
+                                            onClick={() => {
+                                                this.props.history.push({
+                                                    pathname: `/dataset/edit/${this.props.dataset.identifier}`
+                                                });
+                                            }}
+                                        >
+                                            Edit the Dataset
+                                        </button>
+                                    </div>
+                                ) : null}
                             </div>
                         </div>
                         <div className="tab-content">
