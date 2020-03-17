@@ -1344,7 +1344,6 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       sql"""select Records.sequence as sequence,
                    Records.recordId as recordId,
                    Records.name as recordName,
-                   Records.authnReadPolicyid as authnReadPolicyId,
                    (select array_agg(aspectId) from RecordAspects where recordId = Records.recordId and ${SQLUtil
         .tenantIdToWhereClause(tenantId)}) as aspects,
                    Records.tenantId as tenantId
@@ -1740,16 +1739,20 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
                         RecordAspects.data,
                         ${"{\"" + propertyName + "\"}"}::text[],
                         jsonb_agg(
-                          jsonb_build_object(
-                            'id',
-                            Records.recordId,
-                            'name',
-                            Records.name,
-                            'aspects',
-                            (
-                              SELECT jsonb_object_agg(aspectId, data)
-                              FROM RecordAspects
-                              WHERE tenantId=Records.tenantId AND recordId=Records.recordId
+                          jsonb_strip_nulls(
+                            jsonb_build_object(
+                              'id',
+                              Records.recordId,
+                              'name',
+                              Records.name,
+                              'authnReadPolicyId',
+                              Records.authnReadPolicyId,
+                              'aspects',
+                              (
+                                SELECT jsonb_object_agg(aspectId, data)
+                                FROM RecordAspects
+                                WHERE tenantId=Records.tenantId AND recordId=Records.recordId
+                              )
                             )
                           )
                           order by ordinality
@@ -1806,13 +1809,16 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
                     jsonb_set(
                       RecordAspects.data,
                       ${"{\"" + propertyName + "\"}"}::text[],
-                      jsonb_build_object(
-                        'id', Records.recordId,
-                        'name', Records.name,
-                        'aspects', (
-                          SELECT jsonb_object_agg(aspectId, data)
-                          FROM RecordAspects
-                          WHERE tenantId=Records.tenantId AND recordId=Records.recordId AND $linkedRecordOpaConditions
+                      jsonb_strip_nulls(
+                        jsonb_build_object(
+                          'id', Records.recordId,
+                          'name', Records.name,
+                          'authnReadPolicyId', Records.authnReadPolicyId,
+                          'aspects', (
+                            SELECT jsonb_object_agg(aspectId, data)
+                            FROM RecordAspects
+                            WHERE tenantId=Records.tenantId AND recordId=Records.recordId AND $linkedRecordOpaConditions
+                          )
                         )
                       )
                     )
