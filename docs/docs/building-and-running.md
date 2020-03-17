@@ -130,7 +130,7 @@ helm repo update
 # update magda chart dependencies
 helm dep build deploy/helm/magda
 # deploy the magda chart from magda helm repo
-helm upgrade --install --timeout 9999m --wait -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
+helm upgrade --install --timeout 9999s --wait -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
 ```
 
 This can take a while as it does a lot - downloading all the docker images, starting them up and running database migration jobs. You can see what's happening by opening another tab and running `kubectl get pods -w`.
@@ -145,7 +145,7 @@ helm repo update
 # update magda chart dependencies
 helm dep up deploy/helm/magda
 # deploy the magda chart from magda helm repo
-helm upgrade --install --timeout 9999m --wait -f deploy/helm/docker-desktop-windows.yml -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
+helm upgrade --install --timeout 9999s --wait -f deploy/helm/docker-desktop-windows.yml -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
 ```
 
 If you want to deploy the packed & production ready helm chart in our helm repo:
@@ -154,7 +154,7 @@ If you want to deploy the packed & production ready helm chart in our helm repo:
 # update magda helm repo
 helm repo update
 # deploy the local magda chart
-helm upgrade --install --timeout 9999m --wait -f deploy/helm/minikube-dev.yml magda magda-io/magda
+helm upgrade --install --timeout 9999s --wait -f deploy/helm/minikube-dev.yml magda magda-io/magda
 ```
 
 **Please Note:**
