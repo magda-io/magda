@@ -27,24 +27,23 @@ interface PropsType {
 export const Steps: StepItem[] = [
     {
         title: "Add files",
-        url: datasetId =>
-            datasetId ? `/dataset/add/files/${datasetId}` : "/dataset/add/files"
-    },
-    {
-        title: "Details and Contents",
         url: "/dataset/add/metadata/${datasetId}/0"
     },
     {
-        title: "People and Production",
+        title: "Details and Contents",
         url: "/dataset/add/metadata/${datasetId}/1"
     },
     {
-        title: "Access and User",
+        title: "People and Production",
         url: "/dataset/add/metadata/${datasetId}/2"
     },
     {
-        title: "Submit for Approval",
+        title: "Access and User",
         url: "/dataset/add/metadata/${datasetId}/3"
+    },
+    {
+        title: "Submit for Approval",
+        url: "/dataset/add/metadata/${datasetId}/4"
     }
 ];
 
@@ -91,7 +90,7 @@ const AddDatasetProgressMeter = (props: PropsType) => {
         if (Number.isNaN(stepNo)) {
             return 0;
         } else {
-            return isEdit ? stepNo : stepNo + 1;
+            return stepNo;
         }
     }
 

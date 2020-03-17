@@ -46,11 +46,8 @@ import datasetPublisherAspect from "@magda/registry-aspects/dataset-publisher.sc
 import currencyAspect from "@magda/registry-aspects/currency.schema.json";
 
 import "../Add/DatasetAddMetadataPage.scss";
-import "../Add/DatasetAddFilesPage.scss";
 import "../Add/DatasetAddCommon.scss";
 import { autocompletePublishers } from "api-clients/SearchApis";
-
-import ReviewFilesList from "../Add/ReviewFilesList";
 
 import ErrorMessageBox from "../Add/ErrorMessageBox";
 
@@ -144,8 +141,6 @@ class NewDataset extends React.Component<Props, State> {
     };
 
     render() {
-        const { distributions } = this.state;
-
         let { step } = this.props;
 
         step = Math.max(Math.min(step, this.steps.length - 1), 0);
@@ -181,15 +176,6 @@ class NewDataset extends React.Component<Props, State> {
 
         return (
             <div className="dataset-add-files-root dataset-add-meta-data-pages">
-                <div className="row">
-                    <div className="col-sm-12">
-                        <ReviewFilesList
-                            key={step}
-                            files={distributions}
-                            isOpen={step < 1 ? true : false}
-                        />
-                    </div>
-                </div>
                 {this.steps[step]()}
                 <br />
                 <br />

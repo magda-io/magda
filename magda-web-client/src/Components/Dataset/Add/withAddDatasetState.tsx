@@ -32,7 +32,9 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
             });
         }, [props.user]);
 
-        if (isDisabled) {
+        if (props.isFetchingWhoAmI) {
+            return <div>Loading...</div>;
+        } else if (isDisabled) {
             return (
                 <div
                     className="au-body au-page-alerts au-page-alerts--error"
@@ -43,7 +45,7 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
                     </span>
                 </div>
             );
-        } else if (!state || props.isFetchingWhoAmI) {
+        } else if (!state) {
             return <div>Loading...</div>;
         } else {
             return <Component {...props} initialState={state} />;

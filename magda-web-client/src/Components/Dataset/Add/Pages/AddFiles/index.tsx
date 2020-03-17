@@ -15,31 +15,34 @@ import {
     Distribution,
     DistributionState,
     DistributionSource,
-    saveState,
     KeywordsLike
-} from "./DatasetAddCommon";
-import withAddDatasetState from "./withAddDatasetState";
+} from "../../DatasetAddCommon";
+import withAddDatasetState from "../../withAddDatasetState";
 import uniq from "lodash/uniq";
-import * as ValidationManager from "../Add/ValidationManager";
 import { config } from "config";
+import { User } from "reducers/userManagementReducer";
 
-import "./DatasetAddFilesPage.scss";
-import "./DatasetAddCommon.scss";
+import "./index.scss";
+import "../../DatasetAddCommon.scss";
 
-class DatasetAddFilesPage extends React.Component<
-    { dataset: string; initialState: State } & RouterProps,
-    State
-> {
-    state = this.props.initialState;
+type Props = {
+    edit: <K extends keyof State>(
+        aspectField: K
+    ) => (field: string) => (newValue: any) => void;
+    setState: <State>(
+        state: ((prevState: Readonly<State>) => State) | State,
+        callback?: () => void
+    ) => void;
+    user: User;
+    stateData: State;
+};
 
+class AddFilesPage extends React.Component<Props & RouterProps> {
     constructor(props) {
         super(props);
         this.addDistribution = this.addDistribution.bind(this);
         this.editDistribution = this.editDistribution.bind(this);
         this.deleteDistribution = this.deleteDistribution.bind(this);
-        ValidationManager.setStateDataGetter(() => {
-            return this.state;
-        });
     }
 
     async onBrowse() {
@@ -51,7 +54,7 @@ class DatasetAddFilesPage extends React.Component<
     }
 
     updateLastModifyDate() {
-        this.setState(state => {
+        this.props.setState((state: State) => {
             const modifiedDates = state.distributions
                 .filter(f => f.modified)
                 .map(f => new Date(f.modified))
@@ -113,18 +116,20 @@ class DatasetAddFilesPage extends React.Component<
             };
 
             processFile(thisFile, update => {
-                this.setState(state => {
-                    let newState: State = Object.assign({}, state, {
+                this.props.setState((state: State) => {
+                    const newState: State = {
+                        ...state,
                         distributions: state.distributions.slice(0)
-                    });
+                    };
                     Object.assign(newFile, update);
                     return newState;
                 });
             }).then(() => {
-                this.setState(state => {
-                    let newState = Object.assign({}, state, {
+                this.props.setState((state: State) => {
+                    const newState: State = {
+                        ...state,
                         distributions: state.distributions.slice(0)
-                    });
+                    };
 
                     let file: any = newFile;
                     const {
@@ -210,8 +215,9 @@ class DatasetAddFilesPage extends React.Component<
                 });
             });
 
-            this.setState(state => {
-                let newState = {
+            this.props.setState((state: State) => {
+                const newState = {
+                    ...state,
                     distributions: state.distributions.slice(0)
                 };
                 newState.distributions.push(newFile);
@@ -222,7 +228,7 @@ class DatasetAddFilesPage extends React.Component<
     };
 
     addDistribution = (distribution: Distribution) => {
-        this.setState(state => {
+        this.props.setState((state: State) => {
             const newDistribution = state.distributions.concat(distribution);
             return {
                 ...state,
@@ -234,7 +240,7 @@ class DatasetAddFilesPage extends React.Component<
     editDistribution = (index: number) => (
         updater: (distribution: Distribution) => Distribution
     ) => {
-        this.setState(state => {
+        this.props.setState((state: State) => {
             const newDistributions = state.distributions.concat();
             newDistributions[index] = updater(newDistributions[index]);
             return {
@@ -246,7 +252,7 @@ class DatasetAddFilesPage extends React.Component<
     };
 
     deleteDistribution = (index: number) => () => {
-        this.setState(state => {
+        this.setState((state: State) => {
             const newDistributions = state.distributions.filter((item, idx) => {
                 if (idx === index) return false;
                 return true;
@@ -259,7 +265,8 @@ class DatasetAddFilesPage extends React.Component<
     };
 
     render() {
-        const localFiles = this.state.distributions.filter(
+        const state = this.props.stateData;
+        const localFiles = state.distributions.filter(
             file => file.creationSource === DistributionSource.File
         );
 
@@ -296,10 +303,10 @@ class DatasetAddFilesPage extends React.Component<
                         <StorageOptionsSection
                             files={localFiles}
                             shouldUploadToStorageApi={
-                                this.state.shouldUploadToStorageApi
+                                state.shouldUploadToStorageApi
                             }
                             setShouldUploadToStorageApi={value => {
-                                this.setState(state => {
+                                this.props.setState((state: State) => {
                                     const newState = {
                                         ...state,
                                         shouldUploadToStorageApi: value
@@ -316,12 +323,12 @@ class DatasetAddFilesPage extends React.Component<
                                 });
                             }}
                             dataAccessLocation={
-                                this.state.datasetAccess.location
-                                    ? this.state.datasetAccess.location
+                                state.datasetAccess.location
+                                    ? state.datasetAccess.location
                                     : ""
                             }
                             setDataAccessLocation={value =>
-                                this.setState(state => ({
+                                this.setState((state: State) => ({
                                     ...state,
                                     datasetAccess: {
                                         ...state.datasetAccess,
@@ -401,7 +408,7 @@ class DatasetAddFilesPage extends React.Component<
 
                 <AddDatasetLinkSection
                     type={DistributionSource.DatasetUrl}
-                    distributions={this.state.distributions}
+                    distributions={state.distributions}
                     addDistribution={this.addDistribution}
                     editDistribution={this.editDistribution}
                     deleteDistribution={this.deleteDistribution}
@@ -409,52 +416,13 @@ class DatasetAddFilesPage extends React.Component<
 
                 <AddDatasetLinkSection
                     type={DistributionSource.Api}
-                    distributions={this.state.distributions}
+                    distributions={state.distributions}
                     addDistribution={this.addDistribution}
                     editDistribution={this.editDistribution}
                     deleteDistribution={this.deleteDistribution}
                 />
-
-                <div
-                    className="row next-save-button-row"
-                    style={{ marginTop: "6em" }}
-                >
-                    <div className="col-xs-12">
-                        {localFiles.filter(
-                            (file: Distribution) =>
-                                file._state === DistributionState.Ready
-                        ).length === localFiles.length && (
-                            <React.Fragment>
-                                <button
-                                    className="au-btn next-button"
-                                    onClick={this.reviewMetadata.bind(this)}
-                                >
-                                    Next: Review Metadata
-                                </button>
-                                <button
-                                    className="au-btn au-btn--secondary save-button"
-                                    onClick={this.saveAndExit.bind(this)}
-                                >
-                                    Save and Exit
-                                </button>
-                            </React.Fragment>
-                        )}
-                    </div>
-                </div>
             </div>
         );
-    }
-
-    saveAndExit() {
-        saveState(this.state, this.props.dataset);
-        this.props.history.push(`/dataset/list`);
-    }
-
-    reviewMetadata() {
-        if (ValidationManager.validateAll()) {
-            const id = saveState(this.state, this.props.dataset);
-            this.props.history.push(`/dataset/add/metadata/${id}/0`);
-        }
     }
 }
 
@@ -528,5 +496,5 @@ function fileFormat(file): string {
 }
 
 export default withAddDatasetState(
-    withRouter(connect(mapStateToProps)(DatasetAddFilesPage))
+    withRouter(connect(mapStateToProps)(AddFilesPage))
 );

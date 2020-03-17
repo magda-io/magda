@@ -1,9 +1,8 @@
 import React from "react";
-import { Route, Switch } from "react-router-dom";
-
+import { Route, Switch, Redirect } from "react-router-dom";
+import { createId } from "./DatasetAddCommon";
 import withHeader from "Components/Header/withHeader";
 import DatasetAddPage from "Components/Dataset/Add/DatasetAddPage";
-import DatasetAddFilesPage from "Components/Dataset/Add/DatasetAddFilesPage";
 import DatasetListPage from "Components/Dataset/Add/DatasetListPage";
 import DatasetAddMetadataPage from "Components/Dataset/Add/DatasetAddMetadataPage";
 import DatasetEditMetadataPage from "Components/Dataset/Edit/DatasetEditMetadataPage";
@@ -18,15 +17,6 @@ const Routes = () => {
             />
             <Route
                 exact
-                path="/dataset/add/files"
-                component={withHeader(DatasetAddFilesPage, false, true)}
-            />
-            <Route
-                path="/dataset/add/files/:datasetId"
-                component={withHeader(DatasetAddFilesPage, false, true)}
-            />
-            <Route
-                exact
                 path="/dataset/list"
                 component={withHeader(DatasetListPage)}
             />
@@ -35,8 +25,14 @@ const Routes = () => {
                 path="/dataset/add/urls"
                 component={withHeader(DatasetAddPage)}
             />
+            <Redirect
+                exact
+                from="/dataset/add/metadata"
+                to={`/dataset/add/metadata/${createId()}`}
+                component={withHeader(DatasetAddMetadataPage, false, true)}
+            />
             <Route
-                path="/dataset/add/metadata/:datasetId/:step"
+                path="/dataset/add/metadata/:datasetId/:step?"
                 component={withHeader(DatasetAddMetadataPage, false, true)}
             />
             <Route

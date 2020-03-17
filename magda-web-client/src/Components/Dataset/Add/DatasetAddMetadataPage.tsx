@@ -21,11 +21,13 @@ import {
     OrganisationAutocompleteChoice,
     createId,
     DatasetAutocompleteChoice,
-    Dataset
+    Dataset,
+    DistributionState
 } from "./DatasetAddCommon";
 import DetailsAndContents from "./Pages/DetailsAndContents";
 import DatasetAddPeoplePage from "./Pages/People/DatasetAddPeoplePage";
 import DatasetAddEndPreviewPage from "./Pages/DatasetAddEndPreviewPage";
+import DatasetAddFilesPage from "./Pages/AddFiles";
 import { createPublisher, ensureAspectExists } from "api-clients/RegistryApis";
 import DatasetAddAccessAndUsePage from "./Pages/DatasetAddAccessAndUsePage";
 import withAddDatasetState from "./withAddDatasetState";
@@ -46,7 +48,6 @@ import datasetPublisherAspect from "@magda/registry-aspects/dataset-publisher.sc
 import currencyAspect from "@magda/registry-aspects/currency.schema.json";
 
 import "./DatasetAddMetadataPage.scss";
-import "./DatasetAddFilesPage.scss";
 import "./DatasetAddCommon.scss";
 import { autocompletePublishers } from "api-clients/SearchApis";
 
@@ -85,7 +86,6 @@ type Props = {
     lastDatasetId: string;
     step: number;
     datasetId: string;
-    isNewDataset: boolean;
     history: any;
     user: User;
 };
@@ -100,15 +100,15 @@ class NewDataset extends React.Component<Props, State> {
         });
     }
 
-    componentDidMount() {
-        if (this.props.isNewDataset) {
-            this.props.history.replace(
-                `/dataset/add/metadata/${this.props.datasetId}/${this.props.step}`
-            );
-        }
-    }
-
     steps: any = [
+        () => (
+            <DatasetAddFilesPage
+                edit={this.edit}
+                setState={this.setState.bind(this)}
+                stateData={this.state}
+                user={this.props.user}
+            />
+        ),
         () => (
             <DetailsAndContents
                 edit={this.edit}
@@ -172,7 +172,7 @@ class NewDataset extends React.Component<Props, State> {
                     return "Publish draft dataset";
                 }
             } else {
-                return ProgressMeterStepsConfig[step + 2].title;
+                return ProgressMeterStepsConfig[step + 1].title;
             }
         };
 
@@ -191,36 +191,45 @@ class NewDataset extends React.Component<Props, State> {
 
         return (
             <div className="dataset-add-files-root dataset-add-meta-data-pages">
-                <div className="row">
-                    <div className="col-sm-12">
-                        <ReviewFilesList
-                            key={step}
-                            files={distributions}
-                            isOpen={step < 1 ? true : false}
-                        />
+                {step > 0 ? (
+                    <div className="row">
+                        <div className="col-sm-12">
+                            <ReviewFilesList
+                                key={step}
+                                files={distributions}
+                                isOpen={step < 1 ? true : false}
+                            />
+                        </div>
                     </div>
-                </div>
+                ) : null}
+
                 {this.steps[step]()}
                 <br />
                 <br />
                 <ErrorMessageBox />
                 <br />
-                <div className="row next-save-button-row">
-                    <div className="col-sm-12">
-                        <button
-                            className="au-btn next-button"
-                            onClick={nextButtonOnClick}
-                        >
-                            Next: {nextButtonCaption()}
-                        </button>
-                        <button
-                            className="au-btn au-btn--secondary save-button"
-                            onClick={this.saveAndExit.bind(this)}
-                        >
-                            Save and exit
-                        </button>
-                    </div>
-                </div>
+                {distributions.filter(
+                    item => item._state !== DistributionState.Ready
+                ).length ? null : (
+                    <>
+                        <div className="row next-save-button-row">
+                            <div className="col-sm-12">
+                                <button
+                                    className="au-btn next-button"
+                                    onClick={nextButtonOnClick}
+                                >
+                                    Next: {nextButtonCaption()}
+                                </button>
+                                <button
+                                    className="au-btn au-btn--secondary save-button"
+                                    onClick={this.saveAndExit.bind(this)}
+                                >
+                                    Save and exit
+                                </button>
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
         );
     }
@@ -242,11 +251,10 @@ class NewDataset extends React.Component<Props, State> {
     async gotoStep(step) {
         try {
             await this.resetError();
-            console.log(this.state);
             if (ValidationManager.validateAll()) {
                 saveState(this.state, this.props.datasetId);
                 this.props.history.push(
-                    "../" + this.props.datasetId + "/" + step
+                    "/dataset/add/metadata/" + this.props.datasetId + "/" + step
                 );
             }
         } catch (e) {
@@ -536,14 +544,13 @@ async function getOrgIdFromAutocompleteChoice(
     return orgId;
 }
 
-function mapStateToProps(state, old) {
-    let datasetId = old.match.params.datasetId;
-    let isNewDataset = false;
-    if (!datasetId || datasetId === "-") {
-        datasetId = "dataset-" + uuidv4();
-        isNewDataset = true;
+function mapStateToProps(state, props) {
+    const datasetId = props.match.params.datasetId;
+    let step = parseInt(props?.match?.params?.step);
+    if (isNaN(step)) {
+        step = 0;
     }
-    const step = parseInt(old.match.params.step);
+
     const isCreating =
         state.record.newDataset && state.record.newDataset.isCreating;
     const creationError =
@@ -555,7 +562,6 @@ function mapStateToProps(state, old) {
         state.record.newDataset.dataset.id;
     return {
         datasetId,
-        isNewDataset,
         step,
         isCreating,
         creationError,
