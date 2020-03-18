@@ -2,8 +2,7 @@ import getDateString from "./getDateString";
 import { isSupportedFormat as isSupportedMapPreviewFormat } from "../Components/Common/DataPreviewMap";
 import { FetchError } from "../types";
 import weightedMean from "weighted-mean";
-// dataset query:
-//aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&dereference=true&optionalAspect=dataset-publisher&optionalAspect=source
+import { Record } from "api-clients/RegistryApis";
 
 export type RecordAction = {
     json?: any;
@@ -118,7 +117,7 @@ type Provenance = {
         name?: string;
     }[];
     isOpenData?: boolean;
-    affiliatedOrganizationIds?: string[];
+    affiliatedOrganizationIds?: Record[];
 };
 
 export type RawDataset = {

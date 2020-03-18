@@ -377,14 +377,34 @@ async function populateProvenanceAspect(data: RawDataset, state: State) {
         return;
     }
 
-    const provenance = {
-        ...data.aspects?.["provenance"],
-        derivedFrom: await convertToDatasetAutoCompleteData(
-            data.aspects?.["provenance"]?.derivedFrom
-        )
-    };
+    const {
+        derivedFrom,
+        affiliatedOrganizationIds,
+        ...restProps
+    } = data.aspects["provenance"];
 
-    state.provenance = provenance as any;
+    const provenance = {
+        ...restProps
+    } as any;
+
+    if (derivedFrom?.length) {
+        provenance.derivedFrom = await convertToDatasetAutoCompleteData(
+            derivedFrom
+        );
+    }
+
+    if (affiliatedOrganizationIds?.length) {
+        provenance.affiliatedOrganizations = affiliatedOrganizationIds.map(
+            item => ({
+                existingId: item.id,
+                name: item?.aspects?.["organization-details"]?.name
+                    ? item?.aspects?.["organization-details"]?.name
+                    : item.name
+            })
+        );
+    }
+
+    state.provenance = provenance;
 }
 
 async function populateCurrencyAspect(data: RawDataset, state: State) {
