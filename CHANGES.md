@@ -16,7 +16,6 @@ General:
 -   Upgraded everything cert-manager related to work with v0.13
 -   Update build & run document to provide more information regarding running local build connector & minion docker images
 
-
 UI:
 
 -   Fixed the issue of modifying date string in text input using backspaces to an empty string will cause text input to reset text input
@@ -58,6 +57,7 @@ Authorization:
 -   Added ability to set per-record authorization policies in the registry (for getting multiple records)
 -   Added ability to use OPA policies that use data types other than strings in the registry
 -   Added authorization inside links with dereferencing on or off, for the `records/<id>` endpoint
+-   Added authorization inside links with dereferencing on or off, for the `records` endpoint
 
 Others:
 
