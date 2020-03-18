@@ -456,6 +456,21 @@ export async function rawDatasetDataToState(data: RawDataset): Promise<State> {
     await populateCurrencyAspect(data, state);
     populateDistributions(data, state);
 
+    state.licenseLevel = "dataset";
+
+    if (state?.distributions?.length) {
+        // --- if there is one distribution's license is different from dataset level
+        // --- the state.licenseLevel should be distribution
+        for (let i = 0; i < state.distributions.length; i++) {
+            if (
+                state.distributions[i].license !== state.dataset.defaultLicense
+            ) {
+                state.licenseLevel = "distribution";
+                break;
+            }
+        }
+    }
+
     return state;
 }
 
