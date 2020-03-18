@@ -15,7 +15,8 @@ import {
     Distribution,
     DistributionState,
     DistributionSource,
-    KeywordsLike
+    KeywordsLike,
+    createId
 } from "../../DatasetAddCommon";
 import withAddDatasetState from "../../withAddDatasetState";
 import uniq from "lodash/uniq";
@@ -103,6 +104,7 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
             }
 
             const newFile: Distribution = {
+                id: createId("dist"),
                 datasetTitle: toTitleCase(
                     turnPunctuationToSpaces(
                         trimExtension(thisFile.name || "File Name")
