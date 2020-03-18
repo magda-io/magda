@@ -35,6 +35,8 @@ type Props = {
     ) => void;
     user: User;
     stateData: State;
+    // --- if use as edit page
+    isEditView: boolean;
 };
 
 class AddFilesPage extends React.Component<Props & RouterProps> {
@@ -252,7 +254,7 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
     };
 
     deleteDistribution = (index: number) => () => {
-        this.setState((state: State) => {
+        this.props.setState((state: State) => {
             const newDistributions = state.distributions.filter((item, idx) => {
                 if (idx === index) return false;
                 return true;
@@ -264,79 +266,99 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
         });
     };
 
-    render() {
+    renderStorageOption() {
         const state = this.props.stateData;
         const localFiles = state.distributions.filter(
             file => file.creationSource === DistributionSource.File
         );
 
         return (
-            <div className="container-fluid dataset-add-file-page">
-                <div className="row top-area-row">
-                    <div className="col-xs-12 top-text-area">
-                        <h1>Add your dataset to pre-populate metadata</h1>
-                        <p>
-                            Our Publishing Tool can review your dataset contents
-                            and pre-populate metadata. Just add all the files or
-                            services that make up your dataset.
-                        </p>
-                        <p>
-                            You can upload your dataset as files, add a link to
-                            files already hosted online, or add a link to a web
-                            service, or any combination of the three.
-                        </p>
-                        <p>
-                            All our processing happens in your internet browser,
-                            we only store a copy of your files if you ask us to,
-                            and you can edit or delete the metadata at any time.
-                        </p>
-                        <p>
-                            Want to upload your entire data catalogue in one go?
-                            Use our <a>Bulk Upload tool</a>
-                        </p>
+            <StorageOptionsSection
+                files={localFiles}
+                shouldUploadToStorageApi={state.shouldUploadToStorageApi}
+                setShouldUploadToStorageApi={value => {
+                    this.props.setState((state: State) => {
+                        const newState = {
+                            ...state,
+                            shouldUploadToStorageApi: value
+                        };
+                        if (value) {
+                            // --- delete dataset location data when upload to storage api is selected
+                            const {
+                                location: originalLocation,
+                                ...newDatasetAccess
+                            } = { ...state.datasetAccess };
+                            newState.datasetAccess = newDatasetAccess;
+                        }
+                        return newState;
+                    });
+                }}
+                dataAccessLocation={
+                    state.datasetAccess.location
+                        ? state.datasetAccess.location
+                        : ""
+                }
+                setDataAccessLocation={value =>
+                    this.props.setState((state: State) => ({
+                        ...state,
+                        datasetAccess: {
+                            ...state.datasetAccess,
+                            location: value
+                        }
+                    }))
+                }
+            />
+        );
+    }
+
+    render() {
+        const { stateData: state, isEditView } = this.props;
+        const localFiles = state.distributions.filter(
+            file => file.creationSource === DistributionSource.File
+        );
+
+        return (
+            <div
+                className={`container-fluid dataset-add-file-page ${
+                    isEditView ? "is-edit-view" : ""
+                }`}
+            >
+                {isEditView ? null : (
+                    <div className="row top-area-row">
+                        <div className="col-xs-12 top-text-area">
+                            <h1>Add your dataset to pre-populate metadata</h1>
+                            <p>
+                                Our Publishing Tool can review your dataset
+                                contents and pre-populate metadata. Just add all
+                                the files or services that make up your dataset.
+                            </p>
+                            <p>
+                                You can upload your dataset as files, add a link
+                                to files already hosted online, or add a link to
+                                a web service, or any combination of the three.
+                            </p>
+                            <p>
+                                All our processing happens in your internet
+                                browser, we only store a copy of your files if
+                                you ask us to, and you can edit or delete the
+                                metadata at any time.
+                            </p>
+                            <p>
+                                Want to upload your entire data catalogue in one
+                                go? Use our <a>Bulk Upload tool</a>
+                            </p>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 <div className="row add-files-heading">
                     <div className="col-xs-12">
-                        <h3>Add files</h3>
-                        <StorageOptionsSection
-                            files={localFiles}
-                            shouldUploadToStorageApi={
-                                state.shouldUploadToStorageApi
-                            }
-                            setShouldUploadToStorageApi={value => {
-                                this.props.setState((state: State) => {
-                                    const newState = {
-                                        ...state,
-                                        shouldUploadToStorageApi: value
-                                    };
-                                    if (value) {
-                                        // --- delete dataset location data when upload to storage api is selected
-                                        const {
-                                            location: originalLocation,
-                                            ...newDatasetAccess
-                                        } = { ...state.datasetAccess };
-                                        newState.datasetAccess = newDatasetAccess;
-                                    }
-                                    return newState;
-                                });
-                            }}
-                            dataAccessLocation={
-                                state.datasetAccess.location
-                                    ? state.datasetAccess.location
-                                    : ""
-                            }
-                            setDataAccessLocation={value =>
-                                this.setState((state: State) => ({
-                                    ...state,
-                                    datasetAccess: {
-                                        ...state.datasetAccess,
-                                        location: value
-                                    }
-                                }))
-                            }
-                        />
+                        {isEditView ? (
+                            <h3>Your files and distributions</h3>
+                        ) : (
+                            <h3>Add files</h3>
+                        )}
+                        {this.renderStorageOption()}
                     </div>
 
                     {localFiles.length > 0 && (

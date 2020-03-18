@@ -55,6 +55,8 @@ type Props = {
     ) => void;
     user: User;
     stateData: State;
+    // --- if use as edit page
+    isEditView: boolean;
 };
 
 export default function DatasetAddAccessAndUsePage(props: Props) {

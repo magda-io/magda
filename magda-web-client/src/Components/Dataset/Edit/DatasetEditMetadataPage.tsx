@@ -104,6 +104,7 @@ class NewDataset extends React.Component<Props, State> {
                 setState={this.setState.bind(this)}
                 stateData={this.state}
                 user={this.props.user}
+                isEditView={true}
             />
         ),
         () => (
@@ -112,6 +113,7 @@ class NewDataset extends React.Component<Props, State> {
                 setState={this.setState.bind(this)}
                 stateData={this.state}
                 user={this.props.user}
+                isEditView={true}
             />
         ),
         () => (
@@ -121,6 +123,7 @@ class NewDataset extends React.Component<Props, State> {
                 publishing={this.state.datasetPublishing}
                 provenance={this.state.provenance}
                 user={this.props.user}
+                isEditView={true}
             />
         ),
         () => (
@@ -129,6 +132,7 @@ class NewDataset extends React.Component<Props, State> {
                 editState={this.editState}
                 stateData={this.state}
                 editStateWithUpdater={this.setState.bind(this)}
+                isEditView={true}
             />
         ),
         config.featureFlags.previewAddDataset
