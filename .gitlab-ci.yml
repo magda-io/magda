@@ -260,25 +260,6 @@ buildtest:registry:
       - "*/project/project/target"
     expire_in: 7 days
 
-buildtest:map:
-  stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
-  retry: 1
-  dependencies:
-    - builders-and-yarn
-  cache:
-    paths: []
-  script:
-    - yarn install
-    - yarn run in-submodules -- -f categories.map=true -- run build --include-filtered-dependencies
-    - yarn run in-submodules -- -f categories.map=true -- run test
-  artifacts:
-    paths:
-      - "*/build"
-      - "*/dist"
-      - "magda-preview-map/wwwroot/build"
-    expire_in: 7 days
-
 buildtest:typescript-apis:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
