@@ -1,6 +1,5 @@
 import React from "react";
 import { withRouter } from "react-router";
-import uuidv4 from "uuid/v4";
 import { MultilineTextEditor } from "Components/Editing/Editors/textEditor";
 
 import ToolTip from "Components/Dataset/Add/ToolTip";
@@ -18,38 +17,19 @@ import { Steps as ProgressMeterStepsConfig } from "../../Common/AddDatasetProgre
 import {
     State,
     saveState,
-    OrganisationAutocompleteChoice,
-    createId,
-    DatasetAutocompleteChoice,
-    Dataset,
-    DistributionState
+    DistributionState,
+    createDatasetFromState
 } from "./DatasetAddCommon";
 import DetailsAndContents from "./Pages/DetailsAndContents";
 import DatasetAddPeoplePage from "./Pages/People/DatasetAddPeoplePage";
 import DatasetAddEndPreviewPage from "./Pages/DatasetAddEndPreviewPage";
 import DatasetAddFilesPage from "./Pages/AddFiles";
-import { createPublisher, ensureAspectExists } from "api-clients/RegistryApis";
 import DatasetAddAccessAndUsePage from "./Pages/DatasetAddAccessAndUsePage";
 import withAddDatasetState from "./withAddDatasetState";
 import { config } from "config";
 
-import datasetPublishingAspect from "@magda/registry-aspects/publishing.schema.json";
-import dcatDatasetStringsAspect from "@magda/registry-aspects/dcat-dataset-strings.schema.json";
-import spatialCoverageAspect from "@magda/registry-aspects/spatial-coverage.schema.json";
-import temporalCoverageAspect from "@magda/registry-aspects/temporal-coverage.schema.json";
-import datasetDistributionsAspect from "@magda/registry-aspects/dataset-distributions.schema.json";
-import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribution-strings.schema.json";
-import accessAspect from "@magda/registry-aspects/access.schema.json";
-import provenanceAspect from "@magda/registry-aspects/provenance.schema.json";
-import informationSecurityAspect from "@magda/registry-aspects/information-security.schema.json";
-import datasetAccessControlAspect from "@magda/registry-aspects/dataset-access-control.schema.json";
-import organizationDetailsAspect from "@magda/registry-aspects/organization-details.schema.json";
-import datasetPublisherAspect from "@magda/registry-aspects/dataset-publisher.schema.json";
-import currencyAspect from "@magda/registry-aspects/currency.schema.json";
-
 import "./DatasetAddMetadataPage.scss";
 import "./DatasetAddCommon.scss";
-import { autocompletePublishers } from "api-clients/SearchApis";
 
 import ReviewFilesList from "./ReviewFilesList";
 
@@ -58,23 +38,6 @@ import ErrorMessageBox from "./ErrorMessageBox";
 import helpIcon from "assets/help.svg";
 import { User } from "reducers/userManagementReducer";
 import * as ValidationManager from "../Add/ValidationManager";
-
-import { fetchRecord } from "api-clients/RegistryApis";
-
-const aspects = {
-    publishing: datasetPublishingAspect,
-    "dcat-dataset-strings": dcatDatasetStringsAspect,
-    "spatial-coverage": spatialCoverageAspect,
-    "temporal-coverage": temporalCoverageAspect,
-    "dataset-distributions": datasetDistributionsAspect,
-    "dcat-distribution-strings": dcatDistributionStringsAspect,
-    access: accessAspect,
-    provenance: provenanceAspect,
-    "information-security": informationSecurityAspect,
-    "dataset-access-control": datasetAccessControlAspect,
-    "dataset-publisher": datasetPublisherAspect,
-    currency: currencyAspect
-};
 
 type Props = {
     initialState: State;
@@ -299,7 +262,19 @@ class NewDataset extends React.Component<Props, State> {
         try {
             await this.resetError();
 
-            await this.publishDataset();
+            saveState(this.state, this.props.datasetId);
+
+            this.setState(state => ({
+                ...state,
+                isPublishing: true
+            }));
+
+            await createDatasetFromState(
+                this.props.datasetId,
+                this.state,
+                this.setState.bind(this)
+            );
+
             this.props.history.push(`/dataset/${this.props.lastDatasetId}`);
         } catch (e) {
             this.setState({
@@ -308,244 +283,6 @@ class NewDataset extends React.Component<Props, State> {
             this.props.createNewDatasetError(e);
         }
     }
-
-    async ensureBlankDatasetIsSavedToRegistry(id: string, name: string) {
-        try {
-            await fetchRecord(id, [], [], false);
-        } catch (e) {
-            if (e.statusCode !== 404) {
-                throw e;
-            }
-            const { dataset, datasetPublishing } = this.state;
-            // --- if the dataset not exist in registry, save it now
-            // --- the dataset should have the same visibility as the current one
-            // --- but always be a draft one
-            await this.props.createRecord(
-                {
-                    id,
-                    name,
-                    aspects: {
-                        publishing: {
-                            ...datasetPublishing,
-                            state: "draft",
-                            publishAsOpenData: {}
-                        },
-                        "dataset-access-control": {
-                            orgUnitOwnerId: dataset.owningOrgUnitId
-                                ? dataset.owningOrgUnitId
-                                : undefined,
-                            custodianOrgUnitId: dataset.custodianOrgUnitId
-                                ? dataset.custodianOrgUnitId
-                                : undefined
-                        }
-                    }
-                },
-                [],
-                {
-                    publishing: datasetPublishingAspect,
-                    "dataset-access-control": datasetAccessControlAspect
-                }
-            );
-        }
-    }
-
-    async publishDataset() {
-        saveState(this.state, this.props.datasetId);
-
-        const {
-            dataset,
-            datasetPublishing,
-            spatialCoverage,
-            temporalCoverage,
-            distributions,
-            licenseLevel,
-            informationSecurity,
-            datasetAccess,
-            provenance,
-            currency
-        } = this.state;
-
-        this.setState({
-            isPublishing: true
-        });
-
-        let publisherId;
-        if (dataset.publisher) {
-            publisherId = await getOrgIdFromAutocompleteChoice(
-                dataset.publisher
-            );
-            this.edit("dataset")("publisher")({
-                name: dataset.publisher.name,
-                publisherId
-            });
-        }
-
-        const inputDistributions = distributions.map(distribution => {
-            const aspect =
-                licenseLevel === "dataset"
-                    ? {
-                          ...distribution,
-                          license: dataset.defaultLicense
-                      }
-                    : distribution;
-
-            return {
-                id: createId("dist"),
-                name: distribution.title,
-                aspects: {
-                    "dcat-distribution-strings": aspect
-                }
-            };
-        });
-
-        const preProcessDatasetAutocompleteChoices = async (
-            choices?: DatasetAutocompleteChoice[]
-        ) => {
-            if (!choices?.length) {
-                return;
-            }
-            const result: {
-                id?: string[];
-                name?: string;
-            }[] = [];
-            for (let i = 0; i < choices.length; i++) {
-                const id = choices[i]?.existingId;
-                const name = choices[i]?.name;
-                if (!id && !name) {
-                    continue;
-                }
-                if (id && name) {
-                    await this.ensureBlankDatasetIsSavedToRegistry(
-                        id as string,
-                        name
-                    );
-                }
-                result.push({
-                    id: id ? [id] : undefined,
-                    name: !id ? name : undefined
-                });
-            }
-            if (!result.length) {
-                return;
-            }
-            return result;
-        };
-
-        const inputDataset = {
-            id: this.props.datasetId,
-            name: dataset.title,
-            aspects: {
-                publishing: datasetPublishing,
-                "dcat-dataset-strings": buildDcatDatasetStrings(dataset),
-                "spatial-coverage": spatialCoverage,
-                "temporal-coverage": temporalCoverage,
-                "dataset-distributions": {
-                    distributions: inputDistributions.map(d => d.id)
-                },
-                access: datasetAccess,
-                "information-security": informationSecurity,
-                "dataset-access-control": {
-                    orgUnitOwnerId: dataset.owningOrgUnitId
-                        ? dataset.owningOrgUnitId
-                        : undefined,
-                    custodianOrgUnitId: dataset.custodianOrgUnitId
-                        ? dataset.custodianOrgUnitId
-                        : undefined
-                },
-                currency: {
-                    ...currency,
-                    supersededBy:
-                        currency.status === "SUPERSEDED"
-                            ? await preProcessDatasetAutocompleteChoices(
-                                  currency.supersededBy
-                              )
-                            : undefined,
-                    retireReason:
-                        currency.status === "RETIRED"
-                            ? currency.retireReason
-                            : undefined
-                },
-                provenance: {
-                    mechanism: provenance.mechanism,
-                    sourceSystem: provenance.sourceSystem,
-                    derivedFrom: await preProcessDatasetAutocompleteChoices(
-                        provenance.derivedFrom
-                    ),
-                    affiliatedOrganizationIds:
-                        provenance.affiliatedOrganizations &&
-                        (await Promise.all(
-                            provenance.affiliatedOrganizations.map(org =>
-                                getOrgIdFromAutocompleteChoice(org)
-                            )
-                        )),
-                    isOpenData: provenance.isOpenData
-                },
-                "dataset-publisher": publisherId && {
-                    publisher: publisherId
-                }
-            }
-        };
-
-        if (!inputDataset.aspects["dataset-access-control"].orgUnitOwnerId) {
-            delete inputDataset.aspects["dataset-access-control"];
-        }
-
-        console.log("inputDataset:", inputDataset);
-        debugger;
-
-        await this.props.createRecord(
-            inputDataset,
-            inputDistributions,
-            aspects
-        );
-    }
-}
-
-async function getOrgIdFromAutocompleteChoice(
-    organization: OrganisationAutocompleteChoice
-) {
-    let orgId: string;
-    if (!organization.existingId) {
-        // Do a last check to make sure the publisher really doesn't exist
-        const existingPublishers = await autocompletePublishers(
-            {},
-            organization.name
-        );
-
-        const match = existingPublishers.options.find(
-            publisher =>
-                publisher.value.toLowerCase().trim() ===
-                organization!.name.toLowerCase().trim()
-        );
-
-        if (!match) {
-            // OK no publisher, lets add it
-            await ensureAspectExists(
-                "organization-details",
-                organizationDetailsAspect
-            );
-
-            orgId = uuidv4();
-            await createPublisher({
-                id: orgId,
-                name: organization.name,
-                aspects: {
-                    "organization-details": {
-                        name: organization.name,
-                        title: organization.name,
-                        imageUrl: "",
-                        description: "Added manually during dataset creation"
-                    }
-                }
-            });
-        } else {
-            orgId = match.identifier;
-        }
-    } else {
-        orgId = organization.existingId;
-    }
-
-    return orgId;
 }
 
 function mapStateToProps(state, props) {
@@ -587,20 +324,3 @@ const mapDispatchToProps = dispatch => {
 export default withAddDatasetState(
     withRouter(connect(mapStateToProps, mapDispatchToProps)(NewDataset))
 );
-
-function buildDcatDatasetStrings(value: Dataset) {
-    return {
-        title: value.title,
-        description: value.description,
-        issued: value.issued && value.issued.toISOString(),
-        modified: value.modified && value.modified.toISOString(),
-        languages: value.languages,
-        publisher: value.publisher && value.publisher.name,
-        accrualPeriodicity: value.accrualPeriodicity,
-        accrualPeriodicityRecurrenceRule:
-            value.accrualPeriodicityRecurrenceRule,
-        themes: value.themes && value.themes.keywords,
-        keywords: value.keywords && value.keywords.keywords,
-        defaultLicense: value.defaultLicense
-    };
-}

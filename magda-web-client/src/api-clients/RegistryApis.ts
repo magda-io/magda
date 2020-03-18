@@ -121,3 +121,77 @@ export type Record = {
 function createRecord(inputRecord: Record) {
     return request("POST", `${config.registryFullApiUrl}records`, inputRecord);
 }
+
+export type JsonSchema = {
+    $schema?: string;
+    title?: string;
+    description?: string;
+    type: string;
+    [k: string]: any;
+};
+
+export async function createDataset(
+    inputDataset: Record,
+    inputDistributions: Record[],
+    aspects: {
+        [key: string]: JsonSchema;
+    }
+) {
+    // make sure all the aspects exist (this should be improved at some point, but will do for now)
+    const aspectPromises = Object.entries(aspects).map(([aspect, definition]) =>
+        ensureAspectExists(aspect, definition)
+    );
+    await Promise.all(aspectPromises);
+
+    for (const distribution of inputDistributions) {
+        await request(
+            "POST",
+            `${config.registryFullApiUrl}records`,
+            distribution
+        );
+    }
+    const json = (await request(
+        "POST",
+        `${config.registryFullApiUrl}records`,
+        inputDataset
+    )) as Record;
+
+    return json;
+}
+
+export async function updateDataset(
+    inputDataset: Record,
+    inputDistributions: Record[],
+    aspects: {
+        [key: string]: JsonSchema;
+    }
+) {
+    // make sure all the aspects exist (this should be improved at some point, but will do for now)
+    const aspectPromises = Object.entries(aspects).map(([aspect, definition]) =>
+        ensureAspectExists(aspect, definition)
+    );
+    await Promise.all(aspectPromises);
+
+    for (const distribution of inputDistributions) {
+        if (await doesRecordExist(distribution.id)) {
+            await request(
+                "PUT",
+                `${config.registryFullApiUrl}records/${distribution.id}`,
+                distribution
+            );
+        } else {
+            await request(
+                "POST",
+                `${config.registryFullApiUrl}records`,
+                distribution
+            );
+        }
+    }
+    const json = (await request(
+        "PUT",
+        `${config.registryFullApiUrl}records/${inputDataset.id}`,
+        inputDataset
+    )) as Record;
+
+    return json;
+}

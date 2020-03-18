@@ -1,10 +1,49 @@
 import uuidv4 from "uuid/v4";
 
 import { ContactPointDisplayOption } from "constants/DatasetConstants";
-import { fetchOrganization, fetchRecord } from "api-clients/RegistryApis";
+import {
+    fetchOrganization,
+    fetchRecord,
+    createDataset,
+    ensureAspectExists,
+    createPublisher,
+    updateDataset,
+    Record
+} from "api-clients/RegistryApis";
 import { config } from "config";
 import { User } from "reducers/userManagementReducer";
 import { RawDataset } from "helpers/record";
+
+import { autocompletePublishers } from "api-clients/SearchApis";
+
+import datasetPublishingAspect from "@magda/registry-aspects/publishing.schema.json";
+import dcatDatasetStringsAspect from "@magda/registry-aspects/dcat-dataset-strings.schema.json";
+import spatialCoverageAspect from "@magda/registry-aspects/spatial-coverage.schema.json";
+import temporalCoverageAspect from "@magda/registry-aspects/temporal-coverage.schema.json";
+import datasetDistributionsAspect from "@magda/registry-aspects/dataset-distributions.schema.json";
+import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribution-strings.schema.json";
+import accessAspect from "@magda/registry-aspects/access.schema.json";
+import provenanceAspect from "@magda/registry-aspects/provenance.schema.json";
+import informationSecurityAspect from "@magda/registry-aspects/information-security.schema.json";
+import datasetAccessControlAspect from "@magda/registry-aspects/dataset-access-control.schema.json";
+import organizationDetailsAspect from "@magda/registry-aspects/organization-details.schema.json";
+import datasetPublisherAspect from "@magda/registry-aspects/dataset-publisher.schema.json";
+import currencyAspect from "@magda/registry-aspects/currency.schema.json";
+
+const aspects = {
+    publishing: datasetPublishingAspect,
+    "dcat-dataset-strings": dcatDatasetStringsAspect,
+    "spatial-coverage": spatialCoverageAspect,
+    "temporal-coverage": temporalCoverageAspect,
+    "dataset-distributions": datasetDistributionsAspect,
+    "dcat-distribution-strings": dcatDistributionStringsAspect,
+    access: accessAspect,
+    provenance: provenanceAspect,
+    "information-security": informationSecurityAspect,
+    "dataset-access-control": datasetAccessControlAspect,
+    "dataset-publisher": datasetPublisherAspect,
+    currency: currencyAspect
+};
 
 export type Distribution = {
     title: string;
@@ -376,6 +415,7 @@ function populateDistributions(data: RawDataset, state: State) {
             );
             const dis = {
                 ...item.aspects["dcat-distribution-strings"],
+                id: item.id,
                 modified: modified ? modified : new Date(),
                 _state: DistributionState.Ready
             };
@@ -507,4 +547,297 @@ export function saveState(state: State, id = createId()) {
 
 export function createId(type = "ds") {
     return `magda-${type}-${uuidv4()}`;
+}
+
+async function ensureBlankDatasetIsSavedToRegistry(
+    state: State,
+    id: string,
+    name: string
+) {
+    try {
+        await fetchRecord(id, [], [], false);
+    } catch (e) {
+        if (e.statusCode !== 404) {
+            throw e;
+        }
+        const { dataset, datasetPublishing } = state;
+        // --- if the dataset not exist in registry, save it now
+        // --- the dataset should have the same visibility as the current one
+        // --- but always be a draft one
+        await createDataset(
+            {
+                id,
+                name,
+                aspects: {
+                    publishing: {
+                        ...datasetPublishing,
+                        state: "draft",
+                        publishAsOpenData: {}
+                    },
+                    "dataset-access-control": {
+                        orgUnitOwnerId: dataset.owningOrgUnitId
+                            ? dataset.owningOrgUnitId
+                            : undefined,
+                        custodianOrgUnitId: dataset.custodianOrgUnitId
+                            ? dataset.custodianOrgUnitId
+                            : undefined
+                    }
+                }
+            },
+            [],
+            {
+                publishing: datasetPublishingAspect,
+                "dataset-access-control": datasetAccessControlAspect
+            }
+        );
+    }
+}
+
+export async function preProcessDatasetAutocompleteChoices(
+    state: State,
+    choices?: DatasetAutocompleteChoice[]
+) {
+    if (!choices?.length) {
+        return;
+    }
+    const result: {
+        id?: string[];
+        name?: string;
+    }[] = [];
+    for (let i = 0; i < choices.length; i++) {
+        const id = choices[i]?.existingId;
+        const name = choices[i]?.name;
+        if (!id && !name) {
+            continue;
+        }
+        if (id && name) {
+            await ensureBlankDatasetIsSavedToRegistry(
+                state,
+                id as string,
+                name
+            );
+        }
+        result.push({
+            id: id ? [id] : undefined,
+            name: !id ? name : undefined
+        });
+    }
+    if (!result.length) {
+        return;
+    }
+    return result;
+}
+
+function buildDcatDatasetStrings(value: Dataset) {
+    return {
+        title: value.title,
+        description: value.description,
+        issued: value.issued && value.issued.toISOString(),
+        modified: value.modified && value.modified.toISOString(),
+        languages: value.languages,
+        publisher: value.publisher && value.publisher.name,
+        accrualPeriodicity: value.accrualPeriodicity,
+        accrualPeriodicityRecurrenceRule:
+            value.accrualPeriodicityRecurrenceRule,
+        themes: value.themes && value.themes.keywords,
+        keywords: value.keywords && value.keywords.keywords,
+        defaultLicense: value.defaultLicense
+    };
+}
+
+async function getOrgIdFromAutocompleteChoice(
+    organization: OrganisationAutocompleteChoice
+) {
+    let orgId: string;
+    if (!organization.existingId) {
+        // Do a last check to make sure the publisher really doesn't exist
+        const existingPublishers = await autocompletePublishers(
+            {},
+            organization.name
+        );
+
+        const match = existingPublishers.options.find(
+            publisher =>
+                publisher.value.toLowerCase().trim() ===
+                organization!.name.toLowerCase().trim()
+        );
+
+        if (!match) {
+            // OK no publisher, lets add it
+            await ensureAspectExists(
+                "organization-details",
+                organizationDetailsAspect
+            );
+
+            orgId = uuidv4();
+            await createPublisher({
+                id: orgId,
+                name: organization.name,
+                aspects: {
+                    "organization-details": {
+                        name: organization.name,
+                        title: organization.name,
+                        imageUrl: "",
+                        description: "Added manually during dataset creation"
+                    }
+                }
+            });
+        } else {
+            orgId = match.identifier;
+        }
+    } else {
+        orgId = organization.existingId;
+    }
+
+    return orgId;
+}
+
+async function convertStateToDatasetRecord(
+    datasetId: string,
+    distributionRecords: Record[],
+    state: State,
+    setState: React.Dispatch<React.SetStateAction<State>>
+) {
+    const {
+        dataset,
+        datasetPublishing,
+        spatialCoverage,
+        temporalCoverage,
+        informationSecurity,
+        datasetAccess,
+        provenance,
+        currency
+    } = state;
+
+    let publisherId;
+    if (dataset.publisher) {
+        publisherId = await getOrgIdFromAutocompleteChoice(dataset.publisher);
+        setState(state => ({
+            ...state,
+            dataset: {
+                ...state.dataset,
+                publisher: {
+                    name: (dataset.publisher as any).name,
+                    publisherId
+                }
+            }
+        }));
+    }
+
+    const inputDataset = {
+        id: datasetId,
+        name: dataset.title,
+        aspects: {
+            publishing: datasetPublishing,
+            "dcat-dataset-strings": buildDcatDatasetStrings(dataset),
+            "spatial-coverage": spatialCoverage,
+            "temporal-coverage": temporalCoverage,
+            "dataset-distributions": {
+                distributions: distributionRecords.map(d => d.id)
+            },
+            access: datasetAccess,
+            "information-security": informationSecurity,
+            "dataset-access-control": {
+                orgUnitOwnerId: dataset.owningOrgUnitId
+                    ? dataset.owningOrgUnitId
+                    : undefined,
+                custodianOrgUnitId: dataset.custodianOrgUnitId
+                    ? dataset.custodianOrgUnitId
+                    : undefined
+            },
+            currency: {
+                ...currency,
+                supersededBy:
+                    currency.status === "SUPERSEDED"
+                        ? await preProcessDatasetAutocompleteChoices(
+                              state,
+                              currency.supersededBy
+                          )
+                        : undefined,
+                retireReason:
+                    currency.status === "RETIRED"
+                        ? currency.retireReason
+                        : undefined
+            },
+            provenance: {
+                mechanism: provenance.mechanism,
+                sourceSystem: provenance.sourceSystem,
+                derivedFrom: await preProcessDatasetAutocompleteChoices(
+                    state,
+                    provenance.derivedFrom
+                ),
+                affiliatedOrganizationIds:
+                    provenance.affiliatedOrganizations &&
+                    (await Promise.all(
+                        provenance.affiliatedOrganizations.map(org =>
+                            getOrgIdFromAutocompleteChoice(org)
+                        )
+                    )),
+                isOpenData: provenance.isOpenData
+            },
+            "dataset-publisher": publisherId && {
+                publisher: publisherId
+            }
+        }
+    };
+
+    if (!inputDataset.aspects["dataset-access-control"].orgUnitOwnerId) {
+        delete inputDataset.aspects["dataset-access-control"];
+    }
+
+    return inputDataset;
+}
+
+async function convertStateToDistributionRecords(state: State) {
+    const { dataset, distributions, licenseLevel } = state;
+
+    const distributionRecords = distributions.map(distribution => {
+        const aspect =
+            licenseLevel === "dataset"
+                ? {
+                      ...distribution,
+                      license: dataset.defaultLicense
+                  }
+                : distribution;
+
+        return {
+            id: distribution.id ? distribution.id : createId("dist"),
+            name: distribution.title,
+            aspects: {
+                "dcat-distribution-strings": aspect
+            }
+        };
+    });
+
+    return distributionRecords;
+}
+
+export async function createDatasetFromState(
+    datasetId: string,
+    state: State,
+    setState: React.Dispatch<React.SetStateAction<State>>
+) {
+    const distributionRecords = await convertStateToDistributionRecords(state);
+    const datasetRecord = await convertStateToDatasetRecord(
+        datasetId,
+        distributionRecords,
+        state,
+        setState
+    );
+    await createDataset(datasetRecord, distributionRecords, aspects);
+}
+
+export async function updateDatasetFromState(
+    datasetId: string,
+    state: State,
+    setState: React.Dispatch<React.SetStateAction<State>>
+) {
+    const distributionRecords = await convertStateToDistributionRecords(state);
+    const datasetRecord = await convertStateToDatasetRecord(
+        datasetId,
+        distributionRecords,
+        state,
+        setState
+    );
+    await updateDataset(datasetRecord, distributionRecords, aspects);
 }
