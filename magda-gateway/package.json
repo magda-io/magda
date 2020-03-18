@@ -73,6 +73,7 @@
     "@types/passport-facebook": "^2.1.8",
     "@types/passport-local": "^1.0.31",
     "@types/pg": "^6.1.41",
+    "@types/q": "^1.5.2",
     "@types/randomstring": "^1.1.6",
     "@types/read-pkg-up": "^3.0.1",
     "@types/request": "^2.48.1",
