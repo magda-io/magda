@@ -39,10 +39,13 @@ dependencies:
     tags:
       - all
       - indexer
-  # - name: preview-map
-  #   tags:
-  #     - all
-  #     - preview-map
+  - name: magda-preview-map
+    version: 0.0.57-0
+    alias: preview-map
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - preview-map
   - name: registry-api
     tags:
       - all
