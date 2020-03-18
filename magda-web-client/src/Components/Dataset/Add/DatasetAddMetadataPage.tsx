@@ -5,7 +5,6 @@ import { MultilineTextEditor } from "Components/Editing/Editors/textEditor";
 import ToolTip from "Components/Dataset/Add/ToolTip";
 
 import {
-    createRecord,
     createNewDatasetReset,
     createNewDatasetError
 } from "actions/recordActions";
@@ -44,7 +43,6 @@ type Props = {
     createRecord: Function;
     createNewDatasetReset: Function;
     createNewDatasetError: Function;
-    isCreating: boolean;
     creationError: any;
     lastDatasetId: string;
     step: number;
@@ -275,7 +273,7 @@ class NewDataset extends React.Component<Props, State> {
                 this.setState.bind(this)
             );
 
-            this.props.history.push(`/dataset/${this.props.lastDatasetId}`);
+            this.props.history.push(`/dataset/${this.props.datasetId}`);
         } catch (e) {
             this.setState({
                 isPublishing: false
@@ -292,28 +290,15 @@ function mapStateToProps(state, props) {
         step = 0;
     }
 
-    const isCreating =
-        state.record.newDataset && state.record.newDataset.isCreating;
-    const creationError =
-        state.record.newDataset && state.record.newDataset.error;
-    const lastDatasetId =
-        !isCreating &&
-        state.record.newDataset &&
-        state.record.newDataset.dataset &&
-        state.record.newDataset.dataset.id;
     return {
         datasetId,
-        step,
-        isCreating,
-        creationError,
-        lastDatasetId
+        step
     };
 }
 
 const mapDispatchToProps = dispatch => {
     return bindActionCreators(
         {
-            createRecord: createRecord,
             createNewDatasetReset: createNewDatasetReset,
             createNewDatasetError: createNewDatasetError
         },

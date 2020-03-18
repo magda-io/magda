@@ -5,7 +5,6 @@ import { RecordAction, RawDataset } from "../helpers/record";
 import { FetchError } from "../types";
 import {
     ensureAspectExists,
-    doesRecordExist,
     fetchRecord,
     Record
 } from "api-clients/RegistryApis";
@@ -245,72 +244,6 @@ export function createRecord(
             const json = await request(
                 "POST",
                 `${config.registryFullApiUrl}records`,
-                inputDataset
-            );
-            return dispatch(receiveNewDataset(json));
-        } catch (error) {
-            // --- throw out error so it can be caught by try/catch
-            throw error;
-        }
-    };
-}
-
-export function requestDatasetUpdate(json: Object): RecordAction {
-    return {
-        type: actionTypes.REQUEST_DATASET_UPDATE,
-        json
-    };
-}
-
-export function updateNewDatasetError(error: FetchError): RecordAction {
-    return {
-        type: actionTypes.DATASET_UPDATE_ERROR,
-        error
-    };
-}
-
-export function updateNewDatasetReset(error: FetchError): RecordAction {
-    return {
-        type: actionTypes.DATASET_UPDATE_RESET,
-        error
-    };
-}
-
-export function updateRecord(
-    id: string,
-    inputDataset: Record,
-    inputDistributions: Record[],
-    aspects: any
-): any {
-    return async (dispatch: Function, getState: () => any) => {
-        dispatch(requestDatasetUpdate(inputDataset));
-        try {
-            // make sure all the aspects exist (this should be improved at some point, but will do for now)
-            const aspectPromises = Object.entries(
-                aspects
-            ).map(([aspect, definition]) =>
-                ensureAspectExists(aspect, definition)
-            );
-            await Promise.all(aspectPromises);
-
-            for (const distribution of inputDistributions) {
-                if (await doesRecordExist(distribution.id)) {
-                    await request(
-                        "PUT",
-                        `${config.registryFullApiUrl}records/${distribution.id}`,
-                        distribution
-                    );
-                } else {
-                    await request(
-                        "POST",
-                        `${config.registryFullApiUrl}records`,
-                        distribution
-                    );
-                }
-            }
-            const json = await request(
-                "PUT",
-                `${config.registryFullApiUrl}records/${inputDataset.id}`,
                 inputDataset
             );
             return dispatch(receiveNewDataset(json));

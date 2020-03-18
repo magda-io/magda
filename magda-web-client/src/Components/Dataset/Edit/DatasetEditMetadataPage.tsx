@@ -5,9 +5,8 @@ import { MultilineTextEditor } from "Components/Editing/Editors/textEditor";
 import ToolTip from "Components/Dataset/Add/ToolTip";
 
 import {
-    updateRecord,
-    updateNewDatasetReset,
-    updateNewDatasetError
+    createNewDatasetReset,
+    createNewDatasetError
 } from "actions/recordActions";
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
@@ -38,9 +37,8 @@ import * as ValidationManager from "../Add/ValidationManager";
 
 type Props = {
     initialState: State;
-    updateRecord: Function;
-    updateNewDatasetReset: Function;
-    updateNewDatasetError: Function;
+    createNewDatasetReset: Function;
+    createNewDatasetError: Function;
     isCreating: boolean;
     creationError: any;
     lastDatasetId: string;
@@ -191,7 +189,7 @@ class NewDataset extends React.Component<Props, State> {
     }
 
     resetError() {
-        this.props.updateNewDatasetReset();
+        this.props.createNewDatasetReset();
     }
 
     async saveAndExit() {
@@ -200,7 +198,7 @@ class NewDataset extends React.Component<Props, State> {
             saveState(this.state, this.props.datasetId);
             this.props.history.push(`/dataset/list`);
         } catch (e) {
-            this.props.updateNewDatasetError(e);
+            this.props.createNewDatasetError(e);
         }
     }
 
@@ -214,7 +212,7 @@ class NewDataset extends React.Component<Props, State> {
                 );
             }
         } catch (e) {
-            this.props.updateNewDatasetError(e);
+            this.props.createNewDatasetError(e);
         }
     }
 
@@ -263,12 +261,12 @@ class NewDataset extends React.Component<Props, State> {
                 this.setState.bind(this)
             );
 
-            this.props.history.push(`/dataset/${this.props.lastDatasetId}`);
+            this.props.history.push(`/dataset/${this.props.datasetId}`);
         } catch (e) {
             this.setState({
                 isPublishing: false
             });
-            this.props.updateNewDatasetError(e);
+            this.props.createNewDatasetError(e);
         }
     }
 }
@@ -279,30 +277,18 @@ function mapStateToProps(state, old) {
     if (isNaN(step)) {
         step = 0;
     }
-    const isCreating =
-        state.record.newDataset && state.record.newDataset.isCreating;
-    const creationError =
-        state.record.newDataset && state.record.newDataset.error;
-    const lastDatasetId =
-        !isCreating &&
-        state.record.newDataset &&
-        state.record.newDataset.dataset &&
-        state.record.newDataset.dataset.id;
+
     return {
         datasetId,
-        step,
-        isCreating,
-        creationError,
-        lastDatasetId
+        step
     };
 }
 
 const mapDispatchToProps = dispatch => {
     return bindActionCreators(
         {
-            updateRecord: updateRecord,
-            updateNewDatasetReset: updateNewDatasetReset,
-            updateNewDatasetError: updateNewDatasetError
+            createNewDatasetReset: createNewDatasetReset,
+            createNewDatasetError: createNewDatasetError
         },
         dispatch
     );
