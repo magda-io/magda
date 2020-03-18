@@ -1,4 +1,4 @@
-apiVersion: certmanager.k8s.io/v1alpha1
+apiVersion: cert-manager.io/v1alpha2
 kind: ClusterIssuer
 metadata:
   name: letsencrypt
@@ -11,14 +11,13 @@ spec:
     privateKeySecretRef:
       name: letsencrypt
 
+    solvers:
     # ACME DNS-01 provider configurations
-    dns01:
-      providers:
-        - name: prod-dns
-          route53:
-            region: ap-southeast-2
-            hostedZoneID: {{ .Values.hostedZoneID }}
-            accessKeyID: {{ .Values.accessKeyID }}
-            secretAccessKeySecretRef:
-              name: {{ .Values.secretAccessKeySecretRef.name }}
-              key: {{ .Values.secretAccessKeySecretRef.key }}
+    - dns01:
+        route53:
+          region: ap-southeast-2
+          hostedZoneID: {{ .Values.hostedZoneID }}
+          accessKeyID: {{ .Values.accessKeyID }}
+          secretAccessKeySecretRef:
+            name: {{ .Values.secretAccessKeySecretRef.name }}
+            key: {{ .Values.secretAccessKeySecretRef.key }}

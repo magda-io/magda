@@ -37,8 +37,9 @@ const StorageOptionsSection = (props: Props) => {
                         <div className="tooltip-container">
                             <div className="triangle">&nbsp;</div>
                             <div>
-                                All files must be deleted in order to change
-                                whether they should be uploaded or not.
+                                In order to change this selection, please remove
+                                the files you have already uploaded, change this
+                                selection and re-upload them.
                             </div>
                         </div>
                     ) : null}
