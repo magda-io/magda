@@ -1744,8 +1744,7 @@ export class RecordsApi {
         dereference?: boolean,
         xMagdaSession?: string
     ): Promise<{ response: http.IncomingMessage; body: Record }> {
-        const localVarPath =
-            this.basePath + "/records/" + encodeURIComponent(id);
+        const localVarPath = this.basePath + "/records/" + id;
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
