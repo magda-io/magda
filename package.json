@@ -38,7 +38,7 @@
     "build-changed-ts": "node ./scripts/build-changed.js",
     "build-changed-scala": "bash -c \"sbt deployLocalOnChange\"",
     "build-changed": "yarn run build-changed-ts && yarn run build-changed-scala",
-    "prettier": "prettier --write '**/*.js' '**/*.ts' '**/*.json' '!**/regions/**' '!**/dist/**' '!**/build/**' '!**/bin/**', '!**/magda-preview-map/**'",
+    "prettier": "prettier --write '**/*.js' '**/*.ts' '**/*.json' '!**/regions/**' '!**/dist/**' '!**/build/**' '!**/bin/**'",
     "retag-and-push": "lerna run retag-and-push --stream",
     "eslint": "./node_modules/.bin/eslint magda-web-client/src/",
     "create-secrets": "create-secrets",
