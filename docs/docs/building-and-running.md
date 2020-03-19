@@ -86,6 +86,29 @@ eval $(minikube docker-env) # (If you haven't run this already)
 lerna run docker-build-local --stream --concurrency=4 --include-filtered-dependencies
 ```
 
+### Build Connector and Minion local docker images
+
+As of v0.0.57, Magda official connectors & minions live outside the core repository. You can find connector & minions repositories at [here](https://github.com/magda-io?q=connector+OR++minion).
+
+You don't have to build connector & minions docker images as the default config value file [minikube-dev.yml](https://github.com/magda-io/magda/blob/master/deploy/helm/minikube-dev.yml#L20) specifically set to use official production-ready docker image from docker hub repository.
+
+If you do want to use local build connector & minion docker images for testing & development purpose, you need to:
+
+1. Clone the relevant connector or minion repository
+2. Build & Push docker image to a local docker registry.
+
+Run the following commands from the cloned folder:
+
+```bash
+yarn install
+yarn run build
+eval $(minikube docker-env)
+yarn run docker-build-local
+```
+
+3. Modify `minikube-dev.yml`, remove the `global.connectors.image` & `global.minions.image` section.
+4. Deploy Magda with helm using the instructions provided by the [Install Magda on your minikube/docker-desktop cluster section](#install-magda-on-your-minikubedocker-desktop-cluster) below.
+
 ### Create the necessary secrets with the secret creation script
 
 ```bash
@@ -102,25 +125,6 @@ kubectl apply -f deploy/kubernetes/local-storage-volume.yaml
 ```
 
 Note: If using docker desktop for Windows older than version 19, change the value from "docker-desktop" to "docker-for-desktop" in nodeAffinity in file deploy/kubernetes/local-storage-volume.yaml
-
-### Install the CKAN connector
-
-The Magda CKAN connector (as of v0.0.57) lives outside of the core repository, at https://github.com/magda-io/magda-ckan-connector.
-
-This is necessary if you want your magda instance already populated with an initial
-set of datasets from [data.gov.au](data.gov.au). If you don't want to get datasets from
-data.gov.au, then you can skip this and set `global.connectors.includeInitialJobs` to `false`.
-
-To get the CKAN connector running,
-
-```bash
-git clone https://github.com/magda-io/magda-ckan-connector
-cd magda-ckan-connector
-yarn install
-yarn run build
-eval $(minikube docker-env)
-yarn run docker-build-local
-```
 
 ### Install Magda on your minikube/docker-desktop cluster
 
