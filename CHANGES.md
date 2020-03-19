@@ -13,6 +13,7 @@ General:
 -   Release [npm packages](https://www.npmjs.com/search?q=%40magda) for building `connectors` & `minions` without depending on main repo
 -   Upgrade charts to use with Helm 3, Kubernetes 1.17 and Minikube 1.7.2
 -   Make recompiling and updating create secrets scripts an action in the CI
+-   Move [magda-preview-map](https://github.com/magda-io/magda-preview-map) out of the core repo
 
 UI:
 
