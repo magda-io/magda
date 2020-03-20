@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 export default function DatasetAddEndPreviewPage() {
     return (
-        <div className="row people-and-production-page">
+        <div className="row end-preview-page">
             <div className="col-sm-12">
                 <h2>You've completed the Add Dataset Preview!</h2>
                 <hr />
