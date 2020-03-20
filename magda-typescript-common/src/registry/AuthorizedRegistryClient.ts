@@ -13,28 +13,19 @@ import createServiceError from "../createServiceError";
 import buildJwt from "../session/buildJwt";
 import { IncomingMessage } from "http";
 import { Maybe } from "tsmonad";
-import isUuid from "../util/isUuid";
 
 export interface AuthorizedRegistryOptions extends RegistryOptions {
     jwtSecret: string;
-    userId: string;
+    userId?: string;
 }
 
 export default class AuthorizedRegistryClient extends RegistryClient {
     protected options: AuthorizedRegistryOptions;
-    protected jwt: string;
+    protected jwt: string | undefined;
 
     constructor(options: AuthorizedRegistryOptions) {
         if (options.tenantId === undefined || options.tenantId === null) {
             throw Error("A tenant id must be defined.");
-        }
-
-        if (
-            options.userId === undefined ||
-            options.userId === null ||
-            !isUuid(options.userId)
-        ) {
-            throw Error("A user id must be a valid UUID.");
         }
 
         if (options.jwtSecret === undefined || options.jwtSecret === null) {
@@ -42,7 +33,8 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         }
         super(options);
         this.options = options;
-        this.jwt = buildJwt(options.jwtSecret, options.userId);
+        this.jwt =
+            options.userId && buildJwt(options.jwtSecret, options.userId);
     }
 
     putAspectDefinition(

@@ -96,12 +96,12 @@ export default function createApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Storage
      *
-     * @api {get} /v0/{bucket}/{fieldid} Request to download an object in {bucket} with name {fieldid}
+     * @api {get} /v0/{bucket}/{fileid} Request to download an object in {bucket} with name {fileid}
      *
      * @apiDescription Downloads an object
      *
-     * @apiParam (Request body) {string} bucket The name of the bucket under which the requested object is
-     * @apiParam (Request body) {string} fieldid The name of the object being requested
+     * @apiParam (Request path) {string} bucket The name of the bucket under which the requested object is
+     * @apiParam (Request path) {string} fileid The name of the object being requested
      *
      * @apiSuccessExample {binary} 200
      *      <Contents of a file>
@@ -149,31 +149,12 @@ export default function createApiRouter(options: ApiRouterOptions) {
         const recordIdNum = res.getHeader("Record-ID");
         if (recordIdNum) {
             const recordId = recordIdNum.toString();
-            const maybeUserId = getUserId(req, options.jwtSecret);
-            let userId;
-            try {
-                userId = maybeUserId.valueOrThrow();
-            } catch (e) {
-                return res.status(400).send("No User ID set.");
-            }
-            const registryOptions: AuthorizedRegistryOptions = {
-                baseUrl: options.registryApiUrl,
-                jwtSecret: options.jwtSecret,
-                userId: userId,
-                tenantId: options.tenantId
-            };
-            const registryClient = new AuthorizedRegistryClient(
-                registryOptions
-            );
-            const recordP = await registryClient.getRecord(
-                recordId,
-                undefined,
-                ["publishing", "dataset-access-control"]
-            );
-            try {
-                unionToThrowable(recordP);
-            } catch (e) {
+
+            const found = await checkRecord(req, recordId);
+            if (found === 404) {
                 return res.status(404).send("Could not retrieve the file.");
+            } else if (found === 500) {
+                return res.status(500).send("Internal server error");
             }
         }
 
@@ -194,6 +175,46 @@ export default function createApiRouter(options: ApiRouterOptions) {
             );
     });
 
+    async function checkRecord(
+        req: express.Request,
+        recordId: string
+    ): Promise<200 | 404 | 500> {
+        const maybeUserId = getUserId(req, options.jwtSecret);
+        let userId = maybeUserId.valueOr(undefined);
+
+        const registryOptions: AuthorizedRegistryOptions = {
+            baseUrl: options.registryApiUrl,
+            jwtSecret: options.jwtSecret,
+            userId: userId,
+            tenantId: options.tenantId,
+            maxRetries: 0
+        };
+        const registryClient = new AuthorizedRegistryClient(registryOptions);
+        const recordP = await registryClient.getRecord(
+            recordId,
+            undefined,
+            undefined
+        );
+
+        try {
+            const record = unionToThrowable(recordP);
+
+            // We could just return true here, but we'll give ourself a bit of extra cover by
+            // asserting that the id is correct
+            return record.id === recordId ? 200 : 404;
+        } catch (e) {
+            if (e.e && e.e.response && e.e.response.statusCode === 404) {
+                return 404;
+            } else {
+                console.error(
+                    "Error occurred when trying to contact registry",
+                    e.message
+                );
+                return 500;
+            }
+        }
+    }
+
     // Browser uploads
     /**
      * @apiGroup Storage
@@ -202,12 +223,16 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *
      * @apiDescription Uploads a file. Restricted to admins only.
      *
-     * @apiParam (Request body) {string} bucket The name of the bucket to which to upload to
+     * @apiParam (Request path) {string} bucket The name of the bucket to which to upload to
+     * @apiParam (Request query) {string} recordId A record id to associate this file with - a user will only
+     *      be allowed to access this file if they're also allowed to access the associated record. Should be
+     *      url encoded.
      *
      * @apiSuccessExample {string} 200 Successfully uploaded 2 files.
      * {
      *      "message": "Successfully uploaded 2 files.",
-     *      "etags": ["cafbab71cd98120b777799598f0d4808-1","19a3cb5d5706549c2f1a57a27cf30e41-1"]}
+     *      "etags": ["cafbab71cd98120b777799598f0d4808-1","19a3cb5d5706549c2f1a57a27cf30e41-1"]
+     * }
      *
      * @apiErrorExample {string} 500
      *      Internal server error.
@@ -216,11 +241,22 @@ export default function createApiRouter(options: ApiRouterOptions) {
         "/upload/:bucket",
         fileParser({ rawBodyOptions: { limit: options.uploadLimit } }),
         mustBeAdmin(options.authApiUrl, options.jwtSecret),
-        (req: any, res) => {
+        async (req: any, res) => {
             if (!req.files || req.files.length === 0) {
                 return res.status(400).send("No files were uploaded.");
             }
-            const recordId = req.query.recordId;
+            const recordId =
+                req.query.recordId && decodeURIComponent(req.query.recordId);
+
+            if (recordId) {
+                const found = await checkRecord(req, recordId);
+                if (found === 404) {
+                    return res.status(400).send("Invalid record id");
+                } else if (found === 500) {
+                    return res.status(500).send("Internal server error");
+                }
+            }
+
             const bucket = req.params.bucket;
             const encodeBucketname = encodeURIComponent(bucket);
             const promises = (req.files as Array<any>).map((file: any) => {
@@ -231,8 +267,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 if (recordId) {
                     metaData["Record-ID"] = recordId;
                 }
-                const fieldId = file.originalname;
-                const encodedRootPath = encodeURIComponent(fieldId);
+                const fileid = file.originalname;
+                const encodedRootPath = encodeURIComponent(fileid);
                 return options.objectStoreClient
                     .putFile(
                         encodeBucketname,
@@ -262,13 +298,15 @@ export default function createApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Storage
      *
-     * @api {put} /v0/{bucket}/{fieldid}?{recordId} Request to upload an object to {bucket} with name {fieldid}
+     * @api {put} /v0/{bucket}/{fileid}?{recordId} Request to upload an object to {bucket} with name {fileid}
      *
      * @apiDescription Uploads an object. Restricted to admins only.
      *
-     * @apiParam (Request body) {string} bucket The name of the bucket to which to upload to
-     * @apiParam (Request body) {string} fieldid The name of the object being uploaded
-     * @apiParam (Request query) {string} recordId The record ID of the dataset
+     * @apiParam (Request path) {string} bucket The name of the bucket to which to upload to
+     * @apiParam (Request path) {string} fileid The name of the object being uploaded
+     * @apiParam (Request query) {string} recordId A record id to associate this file with - a user will only
+     *      be allowed to access this file if they're also allowed to access the associated record. Should be
+     *      url encoded.
      *
      * @apiSuccessExample {json} 200
      *    {
@@ -276,8 +314,10 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *        "etag":"edd88378a7900bf663a5fa386386b585-1"
      *    }
      *
-     * @apiErrorExample {string} 400
-     *    Record ID not set
+     * @apiErrorExample {json} 400
+     *    {
+     *        "message":"No content.",
+     *    }
      *
      * @apiErrorExample {json} 500
      *    {
@@ -290,7 +330,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
         async function(req, res) {
             const fileId = req.params.fileid;
             const bucket = req.params.bucket;
-            const recordId = req.query.recordId;
+            const recordId =
+                req.query.recordId && decodeURIComponent(req.query.recordId);
             const encodedRootPath = encodeURIComponent(fileId);
             const encodeBucketname = encodeURIComponent(bucket);
             const content = req.body;
@@ -298,7 +339,16 @@ export default function createApiRouter(options: ApiRouterOptions) {
             const contentLength = req.headers["content-length"];
 
             if (!contentLength) {
-                return res.status(400).send("No Content.");
+                return res.status(400).json({ message: "No Content." });
+            }
+
+            if (recordId) {
+                const found = await checkRecord(req, recordId);
+                if (found === 404) {
+                    return res.status(400).send("Invalid record id");
+                } else if (found === 500) {
+                    return res.status(500).send("Internal server error");
+                }
             }
 
             const metaData: any = {
@@ -331,13 +381,13 @@ export default function createApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Storage
      *
-     * @api {delete} /v0/{bucket}/{fieldid} Request to delete an object at {bucket} with name {fieldid}
+     * @api {delete} /v0/{bucket}/{fileid} Request to delete an object at {bucket} with name {fileid}
      *
      * @apiDescription Deletes an object. This is a hard delete, and cannot be undone.
-     * Note that if the {fieldid} does not exist, the request will not fail.
+     * Note that if the {fileid} does not exist, the request will not fail.
      *
      * @apiParam (Request body) {string} bucket The name of the bucket where the object resides
-     * @apiParam (Request body) {string} fieldid The name of the object to be deleted
+     * @apiParam (Request body) {string} fileid The name of the object to be deleted
      *
      * @apiSuccessExample {json} 200
      *    {
