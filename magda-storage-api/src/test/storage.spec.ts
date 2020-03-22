@@ -544,6 +544,44 @@ describe("Storage API tests", () => {
                 );
             });
 
+            it("GET should return a file if the user can access its associated record, with an id that requires url encoding/decoding", async () => {
+                // Add the file
+                const expectRegistryCall = () => {
+                    registryScope
+                        .matchHeader("X-Magda-Session", value => {
+                            const verifiedJwt = jwt.verify(value, jwtSecret);
+
+                            return verifiedJwt.userId === USER_ID;
+                        })
+                        .get(
+                            "/records/ds-act-https%3A%2F%2Fwww.data.act.gov.au%2Fapi%2Fviews%2Fgkvf-4ewf"
+                        )
+                        .reply(200, {
+                            id:
+                                "ds-act-https://www.data.act.gov.au/api/views/gkvf-4ewf"
+                        });
+                };
+
+                expectRegistryCall();
+
+                await addFile(
+                    200,
+                    "ds-act-https%3A%2F%2Fwww.data.act.gov.au%2Fapi%2Fviews%2Fgkvf-4ewf"
+                );
+
+                // Download the file
+                expectRegistryCall();
+
+                await injectUserId(
+                    jwtSecret,
+                    request(app)
+                        .get("/v0/" + bucketName + "/file.gif")
+                        .expect(200)
+                        .expect(bananadance)
+                        .expect("Content-Type", "image/gif")
+                );
+            });
+
             it("should return 404 if requesting the associated record with the users' id returns 404", async () => {
                 // Add the file
                 expectRegistryGetWithCredentials();
@@ -586,6 +624,19 @@ describe("Storage API tests", () => {
                     .expect(200)
                     .expect(bananadance)
                     .expect("Content-Type", "image/gif");
+            });
+
+            it("should return 400 if the user tries to associate a file with a non-existent or unauthorized record", async () => {
+                registryScope
+                    .matchHeader("X-Magda-Session", value => {
+                        const verifiedJwt = jwt.verify(value, jwtSecret);
+
+                        return verifiedJwt.userId === USER_ID;
+                    })
+                    .get("/records/storage-test-dataset")
+                    .reply(404);
+
+                await addFile(400);
             });
 
             it("should return 400 if the user tries to associate a file with a non-existent or unauthorized record", async () => {
