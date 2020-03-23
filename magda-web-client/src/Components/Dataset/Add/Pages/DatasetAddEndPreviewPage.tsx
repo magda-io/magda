@@ -8,25 +8,20 @@ export default function DatasetAddEndPreviewPage() {
     return (
         <div className="row end-preview-page">
             <div className="col-sm-12">
-                <img
-                    src={giantTick}
-                    style={{ justifyContent: "center", display: "flex" }}
-                />
-                <h2>You're all done!</h2>
-                <hr />
-                <p>Your dataset has been successfully sent off for approval.</p>
-
-                <p>
-                    In the meantime, we on the Magda team are looking for
-                    feedback on the process you just completed. If you'd like to
-                    let us know how we did, please click the "Send Us Your
-                    Thoughts" button below:
-                </p>
-                <p>Thanks!</p>
-                <p>
-                    Alex, Alyce, Jacky and Mel from the{" "}
-                    <a href="https://magda.io">Magda</a> team at CSIRO's Data61.
-                </p>
+                <div className="end-preview-container-1">
+                    <img
+                        src={giantTick}
+                        style={{ justifyContent: "center", display: "flex" }}
+                    />
+                    <h2>You're all done!</h2>
+                </div>
+                <div className="end-preview-container-2">
+                    <hr />
+                    <h3>
+                        Your dataset has been successfully sent off for
+                        approval.
+                    </h3>
+                </div>
             </div>
         </div>
     );
