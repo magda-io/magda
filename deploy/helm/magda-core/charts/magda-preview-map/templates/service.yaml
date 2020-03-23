@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: preview-map
+spec:
+  ports:
+  - name: http
+    port: 6110
+    targetPort: 6110
+{{- if .Values.global.exposeNodePorts }}
+    nodePort: 30110
+  type: NodePort
+{{- end }}
+  selector:
+    service: preview-map

@@ -1,0 +1,21 @@
+autoscaler:
+  enabled: false
+  maxReplicas: 3
+  minReplicas: 1
+  targetCPUUtilizationPercentage: 80
+defaultImage:
+  imagePullSecret: false
+  pullPolicy: IfNotPresent
+  repository: docker.io/data61
+  tag: 0.0.57-0
+global:
+  image: {}
+  rollingUpdate: {}
+image:
+  name: magda-preview-map
+resources:
+  limits:
+    cpu: 250m
+  requests:
+    cpu: 50m
+    memory: 200Mi
