@@ -42,8 +42,8 @@
     "retag-and-push": "lerna run retag-and-push --stream",
     "eslint": "./node_modules/.bin/eslint magda-web-client/src/",
     "create-secrets": "create-secrets",
-    "start-opa": "opa run deploy/helm/magda-core/charts/opa/policies",
-    "test-opa": "opa test deploy/helm/magda-core/charts/opa/policies -v"
+    "start-opa": "opa run deploy/helm/internal-charts/opa/policies",
+    "test-opa": "opa test deploy/helm/internal-charts/opa/policies -v"
   },
   "pancake": {
     "auto-save": true,
