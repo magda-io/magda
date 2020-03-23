@@ -257,7 +257,26 @@ describe("Storage API tests", () => {
         });
     });
 
-    describe("Download", () => {
+    describe("PUT", () => {
+        it("should return 500 if we do something incompatible with minio", () => {
+            // Here we PUT a complete null body with no details, something that's
+            // only likely to happen through postman or curl. Minio / node's stream
+            // api won't allow this, so we can test that we're catching that error
+            // properly.
+            return mockAuthorization(
+                authApiUrl,
+                true,
+                jwtSecret,
+                request(app)
+                    .put("/v0/" + bucketName + "/download-test-file-2")
+                    .set("Content-Length", "0")
+                    .send()
+                    .expect(500)
+            );
+        });
+    });
+
+    describe("Download and PUT", () => {
         describe("should work for content type: ", () => {
             it("Empty content", () => {
                 return mockAuthorization(

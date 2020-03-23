@@ -107,21 +107,21 @@ export default class MagdaMinioClient implements ObjectStoreClient {
         content: any,
         metaData?: object
     ): Promise<any> {
-        const contentSize = content.length;
-        const contentStream = new Readable();
-
-        /*  https://stackoverflow.com/questions/12755997/how-to-create-streams-from-string-in-node-js/22085851#22085851
-            (Update: in v0.10.26 through v9.2.1 so far, a call to push directly
-            from the REPL prompt will crash with a not implemented exception
-            if you didn't set _read. It won't crash inside a function or a script.
-            If inconsistency makes you nervous, include the noop.)
-        */
-        // tldr; otherwise .push crashes in some versions of node with a 'not implemented' error
-        contentStream._read = () => {};
-        contentStream.push(content);
-        contentStream.push(null);
-
         return new Promise((resolve, reject) => {
+            const contentSize = content.length;
+            const contentStream = new Readable();
+
+            /*  https://stackoverflow.com/questions/12755997/how-to-create-streams-from-string-in-node-js/22085851#22085851
+                (Update: in v0.10.26 through v9.2.1 so far, a call to push directly
+                from the REPL prompt will crash with a not implemented exception
+                if you didn't set _read. It won't crash inside a function or a script.
+                If inconsistency makes you nervous, include the noop.)
+            */
+            // tldr; otherwise .push crashes in some versions of node with a 'not implemented' error
+            contentStream._read = () => {};
+            contentStream.push(content);
+            contentStream.push(null);
+
             return this.client.putObject(
                 bucket,
                 objectName,
