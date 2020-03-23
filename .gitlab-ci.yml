@@ -297,7 +297,7 @@ buildtest:typescript-apis:
   script:
     - cd deploy/helm/internal-charts/opa
     - docker-compose up -d
-    - cd ../../../../..
+    - cd ../../../../
     - cd magda-typescript-common && yarn build && yarn test && cd ..
     - cd magda-minion-framework && yarn build && yarn test && cd ..
     - yarn run in-submodules -- -f categories.api=true -f categories.testStandAlone=false -f language=typescript -- run build --include-filtered-dependencies
