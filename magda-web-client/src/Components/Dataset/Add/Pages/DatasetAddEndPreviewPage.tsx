@@ -1,15 +1,18 @@
 import React from "react";
 
-// import { Link } from "react-router-dom";
+import "./DatasetAddEndPreviewPage.scss";
+
 import giantTick from "assets/giant-tick.svg";
 
 export default function DatasetAddEndPreviewPage() {
     return (
         <div className="row end-preview-page">
             <div className="col-sm-12">
-                <h2>
-                    You're all done! <img src={giantTick} />
-                </h2>
+                <img
+                    src={giantTick}
+                    style={{ justifyContent: "center", display: "flex" }}
+                />
+                <h2>You're all done!</h2>
                 <hr />
                 <p>Your dataset has been successfully sent off for approval.</p>
 
