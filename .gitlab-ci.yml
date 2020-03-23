@@ -375,6 +375,7 @@ buildtest:helm-charts:
     # Init helm
     # - helm init --client-only
     - helm repo add magda-io https://charts.magda.io
+    - helm dep build deploy/helm/magda-core
     - helm dep build deploy/helm/magda
 
     - echo "helm lint magda chart using magda-dev.yml"
