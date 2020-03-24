@@ -202,13 +202,13 @@ export default function createApiRouter(options: ApiRouterOptions) {
             // We could just return true here, but we'll give ourself a bit of extra cover by
             // asserting that the id is correct
             return record.id === recordId ? 200 : 404;
-        } catch (e) {
-            if (e.e && e.e.response && e.e.response.statusCode === 404) {
+        } catch (err) {
+            if (err.e && err.e.response && err.e.response.statusCode === 404) {
                 return 404;
             } else {
                 console.error(
                     "Error occurred when trying to contact registry",
-                    e.message
+                    err.message
                 );
                 return 500;
             }
