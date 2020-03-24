@@ -471,7 +471,6 @@ export async function rawDatasetDataToState(data: RawDataset): Promise<State> {
         state.informationSecurity = data.aspects?.["information-security"];
     }
 
-    populateTemporalCoverageAspect(data, state);
     populateProvenanceAspect(data, state);
     await populateCurrencyAspect(data, state);
     populateDistributions(data, state);
@@ -628,10 +627,32 @@ async function ensureBlankDatasetIsSavedToRegistry(
     }
 }
 
+/**
+ * Convert data produced by `DatasetAutocomplete` dropdown box to a format that can be saved to the registry.
+ * If `choices` parameters is empty (or `undefined`), this function simply return `undefined`.
+ * This function also create a blank dataset record in registry only if the draft dataset has not been saved to registry yet.
+ *
+ * @export
+ * @param {State} state
+ * @param {DatasetAutocompleteChoice[]} [choices]
+ * @returns {(Promise<
+ *     | {
+ *           id?: string[];
+ *           name?: string;
+ *       }[]
+ *     | undefined
+ * >)}
+ */
 export async function preProcessDatasetAutocompleteChoices(
     state: State,
     choices?: DatasetAutocompleteChoice[]
-) {
+): Promise<
+    | {
+          id?: string[];
+          name?: string;
+      }[]
+    | undefined
+> {
     if (!choices?.length) {
         return;
     }
