@@ -1,6 +1,13 @@
 import React from "react";
 import { connect } from "react-redux";
-import { Link, Route, Switch, Redirect, withRouter } from "react-router-dom";
+import {
+    Link,
+    Route,
+    Switch,
+    Redirect,
+    withRouter,
+    match
+} from "react-router-dom";
 import ProgressBar from "Components/Common/ProgressBar";
 import MagdaDocumentTitle from "Components/i18n/MagdaDocumentTitle";
 import Breadcrumbs from "Components/Common/Breadcrumbs";
@@ -50,8 +57,33 @@ import * as codelists from "constants/DatasetConstants";
 import { config } from "config";
 import RemoteTextContentBox from "../RemoteTextContentBox";
 import { RRule } from "rrule";
+import { History, Location } from "history";
+import { ParsedDataset, ParsedDistribution } from "helpers/record";
+import { FetchError } from "types";
 
-class RecordHandler extends React.Component {
+interface PropsType {
+    history: History;
+    location: Location;
+    match: match<{
+        datasetId?: string;
+        distributionId?: string;
+    }>;
+    dataset: ParsedDataset;
+    distribution: ParsedDistribution;
+    datasetIsFetching: boolean;
+    distributionIsFetching: boolean;
+    datasetFetchError?: FetchError;
+    distributionFetchError?: FetchError;
+    hasEditPermissions: boolean;
+    resetFetchRecord: Function;
+    modifyRecordAspect: Function;
+}
+
+interface StateType {
+    addMargin: boolean;
+}
+
+class RecordHandler extends React.Component<PropsType, StateType> {
     constructor(props) {
         super(props);
         this.state = {
@@ -295,12 +327,11 @@ class RecordHandler extends React.Component {
                                         href={
                                             this.props.distribution.downloadURL
                                         }
-                                        alt="distribution download button"
                                         onClick={() => {
                                             // google analytics download tracking
                                             const resource_url = encodeURIComponent(
                                                 this.props.distribution
-                                                    .downloadURL
+                                                    .downloadURL as string
                                             );
                                             if (resource_url) {
                                                 // legacy support
@@ -692,8 +723,9 @@ class RecordHandler extends React.Component {
                                                         hasEditPermissions
                                                     }
                                                     value={
-                                                        dataset.temporalCoverage
-                                                            .intervals
+                                                        dataset
+                                                            ?.temporalCoverage
+                                                            ?.intervals
                                                     }
                                                     onChange={temporalChange(
                                                         "intervals"
@@ -739,14 +771,10 @@ class RecordHandler extends React.Component {
                                                 organisations?
                                             </h4>
                                             <div>
-                                                {dataset &&
-                                                    dataset.provenance &&
-                                                    dataset.provenance
-                                                        .affiliatedOrganizationIds &&
-                                                    dataset.provenance
-                                                        .affiliatedOrganizationIds
-                                                        .length &&
-                                                    dataset.provenance.affiliatedOrganizationIds.map(
+                                                {dataset?.provenance
+                                                    ?.affiliatedOrganizations
+                                                    ?.length &&
+                                                    dataset.provenance.affiliatedOrganizations.map(
                                                         org => org.name
                                                     )}
                                             </div>
@@ -759,8 +787,8 @@ class RecordHandler extends React.Component {
                                                         hasEditPermissions
                                                     }
                                                     value={
-                                                        dataset.provenance
-                                                            .mechanism
+                                                        dataset?.provenance
+                                                            ?.mechanism
                                                     }
                                                     onChange={provenanceChange(
                                                         "mechanism"
@@ -775,8 +803,8 @@ class RecordHandler extends React.Component {
                                                         hasEditPermissions
                                                     }
                                                     value={
-                                                        dataset.provenance
-                                                            .sourceSystem
+                                                        dataset?.provenance
+                                                            ?.sourceSystem
                                                     }
                                                     onChange={provenanceChange(
                                                         "sourceSystem"
@@ -800,8 +828,8 @@ class RecordHandler extends React.Component {
                                                     }
                                                     value={
                                                         dataset
-                                                            .informationSecurity
-                                                            .disseminationLimits
+                                                            ?.informationSecurity
+                                                            ?.disseminationLimits
                                                     }
                                                     onChange={informationSecurityChange(
                                                         "disseminationLimits"
@@ -823,8 +851,8 @@ class RecordHandler extends React.Component {
                                                     }
                                                     value={
                                                         dataset
-                                                            .informationSecurity
-                                                            .classification
+                                                            ?.informationSecurity
+                                                            ?.classification
                                                     }
                                                     onChange={informationSecurityChange(
                                                         "classification"
