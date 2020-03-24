@@ -58,9 +58,8 @@ You can also run the same command in an individual component's directory (i.e. `
 
 ### Set up Helm
 
-Helm is the package manager for Kubernetes - we use it to make it so that you can install all the various services you need for MAGDA at once. To install, follow the instructions at [https://github.com/helm/helm#install](https://github.com/helm/helm#install).
-
-Magda uses [Helm 3](https://github.com/helm/helm/releases/tag/v3.1.1).
+Helm is the package manager for Kubernetes - we use it to make it so that you can install all the various services you need for MAGDA at once.
+To install, follow the instructions at [https://helm.sh/docs/intro/install/](https://helm.sh/docs/intro/install/).
 
 Once you have helm3 installed, add Magda Helm Chart Repo:
 
