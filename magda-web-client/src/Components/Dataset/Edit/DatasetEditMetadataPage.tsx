@@ -11,7 +11,7 @@ import {
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
 
-import { Steps as ProgressMeterStepsConfig } from "../../Common/AddDatasetProgressMeter";
+import { editSteps as ProgressMeterStepsConfig } from "../../Common/AddDatasetProgressMeter";
 
 import {
     State,

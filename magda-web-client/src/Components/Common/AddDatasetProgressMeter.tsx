@@ -24,7 +24,7 @@ interface PropsType {
     }>;
 }
 
-export const Steps: StepItem[] = [
+export const steps: StepItem[] = [
     {
         title: "Add files",
         url: "/dataset/add/metadata/${datasetId}/0"
@@ -47,7 +47,7 @@ export const Steps: StepItem[] = [
     }
 ];
 
-export const EditSteps: StepItem[] = [
+export const editSteps: StepItem[] = [
     {
         title: "Your Files and Distributions",
         url: "/dataset/edit/${datasetId}/0"
@@ -191,7 +191,7 @@ const AddDatasetProgressMeter = (props: PropsType) => {
                     </div>
                 </div>
                 <div className="col-sm-10 step-item-body">
-                    {(isEdit ? EditSteps : Steps).map((item, idx) =>
+                    {(isEdit ? editSteps : steps).map((item, idx) =>
                         renderStepItem(item, idx, currentStep, datasetId)
                     )}
                 </div>
