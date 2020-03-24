@@ -513,6 +513,7 @@ inttest:registryAuth:
     - sbt-prebuild
     - builders-and-yarn
     - buildtest:registry
+    - buildtest:helm-charts
   services:
     - docker:dind
   cache:
