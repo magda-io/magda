@@ -14,7 +14,7 @@ describe("Test reload tenants", () => {
         magdaAdminPortalName: "some.where",
         fetchTenantsMinIntervalInMs: 1000,
         jwtSecret: "a top secret",
-        userId: "an-admin-user"
+        userId: "b1fddd6f-e230-4068-bd2c-1a21844f1598"
     };
 
     const requestScope = nock(config.tenantUrl, {

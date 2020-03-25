@@ -16,29 +16,25 @@ import { Maybe } from "tsmonad";
 
 export interface AuthorizedRegistryOptions extends RegistryOptions {
     jwtSecret: string;
-    userId: string;
+    userId?: string;
 }
 
 export default class AuthorizedRegistryClient extends RegistryClient {
     protected options: AuthorizedRegistryOptions;
-    protected jwt: string;
+    protected jwt: string | undefined;
 
     constructor(options: AuthorizedRegistryOptions) {
-        if (options.tenantId === undefined) {
+        if (options.tenantId === undefined || options.tenantId === null) {
             throw Error("A tenant id must be defined.");
         }
 
-        if (options.userId === undefined) {
-            throw Error("A user id must be defined.");
+        if (options.jwtSecret === undefined || options.jwtSecret === null) {
+            throw Error("JWT secret must be defined.");
         }
-
-        if (options.jwtSecret === undefined) {
-            throw Error("Some jwt secret must be defined.");
-        }
-
         super(options);
         this.options = options;
-        this.jwt = buildJwt(options.jwtSecret, options.userId);
+        this.jwt =
+            options.userId && buildJwt(options.jwtSecret, options.userId);
     }
 
     putAspectDefinition(

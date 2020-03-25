@@ -18,6 +18,7 @@ expected config file. Create a `config.json` file with the appropriate parameter
     minioEnableSSL: true,
     minioHost: "localhost",
     minioPort: 9000,
+    tenantId: 0,
     uploadLimit: "100mb"
 }
 ```
@@ -54,7 +55,7 @@ $ curl -X PUT localhost:6121/v0/test-bucket
 ### PUT /:bucket/:fileid
 
 Attempts to upload content to the MinIO `<bucket>`. Gives it a name `<fileid>` and returns a unique etag
-if the upload is successfull.
+if the upload is successfull. A `recordId` must be passed through as a query parameter.
 
 #### Example usage
 
@@ -64,7 +65,7 @@ column1,column2
 A,1234
 B,4321
 C,2007
-$ curl -X PUT -H "Content-Type:text/csv" localhost:6121/v0/test-bucket/myFavouriteCSV --data-binary '@favourite.csv'
+$ curl -X PUT -H "Content-Type:text/csv" localhost:6121/v0/test-bucket/myFavouriteCSV?recordId=ds-dga-ab7eddce-84df-4098-bc8f-500d0d9776f1 --data-binary '@favourite.csv'
 {"message":"File uploaded successfully","etag":"<some hash value>"}
 ```
 
@@ -99,9 +100,4 @@ $ curl -X DELETE localhost:6121/v0/test-bucket/myFavouriteCSV
 
 ### Note
 
-The service does not come with authentication or authorization.
-
-## Features in backlog
-
--   [x] Bucket name to be specified in the request, not at startup
--   [ ] Endpoint to delete an object
+The service does not come with authentication or authorization on all endpoints.
