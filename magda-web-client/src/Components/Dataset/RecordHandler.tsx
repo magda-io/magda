@@ -183,6 +183,7 @@ class RecordHandler extends React.Component<PropsType, StateType> {
                         datasetId={this.props.match.params.datasetId}
                         dataset={dataset}
                         distributionId={this.props.match.params.distributionId}
+                        distribution={this.props.distribution}
                         breadcrumbs={this.getBreadcrumbs()}
                         searchText={searchText}
                     />

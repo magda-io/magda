@@ -9,7 +9,6 @@ import DatasetsSearchPage from "Components/Dataset/DatasetsSearchPage";
 import DatasetsSearchPageDraftOnly from "Components/Dataset/DatasetsSearchPageDraftOnly";
 import DatasetsSearchPagePublishedOnly from "Components/Dataset/DatasetsSearchPagePublishedOnly";
 import RecordHandler from "Components/Dataset/RecordHandler";
-import DistributionPage from "Components/Dataset/DistributionPage";
 import DatasetSuggestPage from "Components/Dataset/DatasetSuggestPage";
 
 import ErrorPage from "Components/Error/ErrorPage";
