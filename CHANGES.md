@@ -44,6 +44,7 @@ Storage:
 -   Add apidocs
 -   Add endpoint to create a bucket
 -   Restrict file upload to admins only
+-   Add authorization to GET endpoint
 -   Support multipart upload
 -   Fixed: minio chart will not be deployed if storage-api is not turned on
 

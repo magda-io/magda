@@ -629,9 +629,7 @@ export class AspectDefinitionsApi {
         aspect: AspectDefinition,
         xMagdaSession: string
     ): Promise<{ response: http.IncomingMessage; body: AspectDefinition }> {
-        const localVarPath =
-            this.basePath +
-            "/aspects/{id}".replace("{" + "id" + "}", String(id));
+        const localVarPath = this.basePath + "/aspects/" + String(id);
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
@@ -1049,9 +1047,10 @@ export class RecordAspectsApi {
     ): Promise<{ response: http.IncomingMessage; body: any }> {
         const localVarPath =
             this.basePath +
-            "/records/{recordId}/aspects/{aspectId}"
-                .replace("{" + "recordId" + "}", String(recordId))
-                .replace("{" + "aspectId" + "}", String(aspectId));
+            "/records/" +
+            String(recordId) +
+            "/aspects/" +
+            String(aspectId);
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
@@ -1745,9 +1744,7 @@ export class RecordsApi {
         dereference?: boolean,
         xMagdaSession?: string
     ): Promise<{ response: http.IncomingMessage; body: Record }> {
-        const localVarPath =
-            this.basePath +
-            "/records/{id}".replace("{" + "id" + "}", String(id));
+        const localVarPath = this.basePath + "/records/" + id;
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
@@ -2162,9 +2159,7 @@ export class RecordsApi {
         record: Record,
         xMagdaSession: string
     ): Promise<{ response: http.IncomingMessage; body: Record }> {
-        const localVarPath =
-            this.basePath +
-            "/records/{id}".replace("{" + "id" + "}", String(id));
+        const localVarPath = this.basePath + "/records/" + String(id);
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
@@ -2751,8 +2746,7 @@ export class WebHooksApi {
         hook: WebHook,
         xMagdaSession: string
     ): Promise<{ response: http.IncomingMessage; body: WebHook }> {
-        const localVarPath =
-            this.basePath + "/hooks/{id}".replace("{" + "id" + "}", String(id));
+        const localVarPath = this.basePath + "/hooks/" + String(id);
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};

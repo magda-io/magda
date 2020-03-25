@@ -7,5 +7,6 @@
     "minioPort": 9000,
     "minioRegion": "unspecified-region",
     "authApiUrl": "http://localhost:6104",
+    "tenantId": 0,
     "uploadLimit": "100mb"
 }
