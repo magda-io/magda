@@ -307,6 +307,8 @@ class RecordsServiceAuthSpec extends BaseRecordsServiceAuthSpec {
           }
 
         }
+
+        doLinkTestsOnRecordsEndpoint(Some("a"), Some("b"), "a.read", "b.read")
       }
     }
   }
