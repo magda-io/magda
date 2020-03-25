@@ -9,6 +9,7 @@ import DatasetsSearchPage from "Components/Dataset/DatasetsSearchPage";
 import DatasetsSearchPageDraftOnly from "Components/Dataset/DatasetsSearchPageDraftOnly";
 import DatasetsSearchPagePublishedOnly from "Components/Dataset/DatasetsSearchPagePublishedOnly";
 import DatasetPage from "Components/Dataset/DatasetPage";
+import DistributionPage from "Components/Dataset/DistributionPage";
 import DatasetSuggestPage from "Components/Dataset/DatasetSuggestPage";
 
 import ErrorPage from "Components/Error/ErrorPage";
@@ -214,7 +215,7 @@ const Routes = () => {
             />
             <Route
                 path="/dataset/:datasetId/distribution/:distributionId"
-                component={withHeader(DatasetPage, true)}
+                component={withHeader(DistributionPage, true)}
             />
             {config.featureFlags.cataloguing && (
                 <Route

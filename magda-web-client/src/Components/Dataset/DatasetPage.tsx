@@ -23,8 +23,6 @@ import { gapi } from "analytics/ga";
 import ErrorHandler from "Components/Error/ErrorHandler";
 import RouteNotFound from "Components/Error/RouteNotFoundPage";
 import DatasetPageDetails from "./View/DatasetPageDetails";
-import DistributionDetails from "./View/DistributionDetails";
-import DistributionPreview from "./View/DistributionPreview";
 import queryString from "query-string";
 import DatasetPageSuggestForm from "./View/DatasetPageSuggestForm";
 import { Small, Medium } from "Components/Common/Responsive";
@@ -34,10 +32,6 @@ import TagsBox from "Components/Common/TagsBox";
 import ContactPoint from "Components/Common/ContactPoint";
 import QualityIndicator from "Components/Common/QualityIndicator";
 import TemporalAspectViewer from "Components/Common/TemporalAspectViewer";
-import { getFormatIcon } from "./View/DistributionIcon";
-import apiAccessIcon from "assets/apiAccess.svg";
-import downloadWhiteIcon from "assets/download-white.svg";
-import { get } from "lodash";
 
 import { ToggleEditor } from "Components/Editing/ToggleEditor";
 import {
@@ -83,7 +77,7 @@ interface StateType {
     addMargin: boolean;
 }
 
-class RecordHandler extends React.Component<PropsType, StateType> {
+class DatasetPage extends React.Component<PropsType, StateType> {
     constructor(props) {
         super(props);
         this.state = {
@@ -234,230 +228,7 @@ class RecordHandler extends React.Component<PropsType, StateType> {
 
         const { dataset, hasEditPermissions } = this.props;
 
-        if (this.props.match.params.distributionId) {
-            // on distribution detail page
-            const baseUrlDistribution = `/dataset/${encodeURI(
-                this.props.match.params.datasetId
-            )}/distribution/${encodeURI(
-                this.props.match.params.distributionId
-            )}`;
-            // load progress bar if fetching
-            if (this.props.distributionIsFetching) {
-                return <ProgressBar />;
-            }
-            // load error message if error occurs
-            else if (this.props.distributionFetchError) {
-                return (
-                    <ErrorHandler error={this.props.distributionFetchError} />
-                );
-            }
-            // load detail if distribution id in url matches the current distribution
-            // this is to prevent flashing old content
-            else if (
-                this.props.distribution.identifier ===
-                decodeURIComponent(this.props.match.params.distributionId)
-            ) {
-                return (
-                    <div className="record--distribution">
-                        <Medium>
-                            <Breadcrumbs breadcrumbs={this.getBreadcrumbs()} />
-                        </Medium>
-                        <div className="row">
-                            <div className="col-sm-12">
-                                <span className="distribution-title">
-                                    <img
-                                        className="distribution-icon"
-                                        src={getFormatIcon(
-                                            this.props.distribution
-                                        )}
-                                        alt="distribution icon"
-                                    />
-
-                                    <h1>{this.props.distribution.title}</h1>
-                                </span>
-                                <div className="distribution-meta">
-                                    <div className="publisher">
-                                        <Link
-                                            to={`/organisations/${publisherId}`}
-                                        >
-                                            {dataset.publisher.name}
-                                        </Link>
-                                    </div>
-
-                                    {defined(
-                                        this.props.distribution.updatedDate
-                                    ) && (
-                                        <span className="updated-date">
-                                            <span className="separator hidden-sm">
-                                                &nbsp;/&nbsp;
-                                            </span>
-                                            Updated{" "}
-                                            {
-                                                this.props.distribution
-                                                    .updatedDate
-                                            }
-                                        </span>
-                                    )}
-
-                                    {defined(dataset.issuedDate) && (
-                                        <span className="created-date">
-                                            <span className="separator hidden-sm">
-                                                &nbsp;/&nbsp;
-                                            </span>
-                                            Created{" "}
-                                            {this.props.dataset.issuedDate}
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="distribution-format">
-                                    {this.props.distribution.format}
-                                </div>
-                                {defined(this.props.distribution.license) && (
-                                    <span className="distribution-license">
-                                        <span className="separator hidden-sm">
-                                            &nbsp;/&nbsp;
-                                        </span>
-                                        {this.props.distribution.license}
-                                    </span>
-                                )}
-                                <br />
-                                {this.props.distribution.downloadURL ? (
-                                    <a
-                                        className="au-btn au-btn--primary distribution-download-button"
-                                        href={
-                                            this.props.distribution.downloadURL
-                                        }
-                                        onClick={() => {
-                                            // google analytics download tracking
-                                            const resource_url = encodeURIComponent(
-                                                this.props.distribution
-                                                    .downloadURL as string
-                                            );
-                                            if (resource_url) {
-                                                // legacy support
-                                                gapi.event({
-                                                    category: "Resource",
-                                                    action: "Download",
-                                                    label: resource_url
-                                                });
-                                                // new events
-                                                gapi.event({
-                                                    category:
-                                                        "Download by Dataset",
-                                                    action: this.props.dataset
-                                                        .title,
-                                                    label: resource_url
-                                                });
-                                                gapi.event({
-                                                    category:
-                                                        "Download by Source",
-                                                    action: this.props.dataset
-                                                        .source,
-                                                    label: resource_url
-                                                });
-                                                gapi.event({
-                                                    category:
-                                                        "Download by Publisher",
-                                                    action: this.props.dataset
-                                                        .publisher.name,
-                                                    label: resource_url
-                                                });
-                                            }
-                                        }}
-                                    >
-                                        <span
-                                            style={{
-                                                textDecoration:
-                                                    "none !important"
-                                            }}
-                                        >
-                                            <img
-                                                src={downloadWhiteIcon}
-                                                alt="download"
-                                                className="distribution-button-icon"
-                                            />
-                                            {"  "}
-                                        </span>
-                                        Download
-                                    </a>
-                                ) : null}{" "}
-                                {this.props.distribution.ckanResource &&
-                                    this.props.distribution.ckanResource
-                                        .datastore_active && (
-                                        <a
-                                            className="download-button au-btn au-btn--secondary"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            href={
-                                                get(
-                                                    this.props.distribution,
-                                                    "sourceDetails.url"
-                                                )
-                                                    ? get(
-                                                          this.props
-                                                              .distribution,
-                                                          "sourceDetails.url",
-                                                          ""
-                                                      ).replace(
-                                                          "3/action/resource_show?",
-                                                          "1/util/snippet/api_info.html?resource_"
-                                                      )
-                                                    : "https://docs.ckan.org/en/latest/maintaining/datastore.html#the-datastore-api"
-                                            }
-                                        >
-                                            <img
-                                                src={apiAccessIcon}
-                                                alt=""
-                                                className="distribution-button-icon"
-                                            />{" "}
-                                            Access Data API
-                                        </a>
-                                    )}{" "}
-                                <Small>
-                                    <DescriptionBox
-                                        content={
-                                            this.props.distribution.description
-                                        }
-                                        truncateLength={200}
-                                    />
-                                </Small>
-                                <Medium>
-                                    <DescriptionBox
-                                        content={
-                                            this.props.distribution.description
-                                        }
-                                        truncateLength={500}
-                                    />
-                                </Medium>
-                                <div className="tab-content">
-                                    <Switch>
-                                        <Route
-                                            path="/dataset/:datasetId/distribution/:distributionId/details"
-                                            component={DistributionDetails}
-                                        />
-                                        <Route
-                                            path="/dataset/:datasetId/distribution/:distributionId/preview"
-                                            component={DistributionPreview}
-                                        />
-                                        <Redirect
-                                            from="/dataset/:datasetId/distribution/:distributionId"
-                                            to={{
-                                                pathname: `${baseUrlDistribution}/details`,
-                                                search: `?q=${searchText}`
-                                            }}
-                                        />
-                                    </Switch>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                );
-            }
-            // if all fails, we display an info message saying an error occured
-            else {
-                return null;
-            }
-        } else if (this.props.match.params.datasetId) {
+        if (this.props.match.params.datasetId) {
             // on dataset detail page
             const baseUrlDataset = `/dataset/${encodeURI(
                 this.props.match.params.datasetId
@@ -1029,5 +800,5 @@ const mapDispatchToProps = dispatch => {
     );
 };
 export default withRouter(
-    connect(mapStateToProps, mapDispatchToProps)(RecordHandler)
+    connect(mapStateToProps, mapDispatchToProps)(DatasetPage)
 );
