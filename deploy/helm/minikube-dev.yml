@@ -16,6 +16,21 @@ global:
   connectors:
     includeInitialJobs: true
     includeCronJobs: false
+    # Remove the image section to make connectors pull your test docker images from your local docker registry
+    # Make sure you build & push the connector docker images to your local docker registry
+    image:
+      repository: docker.io/data61
+      tag: 0.0.57-0
+      pullPolicy: IfNotPresent
+      imagePullSecret: false
+  minions:
+    # Remove the image section to make minions pull your test docker images from local docker registry
+    # Make sure you build & push the connector docker images to your local docker registry
+    image:
+      repository: docker.io/data61
+      tag: 0.0.57-0
+      pullPolicy: IfNotPresent
+      imagePullSecret: false
 
 magda-core:
   gateway:

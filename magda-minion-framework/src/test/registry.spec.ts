@@ -23,24 +23,19 @@ const aspectArb = jsc.record({
     tenantId: jsc.string
 });
 
+const userId = "b1fddd6f-e230-4068-bd2c-1a21844f1598";
+
 baseSpec(
     "registry interactions:",
     (
         expressApp: () => express.Express,
-        expressServer: () => Server,
+        _expressServer: () => Server,
         listenPort: () => number,
         beforeEachProperty: () => void
     ) => {
         doStartupTest(
             "should register aspects",
-            ({
-                aspectDefs,
-                registryScope,
-                tenantScope,
-                jwtSecret,
-                userId,
-                hook
-            }) => {
+            ({ aspectDefs, registryScope, tenantScope, jwtSecret, hook }) => {
                 aspectDefs.forEach(aspectDef => {
                     registryScope
                         .put(
@@ -63,14 +58,7 @@ baseSpec(
 
         doStartupTest(
             "should register hook if none exists",
-            ({
-                aspectDefs,
-                registryScope,
-                tenantScope,
-                jwtSecret,
-                userId,
-                hook
-            }) => {
+            ({ aspectDefs, registryScope, tenantScope, jwtSecret, hook }) => {
                 registryScope
                     .put(/aspects\/.*/)
                     .times(aspectDefs.length)
@@ -108,14 +96,7 @@ baseSpec(
 
         doStartupTest(
             "should resume hook if one already exists",
-            ({
-                aspectDefs,
-                registryScope,
-                tenantScope,
-                jwtSecret,
-                userId,
-                hook
-            }) => {
+            ({ aspectDefs, registryScope, tenantScope, jwtSecret, hook }) => {
                 registryScope
                     .put(/aspects\/.*/)
                     .times(aspectDefs.length)
@@ -158,7 +139,6 @@ baseSpec(
                 registryScope: nock.Scope;
                 tenantScope: nock.Scope;
                 jwtSecret: string;
-                userId: string;
                 hook: WebHook;
             }) => void
         ) {
@@ -172,7 +152,6 @@ baseSpec(
                 jsc.array(jsc.nestring),
                 jsc.array(jsc.nestring),
                 lcAlphaNumStringArbNe,
-                lcAlphaNumStringArbNe,
                 jsc.integer(0, 10),
                 jsc.bool,
                 (
@@ -184,7 +163,6 @@ baseSpec(
                     aspects: string[],
                     optionalAspects: string[],
                     jwtSecret: string,
-                    userId: string,
                     concurrency: number,
                     enableMultiTenant: boolean
                 ) => {
@@ -203,12 +181,12 @@ baseSpec(
                         optionalAspects
                     );
 
+                    const userId = "b1fddd6f-e230-4068-bd2c-1a21844f1598";
                     fn({
                         aspectDefs,
                         registryScope,
                         tenantScope,
                         jwtSecret,
-                        userId,
                         hook
                     });
 
@@ -259,7 +237,7 @@ function buildWebHook(
         name: id,
         url: `${internalUrl}/hook`,
         active: true,
-        userId: 0,
+        userId,
         eventTypes: [
             "CreateRecord",
             "CreateAspectDefinition",

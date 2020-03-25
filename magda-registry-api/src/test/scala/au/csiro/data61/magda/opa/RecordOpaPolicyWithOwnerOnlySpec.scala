@@ -610,7 +610,7 @@ abstract class RecordOpaPolicyWithOwnerOnlySpec extends ApiWithOpa {
         status shouldBe StatusCodes.OK
         val record = responseAs[Record]
         record.id shouldBe referencingRecordId
-        record.aspects(withLinkId).fields(linkName) shouldEqual JsString("")
+        record.aspects(withLinkId).fields(linkName) shouldEqual JsNull
       }
 
       Get(
@@ -621,7 +621,7 @@ abstract class RecordOpaPolicyWithOwnerOnlySpec extends ApiWithOpa {
         status shouldBe StatusCodes.OK
         val record = responseAs[Record]
         record.id shouldBe referencingRecordId
-        record.aspects(withLinkId).fields(linkName) shouldBe JsString("")
+        record.aspects(withLinkId).fields(linkName) shouldBe JsNull
         record.aspects(organizationId).fields("name") shouldBe JsString(
           recordOrgNames(referencingRecordIndex)
         )
@@ -647,7 +647,7 @@ abstract class RecordOpaPolicyWithOwnerOnlySpec extends ApiWithOpa {
         record.id shouldBe referencingRecordId
         record
           .aspects(withLinkId)
-          .fields(linkName) shouldEqual JsObject.empty
+          .fields(linkName) shouldEqual JsNull
       }
 
       Get(
@@ -658,7 +658,7 @@ abstract class RecordOpaPolicyWithOwnerOnlySpec extends ApiWithOpa {
         status shouldBe StatusCodes.OK
         val record = responseAs[Record]
         record.id shouldBe referencingRecordId
-        record.aspects(withLinkId).fields(linkName) shouldBe JsObject.empty
+        record.aspects(withLinkId).fields(linkName) shouldBe JsNull
         record.aspects(organizationId).fields("name") shouldBe JsString(
           recordOrgNames(referencingRecordIndex)
         )
@@ -691,9 +691,8 @@ abstract class RecordOpaPolicyWithOwnerOnlySpec extends ApiWithOpa {
               val record = res._1
               val index = res._2
               record.id shouldBe "record-" + index
-              record.aspects(withLinkId).fields(linkName) shouldEqual JsString(
+              record.aspects(withLinkId).fields(linkName) shouldEqual
                 singleLinkRecordIdMapDereferenceIsFalse((userId, record.id))
-              )
             })
           }
         }

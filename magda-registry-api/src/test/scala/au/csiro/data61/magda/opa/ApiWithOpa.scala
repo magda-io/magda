@@ -412,18 +412,18 @@ abstract class ApiWithOpa
   }
 
   lazy val singleLinkRecordIdMapDereferenceIsFalse
-      : Map[(String, String), String] =
+      : Map[(String, String), JsValue] =
     Map(
-      (adminUser, "record-2") -> "record-1",
-      (userId0, "record-2") -> "record-1",
-      (userId2, "record-2") -> ""
+      (adminUser, "record-2") -> JsString("record-1"),
+      (userId0, "record-2") -> JsString("record-1"),
+      (userId2, "record-2") -> JsNull
     )
 
   lazy val singleLinkRecordIdMapDereferenceIsTrue
-      : Map[(String, String), JsObject] =
+      : Map[(String, String), JsValue] =
     Map(
       (adminUser, "record-2") -> testRecords(1).toJson.asJsObject,
       (userId0, "record-2") -> testRecords(1).toJson.asJsObject,
-      (userId2, "record-2") -> JsObject.empty
+      (userId2, "record-2") -> JsNull
     )
 }

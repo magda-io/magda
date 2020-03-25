@@ -12,7 +12,8 @@
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
     "prettier": "prettier --write \"**/*\"",
     "retag-and-push": "retag-and-push",
-    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
+    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
+    "test-local": "MINIO_HOST=localhost MINIO_PORT=9000 MINIO_ACCESS_KEY=minio MINIO_SECRET_KEY=minio123 yarn run test"
   },
   "dependencies": {
     "@google-cloud/storage": "^4.1.0",
