@@ -15,8 +15,7 @@ import { bindActionCreators } from "redux";
 import {
     fetchDatasetFromRegistry,
     fetchDistributionFromRegistry,
-    resetFetchRecord,
-    modifyRecordAspect
+    resetFetchRecord
 } from "actions/recordActions";
 import defined from "helpers/defined";
 import { gapi } from "analytics/ga";
@@ -167,14 +166,6 @@ class DistributionPage extends React.Component<PropsType, StateType> {
                 });
             }
         }
-    }
-
-    change(id, aspect) {
-        return field => {
-            return newValue => {
-                this.props.modifyRecordAspect(id, aspect, field, newValue);
-            };
-        };
     }
 
     renderByState() {
@@ -507,8 +498,7 @@ const mapDispatchToProps = dispatch => {
         {
             fetchDataset: fetchDatasetFromRegistry,
             fetchDistribution: fetchDistributionFromRegistry,
-            resetFetchRecord: resetFetchRecord,
-            modifyRecordAspect: modifyRecordAspect
+            resetFetchRecord: resetFetchRecord
         },
         dispatch
     );

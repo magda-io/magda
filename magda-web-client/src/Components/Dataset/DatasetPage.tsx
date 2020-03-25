@@ -15,8 +15,7 @@ import { bindActionCreators } from "redux";
 import {
     fetchDatasetFromRegistry,
     fetchDistributionFromRegistry,
-    resetFetchRecord,
-    modifyRecordAspect
+    resetFetchRecord
 } from "actions/recordActions";
 import defined from "helpers/defined";
 import { gapi } from "analytics/ga";
@@ -31,26 +30,7 @@ import "./DatasetPage.scss";
 import TagsBox from "Components/Common/TagsBox";
 import ContactPoint from "Components/Common/ContactPoint";
 import QualityIndicator from "Components/Common/QualityIndicator";
-import TemporalAspectViewer from "Components/Common/TemporalAspectViewer";
-
-import { ToggleEditor } from "Components/Editing/ToggleEditor";
-import {
-    textEditor,
-    textEditorFullWidth,
-    multilineTextEditor,
-    multiTextEditor
-} from "Components/Editing/Editors/textEditor";
-import { multiDateIntervalEditor } from "Components/Editing/Editors/dateEditor";
-import {
-    codelistEditor,
-    multiCodelistEditor
-} from "Components/Editing/Editors/codelistEditor";
-import { bboxEditor } from "Components/Editing/Editors/spatialEditor";
-
-import * as codelists from "constants/DatasetConstants";
 import { config } from "config";
-import RemoteTextContentBox from "../RemoteTextContentBox";
-import { RRule } from "rrule";
 import { History, Location } from "history";
 import { ParsedDataset, ParsedDistribution } from "helpers/record";
 import { FetchError } from "types";
@@ -186,45 +166,12 @@ class DatasetPage extends React.Component<PropsType, StateType> {
         }
     }
 
-    change(id, aspect) {
-        return field => {
-            return newValue => {
-                this.props.modifyRecordAspect(id, aspect, field, newValue);
-            };
-        };
-    }
-
     renderByState() {
         const searchText =
             queryString.parse(this.props.location.search).q || "";
         const publisherId = this.props.dataset.publisher
             ? this.props.dataset.publisher.id
             : null;
-
-        const datasetChange = this.change(
-            this.props.dataset.identifier,
-            "dcat-dataset-strings"
-        );
-
-        const spatialChange = this.change(
-            this.props.dataset.identifier,
-            "spatial-coverage"
-        );
-
-        const temporalChange = this.change(
-            this.props.dataset.identifier,
-            "temporal-coverage"
-        );
-
-        const provenanceChange = this.change(
-            this.props.dataset.identifier,
-            "provenance"
-        );
-
-        const informationSecurityChange = this.change(
-            this.props.dataset.identifier,
-            "information-security"
-        );
 
         const { dataset, hasEditPermissions } = this.props;
 
@@ -282,12 +229,7 @@ class DatasetPage extends React.Component<PropsType, StateType> {
                         <div className="row">
                             <div className="col-sm-8">
                                 <h1 itemProp="name">
-                                    <ToggleEditor
-                                        editable={hasEditPermissions}
-                                        value={this.props.dataset.title}
-                                        onChange={datasetChange("title")}
-                                        editor={textEditorFullWidth}
-                                    />
+                                    {this.props?.dataset?.title}
                                 </h1>
                                 <div className="publisher-basic-info-row">
                                     <span
@@ -337,35 +279,24 @@ class DatasetPage extends React.Component<PropsType, StateType> {
                                         </span>
                                     )}
                                     <div className="dataset-details-overview">
-                                        <ToggleEditor
-                                            editable={hasEditPermissions}
-                                            value={
-                                                this.props.dataset.description
-                                            }
-                                            onChange={datasetChange(
-                                                "description"
-                                            )}
-                                            editor={multilineTextEditor}
-                                        >
-                                            <Small>
-                                                <DescriptionBox
-                                                    content={
-                                                        this.props.dataset
-                                                            .description
-                                                    }
-                                                    truncateLength={200}
-                                                />
-                                            </Small>
-                                            <Medium>
-                                                <DescriptionBox
-                                                    content={
-                                                        this.props.dataset
-                                                            .description
-                                                    }
-                                                    truncateLength={500}
-                                                />
-                                            </Medium>
-                                        </ToggleEditor>
+                                        <Small>
+                                            <DescriptionBox
+                                                content={
+                                                    this.props.dataset
+                                                        .description
+                                                }
+                                                truncateLength={200}
+                                            />
+                                        </Small>
+                                        <Medium>
+                                            <DescriptionBox
+                                                content={
+                                                    this.props.dataset
+                                                        .description
+                                                }
+                                                truncateLength={500}
+                                            />
+                                        </Medium>
                                     </div>
                                     {this.props.dataset.hasQuality ? (
                                         <div className="quality-rating-box">
@@ -377,265 +308,16 @@ class DatasetPage extends React.Component<PropsType, StateType> {
                                             />
                                         </div>
                                     ) : null}
-                                    <ToggleEditor
-                                        editable={hasEditPermissions}
-                                        value={dataset.contactPoint}
-                                        onChange={datasetChange("contactPoint")}
-                                        editor={multilineTextEditor}
-                                    >
-                                        {this.props.dataset.contactPoint ? (
-                                            <ContactPoint
-                                                contactPoint={
-                                                    this.props.dataset
-                                                        .contactPoint
-                                                }
-                                            />
-                                        ) : (
-                                            <></>
-                                        )}
-                                    </ToggleEditor>
-                                    <ToggleEditor
-                                        editable={hasEditPermissions}
-                                        value={this.props.dataset.tags}
-                                        onChange={datasetChange("keywords")}
-                                        editor={multiTextEditor}
-                                    >
-                                        <TagsBox
-                                            tags={this.props.dataset.tags}
+                                    {this.props.dataset.contactPoint ? (
+                                        <ContactPoint
+                                            contactPoint={
+                                                this.props.dataset.contactPoint
+                                            }
                                         />
-                                    </ToggleEditor>
-                                    {hasEditPermissions && (
-                                        <div>
-                                            <br />
-                                            <hr />
-                                            <h2>Ownership</h2>
-                                            <div>
-                                                Owner:{" "}
-                                                {this.props.dataset
-                                                    .accessControl &&
-                                                this.props.dataset.accessControl
-                                                    .ownerId ? (
-                                                    <span>
-                                                        <RemoteTextContentBox
-                                                            key={
-                                                                this.props
-                                                                    .dataset
-                                                                    .accessControl
-                                                                    .ownerId
-                                                            }
-                                                            url={`${config.authApiUrl}users/${this.props.dataset.accessControl.ownerId}`}
-                                                            contentExtractor={user =>
-                                                                user.displayName
-                                                            }
-                                                        />
-                                                    </span>
-                                                ) : (
-                                                    "N/A"
-                                                )}
-                                            </div>
-                                            <div>
-                                                Organisation Unit Owner:{" "}
-                                                {this.props.dataset
-                                                    .accessControl &&
-                                                this.props.dataset.accessControl
-                                                    .orgUnitOwnerId ? (
-                                                    <span>
-                                                        <RemoteTextContentBox
-                                                            key={
-                                                                this.props
-                                                                    .dataset
-                                                                    .accessControl
-                                                                    .orgUnitOwnerId
-                                                            }
-                                                            url={`${config.authApiUrl}orgUnits/${this.props.dataset.accessControl.orgUnitOwnerId}`}
-                                                            contentExtractor={orgUnit =>
-                                                                orgUnit.name
-                                                            }
-                                                        />
-                                                    </span>
-                                                ) : (
-                                                    "N/A"
-                                                )}
-                                            </div>
-                                            <hr />
-                                            <h2>Dates and updates</h2>
-                                            <h4>
-                                                How frequently is the dataset
-                                                updated?
-                                            </h4>
-                                            <div>
-                                                {(() => {
-                                                    if (
-                                                        !dataset.accrualPeriodicity
-                                                    )
-                                                        return "[NOT SET]";
-                                                    if (
-                                                        dataset.accrualPeriodicity !==
-                                                        "custom"
-                                                    )
-                                                        return dataset.accrualPeriodicity;
-                                                    if (
-                                                        !dataset.accrualPeriodicityRecurrenceRule
-                                                    )
-                                                        return "[NOT SET]";
-                                                    const r = RRule.fromString(
-                                                        dataset.accrualPeriodicityRecurrenceRule
-                                                    );
-                                                    return r.toText();
-                                                })()}
-                                            </div>
-                                            <h4>
-                                                What time period does the
-                                                dataset cover?
-                                            </h4>
-                                            <div>
-                                                <ToggleEditor
-                                                    editable={
-                                                        hasEditPermissions
-                                                    }
-                                                    value={
-                                                        dataset
-                                                            ?.temporalCoverage
-                                                            ?.intervals
-                                                    }
-                                                    onChange={temporalChange(
-                                                        "intervals"
-                                                    )}
-                                                    editor={multiDateIntervalEditor(
-                                                        true
-                                                    )}
-                                                >
-                                                    <div className="dataset-details-temporal-coverage">
-                                                        <TemporalAspectViewer
-                                                            data={
-                                                                dataset.temporalCoverage
-                                                            }
-                                                        />
-                                                    </div>
-                                                </ToggleEditor>
-                                            </div>
-                                            <hr />
-                                            <h3>Spatial extent</h3>
-                                            <h4>
-                                                We've determined that the
-                                                spatial extent of your data is:
-                                            </h4>
-                                            <div>
-                                                <ToggleEditor
-                                                    editable={
-                                                        hasEditPermissions
-                                                    }
-                                                    value={
-                                                        dataset.spatialCoverageBbox
-                                                    }
-                                                    onChange={spatialChange(
-                                                        "bbox"
-                                                    )}
-                                                    editor={bboxEditor}
-                                                />
-                                            </div>
-                                            <hr />
-                                            <h2>People and production</h2>
-                                            <h4>
-                                                Was this dataset produced
-                                                collaborating with other
-                                                organisations?
-                                            </h4>
-                                            <div>
-                                                {dataset?.provenance
-                                                    ?.affiliatedOrganizations
-                                                    ?.length &&
-                                                    dataset.provenance.affiliatedOrganizations.map(
-                                                        org => org.name
-                                                    )}
-                                            </div>
-                                            <h4>
-                                                How was the dataset produced?
-                                            </h4>
-                                            <div>
-                                                <ToggleEditor
-                                                    editable={
-                                                        hasEditPermissions
-                                                    }
-                                                    value={
-                                                        dataset?.provenance
-                                                            ?.mechanism
-                                                    }
-                                                    onChange={provenanceChange(
-                                                        "mechanism"
-                                                    )}
-                                                    editor={multilineTextEditor}
-                                                />
-                                            </div>
-                                            <h4>Source system:</h4>
-                                            <div>
-                                                <ToggleEditor
-                                                    editable={
-                                                        hasEditPermissions
-                                                    }
-                                                    value={
-                                                        dataset?.provenance
-                                                            ?.sourceSystem
-                                                    }
-                                                    onChange={provenanceChange(
-                                                        "sourceSystem"
-                                                    )}
-                                                    editor={textEditor}
-                                                />
-                                            </div>
-                                            <hr />
-                                            <h2>
-                                                Dataset visibility, access and
-                                                control
-                                            </h2>
-                                            <h4>
-                                                What is the security
-                                                classification of this dataset?
-                                            </h4>
-                                            <div>
-                                                <ToggleEditor
-                                                    editable={
-                                                        hasEditPermissions
-                                                    }
-                                                    value={
-                                                        dataset
-                                                            ?.informationSecurity
-                                                            ?.disseminationLimits
-                                                    }
-                                                    onChange={informationSecurityChange(
-                                                        "disseminationLimits"
-                                                    )}
-                                                    editor={multiCodelistEditor(
-                                                        codelists.disseminationLimits
-                                                    )}
-                                                />
-                                            </div>
-
-                                            <h4>
-                                                What is the sensitivity of this
-                                                dataset?
-                                            </h4>
-                                            <div>
-                                                <ToggleEditor
-                                                    editable={
-                                                        hasEditPermissions
-                                                    }
-                                                    value={
-                                                        dataset
-                                                            ?.informationSecurity
-                                                            ?.classification
-                                                    }
-                                                    onChange={informationSecurityChange(
-                                                        "classification"
-                                                    )}
-                                                    editor={codelistEditor(
-                                                        codelists.classification
-                                                    )}
-                                                />
-                                            </div>
-                                            <hr />
-                                        </div>
+                                    ) : (
+                                        <></>
                                     )}
+                                    <TagsBox tags={this.props.dataset.tags} />
                                 </div>
                             </div>
                             <div
@@ -793,8 +475,7 @@ const mapDispatchToProps = dispatch => {
         {
             fetchDataset: fetchDatasetFromRegistry,
             fetchDistribution: fetchDistributionFromRegistry,
-            resetFetchRecord: resetFetchRecord,
-            modifyRecordAspect: modifyRecordAspect
+            resetFetchRecord: resetFetchRecord
         },
         dispatch
     );
