@@ -77,6 +77,12 @@ magda-core:
           startDateRegex: "(start|st).*(date|dt|year|decade)"
           endDateRegex: "(end).*(date|dt|year|decade)"
 
+  preview-map:
+    image:
+      repository: docker.io/data61
+      tag: 0.0.57-0
+      pullPolicy: IfNotPresent
+      imagePullSecret: false
 
 tags:
   all: true
