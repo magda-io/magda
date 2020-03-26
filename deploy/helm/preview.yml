@@ -113,3 +113,10 @@ magda-core:
     minio:
       host: "localhost"
       port: 9000
+
+  preview-map:
+    image:
+      repository: docker.io/data61
+      tag: 0.0.57-0
+      pullPolicy: IfNotPresent
+      imagePullSecret: false

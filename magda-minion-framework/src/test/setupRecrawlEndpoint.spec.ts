@@ -37,7 +37,7 @@ baseSpec(
                     enableMultiTenant: true,
                     tenantUrl: "example",
                     jwtSecret: "jwtSecret",
-                    userId: "userId",
+                    userId: "b1fddd6f-e230-4068-bd2c-1a21844f1598",
                     listenPort: listenPort()
                 }),
                 id: "id",
@@ -81,7 +81,7 @@ baseSpec(
                     enableMultiTenant: true,
                     tenantUrl: "example",
                     jwtSecret: "jwtSecret",
-                    userId: "userId",
+                    userId: "b1fddd6f-e230-4068-bd2c-1a21844f1598",
                     listenPort: listenPort()
                 }),
                 id: "id",
@@ -153,7 +153,7 @@ baseSpec(
                                 enableMultiTenant: true,
                                 tenantUrl: "example",
                                 jwtSecret: "jwtSecret",
-                                userId: "userId",
+                                userId: "b1fddd6f-e230-4068-bd2c-1a21844f1598",
                                 listenPort: listenPort()
                             }),
                             id: "id",

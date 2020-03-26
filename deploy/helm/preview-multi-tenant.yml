@@ -111,3 +111,10 @@ magda-core:
     alwaysSendToDefaultRecipient: true
     smtpHostname: "smtp.mailgun.org"
     smtpPort: 2525
+
+  preview-map:
+    image:
+      repository: docker.io/data61
+      tag: 0.0.57-0
+      pullPolicy: IfNotPresent
+      imagePullSecret: false

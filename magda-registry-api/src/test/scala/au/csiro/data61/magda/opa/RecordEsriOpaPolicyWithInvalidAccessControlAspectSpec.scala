@@ -597,9 +597,8 @@ abstract class RecordEsriOpaPolicyWithInvalidAccessControlAspectSpec
               val record = res._1
               val index = res._2
               record.id shouldBe "record-" + index
-              record.aspects(withLinkId).fields(linkName) shouldEqual JsString(
+              record.aspects(withLinkId).fields(linkName) shouldEqual
                 singleLinkRecordIdMapDereferenceIsFalse((userId, record.id))
-              )
             })
           }
         }

@@ -1,8 +1,8 @@
+import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
 import express from "express";
 import yargs from "yargs";
 import createApiRouter from "./createApiRouter";
 import MagdaMinioClient from "./MagdaMinioClient";
-import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
 
 const argv = addJwtSecretFromEnvVar(
     yargs
@@ -12,6 +12,11 @@ const argv = addJwtSecretFromEnvVar(
             describe: "The TCP/IP port on which the storage-api should listen.",
             type: "number",
             default: 6121
+        })
+        .option("registryApiUrl", {
+            describe: "The access endpoint URL of the Registry API",
+            type: "string",
+            default: "http://localhost:6101/v0"
         })
         .option("minioAccessKey", {
             describe: "The access key to your minio server.",
@@ -50,6 +55,11 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: "http://localhost:6104/v0"
         })
+        .option("tenantId", {
+            describe: "The tenant id for intra-network communication",
+            type: "number",
+            default: 0
+        })
         .option("uploadLimit", {
             describe: "How large a file can be uploaded to be stored by Magda",
             type: "string",
@@ -70,8 +80,10 @@ app.use(
             secretKey: argv.minioSecretKey,
             region: argv.minioRegion
         }),
+        registryApiUrl: argv.registryApiUrl,
         authApiUrl: argv.authApiUrl,
         jwtSecret: argv.jwtSecret as string,
+        tenantId: argv.tenantId,
         uploadLimit: argv.uploadLimit
     })
 );

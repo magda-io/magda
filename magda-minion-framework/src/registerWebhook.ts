@@ -15,9 +15,10 @@ export default async function registerNewWebhook(
 
     const webHookConfig = buildWebhookConfig(options);
 
+    const userId = "b1fddd6f-e230-4068-bd2c-1a21844f1598";
     const newWebHook: WebHook = {
         id: options.id,
-        userId: 0, // TODO: When this matters
+        userId,
         name: options.id,
         active: true,
         url: getWebhookUrl(options),

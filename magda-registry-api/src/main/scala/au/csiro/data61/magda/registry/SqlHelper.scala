@@ -26,20 +26,19 @@ object SqlHelper {
     * @return a single SQL clause
     */
   def getOpaConditions(
-      opaQueries: List[(String, List[List[OpaQuery]])],
+      opaQueries: Option[List[(String, List[List[OpaQuery]])]],
       operationType: AuthOperations.OperationType,
       defaultPolicyId: Option[String]
   ): SQLSyntax = opaQueries match {
-    case Nil => SQL_TRUE
-    case _ =>
+    case None => SQL_TRUE
+    case Some(opaQueries) =>
       val queries = opaQueries.flatMap {
         case (policyId, Nil) =>
           None
         case (policyId, policyQueries) =>
           val basePolicyIdClause = sqls"Records.authnReadPolicyId = ${policyId}"
-          // If this policy is the default policy, we need to also apply it to records with a null value in the policy column
-          // println(defaultPolicyId + "/" + policyId)
 
+          // If this policy is the default policy, we need to also apply it to records with a null value in the policy column
           val policyIdClauseWithDefault = defaultPolicyId match {
             case Some(innerDefaultPolicyId)
                 if innerDefaultPolicyId == policyId =>

@@ -9,7 +9,7 @@ import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
 import au.csiro.data61.magda.model.Registry._
-import au.csiro.data61.magda.registry.Directives.withRecordOpaQuery
+import au.csiro.data61.magda.registry.Directives._
 import com.typesafe.config.Config
 import io.swagger.annotations._
 import javax.ws.rs.Path
@@ -165,31 +165,37 @@ class RecordsServiceRO(
           ) =>
             val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
 
-            withRecordOpaQuery(
+            withRecordOpaQueryIncludingLinks(
               AuthOperations.read,
               recordPersistence,
-              authApiClient
+              authApiClient,
+              None,
+              aspects ++ optionalAspects
             )(
               config,
               system,
               materializer,
               ec
             ) { opaQueries =>
-              complete {
-                DB readOnly { session =>
-                  recordPersistence.getAllWithAspects(
-                    session,
-                    tenantId,
-                    aspects,
-                    optionalAspects,
-                    opaQueries,
-                    pageToken,
-                    start,
-                    limit,
-                    dereference,
-                    parsedAspectQueries
-                  )
-                }
+              opaQueries match {
+                case (recordQueries, linkedRecordQueries) =>
+                  complete {
+                    DB readOnly { session =>
+                      recordPersistence.getAllWithAspects(
+                        session,
+                        tenantId,
+                        aspects,
+                        optionalAspects,
+                        recordQueries,
+                        linkedRecordQueries,
+                        pageToken,
+                        start,
+                        limit,
+                        dereference,
+                        parsedAspectQueries
+                      )
+                    }
+                  }
               }
             }
         }
@@ -584,36 +590,41 @@ class RecordsServiceRO(
       requiresTenantId { tenantId =>
         parameters('aspect.*, 'optionalAspect.*, 'dereference.as[Boolean].?) {
           (aspects, optionalAspects, dereference) =>
-            withRecordOpaQuery(
+            withRecordOpaQueryIncludingLinks(
               AuthOperations.read,
               recordPersistence,
               authApiClient,
-              Some(id)
+              Some(id),
+              aspects ++ optionalAspects
             )(
               config,
               system,
               materializer,
               ec
             ) { opaQueries =>
-              DB readOnly { session =>
-                recordPersistence.getByIdWithAspects(
-                  session,
-                  tenantId,
-                  id,
-                  opaQueries,
-                  aspects,
-                  optionalAspects,
-                  dereference
-                ) match {
-                  case Some(record) => complete(record)
-                  case None =>
-                    complete(
-                      StatusCodes.NotFound,
-                      ApiError(
-                        "No record exists with that ID or it does not have the required aspects."
-                      )
-                    )
-                }
+              opaQueries match {
+                case (recordQueries, linkedRecordQueries) =>
+                  DB readOnly { session =>
+                    recordPersistence.getByIdWithAspects(
+                      session,
+                      tenantId,
+                      id,
+                      recordQueries,
+                      linkedRecordQueries,
+                      aspects,
+                      optionalAspects,
+                      dereference
+                    ) match {
+                      case Some(record) => complete(record)
+                      case None =>
+                        complete(
+                          StatusCodes.NotFound,
+                          ApiError(
+                            "No record exists with that ID or it does not have the required aspects."
+                          )
+                        )
+                    }
+                  }
               }
             }
         }
@@ -685,7 +696,7 @@ class RecordsServiceRO(
   def getByIdSummary: Route = get {
     path("summary" / Segment) { id =>
       requiresTenantId { tenantId =>
-        withRecordOpaQuery(
+        withRecordOpaQueryIncludingLinks(
           AuthOperations.read,
           recordPersistence,
           authApiClient,
@@ -696,15 +707,19 @@ class RecordsServiceRO(
           materializer,
           ec
         ) { opaQueries =>
-          DB readOnly { session =>
-            recordPersistence.getById(session, tenantId, opaQueries, id) match {
-              case Some(record) => complete(record)
-              case None =>
-                complete(
-                  StatusCodes.NotFound,
-                  ApiError("No record exists with that ID.")
-                )
-            }
+          opaQueries match {
+            case (recordQueries, linkedRecordQueries) =>
+              DB readOnly { session =>
+                recordPersistence
+                  .getById(session, tenantId, recordQueries, id) match {
+                  case Some(record) => complete(record)
+                  case None =>
+                    complete(
+                      StatusCodes.NotFound,
+                      ApiError("No record exists with that ID.")
+                    )
+                }
+              }
           }
         }
       }

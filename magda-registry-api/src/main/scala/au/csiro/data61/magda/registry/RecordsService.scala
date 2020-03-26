@@ -333,8 +333,7 @@ class RecordsService(
                   session,
                   tenantId,
                   id,
-                  recordIn,
-                  Nil
+                  recordIn
                 ) match {
                   case Success(recordOut) =>
                     complete(recordOut)
@@ -442,8 +441,7 @@ class RecordsService(
                 session,
                 tenantId,
                 id,
-                recordPatch,
-                Nil
+                recordPatch
               ) match {
                 case Success(result) =>
                   complete(result)

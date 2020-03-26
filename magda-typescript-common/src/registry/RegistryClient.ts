@@ -100,7 +100,7 @@ export default class RegistryClient {
     ): Promise<Record | Error> {
         const operation = (id: string) => () =>
             this.recordsApi.getById(
-                id,
+                encodeURIComponent(id),
                 this.tenantId,
                 aspect,
                 optionalAspect,
@@ -115,7 +115,9 @@ export default class RegistryClient {
                 console.log(
                     formatServiceError("Failed to GET records.", e, retriesLeft)
                 ),
-            e => e.response.statusCode !== 404
+            e => {
+                return !e.response || e.response.statusCode !== 404;
+            }
         )
             .then(result => result.body)
             .catch(createServiceError);

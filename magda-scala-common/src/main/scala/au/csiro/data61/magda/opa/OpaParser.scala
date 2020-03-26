@@ -96,7 +96,6 @@ object RegoTerm {
 
 object OpaParser {
   val anyInArrayPattern = "(\\$\\d+)".r
-  println(anyInArrayPattern.findAllMatchIn("$06"))
 
   def parseOpaResponse(json: JsValue, policy: String): List[List[OpaQuery]] = {
     val result = json.asJsObject.fields
