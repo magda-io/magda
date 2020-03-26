@@ -11,28 +11,24 @@ import {
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
 
-import { steps as ProgressMeterStepsConfig } from "../../Common/AddDatasetProgressMeter";
+import { editSteps as ProgressMeterStepsConfig } from "../../Common/AddDatasetProgressMeter";
 
 import {
     State,
-    saveState,
     DistributionState,
-    createDatasetFromState
-} from "./DatasetAddCommon";
-import DetailsAndContents from "./Pages/DetailsAndContents";
-import DatasetAddPeoplePage from "./Pages/People/DatasetAddPeoplePage";
-import DatasetAddEndPreviewPage from "./Pages/DatasetAddEndPreviewPage";
-import DatasetAddFilesPage from "./Pages/AddFiles";
-import DatasetAddAccessAndUsePage from "./Pages/DatasetAddAccessAndUsePage";
-import withAddDatasetState from "./withAddDatasetState";
+    updateDatasetFromState
+} from "../Add/DatasetAddCommon";
+import DetailsAndContents from "../Add/Pages/DetailsAndContents";
+import DatasetAddPeoplePage from "../Add/Pages/People/DatasetAddPeoplePage";
+import DatasetAddEndPreviewPage from "../Add/Pages/DatasetAddEndPreviewPage";
+import DatasetAddFilesPage from "../Add/Pages/AddFiles";
+import DatasetAddAccessAndUsePage from "../Add/Pages/DatasetAddAccessAndUsePage";
+import withEditDatasetState from "./withEditDatasetState";
 import { config } from "config";
 
-import "./DatasetAddMetadataPage.scss";
-import "./DatasetAddCommon.scss";
-
-import ReviewFilesList from "./ReviewFilesList";
-
-import ErrorMessageBox from "./ErrorMessageBox";
+import "../Add/DatasetAddMetadataPage.scss";
+import "../Add/DatasetAddCommon.scss";
+import ErrorMessageBox from "../Add/ErrorMessageBox";
 
 import helpIcon from "assets/help.svg";
 import { User } from "reducers/userManagementReducer";
@@ -40,13 +36,14 @@ import * as ValidationManager from "../Add/ValidationManager";
 
 type Props = {
     initialState: State;
-    createRecord: Function;
     createNewDatasetReset: Function;
     createNewDatasetError: Function;
+    isCreating: boolean;
     creationError: any;
     lastDatasetId: string;
     step: number;
     datasetId: string;
+    isNewDataset: boolean;
     history: any;
     user: User;
 };
@@ -120,7 +117,6 @@ class NewDataset extends React.Component<Props, State> {
 
     render() {
         const { distributions } = this.state;
-
         let { step } = this.props;
 
         step = Math.max(Math.min(step, this.steps.length - 1), 0);
@@ -132,12 +128,12 @@ class NewDataset extends React.Component<Props, State> {
                 if (config.featureFlags.previewAddDataset) {
                     return "Send Us Your Thoughts";
                 } else if (this.state.isPublishing) {
-                    return "Publishing as draft...";
+                    return "Submitting Dataset Change...";
                 } else {
-                    return "Publish draft dataset";
+                    return "Submit Dataset Changes";
                 }
             } else {
-                return ProgressMeterStepsConfig[step + 1].title;
+                return "Next: " + ProgressMeterStepsConfig[step + 1].title;
             }
         };
 
@@ -156,18 +152,6 @@ class NewDataset extends React.Component<Props, State> {
 
         return (
             <div className="dataset-add-files-root dataset-add-meta-data-pages">
-                {step > 0 ? (
-                    <div className="row">
-                        <div className="col-sm-12">
-                            <ReviewFilesList
-                                key={step}
-                                files={distributions}
-                                isOpen={step < 1 ? true : false}
-                            />
-                        </div>
-                    </div>
-                ) : null}
-
                 {this.steps[step]()}
                 <br />
                 <br />
@@ -183,14 +167,18 @@ class NewDataset extends React.Component<Props, State> {
                                     className="au-btn next-button"
                                     onClick={nextButtonOnClick}
                                 >
-                                    Next: {nextButtonCaption()}
+                                    {nextButtonCaption()}
                                 </button>
-                                <button
-                                    className="au-btn au-btn--secondary save-button"
-                                    onClick={this.saveAndExit.bind(this)}
-                                >
-                                    Save and exit
-                                </button>
+                                {nextIsPublish ? null : (
+                                    <button
+                                        className="au-btn au-btn--secondary save-button"
+                                        onClick={() =>
+                                            this.gotoStep(this.steps.length - 1)
+                                        }
+                                    >
+                                        Review &amp; Save
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </>
@@ -206,7 +194,6 @@ class NewDataset extends React.Component<Props, State> {
     async saveAndExit() {
         try {
             await this.resetError();
-            saveState(this.state, this.props.datasetId);
             this.props.history.push(`/dataset/list`);
         } catch (e) {
             this.props.createNewDatasetError(e);
@@ -217,9 +204,8 @@ class NewDataset extends React.Component<Props, State> {
         try {
             await this.resetError();
             if (ValidationManager.validateAll()) {
-                saveState(this.state, this.props.datasetId);
                 this.props.history.push(
-                    "/dataset/add/metadata/" + this.props.datasetId + "/" + step
+                    `/dataset/edit/${this.props.datasetId}/${step}`
                 );
             }
         } catch (e) {
@@ -260,14 +246,11 @@ class NewDataset extends React.Component<Props, State> {
         try {
             await this.resetError();
 
-            saveState(this.state, this.props.datasetId);
-
-            this.setState(state => ({
-                ...state,
+            this.setState({
                 isPublishing: true
-            }));
+            });
 
-            await createDatasetFromState(
+            await updateDatasetFromState(
                 this.props.datasetId,
                 this.state,
                 this.setState.bind(this)
@@ -283,9 +266,9 @@ class NewDataset extends React.Component<Props, State> {
     }
 }
 
-function mapStateToProps(state, props) {
-    const datasetId = props.match.params.datasetId;
-    let step = parseInt(props?.match?.params?.step);
+function mapStateToProps(state, old) {
+    let datasetId = old.match.params.datasetId;
+    let step = parseInt(old.match.params.step);
     if (isNaN(step)) {
         step = 0;
     }
@@ -306,6 +289,6 @@ const mapDispatchToProps = dispatch => {
     );
 };
 
-export default withAddDatasetState(
+export default withEditDatasetState(
     withRouter(connect(mapStateToProps, mapDispatchToProps)(NewDataset))
 );

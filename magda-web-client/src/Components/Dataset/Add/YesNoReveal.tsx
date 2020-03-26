@@ -1,4 +1,4 @@
-import React, { useState, ReactNode } from "react";
+import React, { useState, ReactNode, useEffect } from "react";
 
 type Props<T> = {
     name: string;
@@ -25,16 +25,21 @@ export default function YesNoReveal<T>({
     name,
     children
 }: Props<T>) {
-    const [lastValue, setLastValue] = useState<T | undefined>(undefined);
     const [show, setShow] = useState<boolean>(!!value);
+    const [hasUserClick, setHasUserClick] = useState<boolean>(false);
+    useEffect(() => {
+        const shouldShow = !!value;
+        if (shouldShow !== show && !hasUserClick) {
+            setShow(shouldShow);
+        }
+    }, [value]);
 
     const onChangeHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setHasUserClick(true);
         if (event.target.value === "yes") {
-            setLastValue(undefined);
-            onChange(lastValue);
+            onChange(value);
             setShow(true);
         } else {
-            setLastValue(value);
             onChange(undefined);
             setShow(false);
         }

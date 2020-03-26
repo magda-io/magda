@@ -92,10 +92,11 @@ class DatasetListPage extends React.Component<any, any> {
                                                 }
                                             </td>
                                             <td>
-                                                {
-                                                    dataset.dataset
-                                                        .distributions.length
-                                                }{" "}
+                                                {dataset?.dataset?.distributions
+                                                    ?.length
+                                                    ? dataset.dataset
+                                                          .distributions.length
+                                                    : "0"}{" "}
                                                 distribution(s)
                                             </td>
                                         </tr>

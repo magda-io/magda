@@ -93,65 +93,77 @@ const Routes = () => {
             <Route
                 exact
                 path="/admin"
-                component={withHeader(AdminPage, true)}
+                component={withHeader(AdminPage, { includeSearchBox: true })}
             />
             <Route
                 exact
                 path="/admin/home"
-                component={withHeader(HomeAdminPage, true)}
+                component={withHeader(HomeAdminPage, {
+                    includeSearchBox: true
+                })}
             />
             <Route
                 exact
                 path="/admin/home-stories"
-                component={withHeader(StoriesAdminPage, false)}
+                component={withHeader(StoriesAdminPage)}
             />
             <Route
                 exact
                 path="/admin/home-highlights"
-                component={withHeader(HighlightsAdminPage, false)}
+                component={withHeader(HighlightsAdminPage)}
             />
             <Route
                 exact
                 path="/admin/header-navigation"
-                component={withHeader(HeaderNavigationAdminPage, true)}
+                component={withHeader(HeaderNavigationAdminPage, {
+                    includeSearchBox: true
+                })}
             />
             <Route
                 path="/admin/footer-navigation/:size"
-                component={withHeader(FooterNavigationAdminPage, true)}
+                component={withHeader(FooterNavigationAdminPage, {
+                    includeSearchBox: true
+                })}
             />
             <Route
                 path="/admin/footer-navigation-links/:size/:category"
-                component={withHeader(FooterNavigationLinksAdminPage, true)}
+                component={withHeader(FooterNavigationLinksAdminPage, {
+                    includeSearchBox: true
+                })}
             />
             <Route
                 exact
                 path="/admin/footer-copyright"
-                component={withHeader(FooterCopyrightAdminPage, true)}
+                component={withHeader(FooterCopyrightAdminPage, {
+                    includeSearchBox: true
+                })}
             />
             <Route
                 exact
                 path="/admin/connectors"
-                component={withHeader(ConnectorsAdminPage, true)}
+                component={withHeader(ConnectorsAdminPage, {
+                    includeSearchBox: true
+                })}
             />
             <Route
                 exact
                 path="/admin/accounts"
-                component={withHeader(AccountsAdminPage, false)}
+                component={withHeader(AccountsAdminPage)}
             />
             <Route
                 exact
                 path="/admin/pages"
-                component={withHeader(AdminStaticPagesPage, false)}
+                component={withHeader(AdminStaticPagesPage)}
             />
             <Route
                 exact
                 path="/admin/i18n"
-                component={withHeader(LanguageAdminPage, false)}
+                component={withHeader(LanguageAdminPage)}
             />
             <Route
                 exact
                 path="/organisations"
-                component={withHeader(OrganisationsPage, false)}
+                component={withHeader(OrganisationsPage)}
             />
             <Route
                 exact
@@ -168,22 +180,28 @@ const Routes = () => {
             />
             <Route
                 path="/organisations/:publisherId"
-                component={withHeader(OrganisationPage, false)}
+                component={withHeader(OrganisationPage)}
             />
             <Route
                 exact
                 path="/search"
-                component={withHeader(DatasetsSearchPagePublishedOnly, true)}
+                component={withHeader(DatasetsSearchPagePublishedOnly, {
+                    includeSearchBox: true
+                })}
             />
             <Route
                 exact
                 path="/drafts"
-                component={withHeader(DatasetsSearchPageDraftOnly, true)}
+                component={withHeader(DatasetsSearchPageDraftOnly, {
+                    includeSearchBox: true
+                })}
             />
             <Route
                 exact
                 path="/all-datasets"
-                component={withHeader(DatasetsSearchPage, true)}
+                component={withHeader(DatasetsSearchPage, {
+                    includeSearchBox: true
+                })}
             />
             <Route
                 exact
@@ -197,47 +215,45 @@ const Routes = () => {
                     />
                 )}
             />
-            <Route
-                exact
-                path="/account"
-                component={withHeader(AccountPage, false)}
-            />
+            <Route exact path="/account" component={withHeader(AccountPage)} />
             <Route
                 exact
                 path="/login"
-                component={withHeader(AccountLoginPage, false)}
+                component={withHeader(AccountLoginPage)}
             />
             <Route
                 exact
                 path="/sign-in-redirect"
-                component={withHeader(AccountSignInRedirectPage, false)}
+                component={withHeader(AccountSignInRedirectPage)}
             />
             <Route
                 path="/dataset/:datasetId/distribution/:distributionId"
-                component={withHeader(DatasetPage, true)}
+                component={withHeader(DatasetPage, { includeSearchBox: true })}
             />
             {config.featureFlags.cataloguing && (
-                <Route
-                    path="/catalog"
-                    component={withHeader(CatalogRoutes, false)}
-                />
+                <Route path="/catalog" component={withHeader(CatalogRoutes)} />
             )}
             {/*
                 We can't load header here. ProgressMeter needs to go into header
                 but the first route of the dataset route doesn't need a ProgressMeter.
              */}
             {config.featureFlags.cataloguing && (
-                <Route path="/dataset/(add|list)" component={DatasetRoutes} />
+                <Route
+                    path="/dataset/(add|list|edit)"
+                    component={DatasetRoutes}
+                />
             )}
 
             <Route
                 path="/dataset/:datasetId"
-                component={withHeader(DatasetPage, true)}
+                component={withHeader(DatasetPage, { includeSearchBox: true })}
             />
             <Route
                 exact
                 path="/suggest"
-                component={withHeader(DatasetSuggestPage, true)}
+                component={withHeader(DatasetSuggestPage, {
+                    includeSearchBox: true
+                })}
             />
             <Redirect
                 from="/page/dataset-quality"
@@ -245,17 +261,19 @@ const Routes = () => {
             />
             <Route
                 path="/page/:pageId"
-                component={withHeader(StaticPage, true)}
+                component={withHeader(StaticPage, { includeSearchBox: true })}
             />
             <Route
                 exact
                 path="/404"
-                component={withHeader(RouteNotFoundPage, true)}
+                component={withHeader(RouteNotFoundPage, {
+                    includeSearchBox: true
+                })}
             />
             <Route
                 exact
                 path="/error"
-                component={withHeader(ErrorPage, true)}
+                component={withHeader(ErrorPage, { includeSearchBox: true })}
             />
             <FallbackRouteHandlerPage />
         </Switch>

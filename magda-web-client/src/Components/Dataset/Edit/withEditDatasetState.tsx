@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { RouterProps, withRouter } from "react-router-dom";
 import { connect } from "react-redux";
-
-import { loadState, State } from "./DatasetAddCommon";
+import { useAsync } from "react-async-hook";
+import { State, rawDatasetDataToState } from "../Add/DatasetAddCommon";
 import { User } from "reducers/userManagementReducer";
 import { config } from "config";
+import { fetchRecord } from "api-clients/RegistryApis";
 
 type Props = { initialState: State; user: User } & RouterProps;
 
@@ -16,21 +17,23 @@ function mapStateToProps(state: any) {
 }
 
 export default <T extends Props>(Component: React.ComponentType<T>) => {
-    const withAddDatasetState = (props: T) => {
+    const withEditDatasetState = (props: T) => {
         const [state, updateData] = useState<State | undefined>(undefined);
-
         const isDisabled =
             !config.featureFlags.previewAddDataset &&
             (!props.user ||
                 props.user.id === "" ||
                 props.user.isAdmin !== true);
 
-        useEffect(() => {
-            // Once redux has finished getting a logged in user, load the state (we need to pass the current user in to populate default state)
-            loadState(props.match.params.datasetId, props.user).then(state => {
-                updateData(state);
-            });
-        }, [props.user]);
+        const { loading, error } = useAsync(async () => {
+            if (isDisabled || !props.match.params.datasetId) {
+                return;
+            }
+            const data = await fetchRecord(props.match.params.datasetId);
+            const loadedStateData = await rawDatasetDataToState(data);
+
+            updateData(loadedStateData);
+        }, [isDisabled, props.match.params.datasetId]);
 
         if (props.isFetchingWhoAmI) {
             return <div>Loading...</div>;
@@ -45,12 +48,14 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
                     </span>
                 </div>
             );
-        } else if (!state) {
+        } else if ((!state || loading) && !error) {
             return <div>Loading...</div>;
+        } else if (error) {
+            return <div>Failed to load dataset data: {"" + error}</div>;
         } else {
             return <Component {...props} initialState={state} />;
         }
     };
 
-    return connect(mapStateToProps)(withRouter(withAddDatasetState));
+    return connect(mapStateToProps)(withRouter(withEditDatasetState));
 };

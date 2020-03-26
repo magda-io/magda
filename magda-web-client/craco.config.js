@@ -1,6 +1,9 @@
 const { isEqual } = require("lodash");
 
 module.exports = {
+    babel: {
+        plugins: ["@babel/plugin-proposal-optional-chaining"]
+    },
     webpack: {
         configure(webpackConfig) {
             // For reasons that are not entirely clear, production builds take
