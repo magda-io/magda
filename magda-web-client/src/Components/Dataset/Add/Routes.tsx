@@ -13,7 +13,9 @@ const Routes = () => {
             <Route
                 exact
                 path="/dataset/add"
-                component={withHeader(DatasetAddPage, false, false, true)}
+                component={withHeader(DatasetAddPage, {
+                    noContainerClass: true
+                })}
             />
             <Route
                 exact
@@ -29,11 +31,15 @@ const Routes = () => {
                 exact
                 from="/dataset/add/metadata"
                 to={`/dataset/add/metadata/${createId()}`}
-                component={withHeader(DatasetAddMetadataPage, false, true)}
+                component={withHeader(DatasetAddMetadataPage, {
+                    includeDatasetPageProgressMeter: true
+                })}
             />
             <Route
                 path="/dataset/add/metadata/:datasetId/:step?"
-                component={withHeader(DatasetAddMetadataPage, false, true)}
+                component={withHeader(DatasetAddMetadataPage, {
+                    includeDatasetPageProgressMeter: true
+                })}
             />
             <Route
                 exact
@@ -42,7 +48,15 @@ const Routes = () => {
             />
             <Route
                 path="/dataset/edit/:datasetId/:step?"
-                component={withHeader(DatasetEditMetadataPage, false, true)}
+                component={withHeader(
+                    DatasetEditMetadataPage,
+                    {
+                        includeDatasetPageProgressMeter: true
+                    },
+                    {
+                        isEdit: true
+                    }
+                )}
             />
         </Switch>
     );

@@ -14,7 +14,11 @@ interface StepItem {
     url: string | urlFunc;
 }
 
-interface PropsType {
+export interface ExternalProps {
+    isEdit?: boolean;
+}
+
+interface InternalProps {
     history: History;
     location: Location;
     createNewDatasetReset: Function;
@@ -80,10 +84,8 @@ function createStepUrl(datasetId, item: StepItem) {
     }
 }
 
-const AddDatasetProgressMeter = (props: PropsType) => {
-    const isEdit =
-        typeof props?.match?.path === "string" &&
-        props.match.path.indexOf("/dataset/edit/") === 0;
+const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
+    const isEdit = props.isEdit;
 
     function determineDatasetId() {
         return props.match.params.datasetId;
