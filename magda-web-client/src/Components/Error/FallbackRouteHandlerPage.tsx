@@ -14,7 +14,10 @@ function FallbackRouteHandler({ loading }: Props) {
     return loading ? (
         <Loading />
     ) : (
-        <Route path="/*" component={withHeader(RouteNotFound, true)} />
+        <Route
+            path="/*"
+            component={withHeader(RouteNotFound, { includeSearchBox: true })}
+        />
     );
 }
 

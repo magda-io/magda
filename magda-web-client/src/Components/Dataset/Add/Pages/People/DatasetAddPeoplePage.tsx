@@ -31,6 +31,8 @@ type Props = {
     provenance: Provenance;
     publishing: DatasetPublishing;
     user: User;
+    // --- if use as edit page
+    isEditView: boolean;
 };
 
 export default function DatasetAddPeoplePage({
@@ -48,8 +50,8 @@ export default function DatasetAddPeoplePage({
         <div className="row people-and-production-page">
             <div className="col-sm-12">
                 <h2>People and production</h2>
-                <hr />
                 <h3>People</h3>
+                <hr />
                 <h4>
                     Which organisation is responsible for publishing this
                     dataset?

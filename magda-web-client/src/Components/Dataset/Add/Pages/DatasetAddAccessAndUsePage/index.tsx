@@ -32,6 +32,8 @@ type Props = {
     editState: <K extends keyof State>(field: K) => (newValue: any) => void;
     editStateWithUpdater: (updater: (state: State) => void) => void;
     stateData: State;
+    // --- if use as edit page
+    isEditView: boolean;
 };
 
 const publishToDgaValidator: CustomValidatorType = (
@@ -129,7 +131,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
 
     const shouldPublishToDga: boolean = datasetPublishing.publishAsOpenData
         ? !!datasetPublishing.publishAsOpenData.dga
-        : false
+        : false;
 
     return (
         <div className="row dataset-access-and-use-page">

@@ -15,31 +15,37 @@ import {
     Distribution,
     DistributionState,
     DistributionSource,
-    saveState,
-    KeywordsLike
-} from "./DatasetAddCommon";
-import withAddDatasetState from "./withAddDatasetState";
+    KeywordsLike,
+    createId
+} from "../../DatasetAddCommon";
+import withAddDatasetState from "../../withAddDatasetState";
 import uniq from "lodash/uniq";
-import * as ValidationManager from "../Add/ValidationManager";
 import { config } from "config";
+import { User } from "reducers/userManagementReducer";
 
-import "./DatasetAddFilesPage.scss";
-import "./DatasetAddCommon.scss";
+import "./index.scss";
+import "../../DatasetAddCommon.scss";
 
-class DatasetAddFilesPage extends React.Component<
-    { dataset: string; initialState: State } & RouterProps,
-    State
-> {
-    state = this.props.initialState;
+type Props = {
+    edit: <K extends keyof State>(
+        aspectField: K
+    ) => (field: string) => (newValue: any) => void;
+    setState: <State>(
+        state: ((prevState: Readonly<State>) => State) | State,
+        callback?: () => void
+    ) => void;
+    user: User;
+    stateData: State;
+    // --- if use as edit page
+    isEditView: boolean;
+};
 
+class AddFilesPage extends React.Component<Props & RouterProps> {
     constructor(props) {
         super(props);
         this.addDistribution = this.addDistribution.bind(this);
         this.editDistribution = this.editDistribution.bind(this);
         this.deleteDistribution = this.deleteDistribution.bind(this);
-        ValidationManager.setStateDataGetter(() => {
-            return this.state;
-        });
     }
 
     async onBrowse() {
@@ -51,7 +57,7 @@ class DatasetAddFilesPage extends React.Component<
     }
 
     updateLastModifyDate() {
-        this.setState(state => {
+        this.props.setState((state: State) => {
             const modifiedDates = state.distributions
                 .filter(f => f.modified)
                 .map(f => new Date(f.modified))
@@ -98,6 +104,7 @@ class DatasetAddFilesPage extends React.Component<
             }
 
             const newFile: Distribution = {
+                id: createId("dist"),
                 datasetTitle: toTitleCase(
                     turnPunctuationToSpaces(
                         trimExtension(thisFile.name || "File Name")
@@ -113,18 +120,20 @@ class DatasetAddFilesPage extends React.Component<
             };
 
             processFile(thisFile, update => {
-                this.setState(state => {
-                    let newState: State = Object.assign({}, state, {
+                this.props.setState((state: State) => {
+                    const newState: State = {
+                        ...state,
                         distributions: state.distributions.slice(0)
-                    });
+                    };
                     Object.assign(newFile, update);
                     return newState;
                 });
             }).then(() => {
-                this.setState(state => {
-                    let newState = Object.assign({}, state, {
+                this.props.setState((state: State) => {
+                    const newState: State = {
+                        ...state,
                         distributions: state.distributions.slice(0)
-                    });
+                    };
 
                     let file: any = newFile;
                     const {
@@ -210,8 +219,9 @@ class DatasetAddFilesPage extends React.Component<
                 });
             });
 
-            this.setState(state => {
-                let newState = {
+            this.props.setState((state: State) => {
+                const newState = {
+                    ...state,
                     distributions: state.distributions.slice(0)
                 };
                 newState.distributions.push(newFile);
@@ -222,7 +232,7 @@ class DatasetAddFilesPage extends React.Component<
     };
 
     addDistribution = (distribution: Distribution) => {
-        this.setState(state => {
+        this.props.setState((state: State) => {
             const newDistribution = state.distributions.concat(distribution);
             return {
                 ...state,
@@ -234,7 +244,7 @@ class DatasetAddFilesPage extends React.Component<
     editDistribution = (index: number) => (
         updater: (distribution: Distribution) => Distribution
     ) => {
-        this.setState(state => {
+        this.props.setState((state: State) => {
             const newDistributions = state.distributions.concat();
             newDistributions[index] = updater(newDistributions[index]);
             return {
@@ -246,7 +256,7 @@ class DatasetAddFilesPage extends React.Component<
     };
 
     deleteDistribution = (index: number) => () => {
-        this.setState(state => {
+        this.props.setState((state: State) => {
             const newDistributions = state.distributions.filter((item, idx) => {
                 if (idx === index) return false;
                 return true;
@@ -258,78 +268,99 @@ class DatasetAddFilesPage extends React.Component<
         });
     };
 
-    render() {
-        const localFiles = this.state.distributions.filter(
+    renderStorageOption() {
+        const state = this.props.stateData;
+        const localFiles = state.distributions.filter(
             file => file.creationSource === DistributionSource.File
         );
 
         return (
-            <div className="container-fluid dataset-add-file-page">
-                <div className="row top-area-row">
-                    <div className="col-xs-12 top-text-area">
-                        <h1>Add your dataset to pre-populate metadata</h1>
-                        <p>
-                            Our Publishing Tool can review your dataset contents
-                            and pre-populate metadata. Just add all the files or
-                            services that make up your dataset.
-                        </p>
-                        <p>
-                            You can upload your dataset as files, add a link to
-                            files already hosted online, or add a link to a web
-                            service, or any combination of the three.
-                        </p>
-                        <p>
-                            All our processing happens in your internet browser,
-                            we only store a copy of your files if you ask us to,
-                            and you can edit or delete the metadata at any time.
-                        </p>
-                        <p>
-                            Want to upload your entire data catalogue in one go?
-                            Use our <a>Bulk Upload tool</a>
-                        </p>
+            <StorageOptionsSection
+                files={localFiles}
+                shouldUploadToStorageApi={state.shouldUploadToStorageApi}
+                setShouldUploadToStorageApi={value => {
+                    this.props.setState((state: State) => {
+                        const newState = {
+                            ...state,
+                            shouldUploadToStorageApi: value
+                        };
+                        if (value) {
+                            // --- delete dataset location data when upload to storage api is selected
+                            const {
+                                location: originalLocation,
+                                ...newDatasetAccess
+                            } = { ...state.datasetAccess };
+                            newState.datasetAccess = newDatasetAccess;
+                        }
+                        return newState;
+                    });
+                }}
+                dataAccessLocation={
+                    state.datasetAccess.location
+                        ? state.datasetAccess.location
+                        : ""
+                }
+                setDataAccessLocation={value =>
+                    this.props.setState((state: State) => ({
+                        ...state,
+                        datasetAccess: {
+                            ...state.datasetAccess,
+                            location: value
+                        }
+                    }))
+                }
+            />
+        );
+    }
+
+    render() {
+        const { stateData: state, isEditView } = this.props;
+        const localFiles = state.distributions.filter(
+            file => file.creationSource === DistributionSource.File
+        );
+
+        return (
+            <div
+                className={`container-fluid dataset-add-file-page ${
+                    isEditView ? "is-edit-view" : ""
+                }`}
+            >
+                {isEditView ? null : (
+                    <div className="row top-area-row">
+                        <div className="col-xs-12 top-text-area">
+                            <h1>Add your dataset to pre-populate metadata</h1>
+                            <p>
+                                Our Publishing Tool can review your dataset
+                                contents and pre-populate metadata. Just add all
+                                the files or services that make up your dataset.
+                            </p>
+                            <p>
+                                You can upload your dataset as files, add a link
+                                to files already hosted online, or add a link to
+                                a web service, or any combination of the three.
+                            </p>
+                            <p>
+                                All our processing happens in your internet
+                                browser, we only store a copy of your files if
+                                you ask us to, and you can edit or delete the
+                                metadata at any time.
+                            </p>
+                            <p>
+                                Want to upload your entire data catalogue in one
+                                go? Use our <a>Bulk Upload tool</a>
+                            </p>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 <div className="row add-files-heading">
                     <div className="col-xs-12">
-                        <h3>Add files</h3>
-                        <StorageOptionsSection
-                            files={localFiles}
-                            shouldUploadToStorageApi={
-                                this.state.shouldUploadToStorageApi
-                            }
-                            setShouldUploadToStorageApi={value => {
-                                this.setState(state => {
-                                    const newState = {
-                                        ...state,
-                                        shouldUploadToStorageApi: value
-                                    };
-                                    if (value) {
-                                        // --- delete dataset location data when upload to storage api is selected
-                                        const {
-                                            location: originalLocation,
-                                            ...newDatasetAccess
-                                        } = { ...state.datasetAccess };
-                                        newState.datasetAccess = newDatasetAccess;
-                                    }
-                                    return newState;
-                                });
-                            }}
-                            dataAccessLocation={
-                                this.state.datasetAccess.location
-                                    ? this.state.datasetAccess.location
-                                    : ""
-                            }
-                            setDataAccessLocation={value =>
-                                this.setState(state => ({
-                                    ...state,
-                                    datasetAccess: {
-                                        ...state.datasetAccess,
-                                        location: value
-                                    }
-                                }))
-                            }
-                        />
+                        {isEditView ? (
+                            <h3>Your files and distributions</h3>
+                        ) : (
+                            <h3>Add files</h3>
+                        )}
+                        {this.renderStorageOption()}
                     </div>
 
                     {localFiles.length > 0 && (
@@ -401,7 +432,7 @@ class DatasetAddFilesPage extends React.Component<
 
                 <AddDatasetLinkSection
                     type={DistributionSource.DatasetUrl}
-                    distributions={this.state.distributions}
+                    distributions={state.distributions}
                     addDistribution={this.addDistribution}
                     editDistribution={this.editDistribution}
                     deleteDistribution={this.deleteDistribution}
@@ -409,52 +440,13 @@ class DatasetAddFilesPage extends React.Component<
 
                 <AddDatasetLinkSection
                     type={DistributionSource.Api}
-                    distributions={this.state.distributions}
+                    distributions={state.distributions}
                     addDistribution={this.addDistribution}
                     editDistribution={this.editDistribution}
                     deleteDistribution={this.deleteDistribution}
                 />
-
-                <div
-                    className="row next-save-button-row"
-                    style={{ marginTop: "6em" }}
-                >
-                    <div className="col-xs-12">
-                        {localFiles.filter(
-                            (file: Distribution) =>
-                                file._state === DistributionState.Ready
-                        ).length === localFiles.length && (
-                            <React.Fragment>
-                                <button
-                                    className="au-btn next-button"
-                                    onClick={this.reviewMetadata.bind(this)}
-                                >
-                                    Next: Review Metadata
-                                </button>
-                                <button
-                                    className="au-btn au-btn--secondary save-button"
-                                    onClick={this.saveAndExit.bind(this)}
-                                >
-                                    Save and Exit
-                                </button>
-                            </React.Fragment>
-                        )}
-                    </div>
-                </div>
             </div>
         );
-    }
-
-    saveAndExit() {
-        saveState(this.state, this.props.dataset);
-        this.props.history.push(`/dataset/list`);
-    }
-
-    reviewMetadata() {
-        if (ValidationManager.validateAll()) {
-            const id = saveState(this.state, this.props.dataset);
-            this.props.history.push(`/dataset/add/metadata/${id}/0`);
-        }
     }
 }
 
@@ -511,7 +503,7 @@ async function processFile(thisFile: any, update: Function) {
 }
 
 function mapStateToProps(state, old) {
-    let dataset = old.match.params.dataset;
+    let dataset = old.match.params.datasetId;
     return {
         dataset
     };
@@ -528,5 +520,5 @@ function fileFormat(file): string {
 }
 
 export default withAddDatasetState(
-    withRouter(connect(mapStateToProps)(DatasetAddFilesPage))
+    withRouter(connect(mapStateToProps)(AddFilesPage))
 );

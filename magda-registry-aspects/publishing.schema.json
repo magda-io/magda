@@ -14,7 +14,7 @@
             "title": "Level dataset is visible at",
             "type": "string",
             "default": "agency",
-            "enum": ["agency", "team", "public", "personal"]
+            "enum": ["agency", "division", "branch", "team"]
         },
         "contactPointDisplay": {
             "title": "What should be shown for the contact point(s) of a dataset",
