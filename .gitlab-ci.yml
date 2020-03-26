@@ -636,7 +636,7 @@ Stop Preview: &stopPreview
   script:
     - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
     - export KUBECONFIG=kubectlconfig.yaml
-    - helm del $CI_COMMIT_REF_SLUG
+    - helm --namespace $CI_COMMIT_REF_SLUG del $CI_COMMIT_REF_SLUG
     - kubectl delete namespace $CI_COMMIT_REF_SLUG
 
 Manual Release NPM Packages:
