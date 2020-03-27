@@ -1,11 +1,11 @@
-{{- $functionNs := default .Release.Namespace .Values.functionNamespace }}
+{{- $functionNs := include "openfaas.functionNamespace" . }}
 {{- if .Values.prometheus.create }}
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: {{ .Release.Name }}-prometheus
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ include "openfaas.mainNamespace" . | quote }}
   labels:
     app: {{ template "openfaas.name" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
@@ -17,7 +17,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: {{ .Release.Name }}-prometheus
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ include "openfaas.mainNamespace" . | quote }}
   labels:
     app: {{ template "openfaas.name" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
@@ -36,7 +36,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: {{ .Release.Name }}-prometheus
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ include "openfaas.mainNamespace" . | quote }}
   labels:
     app: {{ template "openfaas.name" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
@@ -50,5 +50,5 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: {{ .Release.Name }}-prometheus
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ include "openfaas.mainNamespace" . | quote }}
 {{- end }}

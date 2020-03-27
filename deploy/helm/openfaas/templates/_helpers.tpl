@@ -18,3 +18,23 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Expand the full main namespace string.
+*/}}
+{{- define "openfaas.mainNamespace" -}}
+{{- if not .Values.mainNamespace -}}
+{{- fail "`mainNamespace` can't be empty"  -}}
+{{- end -}}
+{{- .Values.mainNamespace | printf "%s-%s" (required "Please namespacePrefix for openfaas chart" (.Values.namespacePrefix | default .Release.Namespace)) -}}
+{{- end -}}
+
+{{/*
+Expand the full function namespace string.
+*/}}
+{{- define "openfaas.functionNamespace" -}}
+{{- if not .Values.functionNamespace -}}
+{{- fail "`functionNamespace` can't be empty"  -}}
+{{- end -}}
+{{- .Values.functionNamespace | printf "%s-%s" (required "Please namespacePrefix for openfaas chart" (.Values.namespacePrefix | default .Release.Namespace)) -}}
+{{- end -}}

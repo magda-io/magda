@@ -1,4 +1,4 @@
-{{- $functionNs := default .Release.Namespace .Values.functionNamespace }}
+{{- $functionNs := include "openfaas.functionNamespace" . }}
 {{- if .Values.basic_auth }}
 {{- if not .Values.oauth2Plugin.enabled }}
 ---
@@ -12,7 +12,7 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
   name: basic-auth-plugin
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ include "openfaas.mainNamespace" . | quote }}
 spec:
   replicas: {{ .Values.basicAuthPlugin.replicas }}
   selector:

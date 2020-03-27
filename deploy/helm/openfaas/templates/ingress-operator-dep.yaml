@@ -1,4 +1,4 @@
-{{- $functionNs := default .Release.Namespace .Values.functionNamespace }}
+{{- $functionNs := include "openfaas.functionNamespace" . }}
 {{- if .Values.ingressOperator.create }}
 apiVersion: apps/v1
 kind: Deployment
@@ -10,7 +10,7 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
   name: ingress-operator
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ include "openfaas.mainNamespace" . | quote }}
 spec:
   replicas: {{ .Values.ingressOperator.replicas }}
   selector:

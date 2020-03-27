@@ -1,11 +1,11 @@
-{{- $functionNs := default .Release.Namespace .Values.functionNamespace }}
+{{- $functionNs := include "openfaas.functionNamespace" . }}
 {{- if .Values.operator.create }}
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: {{ .Release.Name }}-operator
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ include "openfaas.mainNamespace" . | quote }}
   labels:
     app: {{ template "openfaas.name" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
@@ -63,6 +63,6 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: {{ .Release.Name }}-operator
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ include "openfaas.mainNamespace" . | quote }}
 {{- end }}
 {{- end }}

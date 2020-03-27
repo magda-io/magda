@@ -1,11 +1,11 @@
-{{- $functionNs := default .Release.Namespace .Values.functionNamespace }}
+{{- $functionNs := include "openfaas.functionNamespace" . }}
 {{- if .Values.faasIdler.create }}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: faas-idler
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ include "openfaas.mainNamespace" . | quote }}
   labels:
     app: {{ template "openfaas.name" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
@@ -32,9 +32,9 @@ spec:
           imagePullPolicy: {{ .Values.openfaasImagePullPolicy }}
           env:
             - name: gateway_url
-              value: "http://gateway.{{ .Release.Namespace }}:8080/"
+              value: "http://gateway.{{ include "openfaas.mainNamespace" . }}:8080/"
             - name: prometheus_host
-              value: "prometheus.{{ .Release.Namespace }}"
+              value: "prometheus.{{ include "openfaas.mainNamespace" . }}"
             - name: prometheus_port
               value: "9090"
             - name: inactivity_duration

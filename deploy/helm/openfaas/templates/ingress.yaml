@@ -3,7 +3,7 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: {{ template "openfaas.name" . }}-ingress
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ include "openfaas.mainNamespace" . | quote }}
   labels:
     app: {{ template "openfaas.name" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}

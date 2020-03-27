@@ -1,4 +1,11 @@
+# please note: 
+# the actual namespaces used for function & core are made up of:
+# - `namespacePrefix` + `-` + `functionNamespace`
+# - or `namespacePrefix` + `-` + `mainNamespace`
+# if `namespacePrefix` is empty, `.Release.Namespace` will be used
+namespacePrefix: ""
 functionNamespace: openfaas-fn  # Default namespace for functions
+mainNamespace: openfass # Default namespace for gateway and other core modules
 
 async: true
 

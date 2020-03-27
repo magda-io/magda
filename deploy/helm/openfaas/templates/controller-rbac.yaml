@@ -1,4 +1,4 @@
-{{- $functionNs := default .Release.Namespace .Values.functionNamespace }}
+{{- $functionNs := include "openfaas.functionNamespace" . }}
 {{- if eq .Values.operator.create false }}
 ---
 apiVersion: v1
@@ -11,7 +11,7 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
   name: {{ .Release.Name }}-controller
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ include "openfaas.mainNamespace" . | quote }}
 {{- if .Values.rbac }}
 {{- if .Values.clusterRole }}
 ---
@@ -92,7 +92,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: {{ .Release.Name }}-controller
-    namespace: {{ .Release.Namespace | quote }}
+    namespace: {{ include "openfaas.mainNamespace" . | quote }}
 {{- else }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -172,7 +172,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: {{ .Release.Name }}-controller
-    namespace: {{ .Release.Namespace | quote }}
+    namespace: {{ include "openfaas.mainNamespace" . | quote }}
 {{- end }}
 {{- end }}
 {{- end }}

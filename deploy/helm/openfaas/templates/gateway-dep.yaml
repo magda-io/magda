@@ -1,4 +1,4 @@
-{{- $functionNs := default .Release.Namespace .Values.functionNamespace }}
+{{- $functionNs := include "openfaas.functionNamespace" . }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -9,7 +9,7 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
   name: gateway
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ include "openfaas.mainNamespace" . | quote }}
 spec:
   replicas: {{ .Values.gateway.replicas }}
   selector:
@@ -114,7 +114,7 @@ spec:
         {{- else }}
         {{- if .Values.async }}
         - name: faas_nats_address
-          value: "nats.{{ .Release.Namespace }}.svc.{{ .Values.kubernetesDNSDomain }}"
+          value: "nats.{{ include "openfaas.mainNamespace" . }}.svc.{{ .Values.kubernetesDNSDomain }}"
         - name: faas_nats_port
           value: "4222"
         - name: faas_nats_channel
@@ -128,12 +128,12 @@ spec:
           value: "/var/secrets"
         {{- if .Values.oauth2Plugin.enabled }}
         - name: auth_proxy_url
-          value: "http://oauth2-plugin.{{ .Release.Namespace }}:8080/validate"
+          value: "http://oauth2-plugin.{{ include "openfaas.mainNamespace" . }}:8080/validate"
         - name: auth_pass_body
           value: "false"
         {{- else }}
         - name: auth_proxy_url
-          value: "http://basic-auth-plugin.{{ .Release.Namespace }}:8080/validate"
+          value: "http://basic-auth-plugin.{{ include "openfaas.mainNamespace" . }}:8080/validate"
         - name: auth_pass_body
           value: "false"
         {{- end }}

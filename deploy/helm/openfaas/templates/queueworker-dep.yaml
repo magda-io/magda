@@ -9,7 +9,7 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
   name: queue-worker
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ include "openfaas.mainNamespace" . | quote }}
 spec:
   replicas: {{ .Values.queueWorker.replicas }}
   selector:
@@ -44,7 +44,7 @@ spec:
           value: "{{ .Values.nats.external.clusterName }}"
         {{- else }}
         - name: faas_nats_address
-          value: "nats.{{ .Release.Namespace }}.svc.{{ .Values.kubernetesDNSDomain }}"
+          value: "nats.{{ include "openfaas.mainNamespace" . }}.svc.{{ .Values.kubernetesDNSDomain }}"
         {{- end}}
         - name: faas_nats_durable_queue_subscription
           value: "{{ .Values.queueWorker.durableQueueSubscription }}"
@@ -53,7 +53,7 @@ spec:
         - name: faas_nats_queue_group
           value: "{{ .Values.queueWorker.queueGroup }}"
         - name: faas_gateway_address
-          value: "gateway.{{ .Release.Namespace }}.svc.{{ .Values.kubernetesDNSDomain }}"
+          value: "gateway.{{ include "openfaas.mainNamespace" . }}.svc.{{ .Values.kubernetesDNSDomain }}"
         - name: "gateway_invoke"
           value: "{{ .Values.queueWorker.gatewayInvoke }}"
         {{- if .Values.functionNamespace }}

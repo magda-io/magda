@@ -1,4 +1,4 @@
-{{- $functionNs := default .Release.Namespace .Values.functionNamespace }}
+{{- $functionNs := include "openfaas.functionNamespace" . }}
 {{- if .Values.prometheus.create }}
 ---
 kind: ConfigMap
@@ -11,7 +11,7 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
   name: prometheus-config
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ include "openfaas.mainNamespace" . | quote }}
 data:
   prometheus.yml: |
     global:
@@ -36,7 +36,7 @@ data:
           - role: pod
             namespaces:
               names:
-                - {{ .Release.Namespace }}
+                - {{ include "openfaas.mainNamespace" . }}
         relabel_configs:
         - action: labelmap
           regex: __meta_kubernetes_pod_label_(.+)
