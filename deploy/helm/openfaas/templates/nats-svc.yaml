@@ -1,0 +1,27 @@
+{{- if and .Values.async (not .Values.nats.external.enabled) }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ template "openfaas.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    component: nats
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: nats
+  namespace: {{ .Release.Namespace | quote }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 4222
+      protocol: TCP
+      name: clients
+    {{- if .Values.nats.enableMonitoring }}
+    - port: 8222
+      protocol: TCP
+      name: monitoring
+    {{- end }}
+  selector:
+    app: nats
+{{- end }}

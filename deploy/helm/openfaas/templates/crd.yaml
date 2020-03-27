@@ -1,0 +1,69 @@
+{{- $functionNs := default .Release.Namespace .Values.functionNamespace }}
+{{- if .Values.operator.create }}
+{{- if .Values.operator.createCRD }}
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: functions.openfaas.com
+spec:
+  group: openfaas.com
+  version: v1
+  versions:
+    - name: v1
+      served: true
+      storage: true
+    - name: v1alpha2
+      served: true
+      storage: false
+  names:
+    plural: functions
+    singular: function
+    kind: Function
+    shortNames:
+    - fn
+  scope: Namespaced
+  validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          required:
+            - name
+            - image
+          properties:
+            name:
+              type: string
+              pattern: "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+            image:
+              type: string
+            annotations:
+              anyOf:
+                - type: string
+                - type: object
+            labels:
+              anyOf:
+                - type: string
+                - type: object
+            constraints:
+              type: array
+            secrets:
+              type: array
+            readOnlyRootFilesystem:
+              type: boolean
+            limits:
+              properties:
+                cpu:
+                  type: string
+                  pattern: "^[0-9]+(m)"
+                memory:
+                  type: string
+                  pattern: "^[0-9]+(Mi|Gi)"
+            requests:
+              properties:
+                cpu:
+                  type: string
+                  pattern: "^[0-9]+(m)"
+                memory:
+                  type: string
+                  pattern: "^[0-9]+(Mi|Gi)"
+{{- end }}
+{{- end }}

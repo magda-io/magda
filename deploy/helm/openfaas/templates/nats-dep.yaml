@@ -1,0 +1,61 @@
+{{- if and .Values.async (not .Values.nats.external.enabled) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ template "openfaas.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    component: nats
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: nats
+  namespace: {{ .Release.Namespace | quote }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nats
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+        prometheus.io.scrape: "false"
+      labels:
+        app: nats
+    spec:
+      containers:
+      - name:  nats
+        resources:
+          {{- .Values.nats.resources | toYaml | nindent 12 }}
+        image: {{ .Values.nats.image }}
+        imagePullPolicy: {{ .Values.openfaasImagePullPolicy }}
+        ports:
+        - containerPort: 4222
+          protocol: TCP
+        {{- if .Values.nats.enableMonitoring }}
+        - containerPort: 8222
+          protocol: TCP
+        {{- end }}
+        command: ["/nats-streaming-server"]
+        args:
+          - --store
+          - memory
+          - --cluster_id
+          - faas-cluster
+          {{- if .Values.nats.enableMonitoring }}
+          - -m
+          - "8222"
+          {{- end }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+{{- end }}

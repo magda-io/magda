@@ -1,0 +1,75 @@
+{{- $functionNs := default .Release.Namespace .Values.functionNamespace }}
+{{- if .Values.faasIdler.create }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faas-idler
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ template "openfaas.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    component: faas-idler
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.faasIdler.replicas }}
+  selector:
+    matchLabels:
+      app: faas-idler
+  template:
+    metadata:
+      annotations:
+        prometheus.io.scrape: "false"
+      labels:
+        app: faas-idler
+    spec:
+      containers:
+        - name: faas-idler
+          resources:
+            {{- .Values.faasIdler.resources | toYaml | nindent 12 }}
+          image: {{ .Values.faasIdler.image }}
+          imagePullPolicy: {{ .Values.openfaasImagePullPolicy }}
+          env:
+            - name: gateway_url
+              value: "http://gateway.{{ .Release.Namespace }}:8080/"
+            - name: prometheus_host
+              value: "prometheus.{{ .Release.Namespace }}"
+            - name: prometheus_port
+              value: "9090"
+            - name: inactivity_duration
+              value: {{ .Values.faasIdler.inactivityDuration }}
+            - name: reconcile_interval
+              value: {{ .Values.faasIdler.reconcileInterval }}
+{{- if .Values.faasIdler.writeDebug }}
+            - name: write_debug
+              value: {{ .Values.faasIdler.writeDebug }}
+{{- end }}
+          command:
+            - /home/app/faas-idler
+            - -dry-run={{ .Values.faasIdler.dryRun }}
+
+{{- if .Values.basic_auth }}
+          volumeMounts:
+            - name: auth
+              readOnly: true
+              mountPath: "/var/secrets/"
+      volumes:
+        - name: auth
+          secret:
+            secretName: basic-auth
+
+{{- end }}
+{{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- end }}
