@@ -1,6 +1,6 @@
 @import "variables";
 
-.end-preview-page {
+.end-preview-page-1 {
     background-color: $AU-color-preview;
 }
 
@@ -16,6 +16,10 @@
     margin-left: 300px;
     margin-right: auto;
     width: 50%;
+}
+
+.end-preview-page-2 {
+    background-color: #f1f1f1;
 }
 
 // .draft-image-icon {
