@@ -8,7 +8,7 @@ import AccountSignInRedirectPage from "Components/Account/AccountSignInRedirectP
 import DatasetsSearchPage from "Components/Dataset/DatasetsSearchPage";
 import DatasetsSearchPageDraftOnly from "Components/Dataset/DatasetsSearchPageDraftOnly";
 import DatasetsSearchPagePublishedOnly from "Components/Dataset/DatasetsSearchPagePublishedOnly";
-import DatasetPage from "Components/Dataset/DatasetPage";
+import RecordHandler from "Components/Dataset/RecordHandler";
 import DatasetSuggestPage from "Components/Dataset/DatasetSuggestPage";
 
 import ErrorPage from "Components/Error/ErrorPage";
@@ -228,7 +228,9 @@ const Routes = () => {
             />
             <Route
                 path="/dataset/:datasetId/distribution/:distributionId"
-                component={withHeader(DatasetPage, { includeSearchBox: true })}
+                component={withHeader(RecordHandler, {
+                    includeSearchBox: true
+                })}
             />
             {config.featureFlags.cataloguing && (
                 <Route path="/catalog" component={withHeader(CatalogRoutes)} />
@@ -246,7 +248,9 @@ const Routes = () => {
 
             <Route
                 path="/dataset/:datasetId"
-                component={withHeader(DatasetPage, { includeSearchBox: true })}
+                component={withHeader(RecordHandler, {
+                    includeSearchBox: true
+                })}
             />
             <Route
                 exact
