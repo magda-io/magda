@@ -135,6 +135,7 @@ helm repo update
 # update magda chart dependencies
 helm dep build deploy/helm/magda
 helm dep build deploy/helm/magda-core
+helm dep build deploy/helm/internal-charts/storage-api
 # deploy the magda chart from magda helm repo
 helm upgrade --install --timeout 9999s --wait -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
 ```
