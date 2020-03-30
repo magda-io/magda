@@ -1,0 +1,16 @@
+{{- if and .Values.enableTls (not .Values.useDefaultCertificate) }}
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: magda-cert
+spec:
+  secretName: magda-cert-tls
+  issuerRef:
+    name: letsencrypt
+    kind: ClusterIssuer
+  commonName: {{ index .Values.domains 0 | quote }}
+  dnsNames:
+  {{- range .Values.domains }}
+  - {{ . | quote }}
+  {{- end }}
+{{- end }}

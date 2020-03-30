@@ -38,8 +38,6 @@ export default function TemporalWrapper(props: Props) {
         undefined
     ];
 
-    console.log(props);
-
     return (
         <React.Fragment>
             <FacetHeader

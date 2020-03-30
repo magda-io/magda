@@ -51,6 +51,52 @@ export type ElementType =
     | HTMLSpanElement
     | ElementLikeType;
 
+/**
+ * Type for a custom validator. It accepts these parameters:
+ * - fieldValue: The current value of the input
+ * - state: the whole add dataset state data
+ * - validationItem: a ValidationItem, containing information like field label and json path, that might useful for generating a custom error message
+ *
+ * The custom validator may return an object the following fields
+ *    - useDefaultValidator: a boolean value to indicate whether the field value is valid (true) or not (false).
+ *    - `undefined`, indicating that the default `isEmpty` validator should be used to re-validate the field
+ *    - a string, indicating that validation has failed - the returned string should be used as an error message.
+ *
+ * If the custom validator doesn't return a string and the field value is invalid, a standard error message will be displayed:
+ *  "The [field name] is invalid."
+ *
+ * A custom validator should not produce any side effects
+ */
+
+/**
+ * @typedef CustomValidatorType Type for a custom validator function.
+ *
+ * The custom validator may return an object the following fields：
+ *    - useDefaultValidator: (Optional, boolean). Default to `false`.
+ *        If `false`, the custom validator's validation result will be used.
+ *        If `true`, the built-in validator `isEmpty` will be used.
+ *    - valid: (Optional, boolean) a boolean value to indicate whether the field value is valid (true) or not (false).
+ *    - validationMessage: (Optional, string) Custom error message. If this field doesn't exist, the standard error message ("The [field name] is invalid.") will be used.
+ *
+ * @param {*} fieldValue The current value of the input
+ * @param {State} state the whole add dataset state data
+ * @param {ValidationItem} validationItem  a ValidationItem, containing information like field label and json path, that might useful for generating a custom error message
+ * @returns {{
+ *     useDefaultValidator?: boolean;
+ *     valid?: boolean;
+ *     validationMessage?: string;
+ * }}
+ */
+export type CustomValidatorType = (
+    fieldValue: any,
+    state: State,
+    validationItem: ValidationItem
+) => {
+    valid?: boolean;
+    validationMessage?: string;
+    useDefaultValidator?: boolean;
+};
+
 export interface ValidationItem<T = ElementType> {
     /**
      * the json path will be used:
@@ -66,6 +112,11 @@ export interface ValidationItem<T = ElementType> {
      * Field label / name
      */
     label: string;
+
+    /**
+     * If customValidator exists, it will be used to validate the current input
+     */
+    customValidator?: CustomValidatorType;
 
     /**
      * ValidationManager will call this function to turn on the `Invalid` style of the input ctrl
@@ -128,6 +179,8 @@ function convertConfigFieldItem(field: string): string {
             return "$.informationSecurity.classification";
         case "informationSecurity.disseminationLimits":
             return "$.informationSecurity.disseminationLimits";
+        case "publishToDga":
+            return "$.datasetPublishing.publishAsOpenData.dga";
         default:
             throw new Error(`Unknown mandatory field config name: ${field}`);
     }
@@ -243,9 +296,7 @@ export const deregisterValidationItem = (
     }
 };
 
-function isEmptyValue(jsonPath: string) {
-    const stateData = getStateData();
-    const value = JsonPath.query(stateData, jsonPath)[0];
+function isEmptyValue(value: any) {
     if (typeof value === "undefined" || value === null) {
         return true;
     }
@@ -261,17 +312,47 @@ function getItemsFromJsonPath(jsonPath: string) {
 
 /**
  * Execute validation logic on a validation item
+ * If a customValidator exists for the field, it will be used,  otherwise, the default `isEmptyValue` validator will be used.
  *
  * @param {ValidationItem} item
- * @returns {boolean}
+ * @returns {(boolean | string)}
  */
-function validateItem(item: ValidationItem) {
-    if (isEmptyValue(item.jsonPath)) {
-        item.setError(`Error: \`${item.label}\` is a mandatory field.`);
-        return false;
+function validateItem(item: ValidationItem): boolean | string {
+    const jsonPath = item.jsonPath;
+    const stateData = getStateData();
+    const value = JsonPath.query(stateData, jsonPath)[0];
+
+    const defaultValidationAction = () => {
+        if (isEmptyValue(value)) {
+            item.setError(`Error: \`${item.label}\` is a mandatory field.`);
+            return false;
+        } else {
+            item.clearError();
+            return true;
+        }
+    };
+
+    if (typeof item.customValidator === "function") {
+        const result = item.customValidator(value, stateData, item);
+
+        if (result.useDefaultValidator === true) {
+            return defaultValidationAction();
+        } else if (result.valid === true) {
+            item.clearError();
+            return true;
+        } else if (result.valid === false && !result.validationMessage) {
+            item.setError(`Error: \`${item.label}\` is invalid.`);
+            return false;
+        } else if (result.valid === false && result.validationMessage) {
+            item.setError(result.validationMessage);
+            return false;
+        } else {
+            throw new Error(
+                `Invalid return value from customValidator for \`${jsonPath}\``
+            );
+        }
     } else {
-        item.clearError();
-        return true;
+        return defaultValidationAction();
     }
 }
 
@@ -405,7 +486,8 @@ interface ValidationHookStateType<T extends ElementType> {
 
 export const useValidation = <T extends ElementType = ElementType>(
     fieldJsonPath: string | undefined,
-    fieldLabel: string | undefined
+    fieldLabel: string | undefined,
+    customValidator?: CustomValidatorType
 ): [boolean, string, MutableRefObject<T | null>] => {
     const [state, setState] = useState<ValidationHookStateType<T>>({
         ref: useRef<T>(null),
@@ -425,6 +507,7 @@ export const useValidation = <T extends ElementType = ElementType>(
                     validationErrorMessage: errorMessage
                 });
             },
+            customValidator,
             clearError: () => {
                 setState({
                     ref: state.ref,
@@ -441,7 +524,7 @@ export const useValidation = <T extends ElementType = ElementType>(
                 deregisterValidationItem(validationItem);
             }
         };
-    }, [fieldJsonPath, fieldLabel]);
+    }, [fieldJsonPath, fieldLabel, customValidator]);
 
     return [state.isValidationError, state.validationErrorMessage, state.ref];
 };

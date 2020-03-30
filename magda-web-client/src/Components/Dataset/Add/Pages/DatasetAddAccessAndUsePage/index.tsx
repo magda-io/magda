@@ -17,6 +17,8 @@ import PurpleToolTip from "Components/Common/TooltipWrapper";
 import { config } from "config";
 
 import ValidationRequiredLabel from "../../ValidationRequiredLabel";
+import * as ValidationManager from "../../ValidationManager";
+import { CustomValidatorType } from "../../ValidationManager";
 
 import "./index.scss";
 
@@ -28,7 +30,77 @@ type Props = {
         aspectField: K
     ) => (field: string) => (newValue: any) => void;
     editState: <K extends keyof State>(field: K) => (newValue: any) => void;
+    editStateWithUpdater: (updater: (state: State) => void) => void;
     stateData: State;
+    // --- if use as edit page
+    isEditView: boolean;
+};
+
+const publishToDgaValidator: CustomValidatorType = (
+    value,
+    state,
+    validationItem
+) => {
+    if (value !== true) {
+        return {
+            valid: true
+        };
+    }
+    if (
+        !ValidationManager.shouldValidate(
+            "$.informationSecurity.classification"
+        )
+    ) {
+        return {
+            valid: true
+        };
+    }
+    if (
+        state.informationSecurity.classification &&
+        state.informationSecurity.classification !== "UNOFFICIAL"
+    ) {
+        return {
+            valid: false,
+            validationMessage:
+                "Validation Error: Only unofficial data can be published to data.gov.au. " +
+                'Please update the "Publish to data.gov.au" or "Security classification" section accordingly.'
+        };
+    }
+    return {
+        valid: true
+    };
+};
+
+const classificationValidator: CustomValidatorType = (
+    value,
+    state,
+    validationItem
+) => {
+    if (
+        !ValidationManager.shouldValidate(
+            "$.datasetPublishing.publishAsOpenData.dga"
+        )
+    ) {
+        // --- ask ValidationManager fall back to default validator (`isEmpty`)
+        return {
+            useDefaultValidator: true
+        };
+    }
+    const result = publishToDgaValidator(
+        state.datasetPublishing &&
+            state.datasetPublishing.publishAsOpenData &&
+            state.datasetPublishing.publishAsOpenData.dga,
+        state,
+        validationItem
+    );
+    if (result.valid === true) {
+        // --- ask ValidationManager fall back to default validator (`isEmpty`)
+        return {
+            useDefaultValidator: true
+        };
+    } else {
+        return result;
+    }
 };
 
 export default function DatasetAddAccessAndUsePage(props: Props) {
@@ -42,31 +114,124 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
 
     const editDatasetPublishing = props.edit("datasetPublishing");
     const editInformationSecurity = props.edit("informationSecurity");
+    const editPublishToDga = (shouldPublishToDga: string | undefined) => {
+        props.editStateWithUpdater(state => ({
+            ...state,
+            datasetPublishing: {
+                ...state.datasetPublishing,
+                publishAsOpenData: {
+                    ...(state.datasetPublishing.publishAsOpenData
+                        ? state.datasetPublishing.publishAsOpenData
+                        : {}),
+                    dga: shouldPublishToDga === "true" ? true : false
+                }
+            }
+        }));
+    };
+
+    const shouldPublishToDga: boolean = datasetPublishing.publishAsOpenData
+        ? !!datasetPublishing.publishAsOpenData.dga
+        : false;
 
     return (
         <div className="row dataset-access-and-use-page">
             <div className="col-sm-12">
                 <h2>Access and Use</h2>
-                <h3 className="with-underline">User access</h3>
+                <h3 className="with-underline">Sharing</h3>
+
+                {config.featureFlags.publishToDga ? (
+                    <div className="question-publish-to-dga">
+                        <h4 className="with-icon">
+                            <span>
+                                Do you want to publish this dataset to{" "}
+                                <a href="https://data.gov.au" target="__blank">
+                                    data.gov.au
+                                </a>{" "}
+                                as open data? (*)
+                            </span>
+                            <span className="tooltip-container">
+                                <PurpleToolTip
+                                    className="tooltip no-print"
+                                    launcher={() => (
+                                        <div className="tooltip-launcher-icon help-icon">
+                                            <img
+                                                src={helpIcon}
+                                                alt="Publish to data.gov.au, click for more information"
+                                            />
+                                        </div>
+                                    )}
+                                    innerElementClassName="inner"
+                                >
+                                    {() => (
+                                        <>
+                                            Publishing to data.gov.au will mean
+                                            the dataset will be available
+                                            publicly via the data.gov.au website
+                                            as open data. Please ensure your
+                                            dataset has the appropriate security
+                                            classification and license if
+                                            selecting Yes
+                                        </>
+                                    )}
+                                </PurpleToolTip>
+                            </span>
+                        </h4>
+                        <div className="input-area">
+                            <AlwaysEditor
+                                value={shouldPublishToDga ? "true" : "false"}
+                                onChange={value => {
+                                    editPublishToDga(value);
+                                    if (
+                                        ValidationManager.shouldValidate(
+                                            "$.informationSecurity.classification"
+                                        )
+                                    ) {
+                                        // --- trigger classifcation validtion as well
+                                        setTimeout(() => {
+                                            ValidationManager.onInputFocusOut(
+                                                "$.informationSecurity.classification"
+                                            );
+                                        }, 1);
+                                    }
+                                }}
+                                validationFieldPath="$.datasetPublishing.publishAsOpenData.dga"
+                                validationFieldLabel="Publish as Open Data (data.gov.au)"
+                                customValidator={publishToDgaValidator}
+                                editor={codelistRadioEditor(
+                                    "dataset-publishing-as-open-data",
+                                    {
+                                        true:
+                                            "Yes, publish this as open data to data.gov.au",
+                                        false:
+                                            "No, share it internally within my organisation only"
+                                    }
+                                )}
+                            />
+                        </div>
+                    </div>
+                ) : null}
+
                 <div className="question-who-can-see-dataset">
                     <h4 className="with-icon">
                         <span>
                             Who can see the dataset once it is published?
                         </span>
                     </h4>
-                    <ToolTip>
-                        We recommend you publish your data to everyone in your
-                        organisation to help prevent data silos.
-                    </ToolTip>
-                    <div>
-                        <AlwaysEditor
-                            value={datasetPublishing.level}
-                            onChange={editDatasetPublishing("level")}
-                            editor={codelistRadioEditor(
-                                "dataset-publishing-level",
-                                codelists.publishingLevel
-                            )}
-                        />
+                    <div className="input-area">
+                        <ToolTip>
+                            We recommend you publish your data to everyone in
+                            your organisation to help prevent data silos.
+                        </ToolTip>
+                        <div>
+                            <AlwaysEditor
+                                value={datasetPublishing.level}
+                                onChange={editDatasetPublishing("level")}
+                                editor={codelistRadioEditor(
+                                    "dataset-publishing-level",
+                                    codelists.publishingLevel
+                                )}
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -236,6 +401,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                             <ReactSelect
                                 validationFieldPath="$.informationSecurity.classification"
                                 validationFieldLabel="Dataset Sensitivity or Security Classification"
+                                customValidator={classificationValidator}
                                 isSearchable={false}
                                 options={
                                     Object.keys(codelists.classification).map(
@@ -259,11 +425,23 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                           }
                                         : null
                                 }
-                                onChange={(item: any) =>
+                                onChange={(item: any) => {
                                     editInformationSecurity("classification")(
                                         item.value
-                                    )
-                                }
+                                    );
+                                    if (
+                                        ValidationManager.shouldValidate(
+                                            "$.datasetPublishing.publishAsOpenData.dga"
+                                        )
+                                    ) {
+                                        // --- trigger publish to dga validtion as well
+                                        setTimeout(() => {
+                                            ValidationManager.onInputFocusOut(
+                                                "$.datasetPublishing.publishAsOpenData.dga"
+                                            );
+                                        }, 1);
+                                    }
+                                }}
                             />
                         </div>
                     </div>

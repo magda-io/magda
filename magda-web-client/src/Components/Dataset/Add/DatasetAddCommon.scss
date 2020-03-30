@@ -103,4 +103,14 @@
             margin-bottom: 10px;
         }
     }
+
+    .au-control-input__text:before,
+    .au-control-input__text:after {
+        border: 9px solid transparent;
+    }
+
+    .au-control-input__input[type="radio"]:focus
+        + .au-control-input__text:before {
+        box-shadow: none;
+    }
 }

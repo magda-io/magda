@@ -1,0 +1,124 @@
+.dataset-add-file-page {
+    .top-area-row {
+        padding-bottom: 61px;
+        position: relative;
+    }
+    .top-text-area {
+        h1 {
+            font-size: 38px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 0.79;
+            letter-spacing: normal;
+            color: #30384d;
+            margin-top: 100px;
+            margin-bottom: 50px;
+            padding-bottom: 22px;
+            border-bottom: solid 1px #cccaca;
+        }
+        p {
+            max-width: none;
+            font-size: 21px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.62;
+            letter-spacing: normal;
+            color: #484848;
+        }
+        a {
+            cursor: not-allowed;
+        }
+    }
+    .add-files-heading {
+        h3 {
+            margin-top: 0px;
+            font-size: 24px;
+            font-weight: 500;
+            font-stretch: normal;
+            font-style: normal;
+            line-height: 0.88;
+            letter-spacing: -0.3px;
+            color: #484848;
+        }
+    }
+
+    .tip-area {
+        bottom: 20px;
+        margin-top: 20px;
+        .tooltip-root {
+            max-width: none;
+            font-size: 16px;
+            font-weight: 300;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.57;
+            letter-spacing: normal;
+            color: #636363;
+            img {
+                margin-right: 7px;
+            }
+        }
+    }
+    .files-area {
+        margin-bottom: 32px;
+    }
+
+    .more-files-to-add-text {
+        margin-top: 54px;
+        font-size: 24px;
+        font-weight: 500;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: 0.88;
+        letter-spacing: normal;
+        color: #484848;
+    }
+    .dataset-add-files-dropZone {
+        width: 100%;
+        height: 179px;
+        margin: 0 auto 0 auto;
+        cursor: pointer;
+        background-image: url("../../../../../assets/upload-section.svg");
+        background-repeat: no-repeat;
+        .filedrop-zone-button.au-btn {
+            background: none;
+            border: none;
+            width: 100%;
+            height: 100%;
+        }
+    }
+
+    .dataset-add-files-dropTarget {
+        display: flex;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .dataset-add-files-fileListItem {
+        list-style: none;
+        margin-bottom: 65px;
+    }
+
+    .dataset-add-files-fileListItem.last-row {
+        margin-bottom: 0px;
+    }
+}
+
+.dataset-add-file-page.is-edit-view {
+    .add-files-heading {
+        h3 {
+            margin-top: 60px;
+            margin-bottom: 30px;
+            font-size: 38px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.61;
+            letter-spacing: normal;
+            color: #484848;
+        }
+    }
+}

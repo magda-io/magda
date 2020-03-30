@@ -58,16 +58,10 @@ You can also run the same command in an individual component's directory (i.e. `
 
 ### Set up Helm
 
-Helm is the package manager for Kubernetes - we use it to make it so that you can install all the various services you need for MAGDA at once. To install, follow the instructions at [https://github.com/helm/helm#install](https://github.com/helm/helm#install).
+Helm is the package manager for Kubernetes - we use it to make it so that you can install all the various services you need for MAGDA at once.
+To install, follow the instructions at [https://helm.sh/docs/intro/install/](https://helm.sh/docs/intro/install/).
 
-In a nutshell, once you have helm installed, this is how you initialise helm and Tiller.
-
-```bash
-kubectl apply -f deploy/kubernetes/rbac-config.yaml
-helm init --service-account tiller
-```
-
-Add Magda Helm Chart Repo:
+Once you have helm3 installed, add Magda Helm Chart Repo:
 
 ```bash
 helm repo add magda-io https://charts.magda.io
@@ -80,8 +74,8 @@ This gives you a local docker registry that you'll upload your built images to s
 ```bash
 helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
 helm repo update
-helm install --name docker-registry -f deploy/helm/docker-registry.yml stable/docker-registry
-helm install --name kube-registry-proxy -f deploy/helm/kube-registry-proxy.yml incubator/kube-registry-proxy
+helm install docker-registry -f deploy/helm/docker-registry.yml stable/docker-registry
+helm install kube-registry-proxy -f deploy/helm/kube-registry-proxy.yml magda-io/kube-registry-proxy
 ```
 
 ### Build local docker images
@@ -92,6 +86,29 @@ Now you can build the docker containers locally - this might take quite a while 
 eval $(minikube docker-env) # (If you haven't run this already)
 lerna run docker-build-local --stream --concurrency=4 --include-filtered-dependencies
 ```
+
+### Build Connector and Minion local docker images
+
+As of v0.0.57, Magda official connectors & minions live outside the core repository. You can find connector & minions repositories at [here](https://github.com/magda-io?q=connector+OR++minion).
+
+You don't have to build connector & minions docker images as the default config value file [minikube-dev.yml](https://github.com/magda-io/magda/blob/master/deploy/helm/minikube-dev.yml#L20) specifically set to use official production-ready docker image from docker hub repository.
+
+If you do want to use local build connector & minion docker images for testing & development purpose, you need to:
+
+1. Clone the relevant connector or minion repository
+2. Build & Push docker image to a local docker registry.
+
+Run the following commands from the cloned folder:
+
+```bash
+yarn install
+yarn run build
+eval $(minikube docker-env)
+yarn run docker-build-local
+```
+
+3. Modify `minikube-dev.yml`, remove the `global.connectors.image` & `global.minions.image` section.
+4. Deploy Magda with helm using the instructions provided by the [Install Magda on your minikube/docker-desktop cluster section](#install-magda-on-your-minikubedocker-desktop-cluster) below.
 
 ### Create the necessary secrets with the secret creation script
 
@@ -117,8 +134,9 @@ Note: If using docker desktop for Windows older than version 19, change the valu
 helm repo update
 # update magda chart dependencies
 helm dep build deploy/helm/magda
+helm dep build deploy/helm/magda-core
 # deploy the magda chart from magda helm repo
-helm upgrade --install --timeout 9999 --wait -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
+helm upgrade --install --timeout 9999s --wait -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
 ```
 
 This can take a while as it does a lot - downloading all the docker images, starting them up and running database migration jobs. You can see what's happening by opening another tab and running `kubectl get pods -w`.
@@ -131,9 +149,10 @@ If you're using Docker Desktop on Windows, add `-f deploy/helm/docker-desktop-wi
 # update magda helm repo
 helm repo update
 # update magda chart dependencies
-helm dep build deploy/helm/magda
+helm dep up deploy/helm/magda
+helm dep up deploy/helm/magda-core
 # deploy the magda chart from magda helm repo
-helm upgrade --install --timeout 9999 --wait -f deploy/helm/docker-desktop-windows.yml -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
+helm upgrade --install --timeout 9999s --wait -f deploy/helm/docker-desktop-windows.yml -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
 ```
 
 If you want to deploy the packed & production ready helm chart in our helm repo:
@@ -142,7 +161,7 @@ If you want to deploy the packed & production ready helm chart in our helm repo:
 # update magda helm repo
 helm repo update
 # deploy the local magda chart
-helm upgrade --install --timeout 9999 --wait -f deploy/helm/minikube-dev.yml magda magda-io/magda
+helm upgrade --install --timeout 9999s --wait -f deploy/helm/minikube-dev.yml magda magda-io/magda
 ```
 
 **Please Note:**
@@ -195,7 +214,7 @@ Now you can connect to the database in minikube as if it were running locally, w
 
 ### Running a microservice locally but still connecting through the gateway
 
-You might find yourself developing an API locally that depends on authentication, which is easiest done by just logging in through the web interface and connecting through the gateway. You can actually make this work by telling the gateway to proxy your service to `192.168.99.1` in `deploy/helm/magda-core/charts/gateway/templates/configmap.yaml`. For instance, if I wanted to run the search api locally, I'd change `configmap.yaml` like so:
+You might find yourself developing an API locally that depends on authentication, which is easiest done by just logging in through the web interface and connecting through the gateway. You can actually make this work by telling the gateway to proxy your service to `192.168.99.1` in `deploy/helm/internal-charts/gateway/templates/configmap.yaml`. For instance, if I wanted to run the search api locally, I'd change `configmap.yaml` like so:
 
 ```yaml
 data:

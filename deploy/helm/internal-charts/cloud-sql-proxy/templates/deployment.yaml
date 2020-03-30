@@ -1,0 +1,45 @@
+{{- if .Values.global.useCloudSql }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloud-sql-proxy
+spec:
+  replicas: {{ .Values.replicas | default 1 }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
+  selector:
+    matchLabels:
+      service: cloud-sql-proxy
+  template:
+    metadata:
+      labels:
+        service: cloud-sql-proxy
+    spec:
+{{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1beta1") .Values.global.enablePriorityClass }}
+      priorityClassName: magda-9
+{{- end }}
+      containers:
+      - name: cloud-sql-proxy
+        image: gcr.io/cloudsql-docker/gce-proxy:1.11
+        command: ["/cloud_sql_proxy",
+                  "-instances={{ .Values.instanceConnectionName }}=tcp:0.0.0.0:5432",
+                  "-credential_file=/secrets/cloudsql/credentials.json"]
+{{- if .Values.global.enableLivenessProbes }}
+        livenessProbe:
+          exec:
+            command: ["nc", "-z", "127.0.0.1", "5432"]
+{{- end }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        volumeMounts:
+        - name: cloudsql-instance-credentials
+          mountPath: /secrets/cloudsql
+          readOnly: true
+      volumes:
+      - name: cloudsql-instance-credentials
+        secret:
+          secretName: cloudsql-instance-credentials
+      - name: cloudsql
+        emptyDir:
+{{- end }}

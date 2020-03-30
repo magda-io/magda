@@ -32,7 +32,13 @@ class WithDefaultPolicyRecordsServiceAuthSpec
   describe("with default policy set") {
     describe("GET") {
       describe("for a single record") {
+        describe("with a policy set on the record") {
+          commonSingleRecordTests(Some("default.policy"), true)
+        }
+
         describe("with no policy set on the record") {
+          commonSingleRecordTests(Some("default.policy"), false)
+
           it(
             "allows access to an aspect-less record if default policy resolves to unconditionally allow access"
           ) { param =>
@@ -162,7 +168,92 @@ class WithDefaultPolicyRecordsServiceAuthSpec
           }
         }
 
-        commonTests()
+        describe("with links") {
+          describe("with a policy set on the outer record") {
+            doLinkTests(
+              None,
+              Some("stringPolicy.example"),
+              "default.policy.read",
+              "stringPolicy.example.read"
+            )
+          }
+
+          describe("with a policy set on the inner record") {
+            doLinkTests(
+              Some("stringPolicy.example"),
+              None,
+              "stringPolicy.example.read",
+              "default.policy.read"
+            )
+          }
+        }
+      }
+
+      describe("for multiple records") {
+        it(
+          "falls back to the default policy when records don't have a policy set"
+        ) { param =>
+          addAspectDef(param, "stringExample")
+          addAspectDef(param, "numericExample")
+
+          // Add records with an authnReadPolicyId set to string policy
+          addStringExampleRecords(Some("stringExample.policy"))(param)
+
+          // Add records with no authnReadPolicyId (these should default back to the default policy)
+          addRecord(
+            param,
+            Record(
+              "allowDefaultExample",
+              "allowDefaultExample",
+              Map(
+                "numericExample" -> JsObject(
+                  "number" ->
+                    JsNumber(-1)
+                )
+              ),
+              authnReadPolicyId = None
+            )
+          )
+          addRecord(
+            param,
+            Record(
+              "denyDefaultExample",
+              "denyDefaultExample",
+              Map(
+                "numericExample" -> JsObject(
+                  "number" ->
+                    JsNumber(2)
+                )
+              ),
+              authnReadPolicyId = None
+            )
+          )
+
+          expectOpaQueryForPolicy(
+            param,
+            "stringExample.policy.read",
+            policyResponseForStringExampleAspect
+          )
+
+          // Respond with the numeric policy for the default
+          expectOpaQueryForPolicy(
+            param,
+            "default.policy.read",
+            policyResponseForNumericExampleAspect
+          )
+
+          Get(s"/v0/records") ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val resPage = responseAs[RecordsPage[Record]]
+
+            resPage.records.map(_.id).toSet shouldEqual Set(
+              "allowStringExample",
+              "allowDefaultExample"
+            )
+          }
+        }
       }
     }
   }

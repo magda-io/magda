@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  strategy:
+    rollingUpdate:
+      maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
+  replicas: 1
+  selector:
+    matchLabels:
+      service: web
+  template:
+    metadata:
+      labels:
+        service: web
+    spec:
+{{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1beta1") .Values.global.enablePriorityClass }}
+      priorityClassName: magda-8
+{{- end }}
+      containers:
+      - name: web
+        command: [
+            "node", "/usr/src/app/component/dist/index.js",
+            "--config", "/etc/config/config.json",
+            "--listenPort", "80",
+            "--baseExternalUrl", {{ .Values.global.externalUrl | quote }},
+            "--useLocalStyleSheet", {{ .Values.global.useLocalStyleSheet | default .Values.useLocalStyleSheet | quote }},
+            "--registryApiBaseUrlInternal", "http://registry-api/v0",
+{{- if .Values.adminApiBaseUrl }}
+            "--adminApiBaseUrl", {{ .Values.adminApiBaseUrl | quote }},
+{{- end }}
+            {{- range .Values.gapiIds }}
+            "--gapiIds", {{ . | quote }},
+            {{- end }}
+        ]
+        readinessProbe:
+          httpGet:
+            path: "/"
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
+{{- if .Values.global.enableLivenessProbes }}
+        livenessProbe:
+          httpGet:
+            path: "/"
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
+{{- end }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        env:
+        - name: NODE_ENV
+          value: production
+        image: {{ template "dockerimage" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        volumeMounts:
+        - mountPath: "/etc/config"
+          name: config
+      volumes:
+      - name: config
+        configMap:
+          name: web-app-config
+          items:
+          - key: web.json
+            path: config.json

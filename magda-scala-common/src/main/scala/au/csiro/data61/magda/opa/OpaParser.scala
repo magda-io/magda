@@ -11,6 +11,7 @@ import spray.json._
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import au.csiro.data61.magda.client.AuthApiClient
+import java.util.regex.Pattern
 
 object OpaTypes {
   case class OpaQueryPair(policyId: String, queries: List[OpaQuery])
@@ -93,17 +94,17 @@ object RegoTerm {
   }
 }
 
-object OpaConsts {
-  val ANY_IN_ARRAY: String = "[_]"
-}
-
 object OpaParser {
+  val anyInArrayPattern = "(\\$\\d+)".r
 
-  def parseOpaResponse(json: JsValue): List[List[OpaQuery]] = {
+  def parseOpaResponse(json: JsValue, policy: String): List[List[OpaQuery]] = {
     val result = json.asJsObject.fields
       .get("result") match {
       case Some(aResult) => aResult
-      case None          => throw new Exception("Got no result for opa query")
+      case None =>
+        throw new Exception(
+          s"Got no result for opa query '$policy', instead got ${json}"
+        )
     }
 
     val rulesOpt: List[List[OpaQuery]] = result.asJsObject.fields
@@ -236,7 +237,8 @@ object OpaParser {
 
   private def regoRefPathToOpaRefPath(path: List[RegoTerm]): List[OpaRef] = {
     path.flatMap {
-      case RegoTermVar("input") => None
+      case RegoTermVar("input")              => None
+      case RegoTermVar(anyInArrayPattern(_)) => Some(OpaRefAnyInArray)
       case pathSegment: RegoTermString =>
         Some(OpaRefObjectKey(pathSegment.value))
       case e =>
@@ -244,7 +246,6 @@ object OpaParser {
     }
   }
 
-  private val anyInArrayPattern = "\\$.*".r
   private def parseRule(terms: JsValue): List[RegoTerm] = {
     // The terms may look like
     //

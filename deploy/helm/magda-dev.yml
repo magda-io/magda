@@ -114,6 +114,7 @@ magda-core:
     showNotificationBanner: false
     featureFlags:
       cataloguing: true
+      publishToDga: true
     vocabularyApiEndpoints:
       - "https://vocabs.ands.org.au/repository/api/lda/abares/australian-land-use-and-management-classification/version-8/concept.json"
       - "https://vocabs.ands.org.au/repository/api/lda/neii/australian-landscape-water-balance/version-1/concept.json"
@@ -123,6 +124,13 @@ magda-core:
     alwaysSendToDefaultRecipient: true
     smtpHostname: "smtp.mailgun.org"
     smtpPort: 2525
+
+  preview-map:
+    image:
+      repository: docker.io/data61
+      tag: 0.0.57-0
+      pullPolicy: IfNotPresent
+      imagePullSecret: false
 
 minion-broken-link:
   domainWaitTimeConfig:

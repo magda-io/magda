@@ -25,8 +25,25 @@
             margin-bottom: 76px;
         }
 
+        .question-publish-to-dga {
+            margin-bottom: 83px;
+            .tooltip-container {
+                position: relative;
+            }
+            .tooltiptext {
+                width: 300px;
+                left: -80px;
+            }
+            .input-area {
+                padding-left: 10px;
+            }
+        }
+
         .question-who-can-see-dataset {
             margin-bottom: 54px;
+            .input-area {
+                padding-left: 10px;
+            }
         }
 
         .question-access-notes textarea {

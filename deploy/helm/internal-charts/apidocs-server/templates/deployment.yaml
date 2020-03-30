@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apidocs-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: apidocs-server
+  template:
+    metadata:
+      labels:
+        service: apidocs-server
+    spec:
+      containers:
+      - name: apidocs-server
+        readinessProbe:
+          httpGet:
+            path: "/"
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
+{{- if .Values.global.enableLivenessProbes }}
+        livenessProbe:
+          httpGet:
+            path: "/"
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
+{{- end }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        image: {{ template "dockerimage" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}

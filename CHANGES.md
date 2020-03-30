@@ -11,6 +11,11 @@ General:
 -   Moved out [connectors](https://github.com/magda-io?utf8=%E2%9C%93&q=magda+connector) & [minions](https://github.com/magda-io?utf8=%E2%9C%93&q=magda-minion) from main magda repostory
 -   Broke helm chart to `magda-core` (core magda components excluding `connectors` & `minions`) & `magda` (full magda chart) and adjusted CI pipeline accordingly
 -   Release [npm packages](https://www.npmjs.com/search?q=%40magda) for building `connectors` & `minions` without depending on main repo
+-   Upgrade charts to use with Helm 3, Kubernetes 1.17 and Minikube 1.7.2
+-   Make recompiling and updating create secrets scripts an action in the CI
+-   Move [magda-preview-map](https://github.com/magda-io/magda-preview-map) out of the core repo
+-   Upgraded everything cert-manager related to work with v0.13
+-   Update build & run document to provide more information regarding running local build connector & minion docker images
 
 UI:
 
@@ -28,6 +33,9 @@ UI:
 -   Added UI for "Link to dataset already hosted online" box
 -   Added UI for "Link to an API or web service" box
 -   Added UI for storing files
+-   Added UI for "Publish as Open Data to data.gov.au"
+-   Refactor view dataset page & remove the edit function from the page
+-   Clarify tooltip text
 
 Storage:
 
@@ -37,6 +45,7 @@ Storage:
 -   Add apidocs
 -   Add endpoint to create a bucket
 -   Restrict file upload to admins only
+-   Add authorization to GET endpoint
 -   Support multipart upload
 -   Fixed: minio chart will not be deployed if storage-api is not turned on
 
@@ -50,6 +59,8 @@ Authorization:
 -   Added ability to set per-record authorization policies in the registry (for getting a single record)
 -   Added ability to set per-record authorization policies in the registry (for getting multiple records)
 -   Added ability to use OPA policies that use data types other than strings in the registry
+-   Added authorization inside links with dereferencing on or off, for the `records/<id>` endpoint
+-   Added authorization inside links with dereferencing on or off, for the `records` endpoint
 
 Others:
 
@@ -997,7 +1008,7 @@ Others:
 -   Formatted existing typescript source code using `prettier`
 -   Updated `building-and-running.md`
 -   Added preview map support for geojson data type
--   Merged latest changes (commits on or before 1st Feb 2018) from TerrisMap to `magda-preview-map` module
+-   Merged latest changes (commits on or before 1st Feb 2018) from TerriaMap to `magda-preview-map` module
 -   Map previewer will zoom to dataset (except KML data)
 -   Removed `year` facet from search results, replaced it with a temporal field with earliest and latest dates in search results.
 -   Added Google Analytics Tag Manager Code / VWO code to `<head>`

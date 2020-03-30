@@ -67,6 +67,9 @@
     "xlsx": "^0.14.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.8.7",
+    "@babel/plugin-proposal-optional-chaining": "^7.8.3",
+    "@babel/runtime": "^7.8.7",
     "@craco/craco": "^5.0.2",
     "@magda/registry-aspects": "^0.0.57-0",
     "@magda/scripts": "^0.0.57-0",
@@ -84,7 +87,8 @@
     "@types/react-select": "^3.0.0",
     "@types/rrule": "^2.2.9",
     "@types/smoothscroll-polyfill": "^0.3.1",
-    "babel-core": "^6.26.0",
+    "babel-eslint": "9.0.0",
+    "babel-loader": "8.0.5",
     "browser-detect": "^0.2.22",
     "d3-collection": "^1.0.4",
     "deep-freeze": "0.0.1",
@@ -93,6 +97,8 @@
     "echarts-for-react": "^2.0.14",
     "email-validator": "^2.0.3",
     "eslint": "^5.14.1",
+    "eslint-plugin-flowtype": "2.50.1",
+    "eslint-plugin-import": "2.14.0",
     "expect": "^22.4.0",
     "fast-xml-parser": "^2.6.0",
     "fetch-mock": "^5.8.1",
@@ -137,6 +143,7 @@
     "traverse": "^0.6.6",
     "typescript": "^3.7.2",
     "uuid": "^3.0.1",
+    "webpack-filter-warnings-plugin": "^1.2.1",
     "weighted-mean": "^1.0.2",
     "yaml-front-matter": "^4.0.0"
   },

@@ -51,7 +51,7 @@ users in different organization units. See the comment in the sql file for detai
 ### Start opa server
 
 ```
-cd deploy/helm/magda-core/charts/opa
+cd deploy/helm/internal-charts/opa
 
 docker-compose up
 ```

@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import {
     Distribution,
     DistributionState,
-    DistributionSource
+    DistributionSource,
+    createId
 } from "Components/Dataset/Add/DatasetAddCommon";
 import "./AddDatasetLinkSection.scss";
 
 import isUrl from "is-url";
-import uuid from "uuid";
 import DatasetLinkItem from "./DatasetLinkItem";
 
 type Props = {
@@ -35,7 +35,7 @@ const AddDatasetLinkSection = (props: Props) => {
             setValidationErrorMessage("");
 
             props.addDistribution({
-                id: uuid.v4(),
+                id: createId("dist"),
                 downloadURL: url,
                 creationSource: type,
                 title: url,

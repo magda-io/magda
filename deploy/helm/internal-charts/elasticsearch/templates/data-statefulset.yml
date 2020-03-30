@@ -1,0 +1,139 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: es-data
+  labels:
+    component: elasticsearch
+    role: data
+spec:
+  serviceName: "es-data"
+  replicas: {{- if .Values.production }} 2 {{- else }} 1 {{- end }}
+  selector:
+    matchLabels:
+      component: elasticsearch
+      role: data
+  template:
+    metadata:
+      labels:
+        component: elasticsearch
+        role: data
+    spec:
+{{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1beta1") .Values.global.enablePriorityClass }}
+      priorityClassName: magda-9
+{{- end }}
+      terminationGracePeriodSeconds: 10
+      affinity:
+{{- if .Values.data.affinity }}
+{{ toYaml .Values.data.affinity | indent 8 }}
+{{- end }}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 50
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: component
+                  operator: In
+                  values:
+                  - elasticsearch
+                - key: role
+                  operator: In
+                  values:
+                  - data
+              topologyKey: kubernetes.io/hostname
+      tolerations:
+      - key: "magda.reservedFor"
+        operator: "Equal"
+        value: "statefulsets"
+        effect: "NoSchedule"
+      containers:
+      - name: es-data
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+              - IPC_LOCK
+        image: {{ template "dockerimage" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        readinessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: http
+          initialDelaySeconds: 120
+          timeoutSeconds: 5
+{{- if .Values.global.enableLivenessProbes }}
+        livenessProbe:
+          tcpSocket:
+            port: transport
+          initialDelaySeconds: 300
+          periodSeconds: 60
+{{- end }}
+        resources:
+{{ toYaml .Values.data.resources | indent 10 }}
+        env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: "CLUSTER_NAME"
+          value: "myesdb"
+        - name: NODE_DATA
+          value: "true"
+        - name: NODE_MASTER
+          value: {{ not .Values.production | quote }}
+        - name: HTTP_ENABLE
+          value: {{ not .Values.production | quote }}
+        - name: NODE_INGEST
+          value: {{ not .Values.production | quote }}
+        - name: ES_JAVA_OPTS
+          value: "-Xms{{ .Values.data.heapSize }} -Xmx{{ .Values.data.heapSize }}"
+        - name: ES_PLUGINS_INSTALL
+          value: {{ .Values.data.pluginsInstall | quote }}
+        - name: NETWORK_HOST
+          value: "0.0.0.0"
+        - name: DISCOVERY_SERVICE
+          value: elasticsearch-discovery
+{{- if .Values.backup.googleApplicationCreds }}
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: "/var/{{ .Values.backup.googleApplicationCreds.secretName }}/{{ .Values.backup.googleApplicationCreds.fileName }}"
+{{- end }}
+{{- if not .Values.production }}
+        - name: REPO
+          value: /snapshots
+{{- end }}
+        ports:
+        - containerPort: 9200
+          name: http
+          protocol: TCP
+        - containerPort: 9300
+          name: transport
+          protocol: TCP
+        volumeMounts:
+        - name: storage
+          mountPath: /data
+{{- if .Values.backup.googleApplicationCreds }}
+        - name: google-account-credentials
+          mountPath: "/var/{{ .Values.backup.googleApplicationCreds.secretName }}"
+          readOnly: true
+{{- end }}
+{{- if .Values.backup.googleApplicationCreds }}
+      volumes:
+        - name: google-account-credentials
+          secret:
+            secretName: {{ .Values.backup.googleApplicationCreds.secretName }}
+{{- end }}
+  volumeClaimTemplates:
+  - metadata:
+      name: storage
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+    {{- if .Values.data.storageClass }}
+      storageClassName: "{{ .Values.data.storageClass }}"
+    {{- end }}
+      resources:
+        requests:
+          storage: "{{ .Values.data.storage }}"

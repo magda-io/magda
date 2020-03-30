@@ -1,6 +1,5 @@
 package au.csiro.data61.magda.registry
 
-import au.csiro.data61.magda.opa.OpaConsts.ANY_IN_ARRAY
 import au.csiro.data61.magda.opa.OpaTypes.{
   OpaOp,
   OpaQuery,
@@ -27,20 +26,19 @@ object SqlHelper {
     * @return a single SQL clause
     */
   def getOpaConditions(
-      opaQueries: List[(String, List[List[OpaQuery]])],
+      opaQueries: Option[List[(String, List[List[OpaQuery]])]],
       operationType: AuthOperations.OperationType,
       defaultPolicyId: Option[String]
   ): SQLSyntax = opaQueries match {
-    case Nil => SQL_TRUE
-    case _ =>
+    case None => SQL_TRUE
+    case Some(opaQueries) =>
       val queries = opaQueries.flatMap {
         case (policyId, Nil) =>
           None
         case (policyId, policyQueries) =>
           val basePolicyIdClause = sqls"Records.authnReadPolicyId = ${policyId}"
-          // If this policy is the default policy, we need to also apply it to records with a null value in the policy column
-          // println(defaultPolicyId + "/" + policyId)
 
+          // If this policy is the default policy, we need to also apply it to records with a null value in the policy column
           val policyIdClauseWithDefault = defaultPolicyId match {
             case Some(innerDefaultPolicyId)
                 if innerDefaultPolicyId == policyId =>
@@ -117,6 +115,15 @@ object SqlHelper {
              aspectid = $aspectId AND (data #>> string_to_array(${path
           .mkString(",")}, ','))::${value.postgresType} $sqlComparator ${value.value}
         """
+      case AspectQueryAnyInArray(
+          aspectId,
+          path,
+          value
+          ) =>
+        sqls"""
+             aspectid = $aspectId AND jsonb_exists((data #>> string_to_array(${path
+          .mkString(",")}, ','))::JSONB, ${value.value})
+        """
       case e => throw new Exception(s"Could not handle query $e")
     }
   }
@@ -166,8 +173,10 @@ object SqlHelper {
     case Nil                       => List(SQL_TRUE)
     case List(OpaQueryAllMatched)  => List(SQL_TRUE)
     case List(OpaQueryNoneMatched) => List(SQL_FALSE)
+
     case _ =>
       val opaAspectQueries: List[AspectQuery] = opaQueries.map({
+        // Query that's testing for the existence of a property, rather than its value
         case OpaQueryExists(
             OpaRefObjectKey("object")
               :: OpaRefObjectKey("registry")
@@ -180,6 +189,29 @@ object SqlHelper {
             case e =>
               throw new Exception("Could not understand " + e)
           })
+
+        // Query that's testing for any value in an array matching a value
+        case OpaQueryMatchValue(
+            OpaRefObjectKey("object")
+              :: OpaRefObjectKey("registry")
+              :: OpaRefObjectKey("record")
+              :: OpaRefObjectKey(accessAspectId)
+              :: restOfKeys,
+            Eq,
+            aValue
+            ) if (restOfKeys.last) == OpaRefAnyInArray =>
+          AspectQueryAnyInArray(
+            aspectId = accessAspectId,
+            path = restOfKeys.flatMap {
+              case OpaRefObjectKey(key) => Some(key)
+              case OpaRefAnyInArray     => None
+              case e =>
+                throw new Exception("Could not understand " + e)
+            },
+            value = opaValueToAspectQueryValue(aValue)
+          )
+
+        // Simple, a = b style match
         case OpaQueryMatchValue(
             OpaRefObjectKey("object")
               :: OpaRefObjectKey("registry")
@@ -196,16 +228,20 @@ object SqlHelper {
               case e =>
                 throw new Exception("Could not understand " + e)
             },
-            value = aValue match {
-              case OpaValueString(string)   => AspectQueryString(string)
-              case OpaValueBoolean(boolean) => AspectQueryBoolean(boolean)
-              case OpaValueNumber(bigDec)   => AspectQueryBigDecimal(bigDec)
-            },
+            value = opaValueToAspectQueryValue(aValue),
             sqlComparator = convertToSql(operation)
           )
         case e => throw new Exception(s"Could not understand $e")
       })
 
       aspectQueriesToSql(opaAspectQueries)
+  }
+
+  private def opaValueToAspectQueryValue(value: OpaValue) = {
+    value match {
+      case OpaValueString(string)   => AspectQueryString(string)
+      case OpaValueBoolean(boolean) => AspectQueryBoolean(boolean)
+      case OpaValueNumber(bigDec)   => AspectQueryBigDecimal(bigDec)
+    }
   }
 }

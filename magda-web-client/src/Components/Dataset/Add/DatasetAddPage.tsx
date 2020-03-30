@@ -134,7 +134,7 @@ class AddDataset extends React.Component<any, any> {
                                     heading="Have a single dataset comprised of multiple files or services?"
                                     icon={iconUpload}
                                     blurb="Add your dataset to pre-populate metadata using the Magda Publishing Tool"
-                                    href="/dataset/add/files"
+                                    href="/dataset/add/metadata"
                                 />
                             </div>
                             <div className="row choice-row">

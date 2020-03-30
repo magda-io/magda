@@ -209,3 +209,10 @@
     background-color: $AU-colordark-background;
     color: $AU-colordark-foreground-action;
 }
+
+.code-list-radio-editor.invalid {
+    .code-list-radio-editor-input-container {
+        border-radius: 5px;
+        border: 1px solid red;
+    }
+}

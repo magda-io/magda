@@ -228,7 +228,7 @@ export default function createApiRouter(
     function getDataset(datasetId: string): Promise<Record> {
         return options.registry
             .getRecord(
-                encodeURIComponent(datasetId),
+                datasetId,
                 ["dcat-dataset-strings"],
                 ["dataset-publisher"],
                 true
