@@ -1,4 +1,7 @@
 {{- if .Values.ingressOperator.create }}
+# See values.yaml for how $shouldInstallCRD's value is determined
+{{- $shouldInstallCRD := (ne (.Values.ingressOperator.createCRD | typeOf) "<nil>") | ternary .Values.ingressOperator.createCRD .Release.IsInstall }}
+{{- if $shouldInstallCRD }}
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
