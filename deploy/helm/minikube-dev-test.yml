@@ -95,6 +95,7 @@ tags:
   registry-db: true
   tenant-db: true
   gateway: true
+  openfaas: true
 
 
 connector-dga:

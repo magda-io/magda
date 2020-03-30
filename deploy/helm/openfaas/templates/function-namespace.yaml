@@ -4,8 +4,8 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: openfaas-fn
+  name: {{ include "openfaas.functionNamespace" . | quote }}
   labels:
     istio-injection: enabled
-    role: {{ include "openfaas.functionNamespace" . | quote }}
+    role: openfaas-fn
 {{- end }}

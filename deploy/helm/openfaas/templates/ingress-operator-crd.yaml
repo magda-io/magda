@@ -51,3 +51,4 @@ spec:
                     kind:
                       type: string
 {{- end }}
+{{- end }}
