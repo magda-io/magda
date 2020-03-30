@@ -1,0 +1,11 @@
+# See values.yaml for how $shouldInstallFunctionNamespace's value is determined
+{{- $shouldInstallFunctionNamespace := (ne (.Values.createFunctionNamespace | typeOf) "<nil>") | ternary .Values.createFunctionNamespace .Release.IsInstall -}}
+{{- if $shouldInstallFunctionNamespace }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: openfaas-fn
+  labels:
+    istio-injection: enabled
+    role: {{ include "openfaas.functionNamespace" . | quote }}
+{{- end }}

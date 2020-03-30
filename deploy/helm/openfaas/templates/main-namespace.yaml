@@ -1,0 +1,11 @@
+# See values.yaml for how $shouldInstallMainNamespace's value is determined
+{{- $shouldInstallMainNamespace := (ne (.Values.createMainNamespace | typeOf) "<nil>") | ternary .Values.createMainNamespace .Release.IsInstall }}
+{{- if $shouldInstallMainNamespace }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ include "openfaas.mainNamespace" . | quote }}
+  labels:
+    role: openfaas-system
+    access: openfaas-system
+    istio-injection: enabled
