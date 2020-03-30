@@ -265,7 +265,17 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
   }
 
   /**
+    * Performs tests for the single record summary endpoint (/records/summary/${recordId}) that should be done under
+    * three sets of conditions:
+    * 1. The record being requested has no policy set, and there is a default policy (default policy should be used)
+    *    (defaultPolicy=Some, recordHasPolicy=false)
+    * 2. The record being requested has a policy set, and there is ALSO a default policy (record policy should be used)
+    *    (defaultPolicy=Some, recordHasPolicy=true)
+    * 3. The record being requested has a policy set, and there is NO default policy (record policy should be used)
+    *    (defaultPolicy=None, recordHasPolicy=true)
     *
+    * @param defaultPolicy The default policy that's been set in settings, or None if no policy has been set
+    * @param recordHasPolicy Whether a policy should be set on the record
     */
   def commonSingleRecordSummaryTests(
       defaultPolicy: Option[String],
