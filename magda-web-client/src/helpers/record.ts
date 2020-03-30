@@ -164,7 +164,7 @@ export type ParsedProvenance = {
     mechanism?: string;
     sourceSystem?: string;
     derivedFrom?: string;
-    affiliatedOrganizationIds?: string[];
+    affiliatedOrganizations?: Record[];
     isOpenData?: boolean;
 };
 
@@ -519,7 +519,11 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         linkedDataRating,
         hasQuality,
         sourceDetails: aspects["source"],
-        provenance: aspects["provenance"] || {},
+        provenance: {
+            ...(aspects?.provenance ? aspects.provenance : {}),
+            affiliatedOrganizations:
+                aspects?.provenance?.affiliatedOrganizationIds
+        },
         publishingState: publishing["state"],
         spatialCoverageBbox: spatialCoverage["bbox"],
         temporalExtent: datasetInfo["temporal"] || {},

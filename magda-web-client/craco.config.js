@@ -1,4 +1,5 @@
 const { isEqual } = require("lodash");
+const FilterWarningsPlugin = require("webpack-filter-warnings-plugin");
 
 module.exports = {
     babel: {
@@ -50,6 +51,14 @@ module.exports = {
 
                     return rule;
                 }
+            );
+
+            // --- mute warnings from mini-css-extract-plugin regarding css order
+            // --- css order not always matter. Plus, complete avoid this issue probably require a new way of including component scss files
+            webpackConfig.plugins.push(
+                new FilterWarningsPlugin({
+                    exclude: /mini-css-extract-plugin[^]*Conflicting order between:/
+                })
             );
 
             return webpackConfig;
