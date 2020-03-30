@@ -8,33 +8,9 @@ tags:
   minion-format: false
 
 global:
-  deployOpenfaas: false
   connectors:
     includeInitialJobs: false
     includeCronJobs: true
-  openfaas:
-    gatewayNamespace: openfaas
-    functionNamespace: openfaas-fn
-
-openfaas:
-  gatewayNamespace: openfaas
-  functionNamespace: openfaas-fn
-  operator: 
-    create: true
-    createCRD: true
-  serviceType: ClusterIP
-  basic_auth: false
-  ingress:
-    enabled: false
-  faasnetes:
-    readTimeout: 120s
-    writeTimeout: 120s
-    imagePullPolicy: IfNotPresent
-  gateway:
-    readTimeout: 125s
-    writeTimeout: 125s
-    upstreamTimeout: 120s
-
 
 connector-dga:
   config:

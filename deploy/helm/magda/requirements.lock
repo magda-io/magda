@@ -17,6 +17,90 @@ dependencies:
 - name: magda-ckan-connector
   repository: https://charts.magda.io
   version: 0.0.57-0
+- name: magda-project-open-data-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-project-open-data-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-csw-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-csw-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-csw-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-csw-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-ckan-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-project-open-data-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-project-open-data-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-csw-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-csw-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-project-open-data-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-csw-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-project-open-data-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-project-open-data-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-project-open-data-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-csw-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-project-open-data-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-csw-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-ckan-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-csw-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-ckan-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-ckan-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-project-open-data-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-csw-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-csw-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-ckan-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+- name: magda-ckan-connector
+  repository: https://charts.magda.io
+  version: 0.0.57-0
 - name: magda-dap-connector
   repository: https://charts.magda.io
   version: 0.0.57-0
@@ -33,4 +117,4 @@ dependencies:
   repository: https://charts.magda.io
   version: 0.0.57-0
 digest: sha256:8c140863b9bdc056dc18b1693fcd5ef3ecac8835dcc7764e072898be16625c9a
-generated: "2020-03-23T17:01:27.275745942+11:00"
+generated: "2020-03-30T16:13:16.194019+11:00"

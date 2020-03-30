@@ -16,6 +16,23 @@ global:
   gapiIds: []
   enablePriorityClass: false
 
+openfaas:
+  operator: 
+    create: true
+    createCRD: true
+  serviceType: ClusterIP
+  basic_auth: false
+  ingress:
+    enabled: false
+  faasnetes:
+    readTimeout: 120s
+    writeTimeout: 120s
+    imagePullPolicy: IfNotPresent
+  gateway:
+    readTimeout: 125s
+    writeTimeout: 125s
+    upstreamTimeout: 120s
+
 tags:
   priorities: true
   all: true

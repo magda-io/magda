@@ -7,6 +7,18 @@ namespacePrefix: ""
 functionNamespace: openfaas-fn  # Default namespace for functions
 mainNamespace: openfass # Default namespace for gateway and other core modules
 
+# If openfaas `mainNamespace` will be created
+# don't set any value to `createMainNamespace` will leave it with value `"<nil>`
+# If it's `<Nil>`, we will then decide whether should create `mainNamespace` or not by checking helm operation
+# if `.Release.IsInstall` is true (i.e. the current operation is an install), `mainNamespace` will be create. Otherwise, `mainNamespace` creation will be skipped.
+# createMainNamespace: true
+
+# If openfaas `functionNamespace` will be created
+# don't set any value to `createFunctionNamespace` will leave it with value `"<nil>`
+# If it's `<Nil>`, we will then decide whether should create `createFunctionNamespace` or not by checking helm operation
+# if `.Release.IsInstall` is true (i.e. the current operation is an install), `createFunctionNamespace` will be create. Otherwise, `createFunctionNamespace` creation will be skipped.
+# createFunctionNamespace: true
+
 async: true
 
 exposeServices: true
