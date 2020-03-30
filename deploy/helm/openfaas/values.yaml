@@ -104,7 +104,10 @@ operator:
   create: false
   # set this to false when creating multiple releases in the same cluster
   # must be true for the first one only
-  createCRD: true
+  # don't set any value to `createCRD` will leave it with value `"<nil>`
+  # If it's `<Nil>`, we will then decide whether should create CRD or not by checking helm operation
+  # if `.Release.IsInstall` is true (i.e. the current operation is an install), CRD will be installed. Otherwise, CRD installtion will be skipped.
+  # createCRD: true
   resources:
     requests:
       memory: "120Mi"
@@ -174,6 +177,10 @@ ingressOperator:
   image: openfaas/ingress-operator:0.5.0
   replicas: 1
   create: false
+  # don't set any value to `createCRD` will leave it with value `"<nil>`
+  # If it's `<Nil>`, we will then decide whether should create CRD or not by checking helm operation
+  # if `.Release.IsInstall` is true (i.e. the current operation is an install), CRD will be installed. Otherwise, CRD installtion will be skipped.
+  # createCRD: true
   resources:
     requests:
       memory: "25Mi"
