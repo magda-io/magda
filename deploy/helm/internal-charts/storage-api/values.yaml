@@ -13,4 +13,4 @@ minio:
   fullnameOverride: "magda-minio"
   certsPath: "/etc/minio/certs/"
   configPathmc: "/etc/minio/mc/"
-  MINIO_BROWSER: "on"
+  existingSecret: "storage-secrets"
