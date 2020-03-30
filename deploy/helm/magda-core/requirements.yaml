@@ -114,10 +114,6 @@ dependencies:
     tags:
       - all
       - storage-api
-    dependencies:
-      - name: minio
-        version: 5.0.18
-        repository: "@stable"
   - name: tenant-api
     version: 0.0.57-0
     repository: file://../internal-charts/tenant-api
