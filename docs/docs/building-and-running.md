@@ -133,9 +133,9 @@ Note: If using docker desktop for Windows older than version 19, change the valu
 # update magda helm repo
 helm repo update
 # update magda chart dependencies
-helm dep build deploy/helm/magda
-helm dep build deploy/helm/magda-core
 helm dep build deploy/helm/internal-charts/storage-api
+helm dep build deploy/helm/magda-core
+helm dep build deploy/helm/magda
 # deploy the magda chart from magda helm repo
 helm upgrade --install --timeout 9999s --wait -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
 ```
