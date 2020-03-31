@@ -23,18 +23,22 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 Expand the full main namespace string.
 */}}
 {{- define "openfaas.mainNamespace" -}}
-{{- if not .Values.mainNamespace -}}
+{{- $namespacePrefix :=  .Values.namespacePrefix | default .Values.global.openfaas.namespacePrefix | default .Values.defaultValues.namespacePrefix | default .Release.Namespace -}}
+{{- $mainNamespace :=  .Values.mainNamespace | default .Values.global.openfaas.mainNamespace | default .Values.defaultValues.mainNamespace -}}
+{{- if not $mainNamespace -}}
 {{- fail "`mainNamespace` can't be empty"  -}}
 {{- end -}}
-{{- .Values.mainNamespace | printf "%s-%s" (required "Please namespacePrefix for openfaas chart" (.Values.namespacePrefix | default .Release.Namespace)) -}}
+{{- $mainNamespace | printf "%s-%s" (required "Please namespacePrefix for openfaas chart" $namespacePrefix) -}}
 {{- end -}}
 
 {{/*
 Expand the full function namespace string.
 */}}
 {{- define "openfaas.functionNamespace" -}}
-{{- if not .Values.functionNamespace -}}
+{{- $namespacePrefix :=  .Values.namespacePrefix | default .Values.global.openfaas.namespacePrefix | default .Values.defaultValues.namespacePrefix | default .Release.Namespace -}}
+{{- $functionNamespace :=  .Values.functionNamespace | default .Values.global.openfaas.functionNamespace | default .Values.defaultValues.functionNamespace -}}
+{{- if not $functionNamespace -}}
 {{- fail "`functionNamespace` can't be empty"  -}}
 {{- end -}}
-{{- .Values.functionNamespace | printf "%s-%s" (required "Please namespacePrefix for openfaas chart" (.Values.namespacePrefix | default .Release.Namespace)) -}}
+{{- $functionNamespace | printf "%s-%s" (required "Please namespacePrefix for openfaas chart" $namespacePrefix) -}}
 {{- end -}}

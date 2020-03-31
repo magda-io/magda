@@ -1,11 +1,39 @@
+# Set default global value
+# we will also check 
+global:
+  openfaas: {}
+
+# default values for namespacePrefix, functionNamespace & mainNamespace
+defaultValues:
+  namespacePrefix: ""
+  functionNamespace: openfaas-fn  # Default namespace for functions
+  mainNamespace: openfass # Default namespace for gateway and other core modules
+
 # please note: 
-# the actual namespaces used for function & core are made up of:
+# the actual namespaces used for function & gateway/core are made up of:
 # - `namespacePrefix` + `-` + `functionNamespace`
 # - or `namespacePrefix` + `-` + `mainNamespace`
 # if `namespacePrefix` is empty, `.Release.Namespace` will be used
-namespacePrefix: ""
-functionNamespace: openfaas-fn  # Default namespace for functions
-mainNamespace: openfass # Default namespace for gateway and other core modules
+# `namespacePrefix`, `functionNamespace` & `mainNamespace`'s runtime value will be 
+
+# How namespacePrefix's value is determined:
+# namespacePrefix's value would be:
+# - Values.namespacePrefix (if it's not nil)
+# - Or Values.global.openfass (if it's not nil)
+# - Or Values.defaultValues.namespacePrefix (if it's not empty i.e. not nil or empty string)
+# - Or .Release.Namespace
+
+# How functionNamespace's value is determined:
+# functionNamespace's value would be:
+# - Values.functionNamespace (if it's not nil)
+# - Or Values.global.functionNamespace (if it's not nil)
+# - Or Values.defaultValues.functionNamespace
+
+# How mainNamespace's value is determined:
+# mainNamespace's value would be:
+# - Values.mainNamespace (if it's not nil)
+# - Or Values.global.mainNamespace (if it's not nil)
+# - Or Values.defaultValues.mainNamespace
 
 # If openfaas `mainNamespace` will be created
 # don't set any value to `createMainNamespace` will leave it with value `"<nil>`
@@ -18,6 +46,7 @@ mainNamespace: openfass # Default namespace for gateway and other core modules
 # If it's `<Nil>`, we will then decide whether should create `createFunctionNamespace` or not by checking helm operation
 # if `.Release.IsInstall` is true (i.e. the current operation is an install), `createFunctionNamespace` will be create. Otherwise, `createFunctionNamespace` creation will be skipped.
 # createFunctionNamespace: true
+
 
 async: true
 
