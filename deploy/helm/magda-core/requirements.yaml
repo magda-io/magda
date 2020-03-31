@@ -108,12 +108,6 @@ dependencies:
     tags:
       - all
       - opa
-  - name: minio
-    version: 4.0.1
-    repository: file://../internal-charts/minio
-    tags:
-      - all
-      - storage-api
   - name: storage-api
     version: 0.0.57-0
     repository: file://../internal-charts/storage-api
