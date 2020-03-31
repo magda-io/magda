@@ -19,13 +19,23 @@
 }
 
 .end-preview-page-2 {
-    background-color: #f1f1f1;
+    background-color: #fbfbfb;
 }
 
-// .draft-image-icon {
-//     margin-left: 1000px;
-//     width: 300px;
-//     height: 30px;
-//     justify-content: left;
-//     display: flex;
-// }
+.draft-image-icon {
+    justify-content: left;
+    display: flex;
+    margin-left: 30px;
+}
+
+.print-icon {
+    justify-content: left;
+    display: flex;
+    height: 22px;
+    width: 44px;
+    margin-left: "20px";
+}
+
+.end-preview-button {
+    margin-left: 325px;
+}

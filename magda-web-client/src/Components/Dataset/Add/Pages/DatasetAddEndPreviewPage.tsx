@@ -29,33 +29,29 @@ export default function DatasetAddEndPreviewPage() {
                     </p>
                 </div>
             </div>
-            <p></p>
             <div className="end-preview-page-2">
-                <button className="au-btn next-button">
-                    View your draft dataset
-                    <img
-                        className="draft-image-con"
-                        src={draftIcon}
-                        style={{
-                            marginLeft: "-200px",
-                            marginTop: "-10px",
-                            width: "30px",
-                            height: "30px"
-                        }}
-                    />
+                <button className="au-btn next-button end-preview-button">
+                    <img className="draft-image-icon" src={draftIcon} />
+                    <p style={{ marginTop: "-20px" }}>
+                        View your draft dataset
+                    </p>
                 </button>
-                <button className="au-btn next-button">
-                    Review Metadata
+                <br />
+                <br />
+                <button
+                    className="au-btn next-button end-preview-button"
+                    style={{ fontSize: "16px" }}
+                >
                     <img
-                        className="draft-image-con"
+                        className="print-icon"
                         src={printIcon}
                         style={{
-                            marginLeft: "-200px",
-                            marginTop: "-10px",
-                            width: "30px",
-                            height: "30px"
+                            height: "22px",
+                            width: "44px",
+                            marginLeft: "20px"
                         }}
                     />
+                    <p style={{ marginTop: "-25px" }}>Review Metadata</p>
                 </button>
             </div>
         </div>
