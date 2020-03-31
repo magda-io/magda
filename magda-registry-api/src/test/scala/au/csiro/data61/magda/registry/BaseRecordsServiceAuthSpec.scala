@@ -601,8 +601,10 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
         status shouldEqual StatusCodes.OK
         val resRecord = responseAs[EventsPage]
 
-        resRecord.events.length shouldBe 1
-        resRecord.events.head.id shouldBe "foo"
+        resRecord.events.length shouldBe 1 // one event for record creation
+        resRecord.events.head.data.fields("recordId") shouldEqual JsString(
+          "foo"
+        )
       }
     }
 
@@ -646,8 +648,10 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
         status shouldEqual StatusCodes.OK
 
         val resRecord = responseAs[EventsPage]
-        resRecord.events.length shouldBe 1
-        resRecord.events.head.id shouldBe "foo"
+        resRecord.events.length shouldBe 2 // one each for record and aspect creation
+        resRecord.events.head.data.fields("recordId") shouldEqual JsString(
+          "foo"
+        )
       }
     }
 

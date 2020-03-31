@@ -13,8 +13,11 @@ import au.csiro.data61.magda.client.AuthOperations
 import scala.concurrent.{ExecutionContext, Future}
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
+import au.csiro.data61.magda.client.AuthOperations.OperationType
+import au.csiro.data61.magda.model.TenantId
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 
-object Directives {
+object Directives extends Protocols with SprayJsonSupport {
   private def skipOpaQuery(implicit config: Config) =
     config.hasPath("authorization.skipOpaQuery") && config.getBoolean(
       "authorization.skipOpaQuery"
@@ -172,6 +175,43 @@ object Directives {
             provide(
               (Some(fullRecordPolicyIds), Some(fullLinkedRecordPolicyIds))
             )
+          }
+        }
+      }
+    }
+  }
+
+  def checkUserCanAccessRecord(
+      recordPersistence: RecordPersistence,
+      authApiClient: RegistryAuthApiClient,
+      recordId: String,
+      tenantId: au.csiro.data61.magda.model.TenantId.TenantId,
+      noPoliciesResponse: => ToResponseMarshallable = (
+        StatusCodes.NotFound,
+        ApiError(
+          "No record exists with that ID."
+        )
+      )
+  )(
+      implicit config: Config,
+      system: ActorSystem,
+      materializer: Materializer,
+      ec: ExecutionContext
+  ): Directive0 = {
+    AuthDirectives.getJwt().flatMap { jwt =>
+      withRecordOpaQuery(
+        AuthOperations.read,
+        recordPersistence,
+        authApiClient,
+        Some(recordId),
+        noPoliciesResponse
+      ).flatMap { recordQueries =>
+        DB readOnly { session =>
+          recordPersistence
+            .getById(session, tenantId, recordQueries, recordId) match {
+            case Some(record) => pass
+            case None =>
+              complete(noPoliciesResponse)
           }
         }
       }
