@@ -120,3 +120,7 @@ magda-core:
       tag: 0.0.57-0
       pullPolicy: IfNotPresent
       imagePullSecret: false
+
+  openfaas:
+    operator: 
+      createCRD: false

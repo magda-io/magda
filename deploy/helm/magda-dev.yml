@@ -132,6 +132,10 @@ magda-core:
       pullPolicy: IfNotPresent
       imagePullSecret: false
 
+  openfaas:
+    operator: 
+      createCRD: false
+
 minion-broken-link:
   domainWaitTimeConfig:
     data.csiro.au: 5

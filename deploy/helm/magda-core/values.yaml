@@ -24,7 +24,6 @@ global:
 openfaas:
   operator: 
     create: true
-    createCRD: true
   serviceType: ClusterIP
   basic_auth: false
   ingress:
@@ -34,9 +33,12 @@ openfaas:
     writeTimeout: 120s
     imagePullPolicy: IfNotPresent
   gateway:
+    scaleFromZero: true
     readTimeout: 125s
     writeTimeout: 125s
     upstreamTimeout: 120s
+  faasIdler:
+    dryRun: false
 
 tags:
   priorities: true
