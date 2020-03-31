@@ -8,7 +8,7 @@ interface OptionsType {
     baseAuthUrl: string;
     jwtSecret: string;
     tenantMode: TenantMode;
-    allowAdminOnly: boolean;
+    allowAdminOnly?: boolean;
 }
 
 export default function createOpenfaasGatewayProxy(

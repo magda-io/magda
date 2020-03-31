@@ -83,7 +83,7 @@ type Config = {
     vanguardWsFedRealm?: string;
     vanguardWsFedCertificate?: string;
     openfaasGatewayUrl?: string;
-    openfaasAllowAdminOnly: boolean;
+    openfaasAllowAdminOnly?: boolean;
 };
 
 export default function buildApp(config: Config) {
