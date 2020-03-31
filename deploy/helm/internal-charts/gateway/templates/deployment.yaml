@@ -87,7 +87,7 @@ spec:
             "--previewMap", "http://preview-map:6110",
 {{- if .Values.global.openfaas.mainNamespace }}
             "--openfaasGatewayUrl", {{ include "magda.openfaasGatewayUrl" . | quote }},
-            "--openfaasAllowAdminOnly", {{ .Values.global.openfaas.allowAdminOnly | quote }}
+            "--openfaasAllowAdminOnly", {{ .Values.global.openfaas.allowAdminOnly | quote }},
 {{- end }}         
 {{- if .Values.global.enableMultiTenants }}
             "--enableMultiTenants", "true",
