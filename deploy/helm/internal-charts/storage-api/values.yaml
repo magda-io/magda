@@ -11,6 +11,4 @@ minio:
   port: 9000
   nameOverride: "magda-minio"
   fullnameOverride: "magda-minio"
-  certsPath: "/etc/minio/certs/"
-  configPathmc: "/etc/minio/mc/"
   existingSecret: "storage-secrets"
