@@ -34,6 +34,7 @@ UI:
 -   Added UI for "Link to an API or web service" box
 -   Added UI for storing files
 -   Added UI for "Publish as Open Data to data.gov.au"
+-   Refactor view dataset page & remove the edit function from the page
 -   Clarify tooltip text
 
 Storage:
@@ -47,6 +48,7 @@ Storage:
 -   Add authorization to GET endpoint
 -   Support multipart upload
 -   Fixed: minio chart will not be deployed if storage-api is not turned on
+-   Make MinIO a dependency of storage's helm chart
 
 Gateway:
 

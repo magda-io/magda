@@ -143,6 +143,7 @@
     "traverse": "^0.6.6",
     "typescript": "^3.7.2",
     "uuid": "^3.0.1",
+    "webpack-filter-warnings-plugin": "^1.2.1",
     "weighted-mean": "^1.0.2",
     "yaml-front-matter": "^4.0.0"
   },
