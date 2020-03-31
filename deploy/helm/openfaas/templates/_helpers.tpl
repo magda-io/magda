@@ -28,7 +28,7 @@ Expand the full main namespace string.
 {{- if not $mainNamespace -}}
 {{- fail "`mainNamespace` can't be empty"  -}}
 {{- end -}}
-{{- $mainNamespace | printf "%s-%s" (required "Please namespacePrefix for openfaas chart" $namespacePrefix) -}}
+{{- $mainNamespace | printf "%s-%s" (required "Please provide namespacePrefix for openfaas chart" $namespacePrefix) -}}
 {{- end -}}
 
 {{/*
@@ -40,5 +40,5 @@ Expand the full function namespace string.
 {{- if not $functionNamespace -}}
 {{- fail "`functionNamespace` can't be empty"  -}}
 {{- end -}}
-{{- $functionNamespace | printf "%s-%s" (required "Please namespacePrefix for openfaas chart" $namespacePrefix) -}}
+{{- $functionNamespace | printf "%s-%s" (required "Please provide namespacePrefix for openfaas chart" $namespacePrefix) -}}
 {{- end -}}

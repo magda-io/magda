@@ -15,6 +15,11 @@ global:
   namespace: default
   gapiIds: []
   enablePriorityClass: false
+  openfaas:
+    namespacePrefix: ""
+    functionNamespace: openfaas-fn  # Default namespace for functions
+    mainNamespace: openfass # Default namespace for gateway and other core modules
+    allowAdminOnly: true # Only allow logged-in Admin to access openfaas gateway
 
 openfaas:
   operator: 
