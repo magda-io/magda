@@ -36,6 +36,7 @@ UI:
 -   Added UI for "Publish as Open Data to data.gov.au"
 -   Refactor view dataset page & remove the edit function from the page
 -   Clarify tooltip text
+-   Use a new "All done!" screen at the end of the dataset flow
 
 Storage:
 
