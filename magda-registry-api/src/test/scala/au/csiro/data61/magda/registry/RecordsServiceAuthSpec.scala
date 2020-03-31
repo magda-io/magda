@@ -35,22 +35,6 @@ class RecordsServiceAuthSpec extends BaseRecordsServiceAuthSpec {
         it(
           "if there's no default or specific policy in place, it should deny all access"
         ) { param =>
-          addExampleAspectDef(param)
-          val recordId = "foo"
-          addRecord(
-            param,
-            Record(
-              recordId,
-              "foo",
-              Map(
-                "stringExample" -> JsObject(
-                  "nested" -> JsObject("public" -> JsString("true"))
-                )
-              ),
-              authnReadPolicyId = None
-            )
-          )
-
           Get(s"/v0/records/foo") ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
@@ -65,21 +49,23 @@ class RecordsServiceAuthSpec extends BaseRecordsServiceAuthSpec {
         it(
           "if there's no default or specific policy in place, it should deny all access"
         ) { param =>
-          addExampleAspectDef(param)
-          val recordId = "foo"
-          addRecord(
-            param,
-            Record(
-              recordId,
-              "foo",
-              Map(
-                "stringExample" -> JsObject(
-                  "nested" -> JsObject("public" -> JsString("true"))
-                )
-              ),
-              authnReadPolicyId = None
-            )
-          )
+          setupNullPolicyRecord(param)
+
+          Get(s"/v0/records/summary/foo") ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.NotFound
+          }
+        }
+      }
+
+      describe("for record history") {
+        commonRecordHistoryTests(None, true)
+
+        it(
+          "if there's no default or specific policy in place, it should deny all access"
+        ) { param =>
+          setupNullPolicyRecord(param)
 
           Get(s"/v0/records/summary/foo") ~> addTenantIdHeader(
             TENANT_1
@@ -190,6 +176,20 @@ class RecordsServiceAuthSpec extends BaseRecordsServiceAuthSpec {
 
         }
 
+        it(
+          "if there's no default or specific policy in place, it should deny all access"
+        ) { param =>
+          setupNullPolicyRecord(param)
+
+          Get(s"/v0/records") ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val resPage = responseAs[RecordsPage[Record]]
+            resPage.records.length shouldBe 0
+          }
+        }
+
         doLinkTestsOnRecordsEndpoint(Some("a"), Some("b"), "a.read", "b.read")
       }
 
@@ -283,6 +283,39 @@ class RecordsServiceAuthSpec extends BaseRecordsServiceAuthSpec {
             status shouldEqual StatusCodes.InternalServerError
           }
         }
+
+        it(
+          "if there's no default or specific policy in place, it should deny all access"
+        ) { param =>
+          setupNullPolicyRecord(param)
+
+          Get(s"/v0/records") ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val resPage = responseAs[RecordsPage[RecordSummary]]
+            resPage.records.length shouldBe 0
+          }
+        }
+      }
+
+      /** Creates a record with no policy */
+      def setupNullPolicyRecord(param: FixtureParam) = {
+        addExampleAspectDef(param)
+        val recordId = "foo"
+        addRecord(
+          param,
+          Record(
+            recordId,
+            "foo",
+            Map(
+              "stringExample" -> JsObject(
+                "nested" -> JsObject("public" -> JsString("true"))
+              )
+            ),
+            authnReadPolicyId = None
+          )
+        )
       }
 
       /** Sets up 5 public records with no aspects */
@@ -331,9 +364,7 @@ class RecordsServiceAuthSpec extends BaseRecordsServiceAuthSpec {
         expectOpaQueryForPolicy(
           param,
           "not.default.policyid.read",
-          """{
-            "result": {}
-          }"""
+          policyResponseForUnconditionallyDisallowed
         )
       }
 
