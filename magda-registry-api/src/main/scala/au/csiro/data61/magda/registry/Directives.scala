@@ -12,6 +12,7 @@ import au.csiro.data61.magda.client.AuthOperations
 
 import scala.concurrent.{ExecutionContext, Future}
 import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.marshalling.ToResponseMarshallable
 
 object Directives {
   private def skipOpaQuery(implicit config: Config) =
@@ -26,6 +27,7 @@ object Directives {
     * @param recordPersistence A RecordPersistence instance to look up record policies etc through
     * @param authApiClient An auth api client to query OPA through
     * @param recordId A record id - optional, will be used to narrow down the policies returned to only those that apply to this record.
+    * @param noPoliciesResponse What to respond with if there are no valid policies to query for
     * @return - If no auth should be applied, None
     *         - If auth should be applied, Some, with a List of tuples - _1 in the tuple is the id of the policy, _2 is the parsed query
     *              that pertain to that policy. So a query can be made along the lines of
@@ -35,7 +37,8 @@ object Directives {
       operationType: AuthOperations.OperationType,
       recordPersistence: RecordPersistence,
       authApiClient: RegistryAuthApiClient,
-      recordId: Option[String] = None
+      recordId: Option[String] = None,
+      noPoliciesResponse: => ToResponseMarshallable
   )(
       implicit config: Config,
       system: ActorSystem,
@@ -51,6 +54,16 @@ object Directives {
             .getPolicyIds(session, operationType, recordId.map(Set(_)))
         } get
 
+        if (recordPolicyIds.isEmpty) {
+          system.log.warning(
+            s"""Could not find any policy for operation $operationType on 
+            ${if (recordId.isDefined) s"record $recordId" else "records"}.
+            This will result in the record being completely inaccessible - 
+            if this isn't what you want, define a default policy in config,
+            or set one for all records"""
+          )
+        }
+
         val recordFuture =
           authApiClient
             .queryRecord(
@@ -61,7 +74,7 @@ object Directives {
 
         onSuccess(recordFuture).flatMap { queryResults =>
           if (queryResults.isEmpty) {
-            complete(StatusCodes.NotFound)
+            complete(noPoliciesResponse)
           } else {
             provide(Some(queryResults))
           }
@@ -93,7 +106,8 @@ object Directives {
       recordPersistence: RecordPersistence,
       authApiClient: RegistryAuthApiClient,
       recordId: Option[String] = None,
-      aspectIds: Iterable[String] = List()
+      aspectIds: Iterable[String] = List(),
+      noPoliciesResponse: => ToResponseMarshallable
   )(
       implicit config: Config,
       system: ActorSystem,
@@ -147,7 +161,7 @@ object Directives {
 
         onSuccess(recordFuture).flatMap { queryResults =>
           if (queryResults.isEmpty) {
-            complete(StatusCodes.NotFound)
+            complete(noPoliciesResponse)
           } else {
             val queryResultLookup = queryResults.toMap
             val fullRecordPolicyIds = recordPolicyIds

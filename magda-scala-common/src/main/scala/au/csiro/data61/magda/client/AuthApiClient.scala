@@ -83,6 +83,8 @@ class AuthApiClient(authHttpFetcher: HttpFetcher)(
                                  |  "unknowns": ["input.object"]
                                  |}""".stripMargin
 
+    logger.debug("Making request to opa with requestData {}", requestData)
+
     val headers = jwtToken match {
       case Some(jwt) => List(RawHeader("X-Magda-Session", jwt))
       case None      => List()
@@ -115,7 +117,9 @@ class AuthApiClient(authHttpFetcher: HttpFetcher)(
       }
     } else {
       res.entity.toStrict(10.seconds).map { entity =>
-        fn(entity.data.utf8String.parseJson)
+        val string = entity.data.utf8String
+        logger.debug("Recieved {} from OPA", string)
+        fn(string.parseJson)
       }
     }
   }

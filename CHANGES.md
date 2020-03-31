@@ -48,6 +48,7 @@ Storage:
 -   Add authorization to GET endpoint
 -   Support multipart upload
 -   Fixed: minio chart will not be deployed if storage-api is not turned on
+-   Make MinIO a dependency of storage's helm chart
 
 Gateway:
 
@@ -61,6 +62,7 @@ Authorization:
 -   Added ability to use OPA policies that use data types other than strings in the registry
 -   Added authorization inside links with dereferencing on or off, for the `records/<id>` endpoint
 -   Added authorization inside links with dereferencing on or off, for the `records` endpoint
+-   Added per-record authorization around the `records/summary/<recordid>` endpoint matching the `records/<id>` one.
 
 Others:
 

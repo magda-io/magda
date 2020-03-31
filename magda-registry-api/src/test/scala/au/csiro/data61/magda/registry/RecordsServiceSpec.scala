@@ -40,7 +40,7 @@ class RecordsServiceSpec extends ApiSpec {
     describe("GET") {
       it("starts with no records defined") { param =>
         val recordId = "foo"
-        val record = Record(recordId, "foo", Map())
+        val record = Record(recordId, "foo", Map(), Some("blah"))
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(Full).routes ~> check {
@@ -71,7 +71,7 @@ class RecordsServiceSpec extends ApiSpec {
 
       it("returns 404 if the given ID does not exist") { param =>
         val recordId = "foo"
-        val record = Record(recordId, "foo", Map())
+        val record = Record(recordId, "foo", Map(), Some("blah"))
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(Full).routes ~> check {
@@ -102,7 +102,7 @@ class RecordsServiceSpec extends ApiSpec {
           }
 
           val recordId = "foo"
-          val record = Record(recordId, "foo", Map())
+          val record = Record(recordId, "foo", Map(), Some("blah"))
           param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
@@ -145,7 +145,8 @@ class RecordsServiceSpec extends ApiSpec {
           val record = Record(
             i.toString,
             i.toString,
-            Map(testAspectId -> JsObject("value" -> JsNumber(i)))
+            Map(testAspectId -> JsObject("value" -> JsNumber(i))),
+            Some("blah")
           )
 
           param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(i) ~> param
@@ -183,7 +184,8 @@ class RecordsServiceSpec extends ApiSpec {
           val recordWithAspects = Record(
             recordId,
             recordName,
-            Map(aspectId1 -> JsObject(), aspectId2 -> JsObject())
+            Map(aspectId1 -> JsObject(), aspectId2 -> JsObject()),
+            Some("blah")
           )
           param.asAdmin(Post("/v0/records", recordWithAspects)) ~> addTenantIdHeader(
             TENANT_1
@@ -219,7 +221,8 @@ class RecordsServiceSpec extends ApiSpec {
           val recordWithAspects1 = Record(
             recordId1,
             recordName1,
-            Map(aspectId1 -> JsObject(), aspectId2 -> JsObject())
+            Map(aspectId1 -> JsObject(), aspectId2 -> JsObject()),
+            Some("blah")
           )
           param.asAdmin(Post("/v0/records", recordWithAspects1)) ~> addTenantIdHeader(
             TENANT_1
@@ -237,7 +240,8 @@ class RecordsServiceSpec extends ApiSpec {
           val recordWithAspects2 = Record(
             recordId2,
             recordName2,
-            Map(aspectId1 -> JsObject(), aspectId3 -> JsObject())
+            Map(aspectId1 -> JsObject(), aspectId3 -> JsObject()),
+            Some("blah")
           )
           param.asAdmin(Post("/v0/records", recordWithAspects2)) ~> addTenantIdHeader(
             TENANT_1
@@ -252,7 +256,8 @@ class RecordsServiceSpec extends ApiSpec {
 
           val recordId3 = "id3"
           val recordName3 = "name3"
-          val recordWithoutAspects3 = Record(recordId3, recordName3, Map())
+          val recordWithoutAspects3 =
+            Record(recordId3, recordName3, Map(), Some("blah"))
           param.asAdmin(Post("/v0/records", recordWithoutAspects3)) ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
@@ -357,7 +362,8 @@ class RecordsServiceSpec extends ApiSpec {
         it("returns the right count when no parameters are given") { param =>
           // Create some records for tenant 1.
           for (i <- 1 to 5) {
-            val recordWithoutAspects = Record("id" + i, "name" + i, Map())
+            val recordWithoutAspects =
+              Record("id" + i, "name" + i, Map(), Some("blah"))
             param.asAdmin(Post("/v0/records", recordWithoutAspects)) ~> addTenantIdHeader(
               TENANT_1
             ) ~> param.api(Full).routes ~> check {
@@ -376,7 +382,8 @@ class RecordsServiceSpec extends ApiSpec {
 
           // Create some records for tenant 2.
           for (i <- 1 to 3) {
-            val recordWithoutAspects = Record("id" + i, "name" + i, Map())
+            val recordWithoutAspects =
+              Record("id" + i, "name" + i, Map(), Some("blah"))
             param.asAdmin(Post("/v0/records", recordWithoutAspects)) ~> addTenantIdHeader(
               TENANT_2
             ) ~> param.api(Full).routes ~> check {
@@ -411,11 +418,12 @@ class RecordsServiceSpec extends ApiSpec {
         val withTestAspectRecord = Record(
           withTestAspectRecordId,
           "with",
-          Map(testAspectId -> JsObject("foo" -> JsString("bar")))
+          Map(testAspectId -> JsObject("foo" -> JsString("bar"))),
+          Some("blah")
         )
         val withoutTestAspectRecordId = "without"
         val withoutTestAspectRecord =
-          Record(withoutTestAspectRecordId, "without", Map())
+          Record(withoutTestAspectRecordId, "without", Map(), Some("blah"))
 
         val fooAspectId = "foo"
         val fooAspect = AspectDefinition(fooAspectId, "foo", None)
@@ -427,13 +435,15 @@ class RecordsServiceSpec extends ApiSpec {
         val withFooRecord = Record(
           withFooRecordId,
           "with foo",
-          Map(fooAspectId -> JsObject("test" -> JsString("test")))
+          Map(fooAspectId -> JsObject("test" -> JsString("test"))),
+          Some("blah")
         )
         val withBarRecordId = "withBar"
         val withBarRecord = Record(
           withBarRecordId,
           "with bar",
-          Map(barAspectId -> JsObject("test" -> JsString("test")))
+          Map(barAspectId -> JsObject("test" -> JsString("test"))),
+          Some("blah")
         )
         val withFooAndBarRecordId = "withFooAndBar"
         val withFooAndBarRecord = Record(
@@ -442,10 +452,12 @@ class RecordsServiceSpec extends ApiSpec {
           Map(
             fooAspectId -> JsObject(),
             barAspectId -> JsObject("test" -> JsString("test"))
-          )
+          ),
+          Some("blah")
         )
         val withNoneRecordId = "withNone"
-        val withNoneRecord = Record(withNoneRecordId, "with none", Map())
+        val withNoneRecord =
+          Record(withNoneRecordId, "with none", Map(), Some("blah"))
 
         it("includes optionalAspect if it exists") { param =>
           param.asAdmin(Post("/v0/aspects", testAspect)) ~> addTenantIdHeader(
@@ -723,7 +735,8 @@ class RecordsServiceSpec extends ApiSpec {
               "foo" -> JsObject(),
               "bar" -> JsObject("test" -> JsString("test")),
               "baz" -> JsObject()
-            )
+            ),
+            Some("blah")
           )
           param.asAdmin(Post("/v0/records", withFooAndBarAndBaz)) ~> addTenantIdHeader(
             TENANT_1
@@ -776,7 +789,8 @@ class RecordsServiceSpec extends ApiSpec {
           val record = Record(
             recordId,
             "whatever",
-            Map(aspectWithSpaceId -> JsObject("test" -> JsString("test")))
+            Map(aspectWithSpaceId -> JsObject("test" -> JsString("test"))),
+            Some("blah")
           )
           param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
             TENANT_1
@@ -854,7 +868,12 @@ class RecordsServiceSpec extends ApiSpec {
           val aspectValue1 = JsObject("foo 1" -> JsString("bar 1"))
           val withRecordId = "with"
           val recordWithAspect1 =
-            Record(withRecordId, "with", Map(testAspectId -> aspectValue1))
+            Record(
+              withRecordId,
+              "with",
+              Map(testAspectId -> aspectValue1),
+              Some("blah")
+            )
           param.asAdmin(Post("/v0/records", recordWithAspect1)) ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
@@ -863,7 +882,12 @@ class RecordsServiceSpec extends ApiSpec {
 
           val aspectValue2 = JsObject("foo 2" -> JsString("bar 2"))
           val recordWithAspect2 =
-            Record(withRecordId, "with", Map(testAspectId -> aspectValue2))
+            Record(
+              withRecordId,
+              "with",
+              Map(testAspectId -> aspectValue2),
+              Some("blah")
+            )
           param.asAdmin(Post("/v0/records", recordWithAspect2)) ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
@@ -937,7 +961,8 @@ class RecordsServiceSpec extends ApiSpec {
                 JsString(withLinksAnotherTargetRecordId)
               )
             )
-          )
+          ),
+          Some("blah")
         )
         val withLinksTargetRecord = Record(
           withLinksTargetRecordId,
@@ -946,7 +971,8 @@ class RecordsServiceSpec extends ApiSpec {
             withLinksAspectId -> JsObject(
               "someLinks" -> JsArray(JsString(withLinksSourceRecordId))
             )
-          )
+          ),
+          Some("blah")
         )
         val withLinksAnotherTargetRecord = Record(
           withLinksAnotherTargetRecordId,
@@ -955,12 +981,14 @@ class RecordsServiceSpec extends ApiSpec {
             withLinksAspectId -> JsObject(
               "someLinks" -> JsArray(JsString(withLinksSourceRecordId))
             )
-          )
+          ),
+          Some("blah")
         )
         val withEmptyLinksSourceRecord = Record(
           withLinksSourceRecordId,
           "source",
-          Map(withLinksAspectId -> JsObject("someLinks" -> JsArray()))
+          Map(withLinksAspectId -> JsObject("someLinks" -> JsArray())),
+          Some("blah")
         )
 
         it("dereferences a single link if requested") { param =>
@@ -1014,7 +1042,8 @@ class RecordsServiceSpec extends ApiSpec {
               withLinkAspectId -> JsObject(
                 "someLink" -> JsString(targetRecordId)
               )
-            )
+            ),
+            Some("blah")
           )
           param.asAdmin(Post("/v0/records", sourceRecord)) ~> addTenantIdHeader(
             TENANT_1
@@ -1034,7 +1063,8 @@ class RecordsServiceSpec extends ApiSpec {
               withLinkAspectId -> JsObject(
                 "someLink" -> JsString(sourceRecordId)
               )
-            )
+            ),
+            Some("blah")
           )
           param.asAdmin(Post("/v0/records", targetRecord)) ~> addTenantIdHeader(
             TENANT_1
@@ -1093,7 +1123,8 @@ class RecordsServiceSpec extends ApiSpec {
                       withLinkAspectId -> JsObject(
                         "someLink" -> JsString(sourceRecordId)
                       )
-                    )
+                    ),
+                    "authnReadPolicyId" -> JsString("blah")
                   )
                 )
               )
@@ -1119,7 +1150,8 @@ class RecordsServiceSpec extends ApiSpec {
                       withLinkAspectId -> JsObject(
                         "someLink" -> JsString(sourceRecordId)
                       )
-                    )
+                    ),
+                    "authnReadPolicyId" -> JsString("blah")
                   )
                 )
               )
@@ -1142,7 +1174,8 @@ class RecordsServiceSpec extends ApiSpec {
                       withLinkAspectId -> JsObject(
                         "someLink" -> JsString(targetRecordId)
                       )
-                    )
+                    ),
+                    "authnReadPolicyId" -> JsString("blah")
                   )
                 )
               )
@@ -1175,7 +1208,8 @@ class RecordsServiceSpec extends ApiSpec {
                       withLinkAspectId -> JsObject(
                         "someLink" -> JsString(sourceRecordId)
                       )
-                    )
+                    ),
+                    "authnReadPolicyId" -> JsString("blah")
                   )
                 )
               )
@@ -1198,7 +1232,8 @@ class RecordsServiceSpec extends ApiSpec {
                       withLinkAspectId -> JsObject(
                         "someLink" -> JsString(targetRecordId)
                       )
-                    )
+                    ),
+                    "authnReadPolicyId" -> JsString("blah")
                   )
                 )
               )
@@ -1344,7 +1379,8 @@ class RecordsServiceSpec extends ApiSpec {
                             JsString(withLinksSourceRecordId)
                           )
                         )
-                      )
+                      ),
+                      "authnReadPolicyId" -> JsString("blah")
                     ),
                     JsObject(
                       "id" -> JsString(withLinksAnotherTargetRecordId),
@@ -1355,7 +1391,8 @@ class RecordsServiceSpec extends ApiSpec {
                             JsString(withLinksSourceRecordId)
                           )
                         )
-                      )
+                      ),
+                      "authnReadPolicyId" -> JsString("blah")
                     )
                   )
                 )
@@ -1381,7 +1418,8 @@ class RecordsServiceSpec extends ApiSpec {
                             JsString(withLinksSourceRecordId)
                           )
                         )
-                      )
+                      ),
+                      "authnReadPolicyId" -> JsString("blah")
                     ),
                     JsObject(
                       "id" -> JsString(withLinksAnotherTargetRecordId),
@@ -1392,7 +1430,8 @@ class RecordsServiceSpec extends ApiSpec {
                             JsString(withLinksSourceRecordId)
                           )
                         )
-                      )
+                      ),
+                      "authnReadPolicyId" -> JsString("blah")
                     )
                   )
                 )
@@ -1423,7 +1462,8 @@ class RecordsServiceSpec extends ApiSpec {
                             JsString(withLinksSourceRecordId)
                           )
                         )
-                      )
+                      ),
+                      "authnReadPolicyId" -> JsString("blah")
                     ),
                     JsObject(
                       "id" -> JsString(withLinksAnotherTargetRecordId),
@@ -1434,7 +1474,8 @@ class RecordsServiceSpec extends ApiSpec {
                             JsString(withLinksSourceRecordId)
                           )
                         )
-                      )
+                      ),
+                      "authnReadPolicyId" -> JsString("blah")
                     )
                   )
                 )
@@ -1462,7 +1503,8 @@ class RecordsServiceSpec extends ApiSpec {
                             JsString(withLinksAnotherTargetRecordId)
                           )
                         )
-                      )
+                      ),
+                      "authnReadPolicyId" -> JsString("blah")
                     )
                   )
                 )
@@ -1491,7 +1533,8 @@ class RecordsServiceSpec extends ApiSpec {
                               JsString(withLinksAnotherTargetRecordId)
                             )
                           )
-                        )
+                        ),
+                        "authnReadPolicyId" -> JsString("blah")
                       )
                     )
                   )
@@ -1583,7 +1626,8 @@ class RecordsServiceSpec extends ApiSpec {
         val withQueriedValueRecord1 = Record(
           withQueriedValueRecordId1,
           "any name",
-          Map(aspectId -> JsObject(valueKey -> JsString(queriedValue)))
+          Map(aspectId -> JsObject(valueKey -> JsString(queriedValue))),
+          Some("blah")
         )
         val with2QueriedValuesRecord1 = Record(
           withQueriedValueRecordId1,
@@ -1593,7 +1637,8 @@ class RecordsServiceSpec extends ApiSpec {
               valueKey -> JsString(queriedValue),
               otherValueKey -> JsString(alsoQueriedValue)
             )
-          )
+          ),
+          Some("blah")
         )
         val deepPath = "object"
         val withQueriedValueInDeepPathRecord1 = Record(
@@ -1603,13 +1648,15 @@ class RecordsServiceSpec extends ApiSpec {
             aspectId -> JsObject(
               deepPath -> JsObject(valueKey -> JsString(queriedValue))
             )
-          )
+          ),
+          Some("blah")
         )
         val withQueriedValueRecordId2 = "with the queried value 2"
         val withQueriedValueRecord2 = Record(
           withQueriedValueRecordId2,
           "any name",
-          Map(aspectId -> JsObject(valueKey -> JsString(queriedValue)))
+          Map(aspectId -> JsObject(valueKey -> JsString(queriedValue))),
+          Some("blah")
         )
         val with2QueriedValuesRecord2 = Record(
           withQueriedValueRecordId2,
@@ -1619,7 +1666,8 @@ class RecordsServiceSpec extends ApiSpec {
               valueKey -> JsString(queriedValue),
               otherValueKey -> JsString(alsoQueriedValue)
             )
-          )
+          ),
+          Some("blah")
         )
         val withQueriedValueInDeepPathRecord2 = Record(
           withQueriedValueRecordId2,
@@ -1628,14 +1676,16 @@ class RecordsServiceSpec extends ApiSpec {
             aspectId -> JsObject(
               deepPath -> JsObject(valueKey -> JsString(queriedValue))
             )
-          )
+          ),
+          Some("blah")
         )
         val withoutQueriedValueRecordId1 = "without the queried value"
         val withoutQueriedValueRecordId2 = "without the queried value 2"
         val withoutQueriedValueRecord = Record(
           withoutQueriedValueRecordId1,
           "any name",
-          Map(aspectId -> JsObject(valueKey -> JsString(nonQueriedValue)))
+          Map(aspectId -> JsObject(valueKey -> JsString(nonQueriedValue))),
+          Some("blah")
         )
         val withoutQueriedValueInDeepPathRecord = Record(
           withoutQueriedValueRecordId1,
@@ -1644,13 +1694,15 @@ class RecordsServiceSpec extends ApiSpec {
             aspectId -> JsObject(
               deepPath -> JsObject(valueKey -> JsString(nonQueriedValue))
             )
-          )
+          ),
+          Some("blah")
         )
         val withOnlyOneQueriedValueRecordId = "with only one queried value"
         val withOnlyOneQueriedValueRecord = Record(
           withOnlyOneQueriedValueRecordId,
           "any name",
-          Map(aspectId -> JsObject(valueKey -> JsString(queriedValue)))
+          Map(aspectId -> JsObject(valueKey -> JsString(queriedValue))),
+          Some("blah")
         )
 
         it("works for shallow paths") { param =>
@@ -1979,6 +2031,7 @@ class RecordsServiceSpec extends ApiSpec {
                 rawValueKey -> JsString(rawQueriedValue)
               )
             ),
+            Some("blah"),
             tenantId = Some(TENANT_1)
           )
           param.asAdmin(Post("/v0/records", theWithQueriedValueRecord)) ~> addTenantIdHeader(
@@ -1999,7 +2052,8 @@ class RecordsServiceSpec extends ApiSpec {
             "any name",
             Map(
               rawTestAspectId -> JsObject(rawValueKey -> JsString(queriedValue))
-            )
+            ),
+            Some("blah")
           )
           param.asAdmin(Post("/v0/records", theWithoutQueriedValueRecord1)) ~> addTenantIdHeader(
             TENANT_1
@@ -2019,7 +2073,8 @@ class RecordsServiceSpec extends ApiSpec {
             "any name",
             Map(
               rawTestAspectId -> JsObject(valueKey -> JsString(rawQueriedValue))
-            )
+            ),
+            Some("blah")
           )
           param.asAdmin(Post("/v0/records", theWithoutQueriedValueRecord2)) ~> addTenantIdHeader(
             TENANT_1
@@ -2084,7 +2139,8 @@ class RecordsServiceSpec extends ApiSpec {
               val record = Record(
                 i.toString,
                 i.toString,
-                Map(testAspectId -> JsObject("value" -> JsNumber(i)))
+                Map(testAspectId -> JsObject("value" -> JsNumber(i))),
+                Some("blah")
               )
               param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
                 TENANT_1
@@ -2133,7 +2189,8 @@ class RecordsServiceSpec extends ApiSpec {
               val record = Record(
                 i.toString,
                 i.toString,
-                Map(testAspectId -> JsObject("value" -> JsNumber(i)))
+                Map(testAspectId -> JsObject("value" -> JsNumber(i))),
+                Some("blah")
               )
               param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
                 TENANT_1
@@ -2178,7 +2235,8 @@ class RecordsServiceSpec extends ApiSpec {
               val record = Record(
                 i.toString,
                 i.toString,
-                Map(testAspectId -> JsObject("value" -> JsNumber(i)))
+                Map(testAspectId -> JsObject("value" -> JsNumber(i))),
+                Some("blah")
               )
               param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
                 TENANT_1
@@ -2255,7 +2313,8 @@ class RecordsServiceSpec extends ApiSpec {
               val record = Record(
                 i.toString,
                 i.toString,
-                Map(testAspectId -> JsObject("value" -> JsNumber(i)))
+                Map(testAspectId -> JsObject("value" -> JsNumber(i))),
+                Some("blah")
               )
               param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
                 TENANT_1
@@ -2367,7 +2426,8 @@ class RecordsServiceSpec extends ApiSpec {
                         val record = Record(
                           i.toString,
                           i.toString,
-                          Map(testAspectId -> JsObject("value" -> JsNumber(i)))
+                          Map(testAspectId -> JsObject("value" -> JsNumber(i))),
+                          Some("blah")
                         )
                         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
                           TENANT_1
@@ -2485,7 +2545,8 @@ class RecordsServiceSpec extends ApiSpec {
                                 aspectNumber.toString -> JsObject(
                                   "value" -> JsNumber(i)
                                 )
-                              )
+                              ),
+                              Some("blah")
                             )
                             param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
                               TENANT_1
@@ -2511,7 +2572,8 @@ class RecordsServiceSpec extends ApiSpec {
                                 aspectNumber.toString -> JsObject(
                                   "value" -> JsNumber(i)
                                 )
-                              )
+                              ),
+                              Some("blah")
                             )
                             param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
                               TENANT_2
@@ -2635,7 +2697,12 @@ class RecordsServiceSpec extends ApiSpec {
                           id => id -> JsObject("value" -> JsNumber(i))
                         )
                         val record =
-                          Record(i.toString, i.toString, aspectValues.toMap)
+                          Record(
+                            i.toString,
+                            i.toString,
+                            aspectValues.toMap,
+                            Some("blah")
+                          )
                         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
                           TENANT_1
                         ) ~> param.api(Full).routes ~> check {
@@ -2656,7 +2723,8 @@ class RecordsServiceSpec extends ApiSpec {
                         val record = Record(
                           aspectId + i.toString,
                           i.toString,
-                          Map(aspectId -> JsObject("value" -> JsNumber(i)))
+                          Map(aspectId -> JsObject("value" -> JsNumber(i))),
+                          Some("blah")
                         )
                         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
                           TENANT_1
@@ -2852,7 +2920,7 @@ class RecordsServiceSpec extends ApiSpec {
       }
 
       it("supports invalid URL characters in ID") { param =>
-        val record = Record("in valid", "testName", Map())
+        val record = Record("in valid", "testName", Map(), Some("blah"))
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
@@ -2868,6 +2936,7 @@ class RecordsServiceSpec extends ApiSpec {
             "in valid",
             "testName",
             Map(),
+            Some("blah"),
             tenantId = Some(TENANT_1)
           )
         }
@@ -2880,7 +2949,7 @@ class RecordsServiceSpec extends ApiSpec {
       }
 
       it("returns 400 if a record with the given ID already exists") { param =>
-        val record = Record("testId", "testName", Map())
+        val record = Record("testId", "testName", Map(), Some("blah"))
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
@@ -2904,14 +2973,14 @@ class RecordsServiceSpec extends ApiSpec {
       }
 
       checkMustBeAdmin(role) {
-        val record = Record("testId", "testName", Map())
+        val record = Record("testId", "testName", Map(), Some("blah"))
         Post("/v0/records", record)
       }
     }
 
     describe("PUT") {
       it("can add a new record") { param =>
-        val record = Record("testId", "testName", Map())
+        val record = Record("testId", "testName", Map(), Some("policy"))
         param.asAdmin(Put("/v0/records/testId", record)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
@@ -2942,14 +3011,21 @@ class RecordsServiceSpec extends ApiSpec {
 
       it("can update an existing record") { param =>
         val record =
-          Record("testId", "testName", Map(), tenantId = Some(TENANT_1))
+          Record(
+            "testId",
+            "testName",
+            Map(),
+            tenantId = Some(TENANT_1),
+            authnReadPolicyId = Some("old.policy")
+          )
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
-        val newRecord = record.copy(name = "newName")
+        val newRecord =
+          record.copy(name = "newName", authnReadPolicyId = Some("new.policy"))
         param.asAdmin(Put("/v0/records/testId", newRecord)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
@@ -2976,7 +3052,8 @@ class RecordsServiceSpec extends ApiSpec {
             "testId",
             "newName",
             Map(),
-            tenantId = Some(TENANT_1)
+            tenantId = Some(TENANT_1),
+            authnReadPolicyId = Some("new.policy")
           )
         }
 
@@ -2988,7 +3065,48 @@ class RecordsServiceSpec extends ApiSpec {
             "testId",
             "newName",
             Map(),
-            tenantId = Some(TENANT_2)
+            tenantId = Some(TENANT_2),
+            authnReadPolicyId = Some("new.policy")
+          )
+        }
+      }
+
+      it("can set authnReadPolicyId to NULL") { param =>
+        val record =
+          Record(
+            "testId",
+            "testName",
+            Map(),
+            tenantId = Some(TENANT_1),
+            authnReadPolicyId = Some("old.policy")
+          )
+        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val newRecord =
+          record.copy(authnReadPolicyId = None)
+        param.asAdmin(Put("/v0/records/testId", newRecord)) ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[Record] shouldEqual newRecord.copy(
+            tenantId = Some(TENANT_1)
+          )
+        }
+
+        Get("/v0/records/testId") ~> addTenantIdHeader(TENANT_1) ~> param
+          .api(role)
+          .routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[Record] shouldEqual Record(
+            "testId",
+            "testName",
+            Map(),
+            tenantId = Some(TENANT_1),
+            authnReadPolicyId = None
           )
         }
       }
@@ -3068,7 +3186,7 @@ class RecordsServiceSpec extends ApiSpec {
       }
 
       it("cannot change the ID of an existing record") { param =>
-        val record = Record("testId", "testName", Map())
+        val record = Record("testId", "testName", Map(), Some("blah"))
         param.asAdmin(Put("/v0/records/testId", record)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
@@ -3094,7 +3212,7 @@ class RecordsServiceSpec extends ApiSpec {
       }
 
       it("supports invalid URL characters in ID") { param =>
-        val record = Record("in valid", "testName", Map())
+        val record = Record("in valid", "testName", Map(), Some("blah"))
         param.asAdmin(Put("/v0/records/in%20valid", record)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
@@ -3118,7 +3236,7 @@ class RecordsServiceSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
         }
 
-        val record = Record("testId", "testName", Map())
+        val record = Record("testId", "testName", Map(), Some("blah"))
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
@@ -3152,7 +3270,8 @@ class RecordsServiceSpec extends ApiSpec {
         val record = Record(
           "testId",
           "testName",
-          Map("test" -> JsObject("foo" -> JsString("bar")))
+          Map("test" -> JsObject("foo" -> JsString("bar"))),
+          Some("blah")
         )
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
@@ -3191,7 +3310,8 @@ class RecordsServiceSpec extends ApiSpec {
         val record = Record(
           "testId",
           "testName",
-          Map("test" -> JsObject("foo" -> JsString("bar")))
+          Map("test" -> JsObject("foo" -> JsString("bar"))),
+          Some("blah")
         )
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
@@ -3218,7 +3338,7 @@ class RecordsServiceSpec extends ApiSpec {
       }
 
       checkMustBeAdmin(role) {
-        val record = Record("testId", "testName", Map())
+        val record = Record("testId", "testName", Map(), Some("blah"))
         Put("/v0/records/testId", record)
       }
     }
@@ -3236,7 +3356,7 @@ class RecordsServiceSpec extends ApiSpec {
       }
 
       it("can modify a record's name") { param =>
-        val record = Record("testId", "testName", Map())
+        val record = Record("testId", "testName", Map(), Some("blah"))
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
@@ -3252,6 +3372,7 @@ class RecordsServiceSpec extends ApiSpec {
             "testId",
             "foo",
             Map(),
+            Some("blah"),
             tenantId = Some(TENANT_1)
           )
         }
@@ -3270,6 +3391,7 @@ class RecordsServiceSpec extends ApiSpec {
             "testId",
             "foo",
             Map(),
+            Some("blah"),
             tenantId = Some(TENANT_1)
           )
         }
@@ -3281,8 +3403,38 @@ class RecordsServiceSpec extends ApiSpec {
         }
       }
 
+      it("can modify authnReadPolicyId") { param =>
+        val record = Record(
+          "testId",
+          "testName",
+          Map(),
+          authnReadPolicyId = Some("policyA")
+        )
+        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        val patch = JsonPatch(
+          Replace(Pointer.root / "authnReadPolicyId", JsString("policyB"))
+        )
+        param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(role).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[Record] shouldEqual Record(
+            "testId",
+            "testName",
+            Map(),
+            tenantId = Some(TENANT_1),
+            authnReadPolicyId = Some("policyB")
+          )
+        }
+      }
+
       it("cannot modify a record's ID") { param =>
-        val record = Record("testId", "testName", Map())
+        val record = Record("testId", "testName", Map(), Some("blah"))
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
@@ -3306,7 +3458,7 @@ class RecordsServiceSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
         }
 
-        val record = Record("testId", "testName", Map())
+        val record = Record("testId", "testName", Map(), Some("blah"))
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
@@ -3323,6 +3475,7 @@ class RecordsServiceSpec extends ApiSpec {
             "testId",
             "testName",
             Map("test" -> JsObject()),
+            Some("blah"),
             tenantId = Some(TENANT_1)
           )
         }
@@ -3341,6 +3494,7 @@ class RecordsServiceSpec extends ApiSpec {
             "testId",
             "testName",
             Map("test" -> JsObject()),
+            Some("blah"),
             tenantId = Some(TENANT_1)
           )
         }
@@ -3363,7 +3517,8 @@ class RecordsServiceSpec extends ApiSpec {
         val record = Record(
           "testId",
           "testName",
-          Map("test" -> JsObject("foo" -> JsString("bar")))
+          Map("test" -> JsObject("foo" -> JsString("bar"))),
+          Some("blah")
         )
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
@@ -3382,6 +3537,7 @@ class RecordsServiceSpec extends ApiSpec {
             "testId",
             "testName",
             Map("test" -> JsObject("foo" -> JsString("baz"))),
+            Some("blah"),
             tenantId = Some(TENANT_1)
           )
         }
@@ -3400,6 +3556,7 @@ class RecordsServiceSpec extends ApiSpec {
             "testId",
             "testName",
             Map("test" -> JsObject("foo" -> JsString("baz"))),
+            Some("blah"),
             tenantId = Some(TENANT_1)
           )
         }
@@ -3422,7 +3579,8 @@ class RecordsServiceSpec extends ApiSpec {
         val record = Record(
           "testId",
           "testName",
-          Map("test" -> JsObject("foo" -> JsString("bar")))
+          Map("test" -> JsObject("foo" -> JsString("bar"))),
+          Some("blah")
         )
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
@@ -3446,6 +3604,7 @@ class RecordsServiceSpec extends ApiSpec {
                 "newprop" -> JsString("test")
               )
             ),
+            Some("blah"),
             tenantId = Some(TENANT_1)
           )
         }
@@ -3469,6 +3628,7 @@ class RecordsServiceSpec extends ApiSpec {
                 "newprop" -> JsString("test")
               )
             ),
+            Some("blah"),
             tenantId = Some(TENANT_1)
           )
         }
@@ -3491,7 +3651,8 @@ class RecordsServiceSpec extends ApiSpec {
         val record = Record(
           "testId",
           "testName",
-          Map("test" -> JsObject("foo" -> JsString("bar")))
+          Map("test" -> JsObject("foo" -> JsString("bar"))),
+          Some("blah")
         )
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
@@ -3508,6 +3669,7 @@ class RecordsServiceSpec extends ApiSpec {
             "testId",
             "testName",
             Map(),
+            Some("blah"),
             tenantId = Some(TENANT_1)
           )
         }
@@ -3526,6 +3688,7 @@ class RecordsServiceSpec extends ApiSpec {
             "testId",
             "testName",
             Map(),
+            Some("blah"),
             tenantId = Some(TENANT_1)
           )
         }
@@ -3553,7 +3716,8 @@ class RecordsServiceSpec extends ApiSpec {
               "foo" -> JsString("bar"),
               "newprop" -> JsString("test")
             )
-          )
+          ),
+          Some("blah")
         )
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
@@ -3571,6 +3735,7 @@ class RecordsServiceSpec extends ApiSpec {
             "testId",
             "testName",
             Map("test" -> JsObject("foo" -> JsString("bar"))),
+            Some("blah"),
             tenantId = Some(TENANT_1)
           )
         }
@@ -3589,6 +3754,7 @@ class RecordsServiceSpec extends ApiSpec {
             "testId",
             "testName",
             Map("test" -> JsObject("foo" -> JsString("bar"))),
+            Some("blah"),
             tenantId = Some(TENANT_1)
           )
         }
@@ -3611,7 +3777,8 @@ class RecordsServiceSpec extends ApiSpec {
         val record = Record(
           "testId",
           "testName",
-          Map("test" -> JsObject("foo" -> JsString("bar")))
+          Map("test" -> JsObject("foo" -> JsString("bar"))),
+          Some("blah")
         )
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
@@ -3633,6 +3800,7 @@ class RecordsServiceSpec extends ApiSpec {
             "testId",
             "testName",
             Map("test" -> JsObject("bar" -> JsString("bar"))),
+            Some("blah"),
             tenantId = Some(TENANT_1)
           )
         }
@@ -3651,6 +3819,7 @@ class RecordsServiceSpec extends ApiSpec {
             "testId",
             "testName",
             Map("test" -> JsObject("bar" -> JsString("bar"))),
+            Some("blah"),
             tenantId = Some(TENANT_1)
           )
         }
@@ -3673,7 +3842,8 @@ class RecordsServiceSpec extends ApiSpec {
         val record = Record(
           "testId",
           "testName",
-          Map("test" -> JsObject("foo" -> JsString("bar")))
+          Map("test" -> JsObject("foo" -> JsString("bar"))),
+          Some("blah")
         )
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
@@ -3700,6 +3870,7 @@ class RecordsServiceSpec extends ApiSpec {
                 "bar" -> JsString("bar")
               )
             ),
+            Some("blah"),
             tenantId = Some(TENANT_1)
           )
         }
@@ -3723,6 +3894,7 @@ class RecordsServiceSpec extends ApiSpec {
                 "bar" -> JsString("bar")
               )
             ),
+            Some("blah"),
             tenantId = Some(TENANT_1)
           )
         }
@@ -3745,7 +3917,8 @@ class RecordsServiceSpec extends ApiSpec {
         val record = Record(
           "testId",
           "testName",
-          Map("A" -> JsObject("foo" -> JsString("bar")))
+          Map("A" -> JsObject("foo" -> JsString("bar"))),
+          Some("blah")
         )
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
@@ -3764,6 +3937,7 @@ class RecordsServiceSpec extends ApiSpec {
             "testId",
             "testName",
             Map("A" -> JsObject("foo" -> JsString("bar"))),
+            Some("blah"),
             tenantId = Some(TENANT_1)
           )
         }
@@ -3806,7 +3980,8 @@ class RecordsServiceSpec extends ApiSpec {
         val record = Record(
           "testId",
           "testName",
-          Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject())
+          Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject()),
+          Some("blah")
         )
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
@@ -3846,7 +4021,8 @@ class RecordsServiceSpec extends ApiSpec {
         val record = Record(
           "testId",
           "testName",
-          Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject())
+          Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject()),
+          Some("blah")
         )
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
@@ -3877,7 +4053,7 @@ class RecordsServiceSpec extends ApiSpec {
     describe("DELETE") {
       describe("by id") {
         it("can delete a record without any aspects") { param =>
-          val record = Record("without", "without", Map())
+          val record = Record("without", "without", Map(), Some("blah"))
           param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
@@ -3918,7 +4094,8 @@ class RecordsServiceSpec extends ApiSpec {
             status shouldEqual StatusCodes.OK
           }
 
-          val record = Record("with", "with", Map("test" -> JsObject()))
+          val record =
+            Record("with", "with", Map("test" -> JsObject()), Some("blah"))
           param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
@@ -3963,14 +4140,16 @@ class RecordsServiceSpec extends ApiSpec {
         it(
           "deletes only records with the correct source and without the specified tag"
         ) { param =>
-          val junitFile = new java.io.File(
+          val parentDirSchema = new java.io.File(
             "../magda-registry-aspects/source.schema.json"
           ).getCanonicalFile
-          val commandLineFile = new java.io.File(
+          val thisDirSchema = new java.io.File(
             "./magda-registry-aspects/source.schema.json"
           ).getCanonicalFile
 
-          val file = if (junitFile.exists) junitFile else commandLineFile
+          val file =
+            if (parentDirSchema.exists) parentDirSchema else thisDirSchema
+
           val source = scala.io.Source.fromFile(file)
           val lines = try source.mkString
           finally source.close()
@@ -3986,24 +4165,43 @@ class RecordsServiceSpec extends ApiSpec {
             status shouldEqual StatusCodes.OK
           }
 
-          val noTagNoSource = Record("notag-nosource", "name", Map())
+          val noTagNoSource =
+            Record("notag-nosource", "name", Map(), Some("blah"))
           val noTagWrongSource =
-            Record("notag-wrongsource", "name", buildAspects("wrong"))
+            Record(
+              "notag-wrongsource",
+              "name",
+              buildAspects("wrong"),
+              Some("blah")
+            )
           val noTagRightSource =
-            Record("notag-rightsource", "name", buildAspects("right"))
+            Record(
+              "notag-rightsource",
+              "name",
+              buildAspects("right"),
+              Some("blah")
+            )
 
           val wrongTagNoSource =
-            Record("wrongtag-nosource", "name", Map(), Some("wrongtag"))
+            Record(
+              "wrongtag-nosource",
+              "name",
+              Map(),
+              Some("blah"),
+              Some("wrongtag")
+            )
           val wrongTagWrongSource = Record(
             "wrongtag-wrongsource",
             "name",
             buildAspects("wrong"),
+            Some("blah"),
             Some("wrongtag")
           )
           val wrongTagRightSource = Record(
             "wrongtag-rightsource",
             "name",
             buildAspects("right"),
+            Some("blah"),
             Some("wrongtag")
           )
 
@@ -4013,6 +4211,7 @@ class RecordsServiceSpec extends ApiSpec {
             "righttag-wrongsource",
             "name",
             buildAspects("wrong"),
+            Some("blah"),
             Some("righttag")
           )
 
@@ -4020,6 +4219,7 @@ class RecordsServiceSpec extends ApiSpec {
             "righttag-rightsource",
             "name",
             buildAspects("right"),
+            Some("blah"),
             Some("righttag")
           )
 
@@ -4165,14 +4365,15 @@ class RecordsServiceSpec extends ApiSpec {
         }
 
         it("returns HTTP 200 if there's nothing to delete") { param =>
-          val junitFile = new java.io.File(
+          val parentDirSchema = new java.io.File(
             "../magda-registry-aspects/source.schema.json"
           ).getCanonicalFile
-          val commandLineFile = new java.io.File(
+          val thisDirSchema = new java.io.File(
             "./magda-registry-aspects/source.schema.json"
           ).getCanonicalFile
 
-          val file = if (junitFile.exists) junitFile else commandLineFile
+          val file =
+            if (parentDirSchema.exists) parentDirSchema else thisDirSchema
           val source = scala.io.Source.fromFile(file)
           val lines = try source.mkString
           finally source.close()
@@ -4192,6 +4393,7 @@ class RecordsServiceSpec extends ApiSpec {
             "righttag-rightsource",
             "name",
             buildAspects("right"),
+            Some("blah"),
             Some("righttag")
           )
 
