@@ -523,7 +523,6 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
         // we don't end up with an extraneous record creation event in the database.
         case None =>
           // Check if record exists without any auth
-          // TODO: Add OPA check here.
           this.getById(session, tenantId, None, id) match {
             case Some(record) =>
               Failure(
@@ -560,7 +559,9 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
         val oldRecordJson = oldRecordWithoutAspects.toJson
         val newRecordJson = newRecordWithoutAspects.toJson
 
-        JsonDiff.diff(oldRecordJson, newRecordJson, remember = false)
+        val diff = JsonDiff.diff(oldRecordJson, newRecordJson, remember = false)
+
+        diff
       }
 
       // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
@@ -746,16 +747,18 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
         }
       }
       _ <- Try {
-        // Name is currently the only member of Record that should generate an event when changed.
-        if (record.name != patchedRecord.name) {
+        // only update / generate event if name or authnReadPolicyId have changed. Id can't change, aspect changes are handled separately
+        if ((record.name, record.authnReadPolicyId) != (patchedRecord.name, patchedRecord.authnReadPolicyId)) {
           val event =
             PatchRecordEvent(id, tenantId.tenantId, recordOnlyPatch).toJson.compactPrint
           val eventId =
             sql"insert into Events (eventTypeId, userId, tenantId, data) values (${PatchRecordEvent.Id}, 0, ${tenantId.tenantId}, $event::json)"
               .updateAndReturnGeneratedKey()
               .apply()
-          sql"""update Records set name = ${patchedRecord.name}, lastUpdate = $eventId where (recordId, tenantId) = ($id, ${tenantId.tenantId})""".update
+          sql"""update Records set name = ${patchedRecord.name}, authnReadPolicyId = ${patchedRecord.authnReadPolicyId}, lastUpdate = $eventId
+                  where (recordId, tenantId) = ($id, ${tenantId.tenantId})""".update
             .apply()
+
           eventId
         } else {
           0
@@ -814,6 +817,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
         patchedRecord.id,
         patchedRecord.name,
         aspects.toMap,
+        patchedRecord.authnReadPolicyId,
         tenantId = Some(tenantId.tenantId)
       )
   }
@@ -1559,9 +1563,9 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
             (aspectId, JsonParser(rs.string(s"aspect$index")).asJsObject)
         }
         .toMap,
+      rs.stringOpt("authnReadPolicyId"),
       rs.stringOpt("sourceTag"),
-      rs.bigIntOpt("tenantId").map(BigInt.apply),
-      rs.stringOpt("authnReadPolicyId")
+      rs.bigIntOpt("tenantId").map(BigInt.apply)
     )
   }
 

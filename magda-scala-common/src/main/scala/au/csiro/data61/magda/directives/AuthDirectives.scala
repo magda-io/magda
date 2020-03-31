@@ -47,6 +47,14 @@ object AuthDirectives {
         }
 
         sessionToken match {
+          case Some(header) if header.value().isEmpty() =>
+            log.info("X-Magda-Session header was blank")
+            reject(
+              AuthenticationFailedRejection(
+                AuthenticationFailedRejection.CredentialsMissing,
+                HttpChallenge("magda", None)
+              )
+            )
           case Some(header) =>
             try {
               val claims: Jws[Claims] =

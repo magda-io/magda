@@ -59,6 +59,36 @@ class RecordsServiceAuthSpec extends BaseRecordsServiceAuthSpec {
         }
       }
 
+      describe("for a single record summary") {
+        commonSingleRecordSummaryTests(None, true)
+
+        it(
+          "if there's no default or specific policy in place, it should deny all access"
+        ) { param =>
+          addExampleAspectDef(param)
+          val recordId = "foo"
+          addRecord(
+            param,
+            Record(
+              recordId,
+              "foo",
+              Map(
+                "stringExample" -> JsObject(
+                  "nested" -> JsObject("public" -> JsString("true"))
+                )
+              ),
+              authnReadPolicyId = None
+            )
+          )
+
+          Get(s"/v0/records/summary/foo") ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.NotFound
+          }
+        }
+      }
+
       describe("for multiple records") {
         it(
           "allows access to aspect-less records if default policy resolves to unconditionally allow access to everything"
@@ -82,7 +112,7 @@ class RecordsServiceAuthSpec extends BaseRecordsServiceAuthSpec {
             "not.default.policyid.read",
             """{
             "result": {
-                "queries": []
+                "queries": [[]]
             }
           }"""
           )

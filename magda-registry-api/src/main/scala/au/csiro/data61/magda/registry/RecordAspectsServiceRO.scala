@@ -105,7 +105,13 @@ class RecordAspectsServiceRO(
               AuthOperations.read,
               recordPersistence,
               authApiClient,
-              Some(recordId)
+              Some(recordId),
+              (
+                StatusCodes.NotFound,
+                ApiError(
+                  "No record or aspect exists with the given IDs."
+                )
+              )
             )(
               config,
               system,

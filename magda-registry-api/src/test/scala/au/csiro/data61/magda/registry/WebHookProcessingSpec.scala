@@ -53,7 +53,7 @@ class WebHookProcessingSpec
     it("records if events modified them") { param =>
       testWebHook(param, None) { (payloads, _) =>
         val testId = "testId"
-        val record = Record(testId, "testName", Map())
+        val record = Record(testId, "testName", Map(), Some("test"))
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(Full).routes ~> check {
@@ -102,7 +102,8 @@ class WebHookProcessingSpec
           Map(
             "A" -> JsObject("foo" -> JsString("bar")),
             "B" -> JsObject("bvalue" -> JsString("yep"))
-          )
+          ),
+          Some("blah")
         )
         // Generate and process events with IDs of 4, 5, 6.
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
@@ -167,7 +168,8 @@ class WebHookProcessingSpec
           Map(
             "A" -> JsObject("foo" -> JsString("bar")),
             "B" -> JsObject("bvalue" -> JsString("yep"))
-          )
+          ),
+          Some("blah")
         )
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
@@ -227,7 +229,8 @@ class WebHookProcessingSpec
           Map(
             "A" -> JsObject("foo" -> JsString("bar")),
             "B" -> JsObject("bvalue" -> JsString("yep"))
-          )
+          ),
+          Some("blah")
         )
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
@@ -288,7 +291,8 @@ class WebHookProcessingSpec
           Map(
             "A" -> JsObject("foo" -> JsString("bar")),
             "B" -> JsObject("bvalue" -> JsString("yep"))
-          )
+          ),
+          Some("blah")
         )
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
@@ -355,7 +359,8 @@ class WebHookProcessingSpec
           Map(
             "A" -> JsObject("foo" -> JsString("bar")),
             "B" -> JsObject("bvalue" -> JsString("yep"))
-          )
+          ),
+          Some("blah")
         )
         // Generate events with IDs of 4, 5, 6 but only process 4, 5.
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
@@ -429,7 +434,8 @@ class WebHookProcessingSpec
           Map(
             "A" -> JsObject("foo" -> JsString("bar")),
             "B" -> JsObject("bvalue" -> JsString("yep"))
-          )
+          ),
+          Some("blah")
         )
         // Generate events with IDs of 4, 5, 6 but only process 4 and 6.
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
@@ -470,7 +476,7 @@ class WebHookProcessingSpec
           defaultWebHook.copy(eventTypes = Set(EventType.CreateRecord))
         testWebHook(param, Some(webHook)) { (payloads, _) =>
           val testId = "testId"
-          val record = Record(testId, "testName", Map())
+          val record = Record(testId, "testName", Map(), Some("test"))
           // Generate and process event with ID of 2.
           param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
             TENANT_1
@@ -511,7 +517,7 @@ class WebHookProcessingSpec
 
           // Insert a record to put an event into the table
           val testId = "testId"
-          val record = Record(testId, "testName", Map())
+          val record = Record(testId, "testName", Map(), Some("test"))
 
           param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
             MAGDA_ADMIN_PORTAL_ID
@@ -606,7 +612,8 @@ class WebHookProcessingSpec
           val record = Record(
             testId,
             "testName",
-            Map("A" -> JsObject("foo" -> JsString("bar")))
+            Map("A" -> JsObject("foo" -> JsString("bar"))),
+            Some("blah")
           )
           // Generate events with IDs of 3 and 4 but only process 4.
           param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
@@ -628,7 +635,7 @@ class WebHookProcessingSpec
           defaultWebHook.copy(eventTypes = Set(EventType.DeleteRecord))
         testWebHook(param, Some(webHook)) { (payloads, _) =>
           val testId = "testId"
-          val record = Record(testId, "testName", Map())
+          val record = Record(testId, "testName", Map(), Some("test"))
           // Generate but not process event with ID of 2.
           param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
             TENANT_1
@@ -723,7 +730,7 @@ class WebHookProcessingSpec
           defaultWebHook.copy(eventTypes = Set(EventType.PatchRecord))
         testWebHook(param, Some(webHook)) { (payloads, _) =>
           val testId = "testId"
-          val record = Record(testId, "testName", Map())
+          val record = Record(testId, "testName", Map(), Some("test"))
           // Generate but not process event with ID of 2.
           param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
             TENANT_1
@@ -757,7 +764,7 @@ class WebHookProcessingSpec
           defaultWebHook.copy(eventTypes = Set(EventType.PatchRecord))
         testWebHook(param, Some(webHook)) { (payloads, _) =>
           val testId = "testId"
-          val record = Record(testId, "testName", Map())
+          val record = Record(testId, "testName", Map(), Some("test"))
           // Generate but not process event with ID of 2.
           param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
             TENANT_1
@@ -800,7 +807,8 @@ class WebHookProcessingSpec
           val record = Record(
             testId,
             "testName",
-            Map("A" -> JsObject("foo" -> JsString("bar")))
+            Map("A" -> JsObject("foo" -> JsString("bar"))),
+            Some("blah")
           )
           param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
             TENANT_1
@@ -846,7 +854,8 @@ class WebHookProcessingSpec
           val record = Record(
             testId,
             "testName",
-            Map("A" -> JsObject("foo" -> JsString("bar")))
+            Map("A" -> JsObject("foo" -> JsString("bar"))),
+            Some("blah")
           )
           param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
             TENANT_1
@@ -908,7 +917,8 @@ class WebHookProcessingSpec
           Map(
             "A" -> JsObject("foo" -> JsString("bar")),
             "B" -> JsObject("bvalue" -> JsString("yep"))
-          )
+          ),
+          Some("blah")
         )
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
@@ -974,7 +984,8 @@ class WebHookProcessingSpec
           Map(
             "A" -> JsObject("foo" -> JsString("bar")),
             "B" -> JsObject("bvalue" -> JsString("yep"))
-          )
+          ),
+          Some("blah")
         )
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
@@ -1036,7 +1047,7 @@ class WebHookProcessingSpec
         payloads.clear()
 
         val testId = "testId"
-        val record = Record(testId, "testName", Map())
+        val record = Record(testId, "testName", Map(), Some("test"))
         // Generate and process event with ID of 3.
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
@@ -1178,7 +1189,7 @@ class WebHookProcessingSpec
         payloads.clear()
 
         val datasetId = "dataset"
-        val dataset = Record(datasetId, "dataset", Map())
+        val dataset = Record(datasetId, "dataset", Map(), Some("blah"))
         // Generate and process event with ID of 3.
         param.asAdmin(Post("/v0/records", dataset)) ~> addTenantIdHeader(
           TENANT_1
@@ -1190,7 +1201,8 @@ class WebHookProcessingSpec
         payloads.clear()
 
         val distributionId = "distribution"
-        val distribution = Record(distributionId, "distribution", Map())
+        val distribution =
+          Record(distributionId, "distribution", Map(), Some("blah"))
         // Generate and process event with ID of 4.
         param.asAdmin(Post("/v0/records", distribution)) ~> addTenantIdHeader(
           TENANT_1
@@ -1284,7 +1296,7 @@ class WebHookProcessingSpec
         }
 
         val datasetId = "dataset"
-        val dataset = Record(datasetId, "dataset", Map())
+        val dataset = Record(datasetId, "dataset", Map(), Some("blah"))
         param.asAdmin(Post("/v0/records", dataset)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(Full).routes ~> check {
@@ -1297,7 +1309,8 @@ class WebHookProcessingSpec
         }
 
         val distributionId = "distribution"
-        val distribution = Record(distributionId, "distribution", Map())
+        val distribution =
+          Record(distributionId, "distribution", Map(), Some("blah"))
         param.asAdmin(Post("/v0/records", distribution)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(Full).routes ~> check {
@@ -1385,7 +1398,8 @@ class WebHookProcessingSpec
         }
 
         val distributionId = "distribution"
-        val distribution = Record(distributionId, "distribution", Map())
+        val distribution =
+          Record(distributionId, "distribution", Map(), Some("blah"))
         // Generate and process event with ID of 4.
         param.asAdmin(Post("/v0/records", distribution)) ~> addTenantIdHeader(
           TENANT_1
@@ -1404,7 +1418,8 @@ class WebHookProcessingSpec
         val dataset = Record(
           datasetId,
           "dataset",
-          Map("A" -> JsObject("someLink" -> JsString(distributionId)))
+          Map("A" -> JsObject("someLink" -> JsString(distributionId))),
+          Some("blah")
         )
         // Generate and process events with IDs of 6, 7.
         param.asAdmin(Post("/v0/records", dataset)) ~> addTenantIdHeader(
@@ -1477,7 +1492,12 @@ class WebHookProcessingSpec
         }
 
         val distributionId = "distribution"
-        val distribution = Record(distributionId, "distribution", Map())
+        val distribution = Record(
+          distributionId,
+          "distribution",
+          Map(),
+          Some("blah")
+        )
         // Generate and process event with ID of 3.
         param.asAdmin(Post("/v0/records", distribution)) ~> addTenantIdHeader(
           TENANT_1
@@ -1493,7 +1513,8 @@ class WebHookProcessingSpec
             "A" -> JsObject(
               "distributions" -> JsArray(JsString(distributionId))
             )
-          )
+          ),
+          Some("blah")
         )
         // Generate and process events with IDs of 4, 5.
         param.asAdmin(Post("/v0/records", dataset)) ~> addTenantIdHeader(
@@ -1568,7 +1589,8 @@ class WebHookProcessingSpec
         val distribution = Record(
           distributionId,
           "distribution",
-          Map("B" -> JsObject("value" -> JsString("something")))
+          Map("B" -> JsObject("value" -> JsString("something"))),
+          Some("blah")
         )
         // Generate and process events with IDs of 4, 5.
         param.asAdmin(Post("/v0/records", distribution)) ~> addTenantIdHeader(
@@ -1581,7 +1603,8 @@ class WebHookProcessingSpec
         val dataset = Record(
           datasetId,
           "dataset",
-          Map("A" -> JsObject("someLink" -> JsString(distributionId)))
+          Map("A" -> JsObject("someLink" -> JsString(distributionId))),
+          Some("blah")
         )
         // Generate and process events with IDs of 6, 7.
         param.asAdmin(Post("/v0/records", dataset)) ~> addTenantIdHeader(
@@ -1662,7 +1685,8 @@ class WebHookProcessingSpec
           val distribution = Record(
             distributionId,
             "distribution",
-            Map("B" -> JsObject("value" -> JsString("something")))
+            Map("B" -> JsObject("value" -> JsString("something"))),
+            Some("blah")
           )
           // Generate and process events with IDs of 4, 5.
           param.asAdmin(Post("/v0/records", distribution)) ~> addTenantIdHeader(
@@ -1679,7 +1703,8 @@ class WebHookProcessingSpec
               "A" -> JsObject(
                 "distributions" -> JsArray(JsString(distributionId))
               )
-            )
+            ),
+            Some("blah")
           )
           // Generate and process events with IDs of 6, 7.
           param.asAdmin(Post("/v0/records", dataset)) ~> addTenantIdHeader(
@@ -1754,7 +1779,8 @@ class WebHookProcessingSpec
         }
 
         val distributionId = "distribution"
-        val distribution = Record(distributionId, "distribution", Map())
+        val distribution =
+          Record(distributionId, "distribution", Map(), Some("blah"))
         // Generate and process events with IDs of 4, 5.
         param.asAdmin(Post("/v0/records", distribution)) ~> addTenantIdHeader(
           TENANT_1
@@ -1769,7 +1795,8 @@ class WebHookProcessingSpec
           Map(
             "A" -> JsObject("someLink" -> JsString(distributionId)),
             "B" -> JsObject()
-          )
+          ),
+          Some("blah")
         )
         // Generate and process events with IDs of 6, 7.
         param.asAdmin(Post("/v0/records", dataset)) ~> addTenantIdHeader(
@@ -1843,7 +1870,8 @@ class WebHookProcessingSpec
           val distribution = Record(
             distributionId,
             "distribution",
-            Map("B" -> JsObject("foo" -> JsString("bar")))
+            Map("B" -> JsObject("foo" -> JsString("bar"))),
+            Some("blah")
           )
           // Generate and process events with IDs of 4, 5.
           param.asAdmin(Post("/v0/records", distribution)) ~> addTenantIdHeader(
@@ -1856,7 +1884,8 @@ class WebHookProcessingSpec
           val dataset = Record(
             datasetId,
             "dataset",
-            Map("A" -> JsObject("someLink" -> JsString(distributionId)))
+            Map("A" -> JsObject("someLink" -> JsString(distributionId))),
+            Some("blah")
           )
           // Generate and process events with IDs of 6, 7.
           param.asAdmin(Post("/v0/records", dataset)) ~> addTenantIdHeader(
@@ -1897,7 +1926,7 @@ class WebHookProcessingSpec
 
   describe("resumes hooks that have previously failed with network errors") {
     describe("sync") {
-      val dataset = Record("dataset", "dataset", Map())
+      val dataset = Record("dataset", "dataset", Map(), Some("blah"))
 
       /**
         * This function will perform the following common tasks:
@@ -2040,7 +2069,7 @@ class WebHookProcessingSpec
     }
 
     describe("async") {
-      val dataset = Record("dataset", "dataset", Map())
+      val dataset = Record("dataset", "dataset", Map(), Some("blah"))
 
       def doTestAsync(param: FixtureParam)(resumeHook: () => Any) {
         testAsyncWebHook(param, Some(defaultWebHook)) { (payloads, _) =>
