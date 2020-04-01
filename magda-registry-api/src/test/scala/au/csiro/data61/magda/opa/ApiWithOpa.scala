@@ -42,8 +42,8 @@ abstract class ApiWithOpa
     with AuthProtocols {
   override def testConfigSource: String =
     super.testConfigSource + s"""
-      |opa.recordPolicyId="object.registry.record.esri_owner_groups"
-      |akka.loglevel = ERROR
+                                |opa.recordPolicyId="object.registry.record.esri_owner_groups"
+                                |akka.loglevel = ERROR
     """.stripMargin
 
   implicit def default(implicit system: ActorSystem): RouteTestTimeout =
