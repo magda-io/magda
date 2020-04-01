@@ -63,6 +63,7 @@ Authorization:
 -   Added authorization inside links with dereferencing on or off, for the `/records` endpoint
 -   Added per-record authorization around the `/records/summary/<recordid>` endpoint matching the `/records/<id>` one.
 -   Added per-record authorization around the `/records/summary` endpoint matching the `/records` one.
+-   Added per-record authorization around the `/records/<recordid>/history` endpoint
 
 Others:
 
