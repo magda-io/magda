@@ -128,9 +128,7 @@ class FacetBasicBody extends Component {
 
         return (
             <div
-                className={`facet-body facet-${this.props.title} facet-${
-                    this.props.alignment
-                }`}
+                className={`facet-body facet-${this.props.title} facet-${this.props.alignment}`}
             >
                 <div className="clearfix facet-body__header">
                     <FacetSearchBox

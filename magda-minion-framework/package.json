@@ -7,7 +7,9 @@
     "build": "yarn run compile",
     "compile": "tsc -b && ts-module-alias-transformer dist",
     "watch": "tsc -b --watch",
-    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
+    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
+    "npm-setup": "echo \"//registry.npmjs.org/:_authToken=${NPM_TOKEN}\" > .npmrc",
+    "release": "npm publish || echo \"Skip releasing npm package @magda/minion-framework.\""
   },
   "author": "",
   "license": "Apache-2.0",
@@ -54,10 +56,14 @@
     "language": "typescript",
     "categories": {
       "minion": true,
-      "library": true
+      "library": true,
+      "npmPackage": true
     }
   },
   "_moduleMappings": {
     "magda-typescript-common/src": "@magda/typescript-common/dist"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }

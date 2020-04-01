@@ -7,7 +7,7 @@ import akka.http.scaladsl.marshalling.{
 }
 import akka.http.scaladsl.model.HttpHeader
 import akka.http.scaladsl.model.StatusCodes._
-import au.csiro.data61.magda.indexer.external.registry.RegistryExternalInterface
+import au.csiro.data61.magda.client.RegistryExternalInterface
 import au.csiro.data61.magda.indexer.external.registry.RegisterWebhook
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.registry.{Full, ApiSpec => BaseRegistryApiSpec}
@@ -24,7 +24,7 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
       expectWebHookGet(param)
 
       // Expect the new hook to be posted
-      (param.fetcher
+      (param.authFetcher
         .post(_: String, _: WebHook, _: Seq[HttpHeader])(
           _: ToEntityMarshaller[WebHook]
         ))
@@ -37,7 +37,7 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
               marshaller: ToEntityMarshaller[WebHook]
           ) => {
             // Forward the req to the registry api
-            expectAdminCheck(param.fetcher, true)
+            expectAdminCheck(param.authFetcher, true)
             val request = Post(url, webhook)(marshaller, param.api(Full).ec)
               .withHeaders(scala.collection.immutable.Seq.concat(headers))
 
@@ -49,7 +49,7 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
           }
         )
 
-      val interface = new RegistryExternalInterface(param.fetcher)(
+      val interface = new RegistryExternalInterface(param.authFetcher)(
         config,
         system,
         executor,
@@ -109,7 +109,7 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
       expectWebHookGet(param)
 
       // Expect the hook to update itself
-      (param.fetcher
+      (param.authFetcher
         .put(_: String, _: WebHook, _: Seq[HttpHeader])(
           _: ToEntityMarshaller[WebHook]
         ))
@@ -122,7 +122,7 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
               marshaller: ToEntityMarshaller[WebHook]
           ) => {
             // Forward the req to the registry api
-            expectAdminCheck(param.fetcher, true)
+            expectAdminCheck(param.authFetcher, true)
             val request = Put(url, webhook)(marshaller, param.api(Full).ec)
               .withHeaders(scala.collection.immutable.Seq.concat(headers))
 
@@ -135,7 +135,7 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
         )
 
       // Expect an ACK call once the indexer has determined that the webhook already exists
-      (param.fetcher
+      (param.authFetcher
         .post(_: String, _: WebHookAcknowledgement, _: Seq[HttpHeader])(
           _: ToEntityMarshaller[WebHookAcknowledgement]
         ))
@@ -161,7 +161,7 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
         )
 
       // Start the test
-      val interface = new RegistryExternalInterface(param.fetcher)(
+      val interface = new RegistryExternalInterface(param.authFetcher)(
         config,
         system,
         executor,
@@ -175,8 +175,8 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
     }
 
     def expectWebHookGet(param: FixtureParam) {
-      expectAdminCheck(param.fetcher, true)
-      (param.fetcher
+      expectAdminCheck(param.authFetcher, true)
+      (param.authFetcher
         .get(_: String, _: Seq[HttpHeader]))
         .expects(*, *)
         .onCall((url: String, headers: Seq[HttpHeader]) => {

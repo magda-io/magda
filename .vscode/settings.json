@@ -5,5 +5,6 @@
         "**/bin": true,
         "magda-web-client/**/*.css": true
     },
-    "eslint.enable": true
+    "eslint.enable": true,
+    "files.associations": { "*.json": "jsonc" }
 }

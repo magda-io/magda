@@ -1,9 +1,21 @@
+# CHANGELOG
+
 ## 0.0.57
 
 General:
 
 -   CSV Connector can now process ampersand character properly
+-   Fixed broken link minion causes json schema validation error
 -   Upgraded typescript to 3.7.2 & Use [Project References](https://www.typescriptlang.org/docs/handbook/project-references.html) to organize typescript project
+-   Upgraded prettier to 1.19.1 to [support typescript 3.7 better](https://prettier.io/blog/2019/11/09/1.19.0.html)
+-   Moved out [connectors](https://github.com/magda-io?utf8=%E2%9C%93&q=magda+connector) & [minions](https://github.com/magda-io?utf8=%E2%9C%93&q=magda-minion) from main magda repostory
+-   Broke helm chart to `magda-core` (core magda components excluding `connectors` & `minions`) & `magda` (full magda chart) and adjusted CI pipeline accordingly
+-   Release [npm packages](https://www.npmjs.com/search?q=%40magda) for building `connectors` & `minions` without depending on main repo
+-   Upgrade charts to use with Helm 3, Kubernetes 1.17 and Minikube 1.7.2
+-   Make recompiling and updating create secrets scripts an action in the CI
+-   Move [magda-preview-map](https://github.com/magda-io/magda-preview-map) out of the core repo
+-   Upgraded everything cert-manager related to work with v0.13
+-   Update build & run document to provide more information regarding running local build connector & minion docker images
 
 UI:
 
@@ -11,11 +23,51 @@ UI:
 -   Added pre-specified options for themes on Add dataset page
 -   User can't input a future date to date of last modification on add dataset page
 -   Allow to config whether keywords / themes input can accept manual inputs (or only pre-defined phrases)
+-   Only check for validity in temporal filters (in the search dataset page)
 -   Allow a blacklist of strings to be specified for automatic keyword generation
+-   Make the global notification banner configurable
+-   Removed all references to the DTA Design System react components, so that all styles come through our SCSS compilation, which should make SCSS smaller and more consistent.
+-   Swap the order of custodian & team dropdown on add dataset page
+-   Updated text & margin of add files page to match the new design
+-   Updated Add Dataset Welcome screen options UI design
+-   Added UI for "Link to dataset already hosted online" box
+-   Added UI for "Link to an API or web service" box
+-   Added UI for storing files
+-   Added UI for "Publish as Open Data to data.gov.au"
+-   Refactor view dataset page & remove the edit function from the page
+-   Clarify tooltip text
+
+Storage:
+
+-   Add an API for storing and streaming content
+-   Add a DELETE endpoint
+-   Improves error handling (returns 404 from GET if the file doesn't exist)
+-   Add apidocs
+-   Add endpoint to create a bucket
+-   Restrict file upload to admins only
+-   Add authorization to GET endpoint
+-   Support multipart upload
+-   Fixed: minio chart will not be deployed if storage-api is not turned on
+-   Make MinIO a dependency of storage's helm chart
+
+Gateway:
+
+-   Add /data to ckan URL, remove the `came_from` param
+
+Authorization:
+
+-   Made integration tests for authorisation run automatically as part of CI.
+-   Added ability to set per-record authorization policies in the registry (for getting a single record)
+-   Added ability to set per-record authorization policies in the registry (for getting multiple records)
+-   Added ability to use OPA policies that use data types other than strings in the registry
+-   Added authorization inside links with dereferencing on or off, for the `records/<id>` endpoint
+-   Added authorization inside links with dereferencing on or off, for the `records` endpoint
+-   Added per-record authorization around the `records/summary/<recordid>` endpoint matching the `records/<id>` one.
 
 Others:
 
 -   Use a "Year" column from a CSV file to extract a temporal extent
+-   Fixed Registry History API Performance Issue when limit=1 & Updated Registry History API Document
 
 ## 0.0.56
 
@@ -27,6 +79,7 @@ General:
     policy (default) or Esri groups based access policy.
 -   Add esri portal connector. Read its README.md file before use.
 -   Changed the way of `auth-secrets` to be created in gitlab
+-   Add horizontal pod autoscalers to crucial services
 
 Registry:
 
@@ -37,6 +90,7 @@ Registry:
 -   Removed some unused fields from `dcat-dataset-strings` - it should now be back to looking more-or-less like DCAT.
 -   Added the feature of validating aspect data against JSON Schema (Default to off)
 -   Fixed request for all tenant records returning `[]`.
+-   Made the registry treat tenant id `NULL` as equivalent to tenant id `0`
 
 Gateway:
 
@@ -161,6 +215,10 @@ UI:
 -   Added tooltips to the `Production` section of the `People and Production` page
 -   Reworded the user access options
 -   Removed help icons without content
+-   Made print button call `window.stop` before `window.print`.
+-   Made read-only calls to the registry api use `/registry-read-only`.
+-   Fixed: if featureFlags are not set, edit buttons are always shown on dataset page
+-   Add specific color to recent search item text
 -   Improve keywords generation logic for Spreadsheet
 -   Mention that choosing state is optional
 -   Make spatial input default to Australia
@@ -952,7 +1010,7 @@ Others:
 -   Formatted existing typescript source code using `prettier`
 -   Updated `building-and-running.md`
 -   Added preview map support for geojson data type
--   Merged latest changes (commits on or before 1st Feb 2018) from TerrisMap to `magda-preview-map` module
+-   Merged latest changes (commits on or before 1st Feb 2018) from TerriaMap to `magda-preview-map` module
 -   Map previewer will zoom to dataset (except KML data)
 -   Removed `year` facet from search results, replaced it with a temporal field with earliest and latest dates in search results.
 -   Added Google Analytics Tag Manager Code / VWO code to `<head>`

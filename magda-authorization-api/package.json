@@ -7,7 +7,7 @@
     "compile": "tsc -b && ts-module-alias-transformer dist",
     "watch": "tsc -b --watch",
     "start": "node dist/index.js",
-    "dev": "export PGUSER=client && export JWT_SECRET=squirrel && run-typescript-in-nodemon src/index.ts",
+    "dev": "export PGUSER=client && run-typescript-in-nodemon src/index.ts",
     "test": "nyc mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
@@ -66,7 +66,8 @@
   "magda": {
     "language": "typescript",
     "categories": {
-      "api": true
+      "api": true,
+      "testStandAlone": false
     }
   },
   "nyc": {

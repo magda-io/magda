@@ -14,7 +14,7 @@ describe("Test reload tenants", () => {
         magdaAdminPortalName: "some.where",
         fetchTenantsMinIntervalInMs: 1000,
         jwtSecret: "a top secret",
-        userId: "an-admin-user"
+        userId: "b1fddd6f-e230-4068-bd2c-1a21844f1598"
     };
 
     const requestScope = nock(config.tenantUrl, {
@@ -57,13 +57,11 @@ describe("Test reload tenants", () => {
     });
 
     it("should reload tenants table with enabled tenants only", async () => {
-        requestScope
-            .get("/tenants")
-            .reply(200, [
-                { domainname: "built.in", enabled: true, id: 0 },
-                { domainname: "web1.com", enabled: false, id: 1 },
-                { domainname: "web2.com", enabled: true, id: 2 }
-            ]);
+        requestScope.get("/tenants").reply(200, [
+            { domainname: "built.in", enabled: true, id: 0 },
+            { domainname: "web1.com", enabled: false, id: 1 },
+            { domainname: "web2.com", enabled: true, id: 2 }
+        ]);
 
         const tenantLoader = new TenantsLoader({
             tenantUrl: config.tenantUrl,
@@ -80,13 +78,11 @@ describe("Test reload tenants", () => {
     });
 
     it("should remove disabled tenants", async () => {
-        requestScope
-            .get("/tenants")
-            .reply(200, [
-                { domainname: "built.in", enabled: true, id: 0 },
-                { domainname: "web1.com", enabled: true, id: 1 },
-                { domainname: "web2.com", enabled: false, id: 2 }
-            ]);
+        requestScope.get("/tenants").reply(200, [
+            { domainname: "built.in", enabled: true, id: 0 },
+            { domainname: "web1.com", enabled: true, id: 1 },
+            { domainname: "web2.com", enabled: false, id: 2 }
+        ]);
 
         const tenant0: Tenant = {
             domainname: "built.in",

@@ -39,6 +39,7 @@ const fallbackApiHost = "https://dev.magda.io/";
 
 const DEV_FEATURE_FLAGS = {
     cataloguing: true,
+    publishToDga: true,
     previewAddDataset: true
 };
 
@@ -60,9 +61,11 @@ interface DateConfig {
 const serverConfig: {
     authApiBaseUrl?: string;
     baseUrl?: string;
+    showNotificationBanner?: boolean;
     contentApiBaseUrl?: string;
     previewMapBaseUrl?: string;
     registryApiBaseUrl?: string;
+    registryApiReadOnlyBaseUrl?: string;
     searchApiBaseUrl?: string;
     correspondenceApiBaseUrl?: string;
     gapiIds?: Array<string>;
@@ -81,9 +84,9 @@ const serverConfig: {
     csvLoaderChunkSize: number;
     mandatoryFields: ValidationFieldList;
     dateConfig?: DateConfig;
-    addDatasetThemes?: string[];
     noManualKeywords?: boolean;
     noManualThemes?: boolean;
+    datasetThemes?: string[];
     keywordsBlackList?: string[];
 } = window.magda_server_config || {};
 
@@ -136,7 +139,7 @@ function constructDateConfig(
 }
 
 const registryReadOnlyApiUrl =
-    serverConfig.registryApiBaseUrl ||
+    serverConfig.registryApiReadOnlyBaseUrl ||
     fallbackApiHost + "api/v0/registry-read-only/";
 const registryFullApiUrl =
     serverConfig.registryApiBaseUrl || fallbackApiHost + "api/v0/registry/";
@@ -175,6 +178,7 @@ const vocabularyApiEndpoints =
 export const config = {
     fetchOptions,
     homePageConfig: homePageConfig,
+    showNotificationBanner: !!serverConfig.showNotificationBanner,
     baseUrl,
     baseExternalUrl,
     contentApiURL,
@@ -260,20 +264,18 @@ export const config = {
               "dataset.title",
               "dataset.description",
               "dataset.defaultLicense",
-              "files.title",
-              "files.format",
-              "files.license",
+              "distributions.title",
+              "distributions.format",
+              "distributions.license",
               "dataset.publisher",
               "licenseLevel",
               "dataset.defaultLicense",
-              "files.license",
               "informationSecurity.classification",
-              "informationSecurity.disseminationLimits"
+              "informationSecurity.disseminationLimits",
+              "publishToDga"
           ],
     dateConfig: constructDateConfig(serverConfig.dateConfig),
-    addDatasetThemes: serverConfig.addDatasetThemes
-        ? serverConfig.addDatasetThemes
-        : [],
+    datasetThemes: serverConfig.datasetThemes ? serverConfig.datasetThemes : [],
     noManualKeywords: serverConfig.noManualKeywords
         ? serverConfig.noManualKeywords
         : false,

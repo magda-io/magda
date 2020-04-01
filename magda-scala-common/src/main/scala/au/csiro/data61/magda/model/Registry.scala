@@ -109,6 +109,11 @@ object Registry
         dataType = "object"
       ) aspects: Map[String, JsObject],
       @(ApiModelProperty @field)(
+        value = "The read authorization policy id of a record",
+        required = false,
+        allowEmptyValue = true
+      ) authnReadPolicyId: Option[String],
+      @(ApiModelProperty @field)(
         value = "A tag representing the action by the source of this record " +
           "(e.g. an id for a individual crawl of a data portal).",
         required = false,
@@ -116,7 +121,8 @@ object Registry
       ) sourceTag: Option[String] = None,
       @(ApiModelProperty @field)(
         value = "The identifier of a tenant",
-        required = false
+        required = false,
+        allowEmptyValue = true
       ) tenantId: Option[BigInt] = None
   ) extends RecordType
 
@@ -281,7 +287,7 @@ object Registry
         .get
   }
 
-  implicit val recordFormat = jsonFormat5(Registry.Record)
+  implicit val recordFormat = jsonFormat6(Registry.Record)
   implicit val registryEventFormat = jsonFormat6(Registry.RegistryEvent)
   implicit val aspectFormat = jsonFormat3(Registry.AspectDefinition)
   implicit val webHookPayloadFormat = jsonFormat6(Registry.WebHookPayload)

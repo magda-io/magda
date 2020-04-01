@@ -5,7 +5,6 @@ import ChartDatasetEncoder from "helpers/ChartDatasetEncoder";
 import ChartConfig from "./ChartConfig";
 import downArrowIcon from "assets/downArrow.svg";
 import upArrowIcon from "assets/upArrow.svg";
-import AUpageAlert from "pancake/react/page-alerts";
 import memoize from "memoize-one";
 import { gapi } from "analytics/ga";
 import { DataLoadingResult } from "helpers/CsvDataLoader";
@@ -140,9 +139,7 @@ class DataPreviewChart extends Component<PropsType, StateType> {
 
             gapi.event({
                 category: "Error",
-                action: `Failed to display chart for ${window.location.href}: ${
-                    e.message
-                }`,
+                action: `Failed to display chart for ${window.location.href}: ${e.message}`,
                 label: "Chart Display Failure",
                 nonInteraction: true
             });
@@ -185,7 +182,9 @@ class DataPreviewChart extends Component<PropsType, StateType> {
     render() {
         if (this.state.error)
             return (
-                <AUpageAlert as="error" className="notification__inner">
+                <div
+                    className={`au-page-alerts au-page-alerts--error notification__inner`}
+                >
                     <h3>Oops</h3>
                     <p>Chart preview not available, please try table preview</p>
                     <button
@@ -194,7 +193,7 @@ class DataPreviewChart extends Component<PropsType, StateType> {
                     >
                         Switch to table preview
                     </button>
-                </AUpageAlert>
+                </div>
             );
         if (this.props.isLoading) return <Spinner height="420px" />;
         if (!ReactEcharts)
@@ -205,7 +204,9 @@ class DataPreviewChart extends Component<PropsType, StateType> {
             this.props.dataLoadingResult.isPartialData
         ) {
             return (
-                <AUpageAlert as="error" className="notification__inner">
+                <div
+                    className={`au-page-alerts au-page-alerts--error notification__inner`}
+                >
                     <h3>Oops</h3>
                     <p>
                         Chart preview not available due to the overlimit data
@@ -217,7 +218,7 @@ class DataPreviewChart extends Component<PropsType, StateType> {
                     >
                         Switch to table preview
                     </button>
-                </AUpageAlert>
+                </div>
             );
         }
 

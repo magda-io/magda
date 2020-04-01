@@ -8,20 +8,18 @@ import org.scalatest.Matchers
 import org.scalatest.fixture.FunSpec
 import org.slf4j.LoggerFactory
 
-import com.auth0.jwt.JWT
 import com.typesafe.config.Config
+import io.jsonwebtoken.Jwts;
 
 import akka.actor.ActorRef
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.marshalling.Marshal
-import akka.http.scaladsl.model.HttpRequest
-import akka.http.scaladsl.model.HttpResponse
-import akka.http.scaladsl.model.ResponseEntity
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.AuthenticationFailedRejection
 import akka.http.scaladsl.server.AuthorizationFailedRejection
 import akka.http.scaladsl.server.MethodRejection
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import akka.http.scaladsl.model._
 import au.csiro.data61.magda.Authentication
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.client.HttpFetcher
@@ -37,11 +35,10 @@ import scalikejdbc.config.TypesafeConfigReader
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import akka.pattern.gracefulStop
-import au.csiro.data61.magda.model.Registry.{
-  MAGDA_ADMIN_PORTAL_ID,
-  MAGDA_TENANT_ID_HEADER,
-  MAGDA_SYSTEM_ID
-}
+import au.csiro.data61.magda.model.Registry._
+import io.jsonwebtoken.SignatureAlgorithm
+import java.{util => ju}
+import akka.http.scaladsl.marshalling.ToEntityMarshaller
 
 abstract class ApiSpec
     extends FunSpec
@@ -54,15 +51,6 @@ abstract class ApiSpec
   override def beforeAll(): Unit = {
     Util.clearWebHookActorsCache()
   }
-
-  case class FixtureParam(
-      api: Role => Api,
-      webHookActor: ActorRef,
-      asAdmin: HttpRequest => HttpRequest,
-      asNonAdmin: HttpRequest => HttpRequest,
-      fetcher: HttpFetcher,
-      authClient: AuthApiClient
-  )
 
   val databaseUrl = Option(System.getenv("POSTGRES_URL"))
     .getOrElse("jdbc:postgresql://localhost:5432/postgres")
@@ -113,18 +101,19 @@ abstract class ApiSpec
     """.stripMargin
 
   override def withFixture(test: OneArgTest) = {
-    val httpFetcher = mock[HttpFetcher]
+    val authHttpFetcher = mock[HttpFetcher]
 
     //    webHookActorProbe.expectMsg(1 millis, WebHookActor.Process(true))
 
     val authClient =
-      new AuthApiClient(httpFetcher)(testConfig, system, executor, materializer)
-
-    GlobalSettings.loggingSQLAndTime = new LoggingSQLAndTimeSettings(
-      enabled = true,
-      singleLineMode = true,
-      logLevel = 'debug
-    )
+      new RegistryAuthApiClient(
+        authHttpFetcher
+      )(
+        testConfig,
+        system,
+        executor,
+        materializer
+      )
 
     case class DBsWithEnvSpecificConfig(configToUse: Config)
         extends DBs
@@ -158,19 +147,26 @@ abstract class ApiSpec
       )
 
     def asNonAdmin(req: HttpRequest): HttpRequest = {
-      expectAdminCheck(httpFetcher, false)
+      expectAdminCheck(authHttpFetcher, false)
       asUser(req)
     }
 
     def asAdmin(req: HttpRequest): HttpRequest = {
-      expectAdminCheck(httpFetcher, true)
+      expectAdminCheck(authHttpFetcher, true)
       asUser(req)
     }
 
     try {
       super.withFixture(
         test.toNoArgTest(
-          FixtureParam(api, actor, asAdmin, asNonAdmin, httpFetcher, authClient)
+          FixtureParam(
+            api,
+            actor,
+            asAdmin,
+            asNonAdmin,
+            authHttpFetcher,
+            authClient
+          )
         )
       )
     } finally {
@@ -180,12 +176,13 @@ abstract class ApiSpec
   }
 
   def asUser(req: HttpRequest): HttpRequest = {
-    req.withHeaders(
-      new RawHeader(
-        "X-Magda-Session",
-        JWT.create().withClaim("userId", "1").sign(Authentication.algorithm)
-      )
+    val jws = Authentication.signToken(
+      Jwts
+        .builder()
+        .claim("userId", "1"),
+      system.log
     )
+    req.withHeaders(new RawHeader("X-Magda-Session", jws))
   }
 
   def expectAdminCheck(httpFetcher: HttpFetcher, isAdmin: Boolean) {
@@ -262,4 +259,14 @@ abstract class ApiSpec
       }
     }
   }
+
+  case class FixtureParam(
+      api: Role => Api,
+      webHookActor: ActorRef,
+      asAdmin: HttpRequest => HttpRequest,
+      asNonAdmin: HttpRequest => HttpRequest,
+      authFetcher: HttpFetcher,
+      authClient: RegistryAuthApiClient
+  )
+
 }

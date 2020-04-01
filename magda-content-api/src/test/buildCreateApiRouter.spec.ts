@@ -200,7 +200,7 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
         const jwt = require("jsonwebtoken");
 
         function admin(req: request.Test): request.Test {
-            const userId = "1";
+            const userId = "b1fddd6f-e230-4068-bd2c-1a21844f1598";
             const isAdmin = true;
             nock(argv.authApiUrl)
                 .get(`/private/users/${userId}`)
@@ -292,9 +292,7 @@ describe("Content api router", function(this: Mocha.ISuiteCallbackContext) {
         ];
 
         CUSTOM_ROUTES.forEach(customRoute => {
-            it(`should upload and delete with custom routes ${
-                customRoute.route
-            }`, done => {
+            it(`should upload and delete with custom routes ${customRoute.route}`, done => {
                 admin(agent.put(customRoute.route))
                     .set("Content-Type", customRoute.mime)
                     .send(customRoute.content)

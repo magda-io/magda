@@ -264,6 +264,7 @@ export default class Database {
 
     async getCurrentUserInfo(req: any, jwtSecret: string): Promise<User> {
         const userId = getUserId(req, jwtSecret).valueOr(null);
+
         if (!userId || userId === "") {
             return await this.getDefaultAnonymousUserInfo();
         }
@@ -278,14 +279,14 @@ export default class Database {
             user.managingOrgUnitIds = [];
             user.orgUnit = null;
         } else {
-            user.orgUnit = (await this.orgQueryer.getNodeById(
-                user.orgUnitId
-            )).valueOr(null);
-            user.managingOrgUnitIds = (await this.orgQueryer.getAllChildren(
-                user.orgUnitId,
-                true,
-                ["id"]
-            )).map(item => item.id);
+            user.orgUnit = (
+                await this.orgQueryer.getNodeById(user.orgUnitId)
+            ).valueOr(null);
+            user.managingOrgUnitIds = (
+                await this.orgQueryer.getAllChildren(user.orgUnitId, true, [
+                    "id"
+                ])
+            ).map(item => item.id);
         }
         return user;
     }

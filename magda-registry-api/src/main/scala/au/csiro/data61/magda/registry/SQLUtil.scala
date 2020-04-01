@@ -1,5 +1,7 @@
 package au.csiro.data61.magda.registry
+
 import au.csiro.data61.magda.model.TenantId._
+import au.csiro.data61.magda.model.Registry.MAGDA_ADMIN_PORTAL_ID
 import scalikejdbc._
 
 object SQLUtil {
@@ -22,10 +24,19 @@ object SQLUtil {
       tableName: Option[SQLSyntax] = None
   ) =
     tenantId match {
-      case SpecifiedTenantId(innerTenantId) =>
-        sqls"${tableName
-          .map(tableSql => SQLSyntax.createUnsafely(tableSql + "."))
-          .getOrElse(SQLSyntax.createUnsafely(""))}tenantId = $innerTenantId"
+      case SpecifiedTenantId(innerTenantId: BigInt) =>
+        def buildSqlQuery(condition: SQLSyntax) =
+          sqls"${tableName
+            .map(tableSql => SQLSyntax.createUnsafely(tableSql + "."))
+            .getOrElse(SQLSyntax.createUnsafely(""))}tenantId $condition"
+
+        if (innerTenantId == MAGDA_ADMIN_PORTAL_ID) {
+          // Assume that null values are the same as 0. Why not just set a default in the DB?
+          // Because it'll take a whole day to process the migration.
+          sqls"(${buildSqlQuery(sqls"IS NULL")} OR ${buildSqlQuery(sqls"= $innerTenantId")})"
+        } else {
+          buildSqlQuery(sqls"= ${innerTenantId}")
+        }
       case AllTenantsId => sqls"true"
     }
 }

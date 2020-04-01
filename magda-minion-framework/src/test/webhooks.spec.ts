@@ -87,14 +87,12 @@ baseSpec(
                         batchArb,
                         lcAlphaNumStringArbNe,
                         lcAlphaNumStringArbNe,
-                        lcAlphaNumStringArbNe,
                         jsc.integer(1, 10),
                         jsc.bool,
                         (
                             recordsBatches,
                             domain,
                             jwtSecret,
-                            userId,
                             concurrency,
                             enableMultiTenant
                         ) => {
@@ -106,6 +104,8 @@ baseSpec(
                             const tenantDomain = "tenant";
                             const tenantUrl = `http://${tenantDomain}.com:80`;
                             const tenantScope = nock(tenantUrl);
+                            const userId =
+                                "b1fddd6f-e230-4068-bd2c-1a21844f1598";
 
                             /** All records in all the batches */
                             const flattenedRecords = _.flatMap(
@@ -180,9 +180,7 @@ baseSpec(
                                                 // telling it to give more events.
                                                 registryScope
                                                     .post(
-                                                        `/hooks/${
-                                                            options.id
-                                                        }/ack`,
+                                                        `/hooks/${options.id}/ack`,
                                                         {
                                                             succeeded:
                                                                 batch.overallSuccess,

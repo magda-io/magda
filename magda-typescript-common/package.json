@@ -13,7 +13,9 @@
     "create_esri_groups_jwt": "nyc mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/buildJwtForRegistryEsriOpaGroupsTest.ts\"",
     "create_esri_owner_jwt": "nyc mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/buildJwtForRegistryEsriOpaOwnerTest.ts\"",
     "create_esri_groups_owner_jwt": "nyc mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/buildJwtForRegistryEsriOpaGroupsAndOwnerTest.ts\"",
-    "dev": "yarn run watch"
+    "dev": "yarn run watch",
+    "npm-setup": "echo \"//registry.npmjs.org/:_authToken=${NPM_TOKEN}\" > .npmrc",
+    "release": "npm publish || echo \"Skip releasing npm package @magda/typescript-common.\""
   },
   "devDependencies": {
     "@magda/registry-aspects": "^0.0.57-0",
@@ -47,6 +49,7 @@
   },
   "dependencies": {
     "@types/request": "^2.48.1",
+    "@types/resolve": "^1.14.0",
     "body-parser": "^1.18.2",
     "express": "^4.16.3",
     "isomorphic-fetch": "^2.2.1",
@@ -57,6 +60,7 @@
     "read-pkg-up": "^3.0.0",
     "request": "^2.88.0",
     "shortid": "^2.2.15",
+    "resolve": "^1.15.0",
     "tsmonad": "^0.7.2",
     "urijs": "^1.18.12",
     "uuid": "^3.1.0",
@@ -73,7 +77,8 @@
   "magda": {
     "language": "typescript",
     "categories": {
-      "library": true
+      "library": true,
+      "npmPackage": true
     }
   },
   "nyc": {
@@ -83,5 +88,8 @@
     "exclude": [
       "src/test/**"
     ]
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }

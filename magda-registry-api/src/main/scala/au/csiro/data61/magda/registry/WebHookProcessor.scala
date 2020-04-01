@@ -22,25 +22,16 @@ import au.csiro.data61.magda.model.TenantId.AllTenantsId
 
 /**
   * The processor sends notifications to a subscriber via web hook.
-  *
-  * @param actorSystem
-  * @param publicUrl
-  * @param executionContext
   */
 class WebHookProcessor(
     actorSystem: ActorSystem,
     val publicUrl: Uri,
+    recordPersistence: RecordPersistence,
     implicit val executionContext: ExecutionContext
 ) extends Protocols {
   private val http = Http(actorSystem)
   private implicit val materializer: ActorMaterializer =
     ActorMaterializer()(actorSystem)
-
-  val recordPersistence: DefaultRecordPersistence.type =
-    DefaultRecordPersistence
-  // No access control will apply to webhooks.
-  // In the current system, all web hooks are treated as system level users.
-  val opaQuerySkipAccessControl = List(OpaQuerySkipAccessControl)
 
   private def getTenantRecordIdsMap(
       events: List[RegistryEvent]
@@ -104,7 +95,8 @@ class WebHookProcessor(
                   session,
                   SpecifiedTenantId(tenantId),
                   recordIds,
-                  List(this.opaQuerySkipAccessControl),
+                  None,
+                  None,
                   webHook.config.aspects.getOrElse(Nil),
                   webHook.config.optionalAspects.getOrElse(Nil),
                   webHook.config.dereference
@@ -130,7 +122,8 @@ class WebHookProcessor(
                   session,
                   SpecifiedTenantId(tenantId),
                   recordIds,
-                  List(this.opaQuerySkipAccessControl),
+                  None,
+                  None,
                   recordIdsExcluded,
                   webHook.config.aspects.getOrElse(Nil),
                   webHook.config.optionalAspects.getOrElse(Nil),

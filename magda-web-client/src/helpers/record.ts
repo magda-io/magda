@@ -2,8 +2,7 @@ import getDateString from "./getDateString";
 import { isSupportedFormat as isSupportedMapPreviewFormat } from "../Components/Common/DataPreviewMap";
 import { FetchError } from "../types";
 import weightedMean from "weighted-mean";
-// dataset query:
-//aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&dereference=true&optionalAspect=dataset-publisher&optionalAspect=source
+import { Record } from "api-clients/RegistryApis";
 
 export type RecordAction = {
     json?: any;
@@ -13,9 +12,12 @@ export type RecordAction = {
 };
 
 type TemporalCoverage = {
-    data: {
-        intervals?: Array<any>;
-    };
+    intervals: {
+        start?: string;
+        end?: string;
+        startIndeterminate?: "unknown" | "now" | "before" | "after";
+        endIndeterminate?: "unknown" | "now" | "before" | "after";
+    }[];
 };
 
 type dcatDistributionStrings = {
@@ -25,15 +27,28 @@ type dcatDistributionStrings = {
     modified: string;
     license: string;
     description: string;
+    title: string;
 };
 
 type DcatDatasetStrings = {
-    description: string;
-    keywords: Array<string>;
-    landingPage: string;
     title: string;
-    issued: string;
-    modified: string;
+    description: string;
+    issued?: string;
+    modified?: string;
+    languages?: string[];
+    publisher?: string;
+    accrualPeriodicity?: string;
+    accrualPeriodicityRecurrenceRule?: string;
+    spatial?: string;
+    temporal?: {
+        start?: string;
+        end?: string;
+    };
+    themes?: string[];
+    keywords?: Array<string>;
+    contactPoint?: string;
+    landingPage?: string;
+    defaultLicense?: string;
 };
 
 export type Publisher = {
@@ -94,6 +109,17 @@ export type RawDistribution = {
     };
 };
 
+type Provenance = {
+    mechanism?: string;
+    sourceSystem?: string;
+    derivedFrom?: {
+        id?: string[];
+        name?: string;
+    }[];
+    isOpenData?: boolean;
+    affiliatedOrganizationIds?: Record[];
+};
+
 export type RawDataset = {
     id: string;
     name: string;
@@ -110,6 +136,7 @@ export type RawDataset = {
             distributions: Array<RawDistribution>;
         };
         "temporal-coverage"?: TemporalCoverage;
+        provenance?: Provenance;
     };
 };
 
@@ -137,7 +164,7 @@ export type ParsedProvenance = {
     mechanism?: string;
     sourceSystem?: string;
     derivedFrom?: string;
-    affiliatedOrganizationIds?: string[];
+    affiliatedOrganizations?: Record[];
     isOpenData?: boolean;
 };
 
@@ -521,7 +548,11 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         linkedDataRating,
         hasQuality,
         sourceDetails: aspects["source"],
-        provenance: aspects["provenance"] || {},
+        provenance: {
+            ...(aspects?.provenance ? aspects.provenance : {}),
+            affiliatedOrganizations:
+                aspects?.provenance?.affiliatedOrganizationIds
+        },
         publishingState: publishing["state"],
         spatialCoverageBbox: spatialCoverage["bbox"],
         temporalExtent: datasetInfo["temporal"] || {},

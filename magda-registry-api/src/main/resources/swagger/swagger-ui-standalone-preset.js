@@ -2,10 +2,10 @@
     "object" == typeof exports && "object" == typeof module
         ? (module.exports = t())
         : "function" == typeof define && define.amd
-          ? define([], t)
-          : "object" == typeof exports
-            ? (exports.SwaggerUIStandalonePreset = t())
-            : (e.SwaggerUIStandalonePreset = t());
+        ? define([], t)
+        : "object" == typeof exports
+        ? (exports.SwaggerUIStandalonePreset = t())
+        : (e.SwaggerUIStandalonePreset = t());
 })(this, function() {
     return (function(e) {
         function t(r) {
@@ -406,15 +406,16 @@
         function(e, t, o) {
             "use strict";
             var r = o(8),
-                n = (o(9),
-                function(e) {
-                    var t = this;
-                    if (t.instancePool.length) {
-                        var o = t.instancePool.pop();
-                        return t.call(o, e), o;
-                    }
-                    return new t(e);
-                }),
+                n =
+                    (o(9),
+                    function(e) {
+                        var t = this;
+                        if (t.instancePool.length) {
+                            var o = t.instancePool.pop();
+                            return t.call(o, e), o;
+                        }
+                        return new t(e);
+                    }),
                 i = function(e, t) {
                     var o = this;
                     if (o.instancePool.length) {
@@ -716,8 +717,8 @@
                             "31",
                             "[object Object]" === _
                                 ? "object with keys {" +
-                                  Object.keys(e).join(", ") +
-                                  "}"
+                                      Object.keys(e).join(", ") +
+                                      "}"
                                 : _,
                             E
                         );
@@ -804,22 +805,23 @@
         function(e, t, o) {
             "use strict";
             function r(e, t) {}
-            var n = (o(12),
-            {
-                isMounted: function(e) {
-                    return !1;
-                },
-                enqueueCallback: function(e, t) {},
-                enqueueForceUpdate: function(e) {
-                    r(e, "forceUpdate");
-                },
-                enqueueReplaceState: function(e, t) {
-                    r(e, "replaceState");
-                },
-                enqueueSetState: function(e, t) {
-                    r(e, "setState");
-                }
-            });
+            var n =
+                (o(12),
+                {
+                    isMounted: function(e) {
+                        return !1;
+                    },
+                    enqueueCallback: function(e, t) {},
+                    enqueueForceUpdate: function(e) {
+                        r(e, "forceUpdate");
+                    },
+                    enqueueReplaceState: function(e, t) {
+                        r(e, "replaceState");
+                    },
+                    enqueueSetState: function(e, t) {
+                        r(e, "setState");
+                    }
+                });
             e.exports = n;
         },
         function(e, t, o) {
@@ -1243,26 +1245,26 @@
                             else;
                         return null == r[a]
                             ? o
-                              ? new l(
-                                    null === r[a]
-                                        ? "The " +
-                                          p +
-                                          " `" +
-                                          u +
-                                          "` is marked as required " +
-                                          ("in `" +
-                                              s +
-                                              "`, but its value is `null`.")
-                                        : "The " +
-                                          p +
-                                          " `" +
-                                          u +
-                                          "` is marked as required in " +
-                                          ("`" +
-                                              s +
-                                              "`, but its value is `undefined`.")
-                                )
-                              : null
+                                ? new l(
+                                      null === r[a]
+                                          ? "The " +
+                                            p +
+                                            " `" +
+                                            u +
+                                            "` is marked as required " +
+                                            ("in `" +
+                                                s +
+                                                "`, but its value is `null`.")
+                                          : "The " +
+                                            p +
+                                            " `" +
+                                            u +
+                                            "` is marked as required in " +
+                                            ("`" +
+                                                s +
+                                                "`, but its value is `undefined`.")
+                                  )
+                                : null
                             : e(r, a, s, p, u);
                     }
                     var r = o.bind(null, !1);
@@ -1521,9 +1523,8 @@
                 function k(e, t) {
                     return (
                         "symbol" === e ||
-                        ("Symbol" === t["@@toStringTag"] ||
-                            ("function" == typeof Symbol &&
-                                t instanceof Symbol))
+                        "Symbol" === t["@@toStringTag"] ||
+                        ("function" == typeof Symbol && t instanceof Symbol)
                     );
                 }
                 function v(e) {
@@ -1531,8 +1532,10 @@
                     return Array.isArray(e)
                         ? "array"
                         : e instanceof RegExp
-                          ? "object"
-                          : k(t, e) ? "symbol" : t;
+                        ? "object"
+                        : k(t, e)
+                        ? "symbol"
+                        : t;
                 }
                 function E(e) {
                     var t = v(e);
@@ -1685,8 +1688,8 @@
                 if ("top" === e.insertAt)
                     r
                         ? r.nextSibling
-                          ? o.insertBefore(t, r.nextSibling)
-                          : o.appendChild(t)
+                            ? o.insertBefore(t, r.nextSibling)
+                            : o.appendChild(t)
                         : o.insertBefore(t, o.firstChild),
                         h.push(t);
                 else {

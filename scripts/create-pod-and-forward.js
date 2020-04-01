@@ -66,9 +66,7 @@ const endTime = Date.now() + 90 * 1000;
 do {
     status = childProcess
         .execSync(
-            `kubectl get pods -l ${
-                argv.selector
-            } -o=custom-columns=NAME:.status.phase --no-headers`,
+            `kubectl get pods -l ${argv.selector} -o=custom-columns=NAME:.status.phase --no-headers`,
             { encoding: "utf8", env: env }
         )
         .trim();
@@ -85,9 +83,7 @@ console.log("Pod is running!");
 
 const podName = childProcess
     .execSync(
-        `kubectl get pods -l ${
-            argv.selector
-        } -o=custom-columns=NAME:.metadata.name --no-headers`,
+        `kubectl get pods -l ${argv.selector} -o=custom-columns=NAME:.metadata.name --no-headers`,
         { encoding: "utf8", env: env }
     )
     .trim();

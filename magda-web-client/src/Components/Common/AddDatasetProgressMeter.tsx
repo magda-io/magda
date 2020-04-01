@@ -14,37 +14,63 @@ interface StepItem {
     url: string | urlFunc;
 }
 
-interface PropsType {
+export interface ExternalProps {
+    isEdit?: boolean;
+}
+
+interface InternalProps {
     history: History;
     location: Location;
     createNewDatasetReset: Function;
     match: match<{
-        dataset: string;
+        datasetId: string;
         step: string;
     }>;
 }
 
-export const Steps: StepItem[] = [
+export const steps: StepItem[] = [
     {
         title: "Add files",
-        url: datasetId =>
-            datasetId ? `/dataset/add/files/${datasetId}` : "/dataset/add/files"
-    },
-    {
-        title: "Details and Contents",
         url: "/dataset/add/metadata/${datasetId}/0"
     },
     {
-        title: "People and Production",
+        title: "Details and Contents",
         url: "/dataset/add/metadata/${datasetId}/1"
     },
     {
-        title: "Access and User",
+        title: "People and Production",
         url: "/dataset/add/metadata/${datasetId}/2"
     },
     {
-        title: "Submit for Approval",
+        title: "Access and User",
         url: "/dataset/add/metadata/${datasetId}/3"
+    },
+    {
+        title: "Submit for Approval",
+        url: "/dataset/add/metadata/${datasetId}/4"
+    }
+];
+
+export const editSteps: StepItem[] = [
+    {
+        title: "Your Files and Distributions",
+        url: "/dataset/edit/${datasetId}/0"
+    },
+    {
+        title: "Details and Contents",
+        url: "/dataset/edit/${datasetId}/1"
+    },
+    {
+        title: "People and Production",
+        url: "/dataset/edit/${datasetId}/2"
+    },
+    {
+        title: "Access and User",
+        url: "/dataset/edit/${datasetId}/3"
+    },
+    {
+        title: "Submit for Approval",
+        url: "/dataset/edit/${datasetId}/4"
     }
 ];
 
@@ -58,9 +84,11 @@ function createStepUrl(datasetId, item: StepItem) {
     }
 }
 
-const AddDatasetProgressMeter = (props: PropsType) => {
+const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
+    const isEdit = props.isEdit;
+
     function determineDatasetId() {
-        return props.match.params.dataset;
+        return props.match.params.datasetId;
     }
 
     function determineCurrentStep() {
@@ -68,7 +96,7 @@ const AddDatasetProgressMeter = (props: PropsType) => {
         if (Number.isNaN(stepNo)) {
             return 0;
         } else {
-            return stepNo + 1;
+            return stepNo;
         }
     }
 
@@ -113,7 +141,24 @@ const AddDatasetProgressMeter = (props: PropsType) => {
             return (
                 <Link
                     key={idx}
-                    className={`col-sm-2 step-item-container past-item`}
+                    className={`col-sm-2 step-item-container past-item ${
+                        isEdit ? "is-edit" : ""
+                    }`}
+                    to={createStepUrl(datasetId, item)}
+                    onClick={() => {
+                        props.createNewDatasetReset();
+                    }}
+                >
+                    {inner}
+                </Link>
+            );
+        } else if (status.class === "future-item" && isEdit) {
+            return (
+                <Link
+                    key={idx}
+                    className={`col-sm-2 step-item-container future-item ${
+                        isEdit ? "is-edit" : ""
+                    }`}
                     to={createStepUrl(datasetId, item)}
                     onClick={() => {
                         props.createNewDatasetReset();
@@ -126,7 +171,9 @@ const AddDatasetProgressMeter = (props: PropsType) => {
             return (
                 <div
                     key={idx}
-                    className={`col-sm-2 step-item-container ${status.class}`}
+                    className={`col-sm-2 step-item-container ${status.class}  ${
+                        isEdit ? "is-edit" : ""
+                    }`}
                 >
                     {inner}
                 </div>
@@ -141,10 +188,12 @@ const AddDatasetProgressMeter = (props: PropsType) => {
         <div className="add-dataset-progress-meter">
             <div className="container">
                 <div className="col-sm-2 step-item-heading">
-                    <div className="heading">Add a dataset</div>
+                    <div className="heading">
+                        {isEdit ? "Edit a dataset" : "Add a dataset"}
+                    </div>
                 </div>
                 <div className="col-sm-10 step-item-body">
-                    {Steps.map((item, idx) =>
+                    {(isEdit ? editSteps : steps).map((item, idx) =>
                         renderStepItem(item, idx, currentStep, datasetId)
                     )}
                 </div>
@@ -163,8 +212,5 @@ const mapDispatchToProps = dispatch => {
 };
 
 export default withRouter(
-    connect(
-        null,
-        mapDispatchToProps
-    )(AddDatasetProgressMeter)
+    connect(null, mapDispatchToProps)(AddDatasetProgressMeter)
 );

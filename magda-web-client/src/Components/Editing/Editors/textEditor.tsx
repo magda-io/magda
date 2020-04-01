@@ -135,9 +135,7 @@ const truncateByWordsCount = (str: string, limit: number): string => {
     return newStrItems.join("");
 };
 
-export const MultilineTextEditor: FunctionComponent<
-    MultilineTextEditorPropType
-> = props => {
+export const MultilineTextEditor: FunctionComponent<MultilineTextEditorPropType> = props => {
     const [isValidationError, validationErrorMessage, elRef] = useValidation<
         HTMLDivElement
     >(props.validationFieldPath, props.validationFieldLabel);

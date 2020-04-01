@@ -8,7 +8,11 @@ import { getFormatIcon } from "../View/DistributionIcon";
 
 import humanFileSize from "helpers/humanFileSize";
 
-import { FileState, File, fileStateToText } from "./DatasetAddCommon";
+import {
+    Distribution,
+    DistributionState,
+    distributionStateToText
+} from "./DatasetAddCommon";
 
 import editIcon from "../../../assets/edit.svg";
 import dismissIcon from "../../../assets/dismiss.svg";
@@ -26,7 +30,7 @@ function FileInProgress({
     file,
     onDelete
 }: {
-    file: File;
+    file: Distribution;
     onDelete: () => void;
 }) {
     const progress = file._progress ? file._progress : 0;
@@ -68,8 +72,8 @@ function FileInProgress({
                         </div>
                     </div>
                     <div className="file-status">
-                        {fileStateToText(file._state)} - {file._progress}%
-                        complete
+                        {distributionStateToText(file._state)} -{" "}
+                        {file._progress}% complete
                     </div>
                 </div>
             </div>
@@ -85,17 +89,21 @@ const FileEditView = ({
     setEditMode
 }: {
     idx: number;
-    file: File;
-    onChange: (file: File) => void;
+    file: Distribution;
+    onChange: (updater: (file: Distribution) => Distribution) => void;
     editMode: boolean;
     setEditMode: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
     const editFormat = (newValue: string | undefined) =>
-        onChange({ ...file, format: newValue });
+        onChange(file => ({ ...file, format: newValue }));
     const editTitle = (newValue: string | undefined) =>
-        onChange({ ...file, title: newValue! });
+        onChange(file => ({ ...file, title: newValue ? newValue : "" }));
     const editModified = (newValue: Date | undefined) =>
-        onChange({ ...file, modified: newValue! });
+        onChange(file =>
+            typeof newValue === "undefined"
+                ? file
+                : { ...file, modified: newValue }
+        );
 
     return (
         <div>
@@ -105,8 +113,8 @@ const FileEditView = ({
                 onClick={() => {
                     if (
                         ValidationManager.validateFields([
-                            `$.files[${idx}].title`,
-                            `$.files[${idx}].format`
+                            `$.distributions[${idx}].title`,
+                            `$.distributions[${idx}].format`
                         ])
                     ) {
                         setEditMode(!editMode);
@@ -119,13 +127,13 @@ const FileEditView = ({
                 <span>
                     Name:&nbsp;&nbsp;{" "}
                     <ValidationRequiredLabel
-                        validationFieldPath={`$.files[${idx}].title`}
+                        validationFieldPath={`$.distributions[${idx}].title`}
                     />
                 </span>
                 &nbsp;&nbsp;
                 <SlimTextInputWithValidation
                     validationFieldLabel="File Name"
-                    validationFieldPath={`$.files[${idx}].title`}
+                    validationFieldPath={`$.distributions[${idx}].title`}
                     value={file.title}
                     onChange={editTitle}
                     placeholder="Please enter file name..."
@@ -135,13 +143,13 @@ const FileEditView = ({
                 <span>
                     Format:{" "}
                     <ValidationRequiredLabel
-                        validationFieldPath={`$.files[${idx}].format`}
+                        validationFieldPath={`$.distributions[${idx}].format`}
                     />
                 </span>
                 &nbsp;&nbsp;
                 <SlimTextInputWithValidation
                     validationFieldLabel="File Format"
-                    validationFieldPath={`$.files[${idx}].format`}
+                    validationFieldPath={`$.distributions[${idx}].format`}
                     value={file.format}
                     onChange={editFormat}
                     placeholder="Please enter file format..."
@@ -167,15 +175,15 @@ export default function DatasetFile({
     onChange
 }: {
     idx: number;
-    file: File;
+    file: Distribution;
     onDelete: () => void;
-    onChange: (file: File) => void;
+    onChange: (updater: (file: Distribution) => Distribution) => void;
 }) {
-    if (file._state !== FileState.Ready) {
+    const [editMode, setEditMode] = useState(false);
+
+    if (file._state !== DistributionState.Ready) {
         return <FileInProgress file={file} onDelete={onDelete} />;
     }
-
-    const [editMode, setEditMode] = useState(false);
 
     return (
         <div className="dataset-file-root complete-processing">

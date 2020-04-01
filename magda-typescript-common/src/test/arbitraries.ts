@@ -19,29 +19,34 @@ const charArb = jsc.integer(32, 0xff).smap(fromCode, toCode);
  * Generates a random string with characters greater than code 32 (so no random
  * TTY crap that can't be matched by any regex
  */
-export const stringArb = jsc
-    .array(charArb)
-    .smap(chars => chars.join(""), string => string.split(""));
+export const stringArb = jsc.array(charArb).smap(
+    chars => chars.join(""),
+    string => string.split("")
+);
 
 export const lowerCaseAlphaCharArb = jsc
     .integer(97, 122)
     .smap(fromCode, toCode);
 export const numArb = jsc.integer(48, 57).smap(fromCode, toCode);
 export const lcAlphaNumCharArb = jsc.oneof([numArb, lowerCaseAlphaCharArb]);
-export const lcAlphaNumStringArb = jsc
-    .array(lcAlphaNumCharArb)
-    .smap((arr: any) => arr.join(""), (string: string) => string.split(""));
-export const lcAlphaNumStringArbNe = jsc
-    .nearray(lcAlphaNumCharArb)
-    .smap((arr: any) => arr.join(""), (string: string) => string.split(""));
+export const lcAlphaNumStringArb = jsc.array(lcAlphaNumCharArb).smap(
+    (arr: any) => arr.join(""),
+    (string: string) => string.split("")
+);
+export const lcAlphaNumStringArbNe = jsc.nearray(lcAlphaNumCharArb).smap(
+    (arr: any) => arr.join(""),
+    (string: string) => string.split("")
+);
 
-export const lcAlphaStringArb = jsc
-    .array(lowerCaseAlphaCharArb)
-    .smap(chars => chars.join(""), string => string.split(""));
+export const lcAlphaStringArb = jsc.array(lowerCaseAlphaCharArb).smap(
+    chars => chars.join(""),
+    string => string.split("")
+);
 
-export const lcAlphaStringArbNe = jsc
-    .nearray(lowerCaseAlphaCharArb)
-    .smap(chars => chars.join(""), string => string.split(""));
+export const lcAlphaStringArbNe = jsc.nearray(lowerCaseAlphaCharArb).smap(
+    chars => chars.join(""),
+    string => string.split("")
+);
 
 export const peopleNameArb = jsc
     .tuple([lcAlphaStringArbNe, lcAlphaStringArbNe])
@@ -63,7 +68,8 @@ export const recordArb = jsc.record<Record>({
     name: stringArb,
     aspects: jsc.suchthat(jsc.array(jsc.json), arr => arr.length <= 10),
     sourceTag: jsc.constant(undefined),
-    tenantId: intArb
+    tenantId: intArb,
+    authnReadPolicyId: jsc.constant(undefined)
 });
 
 export const specificRecordArb = (aspectArbs: {
@@ -74,7 +80,8 @@ export const specificRecordArb = (aspectArbs: {
         name: stringArb,
         aspects: jsc.record(aspectArbs),
         sourceTag: jsc.constant(undefined),
-        tenantId: intArb
+        tenantId: intArb,
+        authnReadPolicyId: jsc.constant(undefined)
     });
 
 const defaultSchemeArb = jsc.oneof([

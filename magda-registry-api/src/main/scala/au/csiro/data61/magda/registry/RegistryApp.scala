@@ -59,12 +59,6 @@ object RegistryApp extends App {
 
   logger.info("Starting MAGDA Registry")
 
-  GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(
-    enabled = false,
-    singleLineMode = true,
-    logLevel = 'debug
-  )
-
   case class DBsWithEnvSpecificConfig(configToUse: Config)
       extends DBs
       with TypesafeConfigReader
@@ -93,9 +87,12 @@ object RegistryApp extends App {
     Some(actor)
   } else None
 
+  val recordPersistence = new DefaultRecordPersistence(config)
+  val eventPersistence = new DefaultEventPersistence(recordPersistence)
+
   val api = new Api(
     webHookActorOpt,
-    new AuthApiClient(),
+    new RegistryAuthApiClient(),
     config,
     system,
     executor,

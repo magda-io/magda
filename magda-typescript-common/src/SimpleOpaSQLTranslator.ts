@@ -59,9 +59,7 @@ class SimpleOpaSQLTranslator {
                                     op.getValue()
                                 );
                         });
-                        const expStr = `${identifiers[0]} ${operator} ${
-                            identifiers[1]
-                        }`;
+                        const expStr = `${identifiers[0]} ${operator} ${identifiers[1]}`;
                         if (e.isNegated) return `!(${expStr})`;
                         else return expStr;
                     } else {

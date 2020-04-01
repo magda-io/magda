@@ -1,0 +1,55 @@
+{{- if and (not .Values.global.useCombinedDb) (not .Values.global.useCloudSql) }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: authorization-db
+spec:
+  serviceName: authorization-db
+  replicas: 1
+  selector:
+    matchLabels:
+      service: authorization-db
+  template:
+    metadata:
+      labels:
+        service: authorization-db
+    spec:
+{{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1beta1") .Values.global.enablePriorityClass }}
+      priorityClassName: magda-9
+{{- end }}
+      terminationGracePeriodSeconds: 60
+      affinity:
+{{- if .Values.affinity }}
+{{ toYaml .Values.affinity | indent 8 }}
+{{- end }}
+      containers:
+      - name: authorization-db
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        image: {{ template "postgres" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        ports:
+        - containerPort: 5432
+        {{- template "magda.postgresLivenessProbe" . }}
+        env:
+        - name: PGDATA
+          value: /var/pv/data
+        {{- template "magda.postgres-env" . }}
+        volumeMounts:
+        - mountPath: /var/pv
+          name: auth-data
+        {{- template "magda.waleVolumes.volumeMount" . }}
+      volumes:
+      {{- template "magda.waleVolumes.volume" . }}
+  volumeClaimTemplates:
+  - metadata:
+      name: auth-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+    {{- if .Values.data.storageClass }}
+      storageClassName: "{{ .Values.data.storageClass }}"
+    {{- end }}
+      resources:
+        requests:
+          storage: "{{ .Values.data.storage }}"
+{{- end }}

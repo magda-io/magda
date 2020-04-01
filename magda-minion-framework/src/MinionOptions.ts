@@ -5,8 +5,12 @@ import {
     Record,
     AspectDefinition
 } from "magda-typescript-common/src/generated/registry/api";
-import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
+import { default as AuthorizedRegistryClient } from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 
+export type onRecordFoundType = (
+    record: Record,
+    registry: AuthorizedRegistryClient
+) => Promise<void>;
 export default class MinionOptions {
     argv: MinionArguments;
     id: string;
@@ -14,7 +18,7 @@ export default class MinionOptions {
     optionalAspects: string[];
     writeAspectDefs: AspectDefinition[];
     async?: boolean;
-    onRecordFound: (record: Record, registry: Registry) => Promise<void>;
+    onRecordFound: onRecordFoundType;
     express?: () => express.Express;
     maxRetries?: number;
     concurrency?: number;

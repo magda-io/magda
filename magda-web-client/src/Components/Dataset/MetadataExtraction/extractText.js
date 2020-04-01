@@ -277,7 +277,9 @@ async function extractPDFFile(input, output) {
  * Extracts data/metadata from word format.
  */
 async function extractDocumentFile(input, output) {
-    input.text = (await mammoth.extractRawText({
-        arrayBuffer: input.arrayBuffer
-    })).value;
+    input.text = (
+        await mammoth.extractRawText({
+            arrayBuffer: input.arrayBuffer
+        })
+    ).value;
 }

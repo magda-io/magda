@@ -61,10 +61,12 @@ export function mockConnectorConfig(
     return req.reply(
         statusCode,
         statusCode === 200
-            ? fixtures.getConfigMap(_(state)
-                  .mapValues((value: ConnectorState) => value.config)
-                  .pickBy(_.identity)
-                  .value() as { [id: string]: ConfigState })
+            ? fixtures.getConfigMap(
+                  _(state)
+                      .mapValues((value: ConnectorState) => value.config)
+                      .pickBy(_.identity)
+                      .value() as { [id: string]: ConfigState }
+              )
             : "fail"
     );
 }
@@ -78,10 +80,12 @@ export function mockJobs(
     k8sApiScope.get(`/apis/batch/v1/namespaces/${namespace}/jobs`).reply(
         statusCode,
         statusCode === 200
-            ? fixtures.getJobs(_(state)
-                  .mapValues((value: ConnectorState) => value.job)
-                  .pickBy(_.identity)
-                  .value() as { [id: string]: JobState })
+            ? fixtures.getJobs(
+                  _(state)
+                      .mapValues((value: ConnectorState) => value.job)
+                      .pickBy(_.identity)
+                      .value() as { [id: string]: JobState }
+              )
             : "fail"
     );
 }
@@ -104,10 +108,12 @@ export function mockJobStatus(
     return req.reply(
         statusCode,
         statusCode === 200
-            ? (fixtures.getJobs(_(state)
-                  .mapValues((value: ConnectorState) => value.job)
-                  .pickBy(_.identity)
-                  .value() as { [id: string]: JobState }) as any)
+            ? (fixtures.getJobs(
+                  _(state)
+                      .mapValues((value: ConnectorState) => value.job)
+                      .pickBy(_.identity)
+                      .value() as { [id: string]: JobState }
+              ) as any)
             : "fail"
     );
 }

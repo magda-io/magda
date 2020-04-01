@@ -12,6 +12,7 @@ import com.typesafe.config.Config
 import io.swagger.annotations._
 import javax.ws.rs.Path
 import scalikejdbc.DB
+import au.csiro.data61.magda.client.AuthOperations
 
 @Path("/records/{recordId}/aspects")
 @io.swagger.annotations.Api(
@@ -19,12 +20,13 @@ import scalikejdbc.DB
   produces = "application/json"
 )
 class RecordAspectsServiceRO(
+    authApiClient: RegistryAuthApiClient,
     system: ActorSystem,
     materializer: Materializer,
-    config: Config
+    config: Config,
+    recordPersistence: RecordPersistence
 ) extends Protocols
     with SprayJsonSupport {
-  private val recordPersistence = DefaultRecordPersistence
 
   /**
     * @apiGroup Registry Record Aspects
@@ -90,7 +92,7 @@ class RecordAspectsServiceRO(
       new ApiResponse(
         code = 404,
         message = "No record or aspect exists with the given IDs.",
-        response = classOf[BadRequest]
+        response = classOf[ApiError]
       )
     )
   )
@@ -99,13 +101,23 @@ class RecordAspectsServiceRO(
       (recordId: String, aspectId: String) =>
         requiresTenantId { tenantId =>
           {
-            withRecordOpaQuery(AuthOperations.read)(
+            withRecordOpaQuery(
+              AuthOperations.read,
+              recordPersistence,
+              authApiClient,
+              Some(recordId),
+              (
+                StatusCodes.NotFound,
+                ApiError(
+                  "No record or aspect exists with the given IDs."
+                )
+              )
+            )(
               config,
               system,
               materializer,
               system.dispatcher
             ) { opaQueries =>
-              assert(opaQueries nonEmpty)
               DB readOnly { session =>
                 recordPersistence
                   .getRecordAspectById(
@@ -119,7 +131,7 @@ class RecordAspectsServiceRO(
                   case _ =>
                     complete(
                       StatusCodes.NotFound,
-                      BadRequest(
+                      ApiError(
                         "No record or aspect exists with the given IDs."
                       )
                     )

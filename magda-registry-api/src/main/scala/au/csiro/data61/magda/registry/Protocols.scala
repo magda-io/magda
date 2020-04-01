@@ -7,7 +7,7 @@ import gnieh.diffson.sprayJson._
 final case class ReadyStatus(ready: Boolean = false)
 
 trait Protocols extends DiffsonProtocol {
-  implicit val badRequestFormat = jsonFormat1(BadRequest.apply)
+  implicit val apiErrorFormat = jsonFormat1(ApiError.apply)
   implicit val recordsPageFormat = jsonFormat3(RecordsPage.apply[Record])
   implicit val recordSummariesPageFormat = jsonFormat3(
     RecordsPage.apply[RecordSummary]

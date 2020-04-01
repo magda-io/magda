@@ -14,12 +14,22 @@
             "title": "Level dataset is visible at",
             "type": "string",
             "default": "agency",
-            "enum": ["agency", "team", "public", "personal"]
+            "enum": ["agency", "division", "branch", "team"]
         },
         "contactPointDisplay": {
             "title": "What should be shown for the contact point(s) of a dataset",
             "type": "string",
             "enum": ["team", "organization", "custodian"]
+        },
+        "publishAsOpenData": {
+            "title": "The open data platforms that this should be published on",
+            "description": "A map of ids of open data portals to a boolean of whether or not they should be published on that platform. It's assumed that the absence of a platform means that it shouldn't be published on that platform.",
+            "type": "object",
+            "patternProperties": {
+                ".{1,}": {
+                    "type": "boolean"
+                }
+            }
         }
     }
 }

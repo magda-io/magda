@@ -47,19 +47,13 @@ export default function arcgis(options: ArcGisOptions) {
     // Expect options.arcgisInstanceBaseUrl to be something like https://some.portal.gov.au/arcgis
     if (options.arcgisInstanceBaseUrl) {
         // Overrides 'https://www.arcgis.com/sharing/oauth2/authorize'
-        strategyOptions.authorizationURL = `${
-            options.arcgisInstanceBaseUrl
-        }/sharing/oauth2/authorize`;
+        strategyOptions.authorizationURL = `${options.arcgisInstanceBaseUrl}/sharing/oauth2/authorize`;
 
         // Overrides 'https://www.arcgis.com/sharing/oauth2/token'
-        strategyOptions.tokenURL = `${
-            options.arcgisInstanceBaseUrl
-        }/sharing/oauth2/token`;
+        strategyOptions.tokenURL = `${options.arcgisInstanceBaseUrl}/sharing/oauth2/token`;
 
         // Overrides 'https://www.arcgis.com/sharing/rest/community/self?f=json'
-        strategyOptions.userProfileURL = `${
-            options.arcgisInstanceBaseUrl
-        }/sharing/rest/community/self?f=json`;
+        strategyOptions.userProfileURL = `${options.arcgisInstanceBaseUrl}/sharing/rest/community/self?f=json`;
     }
 
     passport.use(
@@ -81,11 +75,7 @@ export default function arcgis(options: ArcGisOptions) {
 
             createOrGetUserToken(authorizationApi, profile, "arcgis")
                 .then(userToken => {
-                    const url = `${
-                        options.arcgisInstanceBaseUrl
-                    }/sharing/rest/community/users/${
-                        profile.username
-                    }?f=json&token=${accessToken}`;
+                    const url = `${options.arcgisInstanceBaseUrl}/sharing/rest/community/users/${profile.username}?f=json&token=${accessToken}`;
                     fetch(url, { method: "get" })
                         .then(res => {
                             return res.json();

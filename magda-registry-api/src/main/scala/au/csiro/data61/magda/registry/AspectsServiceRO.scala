@@ -128,7 +128,7 @@ class AspectsServiceRO(
             case None =>
               complete(
                 StatusCodes.NotFound,
-                BadRequest("No aspect exists with that ID.")
+                ApiError("No aspect exists with that ID.")
               )
           }
         }

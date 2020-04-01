@@ -10,21 +10,28 @@ const MAX_CHARACTERS_FOR_EXTRACTION = 150000;
 /** The maximum number of keywords to return */
 export const MAX_KEYWORDS = 10;
 
-function standardliseWhitespace(keyword: string) {
+const keywordsBlackList =
+    config.keywordsBlackList &&
+    config.keywordsBlackList.map(kw => kw.toLowerCase());
+
+/** Turns all instances of one or more whitespace characters (space, newline etc) into a single space */
+function standardizeWhitespace(keyword: string) {
     return keyword.replace(/\s+/g, " ").trim();
 }
 
 function cleanUpKeywords(keywords: string[]) {
-    let cleaned = keywords.map(standardliseWhitespace);
-    if (config.keywordsBlackList && config.keywordsBlackList.length) {
+    let cleaned = uniq(
+        keywords.map(kw => standardizeWhitespace(kw).toLowerCase())
+    );
+    if (keywordsBlackList) {
         cleaned = cleaned.filter(
             keyword =>
-                config.keywordsBlackList
-                    .map(str => str.toLowerCase())
-                    .indexOf(keyword.toLowerCase()) === -1
+                !keywordsBlackList.some(
+                    blackListed => keyword.indexOf(blackListed) > -1
+                )
         );
     }
-    return uniq(cleaned);
+    return cleaned;
 }
 
 /**
@@ -40,8 +47,8 @@ export async function extractKeywords(
 ) {
     let keywords = [] as string[];
 
-    // --- please note: `largeTextBlockIdentified` can be undefined
-    // --- only spreadsheet like source will set this field
+    // please note: `largeTextBlockIdentified` can be undefined
+    // only spreadsheet like source will set this field
     if (input.text && input.largeTextBlockIdentified !== false) {
         // Only take up to a certain length - anything longer results in massive delays and the browser
         // prompting with a "Should I stop this script?" warning.
@@ -59,33 +66,17 @@ export async function extractKeywords(
             }
         }
 
-        // Put the validated keywords first, if there's room fill it with the best candidate keywords.
-        keywords = [
-            ...validatedKeywords,
-            ...candidateKeywords.slice(
-                0,
-                MAX_KEYWORDS - validatedKeywords.length
-            )
-        ].map(keyword => keyword.toLowerCase());
+        // Put the validated keywords first then unvalidated, so that if it goes over MAX_KEYWORDS
+        // the unvalidated ones will be the ones trimmed.
+        keywords = [...validatedKeywords, ...candidateKeywords];
     }
 
-    // --- Ignore headers keywords if already generate enough from NLP
-    // --- or header keywords not exists
-    if (
-        keywords.length >= MAX_KEYWORDS ||
-        (!input.keywords || !input.keywords.length)
-    ) {
-        output.keywords = keywords;
-        return;
+    // add keywords from header / cells if applicable
+    if (input.keywords) {
+        keywords = [...keywords, ...input.keywords];
     }
 
-    // --- fill keywords with header / cell keywords
-    output.keywords = [
-        ...keywords,
-        ...cleanUpKeywords(
-            input.keywords.slice(0, MAX_KEYWORDS - keywords.length)
-        )
-    ];
+    output.keywords = cleanUpKeywords(keywords).slice(0, 10);
 }
 
 function getKeywordsFromText(
@@ -105,7 +96,7 @@ function getKeywordsFromText(
             file.data.keyphrases.forEach(function(phrase) {
                 keyphrases.push(phrase.matches[0].nodes.map(toString).join(""));
             });
-            resolve(cleanUpKeywords(keyphrases));
+            resolve(keyphrases);
         }
     });
 }

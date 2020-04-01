@@ -28,7 +28,7 @@ import au.csiro.data61.magda.model.misc.Agent
 import au.csiro.data61.magda.search.elasticsearch.Indices
 import com.typesafe.config.ConfigFactory
 import au.csiro.data61.magda.indexer.crawler.Crawler
-import au.csiro.data61.magda.indexer.external.registry.RegistryExternalInterface
+import au.csiro.data61.magda.client.RegistryExternalInterface
 import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
 import au.csiro.data61.magda.client.HttpFetcher
 import au.csiro.data61.magda.search.elasticsearch.Exceptions.ESGenericException

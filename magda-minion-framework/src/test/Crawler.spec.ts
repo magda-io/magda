@@ -20,7 +20,7 @@ baseSpec(
     "Crawler",
     (
         expressApp: () => express.Express,
-        expressServer: () => Server,
+        _expressServer: () => Server,
         listenPort: () => number,
         beforeEachProperty: () => void
     ) => {
@@ -32,7 +32,6 @@ baseSpec(
             registryTotalRecordsNumber: number,
             domain: string,
             jwtSecret: string,
-            userId: string,
             concurrency: number,
             async: boolean,
             enableMultiTenant: boolean,
@@ -56,6 +55,7 @@ baseSpec(
             const registryScope = nock(registryUrl);
             const tenantId = MAGDA_ADMIN_PORTAL_ID;
 
+            const userId = "b1fddd6f-e230-4068-bd2c-1a21844f1598";
             const registry = new Registry({
                 baseUrl: registryUrl,
                 jwtSecret: jwtSecret,
@@ -127,7 +127,6 @@ baseSpec(
                     jsc.nat(100),
                     lcAlphaNumStringArbNe,
                     lcAlphaNumStringArbNe,
-                    lcAlphaNumStringArbNe,
                     jsc.integer(1, 10),
                     jsc.bool,
                     jsc.bool,
@@ -156,7 +155,8 @@ baseSpec(
                             name: "",
                             aspects: {},
                             sourceTag: "",
-                            tenantId: MAGDA_ADMIN_PORTAL_ID
+                            tenantId: MAGDA_ADMIN_PORTAL_ID,
+                            authnReadPolicyId: undefined
                         })
                     );
                     return { recordsTestTable, registryRecords };
@@ -241,7 +241,8 @@ baseSpec(
                             name: "",
                             aspects: {},
                             sourceTag: "",
-                            tenantId: MAGDA_ADMIN_PORTAL_ID
+                            tenantId: MAGDA_ADMIN_PORTAL_ID,
+                            authnReadPolicyId: undefined
                         }));
                     return {
                         totalCrawledRecordsNumber,

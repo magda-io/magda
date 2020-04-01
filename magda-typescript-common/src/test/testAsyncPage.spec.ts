@@ -373,13 +373,15 @@ describe("AsyncPage", function() {
 
         it("works with AsyncPage.single and a non-empty array", function() {
             let calls = 0;
-            return forEachAsync(AsyncPage.single<number[]>([4]), 6, function(
-                value
-            ) {
-                ++calls;
-                expect(value).to.equal(4);
-                return Promise.resolve();
-            }).then(function() {
+            return forEachAsync(
+                AsyncPage.single<number[]>([4]),
+                6,
+                function(value) {
+                    ++calls;
+                    expect(value).to.equal(4);
+                    return Promise.resolve();
+                }
+            ).then(function() {
                 expect(calls).to.equal(1);
             });
         });

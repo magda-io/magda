@@ -19,7 +19,7 @@ import au.csiro.data61.magda.indexer.external.registry.RegisterWebhook.{
   ShouldNotCrawl
 }
 import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
-import au.csiro.data61.magda.indexer.external.registry.RegistryExternalInterface
+import au.csiro.data61.magda.client.RegistryExternalInterface
 import scala.concurrent.Future
 import au.csiro.data61.magda.search.elasticsearch.IndexDefinition
 import au.csiro.data61.magda.search.elasticsearch.Indices

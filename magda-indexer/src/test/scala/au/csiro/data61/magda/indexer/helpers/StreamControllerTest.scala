@@ -7,7 +7,7 @@ import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.scaladsl.{Sink, Source}
 import akka.stream.{ActorMaterializer, OverflowStrategy}
-import au.csiro.data61.magda.indexer.external.registry.RegistryInterface
+import au.csiro.data61.magda.client.RegistryInterface
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.indexer.search.SearchIndexer.IndexResult
 import au.csiro.data61.magda.model.misc.DataSet
@@ -21,6 +21,7 @@ import scala.concurrent.{ExecutionContextExecutor, Future, Promise}
 
 import org.scalatest.concurrent.ScalaFutures._
 import scala.concurrent.duration._
+import au.csiro.data61.magda.client.RegistryExternalInterface
 
 class StreamControllerTest extends FlatSpec with Matchers {
 
@@ -37,7 +38,7 @@ class StreamControllerTest extends FlatSpec with Matchers {
     start + r.nextInt((end - start) + 1)
   }
 
-  class MockRegistryInterface extends RegistryInterface {
+  class MockRegistryInterface extends RegistryExternalInterface {
     private val nextIndex = new AtomicInteger(0)
     private val dataSetCount = new AtomicInteger(0)
 

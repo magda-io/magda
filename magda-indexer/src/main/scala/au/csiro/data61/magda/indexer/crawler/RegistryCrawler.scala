@@ -7,7 +7,7 @@ import akka.actor.{ActorSystem, Scheduler}
 import akka.event.Logging
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
-import au.csiro.data61.magda.indexer.external.registry.RegistryExternalInterface
+import au.csiro.data61.magda.client.RegistryExternalInterface
 import au.csiro.data61.magda.indexer.helpers.StreamController
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.model.misc.DataSet

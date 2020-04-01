@@ -44,7 +44,7 @@ describe("proxying", () => {
             authorizationApi: "http://127.0.0.1",
             sessionSecret: "secret",
             jwtSecret: "othersecret",
-            userId: "123",
+            userId: "b1fddd6f-e230-4068-bd2c-1a21844f1598",
             web: "https://127.0.0.1",
             previewMap: "http://preview-map",
             tenantUrl: "http://tenant"

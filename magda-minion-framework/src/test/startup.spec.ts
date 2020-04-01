@@ -19,6 +19,8 @@ import fakeArgv from "./fakeArgv";
 import makePromiseQueryable from "./makePromiseQueryable";
 import baseSpec from "./baseSpec";
 
+const userId = "b1fddd6f-e230-4068-bd2c-1a21844f1598";
+
 baseSpec(
     "on startup",
     (
@@ -36,7 +38,6 @@ baseSpec(
             jsc.array(recordArb),
             jsc.suchthat(jsc.integer, int => int > 0),
             lcAlphaNumStringArbNe,
-            lcAlphaNumStringArbNe,
             jsc.bool,
             (
                 registryHost,
@@ -46,7 +47,6 @@ baseSpec(
                 records,
                 pageSize,
                 jwtSecret,
-                userId,
                 enableMultiTenant
             ) => {
                 beforeEachProperty();
@@ -145,7 +145,6 @@ baseSpec(
             internalUrl: string;
             id: string;
             jwtSecret: string;
-            userId: string;
             registryUrl: string;
             aspects: string[];
             optionalAspects: string[];
@@ -163,7 +162,6 @@ baseSpec(
                     aspects: jsc.array(lcAlphaNumStringArb),
                     optionalAspects: jsc.array(lcAlphaNumStringArb),
                     jwtSecret: lcAlphaNumStringArb,
-                    userId: lcAlphaNumStringArb,
                     registryUrl: lcAlphaNumStringArb,
                     concurrency: jsc.integer(0, 10),
                     enableMultiTenant: jsc.bool
@@ -176,7 +174,6 @@ baseSpec(
                     containsBlanks(record.aspects) ||
                     containsBlanks(record.optionalAspects) ||
                     record.jwtSecret === "" ||
-                    record.userId === "" ||
                     record.registryUrl === ""
             ),
             ({
@@ -186,7 +183,6 @@ baseSpec(
                 aspects,
                 optionalAspects,
                 jwtSecret,
-                userId,
                 concurrency,
                 enableMultiTenant
             }: input) => {

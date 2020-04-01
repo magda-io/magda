@@ -202,6 +202,7 @@ trait WebhookSpecBase
         id = dataSet.identifier,
         name = dataSet.title.getOrElse("No Title"),
         tenantId = Some(MAGDA_ADMIN_PORTAL_ID),
+        authnReadPolicyId = None,
         aspects = {
           val aspects: Map[String, JsObject] = Map(
             "dcat-dataset-strings" -> modifyJson(

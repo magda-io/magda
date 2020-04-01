@@ -3,7 +3,11 @@ import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
 import { RecordAction, RawDataset } from "../helpers/record";
 import { FetchError } from "../types";
-import { ensureAspectExists } from "api-clients/RegistryApis";
+import {
+    ensureAspectExists,
+    fetchRecord,
+    Record
+} from "api-clients/RegistryApis";
 import request from "helpers/request";
 import { CkanSyncAspectType } from "helpers/record";
 import ckanSyncAspect from "@magda/registry-aspects/ckan-sync.schema.json";
@@ -100,36 +104,17 @@ export function createNewDatasetReset(error: FetchError): RecordAction {
 export function fetchDatasetFromRegistry(id: string): Function {
     return (dispatch: Function) => {
         dispatch(requestDataset(id));
-        let parameters =
-            "dereference=true&aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&" +
-            "optionalAspect=usage&optionalAspect=access&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=source-link-status&optionalAspect=dataset-quality-rating&" +
-            "optionalAspect=spatial-coverage&optionalAspect=publishing&optionalAspect=dataset-access-control&optionalAspect=provenance&optionalAspect=information-security&optionalAspect=currency&optionalAspect=ckan-sync";
-        const url =
-            config.registryReadOnlyApiUrl +
-            `records/${encodeURIComponent(id)}?${parameters}`;
+        // let parameters =
+        //     "dereference=true&aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&" +
+        //     "optionalAspect=usage&optionalAspect=access&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=source-link-status&optionalAspect=dataset-quality-rating&" +
+        //     "optionalAspect=spatial-coverage&optionalAspect=publishing&optionalAspect=dataset-access-control&optionalAspect=provenance&optionalAspect=information-security&optionalAspect=currency&optionalAspect=ckan-sync";
+        // const url =
+        //     config.registryReadOnlyApiUrl +
+        //     `records/${encodeURIComponent(id)}?${parameters}`;
 
-        return fetch(url, config.fetchOptions)
-            .then(response => {
-                if (!response.ok) {
-                    let statusText = response.statusText;
-                    // response.statusText are different in different browser, therefore we unify them here
-                    if (response.status === 404) {
-                        statusText = "Not Found";
-                    }
-                    throw Error(statusText);
-                }
-                return response.json();
-            })
-            .then((json: any) => {
-                if (json.records) {
-                    if (json.records.length > 0) {
-                        return dispatch(receiveDataset(json.records[0]));
-                    } else {
-                        throw new Error("Not Found");
-                    }
-                } else {
-                    return dispatch(receiveDataset(json));
-                }
+        return fetchRecord(id)
+            .then((data: any) => {
+                return dispatch(receiveDataset(data));
             })
             .catch(error =>
                 dispatch(
@@ -274,8 +259,8 @@ export function modifyRecordAspect(
 }
 
 export function createRecord(
-    inputDataset: any,
-    inputDistributions: any,
+    inputDataset: Record,
+    inputDistributions: Record[],
     aspects: any
 ): any {
     return async (dispatch: Function, getState: () => any) => {

@@ -139,12 +139,10 @@ export default function buildCkanRedirectionRouter({
 
     genericUrlRedirectConfigs.forEach(config => {
         const args = covertGenericUrlRedirectConfigToFullArgList(config);
-        redirectToCkanGeneric.apply(null, args as [
-            string,
-            boolean?,
-            number?,
-            string?
-        ]);
+        redirectToCkanGeneric.apply(
+            null,
+            args as [string, boolean?, number?, string?]
+        );
     });
 
     /**

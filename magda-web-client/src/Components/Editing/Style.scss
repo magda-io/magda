@@ -1,4 +1,5 @@
 @import "variables";
+@import "./pancake/sass/core.scss";
 
 .textEditorEx {
     margin-right: 5px;
@@ -207,4 +208,11 @@
     cursor: pointer;
     background-color: $AU-colordark-background;
     color: $AU-colordark-foreground-action;
+}
+
+.code-list-radio-editor.invalid {
+    .code-list-radio-editor-input-container {
+        border-radius: 5px;
+        border: 1px solid red;
+    }
 }

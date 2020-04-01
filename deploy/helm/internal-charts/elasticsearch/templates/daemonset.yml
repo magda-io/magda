@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    name: es-ds
+  name: es-ds
+spec:
+  selector:
+    matchLabels:
+      name: es-ds
+  template:
+    metadata:
+      labels:
+        name: es-ds
+    spec:
+      containers:
+      - name: es-ds
+        image: gcr.io/google-containers/startup-script:v1
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            cpu: 0m
+            memory: 0Mi
+        securityContext:
+          privileged: true
+        env:
+        - name: STARTUP_SCRIPT
+          value: |
+            #! /bin/sh
+            echo "Set vm.max_map_count=262144 in host"
+            sysctl -w vm.max_map_count=262144
+            echo "Current max locked memory in host: "
+            ulimit -l
+            echo "Set max locked memory to unlimited in host"
+            ulimit -l unlimited
+            echo "New max locked memory: "
+            ulimit -l
+            echo "done"

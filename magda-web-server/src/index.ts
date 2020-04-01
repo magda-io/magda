@@ -25,6 +25,12 @@ const argv = yargs
         type: "boolean",
         default: false
     })
+    .option("showNotificationBanner", {
+        describe:
+            "Whether or not the global notification banner should be shown",
+        type: "boolean",
+        default: false
+    })
     .option("useLocalStyleSheet", {
         describe:
             "True to use prebuilt static stylesheet from web-client module.",
@@ -77,6 +83,11 @@ const argv = yargs
     .option("registryApiBaseUrl", {
         describe:
             "The base URL of the MAGDA Registry API.  If not specified, the URL is built from the apiBaseUrl.",
+        type: "string"
+    })
+    .option("registryApiReadOnlyBaseUrl", {
+        describe:
+            "The base URL of the MAGDA Registry API for use for read-only operations.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
     })
     .option("authApiBaseUrl", {
@@ -154,7 +165,7 @@ const argv = yargs
         describe: "Add dataset page mandatory fields list (in JSON path)",
         type: "string",
         coerce: coerceJson("mandatoryFields"),
-        default: "null"
+        default: "[]"
     })
     .option("dateFormats", {
         describe: "A list of date formats supported by this Magda instance",
@@ -162,10 +173,11 @@ const argv = yargs
         coerce: coerceJson("dateFormats"),
         default: "[]"
     })
-    .option("addDatasetThemes", {
-        describe: "A list of pre-defined add data ",
+    .option("datasetThemes", {
+        describe:
+            "A list of pre-defined phrases for theme input on the `add dataset page`",
         type: "string",
-        coerce: coerceJson("addDatasetThemes"),
+        coerce: coerceJson("datasetThemes"),
         default: "[]"
     })
     .option("noManualKeywords", {
@@ -228,6 +240,13 @@ const webServerConfig = {
                 .segment("registry")
                 .toString()
     ),
+    registryApiReadOnlyBaseUrl: addTrailingSlash(
+        argv.registryApiReadOnlyBaseUrl ||
+            new URI(apiBaseUrl)
+                .segment("v0")
+                .segment("registry-read-only")
+                .toString()
+    ),
     authApiBaseUrl: addTrailingSlash(
         argv.authApiBaseUrl ||
             new URI(apiBaseUrl)
@@ -258,6 +277,7 @@ const webServerConfig = {
     ),
     fallbackUrl: argv.fallbackUrl,
     gapiIds: argv.gapiIds,
+    showNotificationBanner: argv.showNotificationBanner,
     featureFlags: argv.featureFlags || {},
     vocabularyApiEndpoints: (argv.vocabularyApiEndpoints || []) as string[],
     defaultOrganizationId: argv.defaultOrganizationId,
@@ -268,7 +288,7 @@ const webServerConfig = {
     csvLoaderChunkSize: argv.csvLoaderChunkSize,
     mandatoryFields: argv.mandatoryFields,
     dateFormats: argv.dateFormats,
-    addDatasetThemes: argv.addDatasetThemes,
+    datasetThemes: argv.datasetThemes,
     noManualKeywords: argv.noManualKeywords,
     noManualThemes: argv.noManualThemes,
     keywordsBlackList: argv.keywordsBlackList

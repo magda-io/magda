@@ -15,9 +15,11 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import akka.stream.Materializer
 import akka.util.Timeout
-import com.auth0.jwt.JWT
-import com.auth0.jwt.algorithms.Algorithm
-import com.auth0.jwt.interfaces.DecodedJWT
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import java.security.Key;
+import java.nio.charset.StandardCharsets;
 import scalikejdbc.config._
 import scalikejdbc._
 
@@ -31,7 +33,7 @@ import au.csiro.data61.magda.client.AuthApiClient
 
 class Api(
     val webHookActorOption: Option[ActorRef],
-    val authClient: AuthApiClient,
+    val authApiClient: RegistryAuthApiClient,
     implicit val config: Config,
     implicit val system: ActorSystem,
     implicit val ec: ExecutionContext,
@@ -60,7 +62,7 @@ class Api(
             .map(_.message)).mkString("\n")
         complete(
           StatusCodes.BadRequest,
-          au.csiro.data61.magda.registry.BadRequest(messages)
+          au.csiro.data61.magda.registry.ApiError(messages)
         )
       }
       .result()
@@ -72,19 +74,22 @@ class Api(
       complete(
         StatusCodes.InternalServerError,
         au.csiro.data61.magda.registry
-          .BadRequest("The server encountered an unexpected error.")
+          .ApiError("The server encountered an unexpected error.")
       )
     }
   }
 
   implicit val timeout = Timeout(FiniteDuration(1, TimeUnit.SECONDS))
 
+  val recordPersistence = new DefaultRecordPersistence(config)
+  val eventPersistence = new DefaultEventPersistence(recordPersistence)
+
   val roleDependentRoutes = webHookActorOption match {
     case Some(webHookActor) =>
       pathPrefix("aspects") {
         new AspectsService(
           config,
-          authClient,
+          authApiClient,
           webHookActor,
           system,
           materializer
@@ -94,26 +99,35 @@ class Api(
           new RecordsService(
             config,
             webHookActor,
-            authClient,
+            authApiClient,
             system,
-            materializer
+            materializer,
+            recordPersistence,
+            eventPersistence
           ).route
         } ~
         pathPrefix("hooks") {
           new HooksService(
             config,
             webHookActor,
-            authClient,
+            authApiClient,
             system,
             materializer
           ).route
         }
     case None =>
       pathPrefix("aspects") {
-        new AspectsServiceRO(config, authClient, system, materializer).route
+        new AspectsServiceRO(config, authApiClient, system, materializer).route
       } ~
         pathPrefix("records") {
-          new RecordsServiceRO(config, system, materializer).route
+          new RecordsServiceRO(
+            authApiClient,
+            config,
+            system,
+            materializer,
+            recordPersistence,
+            eventPersistence
+          ).route
         }
   }
 

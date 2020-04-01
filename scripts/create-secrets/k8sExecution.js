@@ -67,9 +67,7 @@ function doK8sExecution(config, shouldNotAsk = false) {
             promise = promise.then(function() {
                 // --- leave error to be handled at end of then chain. see above
                 throw new Error(
-                    `Namespace ${
-                        configData["cluster-namespace"]
-                    } doesn't exist. Please create and try again.`
+                    `Namespace ${configData["cluster-namespace"]} doesn't exist. Please create and try again.`
                 );
             });
         }
@@ -80,9 +78,7 @@ function doK8sExecution(config, shouldNotAsk = false) {
             .then(function(shouldCreateNamespace) {
                 if (!shouldCreateNamespace) {
                     throw new Error(
-                        `You need to create namespace \`${
-                            configData["cluster-namespace"]
-                        }\` before try again.`
+                        `You need to create namespace \`${configData["cluster-namespace"]}\` before try again.`
                     );
                 } else {
                     createNamespace(env, configData["cluster-namespace"]);
@@ -123,6 +119,7 @@ function doK8sExecution(config, shouldNotAsk = false) {
         }
 
         createDbPasswords(env, namespace, configData);
+        createMinioCredentials(env, namespace, configData);
 
         createWebAccessPassword(env, namespace, configData);
 
@@ -173,7 +170,7 @@ function doK8sExecution(config, shouldNotAsk = false) {
         }
 
         createSecret(env, namespace, "auth-secrets", {
-            "jwt-secret": pwgen(),
+            "jwt-secret": pwgen(64),
             "session-secret": pwgen()
         });
     });
@@ -338,6 +335,14 @@ function createDbPasswords(env, namespace, configData) {
         data[key] = configData["db-passwords"];
     });
     createSecret(env, namespace, "db-passwords", data);
+}
+
+function createMinioCredentials(env, namespace, configData) {
+    const data = {
+        accesskey: configData["accesskey"],
+        secretkey: configData["secretkey"]
+    };
+    createSecret(env, namespace, "storage-secrets", data);
 }
 
 function createWebAccessPassword(env, namespace, configData) {
