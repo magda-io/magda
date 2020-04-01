@@ -3131,8 +3131,7 @@ class RecordsServiceSpec extends ApiSpec {
         Get(s"/v0/records/${record.id}/history") ~> addTenantIdHeader(TENANT_2) ~> param
           .api(role)
           .routes ~> check {
-          status shouldEqual StatusCodes.OK
-          responseAs[EventsPage].events.length shouldEqual 0
+          status shouldEqual StatusCodes.NotFound
         }
 
         val newRecord = record.copy(sourceTag = Some("tag2"))

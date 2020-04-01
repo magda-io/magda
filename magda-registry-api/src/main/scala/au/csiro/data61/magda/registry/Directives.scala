@@ -48,10 +48,10 @@ object Directives extends Protocols with SprayJsonSupport {
       materializer: Materializer,
       ec: ExecutionContext
   ): Directive1[Option[List[(String, List[List[OpaQuery]])]]] = {
-    AuthDirectives.getJwt().flatMap { jwt =>
-      if (skipOpaQuery) {
-        provide(None)
-      } else {
+    if (skipOpaQuery) {
+      provide(None)
+    } else {
+      AuthDirectives.getJwt().flatMap { jwt =>
         val recordPolicyIds = DB readOnly { session =>
           recordPersistence
             .getPolicyIds(session, operationType, recordId.map(Set(_)))
@@ -122,10 +122,10 @@ object Directives extends Protocols with SprayJsonSupport {
         Option[List[(String, List[List[OpaQuery]])]]
     )
   ] = {
-    AuthDirectives.getJwt().flatMap { jwt =>
-      if (skipOpaQuery) {
-        provide((None, None))
-      } else {
+    if (skipOpaQuery) {
+      provide((None, None))
+    } else {
+      AuthDirectives.getJwt().flatMap { jwt =>
         val recordPolicyIds = DB readOnly { session =>
           recordPersistence
             .getPolicyIds(session, operationType, recordId.map(Set(_)))
@@ -181,6 +181,16 @@ object Directives extends Protocols with SprayJsonSupport {
     }
   }
 
+  /**
+    * Checks whether the user making this call can actually access the passed record id. This will complete with a 404 if the user is
+    * not allowed to access the record, OR if the record simply doesn't exist at all.
+    *
+    * @param recordPersistence A RecordPersistence instance to look up record policies etc through
+    * @param authApiClient An auth api client to query OPA through
+    * @param recordId The id of the record in question
+    * @param noPoliciesResponse What to respond with if there are no valid policies to query for (defaults to 404)
+    * @return If the record exists and the user is allowed to access it, will pass through, otherwise will complete with 404.
+    */
   def checkUserCanAccessRecord(
       recordPersistence: RecordPersistence,
       authApiClient: RegistryAuthApiClient,
@@ -198,21 +208,19 @@ object Directives extends Protocols with SprayJsonSupport {
       materializer: Materializer,
       ec: ExecutionContext
   ): Directive0 = {
-    AuthDirectives.getJwt().flatMap { jwt =>
-      withRecordOpaQuery(
-        AuthOperations.read,
-        recordPersistence,
-        authApiClient,
-        Some(recordId),
-        noPoliciesResponse
-      ).flatMap { recordQueries =>
-        DB readOnly { session =>
-          recordPersistence
-            .getById(session, tenantId, recordQueries, recordId) match {
-            case Some(record) => pass
-            case None =>
-              complete(noPoliciesResponse)
-          }
+    withRecordOpaQuery(
+      AuthOperations.read,
+      recordPersistence,
+      authApiClient,
+      Some(recordId),
+      noPoliciesResponse
+    ).flatMap { recordQueries =>
+      DB readOnly { session =>
+        recordPersistence
+          .getById(session, tenantId, recordQueries, recordId) match {
+          case Some(record) => pass
+          case None =>
+            complete(noPoliciesResponse)
         }
       }
     }
