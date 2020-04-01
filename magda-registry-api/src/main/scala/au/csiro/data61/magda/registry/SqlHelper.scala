@@ -30,22 +30,30 @@ object SqlHelper {
       operationType: AuthOperations.OperationType,
       defaultPolicyId: Option[String]
   ): SQLSyntax = opaQueries match {
-    case None => SQL_TRUE
+    case None             => SQL_TRUE
     case Some(opaQueries) =>
+      /**
+        * Builds the policy id clause for a policy id (e.g. Records.authnReadPolicyId =). Will also
+        * insert a clause for nulls if this policy is the default.
+        */
+      def policyIdClause(policyId: String) = {
+        val basePolicyIdClause = sqls"Records.authnReadPolicyId = ${policyId}"
+
+        // If this policy is the default policy, we need to also apply it to records with a null value in the policy column
+        defaultPolicyId match {
+          case Some(innerDefaultPolicyId) if innerDefaultPolicyId == policyId =>
+            sqls"($basePolicyIdClause OR Records.authnReadPolicyId IS NULL)"
+          case _ => basePolicyIdClause
+        }
+      }
+
       val queries = opaQueries.flatMap {
         case (policyId, Nil) =>
           None
+        case (policyId, List(List(OpaQueryAllMatched))) =>
+          // No need for anything other than the policy id clause here, because a record with this policy is allowed to be read
+          Some(sqls"(${policyIdClause(policyId)})")
         case (policyId, policyQueries) =>
-          val basePolicyIdClause = sqls"Records.authnReadPolicyId = ${policyId}"
-
-          // If this policy is the default policy, we need to also apply it to records with a null value in the policy column
-          val policyIdClauseWithDefault = defaultPolicyId match {
-            case Some(innerDefaultPolicyId)
-                if innerDefaultPolicyId == policyId =>
-              sqls"($basePolicyIdClause OR Records.authnReadPolicyId IS NULL)"
-            case _ => basePolicyIdClause
-          }
-
           val policySqlStatements = SQLSyntax.joinWithOr(policyQueries.map {
             outerRule =>
               val queries = opaQueriesToWhereClauseParts(
@@ -60,7 +68,7 @@ object SqlHelper {
           Some(
             sqls"""
             (
-              $policyIdClauseWithDefault AND EXISTS (
+              ${policyIdClause(policyId)} AND EXISTS (
                 SELECT 1 FROM recordaspects
                 WHERE
                   Recordaspects.recordid = Records.recordid AND

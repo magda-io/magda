@@ -170,7 +170,8 @@ class RecordsServiceRO(
               recordPersistence,
               authApiClient,
               None,
-              aspects ++ optionalAspects
+              aspects ++ optionalAspects,
+              RecordsPage[Record](false, None, List())
             )(
               config,
               system,
@@ -283,7 +284,9 @@ class RecordsServiceRO(
             withRecordOpaQuery(
               AuthOperations.read,
               recordPersistence,
-              authApiClient
+              authApiClient,
+              None,
+              RecordsPage[RecordSummary](false, None, List())
             )(
               config,
               system,
@@ -377,7 +380,9 @@ class RecordsServiceRO(
           withRecordOpaQuery(
             AuthOperations.read,
             recordPersistence,
-            authApiClient
+            authApiClient,
+            None,
+            CountResponse(0)
           )(
             config,
             system,
@@ -471,7 +476,9 @@ class RecordsServiceRO(
             withRecordOpaQuery(
               AuthOperations.read,
               recordPersistence,
-              authApiClient
+              authApiClient,
+              None,
+              List[String]()
             )(
               this.config,
               system,
@@ -595,7 +602,8 @@ class RecordsServiceRO(
               recordPersistence,
               authApiClient,
               Some(id),
-              aspects ++ optionalAspects
+              aspects ++ optionalAspects,
+              StatusCodes.NotFound
             )(
               config,
               system,
@@ -696,30 +704,28 @@ class RecordsServiceRO(
   def getByIdSummary: Route = get {
     path("summary" / Segment) { id =>
       requiresTenantId { tenantId =>
-        withRecordOpaQueryIncludingLinks(
+        withRecordOpaQuery(
           AuthOperations.read,
           recordPersistence,
           authApiClient,
-          Some(id)
+          Some(id),
+          StatusCodes.NotFound
         )(
           config,
           system,
           materializer,
           ec
-        ) { opaQueries =>
-          opaQueries match {
-            case (recordQueries, linkedRecordQueries) =>
-              DB readOnly { session =>
-                recordPersistence
-                  .getById(session, tenantId, recordQueries, id) match {
-                  case Some(record) => complete(record)
-                  case None =>
-                    complete(
-                      StatusCodes.NotFound,
-                      ApiError("No record exists with that ID.")
-                    )
-                }
-              }
+        ) { recordQueries =>
+          DB readOnly { session =>
+            recordPersistence
+              .getById(session, tenantId, recordQueries, id) match {
+              case Some(record) => complete(record)
+              case None =>
+                complete(
+                  StatusCodes.NotFound,
+                  ApiError("No record exists with that ID.")
+                )
+            }
           }
         }
       }

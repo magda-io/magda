@@ -57,11 +57,13 @@ object OpaTypes {
       path: List[OpaRef]
   ) extends OpaQuery
 
-  /** A no-op query that occurs when OPA has determined that the query should be resolved regardless of unknowns */
+  /** A no-op query that occurs when OPA has determined that the query should be resolved as allowed regardless of unknowns */
   case object OpaQueryAllMatched extends OpaQuery
 
-  /** A no-op query that occurs when OPA has determined that the query cannot be resolved regardless of unknowns */
+  /** A no-op query that occurs when OPA has determined that the query cannot be resolved as not allowed regardless of unknowns */
   case object OpaQueryNoneMatched extends OpaQuery
+
+  /** Indicates that access control is turned off */
   case object OpaQuerySkipAccessControl extends OpaQuery
 
   case class OpaPartialResponse(
@@ -109,6 +111,14 @@ object OpaParser {
 
     val rulesOpt: List[List[OpaQuery]] = result.asJsObject.fields
       .get("queries") match {
+      case Some(JsArray(Vector(JsArray(Vector())))) =>
+        // This happens if OPA has determined that this policy resolves to true for all possible
+        // values of any unknowns
+        List(List(OpaQueryAllMatched))
+      case None =>
+        // This happens if OPA has determined that this policy resolves to false for all possible
+        // values of the unknowns
+        List(List(OpaQueryNoneMatched))
       case Some(JsArray(rules)) =>
         // It is assumed that a registry record level access OPA policy consists of outer and inner
         // sub-policies where all outer OPA policies are in logical OR relationship; All inner OPA
@@ -157,78 +167,64 @@ object OpaParser {
         // maps to an outer OPA policy (e.g. policy_m) while an inner array element (that is, an inner
         // rule, e.g. rule_m_k) to an inner OPA policy (e.g. policy_m_k).
         //
-        // An empty outer rule indicates that the corresponding outer policy has been fully evaluated to
-        // true therefore the whole access policy should be evaluated to true.
-        val hasEmptyOuterRule = rules
-          .map(
-            outerRule => outerRule.asInstanceOf[JsArray].elements.toList
-          )
-          .exists(outerRule => outerRule.isEmpty)
 
-        if (hasEmptyOuterRule) {
-          List(List(OpaQueryAllMatched))
-        } else {
-          val rawRules: List[List[JsValue]] = rules
-            .map(outerRule => {
-              outerRule
-                .asInstanceOf[JsArray]
-                .elements
-                .toList
-                .flatMap(
-                  innerRules => innerRules.asJsObject.fields.get("terms").toList
-                )
-            })
-            .toList
+        val rawRules: List[List[JsValue]] = rules
+          .map(outerRule => {
+            outerRule
+              .asInstanceOf[JsArray]
+              .elements
+              .toList
+              .flatMap(
+                innerRules => innerRules.asJsObject.fields.get("terms").toList
+              )
+          })
+          .toList
 
-          def processThreeParter(
-              operation: String,
-              path: RegoTermRef,
-              value: RegoTermValue
-          ) = {
-            val thePath: List[OpaRef] =
-              regoRefPathToOpaRefPath(path.value)
-            val theOperation: OpaOp = operation match {
-              case opString: String =>
-                OpaOp(opString)
-            }
-            val theValue = value match {
-              case RegoTermBoolean(aValue) => OpaValueBoolean(aValue)
-              case RegoTermString(aValue)  => OpaValueString(aValue)
-              case RegoTermNumber(aValue)  => OpaValueNumber(aValue)
-            }
-
-            OpaQueryMatchValue(
-              path = thePath,
-              operation = theOperation,
-              value = theValue
-            )
+        def processThreeParter(
+            operation: String,
+            path: RegoTermRef,
+            value: RegoTermValue
+        ) = {
+          val thePath: List[OpaRef] =
+            regoRefPathToOpaRefPath(path.value)
+          val theOperation: OpaOp = operation match {
+            case opString: String =>
+              OpaOp(opString)
+          }
+          val theValue = value match {
+            case RegoTermBoolean(aValue) => OpaValueBoolean(aValue)
+            case RegoTermString(aValue)  => OpaValueString(aValue)
+            case RegoTermNumber(aValue)  => OpaValueNumber(aValue)
           }
 
-          rawRules
-            .map(outerRule => outerRule.map(parseRule))
-            .map(outerRule => {
-              outerRule.map({
-                case List(
-                    RegoTermRef(List(RegoTermVar(operation))),
-                    value: RegoTermValue,
-                    path: RegoTermRef
-                    ) =>
-                  processThreeParter(operation, path, value)
-                case List(
-                    RegoTermRef(List(RegoTermVar(operation))),
-                    path: RegoTermRef,
-                    value: RegoTermValue
-                    ) =>
-                  processThreeParter(operation, path, value)
-                case List(path: RegoTermRef) =>
-                  OpaQueryExists(regoRefPathToOpaRefPath(path.value))
-                case e => throw new Exception(s"Could not understand $e")
-              })
-            })
+          OpaQueryMatchValue(
+            path = thePath,
+            operation = theOperation,
+            value = theValue
+          )
         }
-      case None =>
-        // This happens if access is always disallowed for the input given to OPA
-        List(List(OpaQueryNoneMatched))
+
+        rawRules
+          .map(outerRule => outerRule.map(parseRule))
+          .map(outerRule => {
+            outerRule.map({
+              case List(
+                  RegoTermRef(List(RegoTermVar(operation))),
+                  value: RegoTermValue,
+                  path: RegoTermRef
+                  ) =>
+                processThreeParter(operation, path, value)
+              case List(
+                  RegoTermRef(List(RegoTermVar(operation))),
+                  path: RegoTermRef,
+                  value: RegoTermValue
+                  ) =>
+                processThreeParter(operation, path, value)
+              case List(path: RegoTermRef) =>
+                OpaQueryExists(regoRefPathToOpaRefPath(path.value))
+              case e => throw new Exception(s"Could not understand $e")
+            })
+          })
       case e => throw new Exception(s"Could not understand $e")
     }
 
