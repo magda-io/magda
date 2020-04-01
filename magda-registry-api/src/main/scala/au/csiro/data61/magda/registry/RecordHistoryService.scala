@@ -100,11 +100,12 @@ class RecordHistoryService(
       requiresTenantId { tenantId =>
         parameters('pageToken.as[Long].?, 'start.as[Int].?, 'limit.as[Int].?) {
           (pageToken, start, limit) =>
-            checkUserCanAccessRecord(
+            checkUserCanAccessRecordEvents(
               recordPersistence,
               authApiClient,
               id,
-              tenantId
+              tenantId,
+              EventsPage(false, None, Nil)
             )(
               config,
               system,

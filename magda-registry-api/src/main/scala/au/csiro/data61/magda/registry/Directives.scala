@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import akka.stream.Materializer
-import au.csiro.data61.magda.directives.AuthDirectives
+import au.csiro.data61.magda.directives.AuthDirectives._
 import au.csiro.data61.magda.opa.OpaTypes._
 import com.typesafe.config.Config
 import scalikejdbc.DB
@@ -16,12 +16,27 @@ import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import au.csiro.data61.magda.client.AuthOperations.OperationType
 import au.csiro.data61.magda.model.TenantId
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import au.csiro.data61.magda.model.Auth.User
 
 object Directives extends Protocols with SprayJsonSupport {
-  private def skipOpaQuery(implicit config: Config) =
-    config.hasPath("authorization.skipOpaQuery") && config.getBoolean(
-      "authorization.skipOpaQuery"
-    )
+
+  /**
+    * Returns true if the configuration says to skip the opa query.
+    */
+  private def skipOpaQuery(implicit system: ActorSystem, config: Config) = {
+    val skip = config.hasPath("authorization.skipOpaQuery") && config
+      .getBoolean(
+        "authorization.skipOpaQuery"
+      )
+
+    if (skip) {
+      system.log.warning(
+        "WARNING: Skip OPA querying is turned on! This is fine for testing or playing around, but this should NOT BE TURNED ON FOR PRODUCTION!"
+      )
+    }
+
+    skip
+  }
 
   /**
     * Determines OPA policies that apply, queries OPA and parses the policies for translation to SQL or some other query language.
@@ -51,7 +66,7 @@ object Directives extends Protocols with SprayJsonSupport {
     if (skipOpaQuery) {
       provide(None)
     } else {
-      AuthDirectives.getJwt().flatMap { jwt =>
+      getJwt().flatMap { jwt =>
         val recordPolicyIds = DB readOnly { session =>
           recordPersistence
             .getPolicyIds(session, operationType, recordId.map(Set(_)))
@@ -125,7 +140,7 @@ object Directives extends Protocols with SprayJsonSupport {
     if (skipOpaQuery) {
       provide((None, None))
     } else {
-      AuthDirectives.getJwt().flatMap { jwt =>
+      getJwt().flatMap { jwt =>
         val recordPolicyIds = DB readOnly { session =>
           recordPersistence
             .getPolicyIds(session, operationType, recordId.map(Set(_)))
@@ -182,47 +197,53 @@ object Directives extends Protocols with SprayJsonSupport {
   }
 
   /**
-    * Checks whether the user making this call can actually access the passed record id. This will complete with a 404 if the user is
-    * not allowed to access the record, OR if the record simply doesn't exist at all.
+    * Checks whether the user making this call can access events for the provided record id.
+    *
+    * This will complete with 404 if:
+    *   - The record never existed OR
+    *   - The record existed and has been deleted, and the user is NOT an admin
+    *
+    * This will complete with 200 if:
+    *   - The record exists and the user is allowed to access it in its current form OR
+    *   - The record existed in the past and has been deleted, but the user is an admin
     *
     * @param recordPersistence A RecordPersistence instance to look up record policies etc through
     * @param authApiClient An auth api client to query OPA through
     * @param recordId The id of the record in question
-    * @param noPoliciesResponse What to respond with if there are no valid policies to query for (defaults to 404)
+    * @param notFoundResponse What to respond with if there are no valid policies to query for (defaults to 404)
     * @return If the record exists and the user is allowed to access it, will pass through, otherwise will complete with 404.
     */
-  def checkUserCanAccessRecord(
+  def checkUserCanAccessRecordEvents(
       recordPersistence: RecordPersistence,
       authApiClient: RegistryAuthApiClient,
       recordId: String,
       tenantId: au.csiro.data61.magda.model.TenantId.TenantId,
-      noPoliciesResponse: => ToResponseMarshallable = (
-        StatusCodes.NotFound,
-        ApiError(
-          "No record exists with that ID."
-        )
-      )
+      notFoundResponse: => ToResponseMarshallable
   )(
       implicit config: Config,
       system: ActorSystem,
       materializer: Materializer,
       ec: ExecutionContext
   ): Directive0 = {
-    withRecordOpaQuery(
-      AuthOperations.read,
-      recordPersistence,
-      authApiClient,
-      Some(recordId),
-      noPoliciesResponse
-    ).flatMap { recordQueries =>
-      DB readOnly { session =>
-        recordPersistence
-          .getById(session, tenantId, recordQueries, recordId) match {
-          case Some(record) => pass
-          case None =>
-            complete(noPoliciesResponse)
+    provideUser(authApiClient) flatMap {
+      // If the user is an admin, we should allow this even if they can't access the record
+      case Some(User(_, true)) => pass
+      case _ =>
+        withRecordOpaQuery(
+          AuthOperations.read,
+          recordPersistence,
+          authApiClient,
+          Some(recordId),
+          notFoundResponse
+        ) flatMap { recordQueries =>
+          DB readOnly { session =>
+            recordPersistence
+              .getById(session, tenantId, recordQueries, recordId) match {
+              case Some(record) => pass
+              case None         => complete(notFoundResponse)
+            }
+          }
         }
-      }
     }
   }
 }

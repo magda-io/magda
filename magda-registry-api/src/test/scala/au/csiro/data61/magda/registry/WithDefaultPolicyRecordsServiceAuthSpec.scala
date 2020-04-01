@@ -27,6 +27,7 @@ class WithDefaultPolicyRecordsServiceAuthSpec
        |authorization.skip = false
        |authorization.skipOpaQuery = false
        |opa.recordPolicyId = "default.policy"
+       |akka.loglevel = ERROR
     """.stripMargin
 
   describe("with default policy set") {
@@ -97,28 +98,20 @@ class WithDefaultPolicyRecordsServiceAuthSpec
 
           describe("based on the value in an aspect") {
             it(
-              "allows access to an record if policy resolves true"
+              "allows access to a record if policy resolves true"
             ) { param =>
               addExampleAspectDef(param)
-              val recordId = "foo"
-              addRecord(
-                param,
-                Record(
-                  recordId,
-                  "foo",
-                  Map(
-                    "stringExample" -> JsObject(
-                      "nested" -> JsObject("public" -> JsString("true"))
-                    )
-                  ),
-                  None
-                )
-              )
 
-              expectOpaQueryForPolicy(
+              setupRecord(
                 param,
+                None,
                 "default.policy.read",
-                policyResponseForStringExampleAspect
+                policyResponseForStringExampleAspect,
+                Map(
+                  "stringExample" -> JsObject(
+                    "nested" -> JsObject("public" -> JsString("true"))
+                  )
+                )
               )
 
               Get(s"/v0/records/foo") ~> addTenantIdHeader(
@@ -129,27 +122,19 @@ class WithDefaultPolicyRecordsServiceAuthSpec
             }
 
             it(
-              "denies access to an record if policy resolves false"
+              "denies access to a record if policy resolves false"
             ) { param =>
               addExampleAspectDef(param)
-              val recordId = "foo"
-              addRecord(
+              setupRecord(
                 param,
-                Record(
-                  recordId,
-                  "foo",
-                  Map(
-                    "stringExample" -> JsObject(
-                      "nested" -> JsObject("public" -> JsString("false"))
-                    )
-                  ),
-                  None
-                )
-              )
-              expectOpaQueryForPolicy(
-                param,
+                None,
                 "default.policy.read",
-                policyResponseForStringExampleAspect
+                policyResponseForStringExampleAspect,
+                Map(
+                  "stringExample" -> JsObject(
+                    "nested" -> JsObject("public" -> JsString("false"))
+                  )
+                )
               )
 
               Get(s"/v0/records/foo") ~> addTenantIdHeader(
@@ -160,21 +145,12 @@ class WithDefaultPolicyRecordsServiceAuthSpec
             }
 
             it(
-              "denies access to an record if required aspect is not present"
+              "denies access to a record if required aspect is not present"
             ) { param =>
               addExampleAspectDef(param)
-              val recordId = "foo"
-              addRecord(
+              setupRecord(
                 param,
-                Record(
-                  recordId,
-                  "foo",
-                  Map(),
-                  None
-                )
-              )
-              expectOpaQueryForPolicy(
-                param,
+                None,
                 "default.policy.read",
                 policyResponseForStringExampleAspect
               )
@@ -220,16 +196,11 @@ class WithDefaultPolicyRecordsServiceAuthSpec
           it(
             "allows access to an aspect-less record if default policy resolves to unconditionally allow access"
           ) { param =>
-            val recordId = "foo"
-            addRecord(param, Record(recordId, "foo", Map(), None))
-            expectOpaQueryForPolicy(
+            setupRecord(
               param,
+              None,
               "default.policy.read",
-              """{
-              "result": {
-                  "queries": [[]]
-              }
-            }"""
+              policyResponseForUnconditionallyAllowed
             )
 
             Get(s"/v0/records/summary/foo") ~> addTenantIdHeader(
@@ -245,12 +216,12 @@ class WithDefaultPolicyRecordsServiceAuthSpec
           it(
             "disallows access to an aspect-less record if default policy resolves to unconditionally disallow access"
           ) { param =>
-            val recordId = "foo"
-
-            addRecord(param, Record(recordId, "foo", Map(), None))
-            expectOpaQueryForPolicy(param, "default.policy.read", """{
-              "result": {}
-            }""")
+            setupRecord(
+              param,
+              None,
+              "default.policy.read",
+              policyResponseForUnconditionallyDisallowed
+            )
 
             Get(s"/v0/records/summary/foo") ~> addTenantIdHeader(
               TENANT_1
@@ -261,28 +232,20 @@ class WithDefaultPolicyRecordsServiceAuthSpec
 
           describe("based on the value in an aspect") {
             it(
-              "allows access to an record if policy resolves true"
+              "allows access to a record if policy resolves true"
             ) { param =>
               addExampleAspectDef(param)
-              val recordId = "foo"
-              addRecord(
-                param,
-                Record(
-                  recordId,
-                  "foo",
-                  Map(
-                    "stringExample" -> JsObject(
-                      "nested" -> JsObject("public" -> JsString("true"))
-                    )
-                  ),
-                  None
-                )
-              )
 
-              expectOpaQueryForPolicy(
+              setupRecord(
                 param,
+                None,
                 "default.policy.read",
-                policyResponseForStringExampleAspect
+                policyResponseForStringExampleAspect,
+                Map(
+                  "stringExample" -> JsObject(
+                    "nested" -> JsObject("public" -> JsString("true"))
+                  )
+                )
               )
 
               Get(s"/v0/records/summary/foo") ~> addTenantIdHeader(
@@ -295,27 +258,19 @@ class WithDefaultPolicyRecordsServiceAuthSpec
             }
 
             it(
-              "denies access to an record if policy resolves false"
+              "denies access to a record if policy resolves false"
             ) { param =>
               addExampleAspectDef(param)
-              val recordId = "foo"
-              addRecord(
+              setupRecord(
                 param,
-                Record(
-                  recordId,
-                  "foo",
-                  Map(
-                    "stringExample" -> JsObject(
-                      "nested" -> JsObject("public" -> JsString("false"))
-                    )
-                  ),
-                  None
-                )
-              )
-              expectOpaQueryForPolicy(
-                param,
+                None,
                 "default.policy.read",
-                policyResponseForStringExampleAspect
+                policyResponseForStringExampleAspect,
+                Map(
+                  "stringExample" -> JsObject(
+                    "nested" -> JsObject("public" -> JsString("false"))
+                  )
+                )
               )
 
               Get(s"/v0/records/summary/foo") ~> addTenantIdHeader(
@@ -326,26 +281,17 @@ class WithDefaultPolicyRecordsServiceAuthSpec
             }
 
             it(
-              "denies access to an record if required aspect is not present"
+              "denies access to a record if required aspect is not present"
             ) { param =>
               addExampleAspectDef(param)
-              val recordId = "foo"
-              addRecord(
+              setupRecord(
                 param,
-                Record(
-                  recordId,
-                  "foo",
-                  Map(),
-                  None
-                )
-              )
-              expectOpaQueryForPolicy(
-                param,
+                None,
                 "default.policy.read",
                 policyResponseForStringExampleAspect
               )
 
-              Get(s"/v0/records/foo") ~> addTenantIdHeader(
+              Get(s"/v0/records/summary/foo") ~> addTenantIdHeader(
                 TENANT_1
               ) ~> param.api(Full).routes ~> check {
                 status shouldEqual StatusCodes.NotFound
@@ -364,137 +310,115 @@ class WithDefaultPolicyRecordsServiceAuthSpec
           commonRecordHistoryTests(Some("default.policy"), false)
 
           it(
-            "allows access to an aspect-less record if default policy resolves to unconditionally allow access"
+            "shows events from an aspect-less record if default policy resolves to unconditionally allow access"
           ) { param =>
-            val recordId = "foo"
-            addRecord(param, Record(recordId, "foo", Map(), None))
-            expectOpaQueryForPolicy(
+            setupRecord(
               param,
+              None,
               "default.policy.read",
-              """{
-              "result": {
-                  "queries": [[]]
-              }
-            }"""
+              policyResponseForUnconditionallyAllowed
             )
 
-            Get(s"/v0/records/summary/foo") ~> addTenantIdHeader(
+            Get(s"/v0/records/foo/history") ~> addTenantIdHeader(
               TENANT_1
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
-              val resRecord = responseAs[RecordSummary]
+              val resRecord = responseAs[EventsPage]
 
-              resRecord.id shouldBe "foo"
+              resRecord.events.head.data
+                .fields("recordId") shouldEqual JsString("foo")
             }
           }
 
           it(
-            "disallows access to an aspect-less record if default policy resolves to unconditionally disallow access"
+            "doesn't show events from an aspect-less record if default policy resolves to unconditionally disallow access"
           ) { param =>
-            val recordId = "foo"
+            setupRecord(
+              param,
+              None,
+              "default.policy.read",
+              policyResponseForUnconditionallyDisallowed
+            )
 
-            addRecord(param, Record(recordId, "foo", Map(), None))
-            expectOpaQueryForPolicy(param, "default.policy.read", """{
-              "result": {}
-            }""")
-
-            Get(s"/v0/records/summary/foo") ~> addTenantIdHeader(
+            Get(s"/v0/records/foo/history") ~> addTenantIdHeader(
               TENANT_1
             ) ~> param.api(Full).routes ~> check {
-              status shouldEqual StatusCodes.NotFound
+              status shouldEqual StatusCodes.OK
+              val resRecord = responseAs[EventsPage]
+              resRecord.events.length shouldBe 0
             }
           }
 
           describe("based on the value in an aspect") {
             it(
-              "allows access to an record if policy resolves true"
+              "shows events from a record if policy resolves true"
             ) { param =>
               addExampleAspectDef(param)
-              val recordId = "foo"
-              addRecord(
+
+              setupRecord(
                 param,
-                Record(
-                  recordId,
-                  "foo",
-                  Map(
-                    "stringExample" -> JsObject(
-                      "nested" -> JsObject("public" -> JsString("true"))
-                    )
-                  ),
-                  None
+                None,
+                "default.policy.read",
+                policyResponseForStringExampleAspect,
+                Map(
+                  "stringExample" -> JsObject(
+                    "nested" -> JsObject("public" -> JsString("true"))
+                  )
                 )
               )
 
-              expectOpaQueryForPolicy(
-                param,
-                "default.policy.read",
-                policyResponseForStringExampleAspect
-              )
-
-              Get(s"/v0/records/summary/foo") ~> addTenantIdHeader(
+              Get(s"/v0/records/foo/history") ~> addTenantIdHeader(
                 TENANT_1
               ) ~> param.api(Full).routes ~> check {
                 status shouldEqual StatusCodes.OK
-                val summary = responseAs[RecordSummary]
-                summary.aspects shouldEqual List("stringExample")
+                val resRecord = responseAs[EventsPage]
+                resRecord.events.head.data
+                  .fields("recordId") shouldEqual JsString("foo")
               }
             }
 
             it(
-              "denies access to an record if policy resolves false"
+              "shows no events from a record if policy resolves false"
             ) { param =>
               addExampleAspectDef(param)
-              val recordId = "foo"
-              addRecord(
+              setupRecord(
                 param,
-                Record(
-                  recordId,
-                  "foo",
-                  Map(
-                    "stringExample" -> JsObject(
-                      "nested" -> JsObject("public" -> JsString("false"))
-                    )
-                  ),
-                  None
+                None,
+                "default.policy.read",
+                policyResponseForStringExampleAspect,
+                Map(
+                  "stringExample" -> JsObject(
+                    "nested" -> JsObject("public" -> JsString("false"))
+                  )
                 )
               )
-              expectOpaQueryForPolicy(
-                param,
-                "default.policy.read",
-                policyResponseForStringExampleAspect
-              )
 
-              Get(s"/v0/records/summary/foo") ~> addTenantIdHeader(
+              Get(s"/v0/records/foo/history") ~> addTenantIdHeader(
                 TENANT_1
               ) ~> param.api(Full).routes ~> check {
-                status shouldEqual StatusCodes.NotFound
+                status shouldEqual StatusCodes.OK
+                val resRecord = responseAs[EventsPage]
+                resRecord.events.length shouldBe 0
               }
             }
 
             it(
-              "denies access to an record if required aspect is not present"
+              "shows no events from a record if required aspect is not present"
             ) { param =>
               addExampleAspectDef(param)
-              val recordId = "foo"
-              addRecord(
+              setupRecord(
                 param,
-                Record(
-                  recordId,
-                  "foo",
-                  Map(),
-                  None
-                )
-              )
-              expectOpaQueryForPolicy(
-                param,
+                None,
                 "default.policy.read",
                 policyResponseForStringExampleAspect
               )
 
-              Get(s"/v0/records/foo") ~> addTenantIdHeader(
+              Get(s"/v0/records/foo/history") ~> addTenantIdHeader(
                 TENANT_1
               ) ~> param.api(Full).routes ~> check {
-                status shouldEqual StatusCodes.NotFound
+                status shouldEqual StatusCodes.OK
+                val resRecord = responseAs[EventsPage]
+                resRecord.events.length shouldBe 0
               }
             }
           }

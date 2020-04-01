@@ -25,6 +25,7 @@ class RecordsServiceAuthSpec extends BaseRecordsServiceAuthSpec {
        |db.default.url = "${databaseUrl}?currentSchema=test"
        |authorization.skip = false
        |authorization.skipOpaQuery = false
+       |akka.loglevel = ERROR
     """.stripMargin
 
   describe("without a default policy set") {
@@ -67,10 +68,12 @@ class RecordsServiceAuthSpec extends BaseRecordsServiceAuthSpec {
         ) { param =>
           setupNullPolicyRecord(param)
 
-          Get(s"/v0/records/summary/foo") ~> addTenantIdHeader(
+          Get(s"/v0/records/foo/history") ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
-            status shouldEqual StatusCodes.NotFound
+            status shouldEqual StatusCodes.OK
+            val resRecord = responseAs[EventsPage]
+            resRecord.events.length shouldBe 0
           }
         }
       }

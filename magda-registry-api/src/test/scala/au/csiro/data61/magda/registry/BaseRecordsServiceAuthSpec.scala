@@ -79,30 +79,9 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
     }
 
     it(
-      "allows access to an record if record matches policy"
+      "allows access to a record if record matches policy"
     ) { param =>
       addExampleAspectDef(param)
-      // val recordId = "foo"
-      // addRecord(
-      //   param,
-      //   Record(
-      //     recordId,
-      //     "foo",
-      //     Map(
-      //       "stringExample" -> JsObject(
-      //         "nested" -> JsObject("public" -> JsString("true"))
-      //       )
-      //     ),
-      //     authnReadPolicyId = recordPolicy
-      //   )
-      // )
-
-      // expectOpaQueryForPolicy(
-      //   param,
-      //   expectedReadPolicy,
-      //   policyResponseForStringExampleAspect
-      // )
-
       setupRecord(
         param,
         recordPolicy,
@@ -123,30 +102,9 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
     }
 
     it(
-      "does not allow access to an record if record does not match policy"
+      "does not allow access to a record if record does not match policy"
     ) { param =>
       addExampleAspectDef(param)
-      // val recordId = "foo"
-      // addRecord(
-      //   param,
-      //   Record(
-      //     recordId,
-      //     "foo",
-      //     Map(
-      //       "stringExample" -> JsObject(
-      //         "nested" -> JsObject("public" -> JsString("false"))
-      //       )
-      //     ),
-      //     authnReadPolicyId = recordPolicy
-      //   )
-      // )
-
-      // expectOpaQueryForPolicy(
-      //   param,
-      //   expectedReadPolicy,
-      //   policyResponseForStringExampleAspect
-      // )
-
       setupRecord(
         param,
         recordPolicy,
@@ -351,30 +309,9 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
     }
 
     it(
-      "allows access to an record if record matches policy"
+      "allows access to a record if record matches policy"
     ) { param =>
       addExampleAspectDef(param)
-      // val recordId = "foo"
-      // addRecord(
-      //   param,
-      //   Record(
-      //     recordId,
-      //     "foo",
-      //     Map(
-      //       "stringExample" -> JsObject(
-      //         "nested" -> JsObject("public" -> JsString("true"))
-      //       )
-      //     ),
-      //     authnReadPolicyId = recordPolicy
-      //   )
-      // )
-
-      // expectOpaQueryForPolicy(
-      //   param,
-      //   expectedReadPolicy,
-      //   policyResponseForStringExampleAspect
-      // )
-
       setupRecord(
         param,
         recordPolicy,
@@ -395,30 +332,9 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
     }
 
     it(
-      "does not allow access to an record if record does not match policy"
+      "does not allow access to a record if record does not match policy"
     ) { param =>
       addExampleAspectDef(param)
-      // val recordId = "foo"
-      // addRecord(
-      //   param,
-      //   Record(
-      //     recordId,
-      //     "foo",
-      //     Map(
-      //       "stringExample" -> JsObject(
-      //         "nested" -> JsObject("public" -> JsString("false"))
-      //       )
-      //     ),
-      //     authnReadPolicyId = recordPolicy
-      //   )
-      // )
-
-      // expectOpaQueryForPolicy(
-      //   param,
-      //   expectedReadPolicy,
-      //   policyResponseForStringExampleAspect
-      // )
-
       setupRecord(
         param,
         recordPolicy,
@@ -609,7 +525,7 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
     }
 
     it(
-      "returns 404 for events on an aspect-less record if policy resolves to unconditionally disallow access"
+      "returns empty page for events on an aspect-less record if policy resolves to unconditionally disallow access"
     ) { param =>
       setupRecord(
         param,
@@ -621,12 +537,14 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
       Get(s"/v0/records/foo/history") ~> addTenantIdHeader(
         TENANT_1
       ) ~> param.api(Full).routes ~> check {
-        status shouldEqual StatusCodes.NotFound
+        status shouldEqual StatusCodes.OK
+        val resRecord = responseAs[EventsPage]
+        resRecord.events.length shouldBe 0
       }
     }
 
     it(
-      "allows access to an record if record matches policy"
+      "show events for a record if record matches policy"
     ) { param =>
       addExampleAspectDef(param)
 
@@ -656,7 +574,7 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
     }
 
     it(
-      "does not allow access to an record if record does not match policy"
+      "does not show events for a record if record does not match policy"
     ) { param =>
       addExampleAspectDef(param)
 
@@ -675,11 +593,71 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
       Get(s"/v0/records/foo/history") ~> addTenantIdHeader(
         TENANT_1
       ) ~> param.api(Full).routes ~> check {
-        status shouldEqual StatusCodes.NotFound
+        status shouldEqual StatusCodes.OK
+        val resRecord = responseAs[EventsPage]
+        resRecord.events.length shouldBe 0
       }
     }
 
-    describe("policies successfully allow and deny for") {
+    it(
+      "returns no events for a record that has been deleted, unless the user is an admin"
+    ) { param =>
+      // Create a record
+      setupRecord(
+        param,
+        recordPolicy,
+        expectedReadPolicy,
+        policyResponseForUnconditionallyAllowed
+      )
+
+      // Make sure we can see events without being an admin
+      Get(s"/v0/records/foo/history") ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val resRecord = responseAs[EventsPage]
+        resRecord.events.length shouldBe 1
+      }
+
+      // Delete the record
+      param.asAdmin(Delete("/v0/records/foo")) ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      // No user details = no events
+      Get(s"/v0/records/foo/history") ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val resRecord = responseAs[EventsPage]
+        resRecord.events.length shouldBe 0
+      }
+
+      // Non-admin user = no events
+      param.asNonAdmin(Get(s"/v0/records/foo/history")) ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val resRecord = responseAs[EventsPage]
+        resRecord.events.length shouldBe 0
+      }
+
+      // Admin user = still show events
+      param.asAdmin(Get(s"/v0/records/foo/history")) ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val resRecord = responseAs[EventsPage]
+        resRecord.events.length shouldBe 2
+        resRecord.events.last.eventType shouldEqual EventType.DeleteRecord
+      }
+    }
+
+    describe(
+      "shows events (if allowed) and shows no events (if denied) for"
+    ) {
       it("a string-based policy") { param =>
         doPolicyTestForHistory(
           param,
@@ -763,12 +741,17 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
+          val resRecord = responseAs[EventsPage]
+          resRecord.events.head.data
+            .fields("recordId") shouldEqual JsString(s"allow$PascalCaseId")
         }
 
         Get(s"/v0/records/deny$PascalCaseId/history") ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(Full).routes ~> check {
-          status shouldEqual StatusCodes.NotFound
+          status shouldEqual StatusCodes.OK
+          val resRecord = responseAs[EventsPage]
+          resRecord.events.length shouldBe 0
         }
       }
     }
