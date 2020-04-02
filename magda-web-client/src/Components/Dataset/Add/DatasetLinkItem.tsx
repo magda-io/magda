@@ -304,7 +304,9 @@ const DatasetLinkItem = (props: Props) => {
                     if (res.status !== 200) {
                         throw new Error(
                             `Failed to request function ${item.name}` +
-                                res.statusText
+                                res.statusText +
+                                "\n" +
+                                (await res.text())
                         );
                     }
 
@@ -337,7 +339,9 @@ const DatasetLinkItem = (props: Props) => {
                 console.log(e);
                 if (e && e.length) {
                     // --- only deal with the first error
-                    throw e[0];
+                    throw new Error(
+                        "System cannot recognise or process the URL."
+                    );
                 }
             });
 
