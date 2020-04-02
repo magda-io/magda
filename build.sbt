@@ -18,7 +18,7 @@ lazy val packageJson = {
 lazy val commonSettings = Seq(
   organization := "au.csiro.data61",
   version := packageJson("version"),
-  scalaVersion := "2.11.12"
+  scalaVersion := "2.12.10"
 )
 
 lazy val root = (project in file("."))
@@ -43,10 +43,6 @@ lazy val intTest = (project in file("magda-int-test"))
   .dependsOn(indexer)
   .dependsOn(searchApi)
   .dependsOn(registryApi % "test->test;compile->compile")
-
-EclipseKeys.withJavadoc := true
-EclipseKeys.withSource := true
-EclipseKeys.withBundledScalaContainers := false
 
 Revolver.settings
 Revolver.enableDebugging(port = 8000, suspend = false)

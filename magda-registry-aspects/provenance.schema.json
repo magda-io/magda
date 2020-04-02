@@ -1,0 +1,75 @@
+{
+    "$schema": "http://json-schema.org/hyper-schema#",
+    "title": "Provenance",
+    "description": "Describes how this data was collected or generated.",
+    "type": "object",
+    "properties": {
+        "mechanism": {
+            "description": "How was it produced?",
+            "type": "string"
+        },
+        "sourceSystem": {
+            "description": "What system, if any, was used to produce the data?",
+            "type": "string"
+        },
+        "derivedFrom": {
+            "description": "What other dataset(s), if any, was this data derived from?",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "description": "The dataset that this data was derived from - either a link to another record in Magda or a name if the dataset isn't in Magda",
+                "properties": {
+                    "id": {
+                        "type": "array",
+                        "maxItems": 1,
+                        "items": {
+                            "type": "string",
+                            "description": "This is an array because Magda doesn't properly support single values for links.",
+                            "links": [
+                                {
+                                    "href": "/api/v0/registry/records/{$}",
+                                    "rel": "item"
+                                }
+                            ]
+                        }
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "If the dataset isn't in Magda, the name of the dataset that the data was derived from."
+                    }
+                },
+                "oneOf": [
+                    {
+                        "required": ["id"],
+                        "not": {
+                            "required": ["name"]
+                        }
+                    },
+                    {
+                        "required": ["name"],
+                        "not": {
+                            "required": ["id"]
+                        }
+                    }
+                ]
+            }
+        },
+        "affiliatedOrganizationIds": {
+            "description": "Which other organisation(s), if any, was this produced in collaboration with?",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "links": [
+                    {
+                        "href": "/api/v0/registry/records/{$}",
+                        "rel": "item"
+                    }
+                ]
+            }
+        },
+        "isOpenData": {
+            "description": "Is it already released as open data?",
+            "type": "boolean"
+        }
+    }
+}

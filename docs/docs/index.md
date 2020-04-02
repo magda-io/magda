@@ -8,3 +8,4 @@
 -   [Ports used when running locally](/docs/local-ports)
 -   [Regression test](/docs/regression-test)
 -   [Roadmap](/docs/roadmap)
+-   [Mike's Windows Setup Instructions](/docs/windows-instructions)

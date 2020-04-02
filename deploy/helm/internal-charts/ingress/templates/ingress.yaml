@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    {{- if .Values.ingressClass }}
+    kubernetes.io/ingress.class: {{ .Values.ingressClass }}
+    {{- end }}
+    {{- if .Values.ipName }}
+    kubernetes.io/ingress.global-static-ip-name: {{ .Values.ipName }}
+    {{- end }}
+    nginx.ingress.kubernetes.io/client-body-buffer-size: 10M
+    nginx.ingress.kubernetes.io/proxy-body-size: 10M
+  name: ingress
+spec:
+  {{- if .Values.enableTls }}
+  tls:
+  - hosts:
+    - {{ .Values.hostname }}
+    {{- if not .Values.useDefaultCertificate}}
+    secretName: {{ .Values.tlsSecretName | default "magda-cert-tls" }}
+    {{- end }}
+  {{- end }}
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: {{ .Values.targetService | default "gateway" }}
+          servicePort: 80
+        path: {{ if eq (.Values.ingressClass | default "") "gce" -}} /* {{- else -}} / {{- end }}
+    {{- if .Values.hostname  }}
+    host: {{ .Values.hostname }}
+    {{- end }}

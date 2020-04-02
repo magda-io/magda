@@ -1,0 +1,24 @@
+{
+    "id": "organization",
+    "name": "organization info for testing",
+    "jsonSchema": {
+        "$schema": "http://json-schema.org/hyper-schema#",
+        "title": "Organization info",
+        "description": "Organization info for testing",
+        "type": "object",
+        "properties": {
+            "name": {
+                "title": "the name of the organization",
+                "type": "string",
+                "minLength": 36,
+                "maxLength": 36
+            },
+            "email": {
+                "title": "the email of the organization",
+                "type": "string",
+                "minLength": 36,
+                "maxLength": 36
+            }
+        }
+    }
+}

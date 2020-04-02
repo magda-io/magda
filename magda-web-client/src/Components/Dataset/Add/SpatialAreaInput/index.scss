@@ -1,0 +1,207 @@
+.spatial-area-input {
+    .tab-list {
+        list-style: none;
+        padding: 0px;
+        border-top: solid 1px #cccaca;
+        margin: 0px;
+    }
+    .tab-list-item {
+        list-style: none;
+        float: left;
+        width: 210px;
+        height: 68px;
+        margin: 0px;
+        padding: 25px 20px 13px 17px;
+        border-bottom: solid 1px #cccaca;
+        border-right: solid 1px #cccaca;
+        border-top: 0px;
+        border-left: 0px;
+        font-size: 18px;
+        font-weight: normal;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: 30px;
+        letter-spacing: normal;
+        color: #30384d;
+        cursor: pointer;
+        text-align: left;
+    }
+    .tab-list-item.active {
+        background-color: #30384d !important;
+        color: #ffffff;
+    }
+    .tab-list-item:nth-child(even) {
+        background-color: #f6f6f6;
+    }
+    .tab-list-item:nth-child(odd) {
+        background-color: #eeeeee;
+    }
+
+    .tab-content-container {
+        min-height: auto;
+    }
+
+    .bbox-editor-container {
+        width: 504px;
+        position: relative;
+        border: 1px solid #e0e0e0;
+        padding: 28px 20px 27px 20px;
+        .edit-button {
+            position: absolute;
+            right: 10px;
+            top: 5px;
+            background-color: transparent;
+        }
+        .compass-icon-container {
+            text-align: center;
+            vertical-align: middle;
+            padding: 34px 30px 25px 30px;
+            img {
+                width: 69px;
+            }
+        }
+        input {
+            width: 147px;
+            height: 35.5px;
+            border-radius: 8px;
+            border: solid 1px #e0e0e0;
+        }
+        p {
+            width: 139.9px;
+            height: 20px;
+            text-align: center;
+            font-family: Helvetica;
+            font-size: 12px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.67;
+            letter-spacing: normal;
+            color: #333333;
+            margin-bottom: 10px;
+        }
+    }
+
+    .text-row {
+        margin-top: 51px;
+        margin-bottom: 48px;
+        position: relative;
+        font-size: 16px;
+        font-weight: normal;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: 1.25;
+        letter-spacing: normal;
+        color: #484848;
+        .help-icon-container {
+            position: absolute;
+            display: inline;
+            padding-left: 25px;
+        }
+    }
+
+    .coordinates-panel {
+        .editor-heading {
+            width: 393px;
+            height: 20px;
+            font-size: 15px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.33;
+            letter-spacing: normal;
+            color: #484848;
+            margin-bottom: 17px;
+        }
+    }
+
+    .spatial-data-previewer {
+        height: 340px;
+        .map-ctrl {
+            height: 340px;
+        }
+    }
+
+    .region-panel {
+        .country-select-container {
+            .country-select-heading {
+                font-size: 16px;
+                font-weight: normal;
+                font-style: normal;
+                font-stretch: normal;
+                line-height: 1.25;
+                letter-spacing: normal;
+                color: #484848;
+                margin-bottom: 21px;
+            }
+        }
+
+        .offshore-territories-select-container {
+            margin-top: 48px;
+            .offshore-territories-select-heading {
+                font-size: 16px;
+                font-weight: normal;
+                font-style: normal;
+                font-stretch: normal;
+                line-height: 1.25;
+                letter-spacing: normal;
+                color: #484848;
+                margin-bottom: 21px;
+            }
+        }
+
+        .state-select-container {
+            margin-top: 48px;
+            .state-select-heading {
+                font-size: 16px;
+                font-weight: normal;
+                font-style: normal;
+                font-stretch: normal;
+                line-height: 1.25;
+                letter-spacing: normal;
+                color: #484848;
+                margin-bottom: 21px;
+            }
+            span {
+                color: #979797;
+            }
+        }
+
+        .region-select-container {
+            margin-top: 48px;
+            .region-select-heading {
+                font-size: 16px;
+                font-weight: normal;
+                font-style: normal;
+                font-stretch: normal;
+                line-height: 1.25;
+                letter-spacing: normal;
+                color: #484848;
+                margin-bottom: 21px;
+                span {
+                    color: #979797;
+                }
+            }
+        }
+
+        .area-select-container {
+            margin-top: 48px;
+            .area-select-heading {
+                font-size: 16px;
+                font-weight: normal;
+                font-style: normal;
+                font-stretch: normal;
+                line-height: 1.25;
+                letter-spacing: normal;
+                color: #484848;
+                margin-bottom: 21px;
+                span {
+                    color: #979797;
+                }
+            }
+        }
+        .spatial-data-previewer-container {
+            padding-top: 30px;
+        }
+    }
+}

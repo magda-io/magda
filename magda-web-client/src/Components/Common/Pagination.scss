@@ -1,43 +1,53 @@
 @import "variables";
+@import "./pancake/sass/core.scss";
 .pagination {
     margin: 48px 0 0 0;
 
     .pagination-list {
-        list-style: none;
         display: flex;
         flex-flow: row wrap;
-        padding-left: 0;
         justify-content: center;
         margin-bottom: 24px;
-        button {
-            height: 30px;
-            min-width: 30px;
-            border-radius: 2px;
-            line-height: 1;
+        padding-left: 0;
+        list-style: none;
+
+        a {
+            display: flex;
+            height: 46px;
+            min-width: 46px;
             padding: 0px;
-            margin: 12px;
-            font-weight: 400;
-            background-color: $AU-color-background;
-            color: $AU-color-foreground-action;
-            cursor: pointer;
-            border: 2px solid $AU-color-foreground-action;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: $AU-border-radius;
+            text-decoration: none;
+            @include AU-fontgrid(xs);
+            border: 3px solid $AU-color-foreground-action;
             &:hover,
             &:focus {
                 background: $AU-colordark-foreground-text;
-                border: 2px solid $AU-colordark-background;
             }
             &.current {
                 background-color: $AU-colordark-background;
                 color: $AU-colordark-foreground-text;
-                border: 2px solid $AU-colordark-background;
+                border: 3px solid $AU-colordark-background;
+            }
+        }
+
+        li + li {
+            @include AU-space(margin-left, 0.75unit);
+
+            @include AU-media(xs) {
+                @include AU-space(margin-left, 1.25unit);
             }
         }
     }
-    .pagination-summray {
-        opacity: 0.5;
+    .pagination-summary {
+        color: #6f777b;
         font-size: 14px;
         line-height: 16px;
         text-align: center;
+        @include AU-space(margin-top, 3unit);
         margin-bottom: 8px;
     }
 }

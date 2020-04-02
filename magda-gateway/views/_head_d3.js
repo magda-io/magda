@@ -3,8 +3,8 @@
     typeof exports === "object" && typeof module !== "undefined"
         ? factory(exports)
         : typeof define === "function" && define.amd
-            ? define(["exports"], factory)
-            : factory((global.d3 = global.d3 || {}));
+        ? define(["exports"], factory)
+        : factory((global.d3 = global.d3 || {}));
 })(this, function(exports) {
     "use strict";
 
@@ -192,8 +192,8 @@
                 (n = arguments.length) < 2
                     ? ((stop = start), (start = 0), 1)
                     : n < 3
-                        ? 1
-                        : +step);
+                    ? 1
+                    : +step);
 
         var i = -1,
             n = Math.max(0, Math.ceil((stop - start) / step)) | 0,
@@ -338,8 +338,8 @@
                       typeof _ === "function"
                           ? _
                           : Array.isArray(_)
-                              ? constant(slice.call(_))
-                              : constant(_)),
+                          ? constant(slice.call(_))
+                          : constant(_)),
                   histogram)
                 : threshold;
         };
@@ -726,8 +726,8 @@
                         orient === top
                             ? "0em"
                             : orient === bottom
-                                ? "0.71em"
-                                : "0.32em"
+                            ? "0.71em"
+                            : "0.32em"
                     )
             );
 
@@ -772,15 +772,15 @@
                           k * tickSizeOuter
                         : "M0.5," + range0 + "V" + range1
                     : tickSizeOuter
-                        ? "M" +
-                          range0 +
-                          "," +
-                          k * tickSizeOuter +
-                          "V0.5H" +
-                          range1 +
-                          "V" +
-                          k * tickSizeOuter
-                        : "M" + range0 + ",0.5H" + range1
+                    ? "M" +
+                      range0 +
+                      "," +
+                      k * tickSizeOuter +
+                      "V0.5H" +
+                      range1 +
+                      "V" +
+                      k * tickSizeOuter
+                    : "M" + range0 + ",0.5H" + range1
             );
 
             tick.attr("opacity", 1).attr("transform", function(d) {
@@ -801,8 +801,8 @@
                     orient === right
                         ? "start"
                         : orient === left
-                            ? "end"
-                            : "middle"
+                        ? "end"
+                        : "middle"
                 );
 
             selection.each(function() {
@@ -1548,12 +1548,12 @@
                     ? attrRemoveNS
                     : attrRemove
                 : typeof value === "function"
-                    ? fullname.local
-                        ? attrFunctionNS
-                        : attrFunction
-                    : fullname.local
-                        ? attrConstantNS
-                        : attrConstant)(fullname, value)
+                ? fullname.local
+                    ? attrFunctionNS
+                    : attrFunction
+                : fullname.local
+                ? attrConstantNS
+                : attrConstant)(fullname, value)
         );
     }
 
@@ -1591,8 +1591,8 @@
                   (value == null
                       ? styleRemove
                       : typeof value === "function"
-                          ? styleFunction
-                          : styleConstant)(
+                      ? styleFunction
+                      : styleConstant)(
                       name,
                       value,
                       priority == null ? "" : priority
@@ -1636,8 +1636,8 @@
                   (value == null
                       ? propertyRemove
                       : typeof value === "function"
-                          ? propertyFunction
-                          : propertyConstant)(name, value)
+                      ? propertyFunction
+                      : propertyConstant)(name, value)
               )
             : this.node()[name];
     }
@@ -1724,8 +1724,8 @@
             (typeof value === "function"
                 ? classedFunction
                 : value
-                    ? classedTrue
-                    : classedFalse)(names, value)
+                ? classedTrue
+                : classedFalse)(names, value)
         );
     }
 
@@ -1821,8 +1821,8 @@
                 before == null
                     ? constantNull
                     : typeof before === "function"
-                        ? before
-                        : selector(before);
+                    ? before
+                    : selector(before);
         return this.select(function() {
             return this.insertBefore(
                 create.apply(this, arguments),
@@ -2721,39 +2721,34 @@
                   1
               )) // #f00
             : (m = reHex6.exec(format))
-                ? rgbn(parseInt(m[1], 16)) // #ff0000
-                : (m = reRgbInteger.exec(format))
-                    ? new Rgb(m[1], m[2], m[3], 1) // rgb(255, 0, 0)
-                    : (m = reRgbPercent.exec(format))
-                        ? new Rgb(
-                              (m[1] * 255) / 100,
-                              (m[2] * 255) / 100,
-                              (m[3] * 255) / 100,
-                              1
-                          ) // rgb(100%, 0%, 0%)
-                        : (m = reRgbaInteger.exec(format))
-                            ? rgba(m[1], m[2], m[3], m[4]) // rgba(255, 0, 0, 1)
-                            : (m = reRgbaPercent.exec(format))
-                                ? rgba(
-                                      (m[1] * 255) / 100,
-                                      (m[2] * 255) / 100,
-                                      (m[3] * 255) / 100,
-                                      m[4]
-                                  ) // rgb(100%, 0%, 0%, 1)
-                                : (m = reHslPercent.exec(format))
-                                    ? hsla(m[1], m[2] / 100, m[3] / 100, 1) // hsl(120, 50%, 50%)
-                                    : (m = reHslaPercent.exec(format))
-                                        ? hsla(
-                                              m[1],
-                                              m[2] / 100,
-                                              m[3] / 100,
-                                              m[4]
-                                          ) // hsla(120, 50%, 50%, 1)
-                                        : named.hasOwnProperty(format)
-                                            ? rgbn(named[format])
-                                            : format === "transparent"
-                                                ? new Rgb(NaN, NaN, NaN, 0)
-                                                : null;
+            ? rgbn(parseInt(m[1], 16)) // #ff0000
+            : (m = reRgbInteger.exec(format))
+            ? new Rgb(m[1], m[2], m[3], 1) // rgb(255, 0, 0)
+            : (m = reRgbPercent.exec(format))
+            ? new Rgb(
+                  (m[1] * 255) / 100,
+                  (m[2] * 255) / 100,
+                  (m[3] * 255) / 100,
+                  1
+              ) // rgb(100%, 0%, 0%)
+            : (m = reRgbaInteger.exec(format))
+            ? rgba(m[1], m[2], m[3], m[4]) // rgba(255, 0, 0, 1)
+            : (m = reRgbaPercent.exec(format))
+            ? rgba(
+                  (m[1] * 255) / 100,
+                  (m[2] * 255) / 100,
+                  (m[3] * 255) / 100,
+                  m[4]
+              ) // rgb(100%, 0%, 0%, 1)
+            : (m = reHslPercent.exec(format))
+            ? hsla(m[1], m[2] / 100, m[3] / 100, 1) // hsl(120, 50%, 50%)
+            : (m = reHslaPercent.exec(format))
+            ? hsla(m[1], m[2] / 100, m[3] / 100, m[4]) // hsla(120, 50%, 50%, 1)
+            : named.hasOwnProperty(format)
+            ? rgbn(named[format])
+            : format === "transparent"
+            ? new Rgb(NaN, NaN, NaN, 0)
+            : null;
     }
 
     function rgbn(n) {
@@ -2801,9 +2796,12 @@
             return (
                 0 <= this.r &&
                 this.r <= 255 &&
-                (0 <= this.g && this.g <= 255) &&
-                (0 <= this.b && this.b <= 255) &&
-                (0 <= this.opacity && this.opacity <= 1)
+                0 <= this.g &&
+                this.g <= 255 &&
+                0 <= this.b &&
+                this.b <= 255 &&
+                0 <= this.opacity &&
+                this.opacity <= 1
             );
         },
         hex: function() {
@@ -2900,8 +2898,10 @@
         displayable: function() {
             return (
                 ((0 <= this.s && this.s <= 1) || isNaN(this.s)) &&
-                (0 <= this.l && this.l <= 1) &&
-                (0 <= this.opacity && this.opacity <= 1)
+                0 <= this.l &&
+                this.l <= 1 &&
+                0 <= this.opacity &&
+                this.opacity <= 1
             );
         }
     }));
@@ -2912,10 +2912,10 @@
             (h < 60
                 ? m1 + ((m2 - m1) * h) / 60
                 : h < 180
-                    ? m2
-                    : h < 240
-                        ? m1 + ((m2 - m1) * (240 - h)) / 60
-                        : m1) * 255
+                ? m2
+                : h < 240
+                ? m1 + ((m2 - m1) * (240 - h)) / 60
+                : m1) * 255
         );
     }
 
@@ -3164,8 +3164,8 @@
                     t <= 0
                         ? (t = 0)
                         : t >= 1
-                            ? ((t = 1), n - 1)
-                            : Math.floor(t * n),
+                        ? ((t = 1), n - 1)
+                        : Math.floor(t * n),
                 v1 = values[i],
                 v2 = values[i + 1],
                 v0 = i > 0 ? values[i - 1] : 2 * v1 - v2,
@@ -3420,20 +3420,20 @@
             : (t === "number"
                   ? interpolateNumber
                   : t === "string"
-                      ? (c = color(b))
-                          ? ((b = c), interpolateRgb)
-                          : interpolateString
-                      : b instanceof color
-                          ? interpolateRgb
-                          : b instanceof Date
-                              ? date
-                              : Array.isArray(b)
-                                  ? array$1
-                                  : (typeof b.valueOf !== "function" &&
-                                        typeof b.toString !== "function") ||
-                                    isNaN(b)
-                                      ? object
-                                      : interpolateNumber)(a, b);
+                  ? (c = color(b))
+                      ? ((b = c), interpolateRgb)
+                      : interpolateString
+                  : b instanceof color
+                  ? interpolateRgb
+                  : b instanceof Date
+                  ? date
+                  : Array.isArray(b)
+                  ? array$1
+                  : (typeof b.valueOf !== "function" &&
+                        typeof b.toString !== "function") ||
+                    isNaN(b)
+                  ? object
+                  : interpolateNumber)(a, b);
     }
 
     function discrete(range) {
@@ -4261,10 +4261,10 @@
         return (typeof b === "number"
             ? interpolateNumber
             : b instanceof color
-                ? interpolateRgb
-                : (c = color(b))
-                    ? ((b = c), interpolateRgb)
-                    : interpolateString)(a, b);
+            ? interpolateRgb
+            : (c = color(b))
+            ? ((b = c), interpolateRgb)
+            : interpolateString)(a, b);
     }
 
     function attrRemove$1(name) {
@@ -4286,11 +4286,8 @@
             return value0 === value1
                 ? null
                 : value0 === value00
-                    ? interpolate0
-                    : (interpolate0 = interpolate$$1(
-                          (value00 = value0),
-                          value1
-                      ));
+                ? interpolate0
+                : (interpolate0 = interpolate$$1((value00 = value0), value1));
         };
     }
 
@@ -4301,11 +4298,8 @@
             return value0 === value1
                 ? null
                 : value0 === value00
-                    ? interpolate0
-                    : (interpolate0 = interpolate$$1(
-                          (value00 = value0),
-                          value1
-                      ));
+                ? interpolate0
+                : (interpolate0 = interpolate$$1((value00 = value0), value1));
         };
     }
 
@@ -4319,11 +4313,11 @@
             return value0 === value1
                 ? null
                 : value0 === value00 && value1 === value10
-                    ? interpolate0
-                    : (interpolate0 = interpolate$$1(
-                          (value00 = value0),
-                          (value10 = value1)
-                      ));
+                ? interpolate0
+                : (interpolate0 = interpolate$$1(
+                      (value00 = value0),
+                      (value10 = value1)
+                  ));
         };
     }
 
@@ -4341,11 +4335,11 @@
             return value0 === value1
                 ? null
                 : value0 === value00 && value1 === value10
-                    ? interpolate0
-                    : (interpolate0 = interpolate$$1(
-                          (value00 = value0),
-                          (value10 = value1)
-                      ));
+                ? interpolate0
+                : (interpolate0 = interpolate$$1(
+                      (value00 = value0),
+                      (value10 = value1)
+                  ));
         };
     }
 
@@ -4364,12 +4358,12 @@
                       tweenValue(this, "attr." + name, value)
                   )
                 : value == null
-                    ? (fullname.local ? attrRemoveNS$1 : attrRemove$1)(fullname)
-                    : (fullname.local ? attrConstantNS$1 : attrConstant$1)(
-                          fullname,
-                          i,
-                          value + ""
-                      )
+                ? (fullname.local ? attrRemoveNS$1 : attrRemove$1)(fullname)
+                : (fullname.local ? attrConstantNS$1 : attrConstant$1)(
+                      fullname,
+                      i,
+                      value + ""
+                  )
         );
     }
 
@@ -4705,16 +4699,16 @@
         var value00, value10, interpolate0;
         return function() {
             var value0 = styleValue(this, name),
-                value1 = (this.style.removeProperty(name),
-                styleValue(this, name));
+                value1 =
+                    (this.style.removeProperty(name), styleValue(this, name));
             return value0 === value1
                 ? null
                 : value0 === value00 && value1 === value10
-                    ? interpolate0
-                    : (interpolate0 = interpolate$$1(
-                          (value00 = value0),
-                          (value10 = value1)
-                      ));
+                ? interpolate0
+                : (interpolate0 = interpolate$$1(
+                      (value00 = value0),
+                      (value10 = value1)
+                  ));
         };
     }
 
@@ -4731,11 +4725,8 @@
             return value0 === value1
                 ? null
                 : value0 === value00
-                    ? interpolate0
-                    : (interpolate0 = interpolate$$1(
-                          (value00 = value0),
-                          value1
-                      ));
+                ? interpolate0
+                : (interpolate0 = interpolate$$1((value00 = value0), value1));
         };
     }
 
@@ -4745,16 +4736,16 @@
             var value0 = styleValue(this, name),
                 value1 = value(this);
             if (value1 == null)
-                value1 = (this.style.removeProperty(name),
-                styleValue(this, name));
+                value1 =
+                    (this.style.removeProperty(name), styleValue(this, name));
             return value0 === value1
                 ? null
                 : value0 === value00 && value1 === value10
-                    ? interpolate0
-                    : (interpolate0 = interpolate$$1(
-                          (value00 = value0),
-                          (value10 = value1)
-                      ));
+                ? interpolate0
+                : (interpolate0 = interpolate$$1(
+                      (value00 = value0),
+                      (value10 = value1)
+                  ));
         };
     }
 
@@ -5035,10 +5026,10 @@
         return (t = +t) < b1
             ? b0 * t * t
             : t < b3
-                ? b0 * (t -= b2) * t + b4
-                : t < b6
-                    ? b0 * (t -= b5) * t + b7
-                    : b0 * (t -= b8) * t + b9;
+            ? b0 * (t -= b2) * t + b4
+            : t < b6
+            ? b0 * (t -= b5) * t + b7
+            : b0 * (t -= b8) * t + b9;
     }
 
     function bounceInOut(t) {
@@ -5253,7 +5244,12 @@
         name: "x",
         handles: ["e", "w"].map(type),
         input: function(x, e) {
-            return x && [[x[0], e[0][1]], [x[1], e[1][1]]];
+            return (
+                x && [
+                    [x[0], e[0][1]],
+                    [x[1], e[1][1]]
+                ]
+            );
         },
         output: function(xy) {
             return xy && [xy[0][0], xy[1][0]];
@@ -5264,7 +5260,12 @@
         name: "y",
         handles: ["n", "s"].map(type),
         input: function(y, e) {
-            return y && [[e[0][0], y[0]], [e[1][0], y[1]]];
+            return (
+                y && [
+                    [e[0][0], y[0]],
+                    [e[1][0], y[1]]
+                ]
+            );
         },
         output: function(xy) {
             return xy && [xy[0][1], xy[1][1]];
@@ -5350,7 +5351,10 @@
 
     function defaultExtent() {
         var svg = this.ownerSVGElement || this;
-        return [[0, 0], [svg.width.baseVal.value, svg.height.baseVal.value]];
+        return [
+            [0, 0],
+            [svg.width.baseVal.value, svg.height.baseVal.value]
+        ];
     }
 
     // Like d3.local, but with the name “__brush” rather than auto-generated.
@@ -5618,8 +5622,8 @@
                     "selection"
                         ? MODE_DRAG
                         : exports.event.altKey
-                            ? MODE_CENTER
-                            : MODE_HANDLE,
+                        ? MODE_CENTER
+                        : MODE_HANDLE,
                 signX = dim === Y ? null : signsX[type],
                 signY = dim === X ? null : signsY[type],
                 state = local$1(that),
@@ -5789,7 +5793,10 @@
                     selection$$1[1][0] !== e1 ||
                     selection$$1[1][1] !== s1
                 ) {
-                    state.selection = [[w1, n1], [e1, s1]];
+                    state.selection = [
+                        [w1, n1],
+                        [e1, s1]
+                    ];
                     redraw.call(that);
                     emit.brush();
                 }
@@ -6735,20 +6742,98 @@
 
     var cases = [
         [],
-        [[[1.0, 1.5], [0.5, 1.0]]],
-        [[[1.5, 1.0], [1.0, 1.5]]],
-        [[[1.5, 1.0], [0.5, 1.0]]],
-        [[[1.0, 0.5], [1.5, 1.0]]],
-        [[[1.0, 1.5], [0.5, 1.0]], [[1.0, 0.5], [1.5, 1.0]]],
-        [[[1.0, 0.5], [1.0, 1.5]]],
-        [[[1.0, 0.5], [0.5, 1.0]]],
-        [[[0.5, 1.0], [1.0, 0.5]]],
-        [[[1.0, 1.5], [1.0, 0.5]]],
-        [[[0.5, 1.0], [1.0, 0.5]], [[1.5, 1.0], [1.0, 1.5]]],
-        [[[1.5, 1.0], [1.0, 0.5]]],
-        [[[0.5, 1.0], [1.5, 1.0]]],
-        [[[1.0, 1.5], [1.5, 1.0]]],
-        [[[0.5, 1.0], [1.0, 1.5]]],
+        [
+            [
+                [1.0, 1.5],
+                [0.5, 1.0]
+            ]
+        ],
+        [
+            [
+                [1.5, 1.0],
+                [1.0, 1.5]
+            ]
+        ],
+        [
+            [
+                [1.5, 1.0],
+                [0.5, 1.0]
+            ]
+        ],
+        [
+            [
+                [1.0, 0.5],
+                [1.5, 1.0]
+            ]
+        ],
+        [
+            [
+                [1.0, 1.5],
+                [0.5, 1.0]
+            ],
+            [
+                [1.0, 0.5],
+                [1.5, 1.0]
+            ]
+        ],
+        [
+            [
+                [1.0, 0.5],
+                [1.0, 1.5]
+            ]
+        ],
+        [
+            [
+                [1.0, 0.5],
+                [0.5, 1.0]
+            ]
+        ],
+        [
+            [
+                [0.5, 1.0],
+                [1.0, 0.5]
+            ]
+        ],
+        [
+            [
+                [1.0, 1.5],
+                [1.0, 0.5]
+            ]
+        ],
+        [
+            [
+                [0.5, 1.0],
+                [1.0, 0.5]
+            ],
+            [
+                [1.5, 1.0],
+                [1.0, 1.5]
+            ]
+        ],
+        [
+            [
+                [1.5, 1.0],
+                [1.0, 0.5]
+            ]
+        ],
+        [
+            [
+                [0.5, 1.0],
+                [1.5, 1.0]
+            ]
+        ],
+        [
+            [
+                [1.0, 1.5],
+                [1.5, 1.0]
+            ]
+        ],
+        [
+            [
+                [0.5, 1.0],
+                [1.0, 1.5]
+            ]
+        ],
         []
     ];
 
@@ -6951,8 +7036,8 @@
                       typeof _ === "function"
                           ? _
                           : Array.isArray(_)
-                              ? constant$6(slice$3.call(_))
-                              : constant$6(_)),
+                          ? constant$6(slice$3.call(_))
+                          : constant$6(_)),
                   contours)
                 : threshold$$1;
         };
@@ -7164,8 +7249,8 @@
                       typeof _ === "function"
                           ? _
                           : Array.isArray(_)
-                              ? constant$6(slice$3.call(_))
-                              : constant$6(_)),
+                          ? constant$6(slice$3.call(_))
+                          : constant$6(_)),
                   density)
                 : threshold$$1;
         };
@@ -7328,8 +7413,8 @@
             return text == null
                 ? ""
                 : reFormat.test((text += ""))
-                    ? '"' + text.replace(/"/g, '""') + '"'
-                    : text;
+                ? '"' + text.replace(/"/g, '""') + '"'
+                : text;
         }
 
         return {
@@ -7698,8 +7783,11 @@
         return arguments.length
             ? this.cover(+_[0][0], +_[0][1]).cover(+_[1][0], +_[1][1])
             : isNaN(this._x0)
-                ? undefined
-                : [[this._x0, this._y0], [this._x1, this._y1]];
+            ? undefined
+            : [
+                  [this._x0, this._y0],
+                  [this._x1, this._y1]
+              ];
     }
 
     function Quad(node, x0, y0, x1, y1) {
@@ -8891,12 +8979,12 @@
         return i === n
             ? coefficient
             : i > n
-                ? coefficient + new Array(i - n + 1).join("0")
-                : i > 0
-                    ? coefficient.slice(0, i) + "." + coefficient.slice(i)
-                    : "0." +
-                      new Array(1 - i).join("0") +
-                      formatDecimal(x, Math.max(0, p + i - 1))[0]; // less than 1y!
+            ? coefficient + new Array(i - n + 1).join("0")
+            : i > 0
+            ? coefficient.slice(0, i) + "." + coefficient.slice(i)
+            : "0." +
+              new Array(1 - i).join("0") +
+              formatDecimal(x, Math.max(0, p + i - 1))[0]; // less than 1y!
     }
 
     function formatRounded(x, p) {
@@ -8907,11 +8995,11 @@
         return exponent < 0
             ? "0." + new Array(-exponent).join("0") + coefficient
             : coefficient.length > exponent + 1
-                ? coefficient.slice(0, exponent + 1) +
-                  "." +
-                  coefficient.slice(exponent + 1)
-                : coefficient +
-                  new Array(exponent - coefficient.length + 2).join("0");
+            ? coefficient.slice(0, exponent + 1) +
+              "." +
+              coefficient.slice(exponent + 1)
+            : coefficient +
+              new Array(exponent - coefficient.length + 2).join("0");
     }
 
     var formatTypes = {
@@ -9022,14 +9110,14 @@
                     symbol === "$"
                         ? currency[0]
                         : symbol === "#" && /[boxX]/.test(type)
-                            ? "0" + type.toLowerCase()
-                            : "",
+                        ? "0" + type.toLowerCase()
+                        : "",
                 suffix =
                     symbol === "$"
                         ? currency[1]
                         : /[%p]/.test(type)
-                            ? percent
-                            : "";
+                        ? percent
+                        : "";
 
             // What format function should we use?
             // Is this an integer type?
@@ -9045,8 +9133,8 @@
                 precision == null
                     ? 6
                     : /[gprs]/.test(type)
-                        ? Math.max(1, Math.min(21, precision))
-                        : Math.max(0, Math.min(20, precision));
+                    ? Math.max(1, Math.min(21, precision))
+                    : Math.max(0, Math.min(20, precision));
 
             function format(value) {
                 var valuePrefix = prefix,
@@ -9078,8 +9166,8 @@
                                 ? sign
                                 : "-"
                             : sign === "-" || sign === "("
-                                ? ""
-                                : sign) + valuePrefix;
+                            ? ""
+                            : sign) + valuePrefix;
                     valueSuffix =
                         (type === "s" ? prefixes[8 + prefixExponent / 3] : "") +
                         valueSuffix +
@@ -9684,8 +9772,14 @@
         ranges = range = null;
 
         return lambda0$1 === Infinity || phi0 === Infinity
-            ? [[NaN, NaN], [NaN, NaN]]
-            : [[lambda0$1, phi0], [lambda1, phi1]];
+            ? [
+                  [NaN, NaN],
+                  [NaN, NaN]
+              ]
+            : [
+                  [lambda0$1, phi0],
+                  [lambda1, phi1]
+              ];
     }
 
     var W0,
@@ -9867,8 +9961,8 @@
             lambda > pi$3
                 ? lambda - tau$3
                 : lambda < -pi$3
-                    ? lambda + tau$3
-                    : lambda,
+                ? lambda + tau$3
+                : lambda,
             phi
         ];
     }
@@ -9884,8 +9978,8 @@
                   )
                 : rotationLambda(deltaLambda)
             : deltaPhi || deltaGamma
-                ? rotationPhiGamma(deltaPhi, deltaGamma)
-                : rotationIdentity;
+            ? rotationPhiGamma(deltaPhi, deltaGamma)
+            : rotationIdentity;
     }
 
     function forwardRotationLambda(deltaLambda) {
@@ -9896,8 +9990,8 @@
                     lambda > pi$3
                         ? lambda - tau$3
                         : lambda < -pi$3
-                            ? lambda + tau$3
-                            : lambda,
+                        ? lambda + tau$3
+                        : lambda,
                     phi
                 ]
             );
@@ -10586,11 +10680,8 @@
                                 ? 0
                                 : code(lambda, phi)
                             : v
-                                ? code(
-                                      lambda + (lambda < 0 ? pi$3 : -pi$3),
-                                      phi
-                                  )
-                                : 0;
+                            ? code(lambda + (lambda < 0 ? pi$3 : -pi$3), phi)
+                            : 0;
                     if (!point0 && (v00 = v0 = v)) stream.lineStart();
                     // Handle degeneracies.
                     // TODO ignore if not clipping polygons.
@@ -10844,16 +10935,16 @@
                     ? 0
                     : 3
                 : abs(p[0] - x1) < epsilon$2
-                    ? direction > 0
-                        ? 2
-                        : 1
-                    : abs(p[1] - y0) < epsilon$2
-                        ? direction > 0
-                            ? 1
-                            : 0
-                        : direction > 0
-                            ? 3
-                            : 2; // abs(p[1] - y1) < epsilon
+                ? direction > 0
+                    ? 2
+                    : 1
+                : abs(p[1] - y0) < epsilon$2
+                ? direction > 0
+                    ? 1
+                    : 0
+                : direction > 0
+                ? 3
+                : 2; // abs(p[1] - y1) < epsilon
         }
 
         function compareIntersection(a, b) {
@@ -10866,12 +10957,12 @@
             return ca !== cb
                 ? ca - cb
                 : ca === 0
-                    ? b[1] - a[1]
-                    : ca === 1
-                        ? a[0] - b[0]
-                        : ca === 2
-                            ? a[1] - b[1]
-                            : b[0] - a[0];
+                ? b[1] - a[1]
+                : ca === 1
+                ? a[0] - b[0]
+                : ca === 2
+                ? a[1] - b[1]
+                : b[0] - a[0];
         }
 
         return function(stream) {
@@ -11051,9 +11142,12 @@
             stream: function(stream) {
                 return cache && cacheStream === stream
                     ? cache
-                    : (cache = clipRectangle(x0, y0, x1, y1)(
-                          (cacheStream = stream)
-                      ));
+                    : (cache = clipRectangle(
+                          x0,
+                          y0,
+                          x1,
+                          y1
+                      )((cacheStream = stream)));
             },
             extent: function(_) {
                 return arguments.length
@@ -11063,7 +11157,10 @@
                       (y1 = +_[1][1]),
                       (cache = cacheStream = null),
                       clip)
-                    : [[x0, y0], [x1, y1]];
+                    : [
+                          [x0, y0],
+                          [x1, y1]
+                      ];
             }
         });
     }
@@ -11317,7 +11414,11 @@
         };
 
         graticule.extentMajor = function(_) {
-            if (!arguments.length) return [[X0, Y0], [X1, Y1]];
+            if (!arguments.length)
+                return [
+                    [X0, Y0],
+                    [X1, Y1]
+                ];
             (X0 = +_[0][0]), (X1 = +_[1][0]);
             (Y0 = +_[0][1]), (Y1 = +_[1][1]);
             if (X0 > X1) (_ = X0), (X0 = X1), (X1 = _);
@@ -11326,7 +11427,11 @@
         };
 
         graticule.extentMinor = function(_) {
-            if (!arguments.length) return [[x0, y0], [x1, y1]];
+            if (!arguments.length)
+                return [
+                    [x0, y0],
+                    [x1, y1]
+                ];
             (x0 = +_[0][0]), (x1 = +_[1][0]);
             (y0 = +_[0][1]), (y1 = +_[1][1]);
             if (x0 > x1) (_ = x0), (x0 = x1), (x1 = _);
@@ -11362,8 +11467,14 @@
         };
 
         return graticule
-            .extentMajor([[-180, -90 + epsilon$2], [180, 90 - epsilon$2]])
-            .extentMinor([[-180, -80 - epsilon$2], [180, 80 + epsilon$2]]);
+            .extentMajor([
+                [-180, -90 + epsilon$2],
+                [180, 90 - epsilon$2]
+            ])
+            .extentMinor([
+                [-180, -80 - epsilon$2],
+                [180, 80 + epsilon$2]
+            ]);
     }
 
     function graticule10() {
@@ -11470,7 +11581,10 @@
         polygonStart: noop$2,
         polygonEnd: noop$2,
         result: function() {
-            var bounds = [[x0$2, y0$2], [x1, y1]];
+            var bounds = [
+                [x0$2, y0$2],
+                [x1, y1]
+            ];
             x1 = y1 = -(y0$2 = x0$2 = Infinity);
             return bounds;
         }
@@ -11516,10 +11630,10 @@
             var centroid = Z2$1
                 ? [X2$1 / Z2$1, Y2$1 / Z2$1]
                 : Z1$1
-                    ? [X1$1 / Z1$1, Y1$1 / Z1$1]
-                    : Z0$1
-                        ? [X0$1 / Z0$1, Y0$1 / Z0$1]
-                        : [NaN, NaN];
+                ? [X1$1 / Z1$1, Y1$1 / Z1$1]
+                : Z0$1
+                ? [X0$1 / Z0$1, Y0$1 / Z0$1]
+                : [NaN, NaN];
             X0$1 = Y0$1 = Z0$1 = X1$1 = Y1$1 = Z1$1 = X2$1 = Y2$1 = Z2$1 = 0;
             return centroid;
         }
@@ -12244,8 +12358,11 @@
                             )),
                   reset())
                 : x0 == null
-                    ? null
-                    : [[x0, y0], [x1, y1]];
+                ? null
+                : [
+                      [x0, y0],
+                      [x1, y1]
+                  ];
         };
 
         projection.scale = function(_) {
@@ -12323,14 +12440,8 @@
                     alpha
                 );
             rotate = rotateRadians(deltaLambda, deltaPhi, deltaGamma);
-            projectTransform = compose(
-                project,
-                transform$$1
-            );
-            projectRotateTransform = compose(
-                rotate,
-                projectTransform
-            );
+            projectTransform = compose(project, transform$$1);
+            projectRotateTransform = compose(rotate, projectTransform);
             projectResample = resample(projectTransform, delta2);
             return reset();
         }
@@ -12495,8 +12606,8 @@
             return (y >= 0.12 && y < 0.234 && x >= -0.425 && x < -0.214
                 ? alaska
                 : y >= 0.166 && y < 0.234 && x >= -0.214 && x < -0.115
-                    ? hawaii
-                    : lower48
+                ? hawaii
+                : lower48
             ).invert(coordinates);
         };
 
@@ -12671,8 +12782,11 @@
                         (y1 = +_[1][1])),
                   reclip())
                 : x0 == null
-                    ? null
-                    : [[x0, y0], [x1, y1]];
+                ? null
+                : [
+                      [x0, y0],
+                      [x1, y1]
+                  ];
         };
 
         function reclip() {
@@ -12680,16 +12794,19 @@
                 t = m(rotation(m.rotate()).invert([0, 0]));
             return clipExtent(
                 x0 == null
-                    ? [[t[0] - k, t[1] - k], [t[0] + k, t[1] + k]]
+                    ? [
+                          [t[0] - k, t[1] - k],
+                          [t[0] + k, t[1] + k]
+                      ]
                     : project === mercatorRaw
-                        ? [
-                              [Math.max(t[0] - k, x0), y0],
-                              [Math.min(t[0] + k, x1), y1]
-                          ]
-                        : [
-                              [x0, Math.max(t[1] - k, y0)],
-                              [x1, Math.min(t[1] + k, y1)]
-                          ]
+                    ? [
+                          [Math.max(t[0] - k, x0), y0],
+                          [Math.min(t[0] + k, x1), y1]
+                      ]
+                    : [
+                          [x0, Math.max(t[1] - k, y0)],
+                          [x1, Math.min(t[1] + k, y1)]
+                      ]
             );
         }
 
@@ -12886,8 +13003,11 @@
                                 )),
                       reset())
                     : x0 == null
-                        ? null
-                        : [[x0, y0], [x1, y1]];
+                    ? null
+                    : [
+                          [x0, y0],
+                          [x1, y1]
+                      ];
             },
             scale: function(_) {
                 return arguments.length
@@ -13153,16 +13273,16 @@
             return arguments.length
                 ? ((nodeSize = false), (dx = +x[0]), (dy = +x[1]), cluster)
                 : nodeSize
-                    ? null
-                    : [dx, dy];
+                ? null
+                : [dx, dy];
         };
 
         cluster.nodeSize = function(x) {
             return arguments.length
                 ? ((nodeSize = true), (dx = +x[0]), (dy = +x[1]), cluster)
                 : nodeSize
-                    ? [dx, dy]
-                    : null;
+                ? [dx, dy]
+                : null;
         };
 
         return cluster;
@@ -14173,16 +14293,16 @@
             return arguments.length
                 ? ((nodeSize = false), (dx = +x[0]), (dy = +x[1]), tree)
                 : nodeSize
-                    ? null
-                    : [dx, dy];
+                ? null
+                : [dx, dy];
         };
 
         tree.nodeSize = function(x) {
             return arguments.length
                 ? ((nodeSize = true), (dx = +x[0]), (dy = +x[1]), tree)
                 : nodeSize
-                    ? [dx, dy]
-                    : null;
+                ? [dx, dy]
+                : null;
         };
 
         return tree;
@@ -15040,23 +15160,27 @@
         }
 
         function scale(x) {
-            return (output ||
+            return (
+                output ||
                 (output = piecewise$$1(
                     domain,
                     range,
                     clamp ? deinterpolateClamp(deinterpolate) : deinterpolate,
                     interpolate$$1
-                )))(+x);
+                ))
+            )(+x);
         }
 
         scale.invert = function(y) {
-            return (input ||
+            return (
+                input ||
                 (input = piecewise$$1(
                     range,
                     domain,
                     deinterpolateLinear,
                     clamp ? reinterpolateClamp(reinterpolate) : reinterpolate
-                )))(+y);
+                ))
+            )(+y);
         };
 
         scale.domain = function(_) {
@@ -15271,10 +15395,10 @@
         return base === 10
             ? pow10
             : base === Math.E
-                ? Math.exp
-                : function(x) {
-                      return Math.pow(base, x);
-                  };
+            ? Math.exp
+            : function(x) {
+                  return Math.pow(base, x);
+              };
     }
 
     function logp(base) {
@@ -15525,10 +15649,10 @@
             return i < 0
                 ? [NaN, NaN]
                 : i < 1
-                    ? [x0, domain[0]]
-                    : i >= n
-                        ? [domain[n - 1], x1]
-                        : [domain[i - 1], domain[i]];
+                ? [x0, domain[0]]
+                : i >= n
+                ? [domain[n - 1], x1]
+                : [domain[i - 1], domain[i]];
         };
 
         scale.copy = function() {
@@ -15662,18 +15786,16 @@
                 return !isFinite(step) || !(step > 0)
                     ? null
                     : !(step > 1)
-                        ? interval
-                        : interval.filter(
-                              field
-                                  ? function(d) {
-                                        return field(d) % step === 0;
-                                    }
-                                  : function(d) {
-                                        return (
-                                            interval.count(0, d) % step === 0
-                                        );
-                                    }
-                          );
+                    ? interval
+                    : interval.filter(
+                          field
+                              ? function(d) {
+                                    return field(d) % step === 0;
+                                }
+                              : function(d) {
+                                    return interval.count(0, d) % step === 0;
+                                }
+                      );
             };
         }
 
@@ -16843,18 +16965,18 @@
             return (second$$1(date$$1) < date$$1
                 ? formatMillisecond
                 : minute$$1(date$$1) < date$$1
-                    ? formatSecond
-                    : hour$$1(date$$1) < date$$1
-                        ? formatMinute
-                        : day$$1(date$$1) < date$$1
-                            ? formatHour
-                            : month$$1(date$$1) < date$$1
-                                ? week(date$$1) < date$$1
-                                    ? formatDay
-                                    : formatWeek
-                                : year$$1(date$$1) < date$$1
-                                    ? formatMonth
-                                    : formatYear)(date$$1);
+                ? formatSecond
+                : hour$$1(date$$1) < date$$1
+                ? formatMinute
+                : day$$1(date$$1) < date$$1
+                ? formatHour
+                : month$$1(date$$1) < date$$1
+                ? week(date$$1) < date$$1
+                    ? formatDay
+                    : formatWeek
+                : year$$1(date$$1) < date$$1
+                ? formatMonth
+                : formatYear)(date$$1);
         }
 
         function tickInterval(interval, start, stop, step) {
@@ -17937,8 +18059,8 @@
                       _ == null
                           ? null
                           : typeof _ === "function"
-                              ? _
-                              : constant$b(+_)),
+                          ? _
+                          : constant$b(+_)),
                   arc)
                 : padRadius;
         };
@@ -18168,8 +18290,8 @@
                       _ == null
                           ? null
                           : typeof _ === "function"
-                              ? _
-                              : constant$b(+_)),
+                          ? _
+                          : constant$b(+_)),
                   area)
                 : x1;
         };
@@ -18194,8 +18316,8 @@
                       _ == null
                           ? null
                           : typeof _ === "function"
-                              ? _
-                              : constant$b(+_)),
+                          ? _
+                          : constant$b(+_)),
                   area)
                 : y1;
         };
@@ -19812,8 +19934,8 @@
                       _ == null
                           ? none$2
                           : typeof _ === "function"
-                              ? _
-                              : constant$b(slice$6.call(_))),
+                          ? _
+                          : constant$b(slice$6.call(_))),
                   stack)
                 : order;
         };
@@ -20467,7 +20589,7 @@
                                     site,
                                     end,
                                     Math.abs(endX - x0) < epsilon$4 &&
-                                    y1 - endY > epsilon$4
+                                        y1 - endY > epsilon$4
                                         ? [
                                               x0,
                                               Math.abs(startX - x0) < epsilon$4
@@ -20476,34 +20598,29 @@
                                           ]
                                         : Math.abs(endY - y1) < epsilon$4 &&
                                           x1 - endX > epsilon$4
-                                            ? [
-                                                  Math.abs(startY - y1) <
-                                                  epsilon$4
-                                                      ? startX
-                                                      : x1,
-                                                  y1
-                                              ]
-                                            : Math.abs(endX - x1) < epsilon$4 &&
-                                              endY - y0 > epsilon$4
-                                                ? [
-                                                      x1,
-                                                      Math.abs(startX - x1) <
-                                                      epsilon$4
-                                                          ? startY
-                                                          : y0
-                                                  ]
-                                                : Math.abs(endY - y0) <
-                                                      epsilon$4 &&
-                                                  endX - x0 > epsilon$4
-                                                    ? [
-                                                          Math.abs(
-                                                              startY - y0
-                                                          ) < epsilon$4
-                                                              ? startX
-                                                              : x0,
-                                                          y0
-                                                      ]
-                                                    : null
+                                        ? [
+                                              Math.abs(startY - y1) < epsilon$4
+                                                  ? startX
+                                                  : x1,
+                                              y1
+                                          ]
+                                        : Math.abs(endX - x1) < epsilon$4 &&
+                                          endY - y0 > epsilon$4
+                                        ? [
+                                              x1,
+                                              Math.abs(startX - x1) < epsilon$4
+                                                  ? startY
+                                                  : y0
+                                          ]
+                                        : Math.abs(endY - y0) < epsilon$4 &&
+                                          endX - x0 > epsilon$4
+                                        ? [
+                                              Math.abs(startY - y0) < epsilon$4
+                                                  ? startX
+                                                  : x0,
+                                              y0
+                                          ]
+                                        : null
                                 )
                             ) - 1
                         );
@@ -21058,7 +21175,10 @@
                 ? ((extent =
                       _ == null
                           ? null
-                          : [[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]),
+                          : [
+                                [+_[0][0], +_[0][1]],
+                                [+_[1][0], +_[1][1]]
+                            ]),
                   voronoi)
                 : extent && [
                       [extent[0][0], extent[0][1]],
@@ -21068,7 +21188,13 @@
 
         voronoi.size = function(_) {
             return arguments.length
-                ? ((extent = _ == null ? null : [[0, 0], [+_[0], +_[1]]]),
+                ? ((extent =
+                      _ == null
+                          ? null
+                          : [
+                                [0, 0],
+                                [+_[0], +_[1]]
+                            ]),
                   voronoi)
                 : extent && [
                       extent[1][0] - extent[0][0],
@@ -21189,7 +21315,10 @@
             w = e.clientWidth;
             h = e.clientHeight;
         }
-        return [[0, 0], [w, h]];
+        return [
+            [0, 0],
+            [w, h]
+        ];
     }
 
     function defaultTransform() {
@@ -21224,7 +21353,10 @@
             wheelDelta = defaultWheelDelta,
             touchable = defaultTouchable$1,
             scaleExtent = [0, Infinity],
-            translateExtent = [[-Infinity, -Infinity], [Infinity, Infinity]],
+            translateExtent = [
+                [-Infinity, -Infinity],
+                [Infinity, Infinity]
+            ],
             duration = 250,
             interpolate = interpolateZoom,
             gestures = [],

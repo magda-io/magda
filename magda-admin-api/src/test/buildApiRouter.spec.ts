@@ -1,12 +1,12 @@
-import * as _ from "lodash";
+import _ from "lodash";
 import {} from "mocha";
 import { expect } from "chai";
-import * as express from "express";
-import * as sinon from "sinon";
-import * as nock from "nock";
-import jsc from "@magda/typescript-common/dist/test/jsverify";
+import express from "express";
+import sinon from "sinon";
+import nock from "nock";
+import jsc from "magda-typescript-common/src/test/jsverify";
 import * as helpers from "./helpers";
-import * as request from "supertest";
+import request from "supertest";
 
 import buildApiRouter from "../buildApiRouter";
 import { stateArb } from "./arbitraries";
@@ -740,7 +740,8 @@ describe("admin api router", function(this: Mocha.ISuiteCallbackContext) {
             pullPolicy: "pullPolicy",
             namespace,
             jwtSecret: "secret",
-            userId: "user"
+            userId: "b1fddd6f-e230-4068-bd2c-1a21844f1598",
+            tenantId: 0
         });
 
         const app = express();

@@ -22,9 +22,7 @@ export function retrieveLocalData(key, defaultValue) {
         return JSON.parse(window.localStorage.getItem(key)) || defaultValue;
     } catch (e) {
         console.error(
-            `Failed to retrieve search save data '${key}' from local storage: ${
-                e.message
-            }`,
+            `Failed to retrieve search save data '${key}' from local storage: ${e.message}`,
             e
         );
         return defaultValue;
@@ -47,9 +45,7 @@ export function setLocalData(key, value, defaultValue) {
         return value;
     } catch (e) {
         console.error(
-            `Failed to save search save data '${key}' to local storage: ${
-                e.message
-            }`,
+            `Failed to save search save data '${key}' to local storage: ${e.message}`,
             e
         );
         return defaultValue;
@@ -95,9 +91,7 @@ export function deleteFromLocalStorageArray(key, index, defaultValue = []) {
         return items;
     } catch (e) {
         console.error(
-            `Failed to save search save data '${key}' to local storage: ${
-                e.message
-            }`,
+            `Failed to save search save data '${key}' to local storage: ${e.message}`,
             e
         );
         return defaultValue;

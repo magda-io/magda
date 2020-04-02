@@ -1,9 +1,13 @@
-import * as express from "express";
+import express from "express";
 import createBaseProxy from "./createBaseProxy";
+import { TenantMode } from "./setupTenantMode";
 
-export default function createGenericProxy(target: string): express.Router {
+export default function createGenericProxy(
+    target: string,
+    tenantMode: TenantMode
+): express.Router {
     const webRouter = express.Router();
-    const proxy = createBaseProxy();
+    const proxy = createBaseProxy(tenantMode);
 
     webRouter.get("*", (req: express.Request, res: express.Response) => {
         proxy.web(req, res, { target });

@@ -1,0 +1,116 @@
+.dataset-add-file-page,
+.dataset-add-meta-data-pages {
+    .next-button {
+        width: 386px;
+        height: 48px;
+        border-radius: 10px;
+        border: solid 2px #30384d !important;
+        background-color: #30384d !important;
+        font-size: 16px;
+        font-weight: normal;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: 1;
+        letter-spacing: normal;
+        text-align: center;
+        color: #ffffff;
+        margin-right: 30px;
+    }
+
+    .save-button {
+        width: 386px;
+        height: 48px;
+        border-radius: 10px;
+        border: solid 2px #30384d !important;
+        font-size: 16px;
+        font-weight: normal;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: 1.5;
+        letter-spacing: normal;
+        text-align: center;
+        color: #30384d !important;
+    }
+
+    .next-save-button-row {
+        margin-top: 20px;
+        margin-bottom: 80px;
+    }
+
+    .common-auto-complete-input,
+    .org-auto-complete-input,
+    .contact-editor-input {
+        border-radius: 8px;
+        border: solid 1px #cccaca;
+        font-size: 15px;
+        font-weight: 300;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: 1.6;
+        letter-spacing: normal;
+        color: #979797;
+        padding-right: 50px;
+    }
+
+    .common-auto-complete-input-outer-container,
+    .org-auto-complete-input-outer-container {
+        position: relative;
+        .edit-icon {
+            position: absolute;
+            left: 445px;
+            top: 10px;
+            z-index: 1;
+        }
+    }
+
+    .tooltip-root {
+        font-size: 14px;
+        font-weight: 300;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: 1.57;
+        letter-spacing: normal;
+        color: #636363;
+        max-width: 978px;
+        margin-top: 16px;
+        margin-bottom: 24px;
+        img {
+            margin-right: 10px;
+        }
+    }
+
+    .au-select {
+        border-radius: 2px;
+        border: solid 1px #979797;
+    }
+
+    .au-error-text {
+        font-size: 16px;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #d60000;
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .react-select-with-validation-container {
+        .au-error-text {
+            font-size: 16px;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #d60000;
+            display: block;
+            margin-bottom: 10px;
+        }
+    }
+
+    .au-control-input__text:before,
+    .au-control-input__text:after {
+        border: 9px solid transparent;
+    }
+
+    .au-control-input__input[type="radio"]:focus
+        + .au-control-input__text:before {
+        box-shadow: none;
+    }
+}

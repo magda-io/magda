@@ -1,1 +1,34 @@
 @import "variables";
+@import "./pancake/sass/core.scss";
+
+.static-page-container {
+    font-size: 16px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: 1.63;
+    letter-spacing: normal;
+    color: #30384d;
+
+    .markdown-body {
+        p {
+            max-width: none;
+            margin-bottom: 20px;
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #cccaca;
+        }
+
+        td,
+        th {
+            padding: 5px;
+        }
+    }
+}

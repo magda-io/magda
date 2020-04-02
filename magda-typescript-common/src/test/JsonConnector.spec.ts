@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import "mocha";
-import * as nock from "nock";
-// import * as sinon from "sinon";
+import nock from "nock";
+// import sinon from "sinon";
 
 import AsyncPage from "../AsyncPage";
 // import { AspectDefinition } from "../generated/registry/api";
@@ -13,9 +13,10 @@ import JsonConnector, {
     JsonConnectorConfigExtraMetaData,
     JsonConnectorConfigPresetAspect
 } from "../JsonConnector";
-import JsonTransformer, { JsonTransformerOptions } from "src/JsonTransformer";
-import ConnectorRecordId from "src/ConnectorRecordId";
-import { Record } from "src/generated/registry/api";
+import JsonTransformer, { JsonTransformerOptions } from "../JsonTransformer";
+import ConnectorRecordId from "../ConnectorRecordId";
+import { Record } from "../generated/registry/api";
+
 // ConnectorSource,
 
 describe("JsonConnector", () => {
@@ -30,6 +31,8 @@ describe("JsonConnector", () => {
     afterEach(() => {
         nock.cleanAll();
     });
+
+    const tenant_id_1 = 1;
 
     describe("crawlTag", () => {
         it("auto-generates a tag that is distinct between instances by default", () => {
@@ -90,9 +93,7 @@ describe("JsonConnector", () => {
 
             scope
                 .delete(
-                    `/records?sourceTagToPreserve=${
-                        connector.sourceTag
-                    }&sourceId=${connector.source.id}`
+                    `/records?sourceTagToPreserve=${connector.sourceTag}&sourceId=${connector.source.id}`
                 )
                 .reply(201, { count: 1 });
 
@@ -200,11 +201,13 @@ describe("JsonConnector", () => {
             properties: {
                 "test-aspect-data1": {
                     title: "test-aspect-data1",
-                    type: "string"
+                    type: "string",
+                    tenantId: tenant_id_1
                 },
                 "test-aspect-data2": {
                     title: "test-aspect-data2",
-                    type: "string"
+                    type: "string",
+                    tenantId: tenant_id_1
                 }
             }
         };
@@ -228,6 +231,7 @@ describe("JsonConnector", () => {
                 {
                     // --- transformer options:
                     sourceId: "connector-id",
+                    tenantId: tenant_id_1,
                     datasetAspectBuilders: [
                         {
                             aspectDefinition: {
@@ -314,8 +318,9 @@ describe("JsonConnector", () => {
             const registry = new AuthRegistryClient({
                 baseUrl: "http://example.com",
                 jwtSecret: "squirrel",
-                userId: "1",
-                maxRetries: 0
+                userId: "b1fddd6f-e230-4068-bd2c-1a21844f1598",
+                maxRetries: 0,
+                tenantId: tenant_id_1
             });
 
             const source = new FakeConnectorSource(config);

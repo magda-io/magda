@@ -1,23 +1,25 @@
 import {} from "mocha";
 import { expect } from "chai";
-import * as sinon from "sinon";
-import * as nock from "nock";
-import jsc from "@magda/typescript-common/dist/test/jsverify";
-import * as express from "express";
-import * as _ from "lodash";
+import sinon from "sinon";
+import nock from "nock";
+import jsc from "magda-typescript-common/src/test/jsverify";
+import express from "express";
+import _ from "lodash";
 import { Server } from "http";
 
 import {
     lcAlphaNumStringArbNe,
     lcAlphaNumStringArb,
     recordArb
-} from "@magda/typescript-common/dist/test/arbitraries";
+} from "magda-typescript-common/src/test/arbitraries";
 
 import minion from "../index";
 import MinionOptions from "../MinionOptions";
 import fakeArgv from "./fakeArgv";
 import makePromiseQueryable from "./makePromiseQueryable";
 import baseSpec from "./baseSpec";
+
+const userId = "b1fddd6f-e230-4068-bd2c-1a21844f1598";
 
 baseSpec(
     "on startup",
@@ -30,26 +32,31 @@ baseSpec(
         jsc.property(
             "should properly crawl existing records if no webhook was found",
             lcAlphaNumStringArbNe,
+            lcAlphaNumStringArbNe,
             jsc.array(jsc.nestring),
             jsc.array(jsc.nestring),
             jsc.array(recordArb),
             jsc.suchthat(jsc.integer, int => int > 0),
             lcAlphaNumStringArbNe,
-            lcAlphaNumStringArbNe,
+            jsc.bool,
             (
                 registryHost,
+                tenantHost,
                 aspects,
                 optionalAspects,
                 records,
                 pageSize,
                 jwtSecret,
-                userId
+                enableMultiTenant
             ) => {
                 beforeEachProperty();
                 const registryUrl = `http://${registryHost}.com`;
+                const tenantUrl = `http://${tenantHost}.com`;
                 const registryScope = nock(registryUrl);
+                const tenantScope = nock(tenantUrl);
                 registryScope.get(/\/hooks\/.*/).reply(404);
                 registryScope.put(/\/hooks\/.*/).reply(201);
+                tenantScope.get("/tenants").reply(200, []);
 
                 let index = 0;
                 const pages = _.groupBy(records, (element: any) => {
@@ -97,6 +104,8 @@ baseSpec(
                     argv: fakeArgv({
                         internalUrl: `http://example.com`,
                         registryUrl,
+                        enableMultiTenant,
+                        tenantUrl,
                         jwtSecret,
                         userId,
                         listenPort: listenPort()
@@ -136,11 +145,11 @@ baseSpec(
             internalUrl: string;
             id: string;
             jwtSecret: string;
-            userId: string;
             registryUrl: string;
             aspects: string[];
             optionalAspects: string[];
             concurrency: number;
+            enableMultiTenant: boolean;
         };
 
         jsc.property(
@@ -153,9 +162,9 @@ baseSpec(
                     aspects: jsc.array(lcAlphaNumStringArb),
                     optionalAspects: jsc.array(lcAlphaNumStringArb),
                     jwtSecret: lcAlphaNumStringArb,
-                    userId: lcAlphaNumStringArb,
                     registryUrl: lcAlphaNumStringArb,
-                    concurrency: jsc.integer(0, 10)
+                    concurrency: jsc.integer(0, 10),
+                    enableMultiTenant: jsc.bool
                 }),
                 (record: input) =>
                     record.port <= 0 ||
@@ -165,7 +174,6 @@ baseSpec(
                     containsBlanks(record.aspects) ||
                     containsBlanks(record.optionalAspects) ||
                     record.jwtSecret === "" ||
-                    record.userId === "" ||
                     record.registryUrl === ""
             ),
             ({
@@ -175,8 +183,8 @@ baseSpec(
                 aspects,
                 optionalAspects,
                 jwtSecret,
-                userId,
-                concurrency
+                concurrency,
+                enableMultiTenant
             }: input) => {
                 beforeEachProperty();
 
@@ -185,6 +193,8 @@ baseSpec(
                         internalUrl: internalUrl,
                         listenPort: port,
                         registryUrl: "",
+                        enableMultiTenant,
+                        tenantUrl: "",
                         jwtSecret,
                         userId
                     }),

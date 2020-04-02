@@ -1,25 +1,26 @@
 import { Server } from "http";
-import * as express from "express";
-import * as nock from "nock";
-import * as _ from "lodash";
+import express from "express";
+import nock from "nock";
+import _ from "lodash";
 import { expect } from "chai";
-import * as queryString from "query-string";
-import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
+import queryString from "query-string";
+import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 
-import { Record } from "@magda/typescript-common/dist/generated/registry/api";
-import { lcAlphaNumStringArbNe } from "@magda/typescript-common/dist/test/arbitraries";
-import jsc from "@magda/typescript-common/dist/test/jsverify";
+import { Record } from "magda-typescript-common/src/generated/registry/api";
+import { lcAlphaNumStringArbNe } from "magda-typescript-common/src/test/arbitraries";
+import jsc from "magda-typescript-common/src/test/jsverify";
 
 import MinionOptions from "../MinionOptions";
 import fakeArgv from "./fakeArgv";
 import baseSpec from "./baseSpec";
 import Crawler from "../Crawler";
+import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts";
 
 baseSpec(
     "Crawler",
     (
         expressApp: () => express.Express,
-        expressServer: () => Server,
+        _expressServer: () => Server,
         listenPort: () => number,
         beforeEachProperty: () => void
     ) => {
@@ -31,9 +32,9 @@ baseSpec(
             registryTotalRecordsNumber: number,
             domain: string,
             jwtSecret: string,
-            userId: string,
             concurrency: number,
             async: boolean,
+            enableMultiTenant: boolean,
             // --- init func creates other context variables shared among callbacks
             envInit: () => any,
             onRecordFound: (
@@ -46,15 +47,20 @@ baseSpec(
             beforeEachProperty();
 
             const internalUrl = `http://${domain}.com`;
-            const registryDomain = "example_" + registryDomainCounter;
+            const registryDomain = "registry_" + registryDomainCounter;
+            const tenantDomain = "tenant_" + registryDomainCounter;
             registryDomainCounter++;
             const registryUrl = `http://${registryDomain}.com:80`;
+            const tenantUrl = `http://${tenantDomain}.com:80`;
             const registryScope = nock(registryUrl);
+            const tenantId = MAGDA_ADMIN_PORTAL_ID;
 
+            const userId = "b1fddd6f-e230-4068-bd2c-1a21844f1598";
             const registry = new Registry({
                 baseUrl: registryUrl,
                 jwtSecret: jwtSecret,
-                userId: userId
+                userId: userId,
+                tenantId: tenantId
             });
 
             let context: any = {
@@ -76,6 +82,8 @@ baseSpec(
                 argv: fakeArgv({
                     internalUrl,
                     registryUrl,
+                    enableMultiTenant,
+                    tenantUrl,
                     jwtSecret,
                     userId,
                     listenPort: listenPort()
@@ -119,8 +127,8 @@ baseSpec(
                     jsc.nat(100),
                     lcAlphaNumStringArbNe,
                     lcAlphaNumStringArbNe,
-                    lcAlphaNumStringArbNe,
                     jsc.integer(1, 10),
+                    jsc.bool,
                     jsc.bool,
                     _.partialRight(
                         basecrawlerTest,
@@ -146,7 +154,9 @@ baseSpec(
                             id: String(idx),
                             name: "",
                             aspects: {},
-                            sourceTag: ""
+                            sourceTag: "",
+                            tenantId: MAGDA_ADMIN_PORTAL_ID,
+                            authnReadPolicyId: undefined
                         })
                     );
                     return { recordsTestTable, registryRecords };
@@ -230,7 +240,9 @@ baseSpec(
                             id: String(idx),
                             name: "",
                             aspects: {},
-                            sourceTag: ""
+                            sourceTag: "",
+                            tenantId: MAGDA_ADMIN_PORTAL_ID,
+                            authnReadPolicyId: undefined
                         }));
                     return {
                         totalCrawledRecordsNumber,

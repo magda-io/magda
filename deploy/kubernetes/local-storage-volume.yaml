@@ -18,4 +18,5 @@ spec:
         - key: kubernetes.io/hostname
           operator: In
           values:
-          - docker-for-desktop
+            # If using version < 19, change value from docker-desktop to docker-for-desktop.
+          - docker-desktop

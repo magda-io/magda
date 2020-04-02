@@ -26,6 +26,11 @@ bin
 # IntelliJ specific
 .idea
 
+# VS Code
+.bloop
+.metals
+metals.sbt
+
 regions
 snapshots
 .cache-tests
@@ -36,3 +41,20 @@ pancake
 package-lock.json
 */package-lock.json
 .nyc_*
+
+# docker specific
+docker-context-*/
+
+#tenant-api specific
+magda-tenant-api/lib/
+
+#typescript
+tsconfig.tsbuildinfo
+
+# Helm chart installations
+deploy/helm/magda/charts/
+deploy/helm/magda/requirements.lock
+deploy/helm/magda-core/charts/
+deploy/helm/magda-core/requirements.lock
+deploy/helm/internal-charts/storage-api/charts/
+deploy/helm/internal-charts/storage-api/requirements.lock

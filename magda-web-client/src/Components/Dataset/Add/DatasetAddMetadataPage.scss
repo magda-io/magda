@@ -1,39 +1,91 @@
 @import "variables";
+@import "./pancake/sass/core.scss";
 
-.leaflet-container {
-    height: 400px;
-    width: 100%;
-}
+.dataset-add-meta-data-pages {
+    h4.with-icon {
+        position: relative;
+    }
 
-.dataset-add-files {
-    box-sizing: border-box;
-    padding: 1em;
-    margin: 1em 0 1em 0;
-    border: 1px solid $AU-color-foreground-action;
-}
+    h4 .help-icon-container {
+        position: absolute;
+        top: -2px;
+        padding-left: 10px;
+    }
 
-.fileBlock {
-    border: 1px solid #cccccc;
-    overflow: auto;
-    line-height: 100%;
-}
+    h3.with-underline {
+        border-bottom: solid 1px #cccaca;
+        margin-bottom: 50px;
+        padding-bottom: 15px;
+    }
 
-.fileBlock-icon {
-    float: left;
-    padding: 0.8em;
-}
+    .file-icon-item {
+        padding-left: 10px;
+        margin-bottom: 20px;
+        .file-title,
+        img.file-icon {
+            float: left;
+            margin-right: 10px;
+        }
+        img.file-icon {
+            width: 24px;
+        }
+    }
 
-.fileBlock-control {
-    float: right;
-    padding: 0.5em;
-}
+    .leaflet-container {
+        height: 400px;
+        width: 100%;
+    }
 
-.fileBlock-text {
-    display: inline-block;
-    padding: 1em;
-}
+    .dataset-add-files {
+        box-sizing: border-box;
+        padding: 1em;
+        margin: 1em 0 1em 0;
+        border: 1px solid $AU-color-foreground-action;
+    }
 
-.snippet-heading {
-    display: inline-block;
-    vertical-align: middle;
+    .snippet-heading {
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    .tooltip-container {
+        position: relative;
+        .tooltip {
+            position: absolute;
+            padding-left: 4px;
+            top: -2px;
+        }
+        .inner {
+            a:hover {
+                color: #fff;
+            }
+        }
+    }
+
+    .dataset-submit-page {
+        h2 {
+            font-size: 38px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 0.79;
+            letter-spacing: normal;
+            color: #30384d;
+            padding-bottom: 39px;
+            border-bottom: solid 1px #cccaca;
+            margin-top: 60px;
+        }
+
+        h3 {
+            font-size: 16px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.25;
+            letter-spacing: normal;
+            color: #484848;
+            margin-top: 39px;
+            margin-bottom: 26px;
+        }
+    }
 }

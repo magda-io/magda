@@ -1,8 +1,8 @@
-import * as express from "express";
+import express from "express";
 const CustomStrategy = require("passport-custom").Strategy;
 import { Authenticator, Profile } from "passport";
 const jwt = require("jwt-simple");
-import ApiClient from "@magda/typescript-common/dist/authorization-api/ApiClient";
+import ApiClient from "magda-typescript-common/src/authorization-api/ApiClient";
 import createOrGetUserToken from "../createOrGetUserToken";
 import { redirectOnSuccess, redirectOnError } from "./redirect";
 
@@ -31,12 +31,8 @@ export default function aaf(options: aafOptions) {
         : ""
     ).trim();
 
-    const aafSuccessRedirect = `${
-        options.externalUrl
-    }/sign-in-redirect?redirectTo=/`;
-    const aafFailRedirect = `${
-        options.externalUrl
-    }/sign-in-redirect?redirectTo=/signin`;
+    const aafSuccessRedirect = `${options.externalUrl}/sign-in-redirect?redirectTo=/`;
+    const aafFailRedirect = `${options.externalUrl}/sign-in-redirect?redirectTo=/signin`;
 
     if (!aafClientUri) {
         return undefined;

@@ -1,16 +1,46 @@
 @import "variables";
+@import "./pancake/sass/core.scss";
 
 .multi-list-item-editor-container {
-    padding: 0.5em;
+    margin-top: 10px;
+    padding: 0.5em 0.5em 0.5em 0em;
 }
 
 .multi-list-item-editor-item {
-    display: inline-block;
-    padding: 0.5em;
-    background: darken($AU-colordark-foreground-action, 15%);
-    border-radius: 0.5em;
-    color: $AU-colordark-background;
-    font-weight: bold;
-    margin-right: 2em;
-    margin-bottom: 1em;
+    float: left;
+    border-radius: 17px;
+    position: relative;
+    background-color: #30384d !important;
+    border: none;
+    padding-left: 19px;
+    padding-right: 45px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    height: 34px;
+    font-size: 14px;
+    font-weight: 500;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #ffffff;
+    .edit-button {
+        position: absolute;
+        right: 10px;
+        top: 5px;
+        background: transparent;
+        color: #ffffff;
+        margin: 0px;
+    }
+}
+
+.list-multi-item-editor-container {
+    .au-btn {
+        border-radius: 10px;
+        border: solid 2px #30384d;
+        background-color: #30384d !important;
+        margin-left: 20px;
+    }
 }

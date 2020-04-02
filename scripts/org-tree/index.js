@@ -5,9 +5,7 @@ const program = require("commander");
 program
     .version(pkg.version)
     .description(
-        `A tool for managing magda authentication & access control data. Version: ${
-            pkg.version
-        }\n\n` +
+        `A tool for managing magda authentication & access control data. Version: ${pkg.version}\n\n` +
             `If a database connection is required, the following environment variables will be used to create a connection:\n` +
             `  POSTGRES_HOST: database host; If not available in env var, 'localhost' will be used.\n` +
             `  POSTGRES_DB: database name; If not available in env var, 'auth' will be used.\n` +
@@ -40,5 +38,9 @@ program
         "\n\tAssign the specified user to the nominated node. \n" +
             "\tBoth `userNameOrId` & `nodeNameOrId` can be either entity name or Id.\n" +
             "\tIf more than one entities are located by entity name, the first one will be used."
+    )
+    .command(
+        "unassign <userNameOrId>",
+        "\n\tAssign the specified user from any node"
     )
     .parse(process.argv);

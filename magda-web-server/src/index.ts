@@ -1,12 +1,13 @@
-import * as express from "express";
-import * as path from "path";
-import * as URI from "urijs";
-import * as yargs from "yargs";
-import * as morgan from "morgan";
-import request from "@magda/typescript-common/dist/request";
+import express from "express";
+import path from "path";
+import URI from "urijs";
+import yargs from "yargs";
+import morgan from "morgan";
+import request from "magda-typescript-common/src/request";
 
-import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
-import coerceJson from "@magda/typescript-common/dist/coerceJson";
+import Registry from "magda-typescript-common/src/registry/RegistryClient";
+import coerceJson from "magda-typescript-common/src/coerceJson";
+import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/TenantConsts";
 
 import buildSitemapRouter from "./buildSitemapRouter";
 import getIndexFileContent from "./getIndexFileContent";
@@ -21,6 +22,12 @@ const argv = yargs
     })
     .option("disableAuthenticationFeatures", {
         describe: "True to disable all features that require authentication.",
+        type: "boolean",
+        default: false
+    })
+    .option("showNotificationBanner", {
+        describe:
+            "Whether or not the global notification banner should be shown",
         type: "boolean",
         default: false
     })
@@ -78,6 +85,11 @@ const argv = yargs
             "The base URL of the MAGDA Registry API.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
     })
+    .option("registryApiReadOnlyBaseUrl", {
+        describe:
+            "The base URL of the MAGDA Registry API for use for read-only operations.  If not specified, the URL is built from the apiBaseUrl.",
+        type: "string"
+    })
     .option("authApiBaseUrl", {
         describe:
             "The base URL of the MAGDA Auth API.  If not specified, the URL is built from the apiBaseUrl.",
@@ -120,9 +132,75 @@ const argv = yargs
         type: "string",
         coerce: coerceJson("vocabularyApiEndpoints"),
         default: "[]"
+    })
+    .option("defaultOrganizationId", {
+        describe: "The id of a default organization to use for new datasets",
+        type: "string",
+        required: false
+    })
+    .option("defaultContactEmail", {
+        describe:
+            "Default contact email for users to report magda system errors",
+        type: "string"
+    })
+    .option("custodianOrgLevel", {
+        describe: "Data custodian org unit tree level",
+        type: "number"
+    })
+    .option("maxChartProcessingRows", {
+        describe:
+            "Max number of CSV data file rows that chart preview will module process",
+        type: "number"
+    })
+    .option("maxTableProcessingRows", {
+        describe:
+            "Max number of CSV data file rows that table preview will module process",
+        type: "number"
+    })
+    .option("csvLoaderChunkSize", {
+        describe: "The size of the csv loader processing chunk (in bytes)",
+        type: "number"
+    })
+    .option("mandatoryFields", {
+        describe: "Add dataset page mandatory fields list (in JSON path)",
+        type: "string",
+        coerce: coerceJson("mandatoryFields"),
+        default: "[]"
+    })
+    .option("dateFormats", {
+        describe: "A list of date formats supported by this Magda instance",
+        type: "string",
+        coerce: coerceJson("dateFormats"),
+        default: "[]"
+    })
+    .option("datasetThemes", {
+        describe:
+            "A list of pre-defined phrases for theme input on the `add dataset page`",
+        type: "string",
+        coerce: coerceJson("datasetThemes"),
+        default: "[]"
+    })
+    .option("noManualKeywords", {
+        describe:
+            "Whether manual keywords input should be allowed on add dataset page",
+        type: "boolean",
+        default: false
+    })
+    .option("noManualThemes", {
+        describe:
+            "Whether manual themes input should be allowed on add dataset page",
+        type: "boolean",
+        default: false
+    })
+    .option("keywordsBlackList", {
+        describe:
+            "A list of pre-defined BlackList for auto keywords generation",
+        type: "string",
+        coerce: coerceJson("keywordsBlackList"),
+        default: "[]"
     }).argv;
 
-var app = express();
+const app = express();
 
 app.use(morgan("combined"));
 
@@ -162,6 +240,13 @@ const webServerConfig = {
                 .segment("registry")
                 .toString()
     ),
+    registryApiReadOnlyBaseUrl: addTrailingSlash(
+        argv.registryApiReadOnlyBaseUrl ||
+            new URI(apiBaseUrl)
+                .segment("v0")
+                .segment("registry-read-only")
+                .toString()
+    ),
     authApiBaseUrl: addTrailingSlash(
         argv.authApiBaseUrl ||
             new URI(apiBaseUrl)
@@ -192,8 +277,21 @@ const webServerConfig = {
     ),
     fallbackUrl: argv.fallbackUrl,
     gapiIds: argv.gapiIds,
+    showNotificationBanner: argv.showNotificationBanner,
     featureFlags: argv.featureFlags || {},
-    vocabularyApiEndpoints: (argv.vocabularyApiEndpoints || []) as string[]
+    vocabularyApiEndpoints: (argv.vocabularyApiEndpoints || []) as string[],
+    defaultOrganizationId: argv.defaultOrganizationId,
+    defaultContactEmail: argv.defaultContactEmail,
+    custodianOrgLevel: argv.custodianOrgLevel,
+    maxChartProcessingRows: argv.maxChartProcessingRows,
+    maxTableProcessingRows: argv.maxTableProcessingRows,
+    csvLoaderChunkSize: argv.csvLoaderChunkSize,
+    mandatoryFields: argv.mandatoryFields,
+    dateFormats: argv.dateFormats,
+    datasetThemes: argv.datasetThemes,
+    noManualKeywords: argv.noManualKeywords,
+    noManualThemes: argv.noManualThemes,
+    keywordsBlackList: argv.keywordsBlackList
 };
 
 app.get("/server-config.js", function(req, res) {
@@ -293,12 +391,14 @@ app.use("/robots.txt", (_, res) => {
     res.status(200).send(robotsTxt);
 });
 
+// TODO: Use proper tenant id in multi-tenant mode.
 app.use(
     buildSitemapRouter({
         baseExternalUrl: argv.baseExternalUrl,
         registry: new Registry({
             baseUrl: argv.registryApiBaseUrlInternal,
-            maxRetries: 0
+            maxRetries: 0,
+            tenantId: MAGDA_ADMIN_PORTAL_ID
         })
     })
 );
@@ -322,9 +422,12 @@ app.use("/", function(req, res) {
 app.listen(argv.listenPort);
 console.log("Listening on port " + argv.listenPort);
 
-process.on("unhandledRejection", (reason: string, promise: any) => {
-    console.error(reason);
-});
+process.on(
+    "unhandledRejection",
+    (reason: {} | null | undefined, promise: Promise<any>) => {
+        console.error(reason);
+    }
+);
 
 function addTrailingSlash(url: string) {
     if (!url) {

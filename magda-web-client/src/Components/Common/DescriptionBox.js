@@ -34,39 +34,44 @@ class DescriptionBox extends Component {
                     this.state.isExpanded ? "is-expanded" : ""
                 }`}
             >
-                <MarkdownViewer
-                    markdown={this.props.content}
-                    truncate={
-                        !this.state.isExpanded && this.props.isAutoTruncate
-                    }
-                    truncateLength={this.props.truncateLength}
-                />
-                {shouldShowToggleButton ? (
-                    this.state.isExpanded ? (
-                        <ToggleButton
-                            onClick={e => this.onToggleButtonClick(e)}
-                        >
-                            <span>Show less description</span>
-                            <img
-                                className="description-box-toggle-button-icon"
-                                src={upArrowIcon}
-                                alt="upArrowIcon"
-                            />
-                        </ToggleButton>
-                    ) : (
-                        <ToggleButton
-                            className="description-box-toggle-button"
-                            onClick={e => this.onToggleButtonClick(e)}
-                        >
-                            <span>Show full description</span>
-                            <img
-                                className="description-box-toggle-button-icon"
-                                src={downArrowIcon}
-                                alt="downArrow"
-                            />
-                        </ToggleButton>
-                    )
-                ) : null}
+                <div className="no-print">
+                    <MarkdownViewer
+                        markdown={this.props.content}
+                        truncate={
+                            !this.state.isExpanded && this.props.isAutoTruncate
+                        }
+                        truncateLength={this.props.truncateLength}
+                    />
+                    {shouldShowToggleButton ? (
+                        this.state.isExpanded ? (
+                            <ToggleButton
+                                onClick={e => this.onToggleButtonClick(e)}
+                            >
+                                <span>Show less description</span>
+                                <img
+                                    className="description-box-toggle-button-icon"
+                                    src={upArrowIcon}
+                                    alt="upArrowIcon"
+                                />
+                            </ToggleButton>
+                        ) : (
+                            <ToggleButton
+                                className="description-box-toggle-button"
+                                onClick={e => this.onToggleButtonClick(e)}
+                            >
+                                <span>Show full description</span>
+                                <img
+                                    className="description-box-toggle-button-icon"
+                                    src={downArrowIcon}
+                                    alt="downArrow"
+                                />
+                            </ToggleButton>
+                        )
+                    ) : null}
+                </div>
+                <div className="print-only">
+                    <MarkdownViewer markdown={this.props.content} />
+                </div>
             </div>
         );
     }

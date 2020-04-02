@@ -1,0 +1,20 @@
+global:
+  externalUrl: http://minikube.data.gov.au:30100
+  rollingUpdate:
+    maxUnavailable: 1
+  exposeNodePorts: true
+  image:
+    imagePullSecret: "regcred"
+    pullPolicy: Always
+  noDbAuth: true
+  useCloudSql: false
+  useCombinedDb: true
+  enablePriorityClass: false
+
+tags:
+  all: false
+  combined-db: true
+  authorization-db: true
+  registry-db: true
+  opa: true
+  authorization-api: true

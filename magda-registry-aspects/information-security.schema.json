@@ -1,0 +1,31 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "title": "Metadata about information security",
+    "type": "object",
+    "properties": {
+        "classification": {
+            "title": "Security classification. See https://www.protectivesecurity.gov.au/information/sensitive-classified-information/Pages/default.aspx for more details.",
+            "type": "string",
+            "enum": [
+                "UNOFFICIAL",
+                "OFFICIAL",
+                "OFFICIAL:SENSITIVE",
+                "PROTECTED",
+                "SECRET",
+                "TOP SECRET"
+            ]
+        },
+        "disseminationLimits": {
+            "title": "Any sensitivity DLMs (dissemination limiting marker). See https://www.protectivesecurity.gov.au/information/sensitive-classified-information/Pages/default.aspx for more details.",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "LEGAL PRIVILEGE",
+                    "LEGISLATIVE SECRECY",
+                    "PERSONAL PRIVACY"
+                ]
+            }
+        }
+    }
+}

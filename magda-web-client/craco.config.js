@@ -1,6 +1,10 @@
 const { isEqual } = require("lodash");
+const FilterWarningsPlugin = require("webpack-filter-warnings-plugin");
 
 module.exports = {
+    babel: {
+        plugins: ["@babel/plugin-proposal-optional-chaining"]
+    },
     webpack: {
         configure(webpackConfig) {
             // For reasons that are not entirely clear, production builds take
@@ -47,6 +51,14 @@ module.exports = {
 
                     return rule;
                 }
+            );
+
+            // --- mute warnings from mini-css-extract-plugin regarding css order
+            // --- css order not always matter. Plus, complete avoid this issue probably require a new way of including component scss files
+            webpackConfig.plugins.push(
+                new FilterWarningsPlugin({
+                    exclude: /mini-css-extract-plugin[^]*Conflicting order between:/
+                })
             );
 
             return webpackConfig;

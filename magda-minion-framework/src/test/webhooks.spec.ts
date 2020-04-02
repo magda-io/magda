@@ -1,18 +1,18 @@
-import * as request from "supertest";
+import request from "supertest";
 import { Server } from "http";
-import * as express from "express";
-import * as nock from "nock";
-import * as sinon from "sinon";
-import * as _ from "lodash";
+import express from "express";
+import nock from "nock";
+import sinon from "sinon";
+import _ from "lodash";
 import { expect } from "chai";
 
-import { Record } from "@magda/typescript-common/dist/generated/registry/api";
+import { Record } from "magda-typescript-common/src/generated/registry/api";
 import {
     arbFlatMap,
     lcAlphaNumStringArbNe,
     recordArb
-} from "@magda/typescript-common/dist/test/arbitraries";
-import jsc from "@magda/typescript-common/dist/test/jsverify";
+} from "magda-typescript-common/src/test/arbitraries";
+import jsc from "magda-typescript-common/src/test/jsverify";
 
 import MinionOptions from "../MinionOptions";
 import minion from "../index";
@@ -87,20 +87,25 @@ baseSpec(
                         batchArb,
                         lcAlphaNumStringArbNe,
                         lcAlphaNumStringArbNe,
-                        lcAlphaNumStringArbNe,
                         jsc.integer(1, 10),
+                        jsc.bool,
                         (
                             recordsBatches,
                             domain,
                             jwtSecret,
-                            userId,
-                            concurrency
+                            concurrency,
+                            enableMultiTenant
                         ) => {
                             beforeEachProperty();
 
                             const registryDomain = "example";
                             const registryUrl = `http://${registryDomain}.com:80`;
                             const registryScope = nock(registryUrl);
+                            const tenantDomain = "tenant";
+                            const tenantUrl = `http://${tenantDomain}.com:80`;
+                            const tenantScope = nock(tenantUrl);
+                            const userId =
+                                "b1fddd6f-e230-4068-bd2c-1a21844f1598";
 
                             /** All records in all the batches */
                             const flattenedRecords = _.flatMap(
@@ -119,6 +124,8 @@ baseSpec(
                                 argv: fakeArgv({
                                     internalUrl,
                                     registryUrl,
+                                    enableMultiTenant,
+                                    tenantUrl,
                                     jwtSecret,
                                     userId,
                                     listenPort: listenPort()
@@ -160,6 +167,8 @@ baseSpec(
                             });
                             registryScope.post(/\/hooks\/.*/).reply(201, {});
 
+                            tenantScope.get("/tenants").reply(200, []);
+
                             return minion(options)
                                 .then(() =>
                                     Promise.all(
@@ -171,9 +180,7 @@ baseSpec(
                                                 // telling it to give more events.
                                                 registryScope
                                                     .post(
-                                                        `/hooks/${
-                                                            options.id
-                                                        }/ack`,
+                                                        `/hooks/${options.id}/ack`,
                                                         {
                                                             succeeded:
                                                                 batch.overallSuccess,
@@ -217,7 +224,7 @@ baseSpec(
                                                 // The hook should only return 500 if it's failed synchronously.
                                                 .expect(
                                                     async ||
-                                                    batch.overallSuccess
+                                                        batch.overallSuccess
                                                         ? 201
                                                         : 500
                                                 )

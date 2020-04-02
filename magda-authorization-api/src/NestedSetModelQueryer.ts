@@ -1,5 +1,5 @@
-import * as pg from "pg";
-import * as _ from "lodash";
+import pg from "pg";
+import _ from "lodash";
 import { Maybe } from "tsmonad";
 const textTree = require("text-treeview");
 
@@ -36,6 +36,11 @@ export type CompareNodeResult =
     | "descendant"
     | "equal"
     | "unrelated";
+
+type NodesQuery = {
+    name?: string;
+    leafNodesOnly?: boolean;
+};
 class NestedSetModelQueryer {
     private pool: pg.Pool;
     private tableName: string;
@@ -150,16 +155,39 @@ class NestedSetModelQueryer {
      * @returns {Promise<NodeRecord[]>}
      * @memberof NestedSetModelQueryer
      */
-    async getNodesByName(
-        name: string,
+    async getNodes(
+        nodesQuery: NodesQuery = {},
         fields: string[] = null,
         client: pg.Client = null
     ): Promise<NodeRecord[]> {
+        const getParamPlaceholder = (() => {
+            let currentPlaceholder = 1;
+
+            return () => currentPlaceholder++;
+        })();
+
+        const clauses = [
+            nodesQuery.name && {
+                sql: `"name" = $${getParamPlaceholder()}`,
+                values: [nodesQuery.name]
+            },
+            nodesQuery.leafNodesOnly && {
+                sql: `"left" = ( "right" - 1 )`
+            }
+        ].filter(x => !!x);
+
+        const whereClause =
+            clauses.length > 0
+                ? `WHERE ${clauses.map(({ sql }) => sql).join(" AND ")}`
+                : "";
+
+        const query = `SELECT ${this.selectFields("", fields)} FROM "${
+            this.tableName
+        }" ${whereClause}`;
+
         const result = await (client ? client : this.pool).query(
-            `SELECT ${this.selectFields("", fields)} FROM "${
-                this.tableName
-            }" WHERE "name" = $1`,
-            [name]
+            query,
+            _.flatMap(clauses, ({ values }) => values || [])
         );
         if (!result || !result.rows || !result.rows.length) return [];
         return result.rows;
@@ -179,7 +207,10 @@ class NestedSetModelQueryer {
         fields: string[] = null,
         client: pg.Client = null
     ): Promise<Maybe<NodeRecord>> {
-        const result = await (client ? client : this.pool).query(
+        const result = await (client
+            ? client
+            : this.pool
+        ).query(
             `SELECT ${this.selectFields("", fields)} FROM "${
                 this.tableName
             }" WHERE "id" = $1`,
@@ -211,22 +242,6 @@ class NestedSetModelQueryer {
         if (!result || !result.rows || !result.rows.length)
             return Maybe.nothing();
         return Maybe.just(result.rows[0]);
-    }
-
-    /**
-     * Leaf Nodes are the nodes that has no children under it
-     *
-     * @returns {Promise<NodeRecord[]>}
-     * @memberof NestedSetModelQueryer
-     */
-    async getLeafNodes(): Promise<NodeRecord[]> {
-        const result = await this.pool.query(
-            `SELECT ${this.selectFields()} FROM "${
-                this.tableName
-            }" WHERE "left" = ( "right" - 1 )`
-        );
-        if (!result || !result.rows || !result.rows.length) return [];
-        return result.rows;
     }
 
     /**
@@ -657,9 +672,7 @@ class NestedSetModelQueryer {
             );
             if (result && isNonEmptyArray(result.rows)) {
                 throw new Error(
-                    `A root node with id: ${
-                        result.rows[0]["id"]
-                    } already exists`
+                    `A root node with id: ${result.rows[0]["id"]} already exists`
                 );
             }
             const countResult = await client.query(
@@ -745,11 +758,9 @@ class NestedSetModelQueryer {
         let nodeId: string;
         try {
             await client.query("BEGIN");
-            const { right: parentRight } = await this.getNodeDataWithinTx(
-                client,
-                parentNodeId,
-                ["right"]
-            );
+            const {
+                right: parentRight
+            } = await this.getNodeDataWithinTx(client, parentNodeId, ["right"]);
 
             await client.query(
                 `UPDATE "${tbl}" 
@@ -918,11 +929,9 @@ class NestedSetModelQueryer {
                 throw new Error("Cannot move Tree root node as substree.");
             }
 
-            const { right: newParentRight } = await this.getNodeDataWithinTx(
-                client,
-                newParentId,
-                ["right"]
-            );
+            const {
+                right: newParentRight
+            } = await this.getNodeDataWithinTx(client, newParentId, ["right"]);
 
             await client.query(
                 `

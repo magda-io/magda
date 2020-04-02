@@ -1,13 +1,13 @@
 import {} from "mocha";
-import * as sinon from "sinon";
-import * as express from "express";
+import sinon from "sinon";
+import express from "express";
 import { expect } from "chai";
-import * as nock from "nock";
-import * as supertest from "supertest";
+import nock from "nock";
+import supertest from "supertest";
 import { parseString } from "xml2js";
 import buildSitemapRouter from "../buildSitemapRouter";
 import { promisify } from "typed-promisify";
-import Registry from "@magda/typescript-common/dist/registry/RegistryClient";
+import Registry from "magda-typescript-common/src/registry/RegistryClient";
 
 const noOptionsParseString = (
     string: string,
@@ -20,7 +20,8 @@ describe("sitemap router", () => {
     const registryUrl = "http://registry.example.com";
     const registry = new Registry({
         baseUrl: registryUrl,
-        maxRetries: 0
+        maxRetries: 0,
+        tenantId: 1
     });
 
     let router: express.Router;

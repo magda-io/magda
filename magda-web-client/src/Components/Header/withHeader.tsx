@@ -4,6 +4,9 @@ import { memoize } from "lodash";
 import { Location } from "history";
 import Header from "Components/Header/Header";
 import SearchBoxSwitcher from "Components/Dataset/Search/SearchBoxSwitcher";
+import AddDatasetProgressMeter, {
+    ExternalProps as AddDatasetProgressMeterProps
+} from "Components/Common/AddDatasetProgressMeter";
 
 import "./withHeader.scss";
 
@@ -12,9 +15,20 @@ type Props = {
     location: Location;
 };
 
+type InterfaceOptions = {
+    includeSearchBox?: boolean;
+    includeDatasetPageProgressMeter?: boolean;
+    noContainerClass?: boolean;
+};
+
 const withHeader = <P extends {}>(
     WrappedComponent: ComponentType<P & Props>,
-    includeSearchBox: boolean
+    {
+        includeSearchBox,
+        includeDatasetPageProgressMeter,
+        noContainerClass
+    }: InterfaceOptions = {},
+    addDatasetProgressMeterProps: AddDatasetProgressMeterProps = {}
 ) => {
     const NewComponent = (props: P & Props) => {
         return (
@@ -28,8 +42,16 @@ const withHeader = <P extends {}>(
                     />
                 )}
 
+                {includeDatasetPageProgressMeter && (
+                    <AddDatasetProgressMeter
+                        {...addDatasetProgressMeterProps}
+                    />
+                )}
+
                 <div
-                    className={`container app-container ${
+                    className={`${
+                        noContainerClass ? "" : "container"
+                    } app-container ${
                         props.finishedFetching ? "loaded" : "loading"
                     }`}
                     id="content"

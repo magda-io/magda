@@ -3,39 +3,118 @@ import React, { Component } from "react";
 import DataPreviewTable from "./DataPreviewTable";
 import DataPreviewChart from "./DataPreviewChart";
 import { ParsedDistribution } from "helpers/record";
+import CsvDataLoader, { DataLoadingResult } from "helpers/CsvDataLoader";
 import "./DataPreviewVis.scss";
+
+type VisType = "chart" | "table";
+
+type StateType = {
+    visType: VisType;
+    isDataLoading: boolean;
+    dataLoadingError: Error | null;
+    dataLoadingResult: DataLoadingResult | null;
+};
 
 class DataPreviewVis extends Component<
     {
         distribution: ParsedDistribution;
     },
-    any
+    StateType
 > {
+    private dataLoader: CsvDataLoader | null = null;
+
     constructor(props) {
         super(props);
         this.state = {
-            chartType: "line",
-            chartTitle: "",
-            yAxis: null,
-            xAxis: null,
-            xScale: "temporal",
-            yScale: "quantitative",
-            visType: "chart"
+            visType: "chart",
+            isDataLoading: true,
+            dataLoadingError: null,
+            dataLoadingResult: null
         };
         this.onChangeTab = this.onChangeTab.bind(this);
+        this.dataLoader = null;
+    }
+
+    componentDidMount() {
+        this.loadData();
+    }
+
+    componentDidUpdate(prevProps) {
+        const distribution = this.props.distribution;
+        const prevDistribution = prevProps.distribution;
+        if (distribution !== prevDistribution) {
+            this.loadData();
+        }
+    }
+
+    componentWillUnmount() {
+        if (this.dataLoader) {
+            this.dataLoader.abort();
+        }
+    }
+
+    async loadData() {
+        try {
+            // If none of chart & table compatiblePreviews option is false, no need to load data
+            const distribution = this.props.distribution;
+            if (
+                !distribution ||
+                !distribution.identifier ||
+                (!distribution.compatiblePreviews.chart &&
+                    !distribution.compatiblePreviews.table)
+            ) {
+                return;
+            }
+
+            this.dataLoader = new CsvDataLoader(this.props.distribution);
+            this.setState({
+                isDataLoading: true,
+                dataLoadingError: null,
+                dataLoadingResult: null
+            });
+            const result = await this.dataLoader.load();
+
+            this.setState({
+                isDataLoading: false,
+                dataLoadingResult: result
+            });
+
+            // --- the CSV processing error could be caused by many reasons
+            // --- most them here should be source file problem
+            // --- But we might still want to keep monitor any rare non-source-file related issues here
+            if (result.errors.length) {
+                console.log("CSV data processing error: ", result.errors);
+            }
+        } catch (e) {
+            this.setState({
+                isDataLoading: false,
+                dataLoadingError: e,
+                dataLoadingResult: null
+            });
+            console.error("Failed to process CSV data file: ", e);
+        }
     }
 
     renderChart() {
         return (
             <DataPreviewChart
                 distribution={this.props.distribution}
+                dataLoadingResult={this.state.dataLoadingResult}
+                dataLoadError={this.state.dataLoadingError}
+                isLoading={this.state.isDataLoading}
                 onChangeTab={this.onChangeTab}
             />
         );
     }
 
     renderTable() {
-        return <DataPreviewTable distribution={this.props.distribution} />;
+        return (
+            <DataPreviewTable
+                dataLoadingResult={this.state.dataLoadingResult}
+                dataLoadError={this.state.dataLoadingError}
+                isLoading={this.state.isDataLoading}
+            />
+        );
     }
 
     onChangeTab(tab) {
@@ -101,7 +180,7 @@ class DataPreviewVis extends Component<
         const bodyRenderResult = this.renderByState();
         if (!bodyRenderResult) return null;
         return (
-            <div className="data-preview-vis">
+            <div className="data-preview-vis no-print">
                 <h3 className="section-heading">Data Preview</h3>
                 {bodyRenderResult}
             </div>

@@ -1,4 +1,132 @@
 @import "variables";
+@import "./pancake/sass/core.scss";
+
+.add-dataset-page-container {
+    .heading-wrapper {
+        margin-top: 2px;
+        background-color: #f4f4f4;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .heading {
+        font-size: 64px;
+        font-weight: normal;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: 179px;
+        height: 179px;
+        letter-spacing: normal;
+        color: #3c3c3c;
+    }
+
+    .lower-header-wrapper {
+        height: 414px;
+        background-color: #fafafa;
+        .block {
+            text-align: center;
+        }
+        .icon-search {
+            margin-top: 90px;
+            margin-bottom: 15px;
+            width: 55px;
+            height: 69px;
+        }
+        .icon-document {
+            width: 64px;
+            height: 60px;
+            margin-top: 74px;
+            margin-bottom: 44px;
+        }
+        .icon-oval {
+            width: 61px;
+            height: 55px;
+            margin-top: 90px;
+            margin-bottom: 33px;
+        }
+    }
+
+    .text-block-container {
+        .text-block {
+            margin-left: auto;
+            margin-right: auto;
+            font-size: 16px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.75;
+            letter-spacing: normal;
+            color: #484848;
+            strong {
+                font-weight: 600;
+            }
+            height: 162px;
+        }
+        .text-block-1 {
+            width: 241px;
+        }
+        .text-block-2 {
+            width: 269px;
+        }
+        .text-block-3 {
+            width: 241px;
+        }
+    }
+
+    .body-heading-row {
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 85px;
+        margin-bottom: 66px;
+        width: 592px;
+        height: 96px;
+        font-size: 38px;
+        font-weight: normal;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: 1.26;
+        letter-spacing: normal;
+        text-align: center;
+        color: #484848;
+    }
+
+    .preview-message-row {
+        margin-bottom: 66px;
+    }
+
+    .choice-files {
+        .choice-icon {
+            width: 88px;
+            height: 58px;
+        }
+    }
+
+    .choice-no-files {
+        .choice-icon {
+            width: 76px;
+            height: 54px;
+        }
+    }
+
+    .choice-multiple {
+        .choice-icon {
+            width: initial;
+            height: 67px;
+        }
+    }
+
+    .choice-row {
+        margin-bottom: 58px;
+
+        &:last-child {
+            margin-bottom: 29px;
+        }
+    }
+
+    .main-body-row {
+        padding-left: 25px;
+    }
+}
 
 .instruction-icon {
     width: 2em;

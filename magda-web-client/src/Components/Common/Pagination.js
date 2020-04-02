@@ -1,41 +1,61 @@
 import React, { Component } from "react";
+import { needsContent } from "helpers/content";
+import { Link } from "react-router-dom";
+import queryString from "query-string";
+
+import "./Pagination.scss";
+
 import left_arrow from "assets/left-arrow.svg";
 import right_arrow from "assets/right-arrow.svg";
-import "./Pagination.scss";
-import { needsContent } from "helpers/content";
 
 class Pagination extends Component {
     constructor(props) {
         super(props);
-        this.onClick = this.onClick.bind(this);
         this.renderNextButton = this.renderNextButton.bind(this);
         this.renderPrevButton = this.renderPrevButton.bind(this);
+        this.generateRoute = this.generateRoute.bind(this);
     }
 
-    onClick(page) {
-        this.props.onPageChange(page);
+    // generates the href for each link-list-item in pagination list.
+    generateRoute(page) {
+        return (
+            this.props.location.pathname +
+            "?" +
+            queryString.stringify(
+                Object.assign(queryString.parse(this.props.location.search), {
+                    page: page
+                })
+            )
+        );
     }
+
     renderPrevButton(currentIndex) {
         return (
-            <button
-                onClick={this.onClick.bind(this, currentIndex - 1)}
-                className="btn-prev"
-            >
-                {" "}
-                <img src={left_arrow} alt="previous page" />{" "}
-            </button>
+            <li>
+                <Link
+                    to={this.generateRoute(currentIndex - 1)}
+                    className="btn-prev"
+                    aria-label="previous page"
+                >
+                    {" "}
+                    <img src={left_arrow} alt="" />{" "}
+                </Link>
+            </li>
         );
     }
 
     renderNextButton(currentIndex) {
         return (
-            <button
-                onClick={this.onClick.bind(this, currentIndex + 1)}
-                className="btn-nexty"
-            >
-                {" "}
-                <img src={right_arrow} alt="next page" />{" "}
-            </button>
+            <li>
+                <Link
+                    to={this.generateRoute(currentIndex + 1)}
+                    className="btn-next"
+                    aria-label="next page"
+                >
+                    {" "}
+                    <img src={right_arrow} alt="" />{" "}
+                </Link>
+            </li>
         );
     }
 
@@ -129,22 +149,20 @@ class Pagination extends Component {
         }
 
         return (
-            <ul className="pagination-list">
+            <ul className="pagination-list ">
                 {current > 1 && this.renderPrevButton(current)}
                 {pageButtons.map(i => (
                     <li key={i}>
-                        <button
-                            onClick={this.onClick.bind(
-                                this,
-                                //-- if i===0 then it's `...` button, Rule 6 applies
-                                i === 0 ? current - 4 : i
-                            )}
+                        <Link
+                            to={this.generateRoute(i)}
                             className={`${
                                 i === current ? "current" : "non-current"
                             }`}
+                            aria-current={i === current ? "true" : "false"}
+                            aria-label={`Page ${i}`}
                         >
                             {i === 0 ? "..." : i}
-                        </button>
+                        </Link>
                     </li>
                 ))}
                 {current < max && this.renderNextButton(current)}
@@ -158,9 +176,13 @@ class Pagination extends Component {
             .searchResultsPerPage;
 
         return (
-            <div className="pagination">
+            <div
+                className="pagination"
+                role="navigation"
+                aria-label="Page navigation"
+            >
                 {this.renderPageList(this.props.maxPage, currentPage)}
-                <div className="pagination-summray">
+                <div className="pagination-summary">
                     {" "}
                     {(currentPage - 1) * searchResultsPerPage + 1} -{" "}
                     {Math.min(

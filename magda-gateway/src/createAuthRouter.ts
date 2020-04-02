@@ -1,7 +1,7 @@
 import { Router } from "express";
-import ApiClient from "@magda/typescript-common/dist/authorization-api/ApiClient";
+import ApiClient from "magda-typescript-common/src/authorization-api/ApiClient";
 import Authenticator from "./Authenticator";
-import * as passport from "passport";
+import passport from "passport";
 
 export interface AuthRouterOptions {
     authenticator: Authenticator;
@@ -14,10 +14,15 @@ export interface AuthRouterOptions {
     aafClientSecret: string;
     arcgisClientId: string;
     arcgisClientSecret: string;
+    arcgisInstanceBaseUrl: string;
+    esriOrgGroup: string;
     ckanUrl: string;
     authorizationApi: string;
     externalUrl: string;
     userId: string;
+    vanguardWsFedIdpUrl: string;
+    vanguardWsFedRealm: string;
+    vanguardWsFedCertificate: string;
 }
 
 export default function createAuthRouter(options: AuthRouterOptions): Router {
@@ -38,56 +43,82 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
         {
             id: "facebook",
             enabled: options.facebookClientId ? true : false,
-            authRouter: require("./oauth2/facebook").default({
-                authorizationApi: authApi,
-                passport: passport,
-                clientId: options.facebookClientId,
-                clientSecret: options.facebookClientSecret,
-                externalAuthHome: `${options.externalUrl}/auth`
-            })
+            authRouter: options.facebookClientId
+                ? require("./oauth2/facebook").default({
+                      authorizationApi: authApi,
+                      passport: passport,
+                      clientId: options.facebookClientId,
+                      clientSecret: options.facebookClientSecret,
+                      externalAuthHome: `${options.externalUrl}/auth`
+                  })
+                : null
         },
         {
             id: "google",
             enabled: options.googleClientId ? true : false,
-            authRouter: require("./oauth2/google").default({
-                authorizationApi: authApi,
-                passport: passport,
-                clientId: options.googleClientId,
-                clientSecret: options.googleClientSecret,
-                externalAuthHome: `${options.externalUrl}/auth`
-            })
+            authRouter: options.googleClientId
+                ? require("./oauth2/google").default({
+                      authorizationApi: authApi,
+                      passport: passport,
+                      clientId: options.googleClientId,
+                      clientSecret: options.googleClientSecret,
+                      externalAuthHome: `${options.externalUrl}/auth`
+                  })
+                : null
         },
         {
             id: "arcgis",
             enabled: options.arcgisClientId ? true : false,
-            authRouter: require("./oauth2/arcgis").default({
-                authorizationApi: authApi,
-                passport: passport,
-                clientId: options.arcgisClientId,
-                clientSecret: options.arcgisClientSecret,
-                externalAuthHome: `${options.externalUrl}/auth`
-            })
+            authRouter: options.arcgisClientId
+                ? require("./oauth2/arcgis").default({
+                      authorizationApi: authApi,
+                      passport: passport,
+                      clientId: options.arcgisClientId,
+                      clientSecret: options.arcgisClientSecret,
+                      arcgisInstanceBaseUrl: options.arcgisInstanceBaseUrl,
+                      externalAuthHome: `${options.externalUrl}/auth`,
+                      esriOrgGroup: options.esriOrgGroup
+                  })
+                : null
         },
         {
             id: "ckan",
             enabled: options.ckanUrl ? true : false,
-            authRouter: require("./oauth2/ckan").default({
-                authorizationApi: authApi,
-                passport: passport,
-                externalAuthHome: `${options.externalUrl}/auth`,
-                ckanUrl: options.ckanUrl
-            })
+            authRouter: options.ckanUrl
+                ? require("./oauth2/ckan").default({
+                      authorizationApi: authApi,
+                      passport: passport,
+                      externalAuthHome: `${options.externalUrl}/auth`,
+                      ckanUrl: options.ckanUrl
+                  })
+                : null
         },
         {
             id: "aaf",
             enabled: options.aafClientUri ? true : false,
-            authRouter: require("./oauth2/aaf").default({
-                authorizationApi: authApi,
-                passport: passport,
-                aafClientUri: options.aafClientUri,
-                aafClientSecret: options.aafClientSecret,
-                externalUrl: options.externalUrl
-            })
+            authRouter: options.aafClientUri
+                ? require("./oauth2/aaf").default({
+                      authorizationApi: authApi,
+                      passport: passport,
+                      aafClientUri: options.aafClientUri,
+                      aafClientSecret: options.aafClientSecret,
+                      externalUrl: options.externalUrl
+                  })
+                : null
+        },
+        {
+            id: "vanguard",
+            enabled: options.vanguardWsFedIdpUrl ? true : false,
+            authRouter: options.vanguardWsFedIdpUrl
+                ? require("./oauth2/vanguard").default({
+                      authorizationApi: authApi,
+                      passport: passport,
+                      wsFedIdpUrl: options.vanguardWsFedIdpUrl,
+                      wsFedRealm: options.vanguardWsFedRealm,
+                      wsFedCertificate: options.vanguardWsFedCertificate,
+                      externalUrl: options.externalUrl
+                  })
+                : null
         }
     ];
 
@@ -134,10 +165,7 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
         }
     );
 
-    authRouter.get("/logout", function(req, res) {
-        req.logout();
-        res.redirect("/auth");
-    });
+    // --- /auth/logout route is now handled by Authenticator.ts
 
     return authRouter;
 }

@@ -1,5 +1,6 @@
 import { config } from "config";
 import fetch from "isomorphic-fetch";
+import ServerError from "../Components/Dataset/Add/Errors/ServerError";
 
 export default async function request(
     method: string,
@@ -29,15 +30,9 @@ export default async function request(
     if (response.status >= 200 && response.status < 300) {
         // wrapping this in try/catch as the request succeeded
         // this is just haggling over response content
-        try {
-            return await response.json();
-        } catch (e) {
-            try {
-                return await response.text();
-            } catch (e) {
-                return;
-            }
-        }
+        return await response.json();
     }
-    throw new Error(await response.text());
+    // --- get responseText and remove any HTML tags
+    const responseText = (await response.text()).replace(/<(.|\n)*?>/g, "");
+    throw new ServerError(responseText, response.status);
 }

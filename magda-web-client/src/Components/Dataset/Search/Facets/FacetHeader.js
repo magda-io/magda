@@ -111,9 +111,7 @@ class FacetHeader extends Component {
             } else {
                 return (
                     <span>
-                        {`${this.props.title}s : ${
-                            this.props.activeOptions.length
-                        }`}{" "}
+                        {`${this.props.title}s : ${this.props.activeOptions.length}`}{" "}
                     </span>
                 );
             }
@@ -205,6 +203,7 @@ class FacetHeader extends Component {
                     } ${this.props.isOpen ? "is-open" : ""}`}
                     onClick={this.props.onClick}
                     aria-label={this.calculateAltText()}
+                    disabled={this.props.disabled}
                 >
                     <img
                         className="facet-icon"

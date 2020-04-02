@@ -37,6 +37,10 @@
             "title": "The frequency at which the dataset is published.",
             "type": "string"
         },
+        "accrualPeriodicityRecurrenceRule": {
+            "title": "The recurrence rule that describes the frequency at which the dataset is published. Only used when `accrualPeriodicity`'s value is `custom`",
+            "type": "string"
+        },
         "spatial": {
             "title": "Spatial coverage of the dataset.",
             "type": "string"
@@ -69,8 +73,7 @@
             "items": {
                 "type": "string",
                 "minLength": 1
-            },
-            "minItems": 1
+            }
         },
         "contactPoint": {
             "title": "Free-text account of who to contact about this dataset.",
@@ -81,106 +84,9 @@
             "type": "string",
             "format": "uri"
         },
-        "conformsTo": {
-            "title": "Data Standard",
-            "description": "URI or description to identify a standardized specification the dataset conforms to",
+        "defaultLicense": {
+            "title": "Default license for any distributions contained by this dataset.",
             "type": "string"
-        },
-        "creation": {
-            "title": "Data creation metadata",
-            "type": "object",
-            "properties": {
-                "isInternallyProduced": {
-                    "title": "Was it internally produced by the metadata?",
-                    "type": "boolean"
-                },
-                "mechanism": {
-                    "title": "How was it produced?",
-                    "type": "string"
-                },
-                "sourceSystem": {
-                    "title": "Source system that was used to produce this metadata.",
-                    "type": "string"
-                },
-                "likelihoodOfRelease": {
-                    "title": "How likely is it to be released as open data?",
-                    "type": "string"
-                },
-                "isOpenData": {
-                    "title": "Is it already released as open data?",
-                    "type": "boolean"
-                },
-                "affiliatedOrganisation": {
-                    "title": "Was this dataset produced collaborating with other organisations?",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "accessLevel": {
-            "description": "The degree to which this dataset could be made publicly-available, regardless of whether it has been made available. Choices: public (Data asset is or could be made publicly available to all without restrictions), restricted public (Data asset is available under certain use restrictions), or non-public (Data asset is not available to members of the public)",
-            "title": "Public Access Level",
-            "type": "string"
-        },
-        "importance": {
-            "title": "How important is this dataset?",
-            "type": "string"
-        },
-        "status": {
-            "title": "Current status. E.g. active, retired",
-            "type": "string"
-        },
-        "informationSecurity": {
-            "title": "Metadata about information security",
-            "type": "object",
-            "properties": {
-                "disseminationLimits": {
-                    "title": "Any sensitivity DLMs. See https://www.protectivesecurity.gov.au/informationsecurity/Documents/AustralianGovernmentclassificationsystem.pdf for more details.",
-                    "type": "array",
-                    "items": {
-                        "type": "string",
-                        "enum": [
-                            "For Official Use Only",
-                            "Sensitive",
-                            "Sensitive: Personal",
-                            "Sensitive: Legal",
-                            "Sensitive: Cabinet",
-                            "Sensitive: Commercial"
-                        ]
-                    }
-                },
-                "classification": {
-                    "title": "Security classification. See https://www.protectivesecurity.gov.au/informationsecurity/Documents/AustralianGovernmentclassificationsystem.pdf for more details.",
-                    "type": "string",
-                    "enum": [
-                        "UNCLASSIFIED",
-                        "PROTECTED",
-                        "CONFIDENTIAL",
-                        "SECRET",
-                        "TOP SECRET"
-                    ]
-                }
-            }
-        },
-        "metadata": {
-            "title": "Metadata about metadata of the dataset.",
-            "type": "object",
-            "properties": {
-                "format": {
-                    "title": "Format metadata exists in. E.g. word document, xml etc.",
-                    "type": "string"
-                },
-                "standard": {
-                    "title": "Standard metadata conforms to. E.g. ISO 19114, RDF etc.",
-                    "type": "string"
-                },
-                "location": {
-                    "title": "Location where it is kept at.",
-                    "type": "string"
-                }
-            }
         }
     },
     "additionalProperties": false

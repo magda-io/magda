@@ -1,11 +1,13 @@
-import * as express from "express";
+import express from "express";
 import { Router } from "express";
-import * as _ from "lodash";
+import _ from "lodash";
 import Database from "./Database";
-import { User } from "@magda/typescript-common/dist/authorization-api/model";
-import * as request from "request-promise-native";
-import * as bodyParser from "body-parser";
-import * as objectPath from "object-path";
+import { User } from "magda-typescript-common/src/authorization-api/model";
+import { getUserSession } from "magda-typescript-common/src/session/GetUserSession";
+import OpaCompileResponseParser from "magda-typescript-common/src/OpaCompileResponseParser";
+import request from "request-promise-native";
+import bodyParser from "body-parser";
+import objectPath from "object-path";
 
 export interface OpaRouterOptions {
     opaUrl: string;
@@ -154,8 +156,17 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
         normaliseInputField(reqData);
 
         reqData.input.user = userInfo;
+        reqData.input.user.roles = userInfo.roles.map(role => role.id);
+
+        const sessionClaim = getUserSession(req, jwtSecret).valueOr({});
+
+        reqData.input.user.session = sessionClaim.session;
+
+        reqData.input.timestamp = Date.now();
 
         reqOpts.json = reqData;
+
+        //console.log(JSON.stringify(reqOpts, null, 2));
 
         try {
             // -- request's pipe api doesn't work well with chunked response
@@ -163,7 +174,24 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                 `${opaUrl}v1${req.path}`,
                 reqOpts
             );
-            res.status(fullResponse.statusCode).send(fullResponse.body);
+            if (
+                req.path === "/compile" &&
+                req.query.printRule &&
+                fullResponse.statusCode === 200
+            ) {
+                // --- output human readable rules for debugging / investigation
+                // --- AST is good for a program to process but too long for a human to read
+                // --- query string parameter `printRule` contains the rule full name that you want to output
+                const parser = new OpaCompileResponseParser();
+                parser.parse(fullResponse.body);
+                res.status(fullResponse.statusCode).send(
+                    parser.evaluateRuleAsHumanReadableString(
+                        req.query.printRule
+                    )
+                );
+            } else {
+                res.status(fullResponse.statusCode).send(fullResponse.body);
+            }
         } catch (e) {
             console.error(e);
             res.status(500).send(`Failed to proxy request to OPA`);

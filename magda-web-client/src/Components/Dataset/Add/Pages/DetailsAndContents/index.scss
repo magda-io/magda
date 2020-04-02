@@ -1,0 +1,113 @@
+@import "variables";
+@import "./pancake/sass/core.scss";
+
+.dataset-add-meta-data-pages {
+    .dataset-details-and-contents-page {
+        h2 {
+            font-size: 38px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.61;
+            letter-spacing: normal;
+            color: #484848;
+            margin-top: 60px;
+            margin-bottom: 80px;
+        }
+        h3 {
+            font-size: 29px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.03;
+            letter-spacing: normal;
+            color: #484848;
+            padding-bottom: 15px;
+        }
+
+        h4 {
+            font-size: 16px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.25;
+            letter-spacing: normal;
+            color: #484848;
+        }
+
+        .question-title {
+            margin-bottom: 58px;
+        }
+
+        .question-language {
+            margin-bottom: 72px;
+        }
+
+        .question-keyword {
+            margin-bottom: 50px;
+        }
+        .question-theme {
+            margin-bottom: 49px;
+        }
+
+        .question-description {
+            margin-bottom: 100px;
+            .tooltip-root {
+                max-width: 728px;
+            }
+        }
+
+        .question-issue-date {
+            h4 {
+                font-size: 16px;
+                font-weight: normal;
+                font-style: normal;
+                font-stretch: normal;
+                line-height: 1.25;
+                letter-spacing: normal;
+                color: #484848;
+                position: relative;
+            }
+            .inner {
+                width: 400px;
+                left: 15px;
+            }
+        }
+
+        .question-recent-modify-date {
+            h4 {
+                font-size: 16px;
+                font-weight: normal;
+                font-style: normal;
+                font-stretch: normal;
+                line-height: 1.25;
+                letter-spacing: normal;
+                color: #484848;
+            }
+        }
+
+        .date-row {
+            margin-bottom: 68px;
+        }
+
+        .question-update-frequency {
+            margin-bottom: 68px;
+        }
+
+        .question-time-period {
+            margin-bottom: 50px;
+        }
+
+        .question-dataset-status {
+            margin-bottom: 50px;
+        }
+
+        .question-dataset-superseded-by {
+            margin-bottom: 50px;
+        }
+
+        .question-dataset-retire-reason {
+            margin-bottom: 50px;
+        }
+    }
+}

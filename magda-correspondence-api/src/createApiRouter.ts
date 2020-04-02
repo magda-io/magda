@@ -1,12 +1,12 @@
-import * as express from "express";
-import * as emailValidator from "email-validator";
-import * as _ from "lodash";
+import express from "express";
+import emailValidator from "email-validator";
+import _ from "lodash";
 
-import RegistryClient from "@magda/typescript-common/dist/registry/RegistryClient";
-import { Record } from "@magda/typescript-common/dist/generated/registry/api";
-import unionToThrowable from "@magda/typescript-common/dist/util/unionToThrowable";
+import RegistryClient from "magda-typescript-common/src/registry/RegistryClient";
+import { Record } from "magda-typescript-common/src/generated/registry/api";
+import unionToThrowable from "magda-typescript-common/src/util/unionToThrowable";
 
-import { installStatusRouter } from "@magda/typescript-common/dist/express/status";
+import { installStatusRouter } from "magda-typescript-common/src/express/status";
 
 import { Router } from "express";
 import { sendMail } from "./mail";
@@ -186,9 +186,7 @@ export default function createApiRouter(
 
                 const validEmail = emails.length > 0;
                 if (!validEmail) {
-                    body.note = `You are getting this email because the contact point '${
-                        dcatDatasetStrings.contactPoint
-                    }' on the dataset and ‘${datasetPublisherEmail}’ on the organisation are not valid email addresses`;
+                    body.note = `You are getting this email because the contact point '${dcatDatasetStrings.contactPoint}' on the dataset and ‘${datasetPublisherEmail}’ on the organisation are not valid email addresses`;
                 }
 
                 const recipient = validEmail
@@ -230,7 +228,7 @@ export default function createApiRouter(
     function getDataset(datasetId: string): Promise<Record> {
         return options.registry
             .getRecord(
-                encodeURIComponent(datasetId),
+                datasetId,
                 ["dcat-dataset-strings"],
                 ["dataset-publisher"],
                 true

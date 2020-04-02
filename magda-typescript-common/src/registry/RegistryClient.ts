@@ -6,7 +6,7 @@ import {
     RecordAspectsApi,
     WebHooksApi
 } from "../generated/registry/api";
-import * as URI from "urijs";
+import URI from "urijs";
 import retry from "../retry";
 import formatServiceError from "../formatServiceError";
 import createServiceError from "../createServiceError";
@@ -15,6 +15,7 @@ export interface RegistryOptions {
     baseUrl: string;
     maxRetries?: number;
     secondsBetweenRetries?: number;
+    tenantId: number;
 }
 
 export interface PutResult {
@@ -37,12 +38,20 @@ export default class RegistryClient {
     protected recordAspectsApi: RecordAspectsApi;
     protected maxRetries: number;
     protected secondsBetweenRetries: number;
+    protected tenantId: number;
+    protected jwt: string | undefined;
 
     constructor({
         baseUrl,
         maxRetries = 10,
-        secondsBetweenRetries = 10
+        secondsBetweenRetries = 10,
+        tenantId
     }: RegistryOptions) {
+        if (tenantId === undefined) {
+            throw Error("A tenant id must be defined.");
+        }
+
+        this.tenantId = tenantId;
         const registryApiUrl = baseUrl;
         this.baseUri = new URI(baseUrl);
         this.maxRetries = maxRetries;
@@ -64,7 +73,8 @@ export default class RegistryClient {
     }
 
     getAspectDefinitions(): Promise<AspectDefinition[] | Error> {
-        const operation = () => () => this.aspectDefinitionsApi.getAll();
+        const operation = () => () =>
+            this.aspectDefinitionsApi.getAll(this.tenantId);
         return <any>retry(
             operation(),
             this.secondsBetweenRetries,
@@ -89,7 +99,14 @@ export default class RegistryClient {
         dereference?: boolean
     ): Promise<Record | Error> {
         const operation = (id: string) => () =>
-            this.recordsApi.getById(id, aspect, optionalAspect, dereference);
+            this.recordsApi.getById(
+                encodeURIComponent(id),
+                this.tenantId,
+                aspect,
+                optionalAspect,
+                dereference,
+                this.jwt
+            );
         return <any>retry(
             operation(id),
             this.secondsBetweenRetries,
@@ -98,7 +115,9 @@ export default class RegistryClient {
                 console.log(
                     formatServiceError("Failed to GET records.", e, retriesLeft)
                 ),
-            e => e.response.statusCode !== 404
+            e => {
+                return !e.response || e.response.statusCode !== 404;
+            }
         )
             .then(result => result.body)
             .catch(createServiceError);
@@ -109,16 +128,20 @@ export default class RegistryClient {
         optionalAspect?: Array<string>,
         pageToken?: string,
         dereference?: boolean,
-        limit?: number
+        limit?: number,
+        aspectQueries?: string[]
     ): Promise<RecordsPage<I> | Error> {
         const operation = (pageToken: string) => () =>
             this.recordsApi.getAll(
+                this.tenantId,
                 aspect,
                 optionalAspect,
                 pageToken,
                 undefined,
                 limit,
-                dereference
+                dereference,
+                aspectQueries,
+                this.jwt
             );
         return <any>retry(
             operation(pageToken),
@@ -137,7 +160,13 @@ export default class RegistryClient {
         aspect?: Array<string>,
         limit?: number
     ): Promise<string[] | Error> {
-        const operation = () => this.recordsApi.getPageTokens(aspect, limit);
+        const operation = () =>
+            this.recordsApi.getPageTokens(
+                this.tenantId,
+                aspect,
+                limit,
+                this.jwt
+            );
         return <any>retry(
             operation,
             this.secondsBetweenRetries,

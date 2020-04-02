@@ -7,19 +7,37 @@ import { config } from "config";
 import { Medium, Small } from "./Responsive";
 import Spinner from "Components/Common/Spinner";
 
-export const defaultDataSourcePreference = [
-    "WMS",
-    "ESRI REST",
-    "GeoJSON",
-    "WFS",
-    "csv-geo-au",
-    "KML",
-    "KMZ"
+const defaultDataSourcePreference = [
+    {
+        format: "WMS"
+    },
+    {
+        format: "ESRI REST",
+        urlRegex: /MapServer/
+    },
+    {
+        format: "GeoJSON"
+    },
+    {
+        format: "WFS"
+    },
+    {
+        format: "csv-geo-au"
+    },
+    {
+        format: "KML"
+    },
+    {
+        format: "KMZ"
+    }
 ];
 
 export const isSupportedFormat = function(format) {
+    const dataSourcePreference = defaultDataSourcePreference.map(
+        preferenceItem => preferenceItem.format
+    );
     return (
-        defaultDataSourcePreference
+        dataSourcePreference
             .map(item => item.toLowerCase())
             .filter(item => format.trim() === item).length !== 0
     );
@@ -34,7 +52,6 @@ const determineDistribution = memoize(function determineDistribution(
     if (!dataSourcePreference || !dataSourcePreference.length) {
         dataSourcePreference = defaultDataSourcePreference;
     }
-    dataSourcePreference = dataSourcePreference.map(item => item.toLowerCase());
     let selectedDis = null,
         preferenceOrder = -1;
     distributions
@@ -45,10 +62,29 @@ const determineDistribution = memoize(function determineDistribution(
         )
         .forEach(dis => {
             const format = dis.format.toLowerCase();
-            const distributionPreferenceOrder = dataSourcePreference.indexOf(
-                format
+            const dataUrl = dis.downloadURL ? dis.downloadURL : dis.accessURL;
+            const distributionPreferenceOrder = dataSourcePreference.findIndex(
+                preferenceItem => {
+                    if (preferenceItem.format.toLowerCase() !== format) {
+                        return false;
+                    }
+                    if (preferenceItem.urlRegex) {
+                        if (dataUrl.match(preferenceItem.urlRegex)) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    } else {
+                        return true;
+                    }
+                }
             );
             if (distributionPreferenceOrder === -1) return;
+            if (
+                dataSourcePreference[distributionPreferenceOrder] ===
+                "ESRI REST".toLocaleLowerCase()
+            ) {
+            }
             if (
                 preferenceOrder === -1 ||
                 distributionPreferenceOrder < preferenceOrder
@@ -170,7 +206,7 @@ class DataPreviewMap extends Component {
         if (!selectedDistribution) return null; // hide the section if no data available
 
         return (
-            <div>
+            <div className="no-print">
                 <h3 className="section-heading">Map Preview</h3>
                 <Small>
                     <DataPreviewMapOpenInNationalMapButton

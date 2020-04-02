@@ -4,9 +4,9 @@ import DockerSetup._
 name := "magda-registry-api"
 
 libraryDependencies ++= {
-  val akkaV       = "2.5.20"
-  val akkaHttpV   = "10.1.7"
-  val scalaTestV  = "3.0.1"
+  val akkaV       = "2.5.23"
+  val akkaHttpV   = "10.1.8"
+  val scalaTestV  = "3.0.8"
   Seq(
     "com.typesafe.akka" %% "akka-actor" % akkaV,
     "com.typesafe.akka" %% "akka-stream" % akkaV,
@@ -23,18 +23,17 @@ libraryDependencies ++= {
     "io.circe" %% "circe-java8" % "0.8.0",
     "org.gnieh" %% "diffson-spray-json" % "2.1.2",
     "net.virtual-void" %%  "json-lenses" % "0.6.2",
-    "com.auth0" % "java-jwt" % "3.7.0",
     "com.typesafe.akka" %% "akka-testkit" % akkaV % "test",
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpV % "test",
     "org.flywaydb" % "flyway-core" % "4.2.0" % "test",
-    "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % "test"
+    "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % "test",
+    "com.github.everit-org.json-schema" % "org.everit.json.schema" % "1.12.0",
+    "jakarta.xml.bind" % "jakarta.xml.bind-api" % "2.3.2",
+    "org.glassfish.jaxb" % "jaxb-runtime" % "2.3.2"
   )
 }
 
 mainClass in Compile := Some("au.csiro.data61.magda.registry.RegistryApp")
-
-EclipseKeys.withJavadoc := true
-EclipseKeys.withSource := true
 
 setupDocker(stage)
 

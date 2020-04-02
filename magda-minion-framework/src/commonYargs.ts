@@ -1,6 +1,6 @@
-import * as yargs from "yargs";
+import yargs from "yargs";
 
-import addJwtSecretFromEnvVar from "@magda/typescript-common/dist/session/addJwtSecretFromEnvVar";
+import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
 
 export type MinionArguments = {
     listenPort: string | number;
@@ -8,6 +8,8 @@ export type MinionArguments = {
     jwtSecret: string;
     userId: string;
     registryUrl: string;
+    enableMultiTenant: boolean;
+    tenantUrl: string;
     retries: string | number;
 };
 
@@ -63,6 +65,29 @@ export default function commonYargs<
                 process.env.REGISTRY_URL ||
                 process.env.npm_package_config_registryUrl ||
                 "http://localhost:6101/v0"
+        })
+        .option("enableMultiTenant", {
+            describe: "Whether to run in multi-tenant mode.",
+            type: "boolean",
+            default:
+                typeof process.env.ENABLE_MULTI_TENANTS !== "undefined"
+                    ? process.env.ENABLE_MULTI_TENANTS.toLowerCase() === "true"
+                        ? true
+                        : false
+                    : typeof process.env
+                          .npm_package_config_enableMultiTenants !== "undefined"
+                    ? process.env.npm_package_config_enableMultiTenants
+                        ? true
+                        : false
+                    : false
+        })
+        .option("tenantUrl", {
+            describe: "The base url for the tenant service",
+            type: "string",
+            default:
+                process.env.TENANT_URL ||
+                process.env.npm_package_config_tenantUrl ||
+                "http://localhost:6130/v0"
         })
         .option("retries", {
             describe: "The number of times to retry calling the registry",

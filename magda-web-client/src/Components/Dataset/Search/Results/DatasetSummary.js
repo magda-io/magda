@@ -75,10 +75,13 @@ export default class DatasetSummary extends Component {
             }
         }
 
-        if (defined(dataset.creation) && defined(dataset.creation.isOpenData)) {
+        if (
+            defined(dataset.provenance) &&
+            defined(dataset.provenance.isOpenData)
+        ) {
             datasetSummaryItems.push(
                 <div className="dataset-summary-type">
-                    {dataset.creation.isOpenData ? "Public" : "Private"}
+                    {dataset.provenance.isOpenData ? "Public" : "Private"}
                 </div>
             );
         }
@@ -86,7 +89,7 @@ export default class DatasetSummary extends Component {
         datasetSummaryItems = datasetSummaryItems.reduce(
             (arr, nextSummaryItem, idx) =>
                 idx < datasetSummaryItems.length - 1
-                    ? [...arr, nextSummaryItem, <Divider />]
+                    ? [...arr, nextSummaryItem, <Divider key={idx} />]
                     : [...arr, nextSummaryItem],
             []
         );

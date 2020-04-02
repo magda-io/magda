@@ -1,4 +1,6 @@
 @import "variables";
+@import "./pancake/sass/core.scss";
+
 .data-preview-vis {
     .data-preview-vis_chart {
         margin-left: -16px;
@@ -67,5 +69,10 @@
                 );
             }
         }
+    }
+    .partial-data-message {
+        color: #313131;
+        font-size: 1rem;
+        margin-top: 10px;
     }
 }

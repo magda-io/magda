@@ -1,5 +1,5 @@
-import { WebHook } from "@magda/typescript-common/dist/generated/registry/api";
-import Registry from "@magda/typescript-common/dist/registry/AuthorizedRegistryClient";
+import { WebHook } from "magda-typescript-common/src/generated/registry/api";
+import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 
 import MinionOptions from "./MinionOptions";
 import getWebhookUrl from "./getWebhookUrl";
@@ -15,9 +15,10 @@ export default async function registerNewWebhook(
 
     const webHookConfig = buildWebhookConfig(options);
 
+    const userId = "b1fddd6f-e230-4068-bd2c-1a21844f1598";
     const newWebHook: WebHook = {
         id: options.id,
-        userId: 0, // TODO: When this matters
+        userId,
         name: options.id,
         active: true,
         url: getWebhookUrl(options),

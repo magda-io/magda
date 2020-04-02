@@ -2,85 +2,159 @@
     <iframe width="560" height="315" src="https://www.youtube.com/embed/gcwqjD-bnhk" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </p>
 
-# Let your data mingle
+# A federated catalog for all of your data
 
-Government agencies, private companies and research organisations generally do a great job of _seeing_ their data as an asset, but they have to overcome many difficulties to _use_ it as one. Creating quality data and metadata is a difficult, manual and thankless process, and once a dataset is created it's hard for data creators to see how their data is being used, or whether it's being used at all. Using data is no easier - data tends to sit inside silos formed by the teams who collect it, invisible and inaccessible to others in the organisation. Even if datasets are able to be seen and used they're hard to find due to poor metadata and search functionality, and once a dataset is found there's no way to know whether it's reliable or up to date.
+The better an organization understands and uses its data, the better it is able to make decisions and discover new opportunities. Many organizations hold massive quantities of data, but it often gets stuck inside organizational silos where its importance is invisible, origins untracked, and existence unknown to those elsewhere in the organization who could improve or derive further value from it.
 
-## A platform for every part of the data landscape
+Magda is a data catalog system that provides a single place where all of your organization's data can be catalogued, enriched, searched, tracked and prioritized - whether big or small, internally or externally sourced, available as files, databases or APIs. With Magda, your data analysts, scientists and engineers can easily find useful data with powerful discovery features, properly understand what they're using thanks to metadata enhancement and authoring tools, and make data-informed decisions with confidence as a result of history tracking and duplication detection.
 
-Magda is an open-source software platform designed to assist in all areas of the data ecosystem, from collection and authoring, through internal discovery and use, all the way to sharing inter-organisation or publishing on an open data portal. Originally developed as an open data aggregator for [data.gov.au](https://data.gov.au), after extensive research how data is used in the publich, research and private sector, it is now being extended into a set of components that can be arranged for many use-cases - internal private data portals, public open-data aggregators, limited data access portals for organisational partners, or any combination, with various users able to access different datasets depending on their permission level.
+### Let your data mingle!
+
+Magda is designed around the concept of _federation_ - providing a single view across all data of interest to a user, regardless of where the data is stored or where it was sourced from. Where other data catalogs are designed around their creators' other data products or implement federation by simply copying external datasets internally, federating over many data sources of any format is at the core of how Magda works. The system is able to quickly crawl external data sources, track changes, make automatic enhancements and push notifications when changes occur, giving your data users a one-stop shop to discover all the data that's available to them.
+
+<p class="center">
+    <img src="./assets/magda-mingling.jpg">
+</p>
+
+### Don't neglect your small data
+
+Investment in data often focuses on extracting value _big data_ - big, complex datasets that are already known to be of high value. This focus comes at the expense of _small data_ - the myriad Excel, CSV and even PDF files that are critical to the operations of every organization, but unknown outside the teams and individuals that use them.
+
+This results in squandered opportunities as small datasets go undiscovered by other teams who could make use of or combine them, fragmentation as files are shared and modified via untracked, ad-hoc methods, and waste as datasets are collected or acquired multiple times, often at extreme expense.
+
+<p class="center">
+    <img src="./assets/magda-puzzle.jpg">
+</p>
+
+Magda is designed with the flexibility to work with _all_ of an organisation's data assets, big or small - it can be used as a catalog for big data in a data lake, an easily-searchable repository for an organization's small data files, an aggregator for multiple external data sources, or all at once.
 
 ## Features
 
-#### Powerful search
+### Discovery
 
-The easiest way to find a dataset is by searching for it, and Magda puts its search functionality front and centre. Magda is able to rate datasets by their quality and return the best ones at the top of the search, understand synonyms and acronyms, as well as provide a number of advanced filters including the ability to search for datasets that affect a certain spatial region or a time period.
+The easiest way to find a dataset is by searching for it, and Magda puts its search functionality front and centre. Magda was originally developed for the Australian government's federal open data portal [data.gov.au](https://data.gov.au), providing a single place for Australia's citizens, scientists, journalists and businesses to discover and access 80,000+ datasets, from linked data APIs to small Excel files.
+
+When users search they expect the result to be the best result for the meaning of their query, not simply the one with the most keyword matches. Magda is able to return higher-quality datasets above lower-quality ones, understand synonyms and acronyms, as well as search by time or geospatial extent.
 
 <p class="center">
-    <img src="./assets/filter-screenshot.png">
+    <video autoplay="false" loop="true" controls>
+        <source src="/assets/searchdemo420p.webm" type="video/webm" >
+    </video>
 </p>
 
-#### Easy federation
+### Federation
 
-Magda was originally developed to power [data.gov.au](https://data.gov.au), which aggregates over twenty different sources, and as a result being able to federate with other data sources is a first-class capability. Magda can be used to seamlessly combine many open data portals into one, easily-searchable repository, or an internal data registry can be enhanced by importing relevant open data sources and having open datasets appear beside private ones.
+Magda is designed from the ground-up with the ability to pull data from many different sources into one easily searchable catalog in which all datasets are first-class citizens, regardless of where they came from. Magda can accept metadata from our easy-to-use cataloging process, existing Excel or CSV-based data inventories, existing metadata APIs such as CKAN or Data.json, or have data pushed to it from your systems via its REST API.
 
-#### Rich previews
+In Magda all data is first-class, regardless of its source. Data in Magda is combined into one search index, with history tracking and even webhook notifications when metadata records are changed.
 
-Ensure that your users can quickly determine if a dataset is useful for them with charting, spatial preview with [TerriaJS](https://terria.io) and automatic charting of tabular data.
+### Previews
+
+Easily determine if a dataset is useful with charting, spatial preview with [TerriaJS](https://terria.io) and automatic charting of tabular data.
 
 <p class="center">
     <img src="./assets/screenshot-preview.png">
 </p>
 
-#### Automatic metadata enhancement
+### Metadata enhancement
 
-The metadata that describes datasets is often poorly formatted or completely absent, making them difficult to search for and understand. Magda is able to enhance the metadata of both locally hosted and external datasets in by checking for broken links, normalising formats, calculating quality and determining the best means of visualisation.
+Authoring of high-quality metadata has historically been difficult and time-consuming, and as a result metadata around datasets is often poorly formatted or completely absent, making them difficult to search for and hard to understand once found.
 
-#### Open architecture
-
-Magda is designed as a set of microservices that allow extension by simply adding more services into the mix. Extensions to collect data from different data sources or enhance metadata in new ways can be written in any language and added or removed from a running deployment without downtime and no effect on upgrades of the core product.
+Magda is able to automatically derive and enhance metadata, without the underlying data itself ever being transmitted to a Magda server. For datasets catalogued directly, our "Add Dataset" process is able to read and derive data from files directly in the browser, without the data itself ever having to leave the user's machine, and for both internal and external datasets our minion framework is able check for broken links, normalize formats, calculate quality, determine the best means of visualisation and more. This framework for enhancement is open and extensible, allowing to build your own enhancement processes using any language that can be deployed as a docker container.
 
 <p class="center">
-    <img src="./docs/magda-basic-architecture.png">
+    <video autoplay="false" loop="true" controls>
+        <source src="/assets/metadatacomplete420p.webm" type="video/webm" >
+    </video>
 </p>
 
-#### Easy set up and upgrades
+### Open architecture
 
-Magda uses Kubernetes and Helm to allow for simple installation and minimal downtime upgrades with a single command. Deploy it to the cloud, your on-premises setup or even your local machine with the same set of commands.
+Magda is designed as a set of microservices that allow extension by simply adding more services into the mix. Extensions to collect data from different data sources or enhance metadata in new ways can be written in any language and added or removed from a running deployment with little downtime and no effect on upgrades of the core product.
 
-## Currently Under Development
+<p class="center">
+    <img src="./assets/marketecture.svg">
+</p>
 
-In the last quarter of 2018 the Magda team was involved in a massive research effort to determine and find out how to solve the biggest pains facing users of data in the public, private and research sectors. As a result, working with our partners in the Australia's Digital Transformation Agency, Department of Agriculture and Department of the Environment, we're expanding the Magda platform with these features:
+### Easy set up and upgrades
 
-#### A better way to publish data
+Magda uses Kubernetes and Helm to allow for simple installation and minimal downtime upgrades with a single step. Deploy it to the cloud, your on-premises setup or even your local machine with the same set of commands.
+
+### Federated authentication
+
+Based on [PassportJS](http://www.passportjs.org/), Magda's authentication system is able to integrate with a wide and growing range of different providers. Currently supported are:
+
+-   Google
+-   Facebook
+-   CKAN
+-   AAF
+-   VANguard (WSFed)
+-   ESRI Portal
+
+<p class="center">
+    <video autoplay="false" loop="true" controls>
+        <source src="/assets/logincomplete420p.webm" type="video/webm" >
+    </video>
+</p>
+
+## Under Development
+
+We're currently finishing off these features - you can see the full roadmap [here](/docs/roadmap).
+
+### A better way to manually catalog datasets
 
 Authoring a quality dataset is hard - not only does it involve a lot of manual work, but it also requires a great deal of up-front knowledge and data literacy. We're building a guided, opinionated and heavily automated publishing process into Magda that will result in an easier time for those who publish data, and higher metadata quality to make it easier to search and use datasets for data users downstream.
 
-#### Keeping data users up to date
+<p class="center">
+    <video autoplay="false" loop="true" controls>
+        <source src="/assets/mapdemo420p.webm" type="video/webm" >
+    </video>
+</p>
 
-Confidence in data-driven policy and decision making is compromised if users can't be sure they have the most recent version of a dataset. We're building in features to keep data users notified when datasets that they use are updated, keep track of duplicates, and reduce the need for duplication by enabling more analysis to be done without the need for downloading artifacts directly.
+### Reducing duplication
 
-#### See the impact of your data
+Often the use of ad-hoc sharing mechanisms such as email or USB disks results in multiple copies of a dataset being modified in parallel, and poor historical visibility of an organization's data holdings leads to external data being bought multiple times by different teams. We're adding features to automatically identify and mitigate duplication, without the need for the data to actually be stored on Magda itself.
 
-A common complaint among data publishers is that they don't know how, how much or even if their data is used in order to prioritise their work. This gets worse at an organisational level: managers aren't able to make decisions on how to prioritise investments in data because they don't know how their existing data is being used. Magda will collect analytics on how data is used, at both a fine-grained and high level. Magda will also expand on its existing ability to collect feedback and foster communities around data.
+### Authorization: Share data with confidence
 
-## Be a part of the future
+We're adding an integrated, customizable authorization system into Magda based on [Open Policy Agent](https://www.openpolicyagent.org/), which will allow:
 
-We're currently looking for more co-creation partners, so if you're part of an organisation that uses data and this sounds like something you'd like to be a part of, we'd love to talk to you! Please get in contact with us at [contact@magda.io](mailto:contact@magda.io).
+-   Datasets to be restricted based on established access-control frameworks (e.g. role-based), or custom policies specified by your organization
+-   Federated authorization - Magda will be able not only to pull data from an external source, but also mimic the same authorization policies, so that what you see from that system on Magda is exactly the same as if you logged into it directly
+-   Seamless integration with search - only get back results that you have access to
+
+## Work with us
+
+We're always looking to help more organizations use their data better with Magda!
+
+If you'd like to become a co-creation partner, want our help getting up and running, or want to sponsor specific features, we'd love to talk to you! Please get in contact with us at [contact@magda.io](mailto:contact@magda.io).
+
+Magda is also completely open-source and can be used for free - to get it running, please see the instructions [below](#want-to-get-it-running-yourself). Don't forget to let us know you're using it!
+
+## Current Users
+
+-   [Digital Transformation Agency](https://www.dta.gov.au/) - [data.gov.au](https://data.gov.au)
+-   [CSIRO Land and Water](https://www.csiro.au/en/Research/LWF) - [Knowledge Network V2](https://knowledgenet.co/)
+-   [Department of Agriculture](http://www.agriculture.gov.au/) - Private Instance
+-   [Department of the Environment and Energy](https://www.environment.gov.au/) - Private Instance
+-   [NSW Department of Customer Service](https://www.customerservice.nsw.gov.au/) - [NSW Spatial Digital Twin](https://nsw.digitaltwin.terria.io/)
+-   [QLD Department of Natural Resources, Mines and Energy](https://www.dnrme.qld.gov.au/) - Under Development
+
+<p class="center">
+    <img src="./assets/magdascreenshots.png">
+</p>
 
 ## See it in action
 
-Magda currently powers Australia's open data portal [data.gov.au](https://data.gov.au), serving tens of thousands of users per week.
-
-<p class="center">
-    <img src="./assets/search-screenshot.png">
-</p>
-
-Magda is also used by CSIRO Land and Water's [Knowledge Network](https://knowledgenet.co/), as well as the Australian Federal Department of Agriculture and Water Resources and Department of the Environment, in internal-only instances.
+A demo site exists at [demo.dev.magda.io](https://demo.dev.magda.io). This is hosted on pre-emptible instances and may go down for short periods, if so wait 5-10 minutes and it should come back up again. For an example of Magda in production, see [data.gov.au](https://data.gov.au).
 
 ## Want to get it running yourself?
 
 [Try the latest version](https://github.com/magda-io/magda-config), or [build and run from source](https://magda.io/docs/building-and-running)
+
+## Want to build your connectors / minions?
+
+You can extend Madga's functionality by [building your own customised connectors / minions](https://magda.io/docs/how-to-build-your-own-connectors-minions).
 
 ## Latest Release
 
@@ -100,6 +174,6 @@ We welcome new contributors too! please check out our [Contributor's Guide](http
 
 -   [Our Github](https://github.com/magda-io/magda)
 -   [Our documentation](/docs)
--   [Magda API](https://search.data.gov.au/api/v0/apidocs/index.html)
+-   [Magda API](https://demo.dev.magda.io/api/v0/apidocs/index.html)
 
-The project was started by CSIRO [Data61](https://data61.csiro.au/) and Australia's [Department of Prime Minister and Cabinet](https://www.pmc.gov.au/). It's progressing thanks to Data61, the [Digital Transformation Agency](https://www.dta.gov.au/), the [Department of Agriculture and Water Resources](http://www.agriculture.gov.au/), the [Department of the Environment and Energy](https://www.environment.gov.au/) and [CSIRO Land and Water](https://www.csiro.au/en/Research/LWF).
+The project was started by CSIRO's [Data61](https://data61.csiro.au/) and Australia's [Department of Prime Minister and Cabinet](https://www.pmc.gov.au/). It's progressing thanks to Data61, the [Digital Transformation Agency](https://www.dta.gov.au/), the [Department of Agriculture](http://www.agriculture.gov.au/), the [Department of the Environment and Energy](https://www.environment.gov.au/) and [CSIRO Land and Water](https://www.csiro.au/en/Research/LWF).

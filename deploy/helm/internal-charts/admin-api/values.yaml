@@ -1,0 +1,5 @@
+image: {}
+resources:
+  requests:
+    cpu: 50m
+    memory: 50Mi

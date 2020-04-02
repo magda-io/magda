@@ -1,7 +1,26 @@
 @import "variables";
+@import "./pancake/sass/core.scss";
 
 .date-editor-wrapper {
-    border: 3px solid $AU-color-foreground-action;
     border-radius: 4px;
+    border: solid 1px #cccaca;
     display: inline-block;
+    padding: 1px 10px 1px 1px;
+}
+
+.date-editor-wrapper {
+    .DateRangePicker {
+        .DateInput_input:first-child {
+            padding-right: 5px;
+            width: 90px;
+        }
+    }
+}
+
+.date-editor-wrapper {
+    .DateRangePicker {
+        .DateInput {
+            width: 90px !important;
+        }
+    }
 }

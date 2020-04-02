@@ -2,7 +2,7 @@ const { curried2 } = require("jsverify/lib/utils");
 import { Record } from "../generated/registry/api";
 const lazyseq = require("lazy-seq");
 import uuid = require("uuid/v4");
-import * as _ from "lodash";
+import _ from "lodash";
 import jsc from "./jsverify";
 
 function fromCode(code: number) {
@@ -19,33 +19,41 @@ const charArb = jsc.integer(32, 0xff).smap(fromCode, toCode);
  * Generates a random string with characters greater than code 32 (so no random
  * TTY crap that can't be matched by any regex
  */
-export const stringArb = jsc
-    .array(charArb)
-    .smap(chars => chars.join(""), string => string.split(""));
+export const stringArb = jsc.array(charArb).smap(
+    chars => chars.join(""),
+    string => string.split("")
+);
 
 export const lowerCaseAlphaCharArb = jsc
     .integer(97, 122)
     .smap(fromCode, toCode);
 export const numArb = jsc.integer(48, 57).smap(fromCode, toCode);
 export const lcAlphaNumCharArb = jsc.oneof([numArb, lowerCaseAlphaCharArb]);
-export const lcAlphaNumStringArb = jsc
-    .array(lcAlphaNumCharArb)
-    .smap((arr: any) => arr.join(""), (string: string) => string.split(""));
-export const lcAlphaNumStringArbNe = jsc
-    .nearray(lcAlphaNumCharArb)
-    .smap((arr: any) => arr.join(""), (string: string) => string.split(""));
+export const lcAlphaNumStringArb = jsc.array(lcAlphaNumCharArb).smap(
+    (arr: any) => arr.join(""),
+    (string: string) => string.split("")
+);
+export const lcAlphaNumStringArbNe = jsc.nearray(lcAlphaNumCharArb).smap(
+    (arr: any) => arr.join(""),
+    (string: string) => string.split("")
+);
 
-export const lcAlphaStringArb = jsc
-    .array(lowerCaseAlphaCharArb)
-    .smap(chars => chars.join(""), string => string.split(""));
+export const lcAlphaStringArb = jsc.array(lowerCaseAlphaCharArb).smap(
+    chars => chars.join(""),
+    string => string.split("")
+);
 
-export const lcAlphaStringArbNe = jsc
-    .nearray(lowerCaseAlphaCharArb)
-    .smap(chars => chars.join(""), string => string.split(""));
+export const lcAlphaStringArbNe = jsc.nearray(lowerCaseAlphaCharArb).smap(
+    chars => chars.join(""),
+    string => string.split("")
+);
 
 export const peopleNameArb = jsc
     .tuple([lcAlphaStringArbNe, lcAlphaStringArbNe])
-    .smap(strArr => strArr.join(" "), string => string.split(" "));
+    .smap(
+        strArr => strArr.join(" "),
+        string => string.split(" ") as [string, string]
+    );
 
 const uuidArb: jsc.Arbitrary<string> = jsc.bless({
     generator: jsc.generator.bless(x => uuid()),
@@ -53,11 +61,15 @@ const uuidArb: jsc.Arbitrary<string> = jsc.bless({
     show: (x: string) => x
 });
 
+const intArb = jsc.integer(48, 57);
+
 export const recordArb = jsc.record<Record>({
     id: uuidArb,
     name: stringArb,
     aspects: jsc.suchthat(jsc.array(jsc.json), arr => arr.length <= 10),
-    sourceTag: jsc.constant(undefined)
+    sourceTag: jsc.constant(undefined),
+    tenantId: intArb,
+    authnReadPolicyId: jsc.constant(undefined)
 });
 
 export const specificRecordArb = (aspectArbs: {
@@ -67,7 +79,9 @@ export const specificRecordArb = (aspectArbs: {
         id: uuidArb,
         name: stringArb,
         aspects: jsc.record(aspectArbs),
-        sourceTag: jsc.constant(undefined)
+        sourceTag: jsc.constant(undefined),
+        tenantId: intArb,
+        authnReadPolicyId: jsc.constant(undefined)
     });
 
 const defaultSchemeArb = jsc.oneof([

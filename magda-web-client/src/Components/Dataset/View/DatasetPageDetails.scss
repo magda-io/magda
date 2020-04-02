@@ -1,0 +1,22 @@
+@import "variables";
+@import "./pancake/sass/core.scss";
+
+.au-page-alerts {
+    h3,
+    p {
+        margin: 3px;
+    }
+    .switch-tab-btn {
+        border: 0;
+        border-bottom: 1px solid $magda-red;
+        padding-bottom: 4px;
+        text-decoration: none;
+        color: $magda-red;
+        font-size: 1rem;
+        padding: 0;
+        &:hover,
+        &:focus {
+            cursor: pointer;
+        }
+    }
+}

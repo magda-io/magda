@@ -3,14 +3,14 @@ import "./DataQualityTooltip.scss";
 import React from "react";
 import { Link } from "react-router-dom";
 
-import Tooltip from "./Tooltip";
+import TooltipWrapper from "./TooltipWrapper";
 
 import helpIcon from "assets/help-24.svg";
 
 export default function DataQualityTooltip(props) {
     return (
-        <Tooltip
-            className="data-quality-tooltip"
+        <TooltipWrapper
+            className="data-quality-tooltip no-print"
             launcher={() => (
                 <Link to="/page/linked-data-rating">
                     <img
@@ -30,6 +30,6 @@ export default function DataQualityTooltip(props) {
                     </Link>
                 </React.Fragment>
             )}
-        </Tooltip>
+        </TooltipWrapper>
     );
 }

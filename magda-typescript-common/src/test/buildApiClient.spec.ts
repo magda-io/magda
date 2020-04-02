@@ -1,11 +1,11 @@
 import {} from "mocha";
-import * as sinon from "sinon";
-import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
-import * as yargs from "yargs";
+import sinon from "sinon";
+import chai from "chai";
+import chaiAsPromised from "chai-as-promised";
+import yargs from "yargs";
 import addJwtSecretFromEnvVar from "../session/addJwtSecretFromEnvVar";
 import mockAuthApiHost from "./mockAuthApiHost";
-import ApiClient from "src/authorization-api/ApiClient";
+import ApiClient from "../authorization-api/ApiClient";
 import mockUserDataStore from "./mockUserDataStore";
 
 chai.use(chaiAsPromised);
@@ -109,7 +109,6 @@ describe("Test ApiClient.ts", function() {
             argv.userId
         );
         const data = (await api.getUser(mockUserData[1].id)).valueOr(null);
-        debugger;
         expect(data).to.deep.equal(mockUserData[1]);
     });
 
@@ -172,22 +171,16 @@ describe("Test ApiClient.ts", function() {
         isAdmin: false
     };
 
-    it(`\`createUser\` should return 'Encountered error 401 when POSTing new user to ${
-        argv.authorizationApi
-    }' error if called without sepecifying user ID`, async function() {
+    it(`\`createUser\` should return 'Encountered error 401 when POSTing new user to ${argv.authorizationApi}' error if called without sepecifying user ID`, async function() {
         const api = new ApiClient(argv.authorizationApi);
         return expect(
             api.createUser(newUserDataToBeInserted)
         ).to.eventually.rejectedWith(
-            `Encountered error 401 when POSTing new user to ${
-                argv.authorizationApi
-            }`
+            `Encountered error 401 when POSTing new user to ${argv.authorizationApi}`
         );
     });
 
-    it(`\`createUser\` should return 'Encountered error 403 when POSTing new user to ${
-        argv.authorizationApi
-    }' error if called as a standard user`, async function() {
+    it(`\`createUser\` should return 'Encountered error 403 when POSTing new user to ${argv.authorizationApi}' error if called as a standard user`, async function() {
         const api = new ApiClient(
             argv.authorizationApi,
             argv.jwtSecret,
@@ -196,9 +189,7 @@ describe("Test ApiClient.ts", function() {
         return expect(
             api.createUser(newUserDataToBeInserted)
         ).to.eventually.rejectedWith(
-            `Encountered error 403 when POSTing new user to ${
-                argv.authorizationApi
-            }`
+            `Encountered error 403 when POSTing new user to ${argv.authorizationApi}`
         );
     });
 

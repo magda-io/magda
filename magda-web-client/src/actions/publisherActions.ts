@@ -3,6 +3,7 @@ import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
 import { FetchError } from "../types";
 import { FacetAction } from "../helpers/datasetSearch";
+import { searchPublishers } from "api-clients/SearchApis";
 
 export function requestPublishers(): FacetAction {
     return {
@@ -54,21 +55,8 @@ export function resetFetchPublisher() {
 function fetchPublishers(start, query, searchResultsPerPage) {
     return (dispatch: Function) => {
         dispatch(requestPublishers());
-        const url = `${config.searchApiUrl +
-            "organisations"}?query=${query}&start=${(start - 1) *
-            searchResultsPerPage}&limit=${searchResultsPerPage}`;
-        return fetch(url, config.fetchOptions)
-            .then(response => {
-                if (!response.ok) {
-                    let statusText = response.statusText;
-                    // response.statusText are different in different browser, therefore we unify them here
-                    if (response.status === 404) {
-                        statusText = "Not Found";
-                    }
-                    throw Error(statusText);
-                }
-                return response.json();
-            })
+
+        searchPublishers(query, start, searchResultsPerPage)
             .then(json => {
                 return dispatch(receivePublishers(json, query));
             })
@@ -111,9 +99,7 @@ export function fetchPublishersIfNeeded(start: number, query: string): any {
 function fetchPublisher(id) {
     return (dispatch: Function) => {
         dispatch(requestPublisher());
-        const url = `${
-            config.registryApiUrl
-        }records/${id}?aspect=organization-details`;
+        const url = `${config.registryReadOnlyApiUrl}records/${id}?aspect=organization-details`;
 
         return fetch(url, config.fetchOptions)
             .then(response => {

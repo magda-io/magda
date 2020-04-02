@@ -39,11 +39,12 @@
  */
 
 @import "variables";
+@import "./pancake/sass/core.scss";
 
 .spinner_container {
     display: flex;
     align-items: center;
-    background-color: $AU-color-background;
+    background-color: $AU-color-preview;
 }
 
 .sk-cube-grid {

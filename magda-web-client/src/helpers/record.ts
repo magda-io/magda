@@ -2,8 +2,7 @@ import getDateString from "./getDateString";
 import { isSupportedFormat as isSupportedMapPreviewFormat } from "../Components/Common/DataPreviewMap";
 import { FetchError } from "../types";
 import weightedMean from "weighted-mean";
-// dataset query:
-//aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&dereference=true&optionalAspect=dataset-publisher&optionalAspect=source
+import { Record } from "api-clients/RegistryApis";
 
 export type RecordAction = {
     json?: any;
@@ -13,9 +12,12 @@ export type RecordAction = {
 };
 
 type TemporalCoverage = {
-    data: {
-        intervals?: Array<any>;
-    };
+    intervals: {
+        start?: string;
+        end?: string;
+        startIndeterminate?: "unknown" | "now" | "before" | "after";
+        endIndeterminate?: "unknown" | "now" | "before" | "after";
+    }[];
 };
 
 type dcatDistributionStrings = {
@@ -25,15 +27,28 @@ type dcatDistributionStrings = {
     modified: string;
     license: string;
     description: string;
+    title: string;
 };
 
 type DcatDatasetStrings = {
-    description: string;
-    keywords: Array<string>;
-    landingPage: string;
     title: string;
-    issued: string;
-    modified: string;
+    description: string;
+    issued?: string;
+    modified?: string;
+    languages?: string[];
+    publisher?: string;
+    accrualPeriodicity?: string;
+    accrualPeriodicityRecurrenceRule?: string;
+    spatial?: string;
+    temporal?: {
+        start?: string;
+        end?: string;
+    };
+    themes?: string[];
+    keywords?: Array<string>;
+    contactPoint?: string;
+    landingPage?: string;
+    defaultLicense?: string;
 };
 
 export type Publisher = {
@@ -94,6 +109,17 @@ export type RawDistribution = {
     };
 };
 
+type Provenance = {
+    mechanism?: string;
+    sourceSystem?: string;
+    derivedFrom?: {
+        id?: string[];
+        name?: string;
+    }[];
+    isOpenData?: boolean;
+    affiliatedOrganizationIds?: Record[];
+};
+
 export type RawDataset = {
     id: string;
     name: string;
@@ -110,6 +136,7 @@ export type RawDataset = {
             distributions: Array<RawDistribution>;
         };
         "temporal-coverage"?: TemporalCoverage;
+        provenance?: Provenance;
     };
 };
 
@@ -133,10 +160,25 @@ export type ParsedDistribution = {
     ckanResource: any;
 };
 
+export type ParsedProvenance = {
+    mechanism?: string;
+    sourceSystem?: string;
+    derivedFrom?: string;
+    affiliatedOrganizations?: Record[];
+    isOpenData?: boolean;
+};
+
+export type ParsedInformationSecurity = {
+    disseminationLimits: string[];
+    classification: string;
+};
+
 // all aspects become required and must have value
 export type ParsedDataset = {
     identifier?: string;
     title: string;
+    accrualPeriodicity?: string;
+    accrualPeriodicityRecurrenceRule?: string;
     issuedDate?: string;
     updatedDate?: string;
     landingPage: string;
@@ -151,14 +193,12 @@ export type ParsedDataset = {
     error?: FetchError;
     hasQuality?: boolean;
     sourceDetails?: any;
-    creation?: any;
+    provenance?: ParsedProvenance;
     publishingState?: string;
-    importance?: string;
-    creationAffiliatedOrganisation?: string;
     spatialCoverageBbox?: any;
     temporalExtent?: any;
     accessLevel?: string;
-    informationSecurity?: any;
+    informationSecurity?: ParsedInformationSecurity;
     accessControl?: {
         ownerId: string;
         orgUnitOwnerId: string;
@@ -166,7 +206,7 @@ export type ParsedDataset = {
     };
 };
 
-export const defaultPublisher: Publisher = {
+export const emptyPublisher: Publisher = {
     id: "",
     name: "",
     aspects: {
@@ -196,7 +236,7 @@ const defaultDatasetAspects = {
         distributions: []
     },
     "temporal-coverage": null,
-    "dataset-publisher": { publisher: defaultPublisher },
+    "dataset-publisher": { publisher: emptyPublisher },
     source: {
         url: "",
         name: "",
@@ -315,7 +355,7 @@ export function parseDistribution(
     const accessURL = info.accessURL;
     const accessNotes = info.accessNotes;
     const updatedDate = info.modified && getDateString(info.modified);
-    const license = info.license || "License restrictions unknown";
+    const license = info.license || "Licence restrictions unknown";
     const description = info.description || "No description provided";
     const linkStatus = aspects["source-link-status"];
     const linkStatusAvailable = Boolean(linkStatus.status); // Link status is available if status is non-empty string
@@ -386,12 +426,9 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         datasetInfo.modified && getDateString(datasetInfo.modified);
 
     const publishing = aspects["publishing"] || {};
-
-    const creation = datasetInfo["creation"] || {};
-
     const publisher = aspects["dataset-publisher"]
         ? aspects["dataset-publisher"]["publisher"]
-        : defaultPublisher;
+        : emptyPublisher;
     const contactPoint: string = datasetInfo.contactPoint;
     const source: string | undefined = aspects["source"]
         ? aspects["source"]["type"] !== "csv-dataset"
@@ -451,7 +488,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
             format,
             license:
                 !info.license || info.license === "notspecified"
-                    ? "License restrictions unknown"
+                    ? "Licence restrictions unknown"
                     : info.license,
             description: info.description || "No description provided",
             linkStatusAvailable: Boolean(linkStatus.status), // Link status is available if status is non-empty string
@@ -482,14 +519,19 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         linkedDataRating,
         hasQuality,
         sourceDetails: aspects["source"],
-        creation: datasetInfo["creation"] || {},
-        importance: datasetInfo["importance"],
+        provenance: {
+            ...(aspects?.provenance ? aspects.provenance : {}),
+            affiliatedOrganizations:
+                aspects?.provenance?.affiliatedOrganizationIds
+        },
         publishingState: publishing["state"],
-        creationAffiliatedOrganisation: creation["affiliatedOrganisation"],
         spatialCoverageBbox: spatialCoverage["bbox"],
         temporalExtent: datasetInfo["temporal"] || {},
         accessLevel: datasetInfo["accessLevel"],
-        informationSecurity: datasetInfo["informationSecurity"] || {},
-        accessControl
+        informationSecurity: aspects["information-security"] || {},
+        accessControl,
+        accrualPeriodicity: datasetInfo["accrualPeriodicity"] || "",
+        accrualPeriodicityRecurrenceRule:
+            datasetInfo["accrualPeriodicityRecurrenceRule"] || ""
     };
 }

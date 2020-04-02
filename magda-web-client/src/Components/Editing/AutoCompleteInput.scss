@@ -1,0 +1,27 @@
+.vocabulary-auto-complete-input {
+    position: relative;
+    .suggestion-item {
+        border: 1px solid grey;
+        border-radius: 0.5em;
+        padding: 0.5em;
+        margin-bottom: 4px;
+        background-color: #ffffff;
+        cursor: pointer;
+    }
+    .suggestion-item:hover {
+        background-color: #e7e7e7;
+    }
+    .suggestion-item--highlighted {
+        background-color: #e7e7e7;
+    }
+    .suggestions-list {
+        list-style-type: none;
+        padding-inline-start: unset;
+        margin-top: 2px;
+    }
+    .suggestions-container {
+        margin-bottom: 10px;
+        position: absolute;
+        z-index: 999;
+    }
+}

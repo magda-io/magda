@@ -11,6 +11,7 @@ import au.csiro.data61.magda.client.RegistryInterface
 import au.csiro.data61.magda.indexer.search.SearchIndexer
 import au.csiro.data61.magda.indexer.search.SearchIndexer.IndexResult
 import au.csiro.data61.magda.model.misc.DataSet
+import au.csiro.data61.magda.model.Registry.MAGDA_ADMIN_PORTAL_ID
 import au.csiro.data61.magda.search.elasticsearch.Indices
 import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest.{Assertion, AsyncFlatSpec, FlatSpec, Matchers}
@@ -20,7 +21,7 @@ import scala.concurrent.{ExecutionContextExecutor, Future, Promise}
 
 import org.scalatest.concurrent.ScalaFutures._
 import scala.concurrent.duration._
-
+import au.csiro.data61.magda.client.RegistryExternalInterface
 
 class StreamControllerTest extends FlatSpec with Matchers {
 
@@ -32,23 +33,27 @@ class StreamControllerTest extends FlatSpec with Matchers {
   private var sc: StreamController = None.orNull
   private var dataSets: Seq[DataSet] = Seq()
 
-  def between(start:Int, end:Int) = {
+  def between(start: Int, end: Int) = {
     val r = new scala.util.Random
-    start + r.nextInt(( end- start) + 1)
+    start + r.nextInt((end - start) + 1)
   }
 
-  class MockRegistryInterface extends RegistryInterface {
+  class MockRegistryInterface extends RegistryExternalInterface {
     private val nextIndex = new AtomicInteger(0)
     private val dataSetCount = new AtomicInteger(0)
 
-    override def getDataSetsReturnToken(start: Long, size: Int)
-    : Future[(Option[String], List[DataSet])] = Future {
-      assert (start == 0)
+    override def getDataSetsReturnToken(
+        start: Long,
+        size: Int
+    ): Future[(Option[String], List[DataSet])] = Future {
+      assert(start == 0)
       nextIndex.set(size)
       val batch = dataSets.slice(start.toInt, size).toList
       dataSetCount.addAndGet(batch.size)
       val token = s"token $size"
-      val tokenOption = if (batch.size < size || batch.size == dataSets.size) None else Some(token)
+      val tokenOption =
+        if (batch.size < size || batch.size == dataSets.size) None
+        else Some(token)
 //      println(s"* start: $start, end: $size, batch: ${batch.size}, " +
 //        s"fetch: ${dataSetCount.get()}, token: $tokenOption")
       Thread.sleep(1000)
@@ -56,9 +61,11 @@ class StreamControllerTest extends FlatSpec with Matchers {
       (tokenOption, batch)
     }
 
-    override def getDataSetsToken(token: String, size: Int)
-    : Future[(Option[String], List[DataSet])] = Future {
-      assert (token.nonEmpty)
+    override def getDataSetsToken(
+        token: String,
+        size: Int
+    ): Future[(Option[String], List[DataSet])] = Future {
+      assert(token.nonEmpty)
 
       val startIndex = nextIndex.get()
       var endIndex = startIndex + size
@@ -72,8 +79,8 @@ class StreamControllerTest extends FlatSpec with Matchers {
 
       val tokenOption =
         if (startIndex >= dataSets.size ||
-          batch.size < size ||
-          batch.size == size && endIndex == dataSets.size)
+            batch.size < size ||
+            batch.size == size && endIndex == dataSets.size)
           None
         else
           Some(s"token ${dataSetCount.get()}")
@@ -85,32 +92,45 @@ class StreamControllerTest extends FlatSpec with Matchers {
     }
   }
 
-  class MockIndexer(bufferSize: Int) extends SearchIndexer{
+  class MockIndexer(bufferSize: Int) extends SearchIndexer {
     private val dataSetCount = new AtomicInteger(0)
     private val buffer = new ListBuffer[Promise[Unit]]()
     private val batchProcessingSize = 4
 
-    override def index(source: Source[DataSet, NotUsed]): Future[SearchIndexer.IndexResult] = {
-      val indexResults = source.buffer(bufferSize, OverflowStrategy.backpressure)
+    override def index(
+        source: Source[DataSet, NotUsed]
+    ): Future[SearchIndexer.IndexResult] = {
+      val indexResults = source
+        .buffer(bufferSize, OverflowStrategy.backpressure)
         .map(dataSet => {
-          (dataSet.uniqueId, index(dataSet))
+          (dataSet.identifier, index(dataSet))
         })
         .runWith(Sink.fold(Future(SearchIndexer.IndexResult(0, Seq()))) {
-          case (combinedResultFuture, (thisResultIdentifier, thisResultFuture)) =>
+          case (
+              combinedResultFuture,
+              (thisResultIdentifier, thisResultFuture)
+              ) =>
             combinedResultFuture.flatMap { combinedResult =>
-              thisResultFuture.map { _ =>
-                combinedResult.copy(successes = combinedResult.successes + 1)
-              }.recover {
-                case _: Throwable =>
-                  combinedResult.copy(failures = combinedResult.failures :+ thisResultIdentifier)
-              }
+              thisResultFuture
+                .map { _ =>
+                  combinedResult.copy(successes = combinedResult.successes + 1)
+                }
+                .recover {
+                  case _: Throwable =>
+                    combinedResult.copy(
+                      failures = combinedResult.failures :+ thisResultIdentifier
+                    )
+                }
             }
         })
 
       indexResults.flatMap(identity)
     }
 
-    private def index(dataSet: DataSet, promise: Promise[Unit] = Promise[Unit]): Future[Unit] = {
+    private def index(
+        dataSet: DataSet,
+        promise: Promise[Unit] = Promise[Unit]
+    ): Future[Unit] = {
       dataSetCount.incrementAndGet()
       buffer.append(promise)
 
@@ -118,8 +138,7 @@ class StreamControllerTest extends FlatSpec with Matchers {
         // Simulate non-full batch processing
         buffer.toList.foreach(promise => promise.success())
         buffer.clear()
-      }
-      else if (dataSetCount.get() % batchProcessingSize == 0) {
+      } else if (dataSetCount.get() % batchProcessingSize == 0) {
         // Simulate batch processing
         buffer.toList.foreach(promise => promise.success())
         buffer.clear()
@@ -151,10 +170,17 @@ class StreamControllerTest extends FlatSpec with Matchers {
 
   private def createDataSets(num: Int): Seq[DataSet] = {
     val range = 1 to num
-    range.foldLeft(Seq[DataSet]()){
+    range.foldLeft(Seq[DataSet]()) {
       case (acc, e) =>
         acc ++ Seq(
-          DataSet(identifier = s"d$e", catalog = Some("c"), quality = 1.0D, score = Some(1.0F)))
+          DataSet(
+            identifier = s"d$e",
+            tenantId = MAGDA_ADMIN_PORTAL_ID,
+            catalog = Some("c"),
+            quality = 1.0d,
+            score = Some(1.0f)
+          )
+        )
     }
   }
 
@@ -170,16 +196,17 @@ class StreamControllerTest extends FlatSpec with Matchers {
 
     sc.start()
 
-    indexResultF.map(indexResult =>
-      indexResult shouldEqual IndexResult(dataSets.size, List()))
+    indexResultF.map(
+      indexResult => indexResult shouldEqual IndexResult(dataSets.size, List())
+    )
   }
 
-  "The stream controller" should "support the indexer stream when the dataset number is 1"  in {
+  "The stream controller" should "support the indexer stream when the dataset number is 1" in {
     val numOfDataSets = 1
     whenReady(run(numOfDataSets))(identity)
   }
 
-  it should "support the indexer stream when the dataset number is 0"  in {
+  it should "support the indexer stream when the dataset number is 0" in {
     val numOfDataSets = 0
     whenReady(run(numOfDataSets))(identity)
   }
@@ -189,7 +216,7 @@ class StreamControllerTest extends FlatSpec with Matchers {
     whenReady(run(numOfDataSets))(identity)
   }
 
-  it should "support the indexer stream when the dataset number is 10 * bufferSize"  in {
+  it should "support the indexer stream when the dataset number is 10 * bufferSize" in {
     val numOfDataSets = 10 * bufferSize
     whenReady(run(numOfDataSets))(identity)
   }
@@ -204,27 +231,27 @@ class StreamControllerTest extends FlatSpec with Matchers {
     whenReady(run(numOfDataSets))(identity)
   }
 
-  it should "support the indexer stream when the dataset number is bufferSize"  in {
+  it should "support the indexer stream when the dataset number is bufferSize" in {
     val numOfDataSets = bufferSize
     whenReady(run(numOfDataSets))(identity)
   }
 
-  it should "support the indexer stream when the dataset number is bufferSize + 1"  in {
+  it should "support the indexer stream when the dataset number is bufferSize + 1" in {
     val numOfDataSets = bufferSize + 1
     whenReady(run(numOfDataSets))(identity)
   }
 
-  it should "support the indexer stream when the dataset number is bufferSize / 2 - 1"  in {
+  it should "support the indexer stream when the dataset number is bufferSize / 2 - 1" in {
     val numOfDataSets = bufferSize / 2 - 1
     whenReady(run(numOfDataSets))(identity)
   }
 
-  it should "support the indexer stream when the dataset number is bufferSize / 2"  in {
+  it should "support the indexer stream when the dataset number is bufferSize / 2" in {
     val numOfDataSets = bufferSize / 2
     whenReady(run(numOfDataSets))(identity)
   }
 
-  it should "support the indexer stream when the dataset number is bufferSize / 2 + 1"  in {
+  it should "support the indexer stream when the dataset number is bufferSize / 2 + 1" in {
     val numOfDataSets = bufferSize / 2 + 1
     whenReady(run(numOfDataSets))(identity)
   }

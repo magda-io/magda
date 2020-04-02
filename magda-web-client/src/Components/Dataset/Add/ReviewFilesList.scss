@@ -1,0 +1,113 @@
+.review-files-list-outer-container {
+    position: absolute;
+    background-color: #ffffff;
+    z-index: 999;
+    right: 0px;
+    top: 10px;
+}
+.review-files-list-container {
+    width: 295px;
+    border-radius: 8px;
+    border: solid 3px #413157;
+    background-color: #ffffff;
+    .header-container {
+        height: 48px;
+        background-color: #413157;
+        text-align: center;
+        position: relative;
+        .heading {
+            font-size: 17px;
+            font-weight: bold;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.29;
+            letter-spacing: normal;
+            text-align: center;
+            color: #ffffff;
+            padding-top: 12px;
+        }
+        .expand-button {
+            position: absolute;
+            right: 5px;
+            top: 9px;
+            width: 30px;
+            height: 30px;
+            padding: 0px;
+            border: 0px;
+            cursor: pointer;
+            img {
+                width: 28px;
+                height: 28px;
+                padding: 0px;
+            }
+        }
+    }
+    .body-container {
+        padding-top: 24px;
+        padding-bottom: 24px;
+        .body-text-container {
+            padding-left: 27px;
+            padding-right: 27px;
+            font-size: 15px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.47;
+            letter-spacing: normal;
+            color: #484848;
+            p:nth-child(2) {
+                margin-top: 16px;
+            }
+        }
+        .file-icons-container {
+            padding-left: 15px;
+            padding-right: 15px;
+            margin-top: 25px;
+            font-size: 14px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.43;
+            letter-spacing: normal;
+            color: #484848;
+            .file-icon-item {
+                padding-left: 10px;
+                margin-bottom: 20px;
+                .file-title,
+                img.file-icon {
+                    float: left;
+                    margin-right: 10px;
+                }
+                img.file-icon {
+                    width: 24px;
+                }
+                .file-title {
+                    width: 200px;
+                    overflow-wrap: anywhere;
+                    word-break: break-all;
+                    white-space: pre-wrap;
+                }
+            }
+        }
+        .show-more-button-container {
+            position: relative;
+            .show-more-button {
+                position: absolute;
+                right: 10px;
+                top: -12px;
+                border-radius: 5px;
+                border: solid 2px #30384d;
+                background-color: #30384d;
+                font-size: 12px;
+                padding: 5px;
+                font-weight: normal;
+                font-style: normal;
+                font-stretch: normal;
+                line-height: 1;
+                letter-spacing: normal;
+                text-align: center;
+                color: #ffffff;
+            }
+        }
+    }
+}

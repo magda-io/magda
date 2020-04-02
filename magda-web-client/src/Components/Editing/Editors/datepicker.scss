@@ -1,3 +1,6 @@
+@import "variables";
+@import "./pancake/sass/core.scss";
+
 .PresetDateRangePicker_panel {
     padding: 0 22px 11px;
 }
@@ -6,8 +9,8 @@
     height: 100%;
     text-align: center;
     background: 0 0;
-    border: 2px solid #00a699;
-    color: #00a699;
+    border: 2px solid $magda-color-primary;
+    color: $magda-color-primary;
     padding: 4px 12px;
     margin-right: 8px;
     font: inherit;
@@ -23,7 +26,7 @@
 }
 .PresetDateRangePicker_button__selected {
     color: #fff;
-    background: #00a699;
+    background: $magda-color-primary;
 }
 .SingleDatePickerInput {
     display: inline-block;
@@ -189,12 +192,12 @@
 }
 .DayPickerKeyboardShortcuts_show__bottomRight::before {
     border-top: 26px solid transparent;
-    border-right: 33px solid #00a699;
+    border-right: 33px solid $magda-color-primary;
     bottom: 0;
     right: 0;
 }
 .DayPickerKeyboardShortcuts_show__bottomRight:hover::before {
-    border-right: 33px solid #008489;
+    border-right: 33px solid $magda-color-dark;
 }
 .DayPickerKeyboardShortcuts_show__topRight {
     top: 0;
@@ -202,12 +205,12 @@
 }
 .DayPickerKeyboardShortcuts_show__topRight::before {
     border-bottom: 26px solid transparent;
-    border-right: 33px solid #00a699;
+    border-right: 33px solid $magda-color-primary;
     top: 0;
     right: 0;
 }
 .DayPickerKeyboardShortcuts_show__topRight:hover::before {
-    border-right: 33px solid #008489;
+    border-right: 33px solid $magda-color-dark;
 }
 .DayPickerKeyboardShortcuts_show__topLeft {
     top: 0;
@@ -215,12 +218,12 @@
 }
 .DayPickerKeyboardShortcuts_show__topLeft::before {
     border-bottom: 26px solid transparent;
-    border-left: 33px solid #00a699;
+    border-left: 33px solid $magda-color-primary;
     top: 0;
     left: 0;
 }
 .DayPickerKeyboardShortcuts_show__topLeft:hover::before {
-    border-left: 33px solid #008489;
+    border-left: 33px solid $magda-color-dark;
 }
 .DayPickerKeyboardShortcuts_showSpan {
     color: #fff;
@@ -337,33 +340,33 @@
     color: #484848;
 }
 .CalendarDay__selected_span {
-    background: #66e2da;
-    border: 1px double #33dacd;
+    background: lighten($magda-color-light, 30%);
+    border: 1px double $magda-color-light;
     color: #fff;
 }
 .CalendarDay__selected_span:active,
 .CalendarDay__selected_span:hover {
-    background: #33dacd;
-    border: 1px double #33dacd;
+    background: $magda-color-light;
+    border: 1px double $magda-color-light;
     color: #fff;
 }
 .CalendarDay__selected,
 .CalendarDay__selected:active,
 .CalendarDay__selected:hover {
-    background: #00a699;
-    border: 1px double #00a699;
+    background: $magda-color-primary;
+    border: 1px double $magda-color-primary;
     color: #fff;
 }
 .CalendarDay__hovered_span,
 .CalendarDay__hovered_span:hover {
-    background: #b2f1ec;
-    border: 1px double #80e8e0;
-    color: #007a87;
+    background: lighten($magda-color-light, 65%);
+    border: 1px double $magda-color-light;
+    color: #484848;
 }
 .CalendarDay__hovered_span:active {
-    background: #80e8e0;
-    border: 1px double #80e8e0;
-    color: #007a87;
+    background: $magda-color-light;
+    border: 1px double $magda-color-light;
+    color: #fff;
 }
 .CalendarDay__blocked_calendar,
 .CalendarDay__blocked_calendar:active,
@@ -691,7 +694,7 @@
     border: 0;
     border-top: 0;
     border-right: 0;
-    border-bottom: 2px solid #008489;
+    border-bottom: 2px solid $magda-color-dark;
     border-left: 0;
 }
 .DateInput_input__disabled {

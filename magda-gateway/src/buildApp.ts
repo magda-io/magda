@@ -1,16 +1,16 @@
-import * as cors from "cors";
-import * as express from "express";
-import * as path from "path";
-import * as ejs from "ejs";
-import * as helmet from "helmet";
-import * as compression from "compression";
-import * as basicAuth from "express-basic-auth";
-import * as _ from "lodash";
+import cors from "cors";
+import express from "express";
+import path from "path";
+import ejs from "ejs";
+import helmet from "helmet";
+import compression from "compression";
+import basicAuth from "express-basic-auth";
+import _ from "lodash";
 
 import {
     installStatusRouter,
     createServiceProbe
-} from "@magda/typescript-common/dist/express/status";
+} from "magda-typescript-common/src/express/status";
 import createApiRouter from "./createApiRouter";
 import createAuthRouter from "./createAuthRouter";
 import createGenericProxy from "./createGenericProxy";
@@ -19,6 +19,8 @@ import createHttpsRedirectionMiddleware from "./createHttpsRedirectionMiddleware
 import Authenticator from "./Authenticator";
 import defaultConfig from "./defaultConfig";
 import { ProxyTarget } from "./createApiRouter";
+import setupTenantMode from "./setupTenantMode";
+import createPool from "./createPool";
 
 // Tell typescript about the semi-private __express field of ejs.
 declare module "ejs" {
@@ -42,6 +44,9 @@ type Config = {
     proxyRoutesJson: {
         [localRoute: string]: ProxyTarget;
     };
+    webProxyRoutesJson: {
+        [localRoute: string]: string;
+    };
     helmetJson: string;
     cspJson: string;
     corsJson: string;
@@ -64,21 +69,31 @@ type Config = {
     aafClientSecret?: string;
     arcgisClientId?: string;
     arcgisClientSecret?: string;
+    arcgisInstanceBaseUrl?: string;
+    esriOrgGroup?: string;
     ckanUrl?: string;
     enableCkanRedirection?: boolean;
     ckanRedirectionDomain?: string;
     ckanRedirectionPath?: string;
+    fetchTenantsMinIntervalInMs?: number;
+    tenantUrl?: string;
+    enableMultiTenants?: boolean;
+    vanguardWsFedIdpUrl?: string;
+    vanguardWsFedRealm?: string;
+    vanguardWsFedCertificate?: string;
 };
 
 export default function buildApp(config: Config) {
+    const tenantMode = setupTenantMode(config);
+
     const routes = _.isEmpty(config.proxyRoutesJson)
         ? defaultConfig.proxyRoutes
         : ((config.proxyRoutesJson as unknown) as Routes);
 
+    const dbPool = createPool(config);
     const authenticator = new Authenticator({
         sessionSecret: config.sessionSecret,
-        dbHost: config.dbHost,
-        dbPort: config.dbPort
+        dbPool
     });
 
     // Create a new Express application.
@@ -96,6 +111,10 @@ export default function buildApp(config: Config) {
     _.forEach(
         (config.proxyRoutesJson as unknown) as Routes,
         (value: any, key: string) => {
+            // --- skip tenant api status prob if multiTenantsMode is off
+            if (key === "tenant" && !tenantMode.multiTenantsMode) {
+                return;
+            }
             // --- skip install status probs if statusCheck == false
             if (value && value.statusCheck === false) {
                 return;
@@ -160,10 +179,15 @@ export default function buildApp(config: Config) {
                 aafClientSecret: config.aafClientSecret,
                 arcgisClientId: config.arcgisClientId,
                 arcgisClientSecret: config.arcgisClientSecret,
+                arcgisInstanceBaseUrl: config.arcgisInstanceBaseUrl,
+                esriOrgGroup: config.esriOrgGroup,
                 ckanUrl: config.ckanUrl,
                 authorizationApi: config.authorizationApi,
                 externalUrl: config.externalUrl,
-                userId: config.userId
+                userId: config.userId,
+                vanguardWsFedIdpUrl: config.vanguardWsFedIdpUrl,
+                vanguardWsFedRealm: config.vanguardWsFedRealm,
+                vanguardWsFedCertificate: config.vanguardWsFedCertificate
             })
         );
     }
@@ -173,10 +197,18 @@ export default function buildApp(config: Config) {
         createApiRouter({
             authenticator: authenticator,
             jwtSecret: config.jwtSecret,
-            routes
+            routes,
+            tenantMode
         })
     );
-    app.use("/preview-map", createGenericProxy(config.previewMap));
+
+    if (config.webProxyRoutesJson) {
+        _.forEach(config.webProxyRoutesJson, (value: string, key: string) => {
+            app.use("/" + key, createGenericProxy(value, tenantMode));
+        });
+    }
+
+    app.use("/preview-map", createGenericProxy(config.previewMap, tenantMode));
 
     if (config.enableCkanRedirection) {
         if (!routes.registry) {
@@ -188,14 +220,15 @@ export default function buildApp(config: Config) {
                 createCkanRedirectionRouter({
                     ckanRedirectionDomain: config.ckanRedirectionDomain,
                     ckanRedirectionPath: config.ckanRedirectionPath,
-                    registryApiBaseUrlInternal: routes.registry.to
+                    registryApiBaseUrlInternal: routes.registry.to,
+                    tenantId: 0 // FIXME: Rather than being hard-coded to the default tenant, the CKAN router needs to figure out the correct tenant.
                 })
             );
         }
     }
 
     // Proxy any other URL to magda-web
-    app.use("/", createGenericProxy(config.web));
+    app.use("/", createGenericProxy(config.web, tenantMode));
 
     return app;
 }

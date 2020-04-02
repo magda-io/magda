@@ -10,25 +10,28 @@ You need to install following in order to build MAGDA:
 -   [Java 8 JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) - To run the JVM components, and to build the small amount of Java code.
 -   [sbt](http://www.scala-sbt.org/) - To build the Scala components.
 -   [yarn](https://yarnpkg.com/) - Npm replacement that makes node deps in a monorepo much easier.
--   [lerna](https://lernajs.io/) - To manage our multiple-project repo. Once you have node.js/yarn installed, installing lerna is as simple as `yarn global add lerna`.
+-   [lerna](https://lerna.js.org/) - To manage our multiple-project repo. Once you have node.js/yarn installed, installing lerna is as simple as `yarn global add lerna`.
 -   [pancake](https://github.com/govau/pancake) - To manage design components. Once you have Node.js installed, installing pancake is as simple as `yarn global add @gov.au/pancake`.
 
 To push the images and run them on kubernetes, you'll need to install:
 
 -   [GNU tar](https://www.gnu.org/software/tar/) - (Mac only) MacOS ships with `BSD tar`. However, you will need `GNU tar` for docker images operations. On MacOS, you can install `GNU Tar` via [Homebrew](https://brew.sh/): `brew install gnu-tar`
 -   [gcloud](https://cloud.google.com/sdk/gcloud/) - For the `kubectl` tool used to control your Kubernetes cluster. You will also need to this to deploy to our test and production environment on Google Cloud.
--   [Helm](https://github.com/kubernetes/helm/blob/master/docs/install.md) to manage kubernetes deployments and config.
+-   [Helm 2](https://v2.helm.sh/docs/using_helm/#installing-helm) to manage kubernetes deployments and config.
 -   [Docker](https://docs.docker.com/install/) - Magda uses `docker` command line tool to build docker images.
 
 You'll also need a Kubernetes cluster - to develop locally this means installing either [minikube](./installing-minikube.md) or [docker](./installing-docker-k8s.md) (MacOS only at this stage). Potentially you could also do this with native Kubernetes, or with a cloud cluster, but we haven't tried it.
 
 ## Trying it out locally
 
-If you just want to try it out locally without actually changing anything, it's much easier to just install [minikube](https://magda.io/docs/docs/installing-minikube.md) or [docker for desktop](https://github.com/magda-io/magda/blob/master/docs/docs/installing-docker-k8s.md), then following the instructions at https://github.com/magda-io/magda-config. What follows is instructions on how to build _everything_, code, databases and all, from scratch into a working application.
+If you just want to try it out locally without actually changing anything, it's much easier to just install [minikube](https://magda.io/docs/installing-minikube.md) or [docker for desktop](https://github.com/magda-io/magda/blob/master/docs/docs/installing-docker-k8s.md), then following the instructions at [https://github.com/magda-io/magda-config/blob/master/legacy.md](https://github.com/magda-io/magda-config/blob/master/legacy.md). What follows is instructions on how to build _everything_, code, databases and all, from scratch into a working application.
 
 ## Building and running (just) the frontend
 
-If you just want to edit the UI, you don't actually even need helm - just clone the repo, run `yarn install` at the root, then `cd magda-web-client` and run `yarn run dev`. This will build/run a local version of the client, connecting to the API at https://dev.magda.io/api. If you want to connect to a magda API hosted elsewhere you can modify the `config.js` file in the client.
+If you just want to edit the UI, you don't actually even need helm -
+just clone the repo, run `yarn install` at the root, then `cd magda-web-client` and run `yarn run dev`.
+This will build/run a local version of the client, connecting to the API at [https://dev.magda.io/api](https://dev.magda.io/api).
+If you want to connect to a magda API hosted elsewhere you can modify the `config.js` file in the client.
 
 ## Building and running the backend
 
@@ -40,23 +43,28 @@ Then install `npm` dependencies and set up the links between components by runni
 yarn install
 ```
 
-Once the above prerequisites are in place, and the npm dependencies are installed, building MAGDA is easy. From the MAGDA root directory, simply run:
+Once the above prerequisites are in place, and the npm dependencies are installed, building MAGDA is easy.
+From the MAGDA root directory, simply run the appropriate build command:
 
 ```bash
-lerna run build --include-filtered-dependencies
+# If using lerna v3.18.0 or higher
+lerna run build --stream --concurrency=1 --include-dependencies
+
+# If verison of lerna is lower than v3.18.0
+lerna run build --stream --concurrency=1 --include-filtered-dependencies
 ```
 
 You can also run the same command in an individual component's directory (i.e. `magda-whatever/`) to build just that component.
 
 ### Set up Helm
 
-Helm is the package manager for Kubernetes - we use it to make it so that you can install all the various services you need for MAGDA at once. To install, follow the instructions at https://github.com/kubernetes/helm/blob/master/docs/install.md.
+Helm is the package manager for Kubernetes - we use it to make it so that you can install all the various services you need for MAGDA at once.
+To install, follow the instructions at [https://helm.sh/docs/intro/install/](https://helm.sh/docs/intro/install/).
 
-In a nutshell, once you have helm installed, this is how you initialise helm and Tiller.
+Once you have helm3 installed, add Magda Helm Chart Repo:
 
 ```bash
-kubectl apply -f deploy/kubernetes/rbac-config.yaml
-helm init --service-account tiller
+helm repo add magda-io https://charts.magda.io
 ```
 
 ### Install a local kube registry
@@ -66,8 +74,8 @@ This gives you a local docker registry that you'll upload your built images to s
 ```bash
 helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
 helm repo update
-helm install --name docker-registry -f deploy/helm/docker-registry.yml stable/docker-registry
-helm install --name kube-registry-proxy -f deploy/helm/kube-registry-proxy.yml incubator/kube-registry-proxy
+helm install docker-registry -f deploy/helm/docker-registry.yml stable/docker-registry
+helm install kube-registry-proxy -f deploy/helm/kube-registry-proxy.yml magda-io/kube-registry-proxy
 ```
 
 ### Build local docker images
@@ -76,8 +84,31 @@ Now you can build the docker containers locally - this might take quite a while 
 
 ```bash
 eval $(minikube docker-env) # (If you haven't run this already)
-lerna run docker-build-local --include-filtered-dependencies
+lerna run docker-build-local --stream --concurrency=4 --include-filtered-dependencies
 ```
+
+### Build Connector and Minion local docker images
+
+As of v0.0.57, Magda official connectors & minions live outside the core repository. You can find connector & minions repositories at [here](https://github.com/magda-io?q=connector+OR++minion).
+
+You don't have to build connector & minions docker images as the default config value file [minikube-dev.yml](https://github.com/magda-io/magda/blob/master/deploy/helm/minikube-dev.yml#L20) specifically set to use official production-ready docker image from docker hub repository.
+
+If you do want to use local build connector & minion docker images for testing & development purpose, you need to:
+
+1. Clone the relevant connector or minion repository
+2. Build & Push docker image to a local docker registry.
+
+Run the following commands from the cloned folder:
+
+```bash
+yarn install
+yarn run build
+eval $(minikube docker-env)
+yarn run docker-build-local
+```
+
+3. Modify `minikube-dev.yml`, remove the `global.connectors.image` & `global.minions.image` section.
+4. Deploy Magda with helm using the instructions provided by the [Install Magda on your minikube/docker-desktop cluster section](#install-magda-on-your-minikubedocker-desktop-cluster) below.
 
 ### Create the necessary secrets with the secret creation script
 
@@ -94,21 +125,51 @@ kubectl apply -f deploy/kubernetes/local-storage.yaml
 kubectl apply -f deploy/kubernetes/local-storage-volume.yaml
 ```
 
+Note: If using docker desktop for Windows older than version 19, change the value from "docker-desktop" to "docker-for-desktop" in nodeAffinity in file deploy/kubernetes/local-storage-volume.yaml
+
 ### Install Magda on your minikube/docker-desktop cluster
 
 ```bash
-helm upgrade --install --timeout 9999 --wait -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
-```
-
-If you're using Docker Desktop on Windows, add `-f deploy/helm/docker-desktop-windows.yml` too, i.e. do this instead of the above:
-
-```bash
-helm upgrade --install --timeout 9999 --wait -f deploy/helm/docker-desktop-windows.yml -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
+# update magda helm repo
+helm repo update
+# update magda chart dependencies
+helm dep build deploy/helm/internal-charts/storage-api
+helm dep build deploy/helm/magda-core
+helm dep build deploy/helm/magda
+# deploy the magda chart from magda helm repo
+helm upgrade --install --timeout 9999s --wait -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
 ```
 
 This can take a while as it does a lot - downloading all the docker images, starting them up and running database migration jobs. You can see what's happening by opening another tab and running `kubectl get pods -w`.
 
 Also note that by default there won't be any minions running, as some of them can be very CPU intensive. You can toggle them on by specifying `--set tags.minion-<minionname>=true` when you run `helm upgrade`.
+
+If you're using Docker Desktop on Windows, add `-f deploy/helm/docker-desktop-windows.yml` too, i.e. do this instead of the above:
+
+```bash
+# update magda helm repo
+helm repo update
+# update magda chart dependencies
+helm dep up deploy/helm/magda
+helm dep up deploy/helm/magda-core
+# deploy the magda chart from magda helm repo
+helm upgrade --install --timeout 9999s --wait -f deploy/helm/docker-desktop-windows.yml -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
+```
+
+If you want to deploy the packed & production ready helm chart in our helm repo:
+
+```bash
+# update magda helm repo
+helm repo update
+# deploy the local magda chart
+helm upgrade --install --timeout 9999s --wait -f deploy/helm/minikube-dev.yml magda magda-io/magda
+```
+
+**Please Note:**
+
+-   By default, helm will install the latest production version. This excludes development versions (e.g. 0.0.57-0)
+-   If you need the latest version (including the development version), please add a `--devel` switch to the `helm upgrade` command above.
+-   Alternatively, you can use `--version` to specify a specific version. e.g. `--version 0.0.57-0`
 
 ### Crawl Data
 
@@ -124,7 +185,7 @@ If you want to just start up individual pods (e.g. just the combined database) y
 helm install --name magda deploy/helm/magda -f deploy/helm/minikube-dev.yml --set tags.all=false --set tags.combined-db=true
 ```
 
-**You can find all available tags in [deploy/helm/magda/requirements.yaml](https://github.com/magda-io/magda/blob/master/deploy/helm/magda/requirements.yaml)**
+**You can find all available tags in [deploy/helm/magda-core/requirements.yaml](https://github.com/magda-io/magda/blob/master/deploy/helm/magda-core/requirements.yaml) and [deploy/helm/magda/requirements.yaml](https://github.com/magda-io/magda/blob/master/deploy/helm/magda/requirements.yaml)**
 
 Once everything starts up, you can access the web front end on http://192.168.99.100:30100. The IP address may be different on your system. Get the real IP address by running:
 
@@ -134,7 +195,7 @@ minikube ip
 
 It's a good idea to add an entry for `minikube.data.gov.au` to your `hosts` file (`C:\Windows\System32\drivers\etc\hosts` on Windows), mapping it to your Minikube IP address. Some services may assume this is in place. For example:
 
-```
+```console
 192.168.99.100	minikube.data.gov.au
 ```
 
@@ -154,7 +215,7 @@ Now you can connect to the database in minikube as if it were running locally, w
 
 ### Running a microservice locally but still connecting through the gateway
 
-You might find yourself developing an API locally that depends on authentication, which is easiest done by just logging in through the web interface and connecting through the gateway. You can actually make this work by telling the gateway to proxy your service to `192.168.99.1` in `deploy/helm/magda/charts/gateway/templates/configmap.yaml`. For instance, if I wanted to run the search api locally, I'd change `configmap.yaml` like so:
+You might find yourself developing an API locally that depends on authentication, which is easiest done by just logging in through the web interface and connecting through the gateway. You can actually make this work by telling the gateway to proxy your service to `192.168.99.1` in `deploy/helm/internal-charts/gateway/templates/configmap.yaml`. For instance, if I wanted to run the search api locally, I'd change `configmap.yaml` like so:
 
 ```yaml
 data:
@@ -174,7 +235,7 @@ helm upgrade magda -f deploy/helm/minikube-dev.yml deploy/helm/magda
 
 Now when I go to `http://${minikube ip}/api/v0/search`, it'll be proxied to my local search rather than the one in minikube.
 
-Be aware that if your local service has to connect to the database or other microservices in minikube you'll have to use `kube-port-forward` to proxy from `localhost:{port}` to the appropriate service in minikube - you can find a list of ports at https://github.com/TerriaJS/magda/blob/master/doc/local-ports.md.
+Be aware that if your local service has to connect to the database or other microservices in minikube you'll have to use `kube-port-forward` to proxy from `localhost:{port}` to the appropriate service in minikube - you can find a list of ports at https://github.com/magda-io/magda/blob/master/doc/local-ports.md.
 
 In the likely even you need to figure out what the jwt shared secret is on your minikube, you can cheat by opening up a shell to a container that has that secret and echoing the environment variable:
 

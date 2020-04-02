@@ -44,7 +44,9 @@ function loadPapa() {
 }
 
 function loadXmlParser() {
-    return import(/* webpackChunkName: "xmltoTabular" */ "../helpers/xmlToTabular")
+    return import(
+        /* webpackChunkName: "xmltoTabular" */ "../helpers/xmlToTabular"
+    )
         .then(xmlToTabular => {
             return xmlToTabular;
         })

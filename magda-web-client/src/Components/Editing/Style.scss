@@ -1,10 +1,127 @@
 @import "variables";
+@import "./pancake/sass/core.scss";
 
 .textEditorEx {
     margin-right: 5px;
     margin-bottom: 5px;
 }
 
+.textEditorEx-outter-container {
+    position: relative;
+    .edit-icon-container {
+        position: absolute;
+        display: inline;
+        .edit-icon {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+        }
+    }
+    input {
+        padding-right: 43px;
+        font-size: 15px;
+        font-weight: normal;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: 1.33;
+        letter-spacing: normal;
+        color: #484848;
+    }
+}
+
+.textEditorEx.au-text-input {
+    border-radius: 8px;
+    border: solid 1px #cccaca;
+}
+
+.textEditorEx.au-text-input--invalid {
+    background-color: #fdf2f2;
+    border-color: #d60000;
+}
+
+.textEditorEx-outter-container {
+    .au-error-text {
+        font-size: 16px;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #d60000;
+        display: block;
+        margin-bottom: 10px;
+    }
+}
+
+.multilineTextEditor-outter-container.invalid {
+    .edit-icon {
+        top: 45px !important;
+    }
+}
+
+.multilineTextEditor-outter-container {
+    position: relative;
+    .au-error-text {
+        font-size: 16px;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #d60000;
+        display: block;
+        margin-bottom: 10px;
+    }
+    .edit-icon-container {
+        display: inline;
+        .edit-icon {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+        }
+    }
+    textarea {
+        border-radius: 8px !important;
+        border: solid 1px #cccaca;
+        display: inline !important;
+        padding-right: 35px;
+        padding-left: 27px;
+        padding-top: 12px;
+        padding-bottom: 12px;
+        font-size: 15px;
+        font-weight: 300;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: 1.33;
+        letter-spacing: normal;
+        color: #636363;
+        max-width: none !important;
+        height: 217px;
+    }
+    textarea.au-text-input--invalid {
+        background-color: #fdf2f2 !important;
+    }
+    .word-count-row {
+        font-size: 14px;
+        font-weight: 300;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: 1.57;
+        letter-spacing: normal;
+        color: #636363;
+        margin-top: 13px;
+        margin-left: 10px;
+    }
+}
+
+.contact-editor-input-outter-container {
+    position: relative;
+    .edit-icon-container {
+        position: absolute;
+        display: inline;
+        .edit-icon {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+        }
+    }
+}
+
+.multilineTextEditor-outter-container,
 .toggle-editor-container {
     position: relative;
     .toggle-edit-button {
@@ -91,4 +208,11 @@
     cursor: pointer;
     background-color: $AU-colordark-background;
     color: $AU-colordark-foreground-action;
+}
+
+.code-list-radio-editor.invalid {
+    .code-list-radio-editor-input-container {
+        border-radius: 5px;
+        border: 1px solid red;
+    }
 }

@@ -1,20 +1,20 @@
-import * as express from "express";
+import express from "express";
 import { Maybe } from "tsmonad";
 
 import Database from "./Database";
-import { PublicUser } from "@magda/typescript-common/dist/authorization-api/model";
-import { getUserIdHandling } from "@magda/typescript-common/dist/session/GetUserId";
-import GenericError from "@magda/typescript-common/dist/authorization-api/GenericError";
-import AuthError from "@magda/typescript-common/dist/authorization-api/AuthError";
-import { installStatusRouter } from "@magda/typescript-common/dist/express/status";
-import NestedSetModelQueryer, {
-    NodeNotFoundError
-} from "./NestedSetModelQueryer";
+import { PublicUser } from "magda-typescript-common/src/authorization-api/model";
+import { getUserIdHandling } from "magda-typescript-common/src/session/GetUserId";
+import GenericError from "magda-typescript-common/src/authorization-api/GenericError";
+import AuthError from "magda-typescript-common/src/authorization-api/AuthError";
+import { installStatusRouter } from "magda-typescript-common/src/express/status";
+import { NodeNotFoundError } from "./NestedSetModelQueryer";
 
 export interface ApiRouterOptions {
     database: Database;
-    orgQueryer: NestedSetModelQueryer;
+    registryApiUrl: string;
+    opaUrl: string;
     jwtSecret: string;
+    tenantId: number;
 }
 
 /**
@@ -23,7 +23,7 @@ export interface ApiRouterOptions {
 
 export default function createApiRouter(options: ApiRouterOptions) {
     const database = options.database;
-    const orgQueryer = options.orgQueryer;
+    const orgQueryer = database.getOrgQueryer();
 
     const router: express.Router = express.Router();
 
@@ -37,7 +37,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
     installStatusRouter(router, status, "/public");
 
     function respondWithError(route: string, res: express.Response, e: Error) {
-        console.error(`Error happened when processed "${route}": ${e}`);
+        console.error(`Error happened when processed "${route}"`);
+        console.error(e);
 
         if (e instanceof NodeNotFoundError) {
             res.status(404).json({
@@ -80,7 +81,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     const MUST_BE_ADMIN = function(req: any, res: any, next: any) {
         //--- private API requires admin level access
-
         getUserIdHandling(
             req,
             res,
@@ -108,6 +108,15 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 }
             }
         );
+    };
+
+    const NO_CACHE = function(req: any, res: any, next: any) {
+        res.set({
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+            Expires: "0"
+        });
+        next();
     };
 
     router.all("/private/*", MUST_BE_ADMIN);
@@ -166,13 +175,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *      "errorMessage": "Not authorized"
      *    }
      */
-    router.get("/public/users/whoami", async function(req, res) {
+    router.get("/public/users/whoami", NO_CACHE, async function(req, res) {
         try {
-            res.set({
-                "Cache-Control": "no-cache, no-store, must-revalidate",
-                Pragma: "no-cache",
-                Expires: "0"
-            });
             const currentUserInfo = await database.getCurrentUserInfo(
                 req,
                 options.jwtSecret
@@ -246,12 +250,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *      "errorMessage": "Not authorized"
      *    }
      */
-    router.get("/public/users/:userId", (req, res) => {
-        res.set({
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            Pragma: "no-cache",
-            Expires: "0"
-        });
+    router.get("/public/users/:userId", NO_CACHE, (req, res) => {
         const userId = req.params.userId;
         const getPublicUser = database.getUser(userId).then(userMaybe =>
             userMaybe.map(user => {
@@ -314,16 +313,83 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
+     * @api {get} /public/orgunits/bylevel/:orgLevel List OrgUnits at certain org tree level
+     * @apiDescription
+     * List all OrgUnits at certain org tree level
+     * Optionally provide a test Org Unit Id that will be used to
+     * test the relationship with each of returned orgUnit item.
+     * Possible Value: 'ancestor', 'descendant', 'equal', 'unrelated'
+     *
+     * @apiParam (Path) {string} orgLevel The level number (starts from 1) where org Units of the tree are taken horizontally.
+     * @apiParam (Query) {string} relationshipOrgUnitId Optional; The org unit id that is used to test the relationship with each of returned orgUnit item.
+     *
+     * @apiSuccessExample {string} 200
+     *     [{
+     *       "id": "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7",
+     *       "name": "node 1",
+     *       "description": "xxxxxxxx",
+     *       "relationship": "unrelated"
+     *     },{
+     *       "id": "e5f0ed5f-bb00-4e49-89a6-3f044aecc3f7",
+     *       "name": "node 2",
+     *       "description": "xxxxxxxx",
+     *       "relationship": "ancestor"
+     *     }]
+     *
+     * @apiErrorExample {json} 401/404/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 404, 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.get("/public/orgunits/bylevel/:orgLevel", async (req, res) => {
+        try {
+            const orgLevel = req.params.orgLevel;
+            const relationshipOrgUnitId = req.query.relationshipOrgUnitId;
+
+            const levelNumber = parseInt(orgLevel);
+
+            if (levelNumber < 1 || isNaN(levelNumber))
+                throw new Error(`Invalid level number: ${orgLevel}.`);
+
+            const nodes = await orgQueryer.getAllNodesAtLevel(levelNumber);
+
+            if (relationshipOrgUnitId && nodes.length) {
+                for (let i = 0; i < nodes.length; i++) {
+                    const r = await orgQueryer.compareNodes(
+                        nodes[i]["id"],
+                        relationshipOrgUnitId
+                    );
+                    nodes[i]["relationship"] = r;
+                }
+            }
+
+            res.status(200).json(nodes);
+        } catch (e) {
+            respondWithError("GET /public/orgunits/bylevel/:orgLevel", res, e);
+        }
+    });
+
+    /**
+     * @apiGroup Auth
      * @api {get} /public/orgunits Get orgunits by name
-     * @apiDescription Gets org units matching a name
+     * @apiDescription
+     * Gets org units matching a name
+     * Optionally provide a test Org Unit Id that will be used to
+     * test the relationship with each of returned orgUnit item.
+     * Possible Value: 'ancestor', 'descendant', 'equal', 'unrelated'
      *
      * @apiParam (query) {string} nodeName the name of the org unit to look up
+     * @apiParam (query) {boolean} leafNodesOnly Whether only leaf nodes should be returned
+     * @apiParam (Query) {string} relationshipOrgUnitId Optional; The org unit id that is used to test the relationship with each of returned orgUnit item.
      *
      * @apiSuccessExample {json} 200
      *    [{
-     *      id: "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
-     *      name: "other-team"
-     *      description: "The other teams"
+     *      "id": "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7",
+     *      "name": "other-team",
+     *      "description": "The other teams",
+     *      "relationship": "unrelated"
      *    }]
      *
      * @apiErrorExample {json} 401/500
@@ -333,18 +399,91 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *      "errorMessage": "Not authorized"
      *    }
      */
-    router.get("/public/orgunits", MUST_BE_ADMIN, async (req, res) => {
+    router.get("/public/orgunits", async (req, res) => {
         try {
-            const nodeName = req.query.nodeName;
+            const nodeName: string = req.query.nodeName;
+            const leafNodesOnly: string = req.query.leafNodesOnly;
+            const relationshipOrgUnitId = req.query.relationshipOrgUnitId;
 
-            if (!nodeName || nodeName.length === 0) {
-                throw new Error("No nodeName parameter specified");
+            const nodes = await orgQueryer.getNodes({
+                name: nodeName,
+                leafNodesOnly: leafNodesOnly === "true"
+            });
+
+            if (relationshipOrgUnitId && nodes.length) {
+                for (let i = 0; i < nodes.length; i++) {
+                    const r = await orgQueryer.compareNodes(
+                        nodes[i]["id"],
+                        relationshipOrgUnitId
+                    );
+                    nodes[i]["relationship"] = r;
+                }
             }
 
-            const nodes = await orgQueryer.getNodesByName(nodeName);
             res.status(200).json(nodes);
         } catch (e) {
             respondWithError("/public/orgunits", res, e);
+        }
+    });
+
+    /**
+     * @apiGroup Auth
+     * @api {get} /v0/orgunits/root Get root organisation
+     * @apiDescription Gets the root organisation unit (top of the tree).
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *      id: "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
+     *      name: "other-team"
+     *      description: "The other teams"
+     *    }
+     *
+     * @apiErrorExample {json} 401/404/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 404, 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.get("/public/orgunits/root", async (req, res) => {
+        handleMaybePromise(
+            res,
+            orgQueryer.getRootNode(),
+            "GET /public/orgunits/root",
+            "Cannot locate the root tree node."
+        );
+    });
+
+    /**
+     * @apiGroup Auth
+     * @api {post} /v0/orgunits/root Create root organisation
+     * @apiDescription Creates the root organisation unit (top of the tree).
+     *
+     * @apiParamExample (Body) {json}:
+     *     {
+     *       id: "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
+     *       name: "other-team"
+     *       description: "The other teams"
+     *     }
+     *
+     * @apiSuccessExample {string} 200
+     *     {
+     *       "nodeId": "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
+     *     }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.post("/public/orgunits/root", MUST_BE_ADMIN, async (req, res) => {
+        try {
+            const nodeId = await orgQueryer.createRootNode(req.body);
+            res.status(200).json({ nodeId: nodeId });
+        } catch (e) {
+            respondWithError("POST /public/orgunits/root", res, e);
         }
     });
 
@@ -369,7 +508,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *      "errorMessage": "Not authorized"
      *    }
      */
-    router.get("/public/orgunits/:nodeId", MUST_BE_ADMIN, async (req, res) => {
+    router.get("/public/orgunits/:nodeId", async (req, res) => {
         const nodeId = req.params.nodeId;
         handleMaybePromise(
             res,
@@ -425,67 +564,6 @@ export default function createApiRouter(options: ApiRouterOptions) {
             });
         } catch (e) {
             respondWithError("PUT /public/orgunits/:nodeId", res, e);
-        }
-    });
-
-    /**
-     * @apiGroup Auth
-     * @api {get} /v0/orgunits/root Get root organisation
-     * @apiDescription Gets the root organisation unit (top of the tree).
-     *
-     * @apiSuccessExample {json} 200
-     *    {
-     *      id: "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
-     *      name: "other-team"
-     *      description: "The other teams"
-     *    }
-     *
-     * @apiErrorExample {json} 401/404/500
-     *    {
-     *      "isError": true,
-     *      "errorCode": 401, //--- or 404, 500 depends on error type
-     *      "errorMessage": "Not authorized"
-     *    }
-     */
-    router.get("/public/orgunits/root", MUST_BE_ADMIN, async (req, res) => {
-        handleMaybePromise(
-            res,
-            orgQueryer.getRootNode(),
-            "GET /public/orgunits/root",
-            "Cannot locate the root tree node."
-        );
-    });
-
-    /**
-     * @apiGroup Auth
-     * @api {post} /v0/orgunits/root Create root organisation
-     * @apiDescription Creates the root organisation unit (top of the tree).
-     *
-     * @apiParamExample (Body) {json}:
-     *     {
-     *       id: "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
-     *       name: "other-team"
-     *       description: "The other teams"
-     *     }
-     *
-     * @apiSuccessExample {string} 200
-     *     {
-     *       "nodeId": "e5f0ed5f-aa97-4e49-89a6-3f044aecc3f7"
-     *     }
-     *
-     * @apiErrorExample {json} 401/500
-     *    {
-     *      "isError": true,
-     *      "errorCode": 401, //--- or 500 depends on error type
-     *      "errorMessage": "Not authorized"
-     *    }
-     */
-    router.post("/public/orgunits/root", MUST_BE_ADMIN, async (req, res) => {
-        try {
-            const nodeId = await orgQueryer.createRootNode(req.body);
-            res.status(200).json({ nodeId: nodeId });
-        } catch (e) {
-            respondWithError("POST /public/orgunits/root", res, e);
         }
     });
 

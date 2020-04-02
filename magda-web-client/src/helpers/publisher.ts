@@ -1,5 +1,5 @@
 import { Publisher } from "../helpers/record";
-import { defaultPublisher } from "../helpers/record";
+import { emptyPublisher } from "../helpers/record";
 
 export function parsePublisher(publisherRaw?: Publisher): Publisher {
     let error: string | null = null;
@@ -7,7 +7,7 @@ export function parsePublisher(publisherRaw?: Publisher): Publisher {
         error = publisherRaw.message || "an error occurred";
     }
     if (!publisherRaw) {
-        return defaultPublisher;
+        return emptyPublisher;
     }
     const publisher = {
         name: publisherRaw.name,
@@ -15,7 +15,7 @@ export function parsePublisher(publisherRaw?: Publisher): Publisher {
         aspects:
             publisherRaw.aspects && publisherRaw.aspects["organization-details"]
                 ? publisherRaw.aspects
-                : defaultPublisher.aspects,
+                : emptyPublisher.aspects,
         error: error
     };
     return publisher;

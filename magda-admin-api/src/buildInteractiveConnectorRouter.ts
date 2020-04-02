@@ -1,8 +1,8 @@
 import "isomorphic-fetch";
 import buildConnectorManifest from "./buildConnectorManifest";
 import K8SApi from "./k8sApi";
-import * as express from "express";
-import * as HttpProxy from "http-proxy";
+import express from "express";
+import HttpProxy from "http-proxy";
 
 // Use type merging to add a connectorProxy property to Express's Request object.
 declare global {
@@ -22,6 +22,7 @@ export interface Options {
     pullPolicy: string;
     k8sApi: K8SApi;
     userId: string;
+    tenantId: number;
 }
 
 export default function buildInteractiveConnectorRouter(options: Options) {
@@ -71,6 +72,7 @@ async function createInteractiveJob(
             registryApiUrl: options.registryApiUrl,
             pullPolicy: options.pullPolicy,
             userId: options.userId,
+            tenantId: options.tenantId,
             interactive: true
         })
     );
@@ -210,9 +212,7 @@ async function ensureInteractiveConnectorOnce(
             setTimeout(resolve, 1000);
         });
 
-        connectorUrl = `http://${k8sApi.minikubeIP}:${
-            service.spec.ports[0].nodePort
-        }/v0`;
+        connectorUrl = `http://${k8sApi.minikubeIP}:${service.spec.ports[0].nodePort}/v0`;
     } else {
         // The Admin API is running inside the cluster.
         // We just need the IP address of the pod and we can talk to it directly.

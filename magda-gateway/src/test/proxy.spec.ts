@@ -1,16 +1,18 @@
 import {} from "mocha";
-import * as sinon from "sinon";
-import * as express from "express";
-import * as nock from "nock";
-import * as _ from "lodash";
-import * as supertest from "supertest";
-import * as URI from "urijs";
+import sinon from "sinon";
+import express from "express";
+import nock from "nock";
+import _ from "lodash";
+import supertest from "supertest";
+import URI from "urijs";
 
 import buildApp from "../buildApp";
 
 const PROXY_ROOTS = {
     "/api/v0/registry": "http://registry",
-    "/preview-map": "http://preview-map/"
+    "/preview-map": "http://preview-map/",
+    "/map/": "http://map/",
+    "/other/foo/bar/": "http://otherplace/foo/bar"
 };
 
 describe("proxying", () => {
@@ -32,15 +34,20 @@ describe("proxying", () => {
                     auth: true
                 }
             },
+            webProxyRoutesJson: {
+                map: "http://map",
+                other: "http://otherplace"
+            },
             helmetJson: "{}",
             cspJson: "{}",
             corsJson: "{}",
             authorizationApi: "http://127.0.0.1",
             sessionSecret: "secret",
             jwtSecret: "othersecret",
-            userId: "123",
+            userId: "b1fddd6f-e230-4068-bd2c-1a21844f1598",
             web: "https://127.0.0.1",
-            previewMap: "http://preview-map"
+            previewMap: "http://preview-map",
+            tenantUrl: "http://tenant"
         });
     });
 

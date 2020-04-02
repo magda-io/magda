@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tenant-api
+spec:
+  replicas: {{ .Values.replicas | default 1 }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
+  selector:
+    matchLabels:
+      service: tenant-api
+  template:
+    metadata:
+      labels:
+        service: tenant-api
+    spec:
+{{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1beta1") .Values.global.enablePriorityClass }}
+      priorityClassName: magda-8
+{{- end }}
+      containers:
+      - name: tenant-api
+        image: {{ template "dockerimage" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        command: [
+            "node",
+            "/usr/src/app/component/dist/index.js",
+            "--listenPort", "80",
+            "--dbHost", "tenant-db",
+            "--dbPort", "5432",
+            "--authApiUrl", "http://authorization-api/v0"
+        ]
+{{- if .Values.global.enableLivenessProbes }}
+        livenessProbe:
+          httpGet:
+            path: /v0/status/live
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /v0/status/ready
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
+{{- end }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        env:
+        - name: NODE_ENV
+          value: production
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: jwt-secret
+{{- if .Values.global.noDbAuth }}
+        - name: PGUSER
+          value: client
+{{- else }}
+        - name: PGUSER
+          value: client
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-passwords
+              key: tenant-db-client
+{{- end }}

@@ -1,4 +1,4 @@
-import * as _ from "lodash";
+import _ from "lodash";
 
 export type RegoValue = string | boolean | number | Array<any> | Object;
 
@@ -315,6 +315,63 @@ export class RegoTerm {
     isRef(): boolean {
         if (this.value instanceof RegoRef) return true;
         return false;
+    }
+
+    /**
+     * Return RegoRef instance if this term is a RegoRef.
+     *
+     * @returns {RegoRef}
+     * @memberof RegoTerm
+     */
+    getRef(): RegoRef {
+        if (this.isRef()) {
+            return this.value as RegoRef;
+        }
+        throw new Error(`Term ${this.asString()} is not a ref`);
+    }
+
+    /**
+     * If the term is a reference and it contains any collection lookup
+     * e.g.
+     * - objectA.propB.collectionC[_]
+     * - objectA.propB.collectionC[_].ABC[_].name
+     * - objectA.propB.collectionC[_].id
+     *
+     * @returns {boolean}
+     * @memberof RegoTerm
+     */
+    hasCollectionLookup(): boolean {
+        if (!this.isRef()) return false;
+        const ref = this.getRef();
+        return ref.hasCollectionLookup();
+    }
+
+    /**
+     * The term is not only a Reference but a reference contains simple collection lookup
+     * i.e. only contains one collection lookup and the whole ref ends with the only collection lookup
+     * e.g. objectA.propB.collectionC[_]
+     * Note: objectA.propB.collectionC[_].name is not a simple collection lookup as it resolve to single value (`name` property)
+     * rather than a collection
+     *
+     * @returns {boolean}
+     * @memberof RegoTerm
+     */
+    isSimpleCollectionLookup(): boolean {
+        if (!this.isRef()) return false;
+        const ref = this.getRef();
+        return ref.isSimpleCollectionLookup();
+    }
+
+    /**
+     *
+     *
+     * @returns {boolean}
+     * @memberof RegoTerm
+     */
+    isResolveAsCollectionValue(): boolean {
+        if (!this.isRef()) return false;
+        const ref = this.getRef();
+        return ref.isResolveAsCollectionValue();
     }
 
     /**
@@ -744,7 +801,7 @@ export class RegoRef {
             .forEach(prefix => {
                 if (!prefix) return;
                 const idx = result.indexOf(prefix);
-                if (idx === -1) return;
+                if (idx !== 0) return;
                 result = result.substring(prefix.length);
             });
         return result;
@@ -760,7 +817,7 @@ export class RegoRef {
                 } else {
                     if (part.type == "var") {
                         // --- it's a collection lookup
-                        // --- var name doesn't matter
+                        // --- var name doesn't matter for most cases
                         partStr = "[_]";
                     } else {
                         partStr = part.value;
@@ -771,12 +828,18 @@ export class RegoRef {
                 //--- a.[_].[_] should be a[_][_]
             })
             .join(".")
-            .replace(".[", "[");
+            .replace(/\.\[/g, "[");
         return this.removeAllPrefixs(str, removalPrefixs);
     }
 
     refString(removalPrefixs: string[] = []): string {
         return this.fullRefString(removalPrefixs).replace("\\[_\\]$", "");
+    }
+
+    asCollectionRefs(removalPrefixs: string[] = []): string[] {
+        return this.fullRefString(removalPrefixs)
+            .split("[_]")
+            .map(refStr => refStr.replace(/^\./, ""));
     }
 
     isOperator(): boolean {
@@ -786,7 +849,12 @@ export class RegoRef {
     // --- the first var type won't count as collection lookup
     hasCollectionLookup(): boolean {
         if (this.parts.length <= 1) return false;
-        else return this.parts.findIndex(part => part.type === "var") >= 1;
+        else {
+            return (
+                this.parts.slice(1).findIndex(part => part.type === "var") !==
+                -1
+            );
+        }
     }
 
     // -- simple collection only contains 1 level lookup
@@ -795,10 +863,16 @@ export class RegoRef {
         if (this.parts.length <= 1) return false;
         else {
             return (
-                this.parts.findIndex(part => part.type === "var") ===
-                this.parts.length - 1
+                this.parts.slice(1).findIndex(part => part.type === "var") ===
+                this.parts.length - 2
             );
         }
+    }
+
+    // --- see comment for same name method of RegoTerm
+    isResolveAsCollectionValue(): boolean {
+        const refString = this.fullRefString();
+        return refString.lastIndexOf("[_]") === refString.length - 3;
     }
 
     asOperator(): string {
@@ -862,6 +936,8 @@ export default class OpaCompileResponseParser {
      */
     public rules: RegoRule[] = [];
 
+    public queries: RegoExp[] = [];
+
     /**
      * A cache of all resolved rule result
      *
@@ -894,33 +970,68 @@ export default class OpaCompileResponseParser {
             return [];
         }
         this.data = this.data.result;
-        if (!_.isArray(this.data.support) || !this.data.support.length) {
+        if (
+            (!this.data.queries ||
+                !_.isArray(this.data.queries) ||
+                !this.data.queries.length) &&
+            (!_.isArray(this.data.support) || !this.data.support.length)
+        ) {
             // --- mean no rule matched
             return [];
         }
-        const packages: any[] = this.data.support;
-        packages.forEach(p => {
-            if (!_.isArray(p.rules) || !p.rules.length) return;
-            const packageName =
-                p.package && _.isArray(p.package.path)
-                    ? RegoRef.convertToFullRefString(p.package.path)
-                    : "";
 
-            const rules: any[] = p.rules;
-            rules.forEach(r => {
-                const regoRule = RegoRule.parseFromData(r, packageName, this);
-                this.completeRules.push(regoRule);
-                // --- only save matched rules
-                if (!regoRule.isCompleteEvaluated) {
-                    this.rules.push(regoRule);
-                } else {
-                    if (regoRule.isMatched) {
-                        this.rules.push(regoRule);
-                    }
-                }
+        const queries = this.data.queries;
+
+        if (queries) {
+            queries.forEach((q: any, i: number) => {
+                const rule = new RegoRule({
+                    name: "queryRule" + 1,
+                    fullName: "queryRule" + 1,
+                    expressions: q.map((innerQ: any) =>
+                        RegoExp.parseFromData(innerQ, this)
+                    ),
+                    isDefault: false,
+                    isCompleteEvaluated: false,
+                    value: undefined,
+                    parser: this
+                });
+
+                this.completeRules.push(rule);
+                this.rules.push(rule);
             });
-        });
-        this.calculateCompleteRuleResult();
+        }
+
+        const packages: any[] = this.data.support;
+
+        if (packages) {
+            packages.forEach(p => {
+                if (!_.isArray(p.rules) || !p.rules.length) return;
+                const packageName =
+                    p.package && _.isArray(p.package.path)
+                        ? RegoRef.convertToFullRefString(p.package.path)
+                        : "";
+
+                const rules: any[] = p.rules;
+                rules.forEach(r => {
+                    const regoRule = RegoRule.parseFromData(
+                        r,
+                        packageName,
+                        this
+                    );
+                    this.completeRules.push(regoRule);
+                    // --- only save matched rules
+                    if (!regoRule.isCompleteEvaluated) {
+                        this.rules.push(regoRule);
+                    } else {
+                        if (regoRule.isMatched) {
+                            this.rules.push(regoRule);
+                        }
+                    }
+                });
+            });
+        }
+
+        this.calculateCompleteResult();
         this.reduceDependencies();
         return this.rules;
     }
@@ -935,7 +1046,7 @@ export default class OpaCompileResponseParser {
      * @private
      * @memberof OpaCompileResponseParser
      */
-    private calculateCompleteRuleResult() {
+    private calculateCompleteResult() {
         const fullNames = this.rules.map(r => r.fullName);
         fullNames.forEach(fullName => {
             const rules = this.rules.filter(r => r.fullName === fullName);

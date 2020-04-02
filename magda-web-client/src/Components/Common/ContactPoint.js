@@ -30,15 +30,24 @@ class ContactPoint extends React.Component {
                         <div className="heading">
                             {translate(["contactPointTitle", "Contact Point"])}:
                         </div>
-                        {this.state.reveal ? (
+                        <div className="no-print">
+                            {this.state.reveal ? (
+                                <MarkdownViewer
+                                    markdown={this.props.contactPoint}
+                                />
+                            ) : (
+                                <ToggleButton
+                                    onClick={this.onRevealButtonClick}
+                                >
+                                    <span>Click to reveal</span>
+                                </ToggleButton>
+                            )}
+                        </div>
+                        <div className="print-only">
                             <MarkdownViewer
                                 markdown={this.props.contactPoint}
                             />
-                        ) : (
-                            <ToggleButton onClick={this.onRevealButtonClick}>
-                                <span>Click to reveal</span>
-                            </ToggleButton>
-                        )}
+                        </div>
                     </div>
                 )}
             </MagdaNamespacesConsumer>

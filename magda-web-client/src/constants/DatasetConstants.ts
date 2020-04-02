@@ -492,6 +492,11 @@ export const languages = {
     zza: "Zaza; Dimili; Dimli; Kirdki; Kirmanjki; Zazaki"
 };
 
+export const languageOptions = Object.keys(languages).map(key => ({
+    label: languages[key],
+    value: key
+}));
+
 export const importance = {
     critical: "Critical",
     high: "High",
@@ -506,18 +511,15 @@ export const status = {
 };
 
 export const accrualPeriodicity = {
-    continual: "Continual",
+    continual: "In Real Time",
     hourly: "Every Hour",
     daily: "Every Day",
     weekly: "Every Week",
     fortnightly: "Every Fortnight",
     monthly: "Every Month",
     yearly: "Every Year",
-    quinquennialy: "Every 5 years",
-    decennially: "Every 10 years",
-    centennially: "Every 100 years",
     asNeeded: "As Needed",
-    notUpdated: "Not Updated"
+    custom: "Custom..."
 };
 
 export const accessLevel = {
@@ -529,35 +531,33 @@ export const accessLevel = {
 };
 
 export const disseminationLimits = {
-    "For Official Use Only": "For Official Use Only",
-    Sensitive: "Sensitive",
-    "Sensitive: Personal": "Sensitive: Personal",
-    "Sensitive: Legal": "Sensitive: Legal",
-    "Sensitive: Cabinet": "Sensitive: Cabinet",
-    "Sensitive: Commercial": "Sensitive: Commercial",
-    "Sensitive: Cultural": "Sensitive: Cultural",
-    "Sensitive: Legal Privilege": "Sensitive: Legal Privilege",
-    "Sensitive: Legislative Secrecy": "Sensitive: Legislative Secrecy"
+    "LEGAL PRIVILEGE": "Legal Privilege",
+    "LEGISLATIVE SECRECY": "Legislative Secrecy",
+    "PERSONAL PRIVACY": "Personal Privacy"
 };
 
 export const classification = {
-    UNCLASSIFIED: "UNCLASSIFIED",
+    UNOFFICIAL: "UNOFFICIAL",
+    OFFICIAL: "OFFICIAL",
+    "OFFICIAL:SENSITIVE": "OFFICIAL:SENSITIVE",
     PROTECTED: "PROTECTED",
-    CONFIDENTIAL: "CONFIDENTIAL",
     SECRET: "SECRET",
     "TOP SECRET": "TOP SECRET"
 };
 
-export const contactPointDisplay = {
-    role: "Display contact point(s) role (recommended)",
-    name: "Display contact point(s) name",
-    organisation: "Display responsible organisation"
+export type ContactPointDisplayOption = "team" | "custodian" | "organization";
+
+export const contactPointDisplay: Record<ContactPointDisplayOption, string> = {
+    team: "Display maintaining team name (recommended)",
+    organization: "Display organisation name",
+    custodian: "Display data custodian area name"
 };
 
 export const publishingLevel = {
-    agency: "Everyone in my organisation",
-    team: "My team only"
-    // public: "Everyone (Open Data)"
+    agency: "Everyone in the department (recommended)",
+    division: "My division only",
+    branch: "My branch only",
+    team: "My business area only"
 };
 
 // TODO: this is a preconfigured agency level configured license lookup feature being faked here
@@ -567,11 +567,17 @@ export const licenseLevel = {
         "For all of government use (Whole of Australian Government license)",
     agency: "For just my department use (Other organisation-specific license)",
     section: "For just my section use (Other organisation-specific license)",
-    team: "For just my team use (Other organisation-specific license)",
+    team: "For just my business area use (Other organisation-specific license)",
     custom: "Other custom license"
 };
 
 export const datasetLicenseLevel = {
     dataset: "Dataset level license",
-    distribution: "Distribution level license"
+    distribution: "Distribution (or file/URL) level license"
+};
+
+export const datasetCurrencyStatus = {
+    CURRENT: "Current",
+    SUPERSEDED: "Superseded",
+    RETIRED: "Retired"
 };

@@ -12,7 +12,7 @@ import AdminHeader from "Components/Admin/AdminHeader";
 
 class StoriesAdminPage extends Component {
     state = {
-        connectors: []
+        connectors: null
     };
 
     updateState(update: any) {
@@ -30,7 +30,7 @@ class StoriesAdminPage extends Component {
 
     render() {
         const { connectors } = this.state;
-        connectors.sort((a, b) =>
+        const sortedConnectors = (connectors || []).sort((a, b) =>
             a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
         );
         return (
@@ -39,7 +39,7 @@ class StoriesAdminPage extends Component {
                 <button className="au-btn" onClick={() => this.refresh()}>
                     Refresh
                 </button>
-                {connectors.length === 0 ? (
+                {!connectors ? (
                     <Spinner />
                 ) : (
                     <table>
@@ -53,7 +53,9 @@ class StoriesAdminPage extends Component {
                             </tr>
                         </thead>
                         <tbody>
-                            {connectors.map(this.renderConnector.bind(this))}
+                            {sortedConnectors.map(
+                                this.renderConnector.bind(this)
+                            )}
                         </tbody>
                     </table>
                 )}

@@ -1,0 +1,137 @@
+@import "variables";
+@import "./pancake/sass/core.scss";
+
+.dataset-add-meta-data-pages {
+    .dataset-access-and-use-page {
+        h2 {
+            font-size: 38px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.61;
+            letter-spacing: normal;
+            color: #30384d;
+            margin-bottom: 80px;
+        }
+
+        h3 {
+            font-size: 29px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.03;
+            letter-spacing: normal;
+            color: #484848;
+            margin-bottom: 76px;
+        }
+
+        .question-publish-to-dga {
+            margin-bottom: 83px;
+            .tooltip-container {
+                position: relative;
+            }
+            .tooltiptext {
+                width: 300px;
+                left: -80px;
+            }
+            .input-area {
+                padding-left: 10px;
+            }
+        }
+
+        .question-who-can-see-dataset {
+            margin-bottom: 54px;
+            .input-area {
+                padding-left: 10px;
+            }
+        }
+
+        .question-access-notes textarea {
+            padding-left: 16px !important;
+            margin-bottom: 50px;
+        }
+
+        .question-license-apply-type {
+            margin-bottom: 40px;
+        }
+
+        .question-license-restriction-type {
+            margin-bottom: 36px;
+
+            .textEditorEx-outter-container {
+                margin-top: 20px;
+                width: 100%;
+                max-width: none !important;
+                .au-text-input {
+                    max-width: none !important;
+                }
+                .edit-icon-container {
+                    position: initial;
+                }
+            }
+            .invalid {
+                .edit-icon {
+                    top: 45px !important;
+                }
+            }
+            .license-distribution-option-container {
+                .fileBlock {
+                    border: solid 1px #cccaca;
+                    margin-bottom: 15px;
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+
+                .fileBlock-file {
+                    width: 50%;
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                }
+
+                .fileBlock-icon {
+                    display: flex;
+                    padding: 0.8em 0.8em 0.8em 1.6em;
+                }
+
+                .fileBlock-control {
+                    padding-left: 0.8em;
+                    padding-right: 1.6em;
+                    flex: 1;
+                }
+
+                .fileBlock-text {
+                    display: inline-block;
+                    padding: 0.8em;
+                    font-size: 15px;
+                    font-weight: normal;
+                    font-style: normal;
+                    font-stretch: normal;
+                    line-height: 1.33;
+                    letter-spacing: normal;
+                    color: #484848;
+                }
+                .textEditorEx-outter-container {
+                    margin-top: 10px !important;
+                    .au-text-input {
+                        margin-bottom: 0px;
+                    }
+                }
+            }
+        }
+
+        .question-security-classification {
+            margin-bottom: 52px;
+            .inner {
+                width: 500px;
+                text-align: left;
+            }
+
+            .au-page-alerts {
+                margin-top: 20px;
+            }
+        }
+    }
+}

@@ -1,12 +1,13 @@
-import * as crypto from "crypto";
+import crypto from "crypto";
 
 export const RecordTypeMapping = {
     Organization: "org",
     Dataset: "ds",
-    Distribution: "dist"
+    Distribution: "dist",
+    Group: "gp"
 };
 
-export type RecordType = "Organization" | "Dataset" | "Distribution";
+export type RecordType = "Organization" | "Dataset" | "Distribution" | "Group";
 
 export default class ConnectorRecordId {
     constructor(

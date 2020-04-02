@@ -189,7 +189,7 @@ storiesOf("API viewer", module)
     ))
     .add("dataset detail viewer", () => (
         <ApiViewer
-            url="http://search.data.gov.au/api/v0/registry/records/19432f89-dc3a-4ef3-b943-5326ef1dbecc?aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&dereference=true&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=source-link-status"
+            url="http://search.data.gov.au/api/v0/registry-read-only/records/19432f89-dc3a-4ef3-b943-5326ef1dbecc?aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&dereference=true&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=source-link-status"
             type="json"
         />
     ));

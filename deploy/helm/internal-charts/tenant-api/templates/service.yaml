@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tenant-api
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+{{- if .Values.global.exposeNodePorts }}
+    nodePort: 30130
+  type: NodePort
+{{- end }}
+  selector:
+    service: tenant-api

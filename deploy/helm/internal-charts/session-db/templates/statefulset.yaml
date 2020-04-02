@@ -1,0 +1,52 @@
+{{- if and (not .Values.global.useCombinedDb) (not .Values.global.useCloudSql) }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: session-db
+spec:
+  serviceName: session-db
+  replicas: 1
+  selector:
+    matchLabels:
+      service: session-db
+  template:
+    metadata:
+      labels:
+        service: session-db
+    spec:
+{{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1beta1") .Values.global.enablePriorityClass }}
+      priorityClassName: magda-9
+{{- end }}
+      terminationGracePeriodSeconds: 60
+      affinity:
+{{- if .Values.affinity }}
+{{ toYaml .Values.affinity | indent 8 }}
+{{- end }}
+      containers:
+      - name: session-db
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        image: {{ template "postgres" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        ports:
+        - containerPort: 5432
+        {{- template "magda.postgresLivenessProbe" . }}
+        env:
+        - name: PGDATA
+          value: /var/pv/data
+        {{- template "magda.postgres-env" . }}
+        volumeMounts:
+        - mountPath: /var/pv
+          name: session-data
+  volumeClaimTemplates:
+  - metadata:
+      name: session-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+    {{- if .Values.data.storageClass }}
+      storageClassName: "{{ .Values.data.storageClass }}"
+    {{- end }}
+      resources:
+        requests:
+          storage: "{{ .Values.data.storage }}"
+{{- end }}

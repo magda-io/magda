@@ -1,0 +1,88 @@
+.add-dataset-progress-meter {
+    height: 149px;
+    background-color: #f4f4f4;
+    .heading {
+        margin-top: 44px;
+        height: 105px;
+        line-height: 61px;
+        font-size: 28px;
+        font-weight: normal;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: 1.61;
+        letter-spacing: normal;
+        color: #3c3c3c;
+        text-align: center;
+    }
+    .step-item {
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+        text-align: center;
+    }
+    .step-item-body {
+        margin-top: 37px;
+        .col-sm-2 {
+            width: 20% !important;
+        }
+    }
+    .step-item-title {
+        font-size: 16px;
+        font-weight: 500;
+        font-style: normal;
+        font-stretch: normal;
+        letter-spacing: normal;
+        text-align: center;
+    }
+
+    .current-item {
+        color: #4b2a85;
+        cursor: default;
+        .round-number-icon {
+            background-color: #4b2a85;
+        }
+        .step-item-title {
+            margin-top: 6px;
+        }
+    }
+
+    .future-item {
+        color: #cccaca;
+        cursor: default;
+        .round-number-icon {
+            background-color: #cccaca;
+        }
+        .step-item-title {
+            margin-top: 6px;
+        }
+    }
+
+    .past-item {
+        color: #4b2a85;
+        text-decoration: none;
+        cursor: pointer;
+        .round-number-icon {
+            background-color: #4b2a85;
+        }
+    }
+
+    .future-item.is-edit {
+        cursor: pointer;
+    }
+
+    .round-number-icon {
+        margin-left: auto;
+        margin-right: auto;
+        width: 51px;
+        height: 51px;
+        border-radius: 51px;
+        font-size: 28px;
+        font-weight: bold;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: 51px;
+        letter-spacing: normal;
+        color: #ffffff;
+        text-align: center;
+    }
+}

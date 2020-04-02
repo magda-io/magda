@@ -1,12 +1,13 @@
-import * as express from "express";
+import express from "express";
 import { Router } from "express";
-import * as _ from "lodash";
-import * as escapeStringRegexp from "escape-string-regexp";
+import _ from "lodash";
+import escapeStringRegexp from "escape-string-regexp";
 
-import buildJwt from "@magda/typescript-common/dist/session/buildJwt";
+import buildJwt from "magda-typescript-common/src/session/buildJwt";
 
 import createBaseProxy from "./createBaseProxy";
 import Authenticator from "./Authenticator";
+import { TenantMode } from "./setupTenantMode";
 
 export interface ProxyTarget {
     to: string;
@@ -21,21 +22,22 @@ export interface ApiRouterOptions {
     routes: {
         [localRoute: string]: ProxyTarget;
     };
+    tenantMode: TenantMode;
 }
 
 export default function createApiRouter(options: ApiRouterOptions): Router {
-    var proxy = createBaseProxy();
+    var proxy = createBaseProxy(options.tenantMode);
 
     const authenticator = options.authenticator;
     const jwtSecret = options.jwtSecret;
 
     const router: Router = express.Router();
 
-    proxy.on("proxyReq", (proxyReq, req: any, res, options) => {
+    proxy.on("proxyReq", (proxyReq, req: any, _res, _options) => {
         if (jwtSecret && req.user) {
             proxyReq.setHeader(
                 "X-Magda-Session",
-                buildJwt(jwtSecret, req.user.id)
+                buildJwt(jwtSecret, req.user.id, { session: req.user.session })
             );
         }
     });
@@ -77,6 +79,10 @@ export default function createApiRouter(options: ApiRouterOptions): Router {
     }
 
     _.forEach(options.routes, (value: ProxyTarget, key: string) => {
+        // --- skip tenant api router if multiTenantsMode is off
+        if (key === "tenant" && !options.tenantMode.multiTenantsMode) {
+            return;
+        }
         proxyRoute(
             `/${key}`,
             value.to,

@@ -5,6 +5,7 @@ import {
     ParsedDistribution,
     RecordAction
 } from "../helpers/record";
+import { FetchError } from "types";
 
 const initialData: RecordResult = {
     datasetIsFetching: false,
@@ -16,7 +17,7 @@ const initialData: RecordResult = {
 type RecordResult = {
     datasetIsFetching: boolean;
     distributionIsFetching: boolean;
-    datasetFetchError?: Object;
+    datasetFetchError?: FetchError;
     distributionFetchError?: number;
     dataset?: ParsedDataset;
     distribution?: ParsedDistribution;
@@ -26,7 +27,7 @@ type RecordResult = {
 
 type NewDataset = {
     isCreating?: boolean;
-    error?: Object;
+    error?: Error | null;
     dataset?: Object;
 };
 
@@ -35,7 +36,7 @@ const record = (state: RecordResult = initialData, action: RecordAction) => {
         case "REQUEST_DATASET":
             return Object.assign({}, state, {
                 datasetIsFetching: true,
-                datasetFetchError: null
+                datasetFetchError: undefined
             });
         case "RECEIVE_DATASET":
             return Object.assign({}, state, {
@@ -80,6 +81,13 @@ const record = (state: RecordResult = initialData, action: RecordAction) => {
                 newDataset: {
                     isCreating: false,
                     error: action.error
+                }
+            });
+        case "DATASET_CREATE_RESET":
+            return Object.assign({}, state, {
+                newDataset: {
+                    isCreating: false,
+                    error: null
                 }
             });
         case "REQUEST_DATASET_CREATE":

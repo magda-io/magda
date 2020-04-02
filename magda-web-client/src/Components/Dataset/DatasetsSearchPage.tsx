@@ -43,7 +43,6 @@ class Search extends Component<Props & any> {
         self.onDismissError = this.onDismissError.bind(this);
         self.updateSearchText = this.updateSearchText.bind(this);
         self.onToggleDataset = this.onToggleDataset.bind(this);
-        self.onPageChange = this.onPageChange.bind(this);
         // it needs to be undefined here, so the default value should be from the url
         // once this value is set, the value should always be from the user input
         this.state = {
@@ -133,17 +132,6 @@ class Search extends Component<Props & any> {
             !defined(queryString.parse(this.props.location.search).q) ||
             queryString.parse(this.props.location.search).q.length === 0
         );
-    }
-
-    onPageChange(i) {
-        this.context.router.history.push({
-            pathname: this.props.location.pathname,
-            search: queryString.stringify(
-                Object.assign(queryString.parse(this.props.location.search), {
-                    page: i
-                })
-            )
-        });
     }
 
     /**
@@ -257,7 +245,7 @@ class Search extends Component<Props & any> {
                                                 this.props.hitCount /
                                                     searchResultsPerPage
                                             )}
-                                            onPageChange={this.onPageChange}
+                                            location={this.props.location}
                                             totalItems={this.props.hitCount}
                                         />
                                     )}
@@ -306,7 +294,4 @@ function mapStateToProps(state, ownProps) {
     };
 }
 
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(Search);
+export default connect(mapStateToProps, mapDispatchToProps)(Search);

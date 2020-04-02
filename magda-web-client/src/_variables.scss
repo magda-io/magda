@@ -1,24 +1,39 @@
-$AU-color-foreground-action: #4c2a85;
-$AU-color-foreground-focus: #0e0021;
-$AU-color-foreground-text: #0e0021;
+@import "fns";
+
+$magda-color-primary: #320e3b;
+$magda-color-secondary: #ffffff;
+
+$magda-color-light: lighten($magda-color-primary, 10%);
+$magda-color-dark: darken($magda-color-primary, 15%);
+
+$AU-color-foreground-action: $magda-color-light;
+$AU-color-foreground-focus: $magda-color-dark;
+$AU-color-foreground-text: $magda-color-dark;
 $AU-color-background: #ffffff;
+$AU-color-preview: #f5f5f5;
 
 $AU-colordark-foreground-action: #f7f7f7;
-$AU-colordark-foreground-focus: #6b7fd7;
+$AU-colordark-foreground-focus: $magda-color-secondary;
 $AU-colordark-foreground-text: #f7f7f7;
-$AU-colordark-background: #320e3b;
+$AU-colordark-background: $magda-color-primary;
 
-$header-color-background: #ffffff;
+$header-color-background: $magda-color-secondary;
 $header-opacity-desktop-background: 0.9;
-$header-color-border: #341039;
+$header-color-border: $magda-color-primary;
 
-$header-color-text: $AU-color-foreground-action;
-$header-color-action: $AU-color-foreground-action;
+$header-color-text: white-if-bg-too-dark(
+    $AU-color-foreground-action,
+    $header-color-background
+);
+$header-color-action: white-if-bg-too-dark(
+    $AU-color-foreground-action,
+    $header-color-background
+);
 $header-color-action-background: transparent;
 $header-color-focus: #fff;
-$header-color-focus-background: #341039;
+$header-color-focus-background: $magda-color-primary;
 
-$header-color-mobile-toggle-button-text: #6b7fd7;
+$header-color-mobile-toggle-button-text: $magda-color-secondary;
 $header-color-mobile-toggle-button-icon: #000000;
 $header-color-mobile-nav-background: white;
 $header-color-mobile-nav-border-bottom: #dad9db;
@@ -29,17 +44,19 @@ $header-color-mobile-nav-active: inherit;
 $header-color-mobile-nav-active-background: #f4f3f5;
 $header-color-mobile-nav-active-border: $AU-colordark-background;
 $header-color-mobile-nav-focus: #ffffff;
-$header-color-mobile-nav-focus-background: #341039;
+$header-color-mobile-nav-focus-background: $magda-color-dark;
 $header-color-mobile-nav-focus-border: transparent;
 $header-color-mobile-nav-content: inherit;
 $header-color-mobile-nav-content-background: transparent;
 $header-color-mobile-nav-content-border-bottom: $AU-color-foreground-action;
 
 $footer-color-background: $AU-colordark-background;
-$footer-color-border: $AU-colordark-foreground-focus;
+$footer-color-border: $magda-color-secondary;
 $footer-color-text: $AU-colordark-foreground-text;
 $footer-color-action: $AU-colordark-foreground-action;
-$footer-color-focus: $AU-colordark-foreground-focus;
+$footer-color-focus: $magda-color-secondary;
+
+$add-dataset-page-button-top-rows: #30384d;
 
 $magda-green: #16a085;
 $magda-red: #c0392b;
@@ -47,8 +64,7 @@ $magda-yellow: #f1c40f;
 
 $banner-text: $AU-color-foreground-text;
 
-$minimum: 576px;
+$minimum: 300px;
 $small: 768px;
 $medium: 992px;
 $large: 1200px;
-@import "./pancake/sass/core.scss";

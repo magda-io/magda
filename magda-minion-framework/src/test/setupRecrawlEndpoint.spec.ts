@@ -1,12 +1,12 @@
-import * as request from "supertest";
+import request from "supertest";
 import { Server } from "http";
-import * as express from "express";
-import * as sinon from "sinon";
+import express from "express";
+import sinon from "sinon";
 import { expect } from "chai";
 
-import { Record } from "@magda/typescript-common/dist/generated/registry/api";
-import { lcAlphaNumStringArbNe } from "@magda/typescript-common/dist/test/arbitraries";
-import jsc from "@magda/typescript-common/dist/test/jsverify";
+import { Record } from "magda-typescript-common/src/generated/registry/api";
+import { lcAlphaNumStringArbNe } from "magda-typescript-common/src/test/arbitraries";
+import jsc from "magda-typescript-common/src/test/jsverify";
 
 import MinionOptions from "../MinionOptions";
 import fakeArgv from "./fakeArgv";
@@ -34,8 +34,10 @@ baseSpec(
                 argv: fakeArgv({
                     internalUrl: "example",
                     registryUrl: "example",
+                    enableMultiTenant: true,
+                    tenantUrl: "example",
                     jwtSecret: "jwtSecret",
-                    userId: "userId",
+                    userId: "b1fddd6f-e230-4068-bd2c-1a21844f1598",
                     listenPort: listenPort()
                 }),
                 id: "id",
@@ -76,8 +78,10 @@ baseSpec(
                 argv: fakeArgv({
                     internalUrl: "example",
                     registryUrl: "example",
+                    enableMultiTenant: true,
+                    tenantUrl: "example",
                     jwtSecret: "jwtSecret",
-                    userId: "userId",
+                    userId: "b1fddd6f-e230-4068-bd2c-1a21844f1598",
                     listenPort: listenPort()
                 }),
                 id: "id",
@@ -146,8 +150,10 @@ baseSpec(
                             argv: fakeArgv({
                                 internalUrl: "example",
                                 registryUrl: "example",
+                                enableMultiTenant: true,
+                                tenantUrl: "example",
                                 jwtSecret: "jwtSecret",
-                                userId: "userId",
+                                userId: "b1fddd6f-e230-4068-bd2c-1a21844f1598",
                                 listenPort: listenPort()
                             }),
                             id: "id",

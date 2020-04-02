@@ -42,7 +42,7 @@ export const mustBeAdmin = (baseAuthUrl: string, jwtSecret: string) => {
     const getUserInstance = getUser(baseAuthUrl, jwtSecret);
     return (req: Request, res: Response, next: () => void) => {
         getUserInstance(req, res, () => {
-            if (req.user && req.user.isAdmin) {
+            if (req.user && (req.user as any).isAdmin) {
                 next();
             } else {
                 console.warn("Rejecting because user is not an admin");

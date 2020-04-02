@@ -1,14 +1,14 @@
-import * as express from "express";
+import express from "express";
 import buildConnectorManifest from "./buildConnectorManifest";
 import buildInteractiveConnectorRouter from "./buildInteractiveConnectorRouter";
-import * as _ from "lodash";
+import _ from "lodash";
 import K8SApi, { K8SApiType } from "./k8sApi";
-import { mustBeAdmin } from "@magda/typescript-common/dist/authorization-api/authMiddleware";
+import { mustBeAdmin } from "magda-typescript-common/src/authorization-api/authMiddleware";
 
 import {
     installStatusRouter,
     createServiceProbe
-} from "@magda/typescript-common/dist/express/status";
+} from "magda-typescript-common/src/express/status";
 
 export interface Options {
     dockerRepo: string;
@@ -19,6 +19,7 @@ export interface Options {
     pullPolicy: string;
     jwtSecret: string;
     userId: string;
+    tenantId: number;
     namespace?: string;
 }
 
@@ -170,7 +171,8 @@ export default function buildApiRouter(options: Options) {
                                 dockerRepo: options.dockerRepo,
                                 registryApiUrl: options.registryApiUrl,
                                 pullPolicy: options.pullPolicy,
-                                userId: options.userId
+                                userId: options.userId,
+                                tenantId: options.tenantId
                             })
                         )
                         .then((result: any) => {
@@ -218,7 +220,8 @@ export default function buildApiRouter(options: Options) {
             registryApiUrl: options.registryApiUrl,
             pullPolicy: options.pullPolicy,
             k8sApi,
-            userId: options.userId
+            userId: options.userId,
+            tenantId: options.tenantId
         })
     );
 

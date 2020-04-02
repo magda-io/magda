@@ -1,24 +1,122 @@
+# CHANGELOG
+
+## 0.0.57
+
+General:
+
+-   CSV Connector can now process ampersand character properly
+-   Fixed broken link minion causes json schema validation error
+-   Upgraded typescript to 3.7.2 & Use [Project References](https://www.typescriptlang.org/docs/handbook/project-references.html) to organize typescript project
+-   Upgraded prettier to 1.19.1 to [support typescript 3.7 better](https://prettier.io/blog/2019/11/09/1.19.0.html)
+-   Moved out [connectors](https://github.com/magda-io?utf8=%E2%9C%93&q=magda+connector) & [minions](https://github.com/magda-io?utf8=%E2%9C%93&q=magda-minion) from main magda repostory
+-   Broke helm chart to `magda-core` (core magda components excluding `connectors` & `minions`) & `magda` (full magda chart) and adjusted CI pipeline accordingly
+-   Release [npm packages](https://www.npmjs.com/search?q=%40magda) for building `connectors` & `minions` without depending on main repo
+-   Upgrade charts to use with Helm 3, Kubernetes 1.17 and Minikube 1.7.2
+-   Make recompiling and updating create secrets scripts an action in the CI
+-   Move [magda-preview-map](https://github.com/magda-io/magda-preview-map) out of the core repo
+-   Upgraded everything cert-manager related to work with v0.13
+-   Update build & run document to provide more information regarding running local build connector & minion docker images
+
+UI:
+
+-   Fixed the issue of modifying date string in text input using backspaces to an empty string will cause text input to reset text input
+-   Added pre-specified options for themes on Add dataset page
+-   User can't input a future date to date of last modification on add dataset page
+-   Allow to config whether keywords / themes input can accept manual inputs (or only pre-defined phrases)
+-   Only check for validity in temporal filters (in the search dataset page)
+-   Allow a blacklist of strings to be specified for automatic keyword generation
+-   Make the global notification banner configurable
+-   Removed all references to the DTA Design System react components, so that all styles come through our SCSS compilation, which should make SCSS smaller and more consistent.
+-   Swap the order of custodian & team dropdown on add dataset page
+-   Updated text & margin of add files page to match the new design
+-   Updated Add Dataset Welcome screen options UI design
+-   Added UI for "Link to dataset already hosted online" box
+-   Added UI for "Link to an API or web service" box
+-   Added UI for storing files
+-   Added UI for "Publish as Open Data to data.gov.au"
+-   Refactor view dataset page & remove the edit function from the page
+-   Clarify tooltip text
+
+Storage:
+
+-   Add an API for storing and streaming content
+-   Add a DELETE endpoint
+-   Improves error handling (returns 404 from GET if the file doesn't exist)
+-   Add apidocs
+-   Add endpoint to create a bucket
+-   Restrict file upload to admins only
+-   Add authorization to GET endpoint
+-   Support multipart upload
+-   Fixed: minio chart will not be deployed if storage-api is not turned on
+-   Make MinIO a dependency of storage's helm chart
+
+Gateway:
+
+-   Add /data to ckan URL, remove the `came_from` param
+
+Authorization:
+
+-   Made integration tests for authorisation run automatically as part of CI.
+-   Added ability to set per-record authorization policies in the registry (for getting a single record)
+-   Added ability to set per-record authorization policies in the registry (for getting multiple records)
+-   Added ability to use OPA policies that use data types other than strings in the registry
+-   Added authorization inside links with dereferencing on or off, for the `records/<id>` endpoint
+-   Added authorization inside links with dereferencing on or off, for the `records` endpoint
+-   Added per-record authorization around the `records/summary/<recordid>` endpoint matching the `records/<id>` one.
+
+Others:
+
+-   Use a "Year" column from a CSV file to extract a temporal extent
+-   Fixed Registry History API Performance Issue when limit=1 & Updated Registry History API Document
+
 ## 0.0.56
+
+General:
+
+-   Add multi-tenant support. Deployed as single tenant by default.
+-   Add access control capability to registry api, only applying to read operations currently.
+    The registry service can be configured to support either hierarchical organization based access
+    policy (default) or Esri groups based access policy.
+-   Add esri portal connector. Read its README.md file before use.
+-   Changed the way of `auth-secrets` to be created in gitlab
+-   Add horizontal pod autoscalers to crucial services
+
+Registry:
+
+-   Changed database schema.
+-   Provide services based on Tenant IDs.
+-   Fixed PATCH request to registry won't trigger notification to webhook
+-   Moved provenance and information security information out of `dcat-dataset-strings`.
+-   Removed some unused fields from `dcat-dataset-strings` - it should now be back to looking more-or-less like DCAT.
+-   Added the feature of validating aspect data against JSON Schema (Default to off)
+-   Fixed request for all tenant records returning `[]`.
+-   Made the registry treat tenant id `NULL` as equivalent to tenant id `0`
+
+Gateway:
+
+-   Add tenant ID header to client requests.
+-   Add ArcGIS/ESRI Authentication provider, including support for on-premise instances of ArcGIS Portal.
+-   Add Vanguard (WS-FED) Authentication provider
+-   Upgrade passport google strategy to 2.0.0 to solve the legacy API access issue
+-   Add `webProxyRoutesJson` command-line argument, allowing non-API proxy routes to be configured.
+-   Only start / keep sessions for logged-in users to make content cachable for non-logged-in users
 
 Search:
 
 -   Prevent freeText query from being None which will cause score to be 0
+-   Add tenant specific search.
+-   Fixed facet options (publishers) API error: Invalid aggregation name
+-   Fixed Querying formats in upper case causes two formats to be selected
 
 Indexer:
 
 -   Fixed indexer throws an error when temporalCoverage aspects intervals is an empty array
-
-Registry:
-
--   PATCH request to registry won't trigger notification to webhook
-
-Others:
-
--   Made registry-api DB pool settings configurable via Helm
--   Make broken link sleuther recrawl period configurable via Helm
--   Format minion will trust dcat format if other measures indicate a ZIP format
--   Format minion will trust dcat format if other measures indicate a ESRI REST format
--   Added ASC to 4 stars rating list
+-   Index datasets with tenant ID.
+-   Fixed indexer throws an error when affiliatedOrganisation field is created
+-   Fixed indexer incorrect parsing bounding box data in spatialCoverage aspect
+-   Added auth when crawling the registry
+-   Fixed Data.json spatial bounding box ordering not understood
+-   Handle and log the exception "Object is missing required member 'id'"
 
 Cataloging:
 
@@ -31,6 +129,7 @@ Cataloging:
 
 UI:
 
+-   Made dataset page printer friendly
 -   Display search box placeholder text at a lower opacity while the field is in focus.
 -   Showed text message if there are no tags to display in a dataset page.
 -   Removed gap after data quality star rating
@@ -45,10 +144,93 @@ UI:
 -   Show Database ownership information on dataset page (Admin Only)
 -   Added vocabulary suggestion for keywords & themes input on new dataset page
 -   Extracted keyword will be filtered by vocabulary APIs
+-   New add dataset page design
+-   Added new progress meter
+-   New design for file upload area
+-   New dropdown box design on `Dataset details and contents` page
+-   New Design for Multiple Tags input for keywords & Themes on `Dataset details and contents` page
+-   New Design for Accrual Periodicity Recurrence input on `Dataset details and contents` page
+-   New Design Spatial area input on `Dataset details and contents` page
+-   New Design for text input & text area input on add dataset pages
+-   Next & save button style adjustment on add dataset pages
+-   Update pagination to meet WCAG and use correct semantic HTML tags.
+-   New Design for files review box on `Details and Content` page
+-   Moved dataset description to Details and Contents page & added `additional notes` text box to submit page
+-   Added words count to Textarea
+-   Adjusted tooltip style & layout
+-   Overall page layout adjustment for `Details and Content` page
+-   fixed: keywords & themes extraction might produce duplicate keywords for different files
+-   Restricted dataset contact point display options to team members, team or org and made it save in the registry.
+-   Added ability to set the owning org unit in Add Dataset flow.
+-   Stopped keywords & themes extraction producing duplicate keywords for different files
+-   Capped the maximum input to retext for keyword extraction to prevent browser freezeup
+-   Made all keywords extracted lower case
+-   Made extracted keywords fall back on non-vocabulary-filtered keywords if it doesn't find enough keywords matching the vocabulary.
+-   Style adjustment for question Who can see the dataset once it is published on Access and Use page
+-   Added access location auto complete input on Access and Use page
+-   Fixed a JS error which causes blank screen on Organisations Page
+-   Fixed: drop a folder to Add dataset file drop area will break the UI
+-   Show an error message screen if the user is not allowed to access the add dataset page
+-   Updated security classification & sensitivity questions according to the new design
+-   Make sure all publish new dataset errors are captured and shown to users on add dataset page
+-   Added Custodian field to the 'People and Production' page
+-   Added the ability to add references to datasets that a new dataset was derived from.
+-   Added `dataset status` question to 'Details and Contents' page
+-   Fixed edit file panel text input layout
+-   Fixed a blank screen issue on dataset page
+-   Improve visualisation data processing:
+-   Use worker to download & process csv file
+-   Chart & table modules share the same data source to avoid unnecessary download
+-   Allow to set max. number of rows that accepted by the the visualisation module
+-   Fixed "NOT SET" appears on the dataset page for non-admins
+-   Made the add dataset flow only say it found keywords in the document if it actually did so.
+-   Made the datepicker for add dataset use the correct colours.
+-   Updated schema.org Dataset and DataDownload semantic markup for rich search results
+-   Fixed typos in no-print styling and adding keywords tooltip
+-   Added a preview mode for add dataset, that allows all users to use add dataset but prevents them from submitting.
+-   Fixed text wrap around tooltip
+-   Fixed Add Dataset / Licence setting: Long file names should be wrapped to the next line
+-   Added a new color (slightly grey) for preview screens
+-   Removed unnecessary margin in the filter facets
+-   Map Preview: avoid selecting Esri feature server distribution for preview
+-   Fixed mobile views incorrect min. width
+-   Drafts should be ordered by date on Drafts list page
+-   Changed text to reflect state/territory/country accordingly
+-   Fixed CSV loader didn't retry the different line ending correctly
+-   Saved publisher id in the database
+-   Added hover text for the tooltip beside the date-picker in the Add Dataset page
+-   Added a distribution hyperlink to the title of resource links
+-   Made the default name of a dataset blank
+-   Added a tooltip for dataset names
+-   Rename "Spatial area" to "Spatial extent"
+-   Fix issue with user manually typing dates
+-   Add tooltip to explain the difference between MB and MiB, KB and KiB, etc.
+-   Fixed `validateDOMNesting` warning
+-   Fixed warning for placeholder text being a boolean value
+-   Added unique key to the topmost `div` of `codelistEditor`
+-   Rename `license` to `licence` where appropriate
+-   Added unique keys to the props in `Stories.js`
+-   Added Mandatory Field Validation to the Add Dataset Flow
+-   Reworded `team` to `business area`
+-   Added tooltips to the `Production` section of the `People and Production` page
+-   Reworded the user access options
+-   Removed help icons without content
+-   Made print button call `window.stop` before `window.print`.
+-   Made read-only calls to the registry api use `/registry-read-only`.
+-   Fixed: if featureFlags are not set, edit buttons are always shown on dataset page
+-   Add specific color to recent search item text
+-   Improve keywords generation logic for Spreadsheet
+-   Mention that choosing state is optional
+-   Make spatial input default to Australia
+-   Render selected time intervals above the date picker so that nothing gets hidden
 
 Gateway:
 
--   Add ArcGIS/ESRI Authentication provider
+-   Add ArcGIS/ESRI Authentication provider, including support for on-premise instances of ArcGIS Portal.
+-   Add Vanguard (WS-FED) Authentication provider
+-   Made organisation field an autocomplete in add dataset page.
+-   Corrected Vanguard Authentication Landing Url
+-   Fixed Google oAuth Error: authRouter
 
 Access Control:
 
@@ -59,14 +241,25 @@ Access Control:
 -   Users with access to draft datasets can see a new `drafts` tab
 -   Organization hierarchy & make Organization hierarchy data available for access control
 -   Filter datasets based on user's current organization unit
+-   Added API to see what users will approve a potential dataset
 
 Others:
 
 -   Made registry-api DB pool settings configurable via Helm
 -   Make broken link sleuther recrawl period configurable via Helm
+-   Set version of Helm used by GitLab CI to 2.16.1
 -   Format minion will trust dcat format if other measures indicate a ZIP format
 -   Format minion will trust dcat format if other measures indicate a ESRI REST format
 -   Added ASC to 4 stars rating list
+-   Removed Travis CI (Gitlab CI still remains)
+-   Disabled tenant-api & tenant-db when `enableMultiTenants` = false
+-   Excluded organisations that are owners of thesauruses (keyword taxonomies) from being considered as owners of datasets via CSW connector
+-   Fix data.json connector dcat-dataset-strings aspect so keywords are stored correctly
+-   Fix CSW connector may process XML response incorrectly and report `no id` error
+-   Fix: CSW connector should look for alternative location for title, keywords & spatial extend for aurin data source
+-   Upgrade Scala dependencies versions & added scalafmt support
+-   Fixed doc to reflect [lerna deprecating an option](https://github.com/lerna/lerna/commit/f2c3a92fe41b6fdc5d11269f0f2c3e27761b4c85)
+-   Fix potential memory leak by deregistering listener when Header is unmounted
 
 ## 0.0.55
 
@@ -89,6 +282,7 @@ Others:
 -   Added craco to allow for some Create React App overrides for a faster build and to allow use of PDFjs without warnings.
 -   Fixed Unable to use Google / Facebook Login on Preview Site
 -   Fixed warnings: `as` props is compulsory for AUpageAlert & boolean value was sent to `id` props
+-   Fixed docker build cache issue that causes DB image not build
 
 ## 0.0.54
 
@@ -136,7 +330,7 @@ Connectors:
 
 -   Allowed Ckan connector to pull datasets belongs to a specified organisation
 -   Added `presetRecordAspects` & `extra` parameters supports to all connectors
--   Improvements on CSW connector license info retrieve
+-   Improvements on CSW connector licence info retrieve
 
 Dataset Page:
 
@@ -242,7 +436,7 @@ Search:
 
 Others:
 
--   Download unknown project open data license URLs to extract human readable licence
+-   Download unknown project open data licence URLs to extract human readable licence
 -   Removed the .bin extension from the logo
 
 ## 0.0.50
@@ -361,7 +555,7 @@ Others:
 -   Switch apidocs root to `<host>`
 -   Removed unused jQuery dependency from format-minion
 -   Split the registry api into full and read only modes that can run separately in production
--   Take open data connector license from dataset level to distribution level and add basic black box test
+-   Take open data connector licence from dataset level to distribution level and add basic black box test
 -   Fix logo vertical alignment and partially hidden issue
 -   Made header padding even
 -   Made the broken link minion use `GET` for everything and ignore the data.
@@ -816,7 +1010,7 @@ Others:
 -   Formatted existing typescript source code using `prettier`
 -   Updated `building-and-running.md`
 -   Added preview map support for geojson data type
--   Merged latest changes (commits on or before 1st Feb 2018) from TerrisMap to `magda-preview-map` module
+-   Merged latest changes (commits on or before 1st Feb 2018) from TerriaMap to `magda-preview-map` module
 -   Map previewer will zoom to dataset (except KML data)
 -   Removed `year` facet from search results, replaced it with a temporal field with earliest and latest dates in search results.
 -   Added Google Analytics Tag Manager Code / VWO code to `<head>`

@@ -42,15 +42,25 @@ class DistributionRow extends Component<PropType> {
 
     render() {
         const { dataset, distribution } = this.props;
-        let distributionLink;
-        if (!distribution.downloadURL && distribution.accessURL) {
-            distributionLink = distribution.accessURL;
-        } else {
-            distributionLink = `/dataset/${encodeURIComponent(
-                dataset.identifier
-            )}/distribution/${encodeURIComponent(
-                distribution.identifier!
-            )}/?q=${this.props.searchText}`;
+
+        const distributionLink = `/dataset/${encodeURIComponent(
+            dataset.identifier
+        )}/distribution/${encodeURIComponent(distribution.identifier!)}/?q=${
+            this.props.searchText
+        }`;
+
+        let apiUrl = "";
+
+        if (
+            distribution.ckanResource &&
+            distribution.ckanResource.datastore_active
+        ) {
+            apiUrl = get(distribution, "sourceDetails.url")
+                ? get(distribution, "sourceDetails.url", "").replace(
+                      "3/action/resource_show?",
+                      "1/util/snippet/api_info.html?resource_"
+                  )
+                : "https://docs.ckan.org/en/latest/maintaining/datastore.html#the-datastore-api";
         }
 
         return (
@@ -76,42 +86,31 @@ class DistributionRow extends Component<PropType> {
 
                         <div className="col-sm-11">
                             <div className="distribution-row-link">
-                                {!distribution.downloadURL &&
-                                distribution.accessURL ? (
-                                    <div>
-                                        <span itemProp="name">
-                                            {this.renderDistributionLink(
-                                                distribution.title
-                                            )}
-                                        </span>
-                                        (
-                                        <span itemProp="fileFormat">
-                                            {distribution.format}
-                                        </span>
-                                        )
-                                    </div>
-                                ) : (
-                                    <Link to={distributionLink}>
-                                        <span itemProp="name">
-                                            {this.renderDistributionLink(
-                                                distribution.title
-                                            )}
-                                        </span>
-                                        (
-                                        <span itemProp="fileFormat">
-                                            {distribution.format}
-                                        </span>
-                                        )
-                                    </Link>
-                                )}
-                                <a
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    href={distributionLink}
-                                    className="new-tab-button"
+                                <Link
+                                    to={distributionLink}
+                                    itemProp="contentUrl"
                                 >
-                                    <img src={newTabIcon} alt="new tab" />
-                                </a>
+                                    <span itemProp="name">
+                                        {this.renderDistributionLink(
+                                            distribution.title
+                                        )}
+                                    </span>
+                                    (
+                                    <span itemProp="fileFormat">
+                                        {distribution.format}
+                                    </span>
+                                    )
+                                </Link>
+                                {distribution.accessURL && (
+                                    <a
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        href={distribution.accessURL}
+                                        className="new-tab-button"
+                                    >
+                                        <img src={newTabIcon} alt="new tab" />
+                                    </a>
+                                )}
                             </div>
 
                             <div
@@ -129,68 +128,72 @@ class DistributionRow extends Component<PropType> {
                     </div>
                 </div>
                 <div className="col-sm-4 button-area">
-                    {distribution.ckanResource &&
-                        distribution.ckanResource.datastore_active && (
-                            <a
-                                className="download-button au-btn au-btn--secondary au-float-left"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                href={
-                                    get(distribution, "sourceDetails.url")
-                                        ? get(
-                                              distribution,
-                                              "sourceDetails.url",
-                                              ""
-                                          ).replace(
-                                              "3/action/resource_show?",
-                                              "1/util/snippet/api_info.html?resource_"
-                                          )
-                                        : "https://docs.ckan.org/en/latest/maintaining/datastore.html#the-datastore-api"
-                                }
-                            >
-                                <img src={apiAccessIcon} alt="" /> Access Data
-                                API
-                            </a>
-                        )}{" "}
+                    {apiUrl && (
+                        <span>
+                            <span className="no-print">
+                                <a
+                                    className="download-button au-btn au-btn--secondary au-float-left"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    href={apiUrl}
+                                >
+                                    <img src={apiAccessIcon} alt="" /> Access
+                                    Data API
+                                </a>
+                            </span>
+                            <span className="block print-only">
+                                API: {apiUrl}
+                            </span>
+                        </span>
+                    )}{" "}
                     {distribution.downloadURL && (
-                        <a
-                            className="download-button au-btn au-btn--secondary"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            href={distribution.downloadURL}
-                            onClick={() => {
-                                // google analytics download tracking
-                                const resource_url = encodeURIComponent(
-                                    distribution.downloadURL!
-                                );
-                                if (resource_url) {
-                                    // legacy support
-                                    gapi.event({
-                                        category: "Resource",
-                                        action: "Download",
-                                        label: resource_url
-                                    });
-                                    // new events
-                                    gapi.event({
-                                        category: "Download by Dataset",
-                                        action: dataset.title,
-                                        label: resource_url
-                                    });
-                                    gapi.event({
-                                        category: "Download by Source",
-                                        action: dataset.source,
-                                        label: resource_url
-                                    });
-                                    gapi.event({
-                                        category: "Download by Publisher",
-                                        action: dataset.publisher.name,
-                                        label: resource_url
-                                    });
-                                }
-                            }}
-                        >
-                            <img src={downloadIcon} alt="download" /> Download
-                        </a>
+                        <span>
+                            <span className="no-print">
+                                <a
+                                    className="download-button au-btn au-btn--secondary"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    href={distribution.downloadURL}
+                                    onClick={() => {
+                                        // google analytics download tracking
+                                        const resource_url = encodeURIComponent(
+                                            distribution.downloadURL!
+                                        );
+                                        if (resource_url) {
+                                            // legacy support
+                                            gapi.event({
+                                                category: "Resource",
+                                                action: "Download",
+                                                label: resource_url
+                                            });
+                                            // new events
+                                            gapi.event({
+                                                category: "Download by Dataset",
+                                                action: dataset.title,
+                                                label: resource_url
+                                            });
+                                            gapi.event({
+                                                category: "Download by Source",
+                                                action: dataset.source,
+                                                label: resource_url
+                                            });
+                                            gapi.event({
+                                                category:
+                                                    "Download by Publisher",
+                                                action: dataset.publisher.name,
+                                                label: resource_url
+                                            });
+                                        }
+                                    }}
+                                >
+                                    <img src={downloadIcon} alt="download" />{" "}
+                                    Download
+                                </a>
+                            </span>
+                            <span className="block print-only">
+                                Download: {distribution.downloadURL}
+                            </span>
+                        </span>
                     )}
                 </div>
             </div>

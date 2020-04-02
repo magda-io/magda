@@ -3,8 +3,12 @@ import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
 import { RecordAction, RawDataset } from "../helpers/record";
 import { FetchError } from "../types";
+import {
+    ensureAspectExists,
+    fetchRecord,
+    Record
+} from "api-clients/RegistryApis";
 import request from "helpers/request";
-import datasetAccessControlAspect from "@magda/registry-aspects/dataset-access-control.schema.json";
 
 export function requestDataset(id: string): RecordAction {
     return {
@@ -88,37 +92,20 @@ export function createNewDatasetError(error: FetchError): RecordAction {
     };
 }
 
+export function createNewDatasetReset(error: FetchError): RecordAction {
+    return {
+        type: actionTypes.DATASET_CREATE_RESET,
+        error
+    };
+}
+
 export function fetchDatasetFromRegistry(id: string): Function {
     return (dispatch: Function) => {
         dispatch(requestDataset(id));
-        let parameters =
-            "dereference=true&aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&optionalAspect=usage&optionalAspect=access&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=source-link-status&optionalAspect=dataset-quality-rating&optionalAspect=spatial-coverage&optionalAspect=publishing&optionalAspect=dataset-access-control";
-        const url =
-            config.registryApiUrl +
-            `records/${encodeURIComponent(id)}?${parameters}`;
 
-        return fetch(url, config.fetchOptions)
-            .then(response => {
-                if (!response.ok) {
-                    let statusText = response.statusText;
-                    // response.statusText are different in different browser, therefore we unify them here
-                    if (response.status === 404) {
-                        statusText = "Not Found";
-                    }
-                    throw Error(statusText);
-                }
-                return response.json();
-            })
-            .then((json: any) => {
-                if (json.records) {
-                    if (json.records.length > 0) {
-                        return dispatch(receiveDataset(json.records[0]));
-                    } else {
-                        throw new Error("Not Found");
-                    }
-                } else {
-                    return dispatch(receiveDataset(json));
-                }
+        return fetchRecord(id)
+            .then((data: any) => {
+                return dispatch(receiveDataset(data));
             })
             .catch(error =>
                 dispatch(
@@ -135,7 +122,7 @@ export function fetchDistributionFromRegistry(id: string): any {
     return (dispatch: Function) => {
         dispatch(requestDistribution(id));
         let url: string =
-            config.registryApiUrl +
+            config.registryReadOnlyApiUrl +
             `records/${encodeURIComponent(
                 id
             )}?aspect=dcat-distribution-strings&optionalAspect=source-link-status&optionalAspect=source&optionalAspect=visualization-info&optionalAspect=access&optionalAspect=usage&optionalAspect=dataset-format&optionalAspect=ckan-resource&optionalAspect=publishing`;
@@ -174,7 +161,7 @@ export function modifyRecordAspect(
     return async (dispatch: Function) => {
         id = encodeURIComponent(id);
         aspect = encodeURIComponent(aspect);
-        let url = config.registryAuthApiUrl + `records/${id}/aspects/${aspect}`;
+        let url = config.registryFullApiUrl + `records/${id}/aspects/${aspect}`;
 
         if (field.indexOf("/") !== -1) {
             let body = await fetch(url);
@@ -232,74 +219,37 @@ export function modifyRecordAspect(
 }
 
 export function createRecord(
-    inputDataset: any,
-    inputDistributions: any,
+    inputDataset: Record,
+    inputDistributions: Record[],
     aspects: any
 ): any {
     return async (dispatch: Function, getState: () => any) => {
         dispatch(createNewDataset(inputDataset));
         try {
-            // -- set up access control aspect
-            const state = getState();
-            aspects["dataset-access-control"] = datasetAccessControlAspect;
-            if (!inputDataset["aspects"]["dataset-access-control"]) {
-                inputDataset["aspects"]["dataset-access-control"] = {};
-            }
-            if (
-                state.userManagement &&
-                state.userManagement.user &&
-                state.userManagement.user.id
-            ) {
-                inputDataset["aspects"]["dataset-access-control"]["ownerId"] =
-                    state.userManagement.user.id;
-            }
-            if (
-                state.userManagement &&
-                state.userManagement.user &&
-                state.userManagement.user.orgUnitId
-            ) {
-                inputDataset["aspects"]["dataset-access-control"][
-                    "orgUnitOwnerId"
-                ] = state.userManagement.user.orgUnitId;
-            }
-            for (const [aspect, definition] of Object.entries(aspects)) {
-                await ensureAspectExists(aspect, definition);
-            }
+            // make sure all the aspects exist (this should be improved at some point, but will do for now)
+            const aspectPromises = Object.entries(
+                aspects
+            ).map(([aspect, definition]) =>
+                ensureAspectExists(aspect, definition)
+            );
+            await Promise.all(aspectPromises);
+
             for (const distribution of inputDistributions) {
                 await request(
                     "POST",
-                    `${config.baseUrl}api/v0/registry-auth/records`,
+                    `${config.registryFullApiUrl}records`,
                     distribution
                 );
             }
             const json = await request(
                 "POST",
-                `${config.baseUrl}api/v0/registry-auth/records`,
+                `${config.registryFullApiUrl}records`,
                 inputDataset
             );
             return dispatch(receiveNewDataset(json));
         } catch (error) {
-            dispatch(
-                createNewDatasetError({
-                    title: error.name,
-                    detail: error.message
-                })
-            );
+            // --- throw out error so it can be caught by try/catch
+            throw error;
         }
     };
-}
-
-async function ensureAspectExists(id: string, jsonSchema: any) {
-    try {
-        await request(
-            "GET",
-            `${config.baseUrl}api/v0/registry-auth/aspects/${id}`
-        );
-    } catch (error) {
-        await request("POST", `${config.baseUrl}api/v0/registry-auth/aspects`, {
-            id,
-            name: jsonSchema.title,
-            jsonSchema
-        });
-    }
 }
