@@ -36,16 +36,10 @@ defaultValues:
 # - Or Values.defaultValues.mainNamespace
 
 # If openfaas `mainNamespace` will be created
-# don't set any value to `createMainNamespace` will leave it with value `"<nil>`
-# If it's `<Nil>`, we will then decide whether should create `mainNamespace` or not by checking helm operation
-# if `.Release.IsInstall` is true (i.e. the current operation is an install), `mainNamespace` will be create. Otherwise, `mainNamespace` creation will be skipped.
-# createMainNamespace: true
+createMainNamespace: true
 
 # If openfaas `functionNamespace` will be created
-# don't set any value to `createFunctionNamespace` will leave it with value `"<nil>`
-# If it's `<Nil>`, we will then decide whether should create `createFunctionNamespace` or not by checking helm operation
-# if `.Release.IsInstall` is true (i.e. the current operation is an install), `createFunctionNamespace` will be create. Otherwise, `createFunctionNamespace` creation will be skipped.
-# createFunctionNamespace: true
+createFunctionNamespace: true
 
 
 async: true

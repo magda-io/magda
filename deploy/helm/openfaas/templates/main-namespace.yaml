@@ -1,6 +1,4 @@
-# See values.yaml for how $shouldInstallMainNamespace's value is determined
-{{- $shouldInstallMainNamespace := (ne (.Values.createMainNamespace | typeOf) "<nil>") | ternary .Values.createMainNamespace .Release.IsInstall }}
-{{- if $shouldInstallMainNamespace }}
+{{- if .Values.createMainNamespace }}
 apiVersion: v1
 kind: Namespace
 metadata:

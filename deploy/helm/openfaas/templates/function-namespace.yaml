@@ -1,6 +1,4 @@
-# See values.yaml for how $shouldInstallFunctionNamespace's value is determined
-{{- $shouldInstallFunctionNamespace := (ne (.Values.createFunctionNamespace | typeOf) "<nil>") | ternary .Values.createFunctionNamespace .Release.IsInstall -}}
-{{- if $shouldInstallFunctionNamespace }}
+{{- if .Values.createFunctionNamespace }}
 apiVersion: v1
 kind: Namespace
 metadata:
