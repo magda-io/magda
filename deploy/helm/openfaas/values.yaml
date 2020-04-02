@@ -7,7 +7,7 @@ global:
 defaultValues:
   namespacePrefix: ""
   functionNamespace: openfaas-fn  # Default namespace for functions
-  mainNamespace: openfass # Default namespace for gateway and other core modules
+  mainNamespace: openfaas # Default namespace for gateway and other core modules
 
 # please note: 
 # the actual namespaces used for function & gateway/core are made up of:

@@ -11,6 +11,17 @@ global:
   connectors:
     includeInitialJobs: false
     includeCronJobs: true
+  openfaas:
+    namespacePrefix: ""
+    functionNamespace: openfaas-fn  # Default namespace for functions
+    mainNamespace: openfaas # Default namespace for gateway and other core modules
+    allowAdminOnly: true # Only allow logged-in Admin to access openfaas gateway
+
+ckan-connector-functions:
+  includeInitialJobs: false
+  includeCronJobs: false
+  createFunction: true
+  createConfigMap: false
 
 connector-dga:
   config:
