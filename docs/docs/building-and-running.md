@@ -31,7 +31,7 @@ If you just want to try it out locally without actually changing anything, it's 
 If you just want to edit the UI, you don't actually even need helm -
 just clone the repo, run `yarn install` at the root, then `cd magda-web-client` and run `yarn run dev`.
 This will build/run a local version of the client, connecting to the API at [https://dev.magda.io/api](https://dev.magda.io/api).
-If you want to connect to a magda API hosted elsewhere you can modify the `config.js` file in the client.
+If you want to connect to a magda API hosted elsewhere you can modify the `config.ts` file in the client.
 
 ## Building and running the backend
 
