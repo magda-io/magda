@@ -21,5 +21,5 @@ export default function getFacetDefinition(facetType: FacetType) {
                 } as Query)
         };
     }
-    return null;
+    throw new Error("Unknown facet type " + facetType);
 }

@@ -1,4 +1,4 @@
-import { Client, ApiResponse } from "@elastic/elasticsearch";
+import { Client, ApiResponse, RequestParams } from "@elastic/elasticsearch";
 import _ = require("lodash");
 
 import {
@@ -52,7 +52,7 @@ export default class ElasticSearchQueryer implements SearchQueryer {
     ): Promise<FacetSearchResult> {
         const facetDef = getFacetDefinition(facetType);
 
-        const esQueryBody = {
+        const esQueryBody: RequestParams.Search = {
             index: this.publishersIndexId,
             body: {
                 query: {
@@ -76,6 +76,7 @@ export default class ElasticSearchQueryer implements SearchQueryer {
             size: limit,
             from: start
         };
+
         // console.log(JSON.stringify(esQueryBody, null, 2));
 
         const result: ApiResponse = await this.client.search(esQueryBody);
@@ -87,7 +88,7 @@ export default class ElasticSearchQueryer implements SearchQueryer {
         } else {
             type Hit = {
                 value: string;
-                identifier?: string;
+                identifier: string;
             };
 
             const hits: Hit[] = body.hits.hits.map((hit: any) => hit._source);
@@ -116,11 +117,16 @@ export default class ElasticSearchQueryer implements SearchQueryer {
                 },
                 index: this.datasetsIndexId
             };
+
+            // console.log(JSON.stringify(generalEsQueryBody, null, 2));
+
             const resultWithout = await this.client.search(generalEsQueryBody);
 
-            const aggregationsResult = _(resultWithout.body.aggregations as {
-                [aggName: string]: any;
-            })
+            const aggregationsResult = _(
+                resultWithout.body.aggregations as {
+                    [aggName: string]: any;
+                }
+            )
                 .map((value, key) => ({
                     countErrorUpperBound: 0,
                     hitCount: value.doc_count || 0,
@@ -179,6 +185,7 @@ export default class ElasticSearchQueryer implements SearchQueryer {
         //         2
         //     )
         // );
+        // console.log(JSON.stringify(searchParams, null, 2));
         const response: ApiResponse = await this.client.search(searchParams);
 
         return {
@@ -280,13 +287,14 @@ export default class ElasticSearchQueryer implements SearchQueryer {
             if (boostRegions.length === 0) {
                 return textQuery;
             } else {
-                const regionNames = _(boostRegions)
+                const regionNames: string[] = _(boostRegions)
                     .flatMap(region => [
                         region.regionName,
                         region.regionShortName
                     ])
-                    .filter(x => x && x !== "")
-                    .sortBy(a => a.length)
+                    .filter(x => !!x && x !== "")
+                    .map(x => x as string)
+                    .sortBy((x: string) => x.length)
                     .value();
 
                 // Remove these regions from the text

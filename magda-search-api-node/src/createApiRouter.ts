@@ -2,9 +2,9 @@ import * as express from "express";
 import * as _ from "lodash";
 import buildJwt from "@magda/typescript-common/dist/session/buildJwt";
 import * as joi from "joi";
+import moment from "moment";
 
 const validate = require("express-validation");
-const chrono = require("chrono-node");
 
 import ElasticSearchQueryer from "./search/elasticsearch/ElasticSearchQueryer";
 import { Query, QueryRegion } from "./model";
@@ -82,18 +82,40 @@ export default function createApiRouter(options: ApiRouterOptions) {
             return undefined;
         }
 
-        const parsed = chrono.parseDate(dateString, new Date(), {
-            forwardDate: forward
-        });
+        const parsed = moment(dateString, [
+            moment.ISO_8601,
+            "YYYY-MM",
+            "YYYY",
+            "YY"
+        ]);
 
-        return parsed;
+        if (forward) {
+            const creationData = parsed.creationData();
+
+            if (
+                creationData.format === "YYYY" ||
+                creationData.format === "YY"
+            ) {
+                parsed.endOf("year");
+            } else if (creationData.format === "YYYY-MM") {
+                parsed.endOf("month");
+            } else if (creationData.format === "YYYY-MM-DDTHH:mm") {
+                parsed.endOf("minute");
+            } else if (creationData.format === "YYYY-MM-DDTHH:mm:ss") {
+                parsed.endOf("second");
+            } else {
+                parsed.endOf("day");
+            }
+        }
+
+        return parsed.toDate();
     }
 
     function parseBaseQuery(queryStringObj: any): Query {
         return {
             freeText: queryStringObj.generalQuery,
             publishers: queryStringObj.publisher,
-            dateFrom: parseDate(queryStringObj.dateFrom),
+            dateFrom: parseDate(queryStringObj.dateFrom, false),
             dateTo: parseDate(queryStringObj.dateTo, true),
             regions: processRegions(processMaybeArray(queryStringObj.region)),
             formats: queryStringObj.format,
@@ -170,7 +192,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 res.status(200).send(results);
             } catch (e) {
                 console.error(e);
-                console.log(JSON.stringify(e.meta && e.meta.body));
+                // console.log(JSON.stringify(e.meta && e.meta.body));
                 res.status(500).send("Error");
             }
         }
