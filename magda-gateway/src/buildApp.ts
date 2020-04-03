@@ -203,7 +203,8 @@ export default function buildApp(config: Config) {
                 allowAdminOnly: config.openfaasAllowAdminOnly,
                 baseAuthUrl: config.authorizationApi,
                 jwtSecret: config.jwtSecret,
-                tenantMode
+                tenantMode,
+                authenticator
             })
         );
     }
