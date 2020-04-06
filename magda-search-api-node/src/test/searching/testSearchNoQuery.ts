@@ -4,8 +4,8 @@ import supertest from "supertest";
 import express from "express";
 import _ from "lodash";
 
-import { buildDataset, buildNDatasets } from "./utils/builders";
-import { Dataset, SearchResult } from "../model";
+import { buildDataset, buildNDatasets } from "../utils/builders";
+import { Dataset, SearchResult } from "../../model";
 
 export default function testSearchNoQuery(
     app: () => express.Application,

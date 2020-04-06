@@ -11,8 +11,8 @@ import {
     buildDistribution,
     buildNDistributions,
     buildPublisher
-} from "./utils/builders";
-import { Dataset, SearchResult } from "../model";
+} from "../utils/builders";
+import { Dataset, SearchResult } from "../../model";
 
 export default function testSearchByKeyword(
     app: () => express.Application,
@@ -63,6 +63,11 @@ export default function testSearchByKeyword(
         testKeywordSearch("rivers near ballarat", '"rivers near ballarat"');
     });
 
+    /**
+     * For a number of fields inside a dataset, this inserts a bunch of datasets
+     * including one dataset that has `termInData` in the field in question, then
+     * tries to query for that dataset using `termInQuery`.
+     */
     function testKeywordSearch(termInData: string, termInQuery: string) {
         const testField = async (override: any) => {
             const targetDataset = buildDataset(override);

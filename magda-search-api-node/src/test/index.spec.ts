@@ -18,8 +18,8 @@ import {
 // import handleESError from "../search/handleESError";
 import { Dataset, Region, SearchResult, Agent } from "../model";
 
-import testSearchNoQuery from "./testSearchNoQuery";
-import testSearchByKeyword from "./testSearchByKeyword";
+import testSearchNoQuery from "./searching/testSearchNoQuery";
+import testSearchByKeyword from "./searching/testSearchByKeyword";
 import testFilterByRegions from "./filtering/testFilterByRegion";
 import testFilterByDate from "./filtering/testFilterByDate";
 
