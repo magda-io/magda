@@ -30,10 +30,9 @@ export default function promiseAny(items: Promise<any>[]): Promise<any> {
                 }
                 result[idx].isCompleted = true;
                 result[idx].error = e;
-                if (result.findIndex(item => !item.isCompleted) === -1) {
+                if (!result.some(item => !item.isCompleted)) {
                     isResultReturned = true;
                     reject(result.map(item => item.error).filter(item => item));
-                    return;
                 }
             });
         });
