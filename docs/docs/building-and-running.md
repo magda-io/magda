@@ -48,10 +48,7 @@ From the MAGDA root directory, simply run the appropriate build command:
 
 ```bash
 # If using lerna v3.18.0 or higher
-lerna run build --stream --concurrency=1 --include-dependencies
-
-# If verison of lerna is lower than v3.18.0
-lerna run build --stream --concurrency=1 --include-filtered-dependencies
+npx lerna run build --stream --concurrency=1 --include-dependencies
 ```
 
 You can also run the same command in an individual component's directory (i.e. `magda-whatever/`) to build just that component.
@@ -73,6 +70,7 @@ This gives you a local docker registry that you'll upload your built images to s
 
 ```bash
 helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
+helm repo add stable https://kubernetes-charts.storage.googleapis.com/
 helm repo update
 helm install docker-registry -f deploy/helm/docker-registry.yml stable/docker-registry
 helm install kube-registry-proxy -f deploy/helm/kube-registry-proxy.yml magda-io/kube-registry-proxy
@@ -84,7 +82,8 @@ Now you can build the docker containers locally - this might take quite a while 
 
 ```bash
 eval $(minikube docker-env) # (If you haven't run this already)
-lerna run docker-build-local --stream --concurrency=4 --include-filtered-dependencies
+npx lerna run build --stream --concurrency=1 --include-dependencies # (if you haven't run this already)
+npx lerna run docker-build-local --stream --concurrency=1 --include-filtered-dependencies
 ```
 
 ### Build Connector and Minion local docker images
