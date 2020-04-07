@@ -87,7 +87,7 @@ export default function testFilterByDate(
                         .expect(res => {
                             const body: SearchResult = res.body;
 
-                            const identifiers = body.datasets.map(
+                            const identifiers = body.dataSets.map(
                                 dataset => dataset.identifier
                             );
 
@@ -118,7 +118,7 @@ export default function testFilterByDate(
                             const body: SearchResult = res.body;
 
                             expect(
-                                body.datasets.map(ds => ds.identifier)
+                                body.dataSets.map(ds => ds.identifier)
                             ).to.have.same.members(expectedIdentifiers);
                         });
                 }
@@ -144,7 +144,7 @@ export default function testFilterByDate(
                             const body: SearchResult = res.body;
 
                             expect(
-                                body.datasets.map(ds => ds.identifier)
+                                body.dataSets.map(ds => ds.identifier)
                             ).to.have.same.members(expectedIdentifiers);
                         });
                 }
@@ -161,7 +161,7 @@ export default function testFilterByDate(
                     (dataset.temporal.end || dataset.temporal.start)
                 ) {
                     const url = `/datasets?${
-                        dataset.temporal.end && dataset.temporal.end.date
+                        dataset.temporal.end?.date
                             ? "&dateTo=" +
                               encodeURIComponent(
                                   moment(
@@ -187,7 +187,7 @@ export default function testFilterByDate(
                             const body: SearchResult = res.body;
 
                             expect(
-                                body.datasets.map(ds => ds.identifier)
+                                body.dataSets.map(ds => ds.identifier)
                             ).to.contain(dataset.identifier);
                         });
                 }
@@ -249,8 +249,8 @@ export default function testFilterByDate(
                         .expect(res => {
                             const body: SearchResult = res.body;
 
-                            expect(body.datasets.length).to.equal(1);
-                            expect(body.datasets[0].identifier).to.equal(
+                            expect(body.dataSets.length).to.equal(1);
+                            expect(body.dataSets[0].identifier).to.equal(
                                 datasets[1].identifier
                             );
                         });

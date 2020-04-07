@@ -185,25 +185,24 @@ export default class ElasticSearchQueryer implements SearchQueryer {
         //         2
         //     )
         // );
+
         // console.log(JSON.stringify(searchParams, null, 2));
         const response: ApiResponse = await this.client.search(searchParams);
 
         return {
             query,
             hitCount: response.body.hits.total,
-            datasets: response.body.hits.hits.map((hit: any) => ({
+            dataSets: response.body.hits.hits.map((hit: any) => ({
                 ...hit._source,
                 score: hit._score,
                 years: undefined
             })),
             temporal: {
                 start: {
-                    date: new Date().toISOString(), //TODO
-                    text: new Date().toString()
+                    date: new Date().toISOString() //TODO
                 },
                 end: {
-                    date: new Date().toISOString(), //TODO
-                    text: new Date().toString()
+                    date: new Date().toISOString() //TODO
                 }
             },
             facets: [],

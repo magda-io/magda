@@ -16,23 +16,30 @@ const argv = addJwtSecretFromEnvVar(
         .option("elasticsearchUrl", {
             describe: "The url of the elasticsearch node to connect to",
             type: "string",
-            default: "localhost:9200"
+            default: "http://localhost:9200"
         })
         .option("jwtSecret", {
             describe: "The shared secret for intra-network communication",
-            type: "string"
+            type: "string",
+            demand: true
         })
         .option("datasetsIndexId", {
             describe: "The id of the datasets index in elasticsearch",
-            type: "string"
+            type: "string",
+            demand: true,
+            default: "datasets45"
         })
         .option("regionsIndexId", {
             describe: "The id of the regions index id",
-            type: "string"
+            type: "string",
+            demand: true,
+            default: "regions24"
         })
         .option("publishersIndexId", {
             describe: "The id of the publishers index id",
-            type: "string"
+            type: "string",
+            demand: true,
+            default: "publishers4"
         }).argv
 );
 
@@ -53,7 +60,10 @@ app.use(
 app.listen(argv.listenPort);
 console.log("Search API started on port " + argv.listenPort);
 
-process.on("unhandledRejection", (reason: string, promise: any) => {
-    console.error("Unhandled rejection:");
-    console.error(reason);
-});
+process.on(
+    "unhandledRejection",
+    (reason: {} | null | undefined, promise: any) => {
+        console.error("Unhandled rejection:");
+        console.error(reason);
+    }
+);

@@ -53,10 +53,16 @@ export type FacetSearchResult = {
 
 export type ISODate = string;
 
-export type ApiDate = {
-    date?: ISODate;
-    text: string;
-};
+export type ApiDate =
+    | {
+          date: ISODate;
+          text?: string;
+      }
+    | {
+          text: string;
+          date?: ISODate;
+      }
+    | { date: ISODate; text: string };
 
 export type PeriodOfTime = {
     start?: ApiDate;
@@ -161,7 +167,7 @@ export type SearchResult = {
     hitCount: number;
     facets: Facet[];
     temporal: PeriodOfTime;
-    datasets: Dataset[];
+    dataSets: Dataset[];
     errorMessage?: string;
     strategy: "match-all";
 };

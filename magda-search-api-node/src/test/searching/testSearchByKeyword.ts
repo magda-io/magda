@@ -44,7 +44,7 @@ export default function testSearchByKeyword(
                 .expect(200)
                 .expect(res => {
                     const body: SearchResult = res.body;
-                    const identifiers = body.datasets.map(
+                    const identifiers = body.dataSets.map(
                         dataset => dataset.identifier
                     );
 
@@ -83,7 +83,7 @@ export default function testSearchByKeyword(
                     const body: SearchResult = res.body;
 
                     expect(body.hitCount).to.be.greaterThan(0);
-                    expect(body.datasets[0].identifier).to.equal(
+                    expect(body.dataSets[0].identifier).to.equal(
                         targetDataset.identifier
                     );
                 });

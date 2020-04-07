@@ -28,7 +28,7 @@ export default function testFilterByRegion(
                 .expect(200)
                 .expect(res => {
                     const body: SearchResult = res.body;
-                    const identifiers = body.datasets.map(
+                    const identifiers = body.dataSets.map(
                         dataset => dataset.identifier
                     );
 
