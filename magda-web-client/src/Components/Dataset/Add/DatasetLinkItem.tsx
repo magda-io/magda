@@ -260,6 +260,16 @@ const DatasetLinkItemEditing = (props: EditViewProps) => {
     );
 };
 
+/**
+ * Talks to openfaas gateway to retrieve a list of functions with `data-url-processor` labels.
+ * Here the `data-url-processor` label is a user-defined label that we use to distinguish the purposes of function.
+ * Therefore, other connectors can opt to support this feature later without any frontend changes.
+ * We only need the name field of the returned data items to invoke the function later
+ * Documents of openfaas gateway can be found from:
+ * https://github.com/openfaas/faas/tree/master/api-docs
+ *
+ * @returns
+ */
 async function getAllDataUrlProcessorsFromOpenfaasGateway() {
     const res = await fetch(
         `${config.openfaasBaseUrl}/system/functions`,
