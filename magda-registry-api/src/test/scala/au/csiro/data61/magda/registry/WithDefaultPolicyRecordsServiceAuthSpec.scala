@@ -346,54 +346,7 @@ class WithDefaultPolicyRecordsServiceAuthSpec
         it(
           "falls back to the default policy when records don't have a policy set"
         ) { param =>
-          addAspectDef(param, "stringExample")
-          addAspectDef(param, "numericExample")
-
-          // Add records with an authnReadPolicyId set to string policy
-          addStringExampleRecords(Some("stringExample.policy"))(param)
-
-          // Add records with no authnReadPolicyId (these should default back to the default policy)
-          addRecord(
-            param,
-            Record(
-              "allowDefaultExample",
-              "allowDefaultExample",
-              Map(
-                "numericExample" -> JsObject(
-                  "number" ->
-                    JsNumber(-1)
-                )
-              ),
-              authnReadPolicyId = None
-            )
-          )
-          addRecord(
-            param,
-            Record(
-              "denyDefaultExample",
-              "denyDefaultExample",
-              Map(
-                "numericExample" -> JsObject(
-                  "number" ->
-                    JsNumber(2)
-                )
-              ),
-              authnReadPolicyId = None
-            )
-          )
-
-          expectOpaQueryForPolicy(
-            param,
-            "stringExample.policy.read",
-            policyResponseForStringExampleAspect
-          )
-
-          // Respond with the numeric policy for the default
-          expectOpaQueryForPolicy(
-            param,
-            "default.policy.read",
-            policyResponseForNumericExampleAspect
-          )
+          setupMultipleRecords(param)
 
           Get(s"/v0/records") ~> addTenantIdHeader(
             TENANT_1
@@ -407,6 +360,82 @@ class WithDefaultPolicyRecordsServiceAuthSpec
             )
           }
         }
+      }
+
+      describe("for multiple record summaries") {
+        it(
+          "falls back to the default policy when records don't have a policy set"
+        ) { param =>
+          setupMultipleRecords(param)
+
+          Get(s"/v0/records/summary") ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val resPage = responseAs[RecordsPage[RecordSummary]]
+
+            resPage.records.map(_.id).toSet shouldEqual Set(
+              "allowStringExample",
+              "allowDefaultExample"
+            )
+          }
+        }
+      }
+
+      /**
+        * Sets up stringExample and numericExample aspects, adds two records with the stringExample policy set,
+        * and two records with no authnReadPolicyId, and returns the numeric policy when opa is asked for the
+        * default policy id (i.e. the numeric policy is default).
+        */
+      def setupMultipleRecords(param: FixtureParam) = {
+        addAspectDef(param, "stringExample")
+        addAspectDef(param, "numericExample")
+
+        // Add records with an authnReadPolicyId set to string policy
+        addStringExampleRecords(Some("stringExample.policy"))(param)
+
+        // Add records with no authnReadPolicyId (these should default back to the default policy)
+        addRecord(
+          param,
+          Record(
+            "allowDefaultExample",
+            "allowDefaultExample",
+            Map(
+              "numericExample" -> JsObject(
+                "number" ->
+                  JsNumber(-1)
+              )
+            ),
+            authnReadPolicyId = None
+          )
+        )
+        addRecord(
+          param,
+          Record(
+            "denyDefaultExample",
+            "denyDefaultExample",
+            Map(
+              "numericExample" -> JsObject(
+                "number" ->
+                  JsNumber(2)
+              )
+            ),
+            authnReadPolicyId = None
+          )
+        )
+
+        expectOpaQueryForPolicy(
+          param,
+          "stringExample.policy.read",
+          policyResponseForStringExampleAspect
+        )
+
+        // Respond with the numeric policy for the default
+        expectOpaQueryForPolicy(
+          param,
+          "default.policy.read",
+          policyResponseForNumericExampleAspect
+        )
       }
     }
   }
