@@ -1,5 +1,13 @@
 # OpenFaaS - Serverless Functions Made Simple
 
+> This chart is forked from https://github.com/openfaas/faas-netes/tree/master/chart/openfaas. 
+> Changes Summary:
+> - Make it Helm 3 Compatible (Especially, how to handle CRD CustomResourceDefinition)
+> - Auto create namespaces. Allows more streamlined / one step deployment via helm
+> - Allow to use a different gateway / core namespace name. 
+> - Allow to overwrite gateway / core / function namespace name through `.Values.global`
+
+
 ![OpenFaaS Logo](https://blog.alexellis.io/content/images/2017/08/faas_side.png)
 
 [OpenFaaS](https://github.com/openfaas/faas) (Functions as a Service) is a framework for building serverless functions with Docker and Kubernetes which has first class support for metrics. Any process can be packaged as a function enabling you to consume a range of web events without repetitive boiler-plate coding.
