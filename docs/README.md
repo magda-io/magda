@@ -1,8 +1,6 @@
-<p class="center">
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/gcwqjD-bnhk" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-</p>
-
 # A federated catalog for all of your data
+
+[![What is Magda?](https://img.youtube.com/vi/gcwqjD-bnhk/0.jpg)](https://youtu.be/gcwqjD-bnhk)
 
 The better an organization understands and uses its data, the better it is able to make decisions and discover new opportunities. Many organizations hold massive quantities of data, but it often gets stuck inside organizational silos where its importance is invisible, origins untracked, and existence unknown to those elsewhere in the organization who could improve or derive further value from it.
 
