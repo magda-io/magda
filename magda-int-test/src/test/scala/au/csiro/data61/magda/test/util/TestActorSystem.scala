@@ -7,7 +7,7 @@ import au.csiro.data61.magda.AppConfig
 object TestActorSystem {
   // This has to be separated out to make overriding the config work for some stupid reason.
   val config = ConfigFactory.parseString(s"""
-    akka.loglevel = ${if (ContinuousIntegration.isCi) "WARNING" else "DEBUG"}
+    akka.loglevel = ERROR
     indexer.refreshInterval = -1
     akka.http.server.request-timeout = 30s
     maxResults = 100

@@ -987,7 +987,12 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
 
       eventId <- Try {
         val eventJson =
-          CreateRecordEvent(record.id, tenantId.tenantId, record.name).toJson.compactPrint
+          CreateRecordEvent(
+            record.id,
+            tenantId.tenantId,
+            record.name,
+            record.authnReadPolicyId
+          ).toJson.compactPrint
         sql"insert into Events (eventTypeId, userId, tenantId, data) values (${CreateRecordEvent.Id}, 0, ${tenantId.tenantId}, $eventJson::json)".updateAndReturnGeneratedKey
           .apply()
       }

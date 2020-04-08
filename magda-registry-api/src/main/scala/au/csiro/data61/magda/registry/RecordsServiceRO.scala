@@ -747,6 +747,8 @@ class RecordsServiceRO(
         recordPersistence
       ).route ~
       new RecordHistoryService(
+        authApiClient,
+        config,
         system,
         materializer,
         recordPersistence,

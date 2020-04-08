@@ -9,12 +9,17 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
 import au.csiro.data61.magda.model.Registry._
+import au.csiro.data61.magda.registry.Directives._
+import au.csiro.data61.magda.client.AuthOperations
 import io.swagger.annotations._
 import javax.ws.rs.Path
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scalikejdbc.DB
+import com.typesafe.config.Config
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 /**
   * @apiGroup Registry Record History
@@ -24,6 +29,7 @@ import scalikejdbc.DB
   * @apiParam (query) {string} pageToken A token that identifies the start of a page of results. This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results.
   * @apiParam (query) {number} start The index of the first event to retrieve. Specify pageToken instead will result in better performance when access high offset. If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve.
   * @apiParam (query) {number} limit The maximum number of records to receive. The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
+  * @apiHeader {string} X-Magda-Session Magda internal session id
   * @apiSuccess (Success 200) {json} Response the event list
   * @apiSuccessExample {json} Response:
                         {
@@ -50,12 +56,16 @@ import scalikejdbc.DB
   produces = "application/json"
 )
 class RecordHistoryService(
+    authApiClient: RegistryAuthApiClient,
+    config: Config,
     system: ActorSystem,
     materializer: Materializer,
     recordPersistence: RecordPersistence,
     eventPersistence: EventPersistence
 ) extends Protocols
     with SprayJsonSupport {
+
+  implicit private val ec: ExecutionContext = system.dispatcher
 
   val route =
     history ~
@@ -90,17 +100,30 @@ class RecordHistoryService(
       requiresTenantId { tenantId =>
         parameters('pageToken.as[Long].?, 'start.as[Int].?, 'limit.as[Int].?) {
           (pageToken, start, limit) =>
-            complete {
-              DB readOnly { session =>
-                eventPersistence.getEvents(
-                  session,
-                  recordId = Some(id),
-                  pageToken = pageToken,
-                  start = start,
-                  limit = limit,
-                  tenantId = tenantId
-                )
-              }
+            checkUserCanAccessRecordEvents(
+              recordPersistence,
+              authApiClient,
+              id,
+              tenantId,
+              EventsPage(false, None, Nil)
+            )(
+              config,
+              system,
+              materializer,
+              ec
+            ) {
+              complete(
+                DB readOnly { session =>
+                  eventPersistence.getEvents(
+                    session,
+                    recordId = Some(id),
+                    pageToken = pageToken,
+                    start = start,
+                    limit = limit,
+                    tenantId = tenantId
+                  )
+                }
+              )
             }
         }
       }
@@ -182,36 +205,34 @@ class RecordHistoryService(
   def version = get {
     path(Segment / "history" / Segment) { (id, version) =>
       requiresTenantId { tenantId =>
-        {
-          parameters('aspect.*, 'optionalAspect.*) {
-            (aspects: Iterable[String], optionalAspects: Iterable[String]) =>
-              DB readOnly { session =>
-                val events = eventPersistence.streamEventsUpTo(
-                  version.toLong,
-                  recordId = Some(id),
-                  tenantId = tenantId
+        parameters('aspect.*, 'optionalAspect.*) {
+          (aspects: Iterable[String], optionalAspects: Iterable[String]) =>
+            DB readOnly { session =>
+              val events = eventPersistence.streamEventsUpTo(
+                version.toLong,
+                recordId = Some(id),
+                tenantId = tenantId
+              )
+              val recordSource =
+                recordPersistence.reconstructRecordFromEvents(
+                  id,
+                  events,
+                  aspects,
+                  optionalAspects
                 )
-                val recordSource =
-                  recordPersistence.reconstructRecordFromEvents(
-                    id,
-                    events,
-                    aspects,
-                    optionalAspects
-                  )
-                val sink = Sink.head[Option[Record]]
-                val future = recordSource.runWith(sink)(materializer)
-                Await.result[Option[Record]](future, 5 seconds) match {
-                  case Some(record) => complete(record)
-                  case None =>
-                    complete(
-                      StatusCodes.NotFound,
-                      ApiError(
-                        "No record exists with that ID, it does not have a CreateRecord event, or it has been deleted."
-                      )
+              val sink = Sink.head[Option[Record]]
+              val future = recordSource.runWith(sink)(materializer)
+              Await.result[Option[Record]](future, 5 seconds) match {
+                case Some(record) => complete(record)
+                case None =>
+                  complete(
+                    StatusCodes.NotFound,
+                    ApiError(
+                      "No record exists with that ID, it does not have a CreateRecord event, or it has been deleted."
                     )
-                }
+                  )
               }
-          }
+            }
         }
       }
     }
