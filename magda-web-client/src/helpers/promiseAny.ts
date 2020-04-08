@@ -1,4 +1,5 @@
 /**
+ * Implementation of the proposed `promise.any` (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/any).
  * Take an array of promises and return a new promise that will be resolved
  * when any of promises is resolved and will be rejected when all promised are rejected.
  *

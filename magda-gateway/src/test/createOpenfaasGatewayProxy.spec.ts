@@ -51,8 +51,8 @@ const nonAdminUserData = {
 };
 
 describe("Test createOpenfaasGatewayProxy", () => {
-    const openfaasGetwayUrl = "http://gateway.openfass.com";
-    let openfaasGetwayScope: Scope;
+    const openfaasGatewayUrl = "http://gateway.openfaas.com";
+    let openfaasGatewayScope: Scope;
 
     const authApiBaseUrl = "http://authApi";
     let authApiScope: Scope;
@@ -70,9 +70,9 @@ describe("Test createOpenfaasGatewayProxy", () => {
         // Allow localhost connections so we can test local routes and mock servers.
         nock.enableNetConnect("127.0.0.1");
 
-        openfaasGetwayScope = nock(openfaasGetwayUrl).persist();
-        openfaasGetwayScope.get(/.*/).reply(200, (uri: string) => ({ uri }));
-        openfaasGetwayScope
+        openfaasGatewayScope = nock(openfaasGatewayUrl).persist();
+        openfaasGatewayScope.get(/.*/).reply(200, (uri: string) => ({ uri }));
+        openfaasGatewayScope
             .post(/.*/)
             .reply(200, (uri: string, requestBody: any) => ({
                 uri,
@@ -117,7 +117,7 @@ describe("Test createOpenfaasGatewayProxy", () => {
         const app: express.Application = express();
         app.use(
             createOpenfaasGatewayProxy({
-                gatewayUrl: openfaasGetwayUrl,
+                gatewayUrl: openfaasGatewayUrl,
                 allowAdminOnly: allowAdminOnly,
                 baseAuthUrl: authApiBaseUrl,
                 jwtSecret: "test",
@@ -129,7 +129,7 @@ describe("Test createOpenfaasGatewayProxy", () => {
         return supertest(app);
     }
 
-    it("should allow admin users to access openfaas gaetway if `allowAdminOnly` = true", async () => {
+    it("should allow admin users to access openfaas gateway if `allowAdminOnly` = true", async () => {
         const testReq = createTestRequest(true, adminUserId);
         const randomPath = "/" + randomstring.generate();
 
@@ -145,7 +145,7 @@ describe("Test createOpenfaasGatewayProxy", () => {
         expect(res.body.requestBody).to.deep.equal({ data: randomData });
     });
 
-    it("should return 401 when a non-admin user to access openfaas gaetway and `allowAdminOnly` = true", async () => {
+    it("should return 401 when a non-admin user to access openfaas gateway and `allowAdminOnly` = true", async () => {
         const testReq = createTestRequest(true, nonAdminUserId);
         const randomPath = "/" + randomstring.generate();
 
@@ -158,7 +158,7 @@ describe("Test createOpenfaasGatewayProxy", () => {
             .expect(401);
     });
 
-    it("should return 401 when unauthenticated user to access openfaas gaetway and `allowAdminOnly` = true", async () => {
+    it("should return 401 when unauthenticated user to access openfaas gateway and `allowAdminOnly` = true", async () => {
         const testReq = createTestRequest(true, undefined);
         const randomPath = "/" + randomstring.generate();
 
@@ -171,7 +171,7 @@ describe("Test createOpenfaasGatewayProxy", () => {
             .expect(401);
     });
 
-    it("should allow Non-admin users to access openfaas gaetway if `allowAdminOnly` = false", async () => {
+    it("should allow Non-admin users to access openfaas gateway if `allowAdminOnly` = false", async () => {
         const testReq = createTestRequest(false, nonAdminUserId);
         const randomPath = "/" + randomstring.generate();
 
@@ -187,7 +187,7 @@ describe("Test createOpenfaasGatewayProxy", () => {
         expect(res.body.requestBody).to.deep.equal({ data: randomData });
     });
 
-    it("should allow unauthenticated users to access openfaas gaetway if `allowAdminOnly` = false", async () => {
+    it("should allow unauthenticated users to access openfaas gateway if `allowAdminOnly` = false", async () => {
         const testReq = createTestRequest(false, undefined);
         const randomPath = "/" + randomstring.generate();
 
