@@ -37,18 +37,18 @@ If you want to connect to a magda API hosted elsewhere you can modify the `confi
 
 First clone the magda directory and `cd` into it.
 
-Then install `npm` dependencies and set up the links between components by running:
+Then install dependencies and set up the links between components by running:
 
 ```bash
 yarn install
 ```
 
-Once the above prerequisites are in place, and the npm dependencies are installed, building MAGDA is easy.
+Once the above prerequisites are in place, and the dependencies are installed, building MAGDA is easy.
 From the MAGDA root directory, simply run the appropriate build command:
 
 ```bash
 # If using lerna v3.18.0 or higher
-npx lerna run build --stream --concurrency=1 --include-dependencies
+yarn lerna run build --stream --concurrency=1 --include-dependencies
 ```
 
 You can also run the same command in an individual component's directory (i.e. `magda-whatever/`) to build just that component.
@@ -82,8 +82,8 @@ Now you can build the docker containers locally - this might take quite a while 
 
 ```bash
 eval $(minikube docker-env) # (If you haven't run this already)
-npx lerna run build --stream --concurrency=1 --include-dependencies # (if you haven't run this already)
-npx lerna run docker-build-local --stream --concurrency=1 --include-filtered-dependencies
+yarn lerna run build --stream --concurrency=1 --include-dependencies # (if you haven't run this already)
+yarn lerna run docker-build-local --stream --concurrency=1 --include-filtered-dependencies
 ```
 
 ### Build Connector and Minion local docker images
