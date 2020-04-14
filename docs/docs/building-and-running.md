@@ -17,7 +17,7 @@ To push the images and run them on kubernetes, you'll need to install:
 
 -   [GNU tar](https://www.gnu.org/software/tar/) - (Mac only) MacOS ships with `BSD tar`. However, you will need `GNU tar` for docker images operations. On MacOS, you can install `GNU Tar` via [Homebrew](https://brew.sh/): `brew install gnu-tar`
 -   [gcloud](https://cloud.google.com/sdk/gcloud/) - For the `kubectl` tool used to control your Kubernetes cluster. You will also need to this to deploy to our test and production environment on Google Cloud.
--   [Helm 2](https://v2.helm.sh/docs/using_helm/#installing-helm) to manage kubernetes deployments and config.
+-   [Helm 3](https://helm.sh/docs/intro/install/) to manage kubernetes deployments and config.
 -   [Docker](https://docs.docker.com/install/) - Magda uses `docker` command line tool to build docker images.
 
 You'll also need a Kubernetes cluster - to develop locally this means installing either [minikube](./installing-minikube.md) or [docker](./installing-docker-k8s.md) (MacOS only at this stage). Potentially you could also do this with native Kubernetes, or with a cloud cluster, but we haven't tried it.
@@ -31,7 +31,7 @@ If you just want to try it out locally without actually changing anything, it's 
 If you just want to edit the UI, you don't actually even need helm -
 just clone the repo, run `yarn install` at the root, then `cd magda-web-client` and run `yarn run dev`.
 This will build/run a local version of the client, connecting to the API at [https://dev.magda.io/api](https://dev.magda.io/api).
-If you want to connect to a magda API hosted elsewhere you can modify the `config.js` file in the client.
+If you want to connect to a magda API hosted elsewhere you can modify the `config.ts` file in the client.
 
 ## Building and running the backend
 
@@ -48,10 +48,7 @@ From the MAGDA root directory, simply run the appropriate build command:
 
 ```bash
 # If using lerna v3.18.0 or higher
-lerna run build --stream --concurrency=1 --include-dependencies
-
-# If verison of lerna is lower than v3.18.0
-lerna run build --stream --concurrency=1 --include-filtered-dependencies
+npx lerna run build --stream --concurrency=1 --include-dependencies
 ```
 
 You can also run the same command in an individual component's directory (i.e. `magda-whatever/`) to build just that component.
@@ -73,6 +70,7 @@ This gives you a local docker registry that you'll upload your built images to s
 
 ```bash
 helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
+helm repo add stable https://kubernetes-charts.storage.googleapis.com/
 helm repo update
 helm install docker-registry -f deploy/helm/docker-registry.yml stable/docker-registry
 helm install kube-registry-proxy -f deploy/helm/kube-registry-proxy.yml magda-io/kube-registry-proxy
@@ -84,7 +82,8 @@ Now you can build the docker containers locally - this might take quite a while 
 
 ```bash
 eval $(minikube docker-env) # (If you haven't run this already)
-lerna run docker-build-local --stream --concurrency=4 --include-filtered-dependencies
+npx lerna run build --stream --concurrency=1 --include-dependencies # (if you haven't run this already)
+npx lerna run docker-build-local --stream --concurrency=1 --include-filtered-dependencies
 ```
 
 ### Build Connector and Minion local docker images
@@ -133,8 +132,9 @@ Note: If using docker desktop for Windows older than version 19, change the valu
 # update magda helm repo
 helm repo update
 # update magda chart dependencies
-helm dep build deploy/helm/magda
+helm dep build deploy/helm/internal-charts/storage-api
 helm dep build deploy/helm/magda-core
+helm dep build deploy/helm/magda
 # deploy the magda chart from magda helm repo
 helm upgrade --install --timeout 9999s --wait -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
 ```
