@@ -289,6 +289,10 @@ async function getAllDataUrlProcessorsFromOpenfaasGateway() {
     );
 }
 
+interface UrlProcessingError extends Error {
+    unableProcessUrl?: boolean;
+}
+
 const DatasetLinkItem = (props: Props) => {
     const [editMode, setEditMode] = useState(false);
 
@@ -315,12 +319,13 @@ const DatasetLinkItem = (props: Props) => {
                         }
                     );
                     if (res.status !== 200) {
-                        throw new Error(
+                        const e: UrlProcessingError = new Error(
                             `Failed to request function ${item.name}` +
                                 res.statusText +
                                 "\n" +
                                 (await res.text())
                         );
+                        e.unableProcessUrl = true;
                     }
 
                     const data = await res.json();
@@ -352,9 +357,17 @@ const DatasetLinkItem = (props: Props) => {
                 console.log(e);
                 if (e && e.length) {
                     // --- only deal with the first error
-                    throw new Error(
-                        "System cannot recognise or process the URL."
-                    );
+                    if (e.UrlProcessingError === true) {
+                        // --- We simplify the url processing error message here
+                        // --- Different data sources might fail to recognise the url for different technical reason but those info may too technical to users.
+                        throw new Error(
+                            "System cannot recognise or process the URL."
+                        );
+                    } else {
+                        // --- notify users the `post processing` errors as it'd be more relevant message (as the url is recognised).
+                        // --- i.e. url is recognised and processed but data not valid (e.g. no distributions)
+                        throw e;
+                    }
                 }
             });
 
