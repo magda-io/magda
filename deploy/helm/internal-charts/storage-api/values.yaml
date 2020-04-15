@@ -12,3 +12,6 @@ minio:
   nameOverride: "magda-minio"
   fullnameOverride: "magda-minio"
   existingSecret: "storage-secrets"
+  DeploymentUpdate:
+    type: Recreate
+

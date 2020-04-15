@@ -49,6 +49,7 @@ Storage:
 -   Support multipart upload
 -   Fixed: minio chart will not be deployed if storage-api is not turned on
 -   Make MinIO a dependency of storage's helm chart
+-   Make minio, by default, deploy with `Recreate` strategy
 
 Gateway:
 
