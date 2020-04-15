@@ -425,6 +425,127 @@ class WithDefaultPolicyRecordsServiceAuthSpec
         }
       }
 
+      describe("for record version (time-travel)") {
+        describe("with a policy set on the record") {
+          commonVersionTests(Some("default.policy"), true)
+        }
+
+        describe("with no policy set on the record") {
+          commonVersionTests(Some("default.policy"), false)
+
+          it(
+            "shows an aspect-less record if default policy resolves to unconditionally allow access"
+          ) { param =>
+            setupRecord(
+              param,
+              None,
+              "default.policy.read",
+              policyResponseForUnconditionallyAllowed
+            )
+
+            Get(s"/v0/records/foo/history/${Integer.MAX_VALUE}") ~> addTenantIdHeader(
+              TENANT_1
+            ) ~> param.api(Full).routes ~> check {
+              status shouldEqual StatusCodes.OK
+              val resRecord = responseAs[Record]
+
+              resRecord.id shouldEqual "foo"
+            }
+          }
+
+          it(
+            "returns 404 for a record if default policy resolves to unconditionally disallow access"
+          ) { param =>
+            setupRecord(
+              param,
+              None,
+              "default.policy.read",
+              policyResponseForUnconditionallyDisallowed
+            )
+
+            Get(s"/v0/records/foo/history/${Integer.MAX_VALUE}") ~> addTenantIdHeader(
+              TENANT_1
+            ) ~> param.api(Full).routes ~> check {
+              status shouldEqual StatusCodes.NotFound
+            }
+          }
+
+          describe("based on the value in an aspect") {
+            it(
+              "shows a record if default policy resolves true"
+            ) { param =>
+              addExampleAspectDef(param)
+
+              setupRecord(
+                param,
+                None,
+                "default.policy.read",
+                policyResponseForStringExampleAspect,
+                Map(
+                  "stringExample" -> JsObject(
+                    "nested" -> JsObject("public" -> JsString("true"))
+                  )
+                )
+              )
+
+              Get(s"/v0/records/foo/history/${Integer.MAX_VALUE}") ~> addTenantIdHeader(
+                TENANT_1
+              ) ~> param.api(Full).routes ~> check {
+                status shouldEqual StatusCodes.OK
+                val resRecord = responseAs[Record]
+                resRecord.id shouldEqual "foo"
+                resRecord.aspects shouldEqual Map(
+                  "stringExample" -> JsObject(
+                    "nested" -> JsObject("public" -> JsString("true"))
+                  )
+                )
+              }
+            }
+
+            it(
+              "returns 404 for a record if default policy resolves false"
+            ) { param =>
+              addExampleAspectDef(param)
+              setupRecord(
+                param,
+                None,
+                "default.policy.read",
+                policyResponseForStringExampleAspect,
+                Map(
+                  "stringExample" -> JsObject(
+                    "nested" -> JsObject("public" -> JsString("false"))
+                  )
+                )
+              )
+
+              Get(s"/v0/records/foo/history/${Integer.MAX_VALUE}") ~> addTenantIdHeader(
+                TENANT_1
+              ) ~> param.api(Full).routes ~> check {
+                status shouldEqual StatusCodes.NotFound
+              }
+            }
+
+            it(
+              "returns 404 for a record if required aspect for the default policy is not present"
+            ) { param =>
+              addExampleAspectDef(param)
+              setupRecord(
+                param,
+                None,
+                "default.policy.read",
+                policyResponseForStringExampleAspect
+              )
+
+              Get(s"/v0/records/foo/history/${Integer.MAX_VALUE}") ~> addTenantIdHeader(
+                TENANT_1
+              ) ~> param.api(Full).routes ~> check {
+                status shouldEqual StatusCodes.NotFound
+              }
+            }
+          }
+        }
+      }
+
       describe("for multiple records") {
         it(
           "falls back to the default policy when records don't have a policy set"
