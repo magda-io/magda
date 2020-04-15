@@ -359,13 +359,13 @@ const DatasetLinkItem = (props: Props) => {
                     // --- only deal with the first error
                     if (e.UrlProcessingError === true) {
                         // --- We simplify the url processing error message here
-                        // --- Different data sources might fail to recognise the url for different technical reason but those info may too technical to users.
+                        // --- Different data sources might fail to recognise the url for different technical reasons but those info may be too technical to the user.
                         throw new Error(
                             "System cannot recognise or process the URL."
                         );
                     } else {
-                        // --- notify users the `post processing` errors as it'd be more relevant message (as the url is recognised).
-                        // --- i.e. url is recognised and processed but data not valid (e.g. no distributions)
+                        // --- notify the user the `post processing` error as it'd be more `relevant` message (as at least the url has been recognised now).
+                        // --- i.e. url is recognised and processed but meta data is not valid or insufficient (e.g. no distributions)
                         throw e;
                     }
                 }
