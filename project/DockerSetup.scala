@@ -10,12 +10,12 @@ import sbt.TaskKey
 
 object DockerSetup {
   def setupDocker(stage: TaskKey[File], dockerFileMod: Dockerfile => Dockerfile = identity) = {
-    val nameSpacePrefix = Option(System.getProperty("repository")) match {
+    val nameSpacePrefix = Option(System.getProperty("repository", System.getenv("MAGDA_DOCKER_REPOSITORY"))) match {
       case Some(repository) => repository + "/"
       case _            => ""
     }
 
-    val tag = Option(System.getProperty("version")) match {
+    val tag = Option(System.getProperty("version", System.getenv("MAGDA_DOCKER_VERSION"))) match {
       case Some(version) => version
       case _            => "latest"
     }

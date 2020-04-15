@@ -69,6 +69,7 @@ Others:
 
 -   Use a "Year" column from a CSV file to extract a temporal extent
 -   Fixed Registry History API Performance Issue when limit=1 & Updated Registry History API Document
+-   Added tentative documentation for building and running on microk8s.
 
 ## 0.0.56
 

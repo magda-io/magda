@@ -68,6 +68,7 @@ if (programOptions.print) {
         .catch(function(error) {
             hasError = true;
             console.log(chalk.red(`Failed to create secrets: ${error}`));
+            console.error(error);
         })
         .then(function() {
             //--- can't use finally
@@ -98,6 +99,7 @@ if (programOptions.print) {
                     console.log(
                         chalk.red(`Failed to create required secrets: ${error}`)
                     );
+                    console.error(error);
                     process.exit(1);
                 }
             );
