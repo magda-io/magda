@@ -43,6 +43,13 @@ dependencies:
 
   - name: magda-ckan-connector
     version: 0.0.57-0
+    alias: ckan-connector-functions
+    repository: https://charts.magda.io
+    tags:
+      - ckan-connector-functions
+
+  - name: magda-ckan-connector
+    version: 0.0.57-0
     alias: connector-dga
     repository: https://charts.magda.io
     tags:
