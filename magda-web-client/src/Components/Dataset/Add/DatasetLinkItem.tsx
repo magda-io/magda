@@ -294,6 +294,9 @@ const DatasetLinkItem = (props: Props) => {
 
     useAsync(async () => {
         try {
+            if (props.distribution._state !== DistributionState.Processing) {
+                return;
+            }
             const processors = await getAllDataUrlProcessorsFromOpenfaasGateway();
             if (!processors || !processors.length) {
                 throw new Error(
