@@ -16,7 +16,7 @@ import { Query, QueryRegion } from "./model";
 
 export interface ApiRouterOptions {
     jwtSecret: string;
-    elasticsearchUrl: string;
+    elasticSearchUrl: string;
     datasetsIndexId: string;
     regionsIndexId: string;
     publishersIndexId: string;
@@ -25,7 +25,7 @@ export interface ApiRouterOptions {
 export default function createApiRouter(options: ApiRouterOptions) {
     const router: express.Router = express.Router();
     const searchQueryer = new ElasticSearchQueryer(
-        options.elasticsearchUrl,
+        options.elasticSearchUrl,
         options.datasetsIndexId,
         options.regionsIndexId,
         options.publishersIndexId
@@ -192,6 +192,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 res.status(200).send(results);
             } catch (e) {
                 console.error(e);
+                console.error(e.meta?.body?.error);
                 // console.log(JSON.stringify(e.meta && e.meta.body));
                 res.status(500).send("Error");
             }

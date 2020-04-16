@@ -163,8 +163,19 @@ export default class ElasticSearchQueryer implements SearchQueryer {
             from: start,
             size: limit,
             body: {
-                query: await this.buildESDatasetsQuery(query)
-                // aggs: filters
+                query: await this.buildESDatasetsQuery(query),
+                aggs: {
+                    minDate: {
+                        min: {
+                            field: "temporal.start.date"
+                        }
+                    },
+                    maxDate: {
+                        max: {
+                            field: "temporal.end.date"
+                        }
+                    }
+                }
             },
             index: this.datasetsIndexId
         };
@@ -189,6 +200,8 @@ export default class ElasticSearchQueryer implements SearchQueryer {
         // console.log(JSON.stringify(searchParams, null, 2));
         const response: ApiResponse = await this.client.search(searchParams);
 
+        // console.log(response.body);
+
         return {
             query,
             hitCount: response.body.hits.total,
@@ -199,10 +212,10 @@ export default class ElasticSearchQueryer implements SearchQueryer {
             })),
             temporal: {
                 start: {
-                    date: new Date().toISOString() //TODO
+                    date: response.body.aggregations.minDate.value_as_string // new Date().toISOString() //TODO
                 },
                 end: {
-                    date: new Date().toISOString() //TODO
+                    date: response.body.aggregations.maxDate.value_as_string //TODO
                 }
             },
             facets: [],

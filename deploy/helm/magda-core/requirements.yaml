@@ -84,6 +84,11 @@ dependencies:
     tags:
       - all
       - search-api
+  - name: search-api-node
+    version: 0.0.57-0
+    repository: file://../internal-charts/search-api-node
+    tags:
+      - search-api-node
   - name: session-db
     version: 0.0.57-0
     repository: file://../internal-charts/session-db

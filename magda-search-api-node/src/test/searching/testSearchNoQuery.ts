@@ -43,24 +43,28 @@ export default function testSearchNoQuery(
         });
 
         describe("temporal should show the earliest and latest date", () => {
-            it.only("for datasets with fully populated data fields", async () => {
+            it("for datasets with fully populated data fields", async () => {
                 const datasets = buildNDatasets(15);
 
                 for (let i = 0; i < 15; i++) {
                     datasets[i].temporal = {
                         start: {
-                            date: moment({
-                                date: i,
-                                month: 0,
-                                year: 2020
-                            }).toISOString()
+                            date: moment
+                                .utc({
+                                    date: i,
+                                    month: 0,
+                                    year: 2020
+                                })
+                                .toISOString()
                         },
                         end: {
-                            date: moment({
-                                date: i + 1,
-                                month: 0,
-                                year: 2020
-                            }).toISOString()
+                            date: moment
+                                .utc({
+                                    date: i + 1,
+                                    month: 0,
+                                    year: 2020
+                                })
+                                .toISOString()
                         }
                     };
                 }
@@ -75,8 +79,8 @@ export default function testSearchNoQuery(
                         expect(body.temporal.start?.date).to.contain(
                             "2020-01-01"
                         );
-                        expect(body.temporal.start?.date).to.contain(
-                            "2020-01-16"
+                        expect(body.temporal.end?.date).to.contain(
+                            "2020-01-15"
                         );
                     });
             });

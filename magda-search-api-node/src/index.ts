@@ -11,9 +11,9 @@ const argv = addJwtSecretFromEnvVar(
         .option("listenPort", {
             describe: "The TCP/IP port on which the search-api should listen.",
             type: "number",
-            default: 6969
+            default: 6120
         })
-        .option("elasticsearchUrl", {
+        .option("elasticSearchUrl", {
             describe: "The url of the elasticsearch node to connect to",
             type: "string",
             default: "http://localhost:9200"
@@ -50,7 +50,7 @@ app.use(
     "/v0",
     createApiRouter({
         jwtSecret: argv.jwtSecret,
-        elasticsearchUrl: argv.elasticsearchUrl,
+        elasticSearchUrl: argv.elasticSearchUrl,
         datasetsIndexId: argv.datasetsIndexId,
         regionsIndexId: argv.regionsIndexId,
         publishersIndexId: argv.publishersIndexId

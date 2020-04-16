@@ -86,6 +86,7 @@ magda-core:
 
 tags:
   all: true
+  search-api-node: true
   connectors: false
   connector-dga: true
 
