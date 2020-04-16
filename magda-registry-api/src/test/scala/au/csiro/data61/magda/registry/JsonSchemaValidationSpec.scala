@@ -15,7 +15,7 @@ class JsonSchemaValidationSpec extends ApiSpec {
        |db.default.url = "${databaseUrl}?currentSchema=test"
        |authorization.skip = false
        |authorization.skipOpaQuery = true
-       |akka.loglevel = debug
+       |akka.loglevel = ERROR
        |authApi.baseUrl = "http://localhost:6104"
        |webhooks.actorTickRate=0
        |webhooks.eventPageSize=10
