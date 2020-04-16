@@ -15,12 +15,12 @@ To push the images and run them on kubernetes, you'll need to install:
 
 -   [GNU tar](https://www.gnu.org/software/tar/) - (Mac only) MacOS ships with `BSD tar`. However, you will need `GNU tar` for docker images operations. On MacOS, you can install `GNU Tar` via [Homebrew](https://brew.sh/): `brew install gnu-tar`
 -   [gcloud](https://cloud.google.com/sdk/gcloud/) - For the `kubectl` tool used to control your Kubernetes cluster. You will also need to this to deploy to our test and production environment on Google Cloud.
--   [Helm 3](https://helm.sh/docs/intro/install/) to manage kubernetes deployments and config.
+-   [Helm 3](https://helm.sh/docs/intro/install/) to manage kubernetes deployments and config. Since version `0.0.57`, Magda requires helm 3 to deploy.
 -   [Docker](https://docs.docker.com/install/) - Magda uses `docker` command line tool to build docker images.
 
 You'll also need a Kubernetes cluster - to develop locally this means installing either [minikube](./installing-minikube.md) or [docker](./installing-docker-k8s.md) (MacOS only at this stage). Potentially you could also do this with native Kubernetes, or with a cloud cluster, but we haven't tried it.
 
-## Trying it out locally
+## Trying it out locally without building source code
 
 If you just want to try it out locally without actually changing anything, it's much easier to just install [minikube](https://magda.io/docs/installing-minikube.md) or [docker for desktop](https://github.com/magda-io/magda/blob/master/docs/docs/installing-docker-k8s.md), then following the instructions at [https://github.com/magda-io/magda-config/blob/master/legacy.md](https://github.com/magda-io/magda-config/blob/master/legacy.md). What follows is instructions on how to build _everything_, code, databases and all, from scratch into a working application.
 
