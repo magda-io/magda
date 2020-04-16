@@ -92,7 +92,7 @@ abstract class ApiSpec
        |db.default.url = "${databaseUrl}?currentSchema=test"
        |authorization.skip = false
        |authorization.skipOpaQuery = true
-       |akka.loglevel = debug
+       |akka.loglevel = ERROR
        |authApi.baseUrl = "http://localhost:6104"
        |webhooks.actorTickRate=0
        |webhooks.eventPageSize=10
@@ -186,7 +186,7 @@ abstract class ApiSpec
   }
 
   def expectAdminCheck(httpFetcher: HttpFetcher, isAdmin: Boolean) {
-    val resFuture = Marshal(User(isAdmin))
+    val resFuture = Marshal(User("1", isAdmin))
       .to[ResponseEntity]
       .map(user => HttpResponse(status = 200, entity = user))
 

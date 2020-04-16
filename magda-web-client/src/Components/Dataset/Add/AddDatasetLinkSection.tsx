@@ -72,6 +72,7 @@ const AddDatasetLinkSection = (props: Props) => {
                                         idx={item.idx}
                                         key={item.idx}
                                         distribution={item.distribution}
+                                        addDistribution={props.addDistribution}
                                         editDistribution={props.editDistribution(
                                             item.idx
                                         )}

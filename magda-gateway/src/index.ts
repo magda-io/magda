@@ -275,6 +275,16 @@ const argv = addJwtSecretFromEnvVar(
             describe: "Minimal interval in ms to fetch tenants from DB.",
             type: "number",
             default: 60000
+        })
+        .option("openfaasGatewayUrl", {
+            describe: "Internal openfaas gateway url",
+            type: "string"
+        })
+        .option("openfaasAllowAdminOnly", {
+            describe:
+                "Whether only allow admin users to access openfaas gateway.",
+            type: "boolean",
+            default: false
         }).argv
 );
 

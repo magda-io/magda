@@ -14,6 +14,9 @@ export function getUserId(req: Request, jwtSecret: string): Maybe<string> {
             return Maybe.nothing<string>();
         }
     } else {
+        if (req?.user?.id) {
+            return Maybe.just(req.user.id);
+        }
         return Maybe.nothing<string>();
     }
 }

@@ -88,6 +88,7 @@ const serverConfig: {
     noManualThemes?: boolean;
     datasetThemes?: string[];
     keywordsBlackList?: string[];
+    openfaasBaseUrl?: string;
 } = window.magda_server_config || {};
 
 const DATE_REGEX = ".*(date|dt|year|decade).*";
@@ -305,7 +306,10 @@ export const config = {
               "Prof.",
               "Sr.",
               "St."
-          ]
+          ],
+    openfaasBaseUrl: serverConfig.openfaasBaseUrl
+        ? serverConfig.openfaasBaseUrl
+        : baseUrl + "api/v0/openfaas"
 };
 
 export const defaultConfiguration = {

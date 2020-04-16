@@ -1,0 +1,10 @@
+{{- if .Values.createMainNamespace }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ include "openfaas.mainNamespace" . | quote }}
+  labels:
+    role: openfaas-system
+    access: openfaas-system
+    istio-injection: enabled
+{{- end }}
