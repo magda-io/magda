@@ -50,6 +50,7 @@ Storage:
 -   Support multipart upload
 -   Fixed: minio chart will not be deployed if storage-api is not turned on
 -   Make MinIO a dependency of storage's helm chart
+-   Make minio, by default, deploy with `Recreate` strategy
 
 Gateway:
 
@@ -65,6 +66,8 @@ Authorization:
 -   Added authorization inside links with dereferencing on or off, for the `/records` endpoint
 -   Added per-record authorization around the `/records/summary/<recordid>` endpoint matching the `/records/<id>` one.
 -   Added per-record authorization around the `/records/summary` endpoint matching the `/records` one.
+-   Added per-record authorization around the `/records/<recordid>/history` endpoint
+-   Added per-record authorization around the `/records/<recordid>/history/<eventId>` endpoint
 
 Others:
 

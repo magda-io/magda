@@ -289,11 +289,18 @@ async function getAllDataUrlProcessorsFromOpenfaasGateway() {
     );
 }
 
+interface UrlProcessingError extends Error {
+    unableProcessUrl?: boolean;
+}
+
 const DatasetLinkItem = (props: Props) => {
     const [editMode, setEditMode] = useState(false);
 
     useAsync(async () => {
         try {
+            if (props.distribution._state !== DistributionState.Processing) {
+                return;
+            }
             const processors = await getAllDataUrlProcessorsFromOpenfaasGateway();
             if (!processors || !processors.length) {
                 throw new Error(
@@ -312,12 +319,13 @@ const DatasetLinkItem = (props: Props) => {
                         }
                     );
                     if (res.status !== 200) {
-                        throw new Error(
+                        const e: UrlProcessingError = new Error(
                             `Failed to request function ${item.name}` +
                                 res.statusText +
                                 "\n" +
                                 (await res.text())
                         );
+                        e.unableProcessUrl = true;
                     }
 
                     const data = await res.json();
@@ -349,9 +357,17 @@ const DatasetLinkItem = (props: Props) => {
                 console.log(e);
                 if (e && e.length) {
                     // --- only deal with the first error
-                    throw new Error(
-                        "System cannot recognise or process the URL."
-                    );
+                    if (e.UrlProcessingError === true) {
+                        // --- We simplify the url processing error message here
+                        // --- Different data sources might fail to recognise the url for different technical reasons but those info may be too technical to the user.
+                        throw new Error(
+                            "System cannot recognise or process the URL."
+                        );
+                    } else {
+                        // --- notify the user the `post processing` error as it'd be more `relevant` message (as at least the url has been recognised now).
+                        // --- i.e. url is recognised and processed but meta data is not valid or insufficient (e.g. no distributions)
+                        throw e;
+                    }
                 }
             });
 

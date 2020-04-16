@@ -4292,7 +4292,7 @@ class RecordsServiceSpec extends ApiSpec {
                 status shouldEqual StatusCodes.NotFound
               }
 
-              Get(s"/v0/records/$recordId/history") ~> addTenantIdHeader(
+              param.asAdmin(Get(s"/v0/records/$recordId/history")) ~> addTenantIdHeader(
                 TENANT_1
               ) ~> param.api(role).routes ~> check {
                 status shouldEqual StatusCodes.OK

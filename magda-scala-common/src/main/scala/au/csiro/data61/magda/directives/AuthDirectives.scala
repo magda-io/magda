@@ -12,13 +12,26 @@ import com.typesafe.config.Config
 import io.jsonwebtoken.{Jws, Claims}
 
 import scala.util.control.NonFatal
+import au.csiro.data61.magda.model.Auth.User
 
 object AuthDirectives {
 
-  def skipAuthorization(implicit config: Config) =
-    config.hasPath("authorization.skip") && config.getBoolean(
+  /**
+    * Returns true if config says to skip all authorization.
+    */
+  def skipAuthorization(implicit system: ActorSystem, config: Config) = {
+    val skip = config.hasPath("authorization.skip") && config.getBoolean(
       "authorization.skip"
     )
+
+    if (skip) {
+      system.log.warning(
+        "WARNING: Skip authorization is turned on! This is fine for testing or playing around, but this should NOT BE TURNED ON FOR PRODUCTION!"
+      )
+    }
+
+    skip
+  }
 
   /** Gets the X-Magda-Session header out of the request, providing it as a string without doing any verification */
   def getJwt(): Directive1[Option[String]] = {
@@ -32,12 +45,20 @@ object AuthDirectives {
     }
   }
 
-  def requireUserId(
+  /**
+    * If the X-Magda-Session header is present, tries to get a user id out of it.
+    *
+    * @return If:
+    *   - The X-Magda-Session header is present and valid, provides the user id  from it
+    *   - The X-Magda-Session header is present and NOT valid, returns 400
+    *   - The X-Magda-Session header is not present at all, provides None
+    */
+  def provideUserId(
       implicit system: ActorSystem,
       config: Config
-  ): Directive1[String] = {
+  ): Directive1[Option[String]] = {
     if (skipAuthorization) {
-      provide("dummyUserId")
+      provide(Some("authorization-skipped"))
     } else {
       val log = Logging(system, getClass)
       extractRequest flatMap { request =>
@@ -47,6 +68,7 @@ object AuthDirectives {
         }
 
         sessionToken match {
+          case None => provide(None)
           case Some(header) if header.value().isEmpty() =>
             log.info("X-Magda-Session header was blank")
             reject(
@@ -62,7 +84,7 @@ object AuthDirectives {
               val userId = claims.getBody().get("userId", classOf[String])
 
               provide(
-                userId
+                Some(userId)
               )
             } catch {
               case NonFatal(e) =>
@@ -77,48 +99,85 @@ object AuthDirectives {
                   )
                 )
             }
-          case None =>
-            log.info("Could not find X-Magda-Session header in request")
-            reject(
-              AuthenticationFailedRejection(
-                AuthenticationFailedRejection.CredentialsMissing,
-                HttpChallenge("magda", None)
-              )
-            )
-
         }
       }
     }
+
   }
 
-  def requireIsAdmin(
-      authApiClient: AuthApiClient
-  )(implicit system: ActorSystem, config: Config): Directive1[String] = {
-    if (skipAuthorization) {
-      provide("dummyUserId")
-    } else {
-      implicit val ec = authApiClient.executor
-      val log = Logging(system, getClass)
+  /**
+    * Gets a user ID off the incoming X-Magda-Session JWT. Will return 403 if it can't find one.
+    */
+  def requireUserId(
+      implicit system: ActorSystem,
+      config: Config
+  ): Directive1[String] = {
+    provideUserId(system, config) flatMap {
+      case Some(userId) =>
+        provide(
+          userId
+        )
+      case None =>
+        val log = Logging(system, getClass)
+        log.info("Could not find X-Magda-Session header in request")
+        reject(
+          AuthenticationFailedRejection(
+            AuthenticationFailedRejection.CredentialsMissing,
+            HttpChallenge("magda", None)
+          )
+        )
 
-      requireUserId flatMap { userId =>
-        log.debug("Authenticated as user with id {}", userId)
-        extractActorSystem flatMap { actorSystem =>
-          extractMaterializer flatMap { materializer =>
-            extractExecutionContext flatMap { executionContext =>
-              authorizeAsync(
-                _ =>
-                  authApiClient.getUserPublic(userId).map { user =>
-                    log.debug("Retrieved user from auth api: {}", user)
-                    user.isAdmin
-                  }
-              ) tflatMap { _ =>
-                provide(userId)
+    }
+  }
+
+  /**
+    * Gets user making the request from the Auth API. Provides None if it can't find the user id.
+    */
+  def provideUser(
+      authApiClient: AuthApiClient
+  )(implicit system: ActorSystem, config: Config): Directive1[Option[User]] = {
+    implicit val ec = authApiClient.executor
+    val log = Logging(system, getClass)
+
+    if (skipAuthorization) {
+      provide(Some(User("authorization-skipped", true)))
+    } else {
+      provideUserId(system, config) flatMap {
+        case Some(userId) =>
+          log.debug("Authenticated as user with id {}", userId)
+          extractActorSystem flatMap { actorSystem =>
+            extractMaterializer flatMap { materializer =>
+              extractExecutionContext flatMap { executionContext =>
+                onSuccess(authApiClient.getUserPublic(userId)) flatMap { user =>
+                  provide(Some(user))
+                }
               }
             }
           }
-        }
+        case None => provide(None)
       }
     }
   }
 
+  /**
+    * Looks up the user to make sure that the user is an admin. Responds with 403 if the user is
+    * not an admin, passes through the user object if the user is an admin.
+    */
+  def requireIsAdmin(
+      authApiClient: AuthApiClient
+  )(implicit system: ActorSystem, config: Config): Directive1[User] = {
+    provideUser(authApiClient).flatMap {
+      case Some(user) =>
+        authorize(user.isAdmin) tflatMap { _ =>
+          provide(user)
+        }
+      case None =>
+        reject(
+          AuthenticationFailedRejection(
+            AuthenticationFailedRejection.CredentialsMissing,
+            HttpChallenge("magda", None)
+          )
+        )
+    }
+  }
 }
