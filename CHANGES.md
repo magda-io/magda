@@ -17,6 +17,7 @@ General:
 -   Upgraded everything cert-manager related to work with v0.13
 -   Update build & run document to provide more information regarding running local build connector & minion docker images
 -   Update `building and running` documents: replace `npx` with `yarn` in all commands & replace keywords `npm dependecies` with `dependecies`
+-   New: Extract metadata from data portal URLs
 
 UI:
 
@@ -67,6 +68,7 @@ Authorization:
 -   Added per-record authorization around the `/records/summary/<recordid>` endpoint matching the `/records/<id>` one.
 -   Added per-record authorization around the `/records/summary` endpoint matching the `/records` one.
 -   Added per-record authorization around the `/records/<recordid>/history` endpoint
+-   Added per-record authorization around the `/records/<recordid>/history/<eventId>` endpoint
 
 Others:
 

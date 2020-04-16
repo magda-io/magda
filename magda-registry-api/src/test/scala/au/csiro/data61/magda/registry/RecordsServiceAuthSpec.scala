@@ -78,6 +78,22 @@ class RecordsServiceAuthSpec extends BaseRecordsServiceAuthSpec {
         }
       }
 
+      describe("for version") {
+        commonVersionTests(None, true)
+
+        it(
+          "if there's no default or specific policy in place, it should deny all access"
+        ) { param =>
+          setupNullPolicyRecord(param)
+
+          Get(s"/v0/records/foo/history/${Integer.MAX_VALUE}") ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.NotFound
+          }
+        }
+      }
+
       describe("for multiple records") {
         it(
           "allows access to aspect-less records if default policy resolves to unconditionally allow access to everything"
