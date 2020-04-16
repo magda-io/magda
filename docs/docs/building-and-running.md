@@ -10,8 +10,6 @@ You need to install following in order to build MAGDA:
 -   [Java 8 JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) - To run the JVM components, and to build the small amount of Java code.
 -   [sbt](http://www.scala-sbt.org/) - To build the Scala components.
 -   [yarn](https://yarnpkg.com/) - Npm replacement that makes node deps in a monorepo much easier.
--   [lerna](https://lerna.js.org/) - To manage our multiple-project repo. Once you have node.js/yarn installed, installing lerna is as simple as `yarn global add lerna`.
--   [pancake](https://github.com/govau/pancake) - To manage design components. Once you have Node.js installed, installing pancake is as simple as `yarn global add @gov.au/pancake`.
 
 To push the images and run them on kubernetes, you'll need to install:
 
@@ -47,11 +45,10 @@ Once the above prerequisites are in place, and the dependencies are installed, b
 From the MAGDA root directory, simply run the appropriate build command:
 
 ```bash
-# If using lerna v3.18.0 or higher
 yarn lerna run build --stream --concurrency=1 --include-dependencies
 ```
 
-You can also run the same command in an individual component's directory (i.e. `magda-whatever/`) to build just that component.
+You can also run `yarn build` in an individual component's directory (i.e. `magda-whatever/`) to build just that component.
 
 ### Set up Helm
 
@@ -81,7 +78,7 @@ helm install kube-registry-proxy -f deploy/helm/kube-registry-proxy.yml magda-io
 Now you can build the docker containers locally - this might take quite a while so get a cup of tea.
 
 ```bash
-eval $(minikube docker-env) # (If you haven't run this already)
+eval $(minikube docker-env) # (If you're running in minikube and haven't run this already)
 yarn lerna run build --stream --concurrency=1 --include-dependencies # (if you haven't run this already)
 yarn lerna run docker-build-local --stream --concurrency=1 --include-filtered-dependencies
 ```
