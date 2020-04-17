@@ -374,6 +374,7 @@ buildtest:helm-charts:
   script:
     # Init helm
     # - helm init --client-only
+    - helm repo add stable https://kubernetes-charts.storage.googleapis.com
     - helm repo add magda-io https://charts.magda.io
     - helm dep build deploy/helm/internal-charts/storage-api
     - helm dep build deploy/helm/magda-core
