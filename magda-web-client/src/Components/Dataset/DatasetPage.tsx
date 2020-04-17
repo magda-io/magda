@@ -4,6 +4,7 @@ import Breadcrumbs from "Components/Common/Breadcrumbs";
 import defined from "helpers/defined";
 import DatasetPageDetails from "./View/DatasetPageDetails";
 import DatasetPageSuggestForm from "./View/DatasetPageSuggestForm";
+import PublishToCkanButton from "./View/PublishToCkanButton";
 import { Small, Medium } from "Components/Common/Responsive";
 import DescriptionBox from "Components/Common/DescriptionBox";
 import "./DatasetPage.scss";
@@ -139,6 +140,18 @@ const DatasetPage: FunctionComponent<PropsType> = props => {
                             >
                                 Edit the Dataset
                             </button>
+                        </div>
+                    ) : null}
+                    {hasEditPermissions ? (
+                        <div
+                            className={` col-sm-4 ${
+                                addMargin ? "form-margin" : ""
+                            }`}
+                        >
+                            <PublishToCkanButton
+                                ckanSyncData={dataset.ckanSync}
+                                datasetId={dataset.identifier}
+                            />
                         </div>
                     ) : null}
                 </div>
