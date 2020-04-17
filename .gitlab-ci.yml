@@ -262,6 +262,26 @@ buildtest:registry:
 
 buildtest:typescript-apis-stateless:
   stage: buildtest
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  retry: 1
+  dependencies:
+    - builders-and-yarn
+    - registry-typescript-api
+  script:
+    - cd magda-typescript-common && yarn build && yarn test && cd ..
+    - cd magda-minion-framework && yarn build && yarn test && cd ..
+    - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.stateless=true -- run build --include-filtered-dependencies
+    - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.stateless=true -- run test --include-filtered-dependencies
+    - yarn run in-submodules -- -f categories.npmPackage=true -f categories.useCommonLib=true -- run build
+    - yarn run in-submodules -- -f categories.npmPackage=true -f categories.useMinionLib=true -- run build
+  artifacts:
+    paths:
+      - "*/dist"
+      - "packages/*/dist"
+    expire_in: 30 days
+
+buildtest:typescript-apis-with-pg:
+  stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 1
   dependencies:
@@ -300,16 +320,14 @@ buildtest:typescript-apis-stateless:
     - cd ../../../../
     - cd magda-typescript-common && yarn build && yarn test && cd ..
     - cd magda-minion-framework && yarn build && yarn test && cd ..
-    - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.stateless=true -- run build --include-filtered-dependencies
-    - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.stateless=true -- run test --include-filtered-dependencies
-    - yarn run in-submodules -- -f categories.npmPackage=true -f categories.useCommonLib=true -- run build
-    - yarn run in-submodules -- -f categories.npmPackage=true -f categories.useMinionLib=true -- run build
+    - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.uses-pg=true -- run build --include-filtered-dependencies
+    - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.uses-pg=true -- run test --include-filtered-dependencies
     - cd deploy/helm/internal-charts/opa
     - docker-compose down
   artifacts:
     paths:
       - "*/dist"
-    expire_in: 30 days
+    expire_in: 7 days
 
 buildtest:typescript-apis-with-es:
   stage: buildtest
@@ -354,31 +372,6 @@ buildtest:typescript-apis-with-es:
     paths:
       - "*/dist"
     expire_in: 30 days
-
-buildtest:typescript-apis-with-pg:
-  stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
-  retry: 1
-  dependencies:
-    - builders-and-yarn
-    - registry-typescript-api
-  cache:
-    paths: []
-  services:
-    - postgres:9.6
-  variables:
-    POSTGRES_HOST: postgres
-    POSTGRES_DB: postgres
-    POSTGRES_USER: postgres
-    POSTGRES_PASSWORD: ""
-  script:
-    - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.uses-pg=true -- run build --include-filtered-dependencies
-    - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.uses-pg=true -- run test --include-filtered-dependencies
-  artifacts:
-    paths:
-      - "*/dist"
-      - "packages/*/dist"
-    expire_in: 7 days
 
 buildtest:storage-api:
   stage: buildtest
