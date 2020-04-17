@@ -50,7 +50,7 @@
     "create-secrets": "create-secrets",
     "start-opa": "opa run deploy/helm/internal-charts/opa/policies",
     "test-opa": "opa test deploy/helm/internal-charts/opa/policies -v",
-    "cleanup": "rm -rf pancake; for dir in magda-*; do echo \"Removing node_modules from $dir\"; rm -rf $dir/node_modules; done"
+    "clean": "rm -rf pancake magda-web-client/src/pancake; for dir in magda-*; do echo \"Removing node_modules from $dir\"; rm -rf $dir/node_modules; done"
   },
   "pancake": {
     "auto-save": true,

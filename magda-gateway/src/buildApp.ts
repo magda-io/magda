@@ -16,6 +16,7 @@ import createAuthRouter from "./createAuthRouter";
 import createGenericProxy from "./createGenericProxy";
 import createCkanRedirectionRouter from "./createCkanRedirectionRouter";
 import createHttpsRedirectionMiddleware from "./createHttpsRedirectionMiddleware";
+import createOpenfaasGatewayProxy from "./createOpenfaasGatewayProxy";
 import Authenticator from "./Authenticator";
 import defaultConfig from "./defaultConfig";
 import { ProxyTarget } from "./createApiRouter";
@@ -81,6 +82,8 @@ type Config = {
     vanguardWsFedIdpUrl?: string;
     vanguardWsFedRealm?: string;
     vanguardWsFedCertificate?: string;
+    openfaasGatewayUrl?: string;
+    openfaasAllowAdminOnly?: boolean;
 };
 
 export default function buildApp(config: Config) {
@@ -188,6 +191,20 @@ export default function buildApp(config: Config) {
                 vanguardWsFedIdpUrl: config.vanguardWsFedIdpUrl,
                 vanguardWsFedRealm: config.vanguardWsFedRealm,
                 vanguardWsFedCertificate: config.vanguardWsFedCertificate
+            })
+        );
+    }
+
+    if (config.openfaasGatewayUrl) {
+        app.use(
+            "/api/v0/openfaas",
+            createOpenfaasGatewayProxy({
+                gatewayUrl: config.openfaasGatewayUrl,
+                allowAdminOnly: config.openfaasAllowAdminOnly,
+                baseAuthUrl: config.authorizationApi,
+                jwtSecret: config.jwtSecret,
+                tenantMode,
+                authenticator
             })
         );
     }

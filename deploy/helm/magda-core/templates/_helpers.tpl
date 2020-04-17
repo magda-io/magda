@@ -218,3 +218,14 @@ spec:
               - key: "{{ .jobConfig.id }}.json"
                 path: "connector.json"
 {{- end }}
+
+
+{{/*
+Generating the openfaas gateway url.
+*/}}
+{{- define "magda.openfaasGatewayUrl" -}}
+{{- if not .Values.global.openfaas.mainNamespace -}}
+{{- fail "`mainNamespace` can't be empty"  -}}
+{{- end -}}
+{{- .Values.global.openfaas.mainNamespace | printf "http://gateway.%s-%s.svc.cluster.local:8080" (required "Please provide namespacePrefix for generating openfaas gateway url" (.Values.global.openfaas.namespacePrefix | default .Release.Namespace)) -}}
+{{- end -}}

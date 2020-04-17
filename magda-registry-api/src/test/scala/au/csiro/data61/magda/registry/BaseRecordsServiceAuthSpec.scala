@@ -44,11 +44,11 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
     it(
       "allows access to an aspect-less record if policy resolves to unconditionally allow access"
     ) { param =>
-      setupNoAspectRecord(
+      setupRecord(
         param,
         recordPolicy,
         expectedReadPolicy,
-        """{ "queries": [[]] }"""
+        policyResponseForUnconditionallyAllowed
       )
 
       Get(s"/v0/records/foo") ~> addTenantIdHeader(
@@ -64,7 +64,12 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
     it(
       "disallows access to an aspect-less record if policy resolves to unconditionally disallow access"
     ) { param =>
-      setupNoAspectRecord(param, recordPolicy, expectedReadPolicy, """{}""")
+      setupRecord(
+        param,
+        recordPolicy,
+        expectedReadPolicy,
+        policyResponseForUnconditionallyDisallowed
+      )
 
       Get(s"/v0/records/foo") ~> addTenantIdHeader(
         TENANT_1
@@ -74,28 +79,19 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
     }
 
     it(
-      "allows access to an record if record matches policy"
+      "allows access to a record if record matches policy"
     ) { param =>
       addExampleAspectDef(param)
-      val recordId = "foo"
-      addRecord(
+      setupRecord(
         param,
-        Record(
-          recordId,
-          "foo",
-          Map(
-            "stringExample" -> JsObject(
-              "nested" -> JsObject("public" -> JsString("true"))
-            )
-          ),
-          authnReadPolicyId = recordPolicy
-        )
-      )
-
-      expectOpaQueryForPolicy(
-        param,
+        recordPolicy,
         expectedReadPolicy,
-        policyResponseForStringExampleAspect
+        policyResponseForStringExampleAspect,
+        Map(
+          "stringExample" -> JsObject(
+            "nested" -> JsObject("public" -> JsString("true"))
+          )
+        )
       )
 
       Get(s"/v0/records/foo") ~> addTenantIdHeader(
@@ -106,28 +102,19 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
     }
 
     it(
-      "does not allow access to an record if record does not match policy"
+      "does not allow access to a record if record does not match policy"
     ) { param =>
       addExampleAspectDef(param)
-      val recordId = "foo"
-      addRecord(
+      setupRecord(
         param,
-        Record(
-          recordId,
-          "foo",
-          Map(
-            "stringExample" -> JsObject(
-              "nested" -> JsObject("public" -> JsString("false"))
-            )
-          ),
-          authnReadPolicyId = recordPolicy
-        )
-      )
-
-      expectOpaQueryForPolicy(
-        param,
+        recordPolicy,
         expectedReadPolicy,
-        policyResponseForStringExampleAspect
+        policyResponseForStringExampleAspect,
+        Map(
+          "stringExample" -> JsObject(
+            "nested" -> JsObject("public" -> JsString("false"))
+          )
+        )
       )
 
       Get(s"/v0/records/foo") ~> addTenantIdHeader(
@@ -287,11 +274,11 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
     it(
       "allows access to an aspect-less record if policy resolves to unconditionally allow access"
     ) { param =>
-      setupNoAspectRecord(
+      setupRecord(
         param,
         recordPolicy,
         expectedReadPolicy,
-        """{ "queries": [[]] }"""
+        policyResponseForUnconditionallyAllowed
       )
 
       Get(s"/v0/records/summary/foo") ~> addTenantIdHeader(
@@ -307,7 +294,12 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
     it(
       "disallows access to an aspect-less record if policy resolves to unconditionally disallow access"
     ) { param =>
-      setupNoAspectRecord(param, recordPolicy, expectedReadPolicy, """{}""")
+      setupRecord(
+        param,
+        recordPolicy,
+        expectedReadPolicy,
+        policyResponseForUnconditionallyDisallowed
+      )
 
       Get(s"/v0/records/summary/foo") ~> addTenantIdHeader(
         TENANT_1
@@ -317,28 +309,19 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
     }
 
     it(
-      "allows access to an record if record matches policy"
+      "allows access to a record if record matches policy"
     ) { param =>
       addExampleAspectDef(param)
-      val recordId = "foo"
-      addRecord(
+      setupRecord(
         param,
-        Record(
-          recordId,
-          "foo",
-          Map(
-            "stringExample" -> JsObject(
-              "nested" -> JsObject("public" -> JsString("true"))
-            )
-          ),
-          authnReadPolicyId = recordPolicy
-        )
-      )
-
-      expectOpaQueryForPolicy(
-        param,
+        recordPolicy,
         expectedReadPolicy,
-        policyResponseForStringExampleAspect
+        policyResponseForStringExampleAspect,
+        Map(
+          "stringExample" -> JsObject(
+            "nested" -> JsObject("public" -> JsString("true"))
+          )
+        )
       )
 
       Get(s"/v0/records/summary/foo") ~> addTenantIdHeader(
@@ -349,28 +332,19 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
     }
 
     it(
-      "does not allow access to an record if record does not match policy"
+      "does not allow access to a record if record does not match policy"
     ) { param =>
       addExampleAspectDef(param)
-      val recordId = "foo"
-      addRecord(
+      setupRecord(
         param,
-        Record(
-          recordId,
-          "foo",
-          Map(
-            "stringExample" -> JsObject(
-              "nested" -> JsObject("public" -> JsString("false"))
-            )
-          ),
-          authnReadPolicyId = recordPolicy
-        )
-      )
-
-      expectOpaQueryForPolicy(
-        param,
+        recordPolicy,
         expectedReadPolicy,
-        policyResponseForStringExampleAspect
+        policyResponseForStringExampleAspect,
+        Map(
+          "stringExample" -> JsObject(
+            "nested" -> JsObject("public" -> JsString("false"))
+          )
+        )
       )
 
       Get(s"/v0/records/summary/foo") ~> addTenantIdHeader(
@@ -507,27 +481,632 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
     }
   }
 
-  def setupNoAspectRecord(
+  /**
+    * Performs tests for auth on the historyendpoint (/records/${recordId}/history) that should be done under
+    * three sets of conditions:
+    * 1. The record being requested has no policy set, and there is a default policy (default policy should be used)
+    *    (defaultPolicy=Some, recordHasPolicy=false)
+    * 2. The record being requested has a policy set, and there is ALSO a default policy (record policy should be used)
+    *    (defaultPolicy=Some, recordHasPolicy=true)
+    * 3. The record being requested has a policy set, and there is NO default policy (record policy should be used)
+    *    (defaultPolicy=None, recordHasPolicy=true)
+    *
+    * @param defaultPolicy The default policy that's been set in settings, or None if no policy has been set
+    * @param recordHasPolicy Whether a policy should be set on the record
+    */
+  def commonRecordHistoryTests(
+      defaultPolicy: Option[String],
+      recordHasPolicy: Boolean
+  ) = {
+    val recordPolicy = if (recordHasPolicy) Some("nonDefaultPolicy") else None
+    val expectedReadPolicy = recordPolicy.orElse(defaultPolicy).get + ".read"
+
+    it(
+      "allows access to all events of an aspect-less record if policy resolves to unconditionally allow access"
+    ) { param =>
+      setupRecord(
+        param,
+        recordPolicy,
+        expectedReadPolicy,
+        policyResponseForUnconditionallyAllowed
+      )
+
+      Get(s"/v0/records/foo/history") ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val resRecord = responseAs[EventsPage]
+
+        resRecord.events.length shouldBe 1 // one event for record creation
+        resRecord.events.head.data.fields("recordId") shouldEqual JsString(
+          "foo"
+        )
+      }
+    }
+
+    it(
+      "returns empty page for events on an aspect-less record if policy resolves to unconditionally disallow access"
+    ) { param =>
+      setupRecord(
+        param,
+        recordPolicy,
+        expectedReadPolicy,
+        policyResponseForUnconditionallyDisallowed
+      )
+
+      Get(s"/v0/records/foo/history") ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val resRecord = responseAs[EventsPage]
+        resRecord.events.length shouldBe 0
+      }
+    }
+
+    it(
+      "show events for a record if record matches policy"
+    ) { param =>
+      addExampleAspectDef(param)
+
+      setupRecord(
+        param,
+        recordPolicy,
+        expectedReadPolicy,
+        policyResponseForStringExampleAspect,
+        Map(
+          "stringExample" -> JsObject(
+            "nested" -> JsObject("public" -> JsString("true"))
+          )
+        )
+      )
+
+      Get(s"/v0/records/foo/history") ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.OK
+
+        val resRecord = responseAs[EventsPage]
+        resRecord.events.length shouldBe 2 // one each for record and aspect creation
+        resRecord.events.head.data.fields("recordId") shouldEqual JsString(
+          "foo"
+        )
+      }
+    }
+
+    it(
+      "does not show events for a record if record does not match policy"
+    ) { param =>
+      addExampleAspectDef(param)
+
+      setupRecord(
+        param,
+        recordPolicy,
+        expectedReadPolicy,
+        policyResponseForStringExampleAspect,
+        Map(
+          "stringExample" -> JsObject(
+            "nested" -> JsObject("public" -> JsString("false"))
+          )
+        )
+      )
+
+      Get(s"/v0/records/foo/history") ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val resRecord = responseAs[EventsPage]
+        resRecord.events.length shouldBe 0
+      }
+    }
+
+    it(
+      "returns no events for a record that has been deleted, unless the user is an admin"
+    ) { param =>
+      // Create a record
+      setupRecord(
+        param,
+        recordPolicy,
+        expectedReadPolicy,
+        policyResponseForUnconditionallyAllowed
+      )
+
+      // Make sure we can see events without being an admin
+      Get(s"/v0/records/foo/history") ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val resRecord = responseAs[EventsPage]
+        resRecord.events.length shouldBe 1
+      }
+
+      // Delete the record
+      param.asAdmin(Delete("/v0/records/foo")) ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      // No user details = no events
+      Get(s"/v0/records/foo/history") ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val resRecord = responseAs[EventsPage]
+        resRecord.events.length shouldBe 0
+      }
+
+      // Non-admin user = no events
+      param.asNonAdmin(Get(s"/v0/records/foo/history")) ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val resRecord = responseAs[EventsPage]
+        resRecord.events.length shouldBe 0
+      }
+
+      // Admin user = still show events
+      param.asAdmin(Get(s"/v0/records/foo/history")) ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val resRecord = responseAs[EventsPage]
+        resRecord.events.length shouldBe 2
+        resRecord.events.last.eventType shouldEqual EventType.DeleteRecord
+      }
+    }
+
+    describe(
+      "shows events (if allowed) and shows no events (if denied) for"
+    ) {
+      it("a string-based policy") { param =>
+        doPolicyTestForHistory(
+          param,
+          "stringExample",
+          addStringExampleRecords(recordPolicy),
+          policyResponseForStringExampleAspect
+        )
+      }
+
+      it("a boolean-based policy") { param =>
+        doPolicyTestForHistory(
+          param,
+          "booleanExample",
+          addBooleanExampleRecords(recordPolicy),
+          policyResponseForBooleanExampleAspect
+        )
+      }
+
+      it("a numeric-based policy") { param =>
+        doPolicyTestForHistory(
+          param,
+          "numericExample",
+          addNumericExampleRecords(recordPolicy),
+          policyResponseForNumericExampleAspect
+        )
+      }
+
+      it("a policy that tests for the existence of an aspect") { param =>
+        doPolicyTestForHistory(
+          param,
+          "aspectExistenceExample",
+          addAspectExistenceExampleRecords(recordPolicy),
+          policyResponseForAspectExistenceExampleAspect
+        )
+      }
+
+      it(
+        "a policy that tests for the existence of a field within an aspect"
+      ) { param =>
+        doPolicyTestForHistory(
+          param,
+          "existenceExample",
+          addExistenceExampleRecords(recordPolicy),
+          policyResponseForExistenceExampleAspect
+        )
+      }
+
+      it(
+        "a policy that involves checking if one array and another array have a value in common (a la esri)"
+      ) { param =>
+        doPolicyTestForHistory(
+          param,
+          "arrayComparisonExample",
+          addArrayComparisonExampleRecords(recordPolicy),
+          policyResponseForArrayComparisonAspect
+        )
+      }
+
+      def doPolicyTestForHistory(
+          param: FixtureParam,
+          exampleId: String,
+          addRecords: FixtureParam => Unit,
+          policyResponse: String
+      ) = {
+        val PascalCaseId = exampleId.charAt(0).toUpper + exampleId
+          .substring(1)
+        val camelCaseId = exampleId.charAt(0).toLower + exampleId.substring(
+          1
+        )
+
+        addAspectDef(param, camelCaseId)
+        addRecords(param)
+
+        expectOpaQueryForPolicy(
+          param,
+          expectedReadPolicy,
+          policyResponse
+        ).twice()
+
+        Get(s"/v0/records/allow$PascalCaseId/history") ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          val resRecord = responseAs[EventsPage]
+          resRecord.events.head.data
+            .fields("recordId") shouldEqual JsString(s"allow$PascalCaseId")
+        }
+
+        Get(s"/v0/records/deny$PascalCaseId/history") ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          val resRecord = responseAs[EventsPage]
+          resRecord.events.length shouldBe 0
+        }
+      }
+    }
+
+    it("if OPA responds with an error, registry should respond with an error") {
+      param =>
+        addExampleAspectDef(param)
+        val recordId = "foo"
+        addRecord(
+          param,
+          Record(
+            recordId,
+            "foo",
+            Map(
+              "stringExample" -> JsObject(
+                "nested" -> JsObject("public" -> JsString("true"))
+              )
+            ),
+            authnReadPolicyId = recordPolicy
+          )
+        )
+
+        expectOpaQueryForPolicy(
+          param,
+          expectedReadPolicy,
+          "ERROR: Not found",
+          StatusCodes.InternalServerError
+        )
+
+        Get(s"/v0/records/foo/history") ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.InternalServerError
+        }
+    }
+  }
+
+  /**
+    * Performs tests for auth on the version(time-travel) endpoint (/records/${recordId}/history/${version}) that should be done under
+    * three sets of conditions:
+    * 1. The record being requested has no policy set, and there is a default policy (default policy should be used)
+    *    (defaultPolicy=Some, recordHasPolicy=false)
+    * 2. The record being requested has a policy set, and there is ALSO a default policy (record policy should be used)
+    *    (defaultPolicy=Some, recordHasPolicy=true)
+    * 3. The record being requested has a policy set, and there is NO default policy (record policy should be used)
+    *    (defaultPolicy=None, recordHasPolicy=true)
+    *
+    * @param defaultPolicy The default policy that's been set in settings, or None if no policy has been set
+    * @param recordHasPolicy Whether a policy should be set on the record
+    */
+  def commonVersionTests(
+      defaultPolicy: Option[String],
+      recordHasPolicy: Boolean
+  ) = {
+    val recordPolicy = if (recordHasPolicy) Some("nonDefaultPolicy") else None
+    val expectedReadPolicy = recordPolicy.orElse(defaultPolicy).get + ".read"
+
+    it(
+      "shows an aspect-less record if policy resolves to unconditionally allow access"
+    ) { param =>
+      setupRecord(
+        param,
+        recordPolicy,
+        expectedReadPolicy,
+        policyResponseForUnconditionallyAllowed
+      )
+
+      Get(s"/v0/records/foo/history/${Integer.MAX_VALUE}") ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val resRecord = responseAs[Record]
+
+        resRecord.id shouldBe "foo"
+      }
+    }
+
+    it(
+      "returns 404 for an aspect-less record if policy resolves to unconditionally disallow access"
+    ) { param =>
+      setupRecord(
+        param,
+        recordPolicy,
+        expectedReadPolicy,
+        policyResponseForUnconditionallyDisallowed
+      )
+
+      Get(s"/v0/records/foo/history/${Integer.MAX_VALUE}") ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.NotFound
+      }
+    }
+
+    it(
+      "shows a record if record matches policy"
+    ) { param =>
+      addExampleAspectDef(param)
+
+      setupRecord(
+        param,
+        recordPolicy,
+        expectedReadPolicy,
+        policyResponseForStringExampleAspect,
+        Map(
+          "stringExample" -> JsObject(
+            "nested" -> JsObject("public" -> JsString("true"))
+          )
+        )
+      )
+
+      Get(s"/v0/records/foo/history/${Integer.MAX_VALUE}") ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.OK
+
+        val resRecord = responseAs[Record]
+        resRecord.id shouldEqual "foo"
+        resRecord.aspects shouldEqual Map(
+          "stringExample" -> JsObject(
+            "nested" -> JsObject("public" -> JsString("true"))
+          )
+        )
+      }
+    }
+
+    it(
+      "returns 404 if record does not match policy"
+    ) { param =>
+      addExampleAspectDef(param)
+
+      setupRecord(
+        param,
+        recordPolicy,
+        expectedReadPolicy,
+        policyResponseForStringExampleAspect,
+        Map(
+          "stringExample" -> JsObject(
+            "nested" -> JsObject("public" -> JsString("false"))
+          )
+        )
+      )
+
+      Get(s"/v0/records/foo/history/${Integer.MAX_VALUE}") ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.NotFound
+      }
+    }
+
+    it(
+      "returns no events for a record that has been deleted, unless the user is an admin"
+    ) { param =>
+      // Create a record
+      setupRecord(
+        param,
+        recordPolicy,
+        expectedReadPolicy,
+        policyResponseForUnconditionallyAllowed
+      )
+
+      // Make sure we can see events without being an admin
+      Get(s"/v0/records/foo/history/2") ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      // Delete the record
+      param.asAdmin(Delete("/v0/records/foo")) ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+
+      // No user details = 404
+      Get(s"/v0/records/foo/history/2") ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.NotFound
+      }
+
+      // Non-admin user = 404
+      param.asNonAdmin(Get(s"/v0/records/foo/history/2")) ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.NotFound
+      }
+
+      // Admin user = success
+      param.asAdmin(Get(s"/v0/records/foo/history/2")) ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val resRecord = responseAs[Record]
+
+      }
+    }
+
+    describe(
+      "returns the record (if allowed) and returns 404 (if denied) for"
+    ) {
+      it("a string-based policy") { param =>
+        doPolicyTestForVersion(
+          param,
+          "stringExample",
+          addStringExampleRecords(recordPolicy),
+          policyResponseForStringExampleAspect
+        )
+      }
+
+      it("a boolean-based policy") { param =>
+        doPolicyTestForVersion(
+          param,
+          "booleanExample",
+          addBooleanExampleRecords(recordPolicy),
+          policyResponseForBooleanExampleAspect
+        )
+      }
+
+      it("a numeric-based policy") { param =>
+        doPolicyTestForVersion(
+          param,
+          "numericExample",
+          addNumericExampleRecords(recordPolicy),
+          policyResponseForNumericExampleAspect
+        )
+      }
+
+      it("a policy that tests for the existence of an aspect") { param =>
+        doPolicyTestForVersion(
+          param,
+          "aspectExistenceExample",
+          addAspectExistenceExampleRecords(recordPolicy),
+          policyResponseForAspectExistenceExampleAspect
+        )
+      }
+
+      it(
+        "a policy that tests for the existence of a field within an aspect"
+      ) { param =>
+        doPolicyTestForVersion(
+          param,
+          "existenceExample",
+          addExistenceExampleRecords(recordPolicy),
+          policyResponseForExistenceExampleAspect
+        )
+      }
+
+      it(
+        "a policy that involves checking if one array and another array have a value in common (a la esri)"
+      ) { param =>
+        doPolicyTestForVersion(
+          param,
+          "arrayComparisonExample",
+          addArrayComparisonExampleRecords(recordPolicy),
+          policyResponseForArrayComparisonAspect
+        )
+      }
+
+      def doPolicyTestForVersion(
+          param: FixtureParam,
+          exampleId: String,
+          addRecords: FixtureParam => Unit,
+          policyResponse: String
+      ) = {
+        val PascalCaseId = exampleId.charAt(0).toUpper + exampleId
+          .substring(1)
+        val camelCaseId = exampleId.charAt(0).toLower + exampleId.substring(
+          1
+        )
+
+        addAspectDef(param, camelCaseId)
+        addRecords(param)
+
+        expectOpaQueryForPolicy(
+          param,
+          expectedReadPolicy,
+          policyResponse
+        ).twice()
+
+        Get(s"/v0/records/allow$PascalCaseId/history/${Integer.MAX_VALUE}") ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          val resRecord = responseAs[Record]
+          resRecord.id shouldEqual s"allow$PascalCaseId"
+        }
+
+        Get(s"/v0/records/deny$PascalCaseId/history/${Integer.MAX_VALUE}") ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.NotFound
+        }
+      }
+    }
+
+    it("if OPA responds with an error, registry should respond with an error") {
+      param =>
+        addExampleAspectDef(param)
+        val recordId = "foo"
+        addRecord(
+          param,
+          Record(
+            recordId,
+            "foo",
+            Map(
+              "stringExample" -> JsObject(
+                "nested" -> JsObject("public" -> JsString("true"))
+              )
+            ),
+            authnReadPolicyId = recordPolicy
+          )
+        )
+
+        expectOpaQueryForPolicy(
+          param,
+          expectedReadPolicy,
+          "ERROR: Not found",
+          StatusCodes.InternalServerError
+        )
+
+        Get(s"/v0/records/foo/history/${Integer.MAX_VALUE}") ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.InternalServerError
+        }
+    }
+  }
+
+  /**
+    * Adds a record with the supplied record policy and aspects,
+    * and returns the provided result from OPA when it's requested
+    * for the supplied expectedReadPolicy
+    */
+  def setupRecord(
       param: FixtureParam,
       recordPolicy: Option[String],
       expectedReadPolicy: String,
-      result: String
+      opaResult: String,
+      aspects: Map[String, JsObject] = Map()
   ) = {
     addRecord(
       param,
       Record(
         "foo",
         "foo",
-        Map(),
+        aspects,
         authnReadPolicyId = recordPolicy
       )
     )
     expectOpaQueryForPolicy(
       param,
       expectedReadPolicy,
-      s"""{
-            "result": ${result}
-          }"""
+      opaResult
     )
   }
 
@@ -1966,9 +2545,11 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
     }
   }
 
+  /** Adds a simple stringExample aspect definition with no schema */
   def addExampleAspectDef(param: FixtureParam) =
     addAspectDef(param, "stringExample")
 
+  /** Adds the supplied aspect def under the supplied id, with the supplied schema (optional) */
   def addAspectDef(
       param: FixtureParam,
       id: String,
@@ -2223,6 +2804,20 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
       )
     )
   }
+
+  val policyResponseForUnconditionallyAllowed = """
+    {
+      "result": {
+        "queries": [[]]
+      }
+    }
+  """
+
+  val policyResponseForUnconditionallyDisallowed = """
+    {
+      "result": {}
+    }
+  """
 
   val policyResponseForStringExampleAspect = """
       {
