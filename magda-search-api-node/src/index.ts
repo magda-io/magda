@@ -11,7 +11,7 @@ const argv = addJwtSecretFromEnvVar(
         .option("listenPort", {
             describe: "The TCP/IP port on which the search-api should listen.",
             type: "number",
-            default: 6120
+            default: 6122
         })
         .option("elasticSearchUrl", {
             describe: "The url of the elasticsearch node to connect to",
@@ -20,8 +20,7 @@ const argv = addJwtSecretFromEnvVar(
         })
         .option("jwtSecret", {
             describe: "The shared secret for intra-network communication",
-            type: "string",
-            demand: true
+            type: "string"
         })
         .option("datasetsIndexId", {
             describe: "The id of the datasets index in elasticsearch",

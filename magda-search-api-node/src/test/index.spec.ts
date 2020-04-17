@@ -32,7 +32,7 @@ const API_ROUTER_CONFIG = {
     datasetsIndexId: "datasets",
     regionsIndexId: "regions",
     publishersIndexId: "publishers",
-    elasticsearchUrl: ES_URL
+    elasticSearchUrl: ES_URL
 };
 
 describe("Search API:", function(this: Mocha.ISuiteCallbackContext) {

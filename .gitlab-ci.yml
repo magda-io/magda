@@ -721,7 +721,9 @@ Manual Release NPM Packages:
   dependencies:
     - builders-and-yarn
     - registry-typescript-api
-    - buildtest:typescript-apis
+    - buildtest:typescript-apis-stateless
+    - buildtest:typescript-apis-with-pg
+    - buildtest:typescript-apis-with-es
   cache:
     paths: []
   image:
@@ -783,7 +785,9 @@ Publish NPM Packages:
   dependencies:
     - builders-and-yarn
     - registry-typescript-api
-    - buildtest:typescript-apis
+    - buildtest:typescript-apis-stateless
+    - buildtest:typescript-apis-with-pg
+    - buildtest:typescript-apis-with-es
   image:
     name: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
   cache: {}

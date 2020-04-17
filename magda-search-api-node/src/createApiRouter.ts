@@ -55,10 +55,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
             .array()
             .items(joi.string())
             .optional(),
-        publishingState: joi
-            .array()
-            .items(joi.string())
-            .optional()
+        publishingState: joi.string().optional()
     };
 
     const facetQueryValidation = {

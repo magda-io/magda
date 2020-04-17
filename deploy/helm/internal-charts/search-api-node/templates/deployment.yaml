@@ -26,7 +26,7 @@ spec:
             "node",
             "/usr/src/app/component/dist/index.js",
             "--listenPort", "80",
-            "--elasticSearchUrl", "elasticsearch://elasticsearch:9200",
+            "--elasticSearchUrl", "http://elasticsearch:9200",
 {{- if .Values.datasetsIndexVersion }}
             "--datasetsIndexId", {{ .Values.datasetsIndexVersion | quote }},
 {{- end }}

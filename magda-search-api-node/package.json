@@ -2,8 +2,9 @@
   "name": "@magda/search-api-node",
   "version": "0.0.57-0",
   "scripts": {
+    "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
-    "compile": "tsc -p tsconfig-build.json",
+    "compile": "tsc -b && ts-module-alias-transformer dist",
     "watch": "tsc -p tsconfig-build.json --watch",
     "start": "node dist/index.js",
     "dev": "run-typescript-in-nodemon src/index.ts",
@@ -43,12 +44,12 @@
     "nyc": "^13.1.0",
     "sinon": "^4.2.1",
     "supertest": "^3.0.0",
-    "typescript": "^3.2.0"
+    "typescript": "^3.7.2"
   },
   "config": {
     "docker": {
       "name": "data61/magda-search-api-node",
-      "include": "node_modules dist Dockerfile"
+      "include": "node_modules dist Dockerfile package.json"
     },
     "jwtSecret": "squirrel",
     "SESSION_SECRET": "keyboard cat"
@@ -67,5 +68,8 @@
     "exclude": [
       "src/test/**"
     ]
+  },
+  "_moduleMappings": {
+    "magda-typescript-common/src": "@magda/typescript-common/dist"
   }
 }
