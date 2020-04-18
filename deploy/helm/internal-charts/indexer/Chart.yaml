@@ -2,4 +2,4 @@ apiVersion: v2
 description: A Helm chart for Kubernetes
 name: indexer
 version: 0.0.57-0
-kubeVersion: ">= 1.14.0"
+kubeVersion: ">= 1.14.0-0"
