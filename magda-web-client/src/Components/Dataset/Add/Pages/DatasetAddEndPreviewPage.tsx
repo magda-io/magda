@@ -51,7 +51,6 @@ export function DatasetAddEndPage() {
                     <h2>You're all done!</h2>
                 </div>
                 <div className="end-preview-container-2">
-                    <hr />
                     <h3>
                         Your dataset has been successfully sent off for
                         approval.
@@ -82,12 +81,11 @@ export function DatasetAddEndPage() {
                         className="print-icon"
                         src={printIcon}
                         style={{
-                            height: "22px",
-                            width: "44px",
-                            marginLeft: "20px"
+                            marginTop: "-10px",
+                            marginLeft: "22px"
                         }}
                     />
-                    <p style={{ marginTop: "-25px" }}>Review Metadata</p>
+                    <p style={{ marginTop: "-19px" }}>Review Metadata</p>
                 </button>
             </div>
         </div>
