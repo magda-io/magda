@@ -50,16 +50,21 @@ export function DatasetAddEndPage() {
                     />
                     <h2>You're all done!</h2>
                 </div>
+                <br />
                 <div className="end-preview-container-2">
                     <h3>
                         Your dataset has been successfully sent off for
                         approval.
                     </h3>
-                    <p style={{ fontSize: "16px" }}>
+                    <br />
+                    <p style={{ fontSize: "14px", marginLeft: "20px" }}>
                         You can view the status of your dataset from{" "}
                         <a href="/">your home page</a>.
                     </p>
                 </div>
+                <br />
+                <br />
+                <br />
             </div>
             <div className="end-preview-page-2">
                 <button
@@ -67,7 +72,7 @@ export function DatasetAddEndPage() {
                     style={{ marginTop: "50px" }}
                 >
                     <img className="draft-image-icon" src={draftIcon} />
-                    <p style={{ marginTop: "-20px" }}>
+                    <p style={{ marginTop: "-30px" }}>
                         View your draft dataset
                     </p>
                 </button>
@@ -75,17 +80,18 @@ export function DatasetAddEndPage() {
                 <br />
                 <button
                     className="au-btn next-button end-preview-button"
-                    style={{ fontSize: "16px", marginTop: "10px" }}
+                    style={{ marginTop: "10px" }}
                 >
-                    <img
-                        className="print-icon"
-                        src={printIcon}
+                    <img className="print-icon" src={printIcon} />
+                    <p
                         style={{
-                            marginTop: "-10px",
-                            marginLeft: "22px"
+                            fontSize: "16px",
+                            marginTop: "-25px",
+                            marginLeft: "-10px"
                         }}
-                    />
-                    <p style={{ marginTop: "-19px" }}>Review Metadata</p>
+                    >
+                        Review Metadata
+                    </p>
                 </button>
             </div>
         </div>
