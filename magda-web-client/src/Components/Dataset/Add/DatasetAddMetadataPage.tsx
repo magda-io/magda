@@ -185,12 +185,15 @@ class NewDataset extends React.Component<Props, State> {
                                 >
                                     Next: {nextButtonCaption()}
                                 </button>
-                                <button
-                                    className="au-btn au-btn--secondary save-button"
-                                    onClick={this.saveAndExit.bind(this)}
-                                >
-                                    Save and exit
-                                </button>
+                                {/* Only show the Save and Exit button on pages prior to step 4*/}
+                                {step < 4 ? (
+                                    <button
+                                        className="au-btn au-btn--secondary save-button"
+                                        onClick={this.saveAndExit.bind(this)}
+                                    >
+                                        Save and exit
+                                    </button>
+                                ) : null}
                             </div>
                         </div>
                     </>
