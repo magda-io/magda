@@ -142,7 +142,9 @@ const DatasetPage: FunctionComponent<PropsType> = props => {
                             </button>
                         </div>
                     ) : null}
-                    {hasEditPermissions ? (
+                    {hasEditPermissions &&
+                    dataset.identifier &&
+                    dataset.ckanSync ? (
                         <div
                             className={` col-sm-4 ${
                                 addMargin ? "form-margin" : ""
