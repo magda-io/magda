@@ -1,7 +1,10 @@
 import _ from "lodash";
 import { Client } from "@elastic/elasticsearch";
-import handleESError from "./handleESError";
+import handleESError from "../../search/elasticsearch/handleESError";
 
+/**
+ * Adds an array of documents into the specified index
+ */
 export default async function bulkIndex(
     client: Client,
     indexId: string,

@@ -9,10 +9,7 @@ const validate = require("express-validation");
 import ElasticSearchQueryer from "./search/elasticsearch/ElasticSearchQueryer";
 import { Query, QueryRegion } from "./model";
 
-// import {
-//     installStatusRouter,
-//     createServiceProbe
-// } from "@magda/typescript-common/dist/express/status";
+import { installStatusRouter } from "@magda/typescript-common/dist/express/status";
 
 export interface ApiRouterOptions {
     jwtSecret: string;
@@ -31,13 +28,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
         options.publishersIndexId
     );
 
-    // const status = {
-    //     probes: {
-    //         database: database.check.bind(database),
-    //         auth: createServiceProbe(options.authApiUrl)
-    //     }
-    // };
-    // installStatusRouter(router, status);
+    installStatusRouter(router);
 
     const baseValidators = {
         start: joi.number().default(0),

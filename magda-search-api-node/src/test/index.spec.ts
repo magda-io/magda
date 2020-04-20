@@ -1,6 +1,5 @@
 import {} from "mocha";
 import { expect } from "chai";
-// import * as sinon from "sinon";
 import supertest from "supertest";
 import express from "express";
 import { Client } from "@elastic/elasticsearch";
@@ -15,7 +14,6 @@ import {
     buildNDatasets
 } from "./utils/builders";
 
-// import handleESError from "../search/handleESError";
 import { Dataset, Region, SearchResult, Agent } from "../model";
 
 import testSearchNoQuery from "./searching/testSearchNoQuery";

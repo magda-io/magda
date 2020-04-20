@@ -13,19 +13,32 @@ import {
 import SearchQueryer from "../SearchQueryer";
 import getFacetDefinition from "./getFacetDefinition";
 
-type LanguageField = {
+/**
+ * A field within the dataset document indexed in ES that will be searched
+ * using a certain analyzer. Includes a value for how much this individual
+ * field should be boosted by.
+ */
+type AnalysisField = {
     path: string;
     boost?: number;
 };
 
-const DATASETS_LANGUAGE_FIELDS: LanguageField[] = [
+/**
+ * Fields that will be analyzed using a language analyzer (i.e. they have
+ * features like plurals that need to be taken into account)
+ */
+const DATASETS_LANGUAGE_FIELDS: AnalysisField[] = [
     { path: "title", boost: 50 },
     { path: "description", boost: 2 },
     { path: "publisher.name" },
     { path: "keywords", boost: 10 },
     { path: "themes" }
 ];
-const NON_LANGUAGE_FIELDS: LanguageField[] = [
+
+/**
+ * Fields that should not be analyzed using a language analyzer
+ */
+const NON_LANGUAGE_FIELDS: AnalysisField[] = [
     { path: "_id" },
     { path: "catalog" },
     { path: "accrualPeriodicity" },
@@ -33,9 +46,22 @@ const NON_LANGUAGE_FIELDS: LanguageField[] = [
     { path: "publisher.acronym" }
 ];
 
+/**
+ * A `SearchQueryer` that uses ElasticSearch to query the index
+ */
 export default class ElasticSearchQueryer implements SearchQueryer {
-    client = new Client({ node: this.url });
+    /**
+     * The ES client to use for querying. This is an HTTP client, so it doesn't
+     * need a lot of management around setup/teardown.
+     */
+    private client = new Client({ node: this.url });
 
+    /**
+     * @param url The base URL to call ElasticSearch at
+     * @param datasetsIndexId The id of the datasets index in ES
+     * @param regionsIndexId The id of the regions index in ES
+     * @param publishersIndexId The id of the publishers index in ES
+     */
     constructor(
         readonly url: string,
         readonly datasetsIndexId: string,
@@ -110,7 +136,7 @@ export default class ElasticSearchQueryer implements SearchQueryer {
                 from: 0,
                 size: 0,
                 body: {
-                    query: await this.buildESDatasetsQuery(
+                    query: await this.buildESBody(
                         facetDef.removeFromQuery(generalQuery)
                     ),
                     aggs: filters
@@ -159,11 +185,11 @@ export default class ElasticSearchQueryer implements SearchQueryer {
         limit: number,
         facetSize: number
     ): Promise<SearchResult> {
-        const searchParams = {
+        const searchParams: RequestParams.Search = {
             from: start,
             size: limit,
             body: {
-                query: await this.buildESDatasetsQuery(query),
+                query: await this.buildESBody(query),
                 aggs: {
                     minDate: {
                         min: {
@@ -223,6 +249,12 @@ export default class ElasticSearchQueryer implements SearchQueryer {
         };
     }
 
+    /**
+     * Get the regions to apply a boost to, based off the search text in a query.
+     *
+     * E.g. if a user searches for "trees marrickville", then datasets that match the
+     * "Marrickville" SA regions should be boosted above ones that don't.
+     */
     async getBoostRegions(query: Query): Promise<Region[]> {
         if (!query.freeText || query.freeText === "") {
             return [];
@@ -246,7 +278,11 @@ export default class ElasticSearchQueryer implements SearchQueryer {
         return regionsResult.body.hits.hits.map((x: any) => x._source);
     }
 
-    async buildESDatasetsQuery(query: Query): Promise<any> {
+    /**
+     * Uses the Search API query to build an object that can be passed
+     * to ElasticSearch in the body.
+     */
+    async buildESBody(query: Query): Promise<any> {
         const boostRegions = await this.getBoostRegions(query);
 
         const geomScorerQueries = boostRegions.map(
@@ -290,6 +326,9 @@ export default class ElasticSearchQueryer implements SearchQueryer {
         return esQuery;
     }
 
+    /**
+     * Turns a query recieved by the search API into a query recognisable by ES.
+     */
     queryToEsQuery(query: Query, boostRegions: Region[]): any {
         const freeText = (() => {
             const sanitisedFreeText =
@@ -384,6 +423,7 @@ export default class ElasticSearchQueryer implements SearchQueryer {
         };
     }
 
+    /** Turns a string into an ElasticSearch text query */
     textQuery(inputText: string) {
         const simpleQueryStringQuery = {
             query: inputText,
@@ -469,7 +509,7 @@ export default class ElasticSearchQueryer implements SearchQueryer {
     }
 }
 
-function fieldDefToEs(def: LanguageField): string {
+function fieldDefToEs(def: AnalysisField): string {
     if (typeof def.boost !== "undefined") {
         return `${def.path}^${def.boost}`;
     } else {

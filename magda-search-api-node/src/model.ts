@@ -21,6 +21,7 @@ export type Region = {
     geometry?: GeoJSON;
 };
 
+/** A query, as sent to the API (an ElasticSearch query has a very different shape!) */
 export type Query = {
     freeText?: string;
     publishers: string[];
@@ -53,6 +54,10 @@ export type FacetSearchResult = {
 
 export type ISODate = string;
 
+/**
+ * A date as returned from the search API - this can be either a properly formatted ISO date,
+ * a string of unknown format, or both, but never neither.
+ */
 export type ApiDate =
     | {
           date: ISODate;
@@ -75,6 +80,10 @@ export type DataSource = {
     extras?: { [key: string]: any };
 };
 
+/**
+ * An agent is either a person or an organisation that has some role
+ * in relation to data sets
+ */
 export type Agent = {
     identifier: string;
     name?: string;
@@ -106,6 +115,9 @@ export type License = {
     url?: String;
 };
 
+/**
+ * A distribution is an file or an API associated with a dataset.
+ */
 export type Distribution = {
     identifier: string;
     title: string;
@@ -122,7 +134,8 @@ export type Distribution = {
     format?: string;
 };
 
-export type DcatCreation = {
+/** Custom creation metadata used by Magda */
+export type Creation = {
     isInternallyProduced?: boolean;
     mechanism?: string;
     sourceSystem?: string;
@@ -157,11 +170,15 @@ export type Dataset = {
     quality: number;
     hasQuality: boolean;
     source?: DataSource;
-    creation?: DcatCreation;
+    creation?: Creation;
     score?: number;
     publishingState?: string;
 };
 
+/**
+ * A result as returned by the search API. Note that this is NOT a result returned
+ * from ElasticSearch.
+ */
 export type SearchResult = {
     query: Query;
     hitCount: number;

@@ -2,7 +2,7 @@ import { Client } from "@elastic/elasticsearch";
 import _ from "lodash";
 
 import handleESError from "../../search/elasticsearch/handleESError";
-import bulkIndex from "../../search/elasticsearch/bulkIndex";
+import bulkIndex from "./bulkIndex";
 import { Region } from "../../model";
 
 const DEFINITION = {

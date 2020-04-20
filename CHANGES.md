@@ -69,11 +69,16 @@ Authorization:
 -   Added per-record authorization around the `/records/<recordid>/history` endpoint
 -   Added per-record authorization around the `/records/<recordid>/history/<eventId>` endpoint
 
+Search
+
+-   Began work on a NodeJS-based search API to replace the scala one
+
 Others:
 
 -   Use a "Year" column from a CSV file to extract a temporal extent
 -   Fixed Registry History API Performance Issue when limit=1 & Updated Registry History API Document
--   Added tentative documentation for building and running on microk8s.
+-   Added tentative documentation/scripting for building and running on microk8s.
+-   Added tentative documentation/scripting for building and running on k3d.
 
 ## 0.0.56
 
