@@ -55,10 +55,14 @@ You can also run `yarn build` in an individual component's directory (i.e. `magd
 Helm is the package manager for Kubernetes - we use it to make it so that you can install all the various services you need for MAGDA at once.
 To install, follow the instructions at [https://helm.sh/docs/intro/install/](https://helm.sh/docs/intro/install/).
 
-Once you have helm3 installed, add Magda Helm Chart Repo:
+Once you have helm3 installed, add Magda Helm Chart Repo and other relavent helm chart repos:
 
 ```bash
 helm repo add magda-io https://charts.magda.io
+helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
+helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+# Get update from repos
+helm repo update
 ```
 
 ### Install a local kube registry
@@ -66,9 +70,6 @@ helm repo add magda-io https://charts.magda.io
 This gives you a local docker registry that you'll upload your built images to so you can use them locally, without having to go via DockerHub or some other external registry.
 
 ```bash
-helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
-helm repo add stable https://kubernetes-charts.storage.googleapis.com/
-helm repo update
 helm install docker-registry -f deploy/helm/docker-registry.yml stable/docker-registry
 helm install kube-registry-proxy -f deploy/helm/kube-registry-proxy.yml magda-io/kube-registry-proxy
 ```
