@@ -21,7 +21,7 @@ import {
 } from "./DatasetAddCommon";
 import DetailsAndContents from "./Pages/DetailsAndContents";
 import DatasetAddPeoplePage from "./Pages/People/DatasetAddPeoplePage";
-import DatasetAddEndPreviewPage from "./Pages/DatasetAddEndPreviewPage";
+import DatasetAddEndPreviewPage, {DatasetAddEndPage} from "./Pages/DatasetAddEndPreviewPage";
 import DatasetAddFilesPage from "./Pages/AddFiles";
 import DatasetAddAccessAndUsePage from "./Pages/DatasetAddAccessAndUsePage";
 import withAddDatasetState from "./withAddDatasetState";
@@ -101,7 +101,7 @@ class NewDataset extends React.Component<Props, State> {
         ),
         config.featureFlags.previewAddDataset
             ? () => <DatasetAddEndPreviewPage />
-            : this.renderSubmitPage.bind(this)
+            : () => <DatasetAddEndPage />
     ];
 
     edit = <K extends keyof State>(aspectField: K) => (field: string) => (
