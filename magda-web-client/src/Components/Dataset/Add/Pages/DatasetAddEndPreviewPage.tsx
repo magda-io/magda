@@ -23,14 +23,17 @@ export default function DatasetAddEndPreviewPage() {
                         Your dataset has been successfully sent off for
                         approval.
                     </h3>
-                    <p style={{ fontSize: "15px" }}>
+                    <p style={{ fontSize: "16px" }}>
                         You can view the status of your dataset from{" "}
-                        <a href="/">your home page.</a>
+                        <a href="/">your home page</a>.
                     </p>
                 </div>
             </div>
             <div className="end-preview-page-2">
-                <button className="au-btn next-button end-preview-button">
+                <button
+                    className="au-btn next-button end-preview-button"
+                    style={{ marginTop: "50px" }}
+                >
                     <img className="draft-image-icon" src={draftIcon} />
                     <p style={{ marginTop: "-20px" }}>
                         View your draft dataset
@@ -40,7 +43,7 @@ export default function DatasetAddEndPreviewPage() {
                 <br />
                 <button
                     className="au-btn next-button end-preview-button"
-                    style={{ fontSize: "16px" }}
+                    style={{ fontSize: "16px", marginTop: "10px" }}
                 >
                     <img
                         className="print-icon"
