@@ -21,7 +21,9 @@ import {
 } from "./DatasetAddCommon";
 import DetailsAndContents from "./Pages/DetailsAndContents";
 import DatasetAddPeoplePage from "./Pages/People/DatasetAddPeoplePage";
-import DatasetAddEndPreviewPage, {DatasetAddEndPage} from "./Pages/DatasetAddEndPreviewPage";
+import DatasetAddEndPreviewPage, {
+    DatasetAddEndPage
+} from "./Pages/DatasetAddEndPreviewPage";
 import DatasetAddFilesPage from "./Pages/AddFiles";
 import DatasetAddAccessAndUsePage from "./Pages/DatasetAddAccessAndUsePage";
 import withAddDatasetState from "./withAddDatasetState";
@@ -178,23 +180,23 @@ class NewDataset extends React.Component<Props, State> {
                 ).length ? null : (
                     <>
                         <div className="row next-save-button-row">
-                            <div className="col-sm-12">
-                                <button
-                                    className="au-btn next-button"
-                                    onClick={nextButtonOnClick}
-                                >
-                                    Next: {nextButtonCaption()}
-                                </button>
-                                {/* Only show the Save and Exit button on pages prior to step 4*/}
-                                {step < 4 ? (
+                            {step < 4 ? (
+                                <div className="col-sm-12">
+                                    <button
+                                        className="au-btn next-button"
+                                        onClick={nextButtonOnClick}
+                                    >
+                                        Next: {nextButtonCaption()}
+                                    </button>
+                                    {/* Only show the Save and Exit button on pages prior to step 4*/}
                                     <button
                                         className="au-btn au-btn--secondary save-button"
                                         onClick={this.saveAndExit.bind(this)}
                                     >
                                         Save and exit
                                     </button>
-                                ) : null}
-                            </div>
+                                </div>
+                            ) : null}
                         </div>
                     </>
                 )}
