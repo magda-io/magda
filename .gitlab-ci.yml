@@ -744,10 +744,6 @@ Publish Helm Chart:
     - apk -v --update add python py-pip groff less mailcap
     - pip install --upgrade awscli==1.14.5 s3cmd==2.0.1 python-magic
 
-    # Init helm
-    - helm init --client-only
-    - helm repo add magda-io https://charts.magda.io
-
     # Run deploy
     - cd deploy/helm
     - mkdir -p sync_dir
