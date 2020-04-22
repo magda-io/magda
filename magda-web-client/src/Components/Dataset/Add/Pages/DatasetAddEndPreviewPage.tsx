@@ -80,14 +80,8 @@ export function DatasetAddEndPage() {
                     style={{ marginTop: "10px" }}
                 >
                     <img className="print-icon" src={printIcon} />
-                    <p
-                        style={{
-                            fontSize: "16px",
-                            marginTop: "-25px",
-                            marginLeft: "-10px"
-                        }}
-                    >
-                        Review Metadata
+                    <p className="print-metadata-txt">
+                        Print a copy of your metadata
                     </p>
                 </button>
             </div>
