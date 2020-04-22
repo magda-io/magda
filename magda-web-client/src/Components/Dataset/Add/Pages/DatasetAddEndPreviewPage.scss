@@ -1,5 +1,11 @@
 @import "variables";
 
+.giant-tick {
+    justify-content: "center";
+    display: "flex";
+    margin-left: 20px;
+}
+
 .end-preview-page-1 {
     background-color: $AU-color-preview;
 }

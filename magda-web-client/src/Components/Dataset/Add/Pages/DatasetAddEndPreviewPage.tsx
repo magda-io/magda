@@ -44,10 +44,7 @@ export function DatasetAddEndPage() {
         <div className="row">
             <div className="col-sm-12 end-preview-page-1">
                 <div className="end-preview-container-1">
-                    <img
-                        src={giantTickIcon}
-                        style={{ justifyContent: "center", display: "flex" }}
-                    />
+                    <img src={giantTickIcon} className="giant-tick" />
                     <h2>You're all done!</h2>
                 </div>
                 <br />
