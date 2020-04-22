@@ -4,9 +4,9 @@ global:
     maxUnavailable: 1
   exposeNodePorts: true
   image:
-    repository: "localhost:5000/data61"
-    tag: "latest"
-    pullPolicy: Always
+    # repository: ""
+    tag: "0.0.56-RC6"
+    pullPolicy: IfNotPresent
   noDbAuth: true
   useCloudSql: false
   useCombinedDb: true

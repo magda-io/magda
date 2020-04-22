@@ -3,7 +3,9 @@ global:
   useCloudSql: false
   externalUrl: https://dev.magda.io
   image:
-    pullPolicy: Always
+    # pullPolicy: Always
+    tag: "0.0.56-RC6"
+    pullPolicy: IfNotPresent
   rollingUpdate:
     maxUnavailable: 1
   enablePriorityClass: true
@@ -12,31 +14,32 @@ global:
 
 tags:
   all: true
-  ingress: true
-  minion-broken-link: true
-  minion-linked-data-rating: true
-  minion-visualization: true
-  minion-format: true
+  connectors: false
+  # ingress: true
+  # minion-broken-link: true
+  # minion-linked-data-rating: true
+  # minion-visualization: true
+  # minion-format: true
 
-ingress:
-  hostname: dev.magda.io
-  ingressClass: nginx
-  enableTls: true
-  domains:
-    - dev.magda.io
-    - "*.dev.magda.io"
+# ingress:
+#   hostname: dev.magda.io
+#   ingressClass: nginx
+#   enableTls: true
+#   domains:
+#     - dev.magda.io
+#     - "*.dev.magda.io"
 
 gateway:
   enableCkanRedirection: false
   enableAuthEndpoint: true
   enableHttpsRedirection: true
   auth:
-    facebookClientId: "173073926555600"
-    arcgisClientId: "d0MgVUbbg5Z6vmWo"
-    googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
+    # facebookClientId: "173073926555600"
+    # arcgisClientId: "d0MgVUbbg5Z6vmWo"
+    # googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
     ckanAuthenticationUrl: https://data.gov.au/data
-    vanguardWsFedIdpUrl: https://thirdparty.authentication.business.gov.au/fas/v2/wsfed12/authenticate
-    vanguardWsFedRealm: https://environment.magda.io/integration-test-2
+    # vanguardWsFedIdpUrl: https://thirdparty.authentication.business.gov.au/fas/v2/wsfed12/authenticate
+    # vanguardWsFedRealm: https://environment.magda.io/integration-test-2
   cors:
     credentials: true
     origin: true
@@ -53,37 +56,37 @@ gateway:
       reportUri: https://sdga.report-uri.com/r/d/csp/enforce
 
 combined-db:
-  waleBackup:
-    method: WAL
-    gsPrefix: "gs://magda-postgres-backups-asia/dev"
-    executionTime: 03:00
-    googleApplicationCreds:
-      secretName: storage-account-credentials
-      fileName: TerriaJS-5e042b649f8a.json
+  # waleBackup:
+  #   method: WAL
+  #   gsPrefix: "gs://magda-postgres-backups-asia/dev"
+  #   executionTime: 03:00
+  #   googleApplicationCreds:
+  #     secretName: storage-account-credentials
+  #     fileName: TerriaJS-5e042b649f8a.json
   data:
-    storage: 250Gi
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-          - matchExpressions:
-              - key: cloud.google.com/gke-preemptible
-                operator: DoesNotExist
+    storage: 50Gi
+  # affinity:
+  #   nodeAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       nodeSelectorTerms:
+  #         - matchExpressions:
+  #             - key: cloud.google.com/gke-preemptible
+  #               operator: DoesNotExist
 
 elasticsearch:
   data:
     heapSize: 500m
-    affinity:
-      nodeAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:
-          nodeSelectorTerms:
-            - matchExpressions:
-                - key: cloud.google.com/gke-preemptible
-                  operator: DoesNotExist
-  backup:
-    googleApplicationCreds:
-      secretName: storage-account-credentials
-      fileName: db-service-account-private-key.json
+    # affinity:
+    #   nodeAffinity:
+    #     requiredDuringSchedulingIgnoredDuringExecution:
+    #       nodeSelectorTerms:
+    #         - matchExpressions:
+    #             - key: cloud.google.com/gke-preemptible
+    #               operator: DoesNotExist
+  # backup:
+  #   googleApplicationCreds:
+  #     secretName: storage-account-credentials
+  #     fileName: db-service-account-private-key.json
 
 indexer:
   readSnapshots: false
@@ -114,6 +117,8 @@ minion-broken-link:
     data.act.gov.au: 30
 
 connectors:
+  includeInitialJobs: false
+  includeCronJobs: false
   config:
     ## The service's image as per the global options under "global.image", but with a "name "
     ## currently available are magda-ckan-connector, magda-project-open-data-connector and magda-csw-connector
