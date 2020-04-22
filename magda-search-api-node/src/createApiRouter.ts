@@ -1,7 +1,7 @@
 import * as express from "express";
 import * as _ from "lodash";
-import buildJwt from "@magda/typescript-common/dist/session/buildJwt";
-import * as joi from "joi";
+import buildJwt from "magda-typescript-common/dist/session/buildJwt";
+import * as joi from "@hapi/joi";
 import moment from "moment";
 
 const validate = require("express-validation");
@@ -9,7 +9,7 @@ const validate = require("express-validation");
 import ElasticSearchQueryer from "./search/elasticsearch/ElasticSearchQueryer";
 import { Query, QueryRegion } from "./model";
 
-import { installStatusRouter } from "@magda/typescript-common/dist/express/status";
+import { installStatusRouter } from "magda-typescript-common/dist/express/status";
 
 export interface ApiRouterOptions {
     jwtSecret: string;

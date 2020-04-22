@@ -1,4 +1,4 @@
-# Building and Running on MicroK8S
+# Building and Running on K3D
 
 ## WARNING
 
@@ -14,7 +14,7 @@ K3D is K3S on docker. It's nice because:
 
 ## Building and Running
 
-To build and run with MicroK8S, Follow the instructions in [building-and-running](./building-and-running), EXCEPT:
+To build and run with K3D, Follow the instructions in [building-and-running](./building-and-running), EXCEPT:
 
 -   Install docker and make sure it's running
 -   Install K3D
@@ -33,4 +33,4 @@ into your hosts file, so that both your local docker and k3d will be able to res
 -   Instead of `docker-build-local`, run `export MAGDA_DOCKER_REPOSITORY=registry.local:5000 && export MAGDA_DOCKER_VERSION=latest && yarn lerna run docker-build-prod -- --concurrency=1 --stream`
 -   Instead of `helm install <etc>`, run `helm upgrade --install --timeout 9999s --wait -f deploy/helm/minikube-dev.yml magda deploy/helm/magda --set global.image.repository=registry.local:5000/data61`
 
-This will start an instance of Magda in the default namespace that uses MicroK8S' built-in docker registry instead of the Helm-based one that a minikube install would use.
+This will start an instance of Magda in the default namespace that uses K3D's built-in docker registry instead of the Helm-based one that a minikube install would use.
