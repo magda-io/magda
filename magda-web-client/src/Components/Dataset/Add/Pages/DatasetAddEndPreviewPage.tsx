@@ -54,7 +54,7 @@ export function DatasetAddEndPage() {
                         approval.
                     </h3>
                     <br />
-                    <p style={{ fontSize: "14px", marginLeft: "20px" }}>
+                    <p className="dataset-status-txt">
                         You can view the status of your dataset from{" "}
                         <a href="/">your home page</a>.
                     </p>
@@ -64,21 +64,13 @@ export function DatasetAddEndPage() {
                 <br />
             </div>
             <div className="end-preview-page-2">
-                <button
-                    className="au-btn next-button end-preview-button"
-                    style={{ marginTop: "50px" }}
-                >
+                <button className="au-btn next-button end-preview-button draft-dataset-btn">
                     <img className="draft-image-icon" src={draftIcon} />
-                    <p style={{ marginTop: "-30px" }}>
-                        View your draft dataset
-                    </p>
+                    <p className="draft-dataset-txt">View your draft dataset</p>
                 </button>
                 <br />
                 <br />
-                <button
-                    className="au-btn next-button end-preview-button"
-                    style={{ marginTop: "10px" }}
-                >
+                <button className="au-btn next-button end-preview-button print-metadata-btn">
                     <img className="print-icon" src={printIcon} />
                     <p className="print-metadata-txt">
                         Print a copy of your metadata
