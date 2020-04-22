@@ -158,7 +158,7 @@ class NewDataset extends React.Component<Props, State> {
 
         return (
             <div className="dataset-add-files-root dataset-add-meta-data-pages">
-                {step > 0 ? (
+                {step > 0 && step < 4 ? (
                     <div className="row">
                         <div className="col-sm-12">
                             <ReviewFilesList
