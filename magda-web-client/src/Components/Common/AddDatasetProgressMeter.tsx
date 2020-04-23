@@ -86,7 +86,6 @@ function createStepUrl(datasetId, item: StepItem) {
 
 const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
     const isEdit = props.isEdit;
-
     function determineDatasetId() {
         return props.match.params.datasetId;
     }
@@ -184,6 +183,7 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
     const currentStep = determineCurrentStep();
     const datasetId = determineDatasetId();
 
+    if (currentStep >= 4) return null;
     return (
         <div className="add-dataset-progress-meter">
             <div className="container">

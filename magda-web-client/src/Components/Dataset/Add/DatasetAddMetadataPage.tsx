@@ -178,8 +178,9 @@ class NewDataset extends React.Component<Props, State> {
                     item => item._state !== DistributionState.Ready
                 ).length ? null : (
                     <>
-                        <div className="row next-save-button-row">
-                            {step < 4 ? (
+                        {!config.featureFlags.previewAddDataset &&
+                        step >= 4 ? null : (
+                            <div className="row next-save-button-row">
                                 <div className="col-sm-12">
                                     <button
                                         className="au-btn next-button"
@@ -195,8 +196,8 @@ class NewDataset extends React.Component<Props, State> {
                                         Save and exit
                                     </button>
                                 </div>
-                            ) : null}
-                        </div>
+                            </div>
+                        )}
                     </>
                 )}
             </div>
