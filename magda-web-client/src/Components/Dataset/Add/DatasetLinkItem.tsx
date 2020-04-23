@@ -198,12 +198,11 @@ const DatasetLinkItemEditing = (props: EditViewProps) => {
                     ) {
                         setEditMode(!editMode);
                         if (
-                            distribution?._progress ===
-                            DistributionState.Drafting
+                            distribution?._progress !== DistributionState.Ready
                         ) {
                             editDistribution(distribution => ({
                                 ...distribution,
-                                _progress: DistributionState.Ready
+                                _state: DistributionState.Ready
                             }));
                         }
                     }
