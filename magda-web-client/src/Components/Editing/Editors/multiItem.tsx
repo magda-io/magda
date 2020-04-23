@@ -1,5 +1,6 @@
 import React from "react";
 import Editor from "./Editor";
+import "../Style.scss";
 import "./multiItem.scss";
 
 export abstract class MultiItemEditor<V> extends React.Component<
