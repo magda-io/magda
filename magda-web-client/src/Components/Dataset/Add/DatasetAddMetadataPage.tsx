@@ -21,9 +21,8 @@ import {
 } from "./DatasetAddCommon";
 import DetailsAndContents from "./Pages/DetailsAndContents";
 import DatasetAddPeoplePage from "./Pages/People/DatasetAddPeoplePage";
-import DatasetAddEndPreviewPage, {
-    DatasetAddEndPage
-} from "./Pages/DatasetAddEndPreviewPage";
+import DatasetAddEndPreviewPage from "./Pages/DatasetAddEndPreviewPage";
+import DatasetAddEndPage from "./Pages/DatasetAddEndPage";
 import DatasetAddFilesPage from "./Pages/AddFiles";
 import DatasetAddAccessAndUsePage from "./Pages/DatasetAddAccessAndUsePage";
 import withAddDatasetState from "./withAddDatasetState";
