@@ -5,8 +5,20 @@ import draftIcon from "assets/format-active.svg";
 import printIcon from "assets/print.svg";
 import React from "react";
 
+type Props = {
+    datasetId: string;
+};
+
 // If you are not in preview mode
-export default function DatasetAddEndPage() {
+export default function DatasetAddEndPage(props: Props) {
+    const draftPage = "/dataset/" + props.datasetId + "/details";
+    const viewDraft = () => {
+        window.location.href = draftPage;
+    };
+    const printDraft = () => {
+        window.location.href = draftPage;
+        window.print();
+    };
     return (
         <div className="row">
             <div className="col-sm-12 end-preview-page-1">
@@ -31,13 +43,19 @@ export default function DatasetAddEndPage() {
                 <br />
             </div>
             <div className="end-preview-page-2">
-                <button className="au-btn next-button end-preview-button draft-dataset-btn">
+                <button
+                    className="au-btn next-button end-preview-button draft-dataset-btn"
+                    onClick={viewDraft}
+                >
                     <img className="draft-image-icon" src={draftIcon} />
                     <p className="draft-dataset-txt">View your draft dataset</p>
                 </button>
                 <br />
                 <br />
-                <button className="au-btn next-button end-preview-button print-metadata-btn">
+                <button
+                    className="au-btn next-button end-preview-button print-metadata-btn"
+                    onClick={printDraft}
+                >
                     <img className="print-icon" src={printIcon} />
                     <p className="print-metadata-txt">
                         Print a copy of your metadata
