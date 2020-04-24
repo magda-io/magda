@@ -102,7 +102,8 @@ class NewDataset extends React.Component<Props, State> {
         ),
         config.featureFlags.previewAddDataset
             ? () => <DatasetAddEndPreviewPage />
-            : () => <DatasetAddEndPage />
+            : this.renderSubmitPage.bind(this),
+        () => <DatasetAddEndPage datasetId={this.props.datasetId} />
     ];
 
     edit = <K extends keyof State>(aspectField: K) => (field: string) => (
@@ -157,7 +158,7 @@ class NewDataset extends React.Component<Props, State> {
 
         return (
             <div className="dataset-add-files-root dataset-add-meta-data-pages">
-                {step > 0 && step < 4 ? (
+                {step > 0 && step < 5 ? (
                     <div className="row">
                         <div className="col-sm-12">
                             <ReviewFilesList
@@ -178,8 +179,7 @@ class NewDataset extends React.Component<Props, State> {
                     item => item._state !== DistributionState.Ready
                 ).length ? null : (
                     <>
-                        {!config.featureFlags.previewAddDataset &&
-                        step >= 4 ? null : (
+                        {step >= 5 ? null : (
                             <div className="row next-save-button-row">
                                 <div className="col-sm-12">
                                     <button

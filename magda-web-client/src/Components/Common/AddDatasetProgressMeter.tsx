@@ -48,6 +48,10 @@ export const steps: StepItem[] = [
     {
         title: "Submit for Approval",
         url: "/dataset/add/metadata/${datasetId}/4"
+    },
+    {
+        title: "All done!",
+        url: "/dataset/add/metadata/${datasetId}/5"
     }
 ];
 
@@ -183,7 +187,7 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
     const currentStep = determineCurrentStep();
     const datasetId = determineDatasetId();
 
-    if (currentStep >= 4) return null;
+    if (currentStep >= 5) return null;
     return (
         <div className="add-dataset-progress-meter">
             <div className="container">
@@ -194,7 +198,9 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
                 </div>
                 <div className="col-sm-10 step-item-body">
                     {(isEdit ? editSteps : steps).map((item, idx) =>
-                        renderStepItem(item, idx, currentStep, datasetId)
+                        idx < 5
+                            ? renderStepItem(item, idx, currentStep, datasetId)
+                            : null
                     )}
                 </div>
             </div>
