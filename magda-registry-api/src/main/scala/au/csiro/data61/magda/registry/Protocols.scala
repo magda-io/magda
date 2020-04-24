@@ -21,7 +21,7 @@ trait Protocols extends DiffsonProtocol {
   implicit val createAspectDefinitionEventFormat = jsonFormat4(
     CreateAspectDefinitionEvent.apply
   )
-  implicit val createRecordEventFormat = jsonFormat3(CreateRecordEvent.apply)
+  implicit val createRecordEventFormat = jsonFormat4(CreateRecordEvent.apply)
   implicit val createRecordAspectEventFormat = jsonFormat4(
     CreateRecordAspectEvent.apply
   )
