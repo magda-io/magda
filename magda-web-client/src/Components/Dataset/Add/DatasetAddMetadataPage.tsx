@@ -127,7 +127,7 @@ class NewDataset extends React.Component<Props, State> {
 
         step = Math.max(Math.min(step, this.steps.length - 1), 0);
 
-        const nextIsPublish = step + 1 >= this.steps.length;
+        const nextIsPublish = step === 4;
 
         const nextButtonCaption = () => {
             if (nextIsPublish) {
