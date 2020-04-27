@@ -333,9 +333,7 @@ const DatasetLinkItem = (props: Props) => {
                 props.distribution.creationSource
             );
             if (!processors || !processors.length) {
-                throw new Error(
-                    "There is no required url processor has been deployed or available for service."
-                );
+                throw new Error("No url processor available.");
             }
 
             const data = await promiseAny(

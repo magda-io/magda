@@ -51,7 +51,7 @@ const AddDatasetLinkSection = (props: Props) => {
         }
     };
 
-    const manaulCreate = () => {
+    const manualCreate = () => {
         if (!isUrl(url)) {
             setValidationErrorMessage("Please input an valid URL!");
         } else {
@@ -176,7 +176,7 @@ const AddDatasetLinkSection = (props: Props) => {
                 {processingErrorMessage ? (
                     <button
                         className="au-btn au-btn--secondary manual-enter-metadata-button"
-                        onClick={manaulCreate}
+                        onClick={manualCreate}
                     >
                         Manually enter metadata
                     </button>
