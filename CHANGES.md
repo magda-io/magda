@@ -16,6 +16,8 @@ General:
 -   Move [magda-preview-map](https://github.com/magda-io/magda-preview-map) out of the core repo
 -   Upgraded everything cert-manager related to work with v0.13
 -   Update build & run document to provide more information regarding running local build connector & minion docker images
+-   Update `building and running` documents: replace `npx` with `yarn` in all commands & replace keywords `npm dependecies` with `dependecies`
+-   Update `building and running` documents: remove `lerna` & `pancake` from `prerequisites` list
 -   New: Extract metadata from data portal URLs
 
 UI:
