@@ -81,7 +81,7 @@ Now you can build the docker containers locally - this might take quite a while 
 ```bash
 eval $(minikube docker-env) # (If you're running in minikube and haven't run this already)
 yarn lerna run build --stream --concurrency=1 --include-dependencies # (if you haven't run this already)
-yarn lerna run docker-build-local --stream --concurrency=1 --include-filtered-dependencies
+yarn lerna run docker-build-local --stream --concurrency=1 --include-dependencies
 ```
 
 ### Build Connector and Minion local docker images
