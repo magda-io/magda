@@ -27,7 +27,6 @@ export default function DatasetAddEndPage(props: Props) {
                     <img src={giantTickIcon} className="giant-tick" />
                     <h2>You're all done!</h2>
                 </div>
-                <br />
                 <div className="end-preview-container-2">
                     <h3>
                         Your dataset has been successfully sent off for
@@ -39,9 +38,6 @@ export default function DatasetAddEndPage(props: Props) {
                         <a href="/">your home page</a>.
                     </p>
                 </div>
-                <br />
-                <br />
-                <br />
             </div>
             <div className="end-preview-page-2">
                 <button
