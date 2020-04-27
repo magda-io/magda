@@ -1,5 +1,6 @@
 import React from "react";
 import Editor from "./Editor";
+import "../Style.scss";
 
 import "./contactEditor.scss";
 import editIcon from "assets/edit.svg";
