@@ -12,6 +12,7 @@ import ContactPoint from "Components/Common/ContactPoint";
 import QualityIndicator from "Components/Common/QualityIndicator";
 import { History } from "history";
 import { ParsedDataset } from "helpers/record";
+import queryString from "query-string";
 
 interface PropsType {
     history: History;
@@ -171,7 +172,8 @@ const DatasetPage: FunctionComponent<PropsType> = props => {
     );
 
     useEffect(() => {
-        if (props.history.location.search === "?print=true") {
+        const params = queryString.parse(props.history.location.search);
+        if (params.print === "true") {
             window.print();
         }
     }, []);
