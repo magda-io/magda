@@ -278,7 +278,9 @@ class NewDataset extends React.Component<Props, State> {
                 this.setState.bind(this)
             );
 
-            this.props.history.push(`/dataset/${this.props.datasetId}`);
+            this.props.history.push(
+                `/dataset/add/metadata/${this.props.datasetId}/5`
+            );
         } catch (e) {
             this.setState({
                 isPublishing: false
