@@ -15,7 +15,7 @@ To push the images and run them on kubernetes, you'll need to install:
 
 -   [GNU tar](https://www.gnu.org/software/tar/) - (Mac only) MacOS ships with `BSD tar`. However, you will need `GNU tar` for docker images operations. On MacOS, you can install `GNU Tar` via [Homebrew](https://brew.sh/): `brew install gnu-tar`
 -   [gcloud](https://cloud.google.com/sdk/gcloud/) - For the `kubectl` tool used to control your Kubernetes cluster. You will also need to this to deploy to our test and production environment on Google Cloud.
--   [Helm 3](https://helm.sh/docs/intro/install/) to manage kubernetes deployments and config. Since version `0.0.57-0`, Magda requires helm 3 to deploy. **If you have an existing release of Magda `0.0.56-RC6` or earlier, Please refer to [this migration document](./migration/v0.0.56-RC6-to-v0.0.57-0.md) to upgrade it to version `0.0.57-0`.**
+-   [Helm 3](https://helm.sh/docs/intro/install/) to manage kubernetes deployments and config. Magda `0.0.57` and higher requires helm 3 to deploy.
 -   [Docker](https://docs.docker.com/install/) - Magda uses `docker` command line tool to build docker images.
 
 You'll also need a Kubernetes cluster - to develop locally this means installing either [minikube](./installing-minikube.md) or [docker](./installing-docker-k8s.md) (MacOS only at this stage). Potentially you could also do this with native Kubernetes, or with a cloud cluster, but we haven't tried it.
