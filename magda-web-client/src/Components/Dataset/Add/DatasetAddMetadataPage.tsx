@@ -103,7 +103,12 @@ class NewDataset extends React.Component<Props, State> {
         config.featureFlags.previewAddDataset
             ? () => <DatasetAddEndPreviewPage />
             : this.renderSubmitPage.bind(this),
-        () => <DatasetAddEndPage datasetId={this.props.datasetId} />
+        () => (
+            <DatasetAddEndPage
+                datasetId={this.props.datasetId}
+                history={this.props.history}
+            />
+        )
     ];
 
     edit = <K extends keyof State>(aspectField: K) => (field: string) => (

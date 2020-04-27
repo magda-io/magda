@@ -7,17 +7,18 @@ import React from "react";
 
 type Props = {
     datasetId: string;
+    history: any;
 };
 
 // If you are not in preview mode
 export default function DatasetAddEndPage(props: Props) {
     const draftPage = "/dataset/" + props.datasetId + "/details";
     const viewDraft = () => {
-        window.location.href = draftPage;
+        return props.history.push(draftPage);
     };
 
     const printDraft = () => {
-        return (window.location.href = draftPage + "?print=true");
+        return props.history.push(draftPage + "?print=true");
     };
     return (
         <div className="row">
