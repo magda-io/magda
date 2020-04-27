@@ -1,10 +1,9 @@
 import * as express from "express";
 import * as _ from "lodash";
 import buildJwt from "magda-typescript-common/dist/session/buildJwt";
-import * as joi from "@hapi/joi";
 import moment from "moment";
-
-const validate = require("express-validation");
+import { validate, Joi, ValidationError } from "express-validation";
+// const validate = require("express-validation");
 
 import ElasticSearchQueryer from "./search/elasticsearch/ElasticSearchQueryer";
 import { Query, QueryRegion } from "./model";
@@ -31,28 +30,27 @@ export default function createApiRouter(options: ApiRouterOptions) {
     installStatusRouter(router);
 
     const baseValidators = {
-        start: joi.number().default(0),
-        limit: joi.number().default(10),
-        publisher: joi
-            .array()
-            .items(joi.string())
+        start: Joi.number().default(0),
+        limit: Joi.number().default(10),
+        publisher: Joi.array()
+            .items(Joi.string())
             .optional(),
-        dateFrom: joi.string().optional(),
-        dateTo: joi.string().optional(),
-        region: joi
-            .alternatives([joi.array().items(joi.string()), joi.string()])
+        dateFrom: Joi.string().optional(),
+        dateTo: Joi.string().optional(),
+        region: Joi.alternatives([
+            Joi.array().items(Joi.string()),
+            Joi.string()
+        ]).optional(),
+        format: Joi.array()
+            .items(Joi.string())
             .optional(),
-        format: joi
-            .array()
-            .items(joi.string())
-            .optional(),
-        publishingState: joi.string().optional()
+        publishingState: Joi.string().optional()
     };
 
     const facetQueryValidation = {
         query: {
-            facetQuery: joi.string().optional(),
-            generalQuery: joi.string().optional(),
+            facetQuery: Joi.string().optional(),
+            generalQuery: Joi.string().optional(),
             ...baseValidators
         }
     };
@@ -113,7 +111,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     router.get(
         "/facets/:facetId/options",
-        validate(facetQueryValidation),
+        validate(facetQueryValidation, {}, {}),
         async (req, res) => {
             const queryString = req.query;
 
@@ -150,9 +148,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
         query: {
             ...baseValidators,
 
-            query: joi.string().optional(),
-            facetSize: joi
-                .number()
+            query: Joi.string().optional(),
+            facetSize: Joi.number()
                 .optional()
                 .default(10)
         }
@@ -184,6 +181,21 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 // console.log(JSON.stringify(e.meta && e.meta.body));
                 res.status(500).send("Error");
             }
+        }
+    );
+
+    router.use(
+        (
+            err: any,
+            _req: express.Request,
+            res: express.Response,
+            next: express.NextFunction
+        ) => {
+            if (err instanceof ValidationError) {
+                return res.send(err.statusCode).json(err);
+            }
+
+            return next(err);
         }
     );
 
