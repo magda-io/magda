@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from "react";
+import React, { FunctionComponent, useState, useEffect } from "react";
 import { Link, Route, Switch, Redirect, withRouter } from "react-router-dom";
 import Breadcrumbs from "Components/Common/Breadcrumbs";
 import defined from "helpers/defined";
@@ -31,7 +31,7 @@ const DatasetPage: FunctionComponent<PropsType> = props => {
 
     const publisherId = dataset?.publisher?.id ? dataset.publisher.id : null;
 
-    return (
+    const renderResult = (
         <div
             itemScope
             itemType="http://schema.org/Dataset"
@@ -169,6 +169,14 @@ const DatasetPage: FunctionComponent<PropsType> = props => {
             </div>
         </div>
     );
+
+    useEffect(() => {
+        if (props.history.location.search === "?print=true") {
+            window.print();
+        }
+    }, []);
+
+    return renderResult;
 };
 
 export default withRouter(DatasetPage);

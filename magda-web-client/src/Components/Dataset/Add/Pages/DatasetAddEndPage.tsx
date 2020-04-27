@@ -15,9 +15,9 @@ export default function DatasetAddEndPage(props: Props) {
     const viewDraft = () => {
         window.location.href = draftPage;
     };
+
     const printDraft = () => {
-        window.location.href = draftPage;
-        window.print();
+        return (window.location.href = draftPage + "?print=true");
     };
     return (
         <div className="row">
