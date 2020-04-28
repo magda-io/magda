@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, Dispatch, SetStateAction } from "react";
 import { useAsync } from "react-async-hook";
 import moment from "moment";
 import uuid from "uuid";
@@ -7,7 +7,8 @@ import { config } from "config";
 import {
     Distribution,
     DistributionState,
-    DistributionSource
+    DistributionSource,
+    DistributionCreationMethod
 } from "Components/Dataset/Add/DatasetAddCommon";
 import "./DatasetLinkItem.scss";
 
@@ -32,6 +33,7 @@ type Props = {
     ) => void;
     deleteDistribution: () => void;
     className?: string;
+    setProcessingErrorMessage: Dispatch<SetStateAction<string>>;
 };
 
 type ProcessingProps = {
@@ -195,6 +197,14 @@ const DatasetLinkItemEditing = (props: EditViewProps) => {
                         ])
                     ) {
                         setEditMode(!editMode);
+                        if (
+                            distribution?._progress !== DistributionState.Ready
+                        ) {
+                            editDistribution(distribution => ({
+                                ...distribution,
+                                _state: DistributionState.Ready
+                            }));
+                        }
                     }
                 }}
             >
@@ -261,8 +271,8 @@ const DatasetLinkItemEditing = (props: EditViewProps) => {
 };
 
 /**
- * Talks to openfaas gateway to retrieve a list of functions with `data-url-processor` labels.
- * Here the `data-url-processor` label is a user-defined label that we use to distinguish the purposes of function.
+ * Talks to openfaas gateway to retrieve a list of functions with `data-url-processor` labels (or `api-url-processor` if it's for processing API urls).
+ * Here the `data-url-processor` label (or `api-url-processor`) is a user-defined label that we use to distinguish the purposes of function.
  * Therefore, other connectors can opt to support this feature later without any frontend changes.
  * We only need the name field of the returned data items to invoke the function later
  * Documents of openfaas gateway can be found from:
@@ -270,7 +280,20 @@ const DatasetLinkItemEditing = (props: EditViewProps) => {
  *
  * @returns
  */
-async function getAllDataUrlProcessorsFromOpenfaasGateway() {
+async function getAllDataUrlProcessorsFromOpenfaasGateway(
+    type?: DistributionSource
+) {
+    if (
+        type !== DistributionSource.Api &&
+        type !== DistributionSource.DatasetUrl
+    ) {
+        throw new Error("Unknown distribution url type!");
+    }
+
+    const magdaFuncType =
+        type == DistributionSource.DatasetUrl
+            ? "data-url-processor"
+            : "api-url-processor";
     const res = await fetch(
         `${config.openfaasBaseUrl}/system/functions`,
         config.fetchOptions
@@ -285,7 +308,7 @@ async function getAllDataUrlProcessorsFromOpenfaasGateway() {
         return [];
     }
     return data.filter(
-        item => item.labels && item.labels.magdaType === "data-url-processor"
+        item => item.labels && item.labels.magdaType === magdaFuncType
     );
 }
 
@@ -294,18 +317,23 @@ interface UrlProcessingError extends Error {
 }
 
 const DatasetLinkItem = (props: Props) => {
-    const [editMode, setEditMode] = useState(false);
+    const [editMode, setEditMode] = useState(
+        props.distribution?.creationMethod ==
+            DistributionCreationMethod.Manual &&
+            props.distribution?._state == DistributionState.Drafting
+    );
 
     useAsync(async () => {
         try {
             if (props.distribution._state !== DistributionState.Processing) {
                 return;
             }
-            const processors = await getAllDataUrlProcessorsFromOpenfaasGateway();
+
+            const processors = await getAllDataUrlProcessorsFromOpenfaasGateway(
+                props.distribution.creationSource
+            );
             if (!processors || !processors.length) {
-                throw new Error(
-                    "There is no data url processor has been deployed and available for service."
-                );
+                throw new Error("No url processor available.");
             }
 
             const data = await promiseAny(
@@ -326,6 +354,7 @@ const DatasetLinkItem = (props: Props) => {
                                 (await res.text())
                         );
                         e.unableProcessUrl = true;
+                        throw e;
                     }
 
                     const data = await res.json();
@@ -355,18 +384,19 @@ const DatasetLinkItem = (props: Props) => {
                 })
             ).catch(e => {
                 console.log(e);
-                if (e && e.length) {
+                const error = e?.length ? e[0] : e;
+                if (error) {
                     // --- only deal with the first error
-                    if (e.UrlProcessingError === true) {
+                    if (error.unableProcessUrl === true) {
                         // --- We simplify the url processing error message here
                         // --- Different data sources might fail to recognise the url for different technical reasons but those info may be too technical to the user.
                         throw new Error(
-                            "System cannot recognise or process the URL."
+                            "We weren't able to extract any information from the URL"
                         );
                     } else {
                         // --- notify the user the `post processing` error as it'd be more `relevant` message (as at least the url has been recognised now).
                         // --- i.e. url is recognised and processed but meta data is not valid or insufficient (e.g. no distributions)
-                        throw e;
+                        throw error;
                     }
                 }
             });
@@ -395,11 +425,14 @@ const DatasetLinkItem = (props: Props) => {
             }
         } catch (e) {
             props.deleteDistribution();
-            alert("" + e);
+            props.setProcessingErrorMessage("" + (e.message ? e.message : e));
         }
     }, [props.distribution.id]);
 
-    if (props.distribution._state !== DistributionState.Ready) {
+    if (
+        props.distribution._state !== DistributionState.Ready &&
+        props.distribution._state !== DistributionState.Drafting
+    ) {
         return (
             <div
                 className={`dataset-link-item-container ${
