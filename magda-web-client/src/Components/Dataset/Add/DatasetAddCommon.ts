@@ -72,6 +72,7 @@ export type Distribution = {
     // --- An UUID for identify a file during the processing. array index is not a reliable id.
     id?: string;
     creationSource?: DistributionSource;
+    creationMethod?: DistributionCreationMethod;
     _state: DistributionState;
     _progress?: number;
 };
@@ -82,11 +83,17 @@ export enum DistributionSource {
     Api
 }
 
+export enum DistributionCreationMethod {
+    Manual,
+    Auto
+}
+
 export enum DistributionState {
     Added,
     Reading,
     Processing,
-    Ready
+    Ready,
+    Drafting
 }
 
 export function distributionStateToText(state: DistributionState) {

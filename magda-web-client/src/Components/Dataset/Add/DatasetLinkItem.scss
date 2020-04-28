@@ -188,6 +188,17 @@
                 border: solid 1px #cccaca;
             }
 
+            .SlimTextInputWithValidation {
+                .edit-icon {
+                    right: 6px;
+                    top: 7px;
+                }
+                input {
+                    padding-right: 32px;
+                    padding-left: 8px;
+                }
+            }
+
             .link-item-save-button {
                 position: absolute;
                 z-index: 1;
