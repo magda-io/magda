@@ -19,6 +19,7 @@ General:
 -   Update `building and running` documents: replace `npx` with `yarn` in all commands & replace keywords `npm dependecies` with `dependecies`
 -   Update `building and running` documents: remove `lerna` & `pancake` from `prerequisites` list
 -   New: Extract metadata from data portal URLs
+-   Fixed function is incorrectly deployed for UI only deployment
 
 UI:
 
