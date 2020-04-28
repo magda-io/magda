@@ -20,6 +20,8 @@ General:
 -   Update `building and running` documents: remove `lerna` & `pancake` from `prerequisites` list
 -   New: Extract metadata from data portal URLs
 -   Fixed function is incorrectly deployed for UI only deployment
+-   Use helm3 in inttest:registryAuth step in CI
+
 
 UI:
 
