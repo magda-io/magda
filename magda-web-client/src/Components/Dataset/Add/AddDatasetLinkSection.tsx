@@ -3,6 +3,7 @@ import {
     Distribution,
     DistributionState,
     DistributionSource,
+    DistributionCreationMethod,
     createId
 } from "Components/Dataset/Add/DatasetAddCommon";
 import "./AddDatasetLinkSection.scss";
@@ -24,6 +25,7 @@ const AddDatasetLinkSection = (props: Props) => {
     const { type } = props;
     const [url, setUrl] = useState("");
     const [validationErrorMessage, setValidationErrorMessage] = useState("");
+    const [processingErrorMessage, setProcessingErrorMessage] = useState("");
     const distributions = props.distributions
         .map((item, idx) => ({ distribution: item, idx }))
         .filter(item => item.distribution.creationSource === props.type);
@@ -33,16 +35,38 @@ const AddDatasetLinkSection = (props: Props) => {
             setValidationErrorMessage("Please input an valid URL!");
         } else {
             setValidationErrorMessage("");
+            setProcessingErrorMessage("");
 
             props.addDistribution({
                 id: createId("dist"),
                 downloadURL: url,
                 creationSource: type,
+                creationMethod: DistributionCreationMethod.Auto,
                 title: url,
                 modified: new Date(),
                 format: "",
                 _state: DistributionState.Processing,
                 _progress: 50
+            });
+        }
+    };
+
+    const manualCreate = () => {
+        if (!isUrl(url)) {
+            setValidationErrorMessage("Please input an valid URL!");
+        } else {
+            setValidationErrorMessage("");
+            setProcessingErrorMessage("");
+
+            props.addDistribution({
+                id: createId("dist"),
+                downloadURL: url,
+                creationSource: type,
+                creationMethod: DistributionCreationMethod.Manual,
+                title: url,
+                modified: new Date(),
+                format: "",
+                _state: DistributionState.Drafting
             });
 
             setUrl("");
@@ -79,6 +103,9 @@ const AddDatasetLinkSection = (props: Props) => {
                                         deleteDistribution={props.deleteDistribution(
                                             item.idx
                                         )}
+                                        setProcessingErrorMessage={
+                                            setProcessingErrorMessage
+                                        }
                                     />
                                 ))}
                             </div>
@@ -94,6 +121,33 @@ const AddDatasetLinkSection = (props: Props) => {
                         </div>
                     </>
                 ) : null}
+
+                {processingErrorMessage ? (
+                    <div className="process-url-error-message au-body au-page-alerts au-page-alerts--warning">
+                        <h3>{processingErrorMessage}</h3>
+                        <div className="heading">Here’s what you can do:</div>
+                        <ul>
+                            <li>
+                                Double check the URL below is correct and
+                                without any typos. If you need to edit the URL,
+                                do so below and press ‘Fetch’ again
+                            </li>
+                            <li>
+                                If the URL looks correct, it’s possible we can’t
+                                connect to the service or extract any meaningful
+                                metadata from it. You may want to try again
+                                later
+                            </li>
+                            <li>
+                                If you want to continue using this URL you can,
+                                however you’ll need to manually enter the
+                                dataset metadata. Use the ‘Manually enter
+                                metadata’ button below
+                            </li>
+                        </ul>
+                    </div>
+                ) : null}
+
                 <h4 className="url-input-heading">What is the URL?</h4>
 
                 <div>
@@ -119,6 +173,14 @@ const AddDatasetLinkSection = (props: Props) => {
                 <button className="au-btn fetch-button" onClick={fetchUrl}>
                     Fetch
                 </button>
+                {processingErrorMessage ? (
+                    <button
+                        className="au-btn au-btn--secondary manual-enter-metadata-button"
+                        onClick={manualCreate}
+                    >
+                        Manually enter metadata
+                    </button>
+                ) : null}
             </div>
         </div>
     );
