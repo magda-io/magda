@@ -299,9 +299,15 @@ async function getAllDataUrlProcessorsFromOpenfaasGateway(
         config.fetchOptions
     );
     if (res.status !== 200) {
-        throw new Error(
-            "Failed to contact openfaas gateway: " + res.statusText
-        );
+        if (res.status === 401) {
+            throw new Error(
+                "You are not authorised to access the Magda serverless function gateway."
+            );
+        } else {
+            throw new Error(
+                "Failed to contact openfaas gateway: " + res.statusText
+            );
+        }
     }
     const data: any[] = await res.json();
     if (!data || !data.length) {
