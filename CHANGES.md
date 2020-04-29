@@ -21,6 +21,8 @@ General:
 -   New: Extract metadata from data portal URLs
 -   Fixed function is incorrectly deployed for UI only deployment
 -   Use helm3 in inttest:registryAuth step in CI
+-   Make Magda charts helm v3 charts
+-   Add migration document for migrating Magda release v0.0.56-RC6 or eariler to v0.0.57-0
 
 UI:
 
