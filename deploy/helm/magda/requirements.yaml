@@ -38,6 +38,14 @@ dependencies:
       - minions
       - minion-visualization
 
+  - name: magda-minion-ckan-publisher
+    version: 0.0.57-0
+    alias: minion-ckan-publisher
+    repository: https://charts.magda.io
+    tags:
+      - minions
+      - minion-ckan-publisher
+
   - name: magda-ckan-connector
     version: 0.0.57-0
     alias: ckan-connector-functions
