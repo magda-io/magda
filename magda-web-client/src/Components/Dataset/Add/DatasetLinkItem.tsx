@@ -414,7 +414,7 @@ const DatasetLinkItem = (props: Props) => {
                     ...data.distributions[0].aspects[
                         "dcat-distribution-strings"
                     ],
-                    creationSource: DistributionSource.DatasetUrl,
+                    creationSource: props.distribution.creationSource,
                     _state: DistributionState.Ready
                 };
             });
@@ -425,7 +425,7 @@ const DatasetLinkItem = (props: Props) => {
                     props.addDistribution({
                         ...item.aspects["dcat-distribution-strings"],
                         id: uuid.v4(),
-                        creationSource: DistributionSource.DatasetUrl,
+                        creationSource: props.distribution.creationSource,
                         _state: DistributionState.Ready
                     });
                 });
