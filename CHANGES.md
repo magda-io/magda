@@ -22,7 +22,6 @@ General:
 -   Fixed function is incorrectly deployed for UI only deployment
 -   Use helm3 in inttest:registryAuth step in CI
 
-
 UI:
 
 -   Fixed the issue of modifying date string in text input using backspaces to an empty string will cause text input to reset text input
@@ -43,6 +42,7 @@ UI:
 -   Refactor view dataset page & remove the edit function from the page
 -   Clarify tooltip text
 -   Added Error Screen for adding distributions from URL feature & allow manually create distributions
+-   Added the support of processing ESRI REST API URL
 
 Storage:
 
