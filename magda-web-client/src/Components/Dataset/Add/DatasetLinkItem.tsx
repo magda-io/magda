@@ -1,4 +1,4 @@
-import React, { useState, Dispatch, SetStateAction } from "react";
+import React, { useState } from "react";
 import { useAsync } from "react-async-hook";
 import moment from "moment";
 import uuid from "uuid";
@@ -33,7 +33,8 @@ type Props = {
     ) => void;
     deleteDistribution: () => void;
     className?: string;
-    setProcessingErrorMessage: Dispatch<SetStateAction<string>>;
+    onProcessingError: (error: any) => void;
+    onProcessingComplete?: () => void;
 };
 
 type ProcessingProps = {
@@ -429,9 +430,12 @@ const DatasetLinkItem = (props: Props) => {
                     });
                 });
             }
+            if (typeof props.onProcessingComplete === "function") {
+                props.onProcessingComplete();
+            }
         } catch (e) {
             props.deleteDistribution();
-            props.setProcessingErrorMessage("" + (e.message ? e.message : e));
+            props.onProcessingError(e);
         }
     }, [props.distribution.id]);
 

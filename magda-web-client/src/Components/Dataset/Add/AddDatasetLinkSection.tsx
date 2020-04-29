@@ -103,8 +103,11 @@ const AddDatasetLinkSection = (props: Props) => {
                                         deleteDistribution={props.deleteDistribution(
                                             item.idx
                                         )}
-                                        setProcessingErrorMessage={
-                                            setProcessingErrorMessage
+                                        onProcessingComplete={() => setUrl("")}
+                                        onProcessingError={e =>
+                                            setProcessingErrorMessage(
+                                                "" + (e.message ? e.message : e)
+                                            )
                                         }
                                     />
                                 ))}
