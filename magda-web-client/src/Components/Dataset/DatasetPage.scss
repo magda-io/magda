@@ -7,6 +7,18 @@
             max-width: none;
         }
     }
+    .dataset-edit-button-container {
+        position: relative;
+        .edit-button-tooltip-container {
+            position: absolute;
+            top: 15px;
+            left: 245px;
+            .tooltiptext {
+                width: 300px;
+                left: 12px;
+            }
+        }
+    }
 }
 
 .dataset-details {

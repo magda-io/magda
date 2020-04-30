@@ -12,6 +12,8 @@ import ContactPoint from "Components/Common/ContactPoint";
 import QualityIndicator from "Components/Common/QualityIndicator";
 import { History } from "history";
 import { ParsedDataset } from "helpers/record";
+import helpIcon from "assets/help.svg";
+import PurpleToolTip from "Components/Common/TooltipWrapper";
 
 interface PropsType {
     history: History;
@@ -30,6 +32,11 @@ const DatasetPage: FunctionComponent<PropsType> = props => {
     const baseUrlDataset = `/dataset/${encodeURI(props.datasetId)}`;
 
     const publisherId = dataset?.publisher?.id ? dataset.publisher.id : null;
+
+    const editButtonTooltipText =
+        "The `Edit` function is only available to datasets created by Magdad.";
+
+    const isDatasetEditable = dataset.identifier?.indexOf("magda-") === 0;
 
     return (
         <div
@@ -128,17 +135,36 @@ const DatasetPage: FunctionComponent<PropsType> = props => {
                         datasetId={dataset.identifier}
                     />
                     {hasEditPermissions ? (
-                        <div className="dataset-button-container no-print">
+                        <div className="dataset-edit-button-container no-print">
                             <button
                                 className="au-btn au-btn--secondary ask-question-button"
+                                disabled={!isDatasetEditable}
                                 onClick={() => {
                                     props.history.push({
                                         pathname: `/dataset/edit/${dataset.identifier}`
                                     });
                                 }}
                             >
-                                Edit the Dataset
+                                Edit the Dataset{" "}
                             </button>
+                            {isDatasetEditable ? null : (
+                                <div className="edit-button-tooltip-container">
+                                    <PurpleToolTip
+                                        className="tooltip no-print"
+                                        launcher={() => (
+                                            <div className="tooltip-launcher-icon help-icon">
+                                                <img
+                                                    src={helpIcon}
+                                                    alt={editButtonTooltipText}
+                                                />
+                                            </div>
+                                        )}
+                                        innerElementClassName="inner"
+                                    >
+                                        {() => editButtonTooltipText}
+                                    </PurpleToolTip>
+                                </div>
+                            )}
                         </div>
                     ) : null}
                 </div>
