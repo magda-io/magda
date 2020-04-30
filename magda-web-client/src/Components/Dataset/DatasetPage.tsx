@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from "react";
+import React, { FunctionComponent, useState, useEffect } from "react";
 import { Link, Route, Switch, Redirect, withRouter } from "react-router-dom";
 import Breadcrumbs from "Components/Common/Breadcrumbs";
 import defined from "helpers/defined";
@@ -12,6 +12,7 @@ import ContactPoint from "Components/Common/ContactPoint";
 import QualityIndicator from "Components/Common/QualityIndicator";
 import { History } from "history";
 import { ParsedDataset } from "helpers/record";
+import queryString from "query-string";
 
 interface PropsType {
     history: History;
@@ -31,7 +32,7 @@ const DatasetPage: FunctionComponent<PropsType> = props => {
 
     const publisherId = dataset?.publisher?.id ? dataset.publisher.id : null;
 
-    return (
+    const renderResult = (
         <div
             itemScope
             itemType="http://schema.org/Dataset"
@@ -169,6 +170,15 @@ const DatasetPage: FunctionComponent<PropsType> = props => {
             </div>
         </div>
     );
+
+    useEffect(() => {
+        const params = queryString.parse(props.history.location.search);
+        if (params.print === "true") {
+            window.print();
+        }
+    }, []);
+
+    return renderResult;
 };
 
 export default withRouter(DatasetPage);
