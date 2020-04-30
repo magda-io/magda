@@ -47,11 +47,11 @@ export default function createApiRouter(options: ApiRouterOptions) {
     };
 
     const facetQueryValidation = {
-        query: {
+        query: Joi.object({
             facetQuery: Joi.string().optional(),
             generalQuery: Joi.string().optional(),
             ...baseValidators
-        }
+        })
     };
 
     function processMaybeArray<T>(value: T | T[] | undefined): T[] | undefined {
@@ -144,19 +144,19 @@ export default function createApiRouter(options: ApiRouterOptions) {
     );
 
     const datasetQueryValidation = {
-        query: {
+        query: Joi.object({
             ...baseValidators,
 
             query: Joi.string().optional(),
             facetSize: Joi.number()
                 .optional()
                 .default(10)
-        }
+        })
     };
 
     router.get(
         "/datasets",
-        validate(datasetQueryValidation),
+        validate(datasetQueryValidation, {}, {}),
         async (req, res) => {
             const queryString = req.query;
 
