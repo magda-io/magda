@@ -28,6 +28,16 @@ interface InternalProps {
     }>;
 }
 
+/** Lookup for step numbers by page theme */
+const stepNumbers = {
+    ADD_FILES: 0,
+    DETAILS_AND_CONTENTS: 1,
+    PEOPLE_AND_PRODUCTION: 2,
+    ACCESS_AND_USER: 3,
+    SUBMIT_FOR_APPROVAL: 4,
+    ALL_DONE: 5
+};
+
 export const steps: StepItem[] = [
     {
         title: "Add files",
@@ -48,6 +58,10 @@ export const steps: StepItem[] = [
     {
         title: "Submit for Approval",
         url: "/dataset/add/metadata/${datasetId}/4"
+    },
+    {
+        title: "All done!",
+        url: "/dataset/add/metadata/${datasetId}/5"
     }
 ];
 
@@ -86,7 +100,6 @@ function createStepUrl(datasetId, item: StepItem) {
 
 const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
     const isEdit = props.isEdit;
-
     function determineDatasetId() {
         return props.match.params.datasetId;
     }
@@ -184,6 +197,7 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
     const currentStep = determineCurrentStep();
     const datasetId = determineDatasetId();
 
+    if (currentStep >= stepNumbers.ALL_DONE) return null;
     return (
         <div className="add-dataset-progress-meter">
             <div className="container">
@@ -194,7 +208,9 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
                 </div>
                 <div className="col-sm-10 step-item-body">
                     {(isEdit ? editSteps : steps).map((item, idx) =>
-                        renderStepItem(item, idx, currentStep, datasetId)
+                        idx < stepNumbers.ALL_DONE
+                            ? renderStepItem(item, idx, currentStep, datasetId)
+                            : null
                     )}
                 </div>
             </div>
