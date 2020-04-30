@@ -56,7 +56,6 @@ dependencies:
   
   - name: magda-function-esri-url-processor
     version: 0.0.57-0
-    alias: magda-function-esri-url-processor
     repository: https://charts.magda.io
     tags:
       - all
