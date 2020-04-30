@@ -374,6 +374,7 @@ buildtest:helm-charts:
   script:
     # Init helm
     # - helm init --client-only
+    - helm repo add stable https://kubernetes-charts.storage.googleapis.com
     - helm repo add magda-io https://charts.magda.io
     - helm dep build deploy/helm/internal-charts/storage-api
     - helm dep build deploy/helm/magda-core
@@ -741,15 +742,16 @@ Publish Helm Chart:
     - apk -v --update add python py-pip groff less mailcap
     - pip install --upgrade awscli==1.14.5 s3cmd==2.0.1 python-magic
 
-    # Init helm
-    - helm init --client-only
-    - helm repo add magda-io https://charts.magda.io
-
     # Run deploy
     - cd deploy/helm
-    - mkdir -p chart-repo
-    - aws s3 sync s3://magda-charts/ chart-repo
-    - helm package magda-core -d chart-repo
-    - helm package magda -u -d chart-repo
-    - helm repo index chart-repo
-    - aws s3 sync chart-repo s3://magda-charts/ --acl public-read
+    - mkdir -p sync_dir
+    - mkdir -p index_dir
+    - if ! aws s3 cp s3://magda-charts/index.yaml index_dir/index.yaml; then echo "failed to copy current repo index" && exit 1; fi
+    - helm package -d sync_dir openfaas
+    - helm package -d sync_dir magda-core
+    - helm package -d sync_dir magda
+    - helm repo index --merge "index_dir/index.yaml" sync_dir
+    # avoid conflicts & make sure the packages are in place first; upload index at the end
+    - mv -f sync_dir/index.yaml index_dir/index.yaml
+    - aws s3 sync sync_dir s3://magda-charts/ --acl public-read
+    - aws s3 cp index_dir/index.yaml s3://magda-charts/index.yaml --acl public-read
