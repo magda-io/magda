@@ -16,6 +16,14 @@ global:
   openfaas:
     # turn off auth over openfass gateway for ease of debugging
     allowAdminOnly: false
+  url-processors:
+    # Remove the image section to make url processors pull your test docker images from your local docker registry
+    # Make sure you build & push the connector docker images to your local docker registry
+    image:
+      repository: docker.io/data61
+      tag: 0.0.57-0
+      pullPolicy: IfNotPresent
+      imagePullSecret: false
   connectors:
     includeInitialJobs: true
     includeCronJobs: false
