@@ -119,5 +119,5 @@ dependencies:
 - name: magda-esri-portal-connector
   repository: https://charts.magda.io
   version: 0.0.57-0
-digest: sha256:de6c1143a2493ebb506ce4985a10476d95aba9c0e3490feda21032930bbeea96
-generated: "2020-04-27T12:27:30.221445+10:00"
+digest: sha256:f1e2cc2c36581a85dd6b135e3d294f4c66a52c7dcef55274566bda7fbcbe2161
+generated: "2020-04-30T10:29:15.316909+10:00"
