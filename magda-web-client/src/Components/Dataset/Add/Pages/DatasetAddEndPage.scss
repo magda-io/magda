@@ -1,80 +1,59 @@
 @import "variables";
 
-.giant-tick {
-    justify-content: "center";
-    display: "flex";
-    margin-left: 20px;
-    margin-top: 20px;
-}
-
 .end-preview-page-1 {
     background-color: $AU-color-preview;
+    text-align: center;
 }
 
 .end-preview-container-1 {
-    display: block;
-    margin-left: 450px;
-    margin-right: auto;
-    width: 40%;
-    margin-bottom: 50px;
+    margin: 80px auto 50px auto;
+    text-align: center;
 }
 
 .end-preview-container-2 {
-    display: block;
-    margin-left: 300px;
-    margin-right: auto;
-    width: 50%;
-    margin-bottom: 50px;
+    max-width: 35rem;
+    margin: 0 auto 50px auto;
 }
 
 .end-preview-page-2 {
-    background-color: #fbfbfb;
+    text-align: center;
+    padding-top: 1rem;
 }
 
 .draft-image-icon {
-    justify-content: left;
-    display: flex;
-    margin-left: 10px;
-    height: 50px;
-    width: 70px;
-    size: 300px;
-    margin-top: -30px;
+    position: absolute;
+    height: 70px;
+    left: 31px;
 }
 
 .print-icon {
-    justify-content: left;
+    position: absolute;
+    height: 55px;
+    left: 40px;
+}
+
+.end-preview-heading {
+    font-size: 3.5rem;
+}
+
+.end-preview-subheading {
+    font-size: 2.2rem;
+}
+
+.dataset-add-meta-data-pages .end-preview-button.end-preview-button {
+    text-align: left;
+    line-height: 1.3rem;
+    height: 8rem;
+    margin: 1rem auto 1rem auto;
+    padding: 0 3rem 0 8rem;
     display: flex;
-    height: 40px;
-    width: 50px;
-    margin-left: 20px;
-    margin-top: -20px;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    position: relative;
 }
 
-.end-preview-button {
-    margin-left: 350px;
-    width: 400px !important;
-    height: 120px !important;
-}
-
-.dataset-status-txt {
-    font-size: 14px;
-    margin-left: 30px !important;
-}
-
-.draft-dataset-btn {
-    margin-top: 50px;
-}
-
-.draft-dataset-txt {
-    margin-top: -30px !important;
-}
-
-.print-metadata-btn {
-    margin-top: 10px;
-}
-
-.print-metadata-txt {
-    font-size: 16px;
-    margin-top: -30px !important;
-    margin-left: 40px !important;
+.dataset-status-txt.dataset-status-txt {
+    margin-top: 4rem;
+    margin-bottom: 6rem;
 }
