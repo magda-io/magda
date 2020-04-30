@@ -3,7 +3,6 @@ import * as _ from "lodash";
 import buildJwt from "magda-typescript-common/dist/session/buildJwt";
 import moment from "moment";
 import { validate, Joi, ValidationError } from "express-validation";
-// const validate = require("express-validation");
 
 import ElasticSearchQueryer from "./search/elasticsearch/ElasticSearchQueryer";
 import { Query, QueryRegion } from "./model";
