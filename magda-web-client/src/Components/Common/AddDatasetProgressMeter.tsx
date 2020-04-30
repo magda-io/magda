@@ -28,6 +28,16 @@ interface InternalProps {
     }>;
 }
 
+/** Lookup for step numbers by page theme */
+const stepNumbers = {
+    ADD_FILES: 0,
+    DETAILS_AND_CONTENTS: 1,
+    PEOPLE_AND_PRODUCTION: 2,
+    ACCESS_AND_USER: 3,
+    SUBMIT_FOR_APPROVAL: 4,
+    ALL_DONE: 5
+};
+
 export const steps: StepItem[] = [
     {
         title: "Add files",
@@ -187,7 +197,7 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
     const currentStep = determineCurrentStep();
     const datasetId = determineDatasetId();
 
-    if (currentStep >= 5) return null;
+    if (currentStep >= stepNumbers.ALL_DONE) return null;
     return (
         <div className="add-dataset-progress-meter">
             <div className="container">
@@ -198,7 +208,7 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
                 </div>
                 <div className="col-sm-10 step-item-body">
                     {(isEdit ? editSteps : steps).map((item, idx) =>
-                        idx < 5
+                        idx < stepNumbers.ALL_DONE
                             ? renderStepItem(item, idx, currentStep, datasetId)
                             : null
                     )}
