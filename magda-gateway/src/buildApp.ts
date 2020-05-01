@@ -17,7 +17,7 @@ import createGenericProxy from "./createGenericProxy";
 import createCkanRedirectionRouter from "./createCkanRedirectionRouter";
 import createHttpsRedirectionMiddleware from "./createHttpsRedirectionMiddleware";
 import createOpenfaasGatewayProxy from "./createOpenfaasGatewayProxy";
-import Authenticator from "./Authenticator";
+import Authenticator, { SessionCookieOptions } from "./Authenticator";
 import defaultConfig from "./defaultConfig";
 import { ProxyTarget } from "./createApiRouter";
 import setupTenantMode from "./setupTenantMode";
@@ -51,6 +51,7 @@ type Config = {
     helmetJson: string;
     cspJson: string;
     corsJson: string;
+    cookieJson: SessionCookieOptions;
     authorizationApi: string;
     sessionSecret: string;
     jwtSecret: string;
@@ -96,6 +97,9 @@ export default function buildApp(config: Config) {
     const dbPool = createPool(config);
     const authenticator = new Authenticator({
         sessionSecret: config.sessionSecret,
+        cookieOptions: _.isEmpty(config.cookieJson)
+            ? defaultConfig.cookie
+            : config.cookieJson,
         dbPool
     });
 

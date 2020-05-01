@@ -83,3 +83,20 @@ cors:
   exposedHeaders:
   - "Content-Range"
   - "X-Content-Range"
+
+# Session cookie settings
+# Default value will be used if any options are left with blank
+# Supported options are: 
+# - domain: By default, no domain is set, and most clients will consider the cookie to apply to only the current domain.
+# - expires: A fix cookie expire date. The expires option should not be set directly; instead only use the maxAge option.
+# - httpOnly: Default: true
+# - maxAge: Default: 7 * 60 * 60 * 1000 (Hardcoded in our code)
+# - path: Default: '/'
+# - sameSite: Default: false (not set)
+# - secure: Default: false (not set)
+# More info: https://github.com/expressjs/session#cookie
+cookie: {}
+
+
+
+

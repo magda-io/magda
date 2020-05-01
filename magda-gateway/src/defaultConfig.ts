@@ -35,5 +35,8 @@ export default {
         browserSniff: false
     },
     helmet: {},
-    cors: {}
+    cors: {},
+    cookie: {
+        maxAge: 7 * 60 * 60 * 1000
+    }
 };

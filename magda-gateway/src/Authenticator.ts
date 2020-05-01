@@ -6,7 +6,7 @@ import URI from "urijs";
 import signature from "cookie-signature";
 
 /** This is present in the express-session types but not actually exported properly, so it needs to be copy-pasted here */
-type SessionCookieOptions = {
+export type SessionCookieOptions = {
     maxAge?: number;
     signed?: boolean;
     expires?: Date;
@@ -25,9 +25,6 @@ export interface AuthenticatorOptions {
 }
 
 export const DEFAULT_SESSION_COOKIE_NAME: string = "connect.sid";
-export let DEFAULT_SESSION_COOKIE_OPTIONS: SessionCookieOptions = {
-    maxAge: 7 * 60 * 60 * 1000
-};
 
 /**
  * Run a list of middlewares in order.
@@ -84,13 +81,8 @@ export default class Authenticator {
 
     constructor(options: AuthenticatorOptions) {
         this.sessionCookieOptions = options.cookieOptions
-            ? {
-                  ...DEFAULT_SESSION_COOKIE_OPTIONS,
-                  ...options.cookieOptions
-              }
-            : {
-                  ...DEFAULT_SESSION_COOKIE_OPTIONS
-              };
+            ? options.cookieOptions
+            : {};
 
         passport.serializeUser(function(user: any, cb) {
             cb(null, user);
