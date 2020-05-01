@@ -90,7 +90,7 @@ cors:
 # - domain: By default, no domain is set, and most clients will consider the cookie to apply to only the current domain.
 # - expires: A fix cookie expire date. The expires option should not be set directly; instead only use the maxAge option.
 # - httpOnly: Default: true
-# - maxAge: Default: 7 * 60 * 60 * 1000 (Hardcoded in our code)
+# - maxAge: Default: 7 * 60 * 60 * 1000
 # - path: Default: '/'
 # - sameSite: Default: false (not set)
 # - secure: Default: false (not set)

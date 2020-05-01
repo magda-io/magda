@@ -97,9 +97,7 @@ export default function buildApp(config: Config) {
     const dbPool = createPool(config);
     const authenticator = new Authenticator({
         sessionSecret: config.sessionSecret,
-        cookieOptions: _.isEmpty(config.cookieJson)
-            ? defaultConfig.cookie
-            : config.cookieJson,
+        cookieOptions: _.isEmpty(config.cookieJson) ? {} : config.cookieJson,
         dbPool
     });
 

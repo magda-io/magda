@@ -73,7 +73,7 @@ const argv = addJwtSecretFromEnvVar(
             describe:
                 "Path of the json that defines cookie options, as per " +
                 "https://github.com/expressjs/session#cookie. These will " +
-                "be merged with the defaults specified in defaultConfig.ts.",
+                "be merged with the default options specified in Authenticator.ts.",
             type: "string",
             coerce: coerceJson
         })

@@ -25,6 +25,9 @@ export interface AuthenticatorOptions {
 }
 
 export const DEFAULT_SESSION_COOKIE_NAME: string = "connect.sid";
+export let DEFAULT_SESSION_COOKIE_OPTIONS: SessionCookieOptions = {
+    maxAge: 7 * 60 * 60 * 1000
+};
 
 /**
  * Run a list of middlewares in order.
@@ -81,8 +84,13 @@ export default class Authenticator {
 
     constructor(options: AuthenticatorOptions) {
         this.sessionCookieOptions = options.cookieOptions
-            ? options.cookieOptions
-            : {};
+            ? {
+                  ...DEFAULT_SESSION_COOKIE_OPTIONS,
+                  ...options.cookieOptions
+              }
+            : {
+                  ...DEFAULT_SESSION_COOKIE_OPTIONS
+              };
 
         passport.serializeUser(function(user: any, cb) {
             cb(null, user);
