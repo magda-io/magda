@@ -1,13 +1,13 @@
 import * as express from "express";
 import * as _ from "lodash";
-import buildJwt from "magda-typescript-common/dist/session/buildJwt";
+import buildJwt from "magda-typescript-common/src/session/buildJwt";
 import moment from "moment";
 import { validate, Joi, ValidationError } from "express-validation";
 
 import ElasticSearchQueryer from "./search/elasticsearch/ElasticSearchQueryer";
 import { Query, QueryRegion } from "./model";
 
-import { installStatusRouter } from "magda-typescript-common/dist/express/status";
+import { installStatusRouter } from "magda-typescript-common/src/express/status";
 
 export interface ApiRouterOptions {
     jwtSecret: string;
