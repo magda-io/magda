@@ -435,6 +435,7 @@ buildtest:helm-charts:
   script:
     # Init helm
     # - helm init --client-only
+    - helm repo add stable https://kubernetes-charts.storage.googleapis.com
     - helm repo add magda-io https://charts.magda.io
     - helm dep build deploy/helm/internal-charts/storage-api
     - helm dep build deploy/helm/magda-core
@@ -562,14 +563,12 @@ inttest:registryAuth:
     - chmod +x /usr/local/bin/kind
     - curl -Lo /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/${KUBECTL}/bin/linux/amd64/kubectl -C -
     - chmod +x /usr/local/bin/kubectl
-    - curl -L https://storage.googleapis.com/kubernetes-helm/helm-v2.16.1-linux-amd64.tar.gz -C - | tar -xzO linux-amd64/helm > /usr/local/bin/helm
+    - curl -L https://get.helm.sh/helm-v3.2.0-linux-amd64.tar.gz -C - | tar -xzO linux-amd64/helm > /usr/local/bin/helm
     - chmod +x /usr/local/bin/helm
     - kind create cluster --config=./kind-config.yaml --wait 20m --image kindest/node:v1.15.7@sha256:e2df133f80ef633c53c0200114fce2ed5e1f6947477dbc83261a6a921169488d
     # Set up KUBECONFIG that links to kind - we use sed to edit it so it's pointing to gitlab's docker host
     - kind get kubeconfig | sed -E -e 's/localhost|0\.0\.0\.0/docker/g' > ./kubeconfig
     - export KUBECONFIG="$(pwd)/kubeconfig"
-    - kubectl apply -f deploy/kubernetes/rbac-config.yaml
-    - helm init --service-account tiller --wait
     - export JWT_SECRET=udIsbcYaKs1G4n6AdiMSIvPx5KpxQAy8FA2aIcD46iCipNAZvds4jeXFLZKhVvSJZvhYb5Pvgvmtonk7UFfhGnYcd3DXM7KzHG7gBmGO8PCsOZ4t7icqZoJbpdDqYWMmd9XnrVXtJhR6HVFBmEmbk9AmFJ1Gz9ipYPGYLoFcavPs9iZ63KPXgdt4aBdWQcmICkGPYiY8CQOvqOoiU7hUhKDTkJgRRTSaax6UQDOveTQvQnd5uyXuV4os0tlahzRX
     - kubectl create ns test2
     - 'echo "{ \"apiVersion\": \"v1\", \"kind\": \"Secret\", \"metadata\": {\"name\": \"auth-secrets\"}, \"type\": \"Opaque\", \"data\": {\"jwt-secret\": \"dWRJc2JjWWFLczFHNG42QWRpTVNJdlB4NUtweFFBeThGQTJhSWNENDZpQ2lwTkFadmRzNGplWEZMWktoVnZTSlp2aFliNVB2Z3ZtdG9uazdVRmZoR25ZY2QzRFhNN0t6SEc3Z0JtR084UENzT1o0dDdpY3Fab0picGREcVlXTW1kOVhuclZYdEpoUjZIVkZCbUVtYms5QW1GSjFHejlpcFlQR1lMb0ZjYXZQczlpWjYzS1BYZ2R0NGFCZFdRY21JQ2tHUFlpWThDUU92cU9vaVU3aFVoS0RUa0pnUlJUU2FheDZVUURPdmVUUXZRbmQ1dXlYdVY0b3MwdGxhaHpSWA==\"}}" | kubectl apply --namespace test2 -f -'
@@ -810,15 +809,16 @@ Publish Helm Chart:
     - apk -v --update add python py-pip groff less mailcap
     - pip install --upgrade awscli==1.14.5 s3cmd==2.0.1 python-magic
 
-    # Init helm
-    - helm init --client-only
-    - helm repo add magda-io https://charts.magda.io
-
     # Run deploy
     - cd deploy/helm
-    - mkdir -p chart-repo
-    - aws s3 sync s3://magda-charts/ chart-repo
-    - helm package magda-core -d chart-repo
-    - helm package magda -u -d chart-repo
-    - helm repo index chart-repo
-    - aws s3 sync chart-repo s3://magda-charts/ --acl public-read
+    - mkdir -p sync_dir
+    - mkdir -p index_dir
+    - if ! aws s3 cp s3://magda-charts/index.yaml index_dir/index.yaml; then echo "failed to copy current repo index" && exit 1; fi
+    - helm package -d sync_dir openfaas
+    - helm package -d sync_dir magda-core
+    - helm package -d sync_dir magda
+    - helm repo index --merge "index_dir/index.yaml" sync_dir
+    # avoid conflicts & make sure the packages are in place first; upload index at the end
+    - mv -f sync_dir/index.yaml index_dir/index.yaml
+    - aws s3 sync sync_dir s3://magda-charts/ --acl public-read
+    - aws s3 cp index_dir/index.yaml s3://magda-charts/index.yaml --acl public-read

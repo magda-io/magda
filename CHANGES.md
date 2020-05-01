@@ -19,6 +19,10 @@ General:
 -   Update `building and running` documents: replace `npx` with `yarn` in all commands & replace keywords `npm dependecies` with `dependecies`
 -   Update `building and running` documents: remove `lerna` & `pancake` from `prerequisites` list
 -   New: Extract metadata from data portal URLs
+-   Make Magda charts helm v3 charts
+-   Add migration document for migrating Magda release v0.0.56-RC6 or eariler to v0.0.57-0
+-   Fixed function is incorrectly deployed for UI only deployment
+-   Use helm3 in inttest:registryAuth step in CI
 
 UI:
 
@@ -39,6 +43,7 @@ UI:
 -   Added UI for "Publish as Open Data to data.gov.au"
 -   Refactor view dataset page & remove the edit function from the page
 -   Clarify tooltip text
+-   Use a new "All done!" screen at the end of the dataset flow
 -   Added Error Screen for adding distributions from URL feature & allow manually create distributions
 
 Storage:
