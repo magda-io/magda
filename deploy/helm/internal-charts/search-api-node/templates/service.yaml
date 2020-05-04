@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: search-api-node
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+{{- if .Values.global.exposeNodePorts }}
+    nodePort: 30122
+  type: NodePort
+{{- end }}
+  selector:
+    service: search-api-node

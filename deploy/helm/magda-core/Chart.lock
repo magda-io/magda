@@ -41,6 +41,9 @@ dependencies:
 - name: search-api
   repository: file://../internal-charts/search-api
   version: 0.0.57-0
+- name: search-api-node
+  repository: file://../internal-charts/search-api-node
+  version: 0.0.57-0
 - name: session-db
   repository: file://../internal-charts/session-db
   version: 0.0.57-0
@@ -71,5 +74,5 @@ dependencies:
 - name: ingress
   repository: file://../internal-charts/ingress
   version: 0.0.57-0
-digest: sha256:1257298f56be310e322a61336cdd52434c5a60f87987bd654508cfa5c3a852f5
-generated: "2020-04-27T12:27:17.862873+10:00"
+digest: sha256:c8888dfe8edb6b92b28348d88211077fa59f36ab3461bc1bc81b44ab1eb05641
+generated: "2020-05-01T14:20:15.040205+10:00"

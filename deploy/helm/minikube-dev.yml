@@ -95,8 +95,19 @@ magda-core:
       pullPolicy: IfNotPresent
       imagePullSecret: false
 
+  openfaas:
+    faasnetes:
+      imagePullPolicy: Always
+
+  elasticsearch:
+    data:
+      resources:
+        limits:
+          cpu: 1000m
+
 tags:
   all: true
+  search-api-node: true
   connectors: false
   connector-dga: true
 
