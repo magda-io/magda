@@ -433,6 +433,23 @@
             "type": "node",
             "request": "launch",
             "protocol": "inspector",
+            "name": "Search API Test Cases",
+            "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+            "cwd": "${workspaceRoot}/magda-search-api-node",
+            "args": [
+                "--compilers",
+                "ts:ts-node/register",
+                "--require",
+                "tsconfig-paths/register",
+                "src/test/**/*.spec.ts",
+                "--fgrep",
+                "region"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "protocol": "inspector",
             "name": "Launch Content API",
             "runtimeExecutable": "${workspaceRoot}/scripts/node_modules/.bin/ts-node",
             "cwd": "${workspaceRoot}/magda-content-api",

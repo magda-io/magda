@@ -32,18 +32,21 @@ const argv = yargs
         repository: {
             description:
                 "The repository to use in auto tag generation. Will default to '', i.e. dockerhub unless --local is set. Requires --tag=auto",
-            type: "string"
+            type: "string",
+            default: process.env.MAGDA_DOCKER_REPOSITORY
         },
         name: {
             description:
                 "The package name to use in auto tag generation. Will default to ''. Used to override the docker nanme config in package.json during the auto tagging. Requires --tag=auto",
-            type: "string"
+            type: "string",
+            default: process.env.MAGDA_DOCKER_NAME
         },
         version: {
             description:
                 "The version(s) to use in auto tag generation. Will default to the current version in package.json. Requires --tag=auto",
             type: "string",
-            array: true
+            array: true,
+            default: process.env.MAGDA_DOCKER_VERSION
         },
         output: {
             description:

@@ -18,7 +18,7 @@ To push the images and run them on kubernetes, you'll need to install:
 -   [Helm 3](https://helm.sh/docs/intro/install/) to manage kubernetes deployments and config. Magda `0.0.57` and higher requires helm 3 to deploy.
 -   [Docker](https://docs.docker.com/install/) - Magda uses `docker` command line tool to build docker images.
 
-You'll also need a Kubernetes cluster - to develop locally this means installing either [minikube](./installing-minikube.md) or [docker](./installing-docker-k8s.md) (MacOS only at this stage). Potentially you could also do this with native Kubernetes, or with a cloud cluster, but we haven't tried it.
+You'll also need a Kubernetes cluster - to develop locally this means installing either [minikube](./installing-minikube.md) or [docker](./installing-docker-k8s.md) (MacOS only at this stage). We've also started trialing [microk8s](./building-and-running-on-microk8s) on Linux, but we're not sure how well it's going to work long-term. Potentially you could also do this with native Kubernetes, or with a cloud cluster, but we haven't tried it.
 
 ## Trying it out locally without building source code
 
@@ -128,6 +128,7 @@ Note: If using docker desktop for Windows older than version 19, change the valu
 
 ```bash
 # update magda helm repo
+helm repo add stable https://kubernetes-charts.storage.googleapis.com/
 helm repo update
 # update magda chart dependencies
 helm dep build deploy/helm/internal-charts/storage-api

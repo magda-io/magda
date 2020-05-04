@@ -22,6 +22,7 @@ import {
 import DetailsAndContents from "./Pages/DetailsAndContents";
 import DatasetAddPeoplePage from "./Pages/People/DatasetAddPeoplePage";
 import DatasetAddEndPreviewPage from "./Pages/DatasetAddEndPreviewPage";
+import DatasetAddEndPage from "./Pages/DatasetAddEndPage";
 import DatasetAddFilesPage from "./Pages/AddFiles";
 import DatasetAddAccessAndUsePage from "./Pages/DatasetAddAccessAndUsePage";
 import withAddDatasetState from "./withAddDatasetState";
@@ -101,7 +102,13 @@ class NewDataset extends React.Component<Props, State> {
         ),
         config.featureFlags.previewAddDataset
             ? () => <DatasetAddEndPreviewPage />
-            : this.renderSubmitPage.bind(this)
+            : this.renderSubmitPage.bind(this),
+        () => (
+            <DatasetAddEndPage
+                datasetId={this.props.datasetId}
+                history={this.props.history}
+            />
+        )
     ];
 
     edit = <K extends keyof State>(aspectField: K) => (field: string) => (
@@ -125,7 +132,7 @@ class NewDataset extends React.Component<Props, State> {
 
         step = Math.max(Math.min(step, this.steps.length - 1), 0);
 
-        const nextIsPublish = step + 1 >= this.steps.length;
+        const nextIsPublish = step === 4;
 
         const nextButtonCaption = () => {
             if (nextIsPublish) {
@@ -156,7 +163,7 @@ class NewDataset extends React.Component<Props, State> {
 
         return (
             <div className="dataset-add-files-root dataset-add-meta-data-pages">
-                {step > 0 ? (
+                {step > 0 && step < 5 ? (
                     <div className="row">
                         <div className="col-sm-12">
                             <ReviewFilesList
@@ -177,22 +184,25 @@ class NewDataset extends React.Component<Props, State> {
                     item => item._state !== DistributionState.Ready
                 ).length ? null : (
                     <>
-                        <div className="row next-save-button-row">
-                            <div className="col-sm-12">
-                                <button
-                                    className="au-btn next-button"
-                                    onClick={nextButtonOnClick}
-                                >
-                                    Next: {nextButtonCaption()}
-                                </button>
-                                <button
-                                    className="au-btn au-btn--secondary save-button"
-                                    onClick={this.saveAndExit.bind(this)}
-                                >
-                                    Save and exit
-                                </button>
+                        {step >= 5 ? null : (
+                            <div className="row next-save-button-row">
+                                <div className="col-sm-12">
+                                    <button
+                                        className="au-btn next-button"
+                                        onClick={nextButtonOnClick}
+                                    >
+                                        Next: {nextButtonCaption()}
+                                    </button>
+                                    {/* Only show the Save and Exit button on pages prior to step 4*/}
+                                    <button
+                                        className="au-btn au-btn--secondary save-button"
+                                        onClick={this.saveAndExit.bind(this)}
+                                    >
+                                        Save and exit
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </>
                 )}
             </div>
@@ -273,7 +283,9 @@ class NewDataset extends React.Component<Props, State> {
                 this.setState.bind(this)
             );
 
-            this.props.history.push(`/dataset/${this.props.datasetId}`);
+            this.props.history.push(
+                `/dataset/add/metadata/${this.props.datasetId}/5`
+            );
         } catch (e) {
             this.setState({
                 isPublishing: false
