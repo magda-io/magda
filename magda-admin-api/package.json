@@ -58,7 +58,7 @@
     "language": "typescript",
     "categories": {
       "api": true,
-      "testStandAlone": false
+      "stateless": true
     }
   },
   "nyc": {

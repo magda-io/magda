@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import {
+    State,
     Distribution,
     DistributionState,
     DistributionSource,
@@ -19,6 +20,7 @@ type Props = {
         index: number
     ) => (updater: (distribution: Distribution) => Distribution) => void;
     deleteDistribution: (index: number) => () => void;
+    setMetadataState: (updater: (state: State) => State) => void;
 };
 
 const AddDatasetLinkSection = (props: Props) => {
@@ -103,8 +105,14 @@ const AddDatasetLinkSection = (props: Props) => {
                                         deleteDistribution={props.deleteDistribution(
                                             item.idx
                                         )}
-                                        setProcessingErrorMessage={
-                                            setProcessingErrorMessage
+                                        setMetadataState={
+                                            props.setMetadataState
+                                        }
+                                        onProcessingComplete={() => setUrl("")}
+                                        onProcessingError={e =>
+                                            setProcessingErrorMessage(
+                                                "" + (e.message ? e.message : e)
+                                            )
                                         }
                                     />
                                 ))}
