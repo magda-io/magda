@@ -22,7 +22,7 @@
     "@types/minio": "^7.0.4",
     "@types/superagent": "^4.1.4",
     "@types/xmldom": "^0.1.29",
-    "express": "^4.13.1",
+    "express": "^4.17.1",
     "express-multipart-file-parser": "^0.1.2",
     "lru-cache": "^5.1.1",
     "minio": "^7.0.12",

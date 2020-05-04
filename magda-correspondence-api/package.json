@@ -19,7 +19,7 @@
     "@magda/typescript-common": "^0.0.57-0",
     "body-parser": "^1.13.2",
     "email-validator": "^2.0.3",
-    "express": "^4.13.1",
+    "express": "^4.17.1",
     "fs-extra": "^7.0.0",
     "html-to-text": "^4.0.0",
     "lodash": "^4.17.10",
