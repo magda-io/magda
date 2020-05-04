@@ -62,7 +62,11 @@ export default function ckan(options: CkanOptions) {
             res: express.Response,
             next: express.NextFunction
         ) => {
-            redirectOnSuccess(req.query.redirect || externalAuthHome, req, res);
+            redirectOnSuccess(
+                (req.query.redirect as string) || externalAuthHome,
+                req,
+                res
+            );
         },
         (
             err: any,
@@ -72,7 +76,7 @@ export default function ckan(options: CkanOptions) {
         ): any => {
             redirectOnError(
                 err,
-                req.query.redirect || externalAuthHome,
+                (req.query.redirect as string) || externalAuthHome,
                 req,
                 res
             );
