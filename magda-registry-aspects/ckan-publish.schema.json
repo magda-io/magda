@@ -1,0 +1,53 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema#",
+    "title": "Ckan Publishing Information Aspect",
+    "description": "An aspect that stores information regarding publish the associated dataset with Ckan. Any changes to this aspect will trigger the publish action performed by the Ckan publish minion.",
+    "type": "object",
+    "properties": {
+        "status": {
+            "title": "Dataset Publish Status",
+            "description": "Indicates the desired dataset publish status. `retain`: the dataset should be created on target Ckan system and publish any changes of this dataset in registry. `withdraw`: the dataset and its associated resources should be removed from the target Ckan system.",
+            "type": "string",
+            "enum": ["retain", "withdraw"],
+            "default": "retain"
+        },
+        "publishUserId": {
+            "title": "Publish User ID",
+            "description": "(Optional). The magda user ID that is used to perform any Ckan publishing actions (including delete). System mainly use this info to determine the Ckan API key that should be used for any communications with the target Ckan system. The an API key can't be located for this user or this field doesn't exist, system should use a default API key for any Ckan publish communications for this dataset.",
+            "type": "string",
+            "regex": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        "ckanId": {
+            "title": "Ckan ID",
+            "description": "(Optional); The UUID of the dataset in Ckan system (package ID). Only available after the first publish.",
+            "type": "string"
+        },
+        "hasCreated": {
+            "title": "Has the dataset been created in Ckan",
+            "description": "Indicates whether or not the corresponding ckan package has been created for the dataset or not.",
+            "type": "boolean"
+        },
+        "publishRequired": {
+            "title": "Is publish required",
+            "description": "Whether or not system should re-publish the dataset to ckan system. When the dataset is modified, this field should be set to true to trigger the backend publishing process.",
+            "type": "boolean"
+        },
+        "publishAttempted": {
+            "title": "Has publishing been attempted",
+            "description": "Whether or not the backend process (minion) has attempt to process the publish since last time the `publishRequired` is set to true",
+            "type": "boolean"
+        },
+        "lastPublishAttemptTime": {
+            "title": "Time last publish was attempted",
+            "description": "(optional);The time when the backend process publish the dataset.",
+            "type": "string",
+            "format": "date-time"
+        },
+        "publishError": {
+            "title": "Last publish Error",
+            "description": "(optional);The error message recorded during the last backend publish processing.",
+            "type": "string"
+        }
+    },
+    "required": ["status", "hasCreated", "publishRequired", "publishAttempted"]
+}

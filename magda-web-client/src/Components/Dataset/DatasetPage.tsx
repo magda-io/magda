@@ -145,14 +145,14 @@ const DatasetPage: FunctionComponent<PropsType> = props => {
                     ) : null}
                     {hasEditPermissions &&
                     dataset.identifier &&
-                    dataset.ckanSync ? (
+                    dataset.ckanPublish ? (
                         <div
                             className={` col-sm-4 ${
                                 addMargin ? "form-margin" : ""
                             }`}
                         >
                             <PublishToCkanButton
-                                ckanSyncData={dataset.ckanSync}
+                                ckanPublishData={dataset.ckanPublish}
                                 datasetId={dataset.identifier}
                             />
                         </div>

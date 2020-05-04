@@ -204,7 +204,7 @@ export type ParsedDataset = {
         orgUnitOwnerId: string;
         preAuthorisedPermissionIds: string[];
     };
-    ckanSync?: CkanSyncAspectType;
+    ckanPublish?: CkanPublishAspectType;
 };
 
 export const emptyPublisher: Publisher = {
@@ -404,15 +404,15 @@ export function parseDistribution(
     };
 }
 
-export interface CkanSyncAspectType {
+export interface CkanPublishAspectType {
     status: "retain" | "withdraw" | undefined;
     syncUserId?: string;
     ckanId?: string;
     hasCreated: boolean;
-    syncRequired: boolean;
-    syncAttempted: boolean;
-    lastSyncAttemptTime?: Date;
-    syncError?: string;
+    publishRequired: boolean;
+    publishAttempted: boolean;
+    lastPublishAttemptTime?: Date;
+    publishError?: string;
 }
 
 export function parseDataset(dataset?: RawDataset): ParsedDataset {
@@ -462,21 +462,23 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         ? true
         : false;
 
-    const ckanSync: CkanSyncAspectType = aspects["ckan-sync"]
-        ? aspects["ckan-sync"]
+    const ckanPublish: CkanPublishAspectType = aspects["ckan-publish"]
+        ? aspects["ckan-publish"]
         : {
               status: undefined,
               hasCreated: false,
-              syncRequired: false,
-              syncAttempted: false
+              publishRequired: false,
+              publishAttempted: false
           };
 
-    ckanSync.hasCreated = ckanSync.hasCreated ? ckanSync.hasCreated : false;
-    ckanSync.syncRequired = ckanSync.syncRequired
-        ? ckanSync.syncRequired
+    ckanPublish.hasCreated = ckanPublish.hasCreated
+        ? ckanPublish.hasCreated
         : false;
-    ckanSync.syncAttempted = ckanSync.syncAttempted
-        ? ckanSync.syncAttempted
+    ckanPublish.publishRequired = ckanPublish.publishRequired
+        ? ckanPublish.publishRequired
+        : false;
+    ckanPublish.publishAttempted = ckanPublish.publishAttempted
+        ? ckanPublish.publishAttempted
         : false;
 
     const distributions = distribution["distributions"].map(d => {
@@ -562,6 +564,6 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         accrualPeriodicity: datasetInfo["accrualPeriodicity"] || "",
         accrualPeriodicityRecurrenceRule:
             datasetInfo["accrualPeriodicityRecurrenceRule"] || "",
-        ckanSync
+        ckanPublish: ckanPublish
     };
 }

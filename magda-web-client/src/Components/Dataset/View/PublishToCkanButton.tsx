@@ -4,118 +4,125 @@ import { ensureAspectExists } from "api-clients/RegistryApis";
 import { config } from "config";
 import AUbutton from "pancake/react/buttons";
 import moment from "moment";
-import { CkanSyncAspectType } from "../../../helpers/record";
+import { CkanPublishAspectType } from "../../../helpers/record";
 import helpIcon from "assets/help.svg";
 import spinnerIcon from "assets/spinner-white.svg";
 import "./PublishToCkanButton.scss";
-import ckanSyncAspect from "@magda/registry-aspects/ckan-sync.schema.json";
+import ckanPublishAspect from "@magda/registry-aspects/ckan-publish.schema.json";
 
-type SyncStatusType = "retain" | "withdraw";
+type PublishStatusType = "retain" | "withdraw";
 
 interface StateType {
     isLoading: boolean;
-    ckanSyncData: CkanSyncAspectType;
-    showCkanSyncDetails: boolean;
-    isCkanSyncDetailsLoading: boolean;
+    ckanPublishData: CkanPublishAspectType;
+    showCkanPublishDetails: boolean;
+    isCkanPublishDetailsLoading: boolean;
 }
 
 interface PropsType {
-    ckanSyncData: CkanSyncAspectType;
+    ckanPublishData: CkanPublishAspectType;
     datasetId: string;
 }
 
 function getLabelFromState(state: StateType) {
     const loadingStr = state.isLoading ? " (Processing...)" : "";
 
-    return state.ckanSyncData.status === "retain"
+    return state.ckanPublishData.status === "retain"
         ? `Withdraw Dataset From Ckan${loadingStr}`
         : `Publish Dataset To Ckan${loadingStr}`;
 }
 
-const DefaultCkanSyncData: CkanSyncAspectType = {
+const DefaultCkanPublishData: CkanPublishAspectType = {
     status: undefined,
     hasCreated: false,
-    syncRequired: false,
-    syncAttempted: false
+    publishRequired: false,
+    publishAttempted: false
 };
 
 const PublishToCkanButton: FunctionComponent<PropsType> = props => {
     const [state, setState] = useState<StateType>({
         isLoading: false,
-        showCkanSyncDetails: false,
-        isCkanSyncDetailsLoading: false,
-        ckanSyncData: props.ckanSyncData
-            ? props.ckanSyncData
-            : DefaultCkanSyncData
+        showCkanPublishDetails: false,
+        isCkanPublishDetailsLoading: false,
+        ckanPublishData: props.ckanPublishData
+            ? props.ckanPublishData
+            : DefaultCkanPublishData
     });
 
-    async function updateSyncStatus(status: SyncStatusType, datasetId: string) {
+    async function updatePublishStatus(
+        status: PublishStatusType,
+        datasetId: string
+    ) {
         try {
             setState(state => ({
                 ...state,
                 isLoading: true
             }));
-            let ckanSyncData: CkanSyncAspectType;
+            let ckanPublishData: CkanPublishAspectType;
             try {
-                ckanSyncData = await request(
+                ckanPublishData = await request(
                     "GET",
-                    `${config.registryReadOnlyApiUrl}records/${datasetId}/aspects/ckan-sync`
+                    `${config.registryReadOnlyApiUrl}records/${datasetId}/aspects/ckan-publish`
                 );
             } catch (e) {
-                await ensureAspectExists("ckan-sync", ckanSyncAspect);
-                ckanSyncData = { ...DefaultCkanSyncData };
+                await ensureAspectExists("ckan-publish", ckanPublishAspect);
+                ckanPublishData = { ...DefaultCkanPublishData };
             }
-            ckanSyncData = { ...ckanSyncData, status, syncRequired: true };
-            ckanSyncData = await request(
+            ckanPublishData = {
+                ...ckanPublishData,
+                status,
+                publishRequired: true
+            };
+            ckanPublishData = await request(
                 "PUT",
-                `${config.registryFullApiUrl}records/${datasetId}/aspects/ckan-sync`,
-                ckanSyncData
+                `${config.registryFullApiUrl}records/${datasetId}/aspects/ckan-publish`,
+                ckanPublishData
             );
             setState(state => ({
                 ...state,
                 isLoading: false,
-                ckanSyncData: { ...ckanSyncData }
+                ckanPublishData: { ...ckanPublishData }
             }));
         } catch (e) {
             setState(state => ({
                 ...state,
                 isLoading: false
             }));
-            alert(`Failed to update dataset sync status: ${e}`);
+            alert(`Failed to update dataset publish status: ${e}`);
         }
     }
 
-    async function updateCkanSyncData(datasetId) {
+    async function updateCkanPublishData(datasetId) {
         try {
             setState(state => ({
                 ...state,
-                isCkanSyncDetailsLoading: true
+                isCkanPublishDetailsLoading: true
             }));
-            const ckanSyncData = await request(
+            const ckanPublishData = await request(
                 "GET",
-                `${config.registryReadOnlyApiUrl}records/${datasetId}/aspects/ckan-sync`
+                `${config.registryReadOnlyApiUrl}records/${datasetId}/aspects/ckan-publish`
             );
             setState(state => ({
                 ...state,
-                isCkanSyncDetailsLoading: false,
-                ckanSyncData: { ...ckanSyncData }
+                isCkanPublishDetailsLoading: false,
+                ckanPublishData: { ...ckanPublishData }
             }));
         } catch (e) {
             setState(state => ({
                 ...state,
-                isCkanSyncDetailsLoading: false
+                isCkanPublishDetailsLoading: false
             }));
         }
     }
 
-    const ckanSyncData = state.ckanSyncData;
+    const ckanPublishData = state.ckanPublishData;
 
     return (
         <AUbutton
             className="au-btn--secondary publish-to-ckan-button"
             onClick={() =>
-                updateSyncStatus(
-                    state.ckanSyncData.status !== "withdraw"
+                updatePublishStatus(
+                    state.ckanPublishData.status !== "withdraw"
                         ? "withdraw"
                         : "retain",
                     props.datasetId
@@ -124,70 +131,72 @@ const PublishToCkanButton: FunctionComponent<PropsType> = props => {
         >
             <span>{getLabelFromState(state)}&nbsp;</span>
             <span
-                className="ckan-sync-details-icon"
+                className="ckan-publish-details-icon"
                 onMouseOver={() => {
                     setState(state => ({
                         ...state,
-                        showCkanSyncDetails: true
+                        showCkanPublishDetails: true
                     }));
-                    updateCkanSyncData(props.datasetId);
+                    updateCkanPublishData(props.datasetId);
                 }}
                 onMouseOut={() => {
                     setState(state => ({
                         ...state,
-                        showCkanSyncDetails: false
+                        showCkanPublishDetails: false
                     }));
                 }}
             >
                 <img src={helpIcon} />
             </span>
-            {state.showCkanSyncDetails ? (
-                <div className="ckan-sync-details">
+            {state.showCkanPublishDetails ? (
+                <div className="ckan-publish-details">
                     <div className="row">
-                        <div className="col-sm-6">Current Sync Status: </div>
+                        <div className="col-sm-6">Current Publish Status: </div>
                         <div className="col-sm-6">
-                            {ckanSyncData.status === "retain"
-                                ? "Sync to Ckan"
-                                : "Not Sync to Ckan"}
+                            {ckanPublishData.status === "retain"
+                                ? "Publish to Ckan"
+                                : "Don't publish to Ckan"}
                         </div>
                     </div>
                     <div className="row">
                         <div className="col-sm-6">Ckan Package Created: </div>
                         <div className="col-sm-6">
-                            {ckanSyncData.hasCreated ? "Yes" : "No"}
+                            {ckanPublishData.hasCreated ? "Yes" : "No"}
                         </div>
                     </div>
                     <div className="row">
-                        <div className="col-sm-6">Pending Sync Required: </div>
                         <div className="col-sm-6">
-                            {ckanSyncData.syncRequired
-                                ? ckanSyncData.syncAttempted
+                            Pending Publish Required:{" "}
+                        </div>
+                        <div className="col-sm-6">
+                            {ckanPublishData.publishRequired
+                                ? ckanPublishData.publishAttempted
                                     ? "Yes (Not Attempted Yet)"
                                     : "Yes (Attempted)"
                                 : "No"}
                         </div>
                     </div>
-                    {ckanSyncData.syncAttempted ? (
+                    {ckanPublishData.publishAttempted ? (
                         <div className="row">
-                            <div className="col-sm-6">Last Sync Time: </div>
+                            <div className="col-sm-6">Last Publish Time: </div>
                             <div className="col-sm-6">
-                                {ckanSyncData.lastSyncAttemptTime
+                                {ckanPublishData.lastPublishAttemptTime
                                     ? moment(
-                                          ckanSyncData.lastSyncAttemptTime
+                                          ckanPublishData.lastPublishAttemptTime
                                       ).format("Do MMM YYYY h:mm:ss a")
                                     : "Not Available"}
                             </div>
                         </div>
                     ) : null}
-                    {ckanSyncData.syncError ? (
+                    {ckanPublishData.publishError ? (
                         <div className="row">
-                            <div className="col-sm-6">Last Sync Error: </div>
+                            <div className="col-sm-6">Last Publish Error: </div>
                             <div className="col-sm-6">
-                                {ckanSyncData.syncError}
+                                {ckanPublishData.publishError}
                             </div>
                         </div>
                     ) : null}
-                    {state.isCkanSyncDetailsLoading ? (
+                    {state.isCkanPublishDetailsLoading ? (
                         <div className="row details-loading-container">
                             <div>
                                 <img src={spinnerIcon} />

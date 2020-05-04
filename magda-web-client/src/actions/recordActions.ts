@@ -9,8 +9,8 @@ import {
     Record
 } from "api-clients/RegistryApis";
 import request from "helpers/request";
-import { CkanSyncAspectType } from "helpers/record";
-import ckanSyncAspect from "@magda/registry-aspects/ckan-sync.schema.json";
+import { CkanPublishAspectType } from "helpers/record";
+import ckanPublishAspect from "@magda/registry-aspects/ckan-publish.schema.json";
 
 export function requestDataset(id: string): RecordAction {
     return {
@@ -107,7 +107,7 @@ export function fetchDatasetFromRegistry(id: string): Function {
         // let parameters =
         //     "dereference=true&aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&" +
         //     "optionalAspect=usage&optionalAspect=access&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=source-link-status&optionalAspect=dataset-quality-rating&" +
-        //     "optionalAspect=spatial-coverage&optionalAspect=publishing&optionalAspect=dataset-access-control&optionalAspect=provenance&optionalAspect=information-security&optionalAspect=currency&optionalAspect=ckan-sync";
+        //     "optionalAspect=spatial-coverage&optionalAspect=publishing&optionalAspect=dataset-access-control&optionalAspect=provenance&optionalAspect=information-security&optionalAspect=currency&optionalAspect=ckan-publish";
         // const url =
         //     config.registryReadOnlyApiUrl +
         //     `records/${encodeURIComponent(id)}?${parameters}`;
@@ -161,30 +161,30 @@ export function fetchDistributionFromRegistry(id: string): any {
     };
 }
 
-const DefaultCkanSyncData: CkanSyncAspectType = {
+const DefaultCkanPublishData: CkanPublishAspectType = {
     status: undefined,
     hasCreated: false,
-    syncRequired: false,
-    syncAttempted: false
+    publishRequired: false,
+    publishAttempted: false
 };
 
-async function notifyCkanSyncMinion(datasetId: string) {
-    let ckanSyncData: CkanSyncAspectType;
+async function notifyCkanPublishMinion(datasetId: string) {
+    let ckanPublishData: CkanPublishAspectType;
     try {
-        ckanSyncData = await request(
+        ckanPublishData = await request(
             "GET",
-            `${config.registryReadOnlyApiUrl}records/${datasetId}/aspects/ckan-sync`
+            `${config.registryReadOnlyApiUrl}records/${datasetId}/aspects/ckan-publish`
         );
     } catch (e) {
-        await ensureAspectExists("ckan-sync", ckanSyncAspect);
-        ckanSyncData = { ...DefaultCkanSyncData };
+        await ensureAspectExists("ckan-publish", ckanPublishAspect);
+        ckanPublishData = { ...DefaultCkanPublishData };
     }
 
-    if (ckanSyncData.status === "retain") {
+    if (ckanPublishData.status === "retain") {
         await request(
             "PUT",
-            `${config.registryFullApiUrl}records/${datasetId}/aspects/ckan-sync`,
-            { ...ckanSyncData, syncRequired: true }
+            `${config.registryFullApiUrl}records/${datasetId}/aspects/ckan-publish`,
+            { ...ckanPublishData, publishRequired: true }
         );
     }
 }
@@ -237,7 +237,7 @@ export function modifyRecordAspect(
                 return response.json();
             })
             .then((json: any) => {
-                return notifyCkanSyncMinion(id).then(() => {
+                return notifyCkanPublishMinion(id).then(() => {
                     return dispatch(receiveAspectModified(aspect, json));
                 });
             })
