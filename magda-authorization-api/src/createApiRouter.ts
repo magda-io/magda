@@ -122,8 +122,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
     router.all("/private/*", MUST_BE_ADMIN);
 
     router.get("/private/users/lookup", function(req, res) {
-        const source = req.query.source;
-        const sourceId = req.query.sourceId;
+        const source = req.query.source as string;
+        const sourceId = req.query.sourceId as string;
 
         handleMaybePromise(
             res,
@@ -346,7 +346,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
     router.get("/public/orgunits/bylevel/:orgLevel", async (req, res) => {
         try {
             const orgLevel = req.params.orgLevel;
-            const relationshipOrgUnitId = req.query.relationshipOrgUnitId;
+            const relationshipOrgUnitId = req.query
+                .relationshipOrgUnitId as string;
 
             const levelNumber = parseInt(orgLevel);
 
@@ -401,9 +402,10 @@ export default function createApiRouter(options: ApiRouterOptions) {
      */
     router.get("/public/orgunits", async (req, res) => {
         try {
-            const nodeName: string = req.query.nodeName;
-            const leafNodesOnly: string = req.query.leafNodesOnly;
-            const relationshipOrgUnitId = req.query.relationshipOrgUnitId;
+            const nodeName: string = req.query.nodeName as string;
+            const leafNodesOnly: string = req.query.leafNodesOnly as string;
+            const relationshipOrgUnitId = req.query
+                .relationshipOrgUnitId as string;
 
             const nodes = await orgQueryer.getNodes({
                 name: nodeName,

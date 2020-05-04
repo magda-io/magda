@@ -186,7 +186,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                 parser.parse(fullResponse.body);
                 res.status(fullResponse.statusCode).send(
                     parser.evaluateRuleAsHumanReadableString(
-                        req.query.printRule
+                        req.query.printRule as string
                     )
                 );
             } else {

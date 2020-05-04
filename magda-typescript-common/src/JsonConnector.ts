@@ -418,7 +418,7 @@ export default class JsonConnector {
 
         app.get("/v0/search/datasets", (req, res) => {
             asyncPageToArray(
-                this.source.searchDatasetsByTitle(req.query.title, 10)
+                this.source.searchDatasetsByTitle(req.query.title as string, 10)
             ).then(datasets => {
                 res.send(datasets);
             });
@@ -436,7 +436,7 @@ export default class JsonConnector {
             app.get("/v0/search/organizations", (req, res) => {
                 asyncPageToArray(
                     this.source.searchFirstClassOrganizationsByTitle(
-                        req.query.title,
+                        req.query.title as string,
                         5
                     )
                 ).then(organizations => {

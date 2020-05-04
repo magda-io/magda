@@ -331,7 +331,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
             const fileId = req.params.fileid;
             const bucket = req.params.bucket;
             const recordId =
-                req.query.recordId && decodeURIComponent(req.query.recordId);
+                req.query.recordId &&
+                decodeURIComponent(req.query.recordId as string);
             const encodedRootPath = encodeURIComponent(fileId);
             const encodeBucketname = encodeURIComponent(bucket);
             const content = req.body;
