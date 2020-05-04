@@ -37,7 +37,9 @@ const DatasetPage: FunctionComponent<PropsType> = props => {
     const editButtonTooltipText =
         "The `Edit` function is only available to datasets created by Magdad.";
 
-    const isDatasetEditable = dataset.identifier?.indexOf("magda-") === 0;
+    const isDatasetEditable =
+        dataset?.sourceDetails?.id === "magda" &&
+        dataset?.sourceDetails?.type === "internal";
 
     const renderResult = (
         <div
