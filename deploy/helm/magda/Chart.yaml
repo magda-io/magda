@@ -60,6 +60,14 @@ dependencies:
       - all
       - url-processors
       - ckan-connector-functions
+  
+  - name: magda-function-esri-url-processor
+    version: 0.0.57-0
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - url-processors
+      - magda-function-esri-url-processor
 
   - name: magda-ckan-connector
     version: 0.0.57-0

@@ -1,15 +1,17 @@
-import React, { useState, Dispatch, SetStateAction } from "react";
+import React, { useState } from "react";
 import { useAsync } from "react-async-hook";
 import moment from "moment";
 import uuid from "uuid";
 import fetch from "isomorphic-fetch";
 import { config } from "config";
 import {
+    State,
     Distribution,
     DistributionState,
     DistributionSource,
     DistributionCreationMethod
 } from "Components/Dataset/Add/DatasetAddCommon";
+import { Record } from "api-clients/RegistryApis";
 import "./DatasetLinkItem.scss";
 
 import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
@@ -24,6 +26,11 @@ import ValidationRequiredLabel from "../../Dataset/Add/ValidationRequiredLabel";
 import { MultilineTextEditor } from "Components/Editing/Editors/textEditor";
 import promiseAny from "helpers/promiseAny";
 
+export type UrlProcessorResult = {
+    dataset: Record;
+    distributions: Record[];
+};
+
 type Props = {
     distribution: Distribution;
     idx: number;
@@ -33,7 +40,9 @@ type Props = {
     ) => void;
     deleteDistribution: () => void;
     className?: string;
-    setProcessingErrorMessage: Dispatch<SetStateAction<string>>;
+    onProcessingError: (error: any) => void;
+    onProcessingComplete?: () => void;
+    setMetadataState: (updater: (state: State) => State) => void;
 };
 
 type ProcessingProps = {
@@ -299,9 +308,15 @@ async function getAllDataUrlProcessorsFromOpenfaasGateway(
         config.fetchOptions
     );
     if (res.status !== 200) {
-        throw new Error(
-            "Failed to contact openfaas gateway: " + res.statusText
-        );
+        if (res.status === 401) {
+            throw new Error(
+                "You are not authorised to access the Magda serverless function gateway."
+            );
+        } else {
+            throw new Error(
+                "Failed to contact openfaas gateway: " + res.statusText
+            );
+        }
     }
     const data: any[] = await res.json();
     if (!data || !data.length) {
@@ -323,6 +338,62 @@ const DatasetLinkItem = (props: Props) => {
             props.distribution?._state == DistributionState.Drafting
     );
 
+    function processDatasetDcat(aspectData) {
+        if (!aspectData?.title && !aspectData?.description) {
+            return;
+        }
+
+        props.setMetadataState(state => {
+            const newDatasetData = { ...state.dataset };
+            if (aspectData?.title) {
+                newDatasetData.title = aspectData?.title;
+            }
+            if (aspectData?.description) {
+                newDatasetData.description = aspectData?.description;
+            }
+            return {
+                ...state,
+                dataset: newDatasetData
+            };
+        });
+    }
+
+    function processDatasetSpatialCoverage(aspectData) {
+        if (aspectData?.bbox?.length !== 4) {
+            return;
+        }
+
+        const bbox = aspectData.bbox
+            .map(item => (typeof item === "string" ? parseFloat(item) : item))
+            .filter(item => typeof item === "number" && !isNaN(item));
+
+        if (bbox.length !== 4) {
+            return;
+        }
+
+        props.setMetadataState(state => ({
+            ...state,
+            spatialCoverage: {
+                spatialDataInputMethod: "bbox",
+                bbox
+            }
+        }));
+    }
+
+    function processDatasetData(dataset: Record) {
+        // --- implement logic of populate dataset data into add dataset page state
+
+        if (dataset?.aspects?.["dcat-dataset-strings"]) {
+            // --- populate dcat-dataset-strings
+            processDatasetDcat(dataset.aspects["dcat-dataset-strings"]);
+        }
+
+        if (dataset?.aspects?.["spatial-coverage"]) {
+            // --- populate spatial-coverage
+            processDatasetSpatialCoverage(dataset.aspects["spatial-coverage"]);
+        }
+    }
+
     useAsync(async () => {
         try {
             if (props.distribution._state !== DistributionState.Processing) {
@@ -336,7 +407,7 @@ const DatasetLinkItem = (props: Props) => {
                 throw new Error("No url processor available.");
             }
 
-            const data = await promiseAny(
+            const data = (await promiseAny<UrlProcessorResult>(
                 processors.map(async item => {
                     const res = await fetch(
                         `${config.openfaasBaseUrl}/function/${item.name}`,
@@ -357,7 +428,7 @@ const DatasetLinkItem = (props: Props) => {
                         throw e;
                     }
 
-                    const data = await res.json();
+                    const data = (await res.json()) as UrlProcessorResult;
                     if (
                         !data ||
                         !data.distributions ||
@@ -399,7 +470,7 @@ const DatasetLinkItem = (props: Props) => {
                         throw error;
                     }
                 }
-            });
+            })) as UrlProcessorResult;
 
             props.editDistribution(distribution => {
                 return {
@@ -407,7 +478,7 @@ const DatasetLinkItem = (props: Props) => {
                     ...data.distributions[0].aspects[
                         "dcat-distribution-strings"
                     ],
-                    creationSource: DistributionSource.DatasetUrl,
+                    creationSource: props.distribution.creationSource,
                     _state: DistributionState.Ready
                 };
             });
@@ -418,14 +489,23 @@ const DatasetLinkItem = (props: Props) => {
                     props.addDistribution({
                         ...item.aspects["dcat-distribution-strings"],
                         id: uuid.v4(),
-                        creationSource: DistributionSource.DatasetUrl,
+                        creationSource: props.distribution.creationSource,
                         _state: DistributionState.Ready
                     });
                 });
             }
+
+            if (data?.dataset) {
+                // --- populate possible dataset level data e.g. spatial-coverage-aspect
+                processDatasetData(data.dataset);
+            }
+
+            if (typeof props.onProcessingComplete === "function") {
+                props.onProcessingComplete();
+            }
         } catch (e) {
             props.deleteDistribution();
-            props.setProcessingErrorMessage("" + (e.message ? e.message : e));
+            props.onProcessingError(e);
         }
     }, [props.distribution.id]);
 

@@ -19,10 +19,10 @@ General:
 -   Update `building and running` documents: replace `npx` with `yarn` in all commands & replace keywords `npm dependecies` with `dependecies`
 -   Update `building and running` documents: remove `lerna` & `pancake` from `prerequisites` list
 -   New: Extract metadata from data portal URLs
--   Make Magda charts helm v3 charts
--   Add migration document for migrating Magda release v0.0.56-RC6 or eariler to v0.0.57-0
 -   Fixed function is incorrectly deployed for UI only deployment
 -   Use helm3 in inttest:registryAuth step in CI
+-   Make Magda charts helm v3 charts
+-   Add migration document for migrating Magda release v0.0.56-RC6 or eariler to v0.0.57-0
 
 UI:
 
@@ -45,6 +45,7 @@ UI:
 -   Clarify tooltip text
 -   Use a new "All done!" screen at the end of the dataset flow
 -   Added Error Screen for adding distributions from URL feature & allow manually create distributions
+-   Added the support of processing ESRI REST API URL
 
 Storage:
 
@@ -77,10 +78,16 @@ Authorization:
 -   Added per-record authorization around the `/records/<recordid>/history` endpoint
 -   Added per-record authorization around the `/records/<recordid>/history/<eventId>` endpoint
 
+Search
+
+-   Began work on a NodeJS-based search API to replace the scala one
+
 Others:
 
 -   Use a "Year" column from a CSV file to extract a temporal extent
 -   Fixed Registry History API Performance Issue when limit=1 & Updated Registry History API Document
+-   Added tentative documentation/scripting for building and running on microk8s.
+-   Added tentative documentation/scripting for building and running on k3d.
 
 ## 0.0.56
 

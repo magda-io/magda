@@ -31,7 +31,7 @@ const questions = [
         name: "local-cluster-type",
         message:
             "Which local k8s cluster environment you are going to connect to?",
-        choices: ["minikube", "docker"],
+        choices: ["minikube", "docker", "microk8s"],
         when: onlyWhenQuestion("deploy-to-google-cloud", false)
     },
     {

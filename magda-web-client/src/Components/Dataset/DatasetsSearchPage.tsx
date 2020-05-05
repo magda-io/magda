@@ -294,7 +294,4 @@ function mapStateToProps(state, ownProps) {
     };
 }
 
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(Search);
+export default connect(mapStateToProps, mapDispatchToProps)(Search);

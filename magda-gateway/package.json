@@ -103,7 +103,7 @@
     "language": "typescript",
     "categories": {
       "api": true,
-      "testStandAlone": false
+      "uses-pg": true
     }
   },
   "_moduleMappings": {

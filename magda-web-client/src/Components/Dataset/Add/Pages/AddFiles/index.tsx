@@ -436,6 +436,7 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                     addDistribution={this.addDistribution}
                     editDistribution={this.editDistribution}
                     deleteDistribution={this.deleteDistribution}
+                    setMetadataState={this.props.setState}
                 />
 
                 <AddDatasetLinkSection
@@ -444,6 +445,7 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                     addDistribution={this.addDistribution}
                     editDistribution={this.editDistribution}
                     deleteDistribution={this.deleteDistribution}
+                    setMetadataState={this.props.setState}
                 />
             </div>
         );

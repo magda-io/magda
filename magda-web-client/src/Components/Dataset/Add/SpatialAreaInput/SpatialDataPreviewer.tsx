@@ -22,7 +22,10 @@ function getBoundsFromBbox(bbox: BoundingBox): BoundsQueueItem {
     ];
     const isValid =
         !isNaN(minlon) && !isNaN(minlat) && !isNaN(maxlon) && !isNaN(maxlat);
-    const bounds = [[minlat, minlon], [maxlat, maxlon]];
+    const bounds = [
+        [minlat, minlon],
+        [maxlat, maxlon]
+    ];
 
     return {
         bounds,

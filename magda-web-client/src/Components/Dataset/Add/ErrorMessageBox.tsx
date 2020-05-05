@@ -42,9 +42,7 @@ const ErrorMessageBox: FunctionComponent<Props> = props => {
                             <span>
                                 We've logged this internally, please contact{" "}
                                 <a
-                                    href={`mailto:${
-                                        config.defaultContactEmail
-                                    }`}
+                                    href={`mailto:${config.defaultContactEmail}`}
                                 >
                                     {config.defaultContactEmail}
                                 </a>{" "}

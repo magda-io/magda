@@ -6,10 +6,10 @@
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/any
  *
  * @export
- * @param {Promise<any>[]} items
- * @returns {Promise<any>}
+ * @param {Promise<T>[]} items
+ * @returns {Promise<T>}
  */
-export default function promiseAny(items: Promise<any>[]): Promise<any> {
+export default function promiseAny<T = any>(items: Promise<T>[]): Promise<T> {
     return new Promise((resolve, reject) => {
         const result: {
             isCompleted: boolean;

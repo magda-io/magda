@@ -52,7 +52,7 @@ function doK8sExecution(config, shouldNotAsk = false) {
          * All errors / exceptions should be process through promise chain rather than stop program here.
          * There are different logic outside doK8sExecution requires some clean-up job to be done before exit program.
          */
-        checkIfKubectlValid(env);
+        checkIfKubectlValid(env, configData);
         configData["cluster-namespace"] = trim(configData["cluster-namespace"]);
         if (!configData["cluster-namespace"]) {
             throw new Error(
@@ -62,7 +62,7 @@ function doK8sExecution(config, shouldNotAsk = false) {
         }
     });
 
-    if (!checkNamespace(env, configData["cluster-namespace"])) {
+    if (!checkNamespace(env, configData["cluster-namespace"], config)) {
         if (shouldNotAsk) {
             promise = promise.then(function() {
                 // --- leave error to be handled at end of then chain. see above
@@ -81,7 +81,11 @@ function doK8sExecution(config, shouldNotAsk = false) {
                         `You need to create namespace \`${configData["cluster-namespace"]}\` before try again.`
                     );
                 } else {
-                    createNamespace(env, configData["cluster-namespace"]);
+                    createNamespace(
+                        env,
+                        configData,
+                        configData["cluster-namespace"]
+                    );
                 }
             });
     }
@@ -92,19 +96,27 @@ function doK8sExecution(config, shouldNotAsk = false) {
             createFileContentSecret(
                 env,
                 namespace,
+                configData,
                 "cloudsql-instance-credentials",
                 "credentials.json",
                 configData["cloudsql-instance-credentials"]["data"]
             );
-            createSecret(env, namespace, "cloudsql-db-credentials", {
-                password: configData["cloudsql-db-credentials"]
-            });
+            createSecret(
+                env,
+                namespace,
+                configData,
+                "cloudsql-db-credentials",
+                {
+                    password: configData["cloudsql-db-credentials"]
+                }
+            );
         }
 
         if (configData["use-storage-account-credentials"] === true) {
             createFileContentSecret(
                 env,
                 namespace,
+                configData,
                 "storage-account-credentials",
                 "db-service-account-private-key.json",
                 configData["storage-account-credentials"]["data"]
@@ -112,7 +124,7 @@ function doK8sExecution(config, shouldNotAsk = false) {
         }
 
         if (configData["use-smtp-secret"] === true) {
-            createSecret(env, namespace, "smtp-secret", {
+            createSecret(env, namespace, configData, "smtp-secret", {
                 username: configData["smtp-secret-username"],
                 password: configData["smtp-secret-password"]
             });
@@ -131,6 +143,7 @@ function doK8sExecution(config, shouldNotAsk = false) {
             createDockerRegistrySecret(
                 env,
                 namespace,
+                configData,
                 "regcred",
                 configData["regcred-password"],
                 "registry.gitlab.com",
@@ -166,10 +179,10 @@ function doK8sExecution(config, shouldNotAsk = false) {
                 data["aaf-client-secret"] = configData["oauth-secrets-aaf"];
             }
 
-            createSecret(env, namespace, "oauth-secrets", data);
+            createSecret(env, namespace, configData, "oauth-secrets", data);
         }
 
-        createSecret(env, namespace, "auth-secrets", {
+        createSecret(env, namespace, configData, "auth-secrets", {
             "jwt-secret": pwgen(64),
             "session-secret": pwgen()
         });
@@ -274,9 +287,9 @@ function overrideSettingWithEnvVars(env, configData) {
     return configData;
 }
 
-function checkIfKubectlValid(env) {
+function checkIfKubectlValid(env, configData) {
     try {
-        childProcess.execSync("kubectl", {
+        childProcess.execSync(getKubectlCommand(configData), {
             stdio: "ignore",
             env: env
         });
@@ -288,12 +301,15 @@ function checkIfKubectlValid(env) {
     }
 }
 
-function checkNamespace(env, namespace) {
+function checkNamespace(env, namespace, configData) {
     try {
-        childProcess.execSync(`kubectl get namespace ${namespace}`, {
-            stdio: "ignore",
-            env: env
-        });
+        childProcess.execSync(
+            `${getKubectlCommand(configData)} get namespace ${namespace}`,
+            {
+                stdio: "ignore",
+                env: env
+            }
+        );
         return true;
     } catch (e) {
         console.log(
@@ -305,11 +321,14 @@ function checkNamespace(env, namespace) {
     }
 }
 
-function createNamespace(env, namespace) {
-    childProcess.execSync(`kubectl create namespace ${namespace}`, {
-        stdio: "inherit",
-        env: env
-    });
+function createNamespace(env, namespace, configData) {
+    childProcess.execSync(
+        `${getKubectlCommand(configData)} create namespace ${namespace}`,
+        {
+            stdio: "inherit",
+            env: env
+        }
+    );
 }
 
 function buildTemplateObject(name, namespace) {
@@ -334,7 +353,7 @@ function createDbPasswords(env, namespace, configData) {
     dbPasswordNames.forEach(key => {
         data[key] = configData["db-passwords"];
     });
-    createSecret(env, namespace, "db-passwords", data);
+    createSecret(env, namespace, configData, "db-passwords", data);
 }
 
 function createMinioCredentials(env, namespace, configData) {
@@ -342,7 +361,7 @@ function createMinioCredentials(env, namespace, configData) {
         accesskey: configData["accesskey"],
         secretkey: configData["secretkey"]
     };
-    createSecret(env, namespace, "storage-secrets", data);
+    createSecret(env, namespace, configData, "storage-secrets", data);
 }
 
 function createWebAccessPassword(env, namespace, configData) {
@@ -353,12 +372,13 @@ function createWebAccessPassword(env, namespace, configData) {
         username: configData["web-access-username"],
         password: configData["web-access-password"]
     };
-    createSecret(env, namespace, "web-access-secret", data);
+    createSecret(env, namespace, configData, "web-access-secret", data);
 }
 
 function createFileContentSecret(
     env,
     namespace,
+    configData,
     secretName,
     fileName,
     content
@@ -367,7 +387,7 @@ function createFileContentSecret(
         content = JSON.stringify(content);
     }
 
-    createSecret(env, namespace, secretName, {
+    createSecret(env, namespace, configData, secretName, {
         [fileName]: content
     });
 }
@@ -375,6 +395,7 @@ function createFileContentSecret(
 function createDockerRegistrySecret(
     env,
     namespace,
+    configData,
     secretName,
     password,
     dockerServer,
@@ -397,6 +418,7 @@ function createDockerRegistrySecret(
     createSecret(
         env,
         namespace,
+        configData,
         secretName,
         data,
         true,
@@ -407,6 +429,7 @@ function createDockerRegistrySecret(
 function createSecret(
     env,
     namespace,
+    configData,
     secretName,
     data,
     encodeAllDataFields,
@@ -425,16 +448,25 @@ function createSecret(
 
     const configContent = JSON.stringify(configObj);
 
-    childProcess.execSync(`kubectl apply --namespace ${namespace} -f -`, {
-        input: configContent,
-        env: env
-    });
+    childProcess.execSync(
+        `${getKubectlCommand(configData)} apply --namespace ${namespace} -f -`,
+        {
+            input: configContent,
+            env: env
+        }
+    );
 
     console.log(
         chalk.green(
             `Successfully created secret \`${secretName}\` in namespace \`${namespace}\`.`
         )
     );
+}
+
+function getKubectlCommand(configData) {
+    const clusterType = configData["local-cluster-type"];
+
+    return clusterType === "microk8s" ? "microk8s kubectl" : "kubectl";
 }
 
 module.exports = k8sExecution;
