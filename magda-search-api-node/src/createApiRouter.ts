@@ -130,9 +130,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 const results = await searchQueryer.searchFacets(
                     req.params.facetId as FacetType,
                     processedQuery,
-                    parseInt(queryString.start as string),
-                    parseInt(queryString.limit as string),
-                    queryString.facetQuery as string
+                    queryString.start as any,
+                    queryString.limit as any,
+                    queryString.facetQuery as any
                 );
 
                 res.status(200).send(results);
@@ -168,9 +168,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
             try {
                 const results = await searchQueryer.search(
                     processedQuery,
-                    parseInt(queryString.start as string),
-                    parseInt(queryString.limit as string),
-                    parseInt(queryString.facetSize as string)
+                    queryString.start as any,
+                    queryString.limit as any,
+                    queryString.facetSize as any
                 );
 
                 res.status(200).send(results);
