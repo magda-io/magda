@@ -151,24 +151,24 @@ const PublishToCkanButton: FunctionComponent<PropsType> = props => {
             {state.showCkanPublishDetails ? (
                 <div className="ckan-publish-details">
                     <div className="row">
-                        <div className="col-sm-6">Current Publish Status: </div>
-                        <div className="col-sm-6">
+                        <div className="col-sm-5">Current Publish Status: </div>
+                        <div className="col-sm-5">
                             {ckanPublishData.status === "retain"
                                 ? "Publish to Ckan"
                                 : "Don't publish to Ckan"}
                         </div>
                     </div>
                     <div className="row">
-                        <div className="col-sm-6">Ckan Package Created: </div>
-                        <div className="col-sm-6">
+                        <div className="col-sm-5">Ckan Package Created: </div>
+                        <div className="col-sm-5">
                             {ckanPublishData.hasCreated ? "Yes" : "No"}
                         </div>
                     </div>
                     <div className="row">
-                        <div className="col-sm-6">
+                        <div className="col-sm-5">
                             Pending Publish Required:{" "}
                         </div>
-                        <div className="col-sm-6">
+                        <div className="col-sm-5">
                             {ckanPublishData.publishRequired
                                 ? ckanPublishData.publishAttempted
                                     ? "Yes (Not Attempted Yet)"
@@ -178,8 +178,8 @@ const PublishToCkanButton: FunctionComponent<PropsType> = props => {
                     </div>
                     {ckanPublishData.publishAttempted ? (
                         <div className="row">
-                            <div className="col-sm-6">Last Publish Time: </div>
-                            <div className="col-sm-6">
+                            <div className="col-sm-5">Last Publish Time: </div>
+                            <div className="col-sm-5">
                                 {ckanPublishData.lastPublishAttemptTime
                                     ? moment(
                                           ckanPublishData.lastPublishAttemptTime
@@ -190,8 +190,8 @@ const PublishToCkanButton: FunctionComponent<PropsType> = props => {
                     ) : null}
                     {ckanPublishData.publishError ? (
                         <div className="row">
-                            <div className="col-sm-6">Last Publish Error: </div>
-                            <div className="col-sm-6">
+                            <div className="col-sm-5">Last Publish Error: </div>
+                            <div className="col-sm-5">
                                 {ckanPublishData.publishError}
                             </div>
                         </div>
