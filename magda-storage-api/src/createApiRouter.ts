@@ -112,15 +112,15 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * @apiErrorExample {text} 500
      *      "Unknown error"
      */
-    router.get("/:bucket/:fileid", async function(req, res) {
-        const fileId = req.params.fileid;
+    router.get("/:bucket/*", async function(req, res) {
+        const fileId = req.params[0];
         const bucket = req.params.bucket;
-        const encodedFilename = encodeURIComponent(fileId);
         const encodeBucketname = encodeURIComponent(bucket);
 
         const object = options.objectStoreClient.getFile(
             encodeBucketname,
-            encodedFilename
+            // --- do not encode object name so `/` will be treated as prefix delimiter for s3 alike API
+            fileId
         );
 
         let headers: OutgoingHttpHeaders;
@@ -325,11 +325,12 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *    }
      */
     router.put(
-        "/:bucket/:fileid",
+        "/:bucket/*",
         mustBeAdmin(options.authApiUrl, options.jwtSecret),
         async function(req, res) {
-            const fileId = req.params.fileid;
+            const fileId = req.params[0];
             const bucket = req.params.bucket;
+
             const recordId =
                 req.query.recordId && decodeURIComponent(req.query.recordId);
             const encodedRootPath = encodeURIComponent(fileId);
