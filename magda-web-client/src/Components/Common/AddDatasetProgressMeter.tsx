@@ -60,8 +60,12 @@ export const steps: StepItem[] = [
         url: "/dataset/add/metadata/${datasetId}/4"
     },
     {
-        title: "All done!",
+        title: "Review before submitting",
         url: "/dataset/add/metadata/${datasetId}/5"
+    },
+    {
+        title: "All done!",
+        url: "/dataset/add/metadata/${datasetId}/6"
     }
 ];
 
@@ -85,6 +89,14 @@ export const editSteps: StepItem[] = [
     {
         title: "Submit for Approval",
         url: "/dataset/edit/${datasetId}/4"
+    },
+    {
+        title: "Review before submitting",
+        url: "/dataset/add/metadata/${datasetId}/5"
+    },
+    {
+        title: "All done!",
+        url: "/dataset/add/metadata/${datasetId}/6"
     }
 ];
 

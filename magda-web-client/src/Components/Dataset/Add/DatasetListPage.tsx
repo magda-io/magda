@@ -66,7 +66,7 @@ class DatasetListPage extends React.Component<any, any> {
                                         <tr>
                                             <td>
                                                 <Link
-                                                    to={`add/files/${dataset.id}`}
+                                                    to={`add/metadata/${dataset.id}`}
                                                 >
                                                     <a>
                                                         {dataset.dataset &&

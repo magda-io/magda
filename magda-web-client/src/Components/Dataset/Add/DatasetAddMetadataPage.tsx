@@ -24,6 +24,7 @@ import DatasetAddPeoplePage from "./Pages/People/DatasetAddPeoplePage";
 import DatasetAddEndPreviewPage from "./Pages/DatasetAddEndPreviewPage";
 import DatasetAddEndPage from "./Pages/DatasetAddEndPage";
 import DatasetAddFilesPage from "./Pages/AddFiles";
+import ReviewPage from "./Pages/ReviewPage";
 import DatasetAddAccessAndUsePage from "./Pages/DatasetAddAccessAndUsePage";
 import withAddDatasetState from "./withAddDatasetState";
 import { config } from "config";
@@ -100,15 +101,16 @@ class NewDataset extends React.Component<Props, State> {
                 isEditView={true}
             />
         ),
+        this.renderSubmitPage.bind(this),
+        () => <ReviewPage />,
         config.featureFlags.previewAddDataset
             ? () => <DatasetAddEndPreviewPage />
-            : this.renderSubmitPage.bind(this),
-        () => (
-            <DatasetAddEndPage
-                datasetId={this.props.datasetId}
-                history={this.props.history}
-            />
-        )
+            : () => (
+                  <DatasetAddEndPage
+                      datasetId={this.props.datasetId}
+                      history={this.props.history}
+                  />
+              )
     ];
 
     edit = <K extends keyof State>(aspectField: K) => (field: string) => (
@@ -132,32 +134,48 @@ class NewDataset extends React.Component<Props, State> {
 
         step = Math.max(Math.min(step, this.steps.length - 1), 0);
 
-        const nextIsPublish = step === 4;
-
         const nextButtonCaption = () => {
-            if (nextIsPublish) {
-                if (config.featureFlags.previewAddDataset) {
-                    return "Send Us Your Thoughts";
-                } else if (this.state.isPublishing) {
+            if (step === 5) {
+                // --- review page
+                if (this.state.isPublishing) {
                     return "Publishing as draft...";
                 } else {
                     return "Publish draft dataset";
                 }
+            } else if (step === 6) {
+                // --- all done or preview mode feedback page
+                // --- All done page has no button to show
+                return "Send Us Your Thoughts";
             } else {
                 return ProgressMeterStepsConfig[step + 1].title;
             }
         };
 
         const nextButtonOnClick = () => {
-            if (nextIsPublish) {
+            if (step === 5) {
+                // --- review page
                 if (config.featureFlags.previewAddDataset) {
-                    window.location.href =
-                        "mailto:magda@csiro.au?subject=Add Dataset Feedback";
+                    this.gotoStep(step + 1);
                 } else {
                     this.performPublishDataset();
                 }
+            } else if (step === 6) {
+                // --- all done or preview mode feedback page
+                if (config.featureFlags.previewAddDataset) {
+                    // --- preview mode feedback page
+                    window.location.href =
+                        "mailto:magda@csiro.au?subject=Add Dataset Feedback";
+                }
             } else {
                 this.gotoStep(step + 1);
+            }
+        };
+
+        const shouldRenderNextButton = () => {
+            if (step === 6 && !config.featureFlags.previewAddDataset) {
+                return false;
+            } else {
+                return true;
             }
         };
 
@@ -184,19 +202,20 @@ class NewDataset extends React.Component<Props, State> {
                     item => item._state !== DistributionState.Ready
                 ).length ? null : (
                     <>
-                        {step >= 5 ? null : (
+                        {!shouldRenderNextButton() ? null : (
                             <div className="row next-save-button-row">
                                 <div className="col-sm-12">
                                     <button
                                         className="au-btn next-button"
                                         onClick={nextButtonOnClick}
+                                        disabled={this.state.isPublishing}
                                     >
                                         Next: {nextButtonCaption()}
                                     </button>
-                                    {/* Only show the Save and Exit button on pages prior to step 4*/}
                                     <button
                                         className="au-btn au-btn--secondary save-button"
                                         onClick={this.saveAndExit.bind(this)}
+                                        disabled={this.state.isPublishing}
                                     >
                                         Save and exit
                                     </button>
@@ -284,7 +303,7 @@ class NewDataset extends React.Component<Props, State> {
             );
 
             this.props.history.push(
-                `/dataset/add/metadata/${this.props.datasetId}/5`
+                `/dataset/add/metadata/${this.props.datasetId}/6`
             );
         } catch (e) {
             this.setState({
