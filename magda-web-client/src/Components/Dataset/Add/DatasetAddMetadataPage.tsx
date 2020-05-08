@@ -134,6 +134,10 @@ class NewDataset extends React.Component<Props, State> {
 
         step = Math.max(Math.min(step, this.steps.length - 1), 0);
 
+        const hideExitButton = config.featureFlags.previewAddDataset
+            ? step >= 4
+            : step >= 5;
+
         const nextButtonCaption = () => {
             if (step === 5) {
                 // --- review page
@@ -147,7 +151,7 @@ class NewDataset extends React.Component<Props, State> {
                 // --- All done page has no button to show
                 return "Send Us Your Thoughts";
             } else {
-                return ProgressMeterStepsConfig[step + 1].title;
+                return "Next: " + ProgressMeterStepsConfig[step + 1].title;
             }
         };
 
@@ -171,7 +175,14 @@ class NewDataset extends React.Component<Props, State> {
             }
         };
 
-        const shouldRenderNextButton = () => {
+        const shouldRenderButtonArea = () => {
+            if (
+                distributions.filter(
+                    item => item._state !== DistributionState.Ready
+                ).length
+            ) {
+                return false;
+            }
             if (step === 6 && !config.featureFlags.previewAddDataset) {
                 return false;
             } else {
@@ -198,30 +209,27 @@ class NewDataset extends React.Component<Props, State> {
                 <br />
                 <ErrorMessageBox />
                 <br />
-                {distributions.filter(
-                    item => item._state !== DistributionState.Ready
-                ).length ? null : (
+                {!shouldRenderButtonArea() ? null : (
                     <>
-                        {!shouldRenderNextButton() ? null : (
-                            <div className="row next-save-button-row">
-                                <div className="col-sm-12">
-                                    <button
-                                        className="au-btn next-button"
-                                        onClick={nextButtonOnClick}
-                                        disabled={this.state.isPublishing}
-                                    >
-                                        Next: {nextButtonCaption()}
-                                    </button>
+                        <div className="row next-save-button-row">
+                            <div className="col-sm-12">
+                                <button
+                                    className="au-btn next-button"
+                                    onClick={nextButtonOnClick}
+                                    disabled={this.state.isPublishing}
+                                >
+                                    {nextButtonCaption()}
+                                </button>
+                                {hideExitButton ? null : (
                                     <button
                                         className="au-btn au-btn--secondary save-button"
                                         onClick={this.saveAndExit.bind(this)}
-                                        disabled={this.state.isPublishing}
                                     >
                                         Save and exit
                                     </button>
-                                </div>
+                                )}
                             </div>
-                        )}
+                        </div>
                     </>
                 )}
             </div>
