@@ -53,7 +53,8 @@ export async function fetchRecord(
         "dataset-access-control",
         "provenance",
         "information-security",
-        "currency"
+        "currency",
+        "ckan-publish"
     ],
     aspects: string[] = ["dcat-dataset-strings"],
     dereference: boolean = true

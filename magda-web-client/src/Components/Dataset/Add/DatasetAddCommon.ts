@@ -29,6 +29,7 @@ import datasetAccessControlAspect from "@magda/registry-aspects/dataset-access-c
 import organizationDetailsAspect from "@magda/registry-aspects/organization-details.schema.json";
 import datasetPublisherAspect from "@magda/registry-aspects/dataset-publisher.schema.json";
 import currencyAspect from "@magda/registry-aspects/currency.schema.json";
+import ckanPublishAspect from "@magda/registry-aspects/ckan-publish.schema.json";
 
 const aspects = {
     publishing: datasetPublishingAspect,
@@ -42,7 +43,8 @@ const aspects = {
     "information-security": informationSecurityAspect,
     "dataset-access-control": datasetAccessControlAspect,
     "dataset-publisher": datasetPublisherAspect,
-    currency: currencyAspect
+    currency: currencyAspect,
+    "ckan-publish": ckanPublishAspect
 };
 
 export type Distribution = {
@@ -190,6 +192,18 @@ type Currency = {
     retireReason?: string;
 };
 
+type CkanPublishStatus = "withdraw" | "retain";
+type CkanPublish = {
+    status: CkanPublishStatus;
+    hasCreated: boolean;
+    publishRequired: boolean;
+    publishAttempted: boolean;
+    publishUserId?: string;
+    ckanId?: string;
+    lastPublishAttemptTime?: Date;
+    publishError?: Error | string;
+};
+
 export type State = {
     distributions: Distribution[];
     dataset: Dataset;
@@ -201,6 +215,7 @@ export type State = {
     informationSecurity: InformationSecurity;
     provenance: Provenance;
     currency: Currency;
+    ckanPublish: CkanPublish;
 
     _lastModifiedDate: Date;
     _createdDate: Date;
@@ -448,7 +463,6 @@ function populateDistributions(data: RawDataset, state: State) {
             };
             return dis;
         });
-
     if (distributions.length) {
         state.distributions = distributions;
     }
@@ -466,6 +480,10 @@ export async function rawDatasetDataToState(data: RawDataset): Promise<State> {
 
     if (data.aspects?.["spatial-coverage"]) {
         state.spatialCoverage = data.aspects?.["spatial-coverage"];
+    }
+
+    if (data.aspects?.["ckan-publish"]) {
+        state.ckanPublish = data.aspects?.["ckan-publish"];
     }
 
     populateTemporalCoverageAspect(data, state);
@@ -540,7 +558,13 @@ export function createBlankState(user?: User): State {
         shouldUploadToStorageApi: false,
         error: null,
         _createdDate: new Date(),
-        _lastModifiedDate: new Date()
+        _lastModifiedDate: new Date(),
+        ckanPublish: {
+            status: "retain",
+            hasCreated: false,
+            publishAttempted: false,
+            publishRequired: false
+        }
     };
 }
 
@@ -769,7 +793,8 @@ async function convertStateToDatasetRecord(
         informationSecurity,
         datasetAccess,
         provenance,
-        currency
+        currency,
+        ckanPublish
     } = state;
 
     let publisherId;
@@ -798,6 +823,7 @@ async function convertStateToDatasetRecord(
             "dataset-distributions": {
                 distributions: distributionRecords.map(d => d.id)
             },
+            "ckan-publish": ckanPublish,
             access: datasetAccess,
             "information-security": informationSecurity,
             "dataset-access-control": {
@@ -895,6 +921,10 @@ export async function updateDatasetFromState(
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>
 ) {
+    // If the dataset has been published, do an update in CKAN
+    if (state.ckanPublish.status === "retain") {
+        state.ckanPublish.publishRequired = true;
+    }
     const distributionRecords = await convertStateToDistributionRecords(state);
     const datasetRecord = await convertStateToDatasetRecord(
         datasetId,
