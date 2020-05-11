@@ -1,0 +1,63 @@
+.dataset-add-meta-data-pages {
+    .review-page {
+        h2 {
+            font-size: 38px;
+            font-weight: 300;
+            font-stretch: normal;
+            font-style: normal;
+            line-height: 1.61;
+            letter-spacing: -0.1px;
+            color: #30384d;
+            margin-top: 58px;
+            margin-bottom: 62px;
+        }
+        .top-tooltip {
+            margin-bottom: 62px;
+            .tooltip-root {
+                margin-bottom: 0px;
+            }
+            .tooltip-content {
+                font-size: 14px;
+                font-weight: 300;
+                font-stretch: normal;
+                font-style: normal;
+                line-height: 1.57;
+                letter-spacing: -0.1px;
+                color: #636363;
+            }
+        }
+    }
+
+    .collapse-box-body {
+        .title-box {
+            font-size: 16px;
+            font-weight: normal;
+            font-stretch: normal;
+            font-style: normal;
+            line-height: 1.25;
+            letter-spacing: -0.1px;
+            color: #484848;
+        }
+
+        .description-box {
+            font-size: 14px;
+            font-weight: 300;
+            font-stretch: normal;
+            font-style: normal;
+            line-height: 1.57;
+            letter-spacing: normal;
+            color: #636363;
+        }
+
+        .content-box {
+            border-radius: 4px;
+            border: solid 1px #cccaca;
+            background-color: #f4f4f4;
+            min-height: 214px;
+            padding-left: 48px;
+            padding-top: 19px;
+            padding-bottom: 13px;
+            padding-right: 35px;
+        }
+    }
+}

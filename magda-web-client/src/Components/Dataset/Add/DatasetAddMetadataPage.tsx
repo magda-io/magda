@@ -24,7 +24,7 @@ import DatasetAddPeoplePage from "./Pages/People/DatasetAddPeoplePage";
 import DatasetAddEndPreviewPage from "./Pages/DatasetAddEndPreviewPage";
 import DatasetAddEndPage from "./Pages/DatasetAddEndPage";
 import DatasetAddFilesPage from "./Pages/AddFiles";
-import ReviewPage from "./Pages/ReviewPage";
+import ReviewPage from "./Pages/ReviewPage/index";
 import DatasetAddAccessAndUsePage from "./Pages/DatasetAddAccessAndUsePage";
 import withAddDatasetState from "./withAddDatasetState";
 import { config } from "config";
@@ -102,7 +102,7 @@ class NewDataset extends React.Component<Props, State> {
             />
         ),
         this.renderSubmitPage.bind(this),
-        () => <ReviewPage />,
+        () => <ReviewPage stateData={this.state} />,
         config.featureFlags.previewAddDataset
             ? () => <DatasetAddEndPreviewPage />
             : () => (

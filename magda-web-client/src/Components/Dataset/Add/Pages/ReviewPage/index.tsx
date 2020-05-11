@@ -1,9 +1,16 @@
-import "./ReviewPage.scss";
+import "./index.scss";
 
 import React from "react";
 import ToolTip from "Components/Dataset/Add/ToolTip";
+import Files from "./Files";
 
-export default function DatasetAddEndPage(props) {
+import { State } from "../../DatasetAddCommon";
+
+type PropsType = {
+    stateData: State;
+};
+
+export default function DatasetAddEndPage(props: PropsType) {
     return (
         <div className="row review-page">
             <div className="col-sm-12">
@@ -16,10 +23,7 @@ export default function DatasetAddEndPage(props) {
                     </ToolTip>
                 </div>
 
-                <div className="section-heading">
-                    Dataset files and services
-                    <button className="au-btn">Edit</button>
-                </div>
+                <Files stateData={props.stateData} />
             </div>
         </div>
     );
