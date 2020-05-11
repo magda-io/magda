@@ -36,8 +36,8 @@ function TagsBox(props) {
                                 else if (a > b) return 1;
                                 else return 0;
                             })
-                            .map((t, _) => (
-                                <li>
+                            .map((t, index) => (
+                                <li key={index}>
                                     <Link
                                         to={`/search?q=${encodeURIComponent(
                                             t
