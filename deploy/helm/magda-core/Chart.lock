@@ -75,4 +75,4 @@ dependencies:
   repository: file://../internal-charts/ingress
   version: 0.0.57-0
 digest: sha256:c8888dfe8edb6b92b28348d88211077fa59f36ab3461bc1bc81b44ab1eb05641
-generated: "2020-05-01T14:20:15.040205+10:00"
+generated: "2020-05-08T13:49:35.906413133+10:00"
