@@ -96,7 +96,7 @@ cors:
 # - secure: Default: false (not set)
 # More info: https://github.com/expressjs/session#cookie
 cookie:
-  sameSite: lax
+  sameSite: "lax"
 
 
 
