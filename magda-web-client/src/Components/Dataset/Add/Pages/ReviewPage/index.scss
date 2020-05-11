@@ -53,11 +53,32 @@
             border-radius: 4px;
             border: solid 1px #cccaca;
             background-color: #f4f4f4;
-            min-height: 214px;
+            min-height: 90px;
             padding-left: 48px;
             padding-top: 19px;
             padding-bottom: 13px;
             padding-right: 35px;
+
+            font-size: 15px;
+            font-weight: normal;
+            font-stretch: normal;
+            font-style: normal;
+            line-height: normal;
+            letter-spacing: normal;
+            color: #484848;
+        }
+
+        .title-box.single-line {
+            line-height: 80px;
+            min-height: 90px;
+        }
+
+        .content-box.single-line {
+            padding-left: 45px;
+            padding-top: 34px;
+            padding-bottom: 37px;
+            padding-right: 35px;
+            vertical-align: middle;
         }
     }
 }

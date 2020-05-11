@@ -3,6 +3,7 @@ import "./index.scss";
 import React from "react";
 import ToolTip from "Components/Dataset/Add/ToolTip";
 import Files from "./Files";
+import DetailsContents from "./DetailsContents";
 
 import { State } from "../../DatasetAddCommon";
 
@@ -24,6 +25,8 @@ export default function DatasetAddEndPage(props: PropsType) {
                 </div>
 
                 <Files stateData={props.stateData} />
+
+                <DetailsContents stateData={props.stateData} />
             </div>
         </div>
     );
