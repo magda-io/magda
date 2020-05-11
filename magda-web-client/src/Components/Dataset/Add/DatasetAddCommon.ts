@@ -232,9 +232,9 @@ type Access = {
 function getInternalDatasetSourceAspectData() {
     return {
         id: "magda",
-        name: "Magda metadata creation tool",
+        name: "This Magda metadata creation tool",
         type: "internal",
-        url: location?.href ? location.href : config.baseExternalUrl
+        url: config.baseExternalUrl
     };
 }
 
