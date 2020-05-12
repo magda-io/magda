@@ -12,6 +12,9 @@
         .edit-button-tooltip-container {
             position: absolute;
             left: 110px;
+            .tooltip-launcher-text {
+                cursor: default;
+            }
             .tooltiptext {
                 width: 300px;
                 left: 52px;
