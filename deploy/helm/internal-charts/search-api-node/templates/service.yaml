@@ -8,7 +8,7 @@ spec:
     port: 80
     targetPort: 80
 {{- if .Values.global.exposeNodePorts }}
-    nodePort: 30123
+    nodePort: 30122
   type: NodePort
 {{- end }}
   selector:
