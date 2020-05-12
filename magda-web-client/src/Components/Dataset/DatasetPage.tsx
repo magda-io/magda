@@ -13,7 +13,6 @@ import QualityIndicator from "Components/Common/QualityIndicator";
 import { History } from "history";
 import { ParsedDataset } from "helpers/record";
 import queryString from "query-string";
-import helpIcon from "assets/help.svg";
 import PurpleToolTip from "Components/Common/TooltipWrapper";
 
 interface PropsType {
@@ -155,12 +154,9 @@ const DatasetPage: FunctionComponent<PropsType> = props => {
                                     <PurpleToolTip
                                         className="tooltip no-print"
                                         launcher={() => (
-                                            <div className="tooltip-launcher-icon help-icon">
-                                                <img
-                                                    src={helpIcon}
-                                                    alt={editButtonTooltipText}
-                                                />
-                                            </div>
+                                            <a className="tooltip-launcher-text">
+                                                why can't I edit?
+                                            </a>
                                         )}
                                         innerElementClassName="inner"
                                     >
