@@ -5,7 +5,7 @@ import moment from "moment";
 import { validate, Joi, ValidationError } from "express-validation";
 
 import ElasticSearchQueryer from "./search/elasticsearch/ElasticSearchQueryer";
-import { Query, QueryRegion } from "./model";
+import { Query, QueryRegion, FacetType } from "./model";
 
 import { installStatusRouter } from "magda-typescript-common/src/express/status";
 
@@ -118,7 +118,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
             try {
                 processedQuery = {
                     ...parseBaseQuery(queryString),
-                    freeText: queryString.generalQuery
+                    freeText: queryString.generalQuery as string
                 };
             } catch (e) {
                 console.debug(e);
@@ -128,11 +128,11 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
             try {
                 const results = await searchQueryer.searchFacets(
-                    req.params.facetId,
+                    req.params.facetId as FacetType,
                     processedQuery,
-                    queryString.start,
-                    queryString.limit,
-                    queryString.facetQuery
+                    queryString.start as any,
+                    queryString.limit as any,
+                    queryString.facetQuery as any
                 );
 
                 res.status(200).send(results);
@@ -162,15 +162,15 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
             const processedQuery: Query = {
                 ...parseBaseQuery(queryString),
-                freeText: queryString.query
+                freeText: queryString.query as string
             };
 
             try {
                 const results = await searchQueryer.search(
                     processedQuery,
-                    queryString.start,
-                    queryString.limit,
-                    queryString.facetQuery
+                    queryString.start as any,
+                    queryString.limit as any,
+                    queryString.facetSize as any
                 );
 
                 res.status(200).send(results);

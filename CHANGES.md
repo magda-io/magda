@@ -65,6 +65,9 @@ Storage:
 Gateway:
 
 -   Add /data to ckan URL, remove the `came_from` param
+-   Allow cookie option to be configured via helm chart
+-   Set cookie `secure` default value to `auto`
+-   Set dev site cookie `sameSite` attribute to `none`
 
 Authorization:
 

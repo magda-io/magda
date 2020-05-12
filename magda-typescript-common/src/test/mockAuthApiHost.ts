@@ -90,8 +90,8 @@ export default class mockAuthApiHost {
                     }
                 }
                 try {
-                    const source = req.query.source;
-                    const sourceId = req.query.sourceId;
+                    const source = req.query.source as string;
+                    const sourceId = req.query.sourceId as string;
                     if (!source || !sourceId)
                         return [500, "Missing query parameter"];
                     const records = mockUserDataStore.getRecordBySourceAndSourceId(
