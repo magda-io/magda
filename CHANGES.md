@@ -86,6 +86,10 @@ Search
 
 -   Began work on a NodeJS-based search API to replace the scala one
 
+Minions:
+
+-   Added a minion for publishing to CKAN
+
 Others:
 
 -   Use a "Year" column from a CSV file to extract a temporal extent
