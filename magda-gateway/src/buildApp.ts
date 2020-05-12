@@ -1,8 +1,11 @@
-import cors from "cors";
+import cors, { CorsOptions } from "cors";
 import express from "express";
 import path from "path";
 import ejs from "ejs";
-import helmet from "helmet";
+import helmet, {
+    IHelmetConfiguration,
+    IHelmetContentSecurityPolicyConfiguration
+} from "helmet";
 import compression from "compression";
 import basicAuth from "express-basic-auth";
 import _ from "lodash";
@@ -17,7 +20,7 @@ import createGenericProxy from "./createGenericProxy";
 import createCkanRedirectionRouter from "./createCkanRedirectionRouter";
 import createHttpsRedirectionMiddleware from "./createHttpsRedirectionMiddleware";
 import createOpenfaasGatewayProxy from "./createOpenfaasGatewayProxy";
-import Authenticator from "./Authenticator";
+import Authenticator, { SessionCookieOptions } from "./Authenticator";
 import defaultConfig from "./defaultConfig";
 import { ProxyTarget } from "./createApiRouter";
 import setupTenantMode from "./setupTenantMode";
@@ -48,9 +51,10 @@ type Config = {
     webProxyRoutesJson: {
         [localRoute: string]: string;
     };
-    helmetJson: string;
-    cspJson: string;
-    corsJson: string;
+    helmetJson: IHelmetConfiguration;
+    cspJson: IHelmetContentSecurityPolicyConfiguration;
+    corsJson: CorsOptions;
+    cookieJson: SessionCookieOptions;
     authorizationApi: string;
     sessionSecret: string;
     jwtSecret: string;
@@ -96,6 +100,7 @@ export default function buildApp(config: Config) {
     const dbPool = createPool(config);
     const authenticator = new Authenticator({
         sessionSecret: config.sessionSecret,
+        cookieOptions: _.isEmpty(config.cookieJson) ? {} : config.cookieJson,
         dbPool
     });
 
@@ -136,7 +141,7 @@ export default function buildApp(config: Config) {
 
     // Set sensible secure headers
     app.disable("x-powered-by");
-    app.use(helmet(_.merge({}, defaultConfig.helmet, config.helmetJson as {})));
+    app.use(helmet(_.merge({}, defaultConfig.helmet, config.helmetJson)));
     app.use(
         helmet.contentSecurityPolicy(
             _.merge({}, defaultConfig.csp, config.cspJson)
@@ -145,7 +150,7 @@ export default function buildApp(config: Config) {
 
     // Set up CORS headers for all requests
     const configuredCors = cors(
-        _.merge({}, defaultConfig.cors, config.corsJson as {})
+        _.merge({}, defaultConfig.cors, config.corsJson)
     );
     app.options("*", configuredCors);
     app.use(configuredCors);

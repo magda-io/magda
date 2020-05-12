@@ -72,7 +72,7 @@ export default function google(options: GoogleOptions) {
             res: express.Response,
             next: express.NextFunction
         ) => {
-            redirectOnSuccess(req.query.state, req, res);
+            redirectOnSuccess(req.query.state as string, req, res);
         },
         (
             err: any,
@@ -80,7 +80,7 @@ export default function google(options: GoogleOptions) {
             res: express.Response,
             next: express.NextFunction
         ): any => {
-            redirectOnError(err, req.query.state, req, res);
+            redirectOnError(err, req.query.state as string, req, res);
         }
     );
 

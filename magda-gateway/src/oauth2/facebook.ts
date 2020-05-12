@@ -57,7 +57,7 @@ export default function facebook(options: FacebookOptions) {
         const options: any = {
             scope: ["public_profile", "email"],
             callbackURL: `${loginBaseUrl}/facebook/return?redirect=${encodeURIComponent(
-                req.query.redirect || externalAuthHome
+                (req.query.redirect as string) || externalAuthHome
             )}`
         };
         passport.authenticate("facebook", options)(req, res, next);
@@ -72,7 +72,7 @@ export default function facebook(options: FacebookOptions) {
         ) {
             const options: any = {
                 callbackURL: `${loginBaseUrl}/facebook/return?redirect=${encodeURIComponent(
-                    req.query.redirect || externalAuthHome
+                    (req.query.redirect as string) || externalAuthHome
                 )}`,
                 failWithError: true
             };
@@ -83,7 +83,11 @@ export default function facebook(options: FacebookOptions) {
             res: express.Response,
             next: express.NextFunction
         ) => {
-            redirectOnSuccess(req.query.redirect || externalAuthHome, req, res);
+            redirectOnSuccess(
+                (req.query.redirect as string) || externalAuthHome,
+                req,
+                res
+            );
         },
         (
             err: any,
@@ -94,7 +98,7 @@ export default function facebook(options: FacebookOptions) {
             console.error(err);
             redirectOnError(
                 err,
-                req.query.redirect || externalAuthHome,
+                (req.query.redirect as string) || externalAuthHome,
                 req,
                 res
             );

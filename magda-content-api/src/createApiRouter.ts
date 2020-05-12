@@ -70,15 +70,16 @@ export default function createApiRouter(options: ApiRouterOptions) {
         try {
             const idQuery: Query = {
                 field: "id",
-                patterns: coerceToArray(req.query.id)
+                patterns: coerceToArray(req.query.id as string)
             };
             const typeQuery: Query = {
                 field: "type",
-                patterns: coerceToArray(req.query.type)
+                patterns: coerceToArray(req.query.type as string)
             };
 
             const inline =
-                req.query.inline && req.query.inline.toLowerCase() === "true";
+                req.query.inline &&
+                (req.query.inline as string).toLowerCase() === "true";
             const inlineContentIfType: string[] = inline
                 ? ["application/json", "text/plain"]
                 : [];

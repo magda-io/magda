@@ -38,9 +38,10 @@ describe("proxying", () => {
                 map: "http://map",
                 other: "http://otherplace"
             },
-            helmetJson: "{}",
-            cspJson: "{}",
-            corsJson: "{}",
+            cookieJson: {},
+            helmetJson: {},
+            cspJson: {},
+            corsJson: {},
             authorizationApi: "http://127.0.0.1",
             sessionSecret: "secret",
             jwtSecret: "othersecret",

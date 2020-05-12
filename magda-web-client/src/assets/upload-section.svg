@@ -3,9 +3,12 @@
   <defs>
     <path id="a" d="M21.5 14.5v6h-6v2h6v6h2v-6h6v-2h-6v-6z"/>
   </defs>
+  <defs>
+    <style type="text/css">@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans');</style>
+  </defs>
   <g fill="none" fill-rule="evenodd">
     <path fill="#F4F4F4" stroke="#979797" stroke-dasharray="10,10" stroke-width="2" d="M6 1h1110a5 5 0 0 1 5 5v167a5 5 0 0 1-5 5H6a5 5 0 0 1-5-5V6a5 5 0 0 1 5-5z"/>
-    <text fill="#484848" font-family="-apple-system, system-ui, &quot;Segoe UI&quot;, Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;" font-size="18" letter-spacing="-.3" transform="translate(1 1)">
+    <text fill="#484848" font-family="&quot;IBM Plex Sans&quot;, sans-serif" font-size="18" letter-spacing="-.3" transform="translate(1 1)">
       <tspan x="546.406" y="117.858">Drag your files here</tspan>
     </text>
     <g transform="translate(46.492 70)">

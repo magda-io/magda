@@ -41,7 +41,9 @@
      inkscape:current-layer="Layer_1" /><metadata
      id="metadata395"><rdf:RDF><cc:Work
          rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title /></cc:Work></rdf:RDF></metadata><style
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title /></cc:Work></rdf:RDF></metadata>
+<style type="text/css">@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans');</style>           
+<style
      id="style3"
      type="text/css">
 	.st0{fill:#FFFFFF;}
@@ -898,7 +900,7 @@
      font-size="40px"
      y="-139.53755"
      x="348.25876"
-     font-family="Sans"
+     font-family="&quot;IBM Plex Sans&quot;, sans-serif"
      line-height="125%"
      fill="#000000"><tspan
        id="tspan4464"

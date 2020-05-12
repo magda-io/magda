@@ -46,6 +46,7 @@ UI:
 -   Use a new "All done!" screen at the end of the dataset flow
 -   Added Error Screen for adding distributions from URL feature & allow manually create distributions
 -   Added the support of processing ESRI REST API URL
+-   Use IBM Plex Sans font
 
 Storage:
 
@@ -64,6 +65,9 @@ Storage:
 Gateway:
 
 -   Add /data to ckan URL, remove the `came_from` param
+-   Allow cookie option to be configured via helm chart
+-   Set cookie `secure` default value to `auto`
+-   Set dev site cookie `sameSite` attribute to `none`
 
 Authorization:
 

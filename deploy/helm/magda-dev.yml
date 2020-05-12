@@ -64,6 +64,11 @@ magda-core:
       origin: true
     helmet:
       frameguard: false
+    cookie:
+      # Set sameSite to "none" to explicitly allow cross-site cookie
+      # It's only for allowing frontend local dev site to login to remote dev instance
+      # Should not be set to "none" for a production site
+      sameSite: "none"
     csp:
       directives:
         scriptSrc:
