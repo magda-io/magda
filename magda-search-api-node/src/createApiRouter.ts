@@ -103,7 +103,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
             dateFrom: parseDate(queryStringObj.dateFrom, false),
             dateTo: parseDate(queryStringObj.dateTo, true),
             regions: processRegions(processMaybeArray(queryStringObj.region)),
-            formats: queryStringObj.format,
+            formats: queryStringObj.format || [],
             publishingState: queryStringObj.publishingState
         };
     }
@@ -170,7 +170,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                     processedQuery,
                     queryString.start,
                     queryString.limit,
-                    queryString.facetQuery
+                    queryString.facetSize
                 );
 
                 res.status(200).send(results);
@@ -191,7 +191,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
             next: express.NextFunction
         ) => {
             if (err instanceof ValidationError) {
-                return res.send(err.statusCode).json(err);
+                return res.status(err.statusCode).json(err);
             }
 
             return next(err);

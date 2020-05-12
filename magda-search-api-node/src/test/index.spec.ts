@@ -20,6 +20,7 @@ import testSearchNoQuery from "./searching/testSearchNoQuery";
 import testSearchByKeyword from "./searching/testSearchByKeyword";
 import testFilterByRegions from "./filtering/testFilterByRegion";
 import testFilterByDate from "./filtering/testFilterByDate";
+import testFormatFacet from "./facets/testFormatFacet";
 
 const ES_URL = process.env.TEST_ES_URL || "http://localhost:9200";
 const client = new Client({
@@ -196,6 +197,10 @@ describe("Search API:", function(this: Mocha.ISuiteCallbackContext) {
     testSearchNoQuery(() => app, buildDatasetIndex);
 
     testSearchByKeyword(() => app, buildDatasetIndex);
+
+    describe("facets", () => {
+        testFormatFacet(() => app, buildDatasetIndex);
+    });
 
     describe("filtering", () => {
         testFilterByDate(() => app, buildDatasetIndex);

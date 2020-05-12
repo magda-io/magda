@@ -13,6 +13,8 @@ import {
 import SearchQueryer from "../SearchQueryer";
 import getFacetDefinition from "./getFacetDefinition";
 
+const DEFAULT_FACET_SIZE = 10;
+
 /**
  * A field within the dataset document indexed in ES that will be searched
  * using a certain analyzer. Includes a value for how much this individual
@@ -183,7 +185,7 @@ export default class ElasticSearchQueryer implements SearchQueryer {
         query: Query,
         start: number,
         limit: number,
-        facetSize: number
+        facetSize: number = DEFAULT_FACET_SIZE
     ): Promise<SearchResult> {
         const searchParams: RequestParams.Search = {
             from: start,
@@ -191,6 +193,61 @@ export default class ElasticSearchQueryer implements SearchQueryer {
             body: {
                 query: await this.buildESBody(query),
                 aggs: {
+                    "Format-global": {
+                        global: {},
+                        aggs: {
+                            filter: {
+                                filter: await this.buildESBody(query),
+                                aggs: {
+                                    "nested-distributions": {
+                                        nested: { path: "distributions" },
+                                        aggs: {
+                                            "terms-other-options": {
+                                                terms: {
+                                                    size: facetSize,
+                                                    field:
+                                                        "distributions.format.keyword_lowercase",
+                                                    show_term_doc_count_error: true,
+                                                    exclude: query.formats,
+                                                    order: {
+                                                        reverse: "desc"
+                                                    }
+                                                },
+                                                aggs: {
+                                                    reverse: {
+                                                        reverse_nested: {}
+                                                    }
+                                                }
+                                            },
+                                            "terms-selected-options":
+                                                query.formats.length > 0
+                                                    ? {
+                                                          terms: {
+                                                              size: facetSize,
+                                                              include:
+                                                                  query.formats,
+                                                              exclude: [""],
+                                                              field:
+                                                                  "distributions.format.keyword_lowercase",
+                                                              show_term_doc_count_error: true,
+                                                              order: {
+                                                                  reverse:
+                                                                      "desc"
+                                                              }
+                                                          },
+                                                          aggs: {
+                                                              reverse: {
+                                                                  reverse_nested: {}
+                                                              }
+                                                          }
+                                                      }
+                                                    : undefined
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
                     minDate: {
                         min: {
                             field: "temporal.start.date"
@@ -226,7 +283,7 @@ export default class ElasticSearchQueryer implements SearchQueryer {
         // console.log(JSON.stringify(searchParams, null, 2));
         const response: ApiResponse = await this.client.search(searchParams);
 
-        // console.log(response.body);
+        // console.log(JSON.stringify(response.body, null, 2));
 
         return {
             query,
@@ -244,9 +301,46 @@ export default class ElasticSearchQueryer implements SearchQueryer {
                     date: response.body.aggregations.maxDate.value_as_string //TODO
                 }
             },
-            facets: [],
+            facets: [
+                {
+                    id: "Format",
+                    options: this.buildFormatFacetResponse(response, facetSize)
+                }
+            ],
             strategy: "match-all"
         };
+    }
+
+    buildFormatFacetResponse(
+        response: ApiResponse<any, any>,
+        facetSize: number
+    ) {
+        const nestedDistributions =
+            response.body.aggregations["Format-global"].filter[
+                "nested-distributions"
+            ];
+
+        const otherOptions = nestedDistributions["terms-other-options"];
+        const unMatched = otherOptions
+            ? otherOptions.buckets.map((bucket: any) => ({
+                  countErrorUpperBound: bucket.doc_count_error_upper_bound,
+                  hitCount: bucket.reverse.doc_count,
+                  value: bucket.key,
+                  matched: false
+              }))
+            : [];
+
+        const matchedOptions = nestedDistributions["terms-selected-options"];
+        const matched = matchedOptions
+            ? matchedOptions.buckets.map((bucket: any) => ({
+                  countErrorUpperBound: bucket.doc_count_error_upper_bound,
+                  hitCount: bucket.reverse.doc_count,
+                  value: bucket.key,
+                  matched: true
+              }))
+            : [];
+
+        return _.take([...matched, ...unMatched], facetSize);
     }
 
     /**
