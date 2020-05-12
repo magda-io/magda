@@ -19,4 +19,5 @@ data:
   helmet.json: '{{ toJson .Values.helmet | indent 2 }}'
   cors.json: '{{ toJson .Values.cors | indent 2 }}'
   csp.json: '{{ toJson .Values.csp | indent 2 }}'
+  cookie.json: '{{ toJson .Values.cookie | indent 2 }}'
 
