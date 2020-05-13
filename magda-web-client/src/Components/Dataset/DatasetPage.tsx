@@ -13,7 +13,7 @@ import QualityIndicator from "Components/Common/QualityIndicator";
 import { History } from "history";
 import { ParsedDataset } from "helpers/record";
 import queryString from "query-string";
-import PurpleToolTip from "Components/Common/TooltipWrapper";
+import ToolTip from "Components/Common/TooltipWrapper";
 
 interface PropsType {
     history: History;
@@ -34,7 +34,7 @@ const DatasetPage: FunctionComponent<PropsType> = props => {
     const publisherId = dataset?.publisher?.id ? dataset.publisher.id : null;
 
     const editButtonTooltipText =
-        "Datasets harvested from outside Magda can't be edited";
+        "This dataset is harvested from outside the system, so it can't be edited here.";
 
     const isDatasetEditable =
         dataset?.sourceDetails?.id === "magda" &&
@@ -151,17 +151,21 @@ const DatasetPage: FunctionComponent<PropsType> = props => {
                             </button>
                             {isDatasetEditable ? null : (
                                 <div className="edit-button-tooltip-container">
-                                    <PurpleToolTip
-                                        className="tooltip no-print"
-                                        launcher={() => (
-                                            <a className="tooltip-launcher-text">
-                                                why can't I edit?
+                                    <ToolTip
+                                        className="no-print"
+                                        launcher={launch => (
+                                            <a
+                                                onClick={launch}
+                                                className="tooltip-launcher-text"
+                                            >
+                                                Why can't I edit this?
                                             </a>
                                         )}
                                         innerElementClassName="inner"
+                                        orientation="below"
                                     >
                                         {() => editButtonTooltipText}
-                                    </PurpleToolTip>
+                                    </ToolTip>
                                 </div>
                             )}
                         </div>

@@ -8,16 +8,19 @@
         }
     }
     .dataset-edit-button-container {
-        position: relative;
+        .tooltip {
+            width: 100%;
+        }
+
         .edit-button-tooltip-container {
-            position: absolute;
-            left: 110px;
+            position: relative;
+            width: 100%;
+            text-align: center;
+            margin-top: 0.2rem;
+            font-size: 0.9rem;
+
             .tooltip-launcher-text {
                 cursor: default;
-            }
-            .tooltiptext {
-                width: 300px;
-                left: 52px;
             }
         }
     }

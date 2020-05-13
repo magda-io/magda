@@ -13,8 +13,10 @@ type Props = {
     startOpen?: boolean;
     /** Whether the tooltip should show up above or below the element it wraps */
     orientation?: "below" | "above";
-    /** The wrapped component that should launch the tooltip. If startOpen is false then it will show the tooltip when hovered over */
-    launcher?: React.ComponentType;
+    /**
+     * A function that returns a component that should launch the tooltip. If startOpen is false then it will show
+     * the tooltip when hovered over. Accepts an "open" callback that can be used to force-launch the tooltip (e.g. on click) */
+    launcher?: (launch?: () => void) => React.ReactNode;
     /** Class to apply to the  actual tooltip */
     innerElementClassName?: string;
     /** The tooltip content itself, as higher-order function that provides a function to dismiss the tooltip */
@@ -23,7 +25,7 @@ type Props = {
 
 type State = {
     offset: number;
-    dismissed: boolean;
+    open: boolean;
 };
 
 /**
@@ -34,13 +36,13 @@ class TooltipWrapper extends React.Component<Props, State> {
     tooltipTextElementRef = React.createRef<HTMLSpanElement>();
     state = {
         offset: 0,
-        dismissed: false
+        open: !!this.props.startOpen
     };
 
     componentDidMount() {
-        if (this.props.requireClickToDismiss) {
-            document.addEventListener("mousedown", this.handleClickOutside);
-        }
+        document.addEventListener("mousedown", this.dismiss);
+        document.addEventListener("touchstart", this.dismiss);
+
         this.adjustOffset();
     }
 
@@ -49,23 +51,13 @@ class TooltipWrapper extends React.Component<Props, State> {
     }
 
     componentWillUnmount() {
-        if (this.props.requireClickToDismiss) {
-            document.removeEventListener("mousedown", this.handleClickOutside);
-        }
+        document.removeEventListener("mousedown", this.dismiss);
+        document.addEventListener("touchstart", this.dismiss);
     }
-
-    handleClickOutside = event => {
-        if (
-            !this.rootRef.current ||
-            !this.rootRef.current.contains(event.target)
-        ) {
-            this.dismiss();
-        }
-    };
 
     dismiss = () => {
         this.props.onDismiss && this.props.onDismiss();
-        this.setState({ dismissed: true });
+        this.setState({ open: false });
     };
 
     /**
@@ -98,10 +90,16 @@ class TooltipWrapper extends React.Component<Props, State> {
         }
     }
 
+    forceOpen = () => {
+        this.setState({
+            open: true
+        });
+    };
+
     render() {
         const className = this.props.className ? this.props.className : "";
-        const openClass =
-            this.props.startOpen && !this.state.dismissed ? "tooltip-open" : "";
+        console.log(this.state.open);
+        const openClass = this.state.open ? "tooltip-open" : "";
         const orientationClassName =
             this.props.orientation === "below"
                 ? "tooltiptext-below"
@@ -110,12 +108,10 @@ class TooltipWrapper extends React.Component<Props, State> {
         return (
             <div
                 ref={this.rootRef}
-                className={`tooltip ${className} ${openClass} ${
-                    this.state.dismissed ? "tooltip-dismissed" : ""
-                }`}
+                className={`tooltip ${className} ${openClass} `}
             >
                 {/* Caution: if this is ever not the first element be sure to fix adjustOffset */}
-                {this.props.launcher && <this.props.launcher />}
+                {this.props.launcher && this.props.launcher(this.forceOpen)}
                 <span
                     className={`tooltiptext ${orientationClassName} ${this.props
                         .innerElementClassName || ""}`}
