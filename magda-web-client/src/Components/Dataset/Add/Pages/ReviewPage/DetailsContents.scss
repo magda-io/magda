@@ -13,6 +13,17 @@
                     min-height: 200px;
                 }
             }
+
+            .spatial-data {
+                .content-box {
+                    .row {
+                        margin-bottom: 20px;
+                    }
+                    .field-name {
+                        font-style: italic;
+                    }
+                }
+            }
         }
     }
 }

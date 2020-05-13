@@ -238,7 +238,7 @@ class RegionsApiSpec
 
   it(
     "should only return Test SA1 2 regions when specify lv2 region Id 3 & lv3Id 301 & lv4Id 30101 & lv5Id 301011001"
-  ) {
+    ) {
     Get(s"/v0/regions?type=SA1&lv2Id=3&lv3Id=301&lv4Id=30101&lv5Id=301011001") ~> addTenantIdHeader ~> api.routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
@@ -252,6 +252,21 @@ class RegionsApiSpec
       response.regions.head.lv5Id.get shouldEqual "301011001"
       response.regions.head.regionName.get shouldEqual "Test SA1 2"
 
+    }
+  }
+
+  it(
+    "should only return Test region record regionId=10101 regionType=SA3 when specify regionId=10101 type=SA3"
+  ) {
+    Get(s"/v0/regions?type=SA3&regionId=10101") ~> addTenantIdHeader ~> api.routes ~> check {
+      status shouldBe OK
+      contentType shouldBe `application/json`
+      val response = responseAs[RegionSearchResult]
+
+      response.hitCount shouldEqual 1
+
+      response.regions.head.queryRegion.regionType shouldEqual "SA3"
+      response.regions.head.queryRegion.regionId shouldEqual "10101"
     }
   }
 

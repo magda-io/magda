@@ -56,7 +56,7 @@
             min-height: 90px;
             padding-left: 48px;
             padding-top: 19px;
-            padding-bottom: 13px;
+            padding-bottom: 22px;
             padding-right: 35px;
 
             font-size: 15px;
@@ -79,6 +79,10 @@
             padding-bottom: 37px;
             padding-right: 35px;
             vertical-align: middle;
+        }
+
+        .title-box:not(.single-line) {
+            padding-top: 20px;
         }
     }
 }

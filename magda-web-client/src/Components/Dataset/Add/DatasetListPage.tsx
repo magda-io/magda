@@ -44,9 +44,7 @@ class DatasetListPage extends React.Component<any, any> {
                 <div className="row">
                     <div className="col-xs-12 col-sm-6 col-lg-4">
                         <Link to="/dataset/add">
-                            <a>
-                                <h3>Add a dataset to your catalogue</h3>
-                            </a>
+                            <h3>Add a dataset to your catalogue</h3>
                         </Link>
                         <p>
                             Get your data off your harddrive and out in the wold
@@ -63,21 +61,18 @@ class DatasetListPage extends React.Component<any, any> {
                             <tbody>
                                 {datasets.map(dataset => {
                                     return (
-                                        <tr>
+                                        <tr key={dataset.id}>
                                             <td>
                                                 <Link
                                                     to={`add/metadata/${dataset.id}`}
                                                 >
-                                                    <a>
-                                                        {dataset.dataset &&
-                                                        dataset.dataset
-                                                            .dataset &&
-                                                        dataset.dataset.dataset
-                                                            .title
-                                                            ? dataset.dataset
-                                                                  .dataset.title
-                                                            : dataset.id}
-                                                    </a>
+                                                    {dataset.dataset &&
+                                                    dataset.dataset.dataset &&
+                                                    dataset.dataset.dataset
+                                                        .title
+                                                        ? dataset.dataset
+                                                              .dataset.title
+                                                        : dataset.id}
                                                 </Link>
                                             </td>
                                             <td>

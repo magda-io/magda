@@ -167,7 +167,7 @@ export type DatasetPublishing = {
     };
 };
 
-type SpatialCoverage = {
+export type SpatialCoverage = {
     bbox?: [number, number, number, number];
     spatialDataInputMethod?: string;
     lv1Id?: string;
