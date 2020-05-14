@@ -45,6 +45,7 @@ UI:
 -   Clarify tooltip text
 -   Use a new "All done!" screen at the end of the dataset flow
 -   Added Error Screen for adding distributions from URL feature & allow manually create distributions
+-   Disable edit button on harvested datasets
 -   Added the support of processing ESRI REST API URL
 -   Use IBM Plex Sans font
 

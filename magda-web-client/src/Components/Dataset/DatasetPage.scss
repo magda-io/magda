@@ -7,6 +7,23 @@
             max-width: none;
         }
     }
+    .dataset-edit-button-container {
+        .tooltip {
+            width: 100%;
+        }
+
+        .edit-button-tooltip-container {
+            position: relative;
+            width: 100%;
+            text-align: center;
+            margin-top: 0.2rem;
+            font-size: 0.9rem;
+
+            .tooltip-launcher-text {
+                cursor: default;
+            }
+        }
+    }
 }
 
 .dataset-details {
