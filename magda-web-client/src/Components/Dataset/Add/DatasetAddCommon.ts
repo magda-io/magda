@@ -922,7 +922,10 @@ export async function updateDatasetFromState(
     setState: React.Dispatch<React.SetStateAction<State>>
 ) {
     // If the dataset has been published, do an update in CKAN
-    if (state.ckanPublish.status === "retain") {
+    if (
+        state.ckanPublish.status === "retain" &&
+        state.ckanPublish.publishAttempted
+    ) {
         state.ckanPublish.publishRequired = true;
     }
     const distributionRecords = await convertStateToDistributionRecords(state);
