@@ -176,7 +176,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         <ValidationRequiredLabel validationFieldPath="$.dataset.title" />
                     </h4>
                     <ToolTip>
-                        A good dataset description clearly and succintly
+                        A good dataset description clearly and succinctly
                         explains the contents, purpose and value of the dataset.
                         This is how users primarily identify and select your
                         dataset from others. Here you can also include
