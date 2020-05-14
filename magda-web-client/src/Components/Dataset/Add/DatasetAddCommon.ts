@@ -404,8 +404,8 @@ async function populateProvenanceAspect(data: RawDataset, state: State) {
         provenance.affiliatedOrganizations = affiliatedOrganizationIds.map(
             item => ({
                 existingId: item.id,
-                name: item?.aspects?.["organization-details"]?.name
-                    ? item?.aspects?.["organization-details"]?.name
+                name: item?.aspects?.["organization-details"]?.title
+                    ? item?.aspects?.["organization-details"]?.title
                     : item.name
             })
         );
