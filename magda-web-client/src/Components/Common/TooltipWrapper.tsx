@@ -98,7 +98,6 @@ class TooltipWrapper extends React.Component<Props, State> {
 
     render() {
         const className = this.props.className ? this.props.className : "";
-        console.log(this.state.open);
         const openClass = this.state.open ? "tooltip-open" : "";
         const orientationClassName =
             this.props.orientation === "below"
