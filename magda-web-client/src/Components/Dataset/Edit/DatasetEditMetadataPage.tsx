@@ -227,15 +227,6 @@ class NewDataset extends React.Component<Props, State> {
         this.props.createNewDatasetReset();
     }
 
-    async saveAndExit() {
-        try {
-            await this.resetError();
-            this.props.history.push(`/dataset/list`);
-        } catch (e) {
-            this.props.createNewDatasetError(e);
-        }
-    }
-
     async gotoStep(step) {
         try {
             await this.resetError();

@@ -33,6 +33,7 @@ interface PropsType {
     sa4Id?: string;
     sa3Id?: string;
     bbox?: BoundingBox;
+    method?: InputMethod;
     onChange?: (
         method: InputMethod,
         bbox?: BoundingBox,
@@ -45,6 +46,12 @@ interface PropsType {
 
 const initialState = (props: PropsType) => ({
     activeTabIndex: (() => {
+        if (props.method === "bbox") {
+            return 1;
+        } else if (props.method === "region") {
+            return 0;
+        }
+
         if (
             props.bbox &&
             props.bbox.east &&
@@ -135,12 +142,21 @@ const SpatialAreaInput: FunctionComponent<PropsType> = props => {
                 <div className="col-sm-12">
                     <Tabs
                         activeTabIndex={state.activeTabIndex}
-                        onChange={index =>
+                        onChange={index => {
                             setState({
                                 ...state,
                                 activeTabIndex: index
-                            })
-                        }
+                            });
+                            props.onChange &&
+                                props.onChange(
+                                    index === 0 ? "region" : "bbox",
+                                    props.bbox,
+                                    props.countryId,
+                                    props.territoryOrSteId,
+                                    props.sa4Id,
+                                    props.sa3Id
+                                );
+                        }}
                     />
                     <div className="text-row">
                         {(() => {

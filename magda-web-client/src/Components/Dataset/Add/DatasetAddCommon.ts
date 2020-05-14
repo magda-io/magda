@@ -169,7 +169,7 @@ export type DatasetPublishing = {
 
 export type SpatialCoverage = {
     bbox?: [number, number, number, number];
-    spatialDataInputMethod?: string;
+    spatialDataInputMethod?: "bbox" | "region" | "map";
     lv1Id?: string;
     lv2Id?: string;
     lv3Id?: string;
