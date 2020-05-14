@@ -47,6 +47,7 @@ UI:
 -   Added Error Screen for adding distributions from URL feature & allow manually create distributions
 -   Added the support of processing ESRI REST API URL
 -   Use IBM Plex Sans font
+-   Added `add dataset review page`
 
 Storage:
 
@@ -85,6 +86,7 @@ Authorization:
 Search
 
 -   Began work on a NodeJS-based search API to replace the scala one
+-   Allow fetch region record by region id
 
 Others:
 
