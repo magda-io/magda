@@ -29,6 +29,7 @@ import datasetAccessControlAspect from "@magda/registry-aspects/dataset-access-c
 import organizationDetailsAspect from "@magda/registry-aspects/organization-details.schema.json";
 import datasetPublisherAspect from "@magda/registry-aspects/dataset-publisher.schema.json";
 import currencyAspect from "@magda/registry-aspects/currency.schema.json";
+import sourceAspect from "@magda/registry-aspects/source.schema.json";
 
 const aspects = {
     publishing: datasetPublishingAspect,
@@ -42,7 +43,8 @@ const aspects = {
     "information-security": informationSecurityAspect,
     "dataset-access-control": datasetAccessControlAspect,
     "dataset-publisher": datasetPublisherAspect,
-    currency: currencyAspect
+    currency: currencyAspect,
+    source: sourceAspect
 };
 
 export type Distribution = {
@@ -226,6 +228,15 @@ type Access = {
     location?: string;
     notes?: string;
 };
+
+function getInternalDatasetSourceAspectData() {
+    return {
+        id: "magda",
+        name: "This Magda metadata creation tool",
+        type: "internal",
+        url: config.baseExternalUrl
+    };
+}
 
 function dateStringToDate(dateInput: any): Date | null {
     if (dateInput instanceof Date && !isNaN(dateInput.getTime())) {
@@ -622,13 +633,15 @@ async function ensureBlankDatasetIsSavedToRegistry(
                         custodianOrgUnitId: dataset.custodianOrgUnitId
                             ? dataset.custodianOrgUnitId
                             : undefined
-                    }
+                    },
+                    soruce: getInternalDatasetSourceAspectData()
                 }
             },
             [],
             {
                 publishing: datasetPublishingAspect,
-                "dataset-access-control": datasetAccessControlAspect
+                "dataset-access-control": datasetAccessControlAspect,
+                source: sourceAspect
             }
         );
     }
@@ -759,7 +772,8 @@ async function convertStateToDatasetRecord(
     datasetId: string,
     distributionRecords: Record[],
     state: State,
-    setState: React.Dispatch<React.SetStateAction<State>>
+    setState: React.Dispatch<React.SetStateAction<State>>,
+    isUpdate: boolean = false
 ) {
     const {
         dataset,
@@ -844,6 +858,10 @@ async function convertStateToDatasetRecord(
         }
     };
 
+    if (!isUpdate) {
+        inputDataset.aspects["source"] = getInternalDatasetSourceAspectData();
+    }
+
     if (!inputDataset.aspects["dataset-access-control"].orgUnitOwnerId) {
         delete inputDataset.aspects["dataset-access-control"];
     }
@@ -900,7 +918,8 @@ export async function updateDatasetFromState(
         datasetId,
         distributionRecords,
         state,
-        setState
+        setState,
+        true
     );
     await updateDataset(datasetRecord, distributionRecords, aspects);
 }

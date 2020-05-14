@@ -19,7 +19,7 @@ import dismissIcon from "../../../assets/dismiss.svg";
 import SlimTextInputWithValidation from "../Add/SlimTextInputWithValidation";
 import * as ValidationManager from "./ValidationManager";
 
-import PurpleToolTip from "Components/Common/TooltipWrapper";
+import TooltipWrapper from "Components/Common/TooltipWrapper";
 import helpIcon from "assets/help.svg";
 
 import ValidationRequiredLabel from "../../Dataset/Add/ValidationRequiredLabel";
@@ -223,7 +223,7 @@ export default function DatasetFile({
                                 <b>Size:</b>{" "}
                                 {humanFileSize(file.byteSize, false)}
                                 <span className="tooltip-container">
-                                    <PurpleToolTip
+                                    <TooltipWrapper
                                         className="tooltip tooltip-human-file-size"
                                         launcher={() => (
                                             <div className="tooltip-launcher-icon help-icon">
@@ -245,7 +245,7 @@ export default function DatasetFile({
                                                 </div>
                                             );
                                         }}
-                                    </PurpleToolTip>
+                                    </TooltipWrapper>
                                 </span>
                             </div>
                             <div>

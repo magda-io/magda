@@ -61,6 +61,7 @@ interface DateConfig {
 const serverConfig: {
     authApiBaseUrl?: string;
     baseUrl?: string;
+    baseExternalUrl?: string;
     showNotificationBanner?: boolean;
     contentApiBaseUrl?: string;
     previewMapBaseUrl?: string;
@@ -149,10 +150,11 @@ const previewMapUrl =
     serverConfig.previewMapBaseUrl || fallbackApiHost + "preview-map/";
 const proxyUrl = previewMapUrl + "proxy/";
 const baseUrl = serverConfig.baseUrl || fallbackApiHost;
-const baseExternalUrl =
-    baseUrl === "/"
-        ? window.location.protocol + "//" + window.location.host + "/"
-        : baseUrl;
+const baseExternalUrl = serverConfig.baseExternalUrl
+    ? serverConfig.baseExternalUrl
+    : baseUrl === "/"
+    ? window.location.protocol + "//" + window.location.host + "/"
+    : baseUrl;
 
 const fetchOptions: RequestInit =
     `${window.location.protocol}//${window.location.host}/` !== baseUrl

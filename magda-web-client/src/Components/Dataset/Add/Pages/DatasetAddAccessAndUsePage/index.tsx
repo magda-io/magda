@@ -13,7 +13,7 @@ import helpIcon from "assets/help.svg";
 
 import ReactSelectOriginal from "react-select";
 import ValidationHoc from "Components/Common/react-select/ValidationHoc";
-import PurpleToolTip from "Components/Common/TooltipWrapper";
+import TooltipWrapper from "Components/Common/TooltipWrapper";
 import { config } from "config";
 
 import ValidationRequiredLabel from "../../ValidationRequiredLabel";
@@ -150,7 +150,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                 as open data? (*)
                             </span>
                             <span className="tooltip-container">
-                                <PurpleToolTip
+                                <TooltipWrapper
                                     className="tooltip no-print"
                                     launcher={() => (
                                         <div className="tooltip-launcher-icon help-icon">
@@ -173,7 +173,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                             selecting Yes
                                         </>
                                     )}
-                                </PurpleToolTip>
+                                </TooltipWrapper>
                             </span>
                         </h4>
                         <div className="input-area">
@@ -362,7 +362,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                             <ValidationRequiredLabel validationFieldPath="$.informationSecurity.classification" />
                         </span>
                         <span className="tooltip-container">
-                            <PurpleToolTip
+                            <TooltipWrapper
                                 className="tooltip no-print"
                                 launcher={() => (
                                     <div className="tooltip-launcher-icon help-icon">
@@ -393,7 +393,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                         </a>
                                     </>
                                 )}
-                            </PurpleToolTip>
+                            </TooltipWrapper>
                         </span>
                     </h4>
                     <div className="row">
@@ -482,7 +482,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                 <ValidationRequiredLabel validationFieldPath="$.informationSecurity.disseminationLimits" />
                             </span>
                             <span className="tooltip-container">
-                                <PurpleToolTip
+                                <TooltipWrapper
                                     className="tooltip no-print"
                                     launcher={() => (
                                         <div className="tooltip-launcher-icon help-icon">
@@ -507,7 +507,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                             </a>
                                         </>
                                     )}
-                                </PurpleToolTip>
+                                </TooltipWrapper>
                             </span>
                         </h4>
                         <div className="row">
