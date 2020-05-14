@@ -4,6 +4,7 @@ import React from "react";
 import ToolTip from "Components/Dataset/Add/ToolTip";
 import Files from "./Files";
 import DetailsContents from "./DetailsContents";
+import PeopleAndProduction from "./PeopleAndProduction";
 
 import { State } from "../../DatasetAddCommon";
 
@@ -27,6 +28,8 @@ export default function DatasetAddEndPage(props: PropsType) {
                 <Files stateData={props.stateData} />
 
                 <DetailsContents stateData={props.stateData} />
+
+                <PeopleAndProduction stateData={props.stateData} />
             </div>
         </div>
     );
