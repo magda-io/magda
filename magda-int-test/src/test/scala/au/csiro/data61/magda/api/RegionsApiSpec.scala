@@ -238,7 +238,7 @@ class RegionsApiSpec
 
   it(
     "should only return Test SA1 2 regions when specify lv2 region Id 3 & lv3Id 301 & lv4Id 30101 & lv5Id 301011001"
-    ) {
+  ) {
     Get(s"/v0/regions?type=SA1&lv2Id=3&lv3Id=301&lv4Id=30101&lv5Id=301011001") ~> addTenantIdHeader ~> api.routes ~> check {
       status shouldBe OK
       contentType shouldBe `application/json`
