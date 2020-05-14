@@ -6,6 +6,7 @@ import Files from "./Files";
 import DetailsContents from "./DetailsContents";
 import PeopleAndProduction from "./PeopleAndProduction";
 import AccessAndUse from "./AccessAndUse";
+import ApproverNote from "./ApproverNote";
 
 import { State } from "../../DatasetAddCommon";
 
@@ -33,6 +34,8 @@ export default function DatasetAddEndPage(props: PropsType) {
                 <PeopleAndProduction stateData={props.stateData} />
 
                 <AccessAndUse stateData={props.stateData} />
+
+                <ApproverNote stateData={props.stateData} />
             </div>
         </div>
     );
