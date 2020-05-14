@@ -61,8 +61,6 @@ const PeopleAndProduction: FunctionComponent<PropsType> = props => {
         [dataset.owningOrgUnitId]
     );
 
-    console.log(props.stateData);
-
     return (
         <CollapseBox
             heading="People and production"

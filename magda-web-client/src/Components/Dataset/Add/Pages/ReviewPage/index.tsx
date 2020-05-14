@@ -5,6 +5,7 @@ import ToolTip from "Components/Dataset/Add/ToolTip";
 import Files from "./Files";
 import DetailsContents from "./DetailsContents";
 import PeopleAndProduction from "./PeopleAndProduction";
+import AccessAndUse from "./AccessAndUse";
 
 import { State } from "../../DatasetAddCommon";
 
@@ -30,6 +31,8 @@ export default function DatasetAddEndPage(props: PropsType) {
                 <DetailsContents stateData={props.stateData} />
 
                 <PeopleAndProduction stateData={props.stateData} />
+
+                <AccessAndUse stateData={props.stateData} />
             </div>
         </div>
     );
