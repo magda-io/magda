@@ -471,15 +471,9 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
               publishAttempted: false
           };
 
-    ckanPublish.hasCreated = ckanPublish.hasCreated
-        ? ckanPublish.hasCreated
-        : false;
-    ckanPublish.publishRequired = ckanPublish.publishRequired
-        ? ckanPublish.publishRequired
-        : false;
-    ckanPublish.publishAttempted = ckanPublish.publishAttempted
-        ? ckanPublish.publishAttempted
-        : false;
+    ckanPublish.hasCreated = !!ckanPublish.hasCreated;
+    ckanPublish.publishRequired = !!ckanPublish.publishRequired;
+    ckanPublish.publishAttempted = !!ckanPublish.publishAttempted;
 
     const distributions = distribution["distributions"].map(d => {
         const distributionAspects = Object.assign(
@@ -564,6 +558,6 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         accrualPeriodicity: datasetInfo["accrualPeriodicity"] || "",
         accrualPeriodicityRecurrenceRule:
             datasetInfo["accrualPeriodicityRecurrenceRule"] || "",
-        ckanPublish: ckanPublish
+        ckanPublish
     };
 }
