@@ -21,6 +21,7 @@ const ApproverNote: FunctionComponent<PropsType> = props => {
             heading="Approver note"
             stepNum={4}
             className="approver-note"
+            isNotCollapsible={true}
         >
             <CollapseItem className="row" alwaysShow={true}>
                 <div className="col-sm-3">
