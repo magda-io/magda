@@ -11,9 +11,15 @@ interface PropsType extends RouteComponentProps {
     isOpen?: boolean;
     stepNum: number;
     className?: string;
+    isNotCollapsible?: boolean;
 }
 
 const CollapseBox: FunctionComponent<PropsType> = props => {
+    const isNotCollapsible =
+        typeof props?.isNotCollapsible === "undefined"
+            ? false
+            : props.isNotCollapsible;
+
     const [isOpen, setIsOpen] = useState(
         typeof props.isOpen === "boolean" ? props.isOpen : DEFAULT_OPEN_STATUS
     );
@@ -29,11 +35,20 @@ const CollapseBox: FunctionComponent<PropsType> = props => {
             }`}
         >
             <div className="col-sm-12">
-                <div className="collapse-box-section-heading">
-                    <img
-                        src={isOpen ? minusIcon : plusIcon}
-                        onClick={onToggleClick}
-                    />
+                <div
+                    className={
+                        isNotCollapsible
+                            ? "not-collapse-box-section-heading"
+                            : "collapse-box-section-heading"
+                    }
+                >
+                    {isNotCollapsible ? null : (
+                        <img
+                            src={isOpen ? minusIcon : plusIcon}
+                            onClick={onToggleClick}
+                        />
+                    )}
+
                     <button
                         className="au-btn"
                         onClick={() => {
@@ -49,7 +64,11 @@ const CollapseBox: FunctionComponent<PropsType> = props => {
                     >
                         Edit
                     </button>
-                    <h3 onClick={onToggleClick}>{props.heading}</h3>
+                    {isNotCollapsible ? (
+                        <h3>{props.heading}</h3>
+                    ) : (
+                        <h3 onClick={onToggleClick}>{props.heading}</h3>
+                    )}
                 </div>
                 <CollapseBoxContext.Provider value={isOpen}>
                     <div
