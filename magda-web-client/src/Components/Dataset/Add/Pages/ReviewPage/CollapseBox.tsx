@@ -39,7 +39,11 @@ const CollapseBox: FunctionComponent<PropsType> = props => {
                         onClick={() => {
                             const uri = new URI(location.href);
                             props.history.push(
-                                uri.segment(-1, "" + props.stepNum).path()
+                                new URI(
+                                    uri.segment(-1, "" + props.stepNum).path()
+                                )
+                                    .search({ isBackToReview: null })
+                                    .toString()
                             );
                         }}
                     >

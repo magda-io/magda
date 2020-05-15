@@ -1,6 +1,5 @@
-import "./index.scss";
-
 import React from "react";
+import "./index.scss";
 import ToolTip from "Components/Dataset/Add/ToolTip";
 import Files from "./Files";
 import DetailsContents from "./DetailsContents";

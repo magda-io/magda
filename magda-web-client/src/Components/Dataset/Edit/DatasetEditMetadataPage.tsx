@@ -35,6 +35,7 @@ import ErrorMessageBox from "../Add/ErrorMessageBox";
 import helpIcon from "assets/help.svg";
 import { User } from "reducers/userManagementReducer";
 import * as ValidationManager from "../Add/ValidationManager";
+import URI from "urijs";
 
 type Props = {
     initialState: State;
@@ -48,9 +49,10 @@ type Props = {
     isNewDataset: boolean;
     history: any;
     user: User;
+    isBackToReview: boolean;
 };
 
-class NewDataset extends React.Component<Props, State> {
+class EditDataset extends React.Component<Props, State> {
     state: State = this.props.initialState;
 
     constructor(props) {
@@ -198,8 +200,23 @@ class NewDataset extends React.Component<Props, State> {
                     <>
                         <div className="row next-save-button-row">
                             <div className="col-sm-12">
+                                {this.props.isBackToReview ? (
+                                    <button
+                                        className="au-btn back-to-review-button"
+                                        onClick={() =>
+                                            this.gotoStep(this.steps.length - 2)
+                                        }
+                                    >
+                                        Return to Review
+                                    </button>
+                                ) : null}
+
                                 <button
-                                    className="au-btn next-button"
+                                    className={`au-btn ${
+                                        this.props.isBackToReview
+                                            ? "au-btn--secondary save-button"
+                                            : "next-button"
+                                    }`}
                                     onClick={nextButtonOnClick}
                                     disabled={this.state.isPublishing}
                                 >
@@ -293,16 +310,21 @@ class NewDataset extends React.Component<Props, State> {
     }
 }
 
-function mapStateToProps(state, old) {
-    let datasetId = old.match.params.datasetId;
-    let step = parseInt(old.match.params.step);
+function mapStateToProps(state, props) {
+    const uri = new URI(location.href);
+    const datasetId = props.match.params.datasetId;
+    let step = parseInt(props.match.params.step);
+    const isBackToReview =
+        typeof uri.search(true)?.isBackToReview !== "undefined" ? true : false;
+
     if (isNaN(step)) {
         step = 0;
     }
 
     return {
         datasetId,
-        step
+        step,
+        isBackToReview
     };
 }
 
@@ -317,5 +339,5 @@ const mapDispatchToProps = dispatch => {
 };
 
 export default withEditDatasetState(
-    withRouter(connect(mapStateToProps, mapDispatchToProps)(NewDataset))
+    withRouter(connect(mapStateToProps, mapDispatchToProps)(EditDataset))
 );

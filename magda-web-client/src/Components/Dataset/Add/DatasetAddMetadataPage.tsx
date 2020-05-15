@@ -39,6 +39,7 @@ import ErrorMessageBox from "./ErrorMessageBox";
 import helpIcon from "assets/help.svg";
 import { User } from "reducers/userManagementReducer";
 import * as ValidationManager from "../Add/ValidationManager";
+import URI from "urijs";
 
 type Props = {
     initialState: State;
@@ -51,6 +52,7 @@ type Props = {
     datasetId: string;
     history: any;
     user: User;
+    isBackToReview: boolean;
 };
 
 class NewDataset extends React.Component<Props, State> {
@@ -213,8 +215,23 @@ class NewDataset extends React.Component<Props, State> {
                     <>
                         <div className="row next-save-button-row">
                             <div className="col-sm-12">
+                                {this.props.isBackToReview ? (
+                                    <button
+                                        className="au-btn back-to-review-button"
+                                        onClick={() =>
+                                            this.gotoStep(this.steps.length - 2)
+                                        }
+                                    >
+                                        Return to Review
+                                    </button>
+                                ) : null}
+
                                 <button
-                                    className="au-btn next-button"
+                                    className={`au-btn ${
+                                        this.props.isBackToReview
+                                            ? "au-btn--secondary save-button"
+                                            : "next-button"
+                                    }`}
                                     onClick={nextButtonOnClick}
                                     disabled={this.state.isPublishing}
                                 >
@@ -323,15 +340,20 @@ class NewDataset extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state, props) {
-    const datasetId = props.match.params.datasetId;
+    const uri = new URI(location.href);
+    const datasetId = props?.match?.params?.datasetId;
     let step = parseInt(props?.match?.params?.step);
+    const isBackToReview =
+        typeof uri.search(true)?.isBackToReview !== "undefined" ? true : false;
+
     if (isNaN(step)) {
         step = 0;
     }
 
     return {
         datasetId,
-        step
+        step,
+        isBackToReview
     };
 }
 
