@@ -11,11 +11,15 @@
                 .content-box {
                     min-height: 214px;
                 }
+                .distribution-item:not(:last-child) {
+                    margin-bottom: 30px;
+                }
             }
 
             .collapse-box-body.uncollapsed-body {
                 .content-box {
-                    padding-left: 35px;
+                    padding-left: 50px;
+                    padding-right: 50px;
                 }
                 .distribution-item {
                     border-radius: 6px;
@@ -28,11 +32,11 @@
                     line-height: 22px;
                     letter-spacing: normal;
                     color: #484848;
-                    margin-bottom: 30px;
                     padding-left: 30px;
                     padding-top: 16px;
                     padding-bottom: 25px;
                 }
+
                 .file-title {
                     margin-bottom: 16px;
                 }
@@ -47,7 +51,6 @@
                     line-height: normal;
                     letter-spacing: normal;
                     color: #484848;
-                    margin-bottom: 30px;
                 }
                 .file-title {
                     position: relative;

@@ -1,14 +1,7 @@
 .dataset-add-meta-data-pages {
     .review-page {
         .dataset-details-and-contents {
-            .collapse-item {
-                margin-bottom: 50px;
-            }
-
-            .description {
-                .title-box {
-                    margin-top: 20px;
-                }
+            .description-content-box {
                 .content-box {
                     min-height: 200px;
                 }
@@ -16,7 +9,7 @@
 
             .spatial-data {
                 .content-box {
-                    .row {
+                    .row:not(:last-child) {
                         margin-bottom: 20px;
                     }
                     .field-name {

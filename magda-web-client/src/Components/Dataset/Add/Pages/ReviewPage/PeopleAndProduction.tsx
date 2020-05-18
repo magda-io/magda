@@ -12,8 +12,6 @@ import { shouldValidate } from "../../ValidationManager";
 import { useAsync } from "react-async-hook";
 import { getOrgUnitById } from "api-clients/OrgUnitApis";
 
-import "./PeopleAndProduction.scss";
-
 type PropsType = {
     stateData: State;
 };

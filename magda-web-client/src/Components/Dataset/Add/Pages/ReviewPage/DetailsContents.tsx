@@ -252,7 +252,7 @@ const DetailsContents: FunctionComponent<PropsType> = props => {
             </CollapseItem>
 
             <CollapseItem
-                className="row description"
+                className="row"
                 alwaysShow={shouldValidate("$.dataset.description")}
             >
                 <div className="col-sm-3">
@@ -263,7 +263,7 @@ const DetailsContents: FunctionComponent<PropsType> = props => {
                     </div>
                 </div>
                 <DescriptionBox
-                    className="col-sm-9 content-box"
+                    className="col-sm-9 content-box description-content-box"
                     isAutoTruncate={false}
                     content={dataset?.description ? dataset.description : "N/A"}
                 />

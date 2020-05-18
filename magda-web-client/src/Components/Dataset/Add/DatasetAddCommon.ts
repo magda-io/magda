@@ -634,7 +634,7 @@ async function ensureBlankDatasetIsSavedToRegistry(
                             ? dataset.custodianOrgUnitId
                             : undefined
                     },
-                    soruce: getInternalDatasetSourceAspectData()
+                    source: getInternalDatasetSourceAspectData()
                 }
             },
             [],
