@@ -27,7 +27,7 @@ const PeopleAndProduction: FunctionComponent<PropsType> = props => {
         async custodianOrgUnitId => {
             try {
                 if (!custodianOrgUnitId) {
-                    return "N/A";
+                    return codelists.NO_VALUE_LABEL;
                 }
                 const orgUnit = await getOrgUnitById(custodianOrgUnitId);
                 return orgUnit.name;
@@ -47,7 +47,7 @@ const PeopleAndProduction: FunctionComponent<PropsType> = props => {
         async owningOrgUnitId => {
             try {
                 if (!owningOrgUnitId) {
-                    return "N/A";
+                    return codelists.NO_VALUE_LABEL;
                 }
                 const orgUnit = await getOrgUnitById(owningOrgUnitId);
                 return orgUnit.name;
@@ -77,7 +77,9 @@ const PeopleAndProduction: FunctionComponent<PropsType> = props => {
                     </div>
                 </div>
                 <div className="col-sm-9 content-box single-line">
-                    {dataset?.publisher?.name ? dataset.publisher.name : "N/A"}
+                    {dataset?.publisher?.name
+                        ? dataset.publisher.name
+                        : codelists.NO_VALUE_LABEL}
                 </div>
             </CollapseItem>
 
@@ -140,7 +142,7 @@ const PeopleAndProduction: FunctionComponent<PropsType> = props => {
                         ? codelists.contactPointDisplay[
                               datasetPublishing.contactPointDisplay
                           ]
-                        : "N/A"}
+                        : codelists.NO_VALUE_LABEL}
                 </div>
             </CollapseItem>
 
@@ -159,7 +161,9 @@ const PeopleAndProduction: FunctionComponent<PropsType> = props => {
                     className="col-sm-9 content-box"
                     isAutoTruncate={false}
                     content={
-                        provenance?.mechanism ? provenance.mechanism : "N/A"
+                        provenance?.mechanism
+                            ? provenance.mechanism
+                            : codelists.NO_VALUE_LABEL
                     }
                 />
             </CollapseItem>
@@ -181,7 +185,7 @@ const PeopleAndProduction: FunctionComponent<PropsType> = props => {
                     content={
                         provenance?.sourceSystem
                             ? provenance.sourceSystem
-                            : "N/A"
+                            : codelists.NO_VALUE_LABEL
                     }
                 />
             </CollapseItem>
@@ -208,7 +212,7 @@ const PeopleAndProduction: FunctionComponent<PropsType> = props => {
                             ? provenance.affiliatedOrganizations
                                   .map(item => `- ${item.name}`)
                                   .join("\n")
-                            : "N/A"
+                            : codelists.NO_VALUE_LABEL
                     }
                 />
             </CollapseItem>
@@ -232,7 +236,7 @@ const PeopleAndProduction: FunctionComponent<PropsType> = props => {
                             ? provenance.derivedFrom
                                   .map(item => `- ${item.name}`)
                                   .join("\n")
-                            : "N/A"
+                            : codelists.NO_VALUE_LABEL
                     }
                 />
             </CollapseItem>

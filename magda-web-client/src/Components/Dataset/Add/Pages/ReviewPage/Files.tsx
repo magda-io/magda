@@ -7,6 +7,7 @@ import { State } from "../../DatasetAddCommon";
 import { getFormatIcon } from "../../../View/DistributionIcon";
 
 import humanFileSize from "helpers/humanFileSize";
+import * as codelists from "constants/DatasetConstants";
 
 import flatMap from "lodash/flatMap";
 import moment from "moment";
@@ -54,7 +55,7 @@ const Files: FunctionComponent<PropsType> = props => {
                                                     item.byteSize,
                                                     true
                                                 )
-                                              : "N/A"}
+                                              : codelists.NO_VALUE_LABEL}
                                           )
                                       </div>
                                   </div>
@@ -78,7 +79,7 @@ const Files: FunctionComponent<PropsType> = props => {
                                                     item.byteSize,
                                                     true
                                                 )
-                                              : "N/A"}
+                                              : codelists.NO_VALUE_LABEL}
                                       </div>
                                       <div className="file-last-modifed">
                                           Last Modified:{" "}
@@ -86,13 +87,13 @@ const Files: FunctionComponent<PropsType> = props => {
                                               ? moment(item.modified).format(
                                                     "DD/MM/YYYY"
                                                 )
-                                              : "N/A"}
+                                              : codelists.NO_VALUE_LABEL}
                                       </div>
                                       <div className="file-description">
                                           File description:{" "}
                                           {item?.description
                                               ? item.description
-                                              : "N/A"}
+                                              : codelists.NO_VALUE_LABEL}
                                       </div>
                                   </div>
                               </CollapseItem>

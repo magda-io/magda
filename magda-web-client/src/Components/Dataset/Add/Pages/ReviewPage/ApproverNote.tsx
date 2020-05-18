@@ -6,6 +6,7 @@ import CollapseBox from "./CollapseBox";
 import CollapseItem from "./CollapseItem";
 
 import DescriptionBox from "Components/Common/DescriptionBox";
+import * as codelists from "constants/DatasetConstants";
 
 import "./ApproverNote.scss";
 
@@ -33,7 +34,7 @@ const ApproverNote: FunctionComponent<PropsType> = props => {
                     content={
                         datasetPublishing?.notesToApprover
                             ? datasetPublishing?.notesToApprover
-                            : "N/A"
+                            : codelists.NO_VALUE_LABEL
                     }
                 />
             </CollapseItem>

@@ -35,7 +35,7 @@ function useGetSpatialData(spatialCoverage: SpatialCoverage) {
                         <div className="col-sm-6">
                             {spatialCoverage?.bbox?.[0]
                                 ? spatialCoverage.bbox[0]
-                                : "N/A"}
+                                : codelists.NO_VALUE_LABEL}
                         </div>
                     </div>
                     <div key={"bbox1"} className="row">
@@ -45,7 +45,7 @@ function useGetSpatialData(spatialCoverage: SpatialCoverage) {
                         <div className="col-sm-6">
                             {spatialCoverage?.bbox?.[0]
                                 ? spatialCoverage.bbox[1]
-                                : "N/A"}
+                                : codelists.NO_VALUE_LABEL}
                         </div>
                     </div>
                     <div key={"bbox2"} className="row">
@@ -55,7 +55,7 @@ function useGetSpatialData(spatialCoverage: SpatialCoverage) {
                         <div className="col-sm-6">
                             {spatialCoverage?.bbox?.[0]
                                 ? spatialCoverage.bbox[2]
-                                : "N/A"}
+                                : codelists.NO_VALUE_LABEL}
                         </div>
                     </div>
                     <div key={"bbox3"} className="row">
@@ -65,7 +65,7 @@ function useGetSpatialData(spatialCoverage: SpatialCoverage) {
                         <div className="col-sm-6">
                             {spatialCoverage?.bbox?.[0]
                                 ? spatialCoverage.bbox[3]
-                                : "N/A"}
+                                : codelists.NO_VALUE_LABEL}
                         </div>
                     </div>
                 </>
@@ -122,13 +122,17 @@ function useGetSpatialData(spatialCoverage: SpatialCoverage) {
                     <div key={"country"} className="row">
                         <div className="col-sm-6 field-name">Country: </div>
                         <div className="col-sm-6">
-                            {regionNames?.[0] ? regionNames[0] : "N/A"}
+                            {regionNames?.[0]
+                                ? regionNames[0]
+                                : codelists.NO_VALUE_LABEL}
                         </div>
                     </div>
                     <div key={"state"} className="row">
                         <div className="col-sm-6 field-name">State: </div>
                         <div className="col-sm-6">
-                            {regionNames?.[1] ? regionNames[1] : "N/A"}
+                            {regionNames?.[1]
+                                ? regionNames[1]
+                                : codelists.NO_VALUE_LABEL}
                         </div>
                     </div>
                     <div key={"region"} className="row">
@@ -136,7 +140,9 @@ function useGetSpatialData(spatialCoverage: SpatialCoverage) {
                             Region(ABS SA4):
                         </div>
                         <div className="col-sm-6">
-                            {regionNames?.[2] ? regionNames[2] : "N/A"}
+                            {regionNames?.[2]
+                                ? regionNames[2]
+                                : codelists.NO_VALUE_LABEL}
                         </div>
                     </div>
                     <div key={"area"} className="row">
@@ -144,7 +150,9 @@ function useGetSpatialData(spatialCoverage: SpatialCoverage) {
                             Area(ABS SA3):{" "}
                         </div>
                         <div className="col-sm-6">
-                            {regionNames?.[3] ? regionNames[3] : "N/A"}
+                            {regionNames?.[3]
+                                ? regionNames[3]
+                                : codelists.NO_VALUE_LABEL}
                         </div>
                     </div>
                 </>
@@ -191,7 +199,7 @@ const DetailsContents: FunctionComponent<PropsType> = props => {
                     </div>
                 </div>
                 <div className="col-sm-9 content-box single-line">
-                    {dataset?.title ? dataset.title : "N/A"}
+                    {dataset?.title ? dataset.title : codelists.NO_VALUE_LABEL}
                 </div>
             </CollapseItem>
 
@@ -211,7 +219,7 @@ const DetailsContents: FunctionComponent<PropsType> = props => {
                         ? dataset.languages
                               .map(item => codelists.languages[item])
                               .join("; ")
-                        : "N/A"}
+                        : codelists.NO_VALUE_LABEL}
                 </div>
             </CollapseItem>
 
@@ -229,7 +237,7 @@ const DetailsContents: FunctionComponent<PropsType> = props => {
                 <div className="col-sm-9 content-box single-line">
                     {dataset?.keywords?.keywords
                         ? dataset.keywords.keywords.join(", ")
-                        : "N/A"}
+                        : codelists.NO_VALUE_LABEL}
                 </div>
             </CollapseItem>
 
@@ -247,7 +255,7 @@ const DetailsContents: FunctionComponent<PropsType> = props => {
                 <div className="col-sm-9 content-box single-line">
                     {dataset?.themes?.keywords
                         ? dataset.themes.keywords.join(", ")
-                        : "N/A"}
+                        : codelists.NO_VALUE_LABEL}
                 </div>
             </CollapseItem>
 
@@ -265,7 +273,11 @@ const DetailsContents: FunctionComponent<PropsType> = props => {
                 <DescriptionBox
                     className="col-sm-9 content-box description-content-box"
                     isAutoTruncate={false}
-                    content={dataset?.description ? dataset.description : "N/A"}
+                    content={
+                        dataset?.description
+                            ? dataset.description
+                            : codelists.NO_VALUE_LABEL
+                    }
                 />
             </CollapseItem>
 
@@ -281,7 +293,9 @@ const DetailsContents: FunctionComponent<PropsType> = props => {
                     </div>
                 </div>
                 <div className="col-sm-9 content-box single-line">
-                    {currency?.status ? currency.status : "N/A"}
+                    {currency?.status
+                        ? currency.status
+                        : codelists.NO_VALUE_LABEL}
                 </div>
             </CollapseItem>
 
@@ -303,7 +317,7 @@ const DetailsContents: FunctionComponent<PropsType> = props => {
                         content={
                             currency?.retireReason
                                 ? currency.retireReason
-                                : "N/A"
+                                : codelists.NO_VALUE_LABEL
                         }
                     />
                 </CollapseItem>
@@ -333,7 +347,7 @@ const DetailsContents: FunctionComponent<PropsType> = props => {
                                               : "- Unknown Name Dataset"
                                       )
                                       .join("\n")
-                                : "N/A"
+                                : codelists.NO_VALUE_LABEL
                         }
                     />
                 </CollapseItem>
@@ -353,7 +367,7 @@ const DetailsContents: FunctionComponent<PropsType> = props => {
                 <div className="col-sm-9 content-box single-line">
                     {dataset?.issued
                         ? moment(dataset.issued).format("DD/MM/YYYY")
-                        : "N/A"}
+                        : codelists.NO_VALUE_LABEL}
                 </div>
             </CollapseItem>
 
@@ -371,7 +385,7 @@ const DetailsContents: FunctionComponent<PropsType> = props => {
                 <div className="col-sm-9 content-box single-line">
                     {dataset?.modified
                         ? moment(dataset.modified).format("DD/MM/YYYY")
-                        : "N/A"}
+                        : codelists.NO_VALUE_LABEL}
                 </div>
             </CollapseItem>
 
@@ -392,10 +406,10 @@ const DetailsContents: FunctionComponent<PropsType> = props => {
                             ? RRule.fromString(
                                   dataset?.accrualPeriodicityRecurrenceRule
                               ).toText()
-                            : "N/A"
+                            : codelists.NO_VALUE_LABEL
                         : dataset?.accrualPeriodicity
                         ? dataset.accrualPeriodicity
-                        : "N/A"}
+                        : codelists.NO_VALUE_LABEL}
                 </div>
             </CollapseItem>
 
@@ -425,17 +439,17 @@ const DetailsContents: FunctionComponent<PropsType> = props => {
                                                   ? moment(item.start).format(
                                                         "DD/MM/YYYY"
                                                     )
-                                                  : "N/A"
+                                                  : codelists.NO_VALUE_LABEL
                                           } &nbsp;&nbsp;*End*: &nbsp;${
                                               item?.start
                                                   ? moment(item.end).format(
                                                         "DD/MM/YYYY"
                                                     )
-                                                  : "N/A"
+                                                  : codelists.NO_VALUE_LABEL
                                           }`
                                   )
                                   .join("\n")
-                            : "N/A"
+                            : codelists.NO_VALUE_LABEL
                     }
                 />
             </CollapseItem>

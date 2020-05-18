@@ -42,8 +42,8 @@ const AccessAndUse: FunctionComponent<PropsType> = props => {
                     </div>
                     <div className="col-sm-9 content-box single-line">
                         {datasetPublishing?.publishAsOpenData?.["dga"]
-                            ? "YES"
-                            : "NO"}
+                            ? "Yes"
+                            : "No"}
                     </div>
                 </CollapseItem>
             ) : null}
@@ -62,7 +62,7 @@ const AccessAndUse: FunctionComponent<PropsType> = props => {
                 <div className="col-sm-9 content-box single-line">
                     {datasetPublishing?.level
                         ? codelists.publishingLevel[datasetPublishing.level]
-                        : "N/A"}
+                        : codelists.NO_VALUE_LABEL}
                 </div>
             </CollapseItem>
 
@@ -74,7 +74,7 @@ const AccessAndUse: FunctionComponent<PropsType> = props => {
                     {licenseLevel !== "distribution" || !distributions?.length
                         ? dataset?.defaultLicense
                             ? codelists.licenseLevel[dataset.defaultLicense]
-                            : "N/A"
+                            : codelists.NO_VALUE_LABEL
                         : distributions.map(item => (
                               <div
                                   key={item.id}
@@ -90,7 +90,7 @@ const AccessAndUse: FunctionComponent<PropsType> = props => {
                                   <div className="col-sm-6 distribution-licence-license-col">
                                       {item?.license
                                           ? codelists.licenseLevel[item.license]
-                                          : "N/A"}
+                                          : codelists.NO_VALUE_LABEL}
                                   </div>
                               </div>
                           ))}
@@ -115,7 +115,7 @@ const AccessAndUse: FunctionComponent<PropsType> = props => {
                         ? codelists.classification[
                               informationSecurity.classification
                           ]
-                        : "N/A"}
+                        : codelists.NO_VALUE_LABEL}
                 </div>
             </CollapseItem>
 
@@ -144,7 +144,7 @@ const AccessAndUse: FunctionComponent<PropsType> = props => {
                                               `- ${codelists.disseminationLimits[item]}`
                                       )
                                       .join("\n")
-                                : "N/A"
+                                : codelists.NO_VALUE_LABEL
                         }
                     />
                 </CollapseItem>
