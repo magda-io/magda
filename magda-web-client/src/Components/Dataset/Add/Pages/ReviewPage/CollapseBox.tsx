@@ -4,6 +4,7 @@ import CollapseBoxContext, { DEFAULT_OPEN_STATUS } from "./CollapseBoxContext";
 import plusIcon from "assets/noun-plus.svg";
 import minusIcon from "assets/noun-minus.svg";
 import { withRouter, RouteComponentProps } from "react-router";
+import { Link } from "react-router-dom";
 import URI from "urijs";
 
 interface PropsType extends RouteComponentProps {
@@ -49,21 +50,20 @@ const CollapseBox: FunctionComponent<PropsType> = props => {
                         />
                     )}
 
-                    <button
-                        className="au-btn"
-                        onClick={() => {
+                    <Link
+                        className="edit-link"
+                        to={(() => {
                             const uri = new URI(location.href);
-                            props.history.push(
-                                new URI(
-                                    uri.segment(-1, "" + props.stepNum).path()
-                                )
-                                    .search({ isBackToReview: null })
-                                    .toString()
-                            );
-                        }}
+                            return new URI(
+                                uri.segment(-1, "" + props.stepNum).path()
+                            )
+                                .search({ isBackToReview: null })
+                                .toString();
+                        })()}
                     >
                         Edit
-                    </button>
+                    </Link>
+
                     {isNotCollapsible ? (
                         <h3>{props.heading}</h3>
                     ) : (
