@@ -169,9 +169,9 @@ export type DatasetPublishing = {
     };
 };
 
-type SpatialCoverage = {
+export type SpatialCoverage = {
     bbox?: [number, number, number, number];
-    spatialDataInputMethod?: string;
+    spatialDataInputMethod?: "bbox" | "region" | "map";
     lv1Id?: string;
     lv2Id?: string;
     lv3Id?: string;
@@ -415,8 +415,8 @@ async function populateProvenanceAspect(data: RawDataset, state: State) {
         provenance.affiliatedOrganizations = affiliatedOrganizationIds.map(
             item => ({
                 existingId: item.id,
-                name: item?.aspects?.["organization-details"]?.name
-                    ? item?.aspects?.["organization-details"]?.name
+                name: item?.aspects?.["organization-details"]?.title
+                    ? item?.aspects?.["organization-details"]?.title
                     : item.name
             })
         );
@@ -634,7 +634,7 @@ async function ensureBlankDatasetIsSavedToRegistry(
                             ? dataset.custodianOrgUnitId
                             : undefined
                     },
-                    soruce: getInternalDatasetSourceAspectData()
+                    source: getInternalDatasetSourceAspectData()
                 }
             },
             [],

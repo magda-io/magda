@@ -425,6 +425,8 @@ class SearchApi(val searchQueryer: SearchQueryer)(
             * @apiGroup Search
             * @api {get} /v0/search/regions Get Regions
             * @apiDescription Returns a list of regions
+            * @apiParam (Query) {number} [regionId=None] filter by regionId field
+            * @apiParam (Query) {number} [type=None] filter by regionType field
             * @apiParam (Query) {number} [lv1Id=None] filter by level 1 region Id
             * @apiParam (Query) {number} [lv2Id=None] filter by level 2 region Id
             * @apiParam (Query) {number} [lv3Id=None] filter by level 3 region Id
@@ -446,6 +448,7 @@ class SearchApi(val searchQueryer: SearchQueryer)(
             requiresTenantId { tenantId =>
               (get & parameters(
                 'query ?,
+                "regionId" ?,
                 "type" ?,
                 "lv1Id" ?,
                 "lv2Id" ?,
@@ -457,6 +460,7 @@ class SearchApi(val searchQueryer: SearchQueryer)(
               )) {
                 (
                     query,
+                    regionId,
                     regionType,
                     lv1Id,
                     lv2Id,
@@ -469,6 +473,7 @@ class SearchApi(val searchQueryer: SearchQueryer)(
                   complete(
                     searchQueryer.searchRegions(
                       query,
+                      regionId,
                       regionType,
                       lv1Id,
                       lv2Id,

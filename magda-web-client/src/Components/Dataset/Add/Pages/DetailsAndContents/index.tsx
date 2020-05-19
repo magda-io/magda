@@ -323,6 +323,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                 <h3>Spatial extent</h3>
                 <div>
                     <SpatialAreaInput
+                        method={spatialCoverage.spatialDataInputMethod}
                         countryId={spatialCoverage.lv1Id}
                         territoryOrSteId={spatialCoverage.lv2Id}
                         sa4Id={spatialCoverage.lv3Id}

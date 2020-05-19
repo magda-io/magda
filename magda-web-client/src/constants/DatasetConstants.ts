@@ -581,3 +581,5 @@ export const datasetCurrencyStatus = {
     SUPERSEDED: "Superseded",
     RETIRED: "Retired"
 };
+
+export const NO_VALUE_LABEL = "N/A";

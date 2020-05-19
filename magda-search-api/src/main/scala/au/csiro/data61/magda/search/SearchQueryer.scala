@@ -43,6 +43,7 @@ trait SearchQueryer {
 
   def searchRegions(
       query: Option[String],
+      regionId: Option[String],
       regionType: Option[String],
       lv1Id: Option[String],
       lv2Id: Option[String],

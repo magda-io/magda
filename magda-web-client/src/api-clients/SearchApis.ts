@@ -5,6 +5,7 @@ import buildSearchQueryString, {
     Query
 } from "../helpers/buildSearchQueryString";
 import { DataSearchJson } from "../helpers/datasetSearch";
+import URI from "urijs";
 
 type SearchApiResult = {
     hitCount: number;
@@ -137,4 +138,50 @@ export function searchDatasets(queryObject: Query): Promise<DataSearchJson> {
             errorMessage = "Failed to retrieve network resource.";
         throw new Error(errorMessage);
     });
+}
+
+export type SearchRegionOptions = {
+    regionId?: string;
+    type?: string;
+    lv1Id?: string;
+    lv2Id?: string;
+    lv3Id?: string;
+    lv4Id?: string;
+    lv5Id?: string;
+    start?: number;
+    limit?: number;
+};
+
+export type Region = {
+    regionId: string;
+    regionType: string;
+    lv1Id?: string;
+    lv2Id?: string;
+    lv3Id?: string;
+    lv4Id?: string;
+    lv5Id?: string;
+    boundingBox?: {
+        east?: number;
+        north?: number;
+        south?: number;
+        west?: number;
+    };
+    regionName: string;
+};
+
+export async function getRegions(
+    options: SearchRegionOptions
+): Promise<Region[]> {
+    const uri = new URI(`${config.searchApiUrl}regions`);
+    const res = await fetch(uri.search(options).toString());
+    if (!res.ok) {
+        const bodyText = await res.text();
+        throw new Error(`${res.statusText}${bodyText ? "\n" + bodyText : ""}`);
+    }
+    const data = await res.json();
+    if (data?.regions?.length) {
+        return data.regions;
+    } else {
+        return [];
+    }
 }

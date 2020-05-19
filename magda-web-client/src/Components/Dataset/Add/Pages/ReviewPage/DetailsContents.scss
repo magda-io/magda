@@ -1,0 +1,22 @@
+.dataset-add-meta-data-pages {
+    .review-page {
+        .dataset-details-and-contents {
+            .description-content-box {
+                .content-box {
+                    min-height: 200px;
+                }
+            }
+
+            .spatial-data {
+                .content-box {
+                    .row:not(:last-child) {
+                        margin-bottom: 20px;
+                    }
+                    .field-name {
+                        font-style: italic;
+                    }
+                }
+            }
+        }
+    }
+}
