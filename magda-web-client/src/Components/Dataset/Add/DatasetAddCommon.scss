@@ -1,5 +1,22 @@
 .dataset-add-file-page,
 .dataset-add-meta-data-pages {
+    .back-to-review-button {
+        width: 286px;
+        height: 48px;
+        border-radius: 10px;
+        border: solid 2px #30384d !important;
+        background-color: #30384d !important;
+        font-size: 16px;
+        font-weight: normal;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: 1;
+        letter-spacing: normal;
+        text-align: center;
+        color: #ffffff;
+        margin-right: 30px;
+    }
+
     .next-button {
         width: 386px;
         height: 48px;
@@ -30,6 +47,7 @@
         letter-spacing: normal;
         text-align: center;
         color: #30384d !important;
+        margin-right: 30px;
     }
 
     .next-save-button-row {

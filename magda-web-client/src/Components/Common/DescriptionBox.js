@@ -31,8 +31,8 @@ class DescriptionBox extends Component {
             <div
                 itemProp="description"
                 className={`description-box white-box overview-box ${
-                    this.state.isExpanded ? "is-expanded" : ""
-                }`}
+                    this.props?.className ? this.props.className : ""
+                } ${this.state.isExpanded ? "is-expanded" : ""}`}
             >
                 <div className="no-print">
                     <MarkdownViewer
@@ -80,12 +80,14 @@ class DescriptionBox extends Component {
 DescriptionBox.propTypes = {
     isAutoTruncate: PropTypes.bool,
     truncateLength: PropTypes.number,
-    content: PropTypes.string
+    content: PropTypes.string,
+    className: PropTypes.string
 };
 
 DescriptionBox.defaultProps = {
     isAutoTruncate: true,
     truncateLength: 500,
+    className: "",
     content: ""
 };
 

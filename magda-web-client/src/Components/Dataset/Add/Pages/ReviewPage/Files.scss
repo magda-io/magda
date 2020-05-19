@@ -1,0 +1,67 @@
+.dataset-add-meta-data-pages {
+    .review-page {
+        .dataset-files-and-services {
+            .collapse-box-body {
+                .title-box {
+                    margin-bottom: 40px;
+                }
+                .description-box {
+                    padding-right: 60px;
+                }
+                .content-box {
+                    min-height: 214px;
+                }
+                .distribution-item:not(:last-child) {
+                    margin-bottom: 30px;
+                }
+            }
+
+            .collapse-box-body.uncollapsed-body {
+                .content-box {
+                    padding-left: 50px;
+                    padding-right: 50px;
+                }
+                .distribution-item {
+                    border-radius: 6px;
+                    border: solid 1px #cccaca;
+                    background-color: #ffffff;
+                    font-size: 15px;
+                    font-weight: normal;
+                    font-stretch: normal;
+                    font-style: normal;
+                    line-height: 22px;
+                    letter-spacing: normal;
+                    color: #484848;
+                    padding-left: 30px;
+                    padding-top: 16px;
+                    padding-bottom: 25px;
+                }
+
+                .file-title {
+                    margin-bottom: 16px;
+                }
+            }
+
+            .collapse-box-body.collapsed-body {
+                .distribution-item {
+                    font-size: 15px;
+                    font-weight: normal;
+                    font-stretch: normal;
+                    font-style: normal;
+                    line-height: normal;
+                    letter-spacing: normal;
+                    color: #484848;
+                }
+                .file-title {
+                    position: relative;
+                    .file-icon {
+                        position: absolute;
+                    }
+                    div {
+                        margin-left: 40px;
+                    }
+                }
+            }
+        }
+    }
+}

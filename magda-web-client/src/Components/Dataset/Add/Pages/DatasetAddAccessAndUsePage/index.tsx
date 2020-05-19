@@ -327,7 +327,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                     );
                                 };
                                 return (
-                                    <div className="fileBlock">
+                                    <div className="fileBlock" key={file.id}>
                                         <div className="fileBlock-file">
                                             <span className="fileBlock-icon">
                                                 <img

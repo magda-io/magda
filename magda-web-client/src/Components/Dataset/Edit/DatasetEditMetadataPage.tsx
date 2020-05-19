@@ -23,6 +23,8 @@ import DatasetAddPeoplePage from "../Add/Pages/People/DatasetAddPeoplePage";
 import DatasetAddEndPreviewPage from "../Add/Pages/DatasetAddEndPreviewPage";
 import DatasetAddFilesPage from "../Add/Pages/AddFiles";
 import DatasetAddAccessAndUsePage from "../Add/Pages/DatasetAddAccessAndUsePage";
+import ReviewPage from "../Add/Pages/ReviewPage/index";
+import DatasetAddEndPage from "../Add/Pages/DatasetAddEndPage";
 import withEditDatasetState from "./withEditDatasetState";
 import { config } from "config";
 
@@ -33,6 +35,7 @@ import ErrorMessageBox from "../Add/ErrorMessageBox";
 import helpIcon from "assets/help.svg";
 import { User } from "reducers/userManagementReducer";
 import * as ValidationManager from "../Add/ValidationManager";
+import URI from "urijs";
 
 type Props = {
     initialState: State;
@@ -46,9 +49,10 @@ type Props = {
     isNewDataset: boolean;
     history: any;
     user: User;
+    isBackToReview: boolean;
 };
 
-class NewDataset extends React.Component<Props, State> {
+class EditDataset extends React.Component<Props, State> {
     state: State = this.props.initialState;
 
     constructor(props) {
@@ -96,9 +100,17 @@ class NewDataset extends React.Component<Props, State> {
                 isEditView={true}
             />
         ),
+        this.renderSubmitPage.bind(this),
+        () => <ReviewPage stateData={this.state} />,
         config.featureFlags.previewAddDataset
             ? () => <DatasetAddEndPreviewPage />
-            : this.renderSubmitPage.bind(this)
+            : () => (
+                  <DatasetAddEndPage
+                      datasetId={this.props.datasetId}
+                      history={this.props.history}
+                      isEdit={true}
+                  />
+              )
     ];
 
     edit = <K extends keyof State>(aspectField: K) => (field: string) => (
@@ -121,32 +133,59 @@ class NewDataset extends React.Component<Props, State> {
 
         step = Math.max(Math.min(step, this.steps.length - 1), 0);
 
-        const nextIsPublish = step + 1 >= this.steps.length;
+        const hideExitButton = config.featureFlags.previewAddDataset
+            ? step >= 4
+            : step >= 5;
 
         const nextButtonCaption = () => {
-            if (nextIsPublish) {
-                if (config.featureFlags.previewAddDataset) {
-                    return "Send Us Your Thoughts";
-                } else if (this.state.isPublishing) {
-                    return "Submitting Dataset Change...";
+            if (step === 5) {
+                // --- review page
+                if (this.state.isPublishing) {
+                    return "Submit dataset changes...";
                 } else {
-                    return "Submit Dataset Changes";
+                    return "Submit dataset changes";
                 }
+            } else if (step === 6) {
+                // --- all done or preview mode feedback page
+                // --- All done page has no button to show
+                return "Send Us Your Thoughts";
             } else {
                 return "Next: " + ProgressMeterStepsConfig[step + 1].title;
             }
         };
 
         const nextButtonOnClick = () => {
-            if (nextIsPublish) {
+            if (step === 5) {
+                // --- review page
                 if (config.featureFlags.previewAddDataset) {
-                    window.location.href =
-                        "mailto:magda@csiro.au?subject=Add Dataset Feedback";
+                    this.gotoStep(step + 1);
                 } else {
                     this.performPublishDataset();
                 }
+            } else if (step === 6) {
+                // --- all done or preview mode feedback page
+                if (config.featureFlags.previewAddDataset) {
+                    // --- preview mode feedback page
+                    window.location.href =
+                        "mailto:magda@csiro.au?subject=Add Dataset Feedback";
+                }
             } else {
                 this.gotoStep(step + 1);
+            }
+        };
+
+        const shouldRenderButtonArea = () => {
+            if (
+                distributions.filter(
+                    item => item._state !== DistributionState.Ready
+                ).length
+            ) {
+                return false;
+            }
+            if (step === 6 && !config.featureFlags.previewAddDataset) {
+                return false;
+            } else {
+                return true;
             }
         };
 
@@ -157,23 +196,37 @@ class NewDataset extends React.Component<Props, State> {
                 <br />
                 <ErrorMessageBox />
                 <br />
-                {distributions.filter(
-                    item => item._state !== DistributionState.Ready
-                ).length ? null : (
+                {!shouldRenderButtonArea() ? null : (
                     <>
                         <div className="row next-save-button-row">
                             <div className="col-sm-12">
+                                {this.props.isBackToReview ? (
+                                    <button
+                                        className="au-btn back-to-review-button"
+                                        onClick={() =>
+                                            this.gotoStep(this.steps.length - 2)
+                                        }
+                                    >
+                                        Return to Review
+                                    </button>
+                                ) : null}
+
                                 <button
-                                    className="au-btn next-button"
+                                    className={`au-btn ${
+                                        this.props.isBackToReview
+                                            ? "au-btn--secondary save-button"
+                                            : "next-button"
+                                    }`}
                                     onClick={nextButtonOnClick}
+                                    disabled={this.state.isPublishing}
                                 >
                                     {nextButtonCaption()}
                                 </button>
-                                {nextIsPublish ? null : (
+                                {hideExitButton ? null : (
                                     <button
                                         className="au-btn au-btn--secondary save-button"
                                         onClick={() =>
-                                            this.gotoStep(this.steps.length - 1)
+                                            this.gotoStep(this.steps.length - 2)
                                         }
                                     >
                                         Review &amp; Save
@@ -189,15 +242,6 @@ class NewDataset extends React.Component<Props, State> {
 
     resetError() {
         this.props.createNewDatasetReset();
-    }
-
-    async saveAndExit() {
-        try {
-            await this.resetError();
-            this.props.history.push(`/dataset/list`);
-        } catch (e) {
-            this.props.createNewDatasetError(e);
-        }
     }
 
     async gotoStep(step) {
@@ -256,7 +300,7 @@ class NewDataset extends React.Component<Props, State> {
                 this.setState.bind(this)
             );
 
-            this.props.history.push(`/dataset/${this.props.datasetId}`);
+            this.props.history.push(`/dataset/edit/${this.props.datasetId}/6`);
         } catch (e) {
             this.setState({
                 isPublishing: false
@@ -266,16 +310,21 @@ class NewDataset extends React.Component<Props, State> {
     }
 }
 
-function mapStateToProps(state, old) {
-    let datasetId = old.match.params.datasetId;
-    let step = parseInt(old.match.params.step);
+function mapStateToProps(state, props) {
+    const uri = new URI(location.href);
+    const datasetId = props.match.params.datasetId;
+    let step = parseInt(props.match.params.step);
+    const isBackToReview =
+        typeof uri.search(true)?.isBackToReview !== "undefined" ? true : false;
+
     if (isNaN(step)) {
         step = 0;
     }
 
     return {
         datasetId,
-        step
+        step,
+        isBackToReview
     };
 }
 
@@ -290,5 +339,5 @@ const mapDispatchToProps = dispatch => {
 };
 
 export default withEditDatasetState(
-    withRouter(connect(mapStateToProps, mapDispatchToProps)(NewDataset))
+    withRouter(connect(mapStateToProps, mapDispatchToProps)(EditDataset))
 );

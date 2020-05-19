@@ -35,7 +35,8 @@ const stepNumbers = {
     PEOPLE_AND_PRODUCTION: 2,
     ACCESS_AND_USER: 3,
     SUBMIT_FOR_APPROVAL: 4,
-    ALL_DONE: 5
+    REVIEW: 5,
+    ALL_DONE: 6
 };
 
 export const steps: StepItem[] = [
@@ -60,8 +61,12 @@ export const steps: StepItem[] = [
         url: "/dataset/add/metadata/${datasetId}/4"
     },
     {
-        title: "All done!",
+        title: "Review before submitting",
         url: "/dataset/add/metadata/${datasetId}/5"
+    },
+    {
+        title: "All done!",
+        url: "/dataset/add/metadata/${datasetId}/6"
     }
 ];
 
@@ -85,6 +90,14 @@ export const editSteps: StepItem[] = [
     {
         title: "Submit for Approval",
         url: "/dataset/edit/${datasetId}/4"
+    },
+    {
+        title: "Review before submitting",
+        url: "/dataset/add/metadata/${datasetId}/5"
+    },
+    {
+        title: "All done!",
+        url: "/dataset/add/metadata/${datasetId}/6"
     }
 ];
 
@@ -119,12 +132,25 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
         currentStep: number,
         datasetId: string
     ) {
+        if (idx >= stepNumbers.REVIEW) {
+            return null;
+        }
+
         type Status = {
             class: "past-item" | "current-item" | "future-item";
             iconItem: ReactNode;
         };
 
         const status: Status = (() => {
+            if (
+                currentStep >= stepNumbers.REVIEW &&
+                idx === stepNumbers.SUBMIT_FOR_APPROVAL
+            ) {
+                return {
+                    class: "current-item",
+                    iconItem: <div className="round-number-icon">{idx + 1}</div>
+                } as Status;
+            }
             if (currentStep < idx) {
                 return {
                     class: "future-item",
@@ -208,9 +234,7 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
                 </div>
                 <div className="col-sm-10 step-item-body">
                     {(isEdit ? editSteps : steps).map((item, idx) =>
-                        idx < stepNumbers.ALL_DONE
-                            ? renderStepItem(item, idx, currentStep, datasetId)
-                            : null
+                        renderStepItem(item, idx, currentStep, datasetId)
                     )}
                 </div>
             </div>

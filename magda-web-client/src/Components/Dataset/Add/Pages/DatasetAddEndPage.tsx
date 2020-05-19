@@ -10,11 +10,13 @@ import printIcon from "assets/print.svg";
 type Props = {
     datasetId: string;
     history: any;
+    isEdit?: boolean;
 };
 
 // If you are not in preview mode
 export default function DatasetAddEndPage(props: Props) {
     const draftPage = "/dataset/" + props.datasetId + "/details";
+    const isEdit = typeof props?.isEdit === "undefined" ? false : props.isEdit;
 
     return (
         <div className="row">
@@ -25,11 +27,12 @@ export default function DatasetAddEndPage(props: Props) {
                 </div>
                 <div className="end-preview-container-2">
                     <h2 className="end-preview-subheading">
-                        Your dataset has been successfully sent off for
-                        approval.
+                        {isEdit
+                            ? "Your dataset has been updated"
+                            : "Your dataset has been successfully sent off for approval."}
                     </h2>
                     <p className="dataset-status-txt">
-                        You can view the status of your dataset from{" "}
+                        You can view the status of your datasets from{" "}
                         <a href="/">your home page</a>.
                     </p>
                 </div>
