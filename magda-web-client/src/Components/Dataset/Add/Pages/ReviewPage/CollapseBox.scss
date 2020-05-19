@@ -14,28 +14,6 @@
             margin-top: 0px;
             margin-bottom: 19px;
         }
-        .edit-link {
-            position: absolute;
-            right: 0px;
-            bottom: 0px;
-            background-color: transparent;
-            font-size: 16px;
-            font-weight: normal;
-            font-stretch: normal;
-            font-style: normal;
-            line-height: 1.88;
-            letter-spacing: -0.28px;
-            color: #30384d;
-            border: none;
-            padding-top: 0px;
-            padding-bottom: 5px;
-            padding-right: 5px;
-            padding-left: 5px;
-        }
-        .edit-link:hover {
-            background-color: transparent;
-            color: #30384d;
-        }
     }
     .not-collapse-box-section-heading {
         position: relative;
@@ -69,6 +47,28 @@
             background-color: transparent;
             color: #30384d;
         }
+    }
+    .edit-link {
+        position: absolute;
+        right: 0px;
+        bottom: 0px;
+        background-color: transparent;
+        font-size: 16px;
+        font-weight: normal;
+        font-stretch: normal;
+        font-style: normal;
+        line-height: 1.88;
+        letter-spacing: -0.28px;
+        color: #30384d;
+        border: none;
+        padding-top: 0px;
+        padding-bottom: 5px;
+        padding-right: 5px;
+        padding-left: 5px;
+    }
+    .edit-link:hover {
+        background-color: transparent;
+        color: #30384d;
     }
     .collapse-box-body {
         padding-top: 30px;
