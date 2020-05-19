@@ -45,7 +45,7 @@ const input = fs
 
 const output = `-o ${argv.output}`;
 
-const config = `-x ${argv.config}`;
+const config = `-c ${argv.config}`;
 
 childProcess.execSync(
     `apidoc ${input} -f ".*\.scala$" -f ".*\.ts$" -f ".*\.js$" ${output} ${config}`,
