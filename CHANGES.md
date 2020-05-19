@@ -48,6 +48,7 @@ UI:
 -   Disable edit button on harvested datasets
 -   Added the support of processing ESRI REST API URL
 -   Use IBM Plex Sans font
+-   Fixed: error notification no longer has a white background
 -   Added `add dataset review page`
 
 Storage:
