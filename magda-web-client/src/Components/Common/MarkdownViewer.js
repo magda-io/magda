@@ -25,7 +25,8 @@ export default MarkdownViewer;
 
 const md = new MarkdownIt({
     html: true,
-    linkify: true
+    linkify: true,
+    breaks: true
 });
 
 const htmlRegex = /^\s*<[^>]+>/;

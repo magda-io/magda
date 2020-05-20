@@ -57,14 +57,6 @@
     }
 }
 
-.tooltip.tooltip-dismissed,
-.tooltip.tooltip-dismissed:hover {
-    & .tooltiptext {
-        visibility: hidden;
-        transition: none !important;
-    }
-}
-
 .tooltip:hover .tooltiptext,
 .tooltip-open .tooltiptext {
     visibility: visible;

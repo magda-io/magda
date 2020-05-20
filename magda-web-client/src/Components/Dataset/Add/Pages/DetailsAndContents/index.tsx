@@ -14,7 +14,7 @@ import {
 } from "Components/Editing/Editors/dateEditor";
 
 import ToolTip from "Components/Dataset/Add/ToolTip";
-import PurpleToolTip from "Components/Common/TooltipWrapper";
+import TooltipWrapper from "Components/Common/TooltipWrapper";
 
 import SpatialAreaInput, {
     InputMethod as SpatialAreaInputInputMethod
@@ -255,7 +255,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         <h4>
                             <span>When was the dataset first issued?</span>
                             <span className="tooltip-container">
-                                <PurpleToolTip
+                                <TooltipWrapper
                                     className="tooltip no-print"
                                     launcher={() => (
                                         <div className="tooltip-launcher-icon help-icon">
@@ -270,7 +270,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                     {() =>
                                         "The date the dataset was first created or issued for release"
                                     }
-                                </PurpleToolTip>
+                                </TooltipWrapper>
                             </span>
                         </h4>
                         <AlwaysEditor
@@ -323,6 +323,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                 <h3>Spatial extent</h3>
                 <div>
                     <SpatialAreaInput
+                        method={spatialCoverage.spatialDataInputMethod}
                         countryId={spatialCoverage.lv1Id}
                         territoryOrSteId={spatialCoverage.lv2Id}
                         sa4Id={spatialCoverage.lv3Id}

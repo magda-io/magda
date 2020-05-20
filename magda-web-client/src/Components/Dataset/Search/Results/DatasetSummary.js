@@ -23,7 +23,10 @@ export default class DatasetSummary extends Component {
                 .map(dis => dis.format)
         );
         return formats.length ? (
-            <div className="dataset-summary-downloads">
+            <div
+                key="dataset-summary-downloads"
+                className="dataset-summary-downloads"
+            >
                 <img src={fileIcon} alt="File icon" />{" "}
                 {formats.map((f, i) => (
                     <span key={i}>{f}</span>
@@ -51,7 +54,10 @@ export default class DatasetSummary extends Component {
 
         if (defined(parsed.updatedDate)) {
             datasetSummaryItems.push(
-                <div className="dataset-summary-updated">
+                <div
+                    key="dataset-summary-updated"
+                    className="dataset-summary-updated"
+                >
                     Dataset Updated {parsed.updatedDate}
                 </div>
             );
@@ -59,7 +65,10 @@ export default class DatasetSummary extends Component {
 
         if (dataset.hasQuality && defined(dataset.quality)) {
             datasetSummaryItems.push(
-                <div className="dataset-summary-quality">
+                <div
+                    key="dataset-summary-quality"
+                    className="dataset-summary-quality"
+                >
                     <QualityIndicator quality={dataset.quality} />
                 </div>
             );
@@ -80,7 +89,10 @@ export default class DatasetSummary extends Component {
             defined(dataset.provenance.isOpenData)
         ) {
             datasetSummaryItems.push(
-                <div className="dataset-summary-type">
+                <div
+                    key="dataset-summary-type"
+                    className="dataset-summary-type"
+                >
                     {dataset.provenance.isOpenData ? "Public" : "Private"}
                 </div>
             );

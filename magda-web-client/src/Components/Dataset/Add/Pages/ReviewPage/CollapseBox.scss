@@ -1,0 +1,77 @@
+.collapse-box {
+    .collapse-box-section-heading {
+        position: relative;
+        border-bottom: solid 1px #cccaca;
+        padding-right: 80px;
+        img {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+        }
+        h3 {
+            cursor: pointer;
+            padding-left: 50px;
+            margin-top: 0px;
+            margin-bottom: 19px;
+        }
+    }
+    .not-collapse-box-section-heading {
+        position: relative;
+        border-bottom: solid 1px #cccaca;
+        padding-right: 80px;
+        h3 {
+            cursor: default;
+            padding-left: 10px;
+            margin-top: 0px;
+            margin-bottom: 19px;
+        }
+        button {
+            position: absolute;
+            right: 0px;
+            bottom: 0px;
+            background-color: transparent;
+            font-size: 16px;
+            font-weight: normal;
+            font-stretch: normal;
+            font-style: normal;
+            line-height: 1.88;
+            letter-spacing: -0.28px;
+            color: #30384d;
+            border: none;
+            padding-top: 0px;
+            padding-bottom: 5px;
+            padding-right: 5px;
+            padding-left: 5px;
+        }
+        button:hover {
+            background-color: transparent;
+            color: #30384d;
+        }
+    }
+    .edit-link {
+        position: absolute;
+        right: 0px;
+        bottom: 0px;
+        background-color: transparent;
+        font-size: 16px;
+        font-weight: normal;
+        font-stretch: normal;
+        font-style: normal;
+        line-height: 1.88;
+        letter-spacing: -0.28px;
+        color: #30384d;
+        border: none;
+        padding-top: 0px;
+        padding-bottom: 5px;
+        padding-right: 5px;
+        padding-left: 5px;
+    }
+    .edit-link:hover {
+        background-color: transparent;
+        color: #30384d;
+    }
+    .collapse-box-body {
+        padding-top: 30px;
+        padding-bottom: 90px;
+    }
+}

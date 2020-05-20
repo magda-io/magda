@@ -837,6 +837,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
   override def searchRegions(
       query: Option[String],
+      regionId: Option[String],
       regionType: Option[String],
       lv1Id: Option[String],
       lv2Id: Option[String],
@@ -849,6 +850,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
   ): Future[RegionSearchResult] = {
 
     val otherFilters = (regionType.map(matchQuery("regionType", _)).toList ++
+      regionId.map(matchQuery("regionId", _)).toList ++
       lv1Id.map(matchQuery("lv1Id", _)).toList ++
       lv2Id.map(matchQuery("lv2Id", _)).toList ++
       lv3Id.map(matchQuery("lv3Id", _)).toList ++

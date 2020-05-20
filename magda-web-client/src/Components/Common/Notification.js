@@ -25,7 +25,7 @@ function Notification(props) {
     return (
         <div className="notification-box">
             <div
-                className={`au-page-alerts au-page-alerts--${type} notification__inner`}
+                className={`au-body au-page-alerts au-page-alerts--${type} notification__inner`}
             >
                 {props.onDismiss && (
                     <button

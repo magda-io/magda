@@ -30,6 +30,7 @@ import organizationDetailsAspect from "@magda/registry-aspects/organization-deta
 import datasetPublisherAspect from "@magda/registry-aspects/dataset-publisher.schema.json";
 import currencyAspect from "@magda/registry-aspects/currency.schema.json";
 import ckanPublishAspect from "@magda/registry-aspects/ckan-publish.schema.json";
+import sourceAspect from "@magda/registry-aspects/source.schema.json";
 
 const aspects = {
     publishing: datasetPublishingAspect,
@@ -44,7 +45,8 @@ const aspects = {
     "dataset-access-control": datasetAccessControlAspect,
     "dataset-publisher": datasetPublisherAspect,
     currency: currencyAspect,
-    "ckan-publish": ckanPublishAspect
+    "ckan-publish": ckanPublishAspect,
+    source: sourceAspect
 };
 
 export type Distribution = {
@@ -169,9 +171,9 @@ export type DatasetPublishing = {
     };
 };
 
-type SpatialCoverage = {
+export type SpatialCoverage = {
     bbox?: [number, number, number, number];
-    spatialDataInputMethod?: string;
+    spatialDataInputMethod?: "bbox" | "region" | "map";
     lv1Id?: string;
     lv2Id?: string;
     lv3Id?: string;
@@ -241,6 +243,15 @@ type Access = {
     location?: string;
     notes?: string;
 };
+
+function getInternalDatasetSourceAspectData() {
+    return {
+        id: "magda",
+        name: "This Magda metadata creation tool",
+        type: "internal",
+        url: config.baseExternalUrl
+    };
+}
 
 function dateStringToDate(dateInput: any): Date | null {
     if (dateInput instanceof Date && !isNaN(dateInput.getTime())) {
@@ -419,8 +430,8 @@ async function populateProvenanceAspect(data: RawDataset, state: State) {
         provenance.affiliatedOrganizations = affiliatedOrganizationIds.map(
             item => ({
                 existingId: item.id,
-                name: item?.aspects?.["organization-details"]?.name
-                    ? item?.aspects?.["organization-details"]?.name
+                name: item?.aspects?.["organization-details"]?.title
+                    ? item?.aspects?.["organization-details"]?.title
                     : item.name
             })
         );
@@ -646,13 +657,15 @@ async function ensureBlankDatasetIsSavedToRegistry(
                         custodianOrgUnitId: dataset.custodianOrgUnitId
                             ? dataset.custodianOrgUnitId
                             : undefined
-                    }
+                    },
+                    source: getInternalDatasetSourceAspectData()
                 }
             },
             [],
             {
                 publishing: datasetPublishingAspect,
-                "dataset-access-control": datasetAccessControlAspect
+                "dataset-access-control": datasetAccessControlAspect,
+                source: sourceAspect
             }
         );
     }
@@ -783,7 +796,8 @@ async function convertStateToDatasetRecord(
     datasetId: string,
     distributionRecords: Record[],
     state: State,
-    setState: React.Dispatch<React.SetStateAction<State>>
+    setState: React.Dispatch<React.SetStateAction<State>>,
+    isUpdate: boolean = false
 ) {
     const {
         dataset,
@@ -870,6 +884,10 @@ async function convertStateToDatasetRecord(
         }
     };
 
+    if (!isUpdate) {
+        inputDataset.aspects["source"] = getInternalDatasetSourceAspectData();
+    }
+
     if (!inputDataset.aspects["dataset-access-control"].orgUnitOwnerId) {
         delete inputDataset.aspects["dataset-access-control"];
     }
@@ -933,7 +951,8 @@ export async function updateDatasetFromState(
         datasetId,
         distributionRecords,
         state,
-        setState
+        setState,
+        true
     );
     await updateDataset(datasetRecord, distributionRecords, aspects);
 }

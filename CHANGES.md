@@ -45,8 +45,11 @@ UI:
 -   Clarify tooltip text
 -   Use a new "All done!" screen at the end of the dataset flow
 -   Added Error Screen for adding distributions from URL feature & allow manually create distributions
+-   Disable edit button on harvested datasets
 -   Added the support of processing ESRI REST API URL
 -   Use IBM Plex Sans font
+-   Fixed: error notification no longer has a white background
+-   Added `add dataset review page`
 
 Storage:
 
@@ -85,6 +88,7 @@ Authorization:
 Search
 
 -   Began work on a NodeJS-based search API to replace the scala one
+-   Allow fetch region record by region id
 
 Minions:
 
