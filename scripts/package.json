@@ -16,7 +16,8 @@
     "pkg-create-secrets-script": "pkg create-secrets/index.js --out-path create-secrets/build",
     "create-region-synonym-file": "create-region-synonym-file.js",
     "org-tree": "org-tree/index.js",
-    "acs-cmd": "acs-cmd/index.js"
+    "acs-cmd": "acs-cmd/index.js",
+    "reset-user-password": "reset-user-password.js"
   },
   "scripts": {
     "build": "echo \"ok\"",
@@ -65,7 +66,8 @@
     "tsconfig-paths": "^3.9.0",
     "typescript": "^3.7.2",
     "uniqid": "^5.0.3",
-    "yargs": "^12.0.5"
+    "yargs": "^12.0.5",
+    "bcrypt": "^4.0.1"
   },
   "keywords": [
     "Magda",

@@ -3,6 +3,7 @@ CREATE TABLE "public"."credentials" (
     "user_id" uuid NOT NULL,
     "timestamp" timestamp with time zone DEFAULT (now() at time zone 'utc'),
     "hash" varchar(60) NOT NULL DEFAULT ''::character varying,
+    UNIQUE ("user_id"),
     PRIMARY KEY ("id")
 ) WITH (
     OIDS = FALSE
