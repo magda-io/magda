@@ -947,13 +947,14 @@ export async function updateDatasetFromState(
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>
 ) {
-    // If the dataset has been published, do an update in CKAN
-    if (
-        state.ckanPublish.status === "retain" &&
-        state.ckanPublish.publishAttempted
-    ) {
-        state.ckanPublish.publishRequired = true;
+    if (state.datasetPublishing.publishAsOpenData?.dga) {
+        state.ckanPublish.status = "retain";
+    } else {
+        state.ckanPublish.status = "withdraw";
     }
+
+    state.ckanPublish.publishRequired = true;
+
     const distributionRecords = await convertStateToDistributionRecords(state);
     const datasetRecord = await convertStateToDatasetRecord(
         datasetId,
