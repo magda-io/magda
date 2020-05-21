@@ -465,7 +465,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
     const ckanPublish: CkanPublishAspectType = aspects["ckan-publish"]
         ? aspects["ckan-publish"]
         : {
-              status: undefined,
+              status: "withdraw",
               hasCreated: false,
               publishRequired: false,
               publishAttempted: false
