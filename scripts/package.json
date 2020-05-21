@@ -17,7 +17,7 @@
     "create-region-synonym-file": "create-region-synonym-file.js",
     "org-tree": "org-tree/index.js",
     "acs-cmd": "acs-cmd/index.js",
-    "reset-user-password": "reset-user-password.js"
+    "set-user-password": "set-user-password.js"
   },
   "scripts": {
     "build": "echo \"ok\"",

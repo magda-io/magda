@@ -1,3 +1,5 @@
+ALTER TABLE ONLY users ALTER COLUMN id SET DEFAULT uuid_generate_v4();
+
 CREATE TABLE "public"."credentials" (
     "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
     "user_id" uuid NOT NULL,

@@ -177,6 +177,7 @@ export default function buildApp(config: Config) {
         app.use(
             "/auth",
             createAuthRouter({
+                dbPool,
                 authenticator: authenticator,
                 jwtSecret: config.jwtSecret,
                 facebookClientId: config.facebookClientId,
