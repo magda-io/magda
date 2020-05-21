@@ -405,7 +405,7 @@ export function parseDistribution(
 }
 
 export interface CkanPublishAspectType {
-    status: "retain" | "withdraw" | undefined;
+    status: "retain" | "withdraw";
     syncUserId?: string;
     ckanId?: string;
     hasCreated: boolean;
