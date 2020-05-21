@@ -571,10 +571,10 @@ export function createBlankState(user?: User): State {
         _createdDate: new Date(),
         _lastModifiedDate: new Date(),
         ckanPublish: {
-            status: "retain",
+            status: "withdraw",
             hasCreated: false,
             publishAttempted: false,
-            publishRequired: false
+            publishRequired: false,
         }
     };
 }
