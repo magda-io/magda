@@ -574,7 +574,7 @@ export function createBlankState(user?: User): State {
             status: "withdraw",
             hasCreated: false,
             publishAttempted: false,
-            publishRequired: false,
+            publishRequired: false
         }
     };
 }
@@ -924,6 +924,14 @@ export async function createDatasetFromState(
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>
 ) {
+    if (state.datasetPublishing.publishAsOpenData?.dga) {
+        state.ckanPublish.status = "retain";
+        state.ckanPublish.publishRequired = true;
+    } else {
+        state.ckanPublish.status = "withdraw";
+        state.ckanPublish.publishRequired = false;
+    }
+
     const distributionRecords = await convertStateToDistributionRecords(state);
     const datasetRecord = await convertStateToDatasetRecord(
         datasetId,
