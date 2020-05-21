@@ -104,13 +104,6 @@ export function createNewDatasetReset(error: FetchError): RecordAction {
 export function fetchDatasetFromRegistry(id: string): Function {
     return (dispatch: Function) => {
         dispatch(requestDataset(id));
-        // let parameters =
-        //     "dereference=true&aspect=dcat-dataset-strings&optionalAspect=dcat-distribution-strings&optionalAspect=dataset-distributions&optionalAspect=temporal-coverage&" +
-        //     "optionalAspect=usage&optionalAspect=access&optionalAspect=dataset-publisher&optionalAspect=source&optionalAspect=source-link-status&optionalAspect=dataset-quality-rating&" +
-        //     "optionalAspect=spatial-coverage&optionalAspect=publishing&optionalAspect=dataset-access-control&optionalAspect=provenance&optionalAspect=information-security&optionalAspect=currency&optionalAspect=ckan-publish";
-        // const url =
-        //     config.registryReadOnlyApiUrl +
-        //     `records/${encodeURIComponent(id)}?${parameters}`;
 
         return fetchRecord(id)
             .then((data: any) => {
