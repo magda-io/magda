@@ -33,7 +33,7 @@ function getLabelFromState(state: StateType) {
 }
 
 const DefaultCkanPublishData: CkanPublishAspectType = {
-    status: undefined,
+    status: "withdraw",
     hasCreated: false,
     publishRequired: false,
     publishAttempted: false

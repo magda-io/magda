@@ -162,7 +162,7 @@ export function fetchDistributionFromRegistry(id: string): any {
 }
 
 const DefaultCkanPublishData: CkanPublishAspectType = {
-    status: undefined,
+    status: "withdraw",
     hasCreated: false,
     publishRequired: false,
     publishAttempted: false
