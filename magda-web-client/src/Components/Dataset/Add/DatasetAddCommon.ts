@@ -29,7 +29,7 @@ import datasetAccessControlAspect from "@magda/registry-aspects/dataset-access-c
 import organizationDetailsAspect from "@magda/registry-aspects/organization-details.schema.json";
 import datasetPublisherAspect from "@magda/registry-aspects/dataset-publisher.schema.json";
 import currencyAspect from "@magda/registry-aspects/currency.schema.json";
-import ckanPublishAspect from "@magda/registry-aspects/ckan-publish.schema.json";
+import ckanExportAspect from "@magda/registry-aspects/ckan-export.schema.json";
 import sourceAspect from "@magda/registry-aspects/source.schema.json";
 
 const aspects = {
@@ -45,7 +45,7 @@ const aspects = {
     "dataset-access-control": datasetAccessControlAspect,
     "dataset-publisher": datasetPublisherAspect,
     currency: currencyAspect,
-    "ckan-publish": ckanPublishAspect,
+    "ckan-export": ckanExportAspect,
     source: sourceAspect
 };
 
@@ -194,16 +194,16 @@ type Currency = {
     retireReason?: string;
 };
 
-type CkanPublishStatus = "withdraw" | "retain";
-type CkanPublish = {
-    status: CkanPublishStatus;
+type CkanExportStatus = "withdraw" | "retain";
+type CkanExport = {
+    status: CkanExportStatus;
     hasCreated: boolean;
-    publishRequired: boolean;
-    publishAttempted: boolean;
-    publishUserId?: string;
+    exportRequired: boolean;
+    exportAttempted: boolean;
+    exportUserId?: string;
     ckanId?: string;
-    lastPublishAttemptTime?: Date;
-    publishError?: Error | string;
+    lastExportAttemptTime?: Date;
+    exportError?: Error | string;
 };
 
 export type State = {
@@ -217,7 +217,7 @@ export type State = {
     informationSecurity: InformationSecurity;
     provenance: Provenance;
     currency: Currency;
-    ckanPublish: CkanPublish;
+    ckanExport: CkanExport;
 
     _lastModifiedDate: Date;
     _createdDate: Date;
@@ -493,8 +493,8 @@ export async function rawDatasetDataToState(data: RawDataset): Promise<State> {
         state.spatialCoverage = data.aspects?.["spatial-coverage"];
     }
 
-    if (data.aspects?.["ckan-publish"]) {
-        state.ckanPublish = data.aspects?.["ckan-publish"];
+    if (data.aspects?.["ckan-export"]) {
+        state.ckanExport = data.aspects?.["ckan-export"];
     }
 
     populateTemporalCoverageAspect(data, state);
@@ -570,11 +570,11 @@ export function createBlankState(user?: User): State {
         error: null,
         _createdDate: new Date(),
         _lastModifiedDate: new Date(),
-        ckanPublish: {
+        ckanExport: {
             status: "withdraw",
             hasCreated: false,
-            publishAttempted: false,
-            publishRequired: false
+            exportAttempted: false,
+            exportRequired: false
         }
     };
 }
@@ -808,7 +808,7 @@ async function convertStateToDatasetRecord(
         datasetAccess,
         provenance,
         currency,
-        ckanPublish
+        ckanExport
     } = state;
 
     let publisherId;
@@ -837,7 +837,7 @@ async function convertStateToDatasetRecord(
             "dataset-distributions": {
                 distributions: distributionRecords.map(d => d.id)
             },
-            "ckan-publish": ckanPublish,
+            "ckan-export": ckanExport,
             access: datasetAccess,
             "information-security": informationSecurity,
             "dataset-access-control": {
@@ -925,11 +925,11 @@ export async function createDatasetFromState(
     setState: React.Dispatch<React.SetStateAction<State>>
 ) {
     if (state.datasetPublishing.publishAsOpenData?.dga) {
-        state.ckanPublish.status = "retain";
-        state.ckanPublish.publishRequired = true;
+        state.ckanExport.status = "retain";
+        state.ckanExport.exportRequired = true;
     } else {
-        state.ckanPublish.status = "withdraw";
-        state.ckanPublish.publishRequired = false;
+        state.ckanExport.status = "withdraw";
+        state.ckanExport.exportRequired = false;
     }
 
     const distributionRecords = await convertStateToDistributionRecords(state);
@@ -948,12 +948,12 @@ export async function updateDatasetFromState(
     setState: React.Dispatch<React.SetStateAction<State>>
 ) {
     if (state.datasetPublishing.publishAsOpenData?.dga) {
-        state.ckanPublish.status = "retain";
+        state.ckanExport.status = "retain";
     } else {
-        state.ckanPublish.status = "withdraw";
+        state.ckanExport.status = "withdraw";
     }
 
-    state.ckanPublish.publishRequired = true;
+    state.ckanExport.exportRequired = true;
 
     const distributionRecords = await convertStateToDistributionRecords(state);
     const datasetRecord = await convertStateToDatasetRecord(

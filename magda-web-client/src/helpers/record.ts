@@ -204,7 +204,7 @@ export type ParsedDataset = {
         orgUnitOwnerId: string;
         preAuthorisedPermissionIds: string[];
     };
-    ckanPublish?: CkanPublishAspectType;
+    ckanExport?: CkanExportAspectType;
 };
 
 export const emptyPublisher: Publisher = {
@@ -404,15 +404,15 @@ export function parseDistribution(
     };
 }
 
-export interface CkanPublishAspectType {
+export interface CkanExportAspectType {
     status: "retain" | "withdraw";
     syncUserId?: string;
     ckanId?: string;
     hasCreated: boolean;
-    publishRequired: boolean;
-    publishAttempted: boolean;
-    lastPublishAttemptTime?: Date;
-    publishError?: string;
+    exportRequired: boolean;
+    exportAttempted: boolean;
+    lastExportAttemptTime?: Date;
+    exportError?: string;
 }
 
 export function parseDataset(dataset?: RawDataset): ParsedDataset {
@@ -462,18 +462,18 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         ? true
         : false;
 
-    const ckanPublish: CkanPublishAspectType = aspects["ckan-publish"]
-        ? aspects["ckan-publish"]
+    const ckanExport: CkanExportAspectType = aspects["ckan-export"]
+        ? aspects["ckan-export"]
         : {
               status: "withdraw",
               hasCreated: false,
-              publishRequired: false,
-              publishAttempted: false
+              exportRequired: false,
+              exportAttempted: false
           };
 
-    ckanPublish.hasCreated = !!ckanPublish.hasCreated;
-    ckanPublish.publishRequired = !!ckanPublish.publishRequired;
-    ckanPublish.publishAttempted = !!ckanPublish.publishAttempted;
+    ckanExport.hasCreated = !!ckanExport.hasCreated;
+    ckanExport.exportRequired = !!ckanExport.exportRequired;
+    ckanExport.exportAttempted = !!ckanExport.exportAttempted;
 
     const distributions = distribution["distributions"].map(d => {
         const distributionAspects = Object.assign(
@@ -558,6 +558,6 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         accrualPeriodicity: datasetInfo["accrualPeriodicity"] || "",
         accrualPeriodicityRecurrenceRule:
             datasetInfo["accrualPeriodicityRecurrenceRule"] || "",
-        ckanPublish
+        ckanExport
     };
 }

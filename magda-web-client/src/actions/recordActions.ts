@@ -9,8 +9,8 @@ import {
     Record
 } from "api-clients/RegistryApis";
 import request from "helpers/request";
-import { CkanPublishAspectType } from "helpers/record";
-import ckanPublishAspect from "@magda/registry-aspects/ckan-publish.schema.json";
+import { CkanExportAspectType } from "helpers/record";
+import ckanExportAspect from "@magda/registry-aspects/ckan-export.schema.json";
 
 export function requestDataset(id: string): RecordAction {
     return {
@@ -154,30 +154,30 @@ export function fetchDistributionFromRegistry(id: string): any {
     };
 }
 
-const DefaultCkanPublishData: CkanPublishAspectType = {
+const DefaultCkanExportData: CkanExportAspectType = {
     status: "withdraw",
     hasCreated: false,
-    publishRequired: false,
-    publishAttempted: false
+    exportRequired: false,
+    exportAttempted: false
 };
 
-async function notifyCkanPublishMinion(datasetId: string) {
-    let ckanPublishData: CkanPublishAspectType;
+async function notifyCkanExportMinion(datasetId: string) {
+    let ckanExportData: CkanExportAspectType;
     try {
-        ckanPublishData = await request(
+        ckanExportData = await request(
             "GET",
-            `${config.registryReadOnlyApiUrl}records/${datasetId}/aspects/ckan-publish`
+            `${config.registryReadOnlyApiUrl}records/${datasetId}/aspects/ckan-export`
         );
     } catch (e) {
-        await ensureAspectExists("ckan-publish", ckanPublishAspect);
-        ckanPublishData = { ...DefaultCkanPublishData };
+        await ensureAspectExists("ckan-export", ckanExportAspect);
+        ckanExportData = { ...DefaultCkanExportData };
     }
 
-    if (ckanPublishData.status === "retain") {
+    if (ckanExportData.status === "retain") {
         await request(
             "PUT",
-            `${config.registryFullApiUrl}records/${datasetId}/aspects/ckan-publish`,
-            { ...ckanPublishData, publishRequired: true }
+            `${config.registryFullApiUrl}records/${datasetId}/aspects/ckan-export`,
+            { ...ckanExportData, exportRequired: true }
         );
     }
 }
@@ -230,7 +230,7 @@ export function modifyRecordAspect(
                 return response.json();
             })
             .then((json: any) => {
-                return notifyCkanPublishMinion(id).then(() => {
+                return notifyCkanExportMinion(id).then(() => {
                     return dispatch(receiveAspectModified(aspect, json));
                 });
             })

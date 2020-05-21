@@ -54,7 +54,7 @@ export async function fetchRecord(
         "provenance",
         "information-security",
         "currency",
-        "ckan-publish"
+        "ckan-export"
     ],
     aspects: string[] = ["dcat-dataset-strings"],
     dereference: boolean = true
