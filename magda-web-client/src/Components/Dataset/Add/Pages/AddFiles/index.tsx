@@ -26,6 +26,8 @@ import { User } from "reducers/userManagementReducer";
 import "./index.scss";
 import "../../DatasetAddCommon.scss";
 
+const DATASETS_BUCKET = "datasets";
+
 type Props = {
     edit: <K extends keyof State>(
         aspectField: K
@@ -53,7 +55,9 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
     }
 
     async onDrop(fileList: FileList | null, event: any) {
-        if (fileList) this.addFiles(fileList, event);
+        if (fileList) {
+            this.addFiles(fileList, event);
+        }
     }
 
     updateLastModifyDate() {
@@ -94,6 +98,10 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
         }
     }
 
+    uploadUrl(fileName: string) {
+        return `${config.storageApiUrl}${DATASETS_BUCKET}/${fileName}`;
+    }
+
     addFiles = async (fileList: FileList, event: any = null) => {
         for (let i = 0; i < fileList.length; i++) {
             const thisFile = fileList.item(i);
@@ -103,8 +111,12 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                 continue;
             }
 
+            const distRecordId = createId("dist");
+
+            const shouldUpload = this.props.stateData.shouldUploadToStorageApi;
+
             const newFile: Distribution = {
-                id: createId("dist"),
+                id: distRecordId,
                 datasetTitle: toTitleCase(
                     turnPunctuationToSpaces(
                         trimExtension(thisFile.name || "File Name")
@@ -116,10 +128,32 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                 format: fileFormat(thisFile),
                 _state: DistributionState.Added,
                 license: "world",
-                creationSource: DistributionSource.File
+                creationSource: DistributionSource.File,
+                downloadURL: shouldUpload
+                    ? `${this.uploadUrl(thisFile.name)}`
+                    : undefined
             };
 
-            processFile(thisFile, update => {
+            const formData = new FormData();
+            formData.append(thisFile.name, thisFile);
+
+            const uploadPromise = shouldUpload
+                ? fetch(
+                      `${this.uploadUrl(
+                          thisFile.name
+                      )}?recordId=${distRecordId}`,
+                      {
+                          method: "POST",
+                          body: formData
+                      }
+                  ).then(res => {
+                      if (res.status !== 200) {
+                          throw new Error("Could not upload file");
+                      }
+                  })
+                : Promise.resolve();
+
+            const processPromise = processFile(thisFile, update => {
                 this.props.setState((state: State) => {
                     const newState: State = {
                         ...state,
@@ -128,96 +162,113 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                     Object.assign(newFile, update);
                     return newState;
                 });
-            }).then(() => {
-                this.props.setState((state: State) => {
-                    const newState: State = {
-                        ...state,
-                        distributions: state.distributions.slice(0)
-                    };
-
-                    let file: any = newFile;
-                    const {
-                        dataset,
-                        temporalCoverage,
-                        spatialCoverage
-                    } = state;
-                    for (const key in file) {
-                        // these fields don't belong in a distribution
-                        switch (key) {
-                            case "datasetTitle":
-                                if (
-                                    !dataset["title"] ||
-                                    dataset["title"] === ""
-                                ) {
-                                    dataset["title"] = file[key];
-                                }
-                                file[key] = undefined;
-                                break;
-                            case "keywords":
-                            case "themes":
-                                const existing = dataset[key]
-                                    ? (dataset[key] as KeywordsLike)
-                                    : {
-                                          keywords: [],
-                                          derived: false
-                                      };
-                                const fileKeywords: string[] = file[key] || [];
-
-                                dataset[key] = {
-                                    keywords: uniq(
-                                        existing.keywords.concat(fileKeywords)
-                                    ),
-                                    derived:
-                                        existing.derived ||
-                                        fileKeywords.length > 0
-                                };
-                                file[key] = undefined;
-                                break;
-                            case "spatialCoverage":
-                                Object.assign(spatialCoverage, file[key]);
-                                file[key] = undefined;
-                                break;
-                            case "temporalCoverage":
-                                temporalCoverage.intervals = temporalCoverage.intervals.concat(
-                                    file[key].intervals
-                                );
-                                file[key] = undefined;
-                                break;
-                        }
-                    }
-
-                    if (
-                        config.datasetThemes &&
-                        config.datasetThemes.length &&
-                        newState.dataset &&
-                        newState.dataset.keywords &&
-                        newState.dataset.keywords.keywords &&
-                        newState.dataset.keywords.keywords.length
-                    ) {
-                        const keywords = newState.dataset.keywords.keywords.map(
-                            item => item.toLowerCase()
-                        );
-                        const themesBasedOnKeywords = config.datasetThemes.filter(
-                            theme =>
-                                keywords.indexOf(theme.toLowerCase()) !== -1
-                        );
-                        if (themesBasedOnKeywords.length) {
-                            const existingThemesKeywords = newState.dataset
-                                .themes
-                                ? newState.dataset.themes.keywords
-                                : [];
-                            newState.dataset.themes = {
-                                keywords: themesBasedOnKeywords.concat(
-                                    existingThemesKeywords
-                                ),
-                                derived: true
-                            };
-                        }
-                    }
-
-                    return newState;
-                });
             });
+
+            Promise.all([uploadPromise, processPromise])
+                .then(([uploadResponse, processResult]) => {
+                    this.props.setState((state: State) => {
+                        const newState: State = {
+                            ...state,
+                            distributions: state.distributions.slice(0)
+                        };
+
+                        let file: any = newFile;
+                        const {
+                            dataset,
+                            temporalCoverage,
+                            spatialCoverage
+                        } = state;
+                        for (const key in file) {
+                            // these fields don't belong in a distribution
+                            switch (key) {
+                                case "datasetTitle":
+                                    if (
+                                        !dataset["title"] ||
+                                        dataset["title"] === ""
+                                    ) {
+                                        dataset["title"] = file[key];
+                                    }
+                                    file[key] = undefined;
+                                    break;
+                                case "keywords":
+                                case "themes":
+                                    const existing = dataset[key]
+                                        ? (dataset[key] as KeywordsLike)
+                                        : {
+                                              keywords: [],
+                                              derived: false
+                                          };
+                                    const fileKeywords: string[] =
+                                        file[key] || [];
+
+                                    dataset[key] = {
+                                        keywords: uniq(
+                                            existing.keywords.concat(
+                                                fileKeywords
+                                            )
+                                        ),
+                                        derived:
+                                            existing.derived ||
+                                            fileKeywords.length > 0
+                                    };
+                                    file[key] = undefined;
+                                    break;
+                                case "spatialCoverage":
+                                    Object.assign(spatialCoverage, file[key]);
+                                    file[key] = undefined;
+                                    break;
+                                case "temporalCoverage":
+                                    temporalCoverage.intervals = temporalCoverage.intervals.concat(
+                                        file[key].intervals
+                                    );
+                                    file[key] = undefined;
+                                    break;
+                            }
+                        }
+
+                        if (
+                            config.datasetThemes &&
+                            config.datasetThemes.length &&
+                            newState.dataset &&
+                            newState.dataset.keywords &&
+                            newState.dataset.keywords.keywords &&
+                            newState.dataset.keywords.keywords.length
+                        ) {
+                            const keywords = newState.dataset.keywords.keywords.map(
+                                item => item.toLowerCase()
+                            );
+                            const themesBasedOnKeywords = config.datasetThemes.filter(
+                                theme =>
+                                    keywords.indexOf(theme.toLowerCase()) !== -1
+                            );
+                            if (themesBasedOnKeywords.length) {
+                                const existingThemesKeywords = newState.dataset
+                                    .themes
+                                    ? newState.dataset.themes.keywords
+                                    : [];
+                                newState.dataset.themes = {
+                                    keywords: themesBasedOnKeywords.concat(
+                                        existingThemesKeywords
+                                    ),
+                                    derived: true
+                                };
+                            }
+                        }
+
+                        return newState;
+                    });
+                })
+                .catch(err => {
+                    this.props.setState((state: State) => {
+                        return {
+                            ...state,
+                            error: err,
+                            distributions: state.distributions.filter(
+                                dist => dist.id !== distRecordId
+                            )
+                        };
+                    });
+                });
 
             this.props.setState((state: State) => {
                 const newState = {
@@ -403,6 +454,12 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                                 );
                             })}
                         </div>
+
+                        {state.error && (
+                            <div className="au-body au-page-alerts au-page-alerts--error">
+                                Failed to process file: {state.error?.message}
+                            </div>
+                        )}
 
                         {localFiles.length > 0 && (
                             <div className="more-files-to-add-text">

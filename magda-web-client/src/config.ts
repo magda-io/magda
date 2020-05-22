@@ -40,7 +40,7 @@ const fallbackApiHost = "https://dev.magda.io/";
 const DEV_FEATURE_FLAGS = {
     cataloguing: true,
     publishToDga: true,
-    previewAddDataset: true
+    previewAddDataset: false
 };
 
 const homePageConfig: {
@@ -69,6 +69,7 @@ const serverConfig: {
     registryApiReadOnlyBaseUrl?: string;
     searchApiBaseUrl?: string;
     correspondenceApiBaseUrl?: string;
+    storageApiBaseUrl?: string;
     gapiIds?: Array<string>;
     adminApiBaseUrl?: string;
     disableAuthenticationFeatures?: boolean;
@@ -195,6 +196,8 @@ export const config = {
     correspondenceApiUrl:
         serverConfig.correspondenceApiBaseUrl ||
         fallbackApiHost + "api/v0/correspondence/",
+    storageApiUrl:
+        serverConfig.storageApiBaseUrl || fallbackApiHost + "api/v0/storage/",
     previewMapUrl: previewMapUrl,
     proxyUrl: proxyUrl,
     rssUrl: proxyUrl + "_0d/https://blog.data.gov.au/blogs/rss.xml",
