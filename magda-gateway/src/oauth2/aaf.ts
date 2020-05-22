@@ -104,7 +104,7 @@ export default function aaf(options: aafOptions) {
             res: express.Response,
             next: express.NextFunction
         ) => {
-            passport.authenticate("custom", {
+            passport.authenticate("aaf-custom", {
                 failWithError: true
             })(req, res, next);
         },

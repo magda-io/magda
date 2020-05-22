@@ -81,8 +81,7 @@ export default function internal(options: InternalAuthProviderOptions) {
             res: express.Response,
             next: express.NextFunction
         ) => {
-            console.log("passport.authenticate(loca ....");
-            passport.authenticate("local", {
+            passport.authenticate("magda-internal", {
                 failWithError: true
             })(req, res, next);
         },

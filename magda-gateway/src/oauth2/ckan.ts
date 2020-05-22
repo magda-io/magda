@@ -54,7 +54,7 @@ export default function ckan(options: CkanOptions) {
             res: express.Response,
             next: express.NextFunction
         ) => {
-            passport.authenticate("local", {
+            passport.authenticate("ckan-local", {
                 failWithError: true
             })(req, res, next);
         },
