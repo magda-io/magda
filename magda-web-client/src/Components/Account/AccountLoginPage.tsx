@@ -108,15 +108,18 @@ export default function Login(props) {
                     <>
                         <h2>Forgot your password?</h2>
                         <p>
-                            Forgot your password? Email{" "}
+                            Forgot your password?{" "}
                             {config.defaultContactEmail ? (
-                                <a
-                                    href={`mailto:${config.defaultContactEmail}`}
-                                >
-                                    {config.defaultContactEmail}
-                                </a>
+                                <>
+                                    Email{" "}
+                                    <a
+                                        href={`mailto:${config.defaultContactEmail}`}
+                                    >
+                                        {config.defaultContactEmail}
+                                    </a>
+                                </>
                             ) : (
-                                "your administrator."
+                                "Contact your administrator."
                             )}
                         </p>
                     </>
