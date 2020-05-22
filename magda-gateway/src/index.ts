@@ -79,6 +79,11 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: "http://localhost:6110"
         })
+        .option("magdaUI", {
+            describe: "The base URL of the magda ui.",
+            type: "string",
+            default: "http://localhost:6108"
+        })
         .option("web", {
             describe: "The base URL of the web site.",
             type: "string",

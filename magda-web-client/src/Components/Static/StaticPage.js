@@ -80,7 +80,9 @@ class StaticPage extends Component {
                             />{" "}
                             {hasEditPermissions && (
                                 <p>
-                                    <a href="/admin/pages">Manage Pages</a>
+                                    <a href="/magda/admin/pages">
+                                        Manage Pages
+                                    </a>
                                 </p>
                             )}
                         </div>
@@ -92,7 +94,7 @@ class StaticPage extends Component {
 }
 
 function mapStateToProps(state, old) {
-    const path = old.match.params.pageId;
+    const path = "/magda/" + old.match.params.pageId;
     const hasEditPermissions =
         state.userManagement &&
         state.userManagement.user &&

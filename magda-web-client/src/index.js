@@ -57,7 +57,7 @@ ReactDOM.render(
         <BrowserRouter>
             <GAListener>
                 <ScrollToTop>
-                    <Route path="/" component={AppContainer} />
+                    <Route path="/magda/" component={AppContainer} />
                 </ScrollToTop>
             </GAListener>
         </BrowserRouter>

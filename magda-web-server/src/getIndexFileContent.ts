@@ -8,6 +8,10 @@ const STATIC_STYLE_REGEX = new RegExp(
     "g"
 );
 
+const STATIC_PATH_REGEX = new RegExp("static", "g");
+
+const NEW_PATH = "magda/static";
+
 /**
  * Gets the content stored under "includeHtml" in the content api. On failure
  * simply returns a blank string.
@@ -21,7 +25,9 @@ async function getIncludeHtml(contentApiBaseUrlInternal: string) {
         const response = await fetch(url);
 
         if (response.status === 200) {
-            return response.text();
+            const text = response.text();
+            const newText = (await text).replace(STATIC_PATH_REGEX, NEW_PATH);
+            return newText;
         } else {
             throw new Error(
                 `Received status ${response.status}: ${
@@ -51,7 +57,8 @@ function getIndexHtml(clientRoot: string): Promise<string> {
                 if (err) {
                     reject(err);
                 } else {
-                    resolve(data);
+                    const newData = data.replace(STATIC_PATH_REGEX, NEW_PATH);
+                    resolve(newData);
                 }
             }
         )

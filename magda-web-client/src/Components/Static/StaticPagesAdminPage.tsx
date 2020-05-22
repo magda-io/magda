@@ -12,7 +12,7 @@ export default class ManageStaticPagesPage extends Component {
                 generateNewId={id => `page/${id}`}
                 titleFromItem={item => item.id.substr("page/".length)}
                 pattern="page/*"
-                link={page => `/${page}`}
+                link={page => `/magda/${page}`}
                 newContent={{
                     title: "New Page Title",
                     content: "New Page Content"

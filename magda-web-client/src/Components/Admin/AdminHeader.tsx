@@ -11,7 +11,7 @@ export default class AdminHeader extends Component<any, any> {
         if (this.props.title) {
             crumbs.push(
                 <li key="admin">
-                    <a href="/admin">Admin</a>
+                    <a href="/magda/admin">Admin</a>
                 </li>
             );
             crumbs.push(

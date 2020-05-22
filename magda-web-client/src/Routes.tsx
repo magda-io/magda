@@ -89,109 +89,109 @@ import { config } from "./config";
 const Routes = () => {
     return (
         <Switch>
-            <Route exact path="/" component={HomePage} />
+            <Route exact path="/magda" component={HomePage} />
             <Route
                 exact
-                path="/admin"
+                path="/magda/admin"
                 component={withHeader(AdminPage, true)}
             />
             <Route
                 exact
-                path="/admin/home"
+                path="/magda/admin/home"
                 component={withHeader(HomeAdminPage, true)}
             />
             <Route
                 exact
-                path="/admin/home-stories"
+                path="/magda/admin/home-stories"
                 component={withHeader(StoriesAdminPage, false)}
             />
             <Route
                 exact
-                path="/admin/home-highlights"
+                path="/magda/admin/home-highlights"
                 component={withHeader(HighlightsAdminPage, false)}
             />
             <Route
                 exact
-                path="/admin/header-navigation"
+                path="/magda/admin/header-navigation"
                 component={withHeader(HeaderNavigationAdminPage, true)}
             />
             <Route
-                path="/admin/footer-navigation/:size"
+                path="/magda/admin/footer-navigation/:size"
                 component={withHeader(FooterNavigationAdminPage, true)}
             />
             <Route
-                path="/admin/footer-navigation-links/:size/:category"
+                path="/magda/admin/footer-navigation-links/:size/:category"
                 component={withHeader(FooterNavigationLinksAdminPage, true)}
             />
             <Route
                 exact
-                path="/admin/footer-copyright"
+                path="/magda/admin/footer-copyright"
                 component={withHeader(FooterCopyrightAdminPage, true)}
             />
             <Route
                 exact
-                path="/admin/connectors"
+                path="/magda/admin/connectors"
                 component={withHeader(ConnectorsAdminPage, true)}
             />
             <Route
                 exact
-                path="/admin/accounts"
+                path="/magda/admin/accounts"
                 component={withHeader(AccountsAdminPage, false)}
             />
             <Route
                 exact
-                path="/admin/pages"
+                path="/magda/admin/pages"
                 component={withHeader(AdminStaticPagesPage, false)}
             />
             <Route
                 exact
-                path="/admin/i18n"
+                path="/magda/admin/i18n"
                 component={withHeader(LanguageAdminPage, false)}
             />
             <Route
                 exact
-                path="/organisations"
+                path="/magda/organisations"
                 component={withHeader(OrganisationsPage, false)}
             />
             <Route
                 exact
-                path="/publishers"
-                render={() => <Redirect to="/organisations" />}
+                path="/magda/publishers"
+                render={() => <Redirect to="/magda/organisations" />}
             />
             <Route
-                path="/publishers/:publisherId"
+                path="/magda/publishers/:publisherId"
                 render={({ match }) => (
                     <Redirect
-                        to={`/organisations/${match.params.publisherId}`}
+                        to={`/magda/organisations/${match.params.publisherId}`}
                     />
                 )}
             />
             <Route
-                path="/organisations/:publisherId"
+                path="/magda/organisations/:publisherId"
                 component={withHeader(OrganisationPage, false)}
             />
             <Route
                 exact
-                path="/search"
+                path="/magda/search"
                 component={withHeader(DatasetsSearchPagePublishedOnly, true)}
             />
             <Route
                 exact
-                path="/drafts"
+                path="/magda/drafts"
                 component={withHeader(DatasetsSearchPageDraftOnly, true)}
             />
             <Route
                 exact
-                path="/all-datasets"
+                path="/magda/all-datasets"
                 component={withHeader(DatasetsSearchPage, true)}
             />
             <Route
                 exact
-                path="/dataset"
+                path="/magda/dataset"
                 render={({ location }) => (
                     <Redirect
                         to={{
-                            pathname: "/search",
+                            pathname: "/magda/search",
                             search: location.search
                         }}
                     />
@@ -199,26 +199,26 @@ const Routes = () => {
             />
             <Route
                 exact
-                path="/account"
+                path="/magda/account"
                 component={withHeader(AccountPage, false)}
             />
             <Route
                 exact
-                path="/login"
+                path="/magda/login"
                 component={withHeader(AccountLoginPage, false)}
             />
             <Route
                 exact
-                path="/sign-in-redirect"
+                path="/magda/sign-in-redirect"
                 component={withHeader(AccountSignInRedirectPage, false)}
             />
             <Route
-                path="/dataset/:datasetId/distribution/:distributionId"
+                path="/magda/dataset/:datasetId/distribution/:distributionId"
                 component={withHeader(DatasetPage, true)}
             />
             {config.featureFlags.cataloguing && (
                 <Route
-                    path="/catalog"
+                    path="/magda/catalog"
                     component={withHeader(CatalogRoutes, false)}
                 />
             )}
