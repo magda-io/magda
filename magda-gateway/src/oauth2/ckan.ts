@@ -22,6 +22,7 @@ export default function ckan(options: CkanOptions) {
     const ckanUrl = options.ckanUrl;
 
     passport.use(
+        "ckan-local",
         new LocalStrategy(function(
             username: string,
             password: string,

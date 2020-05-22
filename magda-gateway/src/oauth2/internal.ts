@@ -18,6 +18,7 @@ export default function internal(options: InternalAuthProviderOptions) {
     const db = options.dbPool;
 
     passport.use(
+        "magda-internal",
         new LocalStrategy(
             async (
                 username: string,
@@ -80,6 +81,7 @@ export default function internal(options: InternalAuthProviderOptions) {
             res: express.Response,
             next: express.NextFunction
         ) => {
+            console.log("passport.authenticate(loca ....");
             passport.authenticate("local", {
                 failWithError: true
             })(req, res, next);
