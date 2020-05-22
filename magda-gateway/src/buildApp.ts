@@ -88,7 +88,7 @@ type Config = {
     vanguardWsFedCertificate?: string;
     openfaasGatewayUrl?: string;
     openfaasAllowAdminOnly?: boolean;
-    enableInternalAuthProvider: boolean;
+    enableInternalAuthProvider?: boolean;
 };
 
 export default function buildApp(config: Config) {
@@ -178,7 +178,7 @@ export default function buildApp(config: Config) {
         app.use(
             "/auth",
             createAuthRouter({
-                dbPool,
+                dbPool: createPool({ ...config, database: "auth" }),
                 authenticator: authenticator,
                 jwtSecret: config.jwtSecret,
                 facebookClientId: config.facebookClientId,
