@@ -293,6 +293,12 @@ const argv = addJwtSecretFromEnvVar(
                 "Whether only allow admin users to access openfaas gateway.",
             type: "boolean",
             default: false
+        })
+        .option("enableInternalAuthProvider", {
+            describe:
+                "Whether enable magda internal authentication provider. Default to true. ",
+            type: "boolean",
+            default: true
         }).argv
 );
 

@@ -25,6 +25,7 @@ export interface AuthRouterOptions {
     vanguardWsFedIdpUrl: string;
     vanguardWsFedRealm: string;
     vanguardWsFedCertificate: string;
+    enableInternalAuthProvider: boolean;
 }
 
 export default function createAuthRouter(options: AuthRouterOptions): Router {
@@ -44,8 +45,8 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
     const providers = [
         {
             id: "internal",
-            enabled: true,
-            authRouter: options.facebookClientId
+            enabled: options.enableInternalAuthProvider ? true : false,
+            authRouter: options.enableInternalAuthProvider
                 ? require("./oauth2/internal").default({
                       passport: passport,
                       dbPool: options.dbPool,

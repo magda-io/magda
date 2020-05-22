@@ -88,6 +88,7 @@ type Config = {
     vanguardWsFedCertificate?: string;
     openfaasGatewayUrl?: string;
     openfaasAllowAdminOnly?: boolean;
+    enableInternalAuthProvider: boolean;
 };
 
 export default function buildApp(config: Config) {
@@ -196,7 +197,8 @@ export default function buildApp(config: Config) {
                 userId: config.userId,
                 vanguardWsFedIdpUrl: config.vanguardWsFedIdpUrl,
                 vanguardWsFedRealm: config.vanguardWsFedRealm,
-                vanguardWsFedCertificate: config.vanguardWsFedCertificate
+                vanguardWsFedCertificate: config.vanguardWsFedCertificate,
+                enableInternalAuthProvider: config.enableAuthEndpoint
             })
         );
     }
