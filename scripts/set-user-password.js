@@ -28,6 +28,12 @@ program
     )
     .parse(process.argv);
 
+/**
+ * Salting round. Default is 10. means 2^10 rounds
+ * When 10, approx. ~10 hashes can be generated per sec (on a 2GHz core) roughly
+ * We set to 12 here (based on OWASP). Roughly 2-3 hashes/sec
+ */
+const SALT_ROUNDS = 12;
 const MIN_PASSWORD_LENGTH = 6;
 const AUTO_PASSWORD_LENGTH = 8;
 
@@ -57,7 +63,7 @@ const AUTO_PASSWORD_LENGTH = 8;
         password = pwgenGenerator.generate();
     }
 
-    const hash = await bcrypt.hash(password, await bcrypt.genSalt());
+    const hash = await bcrypt.hash(password, SALT_ROUNDS);
 
     const pool = getDBPool();
     const users = await pool.query(
