@@ -41,7 +41,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Storage
      *
-     * @api {PUT} /v0/{bucketid} Request to create a new bucket
+     * @api {PUT} /v0/buckets/{bucketid} Request to create a new bucket
      *
      * @apiDescription Creates a new bucket with a specified name. Restricted to admins only.
      *
@@ -65,15 +65,17 @@ export default function createApiRouter(options: ApiRouterOptions) {
         "/:bucketid",
         mustBeAdmin(options.authApiUrl, options.jwtSecret),
         async function(req, res) {
-            const bucketId = req.params.bucketid;
-            if (!bucketId) {
-                return res
-                    .status(400)
-                    .send("Please specify a bucket name in the request URL.");
-            }
-
-            const encodedBucketname = encodeURIComponent(bucketId);
             try {
+                const bucketId = req.params.bucketid;
+                if (!bucketId) {
+                    return res
+                        .status(400)
+                        .send(
+                            "Please specify a bucket name in the request URL."
+                        );
+                }
+
+                const encodedBucketname = bucketId; //encodeURIComponent(bucketId);
                 const createBucketRes = await options.objectStoreClient.createBucket(
                     encodedBucketname
                 );
@@ -81,6 +83,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                     message: createBucketRes.message
                 });
             } catch (err) {
+                console.error(err);
                 return res.status(500).send({
                     message:
                         "Bucket creation failed. This has been logged and we are looking into this."
@@ -96,31 +99,31 @@ export default function createApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Storage
      *
-     * @api {get} /v0/{bucket}/{fileid} Request to download an object in {bucket} with name {fileid}
+     * @api {get} /v0/{bucket}/{path} Request to download an object in {bucket} at path {path}
      *
      * @apiDescription Downloads an object
      *
      * @apiParam (Request path) {string} bucket The name of the bucket under which the requested object is
-     * @apiParam (Request path) {string} fileid The name of the object being requested
+     * @apiParam (Request path) {string} path The name of the object being requested
      *
      * @apiSuccessExample {binary} 200
      *      <Contents of a file>
      *
      * @apiErrorExample {text} 404
-     *      "No such object with fileId {fileid} in bucket {bucket}"
+     *      "No such object with path {path} in bucket {bucket}"
      *
      * @apiErrorExample {text} 500
      *      "Unknown error"
      */
     router.get("/:bucket/*", async function(req, res) {
-        const fileId = req.params[0];
+        const path = req.params[0];
         const bucket = req.params.bucket;
+
         const encodeBucketname = encodeURIComponent(bucket);
 
         const object = options.objectStoreClient.getFile(
             encodeBucketname,
-            // --- do not encode object name so `/` will be treated as prefix delimiter for s3 alike API
-            fileId
+            path
         );
 
         let headers: OutgoingHttpHeaders;
@@ -137,8 +140,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 return res
                     .status(404)
                     .send(
-                        "No such object with fileId " +
-                            fileId +
+                        "No such object with path " +
+                            path +
                             " in bucket " +
                             bucket
                     );
@@ -150,7 +153,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
         if (recordIdNum) {
             const recordId = recordIdNum.toString();
 
-            const found = await checkRecord(req, recordId);
+            const found = await checkRecordExists(req, recordId);
             if (found === 404) {
                 return res.status(404).send("Could not retrieve the file.");
             } else if (found === 500) {
@@ -175,7 +178,13 @@ export default function createApiRouter(options: ApiRouterOptions) {
             );
     });
 
-    async function checkRecord(
+    /**
+     * Checks whether a record exists from the point of view of the user making the request
+     *
+     * @param req The incoming request (for getting user info)
+     * @param recordId The id of the record to check
+     */
+    async function checkRecordExists(
         req: express.Request,
         recordId: string
     ): Promise<200 | 404 | 500> {
@@ -219,11 +228,13 @@ export default function createApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Storage
      *
-     * @api {post} /v0/upload/{bucket} Request to upload files to {bucket}
+     * @api {post} /v0/upload/{bucket}/{path} Request to upload files to {bucket}, in the directory {path}
+     *
      *
      * @apiDescription Uploads a file. Restricted to admins only.
      *
      * @apiParam (Request path) {string} bucket The name of the bucket to which to upload to
+     * @apiParam (Request path) {string} path The path in the bucket to put the file in
      * @apiParam (Request query) {string} recordId A record id to associate this file with - a user will only
      *      be allowed to access this file if they're also allowed to access the associated record. Should be
      *      url encoded.
@@ -238,18 +249,19 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *      Internal server error.
      */
     router.post(
-        "/upload/:bucket",
+        "/upload/:bucket*",
         fileParser({ rawBodyOptions: { limit: options.uploadLimit } }),
         mustBeAdmin(options.authApiUrl, options.jwtSecret),
         async (req: any, res) => {
             if (!req.files || req.files.length === 0) {
                 return res.status(400).send("No files were uploaded.");
             }
+
             const recordId =
                 req.query.recordId && decodeURIComponent(req.query.recordId);
 
             if (recordId) {
-                const found = await checkRecord(req, recordId);
+                const found = await checkRecordExists(req, recordId);
                 if (found === 404) {
                     return res.status(400).send("Invalid record id");
                 } else if (found === 500) {
@@ -259,6 +271,14 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
             const bucket = req.params.bucket;
             const encodeBucketname = encodeURIComponent(bucket);
+            const rawPath = req.params[0] as string;
+            const pathNoLeadingSlash = rawPath.startsWith("/")
+                ? rawPath.slice(1)
+                : rawPath;
+            const path = pathNoLeadingSlash.endsWith("/")
+                ? pathNoLeadingSlash.slice(pathNoLeadingSlash.length - 1)
+                : pathNoLeadingSlash;
+
             const promises = (req.files as Array<any>).map((file: any) => {
                 const metaData: any = {
                     "Content-Type": file.mimetype,
@@ -268,14 +288,10 @@ export default function createApiRouter(options: ApiRouterOptions) {
                     metaData["Record-ID"] = recordId;
                 }
                 const fileid = file.originalname;
-                const encodedRootPath = encodeURIComponent(fileid);
+                const fullPath = path !== "" ? path + "/" + fileid : fileid;
+
                 return options.objectStoreClient
-                    .putFile(
-                        encodeBucketname,
-                        encodedRootPath,
-                        file.buffer,
-                        metaData
-                    )
+                    .putFile(encodeBucketname, fullPath, file.buffer, metaData)
                     .then(etag => etag);
             });
             return Promise.all(promises)
@@ -298,12 +314,12 @@ export default function createApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Storage
      *
-     * @api {put} /v0/{bucket}/{fileid}?{recordId} Request to upload an object to {bucket} with name {fileid}
+     * @api {put} /v0/{bucket}/{filePath}?{recordId} Request to upload an object to {bucket} with name {filePath}
      *
      * @apiDescription Uploads an object. Restricted to admins only.
      *
      * @apiParam (Request path) {string} bucket The name of the bucket to which to upload to
-     * @apiParam (Request path) {string} fileid The name of the object being uploaded
+     * @apiParam (Request path) {string} filePath The path of the file to delete
      * @apiParam (Request query) {string} recordId A record id to associate this file with - a user will only
      *      be allowed to access this file if they're also allowed to access the associated record. Should be
      *      url encoded.
@@ -328,13 +344,13 @@ export default function createApiRouter(options: ApiRouterOptions) {
         "/:bucket/*",
         mustBeAdmin(options.authApiUrl, options.jwtSecret),
         async function(req, res) {
-            const fileId = req.params[0];
+            const path = req.params[0];
             const bucket = req.params.bucket;
 
             const recordId =
                 req.query.recordId &&
                 decodeURIComponent(req.query.recordId as string);
-            const encodedRootPath = encodeURIComponent(fileId);
+            const path = path;
             const encodeBucketname = encodeURIComponent(bucket);
             const content = req.body;
             const contentType = req.headers["content-type"];
@@ -345,7 +361,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
             }
 
             if (recordId) {
-                const found = await checkRecord(req, recordId);
+                const found = await checkRecordExists(req, recordId);
                 if (found === 404) {
                     return res.status(400).send("Invalid record id");
                 } else if (found === 500) {
@@ -361,7 +377,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 metaData["Record-ID"] = recordId;
             }
             return options.objectStoreClient
-                .putFile(encodeBucketname, encodedRootPath, content, metaData)
+                .putFile(encodeBucketname, path, content, metaData)
                 .then(etag => {
                     return res.status(200).send({
                         message: "File uploaded successfully",
@@ -383,13 +399,13 @@ export default function createApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Storage
      *
-     * @api {delete} /v0/{bucket}/{fileid} Request to delete an object at {bucket} with name {fileid}
+     * @api {delete} /v0/{bucket}/{filePath} Request to delete an object at {bucket} with path {filePath}
      *
      * @apiDescription Deletes an object. This is a hard delete, and cannot be undone.
-     * Note that if the {fileid} does not exist, the request will not fail.
+     * Note that if the {filePath} does not exist, the request will not fail.
      *
-     * @apiParam (Request body) {string} bucket The name of the bucket where the object resides
-     * @apiParam (Request body) {string} fileid The name of the object to be deleted
+     * @apiParam (Request path) {string} bucket The name of the bucket where the object resides
+     * @apiParam (Request path) {string} filePath The name of the object to be deleted
      *
      * @apiSuccessExample {json} 200
      *    {
@@ -401,14 +417,14 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *        "message": "Encountered error while deleting file. This has been logged and we are looking into this."
      *    }
      */
-    router.delete("/:bucket/:fileid", async function(req, res) {
-        const fileId = req.params.fileid;
+    router.delete("/:bucket/*", async function(req, res) {
+        const filePath = req.params[0];
         const bucket = req.params.bucket;
-        const encodedRootPath = encodeURIComponent(fileId);
+
         const encodeBucketname = encodeURIComponent(bucket);
         const deletionSuccess = await options.objectStoreClient.deleteFile(
             encodeBucketname,
-            encodedRootPath
+            filePath
         );
         if (deletionSuccess) {
             return res.status(200).send({

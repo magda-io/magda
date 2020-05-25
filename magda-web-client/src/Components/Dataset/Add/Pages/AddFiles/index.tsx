@@ -98,7 +98,7 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
         }
     }
 
-    uploadUrl(fileName: string) {
+    generateUploadUrl(fileName: string) {
         return `${config.storageApiUrl}${DATASETS_BUCKET}/${fileName}`;
     }
 
@@ -130,7 +130,7 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                 license: "world",
                 creationSource: DistributionSource.File,
                 downloadURL: shouldUpload
-                    ? `${this.uploadUrl(thisFile.name)}`
+                    ? `${this.generateUploadUrl(thisFile.name)}`
                     : undefined
             };
 
@@ -139,7 +139,7 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
 
             const uploadPromise = shouldUpload
                 ? fetch(
-                      `${this.uploadUrl(
+                      `${this.generateUploadUrl(
                           thisFile.name
                       )}?recordId=${distRecordId}`,
                       {

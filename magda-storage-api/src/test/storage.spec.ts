@@ -1,5 +1,6 @@
 import {} from "mocha";
 import sinon from "sinon";
+import { expect } from "chai";
 import express from "express";
 import _ from "lodash";
 import { Test, Response } from "supertest";
@@ -19,31 +20,10 @@ const USER_ID = "b1fddd6f-e230-4068-bd2c-1a21844f1598";
 /** A gif of a funky banana */
 const bananadance: Buffer = fs.readFileSync("src/test/bananadance.gif");
 
-export default function mockAuthorization(
-    authApiUrl: string,
-    isAdmin: boolean,
-    jwtSecret: string,
-    req: Test
-): Promise<Response> {
-    const userId = USER_ID;
-    const scope = nock(authApiUrl, { allowUnmocked: true });
-
-    scope.get(`/private/users/${userId}`).reply(200, { isAdmin });
-
-    const id = jwt.sign({ userId: userId }, jwtSecret);
-
-    return req.set("X-Magda-Session", id).then(res => {
-        scope.done();
-        return res;
-    });
-}
-
 function injectUserId(jwtSecret: string, req: Test): Promise<Response> {
     const userId = USER_ID;
     const id = jwt.sign({ userId: userId }, jwtSecret);
-    return req.set("X-Magda-Session", id).then(res => {
-        return res;
-    });
+    return req.set("X-Magda-Session", id);
 }
 
 describe("Storage API tests", () => {
@@ -62,6 +42,7 @@ describe("Storage API tests", () => {
     const registryApiUrl = "http://registry.example.com";
     const jwtSecret = "squirrel";
     let registryScope: nock.Scope;
+    let authApiScope: nock.Scope;
     const uploadLimit = "100mb";
 
     before(() => {
@@ -89,6 +70,7 @@ describe("Storage API tests", () => {
             })
         );
         registryScope = nock(registryApiUrl);
+        authApiScope = nock(authApiUrl);
     });
 
     afterEach(() => {
@@ -96,124 +78,91 @@ describe("Storage API tests", () => {
             (<sinon.SinonStub>console.error).restore();
         }
         registryScope.done();
+        authApiScope.done();
     });
 
+    function mockAuthorization(
+        isAdmin: boolean,
+        jwtSecret: string,
+        req: Test
+    ): Promise<Response> {
+        const userId = USER_ID;
+
+        authApiScope.get(`/private/users/${userId}`).reply(200, { isAdmin });
+
+        const id = jwt.sign({ userId: userId }, jwtSecret);
+
+        return req.set("X-Magda-Session", id);
+    }
+
     describe("Create bucket", () => {
-        describe("Creating proper buckets", () => {
-            after(() => {
-                return minioClient.removeBucket(dummyBucket, function(
-                    err: Error
-                ) {
-                    if (err) {
-                        return console.log("Unable to remove bucket: ", err);
-                    }
-                    return console.log(
-                        "Bucket " + dummyBucket + " removed successfully."
-                    );
-                });
-            });
-
-            // Random string
-            const dummyBucket =
-                Math.random()
-                    .toString(36)
-                    .substring(2, 15) +
-                Math.random()
-                    .toString(36)
-                    .substring(2, 15);
-            it("Not an admin", () => {
-                return mockAuthorization(
-                    authApiUrl,
-                    false,
-                    jwtSecret,
-                    request(app)
-                        .put("/v0/" + dummyBucket)
-                        .expect(401, "Not authorized.")
-                );
-            });
-
-            it("As an admin", () => {
-                return mockAuthorization(
-                    authApiUrl,
-                    true,
-                    jwtSecret,
-                    request(app)
-                        .put("/v0/" + dummyBucket)
-                        .expect(201, {
-                            message:
-                                "Bucket " +
-                                dummyBucket +
-                                " created successfully in unspecified-region 🎉"
-                        })
-                );
-            });
-
-            it("Creating a bucket that already exists", () => {
-                return mockAuthorization(
-                    authApiUrl,
-                    true,
-                    jwtSecret,
-                    request(app)
-                        .put("/v0/" + dummyBucket)
-                        .expect(201, {
-                            message:
-                                "Bucket " + dummyBucket + " already exists 👍"
-                        })
+        after(() => {
+            return minioClient.removeBucket(dummyBucket, function(err: Error) {
+                if (err) {
+                    return console.log("Unable to remove bucket: ", err);
+                }
+                return console.log(
+                    "Bucket " + dummyBucket + " removed successfully."
                 );
             });
         });
-    });
 
-    describe("Upload", () => {
-        it("as an admin should result in the file being downloadable", () => {
-            return mockAuthorization(
-                authApiUrl,
+        // Random string
+        const dummyBucket =
+            Math.random()
+                .toString(36)
+                .substring(2, 15) +
+            Math.random()
+                .toString(36)
+                .substring(2, 15);
+
+        it("should create a bucket", async () => {
+            await mockAuthorization(
                 true,
                 jwtSecret,
                 request(app)
-                    .put("/v0/" + bucketName + "/upload-test-file-admin")
-                    .set("Accept", "application/json")
-                    .set("Content-Type", "text/plain")
-                    .send("LALALALALALALALALA")
-                    .expect(200)
+                    .put("/v0/" + dummyBucket)
+                    .expect(201, {
+                        message:
+                            "Bucket " +
+                            dummyBucket +
+                            " created successfully in unspecified-region 🎉"
+                    })
             );
+
+            const bucketExists = await minioClient.bucketExists(dummyBucket);
+
+            expect(bucketExists).to.be.true;
         });
 
-        it("without being an admin, should return 401", () => {
+        it("while not an admin should return 401", () => {
             return mockAuthorization(
-                authApiUrl,
                 false,
                 jwtSecret,
                 request(app)
-                    .put("/v0/" + bucketName + "/upload-test-file-non-admin")
-                    .set("Accept", "application/json")
-                    .set("Content-Type", "text/plain")
-                    .send("LALALALALALALALALA")
+                    .put("/v0/" + dummyBucket)
                     .expect(401, "Not authorized.")
             );
         });
 
-        it("Should fail with 401 if the user is not an admin", () => {
+        it("should return 201 if bucket already exists", () => {
             return mockAuthorization(
-                authApiUrl,
-                false,
+                true,
                 jwtSecret,
                 request(app)
-                    .post("/v0/upload/" + bucketName)
-                    .field("originalname", "test-browser-upload-no-admin")
-                    .attach("image", "src/test/test_image.jpg")
-                    .expect(401, "Not authorized.")
+                    .put("/v0/" + dummyBucket)
+                    .expect(201, {
+                        message: "Bucket " + dummyBucket + " already exists 👍"
+                    })
             );
         });
+    });
 
-        it("should succeed if user is an admin", async () => {
-            const csvContent = fs.readFileSync(
-                "src/test/test_csv_1.csv",
-                "utf-8"
-            );
+    describe("Upload via POST", () => {
+        const csvContent = fs.readFileSync("src/test/test_csv_1.csv", "utf-8");
 
+        it("should result in all attached files being present in minio", async () => {
             await mockAuthorization(
-                authApiUrl,
                 true,
                 jwtSecret,
                 request(app)
@@ -244,9 +193,44 @@ describe("Storage API tests", () => {
             );
         });
 
-        it("uploading no files should fail with 400", () => {
+        it("should allow arbitrary depth for file paths", async () => {
+            await mockAuthorization(
+                true,
+                jwtSecret,
+                request(app)
+                    .post("/v0/upload/" + bucketName + "/this/is/a/deep/path")
+                    .attach("text", "src/test/test_csv_1.csv")
+                    .expect(200)
+            );
+
+            await injectUserId(
+                jwtSecret,
+                request(app)
+                    .get(
+                        "/v0/" +
+                            bucketName +
+                            "/this/is/a/deep/path/test_csv_1.csv"
+                    )
+                    .accept("csv")
+                    .expect(200)
+                    .expect(csvContent)
+            );
+        });
+
+        it("Should fail with 401 if the user is not an admin", () => {
             return mockAuthorization(
-                authApiUrl,
+                false,
+                jwtSecret,
+                request(app)
+                    .post("/v0/upload/" + bucketName)
+                    .field("originalname", "test-browser-upload-no-admin")
+                    .attach("image", "src/test/test_image.jpg")
+                    .expect(401, "Not authorized.")
+            );
+        });
+
+        it("should fail with 400 if it contains no files", () => {
+            return mockAuthorization(
                 true,
                 jwtSecret,
                 request(app)
@@ -258,13 +242,33 @@ describe("Storage API tests", () => {
     });
 
     describe("PUT", () => {
+        it("should result in the file being downloadable", async () => {
+            await mockAuthorization(
+                true,
+                jwtSecret,
+                request(app)
+                    .put("/v0/" + bucketName + "/upload-test-file-admin")
+                    .set("Accept", "application/json")
+                    .set("Content-Type", "text/plain")
+                    .send("LALALALALALALALALA")
+                    .expect(200)
+            );
+
+            await injectUserId(
+                jwtSecret,
+                request(app)
+                    .get("/v0/" + bucketName + "/upload-test-file-admin")
+                    .expect(200)
+                    .expect("LALALALALALALALALA")
+            );
+        });
+
         it("should return 500 if we do something incompatible with minio", () => {
             // Here we PUT a complete null body with no details, something that's
             // only likely to happen through postman or curl. Minio / node's stream
             // api won't allow this, so we can test that we're catching that error
             // properly.
             return mockAuthorization(
-                authApiUrl,
                 true,
                 jwtSecret,
                 request(app)
@@ -274,13 +278,25 @@ describe("Storage API tests", () => {
                     .expect(500)
             );
         });
+
+        it("without being an admin, should return 401", () => {
+            return mockAuthorization(
+                false,
+                jwtSecret,
+                request(app)
+                    .put("/v0/" + bucketName + "/upload-test-file-non-admin")
+                    .set("Accept", "application/json")
+                    .set("Content-Type", "text/plain")
+                    .send("LALALALALALALALALA")
+                    .expect(401, "Not authorized.")
+            );
+        });
     });
 
     describe("Download and PUT", () => {
         describe("should work for content type: ", () => {
             it("Empty content", () => {
                 return mockAuthorization(
-                    authApiUrl,
                     true,
                     jwtSecret,
                     request(app)
@@ -306,7 +322,6 @@ describe("Storage API tests", () => {
             it("JPG Image", () => {
                 const img: Buffer = fs.readFileSync("src/test/test_image.jpg");
                 return mockAuthorization(
-                    authApiUrl,
                     true,
                     jwtSecret,
                     request(app)
@@ -330,7 +345,6 @@ describe("Storage API tests", () => {
 
             it("Bananadance GIF", () => {
                 return mockAuthorization(
-                    authApiUrl,
                     true,
                     jwtSecret,
                     request(app)
@@ -351,58 +365,88 @@ describe("Storage API tests", () => {
                     );
                 });
             });
-        });
 
-        it("CSV File", () => {
-            const csvContent = fs.readFileSync(
-                "src/test/test_csv_1.csv",
-                "utf-8"
-            );
-            return mockAuthorization(
-                authApiUrl,
-                true,
-                jwtSecret,
-                request(app)
-                    .put("/v0/" + bucketName + "/test-csv-1")
-                    .set("Content-Type", "text/csv")
-                    .send(csvContent)
-                    .expect(200)
-            ).then(_res => {
-                return injectUserId(
+            it("CSV File", () => {
+                const csvContent = fs.readFileSync(
+                    "src/test/test_csv_1.csv",
+                    "utf-8"
+                );
+                return mockAuthorization(
+                    true,
                     jwtSecret,
                     request(app)
-                        .get("/v0/" + bucketName + "/test-csv-1")
-                        .set("Accept", "text/csv")
+                        .put("/v0/" + bucketName + "/test-csv-1")
+                        .set("Content-Type", "text/csv")
+                        .send(csvContent)
                         .expect(200)
-                        .expect(csvContent)
-                        .expect("Content-Type", "text/csv")
+                ).then(_res => {
+                    return injectUserId(
+                        jwtSecret,
+                        request(app)
+                            .get("/v0/" + bucketName + "/test-csv-1")
+                            .set("Accept", "text/csv")
+                            .expect(200)
+                            .expect(csvContent)
+                            .expect("Content-Type", "text/csv")
+                    );
+                });
+            });
+
+            it("JSON File", () => {
+                const jsonContent = fs.readFileSync(
+                    "src/test/test_json_1.json",
+                    "utf-8"
                 );
+                return mockAuthorization(
+                    true,
+                    jwtSecret,
+                    request(app)
+                        .put("/v0/" + bucketName + "/test-json-1")
+                        .set("Content-Type", "application/json")
+                        .send(jsonContent)
+                        .expect(200)
+                ).then(_res => {
+                    return injectUserId(
+                        jwtSecret,
+                        request(app)
+                            .get("/v0/" + bucketName + "/test-json-1")
+                            .set("Accept", "application/json")
+                            .expect(200)
+                            .expect(jsonContent)
+                            .expect("Content-Type", "application/json")
+                    );
+                });
             });
         });
 
-        it("JSON File", () => {
-            const jsonContent = fs.readFileSync(
-                "src/test/test_json_1.json",
-                "utf-8"
-            );
+        it("arbitrary directory depths", () => {
+            const img: Buffer = fs.readFileSync("src/test/test_image.jpg");
             return mockAuthorization(
-                authApiUrl,
                 true,
                 jwtSecret,
                 request(app)
-                    .put("/v0/" + bucketName + "/test-json-1")
-                    .set("Content-Type", "application/json")
-                    .send(jsonContent)
+                    .put(
+                        "/v0/" +
+                            bucketName +
+                            "/this/is/a/path/binary-content-jpg"
+                    )
+                    .set("Accept", "image/jpg")
+                    .set("Content-Type", "image/jpg")
+                    .send(img)
                     .expect(200)
             ).then(_res => {
                 return injectUserId(
                     jwtSecret,
                     request(app)
-                        .get("/v0/" + bucketName + "/test-json-1")
-                        .set("Accept", "application/json")
+                        .get(
+                            "/v0/" +
+                                bucketName +
+                                "/this/is/a/path/binary-content-jpg"
+                        )
+                        .set("Accept", "image/jpg")
                         .expect(200)
-                        .expect(jsonContent)
-                        .expect("Content-Type", "application/json")
+                        .expect(img)
+                        .expect("Content-Type", "image/jpg")
                 );
             });
         });
@@ -412,7 +456,6 @@ describe("Storage API tests", () => {
         describe("deleting a file should result in it returning 404 for", () => {
             it("a simple file", () => {
                 return mockAuthorization(
-                    authApiUrl,
                     true,
                     jwtSecret,
                     request(app)
@@ -438,9 +481,43 @@ describe("Storage API tests", () => {
                 });
             });
 
+            it("arbitrary directory depths", () => {
+                return mockAuthorization(
+                    true,
+                    jwtSecret,
+                    request(app)
+                        .put(
+                            "/v0/" +
+                                bucketName +
+                                "/path/path/path/delete-test-file-1"
+                        )
+                        .set("Accept", "application/json")
+                        .set("Content-Type", "text/plain")
+                        .send("Testing delete")
+                        .expect(200)
+                ).then(_res => {
+                    return request(app)
+                        .delete(
+                            "/v0/" +
+                                bucketName +
+                                "/path/path/path/delete-test-file-1"
+                        )
+                        .expect(200)
+                        .expect({ message: "File deleted successfully" })
+                        .then(_res => {
+                            return request(app)
+                                .get(
+                                    "/v0/" + bucketName + "/delete-test-file-1"
+                                )
+                                .set("Accept", "application/json")
+                                .set("Accept", "text/plain")
+                                .expect(404);
+                        });
+                });
+            });
+
             it("empty content", () => {
                 return mockAuthorization(
-                    authApiUrl,
                     true,
                     jwtSecret,
                     request(app)
@@ -497,7 +574,6 @@ describe("Storage API tests", () => {
             }
 
             await mockAuthorization(
-                authApiUrl,
                 true,
                 jwtSecret,
                 req.send(bananadance).expect(expectedCode)
@@ -517,12 +593,7 @@ describe("Storage API tests", () => {
                 req.query({ recordId });
             }
 
-            await mockAuthorization(
-                authApiUrl,
-                true,
-                jwtSecret,
-                req.expect(expectedCode)
-            );
+            await mockAuthorization(true, jwtSecret, req.expect(expectedCode));
         }
 
         function expectRegistryGetWithCredentials(expectedCode: number = 200) {

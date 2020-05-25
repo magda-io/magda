@@ -38,12 +38,14 @@ const argv = addJwtSecretFromEnvVar(
         .option("minioHost", {
             describe: "Host where MinIO server is running.",
             type: "string",
-            default: "localhost"
+            default: process.env.MINIO_HOST || "localhost"
         })
         .option("minioPort", {
             describe: "Port where MinIO server is running.",
             type: "number",
-            default: 9000
+            default: process.env.MINIO_PORT
+                ? Number.parseInt(process.env.MINIO_PORT)
+                : 9000
         })
         .option("minioRegion", {
             describe: "Region where the server is being created.",
@@ -64,33 +66,55 @@ const argv = addJwtSecretFromEnvVar(
             describe: "How large a file can be uploaded to be stored by Magda",
             type: "string",
             default: "100mb"
+        })
+        .option("defaultBuckets", {
+            describe: "Buckets to create on startup.",
+            type: "array",
+            default: ["magda-datasets"]
         }).argv
 );
 
-var app = express();
+(async () => {
+    try {
+        const app = express();
 
-app.use(
-    "/v0",
-    createApiRouter({
-        objectStoreClient: new MagdaMinioClient({
+        const minioClient = new MagdaMinioClient({
             endPoint: argv.minioHost,
             port: argv.minioPort,
             useSSL: argv.minioEnableSSL,
             accessKey: argv.minioAccessKey,
             secretKey: argv.minioSecretKey,
             region: argv.minioRegion
-        }),
-        registryApiUrl: argv.registryApiUrl,
-        authApiUrl: argv.authApiUrl,
-        jwtSecret: argv.jwtSecret as string,
-        tenantId: argv.tenantId,
-        uploadLimit: argv.uploadLimit
-    })
-);
+        });
 
-app.listen(argv.listenPort);
+        console.info("Ensuring that default buckets exist...");
 
-console.log("Storage API started on port " + argv.listenPort);
+        for (let bucket of argv.defaultBuckets) {
+            console.info(`Creating default bucket ${argv.defaultBuckets}`);
+            await minioClient.createBucket(bucket);
+        }
+
+        console.info("Finished creating default buckets");
+
+        app.use(
+            "/v0",
+            createApiRouter({
+                objectStoreClient: minioClient,
+                registryApiUrl: argv.registryApiUrl,
+                authApiUrl: argv.authApiUrl,
+                jwtSecret: argv.jwtSecret as string,
+                tenantId: argv.tenantId,
+                uploadLimit: argv.uploadLimit
+            })
+        );
+
+        app.listen(argv.listenPort);
+
+        console.log("Storage API started on port " + argv.listenPort);
+    } catch (e) {
+        console.error(e);
+    }
+})();
 
 process.on(
     "unhandledRejection",
