@@ -37,8 +37,6 @@ export default function Login(props) {
 
     const [loginFormProvider, setLoginFormProvider] = useState<string>("");
 
-    console.log(loginFormProvider);
-
     const previousUrl =
         props.location.state &&
         props.location.state.from &&
@@ -61,6 +59,9 @@ export default function Login(props) {
         const providerName =
             loginFormProvider === "internal" ? "Magda" : "Data.gov.au";
 
+        const username =
+            loginFormProvider === "internal" ? "Email Address" : "User name";
+
         return (
             <div className="col-sm-6 col-md-5">
                 <h2>Sign In with {providerName}</h2>
@@ -74,12 +75,12 @@ export default function Login(props) {
                         <div className="input-group-addon">
                             <span className="glyphicon glyphicon-user" />
                         </div>
-                        <label htmlFor="username">User name</label>
+                        <label htmlFor="username">{username}</label>
                         <input
                             className="au-text-input au-text-input--block"
                             id="username"
                             type="text"
-                            placeholder="Username"
+                            placeholder={username}
                             name="username"
                         />
                     </div>
