@@ -37,7 +37,9 @@ spec:
             {{- end }}
             "--dbHost", "session-db",
             "--dbPort", "5432",
-            "--enableInternalAuthProvider", {{ Values.auth.enableInternalAuthProvider | quote }},
+            "--authDBHost", "authorization-db",
+            "--authDBPort", "5432",
+            "--enableInternalAuthProvider", {{ .Values.auth.enableInternalAuthProvider | quote }},
 {{- if .Values.auth.facebookClientId }}
             "--facebookClientId", {{ .Values.auth.facebookClientId | quote }},
 {{- end }}

@@ -1,5 +1,4 @@
 image: {}
-auth: {}
 service:
   type: NodePort
   externalPort: 80
