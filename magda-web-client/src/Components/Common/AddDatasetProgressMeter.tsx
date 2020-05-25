@@ -102,6 +102,12 @@ export const editDatasetSteps: StepItem[] = [
     }
 ];
 
+if (!config.featureFlags.datasetApprovalWorkflowOn) {
+    const idx = stepMap.SUBMIT_FOR_APPROVAL;
+    addDatasetSteps.splice(idx, 1);
+    editDatasetSteps.splice(idx, 1);
+}
+
 function createStepUrl(datasetId, item: StepItem) {
     if (typeof item.url === "string") {
         return item.url.replace("${datasetId}", datasetId);
@@ -226,7 +232,7 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
 
     if (currentStep >= stepMap.ALL_DONE) {
         return null;
-    };
+    }
     return (
         <div className="add-dataset-progress-meter">
             <div className="container">
@@ -236,8 +242,23 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
                     </div>
                 </div>
                 <div className="col-sm-10 step-item-body">
-                    {(isEdit ? editSteps : steps).map((item, idx) =>
-                        renderStepItem(item, idx, currentStep, datasetId)
+                    {(isEdit ? editDatasetSteps : addDatasetSteps).map(
+                        (item, idx) => {
+                            // Skip the submit for approval step if it's turned off
+                            if (
+                                !config.featureFlags
+                                    .datasetApprovalWorkflowOn &&
+                                idx === stepMap.SUBMIT_FOR_APPROVAL
+                            ) {
+                                return null;
+                            }
+                            return renderStepItem(
+                                item,
+                                idx,
+                                currentStep,
+                                datasetId
+                            );
+                        }
                     )}
                 </div>
             </div>

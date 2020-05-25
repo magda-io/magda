@@ -11,7 +11,10 @@ import {
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
 
-import { addDatasetSteps as ProgressMeterStepsConfig, stepMap} from "../../Common/AddDatasetProgressMeter";
+import {
+    addDatasetSteps as ProgressMeterStepsConfig,
+    stepMap
+} from "../../Common/AddDatasetProgressMeter";
 
 import {
     State,
@@ -134,21 +137,19 @@ class NewDataset extends React.Component<Props, State> {
 
         let { step } = this.props;
 
-        step = Math.max(Math.min(step, this.steps.length - 1), 0);
-
         const hideExitButton = config.featureFlags.previewAddDataset
-            ? step >= 4
-            : step >= 5;
+            ? step >= stepMap.SUBMIT_FOR_APPROVAL
+            : step >= stepMap.REVIEW;
 
         const nextButtonCaption = () => {
-            if (step === 5) {
+            if (step === stepMap.REVIEW) {
                 // --- review page
                 if (this.state.isPublishing) {
                     return "Publishing as draft...";
                 } else {
                     return "Publish draft dataset";
                 }
-            } else if (step === 6) {
+            } else if (step === stepMap.ALL_DONE) {
                 // --- all done or preview mode feedback page
                 // --- All done page has no button to show
                 return "Send Us Your Thoughts";
@@ -158,14 +159,14 @@ class NewDataset extends React.Component<Props, State> {
         };
 
         const nextButtonOnClick = () => {
-            if (step === 5) {
+            if (step === stepMap.REVIEW) {
                 // --- review page
                 if (config.featureFlags.previewAddDataset) {
                     this.gotoStep(step + 1);
                 } else {
                     this.performPublishDataset();
                 }
-            } else if (step === 6) {
+            } else if (step === stepMap.ALL_DONE) {
                 // --- all done or preview mode feedback page
                 if (config.featureFlags.previewAddDataset) {
                     // --- preview mode feedback page
@@ -173,7 +174,16 @@ class NewDataset extends React.Component<Props, State> {
                         "mailto:magda@csiro.au?subject=Add Dataset Feedback";
                 }
             } else {
-                this.gotoStep(step + 1);
+                // If approval workflow is not turned on
+                // But it's up next
+                if (
+                    !config.featureFlags.datasetApprovalWorkflowOn &&
+                    step + 1 === stepMap.SUBMIT_FOR_APPROVAL
+                ) {
+                    this.gotoStep(step + 2);
+                } else {
+                    this.gotoStep(step + 1);
+                }
             }
         };
 
@@ -267,7 +277,15 @@ class NewDataset extends React.Component<Props, State> {
         }
     }
 
-    async gotoStep(step) {
+    async gotoStep(step: number) {
+        // Bandaid: So that users can't force their way into the submit for approval page
+        if (
+            !config.featureFlags.datasetApprovalWorkflowOn &&
+            step === stepMap.SUBMIT_FOR_APPROVAL
+        ) {
+            step = stepMap.REVIEW;
+        }
+
         try {
             await this.resetError();
             if (ValidationManager.validateAll()) {
