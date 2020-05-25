@@ -3,8 +3,13 @@ import { Strategy as LocalStrategy } from "passport-local";
 import { Authenticator } from "passport";
 import pg from "pg";
 import bcrypt from "bcrypt";
-
 import { redirectOnSuccess, redirectOnError } from "./redirect";
+
+/**
+ * Internal auth provider allow magda to authenticate local users without thrid party SSO.
+ * To set user password, Run `yarn set-user-password -u [user id]`
+ * The username is the user's email address.
+ */
 
 export interface InternalAuthProviderOptions {
     dbPool: pg.Pool;
