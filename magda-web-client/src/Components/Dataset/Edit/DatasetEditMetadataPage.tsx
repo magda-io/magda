@@ -11,7 +11,10 @@ import {
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
 
-import { editDatasetSteps as ProgressMeterStepsConfig } from "../../Common/AddDatasetProgressMeter";
+import {
+    editDatasetSteps as ProgressMeterStepsConfig,
+    stepMap
+} from "../../Common/AddDatasetProgressMeter";
 
 import {
     State,
@@ -134,18 +137,18 @@ class EditDataset extends React.Component<Props, State> {
         step = Math.max(Math.min(step, this.steps.length - 1), 0);
 
         const hideExitButton = config.featureFlags.previewAddDataset
-            ? step >= 4
-            : step >= 5;
+            ? step >= stepMap.SUBMIT_FOR_APPROVAL
+            : step >= stepMap.REVIEW;
 
         const nextButtonCaption = () => {
-            if (step === 5) {
+            if (step === stepMap.REVIEW) {
                 // --- review page
                 if (this.state.isPublishing) {
                     return "Submit dataset changes...";
                 } else {
                     return "Submit dataset changes";
                 }
-            } else if (step === 6) {
+            } else if (step === stepMap.ALL_DONE) {
                 // --- all done or preview mode feedback page
                 // --- All done page has no button to show
                 return "Send Us Your Thoughts";
@@ -155,14 +158,14 @@ class EditDataset extends React.Component<Props, State> {
         };
 
         const nextButtonOnClick = () => {
-            if (step === 5) {
+            if (step === stepMap.REVIEW) {
                 // --- review page
                 if (config.featureFlags.previewAddDataset) {
                     this.gotoStep(step + 1);
                 } else {
                     this.performPublishDataset();
                 }
-            } else if (step === 6) {
+            } else if (step === stepMap.ALL_DONE) {
                 // --- all done or preview mode feedback page
                 if (config.featureFlags.previewAddDataset) {
                     // --- preview mode feedback page
@@ -182,7 +185,10 @@ class EditDataset extends React.Component<Props, State> {
             ) {
                 return false;
             }
-            if (step === 6 && !config.featureFlags.previewAddDataset) {
+            if (
+                step === stepMap.ALL_DONE &&
+                !config.featureFlags.previewAddDataset
+            ) {
                 return false;
             } else {
                 return true;

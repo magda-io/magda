@@ -195,7 +195,10 @@ class NewDataset extends React.Component<Props, State> {
             ) {
                 return false;
             }
-            if (step === 6 && !config.featureFlags.previewAddDataset) {
+            if (
+                step === stepMap.ALL_DONE &&
+                !config.featureFlags.previewAddDataset
+            ) {
                 return false;
             } else {
                 return true;
