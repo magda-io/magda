@@ -134,8 +134,6 @@ class EditDataset extends React.Component<Props, State> {
         const { distributions } = this.state;
         let { step } = this.props;
 
-        step = Math.max(Math.min(step, this.steps.length - 1), 0);
-
         const hideExitButton = config.featureFlags.previewAddDataset
             ? step >= stepMap.SUBMIT_FOR_APPROVAL
             : step >= stepMap.REVIEW;
