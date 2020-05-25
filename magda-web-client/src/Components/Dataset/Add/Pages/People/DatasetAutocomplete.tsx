@@ -2,11 +2,7 @@ import React from "react";
 import debouncePromise from "debounce-promise";
 
 import { searchDatasets } from "api-clients/SearchApis";
-import {
-    DatasetAutocompleteChoice,
-    createId,
-    createBlankState
-} from "../../DatasetAddCommon";
+import { DatasetAutocompleteChoice, createId } from "../../DatasetAddCommon";
 import ASyncSelect, { Async } from "react-select/async";
 import ReactSelectStyles from "Components/Common/react-select/ReactSelectStyles";
 import { OptionProps } from "react-select/src/components/Option";
