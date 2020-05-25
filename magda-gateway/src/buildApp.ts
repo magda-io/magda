@@ -45,6 +45,8 @@ type Config = {
     externalUrl: string;
     dbHost: string;
     dbPort: number;
+    authDBHost: string;
+    authDBPort: number;
     proxyRoutesJson: {
         [localRoute: string]: ProxyTarget;
     };
@@ -178,7 +180,12 @@ export default function buildApp(config: Config) {
         app.use(
             "/auth",
             createAuthRouter({
-                dbPool: createPool({ ...config, database: "auth" }),
+                dbPool: createPool({
+                    ...config,
+                    database: "auth",
+                    dbHost: config.authDBHost,
+                    dbPort: config.authDBPort
+                }),
                 authenticator: authenticator,
                 jwtSecret: config.jwtSecret,
                 facebookClientId: config.facebookClientId,

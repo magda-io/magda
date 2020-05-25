@@ -31,6 +31,16 @@ const argv = addJwtSecretFromEnvVar(
             type: "number",
             default: 5432
         })
+        .option("authDBHost", {
+            describe: "The host running the auth database.",
+            type: "string",
+            default: "localhost"
+        })
+        .option("authDBPort", {
+            describe: "The port running the auth database.",
+            type: "number",
+            default: 5432
+        })
         .option("proxyRoutesJson", {
             describe:
                 "Path of the json that defines routes to proxy. These will be merged with the defaults specified in defaultConfig.ts.",
