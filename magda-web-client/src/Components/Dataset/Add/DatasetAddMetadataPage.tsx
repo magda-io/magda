@@ -260,7 +260,7 @@ class NewDataset extends React.Component<Props, State> {
     async saveAndExit() {
         try {
             await this.resetError();
-            saveState(this.state, this.props.datasetId);
+            await saveState(this.state, this.props.datasetId);
             this.props.history.push(`/dataset/list`);
         } catch (e) {
             this.props.createNewDatasetError(e);
@@ -271,7 +271,7 @@ class NewDataset extends React.Component<Props, State> {
         try {
             await this.resetError();
             if (ValidationManager.validateAll()) {
-                saveState(this.state, this.props.datasetId);
+                await saveState(this.state, this.props.datasetId);
                 this.props.history.push(
                     "/dataset/add/metadata/" + this.props.datasetId + "/" + step
                 );
@@ -314,7 +314,7 @@ class NewDataset extends React.Component<Props, State> {
         try {
             await this.resetError();
 
-            saveState(this.state, this.props.datasetId);
+            await saveState(this.state, this.props.datasetId);
 
             this.setState(state => ({
                 ...state,

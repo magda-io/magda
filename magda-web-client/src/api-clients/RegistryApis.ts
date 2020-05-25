@@ -3,6 +3,41 @@ import request from "helpers/request";
 import { Publisher } from "helpers/record";
 import { RawDataset } from "helpers/record";
 import ServerError from "./ServerError";
+import flatMap from "lodash/flatMap";
+
+import dcatDatasetStringsAspect from "@magda/registry-aspects/dcat-dataset-strings.schema.json";
+import spatialCoverageAspect from "@magda/registry-aspects/spatial-coverage.schema.json";
+import temporalCoverageAspect from "@magda/registry-aspects/temporal-coverage.schema.json";
+import datasetDistributionsAspect from "@magda/registry-aspects/dataset-distributions.schema.json";
+import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribution-strings.schema.json";
+import accessAspect from "@magda/registry-aspects/access.schema.json";
+import provenanceAspect from "@magda/registry-aspects/provenance.schema.json";
+import informationSecurityAspect from "@magda/registry-aspects/information-security.schema.json";
+import datasetPublisherAspect from "@magda/registry-aspects/dataset-publisher.schema.json";
+import currencyAspect from "@magda/registry-aspects/currency.schema.json";
+import datasetPublishingAspect from "@magda/registry-aspects/publishing.schema.json";
+import datasetAccessControlAspect from "@magda/registry-aspects/dataset-access-control.schema.json";
+import organizationDetailsAspect from "@magda/registry-aspects/organization-details.schema.json";
+import sourceAspect from "@magda/registry-aspects/source.schema.json";
+import datasetDraftAspect from "@magda/registry-aspects/dataset-draft.schema.json";
+
+export const aspectSchemas = {
+    publishing: datasetPublishingAspect,
+    "dcat-dataset-strings": dcatDatasetStringsAspect,
+    "spatial-coverage": spatialCoverageAspect,
+    "temporal-coverage": temporalCoverageAspect,
+    "dataset-distributions": datasetDistributionsAspect,
+    "dcat-distribution-strings": dcatDistributionStringsAspect,
+    access: accessAspect,
+    provenance: provenanceAspect,
+    "information-security": informationSecurityAspect,
+    "dataset-access-control": datasetAccessControlAspect,
+    "dataset-publisher": datasetPublisherAspect,
+    "organization-details": organizationDetailsAspect,
+    currency: currencyAspect,
+    source: sourceAspect,
+    "dataset-draft": datasetDraftAspect
+};
 
 export function createPublisher(inputRecord: Publisher) {
     return createRecord(inputRecord);
@@ -28,7 +63,15 @@ export function fetchOrganization(publisherId: string): Promise<Publisher> {
     });
 }
 
-export async function ensureAspectExists(id: string, jsonSchema: any) {
+export async function ensureAspectExists(id: string, jsonSchema?: any) {
+    if (!jsonSchema) {
+        jsonSchema = aspectSchemas[id];
+    }
+
+    if (!jsonSchema) {
+        throw new Error(`Cannot locate json schema for ${id}`);
+    }
+
     await request("PUT", `${config.registryFullApiUrl}aspects/${id}`, {
         id,
         name: jsonSchema.title,
@@ -130,17 +173,26 @@ export type JsonSchema = {
     [k: string]: any;
 };
 
+function getAspectIds(record: Record): string[] {
+    if (!record.aspects) {
+        return [];
+    }
+    return Object.keys(record.aspects);
+}
+
+function getRecordsAspectIds(records: Record[]): string[] {
+    return flatMap(records.map(item => getAspectIds(item)));
+}
+
 export async function createDataset(
     inputDataset: Record,
-    inputDistributions: Record[],
-    aspects: {
-        [key: string]: JsonSchema;
-    }
+    inputDistributions: Record[]
 ) {
     // make sure all the aspects exist (this should be improved at some point, but will do for now)
-    const aspectPromises = Object.entries(aspects).map(([aspect, definition]) =>
-        ensureAspectExists(aspect, definition)
-    );
+    const aspectPromises = Object.keys(
+        getRecordsAspectIds([inputDataset].concat(inputDistributions))
+    ).map(aspectId => ensureAspectExists(aspectId));
+
     await Promise.all(aspectPromises);
 
     for (const distribution of inputDistributions) {
@@ -161,15 +213,13 @@ export async function createDataset(
 
 export async function updateDataset(
     inputDataset: Record,
-    inputDistributions: Record[],
-    aspects: {
-        [key: string]: JsonSchema;
-    }
+    inputDistributions: Record[]
 ) {
     // make sure all the aspects exist (this should be improved at some point, but will do for now)
-    const aspectPromises = Object.entries(aspects).map(([aspect, definition]) =>
-        ensureAspectExists(aspect, definition)
-    );
+    const aspectPromises = Object.keys(
+        getRecordsAspectIds([inputDataset].concat(inputDistributions))
+    ).map(aspectId => ensureAspectExists(aspectId));
+
     await Promise.all(aspectPromises);
 
     for (const distribution of inputDistributions) {

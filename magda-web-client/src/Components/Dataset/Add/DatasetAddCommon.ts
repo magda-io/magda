@@ -13,39 +13,8 @@ import {
 import { config } from "config";
 import { User } from "reducers/userManagementReducer";
 import { RawDataset } from "helpers/record";
-
 import { autocompletePublishers } from "api-clients/SearchApis";
-
-import datasetPublishingAspect from "@magda/registry-aspects/publishing.schema.json";
-import dcatDatasetStringsAspect from "@magda/registry-aspects/dcat-dataset-strings.schema.json";
-import spatialCoverageAspect from "@magda/registry-aspects/spatial-coverage.schema.json";
-import temporalCoverageAspect from "@magda/registry-aspects/temporal-coverage.schema.json";
-import datasetDistributionsAspect from "@magda/registry-aspects/dataset-distributions.schema.json";
-import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribution-strings.schema.json";
-import accessAspect from "@magda/registry-aspects/access.schema.json";
-import provenanceAspect from "@magda/registry-aspects/provenance.schema.json";
-import informationSecurityAspect from "@magda/registry-aspects/information-security.schema.json";
-import datasetAccessControlAspect from "@magda/registry-aspects/dataset-access-control.schema.json";
-import organizationDetailsAspect from "@magda/registry-aspects/organization-details.schema.json";
-import datasetPublisherAspect from "@magda/registry-aspects/dataset-publisher.schema.json";
-import currencyAspect from "@magda/registry-aspects/currency.schema.json";
-import sourceAspect from "@magda/registry-aspects/source.schema.json";
-
-const aspects = {
-    publishing: datasetPublishingAspect,
-    "dcat-dataset-strings": dcatDatasetStringsAspect,
-    "spatial-coverage": spatialCoverageAspect,
-    "temporal-coverage": temporalCoverageAspect,
-    "dataset-distributions": datasetDistributionsAspect,
-    "dcat-distribution-strings": dcatDistributionStringsAspect,
-    access: accessAspect,
-    provenance: provenanceAspect,
-    "information-security": informationSecurityAspect,
-    "dataset-access-control": datasetAccessControlAspect,
-    "dataset-publisher": datasetPublisherAspect,
-    currency: currencyAspect,
-    source: sourceAspect
-};
+import ServerError from "./Errors/ServerError";
 
 export type Distribution = {
     title: string;
@@ -555,22 +524,36 @@ export function createBlankState(user?: User): State {
     };
 }
 
-// saving data in the local storage for now
-// TODO: consider whether it makes sense to store this in registry as a custom state or something
 export async function loadState(id: string, user?: User): Promise<State> {
-    const stateString = localStorage[id];
-    let state: State;
-    if (stateString) {
-        const dehydrated = JSON.parse(stateString);
-        state = {
-            ...dehydrated,
-            dataset: {
-                ...dehydrated.dataset,
-                modified: dehydrated.modified && new Date(dehydrated.modified),
-                issued: dehydrated.issued && new Date(dehydrated.issued)
-            }
-        };
-    } else {
+    let record: RawDataset | undefined;
+    try {
+        record = await fetchRecord(id, ["dataset-draft"], [], false);
+    } catch (e) {
+        if (e! instanceof ServerError || e.statusCode !== 404) {
+            // --- mute 404 error as we're gonna create blank status if can't find an existing one
+            throw e;
+        }
+    }
+
+    let state: State | undefined;
+    if (record?.aspects?.["dataset-draft"]?.data) {
+        try {
+            const dehydrated = JSON.parse(record.aspects["dataset-draft"].data);
+            state = {
+                ...dehydrated,
+                dataset: {
+                    ...dehydrated.dataset,
+                    modified:
+                        dehydrated.modified && new Date(dehydrated.modified),
+                    issued: dehydrated.issued && new Date(dehydrated.issued)
+                }
+            };
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    if (!state) {
         state = createBlankState(user);
     }
 
@@ -588,12 +571,50 @@ export async function loadState(id: string, user?: User): Promise<State> {
     return state;
 }
 
-export function saveState(state: State, id = createId()) {
+export async function saveState(state: State, id = createId()) {
     state = Object.assign({}, state);
 
     state._lastModifiedDate = new Date();
     const dataset = JSON.stringify(state);
-    localStorage[id] = dataset;
+    const timestamp = state._lastModifiedDate.toISOString();
+
+    let record: RawDataset | undefined;
+    try {
+        record = await fetchRecord(id, ["dataset-draft"], [], false);
+    } catch (e) {
+        if (e! instanceof ServerError || e.statusCode !== 404) {
+            // --- mute 404 error as we're gonna create one if can't find an existing one
+            throw e;
+        }
+    }
+
+    const datasetDraftAspectData = {
+        data: dataset,
+        timestamp
+    };
+
+    if (!record) {
+        await createDataset(
+            {
+                id,
+                name: "",
+                aspects: {
+                    "dataset-draft": datasetDraftAspectData
+                }
+            },
+            []
+        );
+    } else {
+        if (!record?.aspects) {
+            record.aspects = {} as any;
+        }
+        record.aspects["dataset-draft"] = {
+            data: dataset,
+            timestamp
+        };
+        await updateDataset(record, []);
+    }
+
     return id;
 }
 
@@ -637,12 +658,7 @@ async function ensureBlankDatasetIsSavedToRegistry(
                     source: getInternalDatasetSourceAspectData()
                 }
             },
-            [],
-            {
-                publishing: datasetPublishingAspect,
-                "dataset-access-control": datasetAccessControlAspect,
-                source: sourceAspect
-            }
+            []
         );
     }
 }
@@ -740,10 +756,7 @@ async function getOrgIdFromAutocompleteChoice(
 
         if (!match) {
             // OK no publisher, lets add it
-            await ensureAspectExists(
-                "organization-details",
-                organizationDetailsAspect
-            );
+            await ensureAspectExists("organization-details");
 
             orgId = uuidv4();
             await createPublisher({
@@ -905,7 +918,7 @@ export async function createDatasetFromState(
         state,
         setState
     );
-    await createDataset(datasetRecord, distributionRecords, aspects);
+    await createDataset(datasetRecord, distributionRecords);
 }
 
 export async function updateDatasetFromState(
@@ -921,5 +934,5 @@ export async function updateDatasetFromState(
         setState,
         true
     );
-    await updateDataset(datasetRecord, distributionRecords, aspects);
+    await updateDataset(datasetRecord, distributionRecords);
 }
