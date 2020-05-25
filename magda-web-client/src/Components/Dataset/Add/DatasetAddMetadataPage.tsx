@@ -68,7 +68,7 @@ class NewDataset extends React.Component<Props, State> {
         });
     }
 
-    steps: any = [
+    steps: Array<any> = [
         () => (
             <DatasetAddFilesPage
                 edit={this.edit}
