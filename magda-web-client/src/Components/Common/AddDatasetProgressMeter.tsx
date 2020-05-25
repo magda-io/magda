@@ -7,6 +7,7 @@ import { withRouter, match } from "react-router";
 import "./AddDatasetProgressMeter.scss";
 import iconTick from "assets/tick.svg";
 import { History, Location } from "history";
+import { config } from "config";
 
 type urlFunc = (datasetId: string) => string;
 interface StepItem {
@@ -29,17 +30,17 @@ interface InternalProps {
 }
 
 /** Lookup for step numbers by page theme */
-const stepNumbers = {
+export const stepMap = {
     ADD_FILES: 0,
     DETAILS_AND_CONTENTS: 1,
     PEOPLE_AND_PRODUCTION: 2,
     ACCESS_AND_USER: 3,
-    SUBMIT_FOR_APPROVAL: 4,
+    SUBMIT_FOR_APPROVAL: 4, // optionally turned off by config.featureFlags.datasetApprovalWorkflowOn
     REVIEW: 5,
     ALL_DONE: 6
 };
 
-export const steps: StepItem[] = [
+export const addDatasetSteps: StepItem[] = [
     {
         title: "Add files",
         url: "/dataset/add/metadata/${datasetId}/0"
@@ -70,7 +71,7 @@ export const steps: StepItem[] = [
     }
 ];
 
-export const editSteps: StepItem[] = [
+export const editDatasetSteps: StepItem[] = [
     {
         title: "Your Files and Distributions",
         url: "/dataset/edit/${datasetId}/0"
@@ -132,7 +133,7 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
         currentStep: number,
         datasetId: string
     ) {
-        if (idx >= stepNumbers.REVIEW) {
+        if (idx >= stepMap.REVIEW) {
             return null;
         }
 
@@ -143,8 +144,8 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
 
         const status: Status = (() => {
             if (
-                currentStep >= stepNumbers.REVIEW &&
-                idx === stepNumbers.SUBMIT_FOR_APPROVAL
+                currentStep >= stepMap.REVIEW &&
+                idx === stepMap.SUBMIT_FOR_APPROVAL
             ) {
                 return {
                     class: "current-item",
@@ -223,7 +224,9 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
     const currentStep = determineCurrentStep();
     const datasetId = determineDatasetId();
 
-    if (currentStep >= stepNumbers.ALL_DONE) return null;
+    if (currentStep >= stepMap.ALL_DONE) {
+        return null;
+    };
     return (
         <div className="add-dataset-progress-meter">
             <div className="container">
