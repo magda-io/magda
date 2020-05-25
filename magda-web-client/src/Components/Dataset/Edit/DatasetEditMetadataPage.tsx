@@ -171,7 +171,16 @@ class EditDataset extends React.Component<Props, State> {
                         "mailto:magda@csiro.au?subject=Add Dataset Feedback";
                 }
             } else {
-                this.gotoStep(step + 1);
+                // If approval workflow is not turned on
+                // But it's up next
+                if (
+                    !config.featureFlags.datasetApprovalWorkflowOn &&
+                    step + 1 === stepMap.SUBMIT_FOR_APPROVAL
+                ) {
+                    this.gotoStep(step + 2);
+                } else {
+                    this.gotoStep(step + 1);
+                }
             }
         };
 
@@ -248,7 +257,15 @@ class EditDataset extends React.Component<Props, State> {
         this.props.createNewDatasetReset();
     }
 
-    async gotoStep(step) {
+    async gotoStep(step: number) {
+        // Bandaid, similar to the add dataset flow
+        // So that users can't force their way into the submit for approval page
+        if (
+            !config.featureFlags.datasetApprovalWorkflowOn &&
+            step === stepMap.SUBMIT_FOR_APPROVAL
+        ) {
+            step = stepMap.REVIEW;
+        }
         try {
             await this.resetError();
             if (ValidationManager.validateAll()) {
