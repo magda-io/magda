@@ -8,6 +8,8 @@ import { redirectOnSuccess, redirectOnError } from "./redirect";
 /**
  * Internal auth provider allow magda to authenticate local users without thrid party SSO.
  * To set user password, Run `yarn set-user-password -u [user id]`
+ * A user record must be created before use `set-user-password` tool.
+ * When create a user record, the `source` field must be `internal`.
  * The username is the user's email address.
  */
 

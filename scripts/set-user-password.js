@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const pkg = require("../package.json");
+const pkg = require("./package.json");
 const program = require("commander");
 const chalk = require("chalk");
 const bcrypt = require("bcrypt");
@@ -10,7 +10,9 @@ program
     .version(pkg.version)
     .usage("[options]")
     .description(
-        `A tool for setting magda users' password. Version: ${pkg.version}\n\n` +
+        `A tool for setting magda users' password. Version: ${pkg.version}\n` +
+            `A user record must be created before use this tool as an user id must be provided.\n` +
+            `When create a user record, the \`source\` field must be \`internal\`.\n\n` +
             "By Default, a random password will be auto generate if -p or --password option does not present.\n" +
             `The database connection to auth DB is required, the following environment variables will be used to create a connection:\n` +
             `  POSTGRES_HOST: database host; If not available in env var, 'localhost' will be used.\n` +
