@@ -114,6 +114,8 @@ class NewDataset extends React.Component<Props, State> {
                   <DatasetAddEndPage
                       datasetId={this.props.datasetId}
                       history={this.props.history}
+                      isEdit={false}
+                      publishStatus={this.state.datasetPublishing.state}
                   />
               )
     ];
@@ -144,10 +146,18 @@ class NewDataset extends React.Component<Props, State> {
         const nextButtonCaption = () => {
             if (step === stepMap.REVIEW) {
                 // --- review page
-                if (this.state.isPublishing) {
-                    return "Publishing as draft...";
+                if (config.featureFlags.datasetApprovalWorkflowOn) {
+                    if (this.state.isPublishing) {
+                        return "Publishing as draft...";
+                    } else {
+                        return "Publish draft dataset";
+                    }
                 } else {
-                    return "Publish draft dataset";
+                    if (this.state.isPublishing) {
+                        return "Publishing...";
+                    } else {
+                        return "Publish dataset";
+                    }
                 }
             } else if (step === stepMap.ALL_DONE) {
                 // --- all done or preview mode feedback page
@@ -341,6 +351,18 @@ class NewDataset extends React.Component<Props, State> {
                 ...state,
                 isPublishing: true
             }));
+
+            // Setting datasets as approved if
+            // approval flow is turned off
+            if (!config.featureFlags.datasetApprovalWorkflowOn) {
+                this.setState(state => ({
+                    ...state,
+                    datasetPublishing: {
+                        ...state.datasetPublishing,
+                        state: "published"
+                    }
+                }));
+            }
 
             await createDatasetFromState(
                 this.props.datasetId,

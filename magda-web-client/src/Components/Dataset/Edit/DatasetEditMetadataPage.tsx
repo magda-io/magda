@@ -112,6 +112,7 @@ class EditDataset extends React.Component<Props, State> {
                       datasetId={this.props.datasetId}
                       history={this.props.history}
                       isEdit={true}
+                      publishStatus={this.state.datasetPublishing.state}
                   />
               )
     ];

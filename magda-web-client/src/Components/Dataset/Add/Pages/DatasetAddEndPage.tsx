@@ -11,12 +11,21 @@ type Props = {
     datasetId: string;
     history: any;
     isEdit?: boolean;
+    publishStatus: string; // "published" | "draft" | "archived"
 };
 
 // If you are not in preview mode
 export default function DatasetAddEndPage(props: Props) {
-    const draftPage = "/dataset/" + props.datasetId + "/details";
+    const { datasetId, publishStatus } = props;
+    const datasetPage = "/dataset/" + datasetId + "/details";
     const isEdit = typeof props?.isEdit === "undefined" ? false : props.isEdit;
+    console.log("props are: ", props);
+    let viewDatasetText;
+    if (publishStatus === "draft") {
+        viewDatasetText = "View your draft dataset";
+    } else {
+        viewDatasetText = "View your dataset";
+    }
 
     return (
         <div className="row">
@@ -39,17 +48,18 @@ export default function DatasetAddEndPage(props: Props) {
             </div>
             <div className="col-sm-12 end-preview-page-2">
                 <div>
-                    <Link to={draftPage}>
+                    <Link to={datasetPage}>
                         <a className="au-btn next-button end-preview-button draft-dataset-btn">
                             <img className="draft-image-icon" src={draftIcon} />
                             <span className="draft-dataset-txt">
-                                View your draft dataset
+                                {" "}
+                                {viewDatasetText}{" "}
                             </span>
                         </a>
                     </Link>
                 </div>
                 <div>
-                    <Link to={draftPage + "?print=true"}>
+                    <Link to={datasetPage + "?print=true"}>
                         <a className="au-btn next-button end-preview-button print-metadata-btn">
                             <img className="print-icon" src={printIcon} />
                             <span className="print-metadata-txt">
