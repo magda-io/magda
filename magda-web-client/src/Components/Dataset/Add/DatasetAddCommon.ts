@@ -8,6 +8,7 @@ import {
     ensureAspectExists,
     createPublisher,
     updateDataset,
+    deleteRecordAspect,
     Record
 } from "api-clients/RegistryApis";
 import { config } from "config";
@@ -935,4 +936,39 @@ export async function updateDatasetFromState(
         true
     );
     await updateDataset(datasetRecord, distributionRecords);
+}
+
+/**
+ * This function will submit the dataset using different API endpoints (depends on whether the dataset has been create or not)
+ * It will also delete any temporary draft data from the `dataset-draft` aspect.
+ *
+ * @export
+ * @param {string} datasetId
+ * @param {State} state
+ * @param {React.Dispatch<React.SetStateAction<State>>} setState
+ */
+export async function submitDatasetFromState(
+    datasetId: string,
+    state: State,
+    setState: React.Dispatch<React.SetStateAction<State>>
+) {
+    let recordExist: boolean = false;
+    try {
+        if (await fetchRecord(datasetId, [], [], false)) {
+            recordExist = true;
+        }
+    } catch (e) {
+        if (e! instanceof ServerError || e.statusCode !== 404) {
+            // --- mute 404 error
+            throw e;
+        }
+    }
+
+    if (recordExist) {
+        await updateDatasetFromState(datasetId, state, setState);
+    } else {
+        await createDatasetFromState(datasetId, state, setState);
+    }
+
+    await deleteRecordAspect(datasetId, "dataset-draft");
 }

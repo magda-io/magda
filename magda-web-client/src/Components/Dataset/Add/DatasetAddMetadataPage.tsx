@@ -17,7 +17,7 @@ import {
     State,
     saveState,
     DistributionState,
-    createDatasetFromState
+    submitDatasetFromState
 } from "./DatasetAddCommon";
 import DetailsAndContents from "./Pages/DetailsAndContents";
 import DatasetAddPeoplePage from "./Pages/People/DatasetAddPeoplePage";
@@ -261,7 +261,7 @@ class NewDataset extends React.Component<Props, State> {
         try {
             await this.resetError();
             await saveState(this.state, this.props.datasetId);
-            this.props.history.push(`/dataset/list`);
+            this.props.history.push(`/`);
         } catch (e) {
             this.props.createNewDatasetError(e);
         }
@@ -312,24 +312,22 @@ class NewDataset extends React.Component<Props, State> {
 
     async performPublishDataset() {
         try {
-            await this.resetError();
+            const datasetId = this.props.datasetId;
 
-            await saveState(this.state, this.props.datasetId);
+            await this.resetError();
 
             this.setState(state => ({
                 ...state,
                 isPublishing: true
             }));
 
-            await createDatasetFromState(
-                this.props.datasetId,
+            await submitDatasetFromState(
+                datasetId,
                 this.state,
                 this.setState.bind(this)
             );
 
-            this.props.history.push(
-                `/dataset/add/metadata/${this.props.datasetId}/6`
-            );
+            this.props.history.push(`/dataset/add/metadata/${datasetId}/6`);
         } catch (e) {
             this.setState({
                 isPublishing: false

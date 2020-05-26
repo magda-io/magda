@@ -166,6 +166,16 @@ export async function fetchRecord(
     }
 }
 
+export async function deleteRecordAspect(
+    recordId: string,
+    aspectId: string
+): Promise<void> {
+    await request(
+        "DELETE",
+        `${config.registryFullApiUrl}records/${recordId}/aspects/${aspectId}`
+    );
+}
+
 export async function doesRecordExist(id: string) {
     try {
         await fetchRecord(id, [], [], false);

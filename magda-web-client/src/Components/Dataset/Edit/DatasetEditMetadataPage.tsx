@@ -16,7 +16,7 @@ import { editSteps as ProgressMeterStepsConfig } from "../../Common/AddDatasetPr
 import {
     State,
     DistributionState,
-    updateDatasetFromState
+    submitDatasetFromState
 } from "../Add/DatasetAddCommon";
 import DetailsAndContents from "../Add/Pages/DetailsAndContents";
 import DatasetAddPeoplePage from "../Add/Pages/People/DatasetAddPeoplePage";
@@ -294,7 +294,7 @@ class EditDataset extends React.Component<Props, State> {
                 isPublishing: true
             });
 
-            await updateDatasetFromState(
+            await submitDatasetFromState(
                 this.props.datasetId,
                 this.state,
                 this.setState.bind(this)
