@@ -94,12 +94,6 @@ const argv = yargs
             "The base URL of the Magda preview map.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
     })
-    .option("magdaWebServerPath", {
-        describe:
-            "The base URL of the Magda web server.  If not specified, the URL is default to root /.",
-        type: "string",
-        default: "/"
-    })
     .option("correspondenceApiBaseUrl", {
         describe:
             "The base URL of the correspondence api.  If not specified, the URL is built from the apiBaseUrl.",
@@ -237,10 +231,6 @@ const webServerConfig = {
     csvLoaderChunkSize: argv.csvLoaderChunkSize
 };
 
-const magdaWebServerPath = addTrailingSlash(
-    argv.magdaWebServerPath || new URI("/").segment("magda").toString()
-);
-
 app.get("/server-config.js", function(req, res) {
     res.type("application/javascript");
     res.send(
@@ -260,7 +250,7 @@ function getIndexFileContentZeroArgs() {
     );
 }
 
-app.get([magdaWebServerPath, "/index.html*"], async function(req, res) {
+app.get(["/", "/index.html*"], async function(req, res) {
     const indexFileContent = await getIndexFileContentZeroArgs();
 
     res.send(indexFileContent);
@@ -288,13 +278,10 @@ const topLevelRoutes = [
 ];
 
 topLevelRoutes.forEach(topLevelRoute => {
-    app.get(magdaWebServerPath + topLevelRoute, async function(req, res) {
+    app.get("/" + topLevelRoute, async function(req, res) {
         res.send(await getIndexFileContentZeroArgs());
     });
-    app.get(magdaWebServerPath + topLevelRoute + "/*", async function(
-        req,
-        res
-    ) {
+    app.get("/" + topLevelRoute + "/*", async function(req, res) {
         res.send(await getIndexFileContentZeroArgs());
     });
 });
@@ -355,7 +342,7 @@ app.use(
 
 // Proxy any other URL to 404 error page
 const maxErrorDataUrlLength = 1500;
-app.use(magdaWebServerPath, function(req, res) {
+app.use("/", function(req, res) {
     let redirectUri: any = new URI("/error");
     const url =
         req.originalUrl.length > maxErrorDataUrlLength

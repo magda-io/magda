@@ -55,7 +55,8 @@ type Config = {
     userId: string;
     web: string;
     previewMap?: string;
-    magdaUI?: string;
+    magdaWebPath?: string;
+    magdaWebUrl?: string;
     enableHttpsRedirection?: boolean;
     enableWebAccessControl?: boolean;
     webAccessUsername?: string;
@@ -210,7 +211,13 @@ export default function buildApp(config: Config) {
 
     app.use("/preview-map", createGenericProxy(config.previewMap, tenantMode));
 
-    app.use("/magda", createGenericProxy(config.magdaUI, tenantMode));
+    // Route of magda web server
+    if (config.magdaWebPath && config.magdaWebUrl) {
+        app.use(
+            config.magdaWebPath,
+            createGenericProxy(config.magdaWebUrl, tenantMode)
+        );
+    }
 
     if (config.enableCkanRedirection) {
         if (!routes.registry) {
