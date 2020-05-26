@@ -350,7 +350,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
             const recordId =
                 req.query.recordId &&
                 decodeURIComponent(req.query.recordId as string);
-            const path = path;
+
             const encodeBucketname = encodeURIComponent(bucket);
             const content = req.body;
             const contentType = req.headers["content-type"];
