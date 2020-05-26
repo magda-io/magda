@@ -23,6 +23,7 @@ General:
 -   Use helm3 in inttest:registryAuth step in CI
 -   Make Magda charts helm v3 charts
 -   Add migration document for migrating Magda release v0.0.56-RC6 or eariler to v0.0.57-0
+-   Use a feature flag to turn on/off the dataset approval workflow
 
 UI:
 
