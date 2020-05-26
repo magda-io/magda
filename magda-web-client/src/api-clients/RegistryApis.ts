@@ -63,6 +63,21 @@ export function fetchOrganization(publisherId: string): Promise<Publisher> {
     });
 }
 
+/**
+ * Store aspect json schema saving action promise.
+ * Used by `ensureAspectExists` to make sure only save the aspect once within current session.
+ */
+const aspectJsonSchemaSavingCache: {
+    [key: string]: Promise<any>;
+} = {};
+
+/**
+ * Ensure aspect exists in registry by storing the aspect def to registry.
+ * Here we are not going to skip storing the aspect def if the aspect def already exisits as we do know whether it's an up-to-date one in registry.
+ * For now, we only make sure the aspect def won't be stored to registry for multiple times.
+ * @param id
+ * @param jsonSchema
+ */
 export async function ensureAspectExists(id: string, jsonSchema?: any) {
     if (!jsonSchema) {
         jsonSchema = aspectSchemas[id];
@@ -72,11 +87,19 @@ export async function ensureAspectExists(id: string, jsonSchema?: any) {
         throw new Error(`Cannot locate json schema for ${id}`);
     }
 
-    await request("PUT", `${config.registryFullApiUrl}aspects/${id}`, {
-        id,
-        name: jsonSchema.title,
-        jsonSchema
-    });
+    if (!aspectJsonSchemaSavingCache[id]) {
+        aspectJsonSchemaSavingCache[id] = request(
+            "PUT",
+            `${config.registryFullApiUrl}aspects/${id}`,
+            {
+                id,
+                name: jsonSchema.title,
+                jsonSchema
+            }
+        );
+    }
+
+    await aspectJsonSchemaSavingCache[id];
 }
 
 export async function fetchRecord(
@@ -189,8 +212,8 @@ export async function createDataset(
     inputDistributions: Record[]
 ) {
     // make sure all the aspects exist (this should be improved at some point, but will do for now)
-    const aspectPromises = Object.keys(
-        getRecordsAspectIds([inputDataset].concat(inputDistributions))
+    const aspectPromises = getRecordsAspectIds(
+        [inputDataset].concat(inputDistributions)
     ).map(aspectId => ensureAspectExists(aspectId));
 
     await Promise.all(aspectPromises);
@@ -216,8 +239,8 @@ export async function updateDataset(
     inputDistributions: Record[]
 ) {
     // make sure all the aspects exist (this should be improved at some point, but will do for now)
-    const aspectPromises = Object.keys(
-        getRecordsAspectIds([inputDataset].concat(inputDistributions))
+    const aspectPromises = getRecordsAspectIds(
+        [inputDataset].concat(inputDistributions)
     ).map(aspectId => ensureAspectExists(aspectId));
 
     await Promise.all(aspectPromises);
