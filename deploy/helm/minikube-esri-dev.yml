@@ -45,6 +45,7 @@ magda-core:
     featureFlags:
       cataloguing: true
       publishToDga: true
+      datasetApprovalWorkflowOn: true
 
 tags:
   all: true

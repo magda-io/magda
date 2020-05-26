@@ -22,6 +22,8 @@ featureFlags:
  cataloguing: false
  previewAddDataset: false
  publishToDga: false
+ datasetApprovalWorkflowOn: true
+
 vocabularyApiEndpoints: []
 defaultContactEmail: "mail@example.com"
 custodianOrgLevel: 2

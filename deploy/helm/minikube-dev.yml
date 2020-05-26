@@ -71,6 +71,7 @@ magda-core:
     featureFlags:
       cataloguing: true
       publishToDga: true
+      datasetApprovalWorkflowOn: true
     dateConfig:
       dateFormats:
         - YYYY

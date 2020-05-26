@@ -112,6 +112,7 @@ magda-core:
     featureFlags:
       cataloguing: true
       publishToDga: true
+      datasetApprovalWorkflowOn: true
 
   correspondence-api:
     alwaysSendToDefaultRecipient: true
