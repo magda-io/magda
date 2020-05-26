@@ -17,7 +17,7 @@ export function requestWhoAmI() {
         });
 
         fetch(config.authApiUrl + "users/whoami", {
-            ...config.fetchOptions,
+            ...config.credentialsFetchOptions,
             credentials: "include"
         })
             .then(async response => {
@@ -71,7 +71,7 @@ export function requestSignOut() {
             });
 
             const response = await fetch(config.baseUrl + "auth/logout", {
-                ...config.fetchOptions,
+                ...config.credentialsFetchOptions,
                 credentials: "include"
             });
 
@@ -120,7 +120,7 @@ export function requestAuthProviders() {
             type: actionTypes.REQUEST_AUTH_PROVIDERS
         });
 
-        fetch(config.baseUrl + "auth/providers", config.fetchOptions)
+        fetch(config.baseUrl + "auth/providers", config.credentialsFetchOptions)
             .then(response => {
                 if (response.status === 200) {
                     return response

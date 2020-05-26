@@ -26,7 +26,7 @@ export function fetchFeaturedPublishersFromRegistry(ids: Array<string>): any {
             fetch(
                 config.registryReadOnlyApiUrl +
                     `records/${id}?aspect=organization-details`,
-                config.fetchOptions
+                config.credentialsFetchOptions
             ).then(response => response.json())
         );
         Promise.all(fetches).then(jsons => dispatch(receivePublishers(jsons)));

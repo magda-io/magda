@@ -70,6 +70,7 @@ class NewDataset extends React.Component<Props, State> {
             <DatasetAddFilesPage
                 edit={this.edit}
                 setState={this.setState.bind(this)}
+                datasetId={this.props.datasetId}
                 stateData={this.state}
                 user={this.props.user}
                 isEditView={true}

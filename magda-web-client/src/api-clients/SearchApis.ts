@@ -40,7 +40,7 @@ export function searchPublishers(
     const url = `${config.searchApiUrl +
         "organisations"}?query=${query}&start=${(start - 1) *
         searchResultsPerPage}&limit=${searchResultsPerPage}`;
-    return fetch(url, config.fetchOptions).then(response => {
+    return fetch(url, config.credentialsFetchOptions).then(response => {
         if (!response.ok) {
             let statusText = response.statusText;
             // response.statusText are different in different browser, therefore we unify them here
@@ -84,7 +84,7 @@ export function autocompletePublishers(
             `facets/publisher/options?generalQuery=${encodeURIComponent(
                 generalQuery.q || "*"
             )}&${generalQueryString}&facetQuery=${term}`,
-        config.fetchOptions
+        config.credentialsFetchOptions
     ).then(response => {
         if (!response.ok) {
             throw new Error(response.statusText);
@@ -109,7 +109,7 @@ export async function autoCompleteAccessLocation(
         term
     )}&size=${size}`;
 
-    const response = await fetch(url, config.fetchOptions);
+    const response = await fetch(url, config.credentialsFetchOptions);
     try {
         const resData: AutoCompleteResult = await response.json();
         if (resData.errorMessage) {
@@ -129,7 +129,7 @@ export async function autoCompleteAccessLocation(
 export function searchDatasets(queryObject: Query): Promise<DataSearchJson> {
     let url: string =
         config.searchApiUrl + `datasets?${buildSearchQueryString(queryObject)}`;
-    return fetch(url, config.fetchOptions).then((response: any) => {
+    return fetch(url, config.credentialsFetchOptions).then((response: any) => {
         if (response.status === 200) {
             return response.json();
         }

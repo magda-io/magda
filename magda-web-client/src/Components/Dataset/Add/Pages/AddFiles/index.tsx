@@ -26,7 +26,7 @@ import { User } from "reducers/userManagementReducer";
 import "./index.scss";
 import "../../DatasetAddCommon.scss";
 
-const DATASETS_BUCKET = "datasets";
+const DATASETS_BUCKET = "magda-datasets";
 
 type Props = {
     edit: <K extends keyof State>(
@@ -37,6 +37,7 @@ type Props = {
         callback?: () => void
     ) => void;
     user: User;
+    datasetId: string;
     stateData: State;
     // --- if use as edit page
     isEditView: boolean;
@@ -98,10 +99,6 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
         }
     }
 
-    generateUploadUrl(fileName: string) {
-        return `${config.storageApiUrl}${DATASETS_BUCKET}/${fileName}`;
-    }
-
     addFiles = async (fileList: FileList, event: any = null) => {
         for (let i = 0; i < fileList.length; i++) {
             const thisFile = fileList.item(i);
@@ -114,6 +111,8 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
             const distRecordId = createId("dist");
 
             const shouldUpload = this.props.stateData.shouldUploadToStorageApi;
+
+            const baseStorageApiPath = `${DATASETS_BUCKET}/${this.props.datasetId}/${distRecordId}`;
 
             const newFile: Distribution = {
                 id: distRecordId,
@@ -130,23 +129,23 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                 license: "world",
                 creationSource: DistributionSource.File,
                 downloadURL: shouldUpload
-                    ? `${this.generateUploadUrl(thisFile.name)}`
+                    ? `${config.storageApiUrl}${baseStorageApiPath}`
                     : undefined
             };
 
             const formData = new FormData();
             formData.append(thisFile.name, thisFile);
 
+            const fetchUrl = `${config.storageApiUrl}upload/${baseStorageApiPath}`;
+            // TODO: Add this when we put drafts in the registry
+            //?recordId=${distRecordId}`;
+
             const uploadPromise = shouldUpload
-                ? fetch(
-                      `${this.generateUploadUrl(
-                          thisFile.name
-                      )}?recordId=${distRecordId}`,
-                      {
-                          method: "POST",
-                          body: formData
-                      }
-                  ).then(res => {
+                ? fetch(fetchUrl, {
+                      ...config.credentialsFetchOptions,
+                      method: "POST",
+                      body: formData
+                  }).then(res => {
                       if (res.status !== 200) {
                           throw new Error("Could not upload file");
                       }

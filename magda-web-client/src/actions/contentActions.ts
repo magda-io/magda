@@ -30,7 +30,7 @@ export function fetchContent() {
         if (getState().content.isFetching) {
             return false;
         }
-        fetch(config.contentUrl, config.fetchOptions)
+        fetch(config.contentUrl, config.credentialsFetchOptions)
             .then(response => {
                 if (response.status === 200) {
                     return response.json();

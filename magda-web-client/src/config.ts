@@ -33,9 +33,9 @@ const defaultDateFormats: string[] = [
 ];
 
 // Local minikube/docker k8s cluster
-// const fallbackApiHost = "http://localhost:30100/";
+const fallbackApiHost = "http://localhost:30100/";
 // Dev server
-const fallbackApiHost = "https://dev.magda.io/";
+// const fallbackApiHost = "https://dev.magda.io/";
 
 const DEV_FEATURE_FLAGS = {
     cataloguing: true,
@@ -157,7 +157,7 @@ const baseExternalUrl = serverConfig.baseExternalUrl
     ? window.location.protocol + "//" + window.location.host + "/"
     : baseUrl;
 
-const fetchOptions: RequestInit =
+const credentialsFetchOptions: RequestInit =
     `${window.location.protocol}//${window.location.host}/` !== baseUrl
         ? {
               credentials: "include"
@@ -180,7 +180,7 @@ const vocabularyApiEndpoints =
           ];
 
 export const config = {
-    fetchOptions,
+    credentialsFetchOptions: credentialsFetchOptions,
     homePageConfig: homePageConfig,
     showNotificationBanner: !!serverConfig.showNotificationBanner,
     baseUrl,

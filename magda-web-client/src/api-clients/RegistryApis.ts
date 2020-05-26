@@ -15,7 +15,7 @@ export function fetchOrganization(publisherId: string): Promise<Publisher> {
             publisherId
         )}?aspect=organization-details`;
 
-    return fetch(url, config.fetchOptions).then(response => {
+    return fetch(url, config.credentialsFetchOptions).then(response => {
         if (!response.ok) {
             let statusText = response.statusText;
             // response.statusText are different in different browser, therefore we unify them here
@@ -78,7 +78,7 @@ export async function fetchRecord(
             parameters.length ? `?${parameters.join("&")}` : ""
         }`;
 
-    const response = await fetch(url, config.fetchOptions);
+    const response = await fetch(url, config.credentialsFetchOptions);
 
     if (!response.ok) {
         let statusText = response.statusText;

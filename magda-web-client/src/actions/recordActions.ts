@@ -126,7 +126,7 @@ export function fetchDistributionFromRegistry(id: string): any {
             `records/${encodeURIComponent(
                 id
             )}?aspect=dcat-distribution-strings&optionalAspect=source-link-status&optionalAspect=source&optionalAspect=visualization-info&optionalAspect=access&optionalAspect=usage&optionalAspect=dataset-format&optionalAspect=ckan-resource&optionalAspect=publishing`;
-        return fetch(url, config.fetchOptions)
+        return fetch(url, config.credentialsFetchOptions)
             .then(response => {
                 if (!response.ok) {
                     let statusText = response.statusText;
@@ -179,7 +179,7 @@ export function modifyRecordAspect(
 
         const patch = [{ op: "add", path: `/${field}`, value }];
 
-        let options = Object.assign({}, config.fetchOptions, {
+        let options = Object.assign({}, config.credentialsFetchOptions, {
             method: "PATCH",
             body: JSON.stringify(patch),
             headers: {

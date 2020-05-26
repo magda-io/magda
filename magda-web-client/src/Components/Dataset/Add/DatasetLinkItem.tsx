@@ -305,7 +305,7 @@ async function getAllDataUrlProcessorsFromOpenfaasGateway(
             : "api-url-processor";
     const res = await fetch(
         `${config.openfaasBaseUrl}/system/functions`,
-        config.fetchOptions
+        config.credentialsFetchOptions
     );
     if (res.status !== 200) {
         if (res.status === 401) {
@@ -412,7 +412,7 @@ const DatasetLinkItem = (props: Props) => {
                     const res = await fetch(
                         `${config.openfaasBaseUrl}/function/${item.name}`,
                         {
-                            ...config.fetchOptions,
+                            ...config.credentialsFetchOptions,
                             method: "post",
                             body: props.distribution.downloadURL
                         }
