@@ -38,6 +38,7 @@
   "dependencies": {
     "ansi-styles": "^3.2.1",
     "apidoc": "https://github.com/magda-io/apidoc",
+    "bcrypt": "^4.0.1",
     "chalk": "^2.4.1",
     "clear": "^0.1.0",
     "commander": "^2.17.0",
@@ -47,6 +48,8 @@
     "inquirer": "^6.0.0",
     "inquirer-autocomplete-prompt": "^1.0.1",
     "is-subdir": "^1.0.2",
+    "isemail": "^3.2.0",
+    "isuuid": "^0.1.0",
     "js-base64": "^2.4.8",
     "klaw-sync": "^2.1.0",
     "lodash": "^4.17.5",
@@ -66,8 +69,7 @@
     "tsconfig-paths": "^3.9.0",
     "typescript": "^3.7.2",
     "uniqid": "^5.0.3",
-    "yargs": "^12.0.5",
-    "bcrypt": "^4.0.1"
+    "yargs": "^12.0.5"
   },
   "keywords": [
     "Magda",
