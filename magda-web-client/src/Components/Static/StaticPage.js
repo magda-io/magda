@@ -99,7 +99,7 @@ class StaticPage extends Component {
 }
 
 function mapStateToProps(state, old) {
-    const path = basePath + old.match.params.pageId;
+    const path = old.match.params.pageId;
     const hasEditPermissions =
         state.userManagement &&
         state.userManagement.user &&

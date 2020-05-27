@@ -21,6 +21,11 @@ import PropTypes from "prop-types";
 import ScrollToTop from "./helpers/ScrollToTop";
 import "./i18n";
 
+import { config } from "./config";
+
+// E.g. basePath = "/magda/" or "/"
+const basePath = config.serverBasePath;
+
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 const store = createStore(
     reducer,
@@ -57,7 +62,7 @@ ReactDOM.render(
         <BrowserRouter>
             <GAListener>
                 <ScrollToTop>
-                    <Route path="/magda/" component={AppContainer} />
+                    <Route path={basePath} component={AppContainer} />
                 </ScrollToTop>
             </GAListener>
         </BrowserRouter>
