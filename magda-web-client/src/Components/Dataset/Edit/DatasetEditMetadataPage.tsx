@@ -1,7 +1,7 @@
 import React from "react";
 import { withRouter } from "react-router";
 import { MultilineTextEditor } from "Components/Editing/Editors/textEditor";
-
+import AsyncButton from "Components/Common/AsyncButton";
 import ToolTip from "Components/Dataset/Add/ToolTip";
 
 import {
@@ -201,17 +201,19 @@ class EditDataset extends React.Component<Props, State> {
                         <div className="row next-save-button-row">
                             <div className="col-sm-12">
                                 {this.props.isBackToReview ? (
-                                    <button
+                                    <AsyncButton
                                         className="au-btn back-to-review-button"
-                                        onClick={() =>
-                                            this.gotoStep(this.steps.length - 2)
+                                        onClick={async () =>
+                                            await this.gotoStep(
+                                                this.steps.length - 2
+                                            )
                                         }
                                     >
                                         Return to Review
-                                    </button>
+                                    </AsyncButton>
                                 ) : null}
 
-                                <button
+                                <AsyncButton
                                     className={`au-btn ${
                                         this.props.isBackToReview
                                             ? "au-btn--secondary save-button"
@@ -221,16 +223,18 @@ class EditDataset extends React.Component<Props, State> {
                                     disabled={this.state.isPublishing}
                                 >
                                     {nextButtonCaption()}
-                                </button>
+                                </AsyncButton>
                                 {hideExitButton ? null : (
-                                    <button
+                                    <AsyncButton
                                         className="au-btn au-btn--secondary save-button"
-                                        onClick={() =>
-                                            this.gotoStep(this.steps.length - 2)
+                                        onClick={async () =>
+                                            await this.gotoStep(
+                                                this.steps.length - 2
+                                            )
                                         }
                                     >
                                         Review &amp; Save
-                                    </button>
+                                    </AsyncButton>
                                 )}
                             </div>
                         </div>

@@ -3,6 +3,7 @@ import { withRouter } from "react-router";
 import { MultilineTextEditor } from "Components/Editing/Editors/textEditor";
 
 import ToolTip from "Components/Dataset/Add/ToolTip";
+import AsyncButton from "Components/Common/AsyncButton";
 
 import {
     createNewDatasetReset,
@@ -157,13 +158,13 @@ class NewDataset extends React.Component<Props, State> {
             }
         };
 
-        const nextButtonOnClick = () => {
+        const nextButtonOnClick = async () => {
             if (step === 5) {
                 // --- review page
                 if (config.featureFlags.previewAddDataset) {
-                    this.gotoStep(step + 1);
+                    await this.gotoStep(step + 1);
                 } else {
-                    this.performPublishDataset();
+                    await this.performPublishDataset();
                 }
             } else if (step === 6) {
                 // --- all done or preview mode feedback page
@@ -173,7 +174,7 @@ class NewDataset extends React.Component<Props, State> {
                         "mailto:magda@csiro.au?subject=Add Dataset Feedback";
                 }
             } else {
-                this.gotoStep(step + 1);
+                await this.gotoStep(step + 1);
             }
         };
 
@@ -216,17 +217,19 @@ class NewDataset extends React.Component<Props, State> {
                         <div className="row next-save-button-row">
                             <div className="col-sm-12">
                                 {this.props.isBackToReview ? (
-                                    <button
+                                    <AsyncButton
                                         className="au-btn back-to-review-button"
-                                        onClick={() =>
-                                            this.gotoStep(this.steps.length - 2)
+                                        onClick={async () =>
+                                            await this.gotoStep(
+                                                this.steps.length - 2
+                                            )
                                         }
                                     >
                                         Return to Review
-                                    </button>
+                                    </AsyncButton>
                                 ) : null}
 
-                                <button
+                                <AsyncButton
                                     className={`au-btn ${
                                         this.props.isBackToReview
                                             ? "au-btn--secondary save-button"
@@ -236,14 +239,14 @@ class NewDataset extends React.Component<Props, State> {
                                     disabled={this.state.isPublishing}
                                 >
                                     {nextButtonCaption()}
-                                </button>
+                                </AsyncButton>
                                 {hideExitButton ? null : (
-                                    <button
+                                    <AsyncButton
                                         className="au-btn au-btn--secondary save-button"
                                         onClick={this.saveAndExit.bind(this)}
                                     >
                                         Save and exit
-                                    </button>
+                                    </AsyncButton>
                                 )}
                             </div>
                         </div>
