@@ -249,15 +249,11 @@ app.get("/server-config.js", function(req, res) {
  * is throttled, it'll only actually be invoked once every 60 seconds
  */
 function getIndexFileContentZeroArgs() {
-    // Removing the leading slash.
-    const newStaticBasePath = argv.serverBasePath
-        ? argv.serverBasePath.substring(1) + "static"
-        : "static";
     return getIndexFileContent(
         clientRoot,
         argv.useLocalStyleSheet,
         argv.contentApiBaseUrlInternal,
-        newStaticBasePath
+        argv.serverBasePath
     );
 }
 

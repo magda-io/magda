@@ -9,6 +9,10 @@ const STATIC_STYLE_REGEX = new RegExp(
 );
 
 const STATIC_PATH_REGEX = new RegExp("static", "g");
+const SERVER_CONFIG_REGEX = new RegExp(
+    '<script src="/server-config.js"></script>',
+    "g"
+);
 
 /**
  * Gets the content stored under "includeHtml" in the content api. On failure
@@ -18,7 +22,7 @@ const STATIC_PATH_REGEX = new RegExp("static", "g");
  */
 async function getIncludeHtml(
     contentApiBaseUrlInternal: string,
-    newStaticBasePath: string
+    serverBasePath: string
 ) {
     const url = `${contentApiBaseUrlInternal}includeHtml.text`;
 
@@ -26,11 +30,14 @@ async function getIncludeHtml(
         const response = await fetch(url);
 
         if (response.status === 200) {
+            const newStaticBasePath = serverBasePath
+                ? serverBasePath.substring(1) + "static"
+                : "static";
+            const newServerConfig = `<script src="${serverBasePath}server-config.js"></script>`;
             const text = response.text();
-            const newText = (await text).replace(
-                STATIC_PATH_REGEX,
-                newStaticBasePath
-            );
+            const newText = (await text)
+                .replace(STATIC_PATH_REGEX, newStaticBasePath)
+                .replace(SERVER_CONFIG_REGEX, newServerConfig);
             return newText;
         } else {
             throw new Error(
@@ -52,7 +59,7 @@ async function getIncludeHtml(
  */
 function getIndexHtml(
     clientRoot: string,
-    newStaticBasePath: string
+    serverBasePath: string
 ): Promise<string> {
     return new Promise((resolve, reject) =>
         fs.readFile(
@@ -64,10 +71,13 @@ function getIndexHtml(
                 if (err) {
                     reject(err);
                 } else {
-                    const newData = data.replace(
-                        STATIC_PATH_REGEX,
-                        newStaticBasePath
-                    );
+                    const newStaticBasePath = serverBasePath
+                        ? serverBasePath.substring(1) + "static"
+                        : "static";
+                    const newServerConfig = `<script src="${serverBasePath}server-config.js"></script>`;
+                    const newData = data
+                        .replace(STATIC_PATH_REGEX, newStaticBasePath)
+                        .replace(SERVER_CONFIG_REGEX, newServerConfig);
                     resolve(newData);
                 }
             }
@@ -91,16 +101,13 @@ async function getIndexFileContent(
     clientRoot: string,
     useLocalStyleSheet: boolean,
     contentApiBaseUrlInternal: string,
-    newStaticBasePath: string
+    serverBasePath: string
 ) {
     const dynamicContentPromise = getIncludeHtml(
         contentApiBaseUrlInternal,
-        newStaticBasePath
+        serverBasePath
     );
-    const indexHtmlPromise = memoizedGetIndexHtml(
-        clientRoot,
-        newStaticBasePath
-    );
+    const indexHtmlPromise = memoizedGetIndexHtml(clientRoot, serverBasePath);
 
     let [dynamicContent, indexFileContent] = await Promise.all([
         dynamicContentPromise,
