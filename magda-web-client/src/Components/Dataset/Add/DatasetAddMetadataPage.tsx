@@ -140,11 +140,11 @@ class NewDataset extends React.Component<Props, State> {
         let { step } = this.props;
 
         const hideExitButton = config.featureFlags.previewAddDataset
-            ? step >= stepMap.SUBMIT_FOR_APPROVAL
-            : step >= stepMap.REVIEW;
+            ? step >= stepMap.REVIEW
+            : step >= stepMap.REVIEW_BEFORE_SUBMIT;
 
         const nextButtonCaption = () => {
-            if (step === stepMap.REVIEW) {
+            if (step === stepMap.REVIEW_BEFORE_SUBMIT) {
                 // --- review page
                 if (config.featureFlags.datasetApprovalWorkflowOn) {
                     if (this.state.isPublishing) {
@@ -169,7 +169,7 @@ class NewDataset extends React.Component<Props, State> {
         };
 
         const nextButtonOnClick = () => {
-            if (step === stepMap.REVIEW) {
+            if (step === stepMap.REVIEW_BEFORE_SUBMIT) {
                 // --- review page
                 if (config.featureFlags.previewAddDataset) {
                     this.gotoStep(step + 1);
@@ -188,7 +188,7 @@ class NewDataset extends React.Component<Props, State> {
                 // But it's up next
                 if (
                     !config.featureFlags.datasetApprovalWorkflowOn &&
-                    step + 1 === stepMap.SUBMIT_FOR_APPROVAL
+                    step + 1 === stepMap.REVIEW
                 ) {
                     this.gotoStep(step + 2);
                 } else {
@@ -291,12 +291,12 @@ class NewDataset extends React.Component<Props, State> {
     }
 
     async gotoStep(step: number) {
-        // Bandaid: So that users can't force their way into the submit for approval page
+        // Bandaid: So that users can't force their way into the approval page
         if (
             !config.featureFlags.datasetApprovalWorkflowOn &&
-            step === stepMap.SUBMIT_FOR_APPROVAL
+            step === stepMap.REVIEW
         ) {
-            step = stepMap.REVIEW;
+            step = stepMap.REVIEW_BEFORE_SUBMIT;
         }
 
         try {

@@ -136,11 +136,11 @@ class EditDataset extends React.Component<Props, State> {
         let { step } = this.props;
 
         const hideExitButton = config.featureFlags.previewAddDataset
-            ? step >= stepMap.SUBMIT_FOR_APPROVAL
-            : step >= stepMap.REVIEW;
+            ? step >= stepMap.REVIEW
+            : step >= stepMap.REVIEW_BEFORE_SUBMIT;
 
         const nextButtonCaption = () => {
-            if (step === stepMap.REVIEW) {
+            if (step === stepMap.REVIEW_BEFORE_SUBMIT) {
                 // --- review page
                 if (this.state.isPublishing) {
                     return "Submit dataset changes...";
@@ -157,7 +157,7 @@ class EditDataset extends React.Component<Props, State> {
         };
 
         const nextButtonOnClick = () => {
-            if (step === stepMap.REVIEW) {
+            if (step === stepMap.REVIEW_BEFORE_SUBMIT) {
                 // --- review page
                 if (config.featureFlags.previewAddDataset) {
                     this.gotoStep(step + 1);
@@ -176,7 +176,7 @@ class EditDataset extends React.Component<Props, State> {
                 // But it's up next
                 if (
                     !config.featureFlags.datasetApprovalWorkflowOn &&
-                    step + 1 === stepMap.SUBMIT_FOR_APPROVAL
+                    step + 1 === stepMap.REVIEW
                 ) {
                     this.gotoStep(step + 2);
                 } else {
@@ -260,12 +260,12 @@ class EditDataset extends React.Component<Props, State> {
 
     async gotoStep(step: number) {
         // Bandaid, similar to the add dataset flow
-        // So that users can't force their way into the submit for approval page
+        // So that users can't force their way into the review page
         if (
             !config.featureFlags.datasetApprovalWorkflowOn &&
-            step === stepMap.SUBMIT_FOR_APPROVAL
+            step === stepMap.REVIEW
         ) {
-            step = stepMap.REVIEW;
+            step = stepMap.REVIEW_BEFORE_SUBMIT;
         }
         try {
             await this.resetError();

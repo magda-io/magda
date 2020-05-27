@@ -35,8 +35,8 @@ export const stepMap = {
     DETAILS_AND_CONTENTS: 1,
     PEOPLE_AND_PRODUCTION: 2,
     ACCESS_AND_USER: 3,
-    SUBMIT_FOR_APPROVAL: 4, // optionally turned off by config.featureFlags.datasetApprovalWorkflowOn
-    REVIEW: 5,
+    REVIEW: 4, // optionally turned off by config.featureFlags.datasetApprovalWorkflowOn
+    REVIEW_BEFORE_SUBMIT: 5,
     ALL_DONE: 6
 };
 
@@ -58,7 +58,7 @@ export const addDatasetSteps: StepItem[] = [
         url: "/dataset/add/metadata/${datasetId}/3"
     },
     {
-        title: "Submit for Approval",
+        title: "Review",
         url: "/dataset/add/metadata/${datasetId}/4"
     },
     {
@@ -89,7 +89,7 @@ export const editDatasetSteps: StepItem[] = [
         url: "/dataset/edit/${datasetId}/3"
     },
     {
-        title: "Submit for Approval",
+        title: "Review",
         url: "/dataset/edit/${datasetId}/4"
     },
     {
@@ -103,7 +103,7 @@ export const editDatasetSteps: StepItem[] = [
 ];
 
 if (!config.featureFlags.datasetApprovalWorkflowOn) {
-    const idx = stepMap.SUBMIT_FOR_APPROVAL;
+    const idx = stepMap.REVIEW;
     addDatasetSteps.splice(idx, 1);
     editDatasetSteps.splice(idx, 1);
 }
@@ -139,7 +139,7 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
         currentStep: number,
         datasetId: string
     ) {
-        if (idx >= stepMap.REVIEW) {
+        if (idx >= stepMap.REVIEW_BEFORE_SUBMIT) {
             return null;
         }
 
@@ -150,8 +150,8 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
 
         const status: Status = (() => {
             if (
-                currentStep >= stepMap.REVIEW &&
-                idx === stepMap.SUBMIT_FOR_APPROVAL
+                currentStep >= stepMap.REVIEW_BEFORE_SUBMIT &&
+                idx === stepMap.REVIEW
             ) {
                 return {
                     class: "current-item",
@@ -244,11 +244,11 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
                 <div className="col-sm-10 step-item-body">
                     {(isEdit ? editDatasetSteps : addDatasetSteps).map(
                         (item, idx) => {
-                            // Skip the submit for approval step if it's turned off
+                            // Skip the review step if it's turned off
                             if (
                                 !config.featureFlags
                                     .datasetApprovalWorkflowOn &&
-                                idx === stepMap.SUBMIT_FOR_APPROVAL
+                                idx === stepMap.REVIEW
                             ) {
                                 return null;
                             }
