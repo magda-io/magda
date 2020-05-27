@@ -95,7 +95,8 @@ export enum DistributionState {
     Reading,
     Processing,
     Ready,
-    Drafting
+    Drafting,
+    Deleting
 }
 
 export function distributionStateToText(state: DistributionState) {
@@ -108,6 +109,8 @@ export function distributionStateToText(state: DistributionState) {
             return "Processing";
         case DistributionState.Ready:
             return "Ready";
+        case DistributionState.Deleting:
+            return "Deleting";
         default:
             return "Unknown";
     }

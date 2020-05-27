@@ -46,9 +46,6 @@ type Props = {
 class AddFilesPage extends React.Component<Props & RouterProps> {
     constructor(props) {
         super(props);
-        this.addDistribution = this.addDistribution.bind(this);
-        this.editDistribution = this.editDistribution.bind(this);
-        this.deleteDistribution = this.deleteDistribution.bind(this);
     }
 
     async onBrowse() {
@@ -306,16 +303,87 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
     };
 
     deleteDistribution = (index: number) => () => {
-        this.props.setState((state: State) => {
-            const newDistributions = state.distributions.filter((item, idx) => {
-                if (idx === index) return false;
-                return true;
+        const removeDist = () => {
+            this.props.setState((state: State) => {
+                const newDistributions = state.distributions.filter(
+                    (item, idx) => {
+                        if (idx === index) return false;
+                        return true;
+                    }
+                );
+                return {
+                    ...state,
+                    distributions: newDistributions
+                };
             });
-            return {
-                ...state,
-                distributions: newDistributions
+        };
+
+        if (this.props.stateData.shouldUploadToStorageApi) {
+            const distToDelete = this.props.stateData.distributions[index];
+
+            // set deleting
+            this.props.setState((state: State) => {
+                const newDistributions = state.distributions.concat();
+                newDistributions[index] = {
+                    ...distToDelete,
+                    _state: DistributionState.Deleting,
+                    _progress: 50
+                };
+
+                return {
+                    ...state,
+                    distributions: newDistributions
+                };
+            });
+
+            // While delete is in progress, warn the user not to close the tab if they try
+            const unloadEventListener = (e: BeforeUnloadEvent) => {
+                // Preventing default makes a warning come up in FF
+                e.preventDefault();
+                // Setting a return value shows the warning in Chrome
+                e.returnValue =
+                    "Closing this page might cause the file not to be fully deleted, are you sure?";
+                // The return value is shown inside the prompt in IE
             };
-        });
+
+            // warn before closing tab
+            window.addEventListener("beforeunload", unloadEventListener);
+
+            // fetch to delete distribution
+            fetch(
+                `${config.storageApiUrl}${DATASETS_BUCKET}/${this.props.datasetId}/${distToDelete.id}`,
+                {
+                    ...config.credentialsFetchOptions,
+                    method: "DELETE"
+                }
+            )
+                .then(res => {
+                    if (res.status !== 200) {
+                        throw new Error("Could not delete file");
+                    }
+
+                    return new Promise(resolve => {
+                        setTimeout(resolve, 2000);
+                    });
+                })
+                .then(() => {
+                    // remove dist from state
+                    removeDist();
+                })
+                .catch(err => {
+                    // TODO: MAKE IT REALLY CLEAR HOW BAD THIS IS
+                    console.error(err);
+                    throw err;
+                })
+                .finally(() => {
+                    window.removeEventListener(
+                        "beforeunload",
+                        unloadEventListener
+                    );
+                });
+        } else {
+            removeDist();
+        }
     };
 
     renderStorageOption() {
