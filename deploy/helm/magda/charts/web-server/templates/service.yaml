@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: web
+  name: magda-ui
 spec:
   ports:
   - name: http
@@ -12,4 +12,4 @@ spec:
 {{- end }}
   type: {{- if .Values.global.exposeNodePorts}} "NodePort" {{- else }} {{ .Values.service.type | default "ClusterIP" }} {{- end }}
   selector:
-    service: web
+    service: magda-ui
