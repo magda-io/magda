@@ -146,6 +146,11 @@ const argv = yargs
             "Max number of CSV data file rows that table preview will module process",
         type: "number"
     })
+    .option("serverBasePath", {
+        describe: "The base path to the web server",
+        type: "string",
+        default: process.env.SERVER_BASE_PATH
+    })
     .option("csvLoaderChunkSize", {
         describe: "The size of the csv loader processing chunk (in bytes)",
         type: "number"
@@ -228,7 +233,8 @@ const webServerConfig = {
     custodianOrgLevel: argv.custodianOrgLevel,
     maxChartProcessingRows: argv.maxChartProcessingRows,
     maxTableProcessingRows: argv.maxTableProcessingRows,
-    csvLoaderChunkSize: argv.csvLoaderChunkSize
+    csvLoaderChunkSize: argv.csvLoaderChunkSize,
+    serverBasePath: argv.serverBasePath || "/"
 };
 
 app.get("/server-config.js", function(req, res) {
@@ -243,10 +249,15 @@ app.get("/server-config.js", function(req, res) {
  * is throttled, it'll only actually be invoked once every 60 seconds
  */
 function getIndexFileContentZeroArgs() {
+    // Removing the leading slash.
+    const newStaticBasePath = argv.serverBasePath
+        ? argv.serverBasePath.substring(1) + "static"
+        : "static";
     return getIndexFileContent(
         clientRoot,
         argv.useLocalStyleSheet,
-        argv.contentApiBaseUrlInternal
+        argv.contentApiBaseUrlInternal,
+        newStaticBasePath
     );
 }
 

@@ -10,15 +10,16 @@ const STATIC_STYLE_REGEX = new RegExp(
 
 const STATIC_PATH_REGEX = new RegExp("static", "g");
 
-const NEW_PATH = "magda/static";
-
 /**
  * Gets the content stored under "includeHtml" in the content api. On failure
  * simply returns a blank string.
  *
  * @param contentApiBaseUrlInternal The base content api to get the content from.
  */
-async function getIncludeHtml(contentApiBaseUrlInternal: string) {
+async function getIncludeHtml(
+    contentApiBaseUrlInternal: string,
+    newStaticBasePath: string
+) {
     const url = `${contentApiBaseUrlInternal}includeHtml.text`;
 
     try {
@@ -26,7 +27,10 @@ async function getIncludeHtml(contentApiBaseUrlInternal: string) {
 
         if (response.status === 200) {
             const text = response.text();
-            const newText = (await text).replace(STATIC_PATH_REGEX, NEW_PATH);
+            const newText = (await text).replace(
+                STATIC_PATH_REGEX,
+                newStaticBasePath
+            );
             return newText;
         } else {
             throw new Error(
@@ -46,7 +50,10 @@ async function getIncludeHtml(contentApiBaseUrlInternal: string) {
  *
  * @param clientRoot The root of the client directory to get the file from.
  */
-function getIndexHtml(clientRoot: string): Promise<string> {
+function getIndexHtml(
+    clientRoot: string,
+    newStaticBasePath: string
+): Promise<string> {
     return new Promise((resolve, reject) =>
         fs.readFile(
             path.join(clientRoot, "build/index.html"),
@@ -57,7 +64,10 @@ function getIndexHtml(clientRoot: string): Promise<string> {
                 if (err) {
                     reject(err);
                 } else {
-                    const newData = data.replace(STATIC_PATH_REGEX, NEW_PATH);
+                    const newData = data.replace(
+                        STATIC_PATH_REGEX,
+                        newStaticBasePath
+                    );
                     resolve(newData);
                 }
             }
@@ -80,10 +90,17 @@ const memoizedGetIndexHtml = memoize(getIndexHtml);
 async function getIndexFileContent(
     clientRoot: string,
     useLocalStyleSheet: boolean,
-    contentApiBaseUrlInternal: string
+    contentApiBaseUrlInternal: string,
+    newStaticBasePath: string
 ) {
-    const dynamicContentPromise = getIncludeHtml(contentApiBaseUrlInternal);
-    const indexHtmlPromise = memoizedGetIndexHtml(clientRoot);
+    const dynamicContentPromise = getIncludeHtml(
+        contentApiBaseUrlInternal,
+        newStaticBasePath
+    );
+    const indexHtmlPromise = memoizedGetIndexHtml(
+        clientRoot,
+        newStaticBasePath
+    );
 
     let [dynamicContent, indexFileContent] = await Promise.all([
         dynamicContentPromise,

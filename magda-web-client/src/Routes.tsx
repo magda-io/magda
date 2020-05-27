@@ -86,112 +86,120 @@ const CatalogRoutes = makeAsync(() =>
 
 import { config } from "./config";
 
+// E.g. basePath = "/magda/" or "/"
+const basePath = config.serverBasePath;
+
 const Routes = () => {
     return (
         <Switch>
-            <Route exact path="/magda" component={HomePage} />
+            <Route exact path={basePath} component={HomePage} />
             <Route
                 exact
-                path="/magda/admin"
+                path={basePath + "admin"}
                 component={withHeader(AdminPage, true)}
             />
             <Route
                 exact
-                path="/magda/admin/home"
+                path={basePath + "admin/home"}
                 component={withHeader(HomeAdminPage, true)}
             />
             <Route
                 exact
-                path="/magda/admin/home-stories"
+                path={basePath + "admin/home-stories"}
                 component={withHeader(StoriesAdminPage, false)}
             />
             <Route
                 exact
-                path="/magda/admin/home-highlights"
+                path={basePath + "admin/home-highlights"}
                 component={withHeader(HighlightsAdminPage, false)}
             />
             <Route
                 exact
-                path="/magda/admin/header-navigation"
+                path={basePath + "admin/header-navigation"}
                 component={withHeader(HeaderNavigationAdminPage, true)}
             />
             <Route
-                path="/magda/admin/footer-navigation/:size"
+                path={basePath + "admin/footer-navigation/:size"}
                 component={withHeader(FooterNavigationAdminPage, true)}
             />
             <Route
-                path="/magda/admin/footer-navigation-links/:size/:category"
+                path={
+                    basePath + "admin/footer-navigation-links/:size/:category"
+                }
                 component={withHeader(FooterNavigationLinksAdminPage, true)}
             />
             <Route
                 exact
-                path="/magda/admin/footer-copyright"
+                path={basePath + "admin/footer-copyright"}
                 component={withHeader(FooterCopyrightAdminPage, true)}
             />
             <Route
                 exact
-                path="/magda/admin/connectors"
+                path={basePath + "admin/connectors"}
                 component={withHeader(ConnectorsAdminPage, true)}
             />
             <Route
                 exact
-                path="/magda/admin/accounts"
+                path={basePath + "admin/accounts"}
                 component={withHeader(AccountsAdminPage, false)}
             />
             <Route
                 exact
-                path="/magda/admin/pages"
+                path={basePath + "admin/pages"}
                 component={withHeader(AdminStaticPagesPage, false)}
             />
             <Route
                 exact
-                path="/magda/admin/i18n"
+                path={basePath + "admin/i18n"}
                 component={withHeader(LanguageAdminPage, false)}
             />
             <Route
                 exact
-                path="/magda/organisations"
+                path={basePath + "organisations"}
                 component={withHeader(OrganisationsPage, false)}
             />
             <Route
                 exact
-                path="/magda/publishers"
+                path={basePath + "publishers"}
                 render={() => <Redirect to="/magda/organisations" />}
             />
             <Route
-                path="/magda/publishers/:publisherId"
+                path={basePath + "publishers/:publisherId"}
                 render={({ match }) => (
                     <Redirect
-                        to={`/magda/organisations/${match.params.publisherId}`}
+                        to={
+                            basePath +
+                            `organisations/${match.params.publisherId}`
+                        }
                     />
                 )}
             />
             <Route
-                path="/magda/organisations/:publisherId"
+                path={basePath + "organisations/:publisherId"}
                 component={withHeader(OrganisationPage, false)}
             />
             <Route
                 exact
-                path="/magda/search"
+                path={basePath + "search"}
                 component={withHeader(DatasetsSearchPagePublishedOnly, true)}
             />
             <Route
                 exact
-                path="/magda/drafts"
+                path={basePath + "drafts"}
                 component={withHeader(DatasetsSearchPageDraftOnly, true)}
             />
             <Route
                 exact
-                path="/magda/all-datasets"
+                path={basePath + "all-datasets"}
                 component={withHeader(DatasetsSearchPage, true)}
             />
             <Route
                 exact
-                path="/magda/dataset"
+                path={basePath + "dataset"}
                 render={({ location }) => (
                     <Redirect
                         to={{
-                            pathname: "/magda/search",
+                            pathname: `"${basePath}+search"`,
                             search: location.search
                         }}
                     />
@@ -199,26 +207,28 @@ const Routes = () => {
             />
             <Route
                 exact
-                path="/magda/account"
+                path={basePath + "account"}
                 component={withHeader(AccountPage, false)}
             />
             <Route
                 exact
-                path="/magda/login"
+                path={basePath + "login"}
                 component={withHeader(AccountLoginPage, false)}
             />
             <Route
                 exact
-                path="/magda/sign-in-redirect"
+                path={basePath + "sign-in-redirect"}
                 component={withHeader(AccountSignInRedirectPage, false)}
             />
             <Route
-                path="/magda/dataset/:datasetId/distribution/:distributionId"
+                path={
+                    basePath + "dataset/:datasetId/distribution/:distributionId"
+                }
                 component={withHeader(DatasetPage, true)}
             />
             {config.featureFlags.cataloguing && (
                 <Route
-                    path="/magda/catalog"
+                    path={basePath + "catalog"}
                     component={withHeader(CatalogRoutes, false)}
                 />
             )}
@@ -227,34 +237,37 @@ const Routes = () => {
                 but the first route of the dataset route doesn't need a ProgressMeter.
              */}
             {config.featureFlags.cataloguing && (
-                <Route path="/dataset/(add|list)" component={DatasetRoutes} />
+                <Route
+                    path={basePath + "dataset/(add|list)"}
+                    component={DatasetRoutes}
+                />
             )}
 
             <Route
-                path="/dataset/:datasetId"
+                path={basePath + "dataset/:datasetId"}
                 component={withHeader(DatasetPage, true)}
             />
             <Route
                 exact
-                path="/suggest"
+                path={basePath + "suggest"}
                 component={withHeader(DatasetSuggestPage, true)}
             />
             <Redirect
-                from="/page/dataset-quality"
-                to="/page/linked-data-rating"
+                from={basePath + "page/dataset-quality"}
+                to={basePath + "page/linked-data-rating"}
             />
             <Route
-                path="/page/:pageId"
+                path={basePath + "page/:pageId"}
                 component={withHeader(StaticPage, true)}
             />
             <Route
                 exact
-                path="/404"
+                path={basePath + "404"}
                 component={withHeader(RouteNotFoundPage, true)}
             />
             <Route
                 exact
-                path="/error"
+                path={basePath + "error"}
                 component={withHeader(ErrorPage, true)}
             />
             <FallbackRouteHandlerPage />

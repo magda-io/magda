@@ -211,14 +211,6 @@ export default function buildApp(config: Config) {
 
     app.use("/preview-map", createGenericProxy(config.previewMap, tenantMode));
 
-    // Route of magda web server
-    if (config.magdaWebPath && config.magdaWebUrl) {
-        app.use(
-            config.magdaWebPath,
-            createGenericProxy(config.magdaWebUrl, tenantMode)
-        );
-    }
-
     if (config.enableCkanRedirection) {
         if (!routes.registry) {
             console.error(
@@ -236,7 +228,18 @@ export default function buildApp(config: Config) {
         }
     }
 
-    // Proxy any other URL to magda-web
+    // Serve magda ui from a given path. The web server is provided by magda.
+    if (config.magdaWebPath && config.magdaWebUrl) {
+        app.use(
+            config.magdaWebPath,
+            createGenericProxy(config.magdaWebUrl, tenantMode)
+        );
+    }
+
+    // Proxy any other URL to web server defined by config.web, which could be any
+    // other web server not provided by magda.
+    // If config.magdaWebPath === "/" and config.magdaWebUrl === config.web, this
+    // will be redudant.
     app.use("/", createGenericProxy(config.web, tenantMode));
 
     return app;

@@ -48,6 +48,7 @@ const serverConfig: {
     maxChartProcessingRows: number;
     maxTableProcessingRows: number;
     csvLoaderChunkSize: number;
+    serverBasePath?: string;
 } = window.magda_server_config || {};
 
 const registryReadOnlyApiUrl =
@@ -88,6 +89,7 @@ const vocabularyApiEndpoints =
           ];
 
 export const config = {
+    serverBasePath: serverConfig.serverBasePath || "/",
     fetchOptions,
     homePageConfig: homePageConfig,
     baseUrl,

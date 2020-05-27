@@ -1,6 +1,11 @@
 import React, { Component } from "react";
 import AdminHeader from "./AdminHeader";
 
+import { config } from "../../config";
+
+// E.g. basePath = "/magda/" or "/"
+const basePath = config.serverBasePath;
+
 export default class AdminPage extends Component {
     render() {
         return (
@@ -8,43 +13,45 @@ export default class AdminPage extends Component {
                 <AdminHeader />
                 <ul>
                     <li>
-                        <a href="/magda/admin/home">Home</a>
+                        <a href={basePath + "admin/home"}>Home</a>
                     </li>
                     <li>
-                        <a href="/magda/admin/home-stories">Home Stories</a>
+                        <a href={basePath + "admin/home-stories"}>
+                            Home Stories
+                        </a>
                     </li>
                     <li>
-                        <a href="/magda/admin/home-highlights">
+                        <a href={basePath + "admin/home-highlights"}>
                             Home Highlights
                         </a>
                     </li>
 
                     <li>
-                        <a href="/magda/admin/header-navigation">
+                        <a href={basePath + "admin/header-navigation"}>
                             Header Navigation
                         </a>
                     </li>
                     <li>
-                        <a href="/magda/admin/footer-navigation/medium">
+                        <a href={basePath + "admin/footer-navigation/medium"}>
                             Footer Navigation
                         </a>
                     </li>
                     <li>
-                        <a href="/magda/admin/footer-copyright">
+                        <a href={basePath + "admin/footer-copyright"}>
                             Footer Copyright
                         </a>
                     </li>
                     <li>
-                        <a href="/magda/admin/accounts">User Accounts</a>
+                        <a href={basePath + "admin/accounts"}>User Accounts</a>
                     </li>
                     <li>
-                        <a href="/magda/admin/i18n">Language</a>
+                        <a href={basePath + "admin/i18n"}>Language</a>
                     </li>
                     <li>
-                        <a href="/magda/admin/connectors">Connectors</a>
+                        <a href={basePath + "admin/connectors"}>Connectors</a>
                     </li>
                     <li>
-                        <a href="/magda/admin/pages">Content Pages</a>
+                        <a href={basePath + "admin/pages"}>Content Pages</a>
                     </li>
                 </ul>
             </div>
