@@ -51,7 +51,7 @@ const SALT_ROUNDS = 12;
 const MIN_PASSWORD_LENGTH = 6;
 const AUTO_PASSWORD_LENGTH = 8;
 
-async function createUser(pool, options) {
+async function createUser(dbClient, options) {
     const email = options.create;
     if (!isEmail(email)) {
         throw new Error(
@@ -63,7 +63,7 @@ async function createUser(pool, options) {
 
     let result;
 
-    result = await pool.query(
+    result = await dbClient.query(
         `SELECT "id" FROM "users" WHERE "email"=$1 AND "source"='internal' LIMIT 1`,
         [email]
     );
@@ -74,7 +74,7 @@ async function createUser(pool, options) {
         );
     }
 
-    result = await pool.query(
+    result = await dbClient.query(
         `INSERT INTO "users" ("id", "displayName", "email", "source", "sourceId", "isAdmin") VALUES(uuid_generate_v4(), $1, $2, 'internal', $3, $4) RETURNING id`,
         [displayName, email, email, isAdmin]
     );
@@ -83,7 +83,7 @@ async function createUser(pool, options) {
     const userId = userInfo.id;
 
     if (isAdmin) {
-        await pool.query(
+        await dbClient.query(
             `INSERT INTO "user_roles" ("id", "user_id", "role_id") VALUES(uuid_generate_v4(), $1, '00000000-0000-0003-0000-000000000000') RETURNING id`,
             [userId]
         );
@@ -92,11 +92,11 @@ async function createUser(pool, options) {
     return userId;
 }
 
-async function getUserIdFromEmailOrUid(pool, user) {
+async function getUserIdFromEmailOrUid(dbClient, user) {
     user = user.trim();
     let userId;
     if (isEmail(user)) {
-        const result = await pool.query(
+        const result = await dbClient.query(
             `SELECT "id" FROM "users" WHERE "email"=$1 AND "source"='internal' LIMIT 1`,
             [user]
         );
@@ -107,7 +107,7 @@ async function getUserIdFromEmailOrUid(pool, user) {
 
         userId = result.rows[0]["id"];
     } else if (isUuid(user)) {
-        const result = await pool.query(
+        const result = await dbClient.query(
             `SELECT "id", "source" FROM "users" WHERE "id"=$1 LIMIT 1`,
             [user]
         );
@@ -140,54 +140,65 @@ async function getUserIdFromEmailOrUid(pool, user) {
     }
 
     const pool = getDBPool();
+    const dbClient = await pool.connect();
 
-    const userId = options.user
-        ? await getUserIdFromEmailOrUid(pool, options.user)
-        : await createUser(pool, options);
+    try {
+        await dbClient.query("BEGIN");
+        const userId = options.user
+            ? await getUserIdFromEmailOrUid(dbClient, options.user)
+            : await createUser(dbClient, options);
 
-    if (
-        typeof options.password === "string" &&
-        options.password.length < MIN_PASSWORD_LENGTH
-    ) {
-        throw new Error(
-            `Password length cannot be smaller than ${MIN_PASSWORD_LENGTH}.`
+        if (
+            typeof options.password === "string" &&
+            options.password.length < MIN_PASSWORD_LENGTH
+        ) {
+            throw new Error(
+                `Password length cannot be smaller than ${MIN_PASSWORD_LENGTH}.`
+            );
+        }
+
+        let password = options.password;
+
+        if (!options.password) {
+            const pwgenGenerator = new pwgen();
+            pwgenGenerator.includeCapitalLetter = true;
+            pwgenGenerator.includeNumber = true;
+            pwgenGenerator.maxLength = AUTO_PASSWORD_LENGTH;
+            password = pwgenGenerator.generate();
+        }
+
+        const hash = await bcrypt.hash(password, SALT_ROUNDS);
+
+        const credentials = await dbClient.query(
+            `SELECT * FROM "credentials" WHERE "user_id"=$1 LIMIT 1`,
+            [userId]
         );
+        if (!credentials || !credentials.rows || !credentials.rows.length) {
+            await dbClient.query(
+                `INSERT INTO "credentials" ("id", "user_id", "timestamp", "hash") VALUES(uuid_generate_v4(), $1, CURRENT_TIMESTAMP, $2)`,
+                [userId, hash]
+            );
+        } else {
+            const cid = credentials.rows[0].id;
+            await dbClient.query(
+                `UPDATE "credentials" SET "hash"=$1, "timestamp"=CURRENT_TIMESTAMP WHERE "id"=$2`,
+                [hash, cid]
+            );
+        }
+        await dbClient.query("COMMIT");
+
+        console.log(
+            chalk.green(
+                `Password for user (id: ${userId}) has been set to: ${password}`
+            )
+        );
+    } catch (e) {
+        await dbClient.query("ROLLBACK");
+        throw e;
+    } finally {
+        dbClient.release();
     }
 
-    let password = options.password;
-
-    if (!options.password) {
-        const pwgenGenerator = new pwgen();
-        pwgenGenerator.includeCapitalLetter = true;
-        pwgenGenerator.includeNumber = true;
-        pwgenGenerator.maxLength = AUTO_PASSWORD_LENGTH;
-        password = pwgenGenerator.generate();
-    }
-
-    const hash = await bcrypt.hash(password, SALT_ROUNDS);
-
-    const credentials = await pool.query(
-        `SELECT * FROM "credentials" WHERE "user_id"=$1 LIMIT 1`,
-        [userId]
-    );
-    if (!credentials || !credentials.rows || !credentials.rows.length) {
-        await pool.query(
-            `INSERT INTO "credentials" ("id", "user_id", "timestamp", "hash") VALUES(uuid_generate_v4(), $1, CURRENT_TIMESTAMP, $2)`,
-            [userId, hash]
-        );
-    } else {
-        const cid = credentials.rows[0].id;
-        await pool.query(
-            `UPDATE "credentials" SET "hash"=$1, "timestamp"=CURRENT_TIMESTAMP WHERE "id"=$2`,
-            [hash, cid]
-        );
-    }
-
-    console.log(
-        chalk.green(
-            `Password for user (id: ${userId}) has been set to: ${password}`
-        )
-    );
     process.exit();
 })().catch(e => {
     console.error(chalk.red(`Failed to reset user password: ${e}`));
