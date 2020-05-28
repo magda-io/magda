@@ -12,7 +12,7 @@ import {
 } from "api-clients/RegistryApis";
 import { config } from "config";
 import { User } from "reducers/userManagementReducer";
-import { RawDataset } from "helpers/record";
+import { RawDataset, CkanExportAspectType } from "helpers/record";
 
 import { autocompletePublishers } from "api-clients/SearchApis";
 
@@ -194,18 +194,6 @@ type Currency = {
     retireReason?: string;
 };
 
-type CkanExportStatus = "withdraw" | "retain";
-type CkanExport = {
-    status: CkanExportStatus;
-    hasCreated: boolean;
-    exportRequired: boolean;
-    exportAttempted: boolean;
-    exportUserId?: string;
-    ckanId?: string;
-    lastExportAttemptTime?: Date;
-    exportError?: Error | string;
-};
-
 export type State = {
     distributions: Distribution[];
     dataset: Dataset;
@@ -217,7 +205,7 @@ export type State = {
     informationSecurity: InformationSecurity;
     provenance: Provenance;
     currency: Currency;
-    ckanExport: CkanExport;
+    ckanExport: CkanExportAspectType;
 
     _lastModifiedDate: Date;
     _createdDate: Date;

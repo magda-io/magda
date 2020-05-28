@@ -404,8 +404,9 @@ export function parseDistribution(
     };
 }
 
+type CkanExportStatus = "withdraw" | "retain";
 export interface CkanExportAspectType {
-    status: "retain" | "withdraw";
+    status: CkanExportStatus;
     syncUserId?: string;
     ckanId?: string;
     hasCreated: boolean;
