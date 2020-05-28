@@ -78,7 +78,7 @@ spec:
             "--cspJson", "/etc/config/csp.json",
             "--corsJson", "/etc/config/cors.json",
             "--web", {{ .Values.web | default "http://magda-ui" | quote }},
-            "--magdaWebPath", {{ .Values.magdaWebPath | default "/magda/" | quote }},
+            "--magdaWebPath", {{ .Values.magdaWebPath | default "/" | quote }},
             "--magdaWebUrl", {{ .Values.magdaWebUrl | default "http://magda-ui" | quote }},
             "--authorizationApi", "http://authorization-api/v0",
             "--tenantUrl", "http://tenant-api/v0",
