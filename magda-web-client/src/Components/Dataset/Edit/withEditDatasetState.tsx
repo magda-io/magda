@@ -35,7 +35,7 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
                 undefined,
                 undefined,
                 true,
-                false
+                true
             );
             const loadedStateData = await rawDatasetDataToState(data);
 
