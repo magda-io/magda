@@ -112,6 +112,8 @@ export type Dataset = {
     defaultLicense?: string;
 
     accrualPeriodicityRecurrenceRule?: string;
+    ownerId?: string; // --- actual owner of the dataset; Initially set to same as `editingUserId` but can be changed to different user.
+    editingUserId?: string; // --- always populate with current logged-in user id (if available)
     owningOrgUnitId?: string;
     custodianOrgUnitId?: string;
     contactPointDisplay?: string;
@@ -199,12 +201,36 @@ type Access = {
     notes?: string;
 };
 
+const DEFAULT_POLICY_ID = "object.registry.record.owner_only";
+
 function getInternalDatasetSourceAspectData() {
     return {
         id: "magda",
         name: "This Magda metadata creation tool",
         type: "internal",
         url: config.baseExternalUrl
+    };
+}
+
+function getAccessControlAspectData(state: State) {
+    const { dataset } = state;
+    return {
+        ownerId: dataset.editingUserId ? dataset.editingUserId : undefined,
+        orgUnitOwnerId: dataset.owningOrgUnitId
+            ? dataset.owningOrgUnitId
+            : undefined,
+        custodianOrgUnitId: dataset.custodianOrgUnitId
+            ? dataset.custodianOrgUnitId
+            : undefined
+    };
+}
+
+function getPublishingAspectData(state: State) {
+    const { datasetPublishing } = state;
+    return {
+        ...datasetPublishing,
+        state: "draft",
+        publishAsOpenData: {}
     };
 }
 
@@ -274,6 +300,11 @@ function populateDcatDatasetStringAspect(data: RawDataset, state: State) {
 
     if (datasetDcatString?.defaultLicense) {
         state.dataset.defaultLicense = datasetDcatString?.defaultLicense;
+    }
+
+    if (data.aspects?.["dataset-access-control"]?.ownerId) {
+        state.dataset.ownerId =
+            data.aspects?.["dataset-access-control"]?.ownerId;
     }
 
     if (data.aspects?.["dataset-access-control"]?.orgUnitOwnerId) {
@@ -489,6 +520,8 @@ export function createBlankState(user?: User): State {
             title: "",
             languages: ["eng"],
             owningOrgUnitId: user ? user.orgUnitId : undefined,
+            ownerId: user ? user.id : undefined,
+            editingUserId: user ? user.id : undefined,
             defaultLicense: "world"
         },
         datasetPublishing: {
@@ -598,26 +631,15 @@ export async function saveState(state: State, id = createId()) {
     };
 
     if (!record) {
-        const { dataset, datasetPublishing } = state;
         await createDataset(
             {
                 id,
                 name: "",
+                authnReadPolicyId: DEFAULT_POLICY_ID,
                 aspects: {
                     "dataset-draft": datasetDraftAspectData,
-                    publishing: {
-                        ...datasetPublishing,
-                        state: "draft",
-                        publishAsOpenData: {}
-                    },
-                    "dataset-access-control": {
-                        orgUnitOwnerId: dataset.owningOrgUnitId
-                            ? dataset.owningOrgUnitId
-                            : undefined,
-                        custodianOrgUnitId: dataset.custodianOrgUnitId
-                            ? dataset.custodianOrgUnitId
-                            : undefined
-                    },
+                    publishing: getPublishingAspectData(state),
+                    "dataset-access-control": getAccessControlAspectData(state),
                     source: getInternalDatasetSourceAspectData()
                 }
             },
@@ -653,7 +675,6 @@ async function ensureBlankDatasetIsSavedToRegistry(
         if (e.statusCode !== 404) {
             throw e;
         }
-        const { dataset, datasetPublishing } = state;
         // --- if the dataset not exist in registry, save it now
         // --- the dataset should have the same visibility as the current one
         // --- but always be a draft one
@@ -661,20 +682,10 @@ async function ensureBlankDatasetIsSavedToRegistry(
             {
                 id,
                 name,
+                authnReadPolicyId: DEFAULT_POLICY_ID,
                 aspects: {
-                    publishing: {
-                        ...datasetPublishing,
-                        state: "draft",
-                        publishAsOpenData: {}
-                    },
-                    "dataset-access-control": {
-                        orgUnitOwnerId: dataset.owningOrgUnitId
-                            ? dataset.owningOrgUnitId
-                            : undefined,
-                        custodianOrgUnitId: dataset.custodianOrgUnitId
-                            ? dataset.custodianOrgUnitId
-                            : undefined
-                    },
+                    publishing: getPublishingAspectData(state),
+                    "dataset-access-control": getAccessControlAspectData(state),
                     source: getInternalDatasetSourceAspectData()
                 }
             },
@@ -810,7 +821,6 @@ async function convertStateToDatasetRecord(
 ) {
     const {
         dataset,
-        datasetPublishing,
         spatialCoverage,
         temporalCoverage,
         informationSecurity,
@@ -837,8 +847,9 @@ async function convertStateToDatasetRecord(
     const inputDataset = {
         id: datasetId,
         name: dataset.title,
+        authnReadPolicyId: DEFAULT_POLICY_ID,
         aspects: {
-            publishing: datasetPublishing,
+            publishing: getPublishingAspectData(state),
             "dcat-dataset-strings": buildDcatDatasetStrings(dataset),
             "spatial-coverage": spatialCoverage,
             "temporal-coverage": temporalCoverage,
@@ -847,14 +858,7 @@ async function convertStateToDatasetRecord(
             },
             access: datasetAccess,
             "information-security": informationSecurity,
-            "dataset-access-control": {
-                orgUnitOwnerId: dataset.owningOrgUnitId
-                    ? dataset.owningOrgUnitId
-                    : undefined,
-                custodianOrgUnitId: dataset.custodianOrgUnitId
-                    ? dataset.custodianOrgUnitId
-                    : undefined
-            },
+            "dataset-access-control": getAccessControlAspectData(state),
             currency: {
                 ...currency,
                 supersededBy:
@@ -893,10 +897,6 @@ async function convertStateToDatasetRecord(
 
     if (!isUpdate) {
         inputDataset.aspects["source"] = getInternalDatasetSourceAspectData();
-    }
-
-    if (!inputDataset.aspects["dataset-access-control"].orgUnitOwnerId) {
-        delete inputDataset.aspects["dataset-access-control"];
     }
 
     return inputDataset;
