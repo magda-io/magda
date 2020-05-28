@@ -598,12 +598,27 @@ export async function saveState(state: State, id = createId()) {
     };
 
     if (!record) {
+        const { dataset, datasetPublishing } = state;
         await createDataset(
             {
                 id,
                 name: "",
                 aspects: {
-                    "dataset-draft": datasetDraftAspectData
+                    "dataset-draft": datasetDraftAspectData,
+                    publishing: {
+                        ...datasetPublishing,
+                        state: "draft",
+                        publishAsOpenData: {}
+                    },
+                    "dataset-access-control": {
+                        orgUnitOwnerId: dataset.owningOrgUnitId
+                            ? dataset.owningOrgUnitId
+                            : undefined,
+                        custodianOrgUnitId: dataset.custodianOrgUnitId
+                            ? dataset.custodianOrgUnitId
+                            : undefined
+                    },
+                    source: getInternalDatasetSourceAspectData()
                 }
             },
             []
