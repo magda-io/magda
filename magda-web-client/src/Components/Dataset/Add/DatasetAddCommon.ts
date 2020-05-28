@@ -558,7 +558,45 @@ export function createBlankState(user?: User): State {
     };
 }
 
-export async function loadState(id: string, user?: User): Promise<State> {
+export async function loadStateFromLocalStorage(
+    id: string,
+    user?: User
+): Promise<State> {
+    const stateString = localStorage[id];
+    let state: State;
+    if (stateString) {
+        const dehydrated = JSON.parse(stateString);
+        state = {
+            ...dehydrated,
+            dataset: {
+                ...dehydrated.dataset,
+                modified: dehydrated.modified && new Date(dehydrated.modified),
+                issued: dehydrated.issued && new Date(dehydrated.issued)
+            }
+        };
+    } else {
+        state = createBlankState(user);
+    }
+
+    if (
+        !state.dataset.publisher &&
+        typeof config.defaultOrganizationId !== "undefined"
+    ) {
+        // --- we turned off cache here
+        const org = await fetchOrganization(config.defaultOrganizationId, true);
+        state.dataset.publisher = {
+            name: org.name,
+            existingId: org.id
+        };
+    }
+
+    return state;
+}
+
+export async function loadStateFromRegistry(
+    id: string,
+    user?: User
+): Promise<State> {
     let record: RawDataset | undefined;
     try {
         // --- we turned off cache here
@@ -607,10 +645,27 @@ export async function loadState(id: string, user?: User): Promise<State> {
     return state;
 }
 
+export async function loadState(id: string, user?: User): Promise<State> {
+    if (config?.featureFlags?.previewAddDataset) {
+        // --- in preview mode, still save to local storage
+        return await loadStateFromLocalStorage(id, user);
+    } else {
+        return await loadStateFromRegistry(id, user);
+    }
+}
+
 export async function saveState(state: State, id = createId()) {
     state = Object.assign({}, state);
 
     state._lastModifiedDate = new Date();
+
+    if (config?.featureFlags?.previewAddDataset) {
+        // --- in preview mode, still save to local storage
+        const dataset = JSON.stringify(state);
+        localStorage[id] = dataset;
+        return id;
+    }
+
     const dataset = JSON.stringify(state);
     const timestamp = state._lastModifiedDate.toISOString();
 
