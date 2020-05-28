@@ -265,7 +265,16 @@ class NewDataset extends React.Component<Props, State> {
         try {
             await this.resetError();
             await saveState(this.state, this.props.datasetId);
-            this.props.history.push(`/`);
+
+            if (config?.featureFlags?.previewAddDataset) {
+                // --- still redirect to dataset list page in preview wmdoe
+                this.props.history.push(`/dataset/list`);
+            } else {
+                // --- redirect to home page for my dataset section
+                // --- set nocache flag so that the my dataset section know to disable cache when query registry
+                // --- otherwise, the recent created dataset may not be list in my dataset
+                this.props.history.push(`/?nocache`);
+            }
         } catch (e) {
             this.props.createNewDatasetError(e);
         }
