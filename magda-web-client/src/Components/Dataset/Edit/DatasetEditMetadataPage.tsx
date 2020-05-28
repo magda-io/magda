@@ -133,18 +133,15 @@ class EditDataset extends React.Component<Props, State> {
 
         step = Math.max(Math.min(step, this.steps.length - 1), 0);
 
-        const hideExitButton = config.featureFlags.previewAddDataset
-            ? step >= 4
-            : step >= 5;
+        const hideExitButton =
+            this.props.isBackToReview ||
+            (config.featureFlags.previewAddDataset ? step >= 4 : step >= 5);
 
         const nextButtonCaption = () => {
             if (step === 5) {
                 // --- review page
-                if (this.state.isPublishing) {
-                    return "Submit dataset changes...";
-                } else {
-                    return "Submit dataset changes";
-                }
+                // --- loading status is handled by AsynButton now
+                return "Submit dataset changes";
             } else if (step === 6) {
                 // --- all done or preview mode feedback page
                 // --- All done page has no button to show
@@ -154,13 +151,13 @@ class EditDataset extends React.Component<Props, State> {
             }
         };
 
-        const nextButtonOnClick = () => {
+        const nextButtonOnClick = async () => {
             if (step === 5) {
                 // --- review page
                 if (config.featureFlags.previewAddDataset) {
-                    this.gotoStep(step + 1);
+                    await this.gotoStep(step + 1);
                 } else {
-                    this.performPublishDataset();
+                    await this.performPublishDataset();
                 }
             } else if (step === 6) {
                 // --- all done or preview mode feedback page
@@ -170,7 +167,7 @@ class EditDataset extends React.Component<Props, State> {
                         "mailto:magda@csiro.au?subject=Add Dataset Feedback";
                 }
             } else {
-                this.gotoStep(step + 1);
+                await this.gotoStep(step + 1);
             }
         };
 
@@ -233,7 +230,7 @@ class EditDataset extends React.Component<Props, State> {
                                             )
                                         }
                                     >
-                                        Review &amp; Save
+                                        Review &amp; Publish
                                     </AsyncButton>
                                 )}
                             </div>

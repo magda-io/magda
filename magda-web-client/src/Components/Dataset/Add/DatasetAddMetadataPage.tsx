@@ -145,7 +145,8 @@ class NewDataset extends React.Component<Props, State> {
             if (step === 5) {
                 // --- review page
                 if (this.state.isPublishing) {
-                    return "Publishing as draft...";
+                    // --- AsyncButton will add extra "..." when loading
+                    return "Publishing as draft";
                 } else {
                     return "Publish draft dataset";
                 }
