@@ -20,6 +20,7 @@ import datasetAccessControlAspect from "@magda/registry-aspects/dataset-access-c
 import organizationDetailsAspect from "@magda/registry-aspects/organization-details.schema.json";
 import sourceAspect from "@magda/registry-aspects/source.schema.json";
 import datasetDraftAspect from "@magda/registry-aspects/dataset-draft.schema.json";
+import { createNoCacheFetchOptions } from "./createNoCacheFetchOptions";
 
 export const aspectSchemas = {
     publishing: datasetPublishingAspect,
@@ -43,14 +44,22 @@ export function createPublisher(inputRecord: Publisher) {
     return createRecord(inputRecord);
 }
 
-export function fetchOrganization(publisherId: string): Promise<Publisher> {
+export function fetchOrganization(
+    publisherId: string,
+    noCache: boolean = false
+): Promise<Publisher> {
     let url: string =
         config.registryReadOnlyApiUrl +
         `records/${encodeURIComponent(
             publisherId
         )}?aspect=organization-details`;
 
-    return fetch(url, config.fetchOptions).then(response => {
+    return fetch(
+        url,
+        noCache
+            ? createNoCacheFetchOptions(config.fetchOptions)
+            : config.fetchOptions
+    ).then(response => {
         if (!response.ok) {
             let statusText = response.statusText;
             // response.statusText are different in different browser, therefore we unify them here
@@ -122,7 +131,8 @@ export async function fetchRecord(
         "currency"
     ],
     aspects: string[] = ["dcat-dataset-strings"],
-    dereference: boolean = true
+    dereference: boolean = true,
+    noCache: boolean = false
 ): Promise<RawDataset> {
     const parameters: string[] = [];
 
@@ -144,7 +154,12 @@ export async function fetchRecord(
             parameters.length ? `?${parameters.join("&")}` : ""
         }`;
 
-    const response = await fetch(url, config.fetchOptions);
+    const response = await fetch(
+        url,
+        noCache
+            ? createNoCacheFetchOptions(config.fetchOptions)
+            : config.fetchOptions
+    );
 
     if (!response.ok) {
         let statusText = response.statusText;
@@ -178,7 +193,8 @@ export async function deleteRecordAspect(
 
 export async function doesRecordExist(id: string) {
     try {
-        await fetchRecord(id, [], [], false);
+        //--- we turned off cache with last `true` parameter here
+        await fetchRecord(id, [], [], false, true);
         return true;
     } catch (e) {
         if (e.statusCode === 404) {

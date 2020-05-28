@@ -528,7 +528,8 @@ export function createBlankState(user?: User): State {
 export async function loadState(id: string, user?: User): Promise<State> {
     let record: RawDataset | undefined;
     try {
-        record = await fetchRecord(id, ["dataset-draft"], [], false);
+        // --- we turned off cache here
+        record = await fetchRecord(id, ["dataset-draft"], [], false, true);
     } catch (e) {
         if (e! instanceof ServerError || e.statusCode !== 404) {
             // --- mute 404 error as we're gonna create blank status if can't find an existing one
@@ -562,7 +563,8 @@ export async function loadState(id: string, user?: User): Promise<State> {
         !state.dataset.publisher &&
         typeof config.defaultOrganizationId !== "undefined"
     ) {
-        const org = await fetchOrganization(config.defaultOrganizationId);
+        // --- we turned off cache here
+        const org = await fetchOrganization(config.defaultOrganizationId, true);
         state.dataset.publisher = {
             name: org.name,
             existingId: org.id
@@ -581,7 +583,8 @@ export async function saveState(state: State, id = createId()) {
 
     let record: RawDataset | undefined;
     try {
-        record = await fetchRecord(id, ["dataset-draft"], [], false);
+        // --- we turned off cache here
+        record = await fetchRecord(id, ["dataset-draft"], [], false, true);
     } catch (e) {
         if (e! instanceof ServerError || e.statusCode !== 404) {
             // --- mute 404 error as we're gonna create one if can't find an existing one
@@ -629,7 +632,8 @@ async function ensureBlankDatasetIsSavedToRegistry(
     name: string
 ) {
     try {
-        await fetchRecord(id, [], [], false);
+        // --- we turned off cache here
+        await fetchRecord(id, [], [], false, true);
     } catch (e) {
         if (e.statusCode !== 404) {
             throw e;
@@ -954,7 +958,8 @@ export async function submitDatasetFromState(
 ) {
     let recordExist: boolean = false;
     try {
-        if (await fetchRecord(datasetId, [], [], false)) {
+        // --- turned off cache
+        if (await fetchRecord(datasetId, [], [], false, true)) {
             recordExist = true;
         }
     } catch (e) {
