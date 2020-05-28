@@ -25,3 +25,4 @@ maxChartProcessingRows: 20000
 maxTableProcessingRows: 200
 # default chunk size 2MB
 csvLoaderChunkSize: 2097152
+serverBasePath: "/"

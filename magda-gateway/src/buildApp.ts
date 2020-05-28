@@ -228,8 +228,12 @@ export default function buildApp(config: Config) {
         }
     }
 
-    // Serve magda ui from a given path. The web server is provided by magda.
-    if (config.magdaWebPath && config.magdaWebUrl) {
+    // Magda web server may optionally be located at non-root path.
+    if (
+        config.magdaWebPath &&
+        config.magdaWebPath !== "/" &&
+        config.magdaWebUrl
+    ) {
         console.log(
             `Serve ${config.magdaWebUrl} from path ${config.magdaWebPath}`
         );
@@ -240,18 +244,9 @@ export default function buildApp(config: Config) {
     }
 
     // Proxy any other URL to web server defined by config.web, which could be any
-    // other web server not provided by magda.
-    // If config.magdaWebPath === "/" and config.magdaWebUrl === config.web, this
-    // will be redudant.
-    if (
-        config.magdaWebPath &&
-        config.magdaWebUrl &&
-        config.magdaWebPath === "/"
-    ) {
-        // do nothing
-    } else {
-        console.log(`Serve ${config.web} from path /`);
-        app.use("/", createGenericProxy(config.web, tenantMode));
-    }
+    // web server, including magda web server.
+    console.log(`Serve ${config.web} from path /`);
+    app.use("/", createGenericProxy(config.web, tenantMode));
+
     return app;
 }

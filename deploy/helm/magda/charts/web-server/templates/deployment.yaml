@@ -53,7 +53,7 @@ spec:
         - name: NODE_ENV
           value: production
         - name: SERVER_BASE_PATH
-          value: /magda/
+          value: {{ .Values.serverBasePath }}
         image: {{ template "dockerimage" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
         volumeMounts:
