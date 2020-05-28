@@ -59,10 +59,10 @@ class GAListener extends React.Component {
 
 ReactDOM.render(
     <Provider store={store}>
-        <BrowserRouter>
+        <BrowserRouter basename={basePath}>
             <GAListener>
                 <ScrollToTop>
-                    <Route path={basePath} component={AppContainer} />
+                    <Route path={"/"} component={AppContainer} />
                 </ScrollToTop>
             </GAListener>
         </BrowserRouter>

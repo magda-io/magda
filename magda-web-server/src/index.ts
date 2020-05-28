@@ -149,7 +149,7 @@ const argv = yargs
     .option("serverBasePath", {
         describe: "The base path to the web server",
         type: "string",
-        default: process.env.SERVER_BASE_PATH
+        default: "/"
     })
     .option("csvLoaderChunkSize", {
         describe: "The size of the csv loader processing chunk (in bytes)",

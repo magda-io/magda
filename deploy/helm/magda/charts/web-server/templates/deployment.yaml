@@ -24,6 +24,9 @@ spec:
             "--baseExternalUrl", {{ .Values.global.externalUrl | quote }},
             "--useLocalStyleSheet", {{ .Values.global.useLocalStyleSheet | default .Values.useLocalStyleSheet | quote }},
             "--registryApiBaseUrlInternal", "http://registry-api/v0",
+{{- if .Values.serverBasePath }}
+            "--serverBasePath", {{ .Values.serverBasePath | quote }},
+{{- end }}
 {{- if .Values.adminApiBaseUrl }}
             "--adminApiBaseUrl", {{ .Values.adminApiBaseUrl | quote }},
 {{- end }}
@@ -52,8 +55,6 @@ spec:
         env:
         - name: NODE_ENV
           value: production
-        - name: SERVER_BASE_PATH
-          value: {{ .Values.serverBasePath }}
         image: {{ template "dockerimage" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
         volumeMounts:

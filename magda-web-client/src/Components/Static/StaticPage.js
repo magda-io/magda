@@ -14,11 +14,6 @@ import { ToggleEditor } from "Components/Editing/ToggleEditor";
 import { textEditor } from "Components/Editing/Editors/textEditor";
 import { markdownEditor } from "Components/Editing/Editors/markdownEditor";
 
-import { config } from "../../config";
-
-// E.g. basePath = "/magda/" or "/"
-const basePath = config.serverBasePath;
-
 class StaticPage extends Component {
     componentDidMount() {
         if (this.props.match.params.pageId) {
@@ -85,9 +80,7 @@ class StaticPage extends Component {
                             />{" "}
                             {hasEditPermissions && (
                                 <p>
-                                    <a href={basePath + "admin/pages"}>
-                                        Manage Pages
-                                    </a>
+                                    <a href={"./admin/pages"}>Manage Pages</a>
                                 </p>
                             )}
                         </div>

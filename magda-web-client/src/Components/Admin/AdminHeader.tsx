@@ -4,11 +4,6 @@ import Breadcrumbs from "Components/Common/Breadcrumbs";
 import { Medium } from "Components/Common/Responsive";
 import MagdaDocumentTitle from "Components/i18n/MagdaDocumentTitle";
 
-import { config } from "../../config";
-
-// E.g. basePath = "/magda/" or "/"
-const basePath = config.serverBasePath;
-
 export default class AdminHeader extends Component<any, any> {
     render() {
         const crumbs: any[] = [];
@@ -16,7 +11,7 @@ export default class AdminHeader extends Component<any, any> {
         if (this.props.title) {
             crumbs.push(
                 <li key="admin">
-                    <a href={basePath + "admin"}>Admin</a>
+                    <a href="/admin">Admin</a>
                 </li>
             );
             crumbs.push(

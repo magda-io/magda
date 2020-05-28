@@ -86,120 +86,112 @@ const CatalogRoutes = makeAsync(() =>
 
 import { config } from "./config";
 
-// E.g. basePath = "/magda/" or "/"
-const basePath = config.serverBasePath;
-
 const Routes = () => {
     return (
         <Switch>
-            <Route exact path={basePath} component={HomePage} />
+            <Route exact path="/" component={HomePage} />
             <Route
                 exact
-                path={basePath + "admin"}
+                path="/admin"
                 component={withHeader(AdminPage, true)}
             />
             <Route
                 exact
-                path={basePath + "admin/home"}
+                path="/admin/home"
                 component={withHeader(HomeAdminPage, true)}
             />
             <Route
                 exact
-                path={basePath + "admin/home-stories"}
+                path="/admin/home-stories"
                 component={withHeader(StoriesAdminPage, false)}
             />
             <Route
                 exact
-                path={basePath + "admin/home-highlights"}
+                path="/admin/home-highlights"
                 component={withHeader(HighlightsAdminPage, false)}
             />
             <Route
                 exact
-                path={basePath + "admin/header-navigation"}
+                path="/admin/header-navigation"
                 component={withHeader(HeaderNavigationAdminPage, true)}
             />
             <Route
-                path={basePath + "admin/footer-navigation/:size"}
+                path="/admin/footer-navigation/:size"
                 component={withHeader(FooterNavigationAdminPage, true)}
             />
             <Route
-                path={
-                    basePath + "admin/footer-navigation-links/:size/:category"
-                }
+                path="/admin/footer-navigation-links/:size/:category"
                 component={withHeader(FooterNavigationLinksAdminPage, true)}
             />
             <Route
                 exact
-                path={basePath + "admin/footer-copyright"}
+                path="/admin/footer-copyright"
                 component={withHeader(FooterCopyrightAdminPage, true)}
             />
             <Route
                 exact
-                path={basePath + "admin/connectors"}
+                path="/admin/connectors"
                 component={withHeader(ConnectorsAdminPage, true)}
             />
             <Route
                 exact
-                path={basePath + "admin/accounts"}
+                path="/admin/accounts"
                 component={withHeader(AccountsAdminPage, false)}
             />
             <Route
                 exact
-                path={basePath + "admin/pages"}
+                path="/admin/pages"
                 component={withHeader(AdminStaticPagesPage, false)}
             />
             <Route
                 exact
-                path={basePath + "admin/i18n"}
+                path="/admin/i18n"
                 component={withHeader(LanguageAdminPage, false)}
             />
             <Route
                 exact
-                path={basePath + "organisations"}
+                path="/organisations"
                 component={withHeader(OrganisationsPage, false)}
             />
             <Route
                 exact
-                path={basePath + "publishers"}
-                render={() => <Redirect to="/magda/organisations" />}
+                path="/publishers"
+                render={() => <Redirect to="/organisations" />}
             />
             <Route
-                path={basePath + "publishers/:publisherId"}
+                path="/publishers/:publisherId"
                 render={({ match }) => (
                     <Redirect
-                        to={
-                            basePath +
-                            `organisations/${match.params.publisherId}`
-                        }
+                        to={`/organisations/${match.params.publisherId}`}
                     />
                 )}
             />
             <Route
-                path={basePath + "organisations/:publisherId"}
+                path="/organisations/:publisherId"
                 component={withHeader(OrganisationPage, false)}
             />
             <Route
                 exact
-                path={basePath + "search"}
+                path="/search"
                 component={withHeader(DatasetsSearchPagePublishedOnly, true)}
             />
             <Route
                 exact
-                path={basePath + "drafts"}
+                path="/drafts"
                 component={withHeader(DatasetsSearchPageDraftOnly, true)}
             />
             <Route
                 exact
-                path={basePath + "all-datasets"}
+                path="/all-datasets"
                 component={withHeader(DatasetsSearchPage, true)}
             />
             <Route
                 exact
-                path={basePath + "dataset"}
+                path="/dataset"
                 render={({ location }) => (
                     <Redirect
                         to={{
-                            pathname: `"${basePath}+search"`,
+                            pathname: "/search",
                             search: location.search
                         }}
                     />
@@ -207,28 +199,26 @@ const Routes = () => {
             />
             <Route
                 exact
-                path={basePath + "account"}
+                path="/account"
                 component={withHeader(AccountPage, false)}
             />
             <Route
                 exact
-                path={basePath + "login"}
+                path="/login"
                 component={withHeader(AccountLoginPage, false)}
             />
             <Route
                 exact
-                path={basePath + "sign-in-redirect"}
+                path="/sign-in-redirect"
                 component={withHeader(AccountSignInRedirectPage, false)}
             />
             <Route
-                path={
-                    basePath + "dataset/:datasetId/distribution/:distributionId"
-                }
+                path="/dataset/:datasetId/distribution/:distributionId"
                 component={withHeader(DatasetPage, true)}
             />
             {config.featureFlags.cataloguing && (
                 <Route
-                    path={basePath + "catalog"}
+                    path="/catalog"
                     component={withHeader(CatalogRoutes, false)}
                 />
             )}
@@ -237,37 +227,34 @@ const Routes = () => {
                 but the first route of the dataset route doesn't need a ProgressMeter.
              */}
             {config.featureFlags.cataloguing && (
-                <Route
-                    path={basePath + "dataset/(add|list)"}
-                    component={DatasetRoutes}
-                />
+                <Route path="/dataset/(add|list)" component={DatasetRoutes} />
             )}
 
             <Route
-                path={basePath + "dataset/:datasetId"}
+                path="/dataset/:datasetId"
                 component={withHeader(DatasetPage, true)}
             />
             <Route
                 exact
-                path={basePath + "suggest"}
+                path="/suggest"
                 component={withHeader(DatasetSuggestPage, true)}
             />
             <Redirect
-                from={basePath + "page/dataset-quality"}
-                to={basePath + "page/linked-data-rating"}
+                from="/page/dataset-quality"
+                to="/page/linked-data-rating"
             />
             <Route
-                path={basePath + "page/:pageId"}
+                path="/page/:pageId"
                 component={withHeader(StaticPage, true)}
             />
             <Route
                 exact
-                path={basePath + "404"}
+                path="/404"
                 component={withHeader(RouteNotFoundPage, true)}
             />
             <Route
                 exact
-                path={basePath + "error"}
+                path="/error"
                 component={withHeader(ErrorPage, true)}
             />
             <FallbackRouteHandlerPage />

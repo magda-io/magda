@@ -4,6 +4,7 @@
   "description": "The MAGDA in-browser web front end.",
   "version": "0.0.56-terria-4",
   "license": "Apache-2.0",
+  "homepage": ".",
   "scripts": {
     "storybook": "start-storybook -p 9001 -c .storybook -s ./public",
     "deploy-storybook": "build-storybook -c .storybook -o .out",

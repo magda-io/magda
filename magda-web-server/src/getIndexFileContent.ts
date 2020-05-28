@@ -8,11 +8,11 @@ const STATIC_STYLE_REGEX = new RegExp(
     "g"
 );
 
-const STATIC_PATH_REGEX = new RegExp("static", "g");
-const SERVER_CONFIG_REGEX = new RegExp(
-    '<script src="/server-config.js"></script>',
-    "g"
-);
+const BASE_HREF_CONFIG_REGEX = new RegExp('<base href="/"/>', "g");
+const parseIndexHtmlForBaseHref = (text: string, serverBasePath: string) => {
+    const newBaseHref = `<base href="${serverBasePath}" />`;
+    return text.replace(BASE_HREF_CONFIG_REGEX, newBaseHref);
+};
 
 /**
  * Gets the content stored under "includeHtml" in the content api. On failure
@@ -30,15 +30,10 @@ async function getIncludeHtml(
         const response = await fetch(url);
 
         if (response.status === 200) {
-            const newStaticBasePath = serverBasePath
-                ? serverBasePath.substring(1) + "static"
-                : "static";
-            const newServerConfig = `<script src="${serverBasePath}server-config.js"></script>`;
-            const text = response.text();
-            const newText = (await text)
-                .replace(STATIC_PATH_REGEX, newStaticBasePath)
-                .replace(SERVER_CONFIG_REGEX, newServerConfig);
-            return newText;
+            return parseIndexHtmlForBaseHref(
+                await response.text(),
+                serverBasePath
+            );
         } else {
             throw new Error(
                 `Received status ${response.status}: ${
@@ -71,14 +66,7 @@ function getIndexHtml(
                 if (err) {
                     reject(err);
                 } else {
-                    const newStaticBasePath = serverBasePath
-                        ? serverBasePath.substring(1) + "static"
-                        : "static";
-                    const newServerConfig = `<script src="${serverBasePath}server-config.js"></script>`;
-                    const newData = data
-                        .replace(STATIC_PATH_REGEX, newStaticBasePath)
-                        .replace(SERVER_CONFIG_REGEX, newServerConfig);
-                    resolve(newData);
+                    resolve(parseIndexHtmlForBaseHref(data, serverBasePath));
                 }
             }
         )
