@@ -29,7 +29,14 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
             if (isDisabled || !props.match.params.datasetId) {
                 return;
             }
-            const data = await fetchRecord(props.match.params.datasetId);
+            // --- turn off cache
+            const data = await fetchRecord(
+                props.match.params.datasetId,
+                undefined,
+                undefined,
+                true,
+                false
+            );
             const loadedStateData = await rawDatasetDataToState(data);
 
             updateData(loadedStateData);
