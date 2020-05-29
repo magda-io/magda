@@ -654,17 +654,18 @@ export async function loadState(id: string, user?: User): Promise<State> {
     }
 }
 
-export async function saveState(state: State, id = createId()) {
+export function saveStateToLocalStorage(state: State, id: string) {
     state = Object.assign({}, state);
-
     state._lastModifiedDate = new Date();
 
-    if (config?.featureFlags?.previewAddDataset) {
-        // --- in preview mode, still save to local storage
-        const dataset = JSON.stringify(state);
-        localStorage[id] = dataset;
-        return id;
-    }
+    const dataset = JSON.stringify(state);
+    localStorage[id] = dataset;
+    return id;
+}
+
+export async function saveStateToRegistry(state: State, id: string) {
+    state = Object.assign({}, state);
+    state._lastModifiedDate = new Date();
 
     const dataset = JSON.stringify(state);
     const timestamp = state._lastModifiedDate.toISOString();
@@ -712,6 +713,15 @@ export async function saveState(state: State, id = createId()) {
     }
 
     return id;
+}
+
+export async function saveState(state: State, id = createId()) {
+    if (config?.featureFlags?.previewAddDataset) {
+        // --- in preview mode, still save to local storage
+        return saveStateToLocalStorage(state, id);
+    } else {
+        return await saveStateToRegistry(state, id);
+    }
 }
 
 export function createId(type = "ds") {
