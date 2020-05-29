@@ -1,17 +1,24 @@
 import React, {
     FunctionComponent,
     ButtonHTMLAttributes,
-    useState
+    useState,
+    MouseEvent
 } from "react";
+
+type Overwrite<T, U> = Pick<T, Exclude<keyof T, keyof U>> & U;
+type PropsType = Overwrite<
+    ButtonHTMLAttributes<HTMLButtonElement>,
+    {
+        onClick: (e: MouseEvent<HTMLButtonElement>) => Promise<any>;
+    }
+>;
 
 /**
  * A button will auto add `...` to button content until onClick is resolved
  *
  * @param props support all buttom element's attributes
  */
-const AsyncButton: FunctionComponent<ButtonHTMLAttributes<
-    HTMLButtonElement
->> = props => {
+const AsyncButton: FunctionComponent<PropsType> = props => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const newProps = { ...props };
 
