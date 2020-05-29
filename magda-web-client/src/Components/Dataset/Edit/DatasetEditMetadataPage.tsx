@@ -247,6 +247,10 @@ class EditDataset extends React.Component<Props, State> {
 
     async gotoStep(step) {
         try {
+            /**
+             * await here is for fixing a weird bug that causing input ctrl with validation error can't be moved into viewport
+             * Until we find the root cause of this problem, resetError() must be called with await
+             */
             await this.resetError();
             if (ValidationManager.validateAll()) {
                 this.props.history.push(
