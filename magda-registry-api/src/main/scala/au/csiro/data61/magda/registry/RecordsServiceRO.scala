@@ -14,8 +14,9 @@ import com.typesafe.config.Config
 import io.swagger.annotations._
 import javax.ws.rs.Path
 import scalikejdbc.DB
-
 import au.csiro.data61.magda.client.AuthOperations
+import scalikejdbc.interpolation.SQLSyntax
+
 import scala.concurrent.ExecutionContext
 
 @Path("/records")
@@ -44,6 +45,9 @@ class RecordsServiceRO(
     * @apiParam (query) {number} limit The maximum number of records to receive. The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
     * @apiParam (query) {boolean} dereference true to automatically dereference links to other records; false to leave them as links. Dereferencing a link means including the record itself where the link would be. Dereferencing only happens one level deep, regardless of the value of this parameter.
     * @apiParam (query) {string[]} aspectQuery Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value’, url encoded. NOTE: This is an early stage API and may change greatly in the future
+    * @apiParam (query) {string[]} aspectOrQuery Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value', url encoded. Queries passing via this parameter will be grouped with OR logic. NOTE: This is an early stage API and may change greatly in the future
+    * @apiParam (query) {string} orderBy Specify the field to sort the result. Aspect field can be supported in a format like aspectId.path.to.field
+    * @apiParam (query) {string} orderByDir Specify the order by direction. Either `asc` or `desc`
     * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiSuccess (Success 200) {json} Response the record detail
@@ -136,6 +140,22 @@ class RecordsServiceRO(
           "Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value', url encoded. Queries passing via this parameter will be grouped with OR logic. NOTE: This is an early stage API and may change greatly in the future"
       ),
       new ApiImplicitParam(
+        name = "orderBy",
+        required = false,
+        dataType = "string",
+        paramType = "query",
+        allowMultiple = false,
+        value = "Specify the field to sort the result. Aspect field can be supported in a format like aspectId.path.to.field"
+      ),
+      new ApiImplicitParam(
+        name = "orderByDir",
+        required = false,
+        dataType = "string",
+        paramType = "query",
+        allowMultiple = false,
+        value = "Specify the order by direction. Either `asc` or `desc`"
+      ),
+      new ApiImplicitParam(
         name = "X-Magda-Tenant-Id",
         required = true,
         dataType = "number",
@@ -162,7 +182,9 @@ class RecordsServiceRO(
           'limit.as[Int].?,
           'dereference.as[Boolean].?,
           'aspectQuery.*,
-          'aspectOrQuery.*
+          'aspectOrQuery.*,
+          'orderBy.as[String].?,
+          'orderByDir.as[String].?
         ) {
           (
               aspects,
@@ -172,10 +194,12 @@ class RecordsServiceRO(
               limit,
               dereference,
               aspectQueries,
-              aspectOrQueries
+              aspectOrQueries,
+              orderBy,
+              orderByDir
           ) =>
             val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
-            val parsedAspectOrQueries = aspectQueries.map(AspectQuery.parse)
+            val parsedAspectOrQueries = aspectOrQueries.map(AspectQuery.parse)
 
             withRecordOpaQueryIncludingLinks(
               AuthOperations.read,
@@ -206,7 +230,15 @@ class RecordsServiceRO(
                         limit,
                         dereference,
                         parsedAspectQueries,
-                        parsedAspectOrQueries
+                        parsedAspectOrQueries,
+                        orderBy match {
+                          case Some(field) => Some(OrderByDef(field, orderByDir match {
+                            case Some("asc") => SQLSyntax.asc
+                            case Some("desc") => SQLSyntax.desc
+                            case _ => throw new Error(s"Invalid orderByDir parameter: ${orderByDir.toString}")
+                          }))
+                          case _ => None
+                        }
                       )
                     }
                   }

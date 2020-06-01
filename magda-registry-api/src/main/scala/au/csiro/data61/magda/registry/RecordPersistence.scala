@@ -46,7 +46,8 @@ trait RecordPersistence {
       limit: Option[Int] = None,
       dereference: Option[Boolean] = None,
       aspectQueries: Iterable[AspectQuery] = Nil,
-      aspectOrQueries: Iterable[AspectQuery] = Nil
+      aspectOrQueries: Iterable[AspectQuery] = Nil,
+      orderBy: Option[OrderByDef] = None
   ): RecordsPage[Record]
 
   def getCount(
@@ -268,7 +269,8 @@ class DefaultRecordPersistence(config: Config)
       limit: Option[Int] = None,
       dereference: Option[Boolean] = None,
       aspectQueries: Iterable[AspectQuery] = Nil,
-      aspectOrQueries: Iterable[AspectQuery] = Nil
+      aspectOrQueries: Iterable[AspectQuery] = Nil,
+      orderBy: Option[OrderByDef] = None
   ): RecordsPage[Record] = {
     val orSelector =
       aspectOrQueries.map(query => aspectQueryToWhereClause(query)) match {
@@ -292,7 +294,8 @@ class DefaultRecordPersistence(config: Config)
       start,
       limit,
       dereference,
-      selectors
+      selectors,
+      orderBy
     )
   }
 
@@ -1407,7 +1410,8 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       start: Option[Int] = None,
       rawLimit: Option[Int] = None,
       dereference: Option[Boolean] = None,
-      recordSelector: Iterable[Option[SQLSyntax]] = Iterable()
+      recordSelector: Iterable[Option[SQLSyntax]] = Iterable(),
+      orderBy: Option[OrderByDef] = None
   ): RecordsPage[Record] = {
 
     val recordsFilteredByTenantClause: SQLSyntax = filterRecordsByTenantClause(
@@ -1448,6 +1452,14 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
     // Create unsafely so that column names will look like temp.aspect0 and temp.sequence.
     // Otherwise it will look like 'temp'.aspect0 and 'temp'.sequence.
     val tempName = SQLSyntax.createUnsafely(rawTempName)
+
+    val orderBySql = orderBy match {
+      case None =>
+        SQLSyntax.orderBy(sqls"${tempName}.sequence")
+      case Some(orderBy) =>
+        sqls"${tempName}.${orderBy.getSql(List.concat(aspectIds, optionalAspectIds))}"
+    }
+
     val nonNullAspectsWhereClause =
       SQLSyntax.where(SQLSyntax.joinWithAnd(aspectIds.zipWithIndex.map {
         case (_, index) =>
@@ -1473,7 +1485,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
             ) as $tempName
             ${if (aspectIds.nonEmpty) sqls"$nonNullAspectsWhereClause"
       else SQLSyntax.empty}
-            order by $tempName.sequence
+            ${orderBySql}
             offset ${start.getOrElse(0)}
             limit ${limit + 1}
         """
@@ -1849,7 +1861,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
               sqls"""(
                 SELECT coalesce (
                   (
-                    SELECT ($linkedAspectsClause) 
+                    SELECT ($linkedAspectsClause)
                     FROM Records
                     WHERE Records.tenantId=RecordAspects.tenantId AND
                       Records.recordId=RecordAspects.data->>$propertyName
