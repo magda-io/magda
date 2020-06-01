@@ -24,18 +24,27 @@ case class AspectQueryAnyInArray(
     value: AspectQueryValue
 ) extends AspectQuery
 
+case class AspectQueryGroup(
+    val aspectId: String,
+    val path: List[String],
+    value: AspectQueryValue
+) extends AspectQuery
+
 sealed trait AspectQueryValue {
   val value: Any
   val postgresType: SQLSyntax
 }
+
 case class AspectQueryString(string: String) extends AspectQueryValue {
   val value = string
   val postgresType = SQLSyntax.createUnsafely("TEXT")
 }
+
 case class AspectQueryBoolean(boolean: Boolean) extends AspectQueryValue {
   val value = boolean
   val postgresType = SQLSyntax.createUnsafely("BOOL")
 }
+
 case class AspectQueryBigDecimal(bigDecimal: BigDecimal)
     extends AspectQueryValue {
   val value = bigDecimal

@@ -127,6 +127,15 @@ class RecordsServiceRO(
           "Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value', url encoded. NOTE: This is an early stage API and may change greatly in the future"
       ),
       new ApiImplicitParam(
+        name = "aspectOrQuery",
+        required = false,
+        dataType = "string",
+        paramType = "query",
+        allowMultiple = true,
+        value =
+          "Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value', url encoded. Queries passing via this parameter will be grouped with OR logic. NOTE: This is an early stage API and may change greatly in the future"
+      ),
+      new ApiImplicitParam(
         name = "X-Magda-Tenant-Id",
         required = true,
         dataType = "number",
@@ -152,7 +161,8 @@ class RecordsServiceRO(
           'start.as[Int].?,
           'limit.as[Int].?,
           'dereference.as[Boolean].?,
-          'aspectQuery.*
+          'aspectQuery.*,
+          'aspectOrQuery.*
         ) {
           (
               aspects,
@@ -161,9 +171,11 @@ class RecordsServiceRO(
               start,
               limit,
               dereference,
-              aspectQueries
+              aspectQueries,
+              aspectOrQueries
           ) =>
             val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
+            val parsedAspectOrQueries = aspectQueries.map(AspectQuery.parse)
 
             withRecordOpaQueryIncludingLinks(
               AuthOperations.read,
@@ -193,7 +205,8 @@ class RecordsServiceRO(
                         start,
                         limit,
                         dereference,
-                        parsedAspectQueries
+                        parsedAspectQueries,
+                        parsedAspectOrQueries
                       )
                     }
                   }

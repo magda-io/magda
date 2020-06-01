@@ -45,7 +45,8 @@ trait RecordPersistence {
       start: Option[Int] = None,
       limit: Option[Int] = None,
       dereference: Option[Boolean] = None,
-      aspectQueries: Iterable[AspectQuery] = Nil
+      aspectQueries: Iterable[AspectQuery] = Nil,
+      aspectOrQueries: Iterable[AspectQuery] = Nil
   ): RecordsPage[Record]
 
   def getCount(
@@ -266,10 +267,18 @@ class DefaultRecordPersistence(config: Config)
       start: Option[Int] = None,
       limit: Option[Int] = None,
       dereference: Option[Boolean] = None,
-      aspectQueries: Iterable[AspectQuery] = Nil
+      aspectQueries: Iterable[AspectQuery] = Nil,
+      aspectOrQueries: Iterable[AspectQuery] = Nil
   ): RecordsPage[Record] = {
-    val selectors = aspectQueries
+    val orSelector =
+      aspectOrQueries.map(query => aspectQueryToWhereClause(query)) match {
+        case Seq()    => SQLSyntax.empty
+        case nonEmpty => SQLSyntax.join(nonEmpty.toSeq, SQLSyntax.or)
+      }
+
+    val selectors = (aspectQueries
       .map(query => aspectQueryToWhereClause(query))
+      .toSeq :+ orSelector)
       .map(Some.apply)
 
     this.getRecords(
