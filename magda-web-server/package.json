@@ -1,7 +1,7 @@
 {
   "name": "@magda/web-server",
   "description": "The server that serves the MAGDA web front end.",
-  "version": "0.0.56-terria-4",
+  "version": "0.0.56-terria-5",
   "license": "Apache-2.0",
   "scripts": {
     "build": "yarn run compile",
@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@magda/typescript-common": "^0.0.56-terria-4",
-    "@magda/web-client": "^0.0.56-terria-4",
+    "@magda/web-client": "^0.0.56-terria-5",
     "express": "^4.15.3",
     "morgan": "^1.9.0",
     "read-pkg-up": "^3.0.0",

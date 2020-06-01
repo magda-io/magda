@@ -1,7 +1,7 @@
 {
   "name": "@magda/magda-scss-compiler",
   "description": "The web-client SCSS compiler pod",
-  "version": "0.0.56-terria-4",
+  "version": "0.0.56-terria-5",
   "license": "Apache-2.0",
   "scripts": {
     "build": "yarn run compile",
@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@magda/typescript-common": "^0.0.56-terria-4",
-    "@magda/web-client": "^0.0.56-terria-4",
+    "@magda/web-client": "^0.0.56-terria-5",
     "autoprefixer": "^9.2.1",
     "clean-css": "^4.2.1",
     "escape-string-regexp": "^1.0.5",

@@ -1,7 +1,7 @@
 {
   "name": "@magda/gateway",
   "description": "The public gateway to all of MAGDA, including the API and web front end.",
-  "version": "0.0.56-terria-4",
+  "version": "0.0.56-terria-5",
   "license": "Apache-2.0",
   "scripts": {
     "build": "yarn run compile",
