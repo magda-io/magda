@@ -80,7 +80,7 @@ class StaticPage extends Component {
                             />{" "}
                             {hasEditPermissions && (
                                 <p>
-                                    <a href="/admin/pages">Manage Pages</a>
+                                    <a href={"./admin/pages"}>Manage Pages</a>
                                 </p>
                             )}
                         </div>

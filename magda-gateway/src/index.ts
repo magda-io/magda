@@ -79,6 +79,15 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: "http://localhost:6110"
         })
+        .option("magdaWebPath", {
+            describe: "If defined, the server is accessed via this path.",
+            type: "string"
+        })
+        .option("magdaWebUrl", {
+            describe:
+                "If magdaWebServerPath is defined, the server url must also be defined.",
+            type: "string"
+        })
         .option("web", {
             describe: "The base URL of the web site.",
             type: "string",

@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: web
+  name: magda-ui
 spec:
   strategy:
     rollingUpdate:
@@ -10,13 +10,13 @@ spec:
   template:
     metadata:
       labels:
-        service: web
+        service: magda-ui
     spec:
 {{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1beta1") .Values.global.enablePriorityClass }}
       priorityClassName: magda-8
 {{- end }}
       containers:
-      - name: web
+      - name: magda-ui
         command: [
             "node", "/usr/src/app/component/dist/index.js",
             "--config", "/etc/config/config.json",
@@ -24,6 +24,9 @@ spec:
             "--baseExternalUrl", {{ .Values.global.externalUrl | quote }},
             "--useLocalStyleSheet", {{ .Values.global.useLocalStyleSheet | default .Values.useLocalStyleSheet | quote }},
             "--registryApiBaseUrlInternal", "http://registry-api/v0",
+{{- if .Values.serverBasePath }}
+            "--serverBasePath", {{ .Values.serverBasePath | quote }},
+{{- end }}
 {{- if .Values.adminApiBaseUrl }}
             "--adminApiBaseUrl", {{ .Values.adminApiBaseUrl | quote }},
 {{- end }}

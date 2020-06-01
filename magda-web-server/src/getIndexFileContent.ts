@@ -8,20 +8,32 @@ const STATIC_STYLE_REGEX = new RegExp(
     "g"
 );
 
+const BASE_HREF_CONFIG_REGEX = new RegExp('<base href="/"/>', "g");
+const parseIndexHtmlForBaseHref = (text: string, serverBasePath: string) => {
+    const newBaseHref = `<base href="${serverBasePath}" />`;
+    return text.replace(BASE_HREF_CONFIG_REGEX, newBaseHref);
+};
+
 /**
  * Gets the content stored under "includeHtml" in the content api. On failure
  * simply returns a blank string.
  *
  * @param contentApiBaseUrlInternal The base content api to get the content from.
  */
-async function getIncludeHtml(contentApiBaseUrlInternal: string) {
+async function getIncludeHtml(
+    contentApiBaseUrlInternal: string,
+    serverBasePath: string
+) {
     const url = `${contentApiBaseUrlInternal}includeHtml.text`;
 
     try {
         const response = await fetch(url);
 
         if (response.status === 200) {
-            return response.text();
+            return parseIndexHtmlForBaseHref(
+                await response.text(),
+                serverBasePath
+            );
         } else {
             throw new Error(
                 `Received status ${response.status}: ${
@@ -40,7 +52,10 @@ async function getIncludeHtml(contentApiBaseUrlInternal: string) {
  *
  * @param clientRoot The root of the client directory to get the file from.
  */
-function getIndexHtml(clientRoot: string): Promise<string> {
+function getIndexHtml(
+    clientRoot: string,
+    serverBasePath: string
+): Promise<string> {
     return new Promise((resolve, reject) =>
         fs.readFile(
             path.join(clientRoot, "build/index.html"),
@@ -51,7 +66,7 @@ function getIndexHtml(clientRoot: string): Promise<string> {
                 if (err) {
                     reject(err);
                 } else {
-                    resolve(data);
+                    resolve(parseIndexHtmlForBaseHref(data, serverBasePath));
                 }
             }
         )
@@ -73,10 +88,14 @@ const memoizedGetIndexHtml = memoize(getIndexHtml);
 async function getIndexFileContent(
     clientRoot: string,
     useLocalStyleSheet: boolean,
-    contentApiBaseUrlInternal: string
+    contentApiBaseUrlInternal: string,
+    serverBasePath: string
 ) {
-    const dynamicContentPromise = getIncludeHtml(contentApiBaseUrlInternal);
-    const indexHtmlPromise = memoizedGetIndexHtml(clientRoot);
+    const dynamicContentPromise = getIncludeHtml(
+        contentApiBaseUrlInternal,
+        serverBasePath
+    );
+    const indexHtmlPromise = memoizedGetIndexHtml(clientRoot, serverBasePath);
 
     let [dynamicContent, indexFileContent] = await Promise.all([
         dynamicContentPromise,

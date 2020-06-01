@@ -146,6 +146,11 @@ const argv = yargs
             "Max number of CSV data file rows that table preview will module process",
         type: "number"
     })
+    .option("serverBasePath", {
+        describe: "The base path to the web server",
+        type: "string",
+        default: "/"
+    })
     .option("csvLoaderChunkSize", {
         describe: "The size of the csv loader processing chunk (in bytes)",
         type: "number"
@@ -228,7 +233,8 @@ const webServerConfig = {
     custodianOrgLevel: argv.custodianOrgLevel,
     maxChartProcessingRows: argv.maxChartProcessingRows,
     maxTableProcessingRows: argv.maxTableProcessingRows,
-    csvLoaderChunkSize: argv.csvLoaderChunkSize
+    csvLoaderChunkSize: argv.csvLoaderChunkSize,
+    serverBasePath: argv.serverBasePath || "/"
 };
 
 app.get("/server-config.js", function(req, res) {
@@ -246,7 +252,8 @@ function getIndexFileContentZeroArgs() {
     return getIndexFileContent(
         clientRoot,
         argv.useLocalStyleSheet,
-        argv.contentApiBaseUrlInternal
+        argv.contentApiBaseUrlInternal,
+        argv.serverBasePath
     );
 }
 
@@ -257,7 +264,7 @@ app.get(["/", "/index.html*"], async function(req, res) {
 });
 
 // app.use("/admin", express.static(adminBuild));
-app.use(express.static(clientBuild));
+app.use("/", express.static(clientBuild));
 
 // URLs in this list will load index.html and be handled by React routing.
 const topLevelRoutes = [
@@ -307,7 +314,7 @@ if (argv.devProxy) {
                 method: req.method
             })
         )
-            .on("error", err => {
+            .on("error", (err: any) => {
                 const msg = "Error on connecting to the webservice.";
                 console.error(msg, err);
                 res.status(500).send(msg);

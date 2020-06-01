@@ -1,3 +1,9 @@
+## 0.0.56-terria-5
+
+Gateway:
+
+-   Magda UI can be served from a given path while a customed UI can be served from root path.
+
 ## 0.0.56
 
 General:

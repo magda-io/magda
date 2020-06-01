@@ -55,6 +55,8 @@ type Config = {
     userId: string;
     web: string;
     previewMap?: string;
+    magdaWebPath?: string;
+    magdaWebUrl?: string;
     enableHttpsRedirection?: boolean;
     enableWebAccessControl?: boolean;
     webAccessUsername?: string;
@@ -226,7 +228,24 @@ export default function buildApp(config: Config) {
         }
     }
 
-    // Proxy any other URL to magda-web
+    // Magda web server may optionally be located at non-root path.
+    if (
+        config.magdaWebPath &&
+        config.magdaWebPath !== "/" &&
+        config.magdaWebUrl
+    ) {
+        console.log(
+            `Serve ${config.magdaWebUrl} from path ${config.magdaWebPath}`
+        );
+        app.use(
+            config.magdaWebPath,
+            createGenericProxy(config.magdaWebUrl, tenantMode)
+        );
+    }
+
+    // Proxy any other URL to web server defined by config.web, which could be any
+    // web server, including magda web server.
+    console.log(`Serve ${config.web} from path /`);
     app.use("/", createGenericProxy(config.web, tenantMode));
 
     return app;

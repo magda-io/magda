@@ -6,7 +6,7 @@ import aafLogo from "assets/login/aaf-logo.png";
 import AUctaLink from "../../pancake/react/cta-link";
 import "./AccountLoginPage.scss";
 import { config } from "config";
-const { baseUrl } = config;
+const { baseUrl, serverBasePath } = config;
 
 export default function Login(props) {
     const previousUrl =
@@ -18,7 +18,7 @@ export default function Login(props) {
     const baseRedirectUrl = `${window.location.protocol}//${
         window.location.host
     }`;
-    const oauthRedirect = `${baseRedirectUrl}/sign-in-redirect?redirectTo=${previousUrl}`;
+    const oauthRedirect = `${baseRedirectUrl}${serverBasePath}sign-in-redirect?redirectTo=${previousUrl}`;
 
     const makeLoginUrl = type =>
         `${baseUrl}auth/login/${type}?redirect=${encodeURIComponent(
