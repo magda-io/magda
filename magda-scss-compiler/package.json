@@ -14,7 +14,7 @@
     "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.56-terria-4",
+    "@magda/scripts": "^0.0.56-terria-5",
     "@types/autoprefixer": "^9.1.0",
     "@types/chai": "^4.0.1",
     "@types/clean-css": "^3.4.30",
@@ -39,7 +39,7 @@
     "typescript": "^3.2.0"
   },
   "dependencies": {
-    "@magda/typescript-common": "^0.0.56-terria-4",
+    "@magda/typescript-common": "^0.0.56-terria-5",
     "@magda/web-client": "^0.0.56-terria-5",
     "autoprefixer": "^9.2.1",
     "clean-css": "^4.2.1",
