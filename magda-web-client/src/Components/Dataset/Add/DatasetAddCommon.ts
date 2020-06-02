@@ -559,10 +559,12 @@ export function createBlankState(user?: User): State {
         _createdDate: new Date(),
         _lastModifiedDate: new Date(),
         ckanExport: {
-            status: "withdraw",
-            hasCreated: false,
-            exportAttempted: false,
-            exportRequired: false
+            [config.defaultCkanServer]: {
+                status: "withdraw",
+                hasCreated: false,
+                exportAttempted: false,
+                exportRequired: false
+            }
         }
     };
 }
@@ -913,11 +915,11 @@ export async function createDatasetFromState(
     setState: React.Dispatch<React.SetStateAction<State>>
 ) {
     if (state.datasetPublishing.publishAsOpenData?.dga) {
-        state.ckanExport.status = "retain";
-        state.ckanExport.exportRequired = true;
+        state.ckanExport[config.defaultCkanServer].status = "retain";
+        state.ckanExport[config.defaultCkanServer].exportRequired = true;
     } else {
-        state.ckanExport.status = "withdraw";
-        state.ckanExport.exportRequired = false;
+        state.ckanExport[config.defaultCkanServer].status = "withdraw";
+        state.ckanExport[config.defaultCkanServer].exportRequired = false;
     }
 
     const distributionRecords = await convertStateToDistributionRecords(state);
@@ -936,12 +938,12 @@ export async function updateDatasetFromState(
     setState: React.Dispatch<React.SetStateAction<State>>
 ) {
     if (state.datasetPublishing.publishAsOpenData?.dga) {
-        state.ckanExport.status = "retain";
+        state.ckanExport[config.defaultCkanServer].status = "retain";
     } else {
-        state.ckanExport.status = "withdraw";
+        state.ckanExport[config.defaultCkanServer].status = "withdraw";
     }
 
-    state.ckanExport.exportRequired = true;
+    state.ckanExport[config.defaultCkanServer].exportRequired = true;
 
     const distributionRecords = await convertStateToDistributionRecords(state);
     const datasetRecord = await convertStateToDatasetRecord(

@@ -3,6 +3,7 @@ import { isSupportedFormat as isSupportedMapPreviewFormat } from "../Components/
 import { FetchError } from "../types";
 import weightedMean from "weighted-mean";
 import { Record } from "api-clients/RegistryApis";
+import { config } from "config";
 
 export type RecordAction = {
     json?: any;
@@ -405,15 +406,19 @@ export function parseDistribution(
 }
 
 type CkanExportStatus = "withdraw" | "retain";
-export interface CkanExportAspectType {
+export interface CkanExportAspectProperties {
     status: CkanExportStatus;
-    syncUserId?: string;
+    exportUserId?: string;
     ckanId?: string;
     hasCreated: boolean;
     exportRequired: boolean;
     exportAttempted: boolean;
     lastExportAttemptTime?: Date;
     exportError?: string;
+}
+
+export interface CkanExportAspectType {
+    [key: string]: CkanExportAspectProperties;
 }
 
 export function parseDataset(dataset?: RawDataset): ParsedDataset {
@@ -466,15 +471,13 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
     const ckanExport: CkanExportAspectType = aspects["ckan-export"]
         ? aspects["ckan-export"]
         : {
-              status: "withdraw",
-              hasCreated: false,
-              exportRequired: false,
-              exportAttempted: false
+              [config.defaultCkanServer]: {
+                  status: "withdraw",
+                  hasCreated: false,
+                  exportRequired: false,
+                  exportAttempted: false
+              }
           };
-
-    ckanExport.hasCreated = !!ckanExport.hasCreated;
-    ckanExport.exportRequired = !!ckanExport.exportRequired;
-    ckanExport.exportAttempted = !!ckanExport.exportAttempted;
 
     const distributions = distribution["distributions"].map(d => {
         const distributionAspects = Object.assign(

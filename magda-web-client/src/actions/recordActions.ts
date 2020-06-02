@@ -1,7 +1,11 @@
 import fetch from "isomorphic-fetch";
 import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
-import { RecordAction, RawDataset } from "../helpers/record";
+import {
+    RecordAction,
+    RawDataset,
+    CkanExportAspectProperties
+} from "../helpers/record";
 import { FetchError } from "../types";
 import {
     ensureAspectExists,
@@ -154,7 +158,7 @@ export function fetchDistributionFromRegistry(id: string): any {
     };
 }
 
-const DefaultCkanExportData: CkanExportAspectType = {
+const DefaultCkanExportProperties: CkanExportAspectProperties = {
     status: "withdraw",
     hasCreated: false,
     exportRequired: false,
@@ -162,7 +166,12 @@ const DefaultCkanExportData: CkanExportAspectType = {
 };
 
 async function notifyCkanExportMinion(datasetId: string) {
-    let ckanExportData: CkanExportAspectType;
+    let ckanExportData: CkanExportAspectType = {};
+    Object.keys(config.ckanExportServers).forEach((ckanServerUrl: string) => {
+        if (config.ckanExportServers[ckanServerUrl] === true) {
+            ckanExportData[ckanServerUrl] = DefaultCkanExportProperties;
+        }
+    });
     try {
         ckanExportData = await request(
             "GET",
@@ -170,10 +179,12 @@ async function notifyCkanExportMinion(datasetId: string) {
         );
     } catch (e) {
         await ensureAspectExists("ckan-export", ckanExportAspect);
-        ckanExportData = { ...DefaultCkanExportData };
+        ckanExportData[config.defaultCkanServer] = {
+            ...DefaultCkanExportProperties
+        };
     }
 
-    if (ckanExportData.status === "retain") {
+    if (ckanExportData[config.defaultCkanServer].status === "retain") {
         await request(
             "PUT",
             `${config.registryFullApiUrl}records/${datasetId}/aspects/ckan-export`,

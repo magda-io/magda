@@ -3,51 +3,61 @@
     "title": "Ckan Export Information Aspect",
     "description": "An aspect that stores information regarding exporting the associated dataset to Ckan. Any changes to this aspect will trigger the export action performed by the Ckan export minion.",
     "type": "object",
-    "properties": {
-        "status": {
-            "title": "Dataset Export Status",
-            "description": "Indicates the desired dataset export status. `retain`: the dataset should be created on target Ckan system and export any changes of this dataset in registry. `withdraw`: the dataset and its associated resources should be removed from the target Ckan system.",
-            "type": "string",
-            "enum": ["retain", "withdraw"],
-            "default": "retain"
-        },
-        "exportUserId": {
-            "title": "Export User ID",
-            "description": "(Optional). The magda user ID that is used to perform any Ckan exporting actions (including delete). System mainly use this info to determine the Ckan API key that should be used for any communications with the target Ckan system. The an API key can't be located for this user or this field doesn't exist, system should use a default API key for any Ckan export communications for this dataset.",
-            "type": "string",
-            "regex": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
-        },
-        "ckanId": {
-            "title": "Ckan ID",
-            "description": "(Optional); The UUID of the dataset in Ckan system (package ID). Only available after the first export.",
-            "type": "string"
-        },
-        "hasCreated": {
-            "title": "Has the dataset been created in Ckan",
-            "description": "Indicates whether or not the corresponding ckan package has been created for the dataset or not.",
-            "type": "boolean"
-        },
-        "exportRequired": {
-            "title": "Is export required",
-            "description": "Whether or not system should re-export the dataset to ckan system. When the dataset is modified, this field should be set to true to trigger the backend exporting process.",
-            "type": "boolean"
-        },
-        "exportAttempted": {
-            "title": "Has exporting been attempted",
-            "description": "Whether or not the backend process (minion) has attempt to process the export since last time the `exportRequired` is set to true",
-            "type": "boolean"
-        },
-        "lastExportAttemptTime": {
-            "title": "Time last export was attempted",
-            "description": "(optional);The time when the backend process export the dataset.",
-            "type": "string",
-            "format": "date-time"
-        },
-        "exportError": {
-            "title": "Last export Error",
-            "description": "(optional);The error message recorded during the last backend export processing.",
-            "type": "string"
+    "patternProperties": {
+        "^https://.*": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "title": "Dataset Export Status",
+                    "description": "Indicates the desired dataset export status. `retain`: the dataset should be created on target Ckan system and export any changes of this dataset in registry. `withdraw`: the dataset and its associated resources should be removed from the target Ckan system.",
+                    "type": "string",
+                    "enum": ["retain", "withdraw"],
+                    "default": "retain"
+                },
+                "exportUserId": {
+                    "title": "Export User ID",
+                    "description": "(Optional). The magda user ID that is used to perform any Ckan exporting actions (including delete). System mainly use this info to determine the Ckan API key that should be used for any communications with the target Ckan system. The an API key can't be located for this user or this field doesn't exist, system should use a default API key for any Ckan export communications for this dataset.",
+                    "type": "string",
+                    "regex": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+                },
+                "ckanId": {
+                    "title": "Ckan ID",
+                    "description": "(Optional); The UUID of the dataset in Ckan system (package ID). Only available after the first export.",
+                    "type": "string"
+                },
+                "hasCreated": {
+                    "title": "Has the dataset been created in Ckan",
+                    "description": "Indicates whether or not the corresponding ckan package has been created for the dataset or not.",
+                    "type": "boolean"
+                },
+                "exportRequired": {
+                    "title": "Is export required",
+                    "description": "Whether or not system should re-export the dataset to ckan system. When the dataset is modified, this field should be set to true to trigger the backend exporting process.",
+                    "type": "boolean"
+                },
+                "exportAttempted": {
+                    "title": "Has exporting been attempted",
+                    "description": "Whether or not the backend process (minion) has attempt to process the export since last time the `exportRequired` is set to true",
+                    "type": "boolean"
+                },
+                "lastExportAttemptTime": {
+                    "title": "Time last export was attempted",
+                    "description": "(optional);The time when the backend process export the dataset.",
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "exportError": {
+                    "title": "Last export Error",
+                    "description": "(optional);The error message recorded during the last backend export processing.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "status",
+                "hasCreated",
+                "exportRequired",
+                "exportAttempted"
+            ]
         }
-    },
-    "required": ["status", "hasCreated", "exportRequired", "exportAttempted"]
+    }
 }

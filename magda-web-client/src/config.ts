@@ -90,6 +90,10 @@ const serverConfig: {
     datasetThemes?: string[];
     keywordsBlackList?: string[];
     openfaasBaseUrl?: string;
+    ckanExportServers: {
+        [ckanServerUrl: string]: boolean;
+    };
+    defultCkanServer: string;
 } = window.magda_server_config || {};
 
 const DATE_REGEX = ".*(date|dt|year|decade).*";
@@ -177,6 +181,18 @@ const vocabularyApiEndpoints =
               "https://vocabs.ands.org.au/repository/api/lda/abares/australian-land-use-and-management-classification/version-8/concept.json",
               "https://vocabs.ands.org.au/repository/api/lda/ands-nc/controlled-vocabulary-for-resource-type-genres/version-1-1/concept.json"
           ];
+
+let defaultCkanServer: string;
+if (process.env.NODE_ENV === "development") {
+    defaultCkanServer = "https://demo.ckan.org";
+} else {
+    defaultCkanServer = "https://data.gov.au/data";
+}
+defaultCkanServer = "https://demo.ckan.org";
+
+const ckanExportServers = {
+    [defaultCkanServer]: true
+};
 
 export const config = {
     fetchOptions,
@@ -311,7 +327,9 @@ export const config = {
           ],
     openfaasBaseUrl: serverConfig.openfaasBaseUrl
         ? serverConfig.openfaasBaseUrl
-        : baseUrl + "api/v0/openfaas"
+        : baseUrl + "api/v0/openfaas",
+    ckanExportServers,
+    defaultCkanServer
 };
 
 export const defaultConfiguration = {
