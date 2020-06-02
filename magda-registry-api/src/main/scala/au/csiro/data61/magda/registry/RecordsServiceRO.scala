@@ -145,7 +145,8 @@ class RecordsServiceRO(
         dataType = "string",
         paramType = "query",
         allowMultiple = false,
-        value = "Specify the field to sort the result. Aspect field can be supported in a format like aspectId.path.to.field"
+        value =
+          "Specify the field to sort the result. Aspect field can be supported in a format like aspectId.path.to.field"
       ),
       new ApiImplicitParam(
         name = "orderByDir",
@@ -232,11 +233,20 @@ class RecordsServiceRO(
                         parsedAspectQueries,
                         parsedAspectOrQueries,
                         orderBy match {
-                          case Some(field) => Some(OrderByDef(field, orderByDir match {
-                            case Some("asc") => SQLSyntax.asc
-                            case Some("desc") => SQLSyntax.desc
-                            case _ => throw new Error(s"Invalid orderByDir parameter: ${orderByDir.toString}")
-                          }))
+                          case Some(field) =>
+                            Some(
+                              OrderByDef(
+                                field,
+                                orderByDir match {
+                                  case Some("asc")  => SQLSyntax.asc
+                                  case Some("desc") => SQLSyntax.desc
+                                  case _ =>
+                                    throw new Error(
+                                      s"Invalid orderByDir parameter: ${orderByDir.toString}"
+                                    )
+                                }
+                              )
+                            )
                           case _ => None
                         }
                       )
