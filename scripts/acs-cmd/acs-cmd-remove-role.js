@@ -2,7 +2,7 @@
 const pkg = require("../package.json");
 const program = require("commander");
 const chalk = require("chalk");
-const getDBPool = require("../org-tree/getDBPool");
+const getDBPool = require("../db/getDBPool");
 const { recordExist } = require("./utils");
 
 const pool = getDBPool();
