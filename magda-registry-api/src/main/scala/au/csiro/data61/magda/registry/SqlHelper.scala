@@ -252,4 +252,13 @@ object SqlHelper {
       case OpaValueNumber(bigDec)   => AspectQueryBigDecimal(bigDec)
     }
   }
+
+  /**
+    * safely escape an identifier string (e.g. column, table names)
+    * sqls"" (SQLSyntax object) will always treats external input values as binding parameters. Thus, not suitable for identifier
+    * @param name identifier string
+    * @return escaped identifier as SQLSyntax object
+    */
+  def escapeIdentifier(name: String): SQLSyntax =
+    SQLSyntax.createUnsafely('"' + name.replaceAll("\"", "\"\"") + '"')
 }

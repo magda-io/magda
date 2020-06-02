@@ -240,6 +240,7 @@ class RecordsServiceRO(
                                 orderByDir match {
                                   case Some("asc")  => SQLSyntax.asc
                                   case Some("desc") => SQLSyntax.desc
+                                  case None => SQLSyntax.desc
                                   case _ =>
                                     throw new Error(
                                       s"Invalid orderByDir parameter: ${orderByDir.toString}"

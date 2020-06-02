@@ -1457,7 +1457,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       case None =>
         SQLSyntax.orderBy(sqls"${tempName}.sequence")
       case Some(orderBy) =>
-        sqls"${tempName}.${orderBy.getSql(List.concat(aspectIds, optionalAspectIds))}"
+        orderBy.getSql(List.concat(aspectIds, optionalAspectIds), Some(rawTempName))
     }
 
     val nonNullAspectsWhereClause =
