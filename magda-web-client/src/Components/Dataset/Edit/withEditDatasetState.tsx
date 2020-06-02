@@ -25,22 +25,25 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
                 props.user.id === "" ||
                 props.user.isAdmin !== true);
 
-        const { loading, error } = useAsync(async () => {
-            if (isDisabled || !props.match.params.datasetId) {
-                return;
-            }
-            // --- turn off cache
-            const data = await fetchRecord(
-                props.match.params.datasetId,
-                undefined,
-                undefined,
-                true,
-                true
-            );
-            const loadedStateData = await rawDatasetDataToState(data);
+        const { loading, error } = useAsync(
+            async (isDisabled, datasetId, user) => {
+                if (isDisabled || !datasetId) {
+                    return;
+                }
+                // --- turn off cache
+                const data = await fetchRecord(
+                    datasetId,
+                    undefined,
+                    undefined,
+                    true,
+                    true
+                );
+                const loadedStateData = await rawDatasetDataToState(data, user);
 
-            updateData(loadedStateData);
-        }, [isDisabled, props.match.params.datasetId]);
+                updateData(loadedStateData);
+            },
+            [isDisabled, props.match.params.datasetId, props.user]
+        );
 
         if (props.isFetchingWhoAmI) {
             return <div>Loading...</div>;

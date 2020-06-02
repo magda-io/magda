@@ -466,8 +466,11 @@ function populateDistributions(data: RawDataset, state: State) {
     }
 }
 
-export async function rawDatasetDataToState(data: RawDataset): Promise<State> {
-    const state = createBlankState();
+export async function rawDatasetDataToState(
+    data: RawDataset,
+    user: User
+): Promise<State> {
+    const state = createBlankState(user);
 
     populateDcatDatasetStringAspect(data, state);
     populateDatasetPublisherAspect(data, state);
@@ -512,7 +515,7 @@ export async function rawDatasetDataToState(data: RawDataset): Promise<State> {
     return state;
 }
 
-export function createBlankState(user?: User): State {
+export function createBlankState(user: User): State {
     return {
         distributions: [],
         processing: false,
@@ -560,7 +563,7 @@ export function createBlankState(user?: User): State {
 
 export async function loadStateFromLocalStorage(
     id: string,
-    user?: User
+    user: User
 ): Promise<State> {
     const stateString = localStorage[id];
     let state: State;
@@ -595,7 +598,7 @@ export async function loadStateFromLocalStorage(
 
 export async function loadStateFromRegistry(
     id: string,
-    user?: User
+    user: User
 ): Promise<State> {
     let record: RawDataset | undefined;
     try {
@@ -645,7 +648,7 @@ export async function loadStateFromRegistry(
     return state;
 }
 
-export async function loadState(id: string, user?: User): Promise<State> {
+export async function loadState(id: string, user: User): Promise<State> {
     if (config?.featureFlags?.previewAddDataset) {
         // --- in preview mode, still save to local storage
         return await loadStateFromLocalStorage(id, user);
