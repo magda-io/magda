@@ -1,5 +1,4 @@
 image: {}
-auth: {}
 service:
   type: NodePort
   externalPort: 80
@@ -14,6 +13,10 @@ autoscaler:
 enableAuthEndpoint: false
 enableWebAccessControl: false
 enableCkanRedirection: false
+
+auth:
+  # Whether enable magda internal authentication provider. Default to true
+  enableInternalAuthProvider: true
 
 helmet:
   frameguard: false

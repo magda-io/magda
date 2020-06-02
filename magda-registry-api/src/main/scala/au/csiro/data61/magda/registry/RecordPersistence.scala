@@ -217,6 +217,14 @@ trait RecordPersistence {
       aspectIds: Iterable[String] = List()
   ): Try[Iterable[String]]
 
+  /**
+    * Given a list of aspect ids, queries each of them to see if the aspects link to other aspects.
+    *
+    * Note that currently, links can only be at the first level of an aspect, and only one is supported
+    * per aspect.
+    *
+    * @return a Map of aspect ids to the first field inside that aspect that links to another aspect.
+    */
   def buildReferenceMap(
       implicit session: DBSession,
       aspectIds: Iterable[String]
@@ -1578,15 +1586,6 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
     JsonParser(rs.string("data")).asJsObject
   }
 
-  /**
-    * Given a list of aspect ids, queries each of them to see if the aspects link to other aspects.
-    *
-    * Note that currently, links can only be at the first level of an aspect, and only one is supported
-    * per aspect.
-    *
-    * @return a Map of aspect ids to the first field inside that aspect that links to another aspect.
-    *
-    */
   def buildReferenceMap(
       implicit session: DBSession,
       aspectIds: Iterable[String]

@@ -8,46 +8,14 @@ import {
     ensureAspectExists,
     createPublisher,
     updateDataset,
+    deleteRecordAspect,
     Record
 } from "api-clients/RegistryApis";
 import { config } from "config";
 import { User } from "reducers/userManagementReducer";
 import { RawDataset, CkanExportAspectType } from "helpers/record";
-
 import { autocompletePublishers } from "api-clients/SearchApis";
-
-import datasetPublishingAspect from "@magda/registry-aspects/publishing.schema.json";
-import dcatDatasetStringsAspect from "@magda/registry-aspects/dcat-dataset-strings.schema.json";
-import spatialCoverageAspect from "@magda/registry-aspects/spatial-coverage.schema.json";
-import temporalCoverageAspect from "@magda/registry-aspects/temporal-coverage.schema.json";
-import datasetDistributionsAspect from "@magda/registry-aspects/dataset-distributions.schema.json";
-import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribution-strings.schema.json";
-import accessAspect from "@magda/registry-aspects/access.schema.json";
-import provenanceAspect from "@magda/registry-aspects/provenance.schema.json";
-import informationSecurityAspect from "@magda/registry-aspects/information-security.schema.json";
-import datasetAccessControlAspect from "@magda/registry-aspects/dataset-access-control.schema.json";
-import organizationDetailsAspect from "@magda/registry-aspects/organization-details.schema.json";
-import datasetPublisherAspect from "@magda/registry-aspects/dataset-publisher.schema.json";
-import currencyAspect from "@magda/registry-aspects/currency.schema.json";
-import ckanExportAspect from "@magda/registry-aspects/ckan-export.schema.json";
-import sourceAspect from "@magda/registry-aspects/source.schema.json";
-
-const aspects = {
-    publishing: datasetPublishingAspect,
-    "dcat-dataset-strings": dcatDatasetStringsAspect,
-    "spatial-coverage": spatialCoverageAspect,
-    "temporal-coverage": temporalCoverageAspect,
-    "dataset-distributions": datasetDistributionsAspect,
-    "dcat-distribution-strings": dcatDistributionStringsAspect,
-    access: accessAspect,
-    provenance: provenanceAspect,
-    "information-security": informationSecurityAspect,
-    "dataset-access-control": datasetAccessControlAspect,
-    "dataset-publisher": datasetPublisherAspect,
-    currency: currencyAspect,
-    "ckan-export": ckanExportAspect,
-    source: sourceAspect
-};
+import ServerError from "./Errors/ServerError";
 
 export type Distribution = {
     title: string;
@@ -144,6 +112,8 @@ export type Dataset = {
     defaultLicense?: string;
 
     accrualPeriodicityRecurrenceRule?: string;
+    ownerId?: string; // --- actual owner of the dataset; Initially set to same as `editingUserId` but can be changed to different user.
+    editingUserId?: string; // --- always populate with current logged-in user id (if available)
     owningOrgUnitId?: string;
     custodianOrgUnitId?: string;
     contactPointDisplay?: string;
@@ -232,12 +202,36 @@ type Access = {
     notes?: string;
 };
 
+const DEFAULT_POLICY_ID = "object.registry.record.owner_only";
+
 function getInternalDatasetSourceAspectData() {
     return {
         id: "magda",
         name: "This Magda metadata creation tool",
         type: "internal",
         url: config.baseExternalUrl
+    };
+}
+
+function getAccessControlAspectData(state: State) {
+    const { dataset } = state;
+    return {
+        ownerId: dataset.editingUserId ? dataset.editingUserId : undefined,
+        orgUnitOwnerId: dataset.owningOrgUnitId
+            ? dataset.owningOrgUnitId
+            : undefined,
+        custodianOrgUnitId: dataset.custodianOrgUnitId
+            ? dataset.custodianOrgUnitId
+            : undefined
+    };
+}
+
+function getPublishingAspectData(state: State) {
+    const { datasetPublishing } = state;
+    return {
+        ...datasetPublishing,
+        state: "draft",
+        publishAsOpenData: {}
     };
 }
 
@@ -307,6 +301,11 @@ function populateDcatDatasetStringAspect(data: RawDataset, state: State) {
 
     if (datasetDcatString?.defaultLicense) {
         state.dataset.defaultLicense = datasetDcatString?.defaultLicense;
+    }
+
+    if (data.aspects?.["dataset-access-control"]?.ownerId) {
+        state.dataset.ownerId =
+            data.aspects?.["dataset-access-control"]?.ownerId;
     }
 
     if (data.aspects?.["dataset-access-control"]?.orgUnitOwnerId) {
@@ -467,8 +466,11 @@ function populateDistributions(data: RawDataset, state: State) {
     }
 }
 
-export async function rawDatasetDataToState(data: RawDataset): Promise<State> {
-    const state = createBlankState();
+export async function rawDatasetDataToState(
+    data: RawDataset,
+    user: User
+): Promise<State> {
+    const state = createBlankState(user);
 
     populateDcatDatasetStringAspect(data, state);
     populateDatasetPublisherAspect(data, state);
@@ -517,7 +519,7 @@ export async function rawDatasetDataToState(data: RawDataset): Promise<State> {
     return state;
 }
 
-export function createBlankState(user?: User): State {
+export function createBlankState(user: User): State {
     return {
         distributions: [],
         processing: false,
@@ -525,6 +527,8 @@ export function createBlankState(user?: User): State {
             title: "",
             languages: ["eng"],
             owningOrgUnitId: user ? user.orgUnitId : undefined,
+            ownerId: user ? user.id : undefined,
+            editingUserId: user ? user.id : undefined,
             defaultLicense: "world"
         },
         datasetPublishing: {
@@ -569,9 +573,10 @@ export function createBlankState(user?: User): State {
     };
 }
 
-// saving data in the local storage for now
-// TODO: consider whether it makes sense to store this in registry as a custom state or something
-export async function loadState(id: string, user?: User): Promise<State> {
+export async function loadStateFromLocalStorage(
+    id: string,
+    user: User
+): Promise<State> {
     const stateString = localStorage[id];
     let state: State;
     if (stateString) {
@@ -592,7 +597,8 @@ export async function loadState(id: string, user?: User): Promise<State> {
         !state.dataset.publisher &&
         typeof config.defaultOrganizationId !== "undefined"
     ) {
-        const org = await fetchOrganization(config.defaultOrganizationId);
+        // --- we turned off cache here
+        const org = await fetchOrganization(config.defaultOrganizationId, true);
         state.dataset.publisher = {
             name: org.name,
             existingId: org.id
@@ -602,13 +608,135 @@ export async function loadState(id: string, user?: User): Promise<State> {
     return state;
 }
 
-export function saveState(state: State, id = createId()) {
-    state = Object.assign({}, state);
+export async function loadStateFromRegistry(
+    id: string,
+    user: User
+): Promise<State> {
+    let record: RawDataset | undefined;
+    try {
+        // --- we turned off cache here
+        record = await fetchRecord(id, ["dataset-draft"], [], false, true);
+    } catch (e) {
+        if (e! instanceof ServerError || e.statusCode !== 404) {
+            // --- mute 404 error as we're gonna create blank status if can't find an existing one
+            throw e;
+        }
+    }
 
+    let state: State | undefined;
+    if (record?.aspects?.["dataset-draft"]?.data) {
+        try {
+            const dehydrated = JSON.parse(record.aspects["dataset-draft"].data);
+            state = {
+                ...dehydrated,
+                dataset: {
+                    ...dehydrated.dataset,
+                    modified:
+                        dehydrated.modified && new Date(dehydrated.modified),
+                    issued: dehydrated.issued && new Date(dehydrated.issued)
+                }
+            };
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    if (!state) {
+        state = createBlankState(user);
+    }
+
+    if (
+        !state.dataset.publisher &&
+        typeof config.defaultOrganizationId !== "undefined"
+    ) {
+        // --- we turned off cache here
+        const org = await fetchOrganization(config.defaultOrganizationId, true);
+        state.dataset.publisher = {
+            name: org.name,
+            existingId: org.id
+        };
+    }
+
+    return state;
+}
+
+export async function loadState(id: string, user: User): Promise<State> {
+    if (config?.featureFlags?.previewAddDataset) {
+        // --- in preview mode, still save to local storage
+        return await loadStateFromLocalStorage(id, user);
+    } else {
+        return await loadStateFromRegistry(id, user);
+    }
+}
+
+export function saveStateToLocalStorage(state: State, id: string) {
+    state = Object.assign({}, state);
     state._lastModifiedDate = new Date();
+
     const dataset = JSON.stringify(state);
     localStorage[id] = dataset;
     return id;
+}
+
+export async function saveStateToRegistry(state: State, id: string) {
+    state = Object.assign({}, state);
+    state._lastModifiedDate = new Date();
+
+    const dataset = JSON.stringify(state);
+    const timestamp = state._lastModifiedDate.toISOString();
+
+    let record: RawDataset | undefined;
+    try {
+        // --- we turned off cache here
+        record = await fetchRecord(id, ["dataset-draft"], [], false, true);
+    } catch (e) {
+        if (e! instanceof ServerError || e.statusCode !== 404) {
+            // --- mute 404 error as we're gonna create one if can't find an existing one
+            throw e;
+        }
+    }
+
+    const datasetDraftAspectData = {
+        data: dataset,
+        timestamp
+    };
+
+    if (!record) {
+        await createDataset(
+            {
+                id,
+                name: "",
+                authnReadPolicyId: DEFAULT_POLICY_ID,
+                aspects: {
+                    "dataset-draft": datasetDraftAspectData,
+                    publishing: getPublishingAspectData(state),
+                    "dataset-access-control": getAccessControlAspectData(state),
+                    source: getInternalDatasetSourceAspectData()
+                }
+            },
+            []
+        );
+    } else {
+        if (!record?.aspects) {
+            record.aspects = {} as any;
+        }
+        record.aspects["dataset-draft"] = {
+            data: dataset,
+            timestamp
+        };
+        await updateDataset(record, []);
+    }
+
+    return id;
+}
+
+export async function saveState(state: State, id = createId()) {
+    if (config?.featureFlags?.previewAddDataset) {
+        // --- in preview mode, still save to local storage
+        return saveStateToLocalStorage(state, id);
+    } else {
+        return await saveStateToRegistry(state, id);
+    }
 }
 
 export function createId(type = "ds") {
@@ -621,12 +749,12 @@ async function ensureBlankDatasetIsSavedToRegistry(
     name: string
 ) {
     try {
-        await fetchRecord(id, [], [], false);
+        // --- we turned off cache here
+        await fetchRecord(id, [], [], false, true);
     } catch (e) {
         if (e.statusCode !== 404) {
             throw e;
         }
-        const { dataset, datasetPublishing } = state;
         // --- if the dataset not exist in registry, save it now
         // --- the dataset should have the same visibility as the current one
         // --- but always be a draft one
@@ -634,29 +762,14 @@ async function ensureBlankDatasetIsSavedToRegistry(
             {
                 id,
                 name,
+                authnReadPolicyId: DEFAULT_POLICY_ID,
                 aspects: {
-                    publishing: {
-                        ...datasetPublishing,
-                        state: "draft",
-                        publishAsOpenData: {}
-                    },
-                    "dataset-access-control": {
-                        orgUnitOwnerId: dataset.owningOrgUnitId
-                            ? dataset.owningOrgUnitId
-                            : undefined,
-                        custodianOrgUnitId: dataset.custodianOrgUnitId
-                            ? dataset.custodianOrgUnitId
-                            : undefined
-                    },
+                    publishing: getPublishingAspectData(state),
+                    "dataset-access-control": getAccessControlAspectData(state),
                     source: getInternalDatasetSourceAspectData()
                 }
             },
-            [],
-            {
-                publishing: datasetPublishingAspect,
-                "dataset-access-control": datasetAccessControlAspect,
-                source: sourceAspect
-            }
+            []
         );
     }
 }
@@ -754,10 +867,7 @@ async function getOrgIdFromAutocompleteChoice(
 
         if (!match) {
             // OK no publisher, lets add it
-            await ensureAspectExists(
-                "organization-details",
-                organizationDetailsAspect
-            );
+            await ensureAspectExists("organization-details");
 
             orgId = uuidv4();
             await createPublisher({
@@ -791,7 +901,6 @@ async function convertStateToDatasetRecord(
 ) {
     const {
         dataset,
-        datasetPublishing,
         spatialCoverage,
         temporalCoverage,
         informationSecurity,
@@ -819,8 +928,9 @@ async function convertStateToDatasetRecord(
     const inputDataset = {
         id: datasetId,
         name: dataset.title,
+        authnReadPolicyId: DEFAULT_POLICY_ID,
         aspects: {
-            publishing: datasetPublishing,
+            publishing: getPublishingAspectData(state),
             "dcat-dataset-strings": buildDcatDatasetStrings(dataset),
             "spatial-coverage": spatialCoverage,
             "temporal-coverage": temporalCoverage,
@@ -830,14 +940,7 @@ async function convertStateToDatasetRecord(
             "ckan-export": ckanExport,
             access: datasetAccess,
             "information-security": informationSecurity,
-            "dataset-access-control": {
-                orgUnitOwnerId: dataset.owningOrgUnitId
-                    ? dataset.owningOrgUnitId
-                    : undefined,
-                custodianOrgUnitId: dataset.custodianOrgUnitId
-                    ? dataset.custodianOrgUnitId
-                    : undefined
-            },
+            "dataset-access-control": getAccessControlAspectData(state),
             currency: {
                 ...currency,
                 supersededBy:
@@ -876,10 +979,6 @@ async function convertStateToDatasetRecord(
 
     if (!isUpdate) {
         inputDataset.aspects["source"] = getInternalDatasetSourceAspectData();
-    }
-
-    if (!inputDataset.aspects["dataset-access-control"].orgUnitOwnerId) {
-        delete inputDataset.aspects["dataset-access-control"];
     }
 
     return inputDataset;
@@ -929,7 +1028,7 @@ export async function createDatasetFromState(
         state,
         setState
     );
-    await createDataset(datasetRecord, distributionRecords, aspects);
+    await createDataset(datasetRecord, distributionRecords);
 }
 
 export async function updateDatasetFromState(
@@ -953,5 +1052,41 @@ export async function updateDatasetFromState(
         setState,
         true
     );
-    await updateDataset(datasetRecord, distributionRecords, aspects);
+    await updateDataset(datasetRecord, distributionRecords);
+}
+
+/**
+ * This function will submit the dataset using different API endpoints (depends on whether the dataset has been create or not)
+ * It will also delete any temporary draft data from the `dataset-draft` aspect.
+ *
+ * @export
+ * @param {string} datasetId
+ * @param {State} state
+ * @param {React.Dispatch<React.SetStateAction<State>>} setState
+ */
+export async function submitDatasetFromState(
+    datasetId: string,
+    state: State,
+    setState: React.Dispatch<React.SetStateAction<State>>
+) {
+    let recordExist: boolean = false;
+    try {
+        // --- turned off cache
+        if (await fetchRecord(datasetId, [], [], false, true)) {
+            recordExist = true;
+        }
+    } catch (e) {
+        if (e! instanceof ServerError || e.statusCode !== 404) {
+            // --- mute 404 error
+            throw e;
+        }
+    }
+
+    if (recordExist) {
+        await updateDatasetFromState(datasetId, state, setState);
+    } else {
+        await createDatasetFromState(datasetId, state, setState);
+    }
+
+    await deleteRecordAspect(datasetId, "dataset-draft");
 }

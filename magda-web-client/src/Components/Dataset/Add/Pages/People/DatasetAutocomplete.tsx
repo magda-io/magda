@@ -2,11 +2,7 @@ import React from "react";
 import debouncePromise from "debounce-promise";
 
 import { searchDatasets } from "api-clients/SearchApis";
-import {
-    DatasetAutocompleteChoice,
-    saveState,
-    createBlankState
-} from "../../DatasetAddCommon";
+import { DatasetAutocompleteChoice, createId } from "../../DatasetAddCommon";
 import ASyncSelect, { Async } from "react-select/async";
 import ReactSelectStyles from "Components/Common/react-select/ReactSelectStyles";
 import { OptionProps } from "react-select/src/components/Option";
@@ -132,11 +128,8 @@ export default function DatasetAutocomplete(props: Props) {
                             label: `Add new: "${term}"`,
                             isCustomItem: true,
                             itemSelectHandler: () => {
-                                const newDatasetState = createBlankState(
-                                    props.user
-                                );
-                                newDatasetState.dataset.title = term;
-                                const newDatasetId = saveState(newDatasetState);
+                                // --- only generate id here will create datasets when submit
+                                const newDatasetId = createId();
 
                                 addChoice({
                                     existingId: newDatasetId,
