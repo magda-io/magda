@@ -82,14 +82,18 @@ class RecordsServiceRO(
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiSuccess (Success 200) {json} Response the record detail
     * @apiSuccessExample {json} Response:
-    *  [
-    *      {
-    *          "id": "string",
-    *          "name": "string",
-    *          "aspects": {},
-    *          "sourceTag": "string"
-    *      }
-    *  ]
+    *  {
+    *       "hasMore": true,
+    *       "nextPageToken": "2344", 
+    *       "records": [
+    *           {
+    *               "id": "string",
+    *               "name": "string",
+    *               "aspects": {},
+    *               "sourceTag": "string"
+    *           }
+    *       ]
+    *  }
     * @apiUse GenericError
     */
   @ApiOperation(
