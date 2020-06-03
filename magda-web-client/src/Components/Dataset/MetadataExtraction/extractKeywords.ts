@@ -4,6 +4,7 @@ import toString from "nlcst-to-string";
 import { isValidKeyword } from "api-clients/VocabularyApis";
 import uniq from "lodash/uniq";
 import { config } from "config";
+import { ExtractedContents, FileDetails } from ".";
 
 /** The maximum number of characters to feed into retext (input after this char length will be trimmed off) */
 const MAX_CHARACTERS_FOR_EXTRACTION = 150000;
@@ -38,21 +39,20 @@ function cleanUpKeywords(keywords: string[]) {
  * Extract keywords from text based file formats
  */
 export async function extractKeywords(
-    input: {
-        text: string;
-        keywords: string[];
-        largeTextBlockIdentified: boolean;
-    },
-    output: { keywords: string[] }
+    _input: FileDetails,
+    depInput: ExtractedContents
 ) {
     let keywords = [] as string[];
 
     // please note: `largeTextBlockIdentified` can be undefined
     // only spreadsheet like source will set this field
-    if (input.text && input.largeTextBlockIdentified !== false) {
+    if (depInput.text && depInput.largeTextBlockIdentified !== false) {
         // Only take up to a certain length - anything longer results in massive delays and the browser
         // prompting with a "Should I stop this script?" warning.
-        const trimmedText = input.text.slice(0, MAX_CHARACTERS_FOR_EXTRACTION);
+        const trimmedText = depInput.text.slice(
+            0,
+            MAX_CHARACTERS_FOR_EXTRACTION
+        );
 
         const candidateKeywords = keywords.concat(
             await getKeywordsFromText(trimmedText)
@@ -71,12 +71,7 @@ export async function extractKeywords(
         keywords = [...validatedKeywords, ...candidateKeywords];
     }
 
-    // add keywords from header / cells if applicable
-    if (input.keywords) {
-        keywords = [...keywords, ...input.keywords];
-    }
-
-    output.keywords = cleanUpKeywords(keywords).slice(0, 10);
+    return { keywords: keywords = cleanUpKeywords(keywords).slice(0, 10) };
 }
 
 function getKeywordsFromText(

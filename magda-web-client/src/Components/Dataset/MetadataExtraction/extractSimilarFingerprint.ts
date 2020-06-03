@@ -1,11 +1,20 @@
+import { FileDetails, ExtractedContents } from ".";
+
 /**
  * Extract a frequency histogram fingerprint for finding similar files
  */
-export function extractSimilarFingerprint(input, output) {
-    if (input.text) {
-        output.similarFingerprint = fingerprint(txtTransform(input.text));
+export function extractSimilarFingerprint(
+    input: FileDetails,
+    { text }: ExtractedContents
+): Promise<{ similarFingerprint: Uint32Array[] }> {
+    if (text) {
+        return Promise.resolve({
+            similarFingerprint: fingerprint(txtTransform(text))
+        });
     } else {
-        output.similarFingerprint = fingerprint(input.array);
+        return Promise.resolve({
+            similarFingerprint: fingerprint(input.array)
+        });
     }
 }
 
@@ -13,14 +22,14 @@ export function extractSimilarFingerprint(input, output) {
  * Fingerprint text files so that comparison is case insensitive
  * whitespaces are ignored
  */
-function txtTransform(text) {
+function txtTransform(text: string) {
     return text.replace(/\s+/g, "").toLowerCase();
 }
 
 /**
  * Calculate fingerprint
  */
-function fingerprint(data) {
+function fingerprint(data: string | Uint8Array): Uint32Array[] {
     const hash = new Uint32Array(256);
     hash.fill(0);
     for (let i = 0; i < data.length; i++) {

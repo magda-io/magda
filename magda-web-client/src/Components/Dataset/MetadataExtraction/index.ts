@@ -1,49 +1,82 @@
-// different extractors/processors
-import { extractText } from "./extractText";
+import extractContents from "./extractContents";
 import { extractEqualHash } from "./extractEqualHash";
 import { extractSimilarFingerprint } from "./extractSimilarFingerprint";
 import { extractExtents } from "./extractExtents";
 import { extractKeywords } from "./extractKeywords";
+import { WorkBook } from "xlsx/types";
+import merge from "lodash/merge";
+import { TemporalCoverage, SpatialCoverage } from "../Add/DatasetAddCommon";
 
-export type ExtractorInput = {
+/**
+ * Details extracted from the file on drag-drop
+ */
+export type FileDetails = {
     file?: File;
     arrayBuffer?: ArrayBuffer;
-    array?: Uint8Array;
+    array: Uint8Array;
 };
 
-export type Extractor = (input: ExtractorInput, output: any) => void;
+/**
+ * Contents of the initial extraction of the file
+ */
+export type ExtractedContents = {
+    format?: string;
+    text?: string;
+    workbook?: WorkBook;
+    datasetTitle?: string;
+    author?: string;
+    modified?: string;
+    keywords?: string[];
+    largeTextBlockIdentified?: boolean;
+};
 
-// different extractors/processors
-export const extractors: Extractor[] = [
-    extractText,
+/**
+ * A processing function that uses ExtractedContents
+ */
+export type Processor = (
+    input: FileDetails,
+    depInput: ExtractedContents
+) => Promise<MetadataExtractionOutput>;
+
+export type MetadataExtractionOutput = ExtractedContents & {
+    equalHash?: number;
+    similarFingerprint?: Uint32Array[];
+    temporalCoverage?: TemporalCoverage;
+    spatialCoverage?: SpatialCoverage;
+};
+
+export const dependentExtractors: Processor[] = [
     extractEqualHash,
     extractSimilarFingerprint,
     extractExtents,
     extractKeywords
 ];
 
-function delay(time) {
-    return new Promise(resolve => setTimeout(resolve, time));
-}
+export async function runExtractors(
+    input: FileDetails,
+    update: (progress: number) => void
+): Promise<MetadataExtractionOutput> {
+    const extractorCount = dependentExtractors.length + 1;
 
-export async function runExtractors(input: ExtractorInput, update: any) {
-    for (const extractor of extractors) {
-        const index = extractors.indexOf(extractor);
-        try {
-            console.log("Processing", index + 1, "of", extractors.length);
-            const output: any = {};
-            output._progress =
-                ((extractors.indexOf(extractor) + 0.1) / extractors.length) *
-                100;
-            update(output);
-            await extractor(input, output);
-            output._progress =
-                ((extractors.indexOf(extractor) + 1) / extractors.length) * 100;
-            update(output);
-            await delay(100);
-        } catch (e) {
-            // even if one of the modules fail, we keep going
-            console.error(e);
-        }
-    }
+    // Extract the contents (text, XLSX workbook)
+    const contents = await extractContents(input);
+
+    // Concurrently feed the contents into various extractors that are dependent on it
+    let doneCount = 0;
+    const extractors = dependentExtractors.map(extractor =>
+        extractor(input, contents)
+            .catch(e => {
+                // even if one of the modules fail, we keep going
+                console.error(e);
+                return {};
+            })
+            .then(result => {
+                doneCount++;
+                update((doneCount + 1) / extractorCount);
+                return result;
+            })
+    );
+
+    const extractorResults = await Promise.all(extractors);
+    return extractorResults.reduce(merge, contents);
 }

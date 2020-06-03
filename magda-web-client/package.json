@@ -87,6 +87,7 @@
     "@types/react-select": "^3.0.0",
     "@types/rrule": "^2.2.9",
     "@types/smoothscroll-polyfill": "^0.3.1",
+    "@types/xlsx": "^0.0.36",
     "babel-eslint": "9.0.0",
     "babel-loader": "8.0.5",
     "browser-detect": "^0.2.22",

@@ -65,8 +65,8 @@ export type Distribution = {
     author?: string;
     keywords?: string[];
     themes?: string[];
-    temporalCoverage?: any;
-    spatialCoverage?: any;
+    temporalCoverage?: TemporalCoverage;
+    spatialCoverage?: SpatialCoverage;
 
     similarFingerprint?: any;
     equalHash?: string;
@@ -218,7 +218,7 @@ export type State = {
     error: Error | null;
 };
 
-type TemporalCoverage = {
+export type TemporalCoverage = {
     intervals: Interval[];
 };
 

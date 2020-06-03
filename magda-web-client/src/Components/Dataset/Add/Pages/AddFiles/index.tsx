@@ -2,12 +2,12 @@ import React from "react";
 import { connect } from "react-redux";
 import { withRouter, RouterProps } from "react-router";
 import FileDrop from "react-file-drop";
+import moment from "moment";
 
 import ToolTip from "Components/Dataset/Add/ToolTip";
 import DatasetFile from "Components/Dataset/Add/DatasetFile";
 import AddDatasetLinkSection from "Components/Dataset/Add/AddDatasetLinkSection";
 import StorageOptionsSection from "Components/Dataset/Add/StorageOptionsSection";
-
 import { getFiles } from "helpers/readFile";
 
 import {
@@ -22,6 +22,10 @@ import withAddDatasetState from "../../withAddDatasetState";
 import uniq from "lodash/uniq";
 import { config } from "config";
 import { User } from "reducers/userManagementReducer";
+import {
+    FileDetails,
+    MetadataExtractionOutput
+} from "Components/Dataset/MetadataExtraction";
 
 import "./index.scss";
 import "../../DatasetAddCommon.scss";
@@ -43,10 +47,25 @@ type Props = {
     isEditView: boolean;
 };
 
+type RunExtractors = (
+    input: FileDetails,
+    update: (progress: number) => void
+) => Promise<MetadataExtractionOutput>;
+
 class AddFilesPage extends React.Component<Props & RouterProps> {
-    constructor(props) {
-        super(props);
-    }
+    /**
+     * Promise for importing the extractors, that begins as soon as the component
+     * is mounted. If it's not finished by the time the extractors are needed, then
+     * the extraction process will simply wait for the import to finish before
+     * beginning, and it'll be part of the same loading state for the user.
+     */
+    importRunExtractorsPromise?: Promise<RunExtractors>;
+
+    componentDidMount = () => {
+        this.importRunExtractorsPromise = import(
+            "Components/Dataset/MetadataExtraction"
+        ).then(mod => mod.runExtractors);
+    };
 
     async onBrowse() {
         this.addFiles(await getFiles("*.*"));
@@ -96,7 +115,14 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
         }
     }
 
+    baseStorageApiPath = (distId: string) =>
+        `${DATASETS_BUCKET}/${this.props.datasetId}/${distId}`;
+
     addFiles = async (fileList: FileList, event: any = null) => {
+        this.props.setState({
+            e: undefined
+        });
+
         for (let i = 0; i < fileList.length; i++) {
             const thisFile = fileList.item(i);
 
@@ -107,11 +133,7 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
 
             const distRecordId = createId("dist");
 
-            const shouldUpload = this.props.stateData.shouldUploadToStorageApi;
-
-            const baseStorageApiPath = `${DATASETS_BUCKET}/${this.props.datasetId}/${distRecordId}`;
-
-            const newFile: Distribution = {
+            const dist: Distribution = {
                 id: distRecordId,
                 datasetTitle: toTitleCase(
                     turnPunctuationToSpaces(
@@ -125,155 +147,114 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                 _state: DistributionState.Added,
                 license: "world",
                 creationSource: DistributionSource.File,
-                downloadURL: shouldUpload
-                    ? `${config.storageApiUrl}${baseStorageApiPath}`
+                downloadURL: this.props.stateData.shouldUploadToStorageApi
+                    ? `${config.storageApiUrl}${this.baseStorageApiPath(
+                          distRecordId
+                      )}`
                     : undefined
             };
 
-            const formData = new FormData();
-            formData.append(thisFile.name, thisFile);
+            const distAfterProcessing = await this.processFile(thisFile, dist);
 
-            const fetchUrl = `${config.storageApiUrl}upload/${baseStorageApiPath}`;
-            // TODO: Add this when we put drafts in the registry
-            //?recordId=${distRecordId}`;
+            console.log(distAfterProcessing);
 
-            const uploadPromise = shouldUpload
-                ? fetch(fetchUrl, {
-                      ...config.credentialsFetchOptions,
-                      method: "POST",
-                      body: formData
-                  }).then(res => {
-                      if (res.status !== 200) {
-                          throw new Error("Could not upload file");
-                      }
-                  })
-                : Promise.resolve();
-
-            const processPromise = processFile(thisFile, update => {
+            try {
                 this.props.setState((state: State) => {
                     const newState: State = {
                         ...state,
                         distributions: state.distributions.slice(0)
                     };
-                    Object.assign(newFile, update);
+
+                    const {
+                        dataset,
+                        temporalCoverage,
+                        spatialCoverage
+                    } = state;
+
+                    if (
+                        (!dataset.title || dataset.title === "") &&
+                        distAfterProcessing?.datasetTitle
+                    ) {
+                        dataset.title = distAfterProcessing.datasetTitle;
+                    }
+
+                    for (let key of ["keywords", "themes"]) {
+                        const existing = dataset[key]
+                            ? (dataset[key] as KeywordsLike)
+                            : {
+                                  keywords: [],
+                                  derived: false
+                              };
+                        const fileKeywords: string[] =
+                            distAfterProcessing[key] || [];
+
+                        dataset[key] = {
+                            keywords: uniq(
+                                existing.keywords.concat(fileKeywords)
+                            ),
+                            derived: existing.derived || fileKeywords.length > 0
+                        };
+                    }
+
+                    if (dist.spatialCoverage) {
+                        Object.assign(
+                            spatialCoverage,
+                            distAfterProcessing.spatialCoverage
+                        );
+                    }
+
+                    if (dist.temporalCoverage) {
+                        temporalCoverage.intervals = temporalCoverage.intervals.concat(
+                            distAfterProcessing.temporalCoverage?.intervals ||
+                                []
+                        );
+                    }
+
+                    if (
+                        config.datasetThemes &&
+                        config.datasetThemes.length &&
+                        newState.dataset &&
+                        newState.dataset.keywords &&
+                        newState.dataset.keywords.keywords &&
+                        newState.dataset.keywords.keywords.length
+                    ) {
+                        const keywords = newState.dataset.keywords.keywords.map(
+                            item => item.toLowerCase()
+                        );
+                        const themesBasedOnKeywords = config.datasetThemes.filter(
+                            theme =>
+                                keywords.indexOf(theme.toLowerCase()) !== -1
+                        );
+                        if (themesBasedOnKeywords.length) {
+                            const existingThemesKeywords = newState.dataset
+                                .themes
+                                ? newState.dataset.themes.keywords
+                                : [];
+                            newState.dataset.themes = {
+                                keywords: themesBasedOnKeywords.concat(
+                                    existingThemesKeywords
+                                ),
+                                derived: true
+                            };
+                        }
+                    }
+
+                    console.log(newState.dataset);
+
                     return newState;
                 });
-            });
+            } catch (e) {
+                console.error(e);
+            }
 
-            Promise.all([uploadPromise, processPromise])
-                .then(([uploadResponse, processResult]) => {
-                    this.props.setState((state: State) => {
-                        const newState: State = {
-                            ...state,
-                            distributions: state.distributions.slice(0)
-                        };
-
-                        let file: any = newFile;
-                        const {
-                            dataset,
-                            temporalCoverage,
-                            spatialCoverage
-                        } = state;
-                        for (const key in file) {
-                            // these fields don't belong in a distribution
-                            switch (key) {
-                                case "datasetTitle":
-                                    if (
-                                        !dataset["title"] ||
-                                        dataset["title"] === ""
-                                    ) {
-                                        dataset["title"] = file[key];
-                                    }
-                                    file[key] = undefined;
-                                    break;
-                                case "keywords":
-                                case "themes":
-                                    const existing = dataset[key]
-                                        ? (dataset[key] as KeywordsLike)
-                                        : {
-                                              keywords: [],
-                                              derived: false
-                                          };
-                                    const fileKeywords: string[] =
-                                        file[key] || [];
-
-                                    dataset[key] = {
-                                        keywords: uniq(
-                                            existing.keywords.concat(
-                                                fileKeywords
-                                            )
-                                        ),
-                                        derived:
-                                            existing.derived ||
-                                            fileKeywords.length > 0
-                                    };
-                                    file[key] = undefined;
-                                    break;
-                                case "spatialCoverage":
-                                    Object.assign(spatialCoverage, file[key]);
-                                    file[key] = undefined;
-                                    break;
-                                case "temporalCoverage":
-                                    temporalCoverage.intervals = temporalCoverage.intervals.concat(
-                                        file[key].intervals
-                                    );
-                                    file[key] = undefined;
-                                    break;
-                            }
-                        }
-
-                        if (
-                            config.datasetThemes &&
-                            config.datasetThemes.length &&
-                            newState.dataset &&
-                            newState.dataset.keywords &&
-                            newState.dataset.keywords.keywords &&
-                            newState.dataset.keywords.keywords.length
-                        ) {
-                            const keywords = newState.dataset.keywords.keywords.map(
-                                item => item.toLowerCase()
-                            );
-                            const themesBasedOnKeywords = config.datasetThemes.filter(
-                                theme =>
-                                    keywords.indexOf(theme.toLowerCase()) !== -1
-                            );
-                            if (themesBasedOnKeywords.length) {
-                                const existingThemesKeywords = newState.dataset
-                                    .themes
-                                    ? newState.dataset.themes.keywords
-                                    : [];
-                                newState.dataset.themes = {
-                                    keywords: themesBasedOnKeywords.concat(
-                                        existingThemesKeywords
-                                    ),
-                                    derived: true
-                                };
-                            }
-                        }
-
-                        return newState;
-                    });
-                })
-                .catch(err => {
-                    this.props.setState((state: State) => {
-                        return {
-                            ...state,
-                            error: err,
-                            distributions: state.distributions.filter(
-                                dist => dist.id !== distRecordId
-                            )
-                        };
-                    });
-                });
-
-            this.props.setState((state: State) => {
-                const newState = {
-                    ...state,
-                    distributions: state.distributions.slice(0)
-                };
-                newState.distributions.push(newFile);
-                return newState;
-            });
+            // this.props.setState((state: State) => {
+            //     const newState = {
+            //         ...state,
+            //         distributions: state.distributions.slice(0)
+            //     };
+            //     newState.distributions.push(dist);
+            //     return newState;
+            // });
         }
         this.updateLastModifyDate();
     };
@@ -320,6 +301,11 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
 
         if (this.props.stateData.shouldUploadToStorageApi) {
             const distToDelete = this.props.stateData.distributions[index];
+            if (!AddFilesPage.canDeleteFile(distToDelete)) {
+                throw new Error(
+                    "Tried to delete file that hasn't been fully processed"
+                );
+            }
 
             // set deleting
             this.props.setState((state: State) => {
@@ -336,55 +322,71 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                 };
             });
 
-            // While delete is in progress, warn the user not to close the tab if they try
-            const unloadEventListener = (e: BeforeUnloadEvent) => {
-                // Preventing default makes a warning come up in FF
-                e.preventDefault();
-                // Setting a return value shows the warning in Chrome
-                e.returnValue =
-                    "Closing this page might cause the file not to be fully deleted, are you sure?";
-                // The return value is shown inside the prompt in IE
-            };
-
             // warn before closing tab
-            window.addEventListener("beforeunload", unloadEventListener);
-
-            // fetch to delete distribution
-            fetch(
-                `${config.storageApiUrl}${DATASETS_BUCKET}/${this.props.datasetId}/${distToDelete.id}`,
-                {
-                    ...config.credentialsFetchOptions,
-                    method: "DELETE"
-                }
-            )
-                .then(res => {
-                    if (res.status !== 200) {
-                        throw new Error("Could not delete file");
-                    }
-
-                    return new Promise(resolve => {
-                        setTimeout(resolve, 2000);
-                    });
-                })
-                .then(() => {
-                    // remove dist from state
-                    removeDist();
-                })
-                .catch(err => {
-                    // TODO: MAKE IT REALLY CLEAR HOW BAD THIS IS
-                    console.error(err);
-                    throw err;
-                })
-                .finally(() => {
-                    window.removeEventListener(
-                        "beforeunload",
-                        unloadEventListener
-                    );
-                });
+            this.deleteFile(distToDelete).then(() =>
+                // remove dist from state
+                removeDist()
+            );
         } else {
             removeDist();
         }
     };
+
+    /**
+     * Deletes the file belonging to a distribution
+     */
+    private deleteFile(distToDelete: Distribution) {
+        // While delete is in progress, warn the user not to close the tab if they try
+        const unloadEventListener = (e: BeforeUnloadEvent) => {
+            // Preventing default makes a warning come up in FF
+            e.preventDefault();
+            // Setting a return value shows the warning in Chrome
+            e.returnValue =
+                "Closing this page might cause the file not to be fully deleted, are you sure?";
+            // The return value is shown inside the prompt in IE
+        };
+
+        window.addEventListener("beforeunload", unloadEventListener);
+
+        // fetch to delete distribution - try to delete even if we hadn't completed the initial upload
+        // just to be safe
+        return fetch(
+            `${config.storageApiUrl}${DATASETS_BUCKET}/${this.props.datasetId}/${distToDelete.id}`,
+            {
+                ...config.credentialsFetchOptions,
+                method: "DELETE"
+            }
+        )
+            .then(res => {
+                if (res.status !== 200) {
+                    throw new Error("Could not delete file");
+                }
+            })
+            .catch(err => {
+                alert(
+                    `Failed to remove file ${distToDelete.title} from Magda's storage. If you removed this ` +
+                        `file because it shouldn't be stored on Magda, please contact ${config.defaultContactEmail}` +
+                        `to ensure that it's properly removed.`
+                );
+
+                console.error(err);
+                throw err;
+            })
+            .finally(() => {
+                window.removeEventListener("beforeunload", unloadEventListener);
+            });
+    }
+
+    /**
+     * Determines whether it's safe to try to delete a distribution's file in the storage API - i.e.
+     * it's in a status where it's finished processing.
+     */
+    private static canDeleteFile(distribution: Distribution) {
+        return (
+            distribution._state === DistributionState.Ready ||
+            distribution._state === DistributionState.Drafting
+        );
+    }
 
     renderStorageOption() {
         const state = this.props.stateData;
@@ -430,6 +432,236 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
             />
         );
     }
+
+    async processFile(
+        thisFile: File,
+        dist: Distribution
+    ): Promise<Distribution> {
+        /** Updates a part of this particular distribution */
+        const updateThisDist = this.updateDistPartial(thisFile, dist);
+
+        // Show user we're starting to read
+        updateThisDist({
+            _state: DistributionState.Reading
+        });
+
+        /** Should we be uploading this file too, or just reading metadata locally? */
+        const shouldUpload = this.props.stateData.shouldUploadToStorageApi;
+
+        /**
+         * Progress towards uploading, as a fraction between 0 and 1. Note that this
+         * is fake because we can't track upload progress
+         */
+        let uploadProgress = 0;
+        let extractionProgress = 0;
+
+        /**
+         * Updates the total progress of file processing, taking into account metadata
+         * extraction and uploading if applicable
+         */
+        const updateTotalProgress = () => {
+            updateThisDist({
+                _progress: Math.floor(
+                    shouldUpload
+                        ? extractionProgress * 50 + uploadProgress * 50
+                        : extractionProgress * 100
+                )
+            });
+        };
+
+        /** Handles a new progress callback from uploading */
+        const handleUploadProgress = (progress: number) => {
+            uploadProgress = progress;
+            updateTotalProgress();
+        };
+
+        /** Handles a new progress callback from extraction */
+        const handleExtractionProgress = (progress: number) => {
+            extractionProgress = progress;
+            updateTotalProgress();
+        };
+
+        /**
+         * Promise tracking the upload of a file if relevant - if upload
+         * isn't needed, simply resolves instantly
+         */
+        const uploadPromise = shouldUpload
+            ? this.uploadFile(thisFile, dist, handleUploadProgress)
+            : Promise.resolve();
+
+        const arrayBuffer = await readFileAsArrayBuffer(thisFile);
+        const input = {
+            file: thisFile,
+            arrayBuffer,
+            array: new Uint8Array(arrayBuffer)
+        };
+
+        // Now we've finished the read, start processing
+        updateThisDist({ _state: DistributionState.Processing });
+
+        /**
+         * Function for running all extractors in the correct order, which returns
+         * a promise that completes when extraction is complete
+         */
+        const runExtractors = await this.importRunExtractorsPromise!;
+
+        try {
+            // Wait for extractors and upload to finish
+            const output = await runExtractors(input, handleExtractionProgress);
+            await uploadPromise;
+
+            // Now we're ready - the extractors and upload will have uploaded the
+            // distribution directly, so no need to do anything with the results of
+            // those promises.
+            updateThisDist({
+                _state: DistributionState.Ready
+            });
+
+            return {
+                ...dist,
+                format: output.format,
+                title: output.datasetTitle || dist.title,
+                modified: moment(output.modified).toDate(),
+                keywords: output.keywords,
+                equalHash: output.equalHash?.toString(),
+                temporalCoverage: output.temporalCoverage,
+                spatialCoverage: output.spatialCoverage
+            };
+        } catch (e) {
+            // Something went wrong - remove the distribution and show the error
+            console.error(e);
+
+            /** Removes the distribution and displays the error */
+            const removeDist = () => {
+                this.props.setState((state: State) => {
+                    return {
+                        ...state,
+                        error: e,
+                        distributions: state.distributions.filter(
+                            thisDist => dist.id !== thisDist.id
+                        )
+                    };
+                });
+            };
+
+            if (shouldUpload) {
+                // If we tried to upload and something went wrong, make sure we get
+                // rid of the file in storage as well if possible
+                uploadPromise
+                    .catch(() => {})
+                    .then(() =>
+                        fetch(
+                            `${config.storageApiUrl}${this.baseStorageApiPath(
+                                dist.id!
+                            )}/${thisFile.name}`,
+                            {
+                                ...config.credentialsFetchOptions,
+                                method: "DELETE"
+                            }
+                        )
+                    )
+                    .then(res => {
+                        // 404 is fine because it means the file never got created.
+                        if (res.status !== 200 && res.status !== 404) {
+                            throw new Error("Could not delete file");
+                        }
+
+                        removeDist();
+                    })
+                    .catch(e => {
+                        console.error(e);
+
+                        // This happens if the DELETE fails, which is really catastrophic.
+                        // We need to warn the user that manual cleanup may be required.
+                        this.props.setState((state: State) => {
+                            return {
+                                ...state,
+                                error: new Error(
+                                    "Adding the file failed, but Magda wasn't able to remove it from the system - if it's important that this file not remain in Magda, contact " +
+                                        config.defaultContactEmail
+                                ),
+                                distributions: state.distributions.filter(
+                                    thisDist => dist.id !== thisDist.id
+                                )
+                            };
+                        });
+                    });
+            } else {
+                removeDist();
+            }
+
+            throw e;
+        }
+    }
+
+    updateDistPartial = (file: File, dist: Distribution) => (
+        updatedDist: Partial<Distribution>
+    ) => {
+        this.props.setState((state: State) => {
+            const distIndex = state.distributions.findIndex(
+                thisDist => thisDist.id === dist.id
+            );
+
+            // Clone the existing dist array
+            const newDists = state.distributions.concat();
+            const mergedDist = {
+                ...dist,
+                ...updatedDist
+            };
+
+            // If dist already exists
+            if (distIndex >= 0) {
+                // Splice in the updated one
+                newDists.splice(distIndex, 1, mergedDist);
+            } else {
+                // Add the new one
+                newDists.push(mergedDist);
+            }
+
+            const newState: State = {
+                ...state,
+                distributions: newDists
+            };
+
+            return newState;
+        });
+    };
+
+    uploadFile = (
+        file: File,
+        dist: Distribution,
+        onProgressUpdate: (progress: number) => void
+    ) => {
+        const formData = new FormData();
+        formData.append(file.name, file);
+
+        const fetchUrl = `${
+            config.storageApiUrl
+        }upload/${this.baseStorageApiPath(dist.id!)}`;
+        // TODO: Add this when we put drafts in the registry
+        //?recordId=${distRecordId}`;
+
+        const uploadPromise = fetch(fetchUrl, {
+            ...config.credentialsFetchOptions,
+            method: "POST",
+            body: formData
+        }).then(res => {
+            if (res.status !== 200) {
+                throw new Error("Could not upload file");
+            }
+        });
+
+        let uploadProgress = 0;
+        const fakeProgressInterval = setInterval(() => {
+            uploadProgress += (1 - uploadProgress) / 4;
+            onProgressUpdate(uploadProgress);
+        }, 1000);
+
+        return uploadPromise.finally(() => {
+            uploadProgress = 1;
+            clearInterval(fakeProgressInterval);
+        });
+    };
 
     render() {
         const { stateData: state, isEditView } = this.props;
@@ -606,28 +838,6 @@ function readFileAsArrayBuffer(file: any): Promise<ArrayBuffer> {
         fileReader.readAsArrayBuffer(file);
     });
 }
-
-async function processFile(thisFile: any, update: Function) {
-    update({ _state: DistributionState.Reading });
-
-    const input: any = {
-        file: thisFile
-    };
-
-    input.arrayBuffer = await readFileAsArrayBuffer(thisFile);
-    input.array = new Uint8Array(input.arrayBuffer);
-
-    update({ _state: DistributionState.Processing });
-
-    const runExtractors = await import(
-        "Components/Dataset/MetadataExtraction"
-    ).then(mod => mod.runExtractors);
-
-    await runExtractors(input, update);
-
-    update({ _state: DistributionState.Ready });
-}
-
 function mapStateToProps(state, old) {
     let dataset = old.match.params.datasetId;
     return {
