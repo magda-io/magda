@@ -21,7 +21,7 @@ case class OrderByDef(field: String, dir: SQLSyntax = SQLSyntax.desc) {
     )
 
     if (jsonPathItems.size > 0) {
-      sqls"${columnRef}->${SQLSyntax.join(jsonPathItems.map(item => sqls"${item}"), sqls"->", false)}"
+      sqls"${columnRef}->${SQLSyntax.join(jsonPathItems.map(item => sqls"${item}"), sqls"->", false)}::TEXT"
     } else {
       columnRef
     }
