@@ -121,7 +121,7 @@ object SqlHelper {
           ) =>
         sqls"""
              aspectid = $aspectId AND (data #>> string_to_array(${path
-          .mkString(",")}, ','))::${value.postgresType} $sqlComparator ${value.value}
+          .mkString(",")}, ','))::${value.postgresType} $sqlComparator ${value.value}::${value.postgresType}
         """
       case AspectQueryAnyInArray(
           aspectId,
