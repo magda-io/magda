@@ -44,8 +44,38 @@ class RecordsServiceRO(
     * @apiParam (query) {number} start The index of the first record to retrieve. When possible, specify pageToken instead as it will result in better performance. If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve.
     * @apiParam (query) {number} limit The maximum number of records to receive. The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
     * @apiParam (query) {boolean} dereference true to automatically dereference links to other records; false to leave them as links. Dereferencing a link means including the record itself where the link would be. Dereferencing only happens one level deep, regardless of the value of this parameter.
-    * @apiParam (query) {string[]} aspectQuery Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value’, url encoded. NOTE: This is an early stage API and may change greatly in the future
-    * @apiParam (query) {string[]} aspectOrQuery Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value', url encoded. Queries passing via this parameter will be grouped with OR logic. NOTE: This is an early stage API and may change greatly in the future
+    * @apiParam (query) {string[]} aspectQuery Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value’, url encoded. 
+    * 
+    *   If more than one queries is passed through `aspectOrQuery` parameters, they will be grouped with `AND` logic.  
+    * 
+    *   NOTE: This is an early stage API and may change greatly in the future.
+    *   
+    *   Support the following operators in `aspectQuery` or `aspectOrQuery`:
+    *   - `:`   equal
+    *   - `:!`  not equal
+    *   - `:?`  pattern Matching in the field. Use Postgresql [ILIKE](https://www.postgresql.org/docs/8.3/functions-matching.html#FUNCTIONS-LIKE) operator (case insenstive). 
+    *     - e.g. `:?%rating%` will match the field contains keyword `rating`
+    *     - e.g. `:?rating%` will match the field starts with keyword `rating`
+    *   - `:!?` pattern Matching in the field. Use Postgresql [ILIKE](https://www.postgresql.org/docs/8.3/functions-matching.html#FUNCTIONS-LIKE) operator (case insenstive)
+    *   - `:>`  greater than
+    *   - `:>=` greater than or equal to 
+    *   - `:<`  less than
+    *   - `:<=` less than or equal to 
+    *
+    *   Value after the operator should be in `application/x-www-form-urlencoded` MIME format
+    *   
+    *   Example URL with aspectQuery `dcat-dataset-strings.title:?%rating%` (Search keyword `rating` in `dcat-dataset-strings` aspect `title` field)
+    * 
+    *   `/v0/records?limit=100&optionalAspect=source&aspect=dcat-dataset-strings&aspectQuery=dcat-dataset-strings.title:?%2525rating%2525`
+    * 
+    * @apiParam (query) {string[]} aspectOrQuery Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value', url encoded. 
+    * 
+    *   If more than one queries is passed through `aspectOrQuery` parameters, they will be grouped with `OR` logic.
+    * 
+    *   `aspectOrQuery` supports the same operator list as `aspectQuery`. 
+    * 
+    *   NOTE: This is an early stage API and may change greatly in the future
+    * 
     * @apiParam (query) {string} orderBy Specify the field to sort the result. Aspect field can be supported in a format like aspectId.path.to.field
     * @apiParam (query) {string} orderByDir Specify the order by direction. Either `asc` or `desc`
     * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id

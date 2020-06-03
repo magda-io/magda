@@ -59,14 +59,16 @@ object AspectQuery {
     * Support the following operators for with value query in `aspectQuery` or aspectOrQuery`:
     * `:`   equal
     * `:!`  not equal
-    * `:?`  like search keyword in field i.e. SQLSyntax.like
-    * `:!?` Not like search keyword in field i.e. SQLSyntax.notLike
+    * `:?`  pattern Matching in the field. Use Postgresql [ILIKE](https://www.postgresql.org/docs/8.3/functions-matching.html#FUNCTIONS-LIKE) operator (case insenstive)
+    * `:!?` pattern Matching in the field. Use Postgresql [ILIKE](https://www.postgresql.org/docs/8.3/functions-matching.html#FUNCTIONS-LIKE) operator (case insenstive)
     * `:>`  >
     * `:>=` >=
     * `:<`  <
     * `:<=` <=
     *
     * Value after the operator should be in `application/x-www-form-urlencoded` MIME format
+    * Example URL with aspectQuery: dcat-dataset-strings.title:?%rating% (Search keyword `rating` in `dcat-dataset-strings` aspect `title` field)
+    * /v0/records?limit=100&optionalAspect=source&aspect=dcat-dataset-strings&aspectQuery=dcat-dataset-strings.title:?%2525rating%2525
     */
   val operatorValueRegex = raw"^(:[!><=?]*)(.+)".r
   val numericValueRegex = raw"[-0-9.]+".r
