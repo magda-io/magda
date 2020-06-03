@@ -1,0 +1,19 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "title": "Dataset Draft Data Storage Aspect",
+    "description": "Store the datatset draft data before submit",
+    "type": "object",
+    "properties": {
+        "data": {
+            "description": "a json string represents the dataset authoring tool state data.",
+            "format": "json",
+            "type": "string"
+        },
+        "timestamp": {
+            "title": "The timestamp when the draft data is generated. In `date-time` (ISO 8601) format",
+            "format": "date-time",
+            "type": "string"
+        }
+    },
+    "required": ["data", "timestamp"]
+}

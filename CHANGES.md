@@ -24,6 +24,7 @@ General:
 -   Make Magda charts helm v3 charts
 -   Add migration document for migrating Magda release v0.0.56-RC6 or eariler to v0.0.57-0
 -   Use a feature flag to turn on/off the dataset approval workflow
+-   Add internal authentication provider allow user to be authenticated locally
 
 UI:
 
@@ -51,6 +52,7 @@ UI:
 -   Use IBM Plex Sans font
 -   Fixed: error notification no longer has a white background
 -   Added `add dataset review page`
+-   Make `add dataset page` save state data to registry (unless in preview mode) rather than localStorage
 
 Storage:
 
