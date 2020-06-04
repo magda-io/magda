@@ -3,19 +3,63 @@ import request from "helpers/request";
 import { Publisher } from "helpers/record";
 import { RawDataset } from "helpers/record";
 import ServerError from "./ServerError";
+import flatMap from "lodash/flatMap";
+
+import dcatDatasetStringsAspect from "@magda/registry-aspects/dcat-dataset-strings.schema.json";
+import spatialCoverageAspect from "@magda/registry-aspects/spatial-coverage.schema.json";
+import temporalCoverageAspect from "@magda/registry-aspects/temporal-coverage.schema.json";
+import datasetDistributionsAspect from "@magda/registry-aspects/dataset-distributions.schema.json";
+import dcatDistributionStringsAspect from "@magda/registry-aspects/dcat-distribution-strings.schema.json";
+import accessAspect from "@magda/registry-aspects/access.schema.json";
+import provenanceAspect from "@magda/registry-aspects/provenance.schema.json";
+import informationSecurityAspect from "@magda/registry-aspects/information-security.schema.json";
+import datasetPublisherAspect from "@magda/registry-aspects/dataset-publisher.schema.json";
+import currencyAspect from "@magda/registry-aspects/currency.schema.json";
+import datasetPublishingAspect from "@magda/registry-aspects/publishing.schema.json";
+import datasetAccessControlAspect from "@magda/registry-aspects/dataset-access-control.schema.json";
+import organizationDetailsAspect from "@magda/registry-aspects/organization-details.schema.json";
+import sourceAspect from "@magda/registry-aspects/source.schema.json";
+import datasetDraftAspect from "@magda/registry-aspects/dataset-draft.schema.json";
+import { createNoCacheFetchOptions } from "./createNoCacheFetchOptions";
+
+export const aspectSchemas = {
+    publishing: datasetPublishingAspect,
+    "dcat-dataset-strings": dcatDatasetStringsAspect,
+    "spatial-coverage": spatialCoverageAspect,
+    "temporal-coverage": temporalCoverageAspect,
+    "dataset-distributions": datasetDistributionsAspect,
+    "dcat-distribution-strings": dcatDistributionStringsAspect,
+    access: accessAspect,
+    provenance: provenanceAspect,
+    "information-security": informationSecurityAspect,
+    "dataset-access-control": datasetAccessControlAspect,
+    "dataset-publisher": datasetPublisherAspect,
+    "organization-details": organizationDetailsAspect,
+    currency: currencyAspect,
+    source: sourceAspect,
+    "dataset-draft": datasetDraftAspect
+};
 
 export function createPublisher(inputRecord: Publisher) {
     return createRecord(inputRecord);
 }
 
-export function fetchOrganization(publisherId: string): Promise<Publisher> {
+export function fetchOrganization(
+    publisherId: string,
+    noCache: boolean = false
+): Promise<Publisher> {
     let url: string =
         config.registryReadOnlyApiUrl +
         `records/${encodeURIComponent(
             publisherId
         )}?aspect=organization-details`;
 
-    return fetch(url, config.credentialsFetchOptions).then(response => {
+    return fetch(
+        url,
+        noCache
+            ? createNoCacheFetchOptions(config.credentialsFetchOptions)
+            : config.credentialsFetchOptions
+    ).then(response => {
         if (!response.ok) {
             let statusText = response.statusText;
             // response.statusText are different in different browser, therefore we unify them here
@@ -28,12 +72,43 @@ export function fetchOrganization(publisherId: string): Promise<Publisher> {
     });
 }
 
-export async function ensureAspectExists(id: string, jsonSchema: any) {
-    await request("PUT", `${config.registryFullApiUrl}aspects/${id}`, {
-        id,
-        name: jsonSchema.title,
-        jsonSchema
-    });
+/**
+ * Store aspect json schema saving action promise.
+ * Used by `ensureAspectExists` to make sure only save the aspect once within current session.
+ */
+const aspectJsonSchemaSavingCache: {
+    [key: string]: Promise<any>;
+} = {};
+
+/**
+ * Ensure aspect exists in registry by storing the aspect def to registry.
+ * Here we are not going to skip storing the aspect def if the aspect def already exisits as we do know whether it's an up-to-date one in registry.
+ * For now, we only make sure the aspect def won't be stored to registry for multiple times.
+ * @param id
+ * @param jsonSchema
+ */
+export async function ensureAspectExists(id: string, jsonSchema?: any) {
+    if (!jsonSchema) {
+        jsonSchema = aspectSchemas[id];
+    }
+
+    if (!jsonSchema) {
+        throw new Error(`Cannot locate json schema for ${id}`);
+    }
+
+    if (!aspectJsonSchemaSavingCache[id]) {
+        aspectJsonSchemaSavingCache[id] = request(
+            "PUT",
+            `${config.registryFullApiUrl}aspects/${id}`,
+            {
+                id,
+                name: jsonSchema.title,
+                jsonSchema
+            }
+        );
+    }
+
+    await aspectJsonSchemaSavingCache[id];
 }
 
 export async function fetchRecord(
@@ -56,7 +131,8 @@ export async function fetchRecord(
         "currency"
     ],
     aspects: string[] = ["dcat-dataset-strings"],
-    dereference: boolean = true
+    dereference: boolean = true,
+    noCache: boolean = false
 ): Promise<RawDataset> {
     const parameters: string[] = [];
 
@@ -78,7 +154,12 @@ export async function fetchRecord(
             parameters.length ? `?${parameters.join("&")}` : ""
         }`;
 
-    const response = await fetch(url, config.credentialsFetchOptions);
+    const response = await fetch(
+        url,
+        noCache
+            ? createNoCacheFetchOptions(config.credentialsFetchOptions)
+            : config.credentialsFetchOptions
+    );
 
     if (!response.ok) {
         let statusText = response.statusText;
@@ -100,9 +181,20 @@ export async function fetchRecord(
     }
 }
 
+export async function deleteRecordAspect(
+    recordId: string,
+    aspectId: string
+): Promise<void> {
+    await request(
+        "DELETE",
+        `${config.registryFullApiUrl}records/${recordId}/aspects/${aspectId}`
+    );
+}
+
 export async function doesRecordExist(id: string) {
     try {
-        await fetchRecord(id, [], [], false);
+        //--- we turned off cache with last `true` parameter here
+        await fetchRecord(id, [], [], false, true);
         return true;
     } catch (e) {
         if (e.statusCode === 404) {
@@ -115,6 +207,7 @@ export async function doesRecordExist(id: string) {
 export type Record = {
     id: string;
     name: string;
+    authnReadPolicyId?: string;
     aspects: { [aspectId: string]: any };
 };
 
@@ -130,17 +223,26 @@ export type JsonSchema = {
     [k: string]: any;
 };
 
+function getAspectIds(record: Record): string[] {
+    if (!record.aspects) {
+        return [];
+    }
+    return Object.keys(record.aspects);
+}
+
+function getRecordsAspectIds(records: Record[]): string[] {
+    return flatMap(records.map(item => getAspectIds(item)));
+}
+
 export async function createDataset(
     inputDataset: Record,
-    inputDistributions: Record[],
-    aspects: {
-        [key: string]: JsonSchema;
-    }
+    inputDistributions: Record[]
 ) {
     // make sure all the aspects exist (this should be improved at some point, but will do for now)
-    const aspectPromises = Object.entries(aspects).map(([aspect, definition]) =>
-        ensureAspectExists(aspect, definition)
-    );
+    const aspectPromises = getRecordsAspectIds(
+        [inputDataset].concat(inputDistributions)
+    ).map(aspectId => ensureAspectExists(aspectId));
+
     await Promise.all(aspectPromises);
 
     for (const distribution of inputDistributions) {
@@ -161,15 +263,13 @@ export async function createDataset(
 
 export async function updateDataset(
     inputDataset: Record,
-    inputDistributions: Record[],
-    aspects: {
-        [key: string]: JsonSchema;
-    }
+    inputDistributions: Record[]
 ) {
     // make sure all the aspects exist (this should be improved at some point, but will do for now)
-    const aspectPromises = Object.entries(aspects).map(([aspect, definition]) =>
-        ensureAspectExists(aspect, definition)
-    );
+    const aspectPromises = getRecordsAspectIds(
+        [inputDataset].concat(inputDistributions)
+    ).map(aspectId => ensureAspectExists(aspectId));
+
     await Promise.all(aspectPromises);
 
     for (const distribution of inputDistributions) {

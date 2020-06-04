@@ -1,7 +1,7 @@
 import React from "react";
 import { withRouter } from "react-router";
 import { MultilineTextEditor } from "Components/Editing/Editors/textEditor";
-
+import AsyncButton from "Components/Common/AsyncButton";
 import ToolTip from "Components/Dataset/Add/ToolTip";
 
 import {
@@ -16,7 +16,7 @@ import { editSteps as ProgressMeterStepsConfig } from "../../Common/AddDatasetPr
 import {
     State,
     DistributionState,
-    updateDatasetFromState
+    submitDatasetFromState
 } from "../Add/DatasetAddCommon";
 import DetailsAndContents from "../Add/Pages/DetailsAndContents";
 import DatasetAddPeoplePage from "../Add/Pages/People/DatasetAddPeoplePage";
@@ -133,18 +133,15 @@ class EditDataset extends React.Component<Props, State> {
 
         step = Math.max(Math.min(step, this.steps.length - 1), 0);
 
-        const hideExitButton = config.featureFlags.previewAddDataset
-            ? step >= 4
-            : step >= 5;
+        const hideExitButton =
+            this.props.isBackToReview ||
+            (config.featureFlags.previewAddDataset ? step >= 4 : step >= 5);
 
         const nextButtonCaption = () => {
             if (step === 5) {
                 // --- review page
-                if (this.state.isPublishing) {
-                    return "Submit dataset changes...";
-                } else {
-                    return "Submit dataset changes";
-                }
+                // --- loading status is handled by AsynButton now
+                return "Submit dataset changes";
             } else if (step === 6) {
                 // --- all done or preview mode feedback page
                 // --- All done page has no button to show
@@ -154,13 +151,13 @@ class EditDataset extends React.Component<Props, State> {
             }
         };
 
-        const nextButtonOnClick = () => {
+        const nextButtonOnClick = async () => {
             if (step === 5) {
                 // --- review page
                 if (config.featureFlags.previewAddDataset) {
-                    this.gotoStep(step + 1);
+                    await this.gotoStep(step + 1);
                 } else {
-                    this.performPublishDataset();
+                    await this.performPublishDataset();
                 }
             } else if (step === 6) {
                 // --- all done or preview mode feedback page
@@ -170,7 +167,7 @@ class EditDataset extends React.Component<Props, State> {
                         "mailto:magda@csiro.au?subject=Add Dataset Feedback";
                 }
             } else {
-                this.gotoStep(step + 1);
+                await this.gotoStep(step + 1);
             }
         };
 
@@ -201,17 +198,19 @@ class EditDataset extends React.Component<Props, State> {
                         <div className="row next-save-button-row">
                             <div className="col-sm-12">
                                 {this.props.isBackToReview ? (
-                                    <button
+                                    <AsyncButton
                                         className="au-btn back-to-review-button"
-                                        onClick={() =>
-                                            this.gotoStep(this.steps.length - 2)
+                                        onClick={async () =>
+                                            await this.gotoStep(
+                                                this.steps.length - 2
+                                            )
                                         }
                                     >
                                         Return to Review
-                                    </button>
+                                    </AsyncButton>
                                 ) : null}
 
-                                <button
+                                <AsyncButton
                                     className={`au-btn ${
                                         this.props.isBackToReview
                                             ? "au-btn--secondary save-button"
@@ -221,16 +220,18 @@ class EditDataset extends React.Component<Props, State> {
                                     disabled={this.state.isPublishing}
                                 >
                                     {nextButtonCaption()}
-                                </button>
+                                </AsyncButton>
                                 {hideExitButton ? null : (
-                                    <button
+                                    <AsyncButton
                                         className="au-btn au-btn--secondary save-button"
-                                        onClick={() =>
-                                            this.gotoStep(this.steps.length - 2)
+                                        onClick={async () =>
+                                            await this.gotoStep(
+                                                this.steps.length - 2
+                                            )
                                         }
                                     >
-                                        Review &amp; Save
-                                    </button>
+                                        Review &amp; Publish
+                                    </AsyncButton>
                                 )}
                             </div>
                         </div>
@@ -246,6 +247,10 @@ class EditDataset extends React.Component<Props, State> {
 
     async gotoStep(step) {
         try {
+            /**
+             * await here is for fixing a weird bug that causing input ctrl with validation error can't be moved into viewport
+             * Until we find the root cause of this problem, resetError() must be called with await
+             */
             await this.resetError();
             if (ValidationManager.validateAll()) {
                 this.props.history.push(
@@ -294,7 +299,7 @@ class EditDataset extends React.Component<Props, State> {
                 isPublishing: true
             });
 
-            await updateDatasetFromState(
+            await submitDatasetFromState(
                 this.props.datasetId,
                 this.state,
                 this.setState.bind(this)

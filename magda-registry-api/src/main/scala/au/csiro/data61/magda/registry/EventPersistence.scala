@@ -188,7 +188,7 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
             aspectSql.or(dereferenceSql)
           case (Some(aspectSql), None)      => aspectSql
           case (None, Some(dereferenceSql)) => dereferenceSql
-          case (None, None)                 => sqls"1=1"
+          case (None, None)                 => sqls"true"
         })
         .and(eventTypesFilter)
     )
@@ -204,7 +204,8 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
             tenantId
           from Events
           $whereClause
-          order by eventTime asc
+      ${/* for some reason if you LIMIT 1 and ORDER BY eventId, postgres chooses a weird query plan, so use eventTime in that case*/ sqls""}
+          order by ${if (limit != Some(1)) sqls"eventId" else sqls"eventTime"} asc 
           offset ${start.getOrElse(0)}
           limit ${limit.getOrElse(1000)}"""
         .map(rs => {

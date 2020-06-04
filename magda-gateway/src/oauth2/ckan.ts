@@ -22,6 +22,7 @@ export default function ckan(options: CkanOptions) {
     const ckanUrl = options.ckanUrl;
 
     passport.use(
+        "ckan-local",
         new LocalStrategy(function(
             username: string,
             password: string,
@@ -53,7 +54,7 @@ export default function ckan(options: CkanOptions) {
             res: express.Response,
             next: express.NextFunction
         ) => {
-            passport.authenticate("local", {
+            passport.authenticate("ckan-local", {
                 failWithError: true
             })(req, res, next);
         },
