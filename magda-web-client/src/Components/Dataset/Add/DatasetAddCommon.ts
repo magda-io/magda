@@ -531,14 +531,7 @@ export function createBlankState(user?: User): State {
         },
         spatialCoverage: {
             // Australia, Mainland
-            lv1Id: "1",
-            bbox: [
-                109.951171875,
-                -45.398449976304086,
-                155.0390625,
-                -9.172601695217201
-            ],
-            spatialDataInputMethod: "region"
+            lv1Id: "1"
         },
         temporalCoverage: {
             intervals: []

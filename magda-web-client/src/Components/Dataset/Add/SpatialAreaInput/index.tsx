@@ -46,6 +46,7 @@ interface PropsType {
 
 const initialState = (props: PropsType) => ({
     activeTabIndex: (() => {
+        console.log(props);
         if (props.method === "bbox") {
             return 1;
         } else if (props.method === "region") {
@@ -54,14 +55,14 @@ const initialState = (props: PropsType) => ({
 
         if (
             props.bbox &&
-            props.bbox.east &&
-            props.bbox.north &&
-            props.bbox.south &&
-            props.bbox.west &&
-            !props.countryId &&
-            !props.territoryOrSteId &&
-            !props.sa4Id &&
-            !props.sa3Id
+            typeof props.bbox.east !== "undefined" &&
+            typeof props.bbox.north !== "undefined" &&
+            typeof props.bbox.south !== "undefined" &&
+            typeof props.bbox.west !== "undefined" //&&
+            // !props.countryId &&
+            // !props.territoryOrSteId &&
+            // !props.sa4Id &&
+            // !props.sa3Id
         ) {
             return 1;
         }
@@ -176,12 +177,12 @@ const SpatialAreaInput: FunctionComponent<PropsType> = props => {
                                 case 1:
                                     return (
                                         <span>
-                                            We’ve determined that the
-                                            coordinates of your data are:
                                             <ToolTip>
                                                 This helps data users understand
                                                 the scope of your dataset.
                                             </ToolTip>
+                                            We’ve determined that the
+                                            coordinates of your data are:
                                         </span>
                                     );
                                 default:

@@ -320,7 +320,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         renderAbove={true}
                     />
                 </div>
-                <h3>Spatial extent</h3>
+                <h3>Spatial Extent</h3>
                 <div>
                     <SpatialAreaInput
                         method={spatialCoverage.spatialDataInputMethod}

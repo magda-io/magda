@@ -196,14 +196,14 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                         };
                     }
 
-                    if (dist.spatialCoverage) {
+                    if (distAfterProcessing.spatialCoverage) {
                         Object.assign(
                             spatialCoverage,
                             distAfterProcessing.spatialCoverage
                         );
                     }
 
-                    if (dist.temporalCoverage) {
+                    if (distAfterProcessing.temporalCoverage) {
                         temporalCoverage.intervals = temporalCoverage.intervals.concat(
                             distAfterProcessing.temporalCoverage?.intervals ||
                                 []
@@ -246,15 +246,6 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
             } catch (e) {
                 console.error(e);
             }
-
-            // this.props.setState((state: State) => {
-            //     const newState = {
-            //         ...state,
-            //         distributions: state.distributions.slice(0)
-            //     };
-            //     newState.distributions.push(dist);
-            //     return newState;
-            // });
         }
         this.updateLastModifyDate();
     };
@@ -442,7 +433,8 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
 
         // Show user we're starting to read
         updateThisDist({
-            _state: DistributionState.Reading
+            _state: DistributionState.Reading,
+            _progress: 0
         });
 
         /** Should we be uploading this file too, or just reading metadata locally? */
@@ -460,11 +452,14 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
          * extraction and uploading if applicable
          */
         const updateTotalProgress = () => {
+            console.log(uploadProgress);
+            console.log(extractionProgress);
+
             updateThisDist({
                 _progress: Math.floor(
                     shouldUpload
-                        ? extractionProgress * 50 + uploadProgress * 50
-                        : extractionProgress * 100
+                        ? extractionProgress * 40 + uploadProgress * 40
+                        : extractionProgress * 80
                 )
             });
         };
@@ -497,7 +492,10 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
         };
 
         // Now we've finished the read, start processing
-        updateThisDist({ _state: DistributionState.Processing });
+        updateThisDist({
+            _state: DistributionState.Processing,
+            _progress: 20
+        });
 
         /**
          * Function for running all extractors in the correct order, which returns
@@ -622,6 +620,8 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                 ...state,
                 distributions: newDists
             };
+
+            console.log(newState);
 
             return newState;
         });
