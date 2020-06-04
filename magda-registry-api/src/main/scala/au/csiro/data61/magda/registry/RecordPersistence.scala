@@ -261,7 +261,7 @@ class DefaultRecordPersistence(config: Config)
   private def getSqlFromAspectQueries(
       aspectQueries: Iterable[AspectQuery],
       aspectOrQueries: Iterable[AspectQuery]
-  ) = {
+  ): Option[SQLSyntax] = {
 
     val orConditions = SQLSyntax.join(
       aspectOrQueries.map(aspectQueryToWhereClause(_)).toSeq,
@@ -290,10 +290,9 @@ class DefaultRecordPersistence(config: Config)
     ) match {
       // --- use () to wrap all conditions as it's `OR` between `aspectQueries` & `aspectOrQueries`
       case sqlPart if sqlPart.value.nonEmpty =>
-        SQLSyntax.roundBracket(sqlPart)
-      case _ => SQLSyntax.empty
+        Some(SQLSyntax.roundBracket(sqlPart))
+      case _ => None
     }
-
   }
 
   def getAllWithAspects(
@@ -312,21 +311,14 @@ class DefaultRecordPersistence(config: Config)
       orderBy: Option[OrderByDef] = None
   ): RecordsPage[Record] = {
 
-    // --- make sure all involved aspectIds are, at least, included in optionalAspectIds
-    val notIncludedAspectIds = ((aspectQueries ++ aspectOrQueries)
-      .map(_.aspectId) ++ orderBy.map(_.aspectName).toList)
+    // --- make sure if orderBy is used, the involved aspectId is, at least, included in optionalAspectIds
+    val notIncludedAspectIds = (orderBy
+      .map(_.aspectName)
+      .toList)
       .filter(!(aspectIds ++ optionalAspectIds).toList.contains(_))
 
-    val orSelector =
-      aspectOrQueries.map(query => aspectQueryToWhereClause(query)) match {
-        case Seq()    => SQLSyntax.empty
-        case nonEmpty =>
-          // --- all `OR` conditions should be group with one round bracket
-          SQLSyntax.roundBracket(SQLSyntax.join(nonEmpty.toSeq, SQLSyntax.or))
-      }
-
     val selectors = Seq(
-      Some(getSqlFromAspectQueries(aspectQueries, aspectOrQueries))
+      getSqlFromAspectQueries(aspectQueries, aspectOrQueries)
     )
 
     this.getRecords(
@@ -357,20 +349,15 @@ class DefaultRecordPersistence(config: Config)
       aspectOrQueries: Iterable[AspectQuery] = Nil
   ): Long = {
 
-    // --- make sure all involved aspectIds are, at least, included in optionalAspectIds
-    val notIncludedAspectIds = (aspectQueries ++ aspectOrQueries)
-      .map(_.aspectId)
-      .filter(!aspectIds.toList.contains(_))
-
     val selectors = Seq(
-      Some(getSqlFromAspectQueries(aspectQueries, aspectOrQueries))
+      getSqlFromAspectQueries(aspectQueries, aspectOrQueries)
     )
 
     this.getCountInner(
       session,
       tenantId,
       opaQueries,
-      aspectIds ++ notIncludedAspectIds,
+      aspectIds,
       selectors
     )
   }
