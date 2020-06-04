@@ -258,6 +258,44 @@ class DefaultRecordPersistence(config: Config)
     this.getSummaries(session, tenantId, opaQueries, pageToken, start, limit)
   }
 
+  private def getSqlFromAspectQueries(
+      aspectQueries: Iterable[AspectQuery],
+      aspectOrQueries: Iterable[AspectQuery]
+  ) = {
+
+    val orConditions = SQLSyntax.join(
+      aspectOrQueries.map(aspectQueryToWhereClause(_)).toSeq,
+      SQLSyntax.or
+    )
+    val andConditions = SQLSyntax.join(
+      aspectQueries.map(aspectQueryToWhereClause(_)).toSeq,
+      SQLSyntax.and
+    )
+
+    SQLSyntax.join(
+      Seq(andConditions, orConditions).map {
+        case sqlPart if sqlPart.value.nonEmpty =>
+          // --- use () to wrap the `OR` or `AND` queries if they are not empty
+          // --- SQLSyntax.roundBracket failed to check it
+          SQLSyntax.roundBracket(sqlPart)
+        case _ => SQLSyntax.empty
+      },
+      if (aspectOrQueries.size == 1) {
+        // When only one aspectOrQueries present, we should join aspectQueries and aspectOrQueries with `OR`
+        // otherwise, aspectOrQueries works as `AND`
+        SQLSyntax.or
+      } else {
+        SQLSyntax.and
+      }
+    ) match {
+      // --- use () to wrap all conditions as it's `OR` between `aspectQueries` & `aspectOrQueries`
+      case sqlPart if sqlPart.value.nonEmpty =>
+        SQLSyntax.roundBracket(sqlPart)
+      case _ => SQLSyntax.empty
+    }
+
+  }
+
   def getAllWithAspects(
       implicit session: DBSession,
       tenantId: TenantId,
@@ -287,10 +325,9 @@ class DefaultRecordPersistence(config: Config)
           SQLSyntax.roundBracket(SQLSyntax.join(nonEmpty.toSeq, SQLSyntax.or))
       }
 
-    val selectors = (aspectQueries
-      .map(query => aspectQueryToWhereClause(query))
-      .toSeq :+ orSelector)
-      .map(Some.apply)
+    val selectors = Seq(
+      Some(getSqlFromAspectQueries(aspectQueries, aspectOrQueries))
+    )
 
     this.getRecords(
       session,
@@ -325,18 +362,9 @@ class DefaultRecordPersistence(config: Config)
       .map(_.aspectId)
       .filter(!aspectIds.toList.contains(_))
 
-    val orSelector =
-      aspectOrQueries.map(query => aspectQueryToWhereClause(query)) match {
-        case Seq()    => SQLSyntax.empty
-        case nonEmpty =>
-          // --- all `OR` conditions should be group with one round bracket
-          SQLSyntax.roundBracket(SQLSyntax.join(nonEmpty.toSeq, SQLSyntax.or))
-      }
-
-    val selectors: Iterable[Some[SQLSyntax]] = (aspectQueries
-      .map(query => aspectQueryToWhereClause(query))
-      .toSeq :+ orSelector)
-      .map(Some.apply)
+    val selectors = Seq(
+      Some(getSqlFromAspectQueries(aspectQueries, aspectOrQueries))
+    )
 
     this.getCountInner(
       session,
