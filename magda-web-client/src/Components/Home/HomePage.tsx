@@ -6,10 +6,13 @@ import SearchBoxSwitcher from "Components/Dataset/Search/SearchBoxSwitcher";
 import "./HomePage.scss";
 
 import TagLine from "Components/Home/TagLine";
-import Lozenge from "Components/Home/Lozenge";
+import Lozenge, {
+    PropsType as LozengePropsType
+} from "Components/Home/Lozenge";
 import Stories from "Components/Home/Stories";
+import { PropsType as StoryBoxPropsType } from "./StoryBox";
 import { Small, Medium } from "Components/Common/Responsive";
-
+import { Location } from "history";
 import MediaQuery from "react-responsive";
 
 const getBgImg = backgroundImageUrls => {
@@ -62,7 +65,16 @@ const getBgImg = backgroundImageUrls => {
     );
 };
 
-class HomePage extends React.Component {
+type PropsType = {
+    backgroundImageUrls: string;
+    mobileTagLine: string;
+    desktopTagLine: string;
+    lozenge: LozengePropsType;
+    stories?: StoryBoxPropsType[];
+    location: Location;
+};
+
+class HomePage extends React.Component<PropsType> {
     render() {
         return (
             <div className="homepage-app-container">
@@ -84,7 +96,10 @@ class HomePage extends React.Component {
                     {this.props.desktopTagLine && (
                         <Medium>
                             <TagLine taglineText={this.props.desktopTagLine} />
-                            <Lozenge content={this.props.lozenge} />
+                            <Lozenge
+                                url={this.props.lozenge.url}
+                                text={this.props.lozenge.text}
+                            />
                         </Medium>
                     )}
                     {(this.props.stories && this.props.stories.length && (

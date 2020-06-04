@@ -1,11 +1,19 @@
 import React, { Component } from "react";
-import StoryBox from "./StoryBox";
+import StoryBox, { PropsType as StoryBoxPropsType } from "./StoryBox";
 import { Medium, Small } from "Components/Common/Responsive";
 import "./Stories.scss";
 import downArrow from "assets/downArrow-homepage-more-stories.svg";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 
-class Stories extends Component {
+export type PropsType = {
+    stories?: StoryBoxPropsType[];
+};
+
+type StateType = {
+    shouldShowStories: boolean;
+};
+
+class Stories extends Component<PropsType, StateType> {
     constructor(props) {
         super(props);
         this.state = {
