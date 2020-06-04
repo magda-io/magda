@@ -181,8 +181,6 @@ export async function fetchRecord(
     ],
     aspects: string[] = ["dcat-dataset-strings"],
     dereference: boolean = true,
-    aspectQueries: AspectQuery[] = [],
-    orderBy?: OrderByOption,
     noCache: boolean = false
 ): Promise<RawDataset> {
     const parameters: string[] = [];
@@ -199,41 +197,6 @@ export async function fetchRecord(
         parameters.push(
             optionalAspects.map(item => `optionalAspect=${item}`).join("&")
         );
-    }
-
-    if (aspectQueries?.length) {
-        parameters.push(
-            aspectQueries
-                .map(
-                    item =>
-                        `${
-                            item.isAndQuery ? "aspectQuery" : "aspectOrQuery"
-                        }=${item.toString()}`
-                )
-                .join("&")
-        );
-    }
-
-    if (orderBy) {
-        if (typeof orderBy === "string") {
-            parameters.push(`orderBy=${encodeURIComponent(orderBy)}`);
-        } else {
-            if (orderBy.orderBy) {
-                parameters.push(
-                    `orderBy=${encodeURIComponent(orderBy.orderBy)}`
-                );
-                if (orderBy.dir) {
-                    if (orderBy.dir !== "asc" && orderBy.dir !== "desc") {
-                        throw new Error(
-                            `Invalid order by direction: ${orderBy.dir}`
-                        );
-                    }
-                    parameters.push(
-                        `orderByDir=${encodeURIComponent(orderBy.dir)}`
-                    );
-                }
-            }
-        }
     }
 
     const url =
@@ -270,6 +233,162 @@ export async function fetchRecord(
 }
 
 export const fetchRecordWithNoCache = partialRight(fetchRecord, true);
+
+export type FetchRecordsOptions = {
+    aspects?: string[];
+    optionalAspects?: string[];
+    pageToken?: string;
+    start?: number;
+    limit?: number;
+    dereference?: boolean;
+    aspectQueries?: AspectQuery[];
+    orderBy?: OrderByOption;
+    noCache?: boolean;
+};
+
+export async function fetchRecords({
+    aspects,
+    optionalAspects,
+    pageToken,
+    start,
+    limit,
+    dereference,
+    aspectQueries,
+    orderBy,
+    noCache
+}: FetchRecordsOptions): Promise<RawDataset[]> {
+    const parameters: string[] = [];
+
+    if (dereference) {
+        parameters.push("dereference=true");
+    }
+
+    if (aspects?.length) {
+        parameters.push(aspects.map(item => `aspect=${item}`).join("&"));
+    }
+
+    if (optionalAspects?.length) {
+        parameters.push(
+            optionalAspects.map(item => `optionalAspect=${item}`).join("&")
+        );
+    }
+
+    if (aspectQueries?.length) {
+        parameters.push(
+            aspectQueries
+                .map(
+                    item =>
+                        `${
+                            item.isAndQuery ? "aspectQuery" : "aspectOrQuery"
+                        }=${item.toString()}`
+                )
+                .join("&")
+        );
+    }
+
+    if (pageToken) {
+        parameters.push(`pageToken=${encodeURIComponent(pageToken)}`);
+    }
+
+    if (start) {
+        parameters.push(`start=${encodeURIComponent(start)}`);
+    }
+
+    if (limit) {
+        parameters.push(`limit=${encodeURIComponent(limit)}`);
+    }
+
+    if (orderBy) {
+        if (typeof orderBy === "string") {
+            parameters.push(`orderBy=${encodeURIComponent(orderBy)}`);
+        } else {
+            if (orderBy.orderBy) {
+                parameters.push(
+                    `orderBy=${encodeURIComponent(orderBy.orderBy)}`
+                );
+                if (orderBy.dir) {
+                    if (orderBy.dir !== "asc" && orderBy.dir !== "desc") {
+                        throw new Error(
+                            `Invalid order by direction: ${orderBy.dir}`
+                        );
+                    }
+                    parameters.push(
+                        `orderByDir=${encodeURIComponent(orderBy.dir)}`
+                    );
+                }
+            }
+        }
+    }
+
+    const url =
+        config.registryReadOnlyApiUrl +
+        `records${parameters.length ? `?${parameters.join("&")}` : ""}`;
+
+    const response = await fetch(
+        url,
+        noCache
+            ? createNoCacheFetchOptions(config.fetchOptions)
+            : config.fetchOptions
+    );
+
+    if (!response.ok) {
+        throw new ServerError(response.statusText, response.status);
+    }
+
+    const data = await response.json();
+    if (data?.records?.length > 0) {
+        return data.records;
+    } else {
+        return [];
+    }
+}
+
+export async function fetchRecordsCount({
+    aspectQueries,
+    aspects,
+    noCache
+}: FetchRecordsOptions): Promise<RawDataset[]> {
+    const parameters: string[] = [];
+
+    if (aspects?.length) {
+        parameters.push(aspects.map(item => `aspect=${item}`).join("&"));
+    }
+
+    if (aspectQueries?.length) {
+        parameters.push(
+            aspectQueries
+                .map(
+                    item =>
+                        `${
+                            item.isAndQuery ? "aspectQuery" : "aspectOrQuery"
+                        }=${item.toString()}`
+                )
+                .join("&")
+        );
+    }
+
+    const url =
+        config.registryReadOnlyApiUrl +
+        `records/count${parameters.length ? `?${parameters.join("&")}` : ""}`;
+
+    const response = await fetch(
+        url,
+        noCache
+            ? createNoCacheFetchOptions(config.fetchOptions)
+            : config.fetchOptions
+    );
+
+    if (!response.ok) {
+        throw new ServerError(response.statusText, response.status);
+    }
+
+    const data = await response.json();
+    if (typeof data?.count === "number") {
+        return data.count;
+    } else {
+        throw new Error(`Invalid response: ${await response.text()}`);
+    }
+}
 
 export async function deleteRecordAspect(
     recordId: string,

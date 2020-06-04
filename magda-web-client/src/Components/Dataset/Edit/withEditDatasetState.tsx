@@ -32,6 +32,7 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
             // --- turn off cache
             const data = await fetchRecordWithNoCache(
                 props.match.params.datasetId,
+                // --- set to undefined so default value will be used
                 undefined,
                 undefined,
                 true
