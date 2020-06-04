@@ -54,8 +54,6 @@ class RecordsServiceRO(
     *
     *   If more than one queries is passed through the `aspectOrQuery` parameters, they will be grouped with `AND` logic.
     *
-    *   Any aspects mentioned in the queries but are not included by either `aspect` or `optionalAspect` parameters will be added to the `optionalAspect` list.
-    *
     *   Support the following operators in aspectQuery or `aspectOrQuery`:
     *   - `:` equal
     *   - `:!`  not equal
@@ -83,8 +81,6 @@ class RecordsServiceRO(
     *   Except `operator`, all parts must be encoded as `application/x-www-form-urlencoded` MIME format.
     *
     *   If more than one queries is passed through `aspectOrQuery` parameters, they will be grouped with `OR` logic.
-    *
-    *   Any aspects mentioned in queries but are not included by either `aspect` or `optionalAspect` parameters will be added to the `optionalAspect` list.
     *
     *   `aspectOrQuery` supports the same operator list as `aspectQuery`.
     *
@@ -434,8 +430,6 @@ class RecordsServiceRO(
     *
     *   If more than one queries is passed through the `aspectOrQuery` parameters, they will be grouped with `AND` logic.
     *
-    *   Any aspects mentioned in the queries but are not included by either `aspect` or `optionalAspect` parameters will be added to the `optionalAspect` list.
-    *
     *   Support the following operators in aspectQuery or `aspectOrQuery`:
     *   - `:` equal
     *   - `:!`  not equal
@@ -487,8 +481,6 @@ class RecordsServiceRO(
     *   Except `operator`, all parts must be encoded as `application/x-www-form-urlencoded` MIME format.
     *
     *   If more than one queries is passed through `aspectOrQuery` parameters, they will be grouped with `OR` logic.
-    *
-    *   Any aspects mentioned in queries but are not included by either `aspect` or `optionalAspect` parameters will be added to the `optionalAspect` list.
     *
     *   `aspectOrQuery` supports the same operator list as `aspectQuery`.
     *
