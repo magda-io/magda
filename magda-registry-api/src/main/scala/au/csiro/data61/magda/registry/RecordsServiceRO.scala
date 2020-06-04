@@ -44,33 +44,43 @@ class RecordsServiceRO(
     * @apiParam (query) {number} start The index of the first record to retrieve. When possible, specify pageToken instead as it will result in better performance. If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve.
     * @apiParam (query) {number} limit The maximum number of records to receive. The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
     * @apiParam (query) {boolean} dereference true to automatically dereference links to other records; false to leave them as links. Dereferencing a link means including the record itself where the link would be. Dereferencing only happens one level deep, regardless of the value of this parameter.
-    * @apiParam (query) {string[]} aspectQuery Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value’, url encoded.
+    * @apiParam (query) {string[]} aspectQuery Filter the records returned by a value within the aspect JSON.
     *
-    *   If more than one queries is passed through `aspectOrQuery` parameters, they will be grouped with `AND` logic.
+    *   Expressed as string concatenation of:
+    *   - `aspectId.path.to.field`
+    *   - `operator`
+    *   - `value`
+    *   Except `operator`, all parts must be encoded as `application/x-www-form-urlencoded` MIME format.
     *
-    *   Any aspects mentioned in queries but are not included by either `aspect` or `optionalAspect` parameters will be added to the `optionalAspect` list.
+    *   If more than one queries is passed through the `aspectOrQuery` parameters, they will be grouped with `AND` logic.
     *
-    *   NOTE: This is an early stage API and may change greatly in the future.
+    *   Any aspects mentioned in the queries but are not included by either `aspect` or `optionalAspect` parameters will be added to the `optionalAspect` list.
     *
     *   Support the following operators in aspectQuery or `aspectOrQuery`:
-    *   - `:`   equal
+    *   - `:` equal
     *   - `:!`  not equal
-    *   - `:?`  match a field that macthes a pattern / Regular Expression. Use Postgresql [SIMILAR TO](https://www.postgresql.org/docs/8.3/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP) operator.
+    *   - `:?`  match a field that matches a pattern / Regular Expression. Use Postgresql [SIMILAR TO](https://www.postgresql.org/docs/8.3/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP) operator.
     *     - e.g. `:?%rating%` will match the field contains keyword `rating`
     *     - e.g. `:?rating%` will match the field starts with keyword `rating`
-    *   - `:!?` match a field that doe not macthes a pattern / Regular Expression. Use Postgresql [SIMILAR TO](https://www.postgresql.org/docs/8.3/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP) operator
+    *   - `:!?` match a field that doe not matches a pattern / Regular Expression. Use Postgresql [SIMILAR TO](https://www.postgresql.org/docs/8.3/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP) operator
     *   - `:>`  greater than
     *   - `:>=` greater than or equal to
     *   - `:<`  less than
     *   - `:<=` less than or equal to
     *
-    *   Value after the operator should be in `application/x-www-form-urlencoded` MIME format
-    *
     *   Example URL with aspectQuery `dcat-dataset-strings.title:?%rating%` (Search keyword `rating` in `dcat-dataset-strings` aspect `title` field)
     *
     *   `/v0/records?limit=100&optionalAspect=source&aspect=dcat-dataset-strings&aspectQuery=dcat-dataset-strings.title:?%2525rating%2525`
     *
-    * @apiParam (query) {string[]} aspectOrQuery Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value', url encoded.
+    *   NOTE: This is an early stage API and may change greatly in the future.
+    *
+    * @apiParam (query) {string[]} aspectOrQuery Filter the records returned by a value within the aspect JSON.
+    *
+    *   Expressed as string concatenation of:
+    *   - `aspectId.path.to.field`
+    *   - `operator`
+    *   - `value`
+    *   Except `operator`, all parts must be encoded as `application/x-www-form-urlencoded` MIME format.
     *
     *   If more than one queries is passed through `aspectOrQuery` parameters, they will be grouped with `OR` logic.
     *

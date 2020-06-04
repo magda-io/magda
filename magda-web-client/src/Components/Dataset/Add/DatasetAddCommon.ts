@@ -3,7 +3,8 @@ import uuidv4 from "uuid/v4";
 import { ContactPointDisplayOption } from "constants/DatasetConstants";
 import {
     fetchOrganization,
-    fetchRecord,
+    fetchRecordWithNoCache,
+    doesRecordExist,
     createDataset,
     ensureAspectExists,
     createPublisher,
@@ -349,7 +350,13 @@ function populateTemporalCoverageAspect(data: RawDataset, state: State) {
 
 async function getDatasetNameById(id): Promise<string> {
     try {
-        const data = await fetchRecord(id, ["dcat-dataset-strings"], []);
+        // --- turn off cache
+        const data = await fetchRecordWithNoCache(
+            id,
+            ["dcat-dataset-strings"],
+            [],
+            false
+        );
         if (data?.aspects?.["dcat-dataset-strings"]?.title) {
             return data.aspects["dcat-dataset-strings"].title;
         } else {
@@ -600,7 +607,7 @@ export async function loadStateFromRegistry(
     let record: RawDataset | undefined;
     try {
         // --- we turned off cache here
-        record = await fetchRecord(id, ["dataset-draft"], [], false, true);
+        record = await fetchRecordWithNoCache(id, ["dataset-draft"], [], false);
     } catch (e) {
         if (e! instanceof ServerError || e.statusCode !== 404) {
             // --- mute 404 error as we're gonna create blank status if can't find an existing one
@@ -673,7 +680,7 @@ export async function saveStateToRegistry(state: State, id: string) {
     let record: RawDataset | undefined;
     try {
         // --- we turned off cache here
-        record = await fetchRecord(id, ["dataset-draft"], [], false, true);
+        record = await fetchRecordWithNoCache(id, ["dataset-draft"], [], false);
     } catch (e) {
         if (e! instanceof ServerError || e.statusCode !== 404) {
             // --- mute 404 error as we're gonna create one if can't find an existing one
@@ -733,13 +740,7 @@ async function ensureBlankDatasetIsSavedToRegistry(
     id: string,
     name: string
 ) {
-    try {
-        // --- we turned off cache here
-        await fetchRecord(id, [], [], false, true);
-    } catch (e) {
-        if (e.statusCode !== 404) {
-            throw e;
-        }
+    if (!(await doesRecordExist(id))) {
         // --- if the dataset not exist in registry, save it now
         // --- the dataset should have the same visibility as the current one
         // --- but always be a draft one
@@ -1036,20 +1037,7 @@ export async function submitDatasetFromState(
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>
 ) {
-    let recordExist: boolean = false;
-    try {
-        // --- turned off cache
-        if (await fetchRecord(datasetId, [], [], false, true)) {
-            recordExist = true;
-        }
-    } catch (e) {
-        if (e! instanceof ServerError || e.statusCode !== 404) {
-            // --- mute 404 error
-            throw e;
-        }
-    }
-
-    if (recordExist) {
+    if (await doesRecordExist(datasetId)) {
         await updateDatasetFromState(datasetId, state, setState);
     } else {
         await createDatasetFromState(datasetId, state, setState);

@@ -4,6 +4,7 @@ import { Publisher } from "helpers/record";
 import { RawDataset } from "helpers/record";
 import ServerError from "./ServerError";
 import flatMap from "lodash/flatMap";
+import partialRight from "lodash/partialRight";
 
 import dcatDatasetStringsAspect from "@magda/registry-aspects/dcat-dataset-strings.schema.json";
 import spatialCoverageAspect from "@magda/registry-aspects/spatial-coverage.schema.json";
@@ -21,6 +22,7 @@ import organizationDetailsAspect from "@magda/registry-aspects/organization-deta
 import sourceAspect from "@magda/registry-aspects/source.schema.json";
 import datasetDraftAspect from "@magda/registry-aspects/dataset-draft.schema.json";
 import { createNoCacheFetchOptions } from "./createNoCacheFetchOptions";
+import formUrlencode from "./formUrlencode";
 
 export const aspectSchemas = {
     publishing: datasetPublishingAspect,
@@ -111,6 +113,53 @@ export async function ensureAspectExists(id: string, jsonSchema?: any) {
     await aspectJsonSchemaSavingCache[id];
 }
 
+// --- See registry API document for API [Get a list of all records](https://dev.magda.io/api/v0/apidocs/index.html#api-Registry_Record_Service-GetV0RegistryRecords) for more details
+export enum AspectQueryOperators {
+    "=" = ":", // --- equal
+    "!=" = ":!", // --- Not equal
+    patternMatch = ":?", // --- pattern matching. Support Regex Expression as well.
+    patternNotMatch = ":!?",
+    ">" = ":>",
+    "<" = ":<",
+    ">=" = ":>=",
+    "<=" = ":<="
+}
+
+export class AspectQuery {
+    public path: string;
+    public operator: AspectQueryOperators;
+    public value: string | number | boolean;
+    // --- when `true`, all aspectQuery will be grouped with `AND` operator, otherwise, will be `OR`
+    public isAndQuery: boolean = true;
+
+    constructor(
+        path: string,
+        operator: AspectQueryOperators,
+        value: string | number | boolean,
+        isAndQuery?: boolean
+    ) {
+        this.path = path;
+        this.operator = operator;
+        this.value = value;
+        if (typeof isAndQuery === "boolean") {
+            this.isAndQuery = isAndQuery;
+        }
+    }
+
+    toString() {
+        return `${formUrlencode(this.path)}${this.operator}${formUrlencode(
+            String(this.value)
+        )}`;
+    }
+}
+
+export type OrderByOption =
+    | string // --- specify orderBy field only
+    | {
+          orderBy: string;
+          dir: "asc" | "desc";
+      };
+
 export async function fetchRecord(
     id: string,
     optionalAspects: string[] = [
@@ -132,6 +181,8 @@ export async function fetchRecord(
     ],
     aspects: string[] = ["dcat-dataset-strings"],
     dereference: boolean = true,
+    aspectQueries: AspectQuery[] = [],
+    orderBy?: OrderByOption,
     noCache: boolean = false
 ): Promise<RawDataset> {
     const parameters: string[] = [];
@@ -139,13 +190,50 @@ export async function fetchRecord(
     if (dereference) {
         parameters.push("dereference=true");
     }
+
     if (aspects?.length) {
         parameters.push(aspects.map(item => `aspect=${item}`).join("&"));
     }
+
     if (optionalAspects?.length) {
         parameters.push(
             optionalAspects.map(item => `optionalAspect=${item}`).join("&")
         );
+    }
+
+    if (aspectQueries?.length) {
+        parameters.push(
+            aspectQueries
+                .map(
+                    item =>
+                        `${
+                            item.isAndQuery ? "aspectQuery" : "aspectOrQuery"
+                        }=${item.toString()}`
+                )
+                .join("&")
+        );
+    }
+
+    if (orderBy) {
+        if (typeof orderBy === "string") {
+            parameters.push(`orderBy=${encodeURIComponent(orderBy)}`);
+        } else {
+            if (orderBy.orderBy) {
+                parameters.push(
+                    `orderBy=${encodeURIComponent(orderBy.orderBy)}`
+                );
+                if (orderBy.dir) {
+                    if (orderBy.dir !== "asc" && orderBy.dir !== "desc") {
+                        throw new Error(
+                            `Invalid order by direction: ${orderBy.dir}`
+                        );
+                    }
+                    parameters.push(
+                        `orderByDir=${encodeURIComponent(orderBy.dir)}`
+                    );
+                }
+            }
+        }
     }
 
     const url =
@@ -181,6 +269,8 @@ export async function fetchRecord(
     }
 }
 
+export const fetchRecordWithNoCache = partialRight(fetchRecord, true);
+
 export async function deleteRecordAspect(
     recordId: string,
     aspectId: string
@@ -194,7 +284,7 @@ export async function deleteRecordAspect(
 export async function doesRecordExist(id: string) {
     try {
         //--- we turned off cache with last `true` parameter here
-        await fetchRecord(id, [], [], false, true);
+        await fetchRecordWithNoCache(id, [], [], false);
         return true;
     } catch (e) {
         if (e.statusCode === 404) {
