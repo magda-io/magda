@@ -55,7 +55,8 @@ trait RecordPersistence {
       tenantId: TenantId,
       opaQueries: Option[List[(String, List[List[OpaQuery]])]],
       aspectIds: Iterable[String],
-      aspectQueries: Iterable[AspectQuery] = Nil
+      aspectQueries: Iterable[AspectQuery] = Nil,
+      aspectOrQueries: Iterable[AspectQuery] = Nil
   ): Long
 
   def getById(
@@ -281,7 +282,9 @@ class DefaultRecordPersistence(config: Config)
     val orSelector =
       aspectOrQueries.map(query => aspectQueryToWhereClause(query)) match {
         case Seq()    => SQLSyntax.empty
-        case nonEmpty => SQLSyntax.join(nonEmpty.toSeq, SQLSyntax.or)
+        case nonEmpty =>
+          // --- all `OR` conditions should be group with one round bracket
+          SQLSyntax.roundBracket(SQLSyntax.join(nonEmpty.toSeq, SQLSyntax.or))
       }
 
     val selectors = (aspectQueries
@@ -313,13 +316,35 @@ class DefaultRecordPersistence(config: Config)
       tenantId: TenantId,
       opaQueries: Option[List[(String, List[List[OpaQuery]])]],
       aspectIds: Iterable[String],
-      aspectQueries: Iterable[AspectQuery] = Nil
+      aspectQueries: Iterable[AspectQuery] = Nil,
+      aspectOrQueries: Iterable[AspectQuery] = Nil
   ): Long = {
-    val selectors: Iterable[Some[SQLSyntax]] = aspectQueries
+
+    // --- make sure all involved aspectIds are, at least, included in optionalAspectIds
+    val notIncludedAspectIds = (aspectQueries ++ aspectOrQueries)
+      .map(_.aspectId)
+      .filter(!aspectIds.toList.contains(_))
+
+    val orSelector =
+      aspectOrQueries.map(query => aspectQueryToWhereClause(query)) match {
+        case Seq()    => SQLSyntax.empty
+        case nonEmpty =>
+          // --- all `OR` conditions should be group with one round bracket
+          SQLSyntax.roundBracket(SQLSyntax.join(nonEmpty.toSeq, SQLSyntax.or))
+      }
+
+    val selectors: Iterable[Some[SQLSyntax]] = (aspectQueries
       .map(query => aspectQueryToWhereClause(query))
+      .toSeq :+ orSelector)
       .map(Some.apply)
 
-    this.getCountInner(session, tenantId, opaQueries, aspectIds, selectors)
+    this.getCountInner(
+      session,
+      tenantId,
+      opaQueries,
+      aspectIds ++ notIncludedAspectIds,
+      selectors
+    )
   }
 
   def getById(

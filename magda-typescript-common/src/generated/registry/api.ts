@@ -1922,12 +1922,14 @@ export class RecordsApi {
      * @param xMagdaTenantId 0
      * @param aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response.
      * @param aspectQuery Filter the records returned by a value within the aspect JSON. Expressed as &#39;aspectId.path.to.field:value&#39;, url encoded. NOTE: This is an early stage API and may change greatly in the future
+     * @param aspectOrQuery Filter the records returned by a value within the aspect JSON. Expressed as &#39;aspectId.path.to.field:value&#39;, url encoded. Queries passing via this parameter will be grouped with OR logic.
      * @param xMagdaSession Magda internal session id
      */
     public getCount(
         xMagdaTenantId: number,
         aspect?: Array<string>,
         aspectQuery?: Array<string>,
+        aspectOrQuery?: Array<string>,
         xMagdaSession?: string
     ): Promise<{ response: http.IncomingMessage; body: CountResponse }> {
         const localVarPath = this.basePath + "/records/count";
@@ -1948,6 +1950,10 @@ export class RecordsApi {
 
         if (aspectQuery !== undefined) {
             queryParameters["aspectQuery"] = aspectQuery;
+        }
+
+        if (aspectOrQuery !== undefined) {
+            queryParameters["aspectOrQuery"] = aspectOrQuery;
         }
 
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;

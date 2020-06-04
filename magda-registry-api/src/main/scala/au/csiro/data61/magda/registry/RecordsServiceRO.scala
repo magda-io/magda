@@ -424,7 +424,52 @@ class RecordsServiceRO(
     * @api {get} /v0/registry/records/count Get the count of records matching the parameters
     * @apiDescription Get the count of records matching the parameters. If no parameters are specified, the count will be approximate for performance reasons.
     * @apiParam (query) {string[]} aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter. Only records that have all of these aspects will be included in the response.
-    * @apiParam (query) {string[]} aspectQuery Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value’, url encoded. NOTE: This is an early stage API and may change greatly in the future
+    * @apiParam (query) {string[]} aspectQuery Filter the records returned by a value within the aspect JSON.
+    *
+    *   Expressed as string concatenation of:
+    *   - `aspectId.path.to.field`
+    *   - `operator`
+    *   - `value`
+    *   Except `operator`, all parts must be encoded as `application/x-www-form-urlencoded` MIME format.
+    *
+    *   If more than one queries is passed through the `aspectOrQuery` parameters, they will be grouped with `AND` logic.
+    *
+    *   Any aspects mentioned in the queries but are not included by either `aspect` or `optionalAspect` parameters will be added to the `optionalAspect` list.
+    *
+    *   Support the following operators in aspectQuery or `aspectOrQuery`:
+    *   - `:` equal
+    *   - `:!`  not equal
+    *   - `:?`  match a field that matches a pattern / Regular Expression. Use Postgresql [SIMILAR TO](https://www.postgresql.org/docs/8.3/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP) operator.
+    *     - e.g. `:?%rating%` will match the field contains keyword `rating`
+    *     - e.g. `:?rating%` will match the field starts with keyword `rating`
+    *   - `:!?` match a field that doe not matches a pattern / Regular Expression. Use Postgresql [SIMILAR TO](https://www.postgresql.org/docs/8.3/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP) operator
+    *   - `:>`  greater than
+    *   - `:>=` greater than or equal to
+    *   - `:<`  less than
+    *   - `:<=` less than or equal to
+    *
+    *   Example URL with aspectQuery `dcat-dataset-strings.title:?%rating%` (Search keyword `rating` in `dcat-dataset-strings` aspect `title` field)
+    *
+    *   `/v0/records?limit=100&optionalAspect=source&aspect=dcat-dataset-strings&aspectQuery=dcat-dataset-strings.title:?%2525rating%2525`
+    *
+    *   NOTE: This is an early stage API and may change greatly in the future.
+    *
+    * @apiParam (query) {string[]} aspectOrQuery Filter the records returned by a value within the aspect JSON.
+    *
+    *   Expressed as string concatenation of:
+    *   - `aspectId.path.to.field`
+    *   - `operator`
+    *   - `value`
+    *   Except `operator`, all parts must be encoded as `application/x-www-form-urlencoded` MIME format.
+    *
+    *   If more than one queries is passed through `aspectOrQuery` parameters, they will be grouped with `OR` logic.
+    *
+    *   Any aspects mentioned in queries but are not included by either `aspect` or `optionalAspect` parameters will be added to the `optionalAspect` list.
+    *
+    *   `aspectOrQuery` supports the same operator list as `aspectQuery`.
+    *
+    *   NOTE: This is an early stage API and may change greatly in the future
+    *
     * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiSuccess (Success 200) {json} Response the record count
@@ -463,6 +508,15 @@ class RecordsServiceRO(
           "Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value', url encoded. NOTE: This is an early stage API and may change greatly in the future"
       ),
       new ApiImplicitParam(
+        name = "aspectOrQuery",
+        required = false,
+        dataType = "string",
+        paramType = "query",
+        allowMultiple = true,
+        value =
+          "Filter the records returned by a value within the aspect JSON. Expressed as 'aspectId.path.to.field:value', url encoded. Queries passing via this parameter will be grouped with OR logic."
+      ),
+      new ApiImplicitParam(
         name = "X-Magda-Tenant-Id",
         required = true,
         dataType = "number",
@@ -481,8 +535,9 @@ class RecordsServiceRO(
   def getCount: Route = get {
     path("count") {
       requiresTenantId { tenantId =>
-        parameters('aspect.*, 'aspectQuery.*) { (aspects, aspectQueries) =>
+        parameters('aspect.*, 'aspectQuery.*, 'aspectOrQuery.*) { (aspects, aspectQueries, aspectOrQueries) =>
           val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
+          val parsedAspectOrQueries = aspectOrQueries.map(AspectQuery.parse)
 
           withRecordOpaQuery(
             AuthOperations.read,
@@ -505,7 +560,8 @@ class RecordsServiceRO(
                       tenantId,
                       opaQueries,
                       aspects,
-                      parsedAspectQueries
+                      parsedAspectQueries,
+                      parsedAspectOrQueries
                     )
                 )
               }
