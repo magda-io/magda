@@ -272,6 +272,12 @@ class DefaultRecordPersistence(config: Config)
       aspectOrQueries: Iterable[AspectQuery] = Nil,
       orderBy: Option[OrderByDef] = None
   ): RecordsPage[Record] = {
+
+    // --- make sure all involved aspectIds are, at least, included in optionalAspectIds
+    val notIncludedAspectIds = ((aspectQueries ++ aspectOrQueries)
+      .map(_.aspectId) ++ orderBy.map(_.aspectName).toList)
+      .filter(!(aspectIds ++ optionalAspectIds).toList.contains(_))
+
     val orSelector =
       aspectOrQueries.map(query => aspectQueryToWhereClause(query)) match {
         case Seq()    => SQLSyntax.empty
@@ -287,7 +293,7 @@ class DefaultRecordPersistence(config: Config)
       session,
       tenantId,
       aspectIds,
-      optionalAspectIds,
+      optionalAspectIds ++ notIncludedAspectIds,
       opaRecordQueries,
       opaLinkedRecordQueries,
       pageToken,

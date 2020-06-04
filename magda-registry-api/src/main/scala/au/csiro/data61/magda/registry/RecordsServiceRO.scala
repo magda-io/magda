@@ -48,9 +48,11 @@ class RecordsServiceRO(
     *
     *   If more than one queries is passed through `aspectOrQuery` parameters, they will be grouped with `AND` logic.
     *
+    *   Any aspects mentioned in queries but are not included by either `aspect` or `optionalAspect` parameters will be added to the `optionalAspect` list.
+    *
     *   NOTE: This is an early stage API and may change greatly in the future.
     *
-    *   Support the following operators in `aspectQuery` or `aspectOrQuery`:
+    *   Support the following operators in aspectQuery or `aspectOrQuery`:
     *   - `:`   equal
     *   - `:!`  not equal
     *   - `:?`  pattern Matching in the field. Use Postgresql [ILIKE](https://www.postgresql.org/docs/8.3/functions-matching.html#FUNCTIONS-LIKE) operator (case insenstive).
@@ -72,11 +74,16 @@ class RecordsServiceRO(
     *
     *   If more than one queries is passed through `aspectOrQuery` parameters, they will be grouped with `OR` logic.
     *
+    *   Any aspects mentioned in queries but are not included by either `aspect` or `optionalAspect` parameters will be added to the `optionalAspect` list.
+    *
     *   `aspectOrQuery` supports the same operator list as `aspectQuery`.
     *
     *   NOTE: This is an early stage API and may change greatly in the future
     *
     * @apiParam (query) {string} orderBy Specify the field to sort the result. Aspect field can be supported in a format like aspectId.path.to.field
+    *
+    *   If `orderBy` reference an aspects that is not included by either `aspect` or `optionalAspect` parameters, it will be added to the `optionalAspect` list.
+    *
     * @apiParam (query) {string} orderByDir Specify the order by direction. Either `asc` or `desc`
     * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
     * @apiHeader {string} X-Magda-Session Magda internal session id
