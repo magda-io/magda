@@ -55,10 +55,10 @@ class RecordsServiceRO(
     *   Support the following operators in aspectQuery or `aspectOrQuery`:
     *   - `:`   equal
     *   - `:!`  not equal
-    *   - `:?`  pattern Matching in the field. Use Postgresql [ILIKE](https://www.postgresql.org/docs/8.3/functions-matching.html#FUNCTIONS-LIKE) operator (case insenstive).
+    *   - `:?`  match a field that macthes a pattern / Regular Expression. Use Postgresql [SIMILAR TO](https://www.postgresql.org/docs/8.3/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP) operator.
     *     - e.g. `:?%rating%` will match the field contains keyword `rating`
     *     - e.g. `:?rating%` will match the field starts with keyword `rating`
-    *   - `:!?` pattern Matching in the field. Use Postgresql [ILIKE](https://www.postgresql.org/docs/8.3/functions-matching.html#FUNCTIONS-LIKE) operator (case insenstive)
+    *   - `:!?` match a field that doe not macthes a pattern / Regular Expression. Use Postgresql [SIMILAR TO](https://www.postgresql.org/docs/8.3/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP) operator
     *   - `:>`  greater than
     *   - `:>=` greater than or equal to
     *   - `:<`  less than
