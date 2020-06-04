@@ -96,9 +96,15 @@ object AspectQuery {
           case ":!" =>
             (SQLSyntax.createUnsafely("!="), AspectQueryString(valueStr))
           case ":?" =>
-            (SQLSyntax.createUnsafely("SIMILAR TO"), AspectQueryString(valueStr))
+            (
+              SQLSyntax.createUnsafely("SIMILAR TO"),
+              AspectQueryString(valueStr)
+            )
           case ":!?" =>
-            (SQLSyntax.createUnsafely("NOT SIMILAR TO"), AspectQueryString(valueStr))
+            (
+              SQLSyntax.createUnsafely("NOT SIMILAR TO"),
+              AspectQueryString(valueStr)
+            )
           case ":>" =>
             (
               SQLSyntax.createUnsafely(">"),

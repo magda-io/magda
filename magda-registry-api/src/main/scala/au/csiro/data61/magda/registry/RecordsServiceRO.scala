@@ -559,38 +559,39 @@ class RecordsServiceRO(
   def getCount: Route = get {
     path("count") {
       requiresTenantId { tenantId =>
-        parameters('aspect.*, 'aspectQuery.*, 'aspectOrQuery.*) { (aspects, aspectQueries, aspectOrQueries) =>
-          val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
-          val parsedAspectOrQueries = aspectOrQueries.map(AspectQuery.parse)
+        parameters('aspect.*, 'aspectQuery.*, 'aspectOrQuery.*) {
+          (aspects, aspectQueries, aspectOrQueries) =>
+            val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
+            val parsedAspectOrQueries = aspectOrQueries.map(AspectQuery.parse)
 
-          withRecordOpaQuery(
-            AuthOperations.read,
-            recordPersistence,
-            authApiClient,
-            None,
-            CountResponse(0)
-          )(
-            config,
-            system,
-            materializer,
-            ec
-          ) { opaQueries =>
-            complete {
-              DB readOnly { session =>
-                CountResponse(
-                  recordPersistence
-                    .getCount(
-                      session,
-                      tenantId,
-                      opaQueries,
-                      aspects,
-                      parsedAspectQueries,
-                      parsedAspectOrQueries
-                    )
-                )
+            withRecordOpaQuery(
+              AuthOperations.read,
+              recordPersistence,
+              authApiClient,
+              None,
+              CountResponse(0)
+            )(
+              config,
+              system,
+              materializer,
+              ec
+            ) { opaQueries =>
+              complete {
+                DB readOnly { session =>
+                  CountResponse(
+                    recordPersistence
+                      .getCount(
+                        session,
+                        tenantId,
+                        opaQueries,
+                        aspects,
+                        parsedAspectQueries,
+                        parsedAspectOrQueries
+                      )
+                  )
+                }
               }
             }
-          }
         }
       }
     }
