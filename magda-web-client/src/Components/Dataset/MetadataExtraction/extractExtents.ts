@@ -106,8 +106,8 @@ function aggregateDates(rows: any[], headers: string[]) {
     let earliestDate = maxDate;
     let latestDate = minDate;
 
-    startDateHeadersInOrder.forEach(header => {
-        rows.forEach(row => {
+    rows.forEach(row => {
+        startDateHeadersInOrder.forEach(header => {
             var dateStr: string = row[header].toString();
             var parsedDate: Moment = moment.utc(dateStr, dateFormats);
             if (parsedDate) {
@@ -117,10 +117,8 @@ function aggregateDates(rows: any[], headers: string[]) {
                 }
             }
         });
-    });
 
-    endDateHeadersInOrder.forEach(header => {
-        rows.forEach(row => {
+        endDateHeadersInOrder.forEach(header => {
             var dateStr: string = row[header].toString();
             var parsedDate: Moment = moment.utc(dateStr, dateFormats);
             if (parsedDate) {
