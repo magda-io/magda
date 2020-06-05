@@ -1,13 +1,15 @@
 import React, { FunctionComponent, useState } from "react";
 import "./DatasetList.scss";
-import DatasetGrid from "./DatasetGrid";
+import DatasetGrid, { DatasetTypes } from "./DatasetGrid";
 
 type PropsType = {};
 
-type TabNames = "drafts" | "published";
+type TabNames = DatasetTypes;
 
 const DatasetList: FunctionComponent<PropsType> = props => {
     const [activeTab, setActiveTab] = useState<TabNames>("drafts");
+    const [searchText, setSearchText] = useState<string>("");
+
     return (
         <div className="dataset-list-container">
             <div className="dataset-list-inner-container row">
@@ -30,10 +32,22 @@ const DatasetList: FunctionComponent<PropsType> = props => {
                             Published &nbsp;{" "}
                         </a>
                     </div>
-                    <input type="text" placeholder="Search datasets" />
+                    <input
+                        type="text"
+                        placeholder="Search datasets"
+                        onKeyUp={e => {
+                            const selectedString = (e.currentTarget as HTMLInputElement).value.trim();
+                            if (e.keyCode === 13) {
+                                setSearchText(selectedString);
+                            }
+                        }}
+                    />
                 </div>
                 <div className="dataset-list-body">
-                    <DatasetGrid />
+                    <DatasetGrid
+                        searchText={searchText}
+                        datasetType={activeTab}
+                    />
                 </div>
             </div>
         </div>

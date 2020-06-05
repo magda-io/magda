@@ -1,11 +1,24 @@
 import React, { FunctionComponent } from "react";
-//import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import editIcon from "assets/edit.svg";
 import "./DatasetGrid.scss";
+import { useAsync } from "react-async-hook";
 
-type PropsType = {};
+export type DatasetTypes = "drafts" | "published";
+
+type PropsType = {
+    searchText: string;
+    datasetType: DatasetTypes;
+};
 
 const DatasetGrid: FunctionComponent<PropsType> = props => {
+    const { result: records, loading, error } = useAsync(
+        async (datasetType, searchText) => {},
+        [props.datasetType, props.searchText]
+    );
+
+    console.log(records, loading, error);
+
     return (
         <>
             <table>
@@ -28,9 +41,12 @@ const DatasetGrid: FunctionComponent<PropsType> = props => {
                                     </td>
                                     <td className="date-col">25/02/2020</td>
                                     <td className="edit-button-col">
-                                        <button className="edit-button">
+                                        <Link
+                                            className="edit-button"
+                                            to={"/datasets"}
+                                        >
                                             <img src={editIcon} />
-                                        </button>
+                                        </Link>
                                     </td>
                                 </tr>
                             );
