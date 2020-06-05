@@ -688,9 +688,21 @@ export async function saveStateToRegistry(state: State, id: string) {
         }
     }
 
+    const datasetDcatString = buildDcatDatasetStrings(state.dataset);
+
     const datasetDraftAspectData = {
         data: dataset,
-        timestamp
+        timestamp,
+        dataset: {
+            title: datasetDcatString?.title ? datasetDcatString.title : "",
+            description: datasetDcatString?.description
+                ? datasetDcatString.description
+                : "",
+            themes: datasetDcatString?.themes ? datasetDcatString.themes : [],
+            keywords: datasetDcatString?.keywords
+                ? datasetDcatString.keywords
+                : []
+        }
     };
 
     if (!record) {
