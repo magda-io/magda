@@ -1,7 +1,131 @@
 .my-dataset-section-container {
     .dataset-list-container {
-        padding-left: 224px;
-        width: 100%;
+        padding-left: 250px;
+        width: 98%;
         height: 100%;
+    }
+    .dataset-list-inner-container {
+        border: 2px solid #ebf0f6;
+        border-radius: 3px;
+        margin-top: 20px;
+        margin-left: 12px;
+        margin-right: 12px;
+
+        padding-bottom: 20px;
+
+        .dataset-list-header {
+            padding-top: 24px;
+            padding-left: 2px;
+            margin-left: 48px;
+            padding-right: 2px;
+            margin-right: 43px;
+            padding-bottom: 1px;
+            height: 104px;
+            border-bottom: 4px solid #cccaca;
+            .dataset-type-tab {
+                float: left;
+                a {
+                    height: 76px;
+                    color: #042330;
+                    font-size: 23px;
+                    letter-spacing: -0.1px;
+                    line-height: 76px;
+                    text-decoration: none;
+                    display: inline-block;
+                }
+                a:first-child {
+                    margin-right: 70px;
+                }
+                a.active {
+                    border-bottom: 4px solid #001bea;
+                }
+            }
+            input {
+                float: right;
+                box-sizing: border-box;
+                height: 57px;
+                width: 363px;
+                border: 1px solid #d4d4d4;
+                border-radius: 11.2px;
+                color: #979797;
+                font-size: 20px;
+                letter-spacing: -0.48px;
+                line-height: 23px;
+                padding-left: 25px;
+                padding-right: 42px;
+                background-image: url("../../../assets/search-dark.svg");
+                background-repeat: no-repeat;
+                background-size: 30px;
+                background-position: 320px 13px;
+            }
+        }
+        .dataset-list-body {
+            table {
+                width: 100%;
+                th,
+                td {
+                    &:first-child {
+                        padding-left: 50px;
+                    }
+                }
+            }
+            thead {
+                th {
+                    text-align: left;
+                    height: 80px;
+                    color: #484848;
+                    font-size: 19px;
+                    letter-spacing: 0;
+                    line-height: 25px;
+                }
+            }
+            tbody {
+                tr:nth-child(odd) {
+                    background: #f9f9f9;
+                }
+                td {
+                    height: 51px;
+                    color: #30384d;
+                    font-size: 17px;
+                    letter-spacing: -0.5px;
+                    line-height: 25px;
+                }
+                .edit-button {
+                    border: none;
+                }
+            }
+            .date-col {
+                width: 120px;
+                text-align: center;
+            }
+            .edit-button-col {
+                width: 80px;
+                text-align: center;
+            }
+
+            .grid-bottom-divider {
+                margin-top: 0px;
+                margin-left: 50px;
+                margin-right: 30px;
+                border-top: 1px solid #cccaca;
+            }
+
+            .paging-area {
+                padding-right: 55px;
+                .next-page-button {
+                    float: right;
+                    height: 42px;
+                    width: 130px;
+                    border-radius: 2px;
+                    background-color: #30384d;
+                    color: #ffffff;
+                    font-size: 16px;
+                    letter-spacing: -0.2px;
+                    line-height: 24px;
+                    text-align: center;
+                    border: none;
+                }
+            }
+        }
     }
 }
