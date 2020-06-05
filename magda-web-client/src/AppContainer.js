@@ -16,6 +16,8 @@ import Routes from "./Routes";
 
 import { Medium } from "Components/Common/Responsive";
 
+import { Route, Switch } from "react-router-dom";
+
 import "./AppContainer.scss";
 
 class AppContainer extends React.Component {
@@ -48,7 +50,15 @@ class AppContainer extends React.Component {
                         <Routes />
                     </div>
 
-                    <Footer />
+                    <Switch>
+                        {/** turn off top margin for home page only */}
+                        <Route
+                            exact
+                            path="/"
+                            render={() => <Footer noTopMergin={true} />}
+                        />
+                        <Route path="/*" component={Footer} />
+                    </Switch>
 
                     {this.props.topNotification.visible ? (
                         <Notification

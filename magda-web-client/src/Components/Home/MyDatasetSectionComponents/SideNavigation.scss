@@ -1,0 +1,103 @@
+.my-dataset-section-container {
+    .side-navigation {
+        position: absolute;
+        height: 100%;
+        width: 220px;
+        background-color: #30384d;
+        overflow-x: hidden;
+        padding-top: 20px;
+        float: left;
+        &:hover {
+            overflow-x: visible;
+        }
+    }
+
+    .side-navigation a {
+        position: relative;
+        cursor: pointer;
+        text-decoration: none;
+        display: block;
+        padding-left: 5px;
+        margin-bottom: 5px;
+        height: 70px;
+
+        span::selection {
+            background: none !important;
+        }
+
+        &:focus {
+            outline: none;
+        }
+
+        span {
+            position: absolute;
+            border-radius: 3px;
+            height: 70px;
+            width: 225px;
+            color: #ffffff;
+            font-family: "SF Compact Display";
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 0;
+            line-height: 70px;
+            padding-left: 70px;
+            &:hover {
+                background-color: #cccaca;
+                color: #30384d;
+                &::selection {
+                    background: none !important;
+                    color: #30384d !important;
+                }
+            }
+        }
+
+        & {
+            span:before {
+                position: absolute;
+                content: "";
+                left: 25px;
+                top: 15px;
+                width: 23px;
+                height: 35px;
+                display: block;
+                background-repeat: no-repeat;
+                background-size: 23px 40px;
+            }
+            &:hover {
+                span:before {
+                    position: absolute;
+                    content: "";
+                    left: 25px;
+                    top: 15px;
+                    width: 23px;
+                    height: 35px;
+                    display: block;
+                    background-repeat: no-repeat;
+                    background-size: 23px 40px;
+                }
+            }
+        }
+
+        &.icon-my-data {
+            span:before {
+                background-image: url("../../../assets/my-data-white.svg");
+            }
+            &:hover {
+                span:before {
+                    background-image: url("../../../assets/my-data.svg");
+                }
+            }
+        }
+
+        &.icon-add-dataset {
+            span:before {
+                background-image: url("../../../assets/add-dataset-white.svg");
+            }
+            &:hover {
+                span:before {
+                    background-image: url("../../../assets/add-dataset.svg");
+                }
+            }
+        }
+    }
+}
