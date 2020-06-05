@@ -1,12 +1,12 @@
 import React, { Component } from "react";
-import StoryBox, { PropsType as StoryBoxPropsType } from "./StoryBox";
+import StoryBox, { StoryDataType } from "./StoryBox";
 import { Medium, Small } from "Components/Common/Responsive";
 import "./Stories.scss";
 import downArrow from "assets/downArrow-homepage-more-stories.svg";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 
 export type PropsType = {
-    stories?: StoryBoxPropsType[];
+    stories?: StoryDataType[];
 };
 
 type StateType = {
@@ -41,7 +41,7 @@ class Stories extends Component<PropsType, StateType> {
         if (!stories || !stories.length) {
             return null;
         }
-        const rows = [];
+        const rows: StoryDataType[][] = [];
         for (let x = 0; x < stories.length; x += 4) {
             rows.push(stories.slice(x, x + 4));
         }

@@ -1,12 +1,16 @@
-import React from "react";
+import React, { FunctionComponent } from "react";
 import { Link } from "react-router-dom";
 
-const Lozenge = data => {
-    if (!data || !data.content || !data.content.url || !data.content.text)
-        return null;
+export type PropsType = {
+    url?: string;
+    text: string;
+};
+
+const Lozenge: FunctionComponent<PropsType> = props => {
+    if (!props?.url || !props?.text) return null;
     return (
         <div className="homepage-lozenge">
-            {<Link to={data.content.url || "/"}>{data.content.text}</Link>}
+            {<Link to={props.url || "/"}>{props.text}</Link>}
         </div>
     );
 };

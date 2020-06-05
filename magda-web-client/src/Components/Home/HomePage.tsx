@@ -10,7 +10,7 @@ import Lozenge, {
     PropsType as LozengePropsType
 } from "Components/Home/Lozenge";
 import Stories from "Components/Home/Stories";
-import { PropsType as StoryBoxPropsType } from "./StoryBox";
+import { StoryDataType } from "./StoryBox";
 import { Small, Medium } from "Components/Common/Responsive";
 import { Location } from "history";
 import MediaQuery from "react-responsive";
@@ -70,7 +70,7 @@ type PropsType = {
     mobileTagLine: string;
     desktopTagLine: string;
     lozenge: LozengePropsType;
-    stories?: StoryBoxPropsType[];
+    stories?: StoryDataType[];
     location: Location;
 };
 
@@ -97,8 +97,8 @@ class HomePage extends React.Component<PropsType> {
                         <Medium>
                             <TagLine taglineText={this.props.desktopTagLine} />
                             <Lozenge
-                                url={this.props.lozenge.url}
-                                text={this.props.lozenge.text}
+                                url={this.props?.lozenge?.url}
+                                text={this.props?.lozenge?.text}
                             />
                         </Medium>
                     )}
