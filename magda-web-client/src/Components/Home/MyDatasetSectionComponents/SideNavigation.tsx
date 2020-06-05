@@ -8,7 +8,7 @@ const SideNavigation: FunctionComponent<PropsType> = props => {
     return (
         <div className="side-navigation">
             <div className="sidenav">
-                <a className="icon-my-data">
+                <a className="icon-my-data active">
                     <span>My data sets</span>
                 </a>
                 <Link to="/dataset/add" className="icon-add-dataset">
