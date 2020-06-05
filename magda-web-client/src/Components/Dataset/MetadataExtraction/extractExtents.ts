@@ -15,7 +15,7 @@ export function extractExtents(input, output) {
         // what if it has multiple sheets?
         const worksheet = input.workbook.Sheets[input.workbook.SheetNames[0]];
 
-        const rows = XLSX.utils.sheet_to_json(worksheet, { raw: false });
+        const rows = XLSX.utils.sheet_to_json(worksheet, { raw: true });
         if (rows.length) {
             const headersSet = new Set<string>();
             for (let row of rows) {

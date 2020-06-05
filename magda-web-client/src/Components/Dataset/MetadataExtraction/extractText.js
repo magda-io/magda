@@ -39,10 +39,11 @@ export async function extractText(input, output) {
  * Extracts data/metadata from various spreadsheet formats. Refer to
  * https://github.com/SheetJS/js-xlsx for more details
  */
-async function extractSpreadsheetFile(input, output, bookType = "xlsx") {
+async function extractSpreadsheetFile(input, output) {
     input.workbook = XLSX.read(input.array, {
         type: "array",
-        cellDates: true
+        cellDates: true,
+        raw: true
     });
 
     // excel files can have embedded properties; extract those
@@ -72,7 +73,7 @@ async function extractSpreadsheetFile(input, output, bookType = "xlsx") {
         input.text = Object.values(input.workbook.Sheets)
             .map(worksheet => {
                 return XLSX.utils
-                    .sheet_to_json(worksheet)
+                    .sheet_to_json(worksheet, { raw: true })
                     .map(row => Object.values(row).join(","))
                     .join("\n");
             })
