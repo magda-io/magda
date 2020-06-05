@@ -27,23 +27,20 @@ function delay(time) {
 }
 
 export async function runExtractors(input: ExtractorInput, update: any) {
-    for (const extractor of extractors) {
-        const index = extractors.indexOf(extractor);
+    const numExtractors = extractors.length;
+    extractors.forEach((extractor: Extractor, index: number) => {
         try {
-            console.log("Processing", index + 1, "of", extractors.length);
+            console.log("Processing", index + 1, "of", numExtractors);
             const output: any = {};
-            output._progress =
-                ((extractors.indexOf(extractor) + 0.1) / extractors.length) *
-                100;
+            output._progress = ((index + 0.1) * 100) / numExtractors;
             update(output);
-            await extractor(input, output);
-            output._progress =
-                ((extractors.indexOf(extractor) + 1) / extractors.length) * 100;
+            extractor(input, output);
+            output._progress = ((index + 1) * 100) / numExtractors;
             update(output);
-            await delay(100);
+            delay(100);
         } catch (e) {
             // even if one of the modules fail, we keep going
             console.error(e);
         }
-    }
+    });
 }
