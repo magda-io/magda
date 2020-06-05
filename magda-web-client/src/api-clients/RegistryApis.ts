@@ -147,9 +147,10 @@ export class AspectQuery {
     }
 
     toString() {
-        return `${formUrlencode(this.path)}${this.operator}${formUrlencode(
-            String(this.value)
-        )}`;
+        // --- need to `encodeURIComponent` the formUrlencode result to ensure formatted string reach parser
+        return `${encodeURIComponent(formUrlencode(this.path))}${
+            this.operator
+        }${encodeURIComponent(formUrlencode(String(this.value)))}`;
     }
 }
 
@@ -256,7 +257,11 @@ export async function fetchRecords({
     aspectQueries,
     orderBy,
     noCache
-}: FetchRecordsOptions): Promise<RawDataset[]> {
+}: FetchRecordsOptions): Promise<{
+    records: RawDataset[];
+    hasMore: boolean;
+    nextPageToken?: string;
+}> {
     const parameters: string[] = [];
 
     if (dereference) {
@@ -337,9 +342,17 @@ export async function fetchRecords({
 
     const data = await response.json();
     if (data?.records?.length > 0) {
-        return data.records;
+        return {
+            records: data.records,
+            hasMore: data.hasMore,
+            nextPageToken: data.nextPageToken
+        };
     } else {
-        return [];
+        return {
+            records: [],
+            hasMore: false,
+            nextPageToken: ""
+        };
     }
 }
 
