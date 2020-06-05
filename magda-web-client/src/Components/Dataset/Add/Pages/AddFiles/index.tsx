@@ -504,7 +504,7 @@ async function processFile(thisFile: any, update: Function) {
     update({ _state: DistributionState.Ready });
 }
 
-function mapStateToProps(state, old) {
+function mapStateToProps(_state, old) {
     let dataset = old.match.params.datasetId;
     return {
         dataset
