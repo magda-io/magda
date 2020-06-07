@@ -18,7 +18,8 @@
         "lib": ["dom", "dom.iterable", "esnext"],
         "isolatedModules": true,
         "skipLibCheck": true,
-        "baseUrl": "./src/"
+        "baseUrl": "./src/",
+        "composite": false
     },
     "include": ["./src/**/*"],
     "exclude": ["**/node_modules/**/*"]

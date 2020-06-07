@@ -174,7 +174,7 @@ class EditDataset extends React.Component<Props, State> {
         const shouldRenderButtonArea = () => {
             if (
                 distributions.filter(
-                    item => item._state !== DistributionState.Ready
+                    (item) => item._state !== DistributionState.Ready
                 ).length
             ) {
                 return false;
@@ -316,7 +316,7 @@ class EditDataset extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state, props) {
-    const uri = new URI(location.href);
+    const uri = new URI(window.location.href);
     const datasetId = props.match.params.datasetId;
     let step = parseInt(props.match.params.step);
     const isBackToReview =
@@ -333,7 +333,7 @@ function mapStateToProps(state, props) {
     };
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return bindActionCreators(
         {
             createNewDatasetReset: createNewDatasetReset,

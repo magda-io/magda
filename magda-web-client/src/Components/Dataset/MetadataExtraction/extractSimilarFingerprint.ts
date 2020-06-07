@@ -1,4 +1,4 @@
-import { FileDetails, ExtractedContents } from ".";
+import { FileDetails, ExtractedContents } from "./types";
 
 /**
  * Extract a frequency histogram fingerprint for finding similar files
@@ -13,7 +13,7 @@ export function extractSimilarFingerprint(
         });
     } else {
         return Promise.resolve({
-            similarFingerprint: fingerprint(input.array)
+            similarFingerprint: fingerprint(new Uint8Array(input.arrayBuffer))
         });
     }
 }

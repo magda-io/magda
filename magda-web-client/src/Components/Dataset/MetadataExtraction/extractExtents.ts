@@ -1,23 +1,21 @@
 import moment, { Moment } from "moment";
 import XLSX from "xlsx";
 import { uniq } from "lodash";
-import { config } from "config";
-import { FileDetails, ExtractedContents } from ".";
+import { FileDetails, ExtractedContents } from "./types";
 import {
     SpatialCoverage,
     TemporalCoverage,
     Interval
 } from "../Add/DatasetAddCommon";
-
-const { dateFormats, dateRegexes } = config.dateConfig;
-const { dateRegex, startDateRegex, endDateRegex } = dateRegexes;
+import type { MessageSafeConfig } from "config";
 
 /**
  * Extract spatial and temporal extent of spreadsheet files
  */
 export function extractExtents(
     _input: FileDetails,
-    depInput: ExtractedContents
+    depInput: ExtractedContents,
+    config: MessageSafeConfig
 ): Promise<{
     temporalCoverage?: TemporalCoverage;
     spatialCoverage?: SpatialCoverage;
@@ -44,7 +42,7 @@ export function extractExtents(
             }
 
             temporalCoverage = {
-                intervals: [aggregateDates(rows, headers)].filter(
+                intervals: [aggregateDates(rows, headers, config)].filter(
                     (i): i is Interval => !!i
                 )
             };
@@ -73,7 +71,7 @@ const MIN_POSSIBLE_LNG = -360;
 
 function tryFilterHeaders(headers: string[], ...regexes: RegExp[]) {
     for (const thisRegex of regexes) {
-        const matchingHeaders = headers.filter(header =>
+        const matchingHeaders = headers.filter((header) =>
             thisRegex.test(header)
         );
 
@@ -108,7 +106,14 @@ type SpatialExtent = {
     maxLng: number;
 };
 
-function aggregateDates(rows: any[], headers: string[]): Interval | undefined {
+function aggregateDates(
+    rows: any[],
+    headers: string[],
+    config: MessageSafeConfig
+): Interval | undefined {
+    const { dateFormats, dateRegexes } = config.dateConfig;
+    const { dateRegex, startDateRegex, endDateRegex } = dateRegexes;
+
     const dateHeaders = tryFilterHeaders(headers, dateRegex);
     const startDateHeaders = uniq(tryFilterHeaders(headers, startDateRegex));
     const endDateHeaders = uniq(tryFilterHeaders(headers, endDateRegex));
@@ -124,8 +129,8 @@ function aggregateDates(rows: any[], headers: string[]): Interval | undefined {
     let earliestDate = maxDate;
     let latestDate = minDate;
 
-    startDateHeadersInOrder.forEach(header => {
-        rows.forEach(row => {
+    startDateHeadersInOrder.forEach((header) => {
+        rows.forEach((row) => {
             var dateStr: string = row[header].toString();
             var parsedDate: Moment = moment.utc(dateStr, dateFormats);
             if (parsedDate) {
@@ -137,8 +142,8 @@ function aggregateDates(rows: any[], headers: string[]): Interval | undefined {
         });
     });
 
-    endDateHeadersInOrder.forEach(header => {
-        rows.forEach(row => {
+    endDateHeadersInOrder.forEach((header) => {
+        rows.forEach((row) => {
             var dateStr: string = row[header].toString();
             var parsedDate: Moment = moment.utc(dateStr, dateFormats);
             if (parsedDate) {

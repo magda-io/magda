@@ -25,10 +25,13 @@ import { User } from "reducers/userManagementReducer";
 import {
     FileDetails,
     MetadataExtractionOutput
-} from "Components/Dataset/MetadataExtraction";
+} from "Components/Dataset/MetadataExtraction/types";
+import * as Comlink from "comlink";
 
 import "./index.scss";
 import "../../DatasetAddCommon.scss";
+
+const ExtractorsWorker = require("worker-loader!../../../MetadataExtraction"); // eslint-disable-line import/no-webpack-loader-syntax
 
 const DATASETS_BUCKET = "magda-datasets";
 
@@ -41,7 +44,7 @@ type Props = {
         callback?: () => void
     ) => void;
     user: User;
-    datasetId: string;
+    datasetId?: string;
     stateData: State;
     // --- if use as edit page
     isEditView: boolean;
@@ -49,23 +52,22 @@ type Props = {
 
 type RunExtractors = (
     input: FileDetails,
-    update: (progress: number) => void
-) => Promise<MetadataExtractionOutput>;
+    config: any
+) => // update: (progress: number) => void
+Promise<MetadataExtractionOutput>;
 
 class AddFilesPage extends React.Component<Props & RouterProps> {
-    /**
-     * Promise for importing the extractors, that begins as soon as the component
-     * is mounted. If it's not finished by the time the extractors are needed, then
-     * the extraction process will simply wait for the import to finish before
-     * beginning, and it'll be part of the same loading state for the user.
-     */
-    importRunExtractorsPromise?: Promise<RunExtractors>;
+    // /**
+    //  * Promise for importing the extractors, that begins as soon as the component
+    //  * is mounted. If it's not finished by the time the extractors are needed, then
+    //  * the extraction process will simply wait for the import to finish before
+    //  * beginning, and it'll be part of the same loading state for the user.
+    //  */
+    // importRunExtractorsPromise?: Promise<RunExtractors>;
 
-    componentDidMount = () => {
-        this.importRunExtractorsPromise = import(
-            "Components/Dataset/MetadataExtraction"
-        ).then(mod => mod.runExtractors);
-    };
+    // componentDidMount = () => {
+    //     // this.importRunExtractorsPromise = ).then(mod => mod().runExtractors);
+    // };
 
     async onBrowse() {
         this.addFiles(await getFiles("*.*"));
@@ -80,10 +82,10 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
     updateLastModifyDate() {
         this.props.setState((state: State) => {
             const modifiedDates = state.distributions
-                .filter(f => f.modified)
-                .map(f => new Date(f.modified))
-                .filter(d => !isNaN(d.getTime()))
-                .map(d => d.getTime())
+                .filter((f) => f.modified)
+                .map((f) => new Date(f.modified))
+                .filter((d) => !isNaN(d.getTime()))
+                .map((d) => d.getTime())
                 .sort((a, b) => b - a);
             return {
                 ...state,
@@ -219,10 +221,10 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                         newState.dataset.keywords.keywords.length
                     ) {
                         const keywords = newState.dataset.keywords.keywords.map(
-                            item => item.toLowerCase()
+                            (item) => item.toLowerCase()
                         );
                         const themesBasedOnKeywords = config.datasetThemes.filter(
-                            theme =>
+                            (theme) =>
                                 keywords.indexOf(theme.toLowerCase()) !== -1
                         );
                         if (themesBasedOnKeywords.length) {
@@ -348,12 +350,12 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                 method: "DELETE"
             }
         )
-            .then(res => {
+            .then((res) => {
                 if (res.status !== 200) {
                     throw new Error("Could not delete file");
                 }
             })
-            .catch(err => {
+            .catch((err) => {
                 alert(
                     `Failed to remove file ${distToDelete.title} from Magda's storage. If you removed this ` +
                         `file because it shouldn't be stored on Magda, please contact ${config.defaultContactEmail}` +
@@ -382,14 +384,14 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
     renderStorageOption() {
         const state = this.props.stateData;
         const localFiles = state.distributions.filter(
-            file => file.creationSource === DistributionSource.File
+            (file) => file.creationSource === DistributionSource.File
         );
 
         return (
             <StorageOptionsSection
                 files={localFiles}
                 shouldUploadToStorageApi={state.shouldUploadToStorageApi}
-                setShouldUploadToStorageApi={value => {
+                setShouldUploadToStorageApi={(value) => {
                     this.props.setState((state: State) => {
                         const newState = {
                             ...state,
@@ -411,7 +413,7 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                         ? state.datasetAccess.location
                         : ""
                 }
-                setDataAccessLocation={value =>
+                setDataAccessLocation={(value) =>
                     this.props.setState((state: State) => ({
                         ...state,
                         datasetAccess: {
@@ -471,10 +473,10 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
         };
 
         /** Handles a new progress callback from extraction */
-        const handleExtractionProgress = (progress: number) => {
-            extractionProgress = progress;
-            updateTotalProgress();
-        };
+        // const handleExtractionProgress = (progress: number) => {
+        //     extractionProgress = progress;
+        //     updateTotalProgress();
+        // };
 
         /**
          * Promise tracking the upload of a file if relevant - if upload
@@ -486,9 +488,8 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
 
         const arrayBuffer = await readFileAsArrayBuffer(thisFile);
         const input = {
-            file: thisFile,
-            arrayBuffer,
-            array: new Uint8Array(arrayBuffer)
+            fileName: thisFile.name,
+            arrayBuffer
         };
 
         // Now we've finished the read, start processing
@@ -501,11 +502,19 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
          * Function for running all extractors in the correct order, which returns
          * a promise that completes when extraction is complete
          */
-        const runExtractors = await this.importRunExtractorsPromise!;
+        const extractorsWorker = new ExtractorsWorker();
+        const extractors = Comlink.wrap(extractorsWorker) as Comlink.Remote<{
+            runExtractors: RunExtractors;
+        }>;
 
         try {
             // Wait for extractors and upload to finish
-            const output = await runExtractors(input, handleExtractionProgress);
+            console.log(config);
+            const output = await extractors.runExtractors(
+                input,
+                { ...config, facets: {} }
+                // handleExtractionProgress
+            );
             await uploadPromise;
 
             // Now we're ready - the extractors and upload will have uploaded the
@@ -536,7 +545,7 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                         ...state,
                         error: e,
                         distributions: state.distributions.filter(
-                            thisDist => dist.id !== thisDist.id
+                            (thisDist) => dist.id !== thisDist.id
                         )
                     };
                 });
@@ -558,7 +567,7 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                             }
                         )
                     )
-                    .then(res => {
+                    .then((res) => {
                         // 404 is fine because it means the file never got created.
                         if (res.status !== 200 && res.status !== 404) {
                             throw new Error("Could not delete file");
@@ -566,7 +575,7 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
 
                         removeDist();
                     })
-                    .catch(e => {
+                    .catch((e) => {
                         console.error(e);
 
                         // This happens if the DELETE fails, which is really catastrophic.
@@ -579,7 +588,7 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                                         config.defaultContactEmail
                                 ),
                                 distributions: state.distributions.filter(
-                                    thisDist => dist.id !== thisDist.id
+                                    (thisDist) => dist.id !== thisDist.id
                                 )
                             };
                         });
@@ -597,7 +606,7 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
     ) => {
         this.props.setState((state: State) => {
             const distIndex = state.distributions.findIndex(
-                thisDist => thisDist.id === dist.id
+                (thisDist) => thisDist.id === dist.id
             );
 
             // Clone the existing dist array
@@ -645,7 +654,7 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
             ...config.credentialsFetchOptions,
             method: "POST",
             body: formData
-        }).then(res => {
+        }).then((res) => {
             if (res.status !== 200) {
                 throw new Error("Could not upload file");
             }
@@ -666,7 +675,7 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
     render() {
         const { stateData: state, isEditView } = this.props;
         const localFiles = state.distributions.filter(
-            file => file.creationSource === DistributionSource.File
+            (file) => file.creationSource === DistributionSource.File
         );
 
         return (
@@ -818,7 +827,7 @@ function turnPunctuationToSpaces(filename: string) {
 const PUNCTUATION_REGEX = /[-_]+/g;
 
 function toTitleCase(str: string) {
-    return str.replace(/\w\S*/g, function(txt) {
+    return str.replace(/\w\S*/g, function (txt) {
         return (
             txt.charAt(0).toUpperCase() +
             txt
@@ -832,7 +841,7 @@ function toTitleCase(str: string) {
 function readFileAsArrayBuffer(file: any): Promise<ArrayBuffer> {
     return new Promise((resolve, reject) => {
         var fileReader = new FileReader();
-        fileReader.onload = function() {
+        fileReader.onload = function () {
             resolve(this.result as ArrayBuffer);
         };
         fileReader.readAsArrayBuffer(file);
@@ -855,6 +864,7 @@ function fileFormat(file): string {
     }
 }
 
-export default withAddDatasetState(
+export default withAddDatasetState<Props>(
+    // @ts-ignore
     withRouter(connect(mapStateToProps)(AddFilesPage))
-);
+) as React.ComponentType<Props>;

@@ -3,32 +3,31 @@ import keywords from "retext-keywords";
 import toString from "nlcst-to-string";
 import { isValidKeyword } from "api-clients/VocabularyApis";
 import uniq from "lodash/uniq";
-import { config } from "config";
-import { ExtractedContents, FileDetails } from ".";
+import { ExtractedContents, FileDetails } from "./types";
+import type { MessageSafeConfig } from "config";
 
 /** The maximum number of characters to feed into retext (input after this char length will be trimmed off) */
 const MAX_CHARACTERS_FOR_EXTRACTION = 150000;
 /** The maximum number of keywords to return */
 export const MAX_KEYWORDS = 10;
 
-const keywordsBlackList =
-    config.keywordsBlackList &&
-    config.keywordsBlackList.map(kw => kw.toLowerCase());
-
 /** Turns all instances of one or more whitespace characters (space, newline etc) into a single space */
 function standardizeWhitespace(keyword: string) {
     return keyword.replace(/\s+/g, " ").trim();
 }
 
-function cleanUpKeywords(keywords: string[]) {
+function cleanUpKeywords(keywords: string[], config: MessageSafeConfig) {
     let cleaned = uniq(
-        keywords.map(kw => standardizeWhitespace(kw).toLowerCase())
+        keywords.map((kw) => standardizeWhitespace(kw).toLowerCase())
     );
+    const keywordsBlackList =
+        config.keywordsBlackList &&
+        config.keywordsBlackList.map((kw) => kw.toLowerCase());
     if (keywordsBlackList) {
         cleaned = cleaned.filter(
-            keyword =>
+            (keyword) =>
                 !keywordsBlackList.some(
-                    blackListed => keyword.indexOf(blackListed) > -1
+                    (blackListed) => keyword.indexOf(blackListed) > -1
                 )
         );
     }
@@ -40,7 +39,8 @@ function cleanUpKeywords(keywords: string[]) {
  */
 export async function extractKeywords(
     _input: FileDetails,
-    depInput: ExtractedContents
+    depInput: ExtractedContents,
+    config: MessageSafeConfig
 ) {
     let keywords = [] as string[];
 
@@ -60,7 +60,7 @@ export async function extractKeywords(
 
         const validatedKeywords: string[] = [];
         for (let i = 0; i < candidateKeywords.length; i++) {
-            const result = await isValidKeyword(candidateKeywords[i]);
+            const result = await isValidKeyword(candidateKeywords[i], config);
             if (result) {
                 validatedKeywords.push(candidateKeywords[i]);
             }
@@ -71,7 +71,9 @@ export async function extractKeywords(
         keywords = [...validatedKeywords, ...candidateKeywords];
     }
 
-    return { keywords: keywords = cleanUpKeywords(keywords).slice(0, 10) };
+    return {
+        keywords: keywords = cleanUpKeywords(keywords, config).slice(0, 10)
+    };
 }
 
 function getKeywordsFromText(
@@ -88,7 +90,7 @@ function getKeywordsFromText(
         function done(err, file) {
             if (err) throw err;
             let keyphrases: string[] = [];
-            file.data.keyphrases.forEach(function(phrase) {
+            file.data.keyphrases.forEach(function (phrase) {
                 keyphrases.push(phrase.matches[0].nodes.map(toString).join(""));
             });
             resolve(keyphrases);

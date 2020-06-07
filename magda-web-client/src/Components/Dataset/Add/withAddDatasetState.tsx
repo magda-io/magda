@@ -7,12 +7,14 @@ import { User } from "reducers/userManagementReducer";
 import { config } from "config";
 import { useAsync } from "react-async-hook";
 
+/* eslint-disable react-hooks/rules-of-hooks */
+
 type Props = { initialState: State; user: User } & RouterProps;
 
 function mapStateToProps(state: any) {
     return {
-        user: state.userManagement && state.userManagement.user,
-        isFetchingWhoAmI: state.userManagement.isFetchingWhoAmI
+        user: state.userManagement && (state.userManagement.user as User),
+        isFetchingWhoAmI: state.userManagement.isFetchingWhoAmI as boolean
     };
 }
 
@@ -60,3 +62,5 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
 
     return connect(mapStateToProps)(withRouter(withAddDatasetState));
 };
+
+/* eslint-enable react-hooks/rules-of-hooks */

@@ -7,6 +7,7 @@ import { User } from "reducers/userManagementReducer";
 import { config } from "config";
 import { fetchRecord } from "api-clients/RegistryApis";
 
+/* eslint-disable react-hooks/rules-of-hooks */
 type Props = { initialState: State; user: User } & RouterProps;
 
 function mapStateToProps(state: any) {
@@ -69,3 +70,5 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
 
     return connect(mapStateToProps)(withRouter(withEditDatasetState));
 };
+
+/* eslint-enable react-hooks/rules-of-hooks */

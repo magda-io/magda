@@ -4,8 +4,8 @@ import pdfjsLib from "pdfjs-dist/build/pdf";
 import PDFWorker from "pdfjs-dist/build/pdf.worker";
 import { MAX_KEYWORDS } from "./extractKeywords";
 import uniq from "lodash/uniq";
-import { FileDetails } from ".";
-(window as any).pdfjsWorker = PDFWorker;
+import { FileDetails } from "./types";
+(self as any).pdfjsWorker = PDFWorker;
 
 interface ContentExtractorOutput {
     format?: string;
@@ -25,7 +25,7 @@ interface ContentExtractorOutput {
 export default async function extract(
     input: FileDetails
 ): Promise<ContentExtractorOutput> {
-    const name = input.file?.name;
+    const name = input.fileName;
 
     const result: ContentExtractorOutput = await (async () => {
         if (name?.match(/[.]xlsx?$/i)) {
@@ -81,7 +81,7 @@ async function extractSpreadsheetFile(
     keywords?: string[];
     largeTextBlockIdentified: boolean;
 }> {
-    const workbook = XLSX.read(input.array, {
+    const workbook = XLSX.read(new Uint8Array(input.arrayBuffer!), {
         type: "array",
         cellDates: true
     });
@@ -116,10 +116,10 @@ async function extractSpreadsheetFile(
     if (largeTextBlockIdentified) {
         // --- only generate text for NLP if large text block is detected
         text = Object.values(workbook.Sheets)
-            .map(worksheet => {
+            .map((worksheet) => {
                 return XLSX.utils
                     .sheet_to_json<string>(worksheet)
-                    .map(row => Object.values(row).join(","))
+                    .map((row) => Object.values(row).join(","))
                     .join("\n");
             })
             .join("\n\n");
@@ -148,7 +148,7 @@ function getKeywordsFromWorksheet(
     const keywords: string[] = [];
     const cancelLoopToken = {};
     try {
-        Object.keys(sheet).forEach(key => {
+        Object.keys(sheet).forEach((key) => {
             if (typeof key !== "string") {
                 // --- invalid key
                 return;
@@ -257,8 +257,8 @@ function productKeywordsFromInput(
             true
         );
         keywords = uniq(keywords.concat(keywordsFromSheet));
-        largeTextBlockIdentified: largeTextBlockIdentified ||
-            largeTextBlockIdentifiedFromSheet;
+        largeTextBlockIdentified =
+            largeTextBlockIdentified || largeTextBlockIdentifiedFromSheet;
         if (keywords.length >= MAX_KEYWORDS && largeTextBlockIdentified) {
             return {
                 keywords: keywords.slice(0, MAX_KEYWORDS),
@@ -307,7 +307,7 @@ function productKeywordsFromInput(
  */
 async function extractPDFFile(input: FileDetails) {
     let pdf = await pdfjsLib.getDocument({
-        data: input.array
+        data: new Uint8Array(input.arrayBuffer)
     });
 
     // pdf files can have embedded properties; extract those
@@ -343,7 +343,7 @@ async function extractPDFFile(input: FileDetails) {
         page = await page.getTextContent({
             normalizeWhitespace: true
         });
-        page = page.items.map(txt => txt.str).join("\n");
+        page = page.items.map((txt) => txt.str).join("\n");
         text.push(page);
     }
 

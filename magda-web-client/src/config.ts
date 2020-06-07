@@ -317,6 +317,9 @@ export const config = {
         : baseUrl + "api/v0/openfaas"
 };
 
+export type Config = typeof config;
+export type MessageSafeConfig = Omit<Config, "facets">;
+
 export const defaultConfiguration = {
     datasetSearchSuggestionScoreThreshold: 65,
     searchResultsPerPage: 10

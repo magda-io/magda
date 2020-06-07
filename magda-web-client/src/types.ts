@@ -1,5 +1,5 @@
 export type FetchError = {
-    title: string | number;
+    title: string;
     detail: string;
 };
 
