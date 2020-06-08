@@ -49,7 +49,11 @@ function createRows(
                 <td className="edit-button-col">
                     <Link
                         className="edit-button"
-                        to={`/dataset/edit/${encodeURIComponent(record.id)}`}
+                        to={`/dataset/${
+                            record?.aspects?.["dataset-draft"]?.data
+                                ? "add/metadata"
+                                : "edit"
+                        }/${encodeURIComponent(record.id)}`}
                     >
                         <img src={editIcon} />
                     </Link>

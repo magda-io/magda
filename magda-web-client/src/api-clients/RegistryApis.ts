@@ -161,26 +161,30 @@ export type OrderByOption =
           dir: "asc" | "desc";
       };
 
+export const DEFAULT_OPTIONAL_FETCH_ASPECT_LIST = [
+    "dcat-distribution-strings",
+    "dataset-distributions",
+    "temporal-coverage&",
+    "usage",
+    "access",
+    "dataset-publisher",
+    "source",
+    "source-link-status",
+    "dataset-quality-rating",
+    "spatial-coverage",
+    "publishing",
+    "dataset-access-control",
+    "provenance",
+    "information-security",
+    "currency"
+];
+
+export const DEFAULT_COMPULSORY_FETCH_ASPECT_LIST = ["dcat-dataset-strings"];
+
 export async function fetchRecord(
     id: string,
-    optionalAspects: string[] = [
-        "dcat-distribution-strings",
-        "dataset-distributions",
-        "temporal-coverage&",
-        "usage",
-        "access",
-        "dataset-publisher",
-        "source",
-        "source-link-status",
-        "dataset-quality-rating",
-        "spatial-coverage",
-        "publishing",
-        "dataset-access-control",
-        "provenance",
-        "information-security",
-        "currency"
-    ],
-    aspects: string[] = ["dcat-dataset-strings"],
+    optionalAspects: string[] = DEFAULT_OPTIONAL_FETCH_ASPECT_LIST,
+    aspects: string[] = DEFAULT_COMPULSORY_FETCH_ASPECT_LIST,
     dereference: boolean = true,
     noCache: boolean = false
 ): Promise<RawDataset> {
