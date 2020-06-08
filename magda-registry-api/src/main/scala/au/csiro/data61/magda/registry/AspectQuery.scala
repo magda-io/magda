@@ -99,7 +99,7 @@ object AspectQuery {
 
     (":" + value) match {
       case operatorValueRegex(opStr, valueStr) =>
-        if (opStr == "!=") {
+        if (opStr == ":!") {
           AspectQueryNotEqualValue(
             pathParts.head,
             pathParts.tail,
@@ -110,8 +110,6 @@ object AspectQuery {
             case ":" =>
               // --- for =, compare as text works for other types (e.g. numeric as well)
               (SQLSyntax.createUnsafely("="), AspectQueryString(valueStr))
-            case ":!" =>
-              (SQLSyntax.createUnsafely("!="), AspectQueryString(valueStr))
             case ":?" =>
               (
                 SQLSyntax.createUnsafely("SIMILAR TO"),
