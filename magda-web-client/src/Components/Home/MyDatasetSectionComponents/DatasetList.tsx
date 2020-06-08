@@ -45,6 +45,7 @@ const DatasetList: FunctionComponent<PropsType> = props => {
                 </div>
                 <div className="dataset-list-body">
                     <DatasetGrid
+                        key={`tab:${activeTab}|searchtext:${searchText}`}
                         searchText={searchText}
                         datasetType={activeTab}
                     />

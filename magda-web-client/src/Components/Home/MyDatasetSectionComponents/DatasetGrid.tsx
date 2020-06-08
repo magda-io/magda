@@ -74,6 +74,9 @@ function getTitle(datasetType: DatasetTypes, record: Record) {
     } else {
         title = record?.aspects?.["dcat-dataset-strings"]?.title;
     }
+    if (!title) {
+        title = record?.name;
+    }
     return title ? title : "N/A";
 }
 
@@ -114,42 +117,61 @@ const DatasetGrid: FunctionComponent<PropsType> = props => {
                 opts.pageToken = pageToken;
             }
 
+            if (datasetType === "drafts") {
+                opts.aspects = ["publishing"];
+                opts.optionalAspects = ["dataset-draft"];
+                opts.orderBy = "dataset-draft.timestamp";
+            } else {
+                opts.aspects = ["dcat-dataset-strings"];
+                opts.optionalAspects = ["publishing"];
+                opts.orderBy = "dcat-dataset-strings.modified";
+            }
+
             searchText = searchText.trim();
 
             if (searchText) {
                 // --- generate keyword search
                 if (datasetType === "drafts") {
-                    opts.aspects = ["dataset-draft"];
                     opts.aspectQueries = [
                         new AspectQuery(
-                            "dataset-draft.title",
+                            "publishing.state",
+                            AspectQueryOperators["="],
+                            `draft`,
+                            true
+                        ),
+                        new AspectQuery(
+                            "dataset-draft.dataset.title",
                             AspectQueryOperators.patternMatch,
                             `%${searchText}%`,
                             false
                         ),
                         new AspectQuery(
-                            "dataset-draft.description",
+                            "dataset-draft.dataset.description",
                             AspectQueryOperators.patternMatch,
                             `%${searchText}%`,
                             false
                         ),
                         new AspectQuery(
-                            "dataset-draft.themes",
+                            "dataset-draft.dataset.themes",
                             AspectQueryOperators.patternMatch,
                             `%${searchText}%`,
                             false
                         ),
                         new AspectQuery(
-                            "dataset-draft.keywords",
+                            "dataset-draft.dataset.keywords",
                             AspectQueryOperators.patternMatch,
                             `%${searchText}%`,
                             false
                         )
                     ];
-                    opts.orderBy = "dataset-draft.timestamp";
                 } else {
-                    opts.aspects = ["dcat-dataset-strings"];
                     opts.aspectQueries = [
+                        new AspectQuery(
+                            "publishing.state",
+                            AspectQueryOperators["!="],
+                            `draft`,
+                            true
+                        ),
                         new AspectQuery(
                             "dcat-dataset-strings.title",
                             AspectQueryOperators.patternMatch,
@@ -175,10 +197,8 @@ const DatasetGrid: FunctionComponent<PropsType> = props => {
                             false
                         )
                     ];
-                    opts.orderBy = "dcat-dataset-strings.modified";
                 }
             }
-
             return await fetchRecords(opts);
         },
         [props.datasetType, props.searchText, pageToken]

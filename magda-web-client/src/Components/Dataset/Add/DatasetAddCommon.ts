@@ -724,10 +724,7 @@ export async function saveStateToRegistry(state: State, id: string) {
         if (!record?.aspects) {
             record.aspects = {} as any;
         }
-        record.aspects["dataset-draft"] = {
-            data: dataset,
-            timestamp
-        };
+        record.aspects["dataset-draft"] = datasetDraftAspectData;
         await updateDataset(record, []);
     }
 
