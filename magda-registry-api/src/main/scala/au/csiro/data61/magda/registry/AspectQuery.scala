@@ -19,6 +19,16 @@ case class AspectQueryWithValue(
     sqlComparator: SQLSyntax = SQLSyntax.createUnsafely("=")
 ) extends AspectQuery
 
+/**
+  * This aspect query will NOT ONLY match the situation that the aspect has specified json path and its value doesn't equal to specified value
+  * But also match the situation that the specific json path does not exist on the aspect.
+  */
+case class AspectQueryNotEqualValue(
+    val aspectId: String,
+    val path: List[String],
+    value: AspectQueryValue
+) extends AspectQuery
+
 case class AspectQueryAnyInArray(
     val aspectId: String,
     val path: List[String],
@@ -87,63 +97,71 @@ object AspectQuery {
       throw new Exception("Path for aspect query was empty")
     }
 
-    val (sqlOp, sqlValue) = (":" + value) match {
+    (":" + value) match {
       case operatorValueRegex(opStr, valueStr) =>
-        opStr match {
-          case ":" =>
-            // --- for = or != compare as text works for other types (e.g. numeric as well)
-            (SQLSyntax.createUnsafely("="), AspectQueryString(valueStr))
-          case ":!" =>
-            (SQLSyntax.createUnsafely("!="), AspectQueryString(valueStr))
-          case ":?" =>
-            (
-              SQLSyntax.createUnsafely("SIMILAR TO"),
-              AspectQueryString(valueStr)
-            )
-          case ":!?" =>
-            (
-              SQLSyntax.createUnsafely("NOT SIMILAR TO"),
-              AspectQueryString(valueStr)
-            )
-          case ":>" =>
-            (
-              SQLSyntax.createUnsafely(">"),
-              if (numericValueRegex matches valueStr) {
-                AspectQueryBigDecimal(valueStr.toDouble)
-              } else {
+        if (opStr == "!=") {
+          AspectQueryNotEqualValue(
+            pathParts.head,
+            pathParts.tail,
+            AspectQueryString(valueStr)
+          )
+        } else {
+          val (sqlOp, sqlValue) = opStr match {
+            case ":" =>
+              // --- for =, compare as text works for other types (e.g. numeric as well)
+              (SQLSyntax.createUnsafely("="), AspectQueryString(valueStr))
+            case ":!" =>
+              (SQLSyntax.createUnsafely("!="), AspectQueryString(valueStr))
+            case ":?" =>
+              (
+                SQLSyntax.createUnsafely("SIMILAR TO"),
                 AspectQueryString(valueStr)
-              }
-            )
-          case ":>=" =>
-            (
-              SQLSyntax.createUnsafely(">="),
-              if (numericValueRegex matches valueStr) {
-                AspectQueryBigDecimal(valueStr.toDouble)
-              } else {
+              )
+            case ":!?" =>
+              (
+                SQLSyntax.createUnsafely("NOT SIMILAR TO"),
                 AspectQueryString(valueStr)
-              }
-            )
-          case ":<" =>
-            (
-              SQLSyntax.createUnsafely(">="),
-              if (numericValueRegex matches valueStr) {
-                AspectQueryBigDecimal(valueStr.toDouble)
-              } else {
-                AspectQueryString(valueStr)
-              }
-            )
-          case ":<=" =>
-            (SQLSyntax.createUnsafely("<="), AspectQueryString(valueStr))
-          case _ =>
-            throw new Error(s"Unsupported aspectQuery operator: ${opStr}")
+              )
+            case ":>" =>
+              (
+                SQLSyntax.createUnsafely(">"),
+                if (numericValueRegex matches valueStr) {
+                  AspectQueryBigDecimal(valueStr.toDouble)
+                } else {
+                  AspectQueryString(valueStr)
+                }
+              )
+            case ":>=" =>
+              (
+                SQLSyntax.createUnsafely(">="),
+                if (numericValueRegex matches valueStr) {
+                  AspectQueryBigDecimal(valueStr.toDouble)
+                } else {
+                  AspectQueryString(valueStr)
+                }
+              )
+            case ":<" =>
+              (
+                SQLSyntax.createUnsafely(">="),
+                if (numericValueRegex matches valueStr) {
+                  AspectQueryBigDecimal(valueStr.toDouble)
+                } else {
+                  AspectQueryString(valueStr)
+                }
+              )
+            case ":<=" =>
+              (SQLSyntax.createUnsafely("<="), AspectQueryString(valueStr))
+            case _ =>
+              throw new Error(s"Unsupported aspectQuery operator: ${opStr}")
+          }
+          AspectQueryWithValue(
+            pathParts.head,
+            pathParts.tail,
+            sqlValue,
+            sqlOp
+          )
         }
     }
 
-    AspectQueryWithValue(
-      pathParts.head,
-      pathParts.tail,
-      sqlValue,
-      sqlOp
-    )
   }
 }

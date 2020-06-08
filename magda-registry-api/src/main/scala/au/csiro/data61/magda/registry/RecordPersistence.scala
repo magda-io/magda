@@ -1962,7 +1962,12 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
   private def aspectQueryToWhereClause(query: AspectQuery) = {
     val comparisonClause = aspectQueryToSql(query)
 
-    sqls"""EXISTS (
+    val existClause = query match {
+      case AspectQueryNotEqualValue(aspectId, path, value) => "NOT EXISTS"
+      case _                                               => "EXISTS"
+    }
+
+    sqls"""${existClause} (
              SELECT 1 FROM recordaspects
              WHERE (aspectId, recordid, tenantId)=(${query.aspectId}, Records.recordId, Records.tenantId) AND
              $comparisonClause )
