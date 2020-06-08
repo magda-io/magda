@@ -53,6 +53,7 @@
         .paging-area {
             padding-right: 55px;
             .next-page-button {
+                cursor: pointer;
                 float: right;
                 height: 42px;
                 width: 130px;
@@ -64,6 +65,10 @@
                 line-height: 24px;
                 text-align: center;
                 border: none;
+                &:disabled {
+                    opacity: 0.3;
+                    cursor: default;
+                }
             }
         }
     }
