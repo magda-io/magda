@@ -121,10 +121,26 @@ const DatasetGrid: FunctionComponent<PropsType> = props => {
                 opts.aspects = ["publishing"];
                 opts.optionalAspects = ["dataset-draft"];
                 opts.orderBy = "dataset-draft.timestamp";
+                opts.aspectQueries = [
+                    new AspectQuery(
+                        "publishing.state",
+                        AspectQueryOperators["="],
+                        `draft`,
+                        true
+                    )
+                ];
             } else {
                 opts.aspects = ["dcat-dataset-strings"];
                 opts.optionalAspects = ["publishing"];
                 opts.orderBy = "dcat-dataset-strings.modified";
+                opts.aspectQueries = [
+                    new AspectQuery(
+                        "publishing.state",
+                        AspectQueryOperators["!="],
+                        `draft`,
+                        true
+                    )
+                ];
             }
 
             searchText = searchText.trim();
@@ -132,13 +148,7 @@ const DatasetGrid: FunctionComponent<PropsType> = props => {
             if (searchText) {
                 // --- generate keyword search
                 if (datasetType === "drafts") {
-                    opts.aspectQueries = [
-                        new AspectQuery(
-                            "publishing.state",
-                            AspectQueryOperators["="],
-                            `draft`,
-                            true
-                        ),
+                    opts.aspectQueries = opts.aspectQueries.concat([
                         new AspectQuery(
                             "dataset-draft.dataset.title",
                             AspectQueryOperators.patternMatch,
@@ -163,15 +173,9 @@ const DatasetGrid: FunctionComponent<PropsType> = props => {
                             `%${searchText}%`,
                             false
                         )
-                    ];
+                    ]);
                 } else {
-                    opts.aspectQueries = [
-                        new AspectQuery(
-                            "publishing.state",
-                            AspectQueryOperators["!="],
-                            `draft`,
-                            true
-                        ),
+                    opts.aspectQueries = opts.aspectQueries.concat([
                         new AspectQuery(
                             "dcat-dataset-strings.title",
                             AspectQueryOperators.patternMatch,
@@ -196,7 +200,7 @@ const DatasetGrid: FunctionComponent<PropsType> = props => {
                             `%${searchText}%`,
                             false
                         )
-                    ];
+                    ]);
                 }
             }
             return await fetchRecords(opts);
