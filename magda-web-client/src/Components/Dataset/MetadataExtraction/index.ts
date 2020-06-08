@@ -19,28 +19,29 @@ const dependentExtractors: Processor[] = [
 const extractors = {
     async runExtractors(
         input: FileDetails,
-        config: MessageSafeConfig
-        // update: (progress: number) => void
+        config: MessageSafeConfig,
+        update: (progress: number) => void
     ): Promise<MetadataExtractionOutput> {
-        // const extractorCount = dependentExtractors.length + 1;
+        const extractorCount = dependentExtractors.length + 1;
+        const array = new Uint8Array(input.arrayBuffer);
 
         // Extract the contents (text, XLSX workbook)
-        const contents = await extractContents(input);
+        const contents = await extractContents(input, array);
 
-        // update(1 / extractorCount + 1);
+        update(1 / (extractorCount + 1));
 
         // Concurrently feed the contents into various extractors that are dependent on it
-        // let doneCount = 0;
+        let doneCount = 0;
         const extractors = dependentExtractors.map((extractor) =>
-            extractor(input, contents, config)
+            extractor(input, array, contents, config)
                 .catch((e) => {
                     // even if one of the modules fail, we keep going
                     console.error(e);
                     return {};
                 })
                 .then((result) => {
-                    // doneCount++;
-                    // update((doneCount + 2) / extractorCount + 1);
+                    doneCount++;
+                    update((doneCount + 1) / (extractorCount + 1));
                     return result;
                 })
         );

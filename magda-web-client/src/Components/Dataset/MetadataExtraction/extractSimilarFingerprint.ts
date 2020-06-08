@@ -5,6 +5,7 @@ import { FileDetails, ExtractedContents } from "./types";
  */
 export function extractSimilarFingerprint(
     input: FileDetails,
+    array: Uint8Array,
     { text }: ExtractedContents
 ): Promise<{ similarFingerprint: Uint32Array[] }> {
     if (text) {
@@ -13,7 +14,7 @@ export function extractSimilarFingerprint(
         });
     } else {
         return Promise.resolve({
-            similarFingerprint: fingerprint(new Uint8Array(input.arrayBuffer))
+            similarFingerprint: fingerprint(array)
         });
     }
 }

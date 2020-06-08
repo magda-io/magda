@@ -29,6 +29,7 @@ export type ExtractedContents = {
  */
 export type Processor = (
     input: FileDetails,
+    array: Uint8Array,
     depInput: ExtractedContents,
     config: MessageSafeConfig
 ) => Promise<MetadataExtractionOutput>;

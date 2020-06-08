@@ -39,6 +39,7 @@ function cleanUpKeywords(keywords: string[], config: MessageSafeConfig) {
  */
 export async function extractKeywords(
     _input: FileDetails,
+    _array: Uint8Array,
     depInput: ExtractedContents,
     config: MessageSafeConfig
 ) {

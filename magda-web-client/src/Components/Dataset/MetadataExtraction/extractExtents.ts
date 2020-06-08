@@ -14,6 +14,7 @@ import type { MessageSafeConfig } from "config";
  */
 export function extractExtents(
     _input: FileDetails,
+    _array: Uint8Array,
     depInput: ExtractedContents,
     config: MessageSafeConfig
 ): Promise<{

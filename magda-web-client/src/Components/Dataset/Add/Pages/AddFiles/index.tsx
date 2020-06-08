@@ -20,7 +20,7 @@ import {
 } from "../../DatasetAddCommon";
 import withAddDatasetState from "../../withAddDatasetState";
 import uniq from "lodash/uniq";
-import { config } from "config";
+import { config, MessageSafeConfig } from "config";
 import { User } from "reducers/userManagementReducer";
 import {
     FileDetails,
@@ -52,9 +52,9 @@ type Props = {
 
 type RunExtractors = (
     input: FileDetails,
-    config: any
-) => // update: (progress: number) => void
-Promise<MetadataExtractionOutput>;
+    config: MessageSafeConfig,
+    update: (progress: number) => void
+) => Promise<MetadataExtractionOutput>;
 
 class AddFilesPage extends React.Component<Props & RouterProps> {
     // /**
@@ -158,8 +158,6 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
 
             const distAfterProcessing = await this.processFile(thisFile, dist);
 
-            console.log(distAfterProcessing);
-
             try {
                 this.props.setState((state: State) => {
                     const newState: State = {
@@ -240,8 +238,6 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                             };
                         }
                     }
-
-                    console.log(newState.dataset);
 
                     return newState;
                 });
@@ -431,13 +427,13 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
         dist: Distribution
     ): Promise<Distribution> {
         /** Updates a part of this particular distribution */
-        const updateThisDist = this.updateDistPartial(thisFile, dist);
+        const updateThisDist = this.updateDistPartial(dist);
 
         // Show user we're starting to read
-        updateThisDist({
+        updateThisDist(() => ({
             _state: DistributionState.Reading,
             _progress: 0
-        });
+        }));
 
         /** Should we be uploading this file too, or just reading metadata locally? */
         const shouldUpload = this.props.stateData.shouldUploadToStorageApi;
@@ -454,15 +450,16 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
          * extraction and uploading if applicable
          */
         const updateTotalProgress = () => {
-            console.log(uploadProgress);
-            console.log(extractionProgress);
-
-            updateThisDist({
-                _progress: Math.floor(
-                    shouldUpload
-                        ? extractionProgress * 40 + uploadProgress * 40
-                        : extractionProgress * 80
-                )
+            updateThisDist(() => {
+                return {
+                    _progress:
+                        20 +
+                        Math.round(
+                            shouldUpload
+                                ? extractionProgress * 40 + uploadProgress * 40
+                                : extractionProgress * 80
+                        )
+                };
             });
         };
 
@@ -473,10 +470,10 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
         };
 
         /** Handles a new progress callback from extraction */
-        // const handleExtractionProgress = (progress: number) => {
-        //     extractionProgress = progress;
-        //     updateTotalProgress();
-        // };
+        const handleExtractionProgress = (progress: number) => {
+            extractionProgress = progress;
+            updateTotalProgress();
+        };
 
         /**
          * Promise tracking the upload of a file if relevant - if upload
@@ -493,10 +490,10 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
         };
 
         // Now we've finished the read, start processing
-        updateThisDist({
+        updateThisDist((_state) => ({
             _state: DistributionState.Processing,
             _progress: 20
-        });
+        }));
 
         /**
          * Function for running all extractors in the correct order, which returns
@@ -509,20 +506,23 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
 
         try {
             // Wait for extractors and upload to finish
-            console.log(config);
             const output = await extractors.runExtractors(
                 input,
-                { ...config, facets: {} }
-                // handleExtractionProgress
+                (() => {
+                    const safeConfig = { ...config };
+                    delete safeConfig.facets;
+                    return safeConfig;
+                })(),
+                Comlink.proxy(handleExtractionProgress)
             );
             await uploadPromise;
 
             // Now we're ready - the extractors and upload will have uploaded the
             // distribution directly, so no need to do anything with the results of
             // those promises.
-            updateThisDist({
+            updateThisDist((_dist: Distribution) => ({
                 _state: DistributionState.Ready
-            });
+            }));
 
             return {
                 ...dist,
@@ -532,7 +532,8 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                 keywords: output.keywords,
                 equalHash: output.equalHash?.toString(),
                 temporalCoverage: output.temporalCoverage,
-                spatialCoverage: output.spatialCoverage
+                spatialCoverage: output.spatialCoverage,
+                _state: DistributionState.Ready
             };
         } catch (e) {
             // Something went wrong - remove the distribution and show the error
@@ -601,19 +602,21 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
         }
     }
 
-    updateDistPartial = (file: File, dist: Distribution) => (
-        updatedDist: Partial<Distribution>
+    updateDistPartial = (dist: Distribution) => (
+        updateFn: (state: Distribution) => Partial<Distribution>
     ) => {
         this.props.setState((state: State) => {
             const distIndex = state.distributions.findIndex(
                 (thisDist) => thisDist.id === dist.id
             );
+            const upToDateDist =
+                distIndex !== -1 ? state.distributions[distIndex] : dist;
 
             // Clone the existing dist array
             const newDists = state.distributions.concat();
             const mergedDist = {
-                ...dist,
-                ...updatedDist
+                ...upToDateDist,
+                ...updateFn(upToDateDist)
             };
 
             // If dist already exists
@@ -629,8 +632,6 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                 ...state,
                 distributions: newDists
             };
-
-            console.log(newState);
 
             return newState;
         });

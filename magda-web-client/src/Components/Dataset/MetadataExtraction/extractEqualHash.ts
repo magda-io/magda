@@ -5,8 +5,8 @@ import { FileDetails } from "./types";
  * Hash for checking exact file matches
  */
 
-export function extractEqualHash(input: FileDetails) {
+export function extractEqualHash(_input: FileDetails, array: Uint8Array) {
     return Promise.resolve({
-        equalHash: CRC32.buf(new Uint8Array(input.arrayBuffer))
+        equalHash: CRC32.buf(array)
     });
 }

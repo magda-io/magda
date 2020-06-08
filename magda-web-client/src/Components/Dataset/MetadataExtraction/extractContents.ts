@@ -23,29 +23,30 @@ interface ContentExtractorOutput {
  *
  */
 export default async function extract(
-    input: FileDetails
+    input: FileDetails,
+    array: Uint8Array
 ): Promise<ContentExtractorOutput> {
     const name = input.fileName;
 
     const result: ContentExtractorOutput = await (async () => {
         if (name?.match(/[.]xlsx?$/i)) {
             return {
-                ...(await extractSpreadsheetFile(input)),
+                ...(await extractSpreadsheetFile(input, array)),
                 format: "XLSX"
             };
         } else if (name?.match(/[.]csv/i)) {
             return {
-                ...(await extractSpreadsheetFile(input, "csv")),
+                ...(await extractSpreadsheetFile(input, array)),
                 format: "CSV"
             };
         } else if (name?.match(/[.]tsv$/i)) {
             return {
-                ...(await extractSpreadsheetFile(input, "csv")),
+                ...(await extractSpreadsheetFile(input, array)),
                 format: "TSV"
             };
         } else if (name?.match(/[.]pdf$/i)) {
             return {
-                ...(await extractPDFFile(input)),
+                ...(await extractPDFFile(input, array)),
                 format: "PDF"
             };
         } else if (name?.match(/[.]docx?$/i)) {
@@ -71,7 +72,7 @@ export default async function extract(
  */
 async function extractSpreadsheetFile(
     input: FileDetails,
-    bookType = "xlsx"
+    array: Uint8Array
 ): Promise<{
     workbook: XLSX.WorkBook;
     datasetTitle?: string;
@@ -81,7 +82,7 @@ async function extractSpreadsheetFile(
     keywords?: string[];
     largeTextBlockIdentified: boolean;
 }> {
-    const workbook = XLSX.read(new Uint8Array(input.arrayBuffer!), {
+    const workbook = XLSX.read(array, {
         type: "array",
         cellDates: true
     });
@@ -110,7 +111,8 @@ async function extractSpreadsheetFile(
 
     // --- pass to keywords extractor for processing
     const { keywords, largeTextBlockIdentified } = productKeywordsFromInput(
-        input
+        input,
+        array
     );
 
     if (largeTextBlockIdentified) {
@@ -232,7 +234,8 @@ function getKeywordsFromWorksheet(
 }
 
 function productKeywordsFromInput(
-    input
+    input: FileDetails,
+    array: Uint8Array
 ): { keywords: string[]; largeTextBlockIdentified: boolean } {
     let keywords: string[] = [];
     let largeTextBlockIdentified = false;
@@ -241,7 +244,7 @@ function productKeywordsFromInput(
     // --- `sheet_to_json` return [] if there is only one row
     // --- the type data & row num is lost during conversion
     const allSheetsData = Object.values(
-        XLSX.read(input.array, {
+        XLSX.read(array, {
             type: "array"
         }).Sheets
     );
@@ -305,9 +308,9 @@ function productKeywordsFromInput(
 /**
  * Extracts data/metadata from pdf format.
  */
-async function extractPDFFile(input: FileDetails) {
+async function extractPDFFile(_input: FileDetails, array: Uint8Array) {
     let pdf = await pdfjsLib.getDocument({
-        data: new Uint8Array(input.arrayBuffer)
+        data: array
     });
 
     // pdf files can have embedded properties; extract those
