@@ -123,9 +123,7 @@ object SqlHelper {
              aspectid = $aspectId AND (data #>> string_to_array(${path
           .mkString(",")}, ','))::${value.postgresType} $sqlComparator ${value.value}::${value.postgresType}
         """
-      case AspectQueryNotEqualValue(aspectId,
-      path,
-      value) =>
+      case AspectQueryNotEqualValue(aspectId, path, value) =>
         // --- In order to cover the situation that json path doesn't exist,
         // --- we set SQL operator as `=` and put the generated SQL in NOT EXISTS clause instead
         // --- data #>> string_to_array(xx,",") IS NULL won't work as, when json path doesn't exist, the higher level `EXIST` clause will always evaluate to false
