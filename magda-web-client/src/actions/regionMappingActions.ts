@@ -27,8 +27,11 @@ export function requestRegionMappingError(error: FetchError): FacetAction {
 export function fetchRegionMapping() {
     return (dispatch: Function) => {
         dispatch(requestRegionMapping());
-        return fetch(config.searchApiUrl + "region-types", config.fetchOptions)
-            .then(response => {
+        return fetch(
+            config.searchApiUrl + "region-types",
+            config.credentialsFetchOptions
+        )
+            .then((response) => {
                 if (response.status === 200) {
                     return response.json();
                 }
@@ -40,7 +43,7 @@ export function fetchRegionMapping() {
             .then((json: FacetSearchJson) => {
                 return dispatch(receiveRegionMapping(json));
             })
-            .catch(error =>
+            .catch((error) =>
                 dispatch(
                     requestRegionMappingError({
                         title: error.name,

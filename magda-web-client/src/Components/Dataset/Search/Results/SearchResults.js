@@ -21,7 +21,7 @@ class SearchResults extends Component {
             return this.props.configuration.searchResultsPerPage;
         }
 
-        const scores = this.props.searchResults.map(result => result.score);
+        const scores = this.props.searchResults.map((result) => result.score);
 
         for (let i = 0; i < scores.length; i++) {
             if (

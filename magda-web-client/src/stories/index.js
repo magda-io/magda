@@ -55,7 +55,7 @@ tacitos ille pondus clipeoque **vomit**. Qui arcem. Cum diu, misit deficeret
 texit ad quos, ferar aratro praecipue.`;
 
 storiesOf("Shared UI", module)
-    .addDecorator(story => (
+    .addDecorator((story) => (
         <MemoryRouter initialEntries={["/"]}>{story()}</MemoryRouter>
     ))
     .add("ToggleList", () => (
@@ -66,8 +66,8 @@ storiesOf("Shared UI", module)
                 { id: 2, title: "item c" }
             ]}
             select={action()}
-            renderFunction={item => <div>{item.title}</div>}
-            getKey={item => item.id}
+            renderFunction={(item) => <div>{item.title}</div>}
+            getKey={(item) => item.id}
             defaultLength={2}
         />
     ))
@@ -142,7 +142,7 @@ storiesOf("Aspect Viewer", module).add("Temporal Aspect Viewer", () => (
     />
 ));
 
-iconTypes.map(iconname =>
+iconTypes.map((iconname) =>
     storiesOf("Icons", module).add(iconname, () => (
         <CustomIcons name={iconname} />
     ))

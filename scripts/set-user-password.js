@@ -200,7 +200,7 @@ async function getUserIdFromEmailOrUid(dbClient, user) {
     }
 
     process.exit();
-})().catch(e => {
+})().catch((e) => {
     console.error(chalk.red(`Failed to reset user password: ${e}`));
     process.exit(1);
 });

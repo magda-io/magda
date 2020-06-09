@@ -22,7 +22,7 @@ program
                 const res = result.rows[i];
                 res["operations"] = await getOperationsByResourceId(res["id"]);
                 res["operations"] = res["operations"]
-                    .map(op => op.uri)
+                    .map((op) => op.uri)
                     .join("\n");
                 delete res["id"];
                 data.push(Object.values(res));

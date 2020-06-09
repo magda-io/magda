@@ -9,7 +9,7 @@ variables:
     -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
   # If you changed dependencies (especially for scala), you might want to prevent your branch from using old cache by increase the version blew
   # gitlab actually use the same technique when you click the `Clear Cache Button`
-  CACHE_VERSION: ts-11-scala-5
+  CACHE_VERSION: ts-12-scala-5
 
 stages:
   - builders
@@ -31,8 +31,10 @@ builders-and-yarn:
     key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
       - .yarn
+      - node_modules/
+      - "*/node_modules"
   before_script:
-    - yarn install --no-progress --child-concurrency 1 --cache-folder .yarn
+    - yarn install --no-progress --cache-folder .yarn
   services:
     - docker:dind
   script:
@@ -45,6 +47,8 @@ builders-and-yarn:
       - "packages/*/node_modules"
       - "yarn.lock"
     expire_in: 7 days
+  tags:
+    - heavy
 
 # Make sure sbt depenencies, plugins are in place, cached (only for this job) and pass to following stage as artifacts
 sbt-prebuild:
@@ -118,11 +122,6 @@ buildtest:search-with-index-cache:
     # use < 25% of time for GC
     # put the ivy cache in the workspace where gitlab can cache it
     SBT_OPTS: >
-      -Xms2500M -Xmx2500M
-      -XX:+CMSClassUnloadingEnabled
-      -XX:MaxGCPauseMillis=1000
-      -XX:+UseG1GC
-      -XX:GCTimeRatio=3
       -Dsbt.global.base=$CI_PROJECT_DIR/sbt-cache/sbtboot
       -Dsbt.boot.directory=$CI_PROJECT_DIR/sbt-cache/boot
       -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
@@ -185,11 +184,6 @@ buildtest:search-no-index-cache:
     # use < 25% of time for GC
     # put the ivy cache in the workspace where gitlab can cache it
     SBT_OPTS: >
-      -Xms2500M -Xmx2500M
-      -XX:+CMSClassUnloadingEnabled
-      -XX:MaxGCPauseMillis=1000
-      -XX:+UseG1GC
-      -XX:GCTimeRatio=3
       -Dsbt.global.base=$CI_PROJECT_DIR/sbt-cache/sbtboot
       -Dsbt.boot.directory=$CI_PROJECT_DIR/sbt-cache/boot
       -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy

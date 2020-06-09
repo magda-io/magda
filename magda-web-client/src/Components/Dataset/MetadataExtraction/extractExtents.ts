@@ -1,20 +1,33 @@
-const moment = require("moment");
-import { Moment } from "moment";
+import moment, { Moment } from "moment";
 import XLSX from "xlsx";
 import { uniq } from "lodash";
-import { config } from "config";
-
-const { dateFormats, dateRegexes } = config.dateConfig;
-const { dateRegex, startDateRegex, endDateRegex } = dateRegexes;
+import { FileDetails, ExtractedContents } from "./types";
+import {
+    SpatialCoverage,
+    TemporalCoverage,
+    Interval
+} from "../Add/DatasetAddCommon";
+import type { MessageSafeConfig } from "config";
 
 /**
  * Extract spatial and temporal extent of spreadsheet files
  */
-export function extractExtents(input, output) {
-    if (input.workbook) {
+export function extractExtents(
+    _input: FileDetails,
+    _array: Uint8Array,
+    depInput: ExtractedContents,
+    config: MessageSafeConfig
+): Promise<{
+    temporalCoverage?: TemporalCoverage;
+    spatialCoverage?: SpatialCoverage;
+}> {
+    if (depInput.workbook) {
         // what if it has multiple sheets?
-        const worksheet = input.workbook.Sheets[input.workbook.SheetNames[0]];
+        const worksheet =
+            depInput.workbook.Sheets[depInput.workbook.SheetNames[0]];
 
+        let temporalCoverage: TemporalCoverage | undefined;
+        let spatialCoverage: SpatialCoverage | undefined;
         const rows = XLSX.utils.sheet_to_json(worksheet, { raw: false });
         if (rows.length) {
             const headersSet = new Set<string>();
@@ -29,15 +42,19 @@ export function extractExtents(input, output) {
                 headers.push(header);
             }
 
-            output.temporalCoverage = {
-                intervals: [aggregateDates(rows, headers)].filter(i => i)
+            temporalCoverage = {
+                intervals: [aggregateDates(rows, headers, config)].filter(
+                    (i): i is Interval => !!i
+                )
             };
-            output.spatialCoverage = calculateSpatialExtent(rows, headers);
+            spatialCoverage = calculateSpatialExtent(rows, headers);
         }
+
+        return Promise.resolve({ temporalCoverage, spatialCoverage });
+    } else {
+        return Promise.resolve({});
     }
 }
-
-const DATE_FORMAT = "YYYY-MM-DD";
 
 const maxDate: Moment = moment(new Date(8640000000000000));
 const minDate: Moment = moment(new Date(-8640000000000000));
@@ -55,7 +72,7 @@ const MIN_POSSIBLE_LNG = -360;
 
 function tryFilterHeaders(headers: string[], ...regexes: RegExp[]) {
     for (const thisRegex of regexes) {
-        const matchingHeaders = headers.filter(header =>
+        const matchingHeaders = headers.filter((header) =>
             thisRegex.test(header)
         );
 
@@ -90,7 +107,14 @@ type SpatialExtent = {
     maxLng: number;
 };
 
-function aggregateDates(rows: any[], headers: string[]) {
+function aggregateDates(
+    rows: any[],
+    headers: string[],
+    config: MessageSafeConfig
+): Interval | undefined {
+    const { dateFormats, dateRegexes } = config.dateConfig;
+    const { dateRegex, startDateRegex, endDateRegex } = dateRegexes;
+
     const dateHeaders = tryFilterHeaders(headers, dateRegex);
     const startDateHeaders = uniq(tryFilterHeaders(headers, startDateRegex));
     const endDateHeaders = uniq(tryFilterHeaders(headers, endDateRegex));
@@ -106,8 +130,8 @@ function aggregateDates(rows: any[], headers: string[]) {
     let earliestDate = maxDate;
     let latestDate = minDate;
 
-    startDateHeadersInOrder.forEach(header => {
-        rows.forEach(row => {
+    startDateHeadersInOrder.forEach((header) => {
+        rows.forEach((row) => {
             var dateStr: string = row[header].toString();
             var parsedDate: Moment = moment.utc(dateStr, dateFormats);
             if (parsedDate) {
@@ -119,8 +143,8 @@ function aggregateDates(rows: any[], headers: string[]) {
         });
     });
 
-    endDateHeadersInOrder.forEach(header => {
-        rows.forEach(row => {
+    endDateHeadersInOrder.forEach((header) => {
+        rows.forEach((row) => {
             var dateStr: string = row[header].toString();
             var parsedDate: Moment = moment.utc(dateStr, dateFormats);
             if (parsedDate) {
@@ -138,10 +162,8 @@ function aggregateDates(rows: any[], headers: string[]) {
 
     if (foundEarliest || foundLatest) {
         return {
-            start:
-                (foundEarliest && earliestDate.format(DATE_FORMAT)) ||
-                undefined,
-            end: (foundLatest && latestDate.format(DATE_FORMAT)) || undefined
+            start: (foundEarliest && earliestDate.toDate()) || undefined,
+            end: (foundLatest && latestDate.toDate()) || undefined
         };
     } else {
         return undefined;
@@ -175,7 +197,10 @@ function extendIncompleteTime(m: Moment): Moment {
     return originalMoment;
 }
 
-function calculateSpatialExtent(rows: any[], headers: string[]) {
+function calculateSpatialExtent(
+    rows: any[],
+    headers: string[]
+): SpatialCoverage | undefined {
     const latHeaders = tryFilterHeaders(headers, LAT_REGEX);
     const longHeaders = tryFilterHeaders(headers, LONG_REGEX);
 
@@ -241,9 +266,6 @@ function calculateSpatialExtent(rows: any[], headers: string[]) {
         } as SpatialExtent
     );
 
-    console.log(`Longitude: ${spatial.minLng} to ${spatial.maxLng}`);
-    console.log(`Latitude: ${spatial.minLat} to ${spatial.maxLat}`);
-
     if (
         spatial.maxLat !== Number.MIN_SAFE_INTEGER &&
         spatial.minLat !== Number.MAX_SAFE_INTEGER &&
@@ -260,6 +282,6 @@ function calculateSpatialExtent(rows: any[], headers: string[]) {
             ]
         };
     } else {
-        return {};
+        return undefined;
     }
 }

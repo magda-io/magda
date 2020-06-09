@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-const Lozenge = data => {
+const Lozenge = (data) => {
     if (!data || !data.content || !data.content.url || !data.content.text)
         return null;
     return (

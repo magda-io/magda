@@ -107,7 +107,7 @@ export function fetchDatasetFromRegistry(id: string): Function {
             .then((data: any) => {
                 return dispatch(receiveDataset(data));
             })
-            .catch(error =>
+            .catch((error) =>
                 dispatch(
                     requestDatasetError({
                         title: error.name,
@@ -126,8 +126,8 @@ export function fetchDistributionFromRegistry(id: string): any {
             `records/${encodeURIComponent(
                 id
             )}?aspect=dcat-distribution-strings&optionalAspect=source-link-status&optionalAspect=source&optionalAspect=visualization-info&optionalAspect=access&optionalAspect=usage&optionalAspect=dataset-format&optionalAspect=ckan-resource&optionalAspect=publishing`;
-        return fetch(url, config.fetchOptions)
-            .then(response => {
+        return fetch(url, config.credentialsFetchOptions)
+            .then((response) => {
                 if (!response.ok) {
                     let statusText = response.statusText;
                     // response.statusText are different in different browser, therefore we unify them here
@@ -141,7 +141,7 @@ export function fetchDistributionFromRegistry(id: string): any {
             .then((json: any) => {
                 return dispatch(receiveDistribution(json));
             })
-            .catch(error =>
+            .catch((error) =>
                 dispatch(
                     requestDistributionError({
                         title: error.name,
@@ -179,7 +179,7 @@ export function modifyRecordAspect(
 
         const patch = [{ op: "add", path: `/${field}`, value }];
 
-        let options = Object.assign({}, config.fetchOptions, {
+        let options = Object.assign({}, config.credentialsFetchOptions, {
             method: "PATCH",
             body: JSON.stringify(patch),
             headers: {
@@ -187,7 +187,7 @@ export function modifyRecordAspect(
             }
         });
         return fetch(url, options)
-            .then(response => {
+            .then((response) => {
                 if (!response.ok) {
                     let statusText = response.statusText;
                     // response.statusText are different in different browser, therefore we unify them here
@@ -201,7 +201,7 @@ export function modifyRecordAspect(
             .then((json: any) => {
                 return dispatch(receiveAspectModified(aspect, json));
             })
-            .catch(error =>
+            .catch((error) =>
                 dispatch(
                     requestDistributionError({
                         title: error.name,

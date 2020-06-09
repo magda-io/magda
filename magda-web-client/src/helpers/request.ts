@@ -8,7 +8,7 @@ export default async function request(
     body: any = undefined,
     contentType: string = "application/json"
 ) {
-    const fetchOptions = Object.assign({}, config.fetchOptions, {
+    const fetchOptions = Object.assign({}, config.credentialsFetchOptions, {
         method
     });
     if (body !== undefined) {

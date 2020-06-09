@@ -131,7 +131,7 @@ class CsvDataLoader {
 
     convertToAbsoluteUrl(url) {
         if (url[0] !== "/") return url;
-        return URI(location.href).origin() + url;
+        return URI(window.location.href).origin() + url;
     }
 
     async load(overrideNewLine?: string): Promise<DataLoadingResult> {
@@ -222,7 +222,7 @@ class CsvDataLoader {
                         reject(e);
                     }
                 }).bind(this),
-                error: err =>
+                error: (err) =>
                     reject(
                         err
                             ? err

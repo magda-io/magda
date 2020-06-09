@@ -2,7 +2,7 @@
     "listenPort": 6121,
     "minioAccessKey": "",
     "minioSecretKey": "",
-    "minioEnableSSL": true,
+    "minioEnableSSL": false,
     "minioHost": "localhost",
     "minioPort": 9000,
     "minioRegion": "unspecified-region",

@@ -11,10 +11,10 @@ import "./DataPreviewNews.scss";
 
 function loadRssParser() {
     return import(/* webpackChunkName: "rssParser" */ "rss-parser")
-        .then(rssParser => {
+        .then((rssParser) => {
             return rssParser;
         })
-        .catch(error => {
+        .catch((error) => {
             throw new Error("An error occurred while loading the component");
         });
 }
@@ -52,8 +52,8 @@ export default class News extends Component<
             loading: true,
             newsItems: null
         });
-        return fetch(config.proxyUrl + url, config.fetchOptions)
-            .then(response => {
+        return fetch(config.proxyUrl + url, config.credentialsFetchOptions)
+            .then((response) => {
                 if (!response.ok) {
                     throw new Error(
                         `${response.status} (${response.statusText})`
@@ -62,8 +62,8 @@ export default class News extends Component<
                     return response.text();
                 }
             })
-            .then(text =>
-                loadRssParser().then(rssParser => {
+            .then((text) =>
+                loadRssParser().then((rssParser) => {
                     rssParser.parseString(text, (err, result) => {
                         if (err) {
                             throw new Error("error getting rss feed");
@@ -77,7 +77,7 @@ export default class News extends Component<
                     });
                 })
             )
-            .catch(err => {
+            .catch((err) => {
                 console.warn(err);
                 this.setState({
                     error: err,
@@ -123,7 +123,9 @@ export default class News extends Component<
         }
         return (
             <ul className="list--unstyled list-group">
-                {this.state.newsItems.slice(0, 3).map(n => this.renderNews(n))}
+                {this.state.newsItems
+                    .slice(0, 3)
+                    .map((n) => this.renderNews(n))}
             </ul>
         );
     }

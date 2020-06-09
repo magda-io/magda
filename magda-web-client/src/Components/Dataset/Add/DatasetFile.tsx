@@ -26,26 +26,13 @@ import ValidationRequiredLabel from "../../Dataset/Add/ValidationRequiredLabel";
 
 import "./DatasetFile.scss";
 
-function FileInProgress({
-    file,
-    onDelete
-}: {
-    file: Distribution;
-    onDelete: () => void;
-}) {
+function FileInProgress({ file }: { file: Distribution }) {
     const progress = file._progress ? file._progress : 0;
     let width = Math.ceil((progress / 100) * 330);
     if (width < 5) width = 5;
     return (
         <div className="dataset-file-root">
             <div className="file-in-progress">
-                <button
-                    className={`dataset-file-delete-button au-btn au-btn--secondary`}
-                    arial-label="Remove file"
-                    onClick={() => onDelete()}
-                >
-                    <img src={dismissIcon} />
-                </button>
                 <div className="file-icon-area">
                     <img className="format-icon" src={getFormatIcon(file)} />
                     <div className="format-text">{file.format}</div>
@@ -95,11 +82,11 @@ const FileEditView = ({
     setEditMode: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
     const editFormat = (newValue: string | undefined) =>
-        onChange(file => ({ ...file, format: newValue }));
+        onChange((file) => ({ ...file, format: newValue }));
     const editTitle = (newValue: string | undefined) =>
-        onChange(file => ({ ...file, title: newValue ? newValue : "" }));
+        onChange((file) => ({ ...file, title: newValue ? newValue : "" }));
     const editModified = (newValue: Date | undefined) =>
-        onChange(file =>
+        onChange((file) =>
             typeof newValue === "undefined"
                 ? file
                 : { ...file, modified: newValue }
@@ -182,7 +169,7 @@ export default function DatasetFile({
     const [editMode, setEditMode] = useState(false);
 
     if (file._state !== DistributionState.Ready) {
-        return <FileInProgress file={file} onDelete={onDelete} />;
+        return <FileInProgress file={file} />;
     }
 
     return (

@@ -29,18 +29,18 @@ export function fetchFeaturedDatasetsFromRegistry(ids: Array<string>): any {
             return false;
         }
         dispatch(requestDatasets(ids));
-        const fetches = ids.map(id =>
+        const fetches = ids.map((id) =>
             fetch(
                 config.registryReadOnlyApiUrl +
                     `records/${encodeURIComponent(
                         id
                     )}?aspect=dcat-dataset-strings&optionalAspect=dataset-publisher&optionalAspect=source&dereference=true`,
-                config.fetchOptions
-            ).then(response => response.json())
+                config.credentialsFetchOptions
+            ).then((response) => response.json())
         );
         Promise.all(fetches)
-            .then(jsons => dispatch(receiveDatasets(jsons)))
-            .catch(error => dispatch(requestDatasetsError(error)));
+            .then((jsons) => dispatch(receiveDatasets(jsons)))
+            .catch((error) => dispatch(requestDatasetsError(error)));
         return undefined;
     };
 }

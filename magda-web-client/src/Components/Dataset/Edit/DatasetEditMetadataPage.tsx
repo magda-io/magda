@@ -16,7 +16,8 @@ import { editSteps as ProgressMeterStepsConfig } from "../../Common/AddDatasetPr
 import {
     State,
     DistributionState,
-    submitDatasetFromState
+    submitDatasetFromState,
+    saveState
 } from "../Add/DatasetAddCommon";
 import DetailsAndContents from "../Add/Pages/DetailsAndContents";
 import DatasetAddPeoplePage from "../Add/Pages/People/DatasetAddPeoplePage";
@@ -70,6 +71,7 @@ class EditDataset extends React.Component<Props, State> {
                 stateData={this.state}
                 user={this.props.user}
                 isEditView={true}
+                save={() => saveState(this.state, this.props.datasetId)}
             />
         ),
         () => (
@@ -174,7 +176,7 @@ class EditDataset extends React.Component<Props, State> {
         const shouldRenderButtonArea = () => {
             if (
                 distributions.filter(
-                    item => item._state !== DistributionState.Ready
+                    (item) => item._state !== DistributionState.Ready
                 ).length
             ) {
                 return false;
@@ -316,7 +318,7 @@ class EditDataset extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state, props) {
-    const uri = new URI(location.href);
+    const uri = new URI(window.location.href);
     const datasetId = props.match.params.datasetId;
     let step = parseInt(props.match.params.step);
     const isBackToReview =
@@ -333,7 +335,7 @@ function mapStateToProps(state, props) {
     };
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return bindActionCreators(
         {
             createNewDatasetReset: createNewDatasetReset,

@@ -3,7 +3,7 @@ const chalk = require("chalk");
 const trim = require("lodash/trim");
 
 function preloadConfig(configStore, executeOption) {
-    return Promise.resolve().then(function() {
+    return Promise.resolve().then(function () {
         if (executeOption === true) {
             console.log(
                 chalk.yellow(
@@ -32,7 +32,7 @@ function preloadConfig(configStore, executeOption) {
 function readConfigFromStdin(configStore) {
     console.log(chalk.yellow(`Loading config data from STDIN ...`));
     let configContent = "";
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
         process.stdin.setEncoding("utf8");
 
         process.stdin.on("readable", () => {
@@ -69,7 +69,7 @@ function readConfigFromStdin(configStore) {
 
 function readConfigFromFile(configStore, executeOption) {
     console.log(chalk.yellow(`Loading config data from ${executeOption}...`));
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
         try {
             const filePath = trim(executeOption);
             if (!fs.existsSync(filePath)) {

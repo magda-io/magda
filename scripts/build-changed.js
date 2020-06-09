@@ -6,20 +6,17 @@ const path = require("path");
 const toposort = require("toposort");
 const yargs = require("yargs");
 
-const argv = yargs
-    .config()
-    .help()
-    .option("skipDocker", {
-        describe: "Skip the build/push of the docker image.",
-        type: "boolean",
-        default: false
-    });
+const argv = yargs.config().help().option("skipDocker", {
+    describe: "Skip the build/push of the docker image.",
+    type: "boolean",
+    default: false
+});
 
 const failed = [];
 const succeeded = [];
 
-const packagePaths = getAllPackages().filter(p => !isScalaPackage(p));
-const packageList = packagePaths.map(packagePath => {
+const packagePaths = getAllPackages().filter((p) => !isScalaPackage(p));
+const packageList = packagePaths.map((packagePath) => {
     const packageJson = require(path.resolve(packagePath, "package.json"));
     const allDependencies = Object.assign(
         {},
@@ -34,13 +31,13 @@ const packageList = packagePaths.map(packagePath => {
 });
 
 const packageIndex = {};
-packageList.forEach(package => {
+packageList.forEach((package) => {
     packageIndex[package.packageJson.name] = package;
 });
 
 const edges = [];
-packageList.forEach(package => {
-    Object.keys(package.allDependencies).forEach(dependency => {
+packageList.forEach((package) => {
+    Object.keys(package.allDependencies).forEach((dependency) => {
         const dependencyPackage = packageIndex[dependency];
         if (dependencyPackage) {
             edges.push([package, dependencyPackage]);
@@ -50,14 +47,14 @@ packageList.forEach(package => {
 
 const sortedPackages = toposort.array(packageList, edges).reverse();
 
-sortedPackages.forEach(package => {
+sortedPackages.forEach((package) => {
     const packagePath = package.packagePath;
     const name = package.packageJson.name;
 
     const dependencies = edges
-        .filter(edge => edge[0] === package)
-        .map(edge => edge[1]);
-    const lastModifiedFiles = dependencies.map(dependency =>
+        .filter((edge) => edge[0] === package)
+        .map((edge) => edge[1]);
+    const lastModifiedFiles = dependencies.map((dependency) =>
         findLastModifiedFile(path.resolve(dependency.packagePath, "dist"))
     );
 
@@ -132,11 +129,11 @@ sortedPackages.forEach(package => {
 if (succeeded.length > 0) {
     console.log();
     console.log("The following packages were built successfully:");
-    succeeded.map(s => "  " + s).forEach(s => console.log(s));
+    succeeded.map((s) => "  " + s).forEach((s) => console.log(s));
 }
 
 if (failed.length > 0) {
     console.log();
     console.log("The following package builds FAILED:");
-    failed.map(s => "  " + s).forEach(s => console.log(s));
+    failed.map((s) => "  " + s).forEach((s) => console.log(s));
 }

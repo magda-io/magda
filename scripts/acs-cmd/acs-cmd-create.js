@@ -10,7 +10,7 @@ program
     )
     .command("permission", "Create permission")
     .command("operation", "Create operation")
-    .on("command:*", function(cmds) {
+    .on("command:*", function (cmds) {
         if (["permission", "operation"].indexOf(cmds[0]) === -1) {
             console.error(
                 chalk.red(

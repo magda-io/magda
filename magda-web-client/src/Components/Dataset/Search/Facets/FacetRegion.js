@@ -102,7 +102,7 @@ class FacetRegion extends Component {
                 className="btn-facet-option btn-facet-option__location"
                 onClick={onClick.bind(this, option)}
                 title={option.regionName}
-                ref={b => {
+                ref={(b) => {
                     if (b != null && onFocus === true) {
                         b.focus();
                     }

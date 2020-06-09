@@ -21,7 +21,7 @@ exports.getName = function getName(name) {
 
 exports.getTags = function getTags(tag, local, repository, version, name) {
     if (tag === "auto") {
-        return exports.getVersions(local, version).map(version => {
+        return exports.getVersions(local, version).map((version) => {
             const tagPrefix = exports.getRepository(local, repository);
             const imageName = exports.getName(name);
 

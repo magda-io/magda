@@ -69,6 +69,7 @@ const serverConfig: {
     registryApiReadOnlyBaseUrl?: string;
     searchApiBaseUrl?: string;
     correspondenceApiBaseUrl?: string;
+    storageApiBaseUrl?: string;
     gapiIds?: Array<string>;
     adminApiBaseUrl?: string;
     disableAuthenticationFeatures?: boolean;
@@ -156,7 +157,7 @@ const baseExternalUrl = serverConfig.baseExternalUrl
     ? window.location.protocol + "//" + window.location.host + "/"
     : baseUrl;
 
-const fetchOptions: RequestInit =
+const credentialsFetchOptions: RequestInit =
     `${window.location.protocol}//${window.location.host}/` !== baseUrl
         ? {
               credentials: "include"
@@ -179,7 +180,7 @@ const vocabularyApiEndpoints =
           ];
 
 export const config = {
-    fetchOptions,
+    credentialsFetchOptions: credentialsFetchOptions,
     homePageConfig: homePageConfig,
     showNotificationBanner: !!serverConfig.showNotificationBanner,
     baseUrl,
@@ -195,6 +196,8 @@ export const config = {
     correspondenceApiUrl:
         serverConfig.correspondenceApiBaseUrl ||
         fallbackApiHost + "api/v0/correspondence/",
+    storageApiUrl:
+        serverConfig.storageApiBaseUrl || fallbackApiHost + "api/v0/storage/",
     previewMapUrl: previewMapUrl,
     proxyUrl: proxyUrl,
     rssUrl: proxyUrl + "_0d/https://blog.data.gov.au/blogs/rss.xml",
@@ -313,6 +316,9 @@ export const config = {
         ? serverConfig.openfaasBaseUrl
         : baseUrl + "api/v0/openfaas"
 };
+
+export type Config = typeof config;
+export type MessageSafeConfig = Omit<Config, "facets">;
 
 export const defaultConfiguration = {
     datasetSearchSuggestionScoreThreshold: 65,

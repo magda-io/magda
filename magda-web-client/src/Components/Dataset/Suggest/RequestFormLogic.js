@@ -24,7 +24,7 @@ export default class RequestFormLogic extends React.Component {
      * When called in the parent component,
      * it also helps retain the state when the form is not submited, or an error state has occured.
      */
-    handleChange = data => {
+    handleChange = (data) => {
         this.props.handleChange(data, this.state.successResult);
     };
 
@@ -32,7 +32,7 @@ export default class RequestFormLogic extends React.Component {
      * handles the logic of submitting form
      * @param {Object} data form submitted data from child component "RequestFormTemplate.js"
      */
-    handleSubmit = data => {
+    handleSubmit = (data) => {
         this.setState(() => {
             return {
                 isSending: true
@@ -53,7 +53,7 @@ export default class RequestFormLogic extends React.Component {
                 )}/question`;
         }
         fetch(url, {
-            ...config.fetchOptions,
+            ...config.credentialsFetchOptions,
             method: "POST",
             headers: {
                 "Content-type": "application/json",
@@ -65,7 +65,7 @@ export default class RequestFormLogic extends React.Component {
                 senderName
             })
         })
-            .then(response => {
+            .then((response) => {
                 if (!response.ok) {
                     this.setState(() => {
                         return {
@@ -101,7 +101,7 @@ export default class RequestFormLogic extends React.Component {
                     }
                 }
             })
-            .catch(error => {
+            .catch((error) => {
                 this.setState(() => {
                     return {
                         successResult: false,
@@ -121,7 +121,7 @@ export default class RequestFormLogic extends React.Component {
     render() {
         return (
             <MagdaNamespacesConsumer ns={["datasetSuggestForm"]}>
-                {translate => {
+                {(translate) => {
                     const alertProps = {
                         successMessage: translate([
                             "suggestSuccessMessage",
