@@ -9,7 +9,8 @@ variables:
     -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
   # If you changed dependencies (especially for scala), you might want to prevent your branch from using old cache by increase the version blew
   # gitlab actually use the same technique when you click the `Clear Cache Button`
-  CACHE_VERSION: ts-11-scala-5
+  JS_CACHE_VERSION: 11
+  SCALA_CACHE_VERSION: 5
 
 stages:
   - builders
@@ -27,26 +28,19 @@ builders-and-yarn:
   stage: builders
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:master
   retry: 1
-  cache:
-    key: $CI_JOB_NAME-$CACHE_VERSION
-    paths:
-      - .yarn
-      - node_modules/
-      - "*/node_modules"
   before_script:
     - yarn install --no-progress --cache-folder .yarn
+  cache:
+    key: JS-$JS_CACHE_VERSION
+    paths:
+      - $CI_PROJECT_DIR/.yarn
+      - $CI_PROJECT_DIR/node_modules/
+      - "$CI_PROJECT_DIR/*/node_modules"
   services:
     - docker:dind
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - yarn run in-submodules -- -f categories.builder=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
-  artifacts:
-    paths:
-      - "node_modules"
-      - "*/node_modules"
-      - "packages/*/node_modules"
-      - "yarn.lock"
-    expire_in: 7 days
   tags:
     - heavy
 
@@ -55,15 +49,21 @@ sbt-prebuild:
   stage: sbt-prebuild
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   cache:
-    key: $CI_JOB_NAME-$CACHE_VERSION
+    key: SCALA-$SCALA_CACHE_VERSION
     paths:
       - "$CI_PROJECT_DIR/sbt-cache"
+      - "target"
+      - "project/target"
+      - "project/project/target"
+      - "*/target"
+      - "*/project/target"
+      - "*/project/project/target"
+    policy: pull
   script:
     - "ls sbt-cache || cp -R /sbt-cache sbt-cache"
     - sbt update
   artifacts:
     paths:
-      - "sbt-cache"
       - "target"
       - "project/target"
       - "project/project/target"
@@ -82,7 +82,7 @@ registry-typescript-api:
   stage: prebuild
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   script:
-    - lerna run generate --scope=@magda/typescript-common --stream
+    - yarn lerna run generate --scope=@magda/typescript-common --stream
   artifacts:
     paths:
       - "magda-typescript-common/src/generated"
@@ -92,14 +92,20 @@ buildtest:search-with-index-cache:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   retry: 2
+  cache:
+    key: SCALA-$SCALA_CACHE_VERSION
+    paths:
+      - "$CI_PROJECT_DIR/sbt-cache"
+      - "$CI_PROJECT_DIR/target"
+      - "$CI_PROJECT_DIR/project/target"
+      - "$CI_PROJECT_DIR/project/project/target"
+      - "$CI_PROJECT_DIR/*/target"
+      - "$CI_PROJECT_DIR/*/project/target"
+      - "$CI_PROJECT_DIR/*/project/project/target"
+      - "$CI_PROJECT_DIR/pip-cache"
   dependencies:
-    - builders-and-yarn
     - sbt-prebuild
   before_script:
-    - |
-      if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
-        export DOCKER_HOST='tcp://localhost:2375'
-      fi
     - docker info
     - apk update
     - apk upgrade
@@ -107,20 +113,10 @@ buildtest:search-with-index-cache:
     - pip3 install --upgrade pip
     - pip3 install docker-compose
     - docker-compose --version
-  cache:
-    key: $CI_JOB_NAME-$CACHE_VERSION
-    paths:
-      - "$CI_PROJECT_DIR/pip-cache"
   services:
     - docker:dind
   variables:
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
-    # 2.5gb heap
-    # unload classes we don't need
-    # aim for < 1000ms gc pauses (largely ignored)
-    # use the next-gen collector that every blog on the internet says not to use because we know better than them
-    # use < 25% of time for GC
-    # put the ivy cache in the workspace where gitlab can cache it
     SBT_OPTS: >
       -Dsbt.global.base=$CI_PROJECT_DIR/sbt-cache/sbtboot
       -Dsbt.boot.directory=$CI_PROJECT_DIR/sbt-cache/boot
@@ -149,13 +145,8 @@ buildtest:search-no-index-cache:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   retry: 2
   dependencies:
-    - builders-and-yarn
     - sbt-prebuild
   before_script:
-    - |
-      if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
-        export DOCKER_HOST='tcp://localhost:2375'
-      fi
     - docker info
     - apk update
     - apk upgrade
@@ -164,8 +155,15 @@ buildtest:search-no-index-cache:
     - pip3 install docker-compose
     - docker-compose --version
   cache:
-    key: $CI_JOB_NAME-$CACHE_VERSION
+    key: SCALA-$SCALA_CACHE_VERSION
     paths:
+      - "$CI_PROJECT_DIR/sbt-cache"
+      - "$CI_PROJECT_DIR/target"
+      - "$CI_PROJECT_DIR/project/target"
+      - "$CI_PROJECT_DIR/project/project/target"
+      - "$CI_PROJECT_DIR/*/target"
+      - "$CI_PROJECT_DIR/*/project/target"
+      - "$CI_PROJECT_DIR/*/project/project/target"
       - "$CI_PROJECT_DIR/pip-cache"
   services:
   # postgres 9.6.17 (published on 15th Feb 2020) introduced an issue see here (https://gitlab.com/gitlab-com/support-forum/issues/5199)
@@ -177,12 +175,6 @@ buildtest:search-no-index-cache:
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: ""
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
-    # 2.5gb heap
-    # unload classes we don't need
-    # aim for < 1000ms gc pauses (largely ignored)
-    # use the next-gen collector that every blog on the internet says not to use because we know better than them
-    # use < 25% of time for GC
-    # put the ivy cache in the workspace where gitlab can cache it
     SBT_OPTS: >
       -Dsbt.global.base=$CI_PROJECT_DIR/sbt-cache/sbtboot
       -Dsbt.boot.directory=$CI_PROJECT_DIR/sbt-cache/boot
@@ -210,10 +202,15 @@ buildtest:ui:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
   retry: 1
-  dependencies:
-    - builders-and-yarn
+  before_script:
+    - yarn install --no-progress --cache-folder .yarn
   cache:
-    paths: []
+    key: JS-$JS_CACHE_VERSION
+    paths:
+      - $CI_PROJECT_DIR/.yarn
+      - $CI_PROJECT_DIR/node_modules/
+      - "$CI_PROJECT_DIR/*/node_modules"
+    policy: pull
   variables:
     REACT_APP_SHA1: "$CI_COMMIT_SHA"
   script:
@@ -232,8 +229,18 @@ buildtest:registry:
   retry: 1
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   dependencies:
-    - builders-and-yarn
     - sbt-prebuild
+  cache:
+    key: SCALA-$SCALA_CACHE_VERSION
+    paths:
+      - "$CI_PROJECT_DIR/sbt-cache"
+      - "$CI_PROJECT_DIR/target"
+      - "$CI_PROJECT_DIR/project/target"
+      - "$CI_PROJECT_DIR/project/project/target"
+      - "$CI_PROJECT_DIR/*/target"
+      - "$CI_PROJECT_DIR/*/project/target"
+      - "$CI_PROJECT_DIR/*/project/project/target"
+      - "$CI_PROJECT_DIR/pip-cache"
   services:
   # postgres 9.6.17 (published on 15th Feb 2020) introduced an issue see here (https://gitlab.com/gitlab-com/support-forum/issues/5199)
     - postgres:9.6.16
@@ -259,8 +266,16 @@ buildtest:typescript-apis-stateless:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
   retry: 1
   dependencies:
-    - builders-and-yarn
     - registry-typescript-api
+  before_script:
+    - yarn install --no-progress --cache-folder .yarn
+  cache:
+    key: JS-$JS_CACHE_VERSION
+    paths:
+      - $CI_PROJECT_DIR/.yarn
+      - $CI_PROJECT_DIR/node_modules/
+      - "$CI_PROJECT_DIR/*/node_modules"
+    policy: pull
   script:
     - cd magda-typescript-common && yarn build && yarn test && cd ..
     - cd magda-minion-framework && yarn build && yarn test && cd ..
@@ -279,13 +294,9 @@ buildtest:typescript-apis-with-pg:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 1
   dependencies:
-    - builders-and-yarn
     - registry-typescript-api
   before_script:
-    - |
-      if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
-        export DOCKER_HOST='tcp://localhost:2375'
-      fi
+    - yarn install --no-progress --cache-folder .yarn
     - docker info
     - apk update
     - apk upgrade
@@ -294,8 +305,11 @@ buildtest:typescript-apis-with-pg:
     - pip3 install docker-compose
     - docker-compose --version
   cache:
-    key: $CI_JOB_NAME-$CACHE_VERSION
+    key: JS-$JS_CACHE_VERSION
     paths:
+      - $CI_PROJECT_DIR/.yarn
+      - $CI_PROJECT_DIR/node_modules/
+      - "$CI_PROJECT_DIR/*/node_modules"
       - "$CI_PROJECT_DIR/pip-cache"
   services:
   # postgres 9.6.17 (published on 15th Feb 2020) introduced an issue see here (https://gitlab.com/gitlab-com/support-forum/issues/5199)
@@ -327,13 +341,8 @@ buildtest:typescript-apis-with-es:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 2
-  dependencies:
-    - builders-and-yarn
   before_script:
-    - |
-      if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
-        export DOCKER_HOST='tcp://localhost:2375'
-      fi
+    - yarn install --no-progress --cache-folder .yarn
     - docker info
     - apk update
     - apk upgrade
@@ -343,8 +352,11 @@ buildtest:typescript-apis-with-es:
     - pip3 install docker-compose
     - docker-compose --version
   cache:
-    key: $CI_JOB_NAME
+    key: JS-$JS_CACHE_VERSION
     paths:
+      - $CI_PROJECT_DIR/.yarn
+      - $CI_PROJECT_DIR/node_modules/
+      - "$CI_PROJECT_DIR/*/node_modules"
       - "$CI_PROJECT_DIR/pip-cache"
   services:
     - docker:dind
@@ -372,13 +384,9 @@ buildtest:storage-api:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 1
   dependencies:
-    - builders-and-yarn
     - registry-typescript-api
   before_script:
-    - |
-      if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
-        export DOCKER_HOST='tcp://localhost:2375'
-      fi
+    - yarn install --no-progress --cache-folder .yarn
     - docker info
     - apk update
     - apk upgrade
@@ -387,8 +395,11 @@ buildtest:storage-api:
     - pip3 install docker-compose
     - docker-compose --version
   cache:
-    key: $CI_JOB_NAME-$CACHE_VERSION
+    key: JS-$JS_CACHE_VERSION
     paths:
+      - $CI_PROJECT_DIR/.yarn
+      - $CI_PROJECT_DIR/node_modules/
+      - "$CI_PROJECT_DIR/*/node_modules"
       - "$CI_PROJECT_DIR/pip-cache"
   services:
     - docker:dind
@@ -411,8 +422,6 @@ buildtest:opa-policies:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 1
-  dependencies:
-    - builders-and-yarn
   cache:
     paths: []
   services:
@@ -472,12 +481,19 @@ dockerize:ui:
   stage: dockerize
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 2
+  before_script:
+    - yarn install --no-progress --cache-folder .yarn
   cache:
-    paths: []
+    key: JS-$JS_CACHE_VERSION
+    paths:
+      - $CI_PROJECT_DIR/.yarn
+      - $CI_PROJECT_DIR/node_modules/
+      - "$CI_PROJECT_DIR/*/node_modules"
+      - "$CI_PROJECT_DIR/pip-cache"
+    policy: pull
   services:
     - docker:dind
   dependencies:
-    - builders-and-yarn
     - registry-typescript-api
     - buildtest:ui
   script:
@@ -488,12 +504,19 @@ dockerize:typescript-apis:
   stage: dockerize
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 2
+  before_script:
+    - yarn install --no-progress --cache-folder .yarn
   cache:
-    paths: []
+    key: JS-$JS_CACHE_VERSION
+    paths:
+      - $CI_PROJECT_DIR/.yarn
+      - $CI_PROJECT_DIR/node_modules/
+      - "$CI_PROJECT_DIR/*/node_modules"
+      - "$CI_PROJECT_DIR/pip-cache"
+    policy: pull
   services:
     - docker:dind
   dependencies:
-    - builders-and-yarn
     - registry-typescript-api
     - buildtest:typescript-apis-stateless
     - buildtest:typescript-apis-with-pg
@@ -507,8 +530,16 @@ dockerize:migrators:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 2
+  before_script:
+    - yarn install --no-progress --cache-folder .yarn
   cache:
-    paths: []
+    key: JS-$JS_CACHE_VERSION
+    paths:
+      - $CI_PROJECT_DIR/.yarn
+      - $CI_PROJECT_DIR/node_modules/
+      - "$CI_PROJECT_DIR/*/node_modules"
+      - "$CI_PROJECT_DIR/pip-cache"
+    policy: pull
   services:
     - docker:dind
   script:
@@ -519,15 +550,21 @@ dockerize:dockerExtensions:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 2
+  before_script:
+    - yarn install --no-progress --cache-folder .yarn
   cache:
-    paths: []
+    key: JS-$JS_CACHE_VERSION
+    paths:
+      - $CI_PROJECT_DIR/.yarn
+      - $CI_PROJECT_DIR/node_modules/
+      - "$CI_PROJECT_DIR/*/node_modules"
+      - "$CI_PROJECT_DIR/pip-cache"
+    policy: pull
   services:
     - docker:dind
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - yarn run in-submodules -- -f categories.dockerExtension=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
-
-
 
 inttest:registryAuth:
   # https://github.com/kind-ci/examples/blob/master/.gitlab-ci.yml
@@ -537,14 +574,21 @@ inttest:registryAuth:
   allow_failure: true
   dependencies:
     - sbt-prebuild
-    - builders-and-yarn
     - buildtest:registry
     - buildtest:helm-charts
   services:
     - docker:dind
   cache:
-    key: $CI_JOB_NAME-$CACHE_VERSION
+    key: SCALA-$SCALA_CACHE_VERSION
     paths:
+      - "$CI_PROJECT_DIR/sbt-cache"
+      - "$CI_PROJECT_DIR/target"
+      - "$CI_PROJECT_DIR/project/target"
+      - "$CI_PROJECT_DIR/project/project/target"
+      - "$CI_PROJECT_DIR/*/target"
+      - "$CI_PROJECT_DIR/*/project/target"
+      - "$CI_PROJECT_DIR/*/project/project/target"
+      - "$CI_PROJECT_DIR/pip-cache"
       - /usr/local/bin/kind
       - /usr/local/bin/kubectl
       - /usr/local/bin/helm
@@ -705,7 +749,6 @@ Manual Release NPM Packages:
     - master
     - /^v.*RC.*$/
   dependencies:
-    - builders-and-yarn
     - registry-typescript-api
     - buildtest:typescript-apis-stateless
     - buildtest:typescript-apis-with-pg
@@ -747,9 +790,15 @@ Release Tags To Docker Hub:
   except:
     - branches
     - triggers
-  dependencies:
-    - builders-and-yarn
-  cache: {}
+  before_script:
+    - yarn install --no-progress --cache-folder .yarn
+  cache:
+    key: JS-$JS_CACHE_VERSION
+    paths:
+      - $CI_PROJECT_DIR/.yarn
+      - $CI_PROJECT_DIR/node_modules/
+      - "$CI_PROJECT_DIR/*/node_modules"
+    policy: pull
   services:
     - docker:dind
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
@@ -757,9 +806,7 @@ Release Tags To Docker Hub:
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker login -u magdabot -p $DOCKER_HUB_PASSWORD
-    - yarn install
     - yarn run retag-and-push -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG
-
 
 Publish NPM Packages:
   stage: release
@@ -768,8 +815,16 @@ Publish NPM Packages:
   except:
     - branches
     - triggers
+  before_script:
+    - yarn install --no-progress --cache-folder .yarn
+  cache:
+    key: JS-$JS_CACHE_VERSION
+    paths:
+      - $CI_PROJECT_DIR/.yarn
+      - $CI_PROJECT_DIR/node_modules/
+      - "$CI_PROJECT_DIR/*/node_modules"
+    policy: pull
   dependencies:
-    - builders-and-yarn
     - registry-typescript-api
     - buildtest:typescript-apis-stateless
     - buildtest:typescript-apis-with-pg
