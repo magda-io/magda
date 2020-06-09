@@ -118,16 +118,11 @@ buildtest:search-with-index-cache:
     # use < 25% of time for GC
     # put the ivy cache in the workspace where gitlab can cache it
     SBT_OPTS: >
-      -Xms2500M -Xmx2500M
-      -XX:+CMSClassUnloadingEnabled
-      -XX:MaxGCPauseMillis=1000
-      -XX:+UseG1GC
-      -XX:GCTimeRatio=3
       -Dsbt.global.base=$CI_PROJECT_DIR/sbt-cache/sbtboot
       -Dsbt.boot.directory=$CI_PROJECT_DIR/sbt-cache/boot
       -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
-  # tags:
-  #   - heavy
+  tags:
+    - heavy
   script:
     - cd magda-elastic-search
     - docker-compose up -d
@@ -185,16 +180,11 @@ buildtest:search-no-index-cache:
     # use < 25% of time for GC
     # put the ivy cache in the workspace where gitlab can cache it
     SBT_OPTS: >
-      -Xms2500M -Xmx2500M
-      -XX:+CMSClassUnloadingEnabled
-      -XX:MaxGCPauseMillis=1000
-      -XX:+UseG1GC
-      -XX:GCTimeRatio=3
       -Dsbt.global.base=$CI_PROJECT_DIR/sbt-cache/sbtboot
       -Dsbt.boot.directory=$CI_PROJECT_DIR/sbt-cache/boot
       -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
-  # tags:
-  #   - heavy
+  tags:
+    - heavy
   script:
     - cd magda-elastic-search
     - docker-compose up -d
