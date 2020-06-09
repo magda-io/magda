@@ -40,7 +40,8 @@ const fallbackApiHost = "https://dev.magda.io/";
 const DEV_FEATURE_FLAGS = {
     cataloguing: true,
     publishToDga: true,
-    previewAddDataset: false
+    previewAddDataset: false,
+    placeholderWorkflowsOn: false
 };
 
 const homePageConfig: {

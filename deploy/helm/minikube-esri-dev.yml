@@ -45,6 +45,7 @@ magda-core:
     featureFlags:
       cataloguing: true
       publishToDga: true
+      placeholderWorkflowsOn: false
 
 tags:
   all: true

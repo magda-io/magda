@@ -137,9 +137,13 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
         <div className="row dataset-access-and-use-page">
             <div className="col-sm-12">
                 <h2>Access and Use</h2>
-                <h3 className="with-underline">Sharing</h3>
 
-                {config.featureFlags.publishToDga ? (
+                {config.featureFlags.placeholderWorkflowsOn ? (
+                    <h3 className="with-underline">Sharing</h3>
+                ) : null}
+
+                {config.featureFlags.placeholderWorkflowsOn &&
+                config.featureFlags.publishToDga ? (
                     <div className="question-publish-to-dga">
                         <h4 className="with-icon">
                             <span>
@@ -211,29 +215,31 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     </div>
                 ) : null}
 
-                <div className="question-who-can-see-dataset">
-                    <h4 className="with-icon">
-                        <span>
-                            Who can see the dataset once it is published?
-                        </span>
-                    </h4>
-                    <div className="input-area">
-                        <ToolTip>
-                            We recommend you publish your data to everyone in
-                            your organisation to help prevent data silos.
-                        </ToolTip>
-                        <div>
-                            <AlwaysEditor
-                                value={datasetPublishing.level}
-                                onChange={editDatasetPublishing("level")}
-                                editor={codelistRadioEditor(
-                                    "dataset-publishing-level",
-                                    codelists.publishingLevel
-                                )}
-                            />
+                {config.featureFlags.placeholderWorkflowsOn ? (
+                    <div className="question-who-can-see-dataset">
+                        <h4 className="with-icon">
+                            <span>
+                                Who can see the dataset once it is published?
+                            </span>
+                        </h4>
+                        <div className="input-area">
+                            <ToolTip>
+                                We recommend you publish your data to everyone
+                                in your organisation to help prevent data silos.
+                            </ToolTip>
+                            <div>
+                                <AlwaysEditor
+                                    value={datasetPublishing.level}
+                                    onChange={editDatasetPublishing("level")}
+                                    editor={codelistRadioEditor(
+                                        "dataset-publishing-level",
+                                        codelists.publishingLevel
+                                    )}
+                                />
+                            </div>
                         </div>
                     </div>
-                </div>
+                ) : null}
 
                 <h3 className="with-underline">Dataset use</h3>
 

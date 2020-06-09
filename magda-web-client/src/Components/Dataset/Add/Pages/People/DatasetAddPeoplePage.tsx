@@ -22,6 +22,7 @@ import ToolTip from "Components/Dataset/Add/ToolTip";
 
 import "./DatasetAddPeoplePage.scss";
 import { User } from "reducers/userManagementReducer";
+import { config } from "config";
 
 type Props = {
     edit: <K extends keyof AddMetadataState>(
@@ -52,53 +53,70 @@ export default function DatasetAddPeoplePage({
                 <h2>People and production</h2>
                 <h3>People</h3>
                 <hr />
-                <h4>
-                    Which organisation is responsible for publishing this
-                    dataset?
-                    <ValidationRequiredLabel validationFieldPath="$.dataset.publisher" />
-                </h4>
                 <div>
-                    <OrganisationAutoComplete
-                        multi={false}
-                        value={dataset.publisher}
-                        onOrgSelected={editDataset("publisher")}
-                        validationFieldPath="$.dataset.publisher"
-                        validationFieldLabel="Responsible Organisation"
-                    />
+                    <h4>
+                        Which organisation is responsible for publishing this
+                        dataset?
+                        <ValidationRequiredLabel validationFieldPath="$.dataset.publisher" />
+                    </h4>
+                    <div>
+                        <OrganisationAutoComplete
+                            multi={false}
+                            value={dataset.publisher}
+                            onOrgSelected={editDataset("publisher")}
+                            validationFieldPath="$.dataset.publisher"
+                            validationFieldLabel="Responsible Organisation"
+                        />
+                    </div>
                 </div>
-                <h4>
-                    Which area of the organisation should be referenced as the
-                    data custodian?
-                </h4>
-                <div>
-                    <CustodianDropdown
-                        orgUnitId={dataset.custodianOrgUnitId}
-                        onChange={editDataset("custodianOrgUnitId")}
-                    />
-                </div>
-                <h4>Which team is responsible for maintaining this dataset?</h4>
-                <div>
-                    <OrgUnitDropdown
-                        orgUnitId={dataset.owningOrgUnitId}
-                        custodianOrgUnitId={dataset.custodianOrgUnitId}
-                        onChange={editDataset("owningOrgUnitId")}
-                    />
-                </div>
+                {config.featureFlags.placeholderWorkflowsOn ? (
+                    <div>
+                        <h4>
+                            Which area of the organisation should be referenced
+                            as the data custodian?
+                        </h4>
+                        <div>
+                            <CustodianDropdown
+                                orgUnitId={dataset.custodianOrgUnitId}
+                                onChange={editDataset("custodianOrgUnitId")}
+                            />
+                        </div>
+                    </div>
+                ) : null}
 
-                <h4>
-                    How should the contact point(s) be referenced in the
-                    metadata?
-                </h4>
-                <div>
-                    <AlwaysEditor
-                        value={publishing.contactPointDisplay}
-                        onChange={editPublishing("contactPointDisplay")}
-                        editor={codelistRadioEditor(
-                            "dataset-contact-point-display",
-                            codelists.contactPointDisplay
-                        )}
-                    />
-                </div>
+                {config.featureFlags.placeholderWorkflowsOn ? (
+                    <div>
+                        <h4>
+                            Which team is responsible for maintaining this
+                            dataset?
+                        </h4>
+                        <div>
+                            <OrgUnitDropdown
+                                orgUnitId={dataset.owningOrgUnitId}
+                                custodianOrgUnitId={dataset.custodianOrgUnitId}
+                                onChange={editDataset("owningOrgUnitId")}
+                            />
+                        </div>
+                    </div>
+                ) : null}
+                {config.featureFlags.placeholderWorkflowsOn ? (
+                    <div>
+                        <h4>
+                            How should the contact point(s) be referenced in the
+                            metadata?
+                        </h4>
+                        <div>
+                            <AlwaysEditor
+                                value={publishing.contactPointDisplay}
+                                onChange={editPublishing("contactPointDisplay")}
+                                editor={codelistRadioEditor(
+                                    "dataset-contact-point-display",
+                                    codelists.contactPointDisplay
+                                )}
+                            />
+                        </div>
+                    </div>
+                ) : null}
                 <hr />
                 <h3>Production</h3>
                 <h4>How was this dataset produced?</h4>
