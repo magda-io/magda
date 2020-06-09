@@ -28,7 +28,7 @@ export function extractExtents(
 
         let temporalCoverage: TemporalCoverage | undefined;
         let spatialCoverage: SpatialCoverage | undefined;
-        const rows = XLSX.utils.sheet_to_json(worksheet, { raw: false });
+        const rows = XLSX.utils.sheet_to_json(worksheet, { raw: true });
         if (rows.length) {
             const headersSet = new Set<string>();
             for (let row of rows) {
@@ -130,8 +130,8 @@ function aggregateDates(
     let earliestDate = maxDate;
     let latestDate = minDate;
 
-    startDateHeadersInOrder.forEach((header) => {
-        rows.forEach((row) => {
+    rows.forEach((row) => {
+        startDateHeadersInOrder.forEach((header) => {
             var dateStr: string = row[header].toString();
             var parsedDate: Moment = moment.utc(dateStr, dateFormats);
             if (parsedDate) {
@@ -141,10 +141,8 @@ function aggregateDates(
                 }
             }
         });
-    });
 
-    endDateHeadersInOrder.forEach((header) => {
-        rows.forEach((row) => {
+        endDateHeadersInOrder.forEach((header) => {
             var dateStr: string = row[header].toString();
             var parsedDate: Moment = moment.utc(dateStr, dateFormats);
             if (parsedDate) {

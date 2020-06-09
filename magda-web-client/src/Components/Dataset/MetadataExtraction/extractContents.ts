@@ -84,7 +84,8 @@ async function extractSpreadsheetFile(
 }> {
     const workbook = XLSX.read(array, {
         type: "array",
-        cellDates: true
+        cellDates: true,
+        raw: true
     });
 
     let datasetTitle: string | undefined;
@@ -120,7 +121,7 @@ async function extractSpreadsheetFile(
         text = Object.values(workbook.Sheets)
             .map((worksheet) => {
                 return XLSX.utils
-                    .sheet_to_json<string>(worksheet)
+                    .sheet_to_json<string>(worksheet, { raw: true })
                     .map((row) => Object.values(row).join(","))
                     .join("\n");
             })

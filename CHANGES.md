@@ -56,6 +56,7 @@ UI:
 -   Change search text to say "Search for data" instead of "Search for open data"
 -   Set flag `previewAddDataset` to `false` by default
 -   Made files that are dropped get uploaded, if this is specified by the user
+-   Bugfix: Read raw value from CSV files
 
 Storage:
 

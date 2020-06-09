@@ -116,7 +116,9 @@ const DatasetLinkItemProcessing = (props: ProcessingProps) => {
 
     const progress = distribution._progress ? distribution._progress : 0;
     let width = Math.ceil((progress / 100) * 330);
-    if (width < 5) width = 5;
+    if (width < 5) {
+        width = 5;
+    }
 
     return (
         <div className="processing-item">
@@ -154,7 +156,7 @@ const DatasetLinkItemProcessing = (props: ProcessingProps) => {
                         </div>
                     </div>
                     <div className="distribution-status">
-                        Reviewing service - {distribution._progress}% complete
+                        Reviewing service - {progress}% complete
                     </div>
                 </div>
             </div>

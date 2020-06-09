@@ -876,7 +876,8 @@ function readFileAsArrayBuffer(file: any): Promise<ArrayBuffer> {
         fileReader.readAsArrayBuffer(file);
     });
 }
-function mapStateToProps(state, old) {
+
+function mapStateToProps(_state, old) {
     let dataset = old.match.params.datasetId;
     return {
         dataset
