@@ -20,7 +20,7 @@ export function requestWhoAmI() {
             ...config.credentialsFetchOptions,
             credentials: "include"
         })
-            .then(async response => {
+            .then(async (response) => {
                 if (response.status === 200) {
                     const res = await response.json();
                     if (res.isError) {
@@ -40,7 +40,7 @@ export function requestWhoAmI() {
                     );
                 }
             })
-            .catch(err => dispatch(receiveWhoAmIError(err)));
+            .catch((err) => dispatch(receiveWhoAmIError(err)));
         return undefined;
     };
 }
@@ -121,11 +121,11 @@ export function requestAuthProviders() {
         });
 
         fetch(config.baseUrl + "auth/providers", config.credentialsFetchOptions)
-            .then(response => {
+            .then((response) => {
                 if (response.status === 200) {
                     return response
                         .json()
-                        .then(providers =>
+                        .then((providers) =>
                             dispatch(receiveAuthProviders(providers))
                         );
                 } else {
@@ -134,7 +134,7 @@ export function requestAuthProviders() {
                     );
                 }
             })
-            .catch(err => dispatch(receiveAuthProvidersError(err)));
+            .catch((err) => dispatch(receiveAuthProvidersError(err)));
         return undefined;
     };
 }

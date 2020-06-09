@@ -21,7 +21,7 @@ describe("saveToContentApi", () => {
 
         contentApiScope
             .put(`/${fileName}`)
-            .reply(function(this: any, uri, requestBody) {
+            .reply(function (this: any, uri, requestBody) {
                 const uriObj = new URI(uri);
                 const segs = uriObj.segmentCoded();
                 expect(segs).to.to.be.an("array");

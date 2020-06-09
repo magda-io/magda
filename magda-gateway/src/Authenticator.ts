@@ -94,11 +94,11 @@ export default class Authenticator {
                   ...DEFAULT_SESSION_COOKIE_OPTIONS
               };
 
-        passport.serializeUser(function(user: any, cb) {
+        passport.serializeUser(function (user: any, cb) {
             cb(null, user);
         });
 
-        passport.deserializeUser(function(user: any, cb) {
+        passport.deserializeUser(function (user: any, cb) {
             cb(null, user);
         });
 
@@ -137,7 +137,7 @@ export default class Authenticator {
      */
     destroySession(req: express.Request): Promise<never> {
         return new Promise((resolve, reject) => {
-            req.session.destroy(err => {
+            req.session.destroy((err) => {
                 if (err) {
                     // Failed to access session storage to delete session data
                     reject(err);
@@ -227,7 +227,7 @@ export default class Authenticator {
                                     isError: false
                                 });
                             })
-                            .catch(err => {
+                            .catch((err) => {
                                 const errorMessage = `Failed to destory session: ${err}`;
                                 console.log(errorMessage);
                                 res.status(500).send({
@@ -238,7 +238,7 @@ export default class Authenticator {
                             });
                     } else {
                         // --- for non logout path, no need to wait till `destroySession` complete
-                        this.destroySession(req).catch(err => {
+                        this.destroySession(req).catch((err) => {
                             // --- only log here if failed to delete session data from session store
                             console.log(`Failed to destory session: ${err}`);
                         });
@@ -269,7 +269,7 @@ export default class Authenticator {
                             // --- the original incoming session id must have been an invalid or expired one
                             // --- we need to destroy this newly created empty session
                             // --- destroy session here & no need to wait till `destroySession` complete
-                            this.destroySession(req).catch(err => {
+                            this.destroySession(req).catch((err) => {
                                 // --- only log here if failed to delete session data from session store
                                 console.log(
                                     `Failed to destory session: ${err}`

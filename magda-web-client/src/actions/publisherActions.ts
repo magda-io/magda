@@ -57,10 +57,10 @@ function fetchPublishers(start, query, searchResultsPerPage) {
         dispatch(requestPublishers());
 
         searchPublishers(query, start, searchResultsPerPage)
-            .then(json => {
+            .then((json) => {
                 return dispatch(receivePublishers(json, query));
             })
-            .catch(error =>
+            .catch((error) =>
                 dispatch(
                     requestPublishersError({
                         title: error.name,
@@ -102,7 +102,7 @@ function fetchPublisher(id) {
         const url = `${config.registryReadOnlyApiUrl}records/${id}?aspect=organization-details`;
 
         return fetch(url, config.credentialsFetchOptions)
-            .then(response => {
+            .then((response) => {
                 if (!response.ok) {
                     let statusText = response.statusText;
                     // response.statusText are different in different browser, therefore we unify them here
@@ -113,10 +113,10 @@ function fetchPublisher(id) {
                 }
                 return response.json();
             })
-            .then(json => {
+            .then((json) => {
                 return dispatch(receivePublisher(json));
             })
-            .catch(error =>
+            .catch((error) =>
                 dispatch(
                     requestPublisherError({
                         title: error.name,

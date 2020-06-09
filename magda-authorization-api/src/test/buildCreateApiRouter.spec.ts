@@ -15,18 +15,18 @@ import Database from "../Database";
 import { userDataArb } from "./arbitraries";
 import { Request } from "supertest";
 
-describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
+describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
     this.timeout(10000);
 
     let app: express.Express;
     let argv: any;
 
-    before(function() {
+    before(function () {
         argv = retrieveArgv();
         app = buildExpressApp();
     });
 
-    afterEach(function() {
+    afterEach(function () {
         mockUserDataStore.reset();
     });
 
@@ -88,14 +88,14 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                 const currentMockUserStoreSize = mockUserDataStore.countRecord();
 
                 await jsc.assert(
-                    jsc.forall(userDataArb, async userData => {
+                    jsc.forall(userDataArb, async (userData) => {
                         try {
                             mockUserDataStore.reset();
                             const req = request(app)
                                 .post("/private/users")
                                 .send(userData);
 
-                            const res = await req.then(res => res);
+                            const res = await req.then((res) => res);
 
                             expect(res.status).to.equal(401);
                             expect(mockUserDataStore.countRecord()).to.equal(
@@ -115,7 +115,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                 const standardUserId = mockUserDataStore.getRecordByIndex(1).id;
 
                 await jsc.assert(
-                    jsc.forall(userDataArb, async userData => {
+                    jsc.forall(userDataArb, async (userData) => {
                         try {
                             mockUserDataStore.reset();
                             const req = request(app)
@@ -124,7 +124,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
 
                             setMockRequestSession(req, standardUserId);
 
-                            const res = await req.then(res => res);
+                            const res = await req.then((res) => res);
 
                             expect(res.status).to.equal(403);
                             expect(mockUserDataStore.countRecord()).to.equal(
@@ -143,7 +143,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                 const adminUserId = mockUserDataStore.getRecordByIndex(0).id;
 
                 await jsc.assert(
-                    jsc.forall(userDataArb, async userData => {
+                    jsc.forall(userDataArb, async (userData) => {
                         try {
                             mockUserDataStore.reset();
 
@@ -153,7 +153,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
 
                             setMockRequestSession(req, adminUserId);
 
-                            const res = await req.then(res => res);
+                            const res = await req.then((res) => res);
                             expect(res.status).to.equal(200);
                             expect(res.body).to.be.a("object");
                             expect(res.body.id).to.be.a("string");
@@ -184,7 +184,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
         silenceErrorLogs(() => {
             it("should return 401 status code if requested without sepecifying user ID", async () => {
                 await jsc.assert(
-                    jsc.forall(userDataArb, async userData => {
+                    jsc.forall(userDataArb, async (userData) => {
                         try {
                             mockUserDataStore.reset();
                             mockUserDataStore.createRecord(userData);
@@ -197,7 +197,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                                     sourceId
                                 });
 
-                            const res = await req.then(res => res);
+                            const res = await req.then((res) => res);
 
                             expect(res.status).to.equal(401);
 
@@ -213,7 +213,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                 const standardUserId = mockUserDataStore.getRecordByIndex(1).id;
 
                 await jsc.assert(
-                    jsc.forall(userDataArb, async userData => {
+                    jsc.forall(userDataArb, async (userData) => {
                         try {
                             mockUserDataStore.reset();
                             mockUserDataStore.createRecord(userData);
@@ -226,7 +226,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                                     sourceId
                                 });
                             setMockRequestSession(req, standardUserId);
-                            const res = await req.then(res => res);
+                            const res = await req.then((res) => res);
 
                             expect(res.status).to.equal(403);
 
@@ -242,7 +242,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                 const adminUserId = mockUserDataStore.getRecordByIndex(0).id;
 
                 await jsc.assert(
-                    jsc.forall(userDataArb, async userData => {
+                    jsc.forall(userDataArb, async (userData) => {
                         try {
                             mockUserDataStore.reset();
                             mockUserDataStore.createRecord(userData);
@@ -257,7 +257,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
 
                             setMockRequestSession(req, adminUserId);
 
-                            const res = await req.then(res => res);
+                            const res = await req.then((res) => res);
                             expect(res.status).to.equal(200);
                             expect(res.body).to.be.a("object");
                             expect(res.body.id).to.be.a("string");
@@ -277,7 +277,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
         silenceErrorLogs(() => {
             it("should return 401 status code if requested without sepecifying user ID", async () => {
                 await jsc.assert(
-                    jsc.forall(userDataArb, async userData => {
+                    jsc.forall(userDataArb, async (userData) => {
                         try {
                             mockUserDataStore.reset();
                             const {
@@ -287,7 +287,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                                 `/private/users/${userId}`
                             );
 
-                            const res = await req.then(res => res);
+                            const res = await req.then((res) => res);
 
                             expect(res.status).to.equal(401);
 
@@ -303,7 +303,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                 const standardUserId = mockUserDataStore.getRecordByIndex(1).id;
 
                 await jsc.assert(
-                    jsc.forall(userDataArb, async userData => {
+                    jsc.forall(userDataArb, async (userData) => {
                         try {
                             mockUserDataStore.reset();
                             const {
@@ -314,7 +314,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                                 `/private/users/${userId}`
                             );
                             setMockRequestSession(req, standardUserId);
-                            const res = await req.then(res => res);
+                            const res = await req.then((res) => res);
 
                             expect(res.status).to.equal(403);
 
@@ -330,7 +330,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                 const adminUserId = mockUserDataStore.getRecordByIndex(0).id;
 
                 await jsc.assert(
-                    jsc.forall(userDataArb, async userData => {
+                    jsc.forall(userDataArb, async (userData) => {
                         try {
                             mockUserDataStore.reset();
                             const {
@@ -343,7 +343,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
 
                             setMockRequestSession(req, adminUserId);
 
-                            const res = await req.then(res => res);
+                            const res = await req.then((res) => res);
                             expect(res.status).to.equal(200);
                             expect(res.body).to.be.a("object");
                             expect(res.body.id).to.be.a("string");
@@ -365,7 +365,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
         silenceErrorLogs(() => {
             it("should return correct user data if queried by `userId` without sepecifying user ID", async () => {
                 await jsc.assert(
-                    jsc.forall(userDataArb, async userData => {
+                    jsc.forall(userDataArb, async (userData) => {
                         try {
                             mockUserDataStore.reset();
                             const {
@@ -376,7 +376,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                                 `/public/users/${userId}`
                             );
 
-                            const res = await req.then(res => res);
+                            const res = await req.then((res) => res);
 
                             expect(res.status).to.equal(200);
                             expect(res.body).to.be.a("object");
@@ -397,7 +397,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                 const standardUserId = mockUserDataStore.getRecordByIndex(1).id;
 
                 await jsc.assert(
-                    jsc.forall(userDataArb, async userData => {
+                    jsc.forall(userDataArb, async (userData) => {
                         try {
                             mockUserDataStore.reset();
                             const {
@@ -408,7 +408,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                                 `/public/users/${userId}`
                             );
                             setMockRequestSession(req, standardUserId);
-                            const res = await req.then(res => res);
+                            const res = await req.then((res) => res);
 
                             expect(res.status).to.equal(200);
                             expect(res.body).to.be.a("object");
@@ -429,7 +429,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                 const adminUserId = mockUserDataStore.getRecordByIndex(0).id;
 
                 await jsc.assert(
-                    jsc.forall(userDataArb, async userData => {
+                    jsc.forall(userDataArb, async (userData) => {
                         try {
                             mockUserDataStore.reset();
                             const {
@@ -442,7 +442,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
 
                             setMockRequestSession(req, adminUserId);
 
-                            const res = await req.then(res => res);
+                            const res = await req.then((res) => res);
                             expect(res.status).to.equal(200);
                             expect(res.body).to.be.a("object");
                             expect(res.body.id).to.be.a("string");
@@ -471,7 +471,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                                 "/public/users/whoami"
                             );
 
-                            const res = await req.then(res => res);
+                            const res = await req.then((res) => res);
 
                             expect(res.status).to.equal(200);
 
@@ -485,7 +485,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
 
             it("should return correct user data specified by session header", async () => {
                 await jsc.assert(
-                    jsc.forall(userDataArb, async userData => {
+                    jsc.forall(userDataArb, async (userData) => {
                         try {
                             mockUserDataStore.reset();
                             const {
@@ -496,7 +496,7 @@ describe("Auth api router", function(this: Mocha.ISuiteCallbackContext) {
                                 `/public/users/whoami`
                             );
                             setMockRequestSession(req, userId);
-                            const res = await req.then(res => res);
+                            const res = await req.then((res) => res);
 
                             expect(res.status).to.equal(200);
                             expect(res.body).to.be.a("object");

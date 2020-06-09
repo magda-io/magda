@@ -37,7 +37,7 @@ class Header extends Component {
     render() {
         return (
             <MagdaNamespacesConsumer ns={["global"]}>
-                {translate => {
+                {(translate) => {
                     const applicationName = translate(["appName", "Magda"]);
 
                     return (

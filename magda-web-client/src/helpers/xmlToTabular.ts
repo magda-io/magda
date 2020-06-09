@@ -1,7 +1,7 @@
 import fastXmlParser from "fast-xml-parser";
 import jsonToArray from "./jsonToArray";
 
-export default function(xmlData: string) {
+export default function (xmlData: string) {
     // when a tag has attributes
     const options = {
         attrPrefix: "@_",

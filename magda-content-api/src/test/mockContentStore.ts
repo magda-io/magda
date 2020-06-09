@@ -52,16 +52,16 @@ export const mockContentData = [
 let runtimeContentDataStore: Content[];
 
 const mockContentDataStore = {
-    reset: function() {
-        runtimeContentDataStore = mockContentData.map(item => ({ ...item }));
+    reset: function () {
+        runtimeContentDataStore = mockContentData.map((item) => ({ ...item }));
     },
 
-    getData: function() {
+    getData: function () {
         return runtimeContentDataStore;
     },
 
     getContentById(id: string) {
-        return runtimeContentDataStore.filter(record => {
+        return runtimeContentDataStore.filter((record) => {
             return record.id === id;
         });
     },
@@ -69,10 +69,10 @@ const mockContentDataStore = {
     setContentById(id: string, type: string, content: string) {
         let set = false;
         runtimeContentDataStore
-            .filter(record => {
+            .filter((record) => {
                 return record.id === id;
             })
-            .forEach(record => {
+            .forEach((record) => {
                 set = true;
                 record.type = type;
                 record.content = content;
@@ -83,7 +83,7 @@ const mockContentDataStore = {
     },
 
     getContentSummary() {
-        return runtimeContentDataStore.map(x => ({ ...x }));
+        return runtimeContentDataStore.map((x) => ({ ...x }));
     },
 
     deleteContentById(id: string) {
@@ -95,7 +95,7 @@ const mockContentDataStore = {
         }
     },
 
-    countRecord: function() {
+    countRecord: function () {
         return runtimeContentDataStore.length;
     }
 };

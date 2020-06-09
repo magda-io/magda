@@ -12,7 +12,7 @@ const defaultStoryNumber = 6;
 
 const initialData = new Array(defaultStoryNumber)
     .fill(initialStoryData)
-    .map(item => ({ ...item })); //--- make sure object copies are created.
+    .map((item) => ({ ...item })); //--- make sure object copies are created.
 
 const homepageStories = (state = initialData, action: Action) => {
     let newState;

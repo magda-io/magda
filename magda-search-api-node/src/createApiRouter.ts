@@ -31,18 +31,14 @@ export default function createApiRouter(options: ApiRouterOptions) {
     const baseValidators = {
         start: Joi.number().default(0),
         limit: Joi.number().default(10),
-        publisher: Joi.array()
-            .items(Joi.string())
-            .optional(),
+        publisher: Joi.array().items(Joi.string()).optional(),
         dateFrom: Joi.string().optional(),
         dateTo: Joi.string().optional(),
         region: Joi.alternatives([
             Joi.array().items(Joi.string()),
             Joi.string()
         ]).optional(),
-        format: Joi.array()
-            .items(Joi.string())
-            .optional(),
+        format: Joi.array().items(Joi.string()).optional(),
         publishingState: Joi.string().optional()
     };
 
@@ -148,9 +144,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
             ...baseValidators,
 
             query: Joi.string().optional(),
-            facetSize: Joi.number()
-                .optional()
-                .default(10)
+            facetSize: Joi.number().optional().default(10)
         })
     };
 
@@ -200,7 +194,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     // This is for getting a JWT in development so you can do fake authenticated requests to a local server.
     if (process.env.NODE_ENV !== "production") {
-        router.get("/public/jwt", function(req, res) {
+        router.get("/public/jwt", function (req, res) {
             res.status(200);
             res.write(
                 "X-Magda-Session: " +
@@ -217,7 +211,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 }
 
 function processRegions(regions: string[] = []): QueryRegion[] {
-    return regions.map(regionString => {
+    return regions.map((regionString) => {
         const [regionType, regionId] = regionString.split(":");
         return {
             regionType,

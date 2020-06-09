@@ -33,7 +33,7 @@ const featuredPublishersReducer = (
         case "RECEIVE_FEATURED_PUBLISHERS":
             return Object.assign({}, state, {
                 isFetching: false,
-                publishers: action.json.map(p => parsePublisher(p)),
+                publishers: action.json.map((p) => parsePublisher(p)),
                 error: null
             });
 

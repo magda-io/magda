@@ -229,7 +229,7 @@ function mapStateToProps({
     };
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return bindActionCreators(
         {
             fetchFeedback: fetchFeedback,

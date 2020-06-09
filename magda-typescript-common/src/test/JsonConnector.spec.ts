@@ -97,7 +97,7 @@ describe("JsonConnector", () => {
                 )
                 .reply(201, { count: 1 });
 
-            return connector.run().then(result => {
+            return connector.run().then((result) => {
                 scope.done();
                 expect(result.recordsTrimmed).to.equal(1);
                 expect(result.trimStillProcessing).to.be.false;
@@ -110,7 +110,7 @@ describe("JsonConnector", () => {
             scope.put(new RegExp("/records")).reply(200);
             scope.delete(/.*/).reply(202);
 
-            return connector.run().then(result => {
+            return connector.run().then((result) => {
                 scope.done();
 
                 expect(result.trimStillProcessing).to.be.true;
@@ -139,9 +139,9 @@ describe("JsonConnector", () => {
                 });
             scope.delete(/.*/).reply(202);
 
-            return connector.run().then(result => {
+            return connector.run().then((result) => {
                 scope.done();
-                receivedRecords.forEach(record => {
+                receivedRecords.forEach((record) => {
                     expect(record.aspects).to.have.deep.property(
                         "test-aspect-id",
                         {
@@ -175,9 +175,9 @@ describe("JsonConnector", () => {
                 });
             scope.delete(/.*/).reply(202);
 
-            return connector.run().then(result => {
+            return connector.run().then((result) => {
                 scope.done();
-                receivedRecords.forEach(record => {
+                receivedRecords.forEach((record) => {
                     if (record.id.indexOf("ds-") === 0) {
                         expect(record.aspects).to.have.deep.property(
                             "test-aspect-id",
@@ -254,9 +254,9 @@ describe("JsonConnector", () => {
                 });
             scope.delete(/.*/).reply(202);
 
-            return connector.run().then(result => {
+            return connector.run().then((result) => {
                 scope.done();
-                receivedRecords.forEach(record => {
+                receivedRecords.forEach((record) => {
                     if (record.id.indexOf("ds-") === 0) {
                         expect(record.aspects).to.have.deep.property(
                             "test-aspect-id",
@@ -296,9 +296,9 @@ describe("JsonConnector", () => {
                 });
             scope.delete(/.*/).reply(202);
 
-            return connector.run().then(result => {
+            return connector.run().then((result) => {
                 scope.done();
-                receivedRecords.forEach(record => {
+                receivedRecords.forEach((record) => {
                     expect(record.aspects["source"]).to.have.deep.property(
                         "extras",
                         {

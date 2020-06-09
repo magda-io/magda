@@ -21,7 +21,7 @@ const DO_NOT_PROXY_HEADERS = [
 ];
 
 const doNotProxyHeaderLookup = groupBy(
-    DO_NOT_PROXY_HEADERS.map(x => x.toLowerCase()),
+    DO_NOT_PROXY_HEADERS.map((x) => x.toLowerCase()),
     (x: string) => x
 );
 
@@ -42,7 +42,7 @@ export default function createBaseProxy(tenantMode: TenantMode): httpProxy {
         }
     );
 
-    proxy.on("error", function(err: any, req: any, res: any) {
+    proxy.on("error", function (err: any, req: any, res: any) {
         res.writeHead(500, {
             "Content-Type": "text/plain"
         });
@@ -52,7 +52,7 @@ export default function createBaseProxy(tenantMode: TenantMode): httpProxy {
         res.end("Something went wrong.");
     });
 
-    proxy.on("proxyReq", function(proxyReq, req, res) {
+    proxy.on("proxyReq", function (proxyReq, req, res) {
         // Presume that we've already got whatever auth details we need out of the request and so remove it now.
         // If we keep it it causes scariness upstream - like anything that goes through the TerriaJS proxy will
         // be leaking auth details to wherever it proxies to.
@@ -69,7 +69,7 @@ export default function createBaseProxy(tenantMode: TenantMode): httpProxy {
         }
     });
 
-    proxy.on("proxyRes", function(proxyRes, req, res) {
+    proxy.on("proxyRes", function (proxyRes, req, res) {
         // Add a default cache time of 60 seconds on GETs so the CDN can cache in times of high load.
         if (
             req.method === "GET" &&
@@ -88,7 +88,7 @@ export default function createBaseProxy(tenantMode: TenantMode): httpProxy {
          * while other content (produced locally by gateway) has been
          * taken care of by `app.disable("x-powered-by");` in index.js
          */
-        Object.keys(proxyRes.headers).forEach(headerKey => {
+        Object.keys(proxyRes.headers).forEach((headerKey) => {
             const headerKeyLowerCase = headerKey.toLowerCase();
             if (
                 headerKeyLowerCase === "x-powered-by" ||
@@ -99,7 +99,7 @@ export default function createBaseProxy(tenantMode: TenantMode): httpProxy {
         });
     });
 
-    proxy.on("proxyReq", async function(proxyReq, req, res) {
+    proxy.on("proxyReq", async function (proxyReq, req, res) {
         if (tenantMode.multiTenantsMode === true) {
             const theRequest = <express.Request>req;
             const domainName = theRequest.hostname.toLowerCase();

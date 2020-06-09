@@ -45,10 +45,10 @@ class MagdaContentAPIBackend {
      */
     read(language, namespace, callback) {
         this.getFromCache(language, namespace)
-            .then(data => {
+            .then((data) => {
                 callback(null, data);
             })
-            .catch(err => callback(err));
+            .catch((err) => callback(err));
     }
 
     /**
@@ -105,9 +105,9 @@ class MagdaContentAPIBackend {
     async processBuffer() {
         const groupedByLanguages = groupBy(this.requestBuffer, "language");
         /** Lookup of callbacks, grouped by languages and then namespaces */
-        const callbackLookup = mapValues(groupedByLanguages, langItems =>
-            mapValues(groupBy(langItems, "namespace"), items =>
-                items.map(item => item.callback)
+        const callbackLookup = mapValues(groupedByLanguages, (langItems) =>
+            mapValues(groupBy(langItems, "namespace"), (items) =>
+                items.map((item) => item.callback)
             )
         );
 
@@ -178,22 +178,25 @@ class MagdaContentAPIBackend {
         //         }
         //     }
         // };
-        const withSplitPaths = json.map(item => ({
+        const withSplitPaths = json.map((item) => ({
             ...item,
             path: item.id.split("/")
         }));
 
-        const groupedByLanguage = groupBy(withSplitPaths, item => item.path[1]);
+        const groupedByLanguage = groupBy(
+            withSplitPaths,
+            (item) => item.path[1]
+        );
 
-        return mapValues(groupedByLanguage, itemsInLanguage => {
+        return mapValues(groupedByLanguage, (itemsInLanguage) => {
             const groupedByNamespace = groupBy(
                 itemsInLanguage,
-                item => item.path[2]
+                (item) => item.path[2]
             );
 
-            return mapValues(groupedByNamespace, namespaceItems =>
+            return mapValues(groupedByNamespace, (namespaceItems) =>
                 fromPairs(
-                    namespaceItems.map(item => [item.path[3], item.content])
+                    namespaceItems.map((item) => [item.path[3], item.content])
                 )
             );
         });

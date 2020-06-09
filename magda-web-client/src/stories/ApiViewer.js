@@ -9,14 +9,14 @@ class ApiViewer extends React.Component {
     }
     componentDidMount() {
         fetch(this.props.url, config.credentialsFetchOptions)
-            .then(response => {
+            .then((response) => {
                 if (response.status === 200) {
                     return response.json();
                 }
                 return false;
             })
 
-            .then(json => {
+            .then((json) => {
                 if (this.props.type === "table") {
                     this.setState({
                         data: json.options,

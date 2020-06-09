@@ -3,7 +3,7 @@ import { getUserId, getUserIdHandling } from "../session/GetUserId";
 import ApiClient from "./ApiClient";
 
 export const mustBeLoggedIn = (jwtSecret: string) =>
-    function(this: any, req: Request, res: Response, next: () => void) {
+    function (this: any, req: Request, res: Response, next: () => void) {
         getUserIdHandling(req, res, jwtSecret, (userId: string) => {
             this.userId = userId;
             next();
@@ -19,13 +19,13 @@ export const getUser = (baseAuthUrl: string, jwtSecret: string) => (
     next: () => void
 ) => {
     getUserId(req, jwtSecret).caseOf({
-        just: userId => {
+        just: (userId) => {
             const apiClient = new ApiClient(baseAuthUrl, jwtSecret, userId);
             apiClient
                 .getUser(userId)
-                .then(maybeUser => {
+                .then((maybeUser) => {
                     maybeUser.caseOf({
-                        just: user => {
+                        just: (user) => {
                             req.user = user;
                             next();
                         },

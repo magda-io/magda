@@ -25,20 +25,20 @@ const mockUserData = [
 let runtimeUserDataStore: User[];
 
 const mockUserDataStore = {
-    reset: function() {
-        runtimeUserDataStore = mockUserData.map(item => ({ ...item }));
+    reset: function () {
+        runtimeUserDataStore = mockUserData.map((item) => ({ ...item }));
     },
 
-    getData: function() {
+    getData: function () {
         return runtimeUserDataStore;
     },
     getRecordBySourceAndSourceId(source: string, sourceId: string) {
-        return runtimeUserDataStore.filter(record => {
+        return runtimeUserDataStore.filter((record) => {
             return record.source == source && record.sourceId == sourceId;
         });
     },
     getRecordByUserId(userId: string) {
-        return runtimeUserDataStore.filter(record => {
+        return runtimeUserDataStore.filter((record) => {
             return record.id == userId;
         });
     },
@@ -50,7 +50,7 @@ const mockUserDataStore = {
         runtimeUserDataStore.push(newRecord);
         return newRecord;
     },
-    countRecord: function() {
+    countRecord: function () {
         return runtimeUserDataStore.length;
     }
 };

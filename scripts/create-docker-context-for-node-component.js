@@ -146,7 +146,7 @@ if (argv.build) {
         argv.name
     );
     const tagArgs = tags
-        .map(tag => ["-t", tag])
+        .map((tag) => ["-t", tag])
         .reduce((soFar, tagArgs) => soFar.concat(tagArgs), []);
 
     const cacheFromArgs = cacheFromImage
@@ -172,7 +172,7 @@ if (argv.build) {
 
     wrapConsoleOutput(dockerProcess);
 
-    dockerProcess.on("close", code => {
+    dockerProcess.on("close", (code) => {
         fse.removeSync(dockerContextDir);
 
         if (code === 0 && argv.push) {
@@ -182,7 +182,7 @@ if (argv.build) {
             }
 
             // Stop if there's a code !== 0
-            tags.every(tag => {
+            tags.every((tag) => {
                 const process = childProcess.spawnSync(
                     "docker",
                     ["push", tag],
@@ -199,11 +199,11 @@ if (argv.build) {
         process.exit(code);
     });
 
-    tarProcess.on("close", code => {
+    tarProcess.on("close", (code) => {
         dockerProcess.stdin.end();
     });
 
-    tarProcess.stdout.on("data", data => {
+    tarProcess.stdout.on("data", (data) => {
         dockerProcess.stdin.write(data);
     });
 } else if (argv.output) {
@@ -222,7 +222,7 @@ if (argv.build) {
         }
     );
 
-    tarProcess.on("close", code => {
+    tarProcess.on("close", (code) => {
         fse.closeSync(outputTar);
         console.log(tarProcess.status);
         fse.removeSync(dockerContextDir);
@@ -273,12 +273,12 @@ function preparePackage(packageDir, destDir) {
         }
         dockerIncludes = dockerIncludesFromPackageJson
             .split(" ")
-            .filter(include => include.length > 0);
+            .filter((include) => include.length > 0);
     }
 
     dockerIncludes
-        .filter(include => include !== "Dockerfile") // Filter out the dockerfile because we'll manually copy over a modified version.
-        .forEach(function(include) {
+        .filter((include) => include !== "Dockerfile") // Filter out the dockerfile because we'll manually copy over a modified version.
+        .forEach(function (include) {
             const src = path.resolve(packageDir, include);
             const dest = path.resolve(destDir, include);
 
@@ -290,7 +290,7 @@ function preparePackage(packageDir, destDir) {
 
                 const productionPackages = _.uniqBy(
                     getPackageList(packageDir, path.resolve(packageDir, "..")),
-                    package => package.path
+                    (package) => package.path
                 );
 
                 prepareNodeModules(src, dest, productionPackages);
@@ -312,7 +312,7 @@ function preparePackage(packageDir, destDir) {
 }
 
 function prepareNodeModules(packageDir, destDir, productionPackages) {
-    productionPackages.forEach(src => {
+    productionPackages.forEach((src) => {
         const relativePath = path.relative(packageDir, src.path);
         const dest = path.resolve(destDir, relativePath);
         const srcPath = path.resolve(packageDir, relativePath);
@@ -337,7 +337,7 @@ function getPackageList(packagePath, packageSearchRoot, resolvedSoFar = {}) {
         return result;
     }
 
-    dependencies.forEach(function(dependencyName) {
+    dependencies.forEach(function (dependencyName) {
         const dependencyNamePath = dependencyName.replace(/\//g, path.sep);
 
         let currentBaseDir = packagePath;
@@ -409,12 +409,12 @@ function getPackageDependencies(packagePath) {
 
 function wrapConsoleOutput(process) {
     if (process.stdout) {
-        process.stdout.on("data", data => {
+        process.stdout.on("data", (data) => {
             console.log(data.toString());
         });
     }
     if (process.stderr) {
-        process.stderr.on("data", data => {
+        process.stderr.on("data", (data) => {
             console.error(data.toString());
         });
     }

@@ -32,7 +32,7 @@ function mapStateToProps({ feedback: { isShowingFeedbackForm } }) {
     };
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return bindActionCreators(
         {
             showFeedbackForm

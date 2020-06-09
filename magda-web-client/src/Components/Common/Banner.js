@@ -12,15 +12,15 @@ class Banner extends React.Component {
         this.state = { isOpen: true };
     }
 
-    goBack = event => {
+    goBack = (event) => {
         event.preventDefault();
 
         if (window.location.hostname === "search.data.gov.au") {
             // Delete all VWO's cookies
             const cookieNames = Object.keys(Cookies.get());
             cookieNames
-                .filter(name => /^_(vis|vwo).*/.test(name))
-                .forEach(name =>
+                .filter((name) => /^_(vis|vwo).*/.test(name))
+                .forEach((name) =>
                     Cookies.remove(name, {
                         path: "/",
                         domain: ".data.gov.au"
@@ -64,7 +64,7 @@ class Banner extends React.Component {
     }
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return bindActionCreators(
         {
             closeTopBanner: closeTopBanner

@@ -32,13 +32,13 @@ export function fetchNewsfromRss() {
         }
         const url = config.rssUrl;
         fetch(url, config.credentialsFetchOptions)
-            .then(response => {
+            .then((response) => {
                 if (response.status === 200) {
                     return response.text();
                 }
                 throw new Error(response.statusText);
             })
-            .then(text => {
+            .then((text) => {
                 parser.parseString(text, (err, result) => {
                     if (err) {
                         console.warn(err);
@@ -53,7 +53,7 @@ export function fetchNewsfromRss() {
                     }
                 });
             })
-            .catch(error =>
+            .catch((error) =>
                 dispatch(
                     requestNewsError({
                         title: error.name,

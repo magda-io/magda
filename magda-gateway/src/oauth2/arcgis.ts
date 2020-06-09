@@ -57,7 +57,7 @@ export default function arcgis(options: ArcGisOptions) {
     }
 
     passport.use(
-        new ArcGISStrategy(strategyOptions, function(
+        new ArcGISStrategy(strategyOptions, function (
             accessToken: string,
             refreshToken: string,
             profile: Profile,
@@ -74,17 +74,19 @@ export default function arcgis(options: ArcGisOptions) {
                 ((profile as any)._json && (profile as any)._json.thumbnail);
 
             createOrGetUserToken(authorizationApi, profile, "arcgis")
-                .then(userToken => {
+                .then((userToken) => {
                     const url = `${options.arcgisInstanceBaseUrl}/sharing/rest/community/users/${profile.username}?f=json&token=${accessToken}`;
                     fetch(url, { method: "get" })
-                        .then(res => {
+                        .then((res) => {
                             return res.json();
                         })
-                        .then(jsObj => {
+                        .then((jsObj) => {
                             const theGroups: any[] = jsObj["groups"];
-                            const groupIds: string[] = theGroups.map(group => {
-                                return group["id"];
-                            });
+                            const groupIds: string[] = theGroups.map(
+                                (group) => {
+                                    return group["id"];
+                                }
+                            );
 
                             const theGroupIds = esriOrgGroup
                                 ? groupIds.concat([esriOrgGroup])
@@ -98,9 +100,9 @@ export default function arcgis(options: ArcGisOptions) {
                                 }
                             });
                         })
-                        .catch(error => cb(error));
+                        .catch((error) => cb(error));
                 })
-                .catch(error => cb(error));
+                .catch((error) => cb(error));
         })
     );
 

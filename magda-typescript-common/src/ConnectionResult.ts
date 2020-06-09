@@ -62,7 +62,7 @@ export default class ConnectionResult {
     public static combine(...results: ConnectionResult[]): ConnectionResult {
         const total = new ConnectionResult();
 
-        results.forEach(result => {
+        results.forEach((result) => {
             total.aspectDefinitionsConnected +=
                 result.aspectDefinitionsConnected;
             total.organizationsConnected += result.organizationsConnected;

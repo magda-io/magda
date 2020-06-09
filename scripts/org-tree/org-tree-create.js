@@ -12,7 +12,7 @@ program
     )
     .option("<nodeName>", "Root node name")
     .version(pkg.version)
-    .action(async nodeName => {
+    .action(async (nodeName) => {
         try {
             if (!process.argv.slice(2).length) {
                 program.help();

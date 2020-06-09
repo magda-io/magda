@@ -48,7 +48,7 @@ export function fetchPublisherSearchResults(
                 .then((json: FacetSearchJson) => {
                     return dispatch(receivePublishers(facetQuery, json));
                 })
-                .catch(error =>
+                .catch((error) =>
                     dispatch(
                         requestPublishersFailed(facetQuery, {
                             title: error.name,

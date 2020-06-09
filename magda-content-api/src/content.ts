@@ -184,7 +184,7 @@ function makeJsonItem(extra: any = {}, options: any = {}) {
                 strict: false
             }),
             encode: ContentEncoding.json,
-            verify: function(req: any, res: any, next: any) {
+            verify: function (req: any, res: any, next: any) {
                 const invalid = env.validate(schemaId, req.body);
                 if (!invalid) {
                     next();

@@ -22,12 +22,12 @@ let nextTenantId = 3;
 let runtimeTenantDataStore: Tenant[];
 
 const mockTenantDataStore = {
-    reset: function() {
-        runtimeTenantDataStore = mockTenantData.map(item => ({ ...item }));
+    reset: function () {
+        runtimeTenantDataStore = mockTenantData.map((item) => ({ ...item }));
         nextTenantId = 3;
     },
 
-    getTenants: function() {
+    getTenants: function () {
         return runtimeTenantDataStore;
     },
 
@@ -36,7 +36,7 @@ const mockTenantDataStore = {
         runtimeTenantDataStore.push(newTenant);
         return newTenant;
     },
-    countTenants: function() {
+    countTenants: function () {
         return runtimeTenantDataStore.length;
     }
 };

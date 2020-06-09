@@ -37,10 +37,12 @@ export function searchPublishers(
     start: number = 1,
     searchResultsPerPage: number = 10
 ): Promise<SearchApiResult> {
-    const url = `${config.searchApiUrl +
-        "organisations"}?query=${query}&start=${(start - 1) *
-        searchResultsPerPage}&limit=${searchResultsPerPage}`;
-    return fetch(url, config.credentialsFetchOptions).then(response => {
+    const url = `${
+        config.searchApiUrl + "organisations"
+    }?query=${query}&start=${
+        (start - 1) * searchResultsPerPage
+    }&limit=${searchResultsPerPage}`;
+    return fetch(url, config.credentialsFetchOptions).then((response) => {
         if (!response.ok) {
             let statusText = response.statusText;
             // response.statusText are different in different browser, therefore we unify them here
@@ -85,7 +87,7 @@ export function autocompletePublishers(
                 generalQuery.q || "*"
             )}&${generalQueryString}&facetQuery=${term}`,
         config.credentialsFetchOptions
-    ).then(response => {
+    ).then((response) => {
         if (!response.ok) {
             throw new Error(response.statusText);
         } else {
@@ -104,8 +106,9 @@ export async function autoCompleteAccessLocation(
     term: string,
     size: number = 8
 ): Promise<string[]> {
-    const url = `${config.searchApiUrl +
-        "autoComplete"}?field=accessNotes.location&input=${encodeURIComponent(
+    const url = `${
+        config.searchApiUrl + "autoComplete"
+    }?field=accessNotes.location&input=${encodeURIComponent(
         term
     )}&size=${size}`;
 

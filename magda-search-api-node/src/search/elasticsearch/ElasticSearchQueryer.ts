@@ -163,11 +163,11 @@ export default class ElasticSearchQueryer implements SearchQueryer {
                 .value();
 
             const options: FacetOption[] = _(hits)
-                .map(hit => ({
+                .map((hit) => ({
                     ...aggregationsResult[hit.value],
                     identifier: hit.identifier
                 }))
-                .sortBy(hit => -hit.hitCount)
+                .sortBy((hit) => -hit.hitCount)
                 .drop(start)
                 .take(limit)
                 .value();
@@ -339,12 +339,12 @@ export default class ElasticSearchQueryer implements SearchQueryer {
                 return textQuery;
             } else {
                 const regionNames: string[] = _(boostRegions)
-                    .flatMap(region => [
+                    .flatMap((region) => [
                         region.regionName,
                         region.regionShortName
                     ])
-                    .filter(x => !!x && x !== "")
-                    .map(x => x as string)
+                    .filter((x) => !!x && x !== "")
+                    .map((x) => x as string)
                     .sortBy((x: string) => x.length)
                     .value();
 
@@ -410,7 +410,7 @@ export default class ElasticSearchQueryer implements SearchQueryer {
             bool: {
                 must: [
                     freeText,
-                    ...query.regions.map(queryRegion =>
+                    ...query.regions.map((queryRegion) =>
                         this.regionIdToGeoshapeQuery(
                             queryRegion.regionType + "/" + queryRegion.regionId
                         )
@@ -418,7 +418,7 @@ export default class ElasticSearchQueryer implements SearchQueryer {
                     query.dateFrom &&
                         dateQuery(query.dateFrom.toISOString(), "gte"),
                     query.dateTo && dateQuery(query.dateTo.toISOString(), "lte")
-                ].filter(x => !!x)
+                ].filter((x) => !!x)
             }
         };
     }

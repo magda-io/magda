@@ -492,7 +492,7 @@ export const languages = {
     zza: "Zaza; Dimili; Dimli; Kirdki; Kirmanjki; Zazaki"
 };
 
-export const languageOptions = Object.keys(languages).map(key => ({
+export const languageOptions = Object.keys(languages).map((key) => ({
     label: languages[key],
     value: key
 }));

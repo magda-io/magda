@@ -12,10 +12,10 @@ import { Small, Medium } from "Components/Common/Responsive";
 
 import MediaQuery from "react-responsive";
 
-const getBgImg = backgroundImageUrls => {
+const getBgImg = (backgroundImageUrls) => {
     let imageMap = {};
 
-    backgroundImageUrls.forEach(item => {
+    backgroundImageUrls.forEach((item) => {
         let width;
         try {
             width = parseInt(

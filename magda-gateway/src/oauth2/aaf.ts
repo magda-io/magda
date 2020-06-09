@@ -44,7 +44,7 @@ export default function aaf(options: aafOptions) {
 
     passport.use(
         "aaf-custom",
-        new CustomStrategy(function(req: any, done: any) {
+        new CustomStrategy(function (req: any, done: any) {
             const verified_jwt = jwt.decode(
                 req.body["assertion"],
                 aafClientSecret
@@ -64,11 +64,11 @@ export default function aaf(options: aafOptions) {
                 provider: "aaf"
             };
             createOrGetUserToken(authorizationApi, profile, "aaf")
-                .then(userId => {
+                .then((userId) => {
                     console.log("create or get token:", userId);
                     return done(null, userId);
                 })
-                .catch(error => done(error));
+                .catch((error) => done(error));
         })
     );
 

@@ -146,7 +146,7 @@ export default class MagdaMinioClient implements ObjectStoreClient {
      */
     deleteFile(bucket: string, objectName: string): Promise<boolean> {
         return new Promise((resolve, _reject) => {
-            return this.client.removeObject(bucket, objectName, function(
+            return this.client.removeObject(bucket, objectName, function (
                 err: any
             ) {
                 if (err) {

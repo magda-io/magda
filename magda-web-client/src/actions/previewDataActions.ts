@@ -31,10 +31,10 @@ export function resetPreviewData() {
 
 function loadPapa() {
     return import(/* webpackChunkName: "papa" */ "papaparse")
-        .then(papa => {
+        .then((papa) => {
             return papa;
         })
-        .catch(error => {
+        .catch((error) => {
             console.error(
                 "An error occurred while loading the component",
                 error
@@ -47,10 +47,10 @@ function loadXmlParser() {
     return import(
         /* webpackChunkName: "xmltoTabular" */ "../helpers/xmlToTabular"
     )
-        .then(xmlToTabular => {
+        .then((xmlToTabular) => {
             return xmlToTabular;
         })
-        .catch(error => {
+        .catch((error) => {
             console.error(
                 "An error occurred while loading the component",
                 error
@@ -61,10 +61,10 @@ function loadXmlParser() {
 
 function loadRssParser() {
     return import(/* webpackChunkName: "rssParser" */ "rss-parser")
-        .then(rssParser => {
+        .then((rssParser) => {
             return rssParser;
         })
-        .catch(error => {
+        .catch((error) => {
             console.error(
                 "An error occurred while loading the component",
                 error
@@ -91,12 +91,12 @@ export function fetchPreviewData(distribution) {
 
         switch (format) {
             case "csv-geo-au":
-                loadPapa().then(papa => {
+                loadPapa().then((papa) => {
                     papa.parse(proxy + "_0d/" + url, {
                         download: true,
                         header: true,
                         skipEmptyLines: true,
-                        complete: function(data) {
+                        complete: function (data) {
                             (data.meta as any).chartFields =
                                 distribution.chartFields;
                             dispatch(
@@ -105,7 +105,7 @@ export function fetchPreviewData(distribution) {
                                 })
                             );
                         },
-                        error: error => {
+                        error: (error) => {
                             dispatch(requestPreviewDataError(error));
                         }
                     });
@@ -113,12 +113,12 @@ export function fetchPreviewData(distribution) {
 
                 break;
             case "csv":
-                loadPapa().then(papa => {
+                loadPapa().then((papa) => {
                     papa.parse(proxy + "_0d/" + url, {
                         download: true,
                         header: true,
                         skipEmptyLines: true,
-                        complete: function(data) {
+                        complete: function (data) {
                             (data.meta as any).chartFields =
                                 distribution.chartFields;
                             dispatch(
@@ -127,7 +127,7 @@ export function fetchPreviewData(distribution) {
                                 })
                             );
                         },
-                        error: error => {
+                        error: (error) => {
                             dispatch(requestPreviewDataError(error));
                         }
                     });
@@ -136,7 +136,7 @@ export function fetchPreviewData(distribution) {
                 break;
             case "xml":
                 fetch(proxy + url, config.credentialsFetchOptions)
-                    .then(response => {
+                    .then((response) => {
                         if (response.status !== 200) {
                             return dispatch(
                                 requestPreviewDataError({
@@ -147,8 +147,8 @@ export function fetchPreviewData(distribution) {
                         }
                         return response.text();
                     })
-                    .then(xmlData => {
-                        loadXmlParser().then(xmlToTabular => {
+                    .then((xmlData) => {
+                        loadXmlParser().then((xmlToTabular) => {
                             const data = xmlToTabular.default(xmlData);
                             if (data) {
                                 dispatch(receivePreviewData(data));
@@ -164,7 +164,7 @@ export function fetchPreviewData(distribution) {
                 break;
             case "json":
                 fetch(proxy + url, config.credentialsFetchOptions)
-                    .then(response => {
+                    .then((response) => {
                         if (response.status !== 200) {
                             return dispatch(
                                 requestPreviewDataError({
@@ -175,7 +175,7 @@ export function fetchPreviewData(distribution) {
                         }
                         return response.json();
                     })
-                    .then(json => {
+                    .then((json) => {
                         const jsonData = {
                             data: json,
                             meta: {
@@ -198,7 +198,7 @@ export function fetchPreviewData(distribution) {
 
             case "txt":
                 fetch(proxy + url, config.credentialsFetchOptions)
-                    .then(response => {
+                    .then((response) => {
                         if (response.status !== 200) {
                             return dispatch(
                                 requestPreviewDataError({
@@ -209,7 +209,7 @@ export function fetchPreviewData(distribution) {
                         }
                         return response.text();
                     })
-                    .then(text => {
+                    .then((text) => {
                         const textData = {
                             data: text,
                             meta: {
@@ -262,7 +262,7 @@ export function fetchPreviewData(distribution) {
                 break;
             case "rss":
                 fetch(proxy + url, config.credentialsFetchOptions)
-                    .then(response => {
+                    .then((response) => {
                         if (response.status !== 200) {
                             return dispatch(
                                 requestPreviewDataError({
@@ -274,8 +274,8 @@ export function fetchPreviewData(distribution) {
                             return response.text();
                         }
                     })
-                    .then(text => {
-                        loadRssParser().then(rssParser => {
+                    .then((text) => {
+                        loadRssParser().then((rssParser) => {
                             rssParser.parseString(text, (err, result) => {
                                 if (err) {
                                     dispatch(

@@ -23,18 +23,18 @@ export default function ckan(options: CkanOptions) {
 
     passport.use(
         "ckan-local",
-        new LocalStrategy(function(
+        new LocalStrategy(function (
             username: string,
             password: string,
             cb: (error: any, user?: any, info?: any) => void
         ) {
-            loginToCkan(username, password, ckanUrl).then(result => {
+            loginToCkan(username, password, ckanUrl).then((result) => {
                 result.caseOf({
-                    left: error => cb(error),
-                    right: profile => {
+                    left: (error) => cb(error),
+                    right: (profile) => {
                         createOrGetUserToken(authorizationApi, profile, "ckan")
-                            .then(userId => cb(null, userId))
-                            .catch(error => cb(error));
+                            .then((userId) => cb(null, userId))
+                            .catch((error) => cb(error));
                     }
                 });
             });
@@ -43,7 +43,7 @@ export default function ckan(options: CkanOptions) {
 
     const router: Router = express.Router();
 
-    router.get("/", function(req, res) {
+    router.get("/", function (req, res) {
         res.render("form");
     });
 

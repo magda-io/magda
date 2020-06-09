@@ -26,7 +26,7 @@ export default function commonYargs<
 >(
     defaultPort: number,
     defaultInternalUrl: string,
-    additions: (a: yargs.Argv<MinionArguments>) => yargs.Argv<T> = x =>
+    additions: (a: yargs.Argv<MinionArguments>) => yargs.Argv<T> = (x) =>
         x as yargs.Argv<T>
 ): T {
     const yarr = yargs

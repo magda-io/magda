@@ -12,7 +12,7 @@ export default async function bulkIndex(
     refresh: boolean,
     idField: string
 ): Promise<any> {
-    const bulkCommands = _.flatMap(documents, document => [
+    const bulkCommands = _.flatMap(documents, (document) => [
         {
             index: {
                 _index: indexId,
@@ -27,7 +27,7 @@ export default async function bulkIndex(
         client.bulk({
             body:
                 bulkCommands
-                    .map(command => JSON.stringify(command))
+                    .map((command) => JSON.stringify(command))
                     .join("\n") + "\n",
             refresh: refresh ? "true" : "false"
         })
