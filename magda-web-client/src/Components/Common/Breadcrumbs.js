@@ -9,7 +9,7 @@ export default class Breadcrumbs extends React.Component {
                     <li>
                         <Link to="/#">Home</Link>
                     </li>
-                    {this.props.breadcrumbs.map(b => b)}
+                    {this.props.breadcrumbs.map((b) => b)}
                 </ul>
             </nav>
         );

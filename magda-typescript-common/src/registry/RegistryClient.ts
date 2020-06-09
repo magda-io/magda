@@ -65,11 +65,7 @@ export default class RegistryClient {
     }
 
     getRecordUrl(id: string): string {
-        return this.baseUri
-            .clone()
-            .segment("records")
-            .segment(id)
-            .toString();
+        return this.baseUri.clone().segment("records").segment(id).toString();
     }
 
     getAspectDefinitions(): Promise<AspectDefinition[] | Error> {
@@ -88,7 +84,7 @@ export default class RegistryClient {
                     )
                 )
         )
-            .then(result => result.body)
+            .then((result) => result.body)
             .catch(createServiceError);
     }
 
@@ -115,11 +111,11 @@ export default class RegistryClient {
                 console.log(
                     formatServiceError("Failed to GET records.", e, retriesLeft)
                 ),
-            e => {
+            (e) => {
                 return !e.response || e.response.statusCode !== 404;
             }
         )
-            .then(result => result.body)
+            .then((result) => result.body)
             .catch(createServiceError);
     }
 
@@ -152,7 +148,7 @@ export default class RegistryClient {
                     formatServiceError("Failed to GET records.", e, retriesLeft)
                 )
         )
-            .then(result => result.body)
+            .then((result) => result.body)
             .catch(createServiceError);
     }
 
@@ -180,7 +176,7 @@ export default class RegistryClient {
                     )
                 )
         )
-            .then(result => result.body)
+            .then((result) => result.body)
             .catch(createServiceError);
     }
 }

@@ -51,7 +51,7 @@ export const stateArb: jsc.Arbitrary<State> = arbFlatMap(
     jsc.array(connectorIdArb),
     (connectorIds: string[]) => {
         const connectorStates = _(connectorIds)
-            .map(connectorId => [
+            .map((connectorId) => [
                 connectorId,
                 jsc.record({
                     config: jsc.oneof([configArb, jsc.constant(undefined)]),
@@ -72,7 +72,7 @@ export const stateArb: jsc.Arbitrary<State> = arbFlatMap(
             return jsc.constant({});
         }
     },
-    connectorStates => {
+    (connectorStates) => {
         return _.keys(connectorStates);
     }
 );

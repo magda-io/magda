@@ -1,5 +1,5 @@
 const customStyles = {
-    menu: provided => {
+    menu: (provided) => {
         return {
             ...provided,
             width: "560px",
@@ -8,11 +8,11 @@ const customStyles = {
             zIndex: 3
         };
     },
-    menuList: provided => ({
+    menuList: (provided) => ({
         ...provided,
         maxHeight: "380px"
     }),
-    control: provided => ({
+    control: (provided) => ({
         ...provided,
         width: "560px",
         height: "44px",

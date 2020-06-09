@@ -1,4 +1,4 @@
-addSection("Header Navigation", async function(body) {
+addSection("Header Navigation", async function (body) {
     showJsonEditor(body, {
         label: "Header Navigation",
         idPattern: "header/navigation/*",
@@ -73,7 +73,7 @@ const headerNavigationSchema = {
     required: ["order"]
 };
 
-addSection("Footer Navigation", async function(body) {
+addSection("Footer Navigation", async function (body) {
     body.text("");
     showJsonEditor(body.append("div"), {
         label: "Medium Footer Navigation Categories",
@@ -81,7 +81,7 @@ addSection("Footer Navigation", async function(body) {
         schema: footerCategory,
         allowDelete: true,
         allowAdd: true,
-        newId: id => `footer/navigation/medium/category/${Date.now()}`,
+        newId: (id) => `footer/navigation/medium/category/${Date.now()}`,
         extraControls: (parent, file) => {
             const prefix = file.id.substr(
                 "footer/navigation/medium/category/".length
@@ -92,7 +92,7 @@ addSection("Footer Navigation", async function(body) {
                 schema: footerLink,
                 allowDelete: true,
                 allowAdd: true,
-                newId: id =>
+                newId: (id) =>
                     `footer/navigation/medium/category-links/${prefix}/${Date.now()}`
             });
         }
@@ -103,7 +103,7 @@ addSection("Footer Navigation", async function(body) {
         schema: footerCategory,
         allowDelete: true,
         allowAdd: true,
-        newId: id => `footer/navigation/small/category/${Date.now()}`,
+        newId: (id) => `footer/navigation/small/category/${Date.now()}`,
         extraControls: (parent, file) => {
             const prefix = file.id.substr(
                 "footer/navigation/small/category/".length
@@ -114,7 +114,7 @@ addSection("Footer Navigation", async function(body) {
                 schema: footerLink,
                 allowDelete: true,
                 allowAdd: true,
-                newId: id =>
+                newId: (id) =>
                     `footer/navigation/small/category-links/${prefix}/${Date.now()}`
             });
         }
@@ -155,14 +155,14 @@ const footerLink = {
     required: ["order", "label", "href"]
 };
 
-addSection("Copyright", async function(body) {
+addSection("Copyright", async function (body) {
     showJsonEditor(body, {
         label: "Footer Copyright",
         idPattern: "footer/copyright/*",
         schema: footerCopyright,
         allowDelete: true,
         allowAdd: true,
-        newId: id => `footer/copyright/${Date.now()}`
+        newId: (id) => `footer/copyright/${Date.now()}`
     });
 });
 

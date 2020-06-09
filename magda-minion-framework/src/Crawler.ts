@@ -58,7 +58,7 @@ class Crawler {
             console.info("Crawling existing records in registry");
 
             const registryPage = AsyncPage.create<RecordsPage<Record>>(
-                previous => {
+                (previous) => {
                     if (previous && previous.hasMore === false) {
                         console.info("No more records left");
                         // Last page was an empty page, no more records left
@@ -84,7 +84,7 @@ class Crawler {
                                 10
                             )
                             .then(unionToThrowable)
-                            .then(page => {
+                            .then((page) => {
                                 this.crawledRecordNumber += page.records.length;
                                 console.info(
                                     `Crawled ${page.records.length} records`

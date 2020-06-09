@@ -68,7 +68,7 @@ export default function createApiRouter(options: ApiRouterOptions): Router {
         if (redirectTrailingSlash) {
             // --- has to use RegEx as `req.originalUrl` will match both with & without trailing /
             const re = new RegExp(`^${escapeStringRegexp(baseRoute)}$`);
-            router.get(re, function(req, res) {
+            router.get(re, function (req, res) {
                 res.redirect(`${req.originalUrl}/`);
             });
         }

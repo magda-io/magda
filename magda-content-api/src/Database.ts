@@ -102,14 +102,14 @@ export default class PostgresDatabase implements Database {
         } else if (result.parts.length === 0) {
             return { sql: "true", params: [] };
         } else {
-            const flattenedParts = result.parts.map(part =>
+            const flattenedParts = result.parts.map((part) =>
                 this.opaResultToSqlClause(part, genParamIndex)
             );
 
             const sql = flattenedParts
-                .map(part => `(${part.sql})`)
+                .map((part) => `(${part.sql})`)
                 .join(result instanceof AuthAnd ? " AND " : " OR ");
-            const params = _.flatMap(flattenedParts, part => part.params);
+            const params = _.flatMap(flattenedParts, (part) => part.params);
 
             return {
                 sql,
@@ -163,7 +163,7 @@ export default class PostgresDatabase implements Database {
         const sqlParameters: any[] = [id];
         return await this.pool
             .query(`SELECT * FROM content WHERE "id" = $1`, sqlParameters)
-            .then(res => arrayToMaybe(res.rows));
+            .then((res) => arrayToMaybe(res.rows));
     }
 
     async check(): Promise<any> {
@@ -207,14 +207,14 @@ export default class PostgresDatabase implements Database {
             AS content`;
         }
 
-        const queryPatterns = _.flatMap(queries, q =>
-            q.patterns.map(p => ({ field: q.field, pattern: p }))
+        const queryPatterns = _.flatMap(queries, (q) =>
+            q.patterns.map((p) => ({ field: q.field, pattern: p }))
         );
 
         const queryPatternResults: (QueryPattern & {
             opaResult?: AuthDecision;
         })[] = await Promise.all(
-            queryPatterns.map(qp => {
+            queryPatterns.map((qp) => {
                 if (qp.field !== "id") {
                     return Promise.resolve(qp);
                 } else {
@@ -237,7 +237,7 @@ export default class PostgresDatabase implements Database {
         );
 
         const whereClauses: string[] = [];
-        queryPatternResults.forEach(r => {
+        queryPatternResults.forEach((r) => {
             params.push(PostgresDatabase.createWildcardMatch(r.pattern));
             const patternLookupSql = `${r.field} LIKE $${getParamIndex()}`;
 
@@ -253,20 +253,20 @@ export default class PostgresDatabase implements Database {
                 patternConditions.push(accessControlSql.sql);
                 params = params.concat(accessControlSql.params);
                 whereClauses.push(
-                    patternConditions.map(c => `(${c})`).join(" AND ")
+                    patternConditions.map((c) => `(${c})`).join(" AND ")
                 );
             }
         });
 
         const sql = `SELECT id, type, length(content) as length ${inline} FROM content ${
             whereClauses.length
-                ? `WHERE ${whereClauses.map(c => `(${c})`).join(" OR ")} `
+                ? `WHERE ${whereClauses.map((c) => `(${c})`).join(" OR ")} `
                 : ""
         }`;
 
         return this.pool
             .query(sql, params)
-            .then(res => (res && res.rows) || []);
+            .then((res) => (res && res.rows) || []);
     }
 
     setContentById(
@@ -282,13 +282,13 @@ export default class PostgresDatabase implements Database {
                  UPDATE SET "type" = $2, "content"=$3`,
                 [id, type, content]
             )
-            .then(res => arrayToMaybe(res.rows));
+            .then((res) => arrayToMaybe(res.rows));
     }
 
     deleteContentById(id: string) {
         return this.pool
             .query("DELETE FROM content WHERE id=$1", [id])
-            .then(res => (res && res.rows) || []);
+            .then((res) => (res && res.rows) || []);
     }
 
     private static createWildcardMatch(pattern: string): string {

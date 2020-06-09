@@ -1,4 +1,4 @@
-addSection("Pages", async function(body) {
+addSection("Pages", async function (body) {
     showJsonEditor(body, {
         label: "Content Pages",
         idPattern: "page/*",
@@ -6,7 +6,7 @@ addSection("Pages", async function(body) {
         allowDelete: true,
         allowAdd: true,
         allowIdFieldInput: true,
-        newId: id => `page/${id}`
+        newId: (id) => `page/${id}`
     });
 });
 

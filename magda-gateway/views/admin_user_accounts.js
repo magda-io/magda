@@ -1,4 +1,4 @@
-addSection("User accounts", async function(body) {
+addSection("User accounts", async function (body) {
     const users = await request("GET", "/api/v0/auth/users/all");
     body.text("");
     body.append("h2").text("Manage Users");
@@ -9,7 +9,7 @@ addSection("User accounts", async function(body) {
     head.append("th").text("email");
     head.append("th").text("source");
     head.append("th").text("admin");
-    users.items.forEach(user => {
+    users.items.forEach((user) => {
         const row = table.append("tr");
         row.append("td").text(user.displayName);
         row.append("td").text(user.email);

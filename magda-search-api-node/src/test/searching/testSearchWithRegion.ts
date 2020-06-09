@@ -27,10 +27,10 @@ export default function testSearchByKeyword(
         await supertest(app())
             .get(`/datasets?query=wildlife density`)
             .expect(200)
-            .expect(res => {
+            .expect((res) => {
                 const body: SearchResult = res.body;
                 const identifiers = body.dataSets.map(
-                    dataset => dataset.identifier
+                    (dataset) => dataset.identifier
                 );
 
                 expect(identifiers).to.eql([
@@ -43,10 +43,10 @@ export default function testSearchByKeyword(
         await supertest(app())
             .get(`/datasets?query=wildlife density in queensland`)
             .expect(200)
-            .expect(res => {
+            .expect((res) => {
                 const body: SearchResult = res.body;
                 const identifiers = body.dataSets.map(
-                    dataset => dataset.identifier
+                    (dataset) => dataset.identifier
                 );
 
                 expect(identifiers).to.eql([
@@ -103,10 +103,10 @@ export default function testSearchByKeyword(
         await supertest(app())
             .get(`/datasets?query=wildlife density`)
             .expect(200)
-            .expect(res => {
+            .expect((res) => {
                 const body: SearchResult = res.body;
                 const identifiers = body.dataSets.map(
-                    dataset => dataset.identifier
+                    (dataset) => dataset.identifier
                 );
 
                 expect(identifiers).to.eql([
@@ -119,10 +119,10 @@ export default function testSearchByKeyword(
         await supertest(app())
             .get(`/datasets?query=wildlife density in SA`)
             .expect(200)
-            .expect(res => {
+            .expect((res) => {
                 const body: SearchResult = res.body;
                 const identifiers = body.dataSets.map(
-                    dataset => dataset.identifier
+                    (dataset) => dataset.identifier
                 );
 
                 expect(identifiers).to.eql([
@@ -134,10 +134,10 @@ export default function testSearchByKeyword(
         await supertest(app())
             .get(`/datasets?query=wildlife density south`)
             .expect(200)
-            .expect(res => {
+            .expect((res) => {
                 const body: SearchResult = res.body;
                 const identifiers = body.dataSets.map(
-                    dataset => dataset.identifier
+                    (dataset) => dataset.identifier
                 );
 
                 expect(identifiers).to.eql([
@@ -197,10 +197,10 @@ export default function testSearchByKeyword(
         await supertest(app())
             .get(`/datasets?query=wildlife density`)
             .expect(200)
-            .expect(res => {
+            .expect((res) => {
                 const body: SearchResult = res.body;
                 const identifiers = body.dataSets.map(
-                    dataset => dataset.identifier
+                    (dataset) => dataset.identifier
                 );
 
                 expect(identifiers).to.eql([
@@ -213,10 +213,10 @@ export default function testSearchByKeyword(
         await supertest(app())
             .get(`/datasets?query=wildlife density in Alfredton`)
             .expect(200)
-            .expect(res => {
+            .expect((res) => {
                 const body: SearchResult = res.body;
                 const identifiers = body.dataSets.map(
-                    dataset => dataset.identifier
+                    (dataset) => dataset.identifier
                 );
 
                 expect(identifiers).to.eql([

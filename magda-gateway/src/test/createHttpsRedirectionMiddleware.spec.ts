@@ -72,7 +72,7 @@ describe("Test createHttpsRedirectionMiddleware", () => {
 
             return testRequest
                 .expect(301)
-                .expect(function(res: supertest.Response) {
+                .expect(function (res: supertest.Response) {
                     expect(isNextHandlerCalled).to.equal(false);
                     const location = res.header.location;
                     const uri = new URI(location);

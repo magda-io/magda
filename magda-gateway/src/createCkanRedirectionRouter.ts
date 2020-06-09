@@ -113,7 +113,7 @@ export default function buildCkanRedirectionRouter({
         }
         const rounterRef: any = router;
         const routerMethod = rounterRef[method] as Function;
-        routerMethod.call(router, genericRegExOrStringPattern, function(
+        routerMethod.call(router, genericRegExOrStringPattern, function (
             req: any,
             res: any
         ) {
@@ -133,11 +133,11 @@ export default function buildCkanRedirectionRouter({
         });
     }
 
-    router.get("/about", function(req, res) {
+    router.get("/about", function (req, res) {
         res.redirect(303, "/page/about");
     });
 
-    genericUrlRedirectConfigs.forEach(config => {
+    genericUrlRedirectConfigs.forEach((config) => {
         const args = covertGenericUrlRedirectConfigToFullArgList(config);
         redirectToCkanGeneric.apply(
             null,
@@ -152,7 +152,7 @@ export default function buildCkanRedirectionRouter({
      * /organization/datarequest/*
      * /organization/about/*
      */
-    router.get(/^\/organization(|\?.*)$/, function(req, res) {
+    router.get(/^\/organization(|\?.*)$/, function (req, res) {
         res.redirect(
             303,
             URI(req.originalUrl)
@@ -329,7 +329,7 @@ export default function buildCkanRedirectionRouter({
      */
     router.get(
         /^\/dataset\/(?!ds-)[^\/]+\/resource\/[^\/]{1}.*\/download\/.*$/,
-        async function(req, res) {
+        async function (req, res) {
             try {
                 res.redirect(
                     301,
@@ -356,7 +356,7 @@ export default function buildCkanRedirectionRouter({
      */
     router.get(
         /^\/dataset\/(?!ds-)[^\/]+\/resource\/[^\/]{1}.*$/,
-        async function(req, res) {
+        async function (req, res) {
             try {
                 const originUri = new URI(req.originalUrl);
                 const dsIdOrName = originUri.segmentCoded(1).trim();
@@ -392,7 +392,7 @@ export default function buildCkanRedirectionRouter({
      */
     const remappedDatasetSubActions = ["groups", "activity", "showcases"];
 
-    router.get(/^\/dataset\/(?!ds-)[^\/]{1}.*$/, async function(req, res) {
+    router.get(/^\/dataset\/(?!ds-)[^\/]{1}.*$/, async function (req, res) {
         try {
             const originUri = new URI(req.originalUrl);
             const segment1 = originUri.segmentCoded(1).trim();
@@ -421,7 +421,7 @@ export default function buildCkanRedirectionRouter({
     });
 
     const orgSubActions = ["about", "datarequest", "activity"];
-    router.get(/^\/organization\/[^/]{1}.*$/, async function(req, res) {
+    router.get(/^\/organization\/[^/]{1}.*$/, async function (req, res) {
         try {
             const originUri = new URI(req.originalUrl);
             const segment1 = originUri.segmentCoded(1).trim();

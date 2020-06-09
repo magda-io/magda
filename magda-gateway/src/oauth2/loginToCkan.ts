@@ -24,7 +24,7 @@ function loginToCkan(
             "Content-Type": "application/x-www-form-urlencoded"
         },
         body: `login=${username}&password=${password}`
-    }).then(res => {
+    }).then((res) => {
         const cookies = res.headers.get("set-cookie");
 
         if (!cookies) {
@@ -50,7 +50,7 @@ function afterLoginSuccess(
         headers: {
             cookie: cookies
         }
-    }).then(secondRes => {
+    }).then((secondRes) => {
         if (secondRes.status === 200) {
             return parseUser(secondRes);
         } else {
@@ -66,7 +66,7 @@ function afterLoginSuccess(
 function parseUser(
     res: Response
 ): Promise<Either<loginToCkan.Failure, loginToCkan.Success>> {
-    return res.text().then(text => {
+    return res.text().then((text) => {
         const $ = cheerio.load(text);
 
         const userName = $("#field-username").attr("value");

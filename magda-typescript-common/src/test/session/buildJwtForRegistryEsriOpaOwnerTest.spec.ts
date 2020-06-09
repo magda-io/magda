@@ -5,17 +5,14 @@ import buildJwt from "../../session/buildJwt";
 
 describe("Get authz claim from jwt token", () => {
     const argv = addJwtSecretFromEnvVar(
-        yargs
-            .config()
-            .help()
-            .option("jwtSecret", {
-                describe:
-                    "The secret to use to sign JSON Web Token (JWT) for authenticated requests.",
-                type: "string"
-            }).argv
+        yargs.config().help().option("jwtSecret", {
+            describe:
+                "The secret to use to sign JSON Web Token (JWT) for authenticated requests.",
+            type: "string"
+        }).argv
     );
 
-    it("should create jwt token with userId and session claims", function() {
+    it("should create jwt token with userId and session claims", function () {
         const sessions = [
             { session: { esriUser: "user0" } },
             { session: { esriUser: "user1" } },

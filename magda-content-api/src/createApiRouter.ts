@@ -66,7 +66,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *        ...
      *    ]
      */
-    router.get("/all", USER, async function(req, res) {
+    router.get("/all", USER, async function (req, res) {
         try {
             const idQuery: Query = {
                 field: "id",
@@ -104,7 +104,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
             // inline
             if (inline) {
-                for (const item of all.filter(item => item.content)) {
+                for (const item of all.filter((item) => item.content)) {
                     try {
                         switch (item.type) {
                             case "application/json":
@@ -177,7 +177,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
             );
             const { content, format } = (
                 await contentPromise.caseOf({
-                    just: content =>
+                    just: (content) =>
                         Promise.resolve(
                             Maybe.just({
                                 format: requestFormat,
@@ -190,7 +190,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                             tempContentId
                         );
 
-                        return tempContentMaybe.map(content => ({
+                        return tempContentMaybe.map((content) => ({
                             format: tempContentId.substr(
                                 tempContentId.lastIndexOf(".") + 1
                             ),
@@ -233,7 +233,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
         }
     }
 
-    Object.entries(content).forEach(function(config: [string, ContentItem]) {
+    Object.entries(content).forEach(function (config: [string, ContentItem]) {
         const [contentId, configurationItem] = config;
 
         const route = configurationItem.route || `/${contentId}`;
@@ -343,7 +343,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
          *
          */
 
-        router.delete(route, ADMIN, async function(req, res) {
+        router.delete(route, ADMIN, async function (req, res) {
             const finalContentId = req.path.substr(1);
 
             await database.deleteContentById(finalContentId);
@@ -356,7 +356,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     // This is for getting a JWT in development so you can do fake authenticated requests to a local server.
     if (process.env.NODE_ENV !== "production") {
-        router.get("/public/jwt", function(req, res) {
+        router.get("/public/jwt", function (req, res) {
             res.status(200);
             res.write(
                 "X-Magda-Session: " +

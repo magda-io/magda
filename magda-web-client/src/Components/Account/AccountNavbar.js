@@ -67,7 +67,7 @@ function mapStateToProps(state) {
     };
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return bindActionCreators(
         {
             requestSignOut

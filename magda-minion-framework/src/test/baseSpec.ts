@@ -23,7 +23,7 @@ export default function baseSpec(
         beforeEachProperty: () => void
     ) => void
 ) {
-    describe(caption, function() {
+    describe(caption, function () {
         this.timeout(10000);
         let expressApp: express.Express;
         let expressServer: Server;
@@ -54,7 +54,7 @@ export default function baseSpec(
             }
             expressApp = express();
             const originalListen = expressApp.listen;
-            sinon.stub(expressApp, "listen").callsFake(port => {
+            sinon.stub(expressApp, "listen").callsFake((port) => {
                 expressServer = originalListen.bind(expressApp)(port);
                 return expressServer;
             });

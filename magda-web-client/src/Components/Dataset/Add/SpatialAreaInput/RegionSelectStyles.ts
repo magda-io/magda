@@ -1,5 +1,5 @@
 const RegionSelectStyles = {
-    menu: provided => {
+    menu: (provided) => {
         return {
             ...provided,
             width: "560px",
@@ -9,11 +9,11 @@ const RegionSelectStyles = {
             zIndex: 1001
         };
     },
-    menuList: provided => ({
+    menuList: (provided) => ({
         ...provided,
         maxHeight: "380px"
     }),
-    control: provided => ({
+    control: (provided) => ({
         ...provided,
         width: "560px",
         height: "44px",

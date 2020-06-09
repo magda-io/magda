@@ -36,7 +36,7 @@ baseSpec(
         doStartupTest(
             "should register aspects",
             ({ aspectDefs, registryScope, tenantScope, jwtSecret, hook }) => {
-                aspectDefs.forEach(aspectDef => {
+                aspectDefs.forEach((aspectDef) => {
                     registryScope
                         .put(
                             `/aspects/${encodeURIComponentWithApost(
@@ -205,7 +205,7 @@ baseSpec(
                         optionalAspects: hook.config.optionalAspects,
                         writeAspectDefs: aspectDefs,
                         express: expressApp,
-                        onRecordFound: record => Promise.resolve(),
+                        onRecordFound: (record) => Promise.resolve(),
                         maxRetries: 0,
                         concurrency: concurrency
                     };

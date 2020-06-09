@@ -10,8 +10,8 @@ export default function retry<T>(
     return new Promise<T>((resolve, reject) => {
         resolve(
             op().then(
-                result => result,
-                e => {
+                (result) => result,
+                (e) => {
                     if (retries > 0 && shouldRetry(e)) {
                         onRetry(e, retries);
                         return runLater(delaySeconds * 1000, () =>

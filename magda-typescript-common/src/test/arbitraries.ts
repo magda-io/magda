@@ -20,8 +20,8 @@ const charArb = jsc.integer(32, 0xff).smap(fromCode, toCode);
  * TTY crap that can't be matched by any regex
  */
 export const stringArb = jsc.array(charArb).smap(
-    chars => chars.join(""),
-    string => string.split("")
+    (chars) => chars.join(""),
+    (string) => string.split("")
 );
 
 export const lowerCaseAlphaCharArb = jsc
@@ -39,25 +39,25 @@ export const lcAlphaNumStringArbNe = jsc.nearray(lcAlphaNumCharArb).smap(
 );
 
 export const lcAlphaStringArb = jsc.array(lowerCaseAlphaCharArb).smap(
-    chars => chars.join(""),
-    string => string.split("")
+    (chars) => chars.join(""),
+    (string) => string.split("")
 );
 
 export const lcAlphaStringArbNe = jsc.nearray(lowerCaseAlphaCharArb).smap(
-    chars => chars.join(""),
-    string => string.split("")
+    (chars) => chars.join(""),
+    (string) => string.split("")
 );
 
 export const peopleNameArb = jsc
     .tuple([lcAlphaStringArbNe, lcAlphaStringArbNe])
     .smap(
-        strArr => strArr.join(" "),
-        string => string.split(" ") as [string, string]
+        (strArr) => strArr.join(" "),
+        (string) => string.split(" ") as [string, string]
     );
 
 const uuidArb: jsc.Arbitrary<string> = jsc.bless({
-    generator: jsc.generator.bless(x => uuid()),
-    shrink: jsc.shrink.bless(x => []),
+    generator: jsc.generator.bless((x) => uuid()),
+    shrink: jsc.shrink.bless((x) => []),
     show: (x: string) => x
 });
 
@@ -66,7 +66,7 @@ const intArb = jsc.integer(48, 57);
 export const recordArb = jsc.record<Record>({
     id: uuidArb,
     name: stringArb,
-    aspects: jsc.suchthat(jsc.array(jsc.json), arr => arr.length <= 10),
+    aspects: jsc.suchthat(jsc.array(jsc.json), (arr) => arr.length <= 10),
     sourceTag: jsc.constant(undefined),
     tenantId: intArb,
     authnReadPolicyId: jsc.constant(undefined)
@@ -101,7 +101,7 @@ function shrinkArrayWithMinimumSize<T>(
 ): (x: jsc.Shrink<T>) => jsc.Shrink<T[]> {
     function shrinkArrayImpl(...args: any[]) {
         const shrink: (x: any) => Array<any> = args[0];
-        const result: any = jsc.shrink.bless(function(arr: Array<any>) {
+        const result: any = jsc.shrink.bless(function (arr: Array<any>) {
             if (arr.length <= size) {
                 return lazyseq.nil;
             } else {
@@ -111,12 +111,12 @@ function shrinkArrayWithMinimumSize<T>(
                 return lazyseq
                     .cons(xs, lazyseq.nil)
                     .append(
-                        shrink(x).map(function(xp: any) {
+                        shrink(x).map(function (xp: any) {
                             return [xp].concat(xs);
                         })
                     )
                     .append(
-                        shrinkArrayImpl(shrink, xs).map(function(xsp: any) {
+                        shrinkArrayImpl(shrink, xs).map(function (xsp: any) {
                             return [x].concat(xsp);
                         })
                     );
@@ -145,7 +145,7 @@ export function arbFlatMap<T, U>(
     arb: jsc.Arbitrary<T>,
     arbForward: (t: T) => jsc.Arbitrary<U>,
     backwards: (u: U) => T,
-    show: (u: U) => string | undefined = u => JSON.stringify(u)
+    show: (u: U) => string | undefined = (u) => JSON.stringify(u)
 ): MonadicArb<U> {
     const x = jsc.bless<U>({
         generator: arb.generator.flatmap((t: T) => {
@@ -161,7 +161,7 @@ export function arbFlatMap<T, U>(
 
             const ts = unSeq<T>(arb.shrink(t));
             const us = _(ts)
-                .flatMap(thisT => {
+                .flatMap((thisT) => {
                     const newArb = arbForward(thisT);
                     const newU = (jsc.sampler(newArb, ts.length)(1) as any)[0];
                     return _.take(unSeq<U>(newArb.shrink(newU)), 3);
@@ -187,7 +187,7 @@ function generateArrayOfSize<T>(
     arrSize: number,
     gen: jsc.Generator<T>
 ): jsc.Generator<T[]> {
-    var result = jsc.generator.bless(function(size: number) {
+    var result = jsc.generator.bless(function (size: number) {
         var arr = new Array(arrSize);
         for (var i = 0; i < arrSize; i++) {
             arr[i] = gen(size);
@@ -206,7 +206,7 @@ export function arrayOfSizeArb<T>(
     return jsc.bless<T[]>({
         generator: generateArrayOfSize(size, arb.generator),
         shrink: shrinkArrayWithMinimumSize<T>(size)(arb.shrink),
-        show: x => x.toString()
+        show: (x) => x.toString()
     });
 }
 
@@ -234,7 +234,7 @@ export const distUrlArb = ({
     hostArb = lcAlphaNumStringArbNe
 }: UrlArbOptions = {}) =>
     urlPartsArb({ schemeArb, hostArb }).smap(
-        urlParts => {
+        (urlParts) => {
             const port =
                 (urlParts.scheme === "http" && urlParts.port === 80) ||
                 (urlParts.scheme === "ftp" && urlParts.port === 21)
@@ -345,7 +345,7 @@ export const recordArbWithDists = (dists: object[]) =>
     specificRecordArb({
         "dataset-distributions": jsc.record({
             distributions: jsc.tuple(
-                dists.map(dist =>
+                dists.map((dist) =>
                     specificRecordArb({
                         "dcat-distribution-strings": jsc.constant(dist)
                     })
@@ -364,11 +364,7 @@ export function someOf<T>(array: T[]): jsc.Arbitrary<T[]> {
             start: jsc.integer(0, array.length - 1)
         })
         .smap(
-            ({ length, start }) =>
-                _(array)
-                    .drop(start)
-                    .take(length)
-                    .value(),
+            ({ length, start }) => _(array).drop(start).take(length).value(),
             (newArray: T[]) => {
                 const start = _.indexOf(array, newArray[0]);
                 const length = newArray.length - start;
@@ -391,11 +387,8 @@ export function fuzzStringArb(
 
     return arbFlatMap(
         aroundArbs,
-        around => {
-            const string = _(around)
-                .zip(words)
-                .flatten()
-                .join("");
+        (around) => {
+            const string = _(around).zip(words).flatten().join("");
             const caseArb = arrayOfSizeArb(string.length, jsc.bool);
             return jsc.record({ string: jsc.constant(string), cases: caseArb });
         },
@@ -412,7 +405,7 @@ export function fuzzStringArb(
                     return char.toLowerCase();
                 }
             }).join(""),
-        string => ({
+        (string) => ({
             cases: _.map(string, (char, index) => char === char.toUpperCase()),
             string
         })
@@ -429,12 +422,12 @@ export function fuzzStringArbResult(
 ) {
     return arbFlatMap(
         stringArb,
-        string => fuzzStringArb(string, fuzzArb),
-        fuzzedString => undefined
+        (string) => fuzzStringArb(string, fuzzArb),
+        (fuzzedString) => undefined
     );
 }
 
 export const dateStringArb = jsc.datetime.smap(
-    date => date.toString(),
-    string => new Date(Date.parse(string))
+    (date) => date.toString(),
+    (string) => new Date(Date.parse(string))
 );

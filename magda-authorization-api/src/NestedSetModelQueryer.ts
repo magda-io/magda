@@ -132,7 +132,7 @@ class NestedSetModelQueryer {
         // --- do not double quote `tableAliasOrName`
         // --- or you will get missing FROM-clause entry for table error
         return fieldList
-            .map(f => {
+            .map((f) => {
                 if (!isValidSqlIdentifier(f)) {
                     throw new Error(
                         `Field name ${f} contains invalid characters.`
@@ -174,7 +174,7 @@ class NestedSetModelQueryer {
             nodesQuery.leafNodesOnly && {
                 sql: `"left" = ( "right" - 1 )`
             }
-        ].filter(x => !!x);
+        ].filter((x) => !!x);
 
         const whereClause =
             clauses.length > 0
@@ -612,7 +612,7 @@ class NestedSetModelQueryer {
         const fieldList = this.getInsertFields(insertFieldList);
 
         const columnsList = fieldList
-            .map(f => {
+            .map((f) => {
                 if (!isValidSqlIdentifier(f)) {
                     throw new Error(
                         `column name: ${f} contains invalid characters!`
@@ -626,10 +626,10 @@ class NestedSetModelQueryer {
 
         const valuesList = nodes
             .map(
-                node =>
+                (node) =>
                     "(" +
                     fieldList
-                        .map(f => {
+                        .map((f) => {
                             sqlValues.push(node[f]);
                             return `$${sqlValues.length}`;
                         })
@@ -725,7 +725,7 @@ class NestedSetModelQueryer {
         const node = await this.getNodeById(nodeId, fields, client);
 
         return node.caseOf({
-            just: node => node,
+            just: (node) => node,
             nothing: () => {
                 throw new NodeNotFoundError(
                     `Cannot locate tree node record with id: ${nodeId}`
@@ -1131,7 +1131,7 @@ class NestedSetModelQueryer {
         }
         const sqlValues: any[] = [nodeId];
         const updateFields: string[] = Object.keys(nodeData).filter(
-            k => k !== "left" && k !== "right" && k !== "id"
+            (k) => k !== "left" && k !== "right" && k !== "id"
         );
 
         if (!updateFields.length) {
@@ -1139,7 +1139,7 @@ class NestedSetModelQueryer {
         }
 
         const setFieldList = updateFields
-            .map(f => {
+            .map((f) => {
                 if (!isValidSqlIdentifier(f)) {
                     throw new Error(
                         `field name: ${f} contains invalid characters!`
@@ -1195,7 +1195,7 @@ class NestedSetModelQueryer {
         const rootNodeMaybe = await this.getRootNode();
 
         return rootNodeMaybe.caseOf({
-            just: async rootNode => {
+            just: async (rootNode) => {
                 const tree: TextTreeNode[] = [];
                 const children = await this.getChildTextTreeNodes(rootNode.id);
                 if (children.length) {

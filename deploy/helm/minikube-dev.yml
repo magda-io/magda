@@ -34,7 +34,7 @@ global:
       tag: 0.0.57-0
       pullPolicy: IfNotPresent
       imagePullSecret: false
-  minions:
+  minions: {}
     # Remove the image section to make minions pull your test docker images from local docker registry
     # Make sure you build & push the connector docker images to your local docker registry
     # image:

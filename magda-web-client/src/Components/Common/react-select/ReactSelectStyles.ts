@@ -25,7 +25,7 @@ const customStyles = {
             };
         }
     },
-    multiValue: provided => ({
+    multiValue: (provided) => ({
         ...provided,
         backgroundColor: "#30384d",
         color: "#ffffff",
@@ -43,7 +43,7 @@ const customStyles = {
         paddingLeft: "19px",
         paddingRight: "20px"
     }),
-    multiValueLabel: provided => ({
+    multiValueLabel: (provided) => ({
         ...provided,
         color: "#ffffff",
         height: "34px",
@@ -76,7 +76,7 @@ export const customStylesWithWidth = (width: string) =>
     width
         ? {
               ...customStyles,
-              container: provided => ({
+              container: (provided) => ({
                   ...provided,
                   width
               })

@@ -36,7 +36,7 @@ baseSpec(
             jsc.array(jsc.nestring),
             jsc.array(jsc.nestring),
             jsc.array(recordArb),
-            jsc.suchthat(jsc.integer, int => int > 0),
+            jsc.suchthat(jsc.integer, (int) => int > 0),
             lcAlphaNumStringArbNe,
             jsc.bool,
             (
@@ -138,7 +138,7 @@ baseSpec(
         );
 
         const containsBlanks = (strings: string[]) =>
-            strings.some(string => string === "");
+            strings.some((string) => string === "");
 
         type input = {
             port: number;
@@ -206,7 +206,7 @@ baseSpec(
                     concurrency,
                     onRecordFound: sinon
                         .stub()
-                        .callsFake(record => Promise.resolve())
+                        .callsFake((record) => Promise.resolve())
                 };
 
                 return minion(options)
