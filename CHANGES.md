@@ -53,6 +53,7 @@ UI:
 -   Added `add dataset review page`
 -   Make `add dataset page` save state data to registry (unless in preview mode) rather than localStorage
 -   Set flag `previewAddDataset` to `false` by default
+-   Made files that are dropped get uploaded, if this is specified by the user
 
 Storage:
 
