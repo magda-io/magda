@@ -35,7 +35,9 @@ function FileInProgress({
 }) {
     const progress = file._progress ? file._progress : 0;
     let width = Math.ceil((progress / 100) * 330);
-    if (width < 5) width = 5;
+    if (width < 5) {
+        width = 5;
+    }
     return (
         <div className="dataset-file-root">
             <div className="file-in-progress">
@@ -72,8 +74,8 @@ function FileInProgress({
                         </div>
                     </div>
                     <div className="file-status">
-                        {distributionStateToText(file._state)} -{" "}
-                        {file._progress}% complete
+                        {distributionStateToText(file._state)} - {progress}%
+                        complete
                     </div>
                 </div>
             </div>
