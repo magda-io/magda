@@ -45,6 +45,8 @@ builders-and-yarn:
       - "packages/*/node_modules"
       - "yarn.lock"
     expire_in: 7 days
+  tags:
+    - heavy
 
 # Make sure sbt depenencies, plugins are in place, cached (only for this job) and pass to following stage as artifacts
 sbt-prebuild:
