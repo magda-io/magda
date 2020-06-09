@@ -126,8 +126,8 @@ buildtest:search-with-index-cache:
       -Dsbt.global.base=$CI_PROJECT_DIR/sbt-cache/sbtboot
       -Dsbt.boot.directory=$CI_PROJECT_DIR/sbt-cache/boot
       -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
-  tags:
-    - heavy
+  # tags:
+  #   - heavy
   script:
     - cd magda-elastic-search
     - docker-compose up -d
@@ -193,8 +193,8 @@ buildtest:search-no-index-cache:
       -Dsbt.global.base=$CI_PROJECT_DIR/sbt-cache/sbtboot
       -Dsbt.boot.directory=$CI_PROJECT_DIR/sbt-cache/boot
       -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
-  tags:
-    - heavy
+  # tags:
+  #   - heavy
   script:
     - cd magda-elastic-search
     - docker-compose up -d
