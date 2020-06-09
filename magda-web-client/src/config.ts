@@ -41,7 +41,7 @@ const DEV_FEATURE_FLAGS = {
     cataloguing: true,
     publishToDga: true,
     previewAddDataset: false,
-    datasetApprovalWorkflowOn: true
+    datasetApprovalWorkflowOn: false
 };
 
 const homePageConfig: {
