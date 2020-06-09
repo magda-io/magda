@@ -361,7 +361,7 @@ class NewDataset extends React.Component<Props, State> {
 
             // Setting datasets as approved if
             // approval flow is turned off
-            if (!config.featureFlags.datasetApprovalWorkflowOn) {
+            if (config.featureFlags.datasetApprovalWorkflowOn) {
                 this.setState(state => ({
                     ...state,
                     datasetPublishing: {
