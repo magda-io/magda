@@ -63,8 +63,16 @@ check-scala-formatting:
 registry-typescript-api:
   stage: prebuild
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  before_script:
+    - yarn install --no-progress --cache-folder .yarn
+  cache:
+    key: JS-$JS_CACHE_VERSION
+    paths:
+      - $CI_PROJECT_DIR/.yarn
+      - $CI_PROJECT_DIR/node_modules/
+      - "$CI_PROJECT_DIR/*/node_modules"
   script:
-    - lerna run generate --scope=@magda/typescript-common --stream
+    - yarn lerna run generate --scope=@magda/typescript-common --stream
   artifacts:
     paths:
       - "magda-typescript-common/src/generated"
