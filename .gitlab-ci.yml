@@ -31,6 +31,8 @@ builders-and-yarn:
     key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
       - .yarn
+      - node_modules/
+      - "*/node_modules"
   before_script:
     - yarn install --no-progress --cache-folder .yarn
   services:
