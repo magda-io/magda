@@ -33,9 +33,9 @@ const defaultDateFormats: string[] = [
 ];
 
 // Local minikube/docker k8s cluster
-const fallbackApiHost = "http://192.168.99.125:30100/";
+// const fallbackApiHost = "http://localhost:30100/";
 // Dev server
-// const fallbackApiHost = "https://dev.magda.io/";
+const fallbackApiHost = "https://dev.magda.io/";
 
 const DEV_FEATURE_FLAGS = {
     cataloguing: true,
