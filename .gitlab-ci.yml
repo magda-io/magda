@@ -32,7 +32,7 @@ builders-and-yarn:
     paths:
       - .yarn
   before_script:
-    - yarn install --no-progress --child-concurrency 1 --cache-folder .yarn
+    - yarn install --no-progress --cache-folder .yarn
   services:
     - docker:dind
   script:
