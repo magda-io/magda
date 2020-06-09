@@ -23,6 +23,8 @@ featureFlags:
  previewAddDataset: false
  publishToDga: false
  placeholderWorkflowsOn: false
+ datasetApprovalWorkflowOn: true
+
 vocabularyApiEndpoints: []
 defaultContactEmail: "mail@example.com"
 custodianOrgLevel: 2

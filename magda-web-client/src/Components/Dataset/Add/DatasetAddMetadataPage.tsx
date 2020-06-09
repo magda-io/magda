@@ -12,7 +12,10 @@ import {
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
 
-import { steps as ProgressMeterStepsConfig } from "../../Common/AddDatasetProgressMeter";
+import {
+    addDatasetSteps as ProgressMeterStepsConfig,
+    stepMap
+} from "../../Common/AddDatasetProgressMeter";
 
 import {
     State,
@@ -66,7 +69,7 @@ class NewDataset extends React.Component<Props, State> {
         });
     }
 
-    steps: any = [
+    steps: Array<any> = [
         () => (
             <DatasetAddFilesPage
                 edit={this.edit}
@@ -114,6 +117,8 @@ class NewDataset extends React.Component<Props, State> {
                   <DatasetAddEndPage
                       datasetId={this.props.datasetId}
                       history={this.props.history}
+                      isEdit={false}
+                      publishStatus={this.state.datasetPublishing.state}
                   />
               )
     ];
@@ -137,22 +142,27 @@ class NewDataset extends React.Component<Props, State> {
 
         let { step } = this.props;
 
-        step = Math.max(Math.min(step, this.steps.length - 1), 0);
-
         const hideExitButton = config.featureFlags.previewAddDataset
-            ? step >= 4
-            : step >= 5;
+            ? step >= stepMap.REVIEW
+            : step >= stepMap.REVIEW_BEFORE_SUBMIT;
 
         const nextButtonCaption = () => {
-            if (step === 5) {
+            if (step === stepMap.REVIEW_BEFORE_SUBMIT) {
                 // --- review page
-                if (this.state.isPublishing) {
-                    // --- AsyncButton will add extra "..." when loading
-                    return "Publishing as draft";
+                if (config.featureFlags.datasetApprovalWorkflowOn) {
+                    if (this.state.isPublishing) {
+                        return "Publishing as draft...";
+                    } else {
+                        return "Publish draft dataset";
+                    }
                 } else {
-                    return "Publish draft dataset";
+                    if (this.state.isPublishing) {
+                        return "Publishing...";
+                    } else {
+                        return "Publish dataset";
+                    }
                 }
-            } else if (step === 6) {
+            } else if (step === stepMap.ALL_DONE) {
                 // --- all done or preview mode feedback page
                 // --- All done page has no button to show
                 return "Send Us Your Thoughts";
@@ -162,14 +172,14 @@ class NewDataset extends React.Component<Props, State> {
         };
 
         const nextButtonOnClick = async () => {
-            if (step === 5) {
+            if (step === stepMap.REVIEW_BEFORE_SUBMIT) {
                 // --- review page
                 if (config.featureFlags.previewAddDataset) {
                     await this.gotoStep(step + 1);
                 } else {
                     await this.performPublishDataset();
                 }
-            } else if (step === 6) {
+            } else if (step === stepMap.ALL_DONE) {
                 // --- all done or preview mode feedback page
                 if (config.featureFlags.previewAddDataset) {
                     // --- preview mode feedback page
@@ -189,7 +199,10 @@ class NewDataset extends React.Component<Props, State> {
             ) {
                 return false;
             }
-            if (step === 6 && !config.featureFlags.previewAddDataset) {
+            if (
+                step === stepMap.ALL_DONE &&
+                !config.featureFlags.previewAddDataset
+            ) {
                 return false;
             } else {
                 return true;
@@ -282,7 +295,15 @@ class NewDataset extends React.Component<Props, State> {
         }
     }
 
-    async gotoStep(step) {
+    async gotoStep(step: number) {
+        // Bandaid: So that users can't force their way into the approval page
+        if (
+            !config.featureFlags.datasetApprovalWorkflowOn &&
+            step === stepMap.REVIEW
+        ) {
+            step = stepMap.REVIEW_BEFORE_SUBMIT;
+        }
+
         try {
             /**
              * await here is for fixing a weird bug that causing input ctrl with validation error can't be moved into viewport
@@ -340,6 +361,17 @@ class NewDataset extends React.Component<Props, State> {
                 isPublishing: true
             }));
 
+            // Setting datasets as approved if
+            // approval flow is turned off
+            if (!config.featureFlags.datasetApprovalWorkflowOn) {
+                this.setState((state) => ({
+                    ...state,
+                    datasetPublishing: {
+                        ...state.datasetPublishing,
+                        state: "published"
+                    }
+                }));
+            }
             await submitDatasetFromState(
                 datasetId,
                 this.state,

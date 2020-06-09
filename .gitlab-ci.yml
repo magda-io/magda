@@ -96,10 +96,6 @@ buildtest:search-with-index-cache:
     - builders-and-yarn
     - sbt-prebuild
   before_script:
-    - |
-      if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
-        export DOCKER_HOST='tcp://localhost:2375'
-      fi
     - docker info
     - apk update
     - apk upgrade
@@ -121,6 +117,12 @@ buildtest:search-with-index-cache:
     # use the next-gen collector that every blog on the internet says not to use because we know better than them
     # use < 25% of time for GC
     # put the ivy cache in the workspace where gitlab can cache it
+
+      # -Xms2500M -Xmx2500M
+      # -XX:+CMSClassUnloadingEnabled
+      # -XX:MaxGCPauseMillis=1000
+      # -XX:+UseG1GC
+      # -XX:GCTimeRatio=3
     SBT_OPTS: >
       -Dsbt.global.base=$CI_PROJECT_DIR/sbt-cache/sbtboot
       -Dsbt.boot.directory=$CI_PROJECT_DIR/sbt-cache/boot
@@ -152,10 +154,6 @@ buildtest:search-no-index-cache:
     - builders-and-yarn
     - sbt-prebuild
   before_script:
-    - |
-      if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
-        export DOCKER_HOST='tcp://localhost:2375'
-      fi
     - docker info
     - apk update
     - apk upgrade
@@ -183,6 +181,11 @@ buildtest:search-no-index-cache:
     # use the next-gen collector that every blog on the internet says not to use because we know better than them
     # use < 25% of time for GC
     # put the ivy cache in the workspace where gitlab can cache it
+      # -Xms2500M -Xmx2500M
+      # -XX:+CMSClassUnloadingEnabled
+      # -XX:MaxGCPauseMillis=1000
+      # -XX:+UseG1GC
+      # -XX:GCTimeRatio=3
     SBT_OPTS: >
       -Dsbt.global.base=$CI_PROJECT_DIR/sbt-cache/sbtboot
       -Dsbt.boot.directory=$CI_PROJECT_DIR/sbt-cache/boot
@@ -282,10 +285,6 @@ buildtest:typescript-apis-with-pg:
     - builders-and-yarn
     - registry-typescript-api
   before_script:
-    - |
-      if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
-        export DOCKER_HOST='tcp://localhost:2375'
-      fi
     - docker info
     - apk update
     - apk upgrade
@@ -330,10 +329,6 @@ buildtest:typescript-apis-with-es:
   dependencies:
     - builders-and-yarn
   before_script:
-    - |
-      if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
-        export DOCKER_HOST='tcp://localhost:2375'
-      fi
     - docker info
     - apk update
     - apk upgrade
@@ -375,10 +370,6 @@ buildtest:storage-api:
     - builders-and-yarn
     - registry-typescript-api
   before_script:
-    - |
-      if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
-        export DOCKER_HOST='tcp://localhost:2375'
-      fi
     - docker info
     - apk update
     - apk upgrade

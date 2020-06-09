@@ -11,7 +11,10 @@ import {
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
 
-import { editSteps as ProgressMeterStepsConfig } from "../../Common/AddDatasetProgressMeter";
+import {
+    editDatasetSteps as ProgressMeterStepsConfig,
+    stepMap
+} from "../../Common/AddDatasetProgressMeter";
 
 import {
     State,
@@ -111,6 +114,7 @@ class EditDataset extends React.Component<Props, State> {
                       datasetId={this.props.datasetId}
                       history={this.props.history}
                       isEdit={true}
+                      publishStatus={this.state.datasetPublishing.state}
                   />
               )
     ];
@@ -133,18 +137,21 @@ class EditDataset extends React.Component<Props, State> {
         const { distributions } = this.state;
         let { step } = this.props;
 
-        step = Math.max(Math.min(step, this.steps.length - 1), 0);
-
         const hideExitButton =
             this.props.isBackToReview ||
-            (config.featureFlags.previewAddDataset ? step >= 4 : step >= 5);
+            (config.featureFlags.previewAddDataset
+                ? step >= stepMap.REVIEW
+                : step >= stepMap.REVIEW_BEFORE_SUBMIT);
 
         const nextButtonCaption = () => {
-            if (step === 5) {
+            if (step === stepMap.REVIEW_BEFORE_SUBMIT) {
                 // --- review page
-                // --- loading status is handled by AsynButton now
-                return "Submit dataset changes";
-            } else if (step === 6) {
+                if (this.state.isPublishing) {
+                    return "Submit dataset changes...";
+                } else {
+                    return "Submit dataset changes";
+                }
+            } else if (step === stepMap.ALL_DONE) {
                 // --- all done or preview mode feedback page
                 // --- All done page has no button to show
                 return "Send Us Your Thoughts";
@@ -154,14 +161,14 @@ class EditDataset extends React.Component<Props, State> {
         };
 
         const nextButtonOnClick = async () => {
-            if (step === 5) {
+            if (step === stepMap.REVIEW_BEFORE_SUBMIT) {
                 // --- review page
                 if (config.featureFlags.previewAddDataset) {
                     await this.gotoStep(step + 1);
                 } else {
                     await this.performPublishDataset();
                 }
-            } else if (step === 6) {
+            } else if (step === stepMap.ALL_DONE) {
                 // --- all done or preview mode feedback page
                 if (config.featureFlags.previewAddDataset) {
                     // --- preview mode feedback page
@@ -181,7 +188,10 @@ class EditDataset extends React.Component<Props, State> {
             ) {
                 return false;
             }
-            if (step === 6 && !config.featureFlags.previewAddDataset) {
+            if (
+                step === stepMap.ALL_DONE &&
+                !config.featureFlags.previewAddDataset
+            ) {
                 return false;
             } else {
                 return true;
@@ -247,7 +257,15 @@ class EditDataset extends React.Component<Props, State> {
         this.props.createNewDatasetReset();
     }
 
-    async gotoStep(step) {
+    async gotoStep(step: number) {
+        // Bandaid, similar to the add dataset flow
+        // So that users can't force their way into the review page
+        if (
+            !config.featureFlags.datasetApprovalWorkflowOn &&
+            step === stepMap.REVIEW
+        ) {
+            step = stepMap.REVIEW_BEFORE_SUBMIT;
+        }
         try {
             /**
              * await here is for fixing a weird bug that causing input ctrl with validation error can't be moved into viewport
