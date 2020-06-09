@@ -146,31 +146,35 @@ export default function Login(props) {
     };
 
     const loginFormProviderOptions = () => {
-        if (!loginFormProvider) {
+        if (!loginFormProvider || !providers?.length) {
             return null;
         }
         return (
             <>
-                <li className="login__provider">
-                    <a onClick={() => setLoginFormProvider("internal")}>
-                        <img
-                            src={magdaLogo}
-                            className="login__logo"
-                            alt="logo"
-                        />
-                        Magda
-                    </a>
-                </li>
-                <li className="login__provider">
-                    <a onClick={() => setLoginFormProvider("ckan")}>
-                        <img
-                            src={ckanLogo}
-                            className="login__logo"
-                            alt="logo"
-                        />
-                        Data.gov.au / Ckan
-                    </a>
-                </li>
+                {providers.indexOf("internal") === -1 ? null : (
+                    <li className="login__provider">
+                        <a onClick={() => setLoginFormProvider("internal")}>
+                            <img
+                                src={magdaLogo}
+                                className="login__logo"
+                                alt="logo"
+                            />
+                            Magda
+                        </a>
+                    </li>
+                )}
+                {providers.indexOf("ckan") === -1 ? null : (
+                    <li className="login__provider">
+                        <a onClick={() => setLoginFormProvider("ckan")}>
+                            <img
+                                src={ckanLogo}
+                                className="login__logo"
+                                alt="logo"
+                            />
+                            Data.gov.au / Ckan
+                        </a>
+                    </li>
+                )}
             </>
         );
     };
