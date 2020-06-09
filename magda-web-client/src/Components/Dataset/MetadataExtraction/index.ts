@@ -22,10 +22,6 @@ export const extractors: Extractor[] = [
     extractKeywords
 ];
 
-function delay(time) {
-    return new Promise(resolve => setTimeout(resolve, time));
-}
-
 export async function runExtractors(input: ExtractorInput, update: any) {
     const numExtractors = extractors.length;
     extractors.forEach((extractor: Extractor, index: number) => {
@@ -37,7 +33,6 @@ export async function runExtractors(input: ExtractorInput, update: any) {
             extractor(input, output);
             output._progress = ((index + 1) * 100) / numExtractors;
             update(output);
-            delay(100);
         } catch (e) {
             // even if one of the modules fail, we keep going
             console.error(e);
