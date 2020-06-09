@@ -48,6 +48,7 @@ type Props = {
     stateData: State;
     // --- if use as edit page
     isEditView: boolean;
+    save: () => Promise<string>;
 };
 
 type RunExtractors = (
@@ -152,13 +153,16 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                 downloadURL: this.props.stateData.shouldUploadToStorageApi
                     ? `${config.storageApiUrl}${this.baseStorageApiPath(
                           distRecordId
-                      )}`
+                      )}/${thisFile.name}`
                     : undefined
             };
 
-            const distAfterProcessing = await this.processFile(thisFile, dist);
-
             try {
+                const distAfterProcessing = await this.processFile(
+                    thisFile,
+                    dist
+                );
+
                 this.props.setState((state: State) => {
                     const newState: State = {
                         ...state,
@@ -241,8 +245,16 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
 
                     return newState;
                 });
+
+                if (this.props.stateData.shouldUploadToStorageApi) {
+                    // Save now so that we don't end up with orphaned uploaded files
+                    await this.props.save();
+                }
             } catch (e) {
                 console.error(e);
+                this.props.setState({
+                    e
+                });
             }
         }
         this.updateLastModifyDate();
@@ -637,29 +649,22 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
         });
     };
 
-    uploadFile = (
+    uploadFile = async (
         file: File,
         dist: Distribution,
         onProgressUpdate: (progress: number) => void
     ) => {
+        // Save first, so that the record id will be present.
+        await this.props.save();
+
         const formData = new FormData();
         formData.append(file.name, file);
 
         const fetchUrl = `${
             config.storageApiUrl
-        }upload/${this.baseStorageApiPath(dist.id!)}`;
-        // TODO: Add this when we put drafts in the registry
-        //?recordId=${distRecordId}`;
-
-        const uploadPromise = fetch(fetchUrl, {
-            ...config.credentialsFetchOptions,
-            method: "POST",
-            body: formData
-        }).then((res) => {
-            if (res.status !== 200) {
-                throw new Error("Could not upload file");
-            }
-        });
+        }upload/${this.baseStorageApiPath(dist.id!)}?recordId=${
+            this.props.datasetId
+        }`;
 
         let uploadProgress = 0;
         const fakeProgressInterval = setInterval(() => {
@@ -667,10 +672,20 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
             onProgressUpdate(uploadProgress);
         }, 1000);
 
-        return uploadPromise.finally(() => {
+        try {
+            const res = await fetch(fetchUrl, {
+                ...config.credentialsFetchOptions,
+                method: "POST",
+                body: formData
+            });
+            if (res.status !== 200) {
+                throw new Error("Could not upload file");
+            }
+        } finally {
             uploadProgress = 1;
+            onProgressUpdate(uploadProgress);
             clearInterval(fakeProgressInterval);
-        });
+        }
     };
 
     render() {
