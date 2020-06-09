@@ -229,7 +229,6 @@ function getPublishingAspectData(state: State) {
     const { datasetPublishing } = state;
     return {
         ...datasetPublishing,
-        state: "draft",
         publishAsOpenData: {}
     };
 }
