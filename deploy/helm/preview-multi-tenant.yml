@@ -112,6 +112,7 @@ magda-core:
     featureFlags:
       cataloguing: true
       publishToDga: true
+      placeholderWorkflowsOn: false
 
   correspondence-api:
     alwaysSendToDefaultRecipient: true
