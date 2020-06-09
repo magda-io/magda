@@ -149,7 +149,7 @@ class SearchBox extends Component {
                 type="text"
                 name="search"
                 id="search"
-                placeholder="Search for open data"
+                placeholder="Search for data"
                 value={this.getSearchBoxValue()}
                 onChange={e => this.onSearchTextChange(e, keepFilters)}
                 onKeyPress={e =>
