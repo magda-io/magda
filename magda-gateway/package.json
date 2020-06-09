@@ -18,6 +18,7 @@
   "dependencies": {
     "@magda/tenant-api": "^0.0.57-0",
     "@magda/typescript-common": "^0.0.57-0",
+    "bcrypt": "^4.0.1",
     "body-parser": "^1.13.2",
     "cheerio": "^0.22.0",
     "compression": "^1.7.2",
@@ -55,6 +56,7 @@
   },
   "devDependencies": {
     "@magda/scripts": "^0.0.57-0",
+    "@types/bcrypt": "^3.0.0",
     "@types/chai": "^4.0.1",
     "@types/compression": "^0.0.36",
     "@types/cookie": "^0.3.3",
@@ -70,7 +72,7 @@
     "@types/nock": "^8.2.1",
     "@types/passport": "^0.4.5",
     "@types/passport-facebook": "^2.1.8",
-    "@types/passport-local": "^1.0.31",
+    "@types/passport-local": "^1.0.33",
     "@types/pg": "^6.1.41",
     "@types/q": "^1.5.2",
     "@types/randomstring": "^1.1.6",

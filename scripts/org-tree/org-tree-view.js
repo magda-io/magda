@@ -4,7 +4,7 @@ const program = require("commander");
 const chalk = require("chalk");
 const NestedSetModelQueryer = require("@magda/authorization-api/dist/NestedSetModelQueryer")
     .default;
-const getDBPool = require("./getDBPool");
+const getDBPool = require("../db/getDBPool");
 
 program
     .version(pkg.version)

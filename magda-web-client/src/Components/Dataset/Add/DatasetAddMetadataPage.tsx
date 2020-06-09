@@ -3,6 +3,7 @@ import { withRouter } from "react-router";
 import { MultilineTextEditor } from "Components/Editing/Editors/textEditor";
 
 import ToolTip from "Components/Dataset/Add/ToolTip";
+import AsyncButton from "Components/Common/AsyncButton";
 
 import {
     createNewDatasetReset,
@@ -20,7 +21,7 @@ import {
     State,
     saveState,
     DistributionState,
-    createDatasetFromState
+    submitDatasetFromState
 } from "./DatasetAddCommon";
 import DetailsAndContents from "./Pages/DetailsAndContents";
 import DatasetAddPeoplePage from "./Pages/People/DatasetAddPeoplePage";
@@ -114,6 +115,8 @@ class NewDataset extends React.Component<Props, State> {
                   <DatasetAddEndPage
                       datasetId={this.props.datasetId}
                       history={this.props.history}
+                      isEdit={false}
+                      publishStatus={this.state.datasetPublishing.state}
                   />
               )
     ];
@@ -138,16 +141,24 @@ class NewDataset extends React.Component<Props, State> {
         let { step } = this.props;
 
         const hideExitButton = config.featureFlags.previewAddDataset
-            ? step >= stepMap.SUBMIT_FOR_APPROVAL
-            : step >= stepMap.REVIEW;
+            ? step >= stepMap.REVIEW
+            : step >= stepMap.REVIEW_BEFORE_SUBMIT;
 
         const nextButtonCaption = () => {
-            if (step === stepMap.REVIEW) {
+            if (step === stepMap.REVIEW_BEFORE_SUBMIT) {
                 // --- review page
-                if (this.state.isPublishing) {
-                    return "Publishing as draft...";
+                if (config.featureFlags.datasetApprovalWorkflowOn) {
+                    if (this.state.isPublishing) {
+                        return "Publishing as draft...";
+                    } else {
+                        return "Publish draft dataset";
+                    }
                 } else {
-                    return "Publish draft dataset";
+                    if (this.state.isPublishing) {
+                        return "Publishing...";
+                    } else {
+                        return "Publish dataset";
+                    }
                 }
             } else if (step === stepMap.ALL_DONE) {
                 // --- all done or preview mode feedback page
@@ -158,13 +169,13 @@ class NewDataset extends React.Component<Props, State> {
             }
         };
 
-        const nextButtonOnClick = () => {
-            if (step === stepMap.REVIEW) {
+        const nextButtonOnClick = async () => {
+            if (step === stepMap.REVIEW_BEFORE_SUBMIT) {
                 // --- review page
                 if (config.featureFlags.previewAddDataset) {
-                    this.gotoStep(step + 1);
+                    await this.gotoStep(step + 1);
                 } else {
-                    this.performPublishDataset();
+                    await this.performPublishDataset();
                 }
             } else if (step === stepMap.ALL_DONE) {
                 // --- all done or preview mode feedback page
@@ -174,16 +185,7 @@ class NewDataset extends React.Component<Props, State> {
                         "mailto:magda@csiro.au?subject=Add Dataset Feedback";
                 }
             } else {
-                // If approval workflow is not turned on
-                // But it's up next
-                if (
-                    !config.featureFlags.datasetApprovalWorkflowOn &&
-                    step + 1 === stepMap.SUBMIT_FOR_APPROVAL
-                ) {
-                    this.gotoStep(step + 2);
-                } else {
-                    this.gotoStep(step + 1);
-                }
+                await this.gotoStep(step + 1);
             }
         };
 
@@ -229,17 +231,19 @@ class NewDataset extends React.Component<Props, State> {
                         <div className="row next-save-button-row">
                             <div className="col-sm-12">
                                 {this.props.isBackToReview ? (
-                                    <button
+                                    <AsyncButton
                                         className="au-btn back-to-review-button"
-                                        onClick={() =>
-                                            this.gotoStep(this.steps.length - 2)
+                                        onClick={async () =>
+                                            await this.gotoStep(
+                                                this.steps.length - 2
+                                            )
                                         }
                                     >
                                         Return to Review
-                                    </button>
+                                    </AsyncButton>
                                 ) : null}
 
-                                <button
+                                <AsyncButton
                                     className={`au-btn ${
                                         this.props.isBackToReview
                                             ? "au-btn--secondary save-button"
@@ -249,14 +253,14 @@ class NewDataset extends React.Component<Props, State> {
                                     disabled={this.state.isPublishing}
                                 >
                                     {nextButtonCaption()}
-                                </button>
+                                </AsyncButton>
                                 {hideExitButton ? null : (
-                                    <button
+                                    <AsyncButton
                                         className="au-btn au-btn--secondary save-button"
                                         onClick={this.saveAndExit.bind(this)}
                                     >
                                         Save and exit
-                                    </button>
+                                    </AsyncButton>
                                 )}
                             </div>
                         </div>
@@ -273,26 +277,39 @@ class NewDataset extends React.Component<Props, State> {
     async saveAndExit() {
         try {
             await this.resetError();
-            saveState(this.state, this.props.datasetId);
-            this.props.history.push(`/dataset/list`);
+            await saveState(this.state, this.props.datasetId);
+
+            if (config?.featureFlags?.previewAddDataset) {
+                // --- still redirect to dataset list page in preview wmdoe
+                this.props.history.push(`/dataset/list`);
+            } else {
+                // --- redirect to home page for my dataset section
+                // --- set nocache flag so that the my dataset section know to disable cache when query registry
+                // --- otherwise, the recent created dataset may not be list in my dataset
+                this.props.history.push(`/?nocache`);
+            }
         } catch (e) {
             this.props.createNewDatasetError(e);
         }
     }
 
     async gotoStep(step: number) {
-        // Bandaid: So that users can't force their way into the submit for approval page
+        // Bandaid: So that users can't force their way into the approval page
         if (
             !config.featureFlags.datasetApprovalWorkflowOn &&
-            step === stepMap.SUBMIT_FOR_APPROVAL
+            step === stepMap.REVIEW
         ) {
-            step = stepMap.REVIEW;
+            step = stepMap.REVIEW_BEFORE_SUBMIT;
         }
 
         try {
+            /**
+             * await here is for fixing a weird bug that causing input ctrl with validation error can't be moved into viewport
+             * Until we find the root cause of this problem, resetError() must be called with await
+             */
             await this.resetError();
             if (ValidationManager.validateAll()) {
-                saveState(this.state, this.props.datasetId);
+                await saveState(this.state, this.props.datasetId);
                 this.props.history.push(
                     "/dataset/add/metadata/" + this.props.datasetId + "/" + step
                 );
@@ -333,24 +350,33 @@ class NewDataset extends React.Component<Props, State> {
 
     async performPublishDataset() {
         try {
-            await this.resetError();
+            const datasetId = this.props.datasetId;
 
-            saveState(this.state, this.props.datasetId);
+            await this.resetError();
 
             this.setState(state => ({
                 ...state,
                 isPublishing: true
             }));
 
-            await createDatasetFromState(
-                this.props.datasetId,
+            // Setting datasets as approved if
+            // approval flow is turned off
+            if (!config.featureFlags.datasetApprovalWorkflowOn) {
+                this.setState(state => ({
+                    ...state,
+                    datasetPublishing: {
+                        ...state.datasetPublishing,
+                        state: "published"
+                    }
+                }));
+            }
+            await submitDatasetFromState(
+                datasetId,
                 this.state,
                 this.setState.bind(this)
             );
 
-            this.props.history.push(
-                `/dataset/add/metadata/${this.props.datasetId}/6`
-            );
+            this.props.history.push(`/dataset/add/metadata/${datasetId}/6`);
         } catch (e) {
             this.setState({
                 isPublishing: false
