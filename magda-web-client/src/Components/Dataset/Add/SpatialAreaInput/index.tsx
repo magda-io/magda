@@ -58,11 +58,7 @@ const initialState = (props: PropsType) => ({
             typeof props.bbox.east !== "undefined" &&
             typeof props.bbox.north !== "undefined" &&
             typeof props.bbox.south !== "undefined" &&
-            typeof props.bbox.west !== "undefined" //&&
-            // !props.countryId &&
-            // !props.territoryOrSteId &&
-            // !props.sa4Id &&
-            // !props.sa3Id
+            typeof props.bbox.west !== "undefined"
         ) {
             return 1;
         }
@@ -80,7 +76,7 @@ const initialState = (props: PropsType) => ({
     }
 });
 
-const SpatialAreaInput: FunctionComponent<PropsType> = props => {
+const SpatialAreaInput: FunctionComponent<PropsType> = (props) => {
     const [state, setState] = useState<StateType>(initialState(props));
     const onRegionPanelChange = (
         region?: Region,
@@ -143,7 +139,7 @@ const SpatialAreaInput: FunctionComponent<PropsType> = props => {
                 <div className="col-sm-12">
                     <Tabs
                         activeTabIndex={state.activeTabIndex}
-                        onChange={index => {
+                        onChange={(index) => {
                             setState({
                                 ...state,
                                 activeTabIndex: index

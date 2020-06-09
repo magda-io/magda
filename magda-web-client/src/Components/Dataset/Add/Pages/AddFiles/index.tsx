@@ -33,7 +33,13 @@ import "../../DatasetAddCommon.scss";
 
 const ExtractorsWorker = require("worker-loader!../../../MetadataExtraction"); // eslint-disable-line import/no-webpack-loader-syntax
 
+/** The bucket in the storage API where datasets are stored */
 const DATASETS_BUCKET = "magda-datasets";
+/**
+ * The increment / 100 to show for progress once the initial
+ * file read is complete
+ */
+const READ_FILE_PROGRESS_INCREMENT = 20;
 
 type Props = {
     edit: <K extends keyof State>(
@@ -58,18 +64,6 @@ type RunExtractors = (
 ) => Promise<MetadataExtractionOutput>;
 
 class AddFilesPage extends React.Component<Props & RouterProps> {
-    // /**
-    //  * Promise for importing the extractors, that begins as soon as the component
-    //  * is mounted. If it's not finished by the time the extractors are needed, then
-    //  * the extraction process will simply wait for the import to finish before
-    //  * beginning, and it'll be part of the same loading state for the user.
-    //  */
-    // importRunExtractorsPromise?: Promise<RunExtractors>;
-
-    // componentDidMount = () => {
-    //     // this.importRunExtractorsPromise = ).then(mod => mod().runExtractors);
-    // };
-
     async onBrowse() {
         this.addFiles(await getFiles("*.*"));
     }
@@ -359,19 +353,20 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
             }
         )
             .then((res) => {
+                // Even a delete on a non-existent file returns 200
                 if (res.status !== 200) {
                     throw new Error("Could not delete file");
                 }
             })
             .catch((err) => {
-                alert(
-                    `Failed to remove file ${distToDelete.title} from Magda's storage. If you removed this ` +
-                        `file because it shouldn't be stored on Magda, please contact ${config.defaultContactEmail}` +
-                        `to ensure that it's properly removed.`
-                );
-
+                this.setState({
+                    e: new Error(
+                        `Failed to remove file ${distToDelete.title} from Magda's storage. If you removed this ` +
+                            `file because it shouldn't be stored on Magda, please contact ${config.defaultContactEmail}` +
+                            `to ensure that it's properly removed.`
+                    )
+                });
                 console.error(err);
-                throw err;
             })
             .finally(() => {
                 window.removeEventListener("beforeunload", unloadEventListener);
@@ -434,12 +429,21 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
         );
     }
 
+    /**
+     * Processes the contents of a file, extracting metadata from it and returning
+     * the result. Will also upload the file to the storage API if this is configured.
+     *
+     * @param thisFile A File to get data out of
+     * @param initialDistribution A distribution to modify
+     *
+     * @returns The modified distribution
+     */
     async processFile(
         thisFile: File,
-        dist: Distribution
+        initialDistribution: Distribution
     ): Promise<Distribution> {
         /** Updates a part of this particular distribution */
-        const updateThisDist = this.updateDistPartial(dist);
+        const updateThisDist = this.updateDistPartial(initialDistribution);
 
         // Show user we're starting to read
         updateThisDist(() => ({
@@ -455,6 +459,7 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
          * is fake because we can't track upload progress
          */
         let uploadProgress = 0;
+        /** Progress of extraction, between 0 and 1 */
         let extractionProgress = 0;
 
         /**
@@ -464,8 +469,11 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
         const updateTotalProgress = () => {
             updateThisDist(() => {
                 return {
+                    // Progress % = the progress of the initial read +
+                    // either just the extraction progress, or the average
+                    // of both extraction and upload progress
                     _progress:
-                        20 +
+                        READ_FILE_PROGRESS_INCREMENT +
                         Math.round(
                             shouldUpload
                                 ? extractionProgress * 40 + uploadProgress * 40
@@ -492,7 +500,11 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
          * isn't needed, simply resolves instantly
          */
         const uploadPromise = shouldUpload
-            ? this.uploadFile(thisFile, dist, handleUploadProgress)
+            ? this.uploadFile(
+                  thisFile,
+                  initialDistribution,
+                  handleUploadProgress
+              )
             : Promise.resolve();
 
         const arrayBuffer = await readFileAsArrayBuffer(thisFile);
@@ -504,7 +516,7 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
         // Now we've finished the read, start processing
         updateThisDist((_state) => ({
             _state: DistributionState.Processing,
-            _progress: 20
+            _progress: READ_FILE_PROGRESS_INCREMENT
         }));
 
         /**
@@ -522,6 +534,9 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                 input,
                 (() => {
                     const safeConfig = { ...config };
+                    // We need to delete facets because it has regexs in it,
+                    // and these cause an error if you try to pass them to
+                    // the webworker
                     delete safeConfig.facets;
                     return safeConfig;
                 })(),
@@ -529,23 +544,20 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
             );
             await uploadPromise;
 
-            // Now we're ready - the extractors and upload will have uploaded the
-            // distribution directly, so no need to do anything with the results of
-            // those promises.
+            // Now we're done!
             updateThisDist((_dist: Distribution) => ({
                 _state: DistributionState.Ready
             }));
 
             return {
-                ...dist,
+                ...initialDistribution,
                 format: output.format,
-                title: output.datasetTitle || dist.title,
+                title: output.datasetTitle || initialDistribution.title,
                 modified: moment(output.modified).toDate(),
                 keywords: output.keywords,
                 equalHash: output.equalHash?.toString(),
                 temporalCoverage: output.temporalCoverage,
-                spatialCoverage: output.spatialCoverage,
-                _state: DistributionState.Ready
+                spatialCoverage: output.spatialCoverage
             };
         } catch (e) {
             // Something went wrong - remove the distribution and show the error
@@ -558,7 +570,7 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                         ...state,
                         error: e,
                         distributions: state.distributions.filter(
-                            (thisDist) => dist.id !== thisDist.id
+                            (thisDist) => initialDistribution.id !== thisDist.id
                         )
                     };
                 });
@@ -572,7 +584,7 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                     .then(() =>
                         fetch(
                             `${config.storageApiUrl}${this.baseStorageApiPath(
-                                dist.id!
+                                initialDistribution.id!
                             )}/${thisFile.name}`,
                             {
                                 ...config.credentialsFetchOptions,
@@ -601,7 +613,8 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                                         config.defaultContactEmail
                                 ),
                                 distributions: state.distributions.filter(
-                                    (thisDist) => dist.id !== thisDist.id
+                                    (thisDist) =>
+                                        initialDistribution.id !== thisDist.id
                                 )
                             };
                         });
