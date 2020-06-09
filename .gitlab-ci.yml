@@ -14,7 +14,6 @@ variables:
 
 stages:
   - builders
-  - sbt-prebuild
   - prebuild
   - buildtest
   - dockerize
@@ -44,45 +43,28 @@ builders-and-yarn:
   tags:
     - heavy
 
-# Make sure sbt depenencies, plugins are in place, cached (only for this job) and pass to following stage as artifacts
-sbt-prebuild:
-  stage: sbt-prebuild
+check-scala-formatting:
+  stage: prebuild
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   cache:
     key: SCALA-$SCALA_CACHE_VERSION
     paths:
       - "$CI_PROJECT_DIR/sbt-cache"
-      - "target"
-      - "project/target"
-      - "project/project/target"
-      - "*/target"
-      - "*/project/target"
-      - "*/project/project/target"
-    policy: pull
+      - "$CI_PROJECT_DIR/target"
+      - "$CI_PROJECT_DIR/project/target"
+      - "$CI_PROJECT_DIR/project/project/target"
+      - "$CI_PROJECT_DIR/*/target"
+      - "$CI_PROJECT_DIR/*/project/target"
+      - "$CI_PROJECT_DIR/*/project/project/target"
   script:
-    - "ls sbt-cache || cp -R /sbt-cache sbt-cache"
     - sbt update
-  artifacts:
-    paths:
-      - "target"
-      - "project/target"
-      - "project/project/target"
-      - "*/target"
-      - "*/project/target"
-      - "*/project/project/target"
-    expire_in: 7 days
-
-check-scala-formatting:
-  stage: prebuild
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
-  script:
     - sbt scalafmtCheckAll
 
 registry-typescript-api:
   stage: prebuild
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   script:
-    - yarn lerna run generate --scope=@magda/typescript-common --stream
+    - lerna run generate --scope=@magda/typescript-common --stream
   artifacts:
     paths:
       - "magda-typescript-common/src/generated"
@@ -103,8 +85,6 @@ buildtest:search-with-index-cache:
       - "$CI_PROJECT_DIR/*/project/target"
       - "$CI_PROJECT_DIR/*/project/project/target"
       - "$CI_PROJECT_DIR/pip-cache"
-  dependencies:
-    - sbt-prebuild
   before_script:
     - docker info
     - apk update
@@ -144,8 +124,6 @@ buildtest:search-no-index-cache:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   retry: 2
-  dependencies:
-    - sbt-prebuild
   before_script:
     - docker info
     - apk update
@@ -228,8 +206,6 @@ buildtest:registry:
   stage: buildtest
   retry: 1
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
-  dependencies:
-    - sbt-prebuild
   cache:
     key: SCALA-$SCALA_CACHE_VERSION
     paths:
@@ -467,7 +443,6 @@ dockerize:scala:
   retry: 2
   dependencies:
     - registry-typescript-api
-    - sbt-prebuild
     - buildtest:registry
     - buildtest:search-no-index-cache
     - buildtest:search-with-index-cache
@@ -573,7 +548,6 @@ inttest:registryAuth:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   allow_failure: true
   dependencies:
-    - sbt-prebuild
     - buildtest:registry
     - buildtest:helm-charts
   services:
