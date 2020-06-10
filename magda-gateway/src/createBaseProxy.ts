@@ -71,15 +71,18 @@ export default function createBaseProxy(tenantMode: TenantMode): httpProxy {
 
     proxy.on("proxyRes", function (proxyRes, req, res) {
         // Add a default cache time of 60 seconds on GETs so the CDN can cache in times of high load.
-        if (
-            req.method === "GET" &&
-            !proxyRes.headers["Cache-Control"] &&
-            !proxyRes.headers["cache-control"] &&
-            !req.headers["Cache-Control"] &&
-            !req.headers["cache-control"]
-        ) {
-            proxyRes.headers["Cache-Control"] = "public, max-age=60";
-        }
+
+        // FIXME FIXME FIXME TODO: Add this back and make it configurable.
+
+        // if (
+        //     req.method === "GET" &&
+        //     !proxyRes.headers["Cache-Control"] &&
+        //     !proxyRes.headers["cache-control"] &&
+        //     !req.headers["Cache-Control"] &&
+        //     !req.headers["cache-control"]
+        // ) {
+        //     proxyRes.headers["Cache-Control"] = "public, max-age=60";
+        // }
 
         /**
          * Remove security sensitive headers
