@@ -5,7 +5,7 @@ import PDFWorker from "pdfjs-dist/build/pdf.worker";
 import { MAX_KEYWORDS } from "./extractKeywords";
 import uniq from "lodash/uniq";
 import { FileDetails } from "./types";
-(self as any).pdfjsWorker = PDFWorker;
+(self as any).pdfjsWorker = PDFWorker; // eslint-disable-line
 
 interface ContentExtractorOutput {
     format?: string;
