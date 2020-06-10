@@ -232,7 +232,9 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
             <div className="paging-area">
                 <button
                     className="next-page-button"
-                    disabled={result?.hasMore === true ? false : true}
+                    disabled={
+                        result?.hasMore === true && !loading ? false : true
+                    }
                     onClick={() => {
                         setPageToken(
                             result?.nextPageToken ? result.nextPageToken : ""
@@ -241,6 +243,16 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
                 >
                     Next page
                 </button>
+                {result?.hasMore === true && !loading ? null : (
+                    <button
+                        className="first-page-button"
+                        onClick={() => {
+                            setPageToken("");
+                        }}
+                    >
+                        First page
+                    </button>
+                )}
             </div>
         </>
     );
