@@ -125,7 +125,10 @@ export default class RegistryClient {
         pageToken?: string,
         dereference?: boolean,
         limit?: number,
-        aspectQueries?: string[]
+        aspectQueries?: string[],
+        aspectOrQuery?: string[],
+        orderBy?: string,
+        orderByDir?: string
     ): Promise<RecordsPage<I> | Error> {
         const operation = (pageToken: string) => () =>
             this.recordsApi.getAll(
@@ -137,6 +140,9 @@ export default class RegistryClient {
                 limit,
                 dereference,
                 aspectQueries,
+                aspectOrQuery,
+                orderBy,
+                orderByDir,
                 this.jwt
             );
         return <any>retry(

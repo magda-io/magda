@@ -115,7 +115,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
     const editDatasetPublishing = props.edit("datasetPublishing");
     const editInformationSecurity = props.edit("informationSecurity");
     const editPublishToDga = (shouldPublishToDga: string | undefined) => {
-        props.editStateWithUpdater(state => ({
+        props.editStateWithUpdater((state) => ({
             ...state,
             datasetPublishing: {
                 ...state.datasetPublishing,
@@ -183,7 +183,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         <div className="input-area">
                             <AlwaysEditor
                                 value={shouldPublishToDga ? "true" : "false"}
-                                onChange={value => {
+                                onChange={(value) => {
                                     editPublishToDga(value);
                                     if (
                                         ValidationManager.shouldValidate(
@@ -267,7 +267,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                     options={
                                         Object.keys(
                                             codelists.datasetLicenseLevel
-                                        ).map(key => ({
+                                        ).map((key) => ({
                                             label:
                                                 codelists.datasetLicenseLevel[
                                                     key
@@ -314,7 +314,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                     validationFieldPath="$.dataset.defaultLicense"
                                     validationFieldLabel="Dataset Level Licence"
                                     value={dataset.defaultLicense || ""}
-                                    onChange={license => {
+                                    onChange={(license) => {
                                         props.editState("dataset")({
                                             ...dataset,
                                             defaultLicense: license
@@ -326,7 +326,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     ) : (
                         <div className="license-distribution-option-container">
                             {distributions.map((file, fileIndex) => {
-                                const edit = field => value => {
+                                const edit = (field) => (value) => {
                                     file[field] = value;
                                     props.editState("distributions")(
                                         distributions
@@ -411,7 +411,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                 isSearchable={false}
                                 options={
                                     Object.keys(codelists.classification).map(
-                                        key => ({
+                                        (key) => ({
                                             label:
                                                 codelists.classification[key],
                                             value: key
@@ -526,7 +526,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                     options={
                                         Object.keys(
                                             codelists.disseminationLimits
-                                        ).map(key => ({
+                                        ).map((key) => ({
                                             label:
                                                 codelists.disseminationLimits[
                                                     key
@@ -539,7 +539,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                         informationSecurity.disseminationLimits
                                             .length
                                             ? informationSecurity.disseminationLimits.map(
-                                                  item => ({
+                                                  (item) => ({
                                                       label:
                                                           codelists
                                                               .disseminationLimits[
@@ -553,7 +553,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                     onChange={(items: any) =>
                                         editInformationSecurity(
                                             "disseminationLimits"
-                                        )(items.map(item => item.value))
+                                        )(items.map((item) => item.value))
                                     }
                                 />
                             </div>

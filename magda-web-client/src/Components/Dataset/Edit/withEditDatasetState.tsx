@@ -5,7 +5,7 @@ import { useAsync } from "react-async-hook";
 import { State, rawDatasetDataToState } from "../Add/DatasetAddCommon";
 import { User } from "reducers/userManagementReducer";
 import { config } from "config";
-import { fetchRecord } from "api-clients/RegistryApis";
+import { fetchRecordWithNoCache } from "api-clients/RegistryApis";
 
 /* eslint-disable react-hooks/rules-of-hooks */
 type Props = { initialState: State; user: User } & RouterProps;
@@ -32,11 +32,10 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
                     return;
                 }
                 // --- turn off cache
-                const data = await fetchRecord(
+                const data = await fetchRecordWithNoCache(
                     datasetId,
                     undefined,
                     undefined,
-                    true,
                     true
                 );
                 const loadedStateData = await rawDatasetDataToState(data, user);

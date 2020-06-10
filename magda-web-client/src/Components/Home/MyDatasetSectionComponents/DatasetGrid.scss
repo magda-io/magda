@@ -1,0 +1,75 @@
+.my-dataset-section-container {
+    .dataset-list-body {
+        table {
+            width: 100%;
+            th,
+            td {
+                &:first-child {
+                    padding-left: 50px;
+                }
+            }
+        }
+        thead {
+            th {
+                text-align: left;
+                height: 80px;
+                color: #484848;
+                font-size: 19px;
+                letter-spacing: 0;
+                line-height: 25px;
+            }
+        }
+        tbody {
+            tr:nth-child(odd) {
+                background: #f9f9f9;
+            }
+            td {
+                height: 51px;
+                color: #30384d;
+                font-size: 17px;
+                letter-spacing: -0.5px;
+                line-height: 25px;
+            }
+            .edit-button {
+                border: none;
+            }
+        }
+        .date-col {
+            width: 120px;
+            text-align: center;
+        }
+        .edit-button-col {
+            width: 80px;
+            text-align: center;
+        }
+
+        .grid-bottom-divider {
+            margin-top: 0px;
+            margin-left: 50px;
+            margin-right: 30px;
+            border-top: 1px solid #cccaca;
+        }
+
+        .paging-area {
+            padding-right: 55px;
+            .next-page-button {
+                cursor: pointer;
+                float: right;
+                height: 42px;
+                width: 130px;
+                border-radius: 2px;
+                background-color: #30384d;
+                color: #ffffff;
+                font-size: 16px;
+                letter-spacing: -0.2px;
+                line-height: 24px;
+                text-align: center;
+                border: none;
+                &:disabled {
+                    opacity: 0.3;
+                    cursor: default;
+                }
+            }
+        }
+    }
+}

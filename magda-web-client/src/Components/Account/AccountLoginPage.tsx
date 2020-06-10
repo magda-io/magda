@@ -31,7 +31,7 @@ export default function Login(props) {
         error: providersLoadingError
     } = useAsync(async () => {
         const providers = await getAuthProviders();
-        setLoginFormProvider(value => getDefaultLoginFormProvider(providers));
+        setLoginFormProvider((value) => getDefaultLoginFormProvider(providers));
         return providers;
     }, []);
 
@@ -46,7 +46,7 @@ export default function Login(props) {
     const baseRedirectUrl = `${window.location.protocol}//${window.location.host}`;
     const oauthRedirect = `${baseRedirectUrl}/sign-in-redirect?redirectTo=${previousUrl}`;
 
-    const makeLoginUrl = type =>
+    const makeLoginUrl = (type) =>
         `${baseUrl}auth/login/${type}?redirect=${encodeURIComponent(
             oauthRedirect
         )}`;

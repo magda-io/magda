@@ -81,10 +81,17 @@ function Copyright({ href, logoSrc, logoClassName, logoAlt, htmlContent }) {
     );
 }
 
-function Footer({ footerMediumNavs, footerSmallNavs, footerCopyRightItems }) {
+function Footer({
+    footerMediumNavs,
+    footerSmallNavs,
+    footerCopyRightItems,
+    noTopMergin
+}) {
     return (
         <footer
-            className="au-footer au-body au-body--dark footer"
+            className={`au-footer au-body au-body--dark footer ${
+                noTopMergin === true ? "" : "with-top-margin"
+            }`}
             role="contentinfo"
             aria-label="footer"
         >
