@@ -32,6 +32,7 @@
             }
             .edit-button {
                 border: none;
+                background-color: initial;
             }
         }
         .date-col {
@@ -52,7 +53,8 @@
 
         .paging-area {
             padding-right: 55px;
-            .next-page-button {
+            .next-page-button,
+            .first-page-button {
                 cursor: pointer;
                 float: right;
                 height: 42px;
@@ -69,6 +71,9 @@
                     opacity: 0.3;
                     cursor: default;
                 }
+            }
+            .first-page-button {
+                margin-right: 10px;
             }
         }
     }

@@ -54,10 +54,24 @@
                 line-height: 23px;
                 padding-left: 25px;
                 padding-right: 42px;
-                background-image: url("../../../assets/search-dark.svg");
-                background-repeat: no-repeat;
-                background-size: 30px;
-                background-position: 320px 13px;
+            }
+            .search-box-wrapper {
+                position: relative;
+                .search-icon {
+                    position: absolute;
+                    width: 36px;
+                    height: 36px;
+                    right: 10px;
+                    top: 12px;
+                }
+                .clear-search-icon {
+                    position: absolute;
+                    width: 36px;
+                    height: 36px;
+                    right: 12px;
+                    top: 8px;
+                    cursor: pointer;
+                }
             }
         }
     }

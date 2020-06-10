@@ -1,14 +1,17 @@
 import React, { FunctionComponent, useState } from "react";
 import "./DatasetList.scss";
 import DatasetGrid, { DatasetTypes } from "./DatasetGrid";
+import dismissIcon from "assets/dismiss.svg";
+import searchIcon from "assets/search-dark.svg";
 
 type PropsType = {};
 
 type TabNames = DatasetTypes;
 
-const DatasetList: FunctionComponent<PropsType> = props => {
+const DatasetList: FunctionComponent<PropsType> = (props) => {
     const [activeTab, setActiveTab] = useState<TabNames>("drafts");
     const [searchText, setSearchText] = useState<string>("");
+    const [inputText, setInputText] = useState<string>("");
 
     return (
         <div className="dataset-list-container">
@@ -32,16 +35,36 @@ const DatasetList: FunctionComponent<PropsType> = props => {
                             Published &nbsp;{" "}
                         </a>
                     </div>
-                    <input
-                        type="text"
-                        placeholder="Search datasets"
-                        onKeyUp={e => {
-                            const selectedString = (e.currentTarget as HTMLInputElement).value.trim();
-                            if (e.keyCode === 13) {
-                                setSearchText(selectedString);
-                            }
-                        }}
-                    />
+                    <div className="search-box-wrapper">
+                        <input
+                            type="text"
+                            placeholder="Search datasets"
+                            value={inputText}
+                            onChange={(e) => {
+                                setInputText(
+                                    (e.target as HTMLInputElement).value
+                                );
+                            }}
+                            onKeyUp={(e) => {
+                                const selectedString = (e.target as HTMLInputElement).value.trim();
+                                if (e.keyCode === 13) {
+                                    setSearchText(selectedString);
+                                }
+                            }}
+                        />
+                        {searchText ? (
+                            <img
+                                className="clear-search-icon"
+                                src={dismissIcon}
+                                onClick={() => {
+                                    setInputText("");
+                                    setSearchText("");
+                                }}
+                            />
+                        ) : (
+                            <img className="search-icon" src={searchIcon} />
+                        )}
+                    </div>
                 </div>
                 <div className="dataset-list-body">
                     <DatasetGrid
