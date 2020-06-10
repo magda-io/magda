@@ -74,7 +74,7 @@ export default class Database {
                 'SELECT id, "displayName", email, "photoURL", source, "isAdmin", "orgUnitId" FROM users WHERE "id" = $1',
                 [id]
             )
-            .then(res => arrayToMaybe(res.rows));
+            .then((res) => arrayToMaybe(res.rows));
     }
 
     async getUserRoles(id: string): Promise<Role[]> {
@@ -87,7 +87,7 @@ export default class Database {
             [id]
         );
         const list: any = {};
-        result.rows.forEach(item => {
+        result.rows.forEach((item) => {
             const { permissionId, ...roleData } = _.zipObject(
                 // --- underscore to camelCase case
                 Object.keys(item).map(_.camelCase),
@@ -132,7 +132,7 @@ export default class Database {
         result: pg.QueryResult
     ): Permission[] {
         const list: any = {};
-        result.rows.forEach(item => {
+        result.rows.forEach((item) => {
             const {
                 operationId,
                 operationUri,
@@ -186,7 +186,7 @@ export default class Database {
             .query(
                 `SELECT id, "displayName", email, "photoURL", source, "isAdmin" FROM users WHERE id <> '00000000-0000-4000-8000-000000000000'`
             )
-            .then(res => res.rows);
+            .then((res) => res.rows);
     }
 
     async updateUser(userId: string, update: any): Promise<void> {
@@ -205,7 +205,7 @@ export default class Database {
                 'SELECT id, "displayName", email, "photoURL", source, "sourceId", "isAdmin" FROM users WHERE "sourceId" = $1 AND source = $2',
                 [sourceId, source]
             )
-            .then(res => arrayToMaybe(res.rows));
+            .then((res) => arrayToMaybe(res.rows));
     }
 
     async createUser(user: User): Promise<User> {
@@ -255,7 +255,9 @@ export default class Database {
         const user = { ...defaultAnonymousUserInfo };
         try {
             user.permissions = await this.getRolePermissions(user.roles[0].id);
-            user.roles[0].permissionIds = user.permissions.map(item => item.id);
+            user.roles[0].permissionIds = user.permissions.map(
+                (item) => item.id
+            );
             return user;
         } catch (e) {
             return user;
@@ -286,7 +288,7 @@ export default class Database {
                 await this.orgQueryer.getAllChildren(user.orgUnitId, true, [
                     "id"
                 ])
-            ).map(item => item.id);
+            ).map((item) => item.id);
         }
         return user;
     }

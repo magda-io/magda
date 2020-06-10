@@ -22,11 +22,8 @@ export default function testFilterByDate(
 
         describe("for datasets with a closed date range", async () => {
             before(async () => {
-                datesByMonth = _.range(0, 12).map(month => {
-                    const monthMoment = moment()
-                        .utc()
-                        .year(2019)
-                        .month(month);
+                datesByMonth = _.range(0, 12).map((month) => {
+                    const monthMoment = moment().utc().year(2019).month(month);
                     const earliest = monthMoment.clone().startOf("month");
                     const latest = monthMoment.clone().endOf("month");
 
@@ -84,15 +81,15 @@ export default function testFilterByDate(
                             `/datasets?dateFrom=${earliest.toISOString()}&dateTo=${latest.toISOString()}`
                         )
                         .expect(200)
-                        .expect(res => {
+                        .expect((res) => {
                             const body: SearchResult = res.body;
 
                             const identifiers = body.dataSets.map(
-                                dataset => dataset.identifier
+                                (dataset) => dataset.identifier
                             );
 
                             expect(identifiers).to.have.same.members(
-                                datasets.map(ds => ds.identifier)
+                                datasets.map((ds) => ds.identifier)
                             );
                         });
                 }
@@ -105,20 +102,21 @@ export default function testFilterByDate(
                     const expectedIdentifiers = _(datesByMonth)
                         .drop(i)
                         .flatMap(({ datasets }) => datasets)
-                        .map(ds => ds.identifier)
+                        .map((ds) => ds.identifier)
                         .value();
 
                     await supertest(app())
                         .get(
-                            `/datasets?dateFrom=${earliest.toISOString()}&limit=${expectedIdentifiers.length +
-                                1}`
+                            `/datasets?dateFrom=${earliest.toISOString()}&limit=${
+                                expectedIdentifiers.length + 1
+                            }`
                         )
                         .expect(200)
-                        .expect(res => {
+                        .expect((res) => {
                             const body: SearchResult = res.body;
 
                             expect(
-                                body.dataSets.map(ds => ds.identifier)
+                                body.dataSets.map((ds) => ds.identifier)
                             ).to.have.same.members(expectedIdentifiers);
                         });
                 }
@@ -131,20 +129,21 @@ export default function testFilterByDate(
                     const expectedIdentifiers = _(datesByMonth)
                         .take(i + 1)
                         .flatMap(({ datasets }) => datasets)
-                        .map(ds => ds.identifier)
+                        .map((ds) => ds.identifier)
                         .value();
 
                     await supertest(app())
                         .get(
-                            `/datasets?dateTo=${latest.toISOString()}&limit=${expectedIdentifiers.length +
-                                1}`
+                            `/datasets?dateTo=${latest.toISOString()}&limit=${
+                                expectedIdentifiers.length + 1
+                            }`
                         )
                         .expect(200)
-                        .expect(res => {
+                        .expect((res) => {
                             const body: SearchResult = res.body;
 
                             expect(
-                                body.dataSets.map(ds => ds.identifier)
+                                body.dataSets.map((ds) => ds.identifier)
                             ).to.have.same.members(expectedIdentifiers);
                         });
                 }
@@ -183,11 +182,11 @@ export default function testFilterByDate(
                     await supertest(app())
                         .get(url)
                         .expect(200)
-                        .expect(res => {
+                        .expect((res) => {
                             const body: SearchResult = res.body;
 
                             expect(
-                                body.dataSets.map(ds => ds.identifier)
+                                body.dataSets.map((ds) => ds.identifier)
                             ).to.contain(dataset.identifier);
                         });
                 }
@@ -246,7 +245,7 @@ export default function testFilterByDate(
                             )}&dateTo=${startDate.format(format)}`
                         )
                         .expect(200)
-                        .expect(res => {
+                        .expect((res) => {
                             const body: SearchResult = res.body;
 
                             expect(body.dataSets.length).to.equal(1);

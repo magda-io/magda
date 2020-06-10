@@ -14,8 +14,8 @@ function Tabs(props) {
         <nav className="tab-navigation">
             <ul className="au-link-list">
                 {props.list
-                    .filter(i => i.isActive)
-                    .map(item => (
+                    .filter((i) => i.isActive)
+                    .map((item) => (
                         <li role="presentation" key={item.id}>
                             <NavLink
                                 activeClassName="mainmenu--active"

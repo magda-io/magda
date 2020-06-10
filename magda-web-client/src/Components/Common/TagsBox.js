@@ -15,7 +15,7 @@ function mergeTags(tags) {
                 return acc.concat(
                     cur
                         .split(tagSeperatorRegex)
-                        .map(item => item.toLowerCase().trim())
+                        .map((item) => item.toLowerCase().trim())
                 );
             },
             []

@@ -13,10 +13,10 @@ export const emailArb: jsc.Arbitrary<string> = jsc
         jsc.constant(".com")
     ])
     .smap(
-        function(x) {
+        function (x) {
             return x.join("");
         },
-        function(email): [string, string, string, string] {
+        function (email): [string, string, string, string] {
             const items = [];
             let parts = email.split("@");
             items.push(parts[0], "@");
@@ -33,10 +33,10 @@ export const urlArb: jsc.Arbitrary<string> = jsc
         jsc.constant(".com")
     ])
     .smap(
-        function(x) {
+        function (x) {
             return x.join("");
         },
-        function(url) {
+        function (url) {
             return [
                 "http://",
                 url.replace(/^http\:\/\//, "").replace(/\.com/, ""),

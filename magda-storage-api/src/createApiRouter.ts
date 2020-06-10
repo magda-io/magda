@@ -29,12 +29,12 @@ export default function createApiRouter(options: ApiRouterOptions) {
     );
 
     // Liveness probe
-    router.get("/status/live", function(_req, res) {
+    router.get("/status/live", function (_req, res) {
         return res.status(200).send("OK");
     });
 
     // Readiness probe
-    router.get("/status/ready", function(_req, res) {
+    router.get("/status/ready", function (_req, res) {
         return res.status(200).send("OK");
     });
 
@@ -64,7 +64,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
     router.put(
         "/:bucketid",
         mustBeAdmin(options.authApiUrl, options.jwtSecret),
-        async function(req, res) {
+        async function (req, res) {
             try {
                 const bucketId = req.params.bucketid;
                 if (!bucketId) {
@@ -115,7 +115,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * @apiErrorExample {text} 500
      *      "Unknown error"
      */
-    router.get("/:bucket/*", async function(req, res) {
+    router.get("/:bucket/*", async function (req, res) {
         const path = req.params[0];
         const bucket = req.params.bucket;
 
@@ -129,7 +129,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
         let headers: OutgoingHttpHeaders;
         try {
             headers = await object.headers();
-            Object.keys(headers).forEach(header => {
+            Object.keys(headers).forEach((header) => {
                 const value = headers[header];
                 if (value !== undefined) {
                     res.setHeader(header, value);
@@ -163,7 +163,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
         const stream = await object.createStream();
         if (stream) {
-            stream.on("error", _e => {
+            stream.on("error", (_e) => {
                 return res.status(500).send("Unknown error");
             });
             return stream.pipe(res);
@@ -292,10 +292,10 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
                 return options.objectStoreClient
                     .putFile(encodeBucketname, fullPath, file.buffer, metaData)
-                    .then(etag => etag);
+                    .then((etag) => etag);
             });
             return Promise.all(promises)
-                .then(etags => {
+                .then((etags) => {
                     return res.status(200).send({
                         message:
                             "Successfully uploaded " +
@@ -343,7 +343,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
     router.put(
         "/:bucket/*",
         mustBeAdmin(options.authApiUrl, options.jwtSecret),
-        async function(req, res) {
+        async function (req, res) {
             const path = req.params[0];
             const bucket = req.params.bucket;
 
@@ -378,7 +378,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
             }
             return options.objectStoreClient
                 .putFile(encodeBucketname, path, content, metaData)
-                .then(etag => {
+                .then((etag) => {
                     return res.status(200).send({
                         message: "File uploaded successfully",
                         etag: etag
@@ -417,7 +417,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *        "message": "Encountered error while deleting file. This has been logged and we are looking into this."
      *    }
      */
-    router.delete("/:bucket/*", async function(req, res) {
+    router.delete("/:bucket/*", async function (req, res) {
         const filePath = req.params[0];
         const bucket = req.params.bucket;
 

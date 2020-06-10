@@ -110,7 +110,7 @@ const contentDirMapper = new ContentApiDirMapper(
 contentDirMapper
     .syncFolder(path.join(__dirname, "..", "emailTemplates"))
     .then(([allFiles, skippedFiles]) => {
-        skippedFiles.forEach(file =>
+        skippedFiles.forEach((file) =>
             console.log(`Skipped existing assets file: ${file}`)
         );
         console.log("Sync default email templates to content API completed!");
@@ -118,7 +118,7 @@ contentDirMapper
         app.listen(listenPort);
         console.log("Listening on " + listenPort);
     })
-    .catch(err => {
+    .catch((err) => {
         console.error(
             "Failed to sync default email templates to content API. Exiting...",
             err

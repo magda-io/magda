@@ -1,4 +1,4 @@
-addSection("Language", async function(body) {
+addSection("Language", async function (body) {
     showJsonEditor(body, {
         label: "Language Items",
         idPattern: "lang/en/*",
@@ -6,7 +6,7 @@ addSection("Language", async function(body) {
         allowDelete: true,
         allowAdd: true,
         allowIdFieldInput: true,
-        newId: id => `lang/en/${id}`,
+        newId: (id) => `lang/en/${id}`,
         mimeType: "text/plain"
     });
 });

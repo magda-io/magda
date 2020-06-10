@@ -16,7 +16,7 @@
 export default function formUrlencode(str: string): string {
     return encodeURIComponent(str)
         .replace(/%20/g, "+")
-        .replace(/[!'()*]/g, function(c) {
+        .replace(/[!'()*]/g, function (c) {
             return "%" + c.charCodeAt(0).toString(16);
         });
 }

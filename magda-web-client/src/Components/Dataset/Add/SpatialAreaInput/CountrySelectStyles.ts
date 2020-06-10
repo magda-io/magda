@@ -1,5 +1,5 @@
 const CountrySelectStyles = {
-    menu: provided => {
+    menu: (provided) => {
         return {
             ...provided,
             borderRadius: "2px",
@@ -8,11 +8,11 @@ const CountrySelectStyles = {
             zIndex: 1001
         };
     },
-    menuList: provided => ({
+    menuList: (provided) => ({
         ...provided,
         maxHeight: "380px"
     }),
-    control: provided => ({
+    control: (provided) => ({
         ...provided,
         height: "44px",
         borderRadius: "2px"

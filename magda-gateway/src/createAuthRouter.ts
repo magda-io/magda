@@ -137,39 +137,39 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
     ];
 
     // Define routes.
-    authRouter.get("/", function(req, res) {
+    authRouter.get("/", function (req, res) {
         res.render("home", { user: req.user });
     });
 
-    authRouter.get("/login", function(req, res) {
+    authRouter.get("/login", function (req, res) {
         res.render("login");
     });
 
-    authRouter.get("/admin", function(req, res) {
+    authRouter.get("/admin", function (req, res) {
         res.render("admin");
     });
 
     providers
-        .filter(provider => provider.enabled)
-        .forEach(provider => {
+        .filter((provider) => provider.enabled)
+        .forEach((provider) => {
             authRouter.use("/login/" + provider.id, provider.authRouter);
         });
 
     authRouter.get("/providers", (req, res) => {
         res.json(
             providers
-                .filter(provider => provider.enabled)
-                .map(provider => provider.id)
+                .filter((provider) => provider.enabled)
+                .map((provider) => provider.id)
         );
     });
 
     authRouter.get(
         "/profile",
         require("connect-ensure-login").ensureLoggedIn(),
-        function(req, res) {
+        function (req, res) {
             authApi
                 .getUser(req.user.id)
-                .then(user =>
+                .then((user) =>
                     res.render("profile", { user: user.valueOrThrow() })
                 )
                 .catch((error: Error) => {

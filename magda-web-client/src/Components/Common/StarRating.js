@@ -5,9 +5,7 @@ import "./StarRating.scss";
 import starIcon from "assets/star.svg";
 
 function StarRating(props) {
-    const stars = Array(5)
-        .fill(emptyStarIcon)
-        .fill(starIcon, 0, props.stars);
+    const stars = Array(5).fill(emptyStarIcon).fill(starIcon, 0, props.stars);
     const ratingText = `${props.stars} out of 5 stars`;
     return (
         <div className="star-rating-box" aria-label={ratingText}>

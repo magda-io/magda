@@ -151,7 +151,7 @@ class Pagination extends Component {
         return (
             <ul className="pagination-list ">
                 {current > 1 && this.renderPrevButton(current)}
-                {pageButtons.map(i => (
+                {pageButtons.map((i) => (
                     <li key={i}>
                         <Link
                             to={this.generateRoute(i)}

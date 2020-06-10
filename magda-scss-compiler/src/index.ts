@@ -76,7 +76,7 @@ async function run() {
     console.log("Web-client SCSS compilation completed!");
 }
 
-run().catch(e => {
+run().catch((e) => {
     console.error("Failed to compile web-client scss. ", e);
     process.exit(1);
 });

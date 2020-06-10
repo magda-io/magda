@@ -97,7 +97,7 @@ describe("Storage API tests", () => {
 
     describe("Create bucket", () => {
         after(() => {
-            return minioClient.removeBucket(dummyBucket, function(err: Error) {
+            return minioClient.removeBucket(dummyBucket, function (err: Error) {
                 if (err) {
                     return console.log("Unable to remove bucket: ", err);
                 }
@@ -109,12 +109,8 @@ describe("Storage API tests", () => {
 
         // Random string
         const dummyBucket =
-            Math.random()
-                .toString(36)
-                .substring(2, 15) +
-            Math.random()
-                .toString(36)
-                .substring(2, 15);
+            Math.random().toString(36).substring(2, 15) +
+            Math.random().toString(36).substring(2, 15);
 
         it("should create a bucket", async () => {
             await mockAuthorization(
@@ -305,7 +301,7 @@ describe("Storage API tests", () => {
                         .set("Content-Type", "text/plain")
                         .send("")
                         .expect(200)
-                ).then(_res => {
+                ).then((_res) => {
                     return injectUserId(
                         jwtSecret,
                         request(app)
@@ -330,7 +326,7 @@ describe("Storage API tests", () => {
                         .set("Content-Type", "image/jpg")
                         .send(img)
                         .expect(200)
-                ).then(_res => {
+                ).then((_res) => {
                     return injectUserId(
                         jwtSecret,
                         request(app)
@@ -353,7 +349,7 @@ describe("Storage API tests", () => {
                         .set("Content-Type", "image/gif")
                         .send(bananadance)
                         .expect(200)
-                ).then(_res => {
+                ).then((_res) => {
                     return injectUserId(
                         jwtSecret,
                         request(app)
@@ -379,7 +375,7 @@ describe("Storage API tests", () => {
                         .set("Content-Type", "text/csv")
                         .send(csvContent)
                         .expect(200)
-                ).then(_res => {
+                ).then((_res) => {
                     return injectUserId(
                         jwtSecret,
                         request(app)
@@ -405,7 +401,7 @@ describe("Storage API tests", () => {
                         .set("Content-Type", "application/json")
                         .send(jsonContent)
                         .expect(200)
-                ).then(_res => {
+                ).then((_res) => {
                     return injectUserId(
                         jwtSecret,
                         request(app)
@@ -434,7 +430,7 @@ describe("Storage API tests", () => {
                     .set("Content-Type", "image/jpg")
                     .send(img)
                     .expect(200)
-            ).then(_res => {
+            ).then((_res) => {
                 return injectUserId(
                     jwtSecret,
                     request(app)
@@ -464,12 +460,12 @@ describe("Storage API tests", () => {
                         .set("Content-Type", "text/plain")
                         .send("Testing delete")
                         .expect(200)
-                ).then(_res => {
+                ).then((_res) => {
                     return request(app)
                         .delete("/v0/" + bucketName + "/delete-test-file-1")
                         .expect(200)
                         .expect({ message: "File deleted successfully" })
-                        .then(_res => {
+                        .then((_res) => {
                             return request(app)
                                 .get(
                                     "/v0/" + bucketName + "/delete-test-file-1"
@@ -495,7 +491,7 @@ describe("Storage API tests", () => {
                         .set("Content-Type", "text/plain")
                         .send("Testing delete")
                         .expect(200)
-                ).then(_res => {
+                ).then((_res) => {
                     return request(app)
                         .delete(
                             "/v0/" +
@@ -504,7 +500,7 @@ describe("Storage API tests", () => {
                         )
                         .expect(200)
                         .expect({ message: "File deleted successfully" })
-                        .then(_res => {
+                        .then((_res) => {
                             return request(app)
                                 .get(
                                     "/v0/" + bucketName + "/delete-test-file-1"
@@ -526,12 +522,12 @@ describe("Storage API tests", () => {
                         .set("Content-Type", "text/plain")
                         .send("")
                         .expect(200)
-                ).then(_res => {
+                ).then((_res) => {
                     return request(app)
                         .delete("/v0/" + bucketName + "/delete-test-file-2")
                         .expect(200)
                         .expect({ message: "File deleted successfully" })
-                        .then(_res => {
+                        .then((_res) => {
                             return request(app)
                                 .get(
                                     "/v0/" + bucketName + "/delete-test-file-2"
@@ -598,7 +594,7 @@ describe("Storage API tests", () => {
 
         function expectRegistryGetWithCredentials(expectedCode: number = 200) {
             registryScope
-                .matchHeader("X-Magda-Session", value => {
+                .matchHeader("X-Magda-Session", (value) => {
                     const verifiedJwt = jwt.verify(value, jwtSecret);
 
                     return verifiedJwt.userId === USER_ID;
@@ -638,7 +634,7 @@ describe("Storage API tests", () => {
                 // Add the file
                 const expectRegistryCall = () => {
                     registryScope
-                        .matchHeader("X-Magda-Session", value => {
+                        .matchHeader("X-Magda-Session", (value) => {
                             const verifiedJwt = jwt.verify(value, jwtSecret);
 
                             return verifiedJwt.userId === USER_ID;
@@ -718,7 +714,7 @@ describe("Storage API tests", () => {
 
             it("should return 400 if the user tries to associate a file with a non-existent or unauthorized record", async () => {
                 registryScope
-                    .matchHeader("X-Magda-Session", value => {
+                    .matchHeader("X-Magda-Session", (value) => {
                         const verifiedJwt = jwt.verify(value, jwtSecret);
 
                         return verifiedJwt.userId === USER_ID;
@@ -731,7 +727,7 @@ describe("Storage API tests", () => {
 
             it("should return 400 if the user tries to associate a file with a non-existent or unauthorized record", async () => {
                 registryScope
-                    .matchHeader("X-Magda-Session", value => {
+                    .matchHeader("X-Magda-Session", (value) => {
                         const verifiedJwt = jwt.verify(value, jwtSecret);
 
                         return verifiedJwt.userId === USER_ID;

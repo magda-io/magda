@@ -20,7 +20,7 @@ export default async function isWebhookRegistered(
 
     return maybeHook
         .map(
-            hook =>
+            (hook) =>
                 isEqual(hook.config, newWebhookConfig) &&
                 hook.url === getWebhookUrl(options)
         )

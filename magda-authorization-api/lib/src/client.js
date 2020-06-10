@@ -18,14 +18,14 @@ const baseUrl =
     })() + "/v0";
 function handleGetResult(promise) {
     return promise
-        .then(res => {
+        .then((res) => {
             if (res.status === 404) {
                 return Promise.resolve(tsmonad_1.Maybe.nothing());
             } else {
-                return res.json().then(user => tsmonad_1.Maybe.just(user));
+                return res.json().then((user) => tsmonad_1.Maybe.just(user));
             }
         })
-        .catch(e => {
+        .catch((e) => {
             console.error(e);
             throw e;
         });
@@ -54,8 +54,8 @@ function createUser(user) {
         },
         body: JSON.stringify(user)
     })
-        .then(res => Object.assign({}, user, res.json()))
-        .catch(e => {
+        .then((res) => Object.assign({}, user, res.json()))
+        .catch((e) => {
             console.error(e);
             throw e;
         });

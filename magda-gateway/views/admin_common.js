@@ -45,10 +45,10 @@ function iconConfig(body, name) {
             input.type = "file";
             input.accept = "image/*";
             input.click();
-            input.onchange = function() {
+            input.onchange = function () {
                 const file = input.files[0];
                 const fileReader = new FileReader();
-                fileReader.onloadend = async function(e) {
+                fileReader.onloadend = async function (e) {
                     const data = new Blob([new Uint8Array(e.target.result)]);
                     await request(
                         "PUT",
@@ -70,13 +70,13 @@ function readFile(callback, accept, read) {
     input.type = "file";
     input.accept = accept;
     input.click();
-    input.onchange = function() {
+    input.onchange = function () {
         const file = input.files[0];
         const fileReader = new FileReader();
-        fileReader.onloadend = function(e) {
+        fileReader.onloadend = function (e) {
             callback(e.target.result, file);
         };
-        fileReader.error = function(e) {
+        fileReader.error = function (e) {
             console.error(e);
         };
         fileReader["readAs" + read](file);
@@ -85,7 +85,7 @@ function readFile(callback, accept, read) {
 
 function readImage(src, callback) {
     var img = new Image();
-    img.onload = function() {
+    img.onload = function () {
         callback(this);
     };
     img.src = src;
@@ -119,7 +119,7 @@ async function showJsonEditor(body, options) {
                     schema: options.schema,
                     startval: file.content,
                     label: "Save",
-                    callback: async newObj => {
+                    callback: async (newObj) => {
                         console.log(
                             "DONE",
                             name,
@@ -170,7 +170,7 @@ async function showJsonEditor(body, options) {
             schema: options.schema,
             startval: null,
             label: "Add",
-            callback: async newObj => {
+            callback: async (newObj) => {
                 console.log(
                     "DONE",
                     name,

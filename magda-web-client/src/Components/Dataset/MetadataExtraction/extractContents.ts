@@ -119,10 +119,10 @@ async function extractSpreadsheetFile(
     if (largeTextBlockIdentified) {
         // --- only generate text for NLP if large text block is detected
         text = Object.values(workbook.Sheets)
-            .map(worksheet => {
+            .map((worksheet) => {
                 return XLSX.utils
                     .sheet_to_json<string>(worksheet, { raw: true })
-                    .map(row => Object.values(row).join(","))
+                    .map((row) => Object.values(row).join(","))
                     .join("\n");
             })
             .join("\n\n");
@@ -151,7 +151,7 @@ function getKeywordsFromWorksheet(
     const keywords: string[] = [];
     const cancelLoopToken = {};
     try {
-        Object.keys(sheet).forEach(key => {
+        Object.keys(sheet).forEach((key) => {
             if (typeof key !== "string") {
                 // --- invalid key
                 return;
@@ -347,7 +347,7 @@ async function extractPDFFile(_input: FileDetails, array: Uint8Array) {
         page = await page.getTextContent({
             normalizeWhitespace: true
         });
-        page = page.items.map(txt => txt.str).join("\n");
+        page = page.items.map((txt) => txt.str).join("\n");
         text.push(page);
     }
 

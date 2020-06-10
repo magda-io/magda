@@ -273,12 +273,12 @@ export async function fetchRecords({
     }
 
     if (aspects?.length) {
-        parameters.push(aspects.map(item => `aspect=${item}`).join("&"));
+        parameters.push(aspects.map((item) => `aspect=${item}`).join("&"));
     }
 
     if (optionalAspects?.length) {
         parameters.push(
-            optionalAspects.map(item => `optionalAspect=${item}`).join("&")
+            optionalAspects.map((item) => `optionalAspect=${item}`).join("&")
         );
     }
 
@@ -286,7 +286,7 @@ export async function fetchRecords({
         parameters.push(
             aspectQueries
                 .map(
-                    item =>
+                    (item) =>
                         `${
                             item.isAndQuery ? "aspectQuery" : "aspectOrQuery"
                         }=${item.toString()}`
@@ -368,14 +368,14 @@ export async function fetchRecordsCount({
     const parameters: string[] = [];
 
     if (aspects?.length) {
-        parameters.push(aspects.map(item => `aspect=${item}`).join("&"));
+        parameters.push(aspects.map((item) => `aspect=${item}`).join("&"));
     }
 
     if (aspectQueries?.length) {
         parameters.push(
             aspectQueries
                 .map(
-                    item =>
+                    (item) =>
                         `${
                             item.isAndQuery ? "aspectQuery" : "aspectOrQuery"
                         }=${item.toString()}`

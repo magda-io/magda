@@ -46,13 +46,13 @@ export default class mockAuthApiHost {
 
     public mockReq(req: any, paramName: string = null): Request {
         const mockReq = {
-            header: function(headerName: string) {
+            header: function (headerName: string) {
                 const header = req.headers[headerName.toLowerCase()];
                 if (header && header.length) return header[0];
                 else return "";
             },
             query: url.parse(req.path, true, true).query,
-            params: (function() {
+            params: (function () {
                 if (!paramName) return {};
                 const r = req.path.match(/\/([^\/]+)$/);
                 if (!r || !r.length) return null;
@@ -78,7 +78,7 @@ export default class mockAuthApiHost {
         this.scope
             .get("/private/users/lookup")
             .query(true)
-            .reply(function(this: any, uri, requestBody) {
+            .reply(function (this: any, uri, requestBody) {
                 const req = thisObj.mockReq(this.req);
                 try {
                     thisObj.mockAuthCheck(req, true);
@@ -107,7 +107,7 @@ export default class mockAuthApiHost {
 
         this.scope
             .get(/\/private\/users\/[^\/]+/)
-            .reply(function(this: any, uri, requestBody) {
+            .reply(function (this: any, uri, requestBody) {
                 const req = thisObj.mockReq(this.req, "userId");
                 try {
                     thisObj.mockAuthCheck(req, true);
@@ -131,7 +131,7 @@ export default class mockAuthApiHost {
 
         this.scope
             .get(/\/public\/users\/[^\/]+/)
-            .reply(function(this: any, uri, requestBody) {
+            .reply(function (this: any, uri, requestBody) {
                 const req = thisObj.mockReq(this.req, "userId");
                 try {
                     const userId = req.params.userId;
@@ -139,7 +139,7 @@ export default class mockAuthApiHost {
 
                     const records = mockUserDataStore
                         .getRecordByUserId(userId)
-                        .map(record => ({
+                        .map((record) => ({
                             id: record.id,
                             photoURL: record.photoURL,
                             displayName: record.displayName,
@@ -155,7 +155,7 @@ export default class mockAuthApiHost {
 
         this.scope
             .post("/private/users")
-            .reply(function(this: any, uri, requestBody) {
+            .reply(function (this: any, uri, requestBody) {
                 const req = thisObj.mockReq(this.req);
                 try {
                     thisObj.mockAuthCheck(req, true);

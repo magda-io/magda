@@ -337,11 +337,11 @@ function populateTemporalCoverageAspect(data: RawDataset, state: State) {
         return;
     }
     const intervals = data.aspects["temporal-coverage"].intervals
-        .map(item => ({
+        .map((item) => ({
             start: dateStringToDate(item.start),
             end: dateStringToDate(item.end)
         }))
-        .filter(item => item.start || item.end);
+        .filter((item) => item.start || item.end);
 
     if (intervals.length) {
         state.temporalCoverage = {
@@ -423,7 +423,7 @@ async function populateProvenanceAspect(data: RawDataset, state: State) {
 
     if (affiliatedOrganizationIds?.length) {
         provenance.affiliatedOrganizations = affiliatedOrganizationIds.map(
-            item => ({
+            (item) => ({
                 existingId: item.id,
                 name: item?.aspects?.["organization-details"]?.title
                     ? item?.aspects?.["organization-details"]?.title
@@ -456,8 +456,8 @@ function populateDistributions(data: RawDataset, state: State) {
         return;
     }
     const distributions = data.aspects["dataset-distributions"].distributions
-        .filter(item => item?.aspects?.["dcat-distribution-strings"])
-        .map(item => {
+        .filter((item) => item?.aspects?.["dcat-distribution-strings"])
+        .map((item) => {
             const modified = dateStringToDate(
                 item.aspects["dcat-distribution-strings"].modified
             );
@@ -855,7 +855,7 @@ async function getOrgIdFromAutocompleteChoice(
         );
 
         const match = existingPublishers.options.find(
-            publisher =>
+            (publisher) =>
                 publisher.value.toLowerCase().trim() ===
                 organization!.name.toLowerCase().trim()
         );
@@ -907,7 +907,7 @@ async function convertStateToDatasetRecord(
     let publisherId;
     if (dataset.publisher) {
         publisherId = await getOrgIdFromAutocompleteChoice(dataset.publisher);
-        setState(state => ({
+        setState((state) => ({
             ...state,
             dataset: {
                 ...state.dataset,
@@ -929,7 +929,7 @@ async function convertStateToDatasetRecord(
             "spatial-coverage": spatialCoverage,
             "temporal-coverage": temporalCoverage,
             "dataset-distributions": {
-                distributions: distributionRecords.map(d => d.id)
+                distributions: distributionRecords.map((d) => d.id)
             },
             access: datasetAccess,
             "information-security": informationSecurity,
@@ -958,7 +958,7 @@ async function convertStateToDatasetRecord(
                 affiliatedOrganizationIds:
                     provenance.affiliatedOrganizations &&
                     (await Promise.all(
-                        provenance.affiliatedOrganizations.map(org =>
+                        provenance.affiliatedOrganizations.map((org) =>
                             getOrgIdFromAutocompleteChoice(org)
                         )
                     )),
@@ -980,7 +980,7 @@ async function convertStateToDatasetRecord(
 async function convertStateToDistributionRecords(state: State) {
     const { dataset, distributions, licenseLevel } = state;
 
-    const distributionRecords = distributions.map(distribution => {
+    const distributionRecords = distributions.map((distribution) => {
         const aspect =
             licenseLevel === "dataset"
                 ? {

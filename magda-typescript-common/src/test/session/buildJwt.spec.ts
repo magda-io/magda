@@ -9,17 +9,14 @@ const { mockRequest } = require("mock-req-res");
 
 describe("Get authz claim from jwt token", () => {
     const argv = addJwtSecretFromEnvVar(
-        yargs
-            .config()
-            .help()
-            .option("jwtSecret", {
-                describe:
-                    "The secret to use to sign JSON Web Token (JWT) for authenticated requests.",
-                type: "string"
-            }).argv
+        yargs.config().help().option("jwtSecret", {
+            describe:
+                "The secret to use to sign JSON Web Token (JWT) for authenticated requests.",
+            type: "string"
+        }).argv
     );
 
-    it("should get userId", function() {
+    it("should get userId", function () {
         const aUserId = "aTestUserId";
         const jwtToken = buildJwt(argv.jwtSecret, aUserId);
 
@@ -34,7 +31,7 @@ describe("Get authz claim from jwt token", () => {
         expect(actual).to.be.equal(aUserId);
     });
 
-    it("should get user session", function() {
+    it("should get user session", function () {
         const aUserId = "aTestUserId";
         const groups = ["G1", "G2"];
         const session = { session: { esriGroups: groups } };
