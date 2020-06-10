@@ -17,6 +17,7 @@ export type DatasetTypes = "drafts" | "published";
 type PropsType = {
     searchText: string;
     datasetType: DatasetTypes;
+    userId: string;
 };
 
 function createRows(
@@ -151,6 +152,14 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
                         "publishing.state",
                         AspectQueryOperators["="],
                         `published`,
+                        true
+                    )
+                ];
+                opts.aspectQueries = [
+                    new AspectQuery(
+                        "dataset-access-control.ownerId",
+                        AspectQueryOperators["="],
+                        props.userId,
                         true
                     )
                 ];
