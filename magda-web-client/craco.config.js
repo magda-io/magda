@@ -15,8 +15,6 @@ module.exports = {
             );
             if (terser) {
                 terser.options.parallel = false;
-                terser.options.sourceMap =
-                    process.env.GENERATE_SOURCEMAP !== "false";
             }
 
             const updatedRules = webpackConfig.module.rules.filter(
