@@ -82,12 +82,10 @@ async function createUser(dbClient, options) {
     const userInfo = result.rows[0];
     const userId = userInfo.id;
 
-    if (isAdmin) {
-        await dbClient.query(
-            `INSERT INTO "user_roles" ("id", "user_id", "role_id") VALUES(uuid_generate_v4(), $1, '00000000-0000-0003-0000-000000000000') RETURNING id`,
-            [userId]
-        );
-    }
+    await dbClient.query(
+        `INSERT INTO "user_roles" ("id", "user_id", "role_id") VALUES(uuid_generate_v4(), $1, '00000000-0000-0002-0000-000000000000') RETURNING id`,
+        [userId]
+    );
 
     return userId;
 }
