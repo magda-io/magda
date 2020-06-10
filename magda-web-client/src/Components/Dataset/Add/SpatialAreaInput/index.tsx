@@ -46,7 +46,6 @@ interface PropsType {
 
 const initialState = (props: PropsType) => ({
     activeTabIndex: (() => {
-        console.log(props);
         if (props.method === "bbox") {
             return 1;
         } else if (props.method === "region") {
