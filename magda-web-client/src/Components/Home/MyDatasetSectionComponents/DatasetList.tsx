@@ -4,7 +4,9 @@ import DatasetGrid, { DatasetTypes } from "./DatasetGrid";
 import dismissIcon from "assets/dismiss.svg";
 import searchIcon from "assets/search-dark.svg";
 
-type PropsType = {};
+type PropsType = {
+    userId: string;
+};
 
 type TabNames = DatasetTypes;
 
@@ -71,6 +73,7 @@ const DatasetList: FunctionComponent<PropsType> = (props) => {
                         key={`tab:${activeTab}|searchtext:${searchText}`}
                         searchText={searchText}
                         datasetType={activeTab}
+                        userId={props.userId}
                     />
                 </div>
             </div>

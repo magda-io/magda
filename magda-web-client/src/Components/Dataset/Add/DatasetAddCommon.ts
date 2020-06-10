@@ -206,6 +206,7 @@ type Access = {
 };
 
 const DEFAULT_POLICY_ID = "object.registry.record.owner_only";
+const PUBLISHED_DATASET_POLICY_ID = "object.registry.record.public";
 
 function getInternalDatasetSourceAspectData() {
     return {
@@ -890,7 +891,8 @@ async function convertStateToDatasetRecord(
     distributionRecords: Record[],
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>,
-    isUpdate: boolean = false
+    isUpdate: boolean = false,
+    authnReadPolicyId?: string
 ) {
     const {
         dataset,
@@ -920,7 +922,9 @@ async function convertStateToDatasetRecord(
     const inputDataset = {
         id: datasetId,
         name: dataset.title,
-        authnReadPolicyId: DEFAULT_POLICY_ID,
+        authnReadPolicyId: authnReadPolicyId
+            ? authnReadPolicyId
+            : DEFAULT_POLICY_ID,
         aspects: {
             publishing: getPublishingAspectData(state),
             "dcat-dataset-strings": buildDcatDatasetStrings(dataset),
@@ -1002,22 +1006,8 @@ async function convertStateToDistributionRecords(state: State) {
 export async function createDatasetFromState(
     datasetId: string,
     state: State,
-    setState: React.Dispatch<React.SetStateAction<State>>
-) {
-    const distributionRecords = await convertStateToDistributionRecords(state);
-    const datasetRecord = await convertStateToDatasetRecord(
-        datasetId,
-        distributionRecords,
-        state,
-        setState
-    );
-    await createDataset(datasetRecord, distributionRecords);
-}
-
-export async function updateDatasetFromState(
-    datasetId: string,
-    state: State,
-    setState: React.Dispatch<React.SetStateAction<State>>
+    setState: React.Dispatch<React.SetStateAction<State>>,
+    authnReadPolicyId?: string
 ) {
     const distributionRecords = await convertStateToDistributionRecords(state);
     const datasetRecord = await convertStateToDatasetRecord(
@@ -1025,7 +1015,26 @@ export async function updateDatasetFromState(
         distributionRecords,
         state,
         setState,
-        true
+        false,
+        authnReadPolicyId
+    );
+    await createDataset(datasetRecord, distributionRecords);
+}
+
+export async function updateDatasetFromState(
+    datasetId: string,
+    state: State,
+    setState: React.Dispatch<React.SetStateAction<State>>,
+    authnReadPolicyId?: string
+) {
+    const distributionRecords = await convertStateToDistributionRecords(state);
+    const datasetRecord = await convertStateToDatasetRecord(
+        datasetId,
+        distributionRecords,
+        state,
+        setState,
+        true,
+        authnReadPolicyId
     );
     await updateDataset(datasetRecord, distributionRecords);
 }
@@ -1045,9 +1054,19 @@ export async function submitDatasetFromState(
     setState: React.Dispatch<React.SetStateAction<State>>
 ) {
     if (await doesRecordExist(datasetId)) {
-        await updateDatasetFromState(datasetId, state, setState);
+        await updateDatasetFromState(
+            datasetId,
+            state,
+            setState,
+            PUBLISHED_DATASET_POLICY_ID
+        );
     } else {
-        await createDatasetFromState(datasetId, state, setState);
+        await createDatasetFromState(
+            datasetId,
+            state,
+            setState,
+            PUBLISHED_DATASET_POLICY_ID
+        );
     }
 
     await deleteRecordAspect(datasetId, "dataset-draft");
