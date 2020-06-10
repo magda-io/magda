@@ -73,16 +73,24 @@ function createRows(
 }
 
 function getTitle(datasetType: DatasetTypes, record: Record) {
-    let title;
+    let titleText: string;
     if (datasetType === "drafts") {
-        title = record?.aspects?.["dataset-draft"]?.["dataset"]?.title;
+        titleText = record?.aspects?.["dataset-draft"]?.["dataset"]?.title;
     } else {
-        title = record?.aspects?.["dcat-dataset-strings"]?.title;
+        titleText = record?.aspects?.["dcat-dataset-strings"]?.title;
     }
-    if (!title) {
-        title = record?.name;
+    if (!titleText) {
+        titleText = record?.name;
     }
-    return title ? title : "N/A";
+    titleText = titleText ? titleText : "Untitled Dataset";
+
+    return datasetType === "drafts" ? (
+        titleText
+    ) : (
+        <Link to={`/dataset/${encodeURIComponent(record.id)}`}>
+            {titleText}
+        </Link>
+    );
 }
 
 function getDate(datasetType: DatasetTypes, record: Record) {
@@ -141,8 +149,8 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
                 opts.aspectQueries = [
                     new AspectQuery(
                         "publishing.state",
-                        AspectQueryOperators["!="],
-                        `draft`,
+                        AspectQueryOperators["="],
+                        `published`,
                         true
                     )
                 ];
