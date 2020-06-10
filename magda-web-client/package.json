@@ -14,7 +14,8 @@
     "eject": "react-scripts eject",
     "analyze": "source-map-explorer 'build/static/js/*.js'"
   },
-  "dependencies": {
+  "dependencies": {},
+  "devDependencies": {
     "@gov.au/accordion": "^7.0.7",
     "@gov.au/animate": "^1.0.0",
     "@gov.au/body": "^2.1.1",
@@ -67,9 +68,7 @@
     "rrule": "^2.6.2",
     "urijs": "^1.19.1",
     "use-debounce": "^3.3.0",
-    "xlsx": "^0.14.0"
-  },
-  "devDependencies": {
+    "xlsx": "^0.14.0",
     "@babel/core": "^7.10.2",
     "@babel/plugin-proposal-optional-chaining": "^7.8.3",
     "@babel/runtime": "^7.8.7",
@@ -135,7 +134,6 @@
     "react-redux": "^5.0.7",
     "react-responsive": "^4.1.0",
     "react-router-dom": "^4.2.2",
-    "react-scripts": "2.1.8",
     "react-table": "^6.10.0",
     "react-transition-group": "^2.3.1",
     "redux": "^4.0.0",
