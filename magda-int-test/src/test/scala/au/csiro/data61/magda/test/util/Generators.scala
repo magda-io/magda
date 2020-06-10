@@ -544,10 +544,13 @@ object Generators {
       mechanism <- Gen.option(Generators.textGen.map(_.take(50).trim))
       sourceSystem <- Gen.option(Generators.textGen.map(_.take(50).trim))
       derivedFrom <- Gen.option(
-        Gen.listOf(Generators.textGen.map(_.take(50).trim))
+        Gen.listOf(
+          Generators.textGen
+            .map(text => ProvenanceRecord(id = Some(List(text.take(50).trim))))
+        )
       )
       affiliatedOrganizationIds <- Gen.option(
-        Gen.listOf(Generators.textGen.map(_.take(50).trim))
+        Gen.listOf(Generators.textGen.map(JsString.apply(_.take(50).trim)))
       )
       isOpenData <- Gen.option(arbitrary[Boolean])
     } yield
