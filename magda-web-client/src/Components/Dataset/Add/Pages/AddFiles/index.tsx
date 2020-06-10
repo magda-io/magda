@@ -242,6 +242,7 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
 
                 if (this.props.stateData.shouldUploadToStorageApi) {
                     // Save now so that we don't end up with orphaned uploaded files
+                    // if the user leaves without saving
                     await this.props.save();
                 }
             } catch (e) {
@@ -574,6 +575,9 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                         )
                     };
                 });
+
+                // Save to make sure that we persist the file's removal
+                this.props.save();
             };
 
             if (shouldUpload) {
@@ -618,6 +622,8 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                                 )
                             };
                         });
+
+                        removeDist();
                     });
             } else {
                 removeDist();
