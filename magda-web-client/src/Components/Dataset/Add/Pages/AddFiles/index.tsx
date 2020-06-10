@@ -16,10 +16,12 @@ import {
     DistributionState,
     DistributionSource,
     KeywordsLike,
-    createId
+    createId,
+    Interval
 } from "../../DatasetAddCommon";
 import withAddDatasetState from "../../withAddDatasetState";
 import uniq from "lodash/uniq";
+import { uniqWith } from "lodash";
 import { config, MessageSafeConfig } from "config";
 import { User } from "reducers/userManagementReducer";
 import {
@@ -206,6 +208,18 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                             distAfterProcessing.temporalCoverage?.intervals ||
                                 []
                         );
+                        let uniqTemporalCoverage = uniqWith(
+                            temporalCoverage.intervals,
+                            (arrVal: Interval, othVal: Interval) => {
+                                return (
+                                    arrVal.start?.getTime() ===
+                                        othVal.start?.getTime() &&
+                                    arrVal.end?.getTime() ===
+                                        othVal.end?.getTime()
+                                );
+                            }
+                        );
+                        temporalCoverage.intervals = uniqTemporalCoverage;
                     }
 
                     if (
