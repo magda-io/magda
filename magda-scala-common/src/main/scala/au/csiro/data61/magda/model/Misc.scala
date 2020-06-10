@@ -59,10 +59,15 @@ package misc {
       extras: Option[Map[String, JsValue]] = None
   )
 
+  case class ProvenanceRecord(
+      id: Option[Seq[String]],
+      name: Option[String]
+  )
+
   case class Provenance(
       mechanism: Option[String],
       sourceSystem: Option[String],
-      derivedFrom: Option[Seq[String]],
+      derivedFrom: Option[Seq[ProvenanceRecord]],
       affiliatedOrganizationIds: Option[Seq[String]],
       isOpenData: Option[Boolean]
   )
@@ -421,6 +426,7 @@ package misc {
     implicit val dataSouceFormat: RootJsonFormat[DataSouce] = jsonFormat3(
       DataSouce.apply
     )
+    implicit val provenanceRecordFormat: RootJsonFormat[ProvenanceRecord] = jsonFormat2(ProvenanceRecord.apply)
     implicit val provenanceFormat: RootJsonFormat[Provenance] = jsonFormat5(
       Provenance.apply
     )
