@@ -8,7 +8,7 @@
     "dev": "pancake && yarn run start",
     "prepare": "pancake",
     "start": "craco start --react-scripts ../node_modules/react-scripts",
-    "build": "GENERATE_SOURCEMAP=false pancake && craco build --react-scripts ../node_modules/react-scripts --max-old-space-size=4000",
+    "build": "pancake && GENERATE_SOURCEMAP=false craco build --react-scripts ../node_modules/react-scripts --max-old-space-size=4000",
     "test": "craco test --react-scripts ../node_modules/react-scripts",
     "eject": "react-scripts eject",
     "analyze": "source-map-explorer 'build/static/js/*.js'"
