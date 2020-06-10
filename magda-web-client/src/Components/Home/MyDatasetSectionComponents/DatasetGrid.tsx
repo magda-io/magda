@@ -17,6 +17,7 @@ export type DatasetTypes = "drafts" | "published";
 type PropsType = {
     searchText: string;
     datasetType: DatasetTypes;
+    userId: string;
 };
 
 function createRows(
@@ -154,6 +155,14 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
                         true
                     )
                 ];
+                opts.aspectQueries = [
+                    new AspectQuery(
+                        "dataset-access-control.ownerId",
+                        AspectQueryOperators["="],
+                        props.userId,
+                        true
+                    )
+                ];
             }
 
             searchText = searchText.trim();
@@ -251,7 +260,7 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
                 >
                     Next page
                 </button>
-                {result?.hasMore === true && !loading ? null : (
+                {result?.hasMore === true && !loading && !pageToken ? null : (
                     <button
                         className="first-page-button"
                         onClick={() => {

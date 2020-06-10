@@ -110,6 +110,11 @@ const argv = yargs
             "The base URL of the correspondence api.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
     })
+    .option("storageApiBaseUrl", {
+        describe:
+            "The base URL of the storage api.  If not specified, the URL is built from the apiBaseUrl.",
+        type: "string"
+    })
     .option("openfaasBaseUrl", {
         describe:
             "The base URL of the openfaas gateway.  If not specified, the URL is built from the apiBaseUrl.",
@@ -262,6 +267,10 @@ const webServerConfig = {
                 .segment("v0")
                 .segment("correspondence")
                 .toString()
+    ),
+    storageApiBaseUrl: addTrailingSlash(
+        argv.storageApiBaseUrl ||
+            new URI(apiBaseUrl).segment("v0").segment("storage").toString()
     ),
     openfaasBaseUrl: addTrailingSlash(
         argv.openfaasBaseUrl ||

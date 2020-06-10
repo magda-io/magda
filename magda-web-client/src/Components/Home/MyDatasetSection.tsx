@@ -3,13 +3,15 @@ import "./MyDatasetSection.scss";
 import SideNavigation from "./MyDatasetSectionComponents/SideNavigation";
 import DatasetList from "./MyDatasetSectionComponents/DatasetList";
 
-type PropsType = {};
+type PropsType = {
+    userId: string;
+};
 
-const MyDatasetSection: FunctionComponent<PropsType> = props => {
+const MyDatasetSection: FunctionComponent<PropsType> = (props) => {
     return (
         <div className="my-dataset-section-container">
             <SideNavigation />
-            <DatasetList />
+            <DatasetList userId={props.userId} />
         </div>
     );
 };
