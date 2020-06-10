@@ -144,7 +144,7 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                 modified: new Date(thisFile.lastModified),
                 format: fileFormat(thisFile),
                 _state: DistributionState.Added,
-                license: "world",
+                license: "No license",
                 creationSource: DistributionSource.File,
                 downloadURL: this.props.stateData.shouldUploadToStorageApi
                     ? `${config.storageApiUrl}${this.baseStorageApiPath(

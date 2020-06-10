@@ -535,7 +535,7 @@ export function createBlankState(user: User): State {
             owningOrgUnitId: user ? user.orgUnitId : undefined,
             ownerId: user ? user.id : undefined,
             editingUserId: user ? user.id : undefined,
-            defaultLicense: "world"
+            defaultLicense: "No license"
         },
         datasetPublishing: {
             state: "draft",
