@@ -336,8 +336,8 @@ export async function fetchRecords({
     const response = await fetch(
         url,
         noCache
-            ? createNoCacheFetchOptions(config.fetchOptions)
-            : config.fetchOptions
+            ? createNoCacheFetchOptions(config.credentialsFetchOptions)
+            : config.credentialsFetchOptions
     );
 
     if (!response.ok) {
@@ -391,8 +391,8 @@ export async function fetchRecordsCount({
     const response = await fetch(
         url,
         noCache
-            ? createNoCacheFetchOptions(config.fetchOptions)
-            : config.fetchOptions
+            ? createNoCacheFetchOptions(config.credentialsFetchOptions)
+            : config.credentialsFetchOptions
     );
 
     if (!response.ok) {
