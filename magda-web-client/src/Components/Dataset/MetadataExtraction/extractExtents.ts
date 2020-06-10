@@ -202,9 +202,6 @@ function calculateSpatialExtent(
     const latHeaders = tryFilterHeaders(headers, LAT_REGEX);
     const longHeaders = tryFilterHeaders(headers, LONG_REGEX);
 
-    console.log("Longitude Headers: " + JSON.stringify(longHeaders));
-    console.log("Latitude Headers: " + JSON.stringify(latHeaders));
-
     const spatial = rows.reduce(
         (soFar: SpatialExtent, row: any) => {
             const getBestCoordinateComponent = (

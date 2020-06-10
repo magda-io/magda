@@ -19,7 +19,6 @@ export default function DatasetAddEndPage(props: Props) {
     const { datasetId, publishStatus } = props;
     const datasetPage = "/dataset/" + datasetId + "/details";
     const isEdit = typeof props?.isEdit === "undefined" ? false : props.isEdit;
-    console.log("props are: ", props);
     let viewDatasetText;
     if (publishStatus === "draft") {
         viewDatasetText = "View your draft dataset";
