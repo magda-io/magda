@@ -54,23 +54,23 @@ export default function DatasetAddEndPage(props: Props) {
             <div className="col-sm-12 end-preview-page-2">
                 <div>
                     <Link to={datasetPage}>
-                        <a className="au-btn next-button end-preview-button draft-dataset-btn">
+                        <div className="au-btn next-button end-preview-button draft-dataset-btn">
                             <img className="draft-image-icon" src={draftIcon} />
                             <span className="draft-dataset-txt">
                                 {" "}
                                 {viewDatasetText}{" "}
                             </span>
-                        </a>
+                        </div>
                     </Link>
                 </div>
                 <div>
                     <Link to={datasetPage + "?print=true"}>
-                        <a className="au-btn next-button end-preview-button print-metadata-btn">
+                        <div className="au-btn next-button end-preview-button print-metadata-btn">
                             <img className="print-icon" src={printIcon} />
                             <span className="print-metadata-txt">
                                 Print a copy of your metadata
                             </span>
-                        </a>
+                        </div>
                     </Link>
                 </div>
             </div>
