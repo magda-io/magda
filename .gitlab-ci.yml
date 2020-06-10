@@ -449,6 +449,16 @@ dockerize:scala:
   stage: dockerize
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   retry: 2
+  cache:
+    key: SCALA-$SCALA_CACHE_VERSION
+    paths:
+      - "$CI_PROJECT_DIR/sbt-cache"
+      - "$CI_PROJECT_DIR/target"
+      - "$CI_PROJECT_DIR/project/target"
+      - "$CI_PROJECT_DIR/project/project/target"
+      - "$CI_PROJECT_DIR/*/target"
+      - "$CI_PROJECT_DIR/*/project/target"
+      - "$CI_PROJECT_DIR/*/project/project/target"
   dependencies:
     - registry-typescript-api
     - buildtest:registry
@@ -457,6 +467,7 @@ dockerize:scala:
   services:
     - docker:dind
   script:
+    - sbt update
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - cat /dev/null | sbt -Drepository=$CI_REGISTRY/magda-data/magda -Dversion=$CI_COMMIT_REF_SLUG dockerBuildAndPush
 
