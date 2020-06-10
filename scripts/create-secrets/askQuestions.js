@@ -56,7 +56,7 @@ const questions = [
         name: "cloudsql-db-credentials",
         message: "Please provide default google cloud SQL service DB password:",
         when: onlyWhenQuestion("use-cloudsql-instance-credentials", true),
-        validate: input =>
+        validate: (input) =>
             trim(input).length ? true : "Default password cannot be empty!"
     },
     {
@@ -77,7 +77,7 @@ const questions = [
         ],
         //--- config parameter needs to be prefilled later before run questionnaire
         //--- answers will be provided by inquirer lib at runtime
-        when: function(config, answers) {
+        when: function (config, answers) {
             if (
                 answers["deploy-to-google-cloud"] === false ||
                 answers["use-cloudsql-instance-credentials"] === false
@@ -105,7 +105,7 @@ const questions = [
             "Please provide the path to the credentials JSON file for your Google SQL cloud service access:",
         //--- config parameter needs to be prefilled later before run questionnaire
         //--- answers will be provided by inquirer lib at runtime
-        when: function(config, answers) {
+        when: function (config, answers) {
             if (
                 answers["deploy-to-google-cloud"] === false ||
                 answers["use-cloudsql-instance-credentials"] === false
@@ -162,7 +162,7 @@ const questions = [
         ],
         //--- config needs to prefill later before run questionnaire
         //--- answers will be provided by inquirer lib at runtime
-        when: function(config, answers) {
+        when: function (config, answers) {
             if (
                 answers["deploy-to-google-cloud"] === false ||
                 answers["use-storage-account-credentials"] === false
@@ -190,7 +190,7 @@ const questions = [
             "Please provide the path to the private key JSON file for your Google storage service access:",
         //--- config needs to prefill later before run questionnaire
         //--- answers will be provided by inquirer lib at runtime
-        when: function(config, answers) {
+        when: function (config, answers) {
             if (
                 answers["deploy-to-google-cloud"] === false ||
                 answers["use-storage-account-credentials"] === false
@@ -234,7 +234,7 @@ const questions = [
         name: "smtp-secret-username",
         message: "Please provide SMTP service username:",
         when: onlyWhenQuestion("use-smtp-secret", true),
-        validate: input =>
+        validate: (input) =>
             trim(input).length ? true : "username cannot be empty!"
     },
     {
@@ -242,7 +242,7 @@ const questions = [
         name: "smtp-secret-password",
         message: "Please provide SMTP service password:",
         when: onlyWhenQuestion("use-smtp-secret", true),
-        validate: input =>
+        validate: (input) =>
             trim(input).length ? true : "password cannot be empty!"
     },
     {
@@ -287,7 +287,7 @@ const questions = [
         message:
             "Please provide the email address that you want to use for Gitlab docker registry:",
         when: onlyWhenQuestion("use-regcred", true),
-        validate: input =>
+        validate: (input) =>
             trim(input).length ? true : "email cannot be empty!"
     },
     {
@@ -295,7 +295,7 @@ const questions = [
         name: "regcred-password",
         message: "Please provide password for Gitlab docker registry:",
         when: onlyWhenQuestion("use-regcred-password-from-env", false),
-        validate: input =>
+        validate: (input) =>
             trim(input).length ? true : "password cannot be empty!"
     },
     {
@@ -319,7 +319,7 @@ const questions = [
         name: "oauth-secrets-google",
         message: "Please provide google api access key for oAuth SSO:",
         when: onlyWhenQuestion("use-oauth-secrets-google", true),
-        validate: input =>
+        validate: (input) =>
             trim(input).length ? true : "secret cannot be empty!"
     },
     {
@@ -343,7 +343,7 @@ const questions = [
         name: "oauth-secrets-facebook",
         message: "Please provide facebook api access key for oAuth SSO:",
         when: onlyWhenQuestion("use-oauth-secrets-facebook", true),
-        validate: input =>
+        validate: (input) =>
             trim(input).length ? true : "secret cannot be empty!"
     },
     {
@@ -367,7 +367,7 @@ const questions = [
         name: "oauth-secrets-arcgis",
         message: "Please provide arcgis api access key for oAuth SSO:",
         when: onlyWhenQuestion("use-oauth-secrets-arcgis", true),
-        validate: input =>
+        validate: (input) =>
             trim(input).length ? true : "secret cannot be empty!"
     },
     {
@@ -392,7 +392,7 @@ const questions = [
         name: "oauth-secrets-aaf",
         message: "Please provide AAF secret for AAF Rapid Connect SSO:",
         when: onlyWhenQuestion("use-oauth-secrets-aaf", true),
-        validate: input =>
+        validate: (input) =>
             trim(input).length ? true : "secret cannot be empty!"
     },
     {
@@ -416,8 +416,8 @@ const questions = [
         name: "web-access-username",
         message:
             "Please provide the username for HTTP Basic authentication setup:",
-        when: answers => answers["use-web-access-secret"] === true,
-        validate: input => {
+        when: (answers) => answers["use-web-access-secret"] === true,
+        validate: (input) => {
             const r = trim(input);
             if (!r.length) {
                 return "username cannot be empty!";
@@ -444,8 +444,8 @@ const questions = [
                 value: true
             }
         ],
-        when: answers => answers["use-web-access-secret"] === true,
-        filter: function(input) {
+        when: (answers) => answers["use-web-access-secret"] === true,
+        filter: function (input) {
             const r = {
                 answer: input
             };
@@ -454,7 +454,7 @@ const questions = [
             }
             return r;
         },
-        transformer: function(value, answers) {
+        transformer: function (value, answers) {
             if (value.answer === true) {
                 return chalk.yellow("Chose to manually input password");
             } else {
@@ -470,10 +470,10 @@ const questions = [
         name: "web-access-password",
         message:
             "Please provide the password for HTTP Basic authentication setup:",
-        when: answers =>
+        when: (answers) =>
             answers["use-web-access-secret"] === true &&
             answers["manual-web-access-password"]["answer"] === true,
-        validate: input =>
+        validate: (input) =>
             trim(input).length ? true : "password cannot be empty!"
     },
     {
@@ -492,7 +492,7 @@ const questions = [
                 value: true
             }
         ],
-        filter: function(input) {
+        filter: function (input) {
             const r = {
                 answer: input
             };
@@ -501,7 +501,7 @@ const questions = [
             }
             return r;
         },
-        transformer: function(value, answers) {
+        transformer: function (value, answers) {
             if (value.answer === true) {
                 return chalk.yellow("Chose to manually input password");
             } else {
@@ -516,15 +516,15 @@ const questions = [
         type: "input",
         name: "db-passwords",
         message: "Please provide the password used for databases:",
-        when: answers => answers["manual-db-passwords"]["answer"] === true,
-        validate: input =>
+        when: (answers) => answers["manual-db-passwords"]["answer"] === true,
+        validate: (input) =>
             trim(input).length ? true : "password cannot be empty!"
     },
     {
         type: "input",
         name: "accesskey",
         message: "Please enter an access key for your MinIO server:",
-        validate: input => {
+        validate: (input) => {
             const trimmedInput = trim(input);
             return trimmedInput.length && trimmedInput.length >= 5
                 ? true
@@ -535,7 +535,7 @@ const questions = [
         type: "input",
         name: "secretkey",
         message: "Please enter a secret key for your MinIO server::",
-        validate: input => {
+        validate: (input) => {
             const trimmedInput = trim(input);
             return trimmedInput.length && trimmedInput.length >= 8
                 ? true
@@ -565,7 +565,7 @@ const questions = [
         message:
             "What's the namespace you want to create secrets into (input `default` if you want to use the `default` namespace)?",
         when: onlyWhenQuestion("get-namespace-from-env", false),
-        validate: input =>
+        validate: (input) =>
             trim(input).length ? true : "Cluster namespace cannot be empty!"
     },
     {
@@ -592,7 +592,7 @@ function onlyAvailableForGoogleCloud(answers) {
 }
 
 function onlyWhenQuestion(name, value) {
-    return answers => {
+    return (answers) => {
         return answers[name] === value;
     };
 }
@@ -655,7 +655,7 @@ function prefillQuestions(questions, config) {
         "storage-account-credentials"
     ];
     return questions
-        .map(question => {
+        .map((question) => {
             let configValue = config.get(question.name);
             const type = typeof configValue;
             if (type === "undefined") return question;
@@ -668,7 +668,7 @@ function prefillQuestions(questions, config) {
                 default: configValue
             });
         })
-        .map(question => {
+        .map((question) => {
             if (questionNamesRequireBindWhen.indexOf(question["name"]) === -1) {
                 return question;
             }
@@ -685,7 +685,7 @@ inquirer.registerPrompt("transformer-list", inquirerListWithTransformer);
 function askSettingQuestions(config) {
     return inquirer
         .prompt(prefillQuestions(questions, config))
-        .then(function(answers) {
+        .then(function (answers) {
             const configData = config.all;
             //--- if user didn't re-select credentials files,
             //--- we needs to save to answers before clear the config
@@ -740,7 +740,7 @@ function askClosingQuestions(config) {
                 ]
             }
         ])
-        .then(answers => answers["deploy-now"]);
+        .then((answers) => answers["deploy-now"]);
 }
 function askStartSecretsCreationWithoutQuestions(config) {
     const creationTime = new Date(config.get("creation-time"));
@@ -771,7 +771,7 @@ function askStartSecretsCreationWithoutQuestions(config) {
                 ]
             }
         ])
-        .then(answers => answers["deploy-now"]);
+        .then((answers) => answers["deploy-now"]);
 }
 
 function askIfCreateNamespace(namespace) {
@@ -793,11 +793,11 @@ function askIfCreateNamespace(namespace) {
                 ]
             }
         ])
-        .then(answers => answers["if-create-namespace"]);
+        .then((answers) => answers["if-create-namespace"]);
 }
 
 function askQuestions(config) {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
         const creationTime = config.get("creation-time");
         let p;
         if (typeof creationTime !== "undefined") {
@@ -805,7 +805,7 @@ function askQuestions(config) {
         } else {
             p = Promise.resolve(false);
         }
-        p.then(ifGoCreatioin => {
+        p.then((ifGoCreatioin) => {
             if (ifGoCreatioin) {
                 return true;
             } else {
@@ -813,12 +813,12 @@ function askQuestions(config) {
                     askClosingQuestions.bind(null, config)
                 );
             }
-        }).then(answer => resolve(answer));
+        }).then((answer) => resolve(answer));
     });
 }
 
 function getEnvVarInfo() {
-    return questions.map(item => ({
+    return questions.map((item) => ({
         name: settingNameToEnvVarName(item.name),
         dataType: item.dataType ? item.dataType : "string",
         settingName: item.name,

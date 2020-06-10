@@ -36,8 +36,8 @@ export type Distribution = {
     author?: string;
     keywords?: string[];
     themes?: string[];
-    temporalCoverage?: any;
-    spatialCoverage?: any;
+    temporalCoverage?: TemporalCoverage;
+    spatialCoverage?: SpatialCoverage;
 
     similarFingerprint?: any;
     equalHash?: string;
@@ -66,7 +66,8 @@ export enum DistributionState {
     Reading,
     Processing,
     Ready,
-    Drafting
+    Drafting,
+    Deleting
 }
 
 export function distributionStateToText(state: DistributionState) {
@@ -79,6 +80,8 @@ export function distributionStateToText(state: DistributionState) {
             return "Processing";
         case DistributionState.Ready:
             return "Ready";
+        case DistributionState.Deleting:
+            return "Deleting";
         default:
             return "Unknown";
     }
@@ -188,7 +191,7 @@ export type State = {
     error: Error | null;
 };
 
-type TemporalCoverage = {
+export type TemporalCoverage = {
     intervals: Interval[];
 };
 
@@ -230,7 +233,6 @@ function getPublishingAspectData(state: State) {
     const { datasetPublishing } = state;
     return {
         ...datasetPublishing,
-        state: "draft",
         publishAsOpenData: {}
     };
 }
@@ -473,8 +475,11 @@ function populateDistributions(data: RawDataset, state: State) {
     }
 }
 
-export async function rawDatasetDataToState(data: RawDataset): Promise<State> {
-    const state = createBlankState();
+export async function rawDatasetDataToState(
+    data: RawDataset,
+    user: User
+): Promise<State> {
+    const state = createBlankState(user);
 
     populateDcatDatasetStringAspect(data, state);
     populateDatasetPublisherAspect(data, state);
@@ -519,7 +524,7 @@ export async function rawDatasetDataToState(data: RawDataset): Promise<State> {
     return state;
 }
 
-export function createBlankState(user?: User): State {
+export function createBlankState(user: User): State {
     return {
         distributions: [],
         processing: false,
@@ -532,20 +537,15 @@ export function createBlankState(user?: User): State {
             defaultLicense: "world"
         },
         datasetPublishing: {
-            state: "draft",
+            state: config.featureFlags.datasetApprovalWorkflowOn
+                ? "draft"
+                : "published",
             level: "agency",
             contactPointDisplay: "team"
         },
         spatialCoverage: {
             // Australia, Mainland
-            lv1Id: "1",
-            bbox: [
-                109.951171875,
-                -45.398449976304086,
-                155.0390625,
-                -9.172601695217201
-            ],
-            spatialDataInputMethod: "region"
+            lv1Id: "1"
         },
         temporalCoverage: {
             intervals: []
@@ -567,7 +567,7 @@ export function createBlankState(user?: User): State {
 
 export async function loadStateFromLocalStorage(
     id: string,
-    user?: User
+    user: User
 ): Promise<State> {
     const stateString = localStorage[id];
     let state: State;
@@ -602,7 +602,7 @@ export async function loadStateFromLocalStorage(
 
 export async function loadStateFromRegistry(
     id: string,
-    user?: User
+    user: User
 ): Promise<State> {
     let record: RawDataset | undefined;
     try {
@@ -652,7 +652,7 @@ export async function loadStateFromRegistry(
     return state;
 }
 
-export async function loadState(id: string, user?: User): Promise<State> {
+export async function loadState(id: string, user: User): Promise<State> {
     if (config?.featureFlags?.previewAddDataset) {
         // --- in preview mode, still save to local storage
         return await loadStateFromLocalStorage(id, user);

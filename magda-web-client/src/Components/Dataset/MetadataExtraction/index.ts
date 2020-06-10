@@ -1,49 +1,54 @@
-// different extractors/processors
-import { extractText } from "./extractText";
+import extractContents from "./extractContents";
 import { extractEqualHash } from "./extractEqualHash";
 import { extractSimilarFingerprint } from "./extractSimilarFingerprint";
 import { extractExtents } from "./extractExtents";
 import { extractKeywords } from "./extractKeywords";
+import * as Comlink from "comlink";
 
-export type ExtractorInput = {
-    file?: File;
-    arrayBuffer?: ArrayBuffer;
-    array?: Uint8Array;
-};
+import merge from "lodash/merge";
+import type { FileDetails, MetadataExtractionOutput, Processor } from "./types";
+import type { MessageSafeConfig } from "config"; // eslint-disable-line
 
-export type Extractor = (input: ExtractorInput, output: any) => void;
-
-// different extractors/processors
-export const extractors: Extractor[] = [
-    extractText,
+const dependentExtractors: Processor[] = [
     extractEqualHash,
     extractSimilarFingerprint,
     extractExtents,
     extractKeywords
 ];
 
-function delay(time) {
-    return new Promise(resolve => setTimeout(resolve, time));
-}
+const extractors = {
+    async runExtractors(
+        input: FileDetails,
+        config: MessageSafeConfig,
+        update: (progress: number) => void
+    ): Promise<MetadataExtractionOutput> {
+        const extractorCount = dependentExtractors.length + 1;
+        const array = new Uint8Array(input.arrayBuffer);
 
-export async function runExtractors(input: ExtractorInput, update: any) {
-    for (const extractor of extractors) {
-        const index = extractors.indexOf(extractor);
-        try {
-            console.log("Processing", index + 1, "of", extractors.length);
-            const output: any = {};
-            output._progress =
-                ((extractors.indexOf(extractor) + 0.1) / extractors.length) *
-                100;
-            update(output);
-            await extractor(input, output);
-            output._progress =
-                ((extractors.indexOf(extractor) + 1) / extractors.length) * 100;
-            update(output);
-            await delay(100);
-        } catch (e) {
-            // even if one of the modules fail, we keep going
-            console.error(e);
-        }
+        // Extract the contents (text, XLSX workbook)
+        const contents = await extractContents(input, array);
+
+        update(1 / (extractorCount + 1));
+
+        // Concurrently feed the contents into various extractors that are dependent on it
+        let doneCount = 0;
+        const extractors = dependentExtractors.map((extractor) =>
+            extractor(input, array, contents, config)
+                .catch((e) => {
+                    // even if one of the modules fail, we keep going
+                    console.error(e);
+                    return {};
+                })
+                .then((result) => {
+                    doneCount++;
+                    update((doneCount + 1) / (extractorCount + 1));
+                    return result;
+                })
+        );
+
+        const extractorResults = await Promise.all(extractors);
+        return extractorResults.reduce(merge, contents);
     }
-}
+};
+
+Comlink.expose(extractors);

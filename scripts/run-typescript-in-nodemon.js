@@ -18,8 +18,8 @@ if (fse.existsSync(tsConfigPath)) {
     const tsConfig = require(tsConfigPath);
     if (tsConfig.compilerOptions && tsConfig.compilerOptions.paths) {
         const paths = tsConfig.compilerOptions.paths;
-        Object.keys(paths).forEach(function(key) {
-            paths[key].forEach(function(path) {
+        Object.keys(paths).forEach(function (key) {
+            paths[key].forEach(function (path) {
                 const lastStars = path.lastIndexOf("**");
                 let truncatedPath = path;
                 if (lastStars >= 0) {
@@ -55,6 +55,6 @@ nodemon({
     }
 });
 
-nodemon.on("log", function(l) {
+nodemon.on("log", function (l) {
     console.log(l.colour);
 });

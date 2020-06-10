@@ -15,7 +15,7 @@ class FacetSearchBox extends Component {
         };
     }
 
-    onChange = event => {
+    onChange = (event) => {
         const value = event.target.value;
         this.setState({
             value
@@ -23,7 +23,7 @@ class FacetSearchBox extends Component {
         this.debounceDoSearch(value);
     };
 
-    doSearch = value => {
+    doSearch = (value) => {
         this.props.searchBoxValueChange(value);
     };
     debounceDoSearch = debounce(this.doSearch, 500);

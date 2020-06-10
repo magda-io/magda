@@ -4,7 +4,7 @@ const program = require("commander");
 const chalk = require("chalk");
 const NestedSetModelQueryer = require("@magda/authorization-api/dist/NestedSetModelQueryer")
     .default;
-const getDBPool = require("./getDBPool");
+const getDBPool = require("../db/getDBPool");
 const getNodeIdFromNameOrId = require("./getNodeIdFromNameOrId");
 
 program
@@ -20,7 +20,7 @@ program
         "If only remove specified node and left its children (if any) to its parent"
     )
     .version(pkg.version)
-    .action(async nodeNameOrId => {
+    .action(async (nodeNameOrId) => {
         try {
             if (!process.argv.slice(2).length) {
                 program.help();

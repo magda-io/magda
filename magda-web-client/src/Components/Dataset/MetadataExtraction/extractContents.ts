@@ -4,92 +4,151 @@ import pdfjsLib from "pdfjs-dist/build/pdf";
 import PDFWorker from "pdfjs-dist/build/pdf.worker";
 import { MAX_KEYWORDS } from "./extractKeywords";
 import uniq from "lodash/uniq";
-window.pdfjsWorker = PDFWorker;
+import { FileDetails } from "./types";
+(self as any).pdfjsWorker = PDFWorker;
+
+interface ContentExtractorOutput {
+    format?: string;
+    text?: string;
+    workbook?: XLSX.WorkBook;
+    datasetTitle?: string;
+    author?: string;
+    modified?: string;
+    keywords?: string[];
+    largeTextBlockIdentified?: boolean;
+}
 
 /**
  * Extract contents of file as text if they are text based file formats
  *
  */
-export async function extractText(input, output) {
-    const name = input.file.name;
+export default async function extract(
+    input: FileDetails,
+    array: Uint8Array
+): Promise<ContentExtractorOutput> {
+    const name = input.fileName;
 
-    if (name.match(/[.]xlsx?$/i)) {
-        await extractSpreadsheetFile(input, output);
-        output.format = "XLSX";
-    } else if (name.match(/[.]csv/i)) {
-        await extractSpreadsheetFile(input, output, "csv");
-        output.format = "CSV";
-    } else if (name.match(/[.]tsv$/i)) {
-        await extractSpreadsheetFile(input, output, "csv");
-        output.format = "TSV";
-    } else if (name.match(/[.]pdf$/i)) {
-        await extractPDFFile(input, output);
-        output.format = "PDF";
-    } else if (name.match(/[.]docx?$/i)) {
-        await extractDocumentFile(input, output);
-        output.format = "DOCX";
+    const result: ContentExtractorOutput = await (async () => {
+        if (name?.match(/[.]xlsx?$/i)) {
+            return {
+                ...(await extractSpreadsheetFile(input, array)),
+                format: "XLSX"
+            };
+        } else if (name?.match(/[.]csv/i)) {
+            return {
+                ...(await extractSpreadsheetFile(input, array)),
+                format: "CSV"
+            };
+        } else if (name?.match(/[.]tsv$/i)) {
+            return {
+                ...(await extractSpreadsheetFile(input, array)),
+                format: "TSV"
+            };
+        } else if (name?.match(/[.]pdf$/i)) {
+            return {
+                ...(await extractPDFFile(input, array)),
+                format: "PDF"
+            };
+        } else if (name?.match(/[.]docx?$/i)) {
+            return {
+                ...(await extractDocumentFile(input)),
+                format: "DOCX"
+            };
+        } else {
+            return {};
+        }
+    })();
+
+    if (result.text) {
+        result.text = result.text.replace(/\n+/g, "\n");
     }
 
-    if (input.text) {
-        input.text = input.text.replace(/\n+/g, "\n");
-    }
+    return result;
 }
 
 /**
  * Extracts data/metadata from various spreadsheet formats. Refer to
  * https://github.com/SheetJS/js-xlsx for more details
  */
-async function extractSpreadsheetFile(input, output, bookType = "xlsx") {
-    input.workbook = XLSX.read(input.array, {
+async function extractSpreadsheetFile(
+    input: FileDetails,
+    array: Uint8Array
+): Promise<{
+    workbook: XLSX.WorkBook;
+    datasetTitle?: string;
+    author?: string;
+    modified?: string;
+    text?: string;
+    keywords?: string[];
+    largeTextBlockIdentified: boolean;
+}> {
+    const workbook = XLSX.read(array, {
         type: "array",
-        cellDates: true
+        cellDates: true,
+        raw: true
     });
 
+    let datasetTitle: string | undefined;
+    let author: string | undefined;
+    let modified: string | undefined;
+    let text: string | undefined;
+
     // excel files can have embedded properties; extract those
-    const props = input.workbook.Props;
+    const props = workbook.Props;
     if (props) {
         if (props.Title) {
-            output.datasetTitle = props.Title;
+            datasetTitle = props.Title;
         }
         if (props.LastAuthor) {
-            output.author = props.LastAuthor;
+            author = props.LastAuthor;
         }
         if (props.Author) {
-            output.author = props.Author;
+            author = props.Author;
         }
         if (props.ModifiedDate) {
-            output.modified = props.ModifiedDate.toISOString().substr(0, 10);
+            modified = props.ModifiedDate.toISOString().substr(0, 10);
         }
     }
 
     // --- pass to keywords extractor for processing
-    largeTextBlockIdentified = false;
-    input.keywords = productKeywordsFromInput(input);
-    input.largeTextBlockIdentified = largeTextBlockIdentified;
+    const { keywords, largeTextBlockIdentified } = productKeywordsFromInput(
+        input,
+        array
+    );
+
     if (largeTextBlockIdentified) {
-        largeTextBlockIdentified = false;
         // --- only generate text for NLP if large text block is detected
-        input.text = Object.values(input.workbook.Sheets)
+        text = Object.values(workbook.Sheets)
             .map(worksheet => {
                 return XLSX.utils
-                    .sheet_to_json(worksheet)
+                    .sheet_to_json<string>(worksheet, { raw: true })
                     .map(row => Object.values(row).join(","))
                     .join("\n");
             })
             .join("\n\n");
     }
+
+    return {
+        workbook,
+        datasetTitle,
+        author,
+        modified,
+        keywords,
+        text,
+        largeTextBlockIdentified
+    };
 }
 
 const CONTAINS_LETTER = /[a-zA-Z]+/;
-let largeTextBlockIdentified = false;
 
 function getKeywordsFromWorksheet(
     sheet,
     limit = 0,
     skipFirstRow = false,
     firstRowOnly = false
-) {
-    const keywords = [];
+): { keywords: string[]; largeTextBlockIdentified: boolean } {
+    let largeTextBlockIdentified = false;
+    const keywords: string[] = [];
     const cancelLoopToken = {};
     try {
         Object.keys(sheet).forEach(key => {
@@ -172,33 +231,43 @@ function getKeywordsFromWorksheet(
         }
     }
 
-    return keywords;
+    return { keywords, largeTextBlockIdentified };
 }
 
-function productKeywordsFromInput(input) {
-    let keywords = [];
+function productKeywordsFromInput(
+    input: FileDetails,
+    array: Uint8Array
+): { keywords: string[]; largeTextBlockIdentified: boolean } {
+    let keywords: string[] = [];
+    let largeTextBlockIdentified = false;
 
     // --- we read the sheet data directly instead of `sheet_to_json` as:
     // --- `sheet_to_json` return [] if there is only one row
     // --- the type data & row num is lost during conversion
     const allSheetsData = Object.values(
-        XLSX.read(input.array, {
+        XLSX.read(array, {
             type: "array"
         }).Sheets
     );
 
     for (let i = 0; i < allSheetsData.length; i++) {
-        keywords = keywords.concat(
-            getKeywordsFromWorksheet(
-                allSheetsData[i],
-                MAX_KEYWORDS,
-                false,
-                true
-            )
+        const {
+            keywords: keywordsFromSheet,
+            largeTextBlockIdentified: largeTextBlockIdentifiedFromSheet
+        } = getKeywordsFromWorksheet(
+            allSheetsData[i],
+            MAX_KEYWORDS,
+            false,
+            true
         );
-        keywords = uniq(keywords);
+        keywords = uniq(keywords.concat(keywordsFromSheet));
+        largeTextBlockIdentified =
+            largeTextBlockIdentified || largeTextBlockIdentifiedFromSheet;
         if (keywords.length >= MAX_KEYWORDS && largeTextBlockIdentified) {
-            return keywords.slice(0, MAX_KEYWORDS);
+            return {
+                keywords: keywords.slice(0, MAX_KEYWORDS),
+                largeTextBlockIdentified
+            };
         }
     }
 
@@ -208,58 +277,70 @@ function productKeywordsFromInput(input) {
 
     // --- we still need to proceed to generate cell keywords if largeTextBlockIdentified not yet detected
     if (largeTextBlockIdentified) {
-        return keywords;
+        return { keywords, largeTextBlockIdentified };
     }
 
     // --- start to process all cell as not enough keywords produced
     for (let i = 0; i < allSheetsData.length; i++) {
-        keywords = keywords.concat(
-            getKeywordsFromWorksheet(
-                allSheetsData[i],
-                MAX_KEYWORDS,
-                true,
-                false
-            )
+        const {
+            keywords: keywordsFromSheet,
+            largeTextBlockIdentified: largeTextBlockIdentifiedFromSheet
+        } = getKeywordsFromWorksheet(
+            allSheetsData[i],
+            MAX_KEYWORDS,
+            true,
+            false
         );
-        keywords = uniq(keywords);
+
+        keywords = uniq(keywords.concat(keywordsFromSheet));
+        largeTextBlockIdentified =
+            largeTextBlockIdentified && largeTextBlockIdentifiedFromSheet;
         if (keywords.length >= MAX_KEYWORDS && largeTextBlockIdentified) {
             break;
         }
     }
 
-    return keywords.slice(0, MAX_KEYWORDS);
+    return {
+        keywords: keywords.slice(0, MAX_KEYWORDS),
+        largeTextBlockIdentified
+    };
 }
 
 /**
  * Extracts data/metadata from pdf format.
  */
-async function extractPDFFile(input, output) {
+async function extractPDFFile(_input: FileDetails, array: Uint8Array) {
     let pdf = await pdfjsLib.getDocument({
-        data: input.array
+        data: array
     });
 
     // pdf files can have embedded properties; extract those
     const meta = await pdf.getMetadata();
 
+    let author: string | undefined;
+    let datasetTitle: string | undefined;
+    let keywords: string[] | undefined;
+    let themes: string[] | undefined;
+
     if (meta.info) {
         if (meta.info.Author) {
-            output.author = meta.info.Author;
+            author = meta.info.Author;
         }
         if (meta.info.Title) {
-            output.datasetTitle = meta.info.Title;
+            datasetTitle = meta.info.Title;
         }
 
         if (meta.info.Keywords) {
-            output.keywords = meta.info.Keywords.split(/,\s+/g);
+            keywords = meta.info.Keywords.split(/,\s+/g);
         }
 
         if (meta.info.Subject) {
-            output.themes = [meta.info.Subject];
+            themes = [meta.info.Subject];
         }
     }
 
     // extract text
-    let text = [];
+    const text: string[] = [];
 
     for (let i = 1; i <= pdf.numPages; i++) {
         let page = await pdf.getPage(i);
@@ -270,16 +351,18 @@ async function extractPDFFile(input, output) {
         text.push(page);
     }
 
-    input.text = text.join("\n\n");
+    return { author, datasetTitle, keywords, themes, text: text.join("\n\n") };
 }
 
 /**
  * Extracts data/metadata from word format.
  */
-async function extractDocumentFile(input, output) {
-    input.text = (
-        await mammoth.extractRawText({
-            arrayBuffer: input.arrayBuffer
-        })
-    ).value;
+async function extractDocumentFile(input: FileDetails) {
+    return {
+        text: (
+            await mammoth.extractRawText({
+                arrayBuffer: input.arrayBuffer
+            })
+        ).value
+    };
 }

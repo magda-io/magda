@@ -41,10 +41,7 @@ const argv = yargs
     }).argv;
 
 function escapeSolrSpecialChar(str) {
-    return str
-        .replace(",", "\\,")
-        .replace("=", "\\=")
-        .replace(">", "\\>");
+    return str.replace(",", "\\,").replace("=", "\\=").replace(">", "\\>");
 }
 
 // --- convert region name from: campbelltown (nsw)
@@ -91,8 +88,8 @@ async function getRemoteDataFileStream(url) {
     return new Promise((resolve, reject) => {
         request
             .get(url)
-            .on("error", e => reject(e))
-            .on("response", response => {
+            .on("error", (e) => reject(e))
+            .on("response", (response) => {
                 try {
                     if (
                         response.statusCode >= 200 &&
@@ -115,7 +112,7 @@ async function getRemoteDataFileStream(url) {
 async function processRegionDataPipeline(regionConfig, targetStream) {
     const remoteDataStream = await getRemoteDataFileStream(regionConfig["url"]);
     await new Promise((resolve, reject) => {
-        remoteDataStream.on("data", data => {
+        remoteDataStream.on("data", (data) => {
             try {
                 const line = createLineFromRegionData(regionConfig, data);
                 if (!line) {
@@ -127,7 +124,7 @@ async function processRegionDataPipeline(regionConfig, targetStream) {
                 reject(e);
             }
         });
-        remoteDataStream.on("error", e => {
+        remoteDataStream.on("error", (e) => {
             reject(e);
         });
         remoteDataStream.on("end", resolve);
@@ -152,7 +149,7 @@ async function createFile(outputFile, regionSources) {
     targetFileStream.end();
     // --- wait until all data goes into underlying system
     return new Promise((resolve, reject) => {
-        targetFileStream.on("error", e => reject(e));
+        targetFileStream.on("error", (e) => reject(e));
         targetFileStream.on("finish", resolve);
     });
 }
@@ -169,7 +166,7 @@ try {
             );
             process.exit(0);
         })
-        .catch(e => {
+        .catch((e) => {
             console.error(`Error: ${e}`);
             process.exit(1);
         });

@@ -39,7 +39,7 @@ export default class SearchPageSuggest extends React.Component {
     };
 
     //toggles "formPosted" state whether or not the form is posted or not
-    getFormSubmitState = formPosted => {
+    getFormSubmitState = (formPosted) => {
         this.setState({ formPosted });
     };
 

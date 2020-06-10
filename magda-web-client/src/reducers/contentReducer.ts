@@ -170,7 +170,7 @@ function parseContent(content) {
         });
 
     let filteredHighlights: string[] = Object.keys(highlights).filter(
-        index => highlights[index].backgroundImageUrls
+        (index) => highlights[index].backgroundImageUrls
     );
 
     if (filteredHighlights.length === 0) {

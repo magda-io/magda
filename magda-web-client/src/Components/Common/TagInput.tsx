@@ -4,6 +4,7 @@ import { query } from "api-clients/VocabularyApis";
 import MultiSelectAutoComplete from "Components/Editing/MultiSelectAutocomplete";
 import { KeywordsLike } from "Components/Dataset/Add/DatasetAddCommon";
 import partial from "lodash/partial";
+import { config } from "config";
 
 interface TagInputProps {
     placeHolderText?: string;
@@ -19,7 +20,7 @@ async function optionsQuery(options: string[], str: string): Promise<string[]> {
         return [];
     }
     return options.filter(
-        item => item.toLowerCase().indexOf(str.toLowerCase()) !== -1
+        (item) => item.toLowerCase().indexOf(str.toLowerCase()) !== -1
     );
 }
 
@@ -30,7 +31,7 @@ export default (props: TagInputProps) => {
         <MultiSelectAutoComplete<string>
             placeHolderText={props.placeHolderText}
             value={props.value && props.value.keywords}
-            onChange={newKeywords =>
+            onChange={(newKeywords) =>
                 props.onChange(
                     newKeywords
                         ? {
@@ -43,13 +44,13 @@ export default (props: TagInputProps) => {
             noManualInput={noManualInput}
             query={
                 props.useVocabularyAutoCompleteInput
-                    ? query
+                    ? (queryText) => query(queryText, config)
                     : props.options
                     ? partial(optionsQuery, props.options)
                     : undefined
             }
-            fromData={data => data.value}
-            toData={string => ({ label: string, value: string })}
+            fromData={(data) => data.value}
+            toData={(string) => ({ label: string, value: string })}
         />
     );
 };

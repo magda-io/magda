@@ -2,7 +2,7 @@
 const pkg = require("../package.json");
 const program = require("commander");
 const chalk = require("chalk");
-const getDBPool = require("../org-tree/getDBPool");
+const getDBPool = require("../db/getDBPool");
 const { table } = require("table");
 
 const pool = getDBPool();
@@ -48,8 +48,8 @@ program
                 const operations = await getOperationsByPermissionId(res["id"]);
                 data.push(
                     selectFields
-                        .map(k => res[k])
-                        .concat([operations.map(op => op.uri).join("\n")])
+                        .map((k) => res[k])
+                        .concat([operations.map((op) => op.uri).join("\n")])
                 );
             }
             console.log(table(data, options));

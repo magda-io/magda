@@ -45,7 +45,7 @@ const argv = yargs
 fs.ensureDirSync(argv.out);
 
 const files = klawSync(argv.in, { nodir: true });
-files.forEach(function(connectorConfigFile) {
+files.forEach(function (connectorConfigFile) {
     const configFile = JSON.parse(
         fs.readFileSync(connectorConfigFile.path, "utf8")
     );

@@ -31,9 +31,6 @@ const Routes = () => {
                 exact
                 from="/dataset/add/metadata"
                 to={`/dataset/add/metadata/${createId()}`}
-                component={withHeader(DatasetAddMetadataPage, {
-                    includeDatasetPageProgressMeter: true
-                })}
             />
             <Route
                 path="/dataset/add/metadata/:datasetId/:step?"

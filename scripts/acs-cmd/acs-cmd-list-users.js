@@ -2,7 +2,7 @@
 const pkg = require("../package.json");
 const program = require("commander");
 const chalk = require("chalk");
-const getDBPool = require("../org-tree/getDBPool");
+const getDBPool = require("../db/getDBPool");
 const { table } = require("table");
 
 const pool = getDBPool();
@@ -15,7 +15,7 @@ program
             const selectFields = ["id", "displayName", "orgUnitId"];
             const result = await pool.query(
                 `SELECT ${selectFields
-                    .map(n => `"${n}"`)
+                    .map((n) => `"${n}"`)
                     .join(", ")} FROM users`
             );
             if (!result || !result.rows || !result.rows.length) {
@@ -43,9 +43,9 @@ program
                 const user = result.rows[i];
                 const roles = await getRolesByUserId(user["id"]);
                 const row = selectFields
-                    .map(k => user[k])
+                    .map((k) => user[k])
                     .concat([
-                        roles.map(r => `${r.id}:\n${r.name}`).join("\n\n")
+                        roles.map((r) => `${r.id}:\n${r.name}`).join("\n\n")
                     ]);
                 row[2] = await getOrgUnitNameById(row[2]);
                 data.push(row);

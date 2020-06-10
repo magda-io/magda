@@ -24,6 +24,12 @@ dependencies:
     tags:
       - all
       - authorization-db
+  - name: cloud-sql-proxy
+    version: 0.0.57-0
+    repository: file://../internal-charts/cloud-sql-proxy
+    tags:
+      - all
+      - cloud-sql-proxy
   - name: combined-db
     version: 0.0.57-0
     repository: file://../internal-charts/combined-db

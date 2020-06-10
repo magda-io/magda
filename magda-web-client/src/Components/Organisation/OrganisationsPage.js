@@ -32,7 +32,7 @@ class OrganisationsPage extends Component {
         this.clearSearch = this.clearSearch.bind(this);
         this.onClickSearch = this.onClickSearch.bind(this);
         this.searchInputFieldRef = null;
-        props.history.listen(location => {
+        props.history.listen((location) => {
             this.debounceUpdateSearchQuery.cancel();
         });
     }
@@ -166,7 +166,7 @@ class OrganisationsPage extends Component {
                                 </button>
                             </div>
                         )}
-                    {this.props.publishers.map(p => (
+                    {this.props.publishers.map((p) => (
                         <OrganisationSummary publisher={p} key={p.identifier} />
                     ))}
                 </div>
@@ -194,7 +194,7 @@ class OrganisationsPage extends Component {
                     placeholder={placeholderText}
                     onChange={this.onUpdateSearchText}
                     onKeyPress={this.handleSearchFieldEnterKeyPress}
-                    ref={el => (this.searchInputFieldRef = el)}
+                    ref={(el) => (this.searchInputFieldRef = el)}
                 />
                 <button
                     className="search-icon au-btn"
@@ -214,7 +214,7 @@ class OrganisationsPage extends Component {
 
         return (
             <MagdaNamespacesConsumer ns={["publishersPage"]}>
-                {translate => (
+                {(translate) => (
                     <MagdaDocumentTitle
                         prefixes={[
                             translate(["publishersBreadCrumb", "Publishers"]),
@@ -312,7 +312,7 @@ OrganisationsPage.contextTypes = {
     router: PropTypes.object.isRequired
 };
 
-const PublishersViewerWithRouter = withRouter(props => (
+const PublishersViewerWithRouter = withRouter((props) => (
     <OrganisationsPage {...props} />
 ));
 

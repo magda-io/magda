@@ -43,6 +43,7 @@ export default function aaf(options: aafOptions) {
     }
 
     passport.use(
+        "aaf-custom",
         new CustomStrategy(function(req: any, done: any) {
             const verified_jwt = jwt.decode(
                 req.body["assertion"],
@@ -103,7 +104,7 @@ export default function aaf(options: aafOptions) {
             res: express.Response,
             next: express.NextFunction
         ) => {
-            passport.authenticate("custom", {
+            passport.authenticate("aaf-custom", {
                 failWithError: true
             })(req, res, next);
         },

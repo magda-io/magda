@@ -59,9 +59,9 @@ export function fetchOrganization(
     return fetch(
         url,
         noCache
-            ? createNoCacheFetchOptions(config.fetchOptions)
-            : config.fetchOptions
-    ).then(response => {
+            ? createNoCacheFetchOptions(config.credentialsFetchOptions)
+            : config.credentialsFetchOptions
+    ).then((response) => {
         if (!response.ok) {
             let statusText = response.statusText;
             // response.statusText are different in different browser, therefore we unify them here
@@ -195,12 +195,12 @@ export async function fetchRecord(
     }
 
     if (aspects?.length) {
-        parameters.push(aspects.map(item => `aspect=${item}`).join("&"));
+        parameters.push(aspects.map((item) => `aspect=${item}`).join("&"));
     }
 
     if (optionalAspects?.length) {
         parameters.push(
-            optionalAspects.map(item => `optionalAspect=${item}`).join("&")
+            optionalAspects.map((item) => `optionalAspect=${item}`).join("&")
         );
     }
 
@@ -213,8 +213,8 @@ export async function fetchRecord(
     const response = await fetch(
         url,
         noCache
-            ? createNoCacheFetchOptions(config.fetchOptions)
-            : config.fetchOptions
+            ? createNoCacheFetchOptions(config.credentialsFetchOptions)
+            : config.credentialsFetchOptions
     );
 
     if (!response.ok) {
@@ -457,7 +457,7 @@ function getAspectIds(record: Record): string[] {
 }
 
 function getRecordsAspectIds(records: Record[]): string[] {
-    return flatMap(records.map(item => getAspectIds(item)));
+    return flatMap(records.map((item) => getAspectIds(item)));
 }
 
 export async function createDataset(
@@ -467,7 +467,7 @@ export async function createDataset(
     // make sure all the aspects exist (this should be improved at some point, but will do for now)
     const aspectPromises = getRecordsAspectIds(
         [inputDataset].concat(inputDistributions)
-    ).map(aspectId => ensureAspectExists(aspectId));
+    ).map((aspectId) => ensureAspectExists(aspectId));
 
     await Promise.all(aspectPromises);
 
@@ -494,7 +494,7 @@ export async function updateDataset(
     // make sure all the aspects exist (this should be improved at some point, but will do for now)
     const aspectPromises = getRecordsAspectIds(
         [inputDataset].concat(inputDistributions)
-    ).map(aspectId => ensureAspectExists(aspectId));
+    ).map((aspectId) => ensureAspectExists(aspectId));
 
     await Promise.all(aspectPromises);
 

@@ -3,12 +3,13 @@ import pg from "pg";
 export interface PoolCreationOptions {
     dbHost: string;
     dbPort: number;
+    database?: string;
 }
 
 function createPool(options: PoolCreationOptions) {
     //   conString: "postgres://postgres@192.168.99.100:30544/postgres"
     const dbConfig = {
-        database: "session", //env var: PGDATABASE
+        database: options?.database ? options.database : "session", //env var: PGDATABASE
         host: options.dbHost, // Server hosting the postgres database
         port: options.dbPort, //env var: PGPORT
         max: 10, // max number of clients in the pool

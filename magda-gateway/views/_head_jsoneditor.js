@@ -25962,7 +25962,10 @@
         }
         function a(e) {
             if (typeof Worker == "undefined")
-                return { postMessage: function() {}, terminate: function() {} };
+                return {
+                    postMessage: function() {},
+                    terminate: function() {}
+                };
             var t = u(e),
                 n = window.URL || window.webkitURL,
                 r = n.createObjectURL(t);

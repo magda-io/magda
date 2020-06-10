@@ -4,7 +4,7 @@ const program = require("commander");
 const chalk = require("chalk");
 const NestedSetModelQueryer = require("@magda/authorization-api/dist/NestedSetModelQueryer")
     .default;
-const getDBPool = require("./getDBPool");
+const getDBPool = require("../db/getDBPool");
 
 program
     .description(
@@ -12,7 +12,7 @@ program
     )
     .option("<nodeName>", "Root node name")
     .version(pkg.version)
-    .action(async nodeName => {
+    .action(async (nodeName) => {
         try {
             if (!process.argv.slice(2).length) {
                 program.help();

@@ -47,7 +47,7 @@ function doK8sExecution(config, shouldNotAsk = false) {
         configData = overrideSettingWithEnvVars(env, configData);
     }
 
-    let promise = Promise.resolve().then(function() {
+    let promise = Promise.resolve().then(function () {
         /**
          * All errors / exceptions should be process through promise chain rather than stop program here.
          * There are different logic outside doK8sExecution requires some clean-up job to be done before exit program.
@@ -64,7 +64,7 @@ function doK8sExecution(config, shouldNotAsk = false) {
 
     if (!checkNamespace(env, configData["cluster-namespace"], config)) {
         if (shouldNotAsk) {
-            promise = promise.then(function() {
+            promise = promise.then(function () {
                 // --- leave error to be handled at end of then chain. see above
                 throw new Error(
                     `Namespace ${configData["cluster-namespace"]} doesn't exist. Please create and try again.`
@@ -75,7 +75,7 @@ function doK8sExecution(config, shouldNotAsk = false) {
             .then(
                 askIfCreateNamespace.bind(null, configData["cluster-namespace"])
             )
-            .then(function(shouldCreateNamespace) {
+            .then(function (shouldCreateNamespace) {
                 if (!shouldCreateNamespace) {
                     throw new Error(
                         `You need to create namespace \`${configData["cluster-namespace"]}\` before try again.`
@@ -89,7 +89,7 @@ function doK8sExecution(config, shouldNotAsk = false) {
                 }
             });
     }
-    return promise.then(function() {
+    return promise.then(function () {
         const namespace = configData["cluster-namespace"];
 
         if (configData["use-cloudsql-instance-credentials"] === true) {
@@ -205,8 +205,8 @@ function getEnvByClusterType(config) {
     );
     const dockerEnv = dockerEnvProcess
         .split("\n")
-        .filter(line => line.indexOf("export ") === 0)
-        .reduce(function(env, line) {
+        .filter((line) => line.indexOf("export ") === 0)
+        .reduce(function (env, line) {
             const match = /^export (\w+)="(.*)"$/.exec(line);
             if (match) {
                 env[match[1]] = match[2];
@@ -265,7 +265,7 @@ function overrideSettingWithEnvVarsBasedOnQuestionAnswers(env, configData) {
 }
 
 function overrideSettingWithEnvVars(env, configData) {
-    getEnvVarInfo().forEach(item => {
+    getEnvVarInfo().forEach((item) => {
         const envVal = env[item.name];
         if (typeof envVal === "undefined") return;
         if (item.dataType === "boolean") {
@@ -350,7 +350,7 @@ function createDbPasswords(env, namespace, configData) {
      * dbPasswordNames is defined as const at top of the file
      */
     const data = {};
-    dbPasswordNames.forEach(key => {
+    dbPasswordNames.forEach((key) => {
         data[key] = configData["db-passwords"];
     });
     createSecret(env, namespace, configData, "db-passwords", data);
@@ -441,7 +441,7 @@ function createSecret(
     if (type) configObj.type = type;
 
     if (encodeAllDataFields !== false) {
-        Object.keys(configObj.data).forEach(key => {
+        Object.keys(configObj.data).forEach((key) => {
             configObj.data[key] = Base64.encode(configObj.data[key]);
         });
     }

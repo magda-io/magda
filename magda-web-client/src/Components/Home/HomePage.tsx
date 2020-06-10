@@ -17,10 +17,10 @@ import MediaQuery from "react-responsive";
 import { User } from "reducers/userManagementReducer";
 import MyDatasetSection from "./MyDatasetSection";
 
-const getBgImg = backgroundImageUrls => {
+const getBgImg = (backgroundImageUrls) => {
     let imageMap = {};
 
-    backgroundImageUrls.forEach(item => {
+    backgroundImageUrls.forEach((item) => {
         let width;
         try {
             width = parseInt(

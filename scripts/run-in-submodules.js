@@ -21,7 +21,7 @@ const argFilters = argv.filters
         : [argv.filters]
     : [];
 
-const filters = argFilters.map(string => {
+const filters = argFilters.map((string) => {
     const splitFilter = string.split("=");
     return {
         key: splitFilter[0],
@@ -30,13 +30,13 @@ const filters = argFilters.map(string => {
 });
 
 const jsPackages = _(lernaJson.packages)
-    .map(package => package + "/package.json")
-    .flatMap(package => glob.sync(package))
-    .map(packagePath => {
+    .map((package) => package + "/package.json")
+    .flatMap((package) => glob.sync(package))
+    .map((packagePath) => {
         const packageJson = require(path.resolve(packagePath));
         return packageJson;
     })
-    .filter(function(packageJson) {
+    .filter(function (packageJson) {
         return filters.every(({ key, value }) => {
             return (
                 _.get(packageJson.magda, key, "").toString() === value &&
@@ -44,13 +44,13 @@ const jsPackages = _(lernaJson.packages)
             );
         });
     })
-    .map(packageJson => packageJson.name)
+    .map((packageJson) => packageJson.name)
     .value();
 
 const result = childProcess.spawnSync(
     "lerna",
     [
-        ...jsPackages.map(package => "--scope " + package),
+        ...jsPackages.map((package) => "--scope " + package),
         "--stream",
         "--concurrency",
         os.cpus().length,

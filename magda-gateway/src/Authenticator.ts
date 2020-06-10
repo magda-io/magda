@@ -137,14 +137,20 @@ export default class Authenticator {
      */
     destroySession(req: express.Request): Promise<never> {
         return new Promise((resolve, reject) => {
-            req.session.destroy(err => {
-                if (err) {
-                    // Failed to access session storage to delete session data
-                    reject(err);
-                } else {
-                    resolve();
-                }
-            });
+            if (req?.session?.destroy) {
+                req.session.destroy(err => {
+                    if (err) {
+                        // Failed to access session storage to delete session data
+                        reject(err);
+                    } else {
+                        resolve();
+                    }
+                });
+            } else {
+                // --- express-session 1.17 may not always initialise session
+                // --- if req.session not exist, should just resolve promise
+                resolve();
+            }
         });
     }
 
@@ -264,7 +270,7 @@ export default class Authenticator {
                         // --- here, we test session middleware's processing result
                         // --- rather than accessing session store directly by ourself
                         const sessionId = getSessionId(req, this.sessionSecret);
-                        if (req.session.id !== sessionId) {
+                        if (req?.session?.id !== sessionId) {
                             // --- a new session has been created
                             // --- the original incoming session id must have been an invalid or expired one
                             // --- we need to destroy this newly created empty session

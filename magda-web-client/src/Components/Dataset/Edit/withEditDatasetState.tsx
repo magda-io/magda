@@ -7,6 +7,7 @@ import { User } from "reducers/userManagementReducer";
 import { config } from "config";
 import { fetchRecordWithNoCache } from "api-clients/RegistryApis";
 
+/* eslint-disable react-hooks/rules-of-hooks */
 type Props = { initialState: State; user: User } & RouterProps;
 
 function mapStateToProps(state: any) {
@@ -25,22 +26,24 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
                 props.user.id === "" ||
                 props.user.isAdmin !== true);
 
-        const { loading, error } = useAsync(async () => {
-            if (isDisabled || !props.match.params.datasetId) {
-                return;
-            }
-            // --- turn off cache
-            const data = await fetchRecordWithNoCache(
-                props.match.params.datasetId,
-                // --- set to undefined so default value will be used
-                undefined,
-                undefined,
-                true
-            );
-            const loadedStateData = await rawDatasetDataToState(data);
+        const { loading, error } = useAsync(
+            async (isDisabled, datasetId, user) => {
+                if (isDisabled || !datasetId) {
+                    return;
+                }
+                // --- turn off cache
+                const data = await fetchRecordWithNoCache(
+                    datasetId,
+                    undefined,
+                    undefined,
+                    true
+                );
+                const loadedStateData = await rawDatasetDataToState(data, user);
 
-            updateData(loadedStateData);
-        }, [isDisabled, props.match.params.datasetId]);
+                updateData(loadedStateData);
+            },
+            [isDisabled, props.match.params.datasetId, props.user]
+        );
 
         if (props.isFetchingWhoAmI) {
             return <div>Loading...</div>;
@@ -66,3 +69,5 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
 
     return connect(mapStateToProps)(withRouter(withEditDatasetState));
 };
+
+/* eslint-enable react-hooks/rules-of-hooks */

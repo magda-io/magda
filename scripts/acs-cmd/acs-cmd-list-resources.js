@@ -2,7 +2,7 @@
 const pkg = require("../package.json");
 const program = require("commander");
 const chalk = require("chalk");
-const getDBPool = require("../org-tree/getDBPool");
+const getDBPool = require("../db/getDBPool");
 const { table } = require("table");
 
 const pool = getDBPool();
@@ -22,7 +22,7 @@ program
                 const res = result.rows[i];
                 res["operations"] = await getOperationsByResourceId(res["id"]);
                 res["operations"] = res["operations"]
-                    .map(op => op.uri)
+                    .map((op) => op.uri)
                     .join("\n");
                 delete res["id"];
                 data.push(Object.values(res));

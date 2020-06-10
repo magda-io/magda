@@ -40,7 +40,7 @@ class SearchBox extends Component {
             selectedId: null
         };
         this.searchInputFieldRef = null;
-        props.history.listen(location => {
+        props.history.listen((location) => {
             this.debounceUpdateSearchQuery.cancel();
             this.setState({
                 searchText: null
@@ -149,14 +149,14 @@ class SearchBox extends Component {
                 type="text"
                 name="search"
                 id="search"
-                placeholder="Search for open data"
+                placeholder="Search for data"
                 value={this.getSearchBoxValue()}
-                onChange={e => this.onSearchTextChange(e, keepFilters)}
-                onKeyPress={e =>
+                onChange={(e) => this.onSearchTextChange(e, keepFilters)}
+                onKeyPress={(e) =>
                     this.handleSearchFieldEnterKeyPress(e, keepFilters)
                 }
                 autoComplete="off"
-                ref={el => (this.searchInputFieldRef = el)}
+                ref={(el) => (this.searchInputFieldRef = el)}
                 onFocus={() => this.setState({ isFocus: true })}
                 onBlur={() =>
                     this.setState({
@@ -173,7 +173,7 @@ class SearchBox extends Component {
         );
     }
 
-    onSelectedIdChange = newId => {
+    onSelectedIdChange = (newId) => {
         this.setState({
             selectedId: newId
         });
@@ -192,9 +192,9 @@ class SearchBox extends Component {
         const icon = this.props.isHome ? searchDark : searchLight;
         return (
             <MagdaNamespacesConsumer ns={["global"]}>
-                {translate => (
+                {(translate) => (
                     <Small>
-                        {isSmall => (
+                        {(isSmall) => (
                             <div className="searchBox">
                                 <label htmlFor="search">
                                     <span className="sr-only">
@@ -253,7 +253,7 @@ const mapStateToProps = (state, ownProps) => {
     };
 };
 
-const mapDispatchToProps = dispatch =>
+const mapDispatchToProps = (dispatch) =>
     bindActionCreators(
         {
             fetchRegionMapping: fetchRegionMapping
@@ -261,7 +261,7 @@ const mapDispatchToProps = dispatch =>
         dispatch
     );
 
-const SearchBoxWithRouter = withRouter(props => <SearchBox {...props} />);
+const SearchBoxWithRouter = withRouter((props) => <SearchBox {...props} />);
 
 export default connect(
     mapStateToProps,

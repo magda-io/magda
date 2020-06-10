@@ -2,8 +2,10 @@ import { Router } from "express";
 import ApiClient from "magda-typescript-common/src/authorization-api/ApiClient";
 import Authenticator from "./Authenticator";
 import passport from "passport";
+import pg from "pg";
 
 export interface AuthRouterOptions {
+    dbPool: pg.Pool;
     authenticator: Authenticator;
     jwtSecret: string;
     facebookClientId: string;
@@ -23,6 +25,7 @@ export interface AuthRouterOptions {
     vanguardWsFedIdpUrl: string;
     vanguardWsFedRealm: string;
     vanguardWsFedCertificate: string;
+    enableInternalAuthProvider: boolean;
 }
 
 export default function createAuthRouter(options: AuthRouterOptions): Router {
@@ -40,6 +43,17 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
     authRouter.use(require("body-parser").urlencoded({ extended: true }));
 
     const providers = [
+        {
+            id: "internal",
+            enabled: options.enableInternalAuthProvider ? true : false,
+            authRouter: options.enableInternalAuthProvider
+                ? require("./oauth2/internal").default({
+                      passport: passport,
+                      dbPool: options.dbPool,
+                      externalAuthHome: `${options.externalUrl}/auth`
+                  })
+                : null
+        },
         {
             id: "facebook",
             enabled: options.facebookClientId ? true : false,

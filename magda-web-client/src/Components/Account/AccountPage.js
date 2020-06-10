@@ -89,6 +89,7 @@ class Account extends React.Component {
                     </Medium>
                     {!this.props.user.id && (
                         <Login
+                            key={JSON.stringify(this.providers)}
                             signInError={
                                 this.props.location.state &&
                                 this.props.location.state.signInError
@@ -124,13 +125,11 @@ class Account extends React.Component {
 
 function mapStateToProps(state) {
     let {
-        userManagement: { user, providers, providersError }
+        userManagement: { user }
     } = state;
 
     return {
-        user,
-        providers,
-        providersError
+        user
     };
 }
 

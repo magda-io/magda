@@ -28,6 +28,8 @@ describe("proxying", () => {
             externalUrl: "http://127.0.0.1",
             dbHost: "localhost",
             dbPort: 5432,
+            authDBHost: "localhost",
+            authDBPort: 5432,
             proxyRoutesJson: {
                 registry: {
                     to: "http://registry",

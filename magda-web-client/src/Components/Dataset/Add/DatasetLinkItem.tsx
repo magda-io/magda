@@ -116,7 +116,9 @@ const DatasetLinkItemProcessing = (props: ProcessingProps) => {
 
     const progress = distribution._progress ? distribution._progress : 0;
     let width = Math.ceil((progress / 100) * 330);
-    if (width < 5) width = 5;
+    if (width < 5) {
+        width = 5;
+    }
 
     return (
         <div className="processing-item">
@@ -154,7 +156,7 @@ const DatasetLinkItemProcessing = (props: ProcessingProps) => {
                         </div>
                     </div>
                     <div className="distribution-status">
-                        Reviewing service - {distribution._progress}% complete
+                        Reviewing service - {progress}% complete
                     </div>
                 </div>
             </div>
@@ -172,23 +174,23 @@ const DatasetLinkItemEditing = (props: EditViewProps) => {
     } = props;
 
     const editFormat = (newValue: string | undefined) =>
-        editDistribution(distribution => ({
+        editDistribution((distribution) => ({
             ...distribution,
             format: newValue
         }));
     const editTitle = (newValue: string | undefined) =>
-        editDistribution(distribution => ({
+        editDistribution((distribution) => ({
             ...distribution,
             title: newValue ? newValue : ""
         }));
     const editModified = (newValue: Date | undefined) =>
-        editDistribution(fidistributionle =>
+        editDistribution((fidistributionle) =>
             typeof newValue === "undefined"
                 ? distribution
                 : { ...distribution, modified: newValue }
         );
     const editDescription = (newValue: string | undefined) =>
-        editDistribution(distribution => ({
+        editDistribution((distribution) => ({
             ...distribution,
             description: newValue ? newValue : ""
         }));
@@ -209,7 +211,7 @@ const DatasetLinkItemEditing = (props: EditViewProps) => {
                         if (
                             distribution?._progress !== DistributionState.Ready
                         ) {
-                            editDistribution(distribution => ({
+                            editDistribution((distribution) => ({
                                 ...distribution,
                                 _state: DistributionState.Ready
                             }));
@@ -305,7 +307,7 @@ async function getAllDataUrlProcessorsFromOpenfaasGateway(
             : "api-url-processor";
     const res = await fetch(
         `${config.openfaasBaseUrl}/system/functions`,
-        config.fetchOptions
+        config.credentialsFetchOptions
     );
     if (res.status !== 200) {
         if (res.status === 401) {
@@ -323,7 +325,7 @@ async function getAllDataUrlProcessorsFromOpenfaasGateway(
         return [];
     }
     return data.filter(
-        item => item.labels && item.labels.magdaType === magdaFuncType
+        (item) => item.labels && item.labels.magdaType === magdaFuncType
     );
 }
 
@@ -343,7 +345,7 @@ const DatasetLinkItem = (props: Props) => {
             return;
         }
 
-        props.setMetadataState(state => {
+        props.setMetadataState((state) => {
             const newDatasetData = { ...state.dataset };
             if (aspectData?.title) {
                 newDatasetData.title = aspectData?.title;
@@ -364,14 +366,14 @@ const DatasetLinkItem = (props: Props) => {
         }
 
         const bbox = aspectData.bbox
-            .map(item => (typeof item === "string" ? parseFloat(item) : item))
-            .filter(item => typeof item === "number" && !isNaN(item));
+            .map((item) => (typeof item === "string" ? parseFloat(item) : item))
+            .filter((item) => typeof item === "number" && !isNaN(item));
 
         if (bbox.length !== 4) {
             return;
         }
 
-        props.setMetadataState(state => ({
+        props.setMetadataState((state) => ({
             ...state,
             spatialCoverage: {
                 spatialDataInputMethod: "bbox",
@@ -408,11 +410,11 @@ const DatasetLinkItem = (props: Props) => {
             }
 
             const data = (await promiseAny<UrlProcessorResult>(
-                processors.map(async item => {
+                processors.map(async (item) => {
                     const res = await fetch(
                         `${config.openfaasBaseUrl}/function/${item.name}`,
                         {
-                            ...config.fetchOptions,
+                            ...config.credentialsFetchOptions,
                             method: "post",
                             body: props.distribution.downloadURL
                         }
@@ -440,7 +442,7 @@ const DatasetLinkItem = (props: Props) => {
                     }
 
                     data.distributions = data.distributions.filter(
-                        item =>
+                        (item) =>
                             item.aspects &&
                             item.aspects["dcat-distribution-strings"]
                     );
@@ -453,7 +455,7 @@ const DatasetLinkItem = (props: Props) => {
 
                     return data;
                 })
-            ).catch(e => {
+            ).catch((e) => {
                 console.log(e);
                 const error = e?.length ? e[0] : e;
                 if (error) {
@@ -472,7 +474,7 @@ const DatasetLinkItem = (props: Props) => {
                 }
             })) as UrlProcessorResult;
 
-            props.editDistribution(distribution => {
+            props.editDistribution((distribution) => {
                 return {
                     ...distribution,
                     ...data.distributions[0].aspects[
@@ -485,7 +487,7 @@ const DatasetLinkItem = (props: Props) => {
 
             // --- if there are more than one distribution returned, added to the list
             if (data.distributions.length > 1) {
-                data.distributions.slice(1).forEach(item => {
+                data.distributions.slice(1).forEach((item) => {
                     props.addDistribution({
                         ...item.aspects["dcat-distribution-strings"],
                         id: uuid.v4(),

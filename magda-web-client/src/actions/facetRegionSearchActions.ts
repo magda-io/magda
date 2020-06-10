@@ -30,9 +30,9 @@ export function fetchRegionSearchResults(facetQuery: string) {
         dispatch(requestRegions(facetQuery));
         return fetch(
             config.searchApiUrl + `regions?query=${facetQuery}`,
-            config.fetchOptions
+            config.credentialsFetchOptions
         )
-            .then(response => {
+            .then((response) => {
                 if (response.status === 200) {
                     return response.json();
                 }
@@ -41,7 +41,7 @@ export function fetchRegionSearchResults(facetQuery: string) {
             .then((json: FacetSearchJson) =>
                 dispatch(receiveRegions(facetQuery, json))
             )
-            .catch(error =>
+            .catch((error) =>
                 dispatch(
                     requestRegionsFailed({
                         title: error.name,

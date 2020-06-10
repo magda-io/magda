@@ -16,7 +16,7 @@ const dataFormatCategories = [
     "spreadsheet",
     "tabular"
 ];
-dataFormatCategories.forEach(item => {
+dataFormatCategories.forEach((item) => {
     formatIcons[item] = require(`assets/data-types/${item}.svg`);
 });
 const CategoryDetermineConfigItems = [

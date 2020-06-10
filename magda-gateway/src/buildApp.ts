@@ -45,6 +45,8 @@ type Config = {
     externalUrl: string;
     dbHost: string;
     dbPort: number;
+    authDBHost: string;
+    authDBPort: number;
     proxyRoutesJson: {
         [localRoute: string]: ProxyTarget;
     };
@@ -88,6 +90,7 @@ type Config = {
     vanguardWsFedCertificate?: string;
     openfaasGatewayUrl?: string;
     openfaasAllowAdminOnly?: boolean;
+    enableInternalAuthProvider?: boolean;
 };
 
 export default function buildApp(config: Config) {
@@ -177,6 +180,12 @@ export default function buildApp(config: Config) {
         app.use(
             "/auth",
             createAuthRouter({
+                dbPool: createPool({
+                    ...config,
+                    database: "auth",
+                    dbHost: config.authDBHost,
+                    dbPort: config.authDBPort
+                }),
                 authenticator: authenticator,
                 jwtSecret: config.jwtSecret,
                 facebookClientId: config.facebookClientId,
@@ -195,7 +204,8 @@ export default function buildApp(config: Config) {
                 userId: config.userId,
                 vanguardWsFedIdpUrl: config.vanguardWsFedIdpUrl,
                 vanguardWsFedRealm: config.vanguardWsFedRealm,
-                vanguardWsFedCertificate: config.vanguardWsFedCertificate
+                vanguardWsFedCertificate: config.vanguardWsFedCertificate,
+                enableInternalAuthProvider: config.enableAuthEndpoint
             })
         );
     }

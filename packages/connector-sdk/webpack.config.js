@@ -45,6 +45,6 @@ module.exports = (env, argv) => {
                         return false;
                     }
                 })
-        ].filter(item => item)
+        ].filter((item) => item)
     };
 };

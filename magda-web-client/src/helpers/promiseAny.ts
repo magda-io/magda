@@ -14,28 +14,30 @@ export default function promiseAny<T = any>(items: Promise<T>[]): Promise<T> {
         const result: {
             isCompleted: boolean;
             error?: any;
-        }[] = items.map(item => ({
+        }[] = items.map((item) => ({
             isCompleted: false
         }));
 
         let isResultReturned = false;
 
         items.forEach((item, idx) => {
-            item.then(r => {
+            item.then((r) => {
                 if (isResultReturned) {
                     return;
                 }
                 isResultReturned = true;
                 resolve(r);
-            }).catch(e => {
+            }).catch((e) => {
                 if (isResultReturned) {
                     return;
                 }
                 result[idx].isCompleted = true;
                 result[idx].error = e;
-                if (!result.some(item => !item.isCompleted)) {
+                if (!result.some((item) => !item.isCompleted)) {
                     isResultReturned = true;
-                    reject(result.map(item => item.error).filter(item => item));
+                    reject(
+                        result.map((item) => item.error).filter((item) => item)
+                    );
                 }
             });
         });
