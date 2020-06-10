@@ -537,9 +537,7 @@ export function createBlankState(user: User): State {
             defaultLicense: "world"
         },
         datasetPublishing: {
-            state: config.featureFlags.datasetApprovalWorkflowOn
-                ? "draft"
-                : "published",
+            state: "draft",
             level: "agency",
             contactPointDisplay: "team"
         },
