@@ -50,7 +50,8 @@ function createRows(
                     <Link
                         className="edit-button"
                         to={`/dataset/${
-                            record?.aspects?.["dataset-draft"]?.data
+                            record?.aspects?.["dataset-draft"]?.data ||
+                            !record?.aspects?.["dcat-dataset-strings"]
                                 ? "add/metadata"
                                 : "edit"
                         }/${encodeURIComponent(record.id)}`}
@@ -102,7 +103,7 @@ function getDate(datasetType: DatasetTypes, record: Record) {
     }
 }
 
-const DatasetGrid: FunctionComponent<PropsType> = props => {
+const DatasetGrid: FunctionComponent<PropsType> = (props) => {
     const { datasetType } = props;
     const [pageToken, setPageToken] = useState<string>("");
 
