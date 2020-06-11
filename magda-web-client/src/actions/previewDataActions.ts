@@ -1,4 +1,4 @@
-import { config } from "../config";
+import { config, getProxiedResourceUrl } from "../config";
 import fetch from "isomorphic-fetch";
 import { actionTypes } from "../constants/ActionTypes";
 
@@ -87,12 +87,10 @@ export function fetchPreviewData(distribution) {
 
         dispatch(requestPreviewData(url));
 
-        const proxy = config.proxyUrl;
-
         switch (format) {
             case "csv-geo-au":
                 loadPapa().then((papa) => {
-                    papa.parse(proxy + "_0d/" + url, {
+                    papa.parse(getProxiedResourceUrl(url, true), {
                         download: true,
                         header: true,
                         skipEmptyLines: true,
@@ -114,7 +112,7 @@ export function fetchPreviewData(distribution) {
                 break;
             case "csv":
                 loadPapa().then((papa) => {
-                    papa.parse(proxy + "_0d/" + url, {
+                    papa.parse(getProxiedResourceUrl(url, true), {
                         download: true,
                         header: true,
                         skipEmptyLines: true,
@@ -135,7 +133,10 @@ export function fetchPreviewData(distribution) {
 
                 break;
             case "xml":
-                fetch(proxy + url, config.credentialsFetchOptions)
+                fetch(
+                    getProxiedResourceUrl(url),
+                    config.credentialsFetchOptions
+                )
                     .then((response) => {
                         if (response.status !== 200) {
                             return dispatch(
@@ -163,7 +164,10 @@ export function fetchPreviewData(distribution) {
                     });
                 break;
             case "json":
-                fetch(proxy + url, config.credentialsFetchOptions)
+                fetch(
+                    getProxiedResourceUrl(url),
+                    config.credentialsFetchOptions
+                )
                     .then((response) => {
                         if (response.status !== 200) {
                             return dispatch(
@@ -197,7 +201,10 @@ export function fetchPreviewData(distribution) {
                 break;
 
             case "txt":
-                fetch(proxy + url, config.credentialsFetchOptions)
+                fetch(
+                    getProxiedResourceUrl(url),
+                    config.credentialsFetchOptions
+                )
                     .then((response) => {
                         if (response.status !== 200) {
                             return dispatch(
@@ -261,7 +268,10 @@ export function fetchPreviewData(distribution) {
                 );
                 break;
             case "rss":
-                fetch(proxy + url, config.credentialsFetchOptions)
+                fetch(
+                    getProxiedResourceUrl(url),
+                    config.credentialsFetchOptions
+                )
                     .then((response) => {
                         if (response.status !== 200) {
                             return dispatch(

@@ -181,6 +181,21 @@ const vocabularyApiEndpoints =
               "https://vocabs.ands.org.au/repository/api/lda/ands-nc/controlled-vocabulary-for-resource-type-genres/version-1-1/concept.json"
           ];
 
+function getFullUrlIfNotEmpty(relativeUrl: string | undefined) {
+    if (!relativeUrl) {
+        return relativeUrl;
+    } else if (relativeUrl.indexOf("http") !== 0) {
+        // --- avoid produce "//" in url
+        return (
+            baseExternalUrl.replace(/\/$/, "") +
+            "/" +
+            relativeUrl.replace(/^\//, "")
+        );
+    } else {
+        return relativeUrl;
+    }
+}
+
 export const config = {
     credentialsFetchOptions: credentialsFetchOptions,
     homePageConfig: homePageConfig,
@@ -199,7 +214,8 @@ export const config = {
         serverConfig.correspondenceApiBaseUrl ||
         fallbackApiHost + "api/v0/correspondence/",
     storageApiUrl:
-        serverConfig.storageApiBaseUrl || fallbackApiHost + "api/v0/storage/",
+        getFullUrlIfNotEmpty(serverConfig.storageApiBaseUrl) ||
+        fallbackApiHost + "api/v0/storage/",
     previewMapUrl: previewMapUrl,
     proxyUrl: proxyUrl,
     rssUrl: proxyUrl + "_0d/https://blog.data.gov.au/blogs/rss.xml",
@@ -326,3 +342,14 @@ export const defaultConfiguration = {
     datasetSearchSuggestionScoreThreshold: 65,
     searchResultsPerPage: 10
 };
+
+export function getProxiedResourceUrl(
+    resourceUrl: string,
+    disableCache: boolean = false
+) {
+    if (resourceUrl.indexOf(config.baseExternalUrl) !== -1) {
+        return resourceUrl;
+    } else {
+        return config.proxyUrl + (disableCache ? "_0d/" : "") + resourceUrl;
+    }
+}

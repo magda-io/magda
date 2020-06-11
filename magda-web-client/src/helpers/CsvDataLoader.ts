@@ -1,4 +1,4 @@
-import { config } from "../config";
+import { config, getProxiedResourceUrl } from "../config";
 import URI from "urijs";
 // --- as we only import types here, no runtime code will be emitted.
 // --- And papaparse will not be included by the main js bundle
@@ -137,8 +137,7 @@ class CsvDataLoader {
     async load(overrideNewLine?: string): Promise<DataLoadingResult> {
         this.resetDownloadData();
         const Papa = await getPapaParse();
-        const proxyUrl =
-            this.convertToAbsoluteUrl(config.proxyUrl) + "_0d/" + this.url;
+        const proxyUrl = getProxiedResourceUrl(this.url, true);
         return new Promise((resolve, reject) => {
             const options = {
                 worker: true,
