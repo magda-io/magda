@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { config } from "config";
+import { config, getProxiedResourceUrl } from "config";
 import fetch from "isomorphic-fetch";
 import Spinner from "Components/Common/Spinner";
 import { ParsedDistribution } from "helpers/record";
@@ -39,7 +39,7 @@ class DataPreviewTextBox extends Component<
             loading: true,
             text: null
         });
-        return fetch(config.proxyUrl + url, config.credentialsFetchOptions)
+        return fetch(getProxiedResourceUrl(url), config.credentialsFetchOptions)
             .then((response) => {
                 if (!response.ok) {
                     throw new Error(

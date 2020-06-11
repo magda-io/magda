@@ -141,6 +141,12 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
                         AspectQueryOperators["="],
                         `draft`,
                         true
+                    ),
+                    new AspectQuery(
+                        "dataset-access-control.ownerId",
+                        AspectQueryOperators["="],
+                        props.userId,
+                        true
                     )
                 ];
             } else {
@@ -153,9 +159,7 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
                         AspectQueryOperators["="],
                         `published`,
                         true
-                    )
-                ];
-                opts.aspectQueries = [
+                    ),
                     new AspectQuery(
                         "dataset-access-control.ownerId",
                         AspectQueryOperators["="],
@@ -260,7 +264,7 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
                 >
                     Next page
                 </button>
-                {result?.hasMore === true && !loading && !pageToken ? null : (
+                {result?.hasMore !== true && pageToken && !loading ? (
                     <button
                         className="first-page-button"
                         onClick={() => {
@@ -269,7 +273,7 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
                     >
                         First page
                     </button>
-                )}
+                ) : null}
             </div>
         </>
     );

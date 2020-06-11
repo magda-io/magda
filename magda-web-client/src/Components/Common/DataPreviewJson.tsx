@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { config } from "config";
+import { config, getProxiedResourceUrl } from "config";
 import fetch from "isomorphic-fetch";
 import Spinner from "./Spinner";
 
@@ -47,7 +47,7 @@ class DataPreviewJson extends Component<
             loading: true,
             json: null
         });
-        return fetch(config.proxyUrl + url, config.credentialsFetchOptions)
+        return fetch(getProxiedResourceUrl(url), config.credentialsFetchOptions)
             .then((response) => {
                 if (!response.ok) {
                     throw new Error(
