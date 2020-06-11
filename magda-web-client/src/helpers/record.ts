@@ -120,6 +120,11 @@ type Provenance = {
     affiliatedOrganizationIds?: Record[];
 };
 
+export type Access = {
+    location?: string;
+    note?: string;
+};
+
 export type RawDataset = {
     id: string;
     name: string;
@@ -137,6 +142,7 @@ export type RawDataset = {
         };
         "temporal-coverage"?: TemporalCoverage;
         provenance?: Provenance;
+        access: Access;
     };
 };
 
@@ -204,6 +210,7 @@ export type ParsedDataset = {
         orgUnitOwnerId: string;
         preAuthorisedPermissionIds: string[];
     };
+    access: Access;
 };
 
 export const emptyPublisher: Publisher = {
@@ -535,6 +542,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         accessControl,
         accrualPeriodicity: datasetInfo["accrualPeriodicity"] || "",
         accrualPeriodicityRecurrenceRule:
-            datasetInfo["accrualPeriodicityRecurrenceRule"] || ""
+            datasetInfo["accrualPeriodicityRecurrenceRule"] || "",
+        access: aspects["access"]
     };
 }

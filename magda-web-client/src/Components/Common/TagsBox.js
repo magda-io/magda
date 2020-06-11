@@ -26,7 +26,7 @@ function mergeTags(tags) {
 function TagsBox(props) {
     return (
         <div className="tags-box">
-            <div className="heading">Tags: </div>
+            <div className="dataset-heading">Tags: </div>
             {props.tags && props.tags.length > 0 ? (
                 <ul className="au-tags">
                     {props.tags &&
