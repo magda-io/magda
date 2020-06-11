@@ -550,7 +550,9 @@ object Generators {
         )
       )
       affiliatedOrganizationIds <- Gen.option(
-        Gen.listOf(Generators.textGen.map(JsString.apply(_.take(50).trim)))
+        Gen.listOf(
+          Generators.textGen.map(item => JsString.apply(item.take(50).trim))
+        )
       )
       isOpenData <- Gen.option(arbitrary[Boolean])
     } yield
