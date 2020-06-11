@@ -557,7 +557,7 @@ export function createBlankState(user: User): State {
         },
         licenseLevel: "dataset",
         isPublishing: false,
-        shouldUploadToStorageApi: true, // TODO: Make configurable
+        shouldUploadToStorageApi: false,
         error: null,
         _createdDate: new Date(),
         _lastModifiedDate: new Date()
