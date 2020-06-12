@@ -58,7 +58,6 @@
     "moment": "^2.17.1",
     "read-pkg-up": "^3.0.0",
     "request": "^2.88.0",
-    "shortid": "^2.2.15",
     "resolve": "^1.15.0",
     "tsmonad": "^0.7.2",
     "urijs": "^1.18.12",
