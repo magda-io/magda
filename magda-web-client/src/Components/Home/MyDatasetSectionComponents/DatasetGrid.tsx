@@ -240,7 +240,7 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
                 <thead>
                     <tr>
                         <th>Dataset title</th>
-                        <th className="date-col">Update Date</th>
+                        <th className="date-col">Last updated</th>
                         <th className="edit-button-col">&nbsp;</th>
                     </tr>
                 </thead>

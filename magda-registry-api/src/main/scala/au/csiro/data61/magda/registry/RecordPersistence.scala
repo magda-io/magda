@@ -280,15 +280,9 @@ class DefaultRecordPersistence(config: Config)
           SQLSyntax.roundBracket(sqlPart)
         case _ => SQLSyntax.empty
       },
-      if (aspectOrQueries.size == 1) {
-        // When only one aspectOrQueries present, we should join aspectQueries and aspectOrQueries with `OR`
-        // otherwise, aspectOrQueries works as `AND`
-        SQLSyntax.or
-      } else {
-        SQLSyntax.and
-      }
+      SQLSyntax.and
     ) match {
-      // --- use () to wrap all conditions as it's `OR` between `aspectQueries` & `aspectOrQueries`
+      // --- use () to wrap all conditions from AspectQuery
       case sqlPart if sqlPart.value.nonEmpty =>
         Some(SQLSyntax.roundBracket(sqlPart))
       case _ => None
