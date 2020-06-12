@@ -1,6 +1,8 @@
 import React, { FunctionComponent, useState } from "react";
 import "./DatasetList.scss";
-import DatasetGrid, { DatasetTypes } from "./DatasetGrid";
+import DatasetGrid from "./DatasetGrid";
+import { DatasetTypes } from "api-clients/RegistryApis";
+import DatasetCountLabel from "./DatasetCountLabel";
 import dismissIcon from "assets/dismiss.svg";
 import searchIcon from "assets/search-dark.svg";
 
@@ -27,6 +29,11 @@ const DatasetList: FunctionComponent<PropsType> = (props) => {
                             onClick={() => setActiveTab("drafts")}
                         >
                             Drafts &nbsp;{" "}
+                            <DatasetCountLabel
+                                datasetType={"drafts"}
+                                searchText={searchText}
+                                userId={props.userId}
+                            />
                         </a>
                         <a
                             className={`${
@@ -35,6 +42,11 @@ const DatasetList: FunctionComponent<PropsType> = (props) => {
                             onClick={() => setActiveTab("published")}
                         >
                             Published &nbsp;{" "}
+                            <DatasetCountLabel
+                                datasetType={"published"}
+                                searchText={searchText}
+                                userId={props.userId}
+                            />
                         </a>
                     </div>
                     <div className="search-box-wrapper">

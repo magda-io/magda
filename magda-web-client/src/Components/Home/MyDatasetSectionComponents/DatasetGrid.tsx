@@ -3,16 +3,14 @@ import { Link } from "react-router-dom";
 import editIcon from "assets/edit.svg";
 import "./DatasetGrid.scss";
 import { useAsync } from "react-async-hook";
+import getMyDatasetAspectQueries from "./getMyDatasetAspectQueries";
 import {
     Record,
     fetchRecords,
     FetchRecordsOptions,
-    AspectQuery,
-    AspectQueryOperators
+    DatasetTypes
 } from "api-clients/RegistryApis";
 import moment from "moment";
-
-export type DatasetTypes = "drafts" | "published";
 
 type PropsType = {
     searchText: string;
@@ -120,6 +118,7 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
         async (
             datasetType: DatasetTypes,
             searchText: string,
+            userId: string,
             pageToken: string
         ) => {
             const opts: FetchRecordsOptions = {
@@ -135,103 +134,21 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
                 opts.aspects = ["publishing"];
                 opts.optionalAspects = ["dataset-draft"];
                 opts.orderBy = "dataset-draft.timestamp";
-                opts.aspectQueries = [
-                    new AspectQuery(
-                        "publishing.state",
-                        AspectQueryOperators["="],
-                        `draft`,
-                        true
-                    ),
-                    new AspectQuery(
-                        "dataset-access-control.ownerId",
-                        AspectQueryOperators["="],
-                        props.userId,
-                        true
-                    )
-                ];
             } else {
                 opts.aspects = ["dcat-dataset-strings"];
                 opts.optionalAspects = ["publishing"];
                 opts.orderBy = "dcat-dataset-strings.modified";
-                opts.aspectQueries = [
-                    new AspectQuery(
-                        "publishing.state",
-                        AspectQueryOperators["="],
-                        `published`,
-                        true
-                    ),
-                    new AspectQuery(
-                        "dataset-access-control.ownerId",
-                        AspectQueryOperators["="],
-                        props.userId,
-                        true
-                    )
-                ];
             }
 
-            searchText = searchText.trim();
+            opts.aspectQueries = getMyDatasetAspectQueries(
+                datasetType,
+                userId,
+                searchText
+            );
 
-            if (searchText) {
-                // --- generate keyword search
-                if (datasetType === "drafts") {
-                    opts.aspectQueries = opts.aspectQueries.concat([
-                        new AspectQuery(
-                            "dataset-draft.dataset.title",
-                            AspectQueryOperators.patternMatch,
-                            `%${searchText}%`,
-                            false
-                        ),
-                        new AspectQuery(
-                            "dataset-draft.dataset.description",
-                            AspectQueryOperators.patternMatch,
-                            `%${searchText}%`,
-                            false
-                        ),
-                        new AspectQuery(
-                            "dataset-draft.dataset.themes",
-                            AspectQueryOperators.patternMatch,
-                            `%${searchText}%`,
-                            false
-                        ),
-                        new AspectQuery(
-                            "dataset-draft.dataset.keywords",
-                            AspectQueryOperators.patternMatch,
-                            `%${searchText}%`,
-                            false
-                        )
-                    ]);
-                } else {
-                    opts.aspectQueries = opts.aspectQueries.concat([
-                        new AspectQuery(
-                            "dcat-dataset-strings.title",
-                            AspectQueryOperators.patternMatch,
-                            `%${searchText}%`,
-                            false
-                        ),
-                        new AspectQuery(
-                            "dcat-dataset-strings.description",
-                            AspectQueryOperators.patternMatch,
-                            `%${searchText}%`,
-                            false
-                        ),
-                        new AspectQuery(
-                            "dcat-dataset-strings.themes",
-                            AspectQueryOperators.patternMatch,
-                            `%${searchText}%`,
-                            false
-                        ),
-                        new AspectQuery(
-                            "dcat-dataset-strings.keywords",
-                            AspectQueryOperators.patternMatch,
-                            `%${searchText}%`,
-                            false
-                        )
-                    ]);
-                }
-            }
             return await fetchRecords(opts);
         },
-        [props.datasetType, props.searchText, pageToken]
+        [props.datasetType, props.searchText, props.userId, pageToken]
     );
 
     return (

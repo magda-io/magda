@@ -42,6 +42,8 @@ export const aspectSchemas = {
     "dataset-draft": datasetDraftAspect
 };
 
+export type DatasetTypes = "drafts" | "published";
+
 export function createPublisher(inputRecord: Publisher) {
     return createRecord(inputRecord);
 }
@@ -372,11 +374,17 @@ export async function fetchRecords({
     }
 }
 
+export type FetchRecordsCountOptions = {
+    aspectQueries?: AspectQuery[];
+    aspects?: string[];
+    noCache?: boolean;
+};
+
 export async function fetchRecordsCount({
     aspectQueries,
     aspects,
     noCache
-}: FetchRecordsOptions): Promise<RawDataset[]> {
+}: FetchRecordsCountOptions): Promise<RawDataset[]> {
     const parameters: string[] = [];
 
     if (aspects?.length) {
