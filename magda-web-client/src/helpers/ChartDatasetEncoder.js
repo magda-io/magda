@@ -70,10 +70,10 @@ const OVERRIDE_TO_NUMERIC_COLUMNS = [
 const EXCLUDE_COLUMNS = ["long", "lat", "lng"];
 
 const noDelimiterParser = new chrono.Parser();
-noDelimiterParser.pattern = function() {
+noDelimiterParser.pattern = function () {
     return /(\d{2})(\d{2})(\d{4})/gi;
 };
-noDelimiterParser.extract = function(text, ref, match, opt) {
+noDelimiterParser.extract = function (text, ref, match, opt) {
     return new chrono.ParsedResult({
         ref: ref,
         text: match[1] + "/" + match[2] + "/" + match[3],
@@ -89,7 +89,7 @@ noDelimiterParser.extract = function(text, ref, match, opt) {
 const customChrono = chrono.en_GB;
 customChrono.parsers.push(noDelimiterParser);
 
-const parseNumber = str => {
+const parseNumber = (str) => {
     let parsedResult = 0;
     try {
         if (typeof str === "number") return str;
@@ -107,11 +107,11 @@ const parseNumber = str => {
 };
 
 const aggregators = {
-    count: v => v.length,
-    sum: field => v => sumBy(v, d => parseNumber(d[field]))
+    count: (v) => v.length,
+    sum: (field) => (v) => sumBy(v, (d) => parseNumber(d[field]))
 };
 
-const rollupResult2Rows = function(
+const rollupResult2Rows = function (
     r,
     groupByFields,
     aggrFuncName = null,
@@ -128,7 +128,7 @@ const rollupResult2Rows = function(
     if (!groupByFields.length) return aggrResult;
     const keyName = groupByFields.shift();
     if (typeof keyName === "undefined") return aggrResult;
-    forEach(r, item => {
+    forEach(r, (item) => {
         const finalMergedKeyObj = { ...mergedKeyObj };
 
         finalMergedKeyObj[keyName] = item.key;
@@ -161,9 +161,9 @@ const defaultChartOption = {
     },
     tooltip: {
         trigger: "item",
-        formatter: params => {
+        formatter: (params) => {
             return Object.keys(params.value)
-                .map(key => {
+                .map((key) => {
                     const rawValue = params.value[key];
                     const value =
                         rawValue.toString().trim().length > 0
@@ -229,11 +229,11 @@ function preProcessFields(headerRow, distribution, chartType) {
         isAggr: false
     }));
     //--- filter out fields that cannot be located in CSV data. VisualInfo outdated maybe?
-    newFields = filter(newFields, item => item.idx !== -1);
+    newFields = filter(newFields, (item) => item.idx !== -1);
     // Filter out specifically excluded columns
     newFields = filter(
         newFields,
-        item => !testKeywords(item.name, EXCLUDE_COLUMNS)
+        (item) => !testKeywords(item.name, EXCLUDE_COLUMNS)
     );
     if (!newFields.length) {
         //--- we will not exit but make our own guess
@@ -250,21 +250,21 @@ function preProcessFields(headerRow, distribution, chartType) {
     newFields = newFields.map(fieldDefAdjustment);
 
     const grouped = chartType !== "scatter";
-    newFields = newFields.map(field => {
+    newFields = newFields.map((field) => {
         if (field.numeric && grouped) {
             field.label += " (Sum of All)";
         }
         return field;
     });
 
-    newFields = newFields.map(field => {
+    newFields = newFields.map((field) => {
         if (!field.label || field.label.trim() === "") {
             field.label = field.name;
         }
         return field;
     });
 
-    newFields = newFields.map(field => {
+    newFields = newFields.map((field) => {
         if (!field.label || field.label.trim() === "") {
             field.label = UNKNOWN_AXIS_LABEL;
         }
@@ -309,8 +309,8 @@ function groupBy(data, aggrFuncName, aggrFunc, aggrfields) {
         throw new Error("`aggrfields` cannot be empty array!");
     }
     let nest = d3.nest();
-    forEach(aggrfields, field => (nest = nest.key(d => d[field])));
-    const result = nest.rollup(v => aggrFunc(v)).entries(data);
+    forEach(aggrfields, (field) => (nest = nest.key((d) => d[field])));
+    const result = nest.rollup((v) => aggrFunc(v)).entries(data);
     return rollupResult2Rows(result, aggrfields, aggrFuncName);
 }
 
@@ -334,7 +334,7 @@ function getDefaultColumn(
         return null;
     }
 
-    const firstAvailableHighPriorityCol = find(availableColumns, field =>
+    const firstAvailableHighPriorityCol = find(availableColumns, (field) =>
         testKeywords(field.label, highPriorityColumnNames)
     );
 
@@ -343,7 +343,7 @@ function getDefaultColumn(
     }
 
     const firstNotLowPriorityCol = availableColumns.find(
-        field => !testKeywords(field.label, lowPriorityColumnNames)
+        (field) => !testKeywords(field.label, lowPriorityColumnNames)
     );
 
     if (firstNotLowPriorityCol) {
@@ -382,15 +382,15 @@ class ChartDatasetEncoder {
     }
 
     getNumericColumns() {
-        return filter(this.fields, field => field.numeric);
+        return filter(this.fields, (field) => field.numeric);
     }
 
     getTimeColumns() {
-        return filter(this.fields, field => field.time);
+        return filter(this.fields, (field) => field.time);
     }
 
     getCategoryColumns() {
-        return filter(this.fields, field => field.category);
+        return filter(this.fields, (field) => field.category);
     }
 
     preProcessData() {
@@ -531,7 +531,7 @@ class ChartDatasetEncoder {
             }
         };
 
-        const unsortedData = inner().map(datum => {
+        const unsortedData = inner().map((datum) => {
             let rawValue = datum[this.xAxis.name];
 
             if (getFieldDataType(this.xAxis) === "time") {
@@ -544,12 +544,12 @@ class ChartDatasetEncoder {
 
         const sortFunc = (() => {
             if (getFieldDataType(this.xAxis) === "time") {
-                return datum => {
+                return (datum) => {
                     const xValue = datum[this.xAxis.name];
                     return xValue.getTime ? xValue.getTime() : xValue;
                 };
             } else {
-                return datum => datum[this.xAxis.name];
+                return (datum) => datum[this.xAxis.name];
             }
         })();
 
@@ -688,7 +688,7 @@ class ChartDatasetEncoder {
                 rotate: type === "category" ? 45 : 0,
                 formatter: (() => {
                     if (type === "category") {
-                        return value => {
+                        return (value) => {
                             if (!value || value.trim().length === 0) {
                                 return UNKNOWN_AXIS_LABEL;
                             } else if (value.length > 20) {
@@ -727,7 +727,7 @@ class ChartDatasetEncoder {
             if (data.length > 100) {
                 const fieldName = dimensions[encode.value].name;
                 option.dataset[0].source = takeRight(
-                    sortBy(data, item => item[fieldName]),
+                    sortBy(data, (item) => item[fieldName]),
                     100
                 );
             }
@@ -743,7 +743,7 @@ class ChartDatasetEncoder {
     }
 }
 
-ChartDatasetEncoder.isValidDistributionData = function(distribution) {
+ChartDatasetEncoder.isValidDistributionData = function (distribution) {
     try {
         ChartDatasetEncoder.validateDistributionData(distribution);
         return true;
@@ -752,7 +752,7 @@ ChartDatasetEncoder.isValidDistributionData = function(distribution) {
     }
 };
 
-ChartDatasetEncoder.validateDistributionData = function(distribution) {
+ChartDatasetEncoder.validateDistributionData = function (distribution) {
     if (!distribution) throw new Error("Invalid empty `distribution` data");
     if (!distribution.identifier)
         throw new Error(

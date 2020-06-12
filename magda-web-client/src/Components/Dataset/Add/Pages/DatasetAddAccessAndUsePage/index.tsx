@@ -115,7 +115,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
     const editDatasetPublishing = props.edit("datasetPublishing");
     const editInformationSecurity = props.edit("informationSecurity");
     const editPublishToDga = (shouldPublishToDga: string | undefined) => {
-        props.editStateWithUpdater(state => ({
+        props.editStateWithUpdater((state) => ({
             ...state,
             datasetPublishing: {
                 ...state.datasetPublishing,
@@ -137,9 +137,13 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
         <div className="row dataset-access-and-use-page">
             <div className="col-sm-12">
                 <h2>Access and Use</h2>
-                <h3 className="with-underline">Sharing</h3>
 
-                {config.featureFlags.publishToDga ? (
+                {config.featureFlags.placeholderWorkflowsOn ? (
+                    <h3 className="with-underline">Sharing</h3>
+                ) : null}
+
+                {config.featureFlags.placeholderWorkflowsOn &&
+                config.featureFlags.publishToDga ? (
                     <div className="question-publish-to-dga">
                         <h4 className="with-icon">
                             <span>
@@ -179,7 +183,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         <div className="input-area">
                             <AlwaysEditor
                                 value={shouldPublishToDga ? "true" : "false"}
-                                onChange={value => {
+                                onChange={(value) => {
                                     editPublishToDga(value);
                                     if (
                                         ValidationManager.shouldValidate(
@@ -211,29 +215,31 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     </div>
                 ) : null}
 
-                <div className="question-who-can-see-dataset">
-                    <h4 className="with-icon">
-                        <span>
-                            Who can see the dataset once it is published?
-                        </span>
-                    </h4>
-                    <div className="input-area">
-                        <ToolTip>
-                            We recommend you publish your data to everyone in
-                            your organisation to help prevent data silos.
-                        </ToolTip>
-                        <div>
-                            <AlwaysEditor
-                                value={datasetPublishing.level}
-                                onChange={editDatasetPublishing("level")}
-                                editor={codelistRadioEditor(
-                                    "dataset-publishing-level",
-                                    codelists.publishingLevel
-                                )}
-                            />
+                {config.featureFlags.placeholderWorkflowsOn ? (
+                    <div className="question-who-can-see-dataset">
+                        <h4 className="with-icon">
+                            <span>
+                                Who can see the dataset once it is published?
+                            </span>
+                        </h4>
+                        <div className="input-area">
+                            <ToolTip>
+                                We recommend you publish your data to everyone
+                                in your organisation to help prevent data silos.
+                            </ToolTip>
+                            <div>
+                                <AlwaysEditor
+                                    value={datasetPublishing.level}
+                                    onChange={editDatasetPublishing("level")}
+                                    editor={codelistRadioEditor(
+                                        "dataset-publishing-level",
+                                        codelists.publishingLevel
+                                    )}
+                                />
+                            </div>
                         </div>
                     </div>
-                </div>
+                ) : null}
 
                 <h3 className="with-underline">Dataset use</h3>
 
@@ -261,7 +267,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                     options={
                                         Object.keys(
                                             codelists.datasetLicenseLevel
-                                        ).map(key => ({
+                                        ).map((key) => ({
                                             label:
                                                 codelists.datasetLicenseLevel[
                                                     key
@@ -308,7 +314,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                     validationFieldPath="$.dataset.defaultLicense"
                                     validationFieldLabel="Dataset Level Licence"
                                     value={dataset.defaultLicense || ""}
-                                    onChange={license => {
+                                    onChange={(license) => {
                                         props.editState("dataset")({
                                             ...dataset,
                                             defaultLicense: license
@@ -320,7 +326,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                     ) : (
                         <div className="license-distribution-option-container">
                             {distributions.map((file, fileIndex) => {
-                                const edit = field => value => {
+                                const edit = (field) => (value) => {
                                     file[field] = value;
                                     props.editState("distributions")(
                                         distributions
@@ -405,7 +411,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                 isSearchable={false}
                                 options={
                                     Object.keys(codelists.classification).map(
-                                        key => ({
+                                        (key) => ({
                                             label:
                                                 codelists.classification[key],
                                             value: key
@@ -520,7 +526,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                     options={
                                         Object.keys(
                                             codelists.disseminationLimits
-                                        ).map(key => ({
+                                        ).map((key) => ({
                                             label:
                                                 codelists.disseminationLimits[
                                                     key
@@ -533,7 +539,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                         informationSecurity.disseminationLimits
                                             .length
                                             ? informationSecurity.disseminationLimits.map(
-                                                  item => ({
+                                                  (item) => ({
                                                       label:
                                                           codelists
                                                               .disseminationLimits[
@@ -547,7 +553,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                     onChange={(items: any) =>
                                         editInformationSecurity(
                                             "disseminationLimits"
-                                        )(items.map(item => item.value))
+                                        )(items.map((item) => item.value))
                                     }
                                 />
                             </div>

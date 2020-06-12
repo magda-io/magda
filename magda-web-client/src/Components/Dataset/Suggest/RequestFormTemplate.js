@@ -68,7 +68,7 @@ export default class RequestFormTemplate extends React.Component {
     /**
      * If valid this form is submitted.
      */
-    handleSubmit = e => {
+    handleSubmit = (e) => {
         e.preventDefault();
         if (this.checkRequiredFields(this.state)) {
             return;
@@ -76,7 +76,7 @@ export default class RequestFormTemplate extends React.Component {
         this.props.handleSubmit(this.state);
     };
 
-    handleClear = e => {
+    handleClear = (e) => {
         e.preventDefault();
         this.setState(
             () => {
@@ -108,7 +108,7 @@ export default class RequestFormTemplate extends React.Component {
      * Handles change event when typed into any of the form inputs.
      * Sets the state according to which input is being typed in
      */
-    handleInputChange = event => {
+    handleInputChange = (event) => {
         const inputId = event.target.id;
         const inputVal = event.target.value;
         this.setState(

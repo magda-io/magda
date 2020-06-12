@@ -17,10 +17,10 @@ export function requestWhoAmI() {
         });
 
         fetch(config.authApiUrl + "users/whoami", {
-            ...config.fetchOptions,
+            ...config.credentialsFetchOptions,
             credentials: "include"
         })
-            .then(async response => {
+            .then(async (response) => {
                 if (response.status === 200) {
                     const res = await response.json();
                     if (res.isError) {
@@ -40,7 +40,7 @@ export function requestWhoAmI() {
                     );
                 }
             })
-            .catch(err => dispatch(receiveWhoAmIError(err)));
+            .catch((err) => dispatch(receiveWhoAmIError(err)));
         return undefined;
     };
 }
@@ -71,7 +71,7 @@ export function requestSignOut() {
             });
 
             const response = await fetch(config.baseUrl + "auth/logout", {
-                ...config.fetchOptions,
+                ...config.credentialsFetchOptions,
                 credentials: "include"
             });
 
@@ -120,12 +120,12 @@ export function requestAuthProviders() {
             type: actionTypes.REQUEST_AUTH_PROVIDERS
         });
 
-        fetch(config.baseUrl + "auth/providers", config.fetchOptions)
-            .then(response => {
+        fetch(config.baseUrl + "auth/providers", config.credentialsFetchOptions)
+            .then((response) => {
                 if (response.status === 200) {
                     return response
                         .json()
-                        .then(providers =>
+                        .then((providers) =>
                             dispatch(receiveAuthProviders(providers))
                         );
                 } else {
@@ -134,7 +134,7 @@ export function requestAuthProviders() {
                     );
                 }
             })
-            .catch(err => dispatch(receiveAuthProvidersError(err)));
+            .catch((err) => dispatch(receiveAuthProvidersError(err)));
         return undefined;
     };
 }

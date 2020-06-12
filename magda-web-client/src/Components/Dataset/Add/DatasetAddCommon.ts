@@ -3,7 +3,8 @@ import uuidv4 from "uuid/v4";
 import { ContactPointDisplayOption } from "constants/DatasetConstants";
 import {
     fetchOrganization,
-    fetchRecord,
+    fetchRecordWithNoCache,
+    doesRecordExist,
     createDataset,
     ensureAspectExists,
     createPublisher,
@@ -35,8 +36,8 @@ export type Distribution = {
     author?: string;
     keywords?: string[];
     themes?: string[];
-    temporalCoverage?: any;
-    spatialCoverage?: any;
+    temporalCoverage?: TemporalCoverage;
+    spatialCoverage?: SpatialCoverage;
 
     similarFingerprint?: any;
     equalHash?: string;
@@ -65,7 +66,8 @@ export enum DistributionState {
     Reading,
     Processing,
     Ready,
-    Drafting
+    Drafting,
+    Deleting
 }
 
 export function distributionStateToText(state: DistributionState) {
@@ -78,6 +80,8 @@ export function distributionStateToText(state: DistributionState) {
             return "Processing";
         case DistributionState.Ready:
             return "Ready";
+        case DistributionState.Deleting:
+            return "Deleting";
         default:
             return "Unknown";
     }
@@ -188,7 +192,7 @@ export type State = {
     error: Error | null;
 };
 
-type TemporalCoverage = {
+export type TemporalCoverage = {
     intervals: Interval[];
 };
 
@@ -203,6 +207,7 @@ type Access = {
 };
 
 const DEFAULT_POLICY_ID = "object.registry.record.owner_only";
+const PUBLISHED_DATASET_POLICY_ID = "object.registry.record.public";
 
 function getInternalDatasetSourceAspectData() {
     return {
@@ -230,7 +235,6 @@ function getPublishingAspectData(state: State) {
     const { datasetPublishing } = state;
     return {
         ...datasetPublishing,
-        state: "draft",
         publishAsOpenData: {}
     };
 }
@@ -335,11 +339,11 @@ function populateTemporalCoverageAspect(data: RawDataset, state: State) {
         return;
     }
     const intervals = data.aspects["temporal-coverage"].intervals
-        .map(item => ({
+        .map((item) => ({
             start: dateStringToDate(item.start),
             end: dateStringToDate(item.end)
         }))
-        .filter(item => item.start || item.end);
+        .filter((item) => item.start || item.end);
 
     if (intervals.length) {
         state.temporalCoverage = {
@@ -350,7 +354,13 @@ function populateTemporalCoverageAspect(data: RawDataset, state: State) {
 
 async function getDatasetNameById(id): Promise<string> {
     try {
-        const data = await fetchRecord(id, ["dcat-dataset-strings"], []);
+        // --- turn off cache
+        const data = await fetchRecordWithNoCache(
+            id,
+            ["dcat-dataset-strings"],
+            [],
+            false
+        );
         if (data?.aspects?.["dcat-dataset-strings"]?.title) {
             return data.aspects["dcat-dataset-strings"].title;
         } else {
@@ -415,7 +425,7 @@ async function populateProvenanceAspect(data: RawDataset, state: State) {
 
     if (affiliatedOrganizationIds?.length) {
         provenance.affiliatedOrganizations = affiliatedOrganizationIds.map(
-            item => ({
+            (item) => ({
                 existingId: item.id,
                 name: item?.aspects?.["organization-details"]?.title
                     ? item?.aspects?.["organization-details"]?.title
@@ -448,8 +458,8 @@ function populateDistributions(data: RawDataset, state: State) {
         return;
     }
     const distributions = data.aspects["dataset-distributions"].distributions
-        .filter(item => item?.aspects?.["dcat-distribution-strings"])
-        .map(item => {
+        .filter((item) => item?.aspects?.["dcat-distribution-strings"])
+        .map((item) => {
             const modified = dateStringToDate(
                 item.aspects["dcat-distribution-strings"].modified
             );
@@ -529,7 +539,7 @@ export function createBlankState(user: User): State {
             owningOrgUnitId: user ? user.orgUnitId : undefined,
             ownerId: user ? user.id : undefined,
             editingUserId: user ? user.id : undefined,
-            defaultLicense: "world"
+            defaultLicense: "No license"
         },
         datasetPublishing: {
             state: "draft",
@@ -538,14 +548,7 @@ export function createBlankState(user: User): State {
         },
         spatialCoverage: {
             // Australia, Mainland
-            lv1Id: "1",
-            bbox: [
-                109.951171875,
-                -45.398449976304086,
-                155.0390625,
-                -9.172601695217201
-            ],
-            spatialDataInputMethod: "region"
+            lv1Id: "1"
         },
         temporalCoverage: {
             intervals: []
@@ -615,7 +618,7 @@ export async function loadStateFromRegistry(
     let record: RawDataset | undefined;
     try {
         // --- we turned off cache here
-        record = await fetchRecord(id, ["dataset-draft"], [], false, true);
+        record = await fetchRecordWithNoCache(id, ["dataset-draft"], [], false);
     } catch (e) {
         if (e! instanceof ServerError || e.statusCode !== 404) {
             // --- mute 404 error as we're gonna create blank status if can't find an existing one
@@ -688,7 +691,7 @@ export async function saveStateToRegistry(state: State, id: string) {
     let record: RawDataset | undefined;
     try {
         // --- we turned off cache here
-        record = await fetchRecord(id, ["dataset-draft"], [], false, true);
+        record = await fetchRecordWithNoCache(id, ["dataset-draft"], [], false);
     } catch (e) {
         if (e! instanceof ServerError || e.statusCode !== 404) {
             // --- mute 404 error as we're gonna create one if can't find an existing one
@@ -696,9 +699,21 @@ export async function saveStateToRegistry(state: State, id: string) {
         }
     }
 
+    const datasetDcatString = buildDcatDatasetStrings(state.dataset);
+
     const datasetDraftAspectData = {
         data: dataset,
-        timestamp
+        timestamp,
+        dataset: {
+            title: datasetDcatString?.title ? datasetDcatString.title : "",
+            description: datasetDcatString?.description
+                ? datasetDcatString.description
+                : "",
+            themes: datasetDcatString?.themes ? datasetDcatString.themes : [],
+            keywords: datasetDcatString?.keywords
+                ? datasetDcatString.keywords
+                : []
+        }
     };
 
     if (!record) {
@@ -720,10 +735,7 @@ export async function saveStateToRegistry(state: State, id: string) {
         if (!record?.aspects) {
             record.aspects = {} as any;
         }
-        record.aspects["dataset-draft"] = {
-            data: dataset,
-            timestamp
-        };
+        record.aspects["dataset-draft"] = datasetDraftAspectData;
         await updateDataset(record, []);
     }
 
@@ -748,13 +760,7 @@ async function ensureBlankDatasetIsSavedToRegistry(
     id: string,
     name: string
 ) {
-    try {
-        // --- we turned off cache here
-        await fetchRecord(id, [], [], false, true);
-    } catch (e) {
-        if (e.statusCode !== 404) {
-            throw e;
-        }
+    if (!(await doesRecordExist(id))) {
         // --- if the dataset not exist in registry, save it now
         // --- the dataset should have the same visibility as the current one
         // --- but always be a draft one
@@ -860,7 +866,7 @@ async function getOrgIdFromAutocompleteChoice(
         );
 
         const match = existingPublishers.options.find(
-            publisher =>
+            (publisher) =>
                 publisher.value.toLowerCase().trim() ===
                 organization!.name.toLowerCase().trim()
         );
@@ -897,7 +903,8 @@ async function convertStateToDatasetRecord(
     distributionRecords: Record[],
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>,
-    isUpdate: boolean = false
+    isUpdate: boolean = false,
+    authnReadPolicyId?: string
 ) {
     const {
         dataset,
@@ -913,7 +920,7 @@ async function convertStateToDatasetRecord(
     let publisherId;
     if (dataset.publisher) {
         publisherId = await getOrgIdFromAutocompleteChoice(dataset.publisher);
-        setState(state => ({
+        setState((state) => ({
             ...state,
             dataset: {
                 ...state.dataset,
@@ -928,14 +935,16 @@ async function convertStateToDatasetRecord(
     const inputDataset = {
         id: datasetId,
         name: dataset.title,
-        authnReadPolicyId: DEFAULT_POLICY_ID,
+        authnReadPolicyId: authnReadPolicyId
+            ? authnReadPolicyId
+            : DEFAULT_POLICY_ID,
         aspects: {
             publishing: getPublishingAspectData(state),
             "dcat-dataset-strings": buildDcatDatasetStrings(dataset),
             "spatial-coverage": spatialCoverage,
             "temporal-coverage": temporalCoverage,
             "dataset-distributions": {
-                distributions: distributionRecords.map(d => d.id)
+                distributions: distributionRecords.map((d) => d.id)
             },
             "ckan-export": ckanExport,
             access: datasetAccess,
@@ -965,7 +974,7 @@ async function convertStateToDatasetRecord(
                 affiliatedOrganizationIds:
                     provenance.affiliatedOrganizations &&
                     (await Promise.all(
-                        provenance.affiliatedOrganizations.map(org =>
+                        provenance.affiliatedOrganizations.map((org) =>
                             getOrgIdFromAutocompleteChoice(org)
                         )
                     )),
@@ -987,7 +996,7 @@ async function convertStateToDatasetRecord(
 async function convertStateToDistributionRecords(state: State) {
     const { dataset, distributions, licenseLevel } = state;
 
-    const distributionRecords = distributions.map(distribution => {
+    const distributionRecords = distributions.map((distribution) => {
         const aspect =
             licenseLevel === "dataset"
                 ? {
@@ -1011,7 +1020,8 @@ async function convertStateToDistributionRecords(state: State) {
 export async function createDatasetFromState(
     datasetId: string,
     state: State,
-    setState: React.Dispatch<React.SetStateAction<State>>
+    setState: React.Dispatch<React.SetStateAction<State>>,
+    authnReadPolicyId?: string
 ) {
     if (state.datasetPublishing.publishAsOpenData?.dga) {
         state.ckanExport[config.defaultCkanServer].status = "retain";
@@ -1026,7 +1036,9 @@ export async function createDatasetFromState(
         datasetId,
         distributionRecords,
         state,
-        setState
+        setState,
+        false,
+        authnReadPolicyId
     );
     await createDataset(datasetRecord, distributionRecords);
 }
@@ -1034,7 +1046,8 @@ export async function createDatasetFromState(
 export async function updateDatasetFromState(
     datasetId: string,
     state: State,
-    setState: React.Dispatch<React.SetStateAction<State>>
+    setState: React.Dispatch<React.SetStateAction<State>>,
+    authnReadPolicyId?: string
 ) {
     if (state.datasetPublishing.publishAsOpenData?.dga) {
         state.ckanExport[config.defaultCkanServer].status = "retain";
@@ -1050,7 +1063,8 @@ export async function updateDatasetFromState(
         distributionRecords,
         state,
         setState,
-        true
+        true,
+        authnReadPolicyId
     );
     await updateDataset(datasetRecord, distributionRecords);
 }
@@ -1069,23 +1083,20 @@ export async function submitDatasetFromState(
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>
 ) {
-    let recordExist: boolean = false;
-    try {
-        // --- turned off cache
-        if (await fetchRecord(datasetId, [], [], false, true)) {
-            recordExist = true;
-        }
-    } catch (e) {
-        if (e! instanceof ServerError || e.statusCode !== 404) {
-            // --- mute 404 error
-            throw e;
-        }
-    }
-
-    if (recordExist) {
-        await updateDatasetFromState(datasetId, state, setState);
+    if (await doesRecordExist(datasetId)) {
+        await updateDatasetFromState(
+            datasetId,
+            state,
+            setState,
+            PUBLISHED_DATASET_POLICY_ID
+        );
     } else {
-        await createDatasetFromState(datasetId, state, setState);
+        await createDatasetFromState(
+            datasetId,
+            state,
+            setState,
+            PUBLISHED_DATASET_POLICY_ID
+        );
     }
 
     await deleteRecordAspect(datasetId, "dataset-draft");

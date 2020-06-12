@@ -121,6 +121,11 @@ type Provenance = {
     affiliatedOrganizationIds?: Record[];
 };
 
+export type Access = {
+    location?: string;
+    note?: string;
+};
+
 export type RawDataset = {
     id: string;
     name: string;
@@ -138,6 +143,7 @@ export type RawDataset = {
         };
         "temporal-coverage"?: TemporalCoverage;
         provenance?: Provenance;
+        access: Access;
     };
 };
 
@@ -206,6 +212,7 @@ export type ParsedDataset = {
         preAuthorisedPermissionIds: string[];
     };
     ckanExport?: CkanExportAspectType;
+    access: Access;
 };
 
 export const emptyPublisher: Publisher = {
@@ -371,10 +378,10 @@ export function parseDistribution(
     if (isTimeSeries) {
         const fields = aspects["visualization-info"].fields;
         const timeFields = Object.keys(fields).filter(
-            f => fields[f].time === true
+            (f) => fields[f].time === true
         );
         const numericFields = Object.keys(fields).filter(
-            f => fields[f].numeric === true
+            (f) => fields[f].numeric === true
         );
         chartFields = {
             time: timeFields,
@@ -456,8 +463,11 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
 
     function calcQuality(qualityAspect) {
         const ratings = Object.keys(qualityAspect)
-            .map(key => qualityAspect[key])
-            .map(aspectRating => [aspectRating.score, aspectRating.weighting]);
+            .map((key) => qualityAspect[key])
+            .map((aspectRating) => [
+                aspectRating.score,
+                aspectRating.weighting
+            ]);
         return weightedMean(ratings);
     }
 
@@ -479,7 +489,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
               }
           };
 
-    const distributions = distribution["distributions"].map(d => {
+    const distributions = distribution["distributions"].map((d) => {
         const distributionAspects = Object.assign(
             {},
             defaultDistributionAspect,
@@ -495,10 +505,10 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         if (isTimeSeries) {
             const fields = distributionAspects["visualization-info"].fields;
             const timeFields = Object.keys(fields).filter(
-                f => fields[f].time === true
+                (f) => fields[f].time === true
             );
             const numericFields = Object.keys(fields).filter(
-                f => fields[f].numeric === true
+                (f) => fields[f].numeric === true
             );
             chartFields = {
                 time: timeFields,
@@ -562,6 +572,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         accrualPeriodicity: datasetInfo["accrualPeriodicity"] || "",
         accrualPeriodicityRecurrenceRule:
             datasetInfo["accrualPeriodicityRecurrenceRule"] || "",
-        ckanExport
+        ckanExport,
+        access: aspects["access"]
     };
 }

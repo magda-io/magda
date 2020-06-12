@@ -110,6 +110,11 @@ const argv = yargs
             "The base URL of the correspondence api.  If not specified, the URL is built from the apiBaseUrl.",
         type: "string"
     })
+    .option("storageApiBaseUrl", {
+        describe:
+            "The base URL of the storage api.  If not specified, the URL is built from the apiBaseUrl.",
+        type: "string"
+    })
     .option("openfaasBaseUrl", {
         describe:
             "The base URL of the openfaas gateway.  If not specified, the URL is built from the apiBaseUrl.",
@@ -227,24 +232,15 @@ const webServerConfig = {
     apiBaseUrl: apiBaseUrl,
     contentApiBaseUrl: addTrailingSlash(
         argv.contentApiBaseUrl ||
-            new URI(apiBaseUrl)
-                .segment("v0")
-                .segment("content")
-                .toString()
+            new URI(apiBaseUrl).segment("v0").segment("content").toString()
     ),
     searchApiBaseUrl: addTrailingSlash(
         argv.searchApiBaseUrl ||
-            new URI(apiBaseUrl)
-                .segment("v0")
-                .segment("search")
-                .toString()
+            new URI(apiBaseUrl).segment("v0").segment("search").toString()
     ),
     registryApiBaseUrl: addTrailingSlash(
         argv.registryApiBaseUrl ||
-            new URI(apiBaseUrl)
-                .segment("v0")
-                .segment("registry")
-                .toString()
+            new URI(apiBaseUrl).segment("v0").segment("registry").toString()
     ),
     registryApiReadOnlyBaseUrl: addTrailingSlash(
         argv.registryApiReadOnlyBaseUrl ||
@@ -255,24 +251,15 @@ const webServerConfig = {
     ),
     authApiBaseUrl: addTrailingSlash(
         argv.authApiBaseUrl ||
-            new URI(apiBaseUrl)
-                .segment("v0")
-                .segment("auth")
-                .toString()
+            new URI(apiBaseUrl).segment("v0").segment("auth").toString()
     ),
     adminApiBaseUrl: addTrailingSlash(
         argv.adminApiBaseUrl ||
-            new URI(apiBaseUrl)
-                .segment("v0")
-                .segment("admin")
-                .toString()
+            new URI(apiBaseUrl).segment("v0").segment("admin").toString()
     ),
     previewMapBaseUrl: addTrailingSlash(
         argv.previewMapBaseUrl ||
-            new URI(apiBaseUrl)
-                .segment("..")
-                .segment("preview-map")
-                .toString()
+            new URI(apiBaseUrl).segment("..").segment("preview-map").toString()
     ),
     correspondenceApiBaseUrl: addTrailingSlash(
         argv.correspondenceApiBaseUrl ||
@@ -281,12 +268,13 @@ const webServerConfig = {
                 .segment("correspondence")
                 .toString()
     ),
+    storageApiBaseUrl: addTrailingSlash(
+        argv.storageApiBaseUrl ||
+            new URI(apiBaseUrl).segment("v0").segment("storage").toString()
+    ),
     openfaasBaseUrl: addTrailingSlash(
         argv.openfaasBaseUrl ||
-            new URI(apiBaseUrl)
-                .segment("v0")
-                .segment("openfaas")
-                .toString()
+            new URI(apiBaseUrl).segment("v0").segment("openfaas").toString()
     ),
     fallbackUrl: argv.fallbackUrl,
     gapiIds: argv.gapiIds,
@@ -307,7 +295,7 @@ const webServerConfig = {
     keywordsBlackList: argv.keywordsBlackList
 };
 
-app.get("/server-config.js", function(req, res) {
+app.get("/server-config.js", function (req, res) {
     res.type("application/javascript");
     res.send(
         "window.magda_server_config = " + JSON.stringify(webServerConfig) + ";"
@@ -326,7 +314,7 @@ function getIndexFileContentZeroArgs() {
     );
 }
 
-app.get(["/", "/index.html*"], async function(req, res) {
+app.get(["/", "/index.html*"], async function (req, res) {
     const indexFileContent = await getIndexFileContentZeroArgs();
 
     res.send(indexFileContent);
@@ -353,16 +341,16 @@ const topLevelRoutes = [
     "error"
 ];
 
-topLevelRoutes.forEach(topLevelRoute => {
-    app.get("/" + topLevelRoute, async function(req, res) {
+topLevelRoutes.forEach((topLevelRoute) => {
+    app.get("/" + topLevelRoute, async function (req, res) {
         res.send(await getIndexFileContentZeroArgs());
     });
-    app.get("/" + topLevelRoute + "/*", async function(req, res) {
+    app.get("/" + topLevelRoute + "/*", async function (req, res) {
         res.send(await getIndexFileContentZeroArgs());
     });
 });
 
-app.get("/page/*", async function(req, res) {
+app.get("/page/*", async function (req, res) {
     res.send(await getIndexFileContentZeroArgs());
 });
 
@@ -374,7 +362,7 @@ app.get("/page/*", async function(req, res) {
 // });
 
 if (argv.devProxy) {
-    app.get("/api/*", function(req, res) {
+    app.get("/api/*", function (req, res) {
         console.log(argv.devProxy + req.params[0]);
         req.pipe(
             request({
@@ -383,7 +371,7 @@ if (argv.devProxy) {
                 method: req.method
             })
         )
-            .on("error", err => {
+            .on("error", (err) => {
                 const msg = "Error on connecting to the webservice.";
                 console.error(msg, err);
                 res.status(500).send(msg);
@@ -418,7 +406,7 @@ app.use(
 
 // Proxy any other URL to 404 error page
 const maxErrorDataUrlLength = 1500;
-app.use("/", function(req, res) {
+app.use("/", function (req, res) {
     let redirectUri: any = new URI("/error");
     const url =
         req.originalUrl.length > maxErrorDataUrlLength

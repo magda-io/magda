@@ -109,13 +109,13 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                 MultiValueRemove: CustomMultiValueRemove
                             }}
                             options={codelists.languageOptions}
-                            getOptionLabel={option =>
+                            getOptionLabel={(option) =>
                                 option?.label ? option.label : option.value
                             }
-                            onChange={values =>
+                            onChange={(values) =>
                                 editDataset("languages")(
                                     Array.isArray(values)
-                                        ? values.map(item => item.value)
+                                        ? values.map((item) => item.value)
                                         : []
                                 )
                             }
@@ -123,7 +123,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                             value={(dataset.languages
                                 ? dataset.languages
                                 : ["eng"]
-                            ).map(item => ({
+                            ).map((item) => ({
                                 label: codelists.languages[item],
                                 value: item
                             }))}
@@ -207,7 +207,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                 isSearchable={false}
                                 options={Object.keys(
                                     codelists.datasetCurrencyStatus
-                                ).map(key => ({
+                                ).map((key) => ({
                                     label: codelists.datasetCurrencyStatus[key],
                                     value: key
                                 }))}
@@ -298,12 +298,12 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         accrualPeriodicityRecurrenceRule={
                             dataset.accrualPeriodicityRecurrenceRule
                         }
-                        onAccrualPeriodicityChange={value =>
+                        onAccrualPeriodicityChange={(value) =>
                             editDataset("accrualPeriodicity")(
                                 value ? value : ""
                             )
                         }
-                        onAccrualPeriodicityRecurrenceRuleChange={rule => {
+                        onAccrualPeriodicityRecurrenceRuleChange={(rule) => {
                             editDataset("accrualPeriodicityRecurrenceRule")(
                                 rule
                             );
@@ -320,7 +320,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                         renderAbove={true}
                     />
                 </div>
-                <h3>Spatial extent</h3>
+                <h3>Spatial Extent</h3>
                 <div>
                     <SpatialAreaInput
                         method={spatialCoverage.spatialDataInputMethod}
@@ -350,7 +350,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                             sa4Id?: string,
                             sa3Id?: string
                         ) =>
-                            props.setState(state => {
+                            props.setState((state) => {
                                 const spatialCoverage: any = {
                                     spatialDataInputMethod: method
                                 };

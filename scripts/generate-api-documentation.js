@@ -37,10 +37,10 @@ argv.include = new RegExp(argv.include);
 
 const input = fs
     .readdirSync(argv.input)
-    .filter(x => x.match(argv.include))
-    .map(x => path.join(argv.input, x, "src"))
-    .filter(x => fs.existsSync(x))
-    .map(x => `-i ${x}`)
+    .filter((x) => x.match(argv.include))
+    .map((x) => path.join(argv.input, x, "src"))
+    .filter((x) => fs.existsSync(x))
+    .map((x) => `-i ${x}`)
     .join(" ");
 
 const output = `-o ${argv.output}`;

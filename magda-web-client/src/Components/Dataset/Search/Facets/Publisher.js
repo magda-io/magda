@@ -19,7 +19,7 @@ class Publisher extends Component {
     }
 
     onTogglePublisherOption(publishers) {
-        const queryOptions = publishers.map(p => p.value);
+        const queryOptions = publishers.map((p) => p.value);
         this.props.updateQuery({
             organisation: queryOptions,
             page: undefined
@@ -59,7 +59,7 @@ class Publisher extends Component {
     render() {
         return (
             <MagdaNamespacesConsumer ns={["searchDatasetsPage"]}>
-                {translate => (
+                {(translate) => (
                     <FacetBasic
                         title={translate(["publisherFilterTitle", "Publisher"])}
                         id="publisher"

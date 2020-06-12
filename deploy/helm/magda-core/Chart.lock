@@ -8,6 +8,9 @@ dependencies:
 - name: authorization-db
   repository: file://../internal-charts/authorization-db
   version: 0.0.57-0
+- name: cloud-sql-proxy
+  repository: file://../internal-charts/cloud-sql-proxy
+  version: 0.0.57-0
 - name: combined-db
   repository: file://../internal-charts/combined-db
   version: 0.0.57-0
@@ -74,5 +77,10 @@ dependencies:
 - name: ingress
   repository: file://../internal-charts/ingress
   version: 0.0.57-0
+<<<<<<< HEAD
 digest: sha256:c8888dfe8edb6b92b28348d88211077fa59f36ab3461bc1bc81b44ab1eb05641
 generated: "2020-05-08T13:49:35.906413133+10:00"
+=======
+digest: sha256:e11f9dd597d72666d34c82c57b0d5dfc34f20d9201c9243482ffbc853ed927ef
+generated: "2020-06-09T17:05:39.075233+10:00"
+>>>>>>> e1deb719f667536586ee511969d6f082421a499b

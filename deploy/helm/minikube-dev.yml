@@ -34,14 +34,14 @@ global:
       tag: 0.0.57-0
       pullPolicy: IfNotPresent
       imagePullSecret: false
-  minions:
+  minions: {}
     # Remove the image section to make minions pull your test docker images from local docker registry
     # Make sure you build & push the connector docker images to your local docker registry
-    image:
-      repository: docker.io/data61
-      tag: 0.0.57-0
-      pullPolicy: IfNotPresent
-      imagePullSecret: false
+    # image:
+    #   repository: docker.io/data61
+    #   tag: 0.0.57-0
+    #   pullPolicy: IfNotPresent
+    #   imagePullSecret: false
 
 magda-core:
   gateway:
@@ -57,6 +57,11 @@ magda-core:
       arcgisClientId: "d0MgVUbbg5Z6vmWo"
       googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
       ckanAuthenticationUrl: https://data.gov.au/data
+    cookie:
+      # Set sameSite to "none" to explicitly allow cross-site cookie
+      # It's only for allowing frontend local dev site to login to remote dev instance
+      # Should not be set to "none" for a production site
+      sameSite: "none"
 
   registry-api:
     skipAuthorization: false
@@ -71,6 +76,8 @@ magda-core:
     featureFlags:
       cataloguing: true
       publishToDga: true
+      placeholderWorkflowsOn: true
+      datasetApprovalWorkflowOn: true
     dateConfig:
       dateFormats:
         - YYYY

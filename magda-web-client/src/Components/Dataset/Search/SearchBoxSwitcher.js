@@ -3,7 +3,7 @@ import { Medium, Small } from "Components/Common/Responsive";
 import SearchBox from "./SearchBox";
 import "./SearchBox.scss";
 
-const SearchBoxSwitcher = props => {
+const SearchBoxSwitcher = (props) => {
     return (
         <div className={"searchBox-switcher " + props.theme}>
             <Small>

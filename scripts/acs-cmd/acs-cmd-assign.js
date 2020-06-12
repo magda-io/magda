@@ -13,7 +13,7 @@ program
         "Assign a permission to a role"
     )
     .command("role <roleId> <userId>", "Assign a role to a user")
-    .on("command:*", function(cmds) {
+    .on("command:*", function (cmds) {
         if (["permission", "role"].indexOf(cmds[0]) === -1) {
             console.error(
                 chalk.red(

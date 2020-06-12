@@ -1,4 +1,4 @@
-export default function(dateString: string) {
+export default function (dateString: string) {
     if (dateString) {
         const date = new Date(dateString);
         if (isValidDate(date)) {

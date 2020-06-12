@@ -54,7 +54,7 @@ class RecordHandler extends React.Component<PropsType, StateType> {
         this.getBreadcrumbs = this.getBreadcrumbs.bind(this);
     }
 
-    toggleMargin = addMargin => {
+    toggleMargin = (addMargin) => {
         this.setState({ addMargin });
     };
 
@@ -248,15 +248,15 @@ class RecordHandler extends React.Component<PropsType, StateType> {
         const results = (
             <li key="result">
                 <Link
-                    to={`/${searchPage}?q=${queryString.parse(
-                        this.props.location.search
-                    ).q || ""}`}
+                    to={`/${searchPage}?q=${
+                        queryString.parse(this.props.location.search).q || ""
+                    }`}
                 >
                     Results
                 </Link>
             </li>
         );
-        const breadcrumbs = params.map(p => {
+        const breadcrumbs = params.map((p) => {
             if (p === "datasetId" && this.props.dataset.identifier) {
                 // if no dataset identifier (eg, coming to distribution page directly from url rather than from dataset page)
                 return (
@@ -328,7 +328,7 @@ function mapStateToProps(state) {
     };
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return bindActionCreators(
         {
             fetchDataset: fetchDatasetFromRegistry,
@@ -338,6 +338,6 @@ const mapDispatchToProps = dispatch => {
         dispatch
     );
 };
-export default withRouter(
+export default (withRouter(
     connect(mapStateToProps, mapDispatchToProps)(RecordHandler)
-);
+) as any) as React.ComponentType<PropsType>;

@@ -50,8 +50,8 @@ export function fetchSearchResults(queryObject: Query) {
         const queryString = buildSearchQueryString(queryObject);
         dispatch(requestResults(queryObject, queryString));
         searchDatasets(queryObject)
-            .then(json => dispatch(receiveResults(queryString, json)))
-            .catch(error =>
+            .then((json) => dispatch(receiveResults(queryString, json)))
+            .catch((error) =>
                 dispatch(
                     transferFailed({ title: error.name, detail: error.message })
                 )

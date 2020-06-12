@@ -78,7 +78,7 @@ class RegionMap extends Component {
     }
 
     generateStyle(region) {
-        return feature => {
+        return (feature) => {
             return {
                 color:
                     region === this.getID(feature)
@@ -114,7 +114,7 @@ class RegionMap extends Component {
         if (!regionType) regionType = "STE";
         let regionData = props.regionMapping[regionType];
         if (defined(regionData)) {
-            this.getID = function(feature) {
+            this.getID = function (feature) {
                 return feature.properties[regionData.regionProp];
             };
             this.layer = new L.TileLayer.MVTSource({
@@ -124,7 +124,7 @@ class RegionMap extends Component {
                 /*onEachFeature: onEachFeature, */
                 clickableLayers: props.interaction ? undefined : [], // Enable clicks for all layers if interaction
                 mutexToggle: true,
-                onClick: function(evt) {
+                onClick: function (evt) {
                     if (evt.type === "click" && evt.feature) {
                         props.onClick(evt.feature);
                         evt.originalEvent.stopPropagation();
@@ -145,7 +145,7 @@ class RegionMap extends Component {
             <div className="region-map">
                 <div
                     className="region-map__map"
-                    ref={c => {
+                    ref={(c) => {
                         this._c = c;
                     }}
                 />

@@ -5,7 +5,7 @@ import { config } from "config";
 import isExternalURL from "is-url-external";
 
 const headerNavigationPlugins = {
-    default: function(nav, i) {
+    default: function (nav, i) {
         const { href, target, rel } = nav;
         const opts = { href, target, rel };
         if (href === window.location.pathname) {

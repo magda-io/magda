@@ -1,0 +1,78 @@
+.my-dataset-section-container {
+    .dataset-list-container {
+        padding-left: 250px;
+        width: 98%;
+        height: 100%;
+    }
+    .dataset-list-inner-container {
+        border: 2px solid #ebf0f6;
+        border-radius: 3px;
+        margin-top: 20px;
+        margin-left: 12px;
+        margin-right: 12px;
+
+        padding-bottom: 20px;
+
+        .dataset-list-header {
+            padding-top: 24px;
+            padding-left: 2px;
+            margin-left: 48px;
+            padding-right: 2px;
+            margin-right: 43px;
+            padding-bottom: 1px;
+            height: 104px;
+            border-bottom: 4px solid #cccaca;
+            .dataset-type-tab {
+                float: left;
+                a {
+                    height: 76px;
+                    color: #042330;
+                    font-size: 23px;
+                    letter-spacing: -0.1px;
+                    line-height: 76px;
+                    text-decoration: none;
+                    display: inline-block;
+                    cursor: pointer;
+                }
+                a:first-child {
+                    margin-right: 70px;
+                }
+                a.active {
+                    border-bottom: 4px solid #001bea;
+                }
+            }
+            input {
+                float: right;
+                box-sizing: border-box;
+                height: 57px;
+                width: 363px;
+                border: 1px solid #d4d4d4;
+                border-radius: 11.2px;
+                color: #979797;
+                font-size: 20px;
+                letter-spacing: -0.48px;
+                line-height: 23px;
+                padding-left: 25px;
+                padding-right: 42px;
+            }
+            .search-box-wrapper {
+                position: relative;
+                .search-icon {
+                    position: absolute;
+                    width: 36px;
+                    height: 36px;
+                    right: 10px;
+                    top: 12px;
+                }
+                .clear-search-icon {
+                    position: absolute;
+                    width: 36px;
+                    height: 36px;
+                    right: 12px;
+                    top: 8px;
+                    cursor: pointer;
+                }
+            }
+        }
+    }
+}

@@ -16,7 +16,7 @@ function FooterLink({ link }) {
             <a
                 href="#feedback"
                 onClick={() => {
-                    zE(function() {
+                    zE(function () {
                         zE.activate();
                     });
                     return false;
@@ -40,7 +40,7 @@ function FooterLink({ link }) {
 }
 
 function FooterNavs({ footerNavs }) {
-    return footerNavs.map(item => (
+    return footerNavs.map((item) => (
         <nav
             className="au-footer__navigation col-md-3 col-sm-6 col-xs-6"
             key={item.label}
@@ -81,16 +81,23 @@ function Copyright({ href, logoSrc, logoClassName, logoAlt, htmlContent }) {
     );
 }
 
-function Footer({ footerMediumNavs, footerSmallNavs, footerCopyRightItems }) {
+function Footer({
+    footerMediumNavs,
+    footerSmallNavs,
+    footerCopyRightItems,
+    noTopMergin
+}) {
     return (
         <footer
-            className="au-footer au-body au-body--dark footer"
+            className={`au-footer au-body au-body--dark footer ${
+                noTopMergin === true ? "" : "with-top-margin"
+            }`}
             role="contentinfo"
             aria-label="footer"
         >
             <div className="container-fluid">
                 <Small>
-                    {matched => (
+                    {(matched) => (
                         <FooterNavs
                             footerNavs={
                                 matched ? footerSmallNavs : footerMediumNavs
@@ -117,7 +124,7 @@ function Footer({ footerMediumNavs, footerSmallNavs, footerCopyRightItems }) {
     );
 }
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
         footerMediumNavs: state.content.footerMediumNavs,
         footerSmallNavs: state.content.footerSmallNavs,

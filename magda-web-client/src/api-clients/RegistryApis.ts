@@ -4,6 +4,7 @@ import { Publisher } from "helpers/record";
 import { RawDataset } from "helpers/record";
 import ServerError from "./ServerError";
 import flatMap from "lodash/flatMap";
+import partialRight from "lodash/partialRight";
 
 import dcatDatasetStringsAspect from "@magda/registry-aspects/dcat-dataset-strings.schema.json";
 import spatialCoverageAspect from "@magda/registry-aspects/spatial-coverage.schema.json";
@@ -21,6 +22,7 @@ import organizationDetailsAspect from "@magda/registry-aspects/organization-deta
 import sourceAspect from "@magda/registry-aspects/source.schema.json";
 import datasetDraftAspect from "@magda/registry-aspects/dataset-draft.schema.json";
 import { createNoCacheFetchOptions } from "./createNoCacheFetchOptions";
+import formUrlencode from "./formUrlencode";
 
 export const aspectSchemas = {
     publishing: datasetPublishingAspect,
@@ -57,9 +59,9 @@ export function fetchOrganization(
     return fetch(
         url,
         noCache
-            ? createNoCacheFetchOptions(config.fetchOptions)
-            : config.fetchOptions
-    ).then(response => {
+            ? createNoCacheFetchOptions(config.credentialsFetchOptions)
+            : config.credentialsFetchOptions
+    ).then((response) => {
         if (!response.ok) {
             let statusText = response.statusText;
             // response.statusText are different in different browser, therefore we unify them here
@@ -111,27 +113,79 @@ export async function ensureAspectExists(id: string, jsonSchema?: any) {
     await aspectJsonSchemaSavingCache[id];
 }
 
+// --- See registry API document for API [Get a list of all records](https://dev.magda.io/api/v0/apidocs/index.html#api-Registry_Record_Service-GetV0RegistryRecords) for more details
+export enum AspectQueryOperators {
+    "=" = ":", // --- equal
+    "!=" = ":!", // --- Not equal
+    patternMatch = ":?", // --- pattern matching. Support Regex Expression as well.
+    patternNotMatch = ":!?",
+    ">" = ":>",
+    "<" = ":<",
+    ">=" = ":>=",
+    "<=" = ":<="
+}
+
+export class AspectQuery {
+    public path: string;
+    public operator: AspectQueryOperators;
+    public value: string | number | boolean;
+    // --- when `true`, all aspectQuery will be grouped with `AND` operator, otherwise, will be `OR`
+    public isAndQuery: boolean = true;
+
+    constructor(
+        path: string,
+        operator: AspectQueryOperators,
+        value: string | number | boolean,
+        isAndQuery?: boolean
+    ) {
+        this.path = path;
+        this.operator = operator;
+        this.value = value;
+        if (typeof isAndQuery === "boolean") {
+            this.isAndQuery = isAndQuery;
+        }
+    }
+
+    toString() {
+        // --- need to `encodeURIComponent` the formUrlencode result to ensure formatted string reach parser
+        return `${encodeURIComponent(formUrlencode(this.path))}${
+            this.operator
+        }${encodeURIComponent(formUrlencode(String(this.value)))}`;
+    }
+}
+
+export type OrderByOption =
+    | string // --- specify orderBy field only
+    | {
+          orderBy: string;
+          dir: "asc" | "desc";
+      };
+
+export const DEFAULT_OPTIONAL_FETCH_ASPECT_LIST = [
+    "dcat-distribution-strings",
+    "dataset-distributions",
+    "temporal-coverage&",
+    "usage",
+    "access",
+    "dataset-publisher",
+    "source",
+    "source-link-status",
+    "dataset-quality-rating",
+    "spatial-coverage",
+    "publishing",
+    "dataset-access-control",
+    "provenance",
+    "information-security",
+    "currency",
+    "ckan-export"
+];
+
+export const DEFAULT_COMPULSORY_FETCH_ASPECT_LIST = ["dcat-dataset-strings"];
+
 export async function fetchRecord(
     id: string,
-    optionalAspects: string[] = [
-        "dcat-distribution-strings",
-        "dataset-distributions",
-        "temporal-coverage&",
-        "usage",
-        "access",
-        "dataset-publisher",
-        "source",
-        "source-link-status",
-        "dataset-quality-rating",
-        "spatial-coverage",
-        "publishing",
-        "dataset-access-control",
-        "provenance",
-        "information-security",
-        "currency",
-        "ckan-export"
-    ],
-    aspects: string[] = ["dcat-dataset-strings"],
+    optionalAspects: string[] = DEFAULT_OPTIONAL_FETCH_ASPECT_LIST,
+    aspects: string[] = DEFAULT_COMPULSORY_FETCH_ASPECT_LIST,
     dereference: boolean = true,
     noCache: boolean = false
 ): Promise<RawDataset> {
@@ -140,12 +194,14 @@ export async function fetchRecord(
     if (dereference) {
         parameters.push("dereference=true");
     }
+
     if (aspects?.length) {
-        parameters.push(aspects.map(item => `aspect=${item}`).join("&"));
+        parameters.push(aspects.map((item) => `aspect=${item}`).join("&"));
     }
+
     if (optionalAspects?.length) {
         parameters.push(
-            optionalAspects.map(item => `optionalAspect=${item}`).join("&")
+            optionalAspects.map((item) => `optionalAspect=${item}`).join("&")
         );
     }
 
@@ -158,8 +214,8 @@ export async function fetchRecord(
     const response = await fetch(
         url,
         noCache
-            ? createNoCacheFetchOptions(config.fetchOptions)
-            : config.fetchOptions
+            ? createNoCacheFetchOptions(config.credentialsFetchOptions)
+            : config.credentialsFetchOptions
     );
 
     if (!response.ok) {
@@ -182,6 +238,176 @@ export async function fetchRecord(
     }
 }
 
+export const fetchRecordWithNoCache = partialRight(fetchRecord, true);
+
+export type FetchRecordsOptions = {
+    aspects?: string[];
+    optionalAspects?: string[];
+    pageToken?: string;
+    start?: number;
+    limit?: number;
+    dereference?: boolean;
+    aspectQueries?: AspectQuery[];
+    orderBy?: OrderByOption;
+    noCache?: boolean;
+};
+
+export async function fetchRecords({
+    aspects,
+    optionalAspects,
+    pageToken,
+    start,
+    limit,
+    dereference,
+    aspectQueries,
+    orderBy,
+    noCache
+}: FetchRecordsOptions): Promise<{
+    records: RawDataset[];
+    hasMore: boolean;
+    nextPageToken?: string;
+}> {
+    const parameters: string[] = [];
+
+    if (dereference) {
+        parameters.push("dereference=true");
+    }
+
+    if (aspects?.length) {
+        parameters.push(aspects.map((item) => `aspect=${item}`).join("&"));
+    }
+
+    if (optionalAspects?.length) {
+        parameters.push(
+            optionalAspects.map((item) => `optionalAspect=${item}`).join("&")
+        );
+    }
+
+    if (aspectQueries?.length) {
+        parameters.push(
+            aspectQueries
+                .map(
+                    (item) =>
+                        `${
+                            item.isAndQuery ? "aspectQuery" : "aspectOrQuery"
+                        }=${item.toString()}`
+                )
+                .join("&")
+        );
+    }
+
+    if (pageToken) {
+        parameters.push(`pageToken=${encodeURIComponent(pageToken)}`);
+    }
+
+    if (start) {
+        parameters.push(`start=${encodeURIComponent(start)}`);
+    }
+
+    if (limit) {
+        parameters.push(`limit=${encodeURIComponent(limit)}`);
+    }
+
+    if (orderBy) {
+        if (typeof orderBy === "string") {
+            parameters.push(`orderBy=${encodeURIComponent(orderBy)}`);
+        } else {
+            if (orderBy.orderBy) {
+                parameters.push(
+                    `orderBy=${encodeURIComponent(orderBy.orderBy)}`
+                );
+                if (orderBy.dir) {
+                    if (orderBy.dir !== "asc" && orderBy.dir !== "desc") {
+                        throw new Error(
+                            `Invalid order by direction: ${orderBy.dir}`
+                        );
+                    }
+                    parameters.push(
+                        `orderByDir=${encodeURIComponent(orderBy.dir)}`
+                    );
+                }
+            }
+        }
+    }
+
+    const url =
+        config.registryReadOnlyApiUrl +
+        `records${parameters.length ? `?${parameters.join("&")}` : ""}`;
+
+    const response = await fetch(
+        url,
+        noCache
+            ? createNoCacheFetchOptions(config.credentialsFetchOptions)
+            : config.credentialsFetchOptions
+    );
+
+    if (!response.ok) {
+        throw new ServerError(response.statusText, response.status);
+    }
+
+    const data = await response.json();
+    if (data?.records?.length > 0) {
+        return {
+            records: data.records,
+            hasMore: data.hasMore,
+            nextPageToken: data.nextPageToken
+        };
+    } else {
+        return {
+            records: [],
+            hasMore: false,
+            nextPageToken: ""
+        };
+    }
+}
+
+export async function fetchRecordsCount({
+    aspectQueries,
+    aspects,
+    noCache
+}: FetchRecordsOptions): Promise<RawDataset[]> {
+    const parameters: string[] = [];
+
+    if (aspects?.length) {
+        parameters.push(aspects.map((item) => `aspect=${item}`).join("&"));
+    }
+
+    if (aspectQueries?.length) {
+        parameters.push(
+            aspectQueries
+                .map(
+                    (item) =>
+                        `${
+                            item.isAndQuery ? "aspectQuery" : "aspectOrQuery"
+                        }=${item.toString()}`
+                )
+                .join("&")
+        );
+    }
+
+    const url =
+        config.registryReadOnlyApiUrl +
+        `records/count${parameters.length ? `?${parameters.join("&")}` : ""}`;
+
+    const response = await fetch(
+        url,
+        noCache
+            ? createNoCacheFetchOptions(config.credentialsFetchOptions)
+            : config.credentialsFetchOptions
+    );
+
+    if (!response.ok) {
+        throw new ServerError(response.statusText, response.status);
+    }
+
+    const data = await response.json();
+    if (typeof data?.count === "number") {
+        return data.count;
+    } else {
+        throw new Error(`Invalid response: ${await response.text()}`);
+    }
+}
+
 export async function deleteRecordAspect(
     recordId: string,
     aspectId: string
@@ -195,7 +421,7 @@ export async function deleteRecordAspect(
 export async function doesRecordExist(id: string) {
     try {
         //--- we turned off cache with last `true` parameter here
-        await fetchRecord(id, [], [], false, true);
+        await fetchRecordWithNoCache(id, [], [], false);
         return true;
     } catch (e) {
         if (e.statusCode === 404) {
@@ -232,7 +458,7 @@ function getAspectIds(record: Record): string[] {
 }
 
 function getRecordsAspectIds(records: Record[]): string[] {
-    return flatMap(records.map(item => getAspectIds(item)));
+    return flatMap(records.map((item) => getAspectIds(item)));
 }
 
 export async function createDataset(
@@ -242,7 +468,7 @@ export async function createDataset(
     // make sure all the aspects exist (this should be improved at some point, but will do for now)
     const aspectPromises = getRecordsAspectIds(
         [inputDataset].concat(inputDistributions)
-    ).map(aspectId => ensureAspectExists(aspectId));
+    ).map((aspectId) => ensureAspectExists(aspectId));
 
     await Promise.all(aspectPromises);
 
@@ -269,7 +495,7 @@ export async function updateDataset(
     // make sure all the aspects exist (this should be improved at some point, but will do for now)
     const aspectPromises = getRecordsAspectIds(
         [inputDataset].concat(inputDistributions)
-    ).map(aspectId => ensureAspectExists(aspectId));
+    ).map((aspectId) => ensureAspectExists(aspectId));
 
     await Promise.all(aspectPromises);
 

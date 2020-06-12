@@ -2,7 +2,22 @@ import React, { Component } from "react";
 import MarkdownViewer from "Components/Common/MarkdownViewer";
 import "./StoryBox.scss";
 
-class StoryBox extends Component {
+export type StoryDataType = {
+    content: {
+        title?: string;
+        titleUrl: string;
+        content: string;
+    };
+    image: string;
+};
+
+type PropsType = {
+    idx?: number;
+    story?: StoryDataType;
+    className?: string;
+};
+
+class StoryBox extends Component<PropsType> {
     getClickableElement(el, url, label) {
         if (!url) return el;
         return (

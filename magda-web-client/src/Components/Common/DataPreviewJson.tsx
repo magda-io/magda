@@ -1,12 +1,12 @@
 import React, { Component } from "react";
-import { config } from "config";
+import { config, getProxiedResourceUrl } from "config";
 import fetch from "isomorphic-fetch";
 import Spinner from "./Spinner";
 
 import { ParsedDistribution } from "helpers/record";
 
 function importReactJsonTree() {
-    return import("react-json-tree").then(module => module.default);
+    return import("react-json-tree").then((module) => module.default);
 }
 
 class DataPreviewJson extends Component<
@@ -35,7 +35,7 @@ class DataPreviewJson extends Component<
 
     componentDidMount() {
         this.fetchData(this.props.distribution.downloadURL);
-        importReactJsonTree().then(reactJsonTree => {
+        importReactJsonTree().then((reactJsonTree) => {
             this.setState({
                 reactJsonTree
             });
@@ -47,8 +47,8 @@ class DataPreviewJson extends Component<
             loading: true,
             json: null
         });
-        return fetch(config.proxyUrl + url, config.fetchOptions)
-            .then(response => {
+        return fetch(getProxiedResourceUrl(url), config.credentialsFetchOptions)
+            .then((response) => {
                 if (!response.ok) {
                     throw new Error(
                         `${response.status} (${response.statusText})`
@@ -57,14 +57,14 @@ class DataPreviewJson extends Component<
                     return response.json();
                 }
             })
-            .then(json => {
+            .then((json) => {
                 this.setState({
                     error: null,
                     loading: false,
                     json
                 });
             })
-            .catch(err => {
+            .catch((err) => {
                 console.warn(err);
                 this.setState({
                     error: err,

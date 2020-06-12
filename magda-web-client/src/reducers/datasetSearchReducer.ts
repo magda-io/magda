@@ -204,7 +204,7 @@ const datasetSearchReducer = (
         case "REMOVE_FORMAT":
             let formatIndex = findIndex(
                 state.activeFormats,
-                item => item.value === (action.item && action.item.value)
+                (item) => item.value === (action.item && action.item.value)
             );
             return Object.assign({}, state, {
                 activeFormats: [

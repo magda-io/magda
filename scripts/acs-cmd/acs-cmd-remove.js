@@ -13,7 +13,7 @@ program
         "Remove a permission from a role"
     )
     .command("role <roleId> <userId>", "Remove a role from a user")
-    .on("command:*", function(cmds) {
+    .on("command:*", function (cmds) {
         if (["permission", "role"].indexOf(cmds[0]) === -1) {
             console.error(
                 chalk.red(

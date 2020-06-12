@@ -25,8 +25,8 @@ export default function buildSitemapRouter({
             registry
                 .getRecordsPageTokens(DATASET_REQUIRED_ASPECTS)
                 .then(handleError)
-                .then(async result => {
-                    const datasetsPages = result.map(token => {
+                .then(async (result) => {
+                    const datasetsPages = result.map((token) => {
                         return baseExternalUri
                             .clone()
                             .path(
@@ -74,7 +74,7 @@ export default function buildSitemapRouter({
             ]
         });
 
-        sitemap.toXML(function(err: Error, xml: string) {
+        sitemap.toXML(function (err: Error, xml: string) {
             if (err) {
                 return res.status(500).end();
             }
@@ -92,17 +92,17 @@ export default function buildSitemapRouter({
             registry
                 .getRecords(DATASET_REQUIRED_ASPECTS, null, afterToken, false)
                 .then(handleError)
-                .then(records => {
+                .then((records) => {
                     const sitemap = sm.createSitemap({
                         hostname: baseExternalUrl,
                         cacheTime: 600000,
-                        urls: records.records.map(record => ({
+                        urls: records.records.map((record) => ({
                             url: `/dataset/${encodeURIComponent(record.id)}`,
                             changefreq: "weekly"
                         }))
                     });
 
-                    sitemap.toXML(function(err: Error, xml: string) {
+                    sitemap.toXML(function (err: Error, xml: string) {
                         if (err) {
                             return res.status(500).end();
                         }
@@ -128,7 +128,7 @@ export default function buildSitemapRouter({
      * and ends the request with HTTP 500
      */
     function catchError<T>(res: express.Response, promise: Promise<T>) {
-        return promise.catch(e => {
+        return promise.catch((e) => {
             console.error(e);
             res.status(500)
                 .set("Content-Type", "text/plain")

@@ -13,6 +13,35 @@
             "title": "The timestamp when the draft data is generated. In `date-time` (ISO 8601) format",
             "format": "date-time",
             "type": "string"
+        },
+        "dataset": {
+            "type": "object",
+            "description": "a list cached dataset fields for searching only",
+            "properties": {
+                "title": {
+                    "description": "A name given to the dataset.",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Free-text account of the dataset.",
+                    "type": "string"
+                },
+                "themes": {
+                    "type": "array",
+                    "description": "The main category of the dataset. A dataset can have multiple themes.",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "keywords": {
+                    "type": "array",
+                    "description": "Tags (or keywords) help users discover your dataset; please include terms that would be used by technical and non-technical users.",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                }
+            }
         }
     },
     "required": ["data", "timestamp"]

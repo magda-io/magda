@@ -19,72 +19,73 @@ import OrganisationPage from "Components/Organisation/OrganisationPage";
 
 import withHeader from "Components/Header/withHeader";
 import { makeAsync } from "Components/AsyncComponent";
+import { config } from "./config";
 
 const AdminPage = makeAsync(() =>
-    import("Components/Admin/AdminPage").then(module => module.default)
+    import("Components/Admin/AdminPage").then((module) => module.default)
 );
 
 const AccountsAdminPage = makeAsync(() =>
     import("Components/Account/AccountsAdminPage").then(
-        module => module.default
+        (module) => module.default
     )
 );
 
 const ConnectorsAdminPage = makeAsync(() =>
     import("Components/Dataset/ConnectorsAdminPage").then(
-        module => module.default
+        (module) => module.default
     )
 );
 
 const HeaderNavigationAdminPage = makeAsync(() =>
     import("Components/Header/HeaderNavigationAdminPage").then(
-        module => module.default
+        (module) => module.default
     )
 );
 const FooterNavigationAdminPage = makeAsync(() =>
     import("Components/Footer/FooterNavigationAdminPage").then(
-        module => module.default
+        (module) => module.default
     )
 );
 const FooterNavigationLinksAdminPage = makeAsync(() =>
     import("Components/Footer/FooterNavigationLinksAdminPage").then(
-        module => module.default
+        (module) => module.default
     )
 );
 const FooterCopyrightAdminPage = makeAsync(() =>
     import("Components/Footer/FooterCopyrightAdminPage").then(
-        module => module.default
+        (module) => module.default
     )
 );
 
 const HighlightsAdminPage = makeAsync(() =>
-    import("Components/Home/HighlightsAdminPage").then(module => module.default)
+    import("Components/Home/HighlightsAdminPage").then(
+        (module) => module.default
+    )
 );
 const HomeAdminPage = makeAsync(() =>
-    import("Components/Home/HomeAdminPage").then(module => module.default)
+    import("Components/Home/HomeAdminPage").then((module) => module.default)
 );
 const StaticPage = makeAsync(() =>
-    import("Components/Static/StaticPage").then(module => module.default)
+    import("Components/Static/StaticPage").then((module) => module.default)
 );
 const AdminStaticPagesPage = makeAsync(() =>
     import("Components/Static/StaticPagesAdminPage").then(
-        module => module.default
+        (module) => module.default
     )
 );
 const StoriesAdminPage = makeAsync(() =>
-    import("Components/Home/StoriesAdminPage").then(module => module.default)
+    import("Components/Home/StoriesAdminPage").then((module) => module.default)
 );
 const LanguageAdminPage = makeAsync(() =>
-    import("Components/i18n/LanguageAdminPage").then(module => module.default)
+    import("Components/i18n/LanguageAdminPage").then((module) => module.default)
 );
 const DatasetRoutes = makeAsync(() =>
-    import("Components/Dataset/Add/Routes").then(module => module.default)
+    import("Components/Dataset/Add/Routes").then((module) => module.default)
 );
 const CatalogRoutes = makeAsync(() =>
-    import("Components/Catalog/Routes").then(module => module.default)
+    import("Components/Catalog/Routes").then((module) => module.default)
 );
-
-import { config } from "./config";
 
 const Routes = () => {
     return (

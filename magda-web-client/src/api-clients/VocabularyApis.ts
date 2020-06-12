@@ -1,8 +1,7 @@
-import { config } from "../config";
 import fetch from "isomorphic-fetch";
 import uniq from "lodash/uniq";
 import flatMap from "lodash/flatMap";
-const apiEndpoints = config.vocabularyApiEndpoints;
+import type { MessageSafeConfig } from "config";
 
 async function queryEndpoint(
     apiEndpoint: string,
@@ -17,7 +16,7 @@ async function queryEndpoint(
     const requestUrl =
         `${apiEndpoint}?labelcontains=` + encodeURIComponent(str);
 
-    const data = await fetch(requestUrl).then(response => {
+    const data = await fetch(requestUrl).then((response) => {
         if (response.status === 200) {
             return response.json();
         }
@@ -32,7 +31,7 @@ async function queryEndpoint(
 
     const keywords: string[] = [];
 
-    data.result.items.forEach(item => {
+    data.result.items.forEach((item) => {
         let prefLabels: {
             _value: string;
             _lang: string;
@@ -54,7 +53,7 @@ async function queryEndpoint(
             }
         }
 
-        prefLabels.forEach(label => {
+        prefLabels.forEach((label) => {
             if (label._lang && label._lang !== "en") {
                 return;
             }
@@ -65,15 +64,19 @@ async function queryEndpoint(
     return keywords;
 }
 
-export async function query(str: string): Promise<string[]> {
+export async function query(
+    str: string,
+    config: MessageSafeConfig
+): Promise<string[]> {
+    const apiEndpoints = config.vocabularyApiEndpoints;
     if (!Array.isArray(apiEndpoints) || !apiEndpoints.length) {
         throw new Error(
             "Failed to contact Vocabulary API: invalid vocabularyApiEndpoints config!"
         );
     }
     const result = await Promise.all(
-        apiEndpoints.map(api =>
-            queryEndpoint(api, str).catch(e => {
+        apiEndpoints.map((api) =>
+            queryEndpoint(api, str).catch((e) => {
                 // In the event that a query fails it's not fatal... just count it as empty and move to the next one.
                 console.error(e);
                 return [];
@@ -81,13 +84,16 @@ export async function query(str: string): Promise<string[]> {
         )
     );
     const keywords = uniq(
-        flatMap(result).map(keyword => keyword.toLowerCase())
+        flatMap(result).map((keyword) => keyword.toLowerCase())
     );
     return keywords;
 }
 
-export async function isValidKeyword(keyword: string): Promise<boolean> {
-    const keywords = await query(keyword);
+export async function isValidKeyword(
+    keyword: string,
+    config: MessageSafeConfig
+): Promise<boolean> {
+    const keywords = await query(keyword, config);
     if (!Array.isArray(keywords) || !keywords.length) return false;
     return true;
 }

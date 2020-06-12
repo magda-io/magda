@@ -33,7 +33,7 @@ const featuredDatasetReducer = (
         case "RECEIVE_FEATURED_DATASETS":
             return Object.assign({}, state, {
                 isFetching: false,
-                records: action.json && action.json.map(d => parseDataset(d)),
+                records: action.json && action.json.map((d) => parseDataset(d)),
                 error: null
             });
 

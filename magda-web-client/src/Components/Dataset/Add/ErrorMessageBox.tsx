@@ -7,7 +7,7 @@ type Props = {
     error?: Error | null;
 };
 
-const ErrorMessageBox: FunctionComponent<Props> = props => {
+const ErrorMessageBox: FunctionComponent<Props> = (props) => {
     const { error } = props;
     if (!error) return null;
     if (error instanceof ServerError) {
@@ -112,7 +112,7 @@ const ErrorMessageBox: FunctionComponent<Props> = props => {
     );
 };
 
-export default connect(state => ({
+export default connect((state: any) => ({
     error:
         state.record && state.record.newDataset
             ? state.record.newDataset.error

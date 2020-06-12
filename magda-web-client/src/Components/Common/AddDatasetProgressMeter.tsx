@@ -7,6 +7,7 @@ import { withRouter, match } from "react-router";
 import "./AddDatasetProgressMeter.scss";
 import iconTick from "assets/tick.svg";
 import { History, Location } from "history";
+import { config } from "config";
 
 type urlFunc = (datasetId: string) => string;
 interface StepItem {
@@ -29,17 +30,17 @@ interface InternalProps {
 }
 
 /** Lookup for step numbers by page theme */
-const stepNumbers = {
+export const stepMap = {
     ADD_FILES: 0,
     DETAILS_AND_CONTENTS: 1,
     PEOPLE_AND_PRODUCTION: 2,
     ACCESS_AND_USER: 3,
-    SUBMIT_FOR_APPROVAL: 4,
-    REVIEW: 5,
+    REVIEW: 4, // optionally turned off by config.featureFlags.datasetApprovalWorkflowOn
+    REVIEW_BEFORE_SUBMIT: 5,
     ALL_DONE: 6
 };
 
-export const steps: StepItem[] = [
+export const addDatasetSteps: StepItem[] = [
     {
         title: "Add files",
         url: "/dataset/add/metadata/${datasetId}/0"
@@ -57,7 +58,7 @@ export const steps: StepItem[] = [
         url: "/dataset/add/metadata/${datasetId}/3"
     },
     {
-        title: "Submit for Approval",
+        title: "Review",
         url: "/dataset/add/metadata/${datasetId}/4"
     },
     {
@@ -70,7 +71,7 @@ export const steps: StepItem[] = [
     }
 ];
 
-export const editSteps: StepItem[] = [
+export const editDatasetSteps: StepItem[] = [
     {
         title: "Your Files and Distributions",
         url: "/dataset/edit/${datasetId}/0"
@@ -88,7 +89,7 @@ export const editSteps: StepItem[] = [
         url: "/dataset/edit/${datasetId}/3"
     },
     {
-        title: "Submit for Approval",
+        title: "Review",
         url: "/dataset/edit/${datasetId}/4"
     },
     {
@@ -100,6 +101,12 @@ export const editSteps: StepItem[] = [
         url: "/dataset/add/metadata/${datasetId}/6"
     }
 ];
+
+if (!config.featureFlags.datasetApprovalWorkflowOn) {
+    const idx = stepMap.REVIEW;
+    addDatasetSteps.splice(idx, 1);
+    editDatasetSteps.splice(idx, 1);
+}
 
 function createStepUrl(datasetId, item: StepItem) {
     if (typeof item.url === "string") {
@@ -132,7 +139,7 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
         currentStep: number,
         datasetId: string
     ) {
-        if (idx >= stepNumbers.REVIEW) {
+        if (idx >= stepMap.REVIEW_BEFORE_SUBMIT) {
             return null;
         }
 
@@ -143,8 +150,8 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
 
         const status: Status = (() => {
             if (
-                currentStep >= stepNumbers.REVIEW &&
-                idx === stepNumbers.SUBMIT_FOR_APPROVAL
+                currentStep >= stepMap.REVIEW_BEFORE_SUBMIT &&
+                idx === stepMap.REVIEW
             ) {
                 return {
                     class: "current-item",
@@ -223,7 +230,9 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
     const currentStep = determineCurrentStep();
     const datasetId = determineDatasetId();
 
-    if (currentStep >= stepNumbers.ALL_DONE) return null;
+    if (currentStep >= stepMap.ALL_DONE) {
+        return null;
+    }
     return (
         <div className="add-dataset-progress-meter">
             <div className="container">
@@ -233,8 +242,23 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
                     </div>
                 </div>
                 <div className="col-sm-10 step-item-body">
-                    {(isEdit ? editSteps : steps).map((item, idx) =>
-                        renderStepItem(item, idx, currentStep, datasetId)
+                    {(isEdit ? editDatasetSteps : addDatasetSteps).map(
+                        (item, idx) => {
+                            // Skip the review step if it's turned off
+                            if (
+                                !config.featureFlags
+                                    .datasetApprovalWorkflowOn &&
+                                idx === stepMap.REVIEW
+                            ) {
+                                return null;
+                            }
+                            return renderStepItem(
+                                item,
+                                idx,
+                                currentStep,
+                                datasetId
+                            );
+                        }
                     )}
                 </div>
             </div>
@@ -242,7 +266,7 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
     );
 };
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return bindActionCreators(
         {
             createNewDatasetReset: createNewDatasetReset

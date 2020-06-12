@@ -42,10 +42,10 @@ program
                 const permissions = await getPermissionsByRoleId(role["id"]);
                 data.push(
                     selectFields
-                        .map(k => role[k])
+                        .map((k) => role[k])
                         .concat([
                             permissions
-                                .map(p => `${p.id}:\n${p.name}`)
+                                .map((p) => `${p.id}:\n${p.name}`)
                                 .join("\n\n")
                         ])
                 );

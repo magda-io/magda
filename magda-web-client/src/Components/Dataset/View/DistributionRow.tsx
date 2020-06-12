@@ -12,6 +12,7 @@ import { gapi } from "analytics/ga";
 import { Dataset } from "helpers/datasetSearch";
 
 import { getFormatIcon, determineFormatIcon } from "./DistributionIcon";
+import { licenseLevel } from "constants/DatasetConstants";
 
 export type PropType = {
     dataset: Dataset;
@@ -32,7 +33,7 @@ class DistributionRow extends Component<PropType> {
      * Replace underscores in links with spaces
      * This stops the text from going off the edge of the screen
      */
-    renderDistributionLink = title => {
+    renderDistributionLink = (title) => {
         if (title.includes("_")) {
             return title.replace(/_/g, " ");
         } else {
@@ -117,12 +118,9 @@ class DistributionRow extends Component<PropType> {
                                 className="distribution-row-link-license"
                                 itemProp="license"
                             >
-                                {distribution.license &&
-                                    (typeof distribution.license === "string"
-                                        ? distribution.license
-                                        : distribution.license.name
-                                        ? distribution.license.name
-                                        : "")}
+                                {(distribution.license &&
+                                    licenseLevel[distribution.license]) ||
+                                    distribution.license}
                             </div>
                         </div>
                     </div>

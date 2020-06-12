@@ -31,7 +31,7 @@ export default function Login(props) {
         error: providersLoadingError
     } = useAsync(async () => {
         const providers = await getAuthProviders();
-        setLoginFormProvider(value => getDefaultLoginFormProvider(providers));
+        setLoginFormProvider((value) => getDefaultLoginFormProvider(providers));
         return providers;
     }, []);
 
@@ -46,7 +46,7 @@ export default function Login(props) {
     const baseRedirectUrl = `${window.location.protocol}//${window.location.host}`;
     const oauthRedirect = `${baseRedirectUrl}/sign-in-redirect?redirectTo=${previousUrl}`;
 
-    const makeLoginUrl = type =>
+    const makeLoginUrl = (type) =>
         `${baseUrl}auth/login/${type}?redirect=${encodeURIComponent(
             oauthRedirect
         )}`;
@@ -146,31 +146,35 @@ export default function Login(props) {
     };
 
     const loginFormProviderOptions = () => {
-        if (!loginFormProvider) {
+        if (!loginFormProvider || !providers?.length) {
             return null;
         }
         return (
             <>
-                <li className="login__provider">
-                    <a onClick={() => setLoginFormProvider("internal")}>
-                        <img
-                            src={magdaLogo}
-                            className="login__logo"
-                            alt="logo"
-                        />
-                        Magda
-                    </a>
-                </li>
-                <li className="login__provider">
-                    <a onClick={() => setLoginFormProvider("ckan")}>
-                        <img
-                            src={ckanLogo}
-                            className="login__logo"
-                            alt="logo"
-                        />
-                        Data.gov.au / Ckan
-                    </a>
-                </li>
+                {providers.indexOf("internal") === -1 ? null : (
+                    <li className="login__provider">
+                        <a onClick={() => setLoginFormProvider("internal")}>
+                            <img
+                                src={magdaLogo}
+                                className="login__logo"
+                                alt="logo"
+                            />
+                            Magda
+                        </a>
+                    </li>
+                )}
+                {providers.indexOf("ckan") === -1 ? null : (
+                    <li className="login__provider">
+                        <a onClick={() => setLoginFormProvider("ckan")}>
+                            <img
+                                src={ckanLogo}
+                                className="login__logo"
+                                alt="logo"
+                            />
+                            Data.gov.au / Ckan
+                        </a>
+                    </li>
+                )}
             </>
         );
     };
