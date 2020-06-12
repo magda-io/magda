@@ -151,7 +151,7 @@ export default function Login(props) {
         }
         return (
             <>
-                {providers.indexOf("internal") === -1 ? null : (
+                {providers.indexOf("internal") === -1 && (
                     <li className="login__provider">
                         <a onClick={() => setLoginFormProvider("internal")}>
                             <img
@@ -163,7 +163,7 @@ export default function Login(props) {
                         </a>
                     </li>
                 )}
-                {providers.indexOf("ckan") === -1 ? null : (
+                {providers.indexOf("ckan") === -1 && (
                     <li className="login__provider">
                         <a onClick={() => setLoginFormProvider("ckan")}>
                             <img
