@@ -52,6 +52,8 @@ UI:
 -   Fixed: error notification no longer has a white background
 -   Added `add dataset review page`
 -   Make `add dataset page` save state data to registry (unless in preview mode) rather than localStorage
+-   Change search text to say "Search for data" instead of "Search for open data"
+-   Set flag `previewAddDataset` to `false` by default
 
 Storage:
 
