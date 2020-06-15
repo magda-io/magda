@@ -86,9 +86,11 @@ class RecordsServiceRO(
     *
     *   NOTE: This is an early stage API and may change greatly in the future
     *
-    * @apiParam (query) {string} orderBy Specify the field to sort the result. Aspect field can be supported in a format like aspectId.path.to.field
+    * @apiParam (query) {string} orderBy Specify the field to sort the result. Aspect field can be supported in a format like aspectId.path.to.field.
     *
-    *   If `orderBy` reference an aspects that is not included by either `aspect` or `optionalAspect` parameters, it will be added to the `optionalAspect` list.
+    *   If orderBy reference an aspects that is not included by either `aspect` or `optionalAspect` parameters, it will be added to the `optionalAspect` list.
+    *
+    *   Please Note: When `orderBy` is specified, `pageToken` parameter is not available. You should use `start` & `limit` instead for pagination purpose.
     *
     * @apiParam (query) {string} orderByDir Specify the order by direction. Either `asc` or `desc`. `desc` order is the default.
     * @apiParam (query) {boolean} orderNullFirst Specify whether nulls appear before (`true`) or after (`false`) non-null values in the sort ordering. Default to `false`.
@@ -276,47 +278,57 @@ class RecordsServiceRO(
             ) { opaQueries =>
               opaQueries match {
                 case (recordQueries, linkedRecordQueries) =>
-                  complete {
-                    DB readOnly { session =>
-                      recordPersistence.getAllWithAspects(
-                        session,
-                        tenantId,
-                        aspects,
-                        optionalAspects,
-                        recordQueries,
-                        linkedRecordQueries,
-                        pageToken,
-                        start,
-                        limit,
-                        dereference,
-                        parsedAspectQueries,
-                        parsedAspectOrQueries,
-                        orderBy match {
-                          case Some(field) =>
-                            Some(
-                              OrderByDef(
-                                field,
-                                orderByDir match {
-                                  case Some("asc")  => SQLSyntax.asc
-                                  case Some("desc") => SQLSyntax.desc
-                                  case None         => SQLSyntax.desc
-                                  case _ =>
-                                    throw new Error(
-                                      s"Invalid orderByDir parameter: ${orderByDir.toString}"
-                                    )
-                                },
-                                orderNullFirst match {
-                                  case Some(true)  => true
-                                  case Some(false) => false
-                                  case _           => false
-                                }
-                              )
-                            )
-                          case _ => None
-                        }
+                  if (orderBy.isDefined && pageToken.isDefined) {
+                    complete(
+                      StatusCodes.BadRequest,
+                      ApiError(
+                        "When `orderBy` parameter is specified, `pageToken` parameter is not supported. Use `start` instead."
                       )
+                    )
+                  } else {
+                    complete {
+                      DB readOnly { session =>
+                        recordPersistence.getAllWithAspects(
+                          session,
+                          tenantId,
+                          aspects,
+                          optionalAspects,
+                          recordQueries,
+                          linkedRecordQueries,
+                          pageToken,
+                          start,
+                          limit,
+                          dereference,
+                          parsedAspectQueries,
+                          parsedAspectOrQueries,
+                          orderBy match {
+                            case Some(field) =>
+                              Some(
+                                OrderByDef(
+                                  field,
+                                  orderByDir match {
+                                    case Some("asc")  => SQLSyntax.asc
+                                    case Some("desc") => SQLSyntax.desc
+                                    case None         => SQLSyntax.desc
+                                    case _ =>
+                                      throw new Error(
+                                        s"Invalid orderByDir parameter: ${orderByDir.toString}"
+                                      )
+                                  },
+                                  orderNullFirst match {
+                                    case Some(true)  => true
+                                    case Some(false) => false
+                                    case _           => false
+                                  }
+                                )
+                              )
+                            case _ => None
+                          }
+                        )
+                      }
                     }
                   }
+
               }
             }
         }

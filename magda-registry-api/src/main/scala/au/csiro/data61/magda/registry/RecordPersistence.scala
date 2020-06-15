@@ -1454,6 +1454,12 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       orderBy: Option[OrderByDef] = None
   ): RecordsPage[Record] = {
 
+    if (orderBy.isDefined && pageToken.isDefined) {
+      throw new Error(
+        "`orderBy` and `pageToken` parameters cannot be both specified."
+      )
+    }
+
     val recordsFilteredByTenantClause: SQLSyntax = filterRecordsByTenantClause(
       tenantId
     )
