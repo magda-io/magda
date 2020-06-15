@@ -90,7 +90,8 @@ class RecordsServiceRO(
     *
     *   If `orderBy` reference an aspects that is not included by either `aspect` or `optionalAspect` parameters, it will be added to the `optionalAspect` list.
     *
-    * @apiParam (query) {string} orderByDir Specify the order by direction. Either `asc` or `desc`
+    * @apiParam (query) {string} orderByDir Specify the order by direction. Either `asc` or `desc`. `desc` order is the default.
+    * @apiParam (query) {boolean} orderNullFirst Specify whether nulls appear before (`true`) or after (`false`) non-null values in the sort ordering. Default to `false`.
     * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiSuccess (Success 200) {json} Response the record detail
@@ -204,6 +205,15 @@ class RecordsServiceRO(
         value = "Specify the order by direction. Either `asc` or `desc`"
       ),
       new ApiImplicitParam(
+        name = "orderNullFirst",
+        required = false,
+        dataType = "boolean",
+        paramType = "query",
+        allowMultiple = false,
+        value =
+          "Specify whether nulls appear before (`true`) or after (`false`) non-null values in the sort ordering."
+      ),
+      new ApiImplicitParam(
         name = "X-Magda-Tenant-Id",
         required = true,
         dataType = "number",
@@ -232,7 +242,8 @@ class RecordsServiceRO(
           'aspectQuery.*,
           'aspectOrQuery.*,
           'orderBy.as[String].?,
-          'orderByDir.as[String].?
+          'orderByDir.as[String].?,
+          'orderNullFirst.as[Boolean].?
         ) {
           (
               aspects,
@@ -244,7 +255,8 @@ class RecordsServiceRO(
               aspectQueries,
               aspectOrQueries,
               orderBy,
-              orderByDir
+              orderByDir,
+              orderNullFirst
           ) =>
             val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
             val parsedAspectOrQueries = aspectOrQueries.map(AspectQuery.parse)
@@ -292,6 +304,11 @@ class RecordsServiceRO(
                                     throw new Error(
                                       s"Invalid orderByDir parameter: ${orderByDir.toString}"
                                     )
+                                },
+                                orderNullFirst match {
+                                  case Some(true)  => true
+                                  case Some(false) => false
+                                  case _           => false
                                 }
                               )
                             )

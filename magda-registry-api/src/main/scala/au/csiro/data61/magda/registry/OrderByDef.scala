@@ -2,7 +2,11 @@ package au.csiro.data61.magda.registry
 
 import scalikejdbc._
 
-case class OrderByDef(field: String, dir: SQLSyntax = SQLSyntax.desc) {
+case class OrderByDef(
+    field: String,
+    dir: SQLSyntax = SQLSyntax.desc,
+    orderNullFirst: Boolean = true
+) {
   def parts: Array[String] = field.split("\\.")
   def isAspectPath: Boolean = parts.length > 1
   def aspectName: String = parts.head
@@ -47,7 +51,9 @@ case class OrderByDef(field: String, dir: SQLSyntax = SQLSyntax.desc) {
         aspectName
       }
 
-      sqls"${SQLSyntax.orderBy(getFullFieldRef(tableName, aspectNameRef, aspectPathItems.toList))} ${dir}"
+      sqls"${SQLSyntax.orderBy(
+        getFullFieldRef(tableName, aspectNameRef, aspectPathItems.toList)
+      )} ${dir} ${if (orderNullFirst) sqls"NULLS FIRST" else sqls"NULLS LAST"}"
     }
   }
 }
