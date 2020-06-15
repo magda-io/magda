@@ -219,7 +219,13 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
                 </button>
                 {!overAllLoading && !overAllError ? (
                     <div className="page-idx-info-area">
-                        {offset + PAGE_SIZE} / {datasetCount}
+                        {(() => {
+                            const totalCount = offset + PAGE_SIZE;
+                            return totalCount > (datasetCount as number)
+                                ? datasetCount
+                                : totalCount;
+                        })()}{" "}
+                        / {datasetCount}
                     </div>
                 ) : null}
             </div>
