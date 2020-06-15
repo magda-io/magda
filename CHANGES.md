@@ -24,6 +24,7 @@ General:
 -   Make Magda charts helm v3 charts
 -   Add migration document for migrating Magda release v0.0.56-RC6 or eariler to v0.0.57-0
 -   Add internal authentication provider allow user to be authenticated locally
+-   Upgrade to typescript 3.9.5
 
 UI:
 
