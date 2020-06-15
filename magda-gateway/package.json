@@ -70,7 +70,7 @@
     "@types/lodash": "^4.14.74",
     "@types/mocha": "^2.2.41",
     "@types/nock": "^8.2.1",
-    "@types/passport": "^0.4.5",
+    "@types/passport": "^1.0.3",
     "@types/passport-facebook": "^2.1.8",
     "@types/passport-local": "^1.0.33",
     "@types/pg": "^6.1.41",
