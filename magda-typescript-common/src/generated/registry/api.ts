@@ -1549,6 +1549,7 @@ export class RecordsApi {
      * @param aspectOrQuery Filter the records returned by a value within the aspect JSON. Expressed as &#39;aspectId.path.to.field:value&#39;, url encoded. Queries passing via this parameter will be grouped with OR logic. NOTE: This is an early stage API and may change greatly in the future
      * @param orderBy Specify the field to sort the result. Aspect field can be supported in a format like aspectId.path.to.field
      * @param orderByDir Specify the order by direction. Either &#x60;asc&#x60; or &#x60;desc&#x60;
+     * @param orderNullFirst Specify whether nulls appear before (&#x60;true&#x60;) or after (&#x60;false&#x60;) non-null values in the sort ordering.
      * @param xMagdaSession Magda internal session id
      */
     public getAll(
@@ -1563,6 +1564,7 @@ export class RecordsApi {
         aspectOrQuery?: Array<string>,
         orderBy?: string,
         orderByDir?: string,
+        orderNullFirst?: boolean,
         xMagdaSession?: string
     ): Promise<{ response: http.IncomingMessage; body: Array<Record> }> {
         const localVarPath = this.basePath + "/records";
@@ -1615,6 +1617,10 @@ export class RecordsApi {
 
         if (orderByDir !== undefined) {
             queryParameters["orderByDir"] = orderByDir;
+        }
+
+        if (orderNullFirst !== undefined) {
+            queryParameters["orderNullFirst"] = orderNullFirst;
         }
 
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
