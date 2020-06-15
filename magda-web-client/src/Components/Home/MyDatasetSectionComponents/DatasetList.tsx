@@ -22,6 +22,7 @@ const DatasetList: FunctionComponent<PropsType> = (props) => {
         loading: draftCountIsLoading,
         error: draftCountError
     } = useDatasetCount("drafts", searchText, props.userId);
+
     const {
         result: publishedCount,
         loading: publishedCountIsLoading,
@@ -56,7 +57,7 @@ const DatasetList: FunctionComponent<PropsType> = (props) => {
                             <span className="dataset-count-info">
                                 {!publishedCountIsLoading &&
                                 !publishedCountError
-                                    ? draftCount
+                                    ? publishedCount
                                     : null}
                             </span>
                         </a>
