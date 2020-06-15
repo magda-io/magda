@@ -12,10 +12,15 @@ import {
 } from "api-clients/RegistryApis";
 import moment from "moment";
 
+const PAGE_SIZE = 10;
+
 type PropsType = {
     searchText: string;
     datasetType: DatasetTypes;
     userId: string;
+    datasetCount?: number;
+    datasetCountIsLoading: boolean;
+    datasetCountError?: Error;
 };
 
 function createRows(
@@ -111,23 +116,28 @@ function getDate(datasetType: DatasetTypes, record: Record) {
 }
 
 const DatasetGrid: FunctionComponent<PropsType> = (props) => {
-    const { datasetType } = props;
-    const [pageToken, setPageToken] = useState<string>("");
+    const {
+        datasetType,
+        datasetCount,
+        datasetCountIsLoading,
+        datasetCountError
+    } = props;
+    const [offset, setPageOffset] = useState<number>(0);
 
     const { result, loading, error } = useAsync(
         async (
             datasetType: DatasetTypes,
             searchText: string,
             userId: string,
-            pageToken: string
+            offset: number
         ) => {
             const opts: FetchRecordsOptions = {
-                limit: 10,
+                limit: PAGE_SIZE,
                 noCache: true
             };
 
-            if (pageToken) {
-                opts.pageToken = pageToken;
+            if (offset) {
+                opts.start = offset;
             }
 
             if (datasetType === "drafts") {
@@ -148,8 +158,11 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
 
             return await fetchRecords(opts);
         },
-        [props.datasetType, props.searchText, props.userId, pageToken]
+        [props.datasetType, props.searchText, props.userId, offset]
     );
+
+    const overAllLoading = loading || datasetCountIsLoading;
+    const overAllError = error ? error : datasetCountError;
 
     return (
         <>
@@ -163,7 +176,12 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
                 </thead>
 
                 <tbody>
-                    {createRows(datasetType, result?.records, loading, error)}
+                    {createRows(
+                        datasetType,
+                        result?.records,
+                        overAllLoading,
+                        overAllError
+                    )}
                 </tbody>
             </table>
             <hr className="grid-bottom-divider" />
@@ -171,25 +189,38 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
                 <button
                     className="next-page-button"
                     disabled={
-                        result?.hasMore === true && !loading ? false : true
+                        (datasetCount && offset + PAGE_SIZE >= datasetCount) ||
+                        overAllLoading ||
+                        overAllError
+                            ? true
+                            : false
                     }
-                    onClick={() => {
-                        setPageToken(
-                            result?.nextPageToken ? result.nextPageToken : ""
-                        );
-                    }}
+                    onClick={() =>
+                        setPageOffset(
+                            (currentOffset) => currentOffset + PAGE_SIZE
+                        )
+                    }
                 >
                     Next page
                 </button>
-                {result?.hasMore !== true && pageToken && !loading ? (
-                    <button
-                        className="first-page-button"
-                        onClick={() => {
-                            setPageToken("");
-                        }}
-                    >
-                        First page
-                    </button>
+                <button
+                    className="first-page-button"
+                    disabled={
+                        !offset || overAllLoading || overAllError ? true : false
+                    }
+                    onClick={() => {
+                        setPageOffset((currentOffset) => {
+                            const offset = currentOffset - PAGE_SIZE;
+                            return offset < 0 ? 0 : offset;
+                        });
+                    }}
+                >
+                    Previous page
+                </button>
+                {!overAllLoading && !overAllError ? (
+                    <div className="page-idx-info-area">
+                        {offset + PAGE_SIZE} / {datasetCount}
+                    </div>
                 ) : null}
             </div>
         </>

@@ -384,7 +384,7 @@ export async function fetchRecordsCount({
     aspectQueries,
     aspects,
     noCache
-}: FetchRecordsCountOptions): Promise<RawDataset[]> {
+}: FetchRecordsCountOptions): Promise<number> {
     const parameters: string[] = [];
 
     if (aspects?.length) {
