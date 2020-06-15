@@ -189,7 +189,8 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
                 <button
                     className="next-page-button"
                     disabled={
-                        (datasetCount && offset + PAGE_SIZE >= datasetCount) ||
+                        !datasetCount ||
+                        offset + PAGE_SIZE >= datasetCount ||
                         overAllLoading ||
                         overAllError
                             ? true
