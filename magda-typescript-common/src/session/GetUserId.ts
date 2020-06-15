@@ -14,7 +14,7 @@ export function getUserId(req: Request, jwtSecret: string): Maybe<string> {
             return Maybe.nothing<string>();
         }
     } else {
-        if (req?.user?.id) {
+        if (req.user?.id) {
             return Maybe.just(req.user.id);
         }
         return Maybe.nothing<string>();
@@ -30,7 +30,7 @@ export function getUserIdHandling(
     const userId = getUserId(req, jwtSecret);
 
     userId.caseOf({
-        just: userId => {
+        just: (userId) => {
             cb(userId);
         },
         nothing: () => {

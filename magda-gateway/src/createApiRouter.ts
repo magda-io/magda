@@ -8,6 +8,13 @@ import buildJwt from "magda-typescript-common/src/session/buildJwt";
 import createBaseProxy from "./createBaseProxy";
 import Authenticator from "./Authenticator";
 import { TenantMode } from "./setupTenantMode";
+import { MagdaUser } from "magda-typescript-common/src/authorization-api/model";
+
+declare global {
+    namespace Express {
+        interface User extends MagdaUser {}
+    }
+}
 
 export interface ProxyTarget {
     to: string;
@@ -68,7 +75,7 @@ export default function createApiRouter(options: ApiRouterOptions): Router {
         if (redirectTrailingSlash) {
             // --- has to use RegEx as `req.originalUrl` will match both with & without trailing /
             const re = new RegExp(`^${escapeStringRegexp(baseRoute)}$`);
-            router.get(re, function(req, res) {
+            router.get(re, function (req, res) {
                 res.redirect(`${req.originalUrl}/`);
             });
         }
