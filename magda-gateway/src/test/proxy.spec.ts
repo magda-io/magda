@@ -7,6 +7,7 @@ import supertest from "supertest";
 import URI from "urijs";
 
 import buildApp from "../buildApp";
+import { expect } from "chai";
 
 const PROXY_ROOTS = {
     "/api/v0/registry": "http://registry",
@@ -50,7 +51,8 @@ describe("proxying", () => {
             userId: "b1fddd6f-e230-4068-bd2c-1a21844f1598",
             web: "https://127.0.0.1",
             previewMap: "http://preview-map",
-            tenantUrl: "http://tenant"
+            tenantUrl: "http://tenant",
+            defaultCacheControl: "DEFAULT CACHE CONTROL"
         });
     });
 
@@ -93,6 +95,38 @@ describe("proxying", () => {
                     });
 
                 return supertest(app).get(key).set("Host", "test").expect(200);
+            });
+
+            it("should add default cache control header if not specified", (done) => {
+                nock(value)
+                    .get("/")
+                    .reply(() => {
+                        return 200;
+                    });
+
+                supertest(app)
+                    .get(key)
+                    .end((_err, res) => {
+                        expect(res.header["cache-control"]).to.equal(
+                            "DEFAULT CACHE CONTROL"
+                        );
+                        done();
+                    });
+            });
+
+            it("should not override cache control header", (done) => {
+                nock(value).get("/").reply(200, "", {
+                    "cache-control": "Non-default cache control"
+                });
+
+                supertest(app)
+                    .get(key)
+                    .end((_err, res) => {
+                        expect(res.header["cache-control"]).to.equal(
+                            "Non-default cache control"
+                        );
+                        done();
+                    });
             });
         });
     });

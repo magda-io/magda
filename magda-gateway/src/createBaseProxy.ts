@@ -1,14 +1,13 @@
 import httpProxy from "http-proxy";
 import express from "express";
 
-import { TenantMode } from "./setupTenantMode";
-
 import groupBy = require("lodash/groupBy");
 
 import {
     MAGDA_TENANT_ID_HEADER,
     MAGDA_ADMIN_PORTAL_ID
 } from "magda-typescript-common/src/registry/TenantConsts";
+import { ApiRouterOptions } from "./createApiRouter";
 
 const DO_NOT_PROXY_HEADERS = [
     "Proxy-Authorization",
@@ -25,7 +24,7 @@ const doNotProxyHeaderLookup = groupBy(
     (x: string) => x
 );
 
-export default function createBaseProxy(tenantMode: TenantMode): httpProxy {
+export default function createBaseProxy(options: ApiRouterOptions): httpProxy {
     const proxy = httpProxy.createProxyServer({
         prependUrl: false,
         changeOrigin: true
@@ -71,18 +70,16 @@ export default function createBaseProxy(tenantMode: TenantMode): httpProxy {
 
     proxy.on("proxyRes", function (proxyRes, req, res) {
         // Add a default cache time of 60 seconds on GETs so the CDN can cache in times of high load.
-
-        // FIXME FIXME FIXME TODO: Add this back and make it configurable.
-
-        // if (
-        //     req.method === "GET" &&
-        //     !proxyRes.headers["Cache-Control"] &&
-        //     !proxyRes.headers["cache-control"] &&
-        //     !req.headers["Cache-Control"] &&
-        //     !req.headers["cache-control"]
-        // ) {
-        //     proxyRes.headers["Cache-Control"] = "public, max-age=60";
-        // }
+        if (
+            req.method === "GET" &&
+            options.defaultCacheControl &&
+            !proxyRes.headers["Cache-Control"] &&
+            !proxyRes.headers["cache-control"] &&
+            !req.headers["Cache-Control"] &&
+            !req.headers["cache-control"]
+        ) {
+            proxyRes.headers["Cache-Control"] = options.defaultCacheControl;
+        }
 
         /**
          * Remove security sensitive headers
@@ -103,17 +100,17 @@ export default function createBaseProxy(tenantMode: TenantMode): httpProxy {
     });
 
     proxy.on("proxyReq", async function (proxyReq, req, res) {
-        if (tenantMode.multiTenantsMode === true) {
+        if (options.tenantMode.multiTenantsMode === true) {
             const theRequest = <express.Request>req;
             const domainName = theRequest.hostname.toLowerCase();
 
-            if (domainName === tenantMode.magdaAdminPortalName) {
+            if (domainName === options.tenantMode.magdaAdminPortalName) {
                 proxyReq.setHeader(
                     MAGDA_TENANT_ID_HEADER,
                     MAGDA_ADMIN_PORTAL_ID
                 );
             } else {
-                const tenant = tenantMode.tenantsLoader.tenantsTable.get(
+                const tenant = options.tenantMode.tenantsLoader.tenantsTable.get(
                     domainName
                 );
 
@@ -124,7 +121,7 @@ export default function createBaseProxy(tenantMode: TenantMode): httpProxy {
                     //   "Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client"
                     // So we just let user try again.
                     // See https://github.com/nodejitsu/node-http-proxy/issues/1328
-                    tenantMode.tenantsLoader.reloadTenants();
+                    options.tenantMode.tenantsLoader.reloadTenants();
                     res.writeHead(400, { "Content-Type": "text/plain" });
                     res.end(
                         `Unable to process ${domainName} right now. Please try again shortly.`

@@ -23,10 +23,11 @@ export interface ApiRouterOptions {
         [localRoute: string]: ProxyTarget;
     };
     tenantMode: TenantMode;
+    defaultCacheControl?: string;
 }
 
 export default function createApiRouter(options: ApiRouterOptions): Router {
-    var proxy = createBaseProxy(options.tenantMode);
+    const proxy = createBaseProxy(options);
 
     const authenticator = options.authenticator;
     const jwtSecret = options.jwtSecret;

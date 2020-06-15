@@ -91,6 +91,7 @@ type Config = {
     openfaasGatewayUrl?: string;
     openfaasAllowAdminOnly?: boolean;
     enableInternalAuthProvider?: boolean;
+    defaultCacheControl?: string;
 };
 
 export default function buildApp(config: Config) {
@@ -163,6 +164,14 @@ export default function buildApp(config: Config) {
     app.set("view engine", "ejs");
     app.engine(".ejs", ejs.__express); // This stops express trying to do its own require of 'ejs'
 
+    const apiRouterOptions = {
+        jwtSecret: config.jwtSecret,
+        tenantMode,
+        authenticator,
+        defaultCacheControl: config.defaultCacheControl,
+        routes
+    };
+
     // --- enable http basic authentication for all users
     if (config.enableWebAccessControl) {
         app.use(
@@ -217,30 +226,23 @@ export default function buildApp(config: Config) {
                 gatewayUrl: config.openfaasGatewayUrl,
                 allowAdminOnly: config.openfaasAllowAdminOnly,
                 baseAuthUrl: config.authorizationApi,
-                jwtSecret: config.jwtSecret,
-                tenantMode,
-                authenticator
+                apiRouterOptions
             })
         );
     }
 
-    app.use(
-        "/api/v0",
-        createApiRouter({
-            authenticator: authenticator,
-            jwtSecret: config.jwtSecret,
-            routes,
-            tenantMode
-        })
-    );
+    app.use("/api/v0", createApiRouter(apiRouterOptions));
 
     if (config.webProxyRoutesJson) {
         _.forEach(config.webProxyRoutesJson, (value: string, key: string) => {
-            app.use("/" + key, createGenericProxy(value, tenantMode));
+            app.use("/" + key, createGenericProxy(value, apiRouterOptions));
         });
     }
 
-    app.use("/preview-map", createGenericProxy(config.previewMap, tenantMode));
+    app.use(
+        "/preview-map",
+        createGenericProxy(config.previewMap, apiRouterOptions)
+    );
 
     if (config.enableCkanRedirection) {
         if (!routes.registry) {
@@ -260,7 +262,7 @@ export default function buildApp(config: Config) {
     }
 
     // Proxy any other URL to magda-web
-    app.use("/", createGenericProxy(config.web, tenantMode));
+    app.use("/", createGenericProxy(config.web, apiRouterOptions));
 
     return app;
 }
