@@ -102,10 +102,10 @@ describe("Test createOpenfaasGatewayProxy", () => {
 
         const mockAuthenticator: any = {
             applyToRoute: (app: express.Router) => {
-                app.use((req, res, next) => {
+                app.use((req, _res, next) => {
                     if (typeof userId === "string") {
                         // --- always logged in as user with id `userId`
-                        req.user = {
+                        (req.user as any) = {
                             id: userId
                         };
                     }
@@ -152,10 +152,7 @@ describe("Test createOpenfaasGatewayProxy", () => {
         await testReq.get(randomPath).expect(401);
 
         const randomData = randomstring.generate();
-        await testReq
-            .post(randomPath)
-            .send({ data: randomData })
-            .expect(401);
+        await testReq.post(randomPath).send({ data: randomData }).expect(401);
     });
 
     it("should return 401 when unauthenticated user to access openfaas gateway and `allowAdminOnly` = true", async () => {
@@ -165,10 +162,7 @@ describe("Test createOpenfaasGatewayProxy", () => {
         await testReq.get(randomPath).expect(401);
 
         const randomData = randomstring.generate();
-        await testReq
-            .post(randomPath)
-            .send({ data: randomData })
-            .expect(401);
+        await testReq.post(randomPath).send({ data: randomData }).expect(401);
     });
 
     it("should allow Non-admin users to access openfaas gateway if `allowAdminOnly` = false", async () => {
