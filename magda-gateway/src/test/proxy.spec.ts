@@ -16,6 +16,37 @@ const PROXY_ROOTS = {
     "/other/foo/bar/": "http://otherplace/foo/bar"
 };
 
+const defaultAppOptions = {
+    listenPort: 80,
+    externalUrl: "http://127.0.0.1",
+    dbHost: "localhost",
+    dbPort: 5432,
+    authDBHost: "localhost",
+    authDBPort: 5432,
+    proxyRoutesJson: {
+        registry: {
+            to: "http://registry",
+            auth: true
+        }
+    },
+    webProxyRoutesJson: {
+        map: "http://map",
+        other: "http://otherplace"
+    },
+    cookieJson: {},
+    helmetJson: {},
+    cspJson: {},
+    corsJson: {},
+    authorizationApi: "http://127.0.0.1",
+    sessionSecret: "secret",
+    jwtSecret: "othersecret",
+    userId: "b1fddd6f-e230-4068-bd2c-1a21844f1598",
+    web: "https://127.0.0.1",
+    previewMap: "http://preview-map",
+    tenantUrl: "http://tenant",
+    defaultCacheControl: "DEFAULT CACHE CONTROL"
+};
+
 describe("proxying", () => {
     let app: express.Application;
 
@@ -24,36 +55,7 @@ describe("proxying", () => {
     });
 
     beforeEach(() => {
-        app = buildApp({
-            listenPort: 80,
-            externalUrl: "http://127.0.0.1",
-            dbHost: "localhost",
-            dbPort: 5432,
-            authDBHost: "localhost",
-            authDBPort: 5432,
-            proxyRoutesJson: {
-                registry: {
-                    to: "http://registry",
-                    auth: true
-                }
-            },
-            webProxyRoutesJson: {
-                map: "http://map",
-                other: "http://otherplace"
-            },
-            cookieJson: {},
-            helmetJson: {},
-            cspJson: {},
-            corsJson: {},
-            authorizationApi: "http://127.0.0.1",
-            sessionSecret: "secret",
-            jwtSecret: "othersecret",
-            userId: "b1fddd6f-e230-4068-bd2c-1a21844f1598",
-            web: "https://127.0.0.1",
-            previewMap: "http://preview-map",
-            tenantUrl: "http://tenant",
-            defaultCacheControl: "DEFAULT CACHE CONTROL"
-        });
+        app = buildApp(defaultAppOptions);
     });
 
     afterEach(() => {
@@ -98,11 +100,7 @@ describe("proxying", () => {
             });
 
             it("should add default cache control header if not specified", (done) => {
-                nock(value)
-                    .get("/")
-                    .reply(() => {
-                        return 200;
-                    });
+                nock(value).get("/").reply(200);
 
                 supertest(app)
                     .get(key)
@@ -114,7 +112,7 @@ describe("proxying", () => {
                     });
             });
 
-            it("should not override cache control header", (done) => {
+            it("should not override cache control header that's set by the proxied service", (done) => {
                 nock(value).get("/").reply(200, "", {
                     "cache-control": "Non-default cache control"
                 });
@@ -125,6 +123,22 @@ describe("proxying", () => {
                         expect(res.header["cache-control"]).to.equal(
                             "Non-default cache control"
                         );
+                        done();
+                    });
+            });
+
+            it("should not set a default cache-control header if none is set", (done) => {
+                app = buildApp({
+                    ...defaultAppOptions,
+                    defaultCacheControl: undefined
+                });
+
+                nock(value).get("/").reply(200);
+
+                supertest(app)
+                    .get(key)
+                    .end((_err, res) => {
+                        expect(res.header["cache-control"]).to.be.undefined;
                         done();
                     });
             });
