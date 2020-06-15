@@ -24,7 +24,7 @@ interface PropsType {
     searchText: string;
 }
 
-const DatasetPage: FunctionComponent<PropsType> = props => {
+const DatasetPage: FunctionComponent<PropsType> = (props) => {
     const [addMargin, setAddMargin] = useState<boolean>(false);
 
     const { dataset, breadcrumbs, hasEditPermissions } = props;
@@ -128,6 +128,15 @@ const DatasetPage: FunctionComponent<PropsType> = props => {
                             <></>
                         )}
                         <TagsBox tags={dataset.tags} />
+
+                        {defined(dataset.access?.location) && (
+                            <div>
+                                <div className="dataset-heading">
+                                    File Location (outside Magda):
+                                </div>
+                                <div>{dataset.access.location}</div>
+                            </div>
+                        )}
                     </div>
                 </div>
                 <div className={` col-sm-4 ${addMargin ? "form-margin" : ""}`}>
@@ -153,7 +162,7 @@ const DatasetPage: FunctionComponent<PropsType> = props => {
                                 <div className="edit-button-tooltip-container">
                                     <ToolTip
                                         className="no-print"
-                                        launcher={launch => (
+                                        launcher={(launch) => (
                                             <a
                                                 onClick={launch}
                                                 className="tooltip-launcher-text"
