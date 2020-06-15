@@ -55,7 +55,7 @@ class AppContainer extends React.Component {
                         <Route
                             exact
                             path="/"
-                            render={() => <Footer noTopMergin={true} />}
+                            render={() => <Footer noTopMargin={true} />}
                         />
                         <Route path="/*" component={Footer} />
                     </Switch>
