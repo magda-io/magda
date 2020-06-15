@@ -95,7 +95,8 @@
     }
   },
   "dependencies": {
-    "@gov.au/pancake-sass": "^2.3.7"
+    "@gov.au/pancake-sass": "^2.3.7",
+    "typescript": "^3.9.5"
   },
   "husky": {
     "hooks": {
