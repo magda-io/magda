@@ -1,27 +1,26 @@
 import express from "express";
 import createBaseProxy from "./createBaseProxy";
-import { TenantMode } from "./setupTenantMode";
-import Authenticator from "./Authenticator";
 import { mustBeAdmin } from "magda-typescript-common/src/authorization-api/authMiddleware";
+import { ApiRouterOptions } from "./createApiRouter";
 
 interface OptionsType {
     gatewayUrl: string;
     baseAuthUrl: string;
-    jwtSecret: string;
-    authenticator: Authenticator;
-    tenantMode: TenantMode;
     allowAdminOnly?: boolean;
+    apiRouterOptions: ApiRouterOptions;
 }
 
 export default function createOpenfaasGatewayProxy(
     options: OptionsType
 ): express.Router {
     const router = express.Router();
-    const proxy = createBaseProxy(options.tenantMode);
+    const proxy = createBaseProxy(options.apiRouterOptions);
 
     if (options.allowAdminOnly) {
-        options.authenticator.applyToRoute(router);
-        router.use(mustBeAdmin(options.baseAuthUrl, options.jwtSecret));
+        options.apiRouterOptions.authenticator.applyToRoute(router);
+        router.use(
+            mustBeAdmin(options.baseAuthUrl, options.apiRouterOptions.jwtSecret)
+        );
     }
 
     router.all("*", (req: express.Request, res: express.Response) => {
