@@ -2022,11 +2022,11 @@ class RecordsServiceSpec extends ApiSpec {
             status shouldEqual StatusCodes.OK
           }
 
-        it("should work with `:!` not equal operqator") {
-          implicit param =>
-            createAspect(AspectDefinition("test-aspect-1", "test aspect", None))
+        it("should work with `:!` not equal operqator") { implicit param =>
+          createAspect(AspectDefinition("test-aspect-1", "test aspect", None))
 
-            createRecord(Record(
+          createRecord(
+            Record(
               "record-1",
               "record 1",
               Map(
@@ -2035,9 +2035,11 @@ class RecordsServiceSpec extends ApiSpec {
                 )
               ),
               Some("source-tag")
-            ))
+            )
+          )
 
-            createRecord(Record(
+          createRecord(
+            Record(
               "record-2",
               "record 2",
               Map(
@@ -2046,9 +2048,11 @@ class RecordsServiceSpec extends ApiSpec {
                 )
               ),
               Some("source-tag")
-            ))
+            )
+          )
 
-            createRecord(Record(
+          createRecord(
+            Record(
               "record-3",
               "record 3",
               Map(
@@ -2057,37 +2061,40 @@ class RecordsServiceSpec extends ApiSpec {
                 )
               ),
               Some("source-tag")
-            ))
+            )
+          )
 
-            Get(
-              s"/v0/records?aspectQuery=test-aspect-1.key1:!test-value-3"
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
-              .api(role)
-              .routes ~> check {
-              status shouldEqual StatusCodes.OK
-              val page = responseAs[RecordsPage[Record]]
-              page.records.length shouldBe 2
-              page.records(0).id shouldBe "record-1"
-              page.records(1).id shouldBe "record-3"
-            }
+          Get(
+            s"/v0/records?aspectQuery=test-aspect-1.key1:!test-value-3"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[Record]]
+            page.records.length shouldBe 2
+            page.records(0).id shouldBe "record-1"
+            page.records(1).id shouldBe "record-3"
+          }
 
-            Get(
-              s"/v0/records/count?aspectQuery=test-aspect-1.key1:!test-value-3"
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
-              .api(role)
-              .routes ~> check {
-              status shouldEqual StatusCodes.OK
-              val countResponse = responseAs[CountResponse]
-              countResponse.count shouldBe 2
-            }
+          Get(
+            s"/v0/records/count?aspectQuery=test-aspect-1.key1:!test-value-3"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val countResponse = responseAs[CountResponse]
+            countResponse.count shouldBe 2
+          }
 
         }
 
-        it("should work with `:?` match a field that matches a pattern / Regular Expression") {
-          implicit param =>
-            createAspect(AspectDefinition("test-aspect-1", "test aspect", None))
+        it(
+          "should work with `:?` match a field that matches a pattern / Regular Expression"
+        ) { implicit param =>
+          createAspect(AspectDefinition("test-aspect-1", "test aspect", None))
 
-            createRecord(Record(
+          createRecord(
+            Record(
               "record-1",
               "record 1",
               Map(
@@ -2096,9 +2103,11 @@ class RecordsServiceSpec extends ApiSpec {
                 )
               ),
               Some("source-tag")
-            ))
+            )
+          )
 
-            createRecord(Record(
+          createRecord(
+            Record(
               "record-2",
               "record 2",
               Map(
@@ -2107,9 +2116,11 @@ class RecordsServiceSpec extends ApiSpec {
                 )
               ),
               Some("source-tag")
-            ))
+            )
+          )
 
-            createRecord(Record(
+          createRecord(
+            Record(
               "record-3",
               "record 3",
               Map(
@@ -2118,60 +2129,63 @@ class RecordsServiceSpec extends ApiSpec {
                 )
               ),
               Some("source-tag")
-            ))
+            )
+          )
 
-            // --- match pattern %test%
-            Get(
-              s"/v0/records?aspectQuery=test-aspect-1.key1:?%2525test%2525"
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
-              .api(role)
-              .routes ~> check {
-              status shouldEqual StatusCodes.OK
-              val page = responseAs[RecordsPage[Record]]
-              page.records.length shouldBe 2
-              page.records(0).id shouldBe "record-1"
-              page.records(1).id shouldBe "record-2"
-            }
+          // --- match pattern %test%
+          Get(
+            s"/v0/records?aspectQuery=test-aspect-1.key1:?%2525test%2525"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[Record]]
+            page.records.length shouldBe 2
+            page.records(0).id shouldBe "record-1"
+            page.records(1).id shouldBe "record-2"
+          }
 
-            Get(
-              s"/v0/records/count?aspectQuery=test-aspect-1.key1:?%2525test%2525"
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
-              .api(role)
-              .routes ~> check {
-              status shouldEqual StatusCodes.OK
-              val countResponse = responseAs[CountResponse]
-              countResponse.count shouldBe 2
-            }
+          Get(
+            s"/v0/records/count?aspectQuery=test-aspect-1.key1:?%2525test%2525"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val countResponse = responseAs[CountResponse]
+            countResponse.count shouldBe 2
+          }
 
-            // --- match regex %[0-9]% (string contains at least one digit)
-            Get(
-              s"/v0/records?aspectQuery=test-aspect-1.key1:?%2525%255B0-9%255D%2525"
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
-              .api(role)
-              .routes ~> check {
-              status shouldEqual StatusCodes.OK
-              val page = responseAs[RecordsPage[Record]]
-              page.records.length shouldBe 2
-              page.records(0).id shouldBe "record-1"
-              page.records(1).id shouldBe "record-3"
-            }
+          // --- match regex %[0-9]% (string contains at least one digit)
+          Get(
+            s"/v0/records?aspectQuery=test-aspect-1.key1:?%2525%255B0-9%255D%2525"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[Record]]
+            page.records.length shouldBe 2
+            page.records(0).id shouldBe "record-1"
+            page.records(1).id shouldBe "record-3"
+          }
 
-            Get(
-              s"/v0/records/count?aspectQuery=test-aspect-1.key1:?%2525%255B0-9%255D%2525"
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
-              .api(role)
-              .routes ~> check {
-              status shouldEqual StatusCodes.OK
-              val countResponse = responseAs[CountResponse]
-              countResponse.count shouldBe 2
-            }
+          Get(
+            s"/v0/records/count?aspectQuery=test-aspect-1.key1:?%2525%255B0-9%255D%2525"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val countResponse = responseAs[CountResponse]
+            countResponse.count shouldBe 2
+          }
         }
 
-        it("should work with `:!?` match a field that does not matches a pattern / Regular Expression") {
-          implicit param =>
-            createAspect(AspectDefinition("test-aspect-1", "test aspect", None))
+        it(
+          "should work with `:!?` match a field that does not matches a pattern / Regular Expression"
+        ) { implicit param =>
+          createAspect(AspectDefinition("test-aspect-1", "test aspect", None))
 
-            createRecord(Record(
+          createRecord(
+            Record(
               "record-1",
               "record 1",
               Map(
@@ -2180,9 +2194,11 @@ class RecordsServiceSpec extends ApiSpec {
                 )
               ),
               Some("source-tag")
-            ))
+            )
+          )
 
-            createRecord(Record(
+          createRecord(
+            Record(
               "record-2",
               "record 2",
               Map(
@@ -2191,9 +2207,11 @@ class RecordsServiceSpec extends ApiSpec {
                 )
               ),
               Some("source-tag")
-            ))
+            )
+          )
 
-            createRecord(Record(
+          createRecord(
+            Record(
               "record-3",
               "record 3",
               Map(
@@ -2202,58 +2220,59 @@ class RecordsServiceSpec extends ApiSpec {
                 )
               ),
               Some("source-tag")
-            ))
+            )
+          )
 
-            // --- match pattern %test%
-            Get(
-              s"/v0/records?aspectQuery=test-aspect-1.key1:!?%2525test%2525"
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
-              .api(role)
-              .routes ~> check {
-              status shouldEqual StatusCodes.OK
-              val page = responseAs[RecordsPage[Record]]
-              page.records.length shouldBe 1
-              page.records(0).id shouldBe "record-3"
-            }
+          // --- match pattern %test%
+          Get(
+            s"/v0/records?aspectQuery=test-aspect-1.key1:!?%2525test%2525"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[Record]]
+            page.records.length shouldBe 1
+            page.records(0).id shouldBe "record-3"
+          }
 
-            Get(
-              s"/v0/records/count?aspectQuery=test-aspect-1.key1:!?%2525test%2525"
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
-              .api(role)
-              .routes ~> check {
-              status shouldEqual StatusCodes.OK
-              val countResponse = responseAs[CountResponse]
-              countResponse.count shouldBe 1
-            }
+          Get(
+            s"/v0/records/count?aspectQuery=test-aspect-1.key1:!?%2525test%2525"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val countResponse = responseAs[CountResponse]
+            countResponse.count shouldBe 1
+          }
 
-            // --- match regex %[0-9]% (string contains at least one digit)
-            Get(
-              s"/v0/records?aspectQuery=test-aspect-1.key1:!?%2525%255B0-9%255D%2525"
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
-              .api(role)
-              .routes ~> check {
-              status shouldEqual StatusCodes.OK
-              val page = responseAs[RecordsPage[Record]]
-              page.records.length shouldBe 1
-              page.records(0).id shouldBe "record-2"
-            }
+          // --- match regex %[0-9]% (string contains at least one digit)
+          Get(
+            s"/v0/records?aspectQuery=test-aspect-1.key1:!?%2525%255B0-9%255D%2525"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[Record]]
+            page.records.length shouldBe 1
+            page.records(0).id shouldBe "record-2"
+          }
 
-            Get(
-              s"/v0/records/count?aspectQuery=test-aspect-1.key1:!?%2525%255B0-9%255D%2525"
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
-              .api(role)
-              .routes ~> check {
-              status shouldEqual StatusCodes.OK
-              val countResponse = responseAs[CountResponse]
-              countResponse.count shouldBe 1
-            }
+          Get(
+            s"/v0/records/count?aspectQuery=test-aspect-1.key1:!?%2525%255B0-9%255D%2525"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val countResponse = responseAs[CountResponse]
+            countResponse.count shouldBe 1
+          }
         }
 
-        it("should work with `:>` greater than") {
-          implicit param =>
-            createAspect(AspectDefinition("test-aspect-1", "test aspect", None))
+        it("should work with `:>` greater than") { implicit param =>
+          createAspect(AspectDefinition("test-aspect-1", "test aspect", None))
 
-            createRecord(Record(
+          createRecord(
+            Record(
               "record-1",
               "record 1",
               Map(
@@ -2262,9 +2281,11 @@ class RecordsServiceSpec extends ApiSpec {
                 )
               ),
               Some("source-tag")
-            ))
+            )
+          )
 
-            createRecord(Record(
+          createRecord(
+            Record(
               "record-2",
               "record 2",
               Map(
@@ -2273,9 +2294,11 @@ class RecordsServiceSpec extends ApiSpec {
                 )
               ),
               Some("source-tag")
-            ))
+            )
+          )
 
-            createRecord(Record(
+          createRecord(
+            Record(
               "record-3",
               "record 3",
               Map(
@@ -2284,66 +2307,73 @@ class RecordsServiceSpec extends ApiSpec {
                 )
               ),
               Some("source-tag")
-            ))
+            )
+          )
 
-            Get(
-              s"/v0/records?aspectQuery=test-aspect-1.key1:>4"
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
-              .api(role)
-              .routes ~> check {
-              status shouldEqual StatusCodes.OK
-              val page = responseAs[RecordsPage[Record]]
-              page.records.length shouldBe 1
-              page.records(0).id shouldBe "record-3"
-            }
+          Get(
+            s"/v0/records?aspectQuery=test-aspect-1.key1:>4"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[Record]]
+            page.records.length shouldBe 1
+            page.records(0).id shouldBe "record-3"
+          }
 
-            Get(
-              s"/v0/records/count?aspectQuery=test-aspect-1.key1:>4"
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
-              .api(role)
-              .routes ~> check {
-              status shouldEqual StatusCodes.OK
-              val countResponse = responseAs[CountResponse]
-              countResponse.count shouldBe 1
-            }
+          Get(
+            s"/v0/records/count?aspectQuery=test-aspect-1.key1:>4"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val countResponse = responseAs[CountResponse]
+            countResponse.count shouldBe 1
+          }
         }
 
         it("should work with `:>=` greater than or equal to") {
           implicit param =>
             createAspect(AspectDefinition("test-aspect-1", "test aspect", None))
 
-            createRecord(Record(
-              "record-1",
-              "record 1",
-              Map(
-                "test-aspect-1" -> JsObject(
-                  "key1" -> JsNumber(1)
-                )
-              ),
-              Some("source-tag")
-            ))
+            createRecord(
+              Record(
+                "record-1",
+                "record 1",
+                Map(
+                  "test-aspect-1" -> JsObject(
+                    "key1" -> JsNumber(1)
+                  )
+                ),
+                Some("source-tag")
+              )
+            )
 
-            createRecord(Record(
-              "record-2",
-              "record 2",
-              Map(
-                "test-aspect-1" -> JsObject(
-                  "key1" -> JsNumber(4)
-                )
-              ),
-              Some("source-tag")
-            ))
+            createRecord(
+              Record(
+                "record-2",
+                "record 2",
+                Map(
+                  "test-aspect-1" -> JsObject(
+                    "key1" -> JsNumber(4)
+                  )
+                ),
+                Some("source-tag")
+              )
+            )
 
-            createRecord(Record(
-              "record-3",
-              "record 3",
-              Map(
-                "test-aspect-1" -> JsObject(
-                  "key1" -> JsNumber(5)
-                )
-              ),
-              Some("source-tag")
-            ))
+            createRecord(
+              Record(
+                "record-3",
+                "record 3",
+                Map(
+                  "test-aspect-1" -> JsObject(
+                    "key1" -> JsNumber(5)
+                  )
+                ),
+                Some("source-tag")
+              )
+            )
 
             Get(
               s"/v0/records?aspectQuery=test-aspect-1.key1:>=4"
@@ -2368,11 +2398,11 @@ class RecordsServiceSpec extends ApiSpec {
             }
         }
 
-        it("should work with `:<` less than") {
-          implicit param =>
-            createAspect(AspectDefinition("test-aspect-1", "test aspect", None))
+        it("should work with `:<` less than") { implicit param =>
+          createAspect(AspectDefinition("test-aspect-1", "test aspect", None))
 
-            createRecord(Record(
+          createRecord(
+            Record(
               "record-1",
               "record 1",
               Map(
@@ -2381,9 +2411,11 @@ class RecordsServiceSpec extends ApiSpec {
                 )
               ),
               Some("source-tag")
-            ))
+            )
+          )
 
-            createRecord(Record(
+          createRecord(
+            Record(
               "record-2",
               "record 2",
               Map(
@@ -2392,9 +2424,11 @@ class RecordsServiceSpec extends ApiSpec {
                 )
               ),
               Some("source-tag")
-            ))
+            )
+          )
 
-            createRecord(Record(
+          createRecord(
+            Record(
               "record-3",
               "record 3",
               Map(
@@ -2403,35 +2437,36 @@ class RecordsServiceSpec extends ApiSpec {
                 )
               ),
               Some("source-tag")
-            ))
+            )
+          )
 
-            Get(
-              s"/v0/records?aspectQuery=test-aspect-1.key1:<4"
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
-              .api(role)
-              .routes ~> check {
-              status shouldEqual StatusCodes.OK
-              val page = responseAs[RecordsPage[Record]]
-              page.records.length shouldBe 1
-              page.records(0).id shouldBe "record-1"
-            }
+          Get(
+            s"/v0/records?aspectQuery=test-aspect-1.key1:<4"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[Record]]
+            page.records.length shouldBe 1
+            page.records(0).id shouldBe "record-1"
+          }
 
-            Get(
-              s"/v0/records/count?aspectQuery=test-aspect-1.key1:<4"
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
-              .api(role)
-              .routes ~> check {
-              status shouldEqual StatusCodes.OK
-              val countResponse = responseAs[CountResponse]
-              countResponse.count shouldBe 1
-            }
+          Get(
+            s"/v0/records/count?aspectQuery=test-aspect-1.key1:<4"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val countResponse = responseAs[CountResponse]
+            countResponse.count shouldBe 1
+          }
         }
 
-        it("should work with `:<=` less than or equal to") {
-          implicit param =>
-            createAspect(AspectDefinition("test-aspect-1", "test aspect", None))
+        it("should work with `:<=` less than or equal to") { implicit param =>
+          createAspect(AspectDefinition("test-aspect-1", "test aspect", None))
 
-            createRecord(Record(
+          createRecord(
+            Record(
               "record-1",
               "record 1",
               Map(
@@ -2440,9 +2475,11 @@ class RecordsServiceSpec extends ApiSpec {
                 )
               ),
               Some("source-tag")
-            ))
+            )
+          )
 
-            createRecord(Record(
+          createRecord(
+            Record(
               "record-2",
               "record 2",
               Map(
@@ -2451,9 +2488,11 @@ class RecordsServiceSpec extends ApiSpec {
                 )
               ),
               Some("source-tag")
-            ))
+            )
+          )
 
-            createRecord(Record(
+          createRecord(
+            Record(
               "record-3",
               "record 3",
               Map(
@@ -2462,37 +2501,40 @@ class RecordsServiceSpec extends ApiSpec {
                 )
               ),
               Some("source-tag")
-            ))
+            )
+          )
 
-            Get(
-              s"/v0/records?aspectQuery=test-aspect-1.key1:<=4"
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
-              .api(role)
-              .routes ~> check {
-              status shouldEqual StatusCodes.OK
-              val page = responseAs[RecordsPage[Record]]
-              page.records.length shouldBe 2
-              page.records(0).id shouldBe "record-1"
-              page.records(1).id shouldBe "record-2"
-            }
+          Get(
+            s"/v0/records?aspectQuery=test-aspect-1.key1:<=4"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[Record]]
+            page.records.length shouldBe 2
+            page.records(0).id shouldBe "record-1"
+            page.records(1).id shouldBe "record-2"
+          }
 
-            Get(
-              s"/v0/records/count?aspectQuery=test-aspect-1.key1:<=4"
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
-              .api(role)
-              .routes ~> check {
-              status shouldEqual StatusCodes.OK
-              val countResponse = responseAs[CountResponse]
-              countResponse.count shouldBe 2
-            }
+          Get(
+            s"/v0/records/count?aspectQuery=test-aspect-1.key1:<=4"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val countResponse = responseAs[CountResponse]
+            countResponse.count shouldBe 2
+          }
         }
 
-        it("should work as OR when multiple queries specified with `aspectOrQuery`") {
-          implicit param =>
-            createAspect(AspectDefinition("test-aspect-1", "test aspect", None))
-            createAspect(AspectDefinition("test-aspect-2", "test aspect", None))
+        it(
+          "should work as OR when multiple queries specified with `aspectOrQuery`"
+        ) { implicit param =>
+          createAspect(AspectDefinition("test-aspect-1", "test aspect", None))
+          createAspect(AspectDefinition("test-aspect-2", "test aspect", None))
 
-            createRecord(Record(
+          createRecord(
+            Record(
               "record-1",
               "record 1",
               Map(
@@ -2502,9 +2544,11 @@ class RecordsServiceSpec extends ApiSpec {
                 )
               ),
               Some("source-tag")
-            ))
+            )
+          )
 
-            createRecord(Record(
+          createRecord(
+            Record(
               "record-2",
               "record 2",
               Map(
@@ -2514,9 +2558,11 @@ class RecordsServiceSpec extends ApiSpec {
                 )
               ),
               Some("source-tag")
-            ))
+            )
+          )
 
-            createRecord(Record(
+          createRecord(
+            Record(
               "record-3",
               "record 3",
               Map(
@@ -2526,38 +2572,40 @@ class RecordsServiceSpec extends ApiSpec {
                 )
               ),
               Some("source-tag")
-            ))
+            )
+          )
 
-            Get(
-              s"/v0/records?aspectOrQuery=test-aspect-1.key1:test-value-1&aspectOrQuery=test-aspect-2.key4:test-value-4"
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
-              .api(role)
-              .routes ~> check {
-              status shouldEqual StatusCodes.OK
-              val page = responseAs[RecordsPage[Record]]
-              page.records.length shouldBe 2
-              page.records.head.id shouldBe "record-1"
-              page.records(1).id shouldBe "record-2"
-            }
+          Get(
+            s"/v0/records?aspectOrQuery=test-aspect-1.key1:test-value-1&aspectOrQuery=test-aspect-2.key4:test-value-4"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[Record]]
+            page.records.length shouldBe 2
+            page.records.head.id shouldBe "record-1"
+            page.records(1).id shouldBe "record-2"
+          }
 
-            Get(
-              s"/v0/records/count?aspectOrQuery=test-aspect-1.key1:test-value-1&aspectOrQuery=test-aspect-2.key4:test-value-4"
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
-              .api(role)
-              .routes ~> check {
-              status shouldEqual StatusCodes.OK
-              val countResponse = responseAs[CountResponse]
-              countResponse.count shouldBe 2
-            }
+          Get(
+            s"/v0/records/count?aspectOrQuery=test-aspect-1.key1:test-value-1&aspectOrQuery=test-aspect-2.key4:test-value-4"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val countResponse = responseAs[CountResponse]
+            countResponse.count shouldBe 2
+          }
         }
 
+        it(
+          "should sorting record correctly using parameters `orderBy`, `orderDir` or `orderNullFirst`"
+        ) { implicit param =>
+          createAspect(AspectDefinition("test-aspect-1", "test aspect", None))
+          createAspect(AspectDefinition("test-aspect-2", "test aspect", None))
 
-        it("should sorting record correctly using parameters `orderBy`, `orderDir` or `orderNullFirst`") {
-          implicit param =>
-            createAspect(AspectDefinition("test-aspect-1", "test aspect", None))
-            createAspect(AspectDefinition("test-aspect-2", "test aspect", None))
-
-            createRecord(Record(
+          createRecord(
+            Record(
               "record-1",
               "record 1",
               Map(
@@ -2567,9 +2615,11 @@ class RecordsServiceSpec extends ApiSpec {
                 )
               ),
               Some("source-tag")
-            ))
+            )
+          )
 
-            createRecord(Record(
+          createRecord(
+            Record(
               "record-2",
               "record 2",
               Map(
@@ -2579,9 +2629,11 @@ class RecordsServiceSpec extends ApiSpec {
                 )
               ),
               Some("source-tag")
-            ))
+            )
+          )
 
-            createRecord(Record(
+          createRecord(
+            Record(
               "record-3",
               "record 3",
               Map(
@@ -2591,103 +2643,105 @@ class RecordsServiceSpec extends ApiSpec {
                 )
               ),
               Some("source-tag")
-            ))
+            )
+          )
 
-            /**
-              * By Default, `orderDir` should default to desc and `orderNullFirst` default to `false`
-              */
-            Get(
-              s"/v0/records?orderBy=test-aspect-1.key1"
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
-              .api(role)
-              .routes ~> check {
-              status shouldEqual StatusCodes.OK
-              val page = responseAs[RecordsPage[Record]]
-              page.records.length shouldBe 3
-              page.records(0).id shouldBe "record-3"
-              page.records(1).id shouldBe "record-1"
-              page.records(2).id shouldBe "record-2"
-            }
+          /**
+            * By Default, `orderDir` should default to desc and `orderNullFirst` default to `false`
+            */
+          Get(
+            s"/v0/records?orderBy=test-aspect-1.key1"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[Record]]
+            page.records.length shouldBe 3
+            page.records(0).id shouldBe "record-3"
+            page.records(1).id shouldBe "record-1"
+            page.records(2).id shouldBe "record-2"
+          }
 
-            /**
-              * By Default, `orderNullFirst` default to `false`
-              */
-            Get(
-              s"/v0/records?orderBy=test-aspect-1.key1&orderByDir=asc"
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
-              .api(role)
-              .routes ~> check {
-              status shouldEqual StatusCodes.OK
-              val page = responseAs[RecordsPage[Record]]
-              page.records.length shouldBe 3
-              page.records(0).id shouldBe "record-1"
-              page.records(1).id shouldBe "record-3"
-              page.records(2).id shouldBe "record-2"
-            }
+          /**
+            * By Default, `orderNullFirst` default to `false`
+            */
+          Get(
+            s"/v0/records?orderBy=test-aspect-1.key1&orderByDir=asc"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[Record]]
+            page.records.length shouldBe 3
+            page.records(0).id shouldBe "record-1"
+            page.records(1).id shouldBe "record-3"
+            page.records(2).id shouldBe "record-2"
+          }
 
-            Get(
-              s"/v0/records?orderBy=test-aspect-1.key1&orderByDir=asc&orderNullFirst=true"
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
-              .api(role)
-              .routes ~> check {
-              status shouldEqual StatusCodes.OK
-              val page = responseAs[RecordsPage[Record]]
-              page.records.length shouldBe 3
-              page.records(0).id shouldBe "record-2"
-              page.records(1).id shouldBe "record-1"
-              page.records(2).id shouldBe "record-3"
-            }
+          Get(
+            s"/v0/records?orderBy=test-aspect-1.key1&orderByDir=asc&orderNullFirst=true"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[Record]]
+            page.records.length shouldBe 3
+            page.records(0).id shouldBe "record-2"
+            page.records(1).id shouldBe "record-1"
+            page.records(2).id shouldBe "record-3"
+          }
 
-            Get(
-              s"/v0/records?orderBy=test-aspect-1.key1&orderByDir=asc&orderNullFirst=false"
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
-              .api(role)
-              .routes ~> check {
-              status shouldEqual StatusCodes.OK
-              val page = responseAs[RecordsPage[Record]]
-              page.records.length shouldBe 3
-              page.records(0).id shouldBe "record-1"
-              page.records(1).id shouldBe "record-3"
-              page.records(2).id shouldBe "record-2"
-            }
+          Get(
+            s"/v0/records?orderBy=test-aspect-1.key1&orderByDir=asc&orderNullFirst=false"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[Record]]
+            page.records.length shouldBe 3
+            page.records(0).id shouldBe "record-1"
+            page.records(1).id shouldBe "record-3"
+            page.records(2).id shouldBe "record-2"
+          }
 
-            Get(
-              s"/v0/records?orderBy=test-aspect-1.key1&orderByDir=desc&orderNullFirst=true"
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
-              .api(role)
-              .routes ~> check {
-              status shouldEqual StatusCodes.OK
-              val page = responseAs[RecordsPage[Record]]
-              page.records.length shouldBe 3
-              page.records(0).id shouldBe "record-2"
-              page.records(1).id shouldBe "record-3"
-              page.records(2).id shouldBe "record-1"
-            }
+          Get(
+            s"/v0/records?orderBy=test-aspect-1.key1&orderByDir=desc&orderNullFirst=true"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[Record]]
+            page.records.length shouldBe 3
+            page.records(0).id shouldBe "record-2"
+            page.records(1).id shouldBe "record-3"
+            page.records(2).id shouldBe "record-1"
+          }
 
-            Get(
-              s"/v0/records?orderBy=test-aspect-1.key1&orderByDir=desc&orderNullFirst=false"
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
-              .api(role)
-              .routes ~> check {
-              status shouldEqual StatusCodes.OK
-              val page = responseAs[RecordsPage[Record]]
-              page.records.length shouldBe 3
-              page.records(0).id shouldBe "record-3"
-              page.records(1).id shouldBe "record-1"
-              page.records(2).id shouldBe "record-2"
-            }
+          Get(
+            s"/v0/records?orderBy=test-aspect-1.key1&orderByDir=desc&orderNullFirst=false"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[Record]]
+            page.records.length shouldBe 3
+            page.records(0).id shouldBe "record-3"
+            page.records(1).id shouldBe "record-1"
+            page.records(2).id shouldBe "record-2"
+          }
 
         }
 
-        it("should throw a `BadRequest` error when orderBy & pageToken both specified") {
-          implicit param =>
-            Get(
-              s"/v0/records?orderBy=test-aspect-1.key1&pageToken=10232"
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
-              .api(role)
-              .routes ~> check {
-              status shouldEqual StatusCodes.BadRequest
-            }
+        it(
+          "should throw a `BadRequest` error when orderBy & pageToken both specified"
+        ) { implicit param =>
+          Get(
+            s"/v0/records?orderBy=test-aspect-1.key1&pageToken=10232"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.BadRequest
+          }
         }
 
         it("allows url encoded paths and values") { param =>
