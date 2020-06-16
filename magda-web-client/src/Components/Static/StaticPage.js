@@ -42,8 +42,8 @@ class StaticPage extends Component {
 
         const hasEditPermissions = this.props.hasEditPermissions;
 
-        const save = field => {
-            return newValue => {
+        const save = (field) => {
+            return (newValue) => {
                 const { title, content } = this.props.page;
                 const page = { title, content };
                 page[field] = newValue;
@@ -108,7 +108,7 @@ function mapStateToProps(state, old) {
     };
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return bindActionCreators(
         {
             fetchStaticPage,

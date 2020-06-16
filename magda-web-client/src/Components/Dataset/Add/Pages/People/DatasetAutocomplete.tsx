@@ -54,9 +54,8 @@ const CustomOption = (props: OptionProps<Choice>) => (
         {...props}
         innerProps={{
             ...props.innerProps,
-            onClick: event => {
+            onClick: (event) => {
                 if (props.data.onClick) {
-                    props.innerRef;
                     props.data.onClick(event);
                 } else {
                     props.innerProps.onClick(event);
@@ -77,7 +76,7 @@ const CustomMultiValue = (props: MultiValueProps<Choice>) => {
             requireClickToDismiss={true}
             orientation="below"
         >
-            {dismiss => (
+            {(dismiss) => (
                 <ExplanationTooltipContent dismiss={dismiss}>
                     This has been added as a draft dataset. You can edit it from
                     your{" "}
@@ -104,7 +103,7 @@ export default function DatasetAutocomplete(props: Props) {
         async (term: string) => {
             const apiResult = await searchDatasets({ q: term, limit: 4 });
 
-            const result = await apiResult.dataSets.map(option => ({
+            const result = await apiResult.dataSets.map((option) => ({
                 existingId: option.identifier,
                 value: option.identifier,
                 label: option.title
@@ -169,7 +168,7 @@ export default function DatasetAutocomplete(props: Props) {
             className="react-select"
             isMulti={true}
             isSearchable={true}
-            onChange={rawValue => {
+            onChange={(rawValue) => {
                 if (!rawValue) {
                     props.onDatasetSelected(undefined);
                 } else {
@@ -197,7 +196,7 @@ export default function DatasetAutocomplete(props: Props) {
             }}
             styles={{
                 ...ReactSelectStyles,
-                valueContainer: provided => ({
+                valueContainer: (provided) => ({
                     ...provided,
                     overflow: "visible"
                 })

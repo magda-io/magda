@@ -9,7 +9,6 @@ export interface PoolCreationOptions {
 function createPool(options: PoolCreationOptions) {
     //   conString: "postgres://postgres@192.168.99.100:30544/postgres"
     const dbConfig = {
-        user: "postgres",
         database: options?.database ? options.database : "session", //env var: PGDATABASE
         host: options.dbHost, // Server hosting the postgres database
         port: options.dbPort, //env var: PGPORT
@@ -19,7 +18,7 @@ function createPool(options: PoolCreationOptions) {
 
     const pool = new pg.Pool(dbConfig);
 
-    pool.on("error", function(err, client) {
+    pool.on("error", function (err, client) {
         // if an error is encountered by a client while it sits idle in the pool
         // the pool itself will emit an error event with both the error and
         // the client which emitted the original error

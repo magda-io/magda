@@ -26,10 +26,10 @@ export default function testFilterByRegion(
             await supertest(app())
                 .get(`/datasets?region=ithinkthisisregiontype:3`)
                 .expect(200)
-                .expect(res => {
+                .expect((res) => {
                     const body: SearchResult = res.body;
                     const identifiers = body.dataSets.map(
-                        dataset => dataset.identifier
+                        (dataset) => dataset.identifier
                     );
 
                     expect(identifiers).to.eql([qldDataset.identifier]);

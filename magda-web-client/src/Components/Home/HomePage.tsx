@@ -6,16 +6,21 @@ import SearchBoxSwitcher from "Components/Dataset/Search/SearchBoxSwitcher";
 import "./HomePage.scss";
 
 import TagLine from "Components/Home/TagLine";
-import Lozenge from "Components/Home/Lozenge";
+import Lozenge, {
+    PropsType as LozengePropsType
+} from "Components/Home/Lozenge";
 import Stories from "Components/Home/Stories";
+import { StoryDataType } from "./StoryBox";
 import { Small, Medium } from "Components/Common/Responsive";
-
+import { Location } from "history";
 import MediaQuery from "react-responsive";
+import { User } from "reducers/userManagementReducer";
+import MyDatasetSection from "./MyDatasetSection";
 
-const getBgImg = backgroundImageUrls => {
+const getBgImg = (backgroundImageUrls) => {
     let imageMap = {};
 
-    backgroundImageUrls.forEach(item => {
+    backgroundImageUrls.forEach((item) => {
         let width;
         try {
             width = parseInt(
@@ -62,7 +67,72 @@ const getBgImg = backgroundImageUrls => {
     );
 };
 
-class HomePage extends React.Component {
+type PropsType = {
+    backgroundImageUrls: string;
+    mobileTagLine: string;
+    desktopTagLine: string;
+    lozenge: LozengePropsType;
+    stories?: StoryDataType[];
+    location: Location;
+    isFetchingWhoAmI: boolean;
+    user: User;
+};
+
+class HomePage extends React.Component<PropsType> {
+    getMainContent() {
+        if (this?.props?.isFetchingWhoAmI === true) {
+            return null;
+        } else if (this?.props?.user?.id) {
+            return (
+                <>
+                    <Medium>My dataset section</Medium>
+                    <Small>
+                        {this?.props?.stories?.length ? (
+                            <Stories stories={this.props.stories} />
+                        ) : null}
+                    </Small>
+                </>
+            );
+        } else if (this?.props?.stories?.length) {
+            return <Stories stories={this.props.stories} />;
+        } else {
+            return null;
+        }
+    }
+
+    getStories() {
+        if (
+            this?.props?.isFetchingWhoAmI === true ||
+            !this?.props?.stories?.length
+        ) {
+            return null;
+        }
+        if (this?.props?.user?.id) {
+            // --- my dataset section should only show for desktop due to the size of the design
+            // --- on mobile should still stories as before
+            return (
+                <Small>
+                    <Stories stories={this.props.stories} />
+                </Small>
+            );
+        } else {
+            return <Stories stories={this.props.stories} />;
+        }
+    }
+
+    getMyDatasetSection() {
+        if (this?.props?.isFetchingWhoAmI === true || !this?.props?.user?.id) {
+            return null;
+        } else {
+            // --- my dataset section should only show for desktop due to the size of the design
+            return (
+                <Medium>
+                    <MyDatasetSection userId={this.props.user.id} />
+                </Medium>
+            );
+        }
+    }
+
     render() {
         return (
             <div className="homepage-app-container">
@@ -84,14 +154,15 @@ class HomePage extends React.Component {
                     {this.props.desktopTagLine && (
                         <Medium>
                             <TagLine taglineText={this.props.desktopTagLine} />
-                            <Lozenge content={this.props.lozenge} />
+                            <Lozenge
+                                url={this.props?.lozenge?.url}
+                                text={this.props?.lozenge?.text}
+                            />
                         </Medium>
                     )}
-                    {(this.props.stories && this.props.stories.length && (
-                        <Stories stories={this.props.stories} />
-                    )) ||
-                        ""}
+                    {this.getStories()}
                 </div>
+                {this.getMyDatasetSection()}
             </div>
         );
     }
@@ -106,13 +177,17 @@ function mapStateToProps(state) {
         stories
     } = state.content;
 
+    const { isFetchingWhoAmI, user } = state.userManagement;
+
     return {
         isTopBannerShown: state.topBanner.isShown,
         desktopTagLine,
         mobileTagLine,
         lozenge,
         backgroundImageUrls,
-        stories
+        stories,
+        isFetchingWhoAmI,
+        user
     };
 }
 

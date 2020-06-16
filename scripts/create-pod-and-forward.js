@@ -35,8 +35,8 @@ const dockerEnvProcess = childProcess.execSync(
 );
 const dockerEnv = dockerEnvProcess
     .split("\n")
-    .filter(line => line.indexOf("export ") === 0)
-    .reduce(function(env, line) {
+    .filter((line) => line.indexOf("export ") === 0)
+    .reduce(function (env, line) {
         const match = /^export (\w+)="(.*)"$/.exec(line);
         if (match) {
             env[match[1]] = match[2];

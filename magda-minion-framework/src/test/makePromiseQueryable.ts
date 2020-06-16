@@ -19,23 +19,23 @@ export default function makePromiseQueryable<W>(
 
     // Observe the promise, saving the fulfillment in a closure scope.
     var result: any = promise.then(
-        function(v) {
+        function (v) {
             isResolved = true;
             return v;
         },
-        function(e) {
+        function (e) {
             isRejected = true;
             throw e;
         }
     );
     result.isQueryable = true;
-    result.isFulfilled = function() {
+    result.isFulfilled = function () {
         return isResolved || isRejected;
     };
-    result.isResolved = function() {
+    result.isResolved = function () {
         return isResolved;
     };
-    result.isRejected = function() {
+    result.isRejected = function () {
         return isRejected;
     };
     return result;

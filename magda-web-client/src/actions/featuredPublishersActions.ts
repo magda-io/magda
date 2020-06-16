@@ -22,14 +22,16 @@ export function fetchFeaturedPublishersFromRegistry(ids: Array<string>): any {
             return false;
         }
         dispatch(requestPublishers(ids));
-        const fetches = ids.map(id =>
+        const fetches = ids.map((id) =>
             fetch(
                 config.registryReadOnlyApiUrl +
                     `records/${id}?aspect=organization-details`,
-                config.fetchOptions
-            ).then(response => response.json())
+                config.credentialsFetchOptions
+            ).then((response) => response.json())
         );
-        Promise.all(fetches).then(jsons => dispatch(receivePublishers(jsons)));
+        Promise.all(fetches).then((jsons) =>
+            dispatch(receivePublishers(jsons))
+        );
         return undefined;
     };
 }

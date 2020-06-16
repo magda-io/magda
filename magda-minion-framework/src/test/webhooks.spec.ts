@@ -35,7 +35,7 @@ baseSpec(
             it(caption, () => {
                 const batchResultsArb = jsc.suchthat(
                     jsc.array(jsc.bool),
-                    array => array.length <= 5
+                    (array) => array.length <= 5
                 );
 
                 const recordWithSuccessArb = (mightFail: boolean) =>
@@ -49,7 +49,7 @@ baseSpec(
 
                     return success
                         ? baseArb
-                        : jsc.suchthat(baseArb, combined =>
+                        : jsc.suchthat(baseArb, (combined) =>
                               combined.some(({ success }) => !success)
                           );
                 };
@@ -65,10 +65,10 @@ baseSpec(
 
                 const batchArb = arbFlatMap<boolean[], Batch[]>(
                     batchResultsArb,
-                    batchResults => {
-                        const batchArb = batchResults.map(overallSuccess =>
+                    (batchResults) => {
+                        const batchArb = batchResults.map((overallSuccess) =>
                             recordsWithSuccessArrArb(overallSuccess).smap(
-                                records => ({ records, overallSuccess }),
+                                (records) => ({ records, overallSuccess }),
                                 ({ records }) => records
                             )
                         );
@@ -76,7 +76,7 @@ baseSpec(
                             ? jsc.tuple(batchArb)
                             : jsc.constant([]);
                     },
-                    batches =>
+                    (batches) =>
                         batches.map(({ overallSuccess }) => overallSuccess)
                 );
 
@@ -110,7 +110,7 @@ baseSpec(
                             /** All records in all the batches */
                             const flattenedRecords = _.flatMap(
                                 recordsBatches,
-                                batch => batch.records
+                                (batch) => batch.records
                             );
                             /** Error thrown when the call is *supposed* to fail  */
                             const fakeError = new Error(
@@ -172,7 +172,7 @@ baseSpec(
                             return minion(options)
                                 .then(() =>
                                     Promise.all(
-                                        recordsBatches.map(batch => {
+                                        recordsBatches.map((batch) => {
                                             lastHookId++;
 
                                             if (async) {

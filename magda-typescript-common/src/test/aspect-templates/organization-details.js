@@ -3,7 +3,7 @@ const data = {
     description: organization.description
 };
 
-Object.keys(data).forEach(key => {
+Object.keys(data).forEach((key) => {
     if (!data[key]) delete data[key];
 });
 

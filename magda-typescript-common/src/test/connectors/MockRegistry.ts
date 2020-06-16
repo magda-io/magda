@@ -91,7 +91,7 @@ export class MockRegistry extends MockExpressServer {
             res.json(this.records).end();
         });
 
-        registry.all("*", function(req: any, res: any) {
+        registry.all("*", function (req: any, res: any) {
             console.log("REG", req.method, req.path, req.body, req.query);
             res.status(200);
         });

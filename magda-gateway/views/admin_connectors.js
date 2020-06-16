@@ -1,4 +1,4 @@
-addSection("Data connectors", async function(body) {
+addSection("Data connectors", async function (body) {
     showConnectors(body);
 });
 
@@ -96,7 +96,7 @@ async function deleteConnector(name) {
 
 // ==================
 
-addSection("CSV connectors", async function(body) {
+addSection("CSV connectors", async function (body) {
     showSpreadsheets(body);
 });
 
@@ -105,7 +105,7 @@ async function showSpreadsheets(body) {
 
     let connectors = await request("GET", "/api/v0/admin/connectors");
     let files = await request("GET", "/api/v0/content/all");
-    files = files.filter(x => x.id.match(/^csv-/));
+    files = files.filter((x) => x.id.match(/^csv-/));
 
     body.text("");
 
@@ -129,7 +129,7 @@ async function showSpreadsheets(body) {
                 .on("click", deleteContent.bind(null, file.id));
 
             if (
-                connectors.filter(connector => connector.id === file.id)
+                connectors.filter((connector) => connector.id === file.id)
                     .length === 0
             ) {
                 td.append("button")
@@ -199,10 +199,10 @@ function spreadsheetConfig(body) {
             input.type = "file";
             input.accept = "*.csv;*.xls;*.xlsx";
             input.click();
-            input.onchange = function() {
+            input.onchange = function () {
                 const file = input.files[0];
                 const fileReader = new FileReader();
-                fileReader.onloadend = async function(e) {
+                fileReader.onloadend = async function (e) {
                     const data = new Blob([new Uint8Array(e.target.result)]);
                     await request(
                         "PUT",

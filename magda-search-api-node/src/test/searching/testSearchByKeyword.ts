@@ -42,10 +42,10 @@ export default function testSearchByKeyword(
             await supertest(app())
                 .get(`/datasets?query=${synonym}`)
                 .expect(200)
-                .expect(res => {
+                .expect((res) => {
                     const body: SearchResult = res.body;
                     const identifiers = body.dataSets.map(
-                        dataset => dataset.identifier
+                        (dataset) => dataset.identifier
                     );
 
                     expect(identifiers).to.contain(targetDataset1.identifier);
@@ -79,7 +79,7 @@ export default function testSearchByKeyword(
             await supertest(app())
                 .get(`/datasets?query=${termInQuery}`)
                 .expect(200)
-                .expect(res => {
+                .expect((res) => {
                     const body: SearchResult = res.body;
 
                     expect(body.hitCount).to.be.greaterThan(0);

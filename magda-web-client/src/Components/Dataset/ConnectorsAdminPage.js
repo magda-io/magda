@@ -21,7 +21,7 @@ class StoriesAdminPage extends Component {
 
     refresh() {
         this.updateState({ connectors: [] });
-        listConnectors().then(connectors => this.updateState({ connectors }));
+        listConnectors().then((connectors) => this.updateState({ connectors }));
     }
 
     componentDidMount() {

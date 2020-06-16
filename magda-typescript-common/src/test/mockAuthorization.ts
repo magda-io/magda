@@ -21,7 +21,7 @@ export default function mockAuthorization(
 
     const id = jwt.sign({ userId: userId }, jwtSecret);
 
-    return req.set("X-Magda-Session", id).then(res => {
+    return req.set("X-Magda-Session", id).then((res) => {
         scope.done();
         return res;
     });

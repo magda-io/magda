@@ -84,23 +84,23 @@ export default class ApiClient {
         promise: Promise<Response>
     ): Promise<Maybe<User>> {
         return promise
-            .then(res => {
+            .then((res) => {
                 if (res.status === 404) {
                     return Promise.resolve(Maybe.nothing<User>());
                 } else {
                     return res
                         .text()
-                        .then(resText => {
+                        .then((resText) => {
                             try {
                                 return JSON.parse(resText);
                             } catch (e) {
                                 throw new Error(resText);
                             }
                         })
-                        .then(user => Maybe.just(user));
+                        .then((user) => Maybe.just(user));
                 }
             })
-            .catch(e => {
+            .catch((e) => {
                 console.error(e);
                 throw e;
             });

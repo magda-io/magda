@@ -120,9 +120,12 @@ describe("Test createOpenfaasGatewayProxy", () => {
                 gatewayUrl: openfaasGatewayUrl,
                 allowAdminOnly: allowAdminOnly,
                 baseAuthUrl: authApiBaseUrl,
-                jwtSecret: "test",
-                tenantMode,
-                authenticator: mockAuthenticator
+                apiRouterOptions: {
+                    jwtSecret: "test",
+                    tenantMode,
+                    authenticator: mockAuthenticator,
+                    routes: {}
+                }
             })
         );
 

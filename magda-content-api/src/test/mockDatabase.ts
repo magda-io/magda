@@ -8,11 +8,11 @@ import { Content } from "../model";
 
 export default class MockDatabase implements Database {
     getContentById(id: string): Promise<Maybe<Content>> {
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
             resolve(
                 arrayToMaybe(
                     mockContentDataStore.getContentById(id).map(
-                        item =>
+                        (item) =>
                             ({
                                 id: item.id,
                                 content: item.content
@@ -24,7 +24,7 @@ export default class MockDatabase implements Database {
     }
 
     setContentById(id: string, type: string, content: string): Promise<any> {
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
             resolve(mockContentDataStore.setContentById(id, type, content));
         });
     }
@@ -35,14 +35,14 @@ export default class MockDatabase implements Database {
     ): Promise<any> {
         return mockContentDataStore
             .getContentSummary()
-            .filter(item =>
-                queries.some(query =>
+            .filter((item) =>
+                queries.some((query) =>
                     query.patterns.some(
-                        pattern => !!wildcard(pattern, item[query.field])
+                        (pattern) => !!wildcard(pattern, item[query.field])
                     )
                 )
             )
-            .map(item => {
+            .map((item) => {
                 if (inlineContentIfType.indexOf(item.type) > -1) {
                     return item;
                 } else {

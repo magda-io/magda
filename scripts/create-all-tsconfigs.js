@@ -4,7 +4,7 @@ const path = require("path");
 const getAllPackages = require("./getAllPackages");
 const isTypeScriptPackage = require("./isTypeScriptPackage");
 
-getAllPackages().forEach(function(packagePath) {
+getAllPackages().forEach(function (packagePath) {
     const packageJson = require(path.resolve(packagePath, "package.json"));
     const isTypeScript = isTypeScriptPackage(packagePath, packageJson);
     if (!isTypeScript) {
@@ -31,8 +31,8 @@ getAllPackages().forEach(function(packagePath) {
     const paths = {};
     const dependencies = packageJson.dependencies || {};
     Object.keys(dependencies)
-        .filter(key => key.indexOf("@magda") === 0)
-        .forEach(function(key) {
+        .filter((key) => key.indexOf("@magda") === 0)
+        .forEach(function (key) {
             paths[key + "/dist/*"] = ["./node_modules/" + key + "/src/*"];
         });
 

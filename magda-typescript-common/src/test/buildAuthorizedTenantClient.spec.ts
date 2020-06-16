@@ -11,7 +11,7 @@ const jwt = require("jsonwebtoken");
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-describe("Test AuthorizedTenantClient.ts", function() {
+describe("Test AuthorizedTenantClient.ts", function () {
     const mockTenants = mockTenantDataStore.getTenants();
     const jwtSecret = "a top secret";
     const adminUserId = "an-admin-user";
@@ -23,7 +23,7 @@ describe("Test AuthorizedTenantClient.ts", function() {
             // "X-Magda-Session" can not be pre-determined. The exact match
             // of this header can not be guaranteed. Therefore we have to
             // check the decoded user id.
-            "X-Magda-Session": jwtToken => {
+            "X-Magda-Session": (jwtToken) => {
                 return jwt.verify(jwtToken, jwtSecret).userId === adminUserId;
             },
             "Content-Type": "application/json",
@@ -35,7 +35,7 @@ describe("Test AuthorizedTenantClient.ts", function() {
         nock.cleanAll();
     });
 
-    it("`getTenants()` should return all tenants", async function() {
+    it("`getTenants()` should return all tenants", async function () {
         requestScope.get("/tenants").reply(200, mockTenants);
 
         const api = new AuthorizedTenantClient({

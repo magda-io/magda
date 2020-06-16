@@ -24,7 +24,7 @@ function inlineImg(
     }
     const filePath = matches[1];
     const fileName = path.basename(filePath);
-    const idx = this.attachments.findIndex(item => item.path === filePath);
+    const idx = this.attachments.findIndex((item) => item.path === filePath);
     let cid = "";
     if (idx !== -1) {
         cid = this.attachments[idx].cid;

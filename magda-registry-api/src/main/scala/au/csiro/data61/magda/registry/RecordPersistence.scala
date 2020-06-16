@@ -45,7 +45,9 @@ trait RecordPersistence {
       start: Option[Int] = None,
       limit: Option[Int] = None,
       dereference: Option[Boolean] = None,
-      aspectQueries: Iterable[AspectQuery] = Nil
+      aspectQueries: Iterable[AspectQuery] = Nil,
+      aspectOrQueries: Iterable[AspectQuery] = Nil,
+      orderBy: Option[OrderByDef] = None
   ): RecordsPage[Record]
 
   def getCount(
@@ -53,7 +55,8 @@ trait RecordPersistence {
       tenantId: TenantId,
       opaQueries: Option[List[(String, List[List[OpaQuery]])]],
       aspectIds: Iterable[String],
-      aspectQueries: Iterable[AspectQuery] = Nil
+      aspectQueries: Iterable[AspectQuery] = Nil,
+      aspectOrQueries: Iterable[AspectQuery] = Nil
   ): Long
 
   def getById(
@@ -255,6 +258,43 @@ class DefaultRecordPersistence(config: Config)
     this.getSummaries(session, tenantId, opaQueries, pageToken, start, limit)
   }
 
+  private def getSqlFromAspectQueries(
+      aspectQueries: Iterable[AspectQuery],
+      aspectOrQueries: Iterable[AspectQuery]
+  ): Option[SQLSyntax] = {
+
+    val orConditions = SQLSyntax.join(
+      aspectOrQueries.map(aspectQueryToWhereClause(_)).toSeq,
+      SQLSyntax.or
+    )
+    val andConditions = SQLSyntax.join(
+      aspectQueries.map(aspectQueryToWhereClause(_)).toSeq,
+      SQLSyntax.and
+    )
+
+    SQLSyntax.join(
+      Seq(andConditions, orConditions).map {
+        case sqlPart if sqlPart.value.nonEmpty =>
+          // --- use () to wrap the `OR` or `AND` queries if they are not empty
+          // --- SQLSyntax.roundBracket failed to check it
+          SQLSyntax.roundBracket(sqlPart)
+        case _ => SQLSyntax.empty
+      },
+      if (aspectOrQueries.size == 1) {
+        // When only one aspectOrQueries present, we should join aspectQueries and aspectOrQueries with `OR`
+        // otherwise, aspectOrQueries works as `AND`
+        SQLSyntax.or
+      } else {
+        SQLSyntax.and
+      }
+    ) match {
+      // --- use () to wrap all conditions as it's `OR` between `aspectQueries` & `aspectOrQueries`
+      case sqlPart if sqlPart.value.nonEmpty =>
+        Some(SQLSyntax.roundBracket(sqlPart))
+      case _ => None
+    }
+  }
+
   def getAllWithAspects(
       implicit session: DBSession,
       tenantId: TenantId,
@@ -266,24 +306,34 @@ class DefaultRecordPersistence(config: Config)
       start: Option[Int] = None,
       limit: Option[Int] = None,
       dereference: Option[Boolean] = None,
-      aspectQueries: Iterable[AspectQuery] = Nil
+      aspectQueries: Iterable[AspectQuery] = Nil,
+      aspectOrQueries: Iterable[AspectQuery] = Nil,
+      orderBy: Option[OrderByDef] = None
   ): RecordsPage[Record] = {
-    val selectors = aspectQueries
-      .map(query => aspectQueryToWhereClause(query))
-      .map(Some.apply)
+
+    // --- make sure if orderBy is used, the involved aspectId is, at least, included in optionalAspectIds
+    val notIncludedAspectIds = (orderBy
+      .map(_.aspectName)
+      .toList)
+      .filter(!(aspectIds ++ optionalAspectIds).toList.contains(_))
+
+    val selectors = Seq(
+      getSqlFromAspectQueries(aspectQueries, aspectOrQueries)
+    )
 
     this.getRecords(
       session,
       tenantId,
       aspectIds,
-      optionalAspectIds,
+      optionalAspectIds ++ notIncludedAspectIds,
       opaRecordQueries,
       opaLinkedRecordQueries,
       pageToken,
       start,
       limit,
       dereference,
-      selectors
+      selectors,
+      orderBy
     )
   }
 
@@ -295,13 +345,21 @@ class DefaultRecordPersistence(config: Config)
       tenantId: TenantId,
       opaQueries: Option[List[(String, List[List[OpaQuery]])]],
       aspectIds: Iterable[String],
-      aspectQueries: Iterable[AspectQuery] = Nil
+      aspectQueries: Iterable[AspectQuery] = Nil,
+      aspectOrQueries: Iterable[AspectQuery] = Nil
   ): Long = {
-    val selectors: Iterable[Some[SQLSyntax]] = aspectQueries
-      .map(query => aspectQueryToWhereClause(query))
-      .map(Some.apply)
 
-    this.getCountInner(session, tenantId, opaQueries, aspectIds, selectors)
+    val selectors = Seq(
+      getSqlFromAspectQueries(aspectQueries, aspectOrQueries)
+    )
+
+    this.getCountInner(
+      session,
+      tenantId,
+      opaQueries,
+      aspectIds,
+      selectors
+    )
   }
 
   def getById(
@@ -1398,7 +1456,8 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       start: Option[Int] = None,
       rawLimit: Option[Int] = None,
       dereference: Option[Boolean] = None,
-      recordSelector: Iterable[Option[SQLSyntax]] = Iterable()
+      recordSelector: Iterable[Option[SQLSyntax]] = Iterable(),
+      orderBy: Option[OrderByDef] = None
   ): RecordsPage[Record] = {
 
     val recordsFilteredByTenantClause: SQLSyntax = filterRecordsByTenantClause(
@@ -1439,6 +1498,17 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
     // Create unsafely so that column names will look like temp.aspect0 and temp.sequence.
     // Otherwise it will look like 'temp'.aspect0 and 'temp'.sequence.
     val tempName = SQLSyntax.createUnsafely(rawTempName)
+
+    val orderBySql = orderBy match {
+      case None =>
+        SQLSyntax.orderBy(sqls"${tempName}.sequence")
+      case Some(orderBy) =>
+        orderBy.getSql(
+          List.concat(aspectIds, optionalAspectIds),
+          Some(rawTempName)
+        )
+    }
+
     val nonNullAspectsWhereClause =
       SQLSyntax.where(SQLSyntax.joinWithAnd(aspectIds.zipWithIndex.map {
         case (_, index) =>
@@ -1464,7 +1534,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
             ) as $tempName
             ${if (aspectIds.nonEmpty) sqls"$nonNullAspectsWhereClause"
       else SQLSyntax.empty}
-            order by $tempName.sequence
+            ${orderBySql}
             offset ${start.getOrElse(0)}
             limit ${limit + 1}
         """
@@ -1840,7 +1910,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
               sqls"""(
                 SELECT coalesce (
                   (
-                    SELECT ($linkedAspectsClause) 
+                    SELECT ($linkedAspectsClause)
                     FROM Records
                     WHERE Records.tenantId=RecordAspects.tenantId AND
                       Records.recordId=RecordAspects.data->>$propertyName
@@ -1892,7 +1962,12 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
   private def aspectQueryToWhereClause(query: AspectQuery) = {
     val comparisonClause = aspectQueryToSql(query)
 
-    sqls"""EXISTS (
+    val existClause = query match {
+      case AspectQueryNotEqualValue(_, _, _) => sqls"NOT EXISTS"
+      case _                                 => sqls"EXISTS"
+    }
+
+    sqls"""${existClause} (
              SELECT 1 FROM recordaspects
              WHERE (aspectId, recordid, tenantId)=(${query.aspectId}, Records.recordId, Records.tenantId) AND
              $comparisonClause )

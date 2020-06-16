@@ -18,7 +18,7 @@ type PropsType = {
     stateData: State;
 };
 
-const AccessAndUse: FunctionComponent<PropsType> = props => {
+const AccessAndUse: FunctionComponent<PropsType> = (props) => {
     const {
         dataset,
         datasetPublishing,
@@ -73,9 +73,10 @@ const AccessAndUse: FunctionComponent<PropsType> = props => {
                 <div className="col-sm-9 content-box single-line">
                     {licenseLevel !== "distribution" || !distributions?.length
                         ? dataset?.defaultLicense
-                            ? codelists.licenseLevel[dataset.defaultLicense]
+                            ? codelists.licenseLevel[dataset?.defaultLicense] ||
+                              dataset?.defaultLicense
                             : codelists.NO_VALUE_LABEL
-                        : distributions.map(item => (
+                        : distributions.map((item) => (
                               <div
                                   key={item.id}
                                   className="row distribution-licence-row"
@@ -89,7 +90,9 @@ const AccessAndUse: FunctionComponent<PropsType> = props => {
                                   </div>
                                   <div className="col-sm-6 distribution-licence-license-col">
                                       {item?.license
-                                          ? codelists.licenseLevel[item.license]
+                                          ? codelists.licenseLevel[
+                                                item.license
+                                            ] || item.license
                                           : codelists.NO_VALUE_LABEL}
                                   </div>
                               </div>
@@ -140,7 +143,7 @@ const AccessAndUse: FunctionComponent<PropsType> = props => {
                             informationSecurity?.disseminationLimits?.length
                                 ? informationSecurity.disseminationLimits
                                       .map(
-                                          item =>
+                                          (item) =>
                                               `- ${codelists.disseminationLimits[item]}`
                                       )
                                       .join("\n")

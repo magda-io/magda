@@ -14,7 +14,7 @@ interface Props {
     contentExtractor?: (any) => string;
 }
 
-const defaultContentExtractor = data => JSON.stringify(data);
+const defaultContentExtractor = (data) => JSON.stringify(data);
 
 const initState = {
     fetchingStarted: false,
@@ -27,35 +27,35 @@ const RemoteTextContentBox = (props: Props) => {
     const [state, setState] = useState(initState);
     if (!state.fetchingStarted) {
         if (props.url) {
-            setState(state => ({ ...state, fetchingStarted: true }));
+            setState((state) => ({ ...state, fetchingStarted: true }));
         } else {
             console.error(
                 "An url is required for RemoteTextContentBox to load data!"
             );
-            setState(state => ({
+            setState((state) => ({
                 ...state,
                 fetchingStarted: true,
                 isError: true,
                 isLoading: false
             }));
         }
-        fetch(props.url, config.fetchOptions)
-            .then(response => {
+        fetch(props.url, config.credentialsFetchOptions)
+            .then((response) => {
                 if (response.status === 200) {
                     return response.json();
                 }
                 throw new Error(response.statusText);
             })
             .then((json: any) => {
-                setState(state => ({
+                setState((state) => ({
                     ...state,
                     isError: false,
                     isLoading: false,
                     data: json
                 }));
             })
-            .catch(error =>
-                setState(state => ({
+            .catch((error) =>
+                setState((state) => ({
                     ...state,
                     isError: true,
                     isLoading: false

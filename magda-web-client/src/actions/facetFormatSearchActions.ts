@@ -56,8 +56,8 @@ export function fetchFormatSearchResults(
                     generalQuery.q || "*"
                 )}&${generalQueryString}&facetQuery=${facetQuery}`;
 
-            return fetch(url, config.fetchOptions)
-                .then(response => {
+            return fetch(url, config.credentialsFetchOptions)
+                .then((response) => {
                     if (response.status === 200) {
                         return response.json();
                     }
@@ -66,7 +66,7 @@ export function fetchFormatSearchResults(
                 .then((json: FacetSearchJson) => {
                     return dispatch(receiveFormats(facetQuery, json));
                 })
-                .catch(error =>
+                .catch((error) =>
                     dispatch(
                         requestFormatsFailed(facetQuery, {
                             title: error.name,

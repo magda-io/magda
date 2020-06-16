@@ -21,7 +21,7 @@ program
         "jwt <userId> [jwtSecret]",
         "calculate JWT token (only for testing purpose)"
     )
-    .on("command:*", function(cmds) {
+    .on("command:*", function (cmds) {
         if (
             ["list", "assign", "remove", "jwt", "create"].indexOf(cmds[0]) ===
             -1

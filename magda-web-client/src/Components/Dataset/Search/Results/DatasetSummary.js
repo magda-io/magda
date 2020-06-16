@@ -19,8 +19,8 @@ export default class DatasetSummary extends Component {
     renderDownloads(dataset) {
         const formats = uniq(
             dataset.distributions
-                .filter(dis => defined(dis.format))
-                .map(dis => dis.format)
+                .filter((dis) => defined(dis.format))
+                .map((dis) => dis.format)
         );
         return formats.length ? (
             <div

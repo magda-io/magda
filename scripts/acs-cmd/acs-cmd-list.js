@@ -11,7 +11,7 @@ program
     .command("permissions", "List all permissions")
     .command("roles", "List all roles")
     .command("users", "List all users")
-    .on("command:*", function(cmds) {
+    .on("command:*", function (cmds) {
         if (["permissions", "roles", "users"].indexOf(cmds[0]) === -1) {
             console.error(
                 chalk.red(

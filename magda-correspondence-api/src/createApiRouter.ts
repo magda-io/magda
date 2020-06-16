@@ -91,7 +91,7 @@ export default function createApiRouter(
      *         "status": "Failed"
      *    }
      */
-    router.post("/public/send/dataset/request", validateMiddleware, function(
+    router.post("/public/send/dataset/request", validateMiddleware, function (
         req,
         res
     ) {
@@ -150,10 +150,10 @@ export default function createApiRouter(
     router.post(
         "/public/send/dataset/:datasetId/question",
         validateMiddleware,
-        async function(req, res) {
+        async function (req, res) {
             const body: DatasetMessage = req.body;
 
-            const promise = getDataset(req.params.datasetId).then(dataset => {
+            const promise = getDataset(req.params.datasetId).then((dataset) => {
                 const dcatDatasetStrings = dataset.aspects[
                     "dcat-dataset-strings"
                 ] as {
@@ -180,9 +180,9 @@ export default function createApiRouter(
                     datasetPublisherEmailMatches[1];
 
                 const emails = [contactPointEmail, datasetPublisherEmail]
-                    .filter(email => !!email)
-                    .filter(email => email !== "")
-                    .filter(email => emailValidator.validate(email));
+                    .filter((email) => !!email)
+                    .filter((email) => email !== "")
+                    .filter((email) => emailValidator.validate(email));
 
                 const validEmail = emails.length > 0;
                 if (!validEmail) {
@@ -233,7 +233,7 @@ export default function createApiRouter(
                 ["dataset-publisher"],
                 true
             )
-            .then(result => unionToThrowable(result));
+            .then((result) => unionToThrowable(result));
     }
 
     return router;
@@ -251,7 +251,7 @@ function handlePromise(
 ): void {
     promise
         .then(() => response.status(200).json({ status: "OK" }))
-        .catch(e => {
+        .catch((e) => {
             if (_.get(e, "e.response.statusCode") === 404) {
                 console.error(
                     "Attempted to send correspondence for non-existent dataset " +
@@ -265,7 +265,7 @@ function handlePromise(
                 throw e;
             }
         })
-        .catch(e => {
+        .catch((e) => {
             console.error(e);
             response.status(500).json({ status: "Failure" });
         });

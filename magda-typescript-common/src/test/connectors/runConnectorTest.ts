@@ -14,7 +14,7 @@ export function runConnectorTest(
     Catalog: any,
     options: any = {}
 ) {
-    describe("connector", function() {
+    describe("connector", function () {
         this.timeout(30000);
 
         const registryPort = 5000 + Math.round(5000 * Math.random());
@@ -71,18 +71,18 @@ export function runConnectorTest(
         let servers: any[] = [];
         let registry: any;
 
-        beforeEach(async function() {
+        beforeEach(async function () {
             servers.push(
                 (registry = await new MockRegistry().run(registryPort))
             );
         });
 
-        afterEach(function() {
-            servers.forEach(server => server.server.close());
+        afterEach(function () {
+            servers.forEach((server) => server.server.close());
         });
 
-        TEST_CASES.forEach(function(testCase: any, index: number) {
-            it(`should run ${index}`, async function() {
+        TEST_CASES.forEach(function (testCase: any, index: number) {
+            it(`should run ${index}`, async function () {
                 const catalog: MockExpressServer = new Catalog(testCase.input);
                 await catalog.run(catalogPort).then((catalog: any) => {
                     servers.push(catalog);

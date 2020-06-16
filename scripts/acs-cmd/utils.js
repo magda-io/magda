@@ -4,7 +4,7 @@ async function recordExist(pool, table, record) {
     }
     const sqlValues = [];
     const where = Object.keys(record)
-        .map(key => {
+        .map((key) => {
             sqlValues.push(record[key]);
             return `"${key}" = $${sqlValues.length}`;
         })

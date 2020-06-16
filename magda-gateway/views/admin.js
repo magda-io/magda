@@ -1,7 +1,7 @@
 const instanceURL = "/api/v0";
 let timeout = null;
 
-window.onload = function() {
+window.onload = function () {
     refresh();
 };
 

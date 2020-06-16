@@ -18,7 +18,7 @@ export default class AsyncPage<T> {
                     new AsyncPage(undefined, false, undefined)
                 );
             }
-            return nextPromise.then(thisPage => {
+            return nextPromise.then((thisPage) => {
                 return new AsyncPage(thisPage, true, () => nextPage(thisPage));
             });
         };
@@ -31,7 +31,7 @@ export default class AsyncPage<T> {
     }
 
     static singlePromise<T>(valuePromise: Promise<T>): AsyncPage<T> {
-        return AsyncPage.create<T>(current =>
+        return AsyncPage.create<T>((current) =>
             current ? undefined : valuePromise
         );
     }
@@ -99,7 +99,7 @@ export default class AsyncPage<T> {
             this.data,
             this.hasData,
             this.requestNextPage
-                ? () => this.requestNextPage().then(page => page.take(nextN))
+                ? () => this.requestNextPage().then((page) => page.take(nextN))
                 : undefined
         );
     }
@@ -123,7 +123,7 @@ export function forEachAsync<T>(
             if (!currentPromise) {
                 currentPromise = currentPage
                     .requestNextPage()
-                    .then(nextPage => {
+                    .then((nextPage) => {
                         currentIndex = 0;
                         currentPromise = undefined;
                         currentPage = nextPage;
@@ -162,7 +162,7 @@ export function forEachAsync<T>(
         promises.push(callNext());
     }
 
-    return Promise.all(promises).then(results => {
+    return Promise.all(promises).then((results) => {
         return;
     });
 }
@@ -170,7 +170,7 @@ export function forEachAsync<T>(
 export function asyncPageToArray<T>(page: AsyncPage<T[]>): Promise<T[]> {
     const result = new Array<T>();
     return page
-        .forEach(value => {
+        .forEach((value) => {
             result.push(...value);
         })
         .then(() => result);

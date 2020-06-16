@@ -146,16 +146,17 @@ class FacetHeader extends Component {
             if (!this.hasFilter()) {
                 return `${upperFirst(filterName)} filter: any ${filterName}`;
             } else if (this.props.activeOptions.length === 1) {
-                return `${upperFirst(filterName)} filter: ${this.props
-                    .activeOptions[0].value ||
+                return `${upperFirst(filterName)} filter: ${
+                    this.props.activeOptions[0].value ||
                     this.props.activeOptions[0].regionType +
                         ": " +
-                        this.props.activeOptions[0].regionName}`;
+                        this.props.activeOptions[0].regionName
+                }`;
             } else {
                 return `${upperFirst(
                     filterName
                 )} filter: ${this.props.activeOptions
-                    .map(option => option.value)
+                    .map((option) => option.value)
                     .join(", ")}`;
             }
         }
@@ -172,7 +173,7 @@ class FacetHeader extends Component {
     hasFilter() {
         let hasFilter = true;
         if (this.props.title === "date range") {
-            if (this.props.activeOptions.every(o => !o)) {
+            if (this.props.activeOptions.every((o) => !o)) {
                 hasFilter = false;
             }
         } else {

@@ -309,6 +309,11 @@ const argv = addJwtSecretFromEnvVar(
                 "Whether enable magda internal authentication provider. Default to true. ",
             type: "boolean",
             default: true
+        })
+        .option("defaultCacheControl", {
+            describe:
+                "A default value to put in the cache-control header of GET responses",
+            type: "string"
         }).argv
 );
 

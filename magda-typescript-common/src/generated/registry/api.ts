@@ -112,6 +112,10 @@ export class Record {
      */
     "aspects": any;
     /**
+     * The read authorization policy id of a record
+     */
+    "authnReadPolicyId": string;
+    /**
      * A tag representing the action by the source of this record (e.g. an id for a individual crawl of a data portal).
      */
     "sourceTag": string;
@@ -119,10 +123,6 @@ export class Record {
      * The identifier of a tenant
      */
     "tenantId": number;
-    /**
-     * The read authorization policy id of a record
-     */
-    "authnReadPolicyId": string;
 }
 
 /**
@@ -629,7 +629,9 @@ export class AspectDefinitionsApi {
         aspect: AspectDefinition,
         xMagdaSession: string
     ): Promise<{ response: http.IncomingMessage; body: AspectDefinition }> {
-        const localVarPath = this.basePath + "/aspects/" + String(id);
+        const localVarPath =
+            this.basePath +
+            "/aspects/{id}".replace("{" + "id" + "}", String(id));
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
@@ -1047,10 +1049,9 @@ export class RecordAspectsApi {
     ): Promise<{ response: http.IncomingMessage; body: any }> {
         const localVarPath =
             this.basePath +
-            "/records/" +
-            String(recordId) +
-            "/aspects/" +
-            String(aspectId);
+            "/records/{recordId}/aspects/{aspectId}"
+                .replace("{" + "recordId" + "}", String(recordId))
+                .replace("{" + "aspectId" + "}", String(aspectId));
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
@@ -1545,6 +1546,9 @@ export class RecordsApi {
      * @param limit The maximum number of records to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
      * @param dereference true to automatically dereference links to other records; false to leave them as links.  Dereferencing a link means including the record itself where the link would be.  Dereferencing only happens one level deep, regardless of the value of this parameter.
      * @param aspectQuery Filter the records returned by a value within the aspect JSON. Expressed as &#39;aspectId.path.to.field:value&#39;, url encoded. NOTE: This is an early stage API and may change greatly in the future
+     * @param aspectOrQuery Filter the records returned by a value within the aspect JSON. Expressed as &#39;aspectId.path.to.field:value&#39;, url encoded. Queries passing via this parameter will be grouped with OR logic. NOTE: This is an early stage API and may change greatly in the future
+     * @param orderBy Specify the field to sort the result. Aspect field can be supported in a format like aspectId.path.to.field
+     * @param orderByDir Specify the order by direction. Either &#x60;asc&#x60; or &#x60;desc&#x60;
      * @param xMagdaSession Magda internal session id
      */
     public getAll(
@@ -1556,6 +1560,9 @@ export class RecordsApi {
         limit?: number,
         dereference?: boolean,
         aspectQuery?: Array<string>,
+        aspectOrQuery?: Array<string>,
+        orderBy?: string,
+        orderByDir?: string,
         xMagdaSession?: string
     ): Promise<{ response: http.IncomingMessage; body: Array<Record> }> {
         const localVarPath = this.basePath + "/records";
@@ -1596,6 +1603,18 @@ export class RecordsApi {
 
         if (aspectQuery !== undefined) {
             queryParameters["aspectQuery"] = aspectQuery;
+        }
+
+        if (aspectOrQuery !== undefined) {
+            queryParameters["aspectOrQuery"] = aspectOrQuery;
+        }
+
+        if (orderBy !== undefined) {
+            queryParameters["orderBy"] = orderBy;
+        }
+
+        if (orderByDir !== undefined) {
+            queryParameters["orderByDir"] = orderByDir;
         }
 
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
@@ -1744,7 +1763,9 @@ export class RecordsApi {
         dereference?: boolean,
         xMagdaSession?: string
     ): Promise<{ response: http.IncomingMessage; body: Record }> {
-        const localVarPath = this.basePath + "/records/" + id;
+        const localVarPath =
+            this.basePath +
+            "/records/{id}".replace("{" + "id" + "}", String(id));
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
@@ -1901,12 +1922,14 @@ export class RecordsApi {
      * @param xMagdaTenantId 0
      * @param aspect The aspects for which to retrieve data, specified as multiple occurrences of this query parameter.  Only records that have all of these aspects will be included in the response.
      * @param aspectQuery Filter the records returned by a value within the aspect JSON. Expressed as &#39;aspectId.path.to.field:value&#39;, url encoded. NOTE: This is an early stage API and may change greatly in the future
+     * @param aspectOrQuery Filter the records returned by a value within the aspect JSON. Expressed as &#39;aspectId.path.to.field:value&#39;, url encoded. Queries passing via this parameter will be grouped with OR logic.
      * @param xMagdaSession Magda internal session id
      */
     public getCount(
         xMagdaTenantId: number,
         aspect?: Array<string>,
         aspectQuery?: Array<string>,
+        aspectOrQuery?: Array<string>,
         xMagdaSession?: string
     ): Promise<{ response: http.IncomingMessage; body: CountResponse }> {
         const localVarPath = this.basePath + "/records/count";
@@ -1927,6 +1950,10 @@ export class RecordsApi {
 
         if (aspectQuery !== undefined) {
             queryParameters["aspectQuery"] = aspectQuery;
+        }
+
+        if (aspectOrQuery !== undefined) {
+            queryParameters["aspectOrQuery"] = aspectOrQuery;
         }
 
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
@@ -2159,7 +2186,9 @@ export class RecordsApi {
         record: Record,
         xMagdaSession: string
     ): Promise<{ response: http.IncomingMessage; body: Record }> {
-        const localVarPath = this.basePath + "/records/" + String(id);
+        const localVarPath =
+            this.basePath +
+            "/records/{id}".replace("{" + "id" + "}", String(id));
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};
@@ -2746,7 +2775,8 @@ export class WebHooksApi {
         hook: WebHook,
         xMagdaSession: string
     ): Promise<{ response: http.IncomingMessage; body: WebHook }> {
-        const localVarPath = this.basePath + "/hooks/" + String(id);
+        const localVarPath =
+            this.basePath + "/hooks/{id}".replace("{" + "id" + "}", String(id));
         let queryParameters: any = {};
         let headerParams: any = (<any>Object).assign({}, this.defaultHeaders);
         let formParams: any = {};

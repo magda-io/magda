@@ -1,10 +1,10 @@
 import React, { FunctionComponent } from "react";
 import uuidv4 from "uuid/v4";
 import * as ValidationManager from "../Add/ValidationManager";
-const useValidation = ValidationManager.useValidation;
-
 import editIcon from "assets/edit.svg";
 import "./SlimTextInputWithValidation.scss";
+
+const useValidation = ValidationManager.useValidation;
 
 interface PropsType {
     validationFieldPath: string;
@@ -15,7 +15,7 @@ interface PropsType {
     [key: string]: any;
 }
 
-const SlimTextInputWithValidation: FunctionComponent<PropsType> = props => {
+const SlimTextInputWithValidation: FunctionComponent<PropsType> = (props) => {
     const {
         validationFieldPath,
         validationFieldLabel,
@@ -63,7 +63,7 @@ const SlimTextInputWithValidation: FunctionComponent<PropsType> = props => {
                 } ${fullWidthClass}`}
                 aria-describedby={errorMessageId}
                 defaultValue={typeof value === "undefined" ? "" : value}
-                onChange={event => {
+                onChange={(event) => {
                     props.onChange(event.target.value);
                 }}
                 {...restProps}

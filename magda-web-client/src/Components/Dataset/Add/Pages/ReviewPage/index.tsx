@@ -8,6 +8,7 @@ import AccessAndUse from "./AccessAndUse";
 import ApproverNote from "./ApproverNote";
 
 import { State } from "../../DatasetAddCommon";
+import { config } from "config";
 
 type PropsType = {
     stateData: State;
@@ -34,7 +35,9 @@ export default function DatasetAddEndPage(props: PropsType) {
 
                 <AccessAndUse stateData={props.stateData} />
 
-                <ApproverNote stateData={props.stateData} />
+                {config.featureFlags.datasetApprovalWorkflowOn && (
+                    <ApproverNote stateData={props.stateData} />
+                )}
             </div>
         </div>
     );

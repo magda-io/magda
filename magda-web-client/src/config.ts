@@ -40,7 +40,9 @@ const fallbackApiHost = "https://dev.magda.io/";
 const DEV_FEATURE_FLAGS = {
     cataloguing: true,
     publishToDga: true,
-    previewAddDataset: false
+    previewAddDataset: false,
+    placeholderWorkflowsOn: false,
+    datasetApprovalWorkflowOn: false
 };
 
 const homePageConfig: {
@@ -69,6 +71,7 @@ const serverConfig: {
     registryApiReadOnlyBaseUrl?: string;
     searchApiBaseUrl?: string;
     correspondenceApiBaseUrl?: string;
+    storageApiBaseUrl?: string;
     gapiIds?: Array<string>;
     adminApiBaseUrl?: string;
     disableAuthenticationFeatures?: boolean;
@@ -156,7 +159,7 @@ const baseExternalUrl = serverConfig.baseExternalUrl
     ? window.location.protocol + "//" + window.location.host + "/"
     : baseUrl;
 
-const fetchOptions: RequestInit =
+const credentialsFetchOptions: RequestInit =
     `${window.location.protocol}//${window.location.host}/` !== baseUrl
         ? {
               credentials: "include"
@@ -178,8 +181,23 @@ const vocabularyApiEndpoints =
               "https://vocabs.ands.org.au/repository/api/lda/ands-nc/controlled-vocabulary-for-resource-type-genres/version-1-1/concept.json"
           ];
 
+function getFullUrlIfNotEmpty(relativeUrl: string | undefined) {
+    if (!relativeUrl) {
+        return relativeUrl;
+    } else if (relativeUrl.indexOf("http") !== 0) {
+        // --- avoid produce "//" in url
+        return (
+            baseExternalUrl.replace(/\/$/, "") +
+            "/" +
+            relativeUrl.replace(/^\//, "")
+        );
+    } else {
+        return relativeUrl;
+    }
+}
+
 export const config = {
-    fetchOptions,
+    credentialsFetchOptions: credentialsFetchOptions,
     homePageConfig: homePageConfig,
     showNotificationBanner: !!serverConfig.showNotificationBanner,
     baseUrl,
@@ -195,6 +213,9 @@ export const config = {
     correspondenceApiUrl:
         serverConfig.correspondenceApiBaseUrl ||
         fallbackApiHost + "api/v0/correspondence/",
+    storageApiUrl:
+        getFullUrlIfNotEmpty(serverConfig.storageApiBaseUrl) ||
+        fallbackApiHost + "api/v0/storage/",
     previewMapUrl: previewMapUrl,
     proxyUrl: proxyUrl,
     rssUrl: proxyUrl + "_0d/https://blog.data.gov.au/blogs/rss.xml",
@@ -314,7 +335,21 @@ export const config = {
         : baseUrl + "api/v0/openfaas"
 };
 
+export type Config = typeof config;
+export type MessageSafeConfig = Omit<Config, "facets">;
+
 export const defaultConfiguration = {
     datasetSearchSuggestionScoreThreshold: 65,
     searchResultsPerPage: 10
 };
+
+export function getProxiedResourceUrl(
+    resourceUrl: string,
+    disableCache: boolean = false
+) {
+    if (resourceUrl.indexOf(config.baseExternalUrl) !== -1) {
+        return resourceUrl;
+    } else {
+        return config.proxyUrl + (disableCache ? "_0d/" : "") + resourceUrl;
+    }
+}

@@ -63,7 +63,7 @@ function queryToString(paramName, paramValue) {
 
     if (Array.isArray(paramValue)) {
         return flatten(
-            paramValue.map(value => queryToString(paramName, value))
+            paramValue.map((value) => queryToString(paramName, value))
         );
     } else {
         return [`${paramName}=${encodeURIComponent(paramValue)}`];

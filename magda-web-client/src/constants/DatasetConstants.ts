@@ -492,7 +492,7 @@ export const languages = {
     zza: "Zaza; Dimili; Dimli; Kirdki; Kirmanjki; Zazaki"
 };
 
-export const languageOptions = Object.keys(languages).map(key => ({
+export const languageOptions = Object.keys(languages).map((key) => ({
     label: languages[key],
     value: key
 }));
@@ -562,13 +562,10 @@ export const publishingLevel = {
 
 // TODO: this is a preconfigured agency level configured license lookup feature being faked here
 export const licenseLevel = {
-    world: "For the entire world use (Creative Commons CC BY4.0)",
-    government:
-        "For all of government use (Whole of Australian Government license)",
-    agency: "For just my department use (Other organisation-specific license)",
-    section: "For just my section use (Other organisation-specific license)",
-    team: "For just my business area use (Other organisation-specific license)",
-    custom: "Other custom license"
+    "Creative Commons CC BY 4.0":
+        "For general re-use (Creative Commons CC BY4.0)",
+    "No License": "No license",
+    custom: "Other license"
 };
 
 export const datasetLicenseLevel = {

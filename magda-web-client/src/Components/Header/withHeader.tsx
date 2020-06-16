@@ -1,5 +1,5 @@
 import React, { ComponentType } from "react";
-import { connect } from "react-redux";
+import { connect, ConnectedProps } from "react-redux";
 import { memoize } from "lodash";
 import { Location } from "history";
 import Header from "Components/Header/Header";
@@ -10,15 +10,35 @@ import AddDatasetProgressMeter, {
 
 import "./withHeader.scss";
 
-type Props = {
-    finishedFetching: boolean;
-    location: Location;
-};
-
 type InterfaceOptions = {
     includeSearchBox?: boolean;
     includeDatasetPageProgressMeter?: boolean;
     noContainerClass?: boolean;
+};
+
+const mapStateToProps = (state) => {
+    const datasetIsFetching = state.record.datasetIsFetching;
+    const distributionIsFetching = state.record.distributionIsFetching;
+    const publishersAreFetching = state.publisher.isFetchingPublishers;
+    const datasetSearchIsFetching = state.datasetSearch.isFetching;
+    const publisherIsFetching = state.publisher.isFetchingPublisher;
+
+    return {
+        finishedFetching:
+            !datasetIsFetching &&
+            !publishersAreFetching &&
+            !datasetSearchIsFetching &&
+            !distributionIsFetching &&
+            !publisherIsFetching
+    };
+};
+
+const connector = connect(mapStateToProps);
+type PropsFromRedux = ConnectedProps<typeof connector>;
+
+type Props = {
+    finishedFetching?: boolean;
+    location?: Location;
 };
 
 const withHeader = <P extends {}>(
@@ -30,7 +50,11 @@ const withHeader = <P extends {}>(
     }: InterfaceOptions = {},
     addDatasetProgressMeterProps: AddDatasetProgressMeterProps = {}
 ) => {
-    const NewComponent = (props: P & Props) => {
+    type AllProps = P & Props & PropsFromRedux;
+
+    const NewComponent: React.FunctionComponent<AllProps> = (
+        props: AllProps
+    ) => {
         return (
             <div className="other-page">
                 <Header />
@@ -62,24 +86,10 @@ const withHeader = <P extends {}>(
         );
     };
 
-    const mapStateToProps = state => {
-        const datasetIsFetching = state.record.datasetIsFetching;
-        const distributionIsFetching = state.record.distributionIsFetching;
-        const publishersAreFetching = state.publisher.isFetchingPublishers;
-        const datasetSearchIsFetching = state.datasetSearch.isFetching;
-        const publisherIsFetching = state.publisher.isFetchingPublisher;
-
-        return {
-            finishedFetching:
-                !datasetIsFetching &&
-                !publishersAreFetching &&
-                !datasetSearchIsFetching &&
-                !distributionIsFetching &&
-                !publisherIsFetching
-        };
-    };
-
-    return connect(mapStateToProps)(NewComponent);
+    return connector(
+        //@ts-ignore
+        NewComponent
+    );
 };
 
 export default memoize(withHeader);
