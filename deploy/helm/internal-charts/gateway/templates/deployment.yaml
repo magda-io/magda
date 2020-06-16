@@ -103,6 +103,9 @@ spec:
 {{- else if .Values.magdaAdminPortalName }}
             "--magdaAdminPortalName", {{ .Values.magdaAdminPortalName | quote}}
 {{- end }}
+{{- if .Values.defaultCacheControl }}
+            "--defaultCacheControl", {{ .Values.defaultCacheControl | quote }},
+{{- end }}
         ]
         volumeMounts:
           - name: config

@@ -101,6 +101,5 @@ cors:
 cookie:
   sameSite: "lax"
 
-
-
-
+# If a response that goes through the gateway doesn't set Cache-Control, it'll be set to this value. Set to null to disable.
+defaultCacheControl: "public, max-age=60"

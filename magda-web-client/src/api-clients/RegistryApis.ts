@@ -154,13 +154,6 @@ export class AspectQuery {
     }
 }
 
-export type OrderByOption =
-    | string // --- specify orderBy field only
-    | {
-          orderBy: string;
-          dir: "asc" | "desc";
-      };
-
 export const DEFAULT_OPTIONAL_FETCH_ASPECT_LIST = [
     "dcat-distribution-strings",
     "dataset-distributions",
@@ -248,7 +241,8 @@ export type FetchRecordsOptions = {
     limit?: number;
     dereference?: boolean;
     aspectQueries?: AspectQuery[];
-    orderBy?: OrderByOption;
+    orderBy?: string;
+    orderByDirection?: "asc" | "desc";
     noCache?: boolean;
 };
 
@@ -261,6 +255,7 @@ export async function fetchRecords({
     dereference,
     aspectQueries,
     orderBy,
+    orderByDirection,
     noCache
 }: FetchRecordsOptions): Promise<{
     records: RawDataset[];
@@ -309,24 +304,11 @@ export async function fetchRecords({
     }
 
     if (orderBy) {
-        if (typeof orderBy === "string") {
-            parameters.push(`orderBy=${encodeURIComponent(orderBy)}`);
-        } else {
-            if (orderBy.orderBy) {
-                parameters.push(
-                    `orderBy=${encodeURIComponent(orderBy.orderBy)}`
-                );
-                if (orderBy.dir) {
-                    if (orderBy.dir !== "asc" && orderBy.dir !== "desc") {
-                        throw new Error(
-                            `Invalid order by direction: ${orderBy.dir}`
-                        );
-                    }
-                    parameters.push(
-                        `orderByDir=${encodeURIComponent(orderBy.dir)}`
-                    );
-                }
-            }
+        parameters.push(`orderBy=${encodeURIComponent(orderBy)}`);
+        if (orderByDirection) {
+            parameters.push(
+                `orderByDir=${encodeURIComponent(orderByDirection)}`
+            );
         }
     }
 

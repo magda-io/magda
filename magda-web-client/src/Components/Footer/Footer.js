@@ -85,12 +85,12 @@ function Footer({
     footerMediumNavs,
     footerSmallNavs,
     footerCopyRightItems,
-    noTopMergin
+    noTopMargin
 }) {
     return (
         <footer
             className={`au-footer au-body au-body--dark footer ${
-                noTopMergin === true ? "" : "with-top-margin"
+                noTopMargin === true ? "" : "with-top-margin"
             }`}
             role="contentinfo"
             aria-label="footer"
