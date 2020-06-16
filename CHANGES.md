@@ -59,6 +59,7 @@ UI:
 -   Made files that are dropped get uploaded, if this is specified by the user
 -   Bugfix: Read raw value from CSV files
 -   Add a flag `placeholderWorkflowsOn` to hide UI components that are not complete yet
+-   Fix magda & ckan login options are missing
 
 Storage:
 
