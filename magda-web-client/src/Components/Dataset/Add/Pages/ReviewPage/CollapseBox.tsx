@@ -15,7 +15,7 @@ interface PropsType extends RouteComponentProps {
     isNotCollapsible?: boolean;
 }
 
-const CollapseBox: FunctionComponent<PropsType> = props => {
+const CollapseBox: FunctionComponent<PropsType> = (props) => {
     const isNotCollapsible =
         typeof props?.isNotCollapsible === "undefined"
             ? false
@@ -26,7 +26,7 @@ const CollapseBox: FunctionComponent<PropsType> = props => {
     );
 
     const onToggleClick = () => {
-        setIsOpen(isOpen => (isOpen ? false : true));
+        setIsOpen((isOpen) => (isOpen ? false : true));
     };
 
     return (
@@ -53,7 +53,7 @@ const CollapseBox: FunctionComponent<PropsType> = props => {
                     <Link
                         className="edit-link"
                         to={(() => {
-                            const uri = new URI(location.href);
+                            const uri = new URI(window.location.href);
                             return new URI(
                                 uri.segment(-1, "" + props.stepNum).path()
                             )

@@ -2,14 +2,14 @@ import { expect } from "chai";
 import AsyncPage, { forEachAsync } from "../AsyncPage";
 import "mocha";
 
-describe("AsyncPage", function() {
-    describe("single", function() {
-        it("can be iterated", function() {
+describe("AsyncPage", function () {
+    describe("single", function () {
+        it("can be iterated", function () {
             const o = {};
             const page = AsyncPage.single(o);
             let calls = 0;
             return page
-                .forEach(item => {
+                .forEach((item) => {
                     ++calls;
                     expect(calls).to.equal(1);
                     expect(item).to.equal(o);
@@ -19,12 +19,12 @@ describe("AsyncPage", function() {
                 });
         });
 
-        it("can be mapped", function() {
+        it("can be mapped", function () {
             const value = 1;
-            const page = AsyncPage.single(value).map(v => v + 1);
+            const page = AsyncPage.single(value).map((v) => v + 1);
             let calls = 0;
             return page
-                .forEach(item => {
+                .forEach((item) => {
                     ++calls;
                     expect(calls).to.equal(1);
                     expect(item).to.equal(2);
@@ -34,13 +34,13 @@ describe("AsyncPage", function() {
                 });
         });
 
-        it("can take 0", function() {
+        it("can take 0", function () {
             const value = {};
             const page = AsyncPage.single(value).take(0);
 
             let calls = 0;
             return page
-                .forEach(item => {
+                .forEach((item) => {
                     ++calls;
                 })
                 .then(() => {
@@ -48,13 +48,13 @@ describe("AsyncPage", function() {
                 });
         });
 
-        it("can take 1", function() {
+        it("can take 1", function () {
             const value = {};
             const page = AsyncPage.single(value).take(1);
 
             let calls = 0;
             return page
-                .forEach(item => {
+                .forEach((item) => {
                     ++calls;
                     expect(calls).to.equal(1);
                     expect(item).to.equal(value);
@@ -64,13 +64,13 @@ describe("AsyncPage", function() {
                 });
         });
 
-        it("can take 2", function() {
+        it("can take 2", function () {
             const value = {};
             const page = AsyncPage.single(value).take(2);
 
             let calls = 0;
             return page
-                .forEach(item => {
+                .forEach((item) => {
                     ++calls;
                     expect(calls).to.equal(1);
                     expect(item).to.equal(value);
@@ -81,26 +81,26 @@ describe("AsyncPage", function() {
         });
     });
 
-    describe("none", function() {
-        it("can be iterated", function() {
-            return AsyncPage.none().forEach(item => {
+    describe("none", function () {
+        it("can be iterated", function () {
+            return AsyncPage.none().forEach((item) => {
                 expect.fail("no items", "an item");
             });
         });
 
-        it("can be mapped", function() {
-            const page = AsyncPage.none<number>().map(v => v + 1);
-            return page.forEach(item => {
+        it("can be mapped", function () {
+            const page = AsyncPage.none<number>().map((v) => v + 1);
+            return page.forEach((item) => {
                 expect.fail("no items", "an item");
             });
         });
 
-        it("can take 0", function() {
+        it("can take 0", function () {
             const page = AsyncPage.none().take(0);
 
             let calls = 0;
             return page
-                .forEach(item => {
+                .forEach((item) => {
                     ++calls;
                 })
                 .then(() => {
@@ -108,12 +108,12 @@ describe("AsyncPage", function() {
                 });
         });
 
-        it("can take 1", function() {
+        it("can take 1", function () {
             const page = AsyncPage.none().take(1);
 
             let calls = 0;
             return page
-                .forEach(item => {
+                .forEach((item) => {
                     ++calls;
                 })
                 .then(() => {
@@ -121,12 +121,12 @@ describe("AsyncPage", function() {
                 });
         });
 
-        it("can take 2", function() {
+        it("can take 2", function () {
             const page = AsyncPage.none().take(2);
 
             let calls = 0;
             return page
-                .forEach(item => {
+                .forEach((item) => {
                     ++calls;
                 })
                 .then(() => {
@@ -135,8 +135,8 @@ describe("AsyncPage", function() {
         });
     });
 
-    describe("singlePromise", function() {
-        it("can be iterated", function() {
+    describe("singlePromise", function () {
+        it("can be iterated", function () {
             const o = {};
             const page = AsyncPage.singlePromise(
                 new Promise((resolve, reject) => {
@@ -145,7 +145,7 @@ describe("AsyncPage", function() {
             );
             let calls = 0;
             return page
-                .forEach(item => {
+                .forEach((item) => {
                     ++calls;
                     expect(calls).to.equal(1);
                     expect(item).to.equal(o);
@@ -155,17 +155,17 @@ describe("AsyncPage", function() {
                 });
         });
 
-        it("can be mapped", function() {
+        it("can be mapped", function () {
             const value = 1;
             const page = AsyncPage.singlePromise<number>(
                 new Promise((resolve, reject) => {
                     resolve(value);
                 })
             );
-            const mapped = page.map(v => v + 1);
+            const mapped = page.map((v) => v + 1);
             let calls = 0;
             return mapped
-                .forEach(item => {
+                .forEach((item) => {
                     ++calls;
                     expect(calls).to.equal(1);
                     expect(item).to.equal(2);
@@ -175,7 +175,7 @@ describe("AsyncPage", function() {
                 });
         });
 
-        it("can take 0", function() {
+        it("can take 0", function () {
             const o = {};
             const page = AsyncPage.singlePromise(
                 new Promise((resolve, reject) => {
@@ -185,7 +185,7 @@ describe("AsyncPage", function() {
 
             let calls = 0;
             return page
-                .forEach(item => {
+                .forEach((item) => {
                     ++calls;
                 })
                 .then(() => {
@@ -193,7 +193,7 @@ describe("AsyncPage", function() {
                 });
         });
 
-        it("can take 1", function() {
+        it("can take 1", function () {
             const o = {};
             const page = AsyncPage.singlePromise(
                 new Promise((resolve, reject) => {
@@ -203,7 +203,7 @@ describe("AsyncPage", function() {
 
             let calls = 0;
             return page
-                .forEach(item => {
+                .forEach((item) => {
                     ++calls;
                     expect(calls).to.equal(1);
                     expect(item).to.equal(o);
@@ -213,7 +213,7 @@ describe("AsyncPage", function() {
                 });
         });
 
-        it("can take 2", function() {
+        it("can take 2", function () {
             const o = {};
             const page = AsyncPage.singlePromise(
                 new Promise((resolve, reject) => {
@@ -223,7 +223,7 @@ describe("AsyncPage", function() {
 
             let calls = 0;
             return page
-                .forEach(item => {
+                .forEach((item) => {
                     ++calls;
                     expect(calls).to.equal(1);
                     expect(item).to.equal(o);
@@ -234,10 +234,10 @@ describe("AsyncPage", function() {
         });
     });
 
-    describe("create", function() {
-        it("can be iterated", function() {
+    describe("create", function () {
+        it("can be iterated", function () {
             let selectorCalls = 0;
-            const page = AsyncPage.create<number>(value => {
+            const page = AsyncPage.create<number>((value) => {
                 ++selectorCalls;
                 if (value === undefined) {
                     return Promise.resolve(0);
@@ -250,7 +250,7 @@ describe("AsyncPage", function() {
 
             let calls = 0;
             return page
-                .forEach(item => {
+                .forEach((item) => {
                     expect(item).to.equal(calls);
                     ++calls;
                 })
@@ -260,8 +260,8 @@ describe("AsyncPage", function() {
                 });
         });
 
-        it("can be mapped", function() {
-            const page = AsyncPage.create<number>(value => {
+        it("can be mapped", function () {
+            const page = AsyncPage.create<number>((value) => {
                 if (value === undefined) {
                     return Promise.resolve(0);
                 } else if (value < 10) {
@@ -270,10 +270,10 @@ describe("AsyncPage", function() {
                     return undefined;
                 }
             });
-            const mapped = page.map(v => v + 1);
+            const mapped = page.map((v) => v + 1);
             let calls = 0;
             return mapped
-                .forEach(item => {
+                .forEach((item) => {
                     expect(item).to.equal(calls + 1);
                     ++calls;
                 })
@@ -282,8 +282,8 @@ describe("AsyncPage", function() {
                 });
         });
 
-        it("can take 0", function() {
-            const page = AsyncPage.create<number>(value => {
+        it("can take 0", function () {
+            const page = AsyncPage.create<number>((value) => {
                 if (value === undefined) {
                     return Promise.resolve(0);
                 } else if (value < 10) {
@@ -295,7 +295,7 @@ describe("AsyncPage", function() {
 
             let calls = 0;
             return page
-                .forEach(item => {
+                .forEach((item) => {
                     ++calls;
                 })
                 .then(() => {
@@ -303,9 +303,9 @@ describe("AsyncPage", function() {
                 });
         });
 
-        it("can take 1", function() {
+        it("can take 1", function () {
             let selectorCalls = 0;
-            const page = AsyncPage.create<number>(value => {
+            const page = AsyncPage.create<number>((value) => {
                 ++selectorCalls;
                 if (value === undefined) {
                     return Promise.resolve(0);
@@ -318,7 +318,7 @@ describe("AsyncPage", function() {
 
             let calls = 0;
             return page
-                .forEach(item => {
+                .forEach((item) => {
                     expect(item).to.equal(calls);
                     ++calls;
                 })
@@ -328,9 +328,9 @@ describe("AsyncPage", function() {
                 });
         });
 
-        it("can take 2", function() {
+        it("can take 2", function () {
             let selectorCalls = 0;
-            const page = AsyncPage.create<number>(value => {
+            const page = AsyncPage.create<number>((value) => {
                 ++selectorCalls;
                 if (value === undefined) {
                     return Promise.resolve(0);
@@ -343,7 +343,7 @@ describe("AsyncPage", function() {
 
             let calls = 0;
             return page
-                .forEach(item => {
+                .forEach((item) => {
                     expect(item).to.equal(calls);
                     ++calls;
                 })
@@ -354,16 +354,9 @@ describe("AsyncPage", function() {
         });
     });
 
-    describe("forEachAsync", function() {
-        it("works with AsyncPage.none", function() {
-            return forEachAsync(AsyncPage.none<number[]>(), 6, function(value) {
-                expect.fail("no items", "an item");
-                return Promise.resolve();
-            });
-        });
-
-        it("works with AsyncPage.single and an empty array", function() {
-            return forEachAsync(AsyncPage.single<number[]>([]), 6, function(
+    describe("forEachAsync", function () {
+        it("works with AsyncPage.none", function () {
+            return forEachAsync(AsyncPage.none<number[]>(), 6, function (
                 value
             ) {
                 expect.fail("no items", "an item");
@@ -371,37 +364,46 @@ describe("AsyncPage", function() {
             });
         });
 
-        it("works with AsyncPage.single and a non-empty array", function() {
+        it("works with AsyncPage.single and an empty array", function () {
+            return forEachAsync(AsyncPage.single<number[]>([]), 6, function (
+                value
+            ) {
+                expect.fail("no items", "an item");
+                return Promise.resolve();
+            });
+        });
+
+        it("works with AsyncPage.single and a non-empty array", function () {
             let calls = 0;
             return forEachAsync(
                 AsyncPage.single<number[]>([4]),
                 6,
-                function(value) {
+                function (value) {
                     ++calls;
                     expect(value).to.equal(4);
                     return Promise.resolve();
                 }
-            ).then(function() {
+            ).then(function () {
                 expect(calls).to.equal(1);
             });
         });
 
-        it("works with AsyncPage.singlePromise and a non-empty array", function() {
+        it("works with AsyncPage.singlePromise and a non-empty array", function () {
             let calls = 0;
             return forEachAsync(
                 AsyncPage.singlePromise<number[]>(Promise.resolve([4])),
                 6,
-                function(value) {
+                function (value) {
                     ++calls;
                     expect(value).to.equal(4);
                     return Promise.resolve();
                 }
-            ).then(function() {
+            ).then(function () {
                 expect(calls).to.equal(1);
             });
         });
 
-        it("works with multiple pages of arrays", function() {
+        it("works with multiple pages of arrays", function () {
             const pages = [
                 { page: 0, values: [1, 2] },
                 { page: 1, values: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
@@ -417,13 +419,13 @@ describe("AsyncPage", function() {
                 }
             });
 
-            const arrayPager = pager.map(page => page.values);
+            const arrayPager = pager.map((page) => page.values);
 
             let values: number[] = [];
-            return forEachAsync(arrayPager, 6, function(value) {
+            return forEachAsync(arrayPager, 6, function (value) {
                 values.push(value);
                 return Promise.resolve();
-            }).then(function() {
+            }).then(function () {
                 expect(values.length).to.equal(14);
                 expect(values).to.eql([
                     1,
@@ -444,7 +446,7 @@ describe("AsyncPage", function() {
             });
         });
 
-        it("works when some pages are an empty array", function() {
+        it("works when some pages are an empty array", function () {
             const pages = [
                 { page: 0, values: [] },
                 { page: 1, values: [1, 2] },
@@ -464,13 +466,13 @@ describe("AsyncPage", function() {
                 }
             });
 
-            const arrayPager = pager.map(page => page.values);
+            const arrayPager = pager.map((page) => page.values);
 
             let values: number[] = [];
-            return forEachAsync(arrayPager, 6, function(value) {
+            return forEachAsync(arrayPager, 6, function (value) {
                 values.push(value);
                 return Promise.resolve();
-            }).then(function() {
+            }).then(function () {
                 expect(values.length).to.equal(14);
                 expect(values).to.eql([
                     1,

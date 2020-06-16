@@ -59,7 +59,7 @@ describe("ckanRedirectionRouter router", () => {
     const routerSkip404Test = ["/dataset/edit", "/dataset/new"];
 
     genericUrlRedirectConfigs
-        .map(config => {
+        .map((config) => {
             const path = typeof config === "string" ? config : config.path;
             if (routerSkip404Test.indexOf(path) !== -1) {
                 if (typeof config === "string") {
@@ -73,7 +73,7 @@ describe("ckanRedirectionRouter router", () => {
             }
             return config;
         })
-        .forEach(config => testGenericCkanRedirection(config));
+        .forEach((config) => testGenericCkanRedirection(config));
 
     describe("Redirect ckan /about", () => {
         it("should redirect /about to /page/about", () => {
@@ -419,7 +419,7 @@ describe("ckanRedirectionRouter router", () => {
             .persist()
             .get("/records")
             .query(true)
-            .reply(200, function(uri: string) {
+            .reply(200, function (uri: string) {
                 const uriObj = URI(uri);
                 const query = uriObj.search(true);
                 if (!query || !query.aspectQuery) return errorResponse;
@@ -501,7 +501,7 @@ describe("ckanRedirectionRouter router", () => {
         } else {
             targetUrls.push(targetUrlOrUrls);
         }
-        targetUrls.forEach(targetUrl => {
+        targetUrls.forEach((targetUrl) => {
             const uri = URI(targetUrl);
             let testMethods = ["get"];
             if (allowAllMethod) {
@@ -516,7 +516,7 @@ describe("ckanRedirectionRouter router", () => {
                 }
             }
 
-            testMethods.forEach(method => {
+            testMethods.forEach((method) => {
                 let caseTitle = `should redirect ${method.toUpperCase()} ${uriRes} correctly`;
                 if (statusCode === 404) {
                     caseTitle = `should return 404 for ${method.toUpperCase()} ${uriRes}`;

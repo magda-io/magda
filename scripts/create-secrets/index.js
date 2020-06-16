@@ -27,11 +27,11 @@ program
     .option("-P, --print", "Print previously saved local config data to stdout")
     .option("-D, --delete", "Delete previously saved local config data");
 
-program.on("--help", function() {
+program.on("--help", function () {
     const envInfo = getEnvVarInfo();
     console.log("  Available Setting ENV Variables:");
     console.log("");
-    envInfo.forEach(item => {
+    envInfo.forEach((item) => {
         console.log(`    ${item.name} : ${item.description}`);
     });
     console.log("");
@@ -42,7 +42,7 @@ program.parse(process.argv);
 const programOptions = program.opts();
 
 if (programOptions.print) {
-    process.stdout.write(JSON.stringify(config.all), "utf-8", function() {
+    process.stdout.write(JSON.stringify(config.all), "utf-8", function () {
         process.exit();
     });
 } else if (programOptions.delete) {
@@ -56,7 +56,7 @@ if (programOptions.print) {
     let configDataBak = {};
     let hasError = false;
     preloadConfig(config, programOptions.execute)
-        .then(function(data) {
+        .then(function (data) {
             if (programOptions.execute !== true) {
                 //--- we only need to receovey user's local config
                 //--- when the config is fed by STDIN or external file
@@ -65,12 +65,12 @@ if (programOptions.print) {
             config.all = data;
             return k8sExecution(config, true);
         })
-        .catch(function(error) {
+        .catch(function (error) {
             hasError = true;
             console.log(chalk.red(`Failed to create secrets: ${error}`));
             console.error(error);
         })
-        .then(function() {
+        .then(function () {
             //--- can't use finally
             if (programOptions.execute !== true) {
                 //--- recover origin config data
@@ -84,10 +84,10 @@ if (programOptions.print) {
     clear();
     console.log("\n");
     console.log(chalk.green(`${appName} tool version: ${pkg.version}`));
-    askQuestions(config).then(function(shouldCreateSecrets) {
+    askQuestions(config).then(function (shouldCreateSecrets) {
         if (shouldCreateSecrets) {
             k8sExecution(config).then(
-                function() {
+                function () {
                     console.log(
                         chalk.green(
                             "All required secrets have been successfully created!"
@@ -95,7 +95,7 @@ if (programOptions.print) {
                     );
                     process.exit();
                 },
-                function(error) {
+                function (error) {
                     console.log(
                         chalk.red(`Failed to create required secrets: ${error}`)
                     );

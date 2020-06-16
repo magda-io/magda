@@ -26,7 +26,7 @@ class ToggleList extends Component {
             <ul
                 className={`list--unstyled toggle-list ${this.props.className}`}
             >
-                {list.slice(0, size).map(o => (
+                {list.slice(0, size).map((o) => (
                     <li key={this.props.getKey(o)}>
                         {this.props.renderFunction(o)}
                     </li>

@@ -30,7 +30,7 @@ class Account extends React.Component {
             <div>
                 Roles:{" "}
                 {user.roles && user.roles.length ? (
-                    <ul>{user.roles.map(role => this.renderRole(role))}</ul>
+                    <ul>{user.roles.map((role) => this.renderRole(role))}</ul>
                 ) : (
                     "N/A"
                 )}
@@ -45,7 +45,7 @@ class Account extends React.Component {
                 <div>Role Permissions: </div>
                 {roleItem.permissionIds && roleItem.permissionIds.length ? (
                     <ul>
-                        {roleItem.permissionIds.map(permissionId =>
+                        {roleItem.permissionIds.map((permissionId) =>
                             this.renderPermissionById(permissionId)
                         )}
                     </ul>
@@ -133,7 +133,7 @@ function mapStateToProps(state) {
     };
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
     return bindActionCreators(
         {
             requestAuthProviders

@@ -3,7 +3,7 @@ import { NextFunction, Response, Request, RequestHandler } from "express";
 export default function createHttpsRedirectionMiddleware(
     enableHttpsRedirection: boolean
 ): RequestHandler {
-    return function(req: Request, res: Response, next: NextFunction) {
+    return function (req: Request, res: Response, next: NextFunction) {
         if (!enableHttpsRedirection) {
             next();
             return;

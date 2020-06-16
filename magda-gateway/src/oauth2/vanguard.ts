@@ -43,7 +43,7 @@ export default function vanguard(options: VanguardOptions) {
                 protocol: "wsfed",
                 cert: wsFedCertificate
             },
-            function(profile: any, cb: Function) {
+            function (profile: any, cb: Function) {
                 const email =
                     profile[
                         "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
@@ -62,8 +62,8 @@ export default function vanguard(options: VanguardOptions) {
                     id
                 });
                 createOrGetUserToken(authorizationApi, profile, "vanguard")
-                    .then(userId => cb(null, userId))
-                    .catch(error => cb(error));
+                    .then((userId) => cb(null, userId))
+                    .catch((error) => cb(error));
             }
         )
     );
@@ -82,7 +82,7 @@ export default function vanguard(options: VanguardOptions) {
             failureRedirect: "/",
             failureFlash: true
         }),
-        function(req, res) {
+        function (req, res) {
             redirectOnSuccess(successRedirectUrl, req, res);
         }
     );

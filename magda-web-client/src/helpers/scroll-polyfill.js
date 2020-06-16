@@ -1,4 +1,4 @@
-(function() {
+(function () {
     let isFirefox = false;
     try {
         isFirefox = navigator.userAgent.toLowerCase().indexOf("firefox") > -1;

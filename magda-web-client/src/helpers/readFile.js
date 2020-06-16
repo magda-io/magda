@@ -1,12 +1,12 @@
 export default function readFile(accept, read = "ArrayBuffer") {
     return new Promise((resolve, reject) => {
-        getFiles(accept, false).then(files => {
+        getFiles(accept, false).then((files) => {
             const file = files[0];
             const fileReader = new FileReader();
-            fileReader.onloadend = function(e) {
+            fileReader.onloadend = function (e) {
                 resolve({ data: e.target.result, file });
             };
-            fileReader.onerror = function(e) {
+            fileReader.onerror = function (e) {
                 reject(e);
             };
             fileReader["readAs" + read](file);
@@ -23,7 +23,7 @@ export function getFiles(accept, multiple = true) {
             input.multiple = true;
         }
         input.click();
-        input.onchange = function() {
+        input.onchange = function () {
             resolve(input.files);
         };
     });

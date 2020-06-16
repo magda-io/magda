@@ -62,9 +62,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
         notFoundMessage: string = "Could not find resource"
     ) {
         return promise
-            .then(resource =>
+            .then((resource) =>
                 resource.caseOf({
-                    just: resource => res.json(resource),
+                    just: (resource) => res.json(resource),
                     nothing: () =>
                         res.status(404).json({
                             isError: true,
@@ -73,13 +73,13 @@ export default function createApiRouter(options: ApiRouterOptions) {
                         })
                 })
             )
-            .catch(e => {
+            .catch((e) => {
                 respondWithError(route, res, e);
             })
             .then(() => res.end());
     }
 
-    const MUST_BE_ADMIN = function(req: any, res: any, next: any) {
+    const MUST_BE_ADMIN = function (req: any, res: any, next: any) {
         //--- private API requires admin level access
         getUserIdHandling(
             req,
@@ -110,7 +110,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
         );
     };
 
-    const NO_CACHE = function(req: any, res: any, next: any) {
+    const NO_CACHE = function (req: any, res: any, next: any) {
         res.set({
             "Cache-Control": "no-cache, no-store, must-revalidate",
             Pragma: "no-cache",
@@ -121,7 +121,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     router.all("/private/*", MUST_BE_ADMIN);
 
-    router.get("/private/users/lookup", function(req, res) {
+    router.get("/private/users/lookup", function (req, res) {
         const source = req.query.source as string;
         const sourceId = req.query.sourceId as string;
 
@@ -132,7 +132,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
         );
     });
 
-    router.get("/private/users/:userId", function(req, res) {
+    router.get("/private/users/:userId", function (req, res) {
         const userId = req.params.userId;
 
         handleMaybePromise(
@@ -142,7 +142,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
         );
     });
 
-    router.post("/private/users", async function(req, res) {
+    router.post("/private/users", async function (req, res) {
         try {
             const user = await database.createUser(req.body);
             res.json(user);
@@ -175,7 +175,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *      "errorMessage": "Not authorized"
      *    }
      */
-    router.get("/public/users/whoami", NO_CACHE, async function(req, res) {
+    router.get("/public/users/whoami", NO_CACHE, async function (req, res) {
         try {
             const currentUserInfo = await database.getCurrentUserInfo(
                 req,
@@ -252,8 +252,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
      */
     router.get("/public/users/:userId", NO_CACHE, (req, res) => {
         const userId = req.params.userId;
-        const getPublicUser = database.getUser(userId).then(userMaybe =>
-            userMaybe.map(user => {
+        const getPublicUser = database.getUser(userId).then((userMaybe) =>
+            userMaybe.map((user) => {
                 const publicUser: PublicUser = {
                     id: user.id,
                     photoURL: user.photoURL,
@@ -713,7 +713,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     // This is for getting a JWT in development so you can do fake authenticated requests to a local server.
     if (process.env.NODE_ENV !== "production") {
-        router.get("public/jwt", function(req, res) {
+        router.get("public/jwt", function (req, res) {
             res.status(200);
             res.write("X-Magda-Session: " + req.header("X-Magda-Session"));
             res.send();

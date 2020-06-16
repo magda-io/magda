@@ -1,4 +1,4 @@
-addSection("Home Taglines", async function(body) {
+addSection("Home Taglines", async function (body) {
     showJsonEditor(body, {
         label: "Home Taglines",
         idPattern: "home/tagline/*",
@@ -8,7 +8,7 @@ addSection("Home Taglines", async function(body) {
     });
 });
 
-addSection("Home Features", async function(body) {
+addSection("Home Features", async function (body) {
     const options = {
         idPattern: "home/highlights/*",
         schema: homeHighlightSchema
@@ -26,10 +26,10 @@ addSection("Home Features", async function(body) {
                 "GET",
                 `/api/v0/content/all?id=home/highlight-images/*&inline=true`
             )
-        ).forEach(img => {
+        ).forEach((img) => {
             let id = img.id.replace("highlight-images", "highlights");
             id = id.substr(0, id.lastIndexOf("/"));
-            if (files.filter(f => f.id === id).length === 0) {
+            if (files.filter((f) => f.id === id).length === 0) {
                 files.push({
                     id,
                     content: {}
@@ -71,7 +71,7 @@ addSection("Home Features", async function(body) {
                 schema: options.schema,
                 startval: file.content,
                 label: "Save",
-                callback: async newObj => {
+                callback: async (newObj) => {
                     console.log(
                         "DONE",
                         name,
@@ -145,7 +145,7 @@ function uploadFeatureImage(body, text, idCallback, doneCallback) {
             readFile(
                 async (data, file) => {
                     status.text("loading image");
-                    readImage(data, async image => {
+                    readImage(data, async (image) => {
                         if (image.width < 720) {
                             return status.text(
                                 " [ Image width must be at least 720px ]"
@@ -205,7 +205,7 @@ function uploadFeatureImage(body, text, idCallback, doneCallback) {
                                 "image/jpeg"
                             );
                             status.text(` [ uploading ${newId} ] `);
-                            toDelete = toDelete.filter(i => i.id !== newId);
+                            toDelete = toDelete.filter((i) => i.id !== newId);
                         }
 
                         for (let item of toDelete) {
@@ -275,10 +275,7 @@ function dataURItoBlob(dataURI) {
     var byteString = atob(dataURI.split(",")[1]);
 
     // separate out the mime component
-    var mimeString = dataURI
-        .split(",")[0]
-        .split(":")[1]
-        .split(";")[0];
+    var mimeString = dataURI.split(",")[0].split(":")[1].split(";")[0];
 
     // write the bytes of the string to an ArrayBuffer
     var ab = new ArrayBuffer(byteString.length);

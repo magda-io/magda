@@ -14,6 +14,7 @@ import downloadWhiteIcon from "assets/download-white.svg";
 
 import { History } from "history";
 import { ParsedDataset, ParsedDistribution } from "helpers/record";
+import { licenseLevel } from "constants/DatasetConstants";
 
 interface PropsType {
     history: History;
@@ -25,7 +26,7 @@ interface PropsType {
     searchText: string;
 }
 
-const DistributionPage: FunctionComponent<PropsType> = props => {
+const DistributionPage: FunctionComponent<PropsType> = (props) => {
     const { dataset, distribution, breadcrumbs } = props;
 
     const baseUrlDistribution = `/dataset/${encodeURI(
@@ -83,7 +84,8 @@ const DistributionPage: FunctionComponent<PropsType> = props => {
                             <span className="separator hidden-sm">
                                 &nbsp;/&nbsp;
                             </span>
-                            {distribution.license}
+                            {licenseLevel[distribution.license] ||
+                                distribution.license}
                         </span>
                     )}
                     <br />

@@ -11,6 +11,8 @@ import { CustomValidatorType } from "../../Dataset/Add/ValidationManager";
 import StateManager from "react-select";
 const useValidation = ValidationManager.useValidation;
 
+/* eslint-disable react-hooks/rules-of-hooks */
+
 interface SelectExtraPropsType {
     validationFieldPath?: string;
     validationFieldLabel?: string;
@@ -147,3 +149,5 @@ function ValidationHoc<OptionType>(
 }
 
 export default ValidationHoc;
+
+/* eslint-enable react-hooks/rules-of-hooks */

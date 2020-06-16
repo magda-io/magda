@@ -23,10 +23,11 @@ export interface ApiRouterOptions {
         [localRoute: string]: ProxyTarget;
     };
     tenantMode: TenantMode;
+    defaultCacheControl?: string;
 }
 
 export default function createApiRouter(options: ApiRouterOptions): Router {
-    var proxy = createBaseProxy(options.tenantMode);
+    const proxy = createBaseProxy(options);
 
     const authenticator = options.authenticator;
     const jwtSecret = options.jwtSecret;
@@ -68,7 +69,7 @@ export default function createApiRouter(options: ApiRouterOptions): Router {
         if (redirectTrailingSlash) {
             // --- has to use RegEx as `req.originalUrl` will match both with & without trailing /
             const re = new RegExp(`^${escapeStringRegexp(baseRoute)}$`);
-            router.get(re, function(req, res) {
+            router.get(re, function (req, res) {
                 res.redirect(`${req.originalUrl}/`);
             });
         }

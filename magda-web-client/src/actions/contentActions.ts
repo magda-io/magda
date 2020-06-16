@@ -30,17 +30,17 @@ export function fetchContent() {
         if (getState().content.isFetching) {
             return false;
         }
-        fetch(config.contentUrl, config.fetchOptions)
-            .then(response => {
+        fetch(config.contentUrl, config.credentialsFetchOptions)
+            .then((response) => {
                 if (response.status === 200) {
                     return response.json();
                 }
                 throw new Error(response.statusText);
             })
-            .then(text => {
+            .then((text) => {
                 dispatch(receiveContent(text));
             })
-            .catch(error =>
+            .catch((error) =>
                 dispatch(
                     requestContentError({
                         title: error.name,
@@ -65,7 +65,7 @@ export async function listContent(...contentIdPattern) {
     const contentIdUrl =
         config.contentApiURL +
         "all?inline=true&" +
-        contentIdPattern.map(id => `id=${id}`).join("&");
+        contentIdPattern.map((id) => `id=${id}`).join("&");
     return request("GET", contentIdUrl);
 }
 

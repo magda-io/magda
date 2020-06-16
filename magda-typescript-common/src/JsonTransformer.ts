@@ -130,7 +130,7 @@ export default abstract class JsonTransformer {
             .concat(this.distributionAspectBuilders)
             .concat(this.organizationAspectBuilders);
         const builderAspectDefinitions = allBuilders.map(
-            builder => builder.aspectDefinition
+            (builder) => builder.aspectDefinition
         );
         return builderAspectDefinitions.concat([
             {
@@ -195,12 +195,12 @@ export default abstract class JsonTransformer {
         aspects.parameters.reportProblem = reportProblem;
 
         const generatedAspects: Aspects = {};
-        aspects.aspects.forEach(aspect => {
+        aspects.aspects.forEach((aspect) => {
             try {
                 aspects.parameters.setup = aspect.setupResult;
                 const aspectValue = aspect.builderFunction(
                     ...aspects.parameterNames.map(
-                        parameter => aspects.parameters[parameter]
+                        (parameter) => aspects.parameters[parameter]
                     )
                 );
                 if (aspectValue !== undefined) {
@@ -248,7 +248,7 @@ export function buildersToCompiledAspects(
     return {
         parameterNames: buildParameterNames,
         parameters: buildParameters,
-        aspects: builders.map(builder => {
+        aspects: builders.map((builder) => {
             let setupResult = undefined;
             if (builder.setupFunctionString) {
                 const setupFunction = new Function(
@@ -259,7 +259,7 @@ export function buildersToCompiledAspects(
                 setupResult = setupFunction.apply(
                     undefined,
                     setupParameterNames.map(
-                        name => setupParametersUntyped[name]
+                        (name) => setupParametersUntyped[name]
                     )
                 );
             }

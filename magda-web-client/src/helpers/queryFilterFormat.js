@@ -5,7 +5,7 @@
  * @param {Array[string] || string} queryFilter if multiple filters are selected, the param
  * is an array of strings. If a single filter is selected it is a single string object
  */
-export default function(queryFilter) {
+export default function (queryFilter) {
     var selectedFilters = [];
     selectedFilters.push(queryFilter);
     // if no filter is selected
@@ -15,7 +15,7 @@ export default function(queryFilter) {
         return [{ value: selectedFilters[0] }];
     } else if (typeof selectedFilters[0] === "object") {
         var returnFilters = [];
-        selectedFilters[0].forEach(queryFilter => {
+        selectedFilters[0].forEach((queryFilter) => {
             returnFilters.push({ value: queryFilter });
         });
         return returnFilters;

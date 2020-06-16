@@ -30,8 +30,8 @@ class InquirerFuzzyPath extends InquirerAutocomplete {
     }
 
     search(searchTerm) {
-        return super.search(searchTerm).then(value => {
-            this.currentChoices.getChoice = choiceIndex => {
+        return super.search(searchTerm).then((value) => {
+            this.currentChoices.getChoice = (choiceIndex) => {
                 let choice = Choices.prototype.getChoice.call(
                     this.currentChoices,
                     choiceIndex
@@ -87,7 +87,7 @@ function getPaths(rootPath, pattern, pathFilter) {
             const nodes = await readdir_(nodePath);
             const currentNode = nodeOption(nodePath, true);
             if (nodes.length > 0) {
-                const nodex = nodes.map(dirName =>
+                const nodex = nodes.map((dirName) =>
                     listNodes(path.join(nodePath, dirName), depth + 1)
                 );
                 const subNodes = await Promise.all(nodex);
@@ -108,8 +108,8 @@ function getPaths(rootPath, pattern, pathFilter) {
     }
 
     const nodes = listNodes(rootPath);
-    const filterPromise = nodes.then(nodeList =>
-        fuzzy.filter(pattern || "", nodeList, fuzzOptions).map(e => e.string)
+    const filterPromise = nodes.then((nodeList) =>
+        fuzzy.filter(pattern || "", nodeList, fuzzOptions).map((e) => e.string)
     );
     return filterPromise;
 }

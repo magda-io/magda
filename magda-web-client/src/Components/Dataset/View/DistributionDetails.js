@@ -22,7 +22,7 @@ class DistributionDetails extends Component {
                 This data file or API can be downloaded from: <br />
                 <a
                     className="url"
-                    onClick={distribution => {
+                    onClick={(distribution) => {
                         // google analytics download tracking
                         const resource_url = encodeURIComponent(
                             distribution.downloadURL
@@ -57,7 +57,7 @@ class DistributionDetails extends Component {
 
         const accessNotes = distribution.accessNotes && (
             <MagdaNamespacesConsumer ns={["datasetPage"]}>
-                {translate => {
+                {(translate) => {
                     const accessNotesPrefix = translate([
                         "accessNotesPrefix",
                         ""
@@ -91,7 +91,7 @@ class DistributionDetails extends Component {
         );
 
         return [downloadText, accessText, accessNotes, contactPoint].filter(
-            x => !!x
+            (x) => !!x
         );
     }
 

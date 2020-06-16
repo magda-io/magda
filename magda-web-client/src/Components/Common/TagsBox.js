@@ -15,7 +15,7 @@ function mergeTags(tags) {
                 return acc.concat(
                     cur
                         .split(tagSeperatorRegex)
-                        .map(item => item.toLowerCase().trim())
+                        .map((item) => item.toLowerCase().trim())
                 );
             },
             []
@@ -26,7 +26,7 @@ function mergeTags(tags) {
 function TagsBox(props) {
     return (
         <div className="tags-box">
-            <div className="heading">Tags: </div>
+            <div className="dataset-heading">Tags: </div>
             {props.tags && props.tags.length > 0 ? (
                 <ul className="au-tags">
                     {props.tags &&
@@ -36,8 +36,8 @@ function TagsBox(props) {
                                 else if (a > b) return 1;
                                 else return 0;
                             })
-                            .map((t, _) => (
-                                <li>
+                            .map((t, idx) => (
+                                <li key={idx}>
                                     <Link
                                         to={`/search?q=${encodeURIComponent(
                                             t

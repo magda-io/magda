@@ -48,8 +48,8 @@ program
                 const operations = await getOperationsByPermissionId(res["id"]);
                 data.push(
                     selectFields
-                        .map(k => res[k])
-                        .concat([operations.map(op => op.uri).join("\n")])
+                        .map((k) => res[k])
+                        .concat([operations.map((op) => op.uri).join("\n")])
                 );
             }
             console.log(table(data, options));

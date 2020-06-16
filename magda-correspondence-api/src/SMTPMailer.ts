@@ -49,14 +49,14 @@ export class NodeMailerSMTPMailer implements SMTPMailer {
     }
 
     checkConnectivity() {
-        return this.connect().then(transporter => {
+        return this.connect().then((transporter) => {
             transporter.close();
         });
     }
 
     send(msg: SMTPTransport.Options) {
         return this.connect().then(
-            transporter =>
+            (transporter) =>
                 new Promise((resolve, reject) => {
                     transporter.sendMail(msg, (err, info) => {
                         if (err) {

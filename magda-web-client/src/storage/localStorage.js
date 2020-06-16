@@ -67,7 +67,7 @@ export function prependToLocalStorageArray(
     defaultValue = []
 ) {
     let items = retrieveLocalData(key, defaultValue);
-    items = items.filter(item => item.data.q !== value.data.q);
+    items = items.filter((item) => item.data.q !== value.data.q);
     items.unshift(value);
     if (limit && limit >= 1) {
         items = items.slice(0, limit);

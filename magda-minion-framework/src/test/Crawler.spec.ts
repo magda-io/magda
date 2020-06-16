@@ -143,7 +143,7 @@ baseSpec(
 
         it("should crawl all records in registry ONCE start() called ", () => {
             return basePropertyTest(
-                function(this: any) {
+                function (this: any) {
                     //---envInit
                     //--- this table records whether all records are sent to onRecordFound for only once
                     const recordsTestTable: number[] = new Array(
@@ -161,7 +161,7 @@ baseSpec(
                     );
                     return { recordsTestTable, registryRecords };
                 },
-                function(
+                function (
                     //---onRecordFound
                     this: any,
                     foundRecord: Record,
@@ -176,7 +176,7 @@ baseSpec(
                     this.recordsTestTable[idx]++;
                     return Promise.resolve();
                 },
-                function(this: any, uri: string, requestBody: string) {
+                function (this: any, uri: string, requestBody: string) {
                     //---registryReplyFunc
                     const params = queryString.parseUrl(uri).query;
                     const pageIdx = params.pageToken
@@ -215,7 +215,7 @@ baseSpec(
 
                     return [200, resData];
                 },
-                function(this: any) {
+                function (this: any) {
                     //---propertyCheckingFunc
                     return (
                         this.recordsTestTable.findIndex(
@@ -228,7 +228,7 @@ baseSpec(
 
         it("should correctly return crawling progress at every step via getProgress()", () => {
             return basePropertyTest(
-                function(this: any) {
+                function (this: any) {
                     //---envInit
                     const totalCrawledRecordsNumber = 0;
 
@@ -249,7 +249,7 @@ baseSpec(
                         registryRecords
                     };
                 },
-                function(
+                function (
                     //---onRecordFound
                     this: any,
                     foundRecord: Record,
@@ -257,7 +257,7 @@ baseSpec(
                 ) {
                     return Promise.resolve();
                 },
-                function(this: any, uri: string, requestBody: string) {
+                function (this: any, uri: string, requestBody: string) {
                     //---registryReplyFunc
                     const params = queryString.parseUrl(uri).query;
                     const pageIdx = params.pageToken
@@ -299,7 +299,7 @@ baseSpec(
                         }
                     ];
                 },
-                function(this: any) {
+                function (this: any) {
                     //---propertyCheckingFunc
                     return true;
                 }

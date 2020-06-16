@@ -61,7 +61,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                     )
                 )
         )
-            .then(result => result.body)
+            .then((result) => result.body)
             .catch(createServiceError);
     }
 
@@ -81,7 +81,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                     )
                 )
         )
-            .then(result => result.body)
+            .then((result) => result.body)
             .catch(createServiceError);
     }
 
@@ -105,7 +105,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                     )
                 )
         )
-            .then(result => result.body)
+            .then((result) => result.body)
             .catch(createServiceError);
     }
 
@@ -113,7 +113,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         const operation = () =>
             this.webHooksApi
                 .getById(encodeURIComponent(hookId), this.jwt)
-                .then(result => Maybe.just(result.body))
+                .then((result) => Maybe.just(result.body))
                 .catch(
                     (e: { response?: IncomingMessage; message?: string }) => {
                         if (e.response && e.response.statusCode === 404) {
@@ -156,7 +156,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                     formatServiceError("Failed to GET hooks.", e, retriesLeft)
                 )
         )
-            .then(result => result.body)
+            .then((result) => result.body)
             .catch(createServiceError);
     }
 
@@ -186,7 +186,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                     )
                 )
         )
-            .then(result => result.body)
+            .then((result) => result.body)
             .catch(createServiceError);
     }
 
@@ -214,7 +214,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                     )
                 )
         )
-            .then(result => result.body)
+            .then((result) => result.body)
             .catch(createServiceError);
     }
 
@@ -245,7 +245,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                     )
                 )
         )
-            .then(result => result.body)
+            .then((result) => result.body)
             .catch(createServiceError);
     }
 
@@ -276,7 +276,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                     )
                 )
         )
-            .then(result => result.body)
+            .then((result) => result.body)
             .catch(createServiceError);
     }
 
@@ -293,7 +293,7 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                     sourceId,
                     this.jwt
                 )
-                .then(result => {
+                .then((result) => {
                     if (result.response.statusCode === 202) {
                         return "Processing" as "Processing";
                     } else {

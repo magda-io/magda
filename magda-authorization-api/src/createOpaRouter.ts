@@ -91,8 +91,8 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
              */
             const data: any = {};
             Object.keys(req.query)
-                .filter(key => key.indexOf("input.") === 0)
-                .forEach(key => {
+                .filter((key) => key.indexOf("input.") === 0)
+                .forEach((key) => {
                     if (key.replace("input.", "").trim() === "") return;
                     objectPath.set(data, key, req.query[key]);
                 });
@@ -156,7 +156,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
         normaliseInputField(reqData);
 
         reqData.input.user = userInfo;
-        reqData.input.user.roles = userInfo.roles.map(role => role.id);
+        reqData.input.user.roles = userInfo.roles.map((role) => role.id);
 
         const sessionClaim = getUserSession(req, jwtSecret).valueOr({});
 
@@ -213,7 +213,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
         }
     }
 
-    opaRoutes.map(route => {
+    opaRoutes.map((route) => {
         if (route.method == "post") {
             router.post(route.path, proxyRequest);
         } else {

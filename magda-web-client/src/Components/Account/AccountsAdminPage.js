@@ -13,7 +13,7 @@ export default class AccountsAdminPage extends React.Component {
     }
 
     componentDidMount() {
-        listUsers().then(users => this.updateState(users));
+        listUsers().then((users) => this.updateState(users));
     }
 
     render() {
@@ -49,9 +49,9 @@ export default class AccountsAdminPage extends React.Component {
     }
 
     renderUser(user) {
-        const save = async patch => {
+        const save = async (patch) => {
             await updateUser(user.id, patch);
-            listUsers().then(users => this.updateState(users));
+            listUsers().then((users) => this.updateState(users));
         };
         return (
             <tr>

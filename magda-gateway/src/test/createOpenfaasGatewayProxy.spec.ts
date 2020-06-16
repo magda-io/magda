@@ -120,9 +120,12 @@ describe("Test createOpenfaasGatewayProxy", () => {
                 gatewayUrl: openfaasGatewayUrl,
                 allowAdminOnly: allowAdminOnly,
                 baseAuthUrl: authApiBaseUrl,
-                jwtSecret: "test",
-                tenantMode,
-                authenticator: mockAuthenticator
+                apiRouterOptions: {
+                    jwtSecret: "test",
+                    tenantMode,
+                    authenticator: mockAuthenticator,
+                    routes: {}
+                }
             })
         );
 
@@ -152,10 +155,7 @@ describe("Test createOpenfaasGatewayProxy", () => {
         await testReq.get(randomPath).expect(401);
 
         const randomData = randomstring.generate();
-        await testReq
-            .post(randomPath)
-            .send({ data: randomData })
-            .expect(401);
+        await testReq.post(randomPath).send({ data: randomData }).expect(401);
     });
 
     it("should return 401 when unauthenticated user to access openfaas gateway and `allowAdminOnly` = true", async () => {
@@ -165,10 +165,7 @@ describe("Test createOpenfaasGatewayProxy", () => {
         await testReq.get(randomPath).expect(401);
 
         const randomData = randomstring.generate();
-        await testReq
-            .post(randomPath)
-            .send({ data: randomData })
-            .expect(401);
+        await testReq.post(randomPath).send({ data: randomData }).expect(401);
     });
 
     it("should allow Non-admin users to access openfaas gateway if `allowAdminOnly` = false", async () => {

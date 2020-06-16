@@ -25,13 +25,13 @@ async function checkNodeLeftRight(
     expect(testNode.right).to.equal(expectedRight);
 }
 
-describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContext) {
+describe("Test NestedSetModelQueryer", function (this: Mocha.ISuiteCallbackContext) {
     this.timeout(10000);
     let pool: pg.Pool = null;
     const createTables: string[] = [];
     const dbConfig = getTestDBConfig();
 
-    before(async function() {
+    before(async function () {
         // --- you have to supply a db name to connect to pg
         pool = new pg.Pool({ ...dbConfig });
         try {
@@ -49,7 +49,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         await pool.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
     });
 
-    after(async function() {
+    after(async function () {
         if (pool) {
             for (let i = 0; i < createTables.length; i++) {
                 await pool.query(`DROP TABLE IF EXISTS "${createTables[i]}"`);
@@ -159,7 +159,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
         const nodes = await queryer.getNodes();
-        expect(nodes.map(n => n.name)).to.have.members([
+        expect(nodes.map((n) => n.name)).to.have.members([
             "Albert",
             "Bert",
             "Chuck",
@@ -173,7 +173,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         const tableName = await createTestTableWithTestData();
         const queryer = new NestedSetModelQueryer(pool, tableName);
         const nodes = await queryer.getNodes({ leafNodesOnly: true });
-        expect(nodes.map(n => n.name)).to.have.members([
+        expect(nodes.map((n) => n.name)).to.have.members([
             "Bert",
             "Donna",
             "Eddie",
@@ -188,7 +188,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
             leafNodesOnly: true,
             name: "Bert"
         });
-        expect(nodes.map(n => n.name)).to.have.members(["Bert"]);
+        expect(nodes.map((n) => n.name)).to.have.members(["Bert"]);
     });
 
     it("`getAllChildren` should return all children correctly", async () => {
@@ -197,7 +197,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         let nodes = await queryer.getAllChildren(
             await getNodeIdFromName(tableName, "Albert")
         );
-        expect(nodes.map(n => n.name)).to.have.members([
+        expect(nodes.map((n) => n.name)).to.have.members([
             "Bert",
             "Chuck",
             "Donna",
@@ -208,7 +208,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         nodes = await queryer.getAllChildren(
             await getNodeIdFromName(tableName, "Chuck")
         );
-        expect(nodes.map(n => n.name)).to.have.members([
+        expect(nodes.map((n) => n.name)).to.have.members([
             "Donna",
             "Eddie",
             "Fred"
@@ -226,12 +226,12 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         let nodes = await queryer.getImmediateChildren(
             await getNodeIdFromName(tableName, "Albert")
         );
-        expect(nodes.map(n => n.name)).to.have.members(["Bert", "Chuck"]);
+        expect(nodes.map((n) => n.name)).to.have.members(["Bert", "Chuck"]);
 
         nodes = await queryer.getImmediateChildren(
             await getNodeIdFromName(tableName, "Chuck")
         );
-        expect(nodes.map(n => n.name)).to.have.members([
+        expect(nodes.map((n) => n.name)).to.have.members([
             "Donna",
             "Eddie",
             "Fred"
@@ -249,17 +249,17 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         let nodes = await queryer.getAllParents(
             await getNodeIdFromName(tableName, "Chuck")
         );
-        expect(nodes.map(n => n.name)).to.have.members(["Albert"]);
+        expect(nodes.map((n) => n.name)).to.have.members(["Albert"]);
 
         nodes = await queryer.getAllParents(
             await getNodeIdFromName(tableName, "Donna")
         );
-        expect(nodes.map(n => n.name)).to.have.members(["Chuck", "Albert"]);
+        expect(nodes.map((n) => n.name)).to.have.members(["Chuck", "Albert"]);
 
         nodes = await queryer.getAllParents(
             await getNodeIdFromName(tableName, "Bert")
         );
-        expect(nodes.map(n => n.name)).to.have.members(["Albert"]);
+        expect(nodes.map((n) => n.name)).to.have.members(["Albert"]);
 
         nodes = await queryer.getAllParents(
             await getNodeIdFromName(tableName, "Albert")
@@ -299,10 +299,10 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(nodes[0].name).to.equal("Albert");
 
         nodes = await queryer.getAllNodesAtLevel(2);
-        expect(nodes.map(n => n.name)).to.have.members(["Bert", "Chuck"]);
+        expect(nodes.map((n) => n.name)).to.have.members(["Bert", "Chuck"]);
 
         nodes = await queryer.getAllNodesAtLevel(3);
-        expect(nodes.map(n => n.name)).to.have.members([
+        expect(nodes.map((n) => n.name)).to.have.members([
             "Donna",
             "Eddie",
             "Fred"
@@ -412,7 +412,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
             await getNodeIdFromName(tableName, "Albert"),
             await getNodeIdFromName(tableName, "Donna")
         );
-        expect(nodes.valueOrThrow().map(n => n.name)).to.have.members([
+        expect(nodes.valueOrThrow().map((n) => n.name)).to.have.members([
             "Albert",
             "Chuck",
             "Donna"
@@ -422,7 +422,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
             await getNodeIdFromName(tableName, "Albert"),
             await getNodeIdFromName(tableName, "Eddie")
         );
-        expect(nodes.valueOrThrow().map(n => n.name)).to.have.members([
+        expect(nodes.valueOrThrow().map((n) => n.name)).to.have.members([
             "Albert",
             "Chuck",
             "Eddie"
@@ -432,7 +432,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
             await getNodeIdFromName(tableName, "Chuck"),
             await getNodeIdFromName(tableName, "Fred")
         );
-        expect(nodes.valueOrThrow().map(n => n.name)).to.have.members([
+        expect(nodes.valueOrThrow().map((n) => n.name)).to.have.members([
             "Chuck",
             "Fred"
         ]);
@@ -441,7 +441,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
             await getNodeIdFromName(tableName, "Albert"),
             await getNodeIdFromName(tableName, "Bert")
         );
-        expect(nodes.valueOrThrow().map(n => n.name)).to.have.members([
+        expect(nodes.valueOrThrow().map((n) => n.name)).to.have.members([
             "Albert",
             "Bert"
         ]);
@@ -631,14 +631,14 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(bert1nodeId.length).to.equal(36);
 
         const lv2Nodes = await queryer.getAllNodesAtLevel(2);
-        const bert1 = lv2Nodes.find(n => n.id === bert1nodeId);
+        const bert1 = lv2Nodes.find((n) => n.id === bert1nodeId);
         expect(_.isUndefined(bert1)).to.equal(false);
 
-        const bert = lv2Nodes.find(n => n.id === bertId);
+        const bert = lv2Nodes.find((n) => n.id === bertId);
         expect(_.isUndefined(bert)).to.equal(false);
 
         const chuckId = (await queryer.getNodes({ name: "Chuck" }))[0]["id"];
-        const chuck = lv2Nodes.find(n => n.id === chuckId);
+        const chuck = lv2Nodes.find((n) => n.id === chuckId);
         expect(_.isUndefined(chuck)).to.equal(false);
 
         // --- test bert1 is between bert and chuck
@@ -651,13 +651,13 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         // --- Chuck's childrens should still be his children
         const childrens = await queryer.getAllChildren(chuckId, false);
         expect(childrens.length).to.equal(3);
-        expect(childrens.findIndex(n => n.name === "Donna") !== -1).to.equal(
+        expect(childrens.findIndex((n) => n.name === "Donna") !== -1).to.equal(
             true
         );
-        expect(childrens.findIndex(n => n.name === "Eddie") !== -1).to.equal(
+        expect(childrens.findIndex((n) => n.name === "Eddie") !== -1).to.equal(
             true
         );
-        expect(childrens.findIndex(n => n.name === "Fred") !== -1).to.equal(
+        expect(childrens.findIndex((n) => n.name === "Fred") !== -1).to.equal(
             true
         );
     });
@@ -688,7 +688,7 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
 
         let lv4Nodes = await queryer.getAllNodesAtLevel(4);
         expect(lv4Nodes.length).to.equal(3);
-        expect(lv4Nodes.map(n => n.name)).to.have.members([
+        expect(lv4Nodes.map((n) => n.name)).to.have.members([
             "Donna",
             "Eddie",
             "Fred"
@@ -710,11 +710,11 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
 
         lv3Nodes = await queryer.getAllNodesAtLevel(3);
         expect(lv3Nodes.length).to.equal(2);
-        expect(lv3Nodes.map(n => n.name)).to.have.members(["Chuck", "Donna"]);
+        expect(lv3Nodes.map((n) => n.name)).to.have.members(["Chuck", "Donna"]);
 
         lv4Nodes = await queryer.getAllNodesAtLevel(4);
         expect(lv4Nodes.length).to.equal(2);
-        expect(lv4Nodes.map(n => n.name)).to.have.members(["Eddie", "Fred"]);
+        expect(lv4Nodes.map((n) => n.name)).to.have.members(["Eddie", "Fred"]);
 
         // --- we shouldn't allow to move Bert's sub stree to Eddie
         // --- as Eddie is one of Bert's subordinate
@@ -750,10 +750,10 @@ describe("Test NestedSetModelQueryer", function(this: Mocha.ISuiteCallbackContex
         expect(rootNode.name).to.equal("Albert");
 
         let lv2Nodes = await queryer.getAllNodesAtLevel(2);
-        expect(lv2Nodes.map(n => n.name)).to.have.members(["Bert", "Chuck"]);
+        expect(lv2Nodes.map((n) => n.name)).to.have.members(["Bert", "Chuck"]);
 
         let lv3Nodes = await queryer.getAllNodesAtLevel(3);
-        expect(lv3Nodes.map(n => n.name)).to.have.members([
+        expect(lv3Nodes.map((n) => n.name)).to.have.members([
             "Eddie",
             "Donna",
             "Fred"

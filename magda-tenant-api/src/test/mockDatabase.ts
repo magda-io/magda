@@ -3,7 +3,7 @@ import { Tenant } from "magda-typescript-common/src/tenant-api/Tenant";
 
 export default class MockDatabase {
     async getTenants(): Promise<Tenant[]> {
-        return new Promise(function(resolve, _) {
+        return new Promise(function (resolve, _) {
             resolve(
                 mockTenantDataStore.getTenants().map(
                     (item: {
@@ -22,7 +22,7 @@ export default class MockDatabase {
     }
 
     async createTenant(tenant: Tenant): Promise<Tenant> {
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
             resolve(mockTenantDataStore.createTenant(tenant));
         });
     }

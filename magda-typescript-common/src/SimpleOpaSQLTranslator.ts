@@ -11,7 +11,7 @@ class SimpleOpaSQLTranslator {
     private refPrefixs: string[] = [];
 
     constructor(unknowns: string[] = []) {
-        this.refPrefixs = unknowns.map(s => s + ".");
+        this.refPrefixs = unknowns.map((s) => s + ".");
     }
 
     parse(result: CompleteRuleResult, sqlParametersArray: any[] = []) {
@@ -23,9 +23,9 @@ class SimpleOpaSQLTranslator {
         if (!result.residualRules || !result.residualRules.length) {
             throw new Error("residualRules cannot be empty array!");
         }
-        let ruleConditions = result.residualRules.map(r =>
+        let ruleConditions = result.residualRules.map((r) =>
             r.expressions
-                .map(e => {
+                .map((e) => {
                     if (e.terms.length === 1) {
                         const term = e.terms[0];
                         if (term.isRef()) {
@@ -50,7 +50,7 @@ class SimpleOpaSQLTranslator {
                             operator,
                             operands
                         ] = e.toOperatorOperandsArray();
-                        const identifiers = operands.map(op => {
+                        const identifiers = operands.map((op) => {
                             if (op.isRef())
                                 return `"${op.fullRefString(this.refPrefixs)}"`;
                             else
@@ -71,7 +71,7 @@ class SimpleOpaSQLTranslator {
                 .join(" AND ")
         );
         if (ruleConditions.length > 1) {
-            ruleConditions = ruleConditions.map(r => `( ${r} )`);
+            ruleConditions = ruleConditions.map((r) => `( ${r} )`);
         }
 
         return ruleConditions.join(" OR ");

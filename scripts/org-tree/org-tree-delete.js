@@ -20,7 +20,7 @@ program
         "If only remove specified node and left its children (if any) to its parent"
     )
     .version(pkg.version)
-    .action(async nodeNameOrId => {
+    .action(async (nodeNameOrId) => {
         try {
             if (!process.argv.slice(2).length) {
                 program.help();

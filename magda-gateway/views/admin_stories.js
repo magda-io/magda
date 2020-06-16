@@ -1,4 +1,4 @@
-addSection("Stories", async function(body) {
+addSection("Stories", async function (body) {
     showJsonEditor(body, {
         label: "Home Stories",
         idPattern: "home/stories/*",

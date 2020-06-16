@@ -35,15 +35,15 @@ export default function facebook(options: FacebookOptions) {
                 profileFields: ["displayName", "picture", "email"],
                 callbackURL: undefined
             },
-            function(
+            function (
                 accessToken: string,
                 refreshToken: string,
                 profile: Profile,
                 cb: Function
             ) {
                 createOrGetUserToken(authorizationApi, profile, "facebook")
-                    .then(userId => cb(null, userId))
-                    .catch(error => cb(error));
+                    .then((userId) => cb(null, userId))
+                    .catch((error) => cb(error));
             }
         )
     );
@@ -65,7 +65,7 @@ export default function facebook(options: FacebookOptions) {
 
     router.get(
         "/return",
-        function(
+        function (
             req: express.Request,
             res: express.Response,
             next: express.NextFunction

@@ -2,6 +2,7 @@ import React from "react";
 
 import { query } from "api-clients/VocabularyApis";
 import AutoCompleteInput, { InputProps } from "./AutoCompleteInput";
+import { config } from "config";
 
 type Props = {
     suggestionSize?: number;
@@ -11,7 +12,7 @@ type Props = {
 };
 
 async function safeQuery(term: string): Promise<string[]> {
-    const result = await query(term);
+    const result = await query(term, config);
     return result || [];
 }
 
@@ -22,7 +23,7 @@ export default function VocabularyAutoCompleteInput(props: Props) {
         <AutoCompleteInput<string>
             suggestionSize={props.suggestionSize}
             query={safeQuery}
-            objectToString={x => x}
+            objectToString={(x) => x}
             onSuggestionSelected={props.onNewTag}
             onTypedValueSelected={props.onNewTag}
             exclude={excludeKeywords}

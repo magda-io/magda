@@ -39,19 +39,19 @@ export function createStatusRouter(options: OptionsIO = {}): Router {
     installUpdater(options);
 
     // we don't want to cache status
-    router.use(function(req, res, next) {
+    router.use(function (req, res, next) {
         res.set("Cache-Control", "no-cache");
         next();
     });
 
     // liveness probe for knowing if service is up
-    router.get("/live", function(req, res) {
+    router.get("/live", function (req, res) {
         res.status(200).send("OK");
     });
 
     // readiness probe for knowing if service and its dependents are
     // ready to go
-    router.get("/ready", function(req, res) {
+    router.get("/ready", function (req, res) {
         res.status(options.ready ? 200 : 500).json({
             ready: options.ready,
             since: options.since,
@@ -62,8 +62,8 @@ export function createStatusRouter(options: OptionsIO = {}): Router {
     });
 
     // added this for diagnosing service state based on latency in kubernetes
-    router.get("/readySync", async function(req, res) {
-        await Promise.all(Object.values(options._probes).map(x => x()));
+    router.get("/readySync", async function (req, res) {
+        await Promise.all(Object.values(options._probes).map((x) => x()));
         res.status(options.ready ? 200 : 500).json({
             ready: options.ready,
             since: options.since,
@@ -92,7 +92,7 @@ function installUpdater(options: OptionsIO) {
     }
     // every probe deserves to not be blocked by state of other probes
     // so we have parallel probe checkers
-    Object.entries(options.probes).forEach(probe => {
+    Object.entries(options.probes).forEach((probe) => {
         const [id, callback] = probe;
         async function update(dontUpdate?: boolean) {
             try {

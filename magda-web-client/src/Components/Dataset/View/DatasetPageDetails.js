@@ -41,7 +41,7 @@ class DatasetPageDetails extends Component {
                                 </span>
                             </h3>
                             <div className="clearfix">
-                                {dataset.distributions.map(s => (
+                                {dataset.distributions.map((s) => (
                                     <DistributionRow
                                         key={s.identifier}
                                         distribution={s}

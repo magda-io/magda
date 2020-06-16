@@ -26,7 +26,7 @@ More info of test cases behaviour see:
 https://github.com/magda-io/magda/issues/2545
 **/
 
-describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteCallbackContext) {
+describe("Test Authenticator (Session Management)", function (this: Mocha.ISuiteCallbackContext) {
     this.timeout(30000);
     let pool: pg.Pool = null;
     const dbConfig = getTestDBConfig();
@@ -55,7 +55,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
         );
     });
 
-    after(async function() {
+    after(async function () {
         if (pool) {
             await deleteAllTables(pool);
             pool.end();
@@ -188,7 +188,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     "/auth/login/xxxxxx?redirect=https%3A%2F%2Fdev.magda.io%2Fsign-in-redirect%3FredirectTo%3D%2Faccount"
                 )
                 .expect(200)
-                .then(async res => {
+                .then(async (res) => {
                     expect(isNextHandlerCalled).to.equal(true);
                     const [sessionId] = getSetCookie(
                         res.header,
@@ -212,7 +212,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     "/auth/login/xxxxxx?redirect=https%3A%2F%2Fdev.magda.io%2Fsign-in-redirect%3FredirectTo%3D%2Faccount"
                 )
                 .expect(200)
-                .then(async res => {
+                .then(async (res) => {
                     expect(isNextHandlerCalled).to.equal(true);
                     // reset isNextHandlerCalled: always check our middleware is not stuck
                     isNextHandlerCalled = false;
@@ -238,7 +238,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     )
                 ])
                 .expect(200)
-                .then(async res => {
+                .then(async (res) => {
                     expect(isNextHandlerCalled).to.equal(true);
                     const [sessionId2] = getSetCookie(
                         res.header,
@@ -260,7 +260,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     "/auth/login/xxxxxx?redirect=https%3A%2F%2Fdev.magda.io%2Fsign-in-redirect%3FredirectTo%3D%2Faccount"
                 )
                 .expect(200)
-                .then(async res => {
+                .then(async (res) => {
                     expect(isNextHandlerCalled).to.equal(true);
                     isNextHandlerCalled = false;
                     [sessionId, cookieOptions] = getSetCookie(
@@ -285,7 +285,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     )
                 ])
                 .expect(200)
-                .then(async res => {
+                .then(async (res) => {
                     expect(isNextHandlerCalled).to.equal(true);
                     const [sessionId2] = getSetCookie(
                         res.header,
@@ -308,7 +308,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
             await request
                 .post("/auth/login/xxxxxx")
                 .expect(200)
-                .then(async res => {
+                .then(async (res) => {
                     expect(isNextHandlerCalled).to.equal(true);
                     isNextHandlerCalled = false;
                     [sessionId, cookieOptions] = getSetCookie(
@@ -333,7 +333,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     )
                 ])
                 .expect(200)
-                .then(async res => {
+                .then(async (res) => {
                     expect(isNextHandlerCalled).to.equal(false);
                     expect(res.body.isError).to.equal(false);
                     [sessionId, cookieOptions] = getSetCookie(
@@ -357,7 +357,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
             await request
                 .get("/auth/logout")
                 .expect(200)
-                .then(async res => {
+                .then(async (res) => {
                     expect(isNextHandlerCalled).to.equal(true);
                     const [sessionId, cookieOptions] = getSetCookie(
                         res.header,
@@ -380,7 +380,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
             await request
                 .post("/auth/login/xxxxxx")
                 .expect(200)
-                .then(async res => {
+                .then(async (res) => {
                     expect(isNextHandlerCalled).to.equal(true);
                     isNextHandlerCalled = false;
                     [sessionId, cookieOptions] = getSetCookie(
@@ -405,7 +405,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     )
                 ])
                 .expect(200)
-                .then(async res => {
+                .then(async (res) => {
                     expect(isNextHandlerCalled).to.equal(true);
                     [sessionId, cookieOptions] = getSetCookie(
                         res.header,
@@ -431,7 +431,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
             await request
                 .post("/auth/login/xxxxxx")
                 .expect(200)
-                .then(async res => {
+                .then(async (res) => {
                     expect(isNextHandlerCalled).to.equal(true);
                     isNextHandlerCalled = false;
                     [sessionId, cookieOptions] = getSetCookie(
@@ -456,7 +456,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     )
                 ])
                 .expect(200)
-                .then(async res => {
+                .then(async (res) => {
                     expect(isNextHandlerCalled).to.equal(true);
                     const [sessionId2] = getSetCookie(
                         res.header,
@@ -477,7 +477,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
             await request
                 .get("/sign-in-redirect?a=sss&b=ddd&result=success")
                 .expect(200)
-                .then(async res => {
+                .then(async (res) => {
                     expect(isNextHandlerCalled).to.equal(true);
                     const [sessionId, cookieOptions] = getSetCookie(
                         res.header,
@@ -495,7 +495,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
             await request
                 .get("/sign-in-redirect?a=sss&b=ddd&result=failure")
                 .expect(200)
-                .then(async res => {
+                .then(async (res) => {
                     expect(isNextHandlerCalled).to.equal(true);
                     const [sessionId, cookieOptions] = getSetCookie(
                         res.header,
@@ -515,7 +515,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
             await request
                 .post("/xxxxx")
                 .expect(200)
-                .then(async res => {
+                .then(async (res) => {
                     expect(isNextHandlerCalled).to.equal(true);
                     expect(res.header["set-cookie"]).to.be.undefined;
                     expect(await getTotalStoreSessionNum()).to.equal(0);
@@ -524,7 +524,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
             await request
                 .get("/xxxxx")
                 .expect(200)
-                .then(async res => {
+                .then(async (res) => {
                     expect(isNextHandlerCalled).to.equal(true);
                     expect(res.header["set-cookie"]).to.be.undefined;
                     expect(await getTotalStoreSessionNum()).to.equal(0);
@@ -540,7 +540,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
             await request
                 .get("/auth/login/xxxxxx")
                 .expect(200)
-                .then(async res => {
+                .then(async (res) => {
                     expect(isNextHandlerCalled).to.equal(true);
                     [sessionId, cookieOptions] = getSetCookie(
                         res.header,
@@ -565,7 +565,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     )
                 ])
                 .expect(200)
-                .then(async res => {
+                .then(async (res) => {
                     expect(isNextHandlerCalled).to.equal(true);
                     const [sessionId2] = getSetCookie(
                         res.header,
@@ -589,7 +589,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
             await request
                 .get("/auth/login/xxxxxx")
                 .expect(200)
-                .then(async res => {
+                .then(async (res) => {
                     expect(isNextHandlerCalled).to.equal(true);
                     isNextHandlerCalled = false;
                     [sessionId, cookieOptions] = getSetCookie(
@@ -616,7 +616,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     )
                 ])
                 .expect(200)
-                .then(async res => {
+                .then(async (res) => {
                     expect(isNextHandlerCalled).to.equal(true);
                     const [sessionId2, cookieOptions2] = getSetCookie(
                         res.header,
@@ -659,7 +659,7 @@ describe("Test Authenticator (Session Management)", function(this: Mocha.ISuiteC
                     )
                 ])
                 .expect(200)
-                .then(async res => {
+                .then(async (res) => {
                     expect(isNextHandlerCalled).to.equal(true);
                     const [sessionId2, cookieOptions2] = getSetCookie(
                         res.header,

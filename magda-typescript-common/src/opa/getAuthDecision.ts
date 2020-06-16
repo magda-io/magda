@@ -33,9 +33,9 @@ export default function getAuthDecision(
     if (response.result.queries) {
         return new AuthOr(
             response.result.queries.map(
-                query =>
+                (query) =>
                     new AuthAnd(
-                        query.map(queryPart => {
+                        query.map((queryPart) => {
                             if (queryPart.terms.length !== 3) {
                                 throw new Error(
                                     "Could not understand terms " +
@@ -67,7 +67,7 @@ function getPath(term: OpaTerm) {
         throw new Error("Could not understand " + JSON.stringify(term));
     }
 
-    return term.value.slice(2).map(valueObj => valueObj.value.toString());
+    return term.value.slice(2).map((valueObj) => valueObj.value.toString());
 }
 
 function getSign(term: OpaTerm) {

@@ -8,7 +8,7 @@ class TemporalAspectViewer extends Component {
                         <th>Start</th>
                         <th>End</th>
                     </tr>
-                    {rows.map(r => (
+                    {rows.map((r) => (
                         <tr key={r}>
                             <td className="">
                                 {r.start && new Date(r.start).toLocaleString()}

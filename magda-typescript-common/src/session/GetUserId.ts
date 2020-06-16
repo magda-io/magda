@@ -30,7 +30,7 @@ export function getUserIdHandling(
     const userId = getUserId(req, jwtSecret);
 
     userId.caseOf({
-        just: userId => {
+        just: (userId) => {
             cb(userId);
         },
         nothing: () => {

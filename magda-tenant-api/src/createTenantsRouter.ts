@@ -46,10 +46,10 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     router.use(mustBeAdmin(options.authApiUrl, options.jwtSecret));
 
-    router.get("/tenants", function(req, res) {
+    router.get("/tenants", function (req, res) {
         try {
             if (hasAdminPortalId(req)) {
-                database.getTenants().then(tenants => {
+                database.getTenants().then((tenants) => {
                     res.json(tenants);
                     res.status(200);
                 });
@@ -64,7 +64,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
         }
     });
 
-    router.post("/tenants", async function(req, res) {
+    router.post("/tenants", async function (req, res) {
         try {
             if (hasAdminPortalId(req)) {
                 const tenantId = await database.createTenant(req.body);

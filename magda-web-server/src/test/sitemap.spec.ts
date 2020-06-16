@@ -50,14 +50,14 @@ describe("sitemap router", () => {
                 .get("/sitemap.xml")
                 .expect(200)
                 .expect(checkRequestMetadata)
-                .then(res => parsePromise(res.text))
-                .then(xmlObj => {
+                .then((res) => parsePromise(res.text))
+                .then((xmlObj) => {
                     const urls = xmlObj.sitemapindex.sitemap.map(
                         (mapEntry: any) => mapEntry.loc[0]
                     );
 
                     const expected = tokens.map(
-                        token =>
+                        (token) =>
                             baseExternalUrl +
                             "/sitemap/dataset/afterToken/" +
                             token +
@@ -77,9 +77,7 @@ describe("sitemap router", () => {
                 .get("/records/pagetokens?aspect=dcat-dataset-strings")
                 .reply(500);
 
-            return supertest(router)
-                .get("/sitemap.xml")
-                .expect(500);
+            return supertest(router).get("/sitemap.xml").expect(500);
         });
     });
 
@@ -89,8 +87,8 @@ describe("sitemap router", () => {
                 .get("/sitemap/main.xml")
                 .expect(200)
                 .expect(checkRequestMetadata)
-                .then(res => parsePromise(res.text))
-                .then(xmlObj => {
+                .then((res) => parsePromise(res.text))
+                .then((xmlObj) => {
                     expect(xmlObj.urlset.url[0].loc[0]).to.equal(
                         baseExternalUrl + "/"
                     );
@@ -109,7 +107,7 @@ describe("sitemap router", () => {
                     `/records?aspect=dcat-dataset-strings&optionalAspect=&pageToken=${token}&dereference=false`
                 )
                 .reply(200, {
-                    records: recordIds.map(id => ({
+                    records: recordIds.map((id) => ({
                         id
                     }))
                 });
@@ -118,14 +116,14 @@ describe("sitemap router", () => {
                 .get(`/sitemap/dataset/afterToken/${token}.xml`)
                 .expect(200)
                 .expect(checkRequestMetadata)
-                .then(res => parsePromise(res.text))
-                .then(xmlObj => {
+                .then((res) => parsePromise(res.text))
+                .then((xmlObj) => {
                     const urls = xmlObj.urlset.url.map(
                         (url: any) => url.loc[0]
                     );
 
                     const expectedUrls = recordIds.map(
-                        id =>
+                        (id) =>
                             `${baseExternalUrl}/dataset/${encodeURIComponent(
                                 id
                             )}`

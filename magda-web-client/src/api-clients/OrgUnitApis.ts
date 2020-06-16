@@ -25,7 +25,7 @@ export async function listOrgUnits({
         uri = uri.addQuery("relationshipOrgUnitId", relationshipOrgUnitId);
     }
 
-    const res = await fetch(uri.toString(), config.fetchOptions);
+    const res = await fetch(uri.toString(), config.credentialsFetchOptions);
 
     if (!res.ok) {
         throw new Error("Rejected with " + res.statusText);
@@ -59,7 +59,7 @@ export async function listOrgUnitsAtLevel(
             : ""
     }`;
 
-    const res = await fetch(uri, config.fetchOptions);
+    const res = await fetch(uri, config.credentialsFetchOptions);
 
     if (!res.ok) {
         throw new Error("Rejected with " + res.statusText);
@@ -78,7 +78,7 @@ export async function listOrgUnitsAtLevel(
 export async function getOrgUnitById(id: string): Promise<OrgUnit> {
     const res = await fetch(
         `${config.authApiUrl}orgunits/${id}`,
-        config.fetchOptions
+        config.credentialsFetchOptions
     );
 
     if (!res.ok) {

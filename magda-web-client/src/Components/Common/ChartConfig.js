@@ -45,9 +45,9 @@ export default class ChartConfig extends Component {
                     id={label}
                     value={findIndex(
                         options,
-                        item => item.idx === this.props[id].idx
+                        (item) => item.idx === this.props[id].idx
                     )}
-                    onChange={e => {
+                    onChange={(e) => {
                         const idx = e.target.value;
                         this.onChange(id, options[idx]);
                     }}
@@ -75,12 +75,12 @@ export default class ChartConfig extends Component {
             <div className="chart-config_icon-select">
                 <label tabIndex="-1">Chart Type</label>
                 <div className="button-group">
-                    {ChartDatasetEncoder.avlChartTypes.map(v => (
+                    {ChartDatasetEncoder.avlChartTypes.map((v) => (
                         <button
                             className={
                                 this.props.chartType === v ? "isActive" : ""
                             }
-                            onClick={e => this.onChange("chartType", v)}
+                            onClick={(e) => this.onChange("chartType", v)}
                             key={v}
                             title={chartTitles[v]}
                         >
@@ -114,7 +114,7 @@ export default class ChartConfig extends Component {
                         name="text-input"
                         id="chart-title"
                         type="text"
-                        onChange={e =>
+                        onChange={(e) =>
                             this.onChange("chartTitle", e.target.value)
                         }
                         label="Chart title"

@@ -17,7 +17,7 @@ export default class TenantsLoader {
     private async updateTenants() {
         const tenants = <Tenant[]>await this.tenantApiClient.getTenants();
         this.tenantsTable.clear();
-        tenants.forEach(t => {
+        tenants.forEach((t) => {
             if (t.enabled === true) {
                 this.tenantsTable.set(t.domainname.toLowerCase(), t);
                 console.debug(`${t.domainname.toLowerCase()} : ${t.id}`);

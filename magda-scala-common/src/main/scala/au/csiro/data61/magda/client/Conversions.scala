@@ -31,10 +31,10 @@ object Conversions {
       hit.aspects
         .getOrElse("dataset-publisher", JsObject())
         .extract[JsObject]('publisher.?)
-        .map((dataSet: JsObject) => {
+        .map((publisher: JsObject) => {
           val theDataSet =
             JsObject(
-              dataSet.fields + ("tenantId" -> JsNumber(hit.tenantId.get))
+              publisher.fields + ("tenantId" -> JsNumber(hit.tenantId.get))
             )
           val record = theDataSet.convertTo[Record]
           record

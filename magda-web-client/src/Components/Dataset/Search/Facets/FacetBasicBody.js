@@ -47,12 +47,12 @@ class FacetBasicBody extends Component {
     checkActiveOption(option) {
         return find(
             this.state._activeOptions,
-            o => o.value.toLowerCase() === option.value.toLowerCase()
+            (o) => o.value.toLowerCase() === option.value.toLowerCase()
         );
     }
 
     onToggleOption(option) {
-        const existingOptions = this.state._activeOptions.map(o => o.value);
+        const existingOptions = this.state._activeOptions.map((o) => o.value);
         const index = existingOptions.indexOf(option.value);
         // if the option is already selected remove it from _activeOptions
         if (index > -1) {
@@ -115,11 +115,11 @@ class FacetBasicBody extends Component {
         if (!this.props.isOpen) return null;
         let options = this.props.options;
         // the option that has the max hit value, use to calculate volumne indicator
-        let maxOptionOptionList = maxBy(this.props.options, o => +o.hitCount);
+        let maxOptionOptionList = maxBy(this.props.options, (o) => +o.hitCount);
 
         let optionsContent;
         if (options.length > 0) {
-            optionsContent = options.map(o =>
+            optionsContent = options.map((o) =>
                 this.renderOption(o, maxOptionOptionList)
             );
         } else {

@@ -125,7 +125,7 @@ export default class JsonConnector {
         await forEachAsync(
             aspectBuilderPage,
             this.maxConcurrency,
-            async aspectDefinition => {
+            async (aspectDefinition) => {
                 const aspectDefinitionOrError = await this.registry.putAspectDefinition(
                     aspectDefinition
                 );
@@ -182,7 +182,7 @@ export default class JsonConnector {
             await forEachAsync(
                 organizations,
                 this.maxConcurrency,
-                async organization => {
+                async (organization) => {
                     if (!organization) {
                         return;
                     }
@@ -214,13 +214,13 @@ export default class JsonConnector {
         const result = new ConnectionResult();
 
         const datasets = this.source.getJsonDatasets();
-        await forEachAsync(datasets, this.maxConcurrency, async dataset => {
+        await forEachAsync(datasets, this.maxConcurrency, async (dataset) => {
             const record = this.transformer.datasetJsonToRecord(dataset);
 
             const distributions = this.source.getJsonDistributions(dataset);
             if (distributions) {
                 const distributionIds: ConnectorRecordId[] = [];
-                await forEachAsync(distributions, 1, async distribution => {
+                await forEachAsync(distributions, 1, async (distribution) => {
                     const recordOrError = await this.createDistribution(
                         distribution,
                         dataset
@@ -253,7 +253,7 @@ export default class JsonConnector {
                 });
 
                 record.aspects["dataset-distributions"] = {
-                    distributions: distributionIds.map(id => id.toString())
+                    distributions: distributionIds.map((id) => id.toString())
                 };
             }
 
@@ -326,7 +326,7 @@ export default class JsonConnector {
         return this.registry
             .deleteBySource(this.sourceTag, this.source.id)
             .then(unionToThrowable)
-            .then(deletionResult => {
+            .then((deletionResult) => {
                 const result = new ConnectionResult();
 
                 if (
@@ -391,26 +391,26 @@ export default class JsonConnector {
         });
 
         app.get("/v0/datasets/:id", (req, res) => {
-            this.source.getJsonDataset(req.params.id).then(function(dataset) {
+            this.source.getJsonDataset(req.params.id).then(function (dataset) {
                 res.send(dataset);
             });
         });
 
         app.get("/v0/datasets/:id/distributions", (req, res) => {
-            this.source.getJsonDataset(req.params.id).then(dataset => {
+            this.source.getJsonDataset(req.params.id).then((dataset) => {
                 return asyncPageToArray(
                     this.source.getJsonDistributions(dataset)
-                ).then(distributions => {
+                ).then((distributions) => {
                     res.send(distributions);
                 });
             });
         });
 
         app.get("/v0/datasets/:id/publisher", (req, res) => {
-            this.source.getJsonDataset(req.params.id).then(dataset => {
+            this.source.getJsonDataset(req.params.id).then((dataset) => {
                 return this.source
                     .getJsonDatasetPublisher(dataset)
-                    .then(publisher => {
+                    .then((publisher) => {
                         res.send(publisher);
                     });
             });
@@ -419,7 +419,7 @@ export default class JsonConnector {
         app.get("/v0/search/datasets", (req, res) => {
             asyncPageToArray(
                 this.source.searchDatasetsByTitle(req.query.title as string, 10)
-            ).then(datasets => {
+            ).then((datasets) => {
                 res.send(datasets);
             });
         });
@@ -428,7 +428,7 @@ export default class JsonConnector {
             app.get("/v0/organizations/:id", (req, res) => {
                 this.source
                     .getJsonFirstClassOrganization(req.params.id)
-                    .then(function(organization) {
+                    .then(function (organization) {
                         res.send(organization);
                     });
             });
@@ -439,13 +439,13 @@ export default class JsonConnector {
                         req.query.title as string,
                         5
                     )
-                ).then(organizations => {
+                ).then((organizations) => {
                     res.send(organizations);
                 });
             });
         }
 
-        app.get("/v0/test-harness.js", function(req, res) {
+        app.get("/v0/test-harness.js", function (req, res) {
             res.sendFile(transformerForBrowserPath);
         });
 
@@ -462,7 +462,7 @@ export default class JsonConnector {
                 clearTimeout(timeoutId);
             }
 
-            timeoutId = setTimeout(function() {
+            timeoutId = setTimeout(function () {
                 console.log("Shutting down due to idle timeout.");
 
                 // TODO: Should just shut down the HTTP server instead of the whole process.
@@ -470,7 +470,7 @@ export default class JsonConnector {
             }, timeoutSeconds * 1000);
         }
 
-        express.use(function(req, res, next) {
+        express.use(function (req, res, next) {
             resetTimeout();
             next();
         });
@@ -530,7 +530,7 @@ export default class JsonConnector {
             return record;
         }
         const presetRecordAspects = this.configData.presetRecordAspects.filter(
-            presetAspect => {
+            (presetAspect) => {
                 if (!presetAspect.recordType) {
                     // --- if not specified, apply to all records
                     return true;
@@ -549,7 +549,7 @@ export default class JsonConnector {
         if (!record.aspects) {
             record.aspects = {};
         }
-        presetRecordAspects.forEach(presetRecordAspect => {
+        presetRecordAspects.forEach((presetRecordAspect) => {
             if (typeof presetRecordAspect !== "object") {
                 return;
             }

@@ -13,7 +13,7 @@ import "./SearchFacets.scss";
 const partitionArray = (array, size) =>
     array
         .map((e, i) => (i % size === 0 ? array.slice(i, i + size) : null))
-        .filter(e => e);
+        .filter((e) => e);
 
 const partitionWithCache = memoize(partitionArray);
 
@@ -73,12 +73,12 @@ class SearchFacets extends Component {
         });
     }
 
-    renderFilterButton = filter => {
+    renderFilterButton = (filter) => {
         const filterComponent = (
             <div
                 className="search-facet"
                 key={filter.id}
-                onClick={ev => ev.stopPropagation()}
+                onClick={(ev) => ev.stopPropagation()}
             >
                 <filter.component
                     updateQuery={this.props.updateQuery}
@@ -106,7 +106,7 @@ class SearchFacets extends Component {
                     onDismiss={() => setLocalData("hideFilterTooltips", true)}
                     orientation="below"
                 >
-                    {dismiss => (
+                    {(dismiss) => (
                         <FilterExplanation
                             dismiss={dismiss}
                             filterType={filter.name}

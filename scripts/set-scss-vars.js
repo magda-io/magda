@@ -38,7 +38,7 @@ program.parse(process.argv);
 
 const programOptions = program.opts();
 
-run(programOptions).catch(e => {
+run(programOptions).catch((e) => {
     console.error(chalk.red(`Failed to set SCSS variable: ${e}`));
     process.exit(1);
 });
@@ -97,8 +97,8 @@ function getEnvByClusterType(isMinikube = false) {
     );
     const dockerEnv = dockerEnvProcess
         .split("\n")
-        .filter(line => line.indexOf("export ") === 0)
-        .reduce(function(env, line) {
+        .filter((line) => line.indexOf("export ") === 0)
+        .reduce(function (env, line) {
             const match = /^export (\w+)="(.*)"$/.exec(line);
             if (match) {
                 env[match[1]] = match[2];
