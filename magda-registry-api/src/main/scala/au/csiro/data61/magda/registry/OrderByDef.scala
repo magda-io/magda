@@ -19,7 +19,7 @@ case class OrderByDef(
       jsonPathItems: List[String] = Nil
   ) = {
     val columnRef = SQLSyntax.join(
-      (tableName.toList ++ List(columnName)).map(SqlHelper.escapeIdentifier(_)),
+      (tableName.toList ++ List(columnName)).map(SQLSyntax.createUnsafely(_)),
       sqls".",
       false
     )
