@@ -146,7 +146,7 @@ object AspectQuery {
           )
         case ":<" =>
           (
-            SQLSyntax.createUnsafely(">="),
+            SQLSyntax.createUnsafely("<"),
             if (numericValueRegex matches valueStr) {
               AspectQueryBigDecimal(valueStr.toDouble)
             } else {
