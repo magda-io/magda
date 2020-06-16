@@ -80,16 +80,24 @@ object AspectQuery {
     * Example URL with aspectQuery: dcat-dataset-strings.title:?%rating% (Search keyword `rating` in `dcat-dataset-strings` aspect `title` field)
     * /v0/records?limit=100&optionalAspect=source&aspect=dcat-dataset-strings&aspectQuery=dcat-dataset-strings.title:?%2525rating%2525
     */
-  val operatorValueRegex = raw"^(:[!><=?]*)(.+)".r
+  val operatorValueRegex = raw"^(.+)(:[!><=?]*)(.+)$$".r
   val numericValueRegex = raw"[-0-9.]+".r
 
   def parse(string: String): AspectQuery = {
 
-    val Array(path, value) =
-      string.split(":").map(URLDecoder.decode(_, "utf-8"))
+    val List(path, opStr, valueStr) = string match {
+      case operatorValueRegex(pathStr, opStr, valueStr) =>
+        List(
+          URLDecoder.decode(pathStr, "utf-8"),
+          opStr,
+          URLDecoder.decode(valueStr, "utf-8")
+        )
+      case _ => throw new Error("Invalid Aspect Query Format.")
+    }
+
     val pathParts = path.split("\\.").toList
 
-    if (value.isEmpty) {
+    if (valueStr.isEmpty) {
       throw new Exception("Value for aspect query is not present.")
     }
 
@@ -97,68 +105,65 @@ object AspectQuery {
       throw new Exception("Path for aspect query was empty")
     }
 
-    (":" + value) match {
-      case operatorValueRegex(opStr, valueStr) =>
-        if (opStr == ":!") {
-          AspectQueryNotEqualValue(
-            pathParts.head,
-            pathParts.tail,
+    if (opStr == ":!") {
+      AspectQueryNotEqualValue(
+        pathParts.head,
+        pathParts.tail,
+        AspectQueryString(valueStr)
+      )
+    } else {
+      val (sqlOp, sqlValue) = opStr match {
+        case ":" =>
+          // --- for =, compare as text works for other types (e.g. numeric as well)
+          (SQLSyntax.createUnsafely("="), AspectQueryString(valueStr))
+        case ":?" =>
+          (
+            SQLSyntax.createUnsafely("SIMILAR TO"),
             AspectQueryString(valueStr)
           )
-        } else {
-          val (sqlOp, sqlValue) = opStr match {
-            case ":" =>
-              // --- for =, compare as text works for other types (e.g. numeric as well)
-              (SQLSyntax.createUnsafely("="), AspectQueryString(valueStr))
-            case ":?" =>
-              (
-                SQLSyntax.createUnsafely("SIMILAR TO"),
-                AspectQueryString(valueStr)
-              )
-            case ":!?" =>
-              (
-                SQLSyntax.createUnsafely("NOT SIMILAR TO"),
-                AspectQueryString(valueStr)
-              )
-            case ":>" =>
-              (
-                SQLSyntax.createUnsafely(">"),
-                if (numericValueRegex matches valueStr) {
-                  AspectQueryBigDecimal(valueStr.toDouble)
-                } else {
-                  AspectQueryString(valueStr)
-                }
-              )
-            case ":>=" =>
-              (
-                SQLSyntax.createUnsafely(">="),
-                if (numericValueRegex matches valueStr) {
-                  AspectQueryBigDecimal(valueStr.toDouble)
-                } else {
-                  AspectQueryString(valueStr)
-                }
-              )
-            case ":<" =>
-              (
-                SQLSyntax.createUnsafely(">="),
-                if (numericValueRegex matches valueStr) {
-                  AspectQueryBigDecimal(valueStr.toDouble)
-                } else {
-                  AspectQueryString(valueStr)
-                }
-              )
-            case ":<=" =>
-              (SQLSyntax.createUnsafely("<="), AspectQueryString(valueStr))
-            case _ =>
-              throw new Error(s"Unsupported aspectQuery operator: ${opStr}")
-          }
-          AspectQueryWithValue(
-            pathParts.head,
-            pathParts.tail,
-            sqlValue,
-            sqlOp
+        case ":!?" =>
+          (
+            SQLSyntax.createUnsafely("NOT SIMILAR TO"),
+            AspectQueryString(valueStr)
           )
-        }
+        case ":>" =>
+          (
+            SQLSyntax.createUnsafely(">"),
+            if (numericValueRegex matches valueStr) {
+              AspectQueryBigDecimal(valueStr.toDouble)
+            } else {
+              AspectQueryString(valueStr)
+            }
+          )
+        case ":>=" =>
+          (
+            SQLSyntax.createUnsafely(">="),
+            if (numericValueRegex matches valueStr) {
+              AspectQueryBigDecimal(valueStr.toDouble)
+            } else {
+              AspectQueryString(valueStr)
+            }
+          )
+        case ":<" =>
+          (
+            SQLSyntax.createUnsafely(">="),
+            if (numericValueRegex matches valueStr) {
+              AspectQueryBigDecimal(valueStr.toDouble)
+            } else {
+              AspectQueryString(valueStr)
+            }
+          )
+        case ":<=" =>
+          (SQLSyntax.createUnsafely("<="), AspectQueryString(valueStr))
+        case _ =>
+          throw new Error(s"Unsupported aspectQuery operator: ${opStr}")
+      }
+      AspectQueryWithValue(
+        pathParts.head,
+        pathParts.tail,
+        sqlValue,
+        sqlOp
+      )
     }
 
   }
