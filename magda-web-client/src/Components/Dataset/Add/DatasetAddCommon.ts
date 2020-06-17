@@ -191,6 +191,11 @@ export type State = {
     error: Error | null;
 };
 
+export type DatasetStateUpdaterType = <State>(
+    state: ((prevState: Readonly<State>) => State) | State,
+    callback?: () => void
+) => void;
+
 export type TemporalCoverage = {
     intervals: Interval[];
 };

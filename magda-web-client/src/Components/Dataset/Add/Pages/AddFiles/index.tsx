@@ -2,7 +2,6 @@ import React from "react";
 import { connect } from "react-redux";
 import { withRouter, RouterProps } from "react-router";
 import FileDrop from "react-file-drop";
-import moment from "moment";
 
 import ToolTip from "Components/Dataset/Add/ToolTip";
 import DatasetFile from "Components/Dataset/Add/DatasetFile";
@@ -12,9 +11,11 @@ import { getFiles } from "helpers/readFile";
 
 import {
     State,
+    saveState as saveStateToStorage,
     Distribution,
     DistributionState,
     DistributionSource,
+    DatasetStateUpdaterType,
     KeywordsLike,
     createId,
     Interval
@@ -22,48 +23,27 @@ import {
 import withAddDatasetState from "../../withAddDatasetState";
 import uniq from "lodash/uniq";
 import { uniqWith } from "lodash";
-import { config, MessageSafeConfig } from "config";
+import { config } from "config";
 import { User } from "reducers/userManagementReducer";
-import {
-    FileDetails,
-    MetadataExtractionOutput
-} from "Components/Dataset/MetadataExtraction/types";
-import * as Comlink from "comlink";
+import baseStorageApiPath from "./baseStorageApiPath";
 
 import "./index.scss";
 import "../../DatasetAddCommon.scss";
-
-const ExtractorsWorker = require("worker-loader!../../../MetadataExtraction"); // eslint-disable-line import/no-webpack-loader-syntax
-
-/** The bucket in the storage API where datasets are stored */
-const DATASETS_BUCKET = "magda-datasets";
-/**
- * The increment / 100 to show for progress once the initial
- * file read is complete
- */
-const READ_FILE_PROGRESS_INCREMENT = 20;
+import UserVisibleError from "helpers/UserVisibleError";
+import processFile from "./processFile";
 
 type Props = {
     edit: <K extends keyof State>(
         aspectField: K
     ) => (field: string) => (newValue: any) => void;
-    setState: <State>(
-        state: ((prevState: Readonly<State>) => State) | State,
-        callback?: () => void
-    ) => void;
+    setState: DatasetStateUpdaterType;
     user: User;
-    datasetId?: string;
+    datasetId: string;
     stateData: State;
     // --- if use as edit page
     isEditView: boolean;
     save: () => Promise<string>;
 };
-
-type RunExtractors = (
-    input: FileDetails,
-    config: MessageSafeConfig,
-    update: (progress: number) => void
-) => Promise<MetadataExtractionOutput>;
 
 class AddFilesPage extends React.Component<Props & RouterProps> {
     async onBrowse() {
@@ -114,9 +94,6 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
         }
     }
 
-    baseStorageApiPath = (distId: string) =>
-        `${DATASETS_BUCKET}/${this.props.datasetId}/${distId}`;
-
     addFiles = async (fileList: FileList, event: any = null) => {
         this.props.setState({
             e: undefined
@@ -147,16 +124,25 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                 license: "No license",
                 creationSource: DistributionSource.File,
                 downloadURL: this.props.stateData.shouldUploadToStorageApi
-                    ? `${config.storageApiUrl}${this.baseStorageApiPath(
+                    ? `${config.storageApiUrl}${baseStorageApiPath(
+                          this.props.datasetId,
                           distRecordId
                       )}/${thisFile.name}`
                     : undefined
             };
 
             try {
-                const distAfterProcessing = await this.processFile(
+                const distAfterProcessing = await processFile(
+                    this.props.datasetId,
                     thisFile,
-                    dist
+                    dist,
+                    () =>
+                        saveStateToStorage(
+                            this.props.stateData,
+                            this.props.datasetId
+                        ),
+                    this.props.setState,
+                    this.props.stateData.shouldUploadToStorageApi
                 );
 
                 this.props.setState((state: State) => {
@@ -261,9 +247,11 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                 }
             } catch (e) {
                 console.error(e);
-                this.props.setState({
-                    e
-                });
+                if (e instanceof UserVisibleError) {
+                    this.props.setState({
+                        error: e
+                    });
+                }
             }
         }
         this.updateLastModifyDate();
@@ -361,7 +349,10 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
         // fetch to delete distribution - try to delete even if we hadn't completed the initial upload
         // just to be safe
         return fetch(
-            `${config.storageApiUrl}${DATASETS_BUCKET}/${this.props.datasetId}/${distToDelete.id}`,
+            `${config.storageApiUrl}${baseStorageApiPath(
+                this.props.datasetId,
+                distToDelete.id!
+            )}`,
             {
                 ...config.credentialsFetchOptions,
                 method: "DELETE"
@@ -443,283 +434,6 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
             />
         );
     }
-
-    /**
-     * Processes the contents of a file, extracting metadata from it and returning
-     * the result. Will also upload the file to the storage API if this is configured.
-     *
-     * @param thisFile A File to get data out of
-     * @param initialDistribution A distribution to modify
-     *
-     * @returns The modified distribution
-     */
-    async processFile(
-        thisFile: File,
-        initialDistribution: Distribution
-    ): Promise<Distribution> {
-        /** Updates a part of this particular distribution */
-        const updateThisDist = this.updateDistPartial(initialDistribution);
-
-        // Show user we're starting to read
-        updateThisDist(() => ({
-            _state: DistributionState.Reading,
-            _progress: 0
-        }));
-
-        /** Should we be uploading this file too, or just reading metadata locally? */
-        const shouldUpload = this.props.stateData.shouldUploadToStorageApi;
-
-        /**
-         * Progress towards uploading, as a fraction between 0 and 1. Note that this
-         * is fake because we can't track upload progress
-         */
-        let uploadProgress = 0;
-        /** Progress of extraction, between 0 and 1 */
-        let extractionProgress = 0;
-
-        /**
-         * Updates the total progress of file processing, taking into account metadata
-         * extraction and uploading if applicable
-         */
-        const updateTotalProgress = () => {
-            updateThisDist(() => {
-                return {
-                    // Progress % = the progress of the initial read +
-                    // either just the extraction progress, or the average
-                    // of both extraction and upload progress
-                    _progress:
-                        READ_FILE_PROGRESS_INCREMENT +
-                        Math.round(
-                            shouldUpload
-                                ? extractionProgress * 40 + uploadProgress * 40
-                                : extractionProgress * 80
-                        )
-                };
-            });
-        };
-
-        /** Handles a new progress callback from uploading */
-        const handleUploadProgress = (progress: number) => {
-            uploadProgress = progress;
-            updateTotalProgress();
-        };
-
-        /** Handles a new progress callback from extraction */
-        const handleExtractionProgress = (progress: number) => {
-            extractionProgress = progress;
-            updateTotalProgress();
-        };
-
-        /**
-         * Promise tracking the upload of a file if relevant - if upload
-         * isn't needed, simply resolves instantly
-         */
-        const uploadPromise = shouldUpload
-            ? this.uploadFile(
-                  thisFile,
-                  initialDistribution,
-                  handleUploadProgress
-              )
-            : Promise.resolve();
-
-        const arrayBuffer = await readFileAsArrayBuffer(thisFile);
-        const input = {
-            fileName: thisFile.name,
-            arrayBuffer
-        };
-
-        // Now we've finished the read, start processing
-        updateThisDist((_state) => ({
-            _state: DistributionState.Processing,
-            _progress: READ_FILE_PROGRESS_INCREMENT
-        }));
-
-        /**
-         * Function for running all extractors in the correct order, which returns
-         * a promise that completes when extraction is complete
-         */
-        const extractorsWorker = new ExtractorsWorker();
-        const extractors = Comlink.wrap(extractorsWorker) as Comlink.Remote<{
-            runExtractors: RunExtractors;
-        }>;
-
-        try {
-            // Wait for extractors and upload to finish
-            const output = await extractors.runExtractors(
-                input,
-                (() => {
-                    const safeConfig = { ...config };
-                    // We need to delete facets because it has regexs in it,
-                    // and these cause an error if you try to pass them to
-                    // the webworker
-                    delete safeConfig.facets;
-                    return safeConfig;
-                })(),
-                Comlink.proxy(handleExtractionProgress)
-            );
-            await uploadPromise;
-
-            // Now we're done!
-            updateThisDist((_dist: Distribution) => ({
-                _state: DistributionState.Ready
-            }));
-
-            return {
-                ...initialDistribution,
-                format: output.format,
-                title: output.datasetTitle || initialDistribution.title,
-                modified: moment(output.modified).toDate(),
-                keywords: output.keywords,
-                equalHash: output.equalHash?.toString(),
-                temporalCoverage: output.temporalCoverage,
-                spatialCoverage: output.spatialCoverage
-            };
-        } catch (e) {
-            // Something went wrong - remove the distribution and show the error
-            console.error(e);
-
-            /** Removes the distribution and displays the error */
-            const removeDist = () => {
-                this.props.setState((state: State) => {
-                    return {
-                        ...state,
-                        error: e,
-                        distributions: state.distributions.filter(
-                            (thisDist) => initialDistribution.id !== thisDist.id
-                        )
-                    };
-                });
-
-                // Save to make sure that we persist the file's removal
-                this.props.save();
-            };
-
-            if (shouldUpload) {
-                // If we tried to upload and something went wrong, make sure we get
-                // rid of the file in storage as well if possible
-                uploadPromise
-                    .catch(() => {})
-                    .then(() =>
-                        fetch(
-                            `${config.storageApiUrl}${this.baseStorageApiPath(
-                                initialDistribution.id!
-                            )}/${thisFile.name}`,
-                            {
-                                ...config.credentialsFetchOptions,
-                                method: "DELETE"
-                            }
-                        )
-                    )
-                    .then((res) => {
-                        // 404 is fine because it means the file never got created.
-                        if (res.status !== 200 && res.status !== 404) {
-                            throw new Error("Could not delete file");
-                        }
-
-                        removeDist();
-                    })
-                    .catch((e) => {
-                        console.error(e);
-
-                        // This happens if the DELETE fails, which is really catastrophic.
-                        // We need to warn the user that manual cleanup may be required.
-                        this.props.setState((state: State) => {
-                            return {
-                                ...state,
-                                error: new Error(
-                                    "Adding the file failed, but Magda wasn't able to remove it from the system - if it's important that this file not remain in Magda, contact " +
-                                        config.defaultContactEmail
-                                ),
-                                distributions: state.distributions.filter(
-                                    (thisDist) =>
-                                        initialDistribution.id !== thisDist.id
-                                )
-                            };
-                        });
-
-                        removeDist();
-                    });
-            } else {
-                removeDist();
-            }
-
-            throw e;
-        }
-    }
-
-    updateDistPartial = (dist: Distribution) => (
-        updateFn: (state: Distribution) => Partial<Distribution>
-    ) => {
-        this.props.setState((state: State) => {
-            const distIndex = state.distributions.findIndex(
-                (thisDist) => thisDist.id === dist.id
-            );
-            const upToDateDist =
-                distIndex !== -1 ? state.distributions[distIndex] : dist;
-
-            // Clone the existing dist array
-            const newDists = state.distributions.concat();
-            const mergedDist = {
-                ...upToDateDist,
-                ...updateFn(upToDateDist)
-            };
-
-            // If dist already exists
-            if (distIndex >= 0) {
-                // Splice in the updated one
-                newDists.splice(distIndex, 1, mergedDist);
-            } else {
-                // Add the new one
-                newDists.push(mergedDist);
-            }
-
-            const newState: State = {
-                ...state,
-                distributions: newDists
-            };
-
-            return newState;
-        });
-    };
-
-    uploadFile = async (
-        file: File,
-        dist: Distribution,
-        onProgressUpdate: (progress: number) => void
-    ) => {
-        // Save first, so that the record id will be present.
-        await this.props.save();
-
-        const formData = new FormData();
-        formData.append(file.name, file);
-
-        const fetchUrl = `${
-            config.storageApiUrl
-        }upload/${this.baseStorageApiPath(dist.id!)}?recordId=${
-            this.props.datasetId
-        }`;
-
-        let uploadProgress = 0;
-        const fakeProgressInterval = setInterval(() => {
-            uploadProgress += (1 - uploadProgress) / 4;
-            onProgressUpdate(uploadProgress);
-        }, 1000);
-
-        try {
-            const res = await fetch(fetchUrl, {
-                ...config.credentialsFetchOptions,
-                method: "POST",
-                body: formData
-            });
-            if (res.status !== 200) {
-                throw new Error("Could not upload file");
-            }
-        } finally {
-            uploadProgress = 1;
-            onProgressUpdate(uploadProgress);
-            clearInterval(fakeProgressInterval);
-        }
-    };
 
     render() {
         const { stateData: state, isEditView } = this.props;
@@ -884,16 +598,6 @@ function toTitleCase(str: string) {
                 .replace(/([a-z])([A-Z])/g, "$1 $2")
                 .toLowerCase()
         );
-    });
-}
-
-function readFileAsArrayBuffer(file: any): Promise<ArrayBuffer> {
-    return new Promise((resolve, reject) => {
-        var fileReader = new FileReader();
-        fileReader.onload = function () {
-            resolve(this.result as ArrayBuffer);
-        };
-        fileReader.readAsArrayBuffer(file);
     });
 }
 
