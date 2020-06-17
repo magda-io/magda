@@ -25,6 +25,7 @@ General:
 -   Add migration document for migrating Magda release v0.0.56-RC6 or eariler to v0.0.57-0
 -   Use a feature flag to turn on/off the dataset approval workflow
 -   Add internal authentication provider allow user to be authenticated locally
+-   Upgrade to typescript 3.9.5
 -   Add missing `cloud-sql-proxy` dependecy to `magda-core` chart
 
 UI:

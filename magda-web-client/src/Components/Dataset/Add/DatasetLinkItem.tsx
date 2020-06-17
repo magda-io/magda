@@ -302,7 +302,7 @@ async function getAllDataUrlProcessorsFromOpenfaasGateway(
     }
 
     const magdaFuncType =
-        type == DistributionSource.DatasetUrl
+        type === DistributionSource.DatasetUrl
             ? "data-url-processor"
             : "api-url-processor";
     const res = await fetch(
@@ -335,9 +335,9 @@ interface UrlProcessingError extends Error {
 
 const DatasetLinkItem = (props: Props) => {
     const [editMode, setEditMode] = useState(
-        props.distribution?.creationMethod ==
+        props.distribution?.creationMethod ===
             DistributionCreationMethod.Manual &&
-            props.distribution?._state == DistributionState.Drafting
+            props.distribution?._state === DistributionState.Drafting
     );
 
     function processDatasetDcat(aspectData) {

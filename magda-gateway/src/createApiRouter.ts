@@ -8,6 +8,13 @@ import buildJwt from "magda-typescript-common/src/session/buildJwt";
 import createBaseProxy from "./createBaseProxy";
 import Authenticator from "./Authenticator";
 import { TenantMode } from "./setupTenantMode";
+import { MagdaUser } from "magda-typescript-common/src/authorization-api/model";
+
+declare global {
+    namespace Express {
+        interface User extends MagdaUser {}
+    }
+}
 
 export interface ProxyTarget {
     to: string;
