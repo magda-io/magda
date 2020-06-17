@@ -358,23 +358,22 @@ class NewDataset extends React.Component<Props, State> {
 
             this.setState((state) => ({
                 ...state,
-                isPublishing: true
+                isPublishing: true,
+                datasetPublishing: {
+                    ...state.datasetPublishing,
+                    state: "published"
+                }
             }));
 
-            // Setting datasets as approved if
-            // approval flow is turned off
-            if (!config.featureFlags.datasetApprovalWorkflowOn) {
-                this.setState((state) => ({
-                    ...state,
-                    datasetPublishing: {
-                        ...state.datasetPublishing,
-                        state: "published"
-                    }
-                }));
-            }
             await submitDatasetFromState(
                 datasetId,
-                this.state,
+                {
+                    ...this.state,
+                    datasetPublishing: {
+                        ...this.state.datasetPublishing,
+                        state: "published"
+                    }
+                },
                 this.setState.bind(this)
             );
 

@@ -60,6 +60,7 @@ UI:
 -   Bugfix: Read raw value from CSV files
 -   Add a flag `placeholderWorkflowsOn` to hide UI components that are not complete yet
 -   Fix magda & ckan login options are missing
+-   Always set dataset publishing state to "published" no matter the approval flow is on / off
 
 Storage:
 
