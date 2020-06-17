@@ -32,14 +32,14 @@ const defaultDataSourcePreference = [
     }
 ];
 
-export const isSupportedFormat = function(format) {
+export const isSupportedFormat = function (format) {
     const dataSourcePreference = defaultDataSourcePreference.map(
-        preferenceItem => preferenceItem.format
+        (preferenceItem) => preferenceItem.format
     );
     return (
         dataSourcePreference
-            .map(item => item.toLowerCase())
-            .filter(item => format.trim() === item).length !== 0
+            .map((item) => item.toLowerCase())
+            .filter((item) => format.trim() === item).length !== 0
     );
 };
 
@@ -56,15 +56,15 @@ const determineDistribution = memoize(function determineDistribution(
         preferenceOrder = -1;
     distributions
         .filter(
-            item =>
+            (item) =>
                 (item.linkStatusAvailable && item.linkActive) ||
                 !item.linkStatusAvailable
         )
-        .forEach(dis => {
+        .forEach((dis) => {
             const format = dis.format.toLowerCase();
             const dataUrl = dis.downloadURL ? dis.downloadURL : dis.accessURL;
             const distributionPreferenceOrder = dataSourcePreference.findIndex(
-                preferenceItem => {
+                (preferenceItem) => {
                     if (preferenceItem.format.toLowerCase() !== format) {
                         return false;
                     }
@@ -106,10 +106,10 @@ class DataPreviewMap extends Component {
         };
         this.onIframeMessageReceived = this.onIframeMessageReceived.bind(this);
         this.iframeRef = React.createRef();
-        this.handleMapClick = evt => {
+        this.handleMapClick = (evt) => {
             this.setState({ isMapInteractive: true });
         };
-        this.handleMapMouseLeave = evt => {
+        this.handleMapMouseLeave = (evt) => {
             this.setState({ isMapInteractive: false });
         };
     }
@@ -255,7 +255,7 @@ class DataPreviewMap extends Component {
                                     !this.state.isMapInteractive &&
                                         "data-preview-map-iframe_no-scroll"
                                 ]
-                                    .filter(c => !!c)
+                                    .filter((c) => !!c)
                                     .join(" ")}
                             />
                         )}

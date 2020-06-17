@@ -45,7 +45,7 @@ class DescriptionBox extends Component {
                     {shouldShowToggleButton ? (
                         this.state.isExpanded ? (
                             <ToggleButton
-                                onClick={e => this.onToggleButtonClick(e)}
+                                onClick={(e) => this.onToggleButtonClick(e)}
                             >
                                 <span>Show less description</span>
                                 <img
@@ -57,7 +57,7 @@ class DescriptionBox extends Component {
                         ) : (
                             <ToggleButton
                                 className="description-box-toggle-button"
-                                onClick={e => this.onToggleButtonClick(e)}
+                                onClick={(e) => this.onToggleButtonClick(e)}
                             >
                                 <span>Show full description</span>
                                 <img
