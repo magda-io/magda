@@ -151,7 +151,7 @@ export default function Login(props) {
         }
         return (
             <>
-                {providers.indexOf("internal") === -1 && (
+                {providers.indexOf("internal") !== -1 ? (
                     <li className="login__provider">
                         <a onClick={() => setLoginFormProvider("internal")}>
                             <img
@@ -162,8 +162,8 @@ export default function Login(props) {
                             Magda
                         </a>
                     </li>
-                )}
-                {providers.indexOf("ckan") === -1 && (
+                ) : null}
+                {providers.indexOf("ckan") !== -1 ? (
                     <li className="login__provider">
                         <a onClick={() => setLoginFormProvider("ckan")}>
                             <img
@@ -174,7 +174,7 @@ export default function Login(props) {
                             Data.gov.au / Ckan
                         </a>
                     </li>
-                )}
+                ) : null}
             </>
         );
     };
