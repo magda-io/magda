@@ -1,6 +1,7 @@
 package au.csiro.data61.magda.registry
 
 import scalikejdbc._
+import au.csiro.data61.magda.util.Regex
 
 case class OrderByDef(
     field: String,
@@ -18,8 +19,17 @@ case class OrderByDef(
       columnName: String,
       jsonPathItems: List[String] = Nil
   ) = {
+    val validAspectAliasRegex = """(aspect\d+)""".r
     val columnRef = SQLSyntax.join(
-      (tableName.toList ++ List(columnName)).map(SQLSyntax.createUnsafely(_)),
+      (tableName.toList ++ List(columnName)).map { idStr =>
+        if (idStr == ColumnNamePrefixType.PREFIX_TEMP.toString || Regex
+              .regexToRichRegex(validAspectAliasRegex)
+              .matches(idStr)) {
+          SQLSyntax.createUnsafely(idStr)
+        } else {
+          throw new Error(s"""Invalid SQL identifier in OrderByDef: ${idStr}""")
+        }
+      },
       sqls".",
       false
     )
