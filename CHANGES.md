@@ -27,6 +27,8 @@ General:
 -   Add internal authentication provider allow user to be authenticated locally
 -   Upgrade to typescript 3.9.5
 -   Add missing `cloud-sql-proxy` dependecy to `magda-core` chart
+-   Add more operators to Registry /records & records/count API `aspectOrQuery`
+-   Add `aspectOrQuery`, `orderBy`, `orderByDir` & `orderNullFirst` parameters to Registry API /records & records/count
 
 UI:
 
@@ -60,6 +62,7 @@ UI:
 -   Made files that are dropped get uploaded, if this is specified by the user
 -   Bugfix: Read raw value from CSV files
 -   Add a flag `placeholderWorkflowsOn` to hide UI components that are not complete yet
+-   Add `MyDatasets` Section to Homepage (after logged in)
 -   Fix magda & ckan login options are missing
 -   Always set dataset publishing state to "published" no matter the approval flow is on / off
 
