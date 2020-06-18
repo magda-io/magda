@@ -21,8 +21,10 @@ case class OrderByDef(
   ) = {
     val validAspectAliasRegex = """(aspect\d+)""".r
     val columnRef = SQLSyntax.join(
-      (tableName.toList ++ List(columnName)).map{ idStr =>
-        if(idStr == ColumnNamePrefixType.PREFIX_TEMP.toString || Regex.regexToRichRegex(validAspectAliasRegex).matches(idStr)) {
+      (tableName.toList ++ List(columnName)).map { idStr =>
+        if (idStr == ColumnNamePrefixType.PREFIX_TEMP.toString || Regex
+              .regexToRichRegex(validAspectAliasRegex)
+              .matches(idStr)) {
           SQLSyntax.createUnsafely(idStr)
         } else {
           throw new Error(s"""Invalid SQL identifier in OrderByDef: ${idStr}""")
