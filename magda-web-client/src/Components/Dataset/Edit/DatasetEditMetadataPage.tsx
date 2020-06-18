@@ -74,7 +74,7 @@ class EditDataset extends React.Component<Props, State> {
                 stateData={this.state}
                 user={this.props.user}
                 isEditView={true}
-                save={() => saveState(this.state, this.props.datasetId)}
+                datasetId={this.props.datasetId}
             />
         ),
         () => (

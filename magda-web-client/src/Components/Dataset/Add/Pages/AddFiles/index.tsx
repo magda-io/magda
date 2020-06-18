@@ -1,6 +1,4 @@
 import React from "react";
-import { connect } from "react-redux";
-import { withRouter, RouterProps } from "react-router";
 import FileDrop from "react-file-drop";
 
 import ToolTip from "Components/Dataset/Add/ToolTip";
@@ -11,7 +9,7 @@ import { getFiles } from "helpers/readFile";
 
 import {
     State,
-    saveState as saveStateToStorage,
+    saveState,
     Distribution,
     DistributionState,
     DistributionSource,
@@ -20,7 +18,6 @@ import {
     createId,
     Interval
 } from "../../DatasetAddCommon";
-import withAddDatasetState from "../../withAddDatasetState";
 import uniq from "lodash/uniq";
 import { uniqWith } from "lodash";
 import { config } from "config";
@@ -42,10 +39,9 @@ type Props = {
     stateData: State;
     // --- if use as edit page
     isEditView: boolean;
-    save: () => Promise<string>;
 };
 
-class AddFilesPage extends React.Component<Props & RouterProps> {
+class AddFilesPage extends React.Component<Props> {
     async onBrowse() {
         this.addFiles(await getFiles("*.*"));
     }
@@ -54,6 +50,10 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
         if (fileList) {
             this.addFiles(fileList, event);
         }
+    }
+
+    async saveStateToStorage() {
+        return await saveState(this.props.stateData, this.props.datasetId);
     }
 
     updateLastModifyDate() {
@@ -136,11 +136,7 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                     this.props.datasetId,
                     thisFile,
                     dist,
-                    () =>
-                        saveStateToStorage(
-                            this.props.stateData,
-                            this.props.datasetId
-                        ),
+                    this.saveStateToStorage.bind(this),
                     this.props.setState,
                     this.props.stateData.shouldUploadToStorageApi
                 );
@@ -243,7 +239,7 @@ class AddFilesPage extends React.Component<Props & RouterProps> {
                 if (this.props.stateData.shouldUploadToStorageApi) {
                     // Save now so that we don't end up with orphaned uploaded files
                     // if the user leaves without saving
-                    await this.props.save();
+                    await this.saveStateToStorage();
                 }
             } catch (e) {
                 console.error(e);
@@ -601,13 +597,6 @@ function toTitleCase(str: string) {
     });
 }
 
-function mapStateToProps(_state, old) {
-    let dataset = old.match.params.datasetId;
-    return {
-        dataset
-    };
-}
-
 function fileFormat(file): string {
     const extensionIndex = file.name.lastIndexOf(".");
     const extensionLength = file.name.length - extensionIndex - 1;
@@ -618,7 +607,4 @@ function fileFormat(file): string {
     }
 }
 
-export default withAddDatasetState<Props>(
-    // @ts-ignore
-    withRouter(connect(mapStateToProps)(AddFilesPage))
-) as React.ComponentType<Props>;
+export default AddFilesPage;
