@@ -6,7 +6,7 @@ export type PropsType = {
     text: string;
 };
 
-const Lozenge: FunctionComponent<PropsType> = props => {
+const Lozenge: FunctionComponent<PropsType> = (props) => {
     if (!props?.url || !props?.text) return null;
     return (
         <div className="homepage-lozenge">

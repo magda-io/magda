@@ -3,21 +3,24 @@ import { Link } from "react-router-dom";
 import editIcon from "assets/edit.svg";
 import "./DatasetGrid.scss";
 import { useAsync } from "react-async-hook";
+import getMyDatasetAspectQueries from "./getMyDatasetAspectQueries";
 import {
     Record,
     fetchRecords,
     FetchRecordsOptions,
-    AspectQuery,
-    AspectQueryOperators
+    DatasetTypes
 } from "api-clients/RegistryApis";
 import moment from "moment";
 
-export type DatasetTypes = "drafts" | "published";
+const PAGE_SIZE = 10;
 
 type PropsType = {
     searchText: string;
     datasetType: DatasetTypes;
     userId: string;
+    datasetCount?: number;
+    datasetCountIsLoading: boolean;
+    datasetCountError?: Error;
 };
 
 function createRows(
@@ -113,126 +116,53 @@ function getDate(datasetType: DatasetTypes, record: Record) {
 }
 
 const DatasetGrid: FunctionComponent<PropsType> = (props) => {
-    const { datasetType } = props;
-    const [pageToken, setPageToken] = useState<string>("");
+    const {
+        datasetType,
+        datasetCount,
+        datasetCountIsLoading,
+        datasetCountError
+    } = props;
+    const [offset, setPageOffset] = useState<number>(0);
 
     const { result, loading, error } = useAsync(
         async (
             datasetType: DatasetTypes,
             searchText: string,
-            pageToken: string
+            userId: string,
+            offset: number
         ) => {
             const opts: FetchRecordsOptions = {
-                limit: 10,
+                limit: PAGE_SIZE,
                 noCache: true
             };
 
-            if (pageToken) {
-                opts.pageToken = pageToken;
+            if (offset) {
+                opts.start = offset;
             }
 
             if (datasetType === "drafts") {
                 opts.aspects = ["publishing"];
                 opts.optionalAspects = ["dataset-draft"];
                 opts.orderBy = "dataset-draft.timestamp";
-                opts.aspectQueries = [
-                    new AspectQuery(
-                        "publishing.state",
-                        AspectQueryOperators["="],
-                        `draft`,
-                        true
-                    ),
-                    new AspectQuery(
-                        "dataset-access-control.ownerId",
-                        AspectQueryOperators["="],
-                        props.userId,
-                        true
-                    )
-                ];
             } else {
                 opts.aspects = ["dcat-dataset-strings"];
                 opts.optionalAspects = ["publishing"];
                 opts.orderBy = "dcat-dataset-strings.modified";
-                opts.aspectQueries = [
-                    new AspectQuery(
-                        "publishing.state",
-                        AspectQueryOperators["="],
-                        `published`,
-                        true
-                    ),
-                    new AspectQuery(
-                        "dataset-access-control.ownerId",
-                        AspectQueryOperators["="],
-                        props.userId,
-                        true
-                    )
-                ];
             }
 
-            searchText = searchText.trim();
+            opts.aspectQueries = getMyDatasetAspectQueries(
+                datasetType,
+                userId,
+                searchText
+            );
 
-            if (searchText) {
-                // --- generate keyword search
-                if (datasetType === "drafts") {
-                    opts.aspectQueries = opts.aspectQueries.concat([
-                        new AspectQuery(
-                            "dataset-draft.dataset.title",
-                            AspectQueryOperators.patternMatch,
-                            `%${searchText}%`,
-                            false
-                        ),
-                        new AspectQuery(
-                            "dataset-draft.dataset.description",
-                            AspectQueryOperators.patternMatch,
-                            `%${searchText}%`,
-                            false
-                        ),
-                        new AspectQuery(
-                            "dataset-draft.dataset.themes",
-                            AspectQueryOperators.patternMatch,
-                            `%${searchText}%`,
-                            false
-                        ),
-                        new AspectQuery(
-                            "dataset-draft.dataset.keywords",
-                            AspectQueryOperators.patternMatch,
-                            `%${searchText}%`,
-                            false
-                        )
-                    ]);
-                } else {
-                    opts.aspectQueries = opts.aspectQueries.concat([
-                        new AspectQuery(
-                            "dcat-dataset-strings.title",
-                            AspectQueryOperators.patternMatch,
-                            `%${searchText}%`,
-                            false
-                        ),
-                        new AspectQuery(
-                            "dcat-dataset-strings.description",
-                            AspectQueryOperators.patternMatch,
-                            `%${searchText}%`,
-                            false
-                        ),
-                        new AspectQuery(
-                            "dcat-dataset-strings.themes",
-                            AspectQueryOperators.patternMatch,
-                            `%${searchText}%`,
-                            false
-                        ),
-                        new AspectQuery(
-                            "dcat-dataset-strings.keywords",
-                            AspectQueryOperators.patternMatch,
-                            `%${searchText}%`,
-                            false
-                        )
-                    ]);
-                }
-            }
             return await fetchRecords(opts);
         },
-        [props.datasetType, props.searchText, pageToken]
+        [props.datasetType, props.searchText, props.userId, offset]
     );
+
+    const overAllLoading = loading || datasetCountIsLoading;
+    const overAllError = error ? error : datasetCountError;
 
     return (
         <>
@@ -240,13 +170,18 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
                 <thead>
                     <tr>
                         <th>Dataset title</th>
-                        <th className="date-col">Update Date</th>
+                        <th className="date-col">Last updated</th>
                         <th className="edit-button-col">&nbsp;</th>
                     </tr>
                 </thead>
 
                 <tbody>
-                    {createRows(datasetType, result?.records, loading, error)}
+                    {createRows(
+                        datasetType,
+                        result?.records,
+                        overAllLoading,
+                        overAllError
+                    )}
                 </tbody>
             </table>
             <hr className="grid-bottom-divider" />
@@ -254,25 +189,45 @@ const DatasetGrid: FunctionComponent<PropsType> = (props) => {
                 <button
                     className="next-page-button"
                     disabled={
-                        result?.hasMore === true && !loading ? false : true
+                        !datasetCount ||
+                        offset + PAGE_SIZE >= datasetCount ||
+                        overAllLoading ||
+                        overAllError
+                            ? true
+                            : false
                     }
-                    onClick={() => {
-                        setPageToken(
-                            result?.nextPageToken ? result.nextPageToken : ""
-                        );
-                    }}
+                    onClick={() =>
+                        setPageOffset(
+                            (currentOffset) => currentOffset + PAGE_SIZE
+                        )
+                    }
                 >
                     Next page
                 </button>
-                {result?.hasMore !== true && pageToken && !loading ? (
-                    <button
-                        className="first-page-button"
-                        onClick={() => {
-                            setPageToken("");
-                        }}
-                    >
-                        First page
-                    </button>
+                <button
+                    className="first-page-button"
+                    disabled={
+                        !offset || overAllLoading || overAllError ? true : false
+                    }
+                    onClick={() => {
+                        setPageOffset((currentOffset) => {
+                            const offset = currentOffset - PAGE_SIZE;
+                            return offset < 0 ? 0 : offset;
+                        });
+                    }}
+                >
+                    Previous page
+                </button>
+                {!overAllLoading && !overAllError ? (
+                    <div className="page-idx-info-area">
+                        {(() => {
+                            const totalCount = offset + PAGE_SIZE;
+                            return totalCount > (datasetCount as number)
+                                ? datasetCount
+                                : totalCount;
+                        })()}{" "}
+                        / {datasetCount}
+                    </div>
                 ) : null}
             </div>
         </>
