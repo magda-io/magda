@@ -260,8 +260,6 @@ export default async function processFile(
                         throw new Error("Could not delete file");
                     }
                 } catch (e) {
-                    console.error(e);
-
                     // This happens if the DELETE fails, which is really catastrophic.
                     // We need to warn the user that manual cleanup may be required.
                     throw new UserVisibleError(

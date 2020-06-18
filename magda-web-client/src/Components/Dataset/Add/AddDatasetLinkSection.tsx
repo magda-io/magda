@@ -19,7 +19,7 @@ type Props = {
     editDistribution: (
         index: number
     ) => (updater: (distribution: Distribution) => Distribution) => void;
-    deleteDistribution: (index: number) => () => void;
+    deleteDistribution: (distId: string) => () => any;
     setMetadataState: (updater: (state: State) => State) => void;
 };
 
@@ -30,7 +30,7 @@ const AddDatasetLinkSection = (props: Props) => {
     const [processingErrorMessage, setProcessingErrorMessage] = useState("");
     const distributions = props.distributions
         .map((item, idx) => ({ distribution: item, idx }))
-        .filter(item => item.distribution.creationSource === props.type);
+        .filter((item) => item.distribution.creationSource === props.type);
 
     const fetchUrl = () => {
         if (!isUrl(url)) {
@@ -93,7 +93,7 @@ const AddDatasetLinkSection = (props: Props) => {
                     <>
                         <div className="row link-items-section">
                             <div className="col-sm-12">
-                                {distributions.map(item => (
+                                {distributions.map((item) => (
                                     <DatasetLinkItem
                                         idx={item.idx}
                                         key={item.idx}
@@ -102,14 +102,16 @@ const AddDatasetLinkSection = (props: Props) => {
                                         editDistribution={props.editDistribution(
                                             item.idx
                                         )}
-                                        deleteDistribution={props.deleteDistribution(
-                                            item.idx
-                                        )}
+                                        deleteDistribution={() =>
+                                            props.deleteDistribution(
+                                                item.distribution.id!
+                                            )
+                                        }
                                         setMetadataState={
                                             props.setMetadataState
                                         }
                                         onProcessingComplete={() => setUrl("")}
-                                        onProcessingError={e =>
+                                        onProcessingError={(e) =>
                                             setProcessingErrorMessage(
                                                 "" + (e.message ? e.message : e)
                                             )
@@ -169,8 +171,8 @@ const AddDatasetLinkSection = (props: Props) => {
                         validationErrorMessage ? "invalid" : ""
                     }`}
                     placeholder="Enter the download URL"
-                    onChange={e => setUrl(e.target.value)}
-                    onKeyUp={e => {
+                    onChange={(e) => setUrl(e.target.value)}
+                    onKeyUp={(e) => {
                         if (e.keyCode === 13) {
                             fetchUrl();
                         }

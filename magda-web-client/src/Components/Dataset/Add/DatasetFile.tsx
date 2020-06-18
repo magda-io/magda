@@ -165,7 +165,7 @@ export default function DatasetFile({
 }: {
     idx: number;
     file: Distribution;
-    onDelete: () => void;
+    onDelete: () => any;
     onChange: (updater: (file: Distribution) => Distribution) => void;
 }) {
     const [editMode, setEditMode] = useState(false);

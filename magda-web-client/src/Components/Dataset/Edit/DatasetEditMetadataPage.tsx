@@ -19,8 +19,7 @@ import {
 import {
     State,
     DistributionState,
-    submitDatasetFromState,
-    saveState
+    submitDatasetFromState
 } from "../Add/DatasetAddCommon";
 import DetailsAndContents from "../Add/Pages/DetailsAndContents";
 import DatasetAddPeoplePage from "../Add/Pages/People/DatasetAddPeoplePage";

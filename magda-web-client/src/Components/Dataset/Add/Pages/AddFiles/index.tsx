@@ -28,6 +28,7 @@ import "./index.scss";
 import "../../DatasetAddCommon.scss";
 import UserVisibleError from "helpers/UserVisibleError";
 import processFile from "./processFile";
+import deleteDistribution from "./deleteDistribution";
 
 type Props = {
     edit: <K extends keyof State>(
@@ -277,115 +278,6 @@ class AddFilesPage extends React.Component<Props> {
         this.updateLastModifyDate();
     };
 
-    deleteDistribution = (index: number) => () => {
-        const removeDist = () => {
-            this.props.setState((state: State) => {
-                const newDistributions = state.distributions.filter(
-                    (item, idx) => {
-                        if (idx === index) return false;
-                        return true;
-                    }
-                );
-                return {
-                    ...state,
-                    distributions: newDistributions
-                };
-            });
-        };
-
-        if (this.props.stateData.shouldUploadToStorageApi) {
-            const distToDelete = this.props.stateData.distributions[index];
-            if (!AddFilesPage.canDeleteFile(distToDelete)) {
-                throw new Error(
-                    "Tried to delete file that hasn't been fully processed"
-                );
-            }
-
-            // set deleting
-            this.props.setState((state: State) => {
-                const newDistributions = state.distributions.concat();
-                newDistributions[index] = {
-                    ...distToDelete,
-                    _state: DistributionState.Deleting,
-                    _progress: 50
-                };
-
-                return {
-                    ...state,
-                    distributions: newDistributions
-                };
-            });
-
-            // warn before closing tab
-            this.deleteFile(distToDelete).then(() =>
-                // remove dist from state
-                removeDist()
-            );
-        } else {
-            removeDist();
-        }
-    };
-
-    /**
-     * Deletes the file belonging to a distribution
-     */
-    private deleteFile(distToDelete: Distribution) {
-        // While delete is in progress, warn the user not to close the tab if they try
-        const unloadEventListener = (e: BeforeUnloadEvent) => {
-            // Preventing default makes a warning come up in FF
-            e.preventDefault();
-            // Setting a return value shows the warning in Chrome
-            e.returnValue =
-                "Closing this page might cause the file not to be fully deleted, are you sure?";
-            // The return value is shown inside the prompt in IE
-        };
-
-        window.addEventListener("beforeunload", unloadEventListener);
-
-        // fetch to delete distribution - try to delete even if we hadn't completed the initial upload
-        // just to be safe
-        return fetch(
-            `${config.storageApiUrl}${baseStorageApiPath(
-                this.props.datasetId,
-                distToDelete.id!
-            )}`,
-            {
-                ...config.credentialsFetchOptions,
-                method: "DELETE"
-            }
-        )
-            .then((res) => {
-                // Even a delete on a non-existent file returns 200
-                if (res.status !== 200) {
-                    throw new Error("Could not delete file");
-                }
-            })
-            .catch((err) => {
-                this.setState({
-                    e: new Error(
-                        `Failed to remove file ${distToDelete.title} from Magda's storage. If you removed this ` +
-                            `file because it shouldn't be stored on Magda, please contact ${config.defaultContactEmail}` +
-                            `to ensure that it's properly removed.`
-                    )
-                });
-                console.error(err);
-            })
-            .finally(() => {
-                window.removeEventListener("beforeunload", unloadEventListener);
-            });
-    }
-
-    /**
-     * Determines whether it's safe to try to delete a distribution's file in the storage API - i.e.
-     * it's in a status where it's finished processing.
-     */
-    private static canDeleteFile(distribution: Distribution) {
-        return (
-            distribution._state === DistributionState.Ready ||
-            distribution._state === DistributionState.Drafting
-        );
-    }
-
     renderStorageOption() {
         const state = this.props.stateData;
         const localFiles = state.distributions.filter(
@@ -436,6 +328,22 @@ class AddFilesPage extends React.Component<Props> {
         const localFiles = state.distributions.filter(
             (file) => file.creationSource === DistributionSource.File
         );
+
+        const deleteDistributionHandler = (distId: string) => () => {
+            deleteDistribution(
+                this.props.datasetId,
+                this.props.setState,
+                this.props.stateData.shouldUploadToStorageApi,
+                distId
+            ).catch((e) => {
+                console.error(e);
+                if (e instanceof UserVisibleError) {
+                    this.props.setState({
+                        error: e
+                    });
+                }
+            });
+        };
 
         return (
             <div
@@ -513,8 +421,8 @@ class AddFilesPage extends React.Component<Props> {
                                             idx={i}
                                             file={file}
                                             onChange={this.editDistribution(i)}
-                                            onDelete={this.deleteDistribution(
-                                                i
+                                            onDelete={deleteDistributionHandler(
+                                                file.id!
                                             )}
                                         />
                                     </div>
@@ -559,7 +467,7 @@ class AddFilesPage extends React.Component<Props> {
                     distributions={state.distributions}
                     addDistribution={this.addDistribution}
                     editDistribution={this.editDistribution}
-                    deleteDistribution={this.deleteDistribution}
+                    deleteDistribution={deleteDistributionHandler}
                     setMetadataState={this.props.setState}
                 />
 
@@ -568,7 +476,7 @@ class AddFilesPage extends React.Component<Props> {
                     distributions={state.distributions}
                     addDistribution={this.addDistribution}
                     editDistribution={this.editDistribution}
-                    deleteDistribution={this.deleteDistribution}
+                    deleteDistribution={deleteDistributionHandler}
                     setMetadataState={this.props.setState}
                 />
             </div>
