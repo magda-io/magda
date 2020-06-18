@@ -280,15 +280,9 @@ class DefaultRecordPersistence(config: Config)
           SQLSyntax.roundBracket(sqlPart)
         case _ => SQLSyntax.empty
       },
-      if (aspectOrQueries.size == 1) {
-        // When only one aspectOrQueries present, we should join aspectQueries and aspectOrQueries with `OR`
-        // otherwise, aspectOrQueries works as `AND`
-        SQLSyntax.or
-      } else {
-        SQLSyntax.and
-      }
+      SQLSyntax.and
     ) match {
-      // --- use () to wrap all conditions as it's `OR` between `aspectQueries` & `aspectOrQueries`
+      // --- use () to wrap all conditions from AspectQuery
       case sqlPart if sqlPart.value.nonEmpty =>
         Some(SQLSyntax.roundBracket(sqlPart))
       case _ => None
@@ -1460,6 +1454,12 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       orderBy: Option[OrderByDef] = None
   ): RecordsPage[Record] = {
 
+    if (orderBy.isDefined && pageToken.isDefined) {
+      throw new Error(
+        "`orderBy` and `pageToken` parameters cannot be both specified."
+      )
+    }
+
     val recordsFilteredByTenantClause: SQLSyntax = filterRecordsByTenantClause(
       tenantId
     )
@@ -1759,12 +1759,6 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       opaSql
     )
     result
-  }
-
-  private object ColumnNamePrefixType extends Enumeration {
-    type ColumnNamePrefixType
-    val PREFIX_TEMP: ColumnNamePrefixType.Value = Value(0, "temp")
-    val PREFIX_EMPTY: ColumnNamePrefixType.Value = Value(1, "")
   }
 
   private def getAspectColumnName(

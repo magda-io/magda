@@ -44,6 +44,8 @@ export const aspectSchemas = {
     "ckan-export": ckanExportAspect
 };
 
+export type DatasetTypes = "drafts" | "published";
+
 export function createPublisher(inputRecord: Publisher) {
     return createRecord(inputRecord);
 }
@@ -148,11 +150,23 @@ export class AspectQuery {
         }
     }
 
+    /**
+     * We use URLDecode.decode to decode query string value.
+     * To make sure `application/x-www-form-urlencoded` encoded string reach aspectQuery parser
+     * This ensures `%` is encoded as `%2525` in the final url string
+     *
+     * @param {string} str
+     * @returns
+     * @memberof AspectQuery
+     */
+    encodeAspectQueryComponent(str: string) {
+        return encodeURIComponent(formUrlencode(str));
+    }
+
     toString() {
-        // --- need to `encodeURIComponent` the formUrlencode result to ensure formatted string reach parser
-        return `${encodeURIComponent(formUrlencode(this.path))}${
+        return `${this.encodeAspectQueryComponent(this.path)}${
             this.operator
-        }${encodeURIComponent(formUrlencode(String(this.value)))}`;
+        }${this.encodeAspectQueryComponent(String(this.value))}`;
     }
 }
 
@@ -345,11 +359,17 @@ export async function fetchRecords({
     }
 }
 
+export type FetchRecordsCountOptions = {
+    aspectQueries?: AspectQuery[];
+    aspects?: string[];
+    noCache?: boolean;
+};
+
 export async function fetchRecordsCount({
     aspectQueries,
     aspects,
     noCache
-}: FetchRecordsOptions): Promise<RawDataset[]> {
+}: FetchRecordsCountOptions): Promise<number> {
     const parameters: string[] = [];
 
     if (aspects?.length) {

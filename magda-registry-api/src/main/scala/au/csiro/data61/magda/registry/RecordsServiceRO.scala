@@ -57,10 +57,12 @@ class RecordsServiceRO(
     *   Support the following operators in aspectQuery or `aspectOrQuery`:
     *   - `:` equal
     *   - `:!`  not equal
-    *   - `:?`  match a field that matches a pattern / Regular Expression. Use Postgresql [SIMILAR TO](https://www.postgresql.org/docs/8.3/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP) operator.
+    *   - `:?`  matches a pattern, case insensitive. Use Postgresql [ILIKE](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-LIKE) operator.
     *     - e.g. `:?%rating%` will match the field contains keyword `rating`
     *     - e.g. `:?rating%` will match the field starts with keyword `rating`
-    *   - `:!?` match a field that doe not matches a pattern / Regular Expression. Use Postgresql [SIMILAR TO](https://www.postgresql.org/docs/8.3/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP) operator
+    *   - `:!?` does not match a pattern, case insensitive. Use Postgresql [NOT ILIKE](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-LIKE) operator
+    *   - `:~`  matches POSIX regular expression, case insensitive. Use Postgresql [~*](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-POSIX-REGEXP) operator
+    *   - `:!~` does not match POSIX regular expression, case insensitive. Use Postgresql [!~*](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-POSIX-REGEXP) operator
     *   - `:>`  greater than
     *   - `:>=` greater than or equal to
     *   - `:<`  less than
@@ -86,11 +88,14 @@ class RecordsServiceRO(
     *
     *   NOTE: This is an early stage API and may change greatly in the future
     *
-    * @apiParam (query) {string} orderBy Specify the field to sort the result. Aspect field can be supported in a format like aspectId.path.to.field
+    * @apiParam (query) {string} orderBy Specify the field to sort the result. Aspect field can be supported in a format like aspectId.path.to.field.
     *
-    *   If `orderBy` reference an aspects that is not included by either `aspect` or `optionalAspect` parameters, it will be added to the `optionalAspect` list.
+    *   If orderBy reference an aspects that is not included by either `aspect` or `optionalAspect` parameters, it will be added to the `optionalAspect` list.
     *
-    * @apiParam (query) {string} orderByDir Specify the order by direction. Either `asc` or `desc`
+    *   Please Note: When `orderBy` is specified, `pageToken` parameter is not available. You should use `start` & `limit` instead for pagination purpose.
+    *
+    * @apiParam (query) {string} orderByDir Specify the order by direction. Either `asc` or `desc`. `desc` order is the default.
+    * @apiParam (query) {boolean} orderNullFirst Specify whether nulls appear before (`true`) or after (`false`) non-null values in the sort ordering. Default to `false`.
     * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiSuccess (Success 200) {json} Response the record detail
@@ -204,6 +209,15 @@ class RecordsServiceRO(
         value = "Specify the order by direction. Either `asc` or `desc`"
       ),
       new ApiImplicitParam(
+        name = "orderNullFirst",
+        required = false,
+        dataType = "boolean",
+        paramType = "query",
+        allowMultiple = false,
+        value =
+          "Specify whether nulls appear before (`true`) or after (`false`) non-null values in the sort ordering."
+      ),
+      new ApiImplicitParam(
         name = "X-Magda-Tenant-Id",
         required = true,
         dataType = "number",
@@ -232,7 +246,8 @@ class RecordsServiceRO(
           'aspectQuery.*,
           'aspectOrQuery.*,
           'orderBy.as[String].?,
-          'orderByDir.as[String].?
+          'orderByDir.as[String].?,
+          'orderNullFirst.as[Boolean].?
         ) {
           (
               aspects,
@@ -244,7 +259,8 @@ class RecordsServiceRO(
               aspectQueries,
               aspectOrQueries,
               orderBy,
-              orderByDir
+              orderByDir,
+              orderNullFirst
           ) =>
             val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
             val parsedAspectOrQueries = aspectOrQueries.map(AspectQuery.parse)
@@ -264,42 +280,57 @@ class RecordsServiceRO(
             ) { opaQueries =>
               opaQueries match {
                 case (recordQueries, linkedRecordQueries) =>
-                  complete {
-                    DB readOnly { session =>
-                      recordPersistence.getAllWithAspects(
-                        session,
-                        tenantId,
-                        aspects,
-                        optionalAspects,
-                        recordQueries,
-                        linkedRecordQueries,
-                        pageToken,
-                        start,
-                        limit,
-                        dereference,
-                        parsedAspectQueries,
-                        parsedAspectOrQueries,
-                        orderBy match {
-                          case Some(field) =>
-                            Some(
-                              OrderByDef(
-                                field,
-                                orderByDir match {
-                                  case Some("asc")  => SQLSyntax.asc
-                                  case Some("desc") => SQLSyntax.desc
-                                  case None         => SQLSyntax.desc
-                                  case _ =>
-                                    throw new Error(
-                                      s"Invalid orderByDir parameter: ${orderByDir.toString}"
-                                    )
-                                }
-                              )
-                            )
-                          case _ => None
-                        }
+                  if (orderBy.isDefined && pageToken.isDefined) {
+                    complete(
+                      StatusCodes.BadRequest,
+                      ApiError(
+                        "When `orderBy` parameter is specified, `pageToken` parameter is not supported. Use `start` instead."
                       )
+                    )
+                  } else {
+                    complete {
+                      DB readOnly { session =>
+                        recordPersistence.getAllWithAspects(
+                          session,
+                          tenantId,
+                          aspects,
+                          optionalAspects,
+                          recordQueries,
+                          linkedRecordQueries,
+                          pageToken,
+                          start,
+                          limit,
+                          dereference,
+                          parsedAspectQueries,
+                          parsedAspectOrQueries,
+                          orderBy match {
+                            case Some(field) =>
+                              Some(
+                                OrderByDef(
+                                  field,
+                                  orderByDir match {
+                                    case Some("asc")  => SQLSyntax.asc
+                                    case Some("desc") => SQLSyntax.desc
+                                    case None         => SQLSyntax.desc
+                                    case _ =>
+                                      throw new Error(
+                                        s"Invalid orderByDir parameter: ${orderByDir.toString}"
+                                      )
+                                  },
+                                  orderNullFirst match {
+                                    case Some(true)  => true
+                                    case Some(false) => false
+                                    case _           => false
+                                  }
+                                )
+                              )
+                            case _ => None
+                          }
+                        )
+                      }
                     }
                   }
+
               }
             }
         }
@@ -433,10 +464,12 @@ class RecordsServiceRO(
     *   Support the following operators in aspectQuery or `aspectOrQuery`:
     *   - `:` equal
     *   - `:!`  not equal
-    *   - `:?`  match a field that matches a pattern / Regular Expression. Use Postgresql [SIMILAR TO](https://www.postgresql.org/docs/8.3/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP) operator.
+    *   - `:?`  matches a pattern, case insensitive. Use Postgresql [ILIKE](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-LIKE) operator.
     *     - e.g. `:?%rating%` will match the field contains keyword `rating`
     *     - e.g. `:?rating%` will match the field starts with keyword `rating`
-    *   - `:!?` match a field that doe not matches a pattern / Regular Expression. Use Postgresql [SIMILAR TO](https://www.postgresql.org/docs/8.3/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP) operator
+    *   - `:!?` does not match a pattern, case insensitive. Use Postgresql [NOT ILIKE](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-LIKE) operator
+    *   - `:~`  matches POSIX regular expression, case insensitive. Use Postgresql [~*](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-POSIX-REGEXP) operator
+    *   - `:!~` does not match POSIX regular expression, case insensitive. Use Postgresql [!~*](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-POSIX-REGEXP) operator
     *   - `:>`  greater than
     *   - `:>=` greater than or equal to
     *   - `:<`  less than
@@ -446,9 +479,7 @@ class RecordsServiceRO(
     *
     *   `/v0/records?limit=100&optionalAspect=source&aspect=dcat-dataset-strings&aspectQuery=dcat-dataset-strings.title:?%2525rating%2525`
     *
-    *   Please note: when both `aspectQuery` and `aspectOrQuery` present:
-    *   - if there is only ONE `aspectOrQuery` specified, query conditions generated from `aspectQuery` and `aspectOrQuery` will be joined with `OR`
-    *   - otherwise, they will be joined with `AND`
+    *   Please note: when both `aspectQuery` and `aspectOrQuery` present, query conditions generated from `aspectQuery` and `aspectOrQuery` will be joined with `AND`
     *
     *   e.g. For the following `aspectQuery` & `aspectOrQuery` queries are specified:
     *   - `aspectQuery`:
@@ -468,7 +499,7 @@ class RecordsServiceRO(
     *   - `aspectOrQuery`:
     *     - q3
     *
-    *   The generated query conditions will be `((q1 AND q2) OR q3 )`
+    *   The generated query conditions will be `((q1 AND q2) AND q3 )`. This is equivalent to set `aspectQuery` only as `q1`, `q2` and `q3`.
     *   <br/><br/><br/>
     *   NOTE: This is an early stage API and may change greatly in the future.
     *
