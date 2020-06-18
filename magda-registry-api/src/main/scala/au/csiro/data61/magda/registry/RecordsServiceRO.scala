@@ -57,10 +57,12 @@ class RecordsServiceRO(
     *   Support the following operators in aspectQuery or `aspectOrQuery`:
     *   - `:` equal
     *   - `:!`  not equal
-    *   - `:?`  match a field that matches a pattern / Regular Expression. Use Postgresql [SIMILAR TO](https://www.postgresql.org/docs/8.3/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP) operator.
+    *   - `:?`  matches a pattern, case insensitive. Use Postgresql [ILIKE](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-LIKE) operator.
     *     - e.g. `:?%rating%` will match the field contains keyword `rating`
     *     - e.g. `:?rating%` will match the field starts with keyword `rating`
-    *   - `:!?` match a field that doe not matches a pattern / Regular Expression. Use Postgresql [SIMILAR TO](https://www.postgresql.org/docs/8.3/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP) operator
+    *   - `:!?` does not match a pattern, case insensitive. Use Postgresql [NOT ILIKE](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-LIKE) operator
+    *   - `:~`  matches POSIX regular expression, case insensitive. Use Postgresql [~*](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-POSIX-REGEXP) operator
+    *   - `:!~` does not match POSIX regular expression, case insensitive. Use Postgresql [!~*](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-POSIX-REGEXP) operator
     *   - `:>`  greater than
     *   - `:>=` greater than or equal to
     *   - `:<`  less than
@@ -462,10 +464,12 @@ class RecordsServiceRO(
     *   Support the following operators in aspectQuery or `aspectOrQuery`:
     *   - `:` equal
     *   - `:!`  not equal
-    *   - `:?`  match a field that matches a pattern / Regular Expression. Use Postgresql [SIMILAR TO](https://www.postgresql.org/docs/8.3/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP) operator.
+    *   - `:?`  matches a pattern, case insensitive. Use Postgresql [ILIKE](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-LIKE) operator.
     *     - e.g. `:?%rating%` will match the field contains keyword `rating`
     *     - e.g. `:?rating%` will match the field starts with keyword `rating`
-    *   - `:!?` match a field that doe not matches a pattern / Regular Expression. Use Postgresql [SIMILAR TO](https://www.postgresql.org/docs/8.3/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP) operator
+    *   - `:!?` does not match a pattern, case insensitive. Use Postgresql [NOT ILIKE](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-LIKE) operator
+    *   - `:~`  matches POSIX regular expression, case insensitive. Use Postgresql [~*](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-POSIX-REGEXP) operator
+    *   - `:!~` does not match POSIX regular expression, case insensitive. Use Postgresql [!~*](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-POSIX-REGEXP) operator
     *   - `:>`  greater than
     *   - `:>=` greater than or equal to
     *   - `:<`  less than
