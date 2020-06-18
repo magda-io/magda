@@ -62,6 +62,7 @@ UI:
 -   Bugfix: Read raw value from CSV files
 -   Add a flag `placeholderWorkflowsOn` to hide UI components that are not complete yet
 -   Add `MyDatasets` Section to Homepage (after logged in)
+-   Always set dataset publishing state to "published" no matter the approval flow is on / off
 
 Storage:
 

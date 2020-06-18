@@ -2089,7 +2089,7 @@ class RecordsServiceSpec extends ApiSpec {
         }
 
         it(
-          "should work with `:?` match a field that matches a pattern / Regular Expression"
+          "should work with `:?` match a field that matches a pattern (case insenstive)"
         ) { implicit param =>
           createAspect(AspectDefinition("test-aspect-1", "test aspect", None))
 
@@ -2112,7 +2112,7 @@ class RecordsServiceSpec extends ApiSpec {
               "record 2",
               Map(
                 "test-aspect-1" -> JsObject(
-                  "key1" -> JsString("another test value")
+                  "key1" -> JsString("another tESt value")
                 )
               ),
               Some("source-tag")
@@ -2154,33 +2154,10 @@ class RecordsServiceSpec extends ApiSpec {
             val countResponse = responseAs[CountResponse]
             countResponse.count shouldBe 2
           }
-
-          // --- match regex %[0-9]% (string contains at least one digit)
-          Get(
-            s"/v0/records?aspectQuery=test-aspect-1.key1:?%2525%255B0-9%255D%2525"
-          ) ~> addTenantIdHeader(TENANT_1) ~> param
-            .api(role)
-            .routes ~> check {
-            status shouldEqual StatusCodes.OK
-            val page = responseAs[RecordsPage[Record]]
-            page.records.length shouldBe 2
-            page.records(0).id shouldBe "record-1"
-            page.records(1).id shouldBe "record-3"
-          }
-
-          Get(
-            s"/v0/records/count?aspectQuery=test-aspect-1.key1:?%2525%255B0-9%255D%2525"
-          ) ~> addTenantIdHeader(TENANT_1) ~> param
-            .api(role)
-            .routes ~> check {
-            status shouldEqual StatusCodes.OK
-            val countResponse = responseAs[CountResponse]
-            countResponse.count shouldBe 2
-          }
         }
 
         it(
-          "should work with `:!?` match a field that does not matches a pattern / Regular Expression"
+          "should work with `:!?` match a field that does not matches a pattern (case insenstive)"
         ) { implicit param =>
           createAspect(AspectDefinition("test-aspect-1", "test aspect", None))
 
@@ -2203,7 +2180,7 @@ class RecordsServiceSpec extends ApiSpec {
               "record 2",
               Map(
                 "test-aspect-1" -> JsObject(
-                  "key1" -> JsString("another test value")
+                  "key1" -> JsString("another tESt value")
                 )
               ),
               Some("source-tag")
@@ -2244,21 +2221,140 @@ class RecordsServiceSpec extends ApiSpec {
             val countResponse = responseAs[CountResponse]
             countResponse.count shouldBe 1
           }
+        }
 
-          // --- match regex %[0-9]% (string contains at least one digit)
+        it(
+          "should work with `:~` match a field that matches a POSIX regular expression (case insenstive)"
+        ) { implicit param =>
+          createAspect(AspectDefinition("test-aspect-1", "test aspect", None))
+
+          createRecord(
+            Record(
+              "record-1",
+              "record 1",
+              Map(
+                "test-aspect-1" -> JsObject(
+                  "key1" -> JsString("test-value-1")
+                )
+              ),
+              Some("source-tag")
+            )
+          )
+
+          createRecord(
+            Record(
+              "record-2",
+              "record 2",
+              Map(
+                "test-aspect-1" -> JsObject(
+                  "key1" -> JsString("another tESt12 value")
+                )
+              ),
+              Some("source-tag")
+            )
+          )
+
+          createRecord(
+            Record(
+              "record-3",
+              "record 3",
+              Map(
+                "test-aspect-1" -> JsObject(
+                  "key1" -> JsString("new-test67-5")
+                )
+              ),
+              Some("source-tag")
+            )
+          )
+
+          // --- match pattern ^.*test\d+.*$
+          // --- encoded as `application/x-www-form-urlencoded`: %5E.%2Atest%5Cd%2B.%2A%24
+          // --- replaced % with %25 to make sure aspectQuery value still stay in `application/x-www-form-urlencoded` format after url decoding
+          // --- %255E.%252Atest%255Cd%252B.%252A%2524
           Get(
-            s"/v0/records?aspectQuery=test-aspect-1.key1:!?%2525%255B0-9%255D%2525"
+            s"/v0/records?aspectQuery=test-aspect-1.key1:~%255E.%252Atest%255Cd%252B.%252A%2524"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val page = responseAs[RecordsPage[Record]]
+            page.records.length shouldBe 2
+            page.records(0).id shouldBe "record-2"
+            page.records(1).id shouldBe "record-3"
+          }
+
+          Get(
+            s"/v0/records/count?aspectQuery=test-aspect-1.key1:~%255E.%252Atest%255Cd%252B.%252A%2524"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            val countResponse = responseAs[CountResponse]
+            countResponse.count shouldBe 2
+          }
+        }
+
+        it(
+          "should work with `:!~` match a field that does not matches a POSIX regular expression (case insenstive)"
+        ) { implicit param =>
+          createAspect(AspectDefinition("test-aspect-1", "test aspect", None))
+
+          createRecord(
+            Record(
+              "record-1",
+              "record 1",
+              Map(
+                "test-aspect-1" -> JsObject(
+                  "key1" -> JsString("test-value-1")
+                )
+              ),
+              Some("source-tag")
+            )
+          )
+
+          createRecord(
+            Record(
+              "record-2",
+              "record 2",
+              Map(
+                "test-aspect-1" -> JsObject(
+                  "key1" -> JsString("another tESt12 value")
+                )
+              ),
+              Some("source-tag")
+            )
+          )
+
+          createRecord(
+            Record(
+              "record-3",
+              "record 3",
+              Map(
+                "test-aspect-1" -> JsObject(
+                  "key1" -> JsString("new-test67-5")
+                )
+              ),
+              Some("source-tag")
+            )
+          )
+
+          // --- match pattern ^.*test\d+.*$
+          // --- encoded as `application/x-www-form-urlencoded`: %5E.%2Atest%5Cd%2B.%2A%24
+          // --- replaced % with %25 to make sure aspectQuery value still stay in `application/x-www-form-urlencoded` format after url decoding:
+          // --- %255E.%252Atest%255Cd%252B.%252A%2524
+          Get(
+            s"/v0/records?aspectQuery=test-aspect-1.key1:!~%255E.%252Atest%255Cd%252B.%252A%2524"
           ) ~> addTenantIdHeader(TENANT_1) ~> param
             .api(role)
             .routes ~> check {
             status shouldEqual StatusCodes.OK
             val page = responseAs[RecordsPage[Record]]
             page.records.length shouldBe 1
-            page.records(0).id shouldBe "record-2"
+            page.records(0).id shouldBe "record-1"
           }
 
           Get(
-            s"/v0/records/count?aspectQuery=test-aspect-1.key1:!?%2525%255B0-9%255D%2525"
+            s"/v0/records/count?aspectQuery=test-aspect-1.key1:!~%255E.%252Atest%255Cd%252B.%252A%2524"
           ) ~> addTenantIdHeader(TENANT_1) ~> param
             .api(role)
             .routes ~> check {

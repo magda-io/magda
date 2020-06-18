@@ -69,8 +69,10 @@ object AspectQuery {
     * Support the following operators for with value query in `aspectQuery` or aspectOrQuery`:
     * `:`   equal
     * `:!`  not equal
-    * `:?`  match a field that macthes a pattern pattern / Regular Expression. Use Postgresql [SIMILAR TO](https://www.postgresql.org/docs/8.3/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP) operator.
-    * `:!?` match a field that doe not macthes a pattern pattern / Regular Expression. Use Postgresql [SIMILAR TO](https://www.postgresql.org/docs/8.3/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP) operator
+    * `:?`  matches a pattern, case insensitive. Use Postgresql [ILIKE](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-LIKE) operator.
+    * `:!?` does not match a pattern, case insensitive. Use Postgresql [NOT ILIKE](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-LIKE) operator
+    * `:~`  matches POSIX regular expression, case insensitive. Use Postgresql [~*](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-POSIX-REGEXP) operator
+    * `:!~` does not match POSIX regular expression, case insensitive. Use Postgresql [!~*](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-POSIX-REGEXP) operator
     * `:>`  greater than
     * `:>=` greater than or equal to
     * `:<`  less than
@@ -80,7 +82,7 @@ object AspectQuery {
     * Example URL with aspectQuery: dcat-dataset-strings.title:?%rating% (Search keyword `rating` in `dcat-dataset-strings` aspect `title` field)
     * /v0/records?limit=100&optionalAspect=source&aspect=dcat-dataset-strings&aspectQuery=dcat-dataset-strings.title:?%2525rating%2525
     */
-  val operatorValueRegex = raw"^(.+)(:[!><=?]*)(.+)$$".r
+  val operatorValueRegex = raw"^(.+)(:[!><=?~]*)(.+)$$".r
   val numericValueRegex = raw"[-0-9.]+".r
 
   def parse(string: String): AspectQuery = {
@@ -118,12 +120,22 @@ object AspectQuery {
           (SQLSyntax.createUnsafely("="), AspectQueryString(valueStr))
         case ":?" =>
           (
-            SQLSyntax.createUnsafely("SIMILAR TO"),
+            SQLSyntax.createUnsafely("ILIKE"),
             AspectQueryString(valueStr)
           )
         case ":!?" =>
           (
-            SQLSyntax.createUnsafely("NOT SIMILAR TO"),
+            SQLSyntax.createUnsafely("NOT ILIKE"),
+            AspectQueryString(valueStr)
+          )
+        case ":~" =>
+          (
+            SQLSyntax.createUnsafely("~*"),
+            AspectQueryString(valueStr)
+          )
+        case ":!~" =>
+          (
+            SQLSyntax.createUnsafely("!~*"),
             AspectQueryString(valueStr)
           )
         case ":>" =>
