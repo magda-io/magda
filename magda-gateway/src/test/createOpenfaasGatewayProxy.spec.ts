@@ -102,10 +102,10 @@ describe("Test createOpenfaasGatewayProxy", () => {
 
         const mockAuthenticator: any = {
             applyToRoute: (app: express.Router) => {
-                app.use((req, res, next) => {
+                app.use((req, _res, next) => {
                     if (typeof userId === "string") {
                         // --- always logged in as user with id `userId`
-                        req.user = {
+                        (req.user as any) = {
                             id: userId
                         };
                     }

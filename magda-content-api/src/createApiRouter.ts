@@ -21,11 +21,18 @@ import {
     createServiceProbe
 } from "magda-typescript-common/src/express/status";
 import AccessControlError from "magda-typescript-common/src/authorization-api/AccessControlError";
+import { MagdaUser } from "magda-typescript-common/src/authorization-api/model";
 
 export interface ApiRouterOptions {
     database: Database;
     jwtSecret: string;
     authApiUrl: string;
+}
+
+declare global {
+    namespace Express {
+        interface User extends MagdaUser {}
+    }
 }
 
 export default function createApiRouter(options: ApiRouterOptions) {
@@ -96,7 +103,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 const contentItem = findContentItemById(item.id);
 
                 if (contentItem && contentItem.private) {
-                    return req.user && req.user.isAdmin;
+                    return req.user?.isAdmin;
                 } else {
                     return true;
                 }

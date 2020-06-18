@@ -4,7 +4,7 @@ import "./SideNavigation.scss";
 
 type PropsType = {};
 
-const SideNavigation: FunctionComponent<PropsType> = props => {
+const SideNavigation: FunctionComponent<PropsType> = (props) => {
     return (
         <div className="side-navigation">
             <div className="sidenav">
