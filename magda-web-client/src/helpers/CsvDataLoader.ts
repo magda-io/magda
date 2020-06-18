@@ -5,7 +5,7 @@ import URI from "urijs";
 import { Parser, ParseResult, ParseError, ParseMeta } from "papaparse";
 import { ParsedDistribution } from "./record";
 
-export interface DataLoadingResult extends ParseResult {
+export interface DataLoadingResult extends ParseResult<any> {
     isPartialData: boolean;
 }
 
@@ -151,7 +151,7 @@ class CsvDataLoader {
                 trimHeader: true,
                 chunkSize: config.csvLoaderChunkSize,
                 // --- the `bind` is required here even for arrow function under worker mode
-                chunk: ((results: ParseResult, parser: Parser) => {
+                chunk: ((results: ParseResult<any>, parser: Parser) => {
                     try {
                         if (this.toBeAbort) {
                             parser.abort();
