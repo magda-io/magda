@@ -29,7 +29,7 @@
     "@types/request": "^2.48.1",
     "@types/sinon": "^2.3.3",
     "@types/supertest": "^2.0.2",
-    "@types/urijs": "^1.15.34",
+    "@types/urijs": "1.19.1",
     "@types/xml2js": "^0.4.0",
     "@types/yargs": "^12.0.8",
     "chai": "^4.1.0",

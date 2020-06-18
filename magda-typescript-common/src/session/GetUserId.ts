@@ -1,6 +1,13 @@
 import { Request, Response } from "express";
 import { Maybe } from "tsmonad";
+import { MagdaUser } from "../authorization-api/model";
 const jwt = require("jsonwebtoken");
+
+declare global {
+    namespace Express {
+        interface User extends MagdaUser {}
+    }
+}
 
 export function getUserId(req: Request, jwtSecret: string): Maybe<string> {
     const jwtToken = req.header("X-Magda-Session");
@@ -14,7 +21,7 @@ export function getUserId(req: Request, jwtSecret: string): Maybe<string> {
             return Maybe.nothing<string>();
         }
     } else {
-        if (req?.user?.id) {
+        if (req.user?.id) {
             return Maybe.just(req.user.id);
         }
         return Maybe.nothing<string>();

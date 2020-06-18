@@ -1,3 +1,14 @@
+declare global {
+    namespace Express {
+        interface User extends MagdaUser {}
+    }
+}
+
+// Exporting MagdaUser as PublicUser because it's not guaranteed
+// that user will have email, source, sourceId, etc
+// Make it export `User` if that's more appropriate
+export type MagdaUser = PublicUser;
+
 export interface PublicUser {
     id?: string;
     displayName: string;
