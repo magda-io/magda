@@ -24,7 +24,7 @@ import {
 import DetailsAndContents from "../Add/Pages/DetailsAndContents";
 import DatasetAddPeoplePage from "../Add/Pages/People/DatasetAddPeoplePage";
 import DatasetAddEndPreviewPage from "../Add/Pages/DatasetAddEndPreviewPage";
-import DatasetAddFilesPage from "../Add/Pages/AddFiles";
+import DatasetEditFilesPage from "./Pages/EditFiles";
 import DatasetAddAccessAndUsePage from "../Add/Pages/DatasetAddAccessAndUsePage";
 import ReviewPage from "../Add/Pages/ReviewPage/index";
 import DatasetAddEndPage from "../Add/Pages/DatasetAddEndPage";
@@ -67,7 +67,7 @@ class EditDataset extends React.Component<Props, State> {
 
     steps: any = [
         () => (
-            <DatasetAddFilesPage
+            <DatasetEditFilesPage
                 edit={this.edit}
                 setState={this.setState.bind(this)}
                 stateData={this.state}
