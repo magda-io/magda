@@ -1,7 +1,6 @@
 import React from "react";
 import FileDrop from "react-file-drop";
 
-import ToolTip from "Components/Dataset/Add/ToolTip";
 import DatasetFile from "Components/Dataset/Add/DatasetFile";
 import AddDatasetLinkSection from "Components/Dataset/Add/AddDatasetLinkSection";
 import StorageOptionsSection from "Components/Dataset/Add/StorageOptionsSection";
@@ -322,9 +321,9 @@ class AddFilesPage extends React.Component<Props> {
     }
 
     render() {
-        const { stateData: state, isEditView } = this.props;
-        const localFiles = state.distributions.filter(
-            (file) => file.creationSource === DistributionSource.File
+        const { stateData: state } = this.props;
+        const readyDistributions = state.distributions.filter(
+            (item) => item._state === DistributionState.Ready
         );
 
         const deleteDistributionHandler = (distId: string) => () => {
@@ -345,68 +344,32 @@ class AddFilesPage extends React.Component<Props> {
 
         return (
             <div
-                className={`container-fluid dataset-add-file-page ${
-                    isEditView ? "is-edit-view" : ""
-                }`}
+                className={`container-fluid dataset-add-file-page is-edit-view`}
             >
-                {isEditView ? null : (
-                    <div className="row top-area-row">
-                        <div className="col-xs-12 top-text-area">
-                            <h1>Add your dataset to pre-populate metadata</h1>
-                            <p>
-                                Our Publishing Tool can review your dataset
-                                contents and pre-populate metadata. Just add all
-                                the files or services that make up your dataset.
-                            </p>
-                            <p>
-                                You can upload your dataset as files, add a link
-                                to files already hosted online, or add a link to
-                                a web service, or any combination of the three.
-                            </p>
-                            <p>
-                                All our processing happens in your internet
-                                browser, we only store a copy of your files if
-                                you ask us to, and you can edit or delete the
-                                metadata at any time.
-                            </p>
-                            <p>
-                                Want to upload your entire data catalogue in one
-                                go? Use our <a>Bulk Upload tool</a>
-                            </p>
-                        </div>
-                    </div>
-                )}
-
                 <div className="row add-files-heading">
                     <div className="col-xs-12">
-                        {isEditView ? (
-                            <h3>Your files and distributions</h3>
-                        ) : (
-                            <h3>Add files</h3>
-                        )}
+                        <h3>Your files and distributions</h3>
+                        <h4>Storage and location</h4>
                         {this.renderStorageOption()}
                     </div>
+                </div>
 
-                    {localFiles.length > 0 && (
-                        <div className="col-xs-12 tip-area">
-                            <ToolTip>
-                                We recommend ensuring dataset file names are
-                                descriptive so users can easily understand the
-                                contents.
-                            </ToolTip>
-                        </div>
-                    )}
+                <h4 className="dataset-contents-heading">Dataset contents</h4>
+                <div className="dataset-contents-sub-heading">
+                    Existing contents:
                 </div>
 
                 <div className="row files-area">
                     <div className="col-xs-12">
                         <div className="row">
-                            {localFiles.map((file: Distribution, i) => {
+                            {readyDistributions.map((file: Distribution, i) => {
                                 let isLastRow;
-                                if (localFiles.length % 2) {
-                                    isLastRow = i >= localFiles.length - 1;
+                                if (readyDistributions.length % 2) {
+                                    isLastRow =
+                                        i >= readyDistributions.length - 1;
                                 } else {
-                                    isLastRow = i >= localFiles.length - 2;
+                                    isLastRow =
+                                        i >= readyDistributions.length - 2;
                                 }
                                 return (
                                     <div
@@ -436,7 +399,7 @@ class AddFilesPage extends React.Component<Props> {
                             </div>
                         )}
 
-                        {localFiles.length > 0 && (
+                        {readyDistributions.length > 0 && (
                             <div className="more-files-to-add-text">
                                 More files to add?
                             </div>
