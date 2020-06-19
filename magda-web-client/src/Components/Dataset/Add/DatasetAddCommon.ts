@@ -17,6 +17,7 @@ import { User } from "reducers/userManagementReducer";
 import { RawDataset } from "helpers/record";
 import { autocompletePublishers } from "api-clients/SearchApis";
 import ServerError from "./Errors/ServerError";
+import defer from "helpers/defer";
 
 export type Distribution = {
     title: string;
@@ -46,6 +47,8 @@ export type Distribution = {
     id?: string;
     creationSource?: DistributionSource;
     creationMethod?: DistributionCreationMethod;
+    // --- whether it's a distribution user yet to confirm it should be replace existing distribution or not
+    isComfired?: boolean;
     _state: DistributionState;
     _progress?: number;
 };
@@ -742,6 +745,33 @@ export async function saveState(state: State, id = createId()) {
     } else {
         return await saveStateToRegistry(state, id);
     }
+}
+
+/**
+ * Save latest runtime state to storage.
+ * Avoid saving outdated local copy of state
+ * @param datasetId
+ * @param datasetStateUpdater
+ */
+export function saveRuntimeStateToStorage(
+    datasetId: string,
+    datasetStateUpdater: DatasetStateUpdaterType
+): Promise<string> {
+    return new Promise((resolve, reject) => {
+        datasetStateUpdater<State>((state) => {
+            // --- defer the execution to make sure the current updater return immediately
+            defer(async () => {
+                try {
+                    const result = await saveState(state, datasetId);
+                    resolve(result);
+                } catch (e) {
+                    reject(e);
+                }
+            });
+            // --- return the same state to avoid updating state
+            return state;
+        });
+    });
 }
 
 export function createId(type = "ds") {
