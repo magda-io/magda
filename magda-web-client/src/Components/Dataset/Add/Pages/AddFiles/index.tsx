@@ -264,17 +264,15 @@ class AddFilesPage extends React.Component<Props> {
         });
     };
 
-    editDistribution = (index: number) => (
+    editDistribution = (distId: string) => (
         updater: (distribution: Distribution) => Distribution
     ) => {
-        this.props.setState((state: State) => {
-            const newDistributions = state.distributions.concat();
-            newDistributions[index] = updater(newDistributions[index]);
-            return {
-                ...state,
-                distributions: newDistributions
-            };
-        });
+        this.props.setState((state: State) => ({
+            ...state,
+            distributions: [...state.distributions].map((item) =>
+                item.id === distId ? updater(item) : item
+            )
+        }));
         this.updateLastModifyDate();
     };
 
@@ -420,7 +418,9 @@ class AddFilesPage extends React.Component<Props> {
                                         <DatasetFile
                                             idx={i}
                                             file={file}
-                                            onChange={this.editDistribution(i)}
+                                            onChange={this.editDistribution(
+                                                file.id!
+                                            )}
                                             onDelete={deleteDistributionHandler(
                                                 file.id!
                                             )}

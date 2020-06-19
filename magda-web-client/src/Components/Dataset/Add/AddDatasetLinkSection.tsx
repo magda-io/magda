@@ -17,7 +17,7 @@ type Props = {
     distributions: Distribution[];
     addDistribution: (distribution: Distribution) => void;
     editDistribution: (
-        index: number
+        distId: string
     ) => (updater: (distribution: Distribution) => Distribution) => void;
     deleteDistribution: (distId: string) => () => any;
     setMetadataState: (updater: (state: State) => State) => void;
@@ -100,7 +100,7 @@ const AddDatasetLinkSection = (props: Props) => {
                                         distribution={item.distribution}
                                         addDistribution={props.addDistribution}
                                         editDistribution={props.editDistribution(
-                                            item.idx
+                                            item.distribution.id!
                                         )}
                                         deleteDistribution={() =>
                                             props.deleteDistribution(
