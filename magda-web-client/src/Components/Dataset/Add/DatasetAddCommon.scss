@@ -50,6 +50,16 @@
         margin-right: 30px;
     }
 
+    .button-with-icon {
+        position: relative;
+        svg {
+            position: absolute;
+            width: 22px;
+            top: 5px;
+            left: 20px;
+        }
+    }
+
     .next-save-button-row {
         margin-top: 20px;
         margin-bottom: 80px;

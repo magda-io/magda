@@ -1,0 +1,27 @@
+.overlay-box-outter-container {
+    padding-top: 42px;
+    padding-left: 57px;
+    padding-right: 70px;
+    padding-bottom: 52px;
+
+    .overlay-box-header {
+        position: relative;
+        border-bottom: 1px solid black;
+        height: 59;
+
+        color: #30384d;
+        font-size: 29px;
+        letter-spacing: -0.5px;
+        line-height: 30px;
+
+        svg {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+        }
+    }
+
+    .overlay-box-body {
+        padding-top: 27px;
+    }
+}

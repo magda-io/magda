@@ -1,9 +1,7 @@
 import React from "react";
 
 import DatasetFile from "Components/Dataset/Add/DatasetFile";
-import AddDatasetLinkSection from "Components/Dataset/Add/AddDatasetLinkSection";
 import StorageOptionsSection from "Components/Dataset/Add/StorageOptionsSection";
-import FileDropZone from "../../../Add/Pages/AddFiles/FileDropZone";
 
 import {
     State,
@@ -19,6 +17,10 @@ import "../../../Add/DatasetAddCommon.scss";
 import UserVisibleError from "helpers/UserVisibleError";
 import deleteDistribution from "../../../Add/Pages/AddFiles/deleteDistribution";
 import updateLastModifyDate from "../../../Add/Pages/AddFiles/updateLastModifyDate";
+
+import AddNewFilesModal from "./AddNewFilesModal";
+
+import { ReactComponent as AddDatasetIcon } from "assets/add-dataset.svg";
 
 type Props = {
     edit: <K extends keyof State>(
@@ -106,6 +108,11 @@ class EditFilesPage extends React.Component<Props> {
             (item) => item.isComfired !== false
         );
 
+        const uncomfirmedDistributions = state.distributions.filter(
+            (item) => item.isComfired === false
+        );
+        console.log(uncomfirmedDistributions);
+
         const deleteDistributionHandler = (distId: string) => () => {
             deleteDistribution(
                 this.props.datasetId,
@@ -182,38 +189,20 @@ class EditFilesPage extends React.Component<Props> {
                                 Failed to process file: {state.error?.message}
                             </div>
                         )}
-
-                        {comfirmedDistributions.length > 0 && (
-                            <div className="more-files-to-add-text">
-                                More files to add?
-                            </div>
-                        )}
                     </div>
                 </div>
 
-                <FileDropZone
-                    datasetId={this.props.datasetId}
-                    datasetStateUpdater={this.props.setState}
-                    stateData={this.props.stateData}
-                />
-
-                <AddDatasetLinkSection
-                    type={DistributionSource.DatasetUrl}
-                    distributions={state.distributions}
-                    addDistribution={this.addDistribution}
-                    editDistribution={this.editDistribution}
-                    deleteDistribution={deleteDistributionHandler}
-                    setMetadataState={this.props.setState}
-                />
-
-                <AddDatasetLinkSection
-                    type={DistributionSource.Api}
-                    distributions={state.distributions}
-                    addDistribution={this.addDistribution}
-                    editDistribution={this.editDistribution}
-                    deleteDistribution={deleteDistributionHandler}
-                    setMetadataState={this.props.setState}
-                />
+                <div className="new-files">
+                    <div className="empty-new-file-hint">
+                        Do you want to add or replace the contents of this
+                        dataset?
+                    </div>
+                    <button className="au-btn au-btn--secondary save-button button-with-icon">
+                        <AddDatasetIcon />
+                        Add or replace files, APIs or URLs
+                        <AddNewFilesModal />
+                    </button>
+                </div>
             </div>
         );
     }
