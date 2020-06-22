@@ -107,10 +107,10 @@ class RecordsService(
   )
   def deleteById: Route = delete {
     path(Segment) { recordId: String =>
-      requireIsAdmin(authClient)(system, config) { _ =>
+      requireIsAdmin(authClient)(system, config) { user =>
         requiresSpecifiedTenantId { tenantId =>
-          val theResult = DB localTx { session =>
-            recordPersistence.deleteRecord(session, tenantId, recordId) match {
+          val theResult = DB localTx { implicit session =>
+            recordPersistence.deleteRecord(tenantId, recordId, user.id) match {
               case Success(result) => complete(DeleteResult(result))
               case Failure(exception) =>
                 complete(
@@ -203,7 +203,7 @@ class RecordsService(
   )
   def trimBySourceTag: Route = delete {
     pathEnd {
-      requireIsAdmin(authClient)(system, config) { _ =>
+      requireIsAdmin(authClient)(system, config) { user =>
         requiresSpecifiedTenantId { tenantId =>
           parameters('sourceTagToPreserve, 'sourceId) {
             (sourceTagToPreserve, sourceId) =>
@@ -215,6 +215,7 @@ class RecordsService(
                     tenantId,
                     sourceTagToPreserve,
                     sourceId,
+                    user.id,
                     Some(logger)
                   )
                 }
@@ -324,16 +325,16 @@ class RecordsService(
   )
   def putById: Route = put {
     path(Segment) { id: String =>
-      requireIsAdmin(authClient)(system, config) { _ =>
+      requireIsAdmin(authClient)(system, config) { user =>
         {
           requiresSpecifiedTenantId { tenantId =>
             entity(as[Record]) { recordIn =>
-              val result = DB localTx { session =>
+              val result = DB localTx { implicit session =>
                 recordPersistence.putRecordById(
-                  session,
                   tenantId,
                   id,
-                  recordIn
+                  recordIn,
+                  user.id
                 ) match {
                   case Success(recordOut) =>
                     complete(recordOut)
@@ -433,15 +434,15 @@ class RecordsService(
   )
   def patchById: Route = patch {
     path(Segment) { id: String =>
-      requireIsAdmin(authClient)(system, config) { _ =>
+      requireIsAdmin(authClient)(system, config) { user =>
         requiresSpecifiedTenantId { tenantId =>
           entity(as[JsonPatch]) { recordPatch =>
-            val theResult = DB localTx { session =>
+            val theResult = DB localTx { implicit session =>
               recordPersistence.patchRecordById(
-                session,
                 tenantId,
                 id,
-                recordPatch
+                recordPatch,
+                user.id
               ) match {
                 case Success(result) =>
                   complete(result)
@@ -536,13 +537,13 @@ class RecordsService(
     )
   )
   def create: Route = post {
-    requireIsAdmin(authClient)(system, config) { _ =>
+    requireIsAdmin(authClient)(system, config) { user =>
       requiresSpecifiedTenantId { tenantId =>
         pathEnd {
           entity(as[Record]) { record =>
-            val result = DB localTx { session =>
+            val result = DB localTx { implicit session =>
               recordPersistence
-                .createRecord(session, tenantId, record) match {
+                .createRecord(tenantId, record, user.id) match {
                 case Success(theResult) => complete(theResult)
                 case Failure(exception) =>
                   complete(

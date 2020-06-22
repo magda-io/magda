@@ -96,7 +96,6 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
               includeRecords = None,
               dereference = None
             ),
-            userId = Some(0),
             isWaitingForResponse = None,
             active = true
           )

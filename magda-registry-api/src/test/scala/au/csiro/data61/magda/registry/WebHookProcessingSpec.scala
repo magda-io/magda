@@ -2638,7 +2638,6 @@ class WebHookProcessingSpec
 
   private val defaultWebHook = WebHook(
     id = Some("test"),
-    userId = None,
     name = "test",
     active = true,
     lastEvent = None,

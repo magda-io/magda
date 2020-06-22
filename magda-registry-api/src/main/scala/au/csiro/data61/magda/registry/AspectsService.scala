@@ -86,11 +86,11 @@ class AspectsService(
   )
   def create: Route = post {
     pathEnd {
-      requireIsAdmin(authClient)(system, config) { _ =>
+      requireIsAdmin(authClient)(system, config) { user =>
         requiresSpecifiedTenantId { tenantId =>
           entity(as[AspectDefinition]) { aspect =>
             val theResult = DB localTx { session =>
-              AspectPersistence.create(session, aspect, tenantId) match {
+              AspectPersistence.create(aspect, tenantId, user.id)(session) match {
                 case Success(result) =>
                   complete(result)
                 case Failure(exception) =>
@@ -178,11 +178,11 @@ class AspectsService(
   def putById: Route = put {
     path(Segment) { id: String =>
       {
-        requireIsAdmin(authClient)(system, config) { _ =>
+        requireIsAdmin(authClient)(system, config) { user =>
           requiresSpecifiedTenantId { tenantId =>
             entity(as[AspectDefinition]) { aspect =>
               val theResult = DB localTx { session =>
-                AspectPersistence.putById(session, id, aspect, tenantId) match {
+                AspectPersistence.putById(id, aspect, tenantId, user.id)(session) match {
                   case Success(result) =>
                     complete(result)
                   case Failure(exception) =>
@@ -270,12 +270,12 @@ class AspectsService(
   )
   def patchById: Route = patch {
     path(Segment) { id: String =>
-      requireIsAdmin(authClient)(system, config) { _ =>
+      requireIsAdmin(authClient)(system, config) { user =>
         requiresSpecifiedTenantId { tenantId =>
           entity(as[JsonPatch]) { aspectPatch =>
             val theResult = DB localTx { session =>
               AspectPersistence
-                .patchById(session, id, aspectPatch, tenantId) match {
+                .patchById(id, aspectPatch, tenantId, user.id)(session) match {
                 case Success(result) =>
                   complete(result)
                 case Failure(exception) =>

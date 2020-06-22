@@ -3684,6 +3684,22 @@ class RecordsServiceSpec extends ApiSpec {
           recordRes shouldEqual record.copy(tenantId = Some(TENANT_1))
         }
 
+        Get(s"/v0/records/${record.id}/history") ~> addTenantIdHeader(TENANT_1) ~> param
+          .api(role)
+          .routes ~> check {
+          status shouldEqual StatusCodes.OK
+
+          val eventsPage = responseAs[EventsPage]
+          eventsPage.events.length shouldEqual 1
+          eventsPage.events(0).userId shouldEqual Some(USER_ID)
+          eventsPage.events(0).eventType shouldEqual EventType.CreateRecord
+          eventsPage
+            .events(0)
+            .data
+            .fields("recordId")
+            .convertTo[String] shouldEqual record.id
+        }
+
         Get("/v0/records/testId") ~> addTenantIdHeader(TENANT_2) ~> param
           .api(role)
           .routes ~> check {
@@ -3840,6 +3856,22 @@ class RecordsServiceSpec extends ApiSpec {
           )
         }
 
+        Get(s"/v0/records/${record.id}/history") ~> addTenantIdHeader(TENANT_1) ~> param
+          .api(role)
+          .routes ~> check {
+          status shouldEqual StatusCodes.OK
+
+          val eventsPage = responseAs[EventsPage]
+          eventsPage.events.length shouldEqual 1
+          eventsPage.events(0).userId shouldEqual Some(USER_ID)
+          eventsPage.events(0).eventType shouldEqual EventType.CreateRecord
+          eventsPage
+            .events(0)
+            .data
+            .fields("recordId")
+            .convertTo[String] shouldEqual record.id
+        }
+
         Get("/v0/records") ~> addTenantIdHeader(TENANT_2) ~> param
           .api(role)
           .routes ~> check {
@@ -3858,6 +3890,7 @@ class RecordsServiceSpec extends ApiSpec {
             tenantId = Some(TENANT_1),
             authnReadPolicyId = Some("old.policy")
           )
+
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
@@ -3895,6 +3928,22 @@ class RecordsServiceSpec extends ApiSpec {
             tenantId = Some(TENANT_1),
             authnReadPolicyId = Some("new.policy")
           )
+        }
+
+        Get(s"/v0/records/testId/history") ~> addTenantIdHeader(TENANT_1) ~> param
+          .api(role)
+          .routes ~> check {
+          status shouldEqual StatusCodes.OK
+
+          val eventsPage = responseAs[EventsPage]
+          eventsPage.events.length shouldEqual 2
+          eventsPage.events(1).userId shouldEqual Some(USER_ID)
+          eventsPage.events(1).eventType shouldEqual EventType.PatchRecord
+          eventsPage
+            .events(1)
+            .data
+            .fields("recordId")
+            .convertTo[String] shouldEqual record.id
         }
 
         Get("/v0/records/testId") ~> addTenantIdHeader(TENANT_2) ~> param
@@ -4234,6 +4283,22 @@ class RecordsServiceSpec extends ApiSpec {
             Some("blah"),
             tenantId = Some(TENANT_1)
           )
+        }
+
+        Get(s"/v0/records/${record.id}/history") ~> addTenantIdHeader(TENANT_1) ~> param
+          .api(role)
+          .routes ~> check {
+          status shouldEqual StatusCodes.OK
+
+          val eventsPage = responseAs[EventsPage]
+          eventsPage.events.length shouldEqual 2
+          eventsPage.events(1).userId shouldEqual Some(USER_ID)
+          eventsPage.events(1).eventType shouldEqual EventType.CreateRecord
+          eventsPage
+            .events(1)
+            .data
+            .fields("recordId")
+            .convertTo[String] shouldEqual record.id
         }
 
         Get("/v0/records/testId") ~> addTenantIdHeader(TENANT_2) ~> param
@@ -4900,6 +4965,24 @@ class RecordsServiceSpec extends ApiSpec {
             status shouldEqual StatusCodes.OK
           }
 
+          Get(s"/v0/records/without/history") ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param
+            .api(role)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+
+            val eventsPage = responseAs[EventsPage]
+            eventsPage.events.length shouldEqual 2
+            eventsPage.events(1).userId shouldEqual Some(USER_ID)
+            eventsPage.events(1).eventType shouldEqual EventType.DeleteRecord
+            eventsPage
+              .events(0)
+              .data
+              .fields("recordId")
+              .convertTo[String] shouldEqual record.id
+          }
+
           param.asAdmin(Delete("/v0/records/without")) ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(role).routes ~> check {
@@ -5182,12 +5265,16 @@ class RecordsServiceSpec extends ApiSpec {
               _: SpecifiedTenantId,
               _: String,
               _: String,
+              _: String,
               _: Option[LoggingAdapter]
-            )(_: DBSession))
-            .expects(*, *, *, *, *)
+            )(
+              _: DBSession
+            ))
+            .expects(*, *, *, *, *, *)
             .onCall {
               (
                   _: SpecifiedTenantId,
+                  _: String,
                   _: String,
                   _: String,
                   _: Option[LoggingAdapter],

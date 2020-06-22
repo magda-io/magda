@@ -491,7 +491,6 @@ object WebHookActor {
             } else {
               val eventPage = DB readOnly { implicit session =>
                 eventPersistence.getEvents(
-                  session,
                   webHook.lastEvent,
                   None,
                   Some(config.getInt("webhooks.eventPageSize")),
