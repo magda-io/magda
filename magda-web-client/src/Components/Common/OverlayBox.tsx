@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useState } from "react";
 import Modal from "react-modal";
+import OverlayBoxContext from "./OverlayBoxContext";
 
 import "./OverlayBox.scss";
 import { ReactComponent as DismissIcon } from "assets/dismiss.svg";
@@ -53,17 +54,19 @@ const OverlayBox: FunctionComponent<PropsType> = (props) => {
             contentLabel={runtimeTitle}
             {...restProps}
         >
-            <div
-                className={`overlay-box-outter-container ${
-                    props.className ? props.className : ""
-                }`}
-            >
-                <div className="overlay-box-header">
-                    {runtimeTitle}
-                    <DismissIcon onClick={() => setIsOpen(false)} />
+            <OverlayBoxContext.Provider value={{ setIsOpen: setIsOpen }}>
+                <div
+                    className={`overlay-box-outter-container ${
+                        props.className ? props.className : ""
+                    }`}
+                >
+                    <div className="overlay-box-header">
+                        {runtimeTitle}
+                        <DismissIcon onClick={() => setIsOpen(false)} />
+                    </div>
+                    <div className="overlay-box-body">{props.children}</div>
                 </div>
-                <div className="overlay-box-body">{props.children}</div>
-            </div>
+            </OverlayBoxContext.Provider>
         </Modal>
     );
 };
