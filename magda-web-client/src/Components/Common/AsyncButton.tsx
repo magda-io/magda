@@ -78,13 +78,18 @@ const AsyncButton: FunctionComponent<PropsType> = (props) => {
 
     if (Icon) {
         return (
-            <button {...newProps}>
+            <button {...newProps} disabled={props.disabled ? true : undefined}>
                 <Icon />
                 <>{newProps.children}</>
             </button>
         );
     } else {
-        return <button {...newProps} />;
+        return (
+            <button
+                {...newProps}
+                disabled={props.disabled ? true : undefined}
+            />
+        );
     }
 };
 

@@ -13,6 +13,9 @@
     text-align: center;
     margin-right: 30px;
     color: #ffffff;
+    &:disabled {
+        opacity: 0.5;
+    }
 }
 .async-button.is-secondary {
     background-color: #ffffff;
