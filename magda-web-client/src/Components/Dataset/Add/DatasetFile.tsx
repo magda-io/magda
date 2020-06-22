@@ -163,43 +163,56 @@ export default function DatasetFile({
     onDelete,
     onChange
 }: {
-    idx: number;
+    idx?: number;
     file: Distribution;
-    onDelete: () => any;
-    onChange: (updater: (file: Distribution) => Distribution) => void;
+    onDelete?: () => any;
+    onChange?: (updater: (file: Distribution) => Distribution) => void;
 }) {
     const [editMode, setEditMode] = useState(false);
+    const canEdit =
+        typeof idx !== "undefined" && typeof onChange === "function";
+    const canDelete = typeof onDelete === "function";
 
     if (file._state !== DistributionState.Ready) {
         return <FileInProgress file={file} />;
     }
 
     return (
-        <div className="dataset-file-root complete-processing">
-            {editMode ? (
+        <div
+            className={`dataset-file-root complete-processing ${
+                !canEdit && !canDelete ? "read-only" : ""
+            }`}
+        >
+            {editMode && canEdit ? (
                 <FileEditView
-                    idx={idx}
+                    idx={idx!}
                     file={file}
-                    onChange={onChange}
+                    onChange={onChange!}
                     editMode={editMode}
                     setEditMode={setEditMode}
                 />
             ) : (
                 <React.Fragment>
-                    <button
-                        className={`dataset-file-edit-button au-btn au-btn--secondary`}
-                        arial-label="Edit file metadata"
-                        onClick={() => setEditMode(!editMode)}
-                    >
-                        <img src={editIcon} />
-                    </button>
-                    <button
-                        className={`dataset-file-delete-button au-btn au-btn--secondary`}
-                        arial-label="Remove file"
-                        onClick={() => onDelete()}
-                    >
-                        <img src={dismissIcon} />
-                    </button>
+                    {canEdit ? (
+                        <button
+                            className={`dataset-file-edit-button au-btn au-btn--secondary`}
+                            arial-label="Edit file metadata"
+                            onClick={() => setEditMode(!editMode)}
+                        >
+                            <img src={editIcon} />
+                        </button>
+                    ) : null}
+
+                    {canDelete ? (
+                        <button
+                            className={`dataset-file-delete-button au-btn au-btn--secondary`}
+                            arial-label="Remove file"
+                            onClick={() => onDelete!()}
+                        >
+                            <img src={dismissIcon} />
+                        </button>
+                    ) : null}
+
                     <div>
                         <h3 className="dataset-file-file-title">
                             {file.title}

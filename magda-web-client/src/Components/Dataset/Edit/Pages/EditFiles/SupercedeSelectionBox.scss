@@ -1,0 +1,61 @@
+.dataset-add-file-page.is-edit-view {
+    .distribution-supercede-selection-box {
+        box-sizing: border-box;
+        border: 1px solid #9b9b9b;
+        background-color: #ffffff;
+        box-shadow: 0 5px 10px -10px rgba(0, 0, 0, 0.2);
+        padding-left: 51px;
+        padding-right: 51px;
+        padding-top: 41px;
+        padding-bottom: 41px;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            th {
+                text-align: center;
+                width: 50%;
+                color: #012c41;
+                font-size: 23px;
+                letter-spacing: -0.1px;
+                line-height: 40px;
+                padding: 14px;
+                border-bottom: 4px solid #cccaca;
+                &:first-of-type {
+                    border-right: 4px solid #cccaca;
+                }
+                &:last-of-type {
+                    border-left: 4px solid #cccaca;
+                }
+            }
+            tr {
+                td:first-of-type {
+                    border-right: 4px solid #cccaca;
+                }
+                td:last-of-type {
+                    border-left: 4px solid #cccaca;
+                }
+            }
+            td {
+                padding-left: 20px;
+                padding-right: 20px;
+                padding-top: 42px;
+                padding-bottom: 42px;
+            }
+        }
+        .new-files-area {
+            border: 3px dashed #d8d8d8;
+            padding-left: 42px;
+            padding-right: 42px;
+            padding-top: 32px;
+            padding-bottom: 32px;
+            margin-top: 50px;
+            .heading {
+                color: #374058;
+                font-size: 18px;
+                letter-spacing: 0;
+                line-height: 26px;
+                margin-bottom: 30px;
+            }
+        }
+    }
+}

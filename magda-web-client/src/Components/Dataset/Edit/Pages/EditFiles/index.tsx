@@ -22,6 +22,7 @@ import AddNewFilesModal from "./AddNewFilesModal";
 
 import { ReactComponent as AddDatasetIcon } from "assets/add-dataset.svg";
 import AsyncButton from "Components/Common/AsyncButton";
+import DistSupercedeSection from "./DistSupercedeSection";
 
 type Props = {
     edit: <K extends keyof State>(
@@ -228,6 +229,13 @@ const EditFilesPage: FunctionComponent<Props> = (props) => {
                         {renderDistList(newDistributions)}
                     </div>
                 ) : null}
+
+                <DistSupercedeSection
+                    stateData={props.stateData}
+                    datasetStateUpdater={props.setState}
+                    editDistributionHandler={editDistribution}
+                    deleteDistributionHandler={deleteDistributionHandler}
+                />
 
                 <AddNewFilesModal
                     isOpen={isAddFilesModalOpen}
