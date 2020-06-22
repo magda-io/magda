@@ -16783,6 +16783,11 @@ react-dom@>=15.5, react-dom@^16.3.2:
     prop-types "^15.6.2"
     scheduler "^0.19.1"
 
+react-drag-and-drop@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/react-drag-and-drop/-/react-drag-and-drop-3.0.0.tgz#8adfe14994b4c36969aa7e104776acd566e4a000"
+  integrity sha512-NO/BVF8LxinZSJlm3DpWWgIndCy6gu/gHwORPE+I3YINBLi+EF3WlYmho8ooKkHRfefz1Fd1cfoVASKJ1bOhbg==
+
 react-error-overlay@^6.0.7:
   version "6.0.7"
   resolved "https://registry.yarnpkg.com/react-error-overlay/-/react-error-overlay-6.0.7.tgz#1dcfb459ab671d53f660a991513cb2f0a0553108"

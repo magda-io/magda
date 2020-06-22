@@ -152,7 +152,8 @@
     "webpack-filter-warnings-plugin": "^1.2.1",
     "weighted-mean": "^1.0.2",
     "worker-loader": "^2.0.0",
-    "yaml-front-matter": "^4.0.0"
+    "yaml-front-matter": "^4.0.0",
+    "react-drag-and-drop": "^3.0.0"
   },
   "browserslist": [
     "last 2 versions",
