@@ -230,12 +230,14 @@ const EditFilesPage: FunctionComponent<Props> = (props) => {
                     </div>
                 ) : null}
 
-                <DistSupercedeSection
-                    stateData={props.stateData}
-                    datasetStateUpdater={props.setState}
-                    editDistributionHandler={editDistribution}
-                    deleteDistributionHandler={deleteDistributionHandler}
-                />
+                {newDistributions.length ? (
+                    <DistSupercedeSection
+                        stateData={props.stateData}
+                        datasetStateUpdater={props.setState}
+                        editDistributionHandler={editDistribution}
+                        deleteDistributionHandler={deleteDistributionHandler}
+                    />
+                ) : null}
 
                 <AddNewFilesModal
                     isOpen={isAddFilesModalOpen}
