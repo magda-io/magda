@@ -1,0 +1,40 @@
+.async-button {
+    width: 386px;
+    height: 48px;
+    border-radius: 10px;
+    border: solid 2px #30384d !important;
+    background-color: #30384d;
+    font-size: 16px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: 1.5;
+    letter-spacing: normal;
+    text-align: center;
+    margin-right: 30px;
+    color: #ffffff;
+}
+.async-button.is-secondary {
+    background-color: #ffffff;
+    color: #30384d !important;
+}
+
+.async-button.with-icon {
+    position: relative;
+    svg {
+        position: absolute;
+        width: 22px;
+        top: 5px;
+        left: 20px;
+        g {
+            fill: #ffffff;
+        }
+    }
+    &.is-secondary {
+        svg {
+            g {
+                fill: #30384d;
+            }
+        }
+    }
+}

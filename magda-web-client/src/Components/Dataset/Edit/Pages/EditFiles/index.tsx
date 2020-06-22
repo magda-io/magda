@@ -21,6 +21,7 @@ import updateLastModifyDate from "../../../Add/Pages/AddFiles/updateLastModifyDa
 import AddNewFilesModal from "./AddNewFilesModal";
 
 import { ReactComponent as AddDatasetIcon } from "assets/add-dataset.svg";
+import AsyncButton from "Components/Common/AsyncButton";
 
 type Props = {
     edit: <K extends keyof State>(
@@ -197,11 +198,14 @@ class EditFilesPage extends React.Component<Props> {
                         Do you want to add or replace the contents of this
                         dataset?
                     </div>
-                    <button className="au-btn au-btn--secondary save-button button-with-icon">
-                        <AddDatasetIcon />
+                    <AsyncButton icon={AddDatasetIcon} isSecondary={true}>
                         Add or replace files, APIs or URLs
-                        <AddNewFilesModal />
-                    </button>
+                    </AsyncButton>
+                    <AddNewFilesModal
+                        datasetId={this.props.datasetId}
+                        stateData={this.props.stateData}
+                        datasetStateUpdater={this.props.setState}
+                    />
                 </div>
             </div>
         );

@@ -6,11 +6,20 @@ import React, {
     useEffect
 } from "react";
 
+import "./AsyncButton.scss";
+
 type Overwrite<T, U> = Pick<T, Exclude<keyof T, keyof U>> & U;
 type PropsType = Overwrite<
     ButtonHTMLAttributes<HTMLButtonElement>,
     {
-        onClick: (e: MouseEvent<HTMLButtonElement>) => Promise<any>;
+        // --- when handler do not return a promise, the handler will be considered as immediately resolved
+        // --- We want reuse this component for other purpose / features (e.g. support button icon / built-in style)
+        // --- Thus, make it more like a normal button (e.g. in term of props type supported )
+        onClick?: (e: MouseEvent<HTMLButtonElement>) => Promise<any> | any;
+        icon?: React.FunctionComponent<
+            React.SVGProps<SVGSVGElement> & { title?: string }
+        >;
+        isSecondary?: boolean;
     }
 >;
 
@@ -57,7 +66,26 @@ const AsyncButton: FunctionComponent<PropsType> = (props) => {
         };
     }
 
-    return <button {...newProps} />;
+    const commonClassNames = `au-btn async-button ${
+        props.isSecondary ? "au-btn--secondary is-secondary" : ""
+    } ${props.icon ? "with-icon" : ""}`;
+
+    newProps.className = props.className
+        ? `${commonClassNames} ${props.className}`
+        : commonClassNames;
+
+    const Icon = props.icon;
+
+    if (Icon) {
+        return (
+            <button {...newProps}>
+                <Icon />
+                <>{newProps.children}</>
+            </button>
+        );
+    } else {
+        return <button {...newProps} />;
+    }
 };
 
 export default AsyncButton;
