@@ -67,7 +67,7 @@ class AspectsServiceRO(
       requiresTenantId { tenantId =>
         complete {
           DB readOnly { session =>
-            AspectPersistence.getAll( tenantId)(session)
+            AspectPersistence.getAll(tenantId)(session)
           }
         }
       }

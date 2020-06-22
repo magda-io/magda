@@ -90,7 +90,8 @@ class AspectsService(
         requiresSpecifiedTenantId { tenantId =>
           entity(as[AspectDefinition]) { aspect =>
             val theResult = DB localTx { session =>
-              AspectPersistence.create(aspect, tenantId, user.id)(session) match {
+              AspectPersistence
+                .create(aspect, tenantId, user.id)(session) match {
                 case Success(result) =>
                   complete(result)
                 case Failure(exception) =>
@@ -182,7 +183,9 @@ class AspectsService(
           requiresSpecifiedTenantId { tenantId =>
             entity(as[AspectDefinition]) { aspect =>
               val theResult = DB localTx { session =>
-                AspectPersistence.putById(id, aspect, tenantId, user.id)(session) match {
+                AspectPersistence.putById(id, aspect, tenantId, user.id)(
+                  session
+                ) match {
                   case Success(result) =>
                     complete(result)
                   case Failure(exception) =>

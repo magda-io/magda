@@ -100,7 +100,12 @@ Authorization:
 -   Added per-record authorization around the `/records/<recordid>/history` endpoint
 -   Added per-record authorization around the `/records/<recordid>/history/<eventId>` endpoint
 
-Search
+Registry:
+
+-   Made events record the correct user id
+-   Fixed Registry History API Performance Issue when limit=1 & Updated Registry History API Document
+
+Search:
 
 -   Began work on a NodeJS-based search API to replace the scala one
 -   Allow fetch region record by region id
@@ -108,7 +113,6 @@ Search
 Others:
 
 -   Use a "Year" column from a CSV file to extract a temporal extent
--   Fixed Registry History API Performance Issue when limit=1 & Updated Registry History API Document
 -   Added tentative documentation/scripting for building and running on microk8s.
 -   Added tentative documentation/scripting for building and running on k3d.
 
