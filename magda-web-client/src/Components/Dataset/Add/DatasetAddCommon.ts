@@ -47,8 +47,10 @@ export type Distribution = {
     id?: string;
     creationSource?: DistributionSource;
     creationMethod?: DistributionCreationMethod;
+    // --- whether it's a distribution that the user hasn't comfirm (by clicking `Finishing Adding` button in Edit flow) that it should be added to dataset
+    isAddConfirmed?: boolean;
     // --- whether it's a distribution user yet to confirm it should be replace existing distribution or not
-    isComfired?: boolean;
+    isReplacementComfired?: boolean;
     _state: DistributionState;
     _progress?: number;
 };

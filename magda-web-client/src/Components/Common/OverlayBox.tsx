@@ -1,6 +1,5 @@
-import React, { FunctionComponent, useState } from "react";
+import React, { FunctionComponent } from "react";
 import Modal from "react-modal";
-import OverlayBoxContext from "./OverlayBoxContext";
 
 import "./OverlayBox.scss";
 import { ReactComponent as DismissIcon } from "assets/dismiss.svg";
@@ -8,10 +7,11 @@ import { ReactComponent as DismissIcon } from "assets/dismiss.svg";
 Modal.setAppElement("#root");
 
 type OverlayBoxOwnProps = {
-    isOpen?: boolean;
+    isOpen: boolean;
     className?: string;
     title?: string;
     showCloseButton?: boolean;
+    onClose?: () => void;
 };
 
 type PropsType = OverlayBoxOwnProps &
@@ -41,32 +41,29 @@ const OverlayBox: FunctionComponent<PropsType> = (props) => {
         showCloseButton,
         ...restProps
     } = props;
-    const runtimeTitle = title ? title : DEFAULT_TITLE;
 
-    const [isOpen, setIsOpen] = useState<boolean>(
-        typeof defaultIsOpen === "boolean" ? defaultIsOpen : false
-    );
+    const runtimeTitle = title ? title : DEFAULT_TITLE;
 
     return (
         <Modal
             style={customStyles}
-            isOpen={isOpen}
+            isOpen={props.isOpen}
             contentLabel={runtimeTitle}
             {...restProps}
         >
-            <OverlayBoxContext.Provider value={{ setIsOpen: setIsOpen }}>
-                <div
-                    className={`overlay-box-outter-container ${
-                        props.className ? props.className : ""
-                    }`}
-                >
-                    <div className="overlay-box-header">
-                        {runtimeTitle}
-                        <DismissIcon onClick={() => setIsOpen(false)} />
-                    </div>
-                    <div className="overlay-box-body">{props.children}</div>
+            <div
+                className={`overlay-box-outter-container ${
+                    props.className ? props.className : ""
+                }`}
+            >
+                <div className="overlay-box-header">
+                    {runtimeTitle}
+                    <DismissIcon onClick={props.onClose} />
                 </div>
-            </OverlayBoxContext.Provider>
+                <div className="overlay-box-body au-grid container">
+                    {props.children}
+                </div>
+            </div>
         </Modal>
     );
 };

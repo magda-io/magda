@@ -44,4 +44,18 @@
     .empty-new-file-hint {
         margin-bottom: 41px;
     }
+
+    .has-new-files-area {
+        padding-top: 20px;
+        button {
+            float: right;
+        }
+        .empty-new-file-hint {
+            float: left;
+        }
+    }
+
+    .new-files-area {
+        margin-top: 110px;
+    }
 }

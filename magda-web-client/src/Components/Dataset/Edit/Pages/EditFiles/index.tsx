@@ -1,4 +1,4 @@
-import React from "react";
+import React, { FunctionComponent, useState } from "react";
 
 import DatasetFile from "Components/Dataset/Add/DatasetFile";
 import StorageOptionsSection from "Components/Dataset/Add/StorageOptionsSection";
@@ -35,9 +35,13 @@ type Props = {
     isEditView: boolean;
 };
 
-class EditFilesPage extends React.Component<Props> {
-    addDistribution = (distribution: Distribution) => {
-        this.props.setState((state: State) => {
+const EditFilesPage: FunctionComponent<Props> = (props) => {
+    const [isAddFilesModalOpen, setIsAddFilesModelOpen] = useState<boolean>(
+        false
+    );
+
+    const addDistribution = (distribution: Distribution) => {
+        props.setState((state: State) => {
             const newDistribution = state.distributions.concat(distribution);
             return {
                 ...state,
@@ -46,20 +50,22 @@ class EditFilesPage extends React.Component<Props> {
         });
     };
 
-    editDistribution = (distId: string) => (
+    console.log(addDistribution);
+
+    const editDistribution = (distId: string) => (
         updater: (distribution: Distribution) => Distribution
     ) => {
-        this.props.setState((state: State) => ({
+        props.setState((state: State) => ({
             ...state,
             distributions: [...state.distributions].map((item) =>
                 item.id === distId ? updater(item) : item
             )
         }));
-        updateLastModifyDate(this.props.setState);
+        updateLastModifyDate(props.setState);
     };
 
-    renderStorageOption() {
-        const state = this.props.stateData;
+    const renderStorageOption = () => {
+        const state = props.stateData;
         const localFiles = state.distributions.filter(
             (file) => file.creationSource === DistributionSource.File
         );
@@ -69,7 +75,7 @@ class EditFilesPage extends React.Component<Props> {
                 files={localFiles}
                 shouldUploadToStorageApi={state.shouldUploadToStorageApi}
                 setShouldUploadToStorageApi={(value) => {
-                    this.props.setState((state: State) => {
+                    props.setState((state: State) => {
                         const newState = {
                             ...state,
                             shouldUploadToStorageApi: value
@@ -91,7 +97,7 @@ class EditFilesPage extends React.Component<Props> {
                         : ""
                 }
                 setDataAccessLocation={(value) =>
-                    this.props.setState((state: State) => ({
+                    props.setState((state: State) => ({
                         ...state,
                         datasetAccess: {
                             ...state.datasetAccess,
@@ -101,34 +107,69 @@ class EditFilesPage extends React.Component<Props> {
                 }
             />
         );
-    }
+    };
 
-    render() {
-        const { stateData: state } = this.props;
-        const comfirmedDistributions = state.distributions.filter(
-            (item) => item.isComfired !== false
+    const deleteDistributionHandler = (distId: string) => () =>
+        deleteDistribution(
+            props.datasetId,
+            props.setState,
+            props.stateData.shouldUploadToStorageApi,
+            distId
+        ).catch((e) => {
+            console.error(e);
+            if (e instanceof UserVisibleError) {
+                props.setState({
+                    error: e
+                });
+            }
+        });
+
+    const renderDistList = (dists: Distribution[]) => {
+        return (
+            <div className="col-xs-12">
+                <div className="row">
+                    {dists.map((file: Distribution, i) => {
+                        let isLastRow;
+                        if (dists.length % 2) {
+                            isLastRow = i >= dists.length - 1;
+                        } else {
+                            isLastRow = i >= dists.length - 2;
+                        }
+                        return (
+                            <div
+                                key={i}
+                                className={`col-xs-6 dataset-add-files-fileListItem ${
+                                    isLastRow ? "last-row" : ""
+                                }`}
+                            >
+                                <DatasetFile
+                                    idx={i}
+                                    file={file}
+                                    onChange={editDistribution(file.id!)}
+                                    onDelete={deleteDistributionHandler(
+                                        file.id!
+                                    )}
+                                />
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        );
+    };
+
+    const render = () => {
+        const { stateData: state } = props;
+        // --- existing distributions or dist confirmed `adding` and `replacement`
+        const existingDistributions = state.distributions.filter(
+            (item) =>
+                item.isReplacementComfired !== false &&
+                item.isAddConfirmed !== false
         );
 
-        const uncomfirmedDistributions = state.distributions.filter(
-            (item) => item.isComfired === false
+        const newDistributions = state.distributions.filter(
+            (item) => item.isAddConfirmed === true
         );
-        console.log(uncomfirmedDistributions);
-
-        const deleteDistributionHandler = (distId: string) => () => {
-            deleteDistribution(
-                this.props.datasetId,
-                this.props.setState,
-                this.props.stateData.shouldUploadToStorageApi,
-                distId
-            ).catch((e) => {
-                console.error(e);
-                if (e instanceof UserVisibleError) {
-                    this.props.setState({
-                        error: e
-                    });
-                }
-            });
-        };
 
         return (
             <div
@@ -138,7 +179,7 @@ class EditFilesPage extends React.Component<Props> {
                     <div className="col-xs-12">
                         <h3>Your files and distributions</h3>
                         <h4>Storage and location</h4>
-                        {this.renderStorageOption()}
+                        {renderStorageOption()}
                     </div>
                 </div>
 
@@ -147,69 +188,61 @@ class EditFilesPage extends React.Component<Props> {
                     Existing contents:
                 </div>
 
-                <div className="row files-area">
-                    <div className="col-xs-12">
-                        <div className="row">
-                            {comfirmedDistributions.map(
-                                (file: Distribution, i) => {
-                                    let isLastRow;
-                                    if (comfirmedDistributions.length % 2) {
-                                        isLastRow =
-                                            i >=
-                                            comfirmedDistributions.length - 1;
-                                    } else {
-                                        isLastRow =
-                                            i >=
-                                            comfirmedDistributions.length - 2;
-                                    }
-                                    return (
-                                        <div
-                                            key={i}
-                                            className={`col-xs-6 dataset-add-files-fileListItem ${
-                                                isLastRow ? "last-row" : ""
-                                            }`}
-                                        >
-                                            <DatasetFile
-                                                idx={i}
-                                                file={file}
-                                                onChange={this.editDistribution(
-                                                    file.id!
-                                                )}
-                                                onDelete={deleteDistributionHandler(
-                                                    file.id!
-                                                )}
-                                            />
-                                        </div>
-                                    );
-                                }
-                            )}
+                {existingDistributions.length ? (
+                    <div className="row files-area">
+                        {renderDistList(existingDistributions)}
+                    </div>
+                ) : null}
+
+                {newDistributions.length ? (
+                    <div className="has-new-files-area">
+                        <div className="empty-new-file-hint dataset-contents-sub-heading">
+                            New contents:
                         </div>
-
-                        {state.error && (
-                            <div className="au-body au-page-alerts au-page-alerts--error">
-                                Failed to process file: {state.error?.message}
-                            </div>
-                        )}
+                        <AsyncButton
+                            icon={AddDatasetIcon}
+                            isSecondary={true}
+                            onClick={() => setIsAddFilesModelOpen(true)}
+                        >
+                            Add or replace files, APIs or URLs
+                        </AsyncButton>
                     </div>
-                </div>
+                ) : (
+                    <>
+                        <div className="empty-new-file-hint">
+                            Do you want to add or replace the contents of this
+                            dataset?
+                        </div>
+                        <AsyncButton
+                            icon={AddDatasetIcon}
+                            isSecondary={true}
+                            onClick={() => setIsAddFilesModelOpen(true)}
+                        >
+                            Add or replace files, APIs or URLs
+                        </AsyncButton>
+                    </>
+                )}
 
-                <div className="new-files">
-                    <div className="empty-new-file-hint">
-                        Do you want to add or replace the contents of this
-                        dataset?
+                {newDistributions.length ? (
+                    <div className="row new-files-area">
+                        {renderDistList(newDistributions)}
                     </div>
-                    <AsyncButton icon={AddDatasetIcon} isSecondary={true}>
-                        Add or replace files, APIs or URLs
-                    </AsyncButton>
-                    <AddNewFilesModal
-                        datasetId={this.props.datasetId}
-                        stateData={this.props.stateData}
-                        datasetStateUpdater={this.props.setState}
-                    />
-                </div>
+                ) : null}
+
+                <AddNewFilesModal
+                    isOpen={isAddFilesModalOpen}
+                    setIsOpen={setIsAddFilesModelOpen}
+                    datasetId={props.datasetId}
+                    stateData={props.stateData}
+                    datasetStateUpdater={props.setState}
+                    editDistributionHandler={editDistribution}
+                    deleteDistributionHandler={deleteDistributionHandler}
+                />
             </div>
         );
-    }
-}
+    };
+
+    return render();
+};
 
 export default EditFilesPage;

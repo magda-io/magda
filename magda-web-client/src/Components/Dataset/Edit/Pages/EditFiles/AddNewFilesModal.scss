@@ -1,2 +1,31 @@
 .add-new-files-modal {
+    .small-heading {
+        color: #737373;
+        font-size: 18px;
+        letter-spacing: -0.3px;
+        line-height: 20px;
+        margin-bottom: 26px;
+    }
+    .file-drop-area {
+        margin-bottom: 43px;
+        width: 1122px;
+    }
+    .file-items-area {
+        width: 1122px;
+    }
+    .url-items-area {
+        margin-bottom: 50px;
+    }
+
+    .bottom-button-area {
+        padding-top: 25px;
+        text-align: center;
+    }
+
+    .dataset-add-files-fileListItem {
+        margin-bottom: 65px;
+    }
+}
+.last-row {
+    margin-bottom: 0px;
 }

@@ -5,7 +5,8 @@ import getDistributionFromId from "./getDistributionFromId";
 import {
     State,
     DistributionState,
-    DatasetStateUpdaterType
+    DatasetStateUpdaterType,
+    DistributionSource
 } from "../../DatasetAddCommon";
 
 const deleteDistribution = (
@@ -36,9 +37,20 @@ const deleteDistribution = (
                         if (!distToDelete) {
                             reject(
                                 new Error(
-                                    `Cannot locate the file (id: ${distId}) whihle tried to delete file`
+                                    `Cannot locate the distribution data (id: ${distId}) whihle tried to delete distribution`
                                 )
                             );
+                            return;
+                        }
+
+                        if (
+                            distToDelete.creationSource !==
+                            DistributionSource.File
+                        ) {
+                            // --- a distribution created from URL can be removed straight-away.
+                            removeDist();
+                            resolve();
+                            // --- exit once the distribution is deleted.
                             return;
                         }
 
