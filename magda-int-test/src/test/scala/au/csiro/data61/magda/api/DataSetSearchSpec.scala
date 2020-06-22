@@ -253,7 +253,7 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
         def dataSetToQuery(dataSet: DataSet) = {
           dataSet.publisher
             .flatMap(d => getAcronymFromPublisherName(d.name))
-            .map(acronym => Generators.randomCaseGen(acronym)) match {
+            .map(acronyms => Generators.randomCaseGen(acronyms.head)) match {
             case Some(randomCaseAcronymGen) =>
               randomCaseAcronymGen.flatMap(
                 acronym => Query(freeText = Some(acronym))
