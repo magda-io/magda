@@ -1,8 +1,8 @@
 .overlay-box-outter-container {
     padding-top: 42px;
-    padding-left: 57px;
-    padding-right: 70px;
-    padding-bottom: 52px;
+    padding-left: 47px;
+    padding-right: 50px;
+    padding-bottom: 45px;
 
     .overlay-box-header {
         position: relative;
@@ -13,11 +13,16 @@
         font-size: 29px;
         letter-spacing: -0.5px;
         line-height: 30px;
+        padding-bottom: 30px;
+        border-bottom: 2px solid #cccaca;
 
         svg {
             position: absolute;
             width: 60px;
             height: 60px;
+            top: -15px;
+            right: -25px;
+            cursor: pointer;
         }
     }
 
