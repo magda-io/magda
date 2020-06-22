@@ -51,6 +51,7 @@ export type Distribution = {
     isAddConfirmed?: boolean;
     // --- whether it's a distribution user yet to confirm it should be replace existing distribution or not
     isReplacementComfired?: boolean;
+    replaceDistId?: string;
     _state: DistributionState;
     _progress?: number;
 };

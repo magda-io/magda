@@ -41,6 +41,25 @@
                 padding-top: 42px;
                 padding-bottom: 42px;
             }
+            .dropable-area {
+                width: 100%;
+                min-height: 155px;
+            }
+            .over .dropable-area {
+                background-color: #e7e7e7;
+            }
+
+            .assigned-distribution {
+                position: relative;
+                svg {
+                    position: absolute;
+                    width: 28px;
+                    height: 28px;
+                    top: 5px;
+                    right: 45px;
+                    cursor: pointer;
+                }
+            }
         }
         .new-files-area {
             border: 3px dashed #d8d8d8;
@@ -55,6 +74,13 @@
                 letter-spacing: 0;
                 line-height: 26px;
                 margin-bottom: 30px;
+            }
+        }
+
+        .new-file-items-area {
+            min-height: 150px;
+            .dataset-add-files-fileListItem {
+                margin-bottom: 40px;
             }
         }
     }
