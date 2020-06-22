@@ -27,6 +27,7 @@ type PropsType = {
     stateData: State;
     datasetStateUpdater: DatasetStateUpdaterType;
     datasetId: string;
+    initDistProps?: Partial<Distribution>;
 };
 
 function trimExtension(filename: string) {
@@ -80,6 +81,7 @@ function isDirItem(idx: number, event: any) {
 
 const FileDropZone: FunctionComponent<PropsType> = (props) => {
     const { datasetStateUpdater, stateData, datasetId } = props;
+    const initDistProps = props.initDistProps ? props.initDistProps : {};
 
     const onBrowse = async () => {
         addFiles(await getFiles("*.*"));
@@ -125,7 +127,9 @@ const FileDropZone: FunctionComponent<PropsType> = (props) => {
                           datasetId,
                           distRecordId
                       )}/${thisFile.name}`
-                    : undefined
+                    : undefined,
+                // --- allow other component to overwrite distribution status
+                ...initDistProps
             };
 
             try {

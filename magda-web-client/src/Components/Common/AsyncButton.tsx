@@ -30,7 +30,7 @@ type PropsType = Overwrite<
  */
 const AsyncButton: FunctionComponent<PropsType> = (props) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const newProps = { ...props };
+    const { isSecondary, icon: Icon, ...newProps } = { ...props };
     let isUnmounted = false;
 
     useEffect(() => {
@@ -73,8 +73,6 @@ const AsyncButton: FunctionComponent<PropsType> = (props) => {
     newProps.className = props.className
         ? `${commonClassNames} ${props.className}`
         : commonClassNames;
-
-    const Icon = props.icon;
 
     if (Icon) {
         return (
