@@ -65,6 +65,7 @@ UI:
 -   Add `MyDatasets` Section to Homepage (after logged in)
 -   Fix magda & ckan login options are missing
 -   Always set dataset publishing state to "published" no matter the approval flow is on / off
+-   Fix a sheet file contains date would cause blank screen during processing
 
 Storage:
 
