@@ -4293,7 +4293,7 @@ class RecordsServiceSpec extends ApiSpec {
           val eventsPage = responseAs[EventsPage]
           eventsPage.events.length shouldEqual 2
           eventsPage.events(1).userId shouldEqual Some(USER_ID)
-          eventsPage.events(1).eventType shouldEqual EventType.CreateRecord
+          eventsPage.events(1).eventType shouldEqual EventType.PatchRecord
           eventsPage
             .events(1)
             .data
@@ -4965,7 +4965,14 @@ class RecordsServiceSpec extends ApiSpec {
             status shouldEqual StatusCodes.OK
           }
 
-          Get(s"/v0/records/without/history") ~> addTenantIdHeader(
+          param.asAdmin(Delete("/v0/records/without")) ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(role).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            responseAs[DeleteResult].deleted shouldBe true
+          }
+
+          param.asAdmin(Get(s"/v0/records/without/history")) ~> addTenantIdHeader(
             TENANT_1
           ) ~> param
             .api(role)
@@ -4988,13 +4995,6 @@ class RecordsServiceSpec extends ApiSpec {
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
             responseAs[DeleteResult].deleted shouldBe false
-          }
-
-          param.asAdmin(Delete("/v0/records/without")) ~> addTenantIdHeader(
-            TENANT_1
-          ) ~> param.api(role).routes ~> check {
-            status shouldEqual StatusCodes.OK
-            responseAs[DeleteResult].deleted shouldBe true
           }
         }
 

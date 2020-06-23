@@ -37,7 +37,11 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
               marshaller: ToEntityMarshaller[WebHook]
           ) => {
             // Forward the req to the registry api
-            expectAdminCheck(param.authFetcher, true)
+            expectAdminCheck(
+              param.authFetcher,
+              true,
+              TestActorSystem.AUTH_USER_ID
+            )
             val request = Post(url, webhook)(marshaller, param.api(Full).ec)
               .withHeaders(scala.collection.immutable.Seq.concat(headers))
 
@@ -121,7 +125,11 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
               marshaller: ToEntityMarshaller[WebHook]
           ) => {
             // Forward the req to the registry api
-            expectAdminCheck(param.authFetcher, true)
+            expectAdminCheck(
+              param.authFetcher,
+              true,
+              TestActorSystem.AUTH_USER_ID
+            )
             val request = Put(url, webhook)(marshaller, param.api(Full).ec)
               .withHeaders(scala.collection.immutable.Seq.concat(headers))
 
