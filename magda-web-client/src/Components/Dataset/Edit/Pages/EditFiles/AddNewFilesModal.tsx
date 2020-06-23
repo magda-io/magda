@@ -1,11 +1,12 @@
-import React, { FunctionComponent } from "react";
+import React, { FunctionComponent, useRef, useState } from "react";
 import OverlayBox from "Components/Common/OverlayBox";
 import FileDropZone from "../../../Add/Pages/AddFiles/FileDropZone";
 import {
     State,
     DatasetStateUpdaterType,
     Distribution,
-    DistributionSource
+    DistributionSource,
+    DistributionState
 } from "Components/Dataset/Add/DatasetAddCommon";
 import AsyncButton from "Components/Common/AsyncButton";
 import DatasetFile from "Components/Dataset/Add/DatasetFile";
@@ -24,11 +25,14 @@ type PropsType = {
     setIsOpen: (boolean) => void;
 };
 
+type PromiseListType = {
+    (key: string): Promise<void>;
+};
+
 const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
     const { distributions } = props.stateData;
-    const deletionPromises = {} as {
-        (distId: string): Promise<void>;
-    };
+    const [error, setError] = useState<Error | null>(null);
+    const deletionPromisesRef = useRef<PromiseListType>({} as PromiseListType);
 
     const renderDistList = (dists: Distribution[]) => {
         return (
@@ -44,11 +48,19 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
 
                         const distId = file.id!;
 
-                        const delHandler = () => {
-                            deletionPromises[
-                                distId
-                            ] = props.deleteDistributionHandler(distId)();
-                            return deletionPromises[distId];
+                        const delHandler = async () => {
+                            const deletionPromises =
+                                deletionPromisesRef.current;
+                            try {
+                                setError(null);
+                                deletionPromises[
+                                    distId
+                                ] = props.deleteDistributionHandler(distId)();
+                                await deletionPromises[distId];
+                            } catch (e) {
+                                setError(e);
+                                throw e;
+                            }
                         };
 
                         return (
@@ -87,23 +99,34 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
                 item.creationSource === DistributionSource.DatasetUrl)
     );
 
-    const closeModal = async () => {
-        // --- wait for existing deletion job
-        await Promise.all(Object.values(deletionPromises));
-        // --- try to delete all existing files
-        await Promise.all(
-            uploadedDistributions.map((item) =>
-                props.deleteDistributionHandler(item.id!)()
-            )
-        );
-        // -- try to delete all existing url distributions
-        await Promise.all(
-            urlDistributions.map((item) =>
-                props.deleteDistributionHandler(item.id!)()
-            )
-        );
+    const pendingDistributions = distributions.filter(
+        (item) =>
+            item._state !== DistributionState.Ready &&
+            item._state !== DistributionState.Drafting
+    );
 
-        props.setIsOpen(false);
+    const closeModal = async () => {
+        try {
+            setError(null);
+            const deletionPromises = deletionPromisesRef.current;
+            // --- wait for existing deletion job
+            await Promise.all(Object.values(deletionPromises));
+            // --- try to delete all existing files
+            await Promise.all(
+                uploadedDistributions.map((item) =>
+                    props.deleteDistributionHandler(item.id!)()
+                )
+            );
+            // -- try to delete all existing url distributions
+            await Promise.all(
+                urlDistributions.map((item) =>
+                    props.deleteDistributionHandler(item.id!)()
+                )
+            );
+            props.setIsOpen(false);
+        } catch (e) {
+            setError(e);
+        }
     };
 
     return (
@@ -112,6 +135,7 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
             isOpen={props.isOpen}
             title="Select the new content you want to add or replace"
             onClose={closeModal}
+            showCloseButton={pendingDistributions.length ? false : true}
         >
             <div className="small-heading">New files</div>
 
@@ -143,8 +167,19 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
                 </div>
             ) : null}
 
+            {error ? (
+                <div className="au-body au-page-alerts au-page-alerts--error">
+                    <div>
+                        <span>
+                            Magda has encountered an error: {error?.message}
+                        </span>
+                    </div>
+                </div>
+            ) : null}
+
             <div className="bottom-button-area">
                 <AsyncButton
+                    disabled={pendingDistributions.length ? true : false}
                     onClick={() => {
                         [...uploadedDistributions, ...urlDistributions].forEach(
                             (item) => {
@@ -162,7 +197,11 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
                     Finish Adding
                 </AsyncButton>{" "}
                 &nbsp;&nbsp;&nbsp;
-                <AsyncButton isSecondary={true} onClick={closeModal}>
+                <AsyncButton
+                    isSecondary={true}
+                    onClick={closeModal}
+                    disabled={pendingDistributions.length ? true : false}
+                >
                     Cancel
                 </AsyncButton>
             </div>

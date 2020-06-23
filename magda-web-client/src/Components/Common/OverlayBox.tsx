@@ -58,7 +58,9 @@ const OverlayBox: FunctionComponent<PropsType> = (props) => {
             >
                 <div className="overlay-box-header">
                     {runtimeTitle}
-                    <DismissIcon onClick={props.onClose} />
+                    {typeof showCloseButton !== "boolean" || showCloseButton ? (
+                        <DismissIcon onClick={props.onClose} />
+                    ) : null}
                 </div>
                 <div className="overlay-box-body au-grid container">
                     {props.children}

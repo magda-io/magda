@@ -39,7 +39,7 @@ const AsyncButton: FunctionComponent<PropsType> = (props) => {
         return () => {
             isUnmountedRef.current = true;
         };
-    });
+    }, [isUnmountedRef]);
 
     if (props.children) {
         const frag = <>{props.children}</>;

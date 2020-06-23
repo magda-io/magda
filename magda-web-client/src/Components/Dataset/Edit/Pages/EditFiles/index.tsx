@@ -14,7 +14,6 @@ import { User } from "reducers/userManagementReducer";
 
 import "./index.scss";
 import "../../../Add/DatasetAddCommon.scss";
-import UserVisibleError from "helpers/UserVisibleError";
 import deleteDistribution from "../../../Add/Pages/AddFiles/deleteDistribution";
 import updateLastModifyDate from "../../../Add/Pages/AddFiles/updateLastModifyDate";
 
@@ -116,14 +115,7 @@ const EditFilesPage: FunctionComponent<Props> = (props) => {
             props.setState,
             props.stateData.datasetAccess.useStorageApi,
             distId
-        ).catch((e) => {
-            console.error(e);
-            if (e instanceof UserVisibleError) {
-                props.setState({
-                    error: e
-                });
-            }
-        });
+        );
 
     const renderDistList = (dists: Distribution[]) => {
         return (
