@@ -35,14 +35,14 @@ const SupercedeSelectionBox: FunctionComponent<PropsType> = (props) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {existingDistributions.map((item, idx) => {
+                    {existingDistributions.map((existingItem, idx) => {
                         const assignedDist = assignedDistributions.find(
-                            (item) => item.id === item.id
+                            (item) => item.replaceDistId === existingItem.id
                         );
                         return (
                             <tr key={idx}>
                                 <td>
-                                    <DatasetFile file={item} />
+                                    <DatasetFile file={existingItem} />
                                 </td>
                                 <td>
                                     {assignedDist ? (
@@ -69,7 +69,8 @@ const SupercedeSelectionBox: FunctionComponent<PropsType> = (props) => {
                                                     distId
                                                 )((dist) => ({
                                                     ...dist,
-                                                    replaceDistId: item.id
+                                                    replaceDistId:
+                                                        existingItem.id
                                                 }));
                                             }}
                                         >
