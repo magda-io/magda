@@ -215,7 +215,20 @@ export default async function processFile(
             modified: moment(output.modified).toDate(),
             keywords: output.keywords,
             equalHash: output.equalHash?.toString(),
-            temporalCoverage: output.temporalCoverage,
+            temporalCoverage: output.temporalCoverage?.intervals?.length
+                ? {
+                      intervals: output.temporalCoverage.intervals.map(
+                          (item) => ({
+                              start: item?.start
+                                  ? moment(item.start).toDate()
+                                  : item?.start,
+                              end: item?.end
+                                  ? moment(item.end).toDate()
+                                  : item?.end
+                          })
+                      )
+                  }
+                : output.temporalCoverage,
             spatialCoverage: output.spatialCoverage
         };
     } catch (e) {
