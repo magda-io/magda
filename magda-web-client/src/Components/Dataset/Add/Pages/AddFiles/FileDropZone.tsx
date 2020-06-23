@@ -122,7 +122,7 @@ const FileDropZone: FunctionComponent<PropsType> = (props) => {
                 _state: DistributionState.Added,
                 license: "No license",
                 creationSource: DistributionSource.File,
-                downloadURL: stateData.shouldUploadToStorageApi
+                downloadURL: stateData.datasetAccess.useStorageApi
                     ? `${config.storageApiUrl}${baseStorageApiPath(
                           datasetId,
                           distRecordId
@@ -143,7 +143,7 @@ const FileDropZone: FunctionComponent<PropsType> = (props) => {
                         datasetStateUpdater
                     ),
                     datasetStateUpdater,
-                    stateData.shouldUploadToStorageApi
+                    stateData.datasetAccess.useStorageApi
                 );
 
                 datasetStateUpdater((state: State) => {
@@ -241,7 +241,7 @@ const FileDropZone: FunctionComponent<PropsType> = (props) => {
                     return newState;
                 });
 
-                if (stateData.shouldUploadToStorageApi) {
+                if (stateData.datasetAccess.useStorageApi) {
                     // Save now so that we don't end up with orphaned uploaded files
                     // if the user leaves without saving
                     await saveRuntimeStateToStorage(

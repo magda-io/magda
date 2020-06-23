@@ -122,6 +122,7 @@ type Provenance = {
 
 export type Access = {
     location?: string;
+    useStorageApi?: boolean;
     note?: string;
 };
 

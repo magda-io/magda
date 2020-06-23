@@ -74,22 +74,22 @@ const EditFilesPage: FunctionComponent<Props> = (props) => {
         return (
             <StorageOptionsSection
                 files={localFiles}
-                shouldUploadToStorageApi={state.shouldUploadToStorageApi}
+                shouldUploadToStorageApi={state.datasetAccess.useStorageApi}
                 setShouldUploadToStorageApi={(value) => {
                     props.setState((state: State) => {
-                        const newState = {
-                            ...state,
-                            shouldUploadToStorageApi: value
-                        };
+                        const datasetAccess = { ...state.datasetAccess };
+
+                        datasetAccess.useStorageApi = value;
+
                         if (value) {
                             // --- delete dataset location data when upload to storage api is selected
-                            const {
-                                location: originalLocation,
-                                ...newDatasetAccess
-                            } = { ...state.datasetAccess };
-                            newState.datasetAccess = newDatasetAccess;
+                            delete datasetAccess.location;
                         }
-                        return newState;
+
+                        return {
+                            ...state,
+                            datasetAccess
+                        };
                     });
                 }}
                 dataAccessLocation={
@@ -114,7 +114,7 @@ const EditFilesPage: FunctionComponent<Props> = (props) => {
         deleteDistribution(
             props.datasetId,
             props.setState,
-            props.stateData.shouldUploadToStorageApi,
+            props.stateData.datasetAccess.useStorageApi,
             distId
         ).catch((e) => {
             console.error(e);

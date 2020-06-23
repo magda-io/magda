@@ -191,8 +191,6 @@ export type State = {
 
     licenseLevel: "dataset" | "distribution";
 
-    shouldUploadToStorageApi: boolean;
-
     isPublishing: boolean;
     error: Error | null;
 };
@@ -213,6 +211,7 @@ export type Interval = {
 
 type Access = {
     location?: string;
+    useStorageApi: boolean;
     notes?: string;
 };
 
@@ -506,8 +505,18 @@ export async function rawDatasetDataToState(
 
     populateTemporalCoverageAspect(data, state);
 
+    state.datasetAccess = {
+        useStorageApi:
+            typeof data?.aspects?.access?.useStorageApi === "boolean"
+                ? data.aspects.access.useStorageApi
+                : false
+    };
+
     if (data.aspects?.["access"]?.location || data.aspects?.["access"]?.note) {
-        state.datasetAccess = data.aspects?.["access"];
+        state.datasetAccess = {
+            ...state.datasetAccess,
+            ...data.aspects.access
+        };
     }
 
     if (data.aspects?.["information-security"]?.classification) {
@@ -560,7 +569,9 @@ export function createBlankState(user: User): State {
         temporalCoverage: {
             intervals: []
         },
-        datasetAccess: {},
+        datasetAccess: {
+            useStorageApi: false
+        },
         informationSecurity: {},
         provenance: {},
         currency: {
@@ -568,7 +579,6 @@ export function createBlankState(user: User): State {
         },
         licenseLevel: "dataset",
         isPublishing: false,
-        shouldUploadToStorageApi: false,
         error: null,
         _createdDate: new Date(),
         _lastModifiedDate: new Date()

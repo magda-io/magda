@@ -65,22 +65,22 @@ class AddFilesPage extends React.Component<Props> {
         return (
             <StorageOptionsSection
                 files={localFiles}
-                shouldUploadToStorageApi={state.shouldUploadToStorageApi}
+                shouldUploadToStorageApi={state.datasetAccess.useStorageApi}
                 setShouldUploadToStorageApi={(value) => {
                     this.props.setState((state: State) => {
-                        const newState = {
-                            ...state,
-                            shouldUploadToStorageApi: value
-                        };
+                        const datasetAccess = { ...state.datasetAccess };
+
+                        datasetAccess.useStorageApi = value;
+
                         if (value) {
                             // --- delete dataset location data when upload to storage api is selected
-                            const {
-                                location: originalLocation,
-                                ...newDatasetAccess
-                            } = { ...state.datasetAccess };
-                            newState.datasetAccess = newDatasetAccess;
+                            delete datasetAccess.location;
                         }
-                        return newState;
+
+                        return {
+                            ...state,
+                            datasetAccess
+                        };
                     });
                 }}
                 dataAccessLocation={
@@ -111,7 +111,7 @@ class AddFilesPage extends React.Component<Props> {
             deleteDistribution(
                 this.props.datasetId,
                 this.props.setState,
-                this.props.stateData.shouldUploadToStorageApi,
+                this.props.stateData.datasetAccess.useStorageApi,
                 distId
             ).catch((e) => {
                 console.error(e);
