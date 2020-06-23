@@ -3,7 +3,8 @@ import React, {
     ButtonHTMLAttributes,
     useState,
     MouseEvent,
-    useEffect
+    useEffect,
+    useRef
 } from "react";
 
 import "./AsyncButton.scss";
@@ -31,15 +32,14 @@ type PropsType = Overwrite<
 const AsyncButton: FunctionComponent<PropsType> = (props) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const { isSecondary, icon: Icon, ...newProps } = { ...props };
-    let isUnmounted = false;
+    const isUnmountedRef = useRef<boolean>(false);
 
     useEffect(() => {
-        isUnmounted = false;
-
+        isUnmountedRef.current = false;
         return () => {
-            isUnmounted = true;
+            isUnmountedRef.current = true;
         };
-    }, []);
+    });
 
     if (props.children) {
         const frag = <>{props.children}</>;
@@ -55,12 +55,12 @@ const AsyncButton: FunctionComponent<PropsType> = (props) => {
 
     if (props.onClick && typeof props.onClick === "function") {
         newProps.onClick = async (...args) => {
-            if (!isUnmounted) {
+            if (!isUnmountedRef.current) {
                 setIsLoading(true);
             }
             // --- await `result` will be resolved to the `result`
             await props.onClick?.apply(null, args);
-            if (!isUnmounted) {
+            if (!isUnmountedRef.current) {
                 setIsLoading(false);
             }
         };
@@ -76,7 +76,10 @@ const AsyncButton: FunctionComponent<PropsType> = (props) => {
 
     if (Icon) {
         return (
-            <button {...newProps} disabled={props.disabled ? true : undefined}>
+            <button
+                {...newProps}
+                disabled={props.disabled || isLoading ? true : undefined}
+            >
                 <Icon />
                 <>{newProps.children}</>
             </button>
@@ -85,7 +88,7 @@ const AsyncButton: FunctionComponent<PropsType> = (props) => {
         return (
             <button
                 {...newProps}
-                disabled={props.disabled ? true : undefined}
+                disabled={props.disabled || isLoading ? true : undefined}
             />
         );
     }
