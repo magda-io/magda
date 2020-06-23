@@ -182,7 +182,7 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
     }
 
     def expectWebHookGet(param: FixtureParam) {
-      expectAdminCheck(param.authFetcher, true)
+      expectAdminCheck(param.authFetcher, true, TestActorSystem.AUTH_USER_ID)
       (param.authFetcher
         .get(_: String, _: Seq[HttpHeader]))
         .expects(*, *)
