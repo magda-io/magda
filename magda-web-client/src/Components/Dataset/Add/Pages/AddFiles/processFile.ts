@@ -17,6 +17,7 @@ import * as Comlink from "comlink";
 
 import baseStorageApiPath from "./baseStorageApiPath";
 import uploadFile from "./uploadFile";
+import translateError from "helpers/translateError";
 
 const ExtractorsWorker = require("worker-loader!../../../MetadataExtraction"); // eslint-disable-line import/no-webpack-loader-syntax
 
@@ -156,15 +157,17 @@ export default async function processFile(
      * Promise tracking the upload of a file if relevant - if upload
      * isn't needed, simply resolves instantly
      */
-    const uploadPromise = shouldUpload
-        ? uploadFile(
-              datasetId,
-              thisFile,
-              initialDistribution.id!,
-              handleUploadProgress,
-              saveDatasetToStorage
-          )
-        : Promise.resolve();
+    const doUpload = async () => {
+        if (shouldUpload) {
+            await uploadFile(
+                datasetId,
+                thisFile,
+                initialDistribution.id!,
+                handleUploadProgress,
+                saveDatasetToStorage
+            );
+        }
+    };
 
     const arrayBuffer = await readFileAsArrayBuffer(thisFile);
     const input = {
@@ -188,6 +191,8 @@ export default async function processFile(
     }>;
 
     try {
+        await doUpload();
+
         // Wait for extractors and upload to finish
         const output = await extractors.runExtractors(
             input,
@@ -201,7 +206,6 @@ export default async function processFile(
             })(),
             Comlink.proxy(handleExtractionProgress)
         );
-        await uploadPromise;
 
         // Now we're done!
         updateThisDist((_dist: Distribution) => ({
@@ -233,7 +237,6 @@ export default async function processFile(
         };
     } catch (e) {
         // Something went wrong - remove the distribution and show the error
-        console.error(e);
 
         /** Removes the distribution and displays the error */
         const removeDist = async () => {
@@ -254,7 +257,7 @@ export default async function processFile(
             // If we tried to upload and something went wrong, make sure we get
             // rid of the file in storage as well if possible
             try {
-                await uploadPromise;
+                await doUpload();
             } catch (e) {
                 try {
                     const res = await fetch(
@@ -287,6 +290,6 @@ export default async function processFile(
             await removeDist();
         }
 
-        throw e;
+        throw translateError(e);
     }
 }

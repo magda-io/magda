@@ -154,6 +154,10 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
                         isAddConfirmed: false,
                         isReplacementComfired: false
                     }}
+                    onError={(e) => {
+                        console.error(e);
+                        setError(e);
+                    }}
                 />
             </div>
 

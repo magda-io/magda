@@ -17,9 +17,9 @@ import {
 } from "../../DatasetAddCommon";
 import baseStorageApiPath from "./baseStorageApiPath";
 import processFile from "./processFile";
-import UserVisibleError from "helpers/UserVisibleError";
 import { getFiles } from "helpers/readFile";
 import updateLastModifyDate from "./updateLastModifyDate";
+import promisifySetState from "helpers/promisifySetState";
 
 import "./FileDropZone.scss";
 
@@ -28,6 +28,7 @@ type PropsType = {
     datasetStateUpdater: DatasetStateUpdaterType;
     datasetId: string;
     initDistProps?: Partial<Distribution>;
+    onError: (error: Error) => void;
 };
 
 function trimExtension(filename: string) {
@@ -84,12 +85,20 @@ const FileDropZone: FunctionComponent<PropsType> = (props) => {
     const initDistProps = props.initDistProps ? props.initDistProps : {};
 
     const onBrowse = async () => {
-        addFiles(await getFiles("*.*"));
+        try {
+            await addFiles(await getFiles("*.*"));
+        } catch (e) {
+            props.onError(e);
+        }
     };
 
     const onDrop = async (fileList: FileList | null, event: any) => {
-        if (fileList) {
-            addFiles(fileList, event);
+        try {
+            if (fileList) {
+                await addFiles(fileList, event);
+            }
+        } catch (e) {
+            props.onError(e);
         }
     };
 
@@ -132,130 +141,108 @@ const FileDropZone: FunctionComponent<PropsType> = (props) => {
                 ...initDistProps
             };
 
-            try {
-                const distAfterProcessing = await processFile(
+            const distAfterProcessing = await processFile(
+                datasetId,
+                thisFile,
+                dist,
+                partial(
+                    saveRuntimeStateToStorage,
                     datasetId,
-                    thisFile,
-                    dist,
-                    partial(
-                        saveRuntimeStateToStorage,
-                        datasetId,
-                        datasetStateUpdater
-                    ),
-                    datasetStateUpdater,
-                    stateData.datasetAccess.useStorageApi
-                );
+                    datasetStateUpdater
+                ),
+                datasetStateUpdater,
+                stateData.datasetAccess.useStorageApi
+            );
 
-                datasetStateUpdater((state: State) => {
-                    const newState: State = {
-                        ...state,
-                        distributions: state.distributions.slice(0)
+            await promisifySetState(datasetStateUpdater)((state: State) => {
+                const newState: State = {
+                    ...state,
+                    distributions: [...state.distributions]
+                };
+
+                const { dataset, temporalCoverage, spatialCoverage } = state;
+
+                if (
+                    (!dataset.title || dataset.title === "") &&
+                    distAfterProcessing?.datasetTitle
+                ) {
+                    dataset.title = distAfterProcessing.datasetTitle;
+                }
+
+                for (let key of ["keywords", "themes"]) {
+                    const existing = dataset[key]
+                        ? (dataset[key] as KeywordsLike)
+                        : {
+                              keywords: [],
+                              derived: false
+                          };
+                    const fileKeywords: string[] =
+                        distAfterProcessing[key] || [];
+
+                    dataset[key] = {
+                        keywords: uniq(existing.keywords.concat(fileKeywords)),
+                        derived: existing.derived || fileKeywords.length > 0
                     };
+                }
 
-                    const {
-                        dataset,
-                        temporalCoverage,
-                        spatialCoverage
-                    } = state;
-
-                    if (
-                        (!dataset.title || dataset.title === "") &&
-                        distAfterProcessing?.datasetTitle
-                    ) {
-                        dataset.title = distAfterProcessing.datasetTitle;
-                    }
-
-                    for (let key of ["keywords", "themes"]) {
-                        const existing = dataset[key]
-                            ? (dataset[key] as KeywordsLike)
-                            : {
-                                  keywords: [],
-                                  derived: false
-                              };
-                        const fileKeywords: string[] =
-                            distAfterProcessing[key] || [];
-
-                        dataset[key] = {
-                            keywords: uniq(
-                                existing.keywords.concat(fileKeywords)
-                            ),
-                            derived: existing.derived || fileKeywords.length > 0
-                        };
-                    }
-
-                    if (distAfterProcessing.spatialCoverage) {
-                        Object.assign(
-                            spatialCoverage,
-                            distAfterProcessing.spatialCoverage
-                        );
-                    }
-
-                    if (distAfterProcessing.temporalCoverage) {
-                        temporalCoverage.intervals = temporalCoverage.intervals.concat(
-                            distAfterProcessing.temporalCoverage?.intervals ||
-                                []
-                        );
-                        let uniqTemporalCoverage = uniqWith(
-                            temporalCoverage.intervals,
-                            (arrVal: Interval, othVal: Interval) => {
-                                return (
-                                    arrVal.start?.getTime() ===
-                                        othVal.start?.getTime() &&
-                                    arrVal.end?.getTime() ===
-                                        othVal.end?.getTime()
-                                );
-                            }
-                        );
-                        temporalCoverage.intervals = uniqTemporalCoverage;
-                    }
-
-                    if (
-                        config.datasetThemes &&
-                        config.datasetThemes.length &&
-                        newState.dataset &&
-                        newState.dataset.keywords &&
-                        newState.dataset.keywords.keywords &&
-                        newState.dataset.keywords.keywords.length
-                    ) {
-                        const keywords = newState.dataset.keywords.keywords.map(
-                            (item) => item.toLowerCase()
-                        );
-                        const themesBasedOnKeywords = config.datasetThemes.filter(
-                            (theme) =>
-                                keywords.indexOf(theme.toLowerCase()) !== -1
-                        );
-                        if (themesBasedOnKeywords.length) {
-                            const existingThemesKeywords = newState.dataset
-                                .themes
-                                ? newState.dataset.themes.keywords
-                                : [];
-                            newState.dataset.themes = {
-                                keywords: themesBasedOnKeywords.concat(
-                                    existingThemesKeywords
-                                ),
-                                derived: true
-                            };
-                        }
-                    }
-
-                    return newState;
-                });
-
-                if (stateData.datasetAccess.useStorageApi) {
-                    // Save now so that we don't end up with orphaned uploaded files
-                    // if the user leaves without saving
-                    await saveRuntimeStateToStorage(
-                        datasetId,
-                        datasetStateUpdater
+                if (distAfterProcessing.spatialCoverage) {
+                    Object.assign(
+                        spatialCoverage,
+                        distAfterProcessing.spatialCoverage
                     );
                 }
-            } catch (e) {
-                console.error(e);
-                if (e instanceof UserVisibleError) {
-                    datasetStateUpdater({
-                        error: e
-                    });
+
+                if (distAfterProcessing.temporalCoverage) {
+                    temporalCoverage.intervals = temporalCoverage.intervals.concat(
+                        distAfterProcessing.temporalCoverage?.intervals || []
+                    );
+                    let uniqTemporalCoverage = uniqWith(
+                        temporalCoverage.intervals,
+                        (arrVal: Interval, othVal: Interval) => {
+                            return (
+                                arrVal.start?.getTime() ===
+                                    othVal.start?.getTime() &&
+                                arrVal.end?.getTime() === othVal.end?.getTime()
+                            );
+                        }
+                    );
+                    temporalCoverage.intervals = uniqTemporalCoverage;
                 }
+
+                if (
+                    config.datasetThemes &&
+                    config.datasetThemes.length &&
+                    newState.dataset &&
+                    newState.dataset.keywords &&
+                    newState.dataset.keywords.keywords &&
+                    newState.dataset.keywords.keywords.length
+                ) {
+                    const keywords = newState.dataset.keywords.keywords.map(
+                        (item) => item.toLowerCase()
+                    );
+                    const themesBasedOnKeywords = config.datasetThemes.filter(
+                        (theme) => keywords.indexOf(theme.toLowerCase()) !== -1
+                    );
+                    if (themesBasedOnKeywords.length) {
+                        const existingThemesKeywords = newState.dataset.themes
+                            ? newState.dataset.themes.keywords
+                            : [];
+                        newState.dataset.themes = {
+                            keywords: themesBasedOnKeywords.concat(
+                                existingThemesKeywords
+                            ),
+                            derived: true
+                        };
+                    }
+                }
+
+                return newState;
+            });
+
+            if (stateData.datasetAccess.useStorageApi) {
+                // Save now so that we don't end up with orphaned uploaded files
+                // if the user leaves without saving
+                await saveRuntimeStateToStorage(datasetId, datasetStateUpdater);
             }
         }
         updateLastModifyDate(datasetStateUpdater);

@@ -228,6 +228,14 @@ class AddFilesPage extends React.Component<Props> {
                     datasetId={this.props.datasetId}
                     datasetStateUpdater={this.props.setState}
                     stateData={this.props.stateData}
+                    onError={(e) => {
+                        console.error(e);
+                        if (e instanceof UserVisibleError) {
+                            this.props.setState({
+                                error: e
+                            });
+                        }
+                    }}
                 />
 
                 <AddDatasetLinkSection
