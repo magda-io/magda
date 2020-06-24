@@ -110,6 +110,7 @@ Search:
 
 -   Began work on a NodeJS-based search API to replace the scala one
 -   Allow fetch region record by region id
+-   Use a list of acronyms for publishers that have a 'Department of' in their name
 
 Others:
 

@@ -330,17 +330,32 @@ object Registry
 
   def getAcronymFromPublisherName(
       publisherName: Option[String]
-  ): Option[String] = {
+  ): Option[List[String]] = {
     publisherName
       .map("""[^a-zA-Z\s]""".r.replaceAllIn(_, ""))
-      .map(
-        """\s""".r
-          .split(_)
+      .map { nameStr =>
+        val nameStrParts = """\s""".r
+          .split(nameStr)
           .map(_.trim.toUpperCase)
-          .filter(!List("", "AND", "THE", "OF").contains(_))
-          .map(_.take(1))
-          .mkString
-      )
+
+        List(
+          Some(
+            nameStrParts
+              .filter(!List("", "AND", "THE", "OF").contains(_))
+              .map(_.take(1))
+              .mkString
+          ),
+          (if (nameStrParts(0) == "DEPARTMENT")
+             Some(
+               nameStrParts
+                 .drop(1)
+                 .filter(!List("", "AND", "THE", "OF").contains(_))
+                 .map(_.take(1))
+                 .mkString
+             )
+           else None)
+        ).filter(_.isDefined).map(_.get)
+      }
   }
 
   def convertPublisher(publisher: Registry.Record): Agent = {
