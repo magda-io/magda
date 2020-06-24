@@ -9,12 +9,7 @@ export default class DatasetPagePreview extends Component {
         if (!distributions || distributions.length === 0) {
             return null;
         }
-        return distributions.find(
-            (d) =>
-                d.linkStatusAvailable &&
-                d.linkActive &&
-                /(^|\W+)csv(\W+|$)/i.test(d.format)
-        );
+        return distributions.find((d) => /(^|\W+)csv(\W+|$)/i.test(d.format));
     }
 
     render() {
