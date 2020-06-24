@@ -1,11 +1,7 @@
 import fetch from "isomorphic-fetch";
 import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
-import {
-    RecordAction,
-    RawDataset,
-    CkanExportAspectProperties
-} from "../helpers/record";
+import { RecordAction, RawDataset } from "../helpers/record";
 import { FetchError } from "../types";
 import {
     ensureAspectExists,
@@ -13,8 +9,6 @@ import {
     Record
 } from "api-clients/RegistryApis";
 import request from "helpers/request";
-import { CkanExportAspectType } from "helpers/record";
-import ckanExportAspect from "@magda/registry-aspects/ckan-export.schema.json";
 
 export function requestDataset(id: string): RecordAction {
     return {
@@ -158,41 +152,6 @@ export function fetchDistributionFromRegistry(id: string): any {
     };
 }
 
-const DefaultCkanExportProperties: CkanExportAspectProperties = {
-    status: "withdraw",
-    hasCreated: false,
-    exportRequired: false,
-    exportAttempted: false
-};
-
-async function notifyCkanExportMinion(datasetId: string) {
-    let ckanExportData: CkanExportAspectType = {};
-    Object.keys(config.ckanExportServers).forEach((ckanServerUrl: string) => {
-        if (config.ckanExportServers[ckanServerUrl] === true) {
-            ckanExportData[ckanServerUrl] = DefaultCkanExportProperties;
-        }
-    });
-    try {
-        ckanExportData = await request(
-            "GET",
-            `${config.registryReadOnlyApiUrl}records/${datasetId}/aspects/ckan-export`
-        );
-    } catch (e) {
-        await ensureAspectExists("ckan-export", ckanExportAspect);
-        ckanExportData[config.defaultCkanServer] = {
-            ...DefaultCkanExportProperties
-        };
-    }
-
-    if (ckanExportData[config.defaultCkanServer].status === "retain") {
-        await request(
-            "PUT",
-            `${config.registryFullApiUrl}records/${datasetId}/aspects/ckan-export`,
-            { ...ckanExportData, exportRequired: true }
-        );
-    }
-}
-
 export function modifyRecordAspect(
     id: string,
     aspect: string,
@@ -227,7 +186,6 @@ export function modifyRecordAspect(
                 "Content-type": "application/json"
             }
         });
-
         return fetch(url, options)
             .then((response) => {
                 if (!response.ok) {
@@ -241,9 +199,7 @@ export function modifyRecordAspect(
                 return response.json();
             })
             .then((json: any) => {
-                return notifyCkanExportMinion(id).then(() => {
-                    return dispatch(receiveAspectModified(aspect, json));
-                });
+                return dispatch(receiveAspectModified(aspect, json));
             })
             .catch((error) =>
                 dispatch(
