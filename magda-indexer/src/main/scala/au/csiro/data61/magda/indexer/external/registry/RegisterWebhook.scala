@@ -89,7 +89,6 @@ object RegisterWebhook {
         includeRecords = Some(true),
         dereference = Some(true)
       ),
-      userId = Some(0), // TODO: Will have to change this when it becomes important
       isWaitingForResponse = None,
       active = true
     )

@@ -27,7 +27,6 @@ trait EventPersistence {
   def getLatestEventId(implicit session: DBSession): Option[Long]
 
   def getEvents(
-      implicit session: DBSession,
       pageToken: Option[Long] = None,
       start: Option[Int] = None,
       limit: Option[Int] = None,
@@ -36,7 +35,7 @@ trait EventPersistence {
       aspectIds: Set[String] = Set(),
       eventTypes: Set[EventType] = Set(),
       tenantId: TenantId
-  ): EventsPage
+  )(implicit session: DBSession): EventsPage
 }
 
 class DefaultEventPersistence(recordPersistence: RecordPersistence)
@@ -55,7 +54,6 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       .unfold(sinceEventId)(offset => {
         val events = DB readOnly { implicit session =>
           getEvents(
-            session = session,
             pageToken = Some(offset),
             start = None,
             limit = Some(eventStreamPageSize),
@@ -80,7 +78,6 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       .unfold(0L)(offset => {
         val events = DB readOnly { implicit session =>
           getEvents(
-            session = session,
             pageToken = Some(offset),
             start = None,
             limit = Some(eventStreamPageSize),
@@ -123,7 +120,6 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
     * @return EventsPage containing events that meet the specified requirements
     */
   def getEvents(
-      implicit session: DBSession,
       pageToken: Option[Long] = None,
       start: Option[Int] = None,
       limit: Option[Int] = None,
@@ -132,7 +128,7 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       aspectIds: Set[String] = Set(),
       eventTypes: Set[EventType] = Set(),
       tenantId: TenantId
-  ): EventsPage = {
+  )(implicit session: DBSession): EventsPage = {
     val filters: Seq[Option[SQLSyntax]] = Seq(
       pageToken.map(v => sqls"eventId > $v"),
       lastEventId.map(v => sqls"eventId <= $v"),
@@ -152,7 +148,7 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
             .toArray: _*
         )
 
-    val linkAspects = recordPersistence.buildReferenceMap(session, aspectIds)
+    val linkAspects = recordPersistence.buildReferenceMap(aspectIds)
     val dereferenceSelectors: Set[SQLSyntax] =
       linkAspects.toSet[(String, PropertyWithLink)].map {
         case (aspectId, propertyWithLink) =>
@@ -228,7 +224,7 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       id = rs.longOpt("eventId"),
       eventTime = rs.offsetDateTimeOpt("eventTime"),
       eventType = EventType.withValue(rs.int("eventTypeId")),
-      userId = rs.int("userId"),
+      userId = rs.stringOpt("userId"),
       data = JsonParser(rs.string("data")).asJsObject,
       tenantId = rs
         .bigIntOpt("tenantid")

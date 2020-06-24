@@ -124,17 +124,17 @@ class RecordAspectsService(
   def putById: Route = put {
     path(Segment / "aspects" / Segment) {
       (recordId: String, aspectId: String) =>
-        requireIsAdmin(authClient)(system, config) { _ =>
+        requireIsAdmin(authClient)(system, config) { user =>
           requiresSpecifiedTenantId { tenantId =>
             entity(as[JsObject]) { aspect =>
               val theResult = DB localTx { session =>
                 recordPersistence.putRecordAspectById(
-                  session,
                   tenantId,
                   recordId,
                   aspectId,
-                  aspect
-                ) match {
+                  aspect,
+                  user.id
+                )(session) match {
                   case Success(result) => complete(result)
                   case Failure(exception) =>
                     complete(
@@ -210,15 +210,15 @@ class RecordAspectsService(
   def deleteById: Route = delete {
     path(Segment / "aspects" / Segment) {
       (recordId: String, aspectId: String) =>
-        requireIsAdmin(authClient)(system, config) { _ =>
+        requireIsAdmin(authClient)(system, config) { user =>
           requiresSpecifiedTenantId { tenantId =>
             val theResult = DB localTx { session =>
               recordPersistence.deleteRecordAspect(
-                session,
                 tenantId,
                 recordId,
-                aspectId
-              ) match {
+                aspectId,
+                user.id
+              )(session) match {
                 case Success(result) => complete(DeleteResult(result))
                 case Failure(exception) =>
                   complete(
@@ -313,17 +313,17 @@ class RecordAspectsService(
   def patchById: Route = patch {
     path(Segment / "aspects" / Segment) {
       (recordId: String, aspectId: String) =>
-        requireIsAdmin(authClient)(system, config) { _ =>
+        requireIsAdmin(authClient)(system, config) { user =>
           requiresSpecifiedTenantId { tenantId =>
             entity(as[JsonPatch]) { aspectPatch =>
               val theResult = DB localTx { session =>
                 recordPersistence.patchRecordAspectById(
-                  session,
                   tenantId,
                   recordId,
                   aspectId,
-                  aspectPatch
-                ) match {
+                  aspectPatch,
+                  user.id
+                )(session) match {
                   case Success(result) => complete(result)
                   case Failure(exception) =>
                     complete(

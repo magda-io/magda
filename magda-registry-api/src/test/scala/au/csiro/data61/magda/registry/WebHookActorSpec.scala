@@ -25,7 +25,6 @@ class WebHookActorSpec extends ApiSpec with BeforeAndAfterEach {
 
     val hook = WebHook(
       id = Some(hookId),
-      userId = None,
       name = "abc",
       active = true,
       lastEvent = None,
@@ -58,7 +57,6 @@ class WebHookActorSpec extends ApiSpec with BeforeAndAfterEach {
 
       val hook = WebHook(
         id = Some(hookId),
-        userId = None,
         name = "abc",
         active = true,
         lastEvent = None,
@@ -92,7 +90,6 @@ class WebHookActorSpec extends ApiSpec with BeforeAndAfterEach {
 
     val hook = WebHook(
       id = Some(hookId),
-      userId = None,
       name = "abc",
       active = true,
       lastEvent = None,

@@ -16,9 +16,8 @@ import au.csiro.data61.magda.model.TenantId._
 object AspectPersistence extends Protocols with DiffsonProtocol {
 
   def getAll(
-      implicit session: DBSession,
       tenantId: TenantId
-  ): List[AspectDefinition] = {
+  )(implicit session: DBSession): List[AspectDefinition] = {
     sql"select aspectId, name, jsonSchema, tenantId from Aspects where ${SQLUtil.tenantIdToWhereClause(tenantId)}"
       .map(rowToAspect)
       .list
@@ -26,19 +25,17 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
   }
 
   def getById(
-      implicit session: DBSession,
       id: String,
       tenantId: TenantId
-  ): Option[AspectDefinition] = {
+  )(implicit session: DBSession): Option[AspectDefinition] = {
     sql"""select aspectId, name, jsonSchema, tenantId from Aspects where aspectId=$id and ${SQLUtil
       .tenantIdToWhereClause(tenantId)}""".map(rowToAspect).single.apply()
   }
 
   def getByIds(
-      implicit session: DBSession,
       ids: Iterable[String],
       tenantId: TenantId
-  ): List[AspectDefinition] = {
+  )(implicit session: DBSession): List[AspectDefinition] = {
     if (ids.isEmpty)
       List()
     else {
@@ -51,11 +48,11 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
   }
 
   def putById(
-      implicit session: DBSession,
       id: String,
       newAspect: AspectDefinition,
-      tenantId: SpecifiedTenantId
-  ): Try[AspectDefinition] = {
+      tenantId: SpecifiedTenantId,
+      userId: String
+  )(implicit session: DBSession): Try[AspectDefinition] = {
     for {
       _ <- if (id == newAspect.id) Success(newAspect)
       else
@@ -64,9 +61,9 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
             "The provided ID does not match the aspect's ID."
           )
         )
-      oldAspect <- this.getById(session, id, tenantId) match {
+      oldAspect <- this.getById(id, tenantId) match {
         case Some(aspect) => Success(aspect)
-        case None         => create(session, newAspect, tenantId)
+        case None         => create(newAspect, tenantId, userId)
       }
       aspectPatch <- Try {
         // Diff the old aspect and the new one
@@ -75,18 +72,18 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
 
         JsonDiff.diff(oldAspectJson, newAspectJson, false)
       }
-      result <- patchById(session, id, aspectPatch, tenantId)
+      result <- patchById(id, aspectPatch, tenantId, userId)
     } yield result
   }
 
   def patchById(
-      implicit session: DBSession,
       id: String,
       aspectPatch: JsonPatch,
-      tenantId: SpecifiedTenantId
-  ): Try[AspectDefinition] = {
+      tenantId: SpecifiedTenantId,
+      userId: String
+  )(implicit session: DBSession): Try[AspectDefinition] = {
     for {
-      aspect <- this.getById(session, id, tenantId) match {
+      aspect <- this.getById(id, tenantId) match {
         case Some(aspect) => Success(aspect)
         case None =>
           Failure(new RuntimeException("No aspect exists with that ID."))
@@ -119,7 +116,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
             aspectPatch,
             tenantId.tenantId
           ).toJson.compactPrint
-          sql"insert into Events (eventTypeId, userId, tenantId, data) values (${PatchAspectDefinitionEvent.Id}, 0, ${tenantId.tenantId}, $event::json)"
+          sql"insert into Events (eventTypeId, userId, tenantId, data) values (${PatchAspectDefinitionEvent.Id}, ${userId}::uuid, ${tenantId.tenantId}, $event::json)"
             .updateAndReturnGeneratedKey()
             .apply()
         } else {
@@ -145,10 +142,10 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
   }
 
   def create(
-      implicit session: DBSession,
       aspect: AspectDefinition,
-      tenantId: SpecifiedTenantId
-  ): Try[AspectDefinition] = {
+      tenantId: SpecifiedTenantId,
+      userId: String
+  )(implicit session: DBSession): Try[AspectDefinition] = {
     // Create a 'Create Aspect' event
     val eventJson = CreateAspectDefinitionEvent(
       aspect.id,
@@ -157,7 +154,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
       tenantId.tenantId
     ).toJson.compactPrint
     val eventId =
-      sql"insert into Events (eventTypeId, userId, tenantId, data) values (${CreateAspectDefinitionEvent.Id}, 0, ${tenantId.tenantId}, $eventJson::json)"
+      sql"insert into Events (eventTypeId, userId, tenantId, data) values (${CreateAspectDefinitionEvent.Id}, ${userId}::uuid, ${tenantId.tenantId}, $eventJson::json)"
         .updateAndReturnGeneratedKey()
         .apply()
 

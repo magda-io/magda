@@ -113,9 +113,8 @@ class RecordHistoryService(
               ec
             ) {
               complete(
-                DB readOnly { session =>
+                DB readOnly { implicit session =>
                   eventPersistence.getEvents(
-                    session,
                     recordId = Some(id),
                     pageToken = pageToken,
                     start = start,
