@@ -5,13 +5,14 @@ export default function retryBackoff<T>(
     delaySeconds: number,
     retries: number,
     onRetry: (e: any, retries: number) => any,
-    easing: (delaySeconds: number) => number = delaySeconds => delaySeconds * 2
+    easing: (delaySeconds: number) => number = (delaySeconds) =>
+        delaySeconds * 2
 ): Promise<T> {
     return new Promise<T>((resolve, reject) => {
         resolve(
             op().then(
-                result => result,
-                e => {
+                (result) => result,
+                (e) => {
                     if (retries > 0) {
                         onRetry(e, retries);
                         return runLater(delaySeconds * 1000, () =>

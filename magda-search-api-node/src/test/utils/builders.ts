@@ -53,7 +53,7 @@ export const buildPublisher = (() => {
             description: casual.description,
             acronym: casual.title
                 .split(" ")
-                .map(word => word[0])
+                .map((word) => word[0])
                 .join(""),
             jurisdiction: casual.title,
             aggKeywords: casual.array_of_words(casual.integer(0, 10)),

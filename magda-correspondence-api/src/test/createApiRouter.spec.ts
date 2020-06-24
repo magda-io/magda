@@ -38,15 +38,15 @@ const assetsFiles = [
     "emailTemplates/assets/centered-logo.jpg"
 ];
 
-sinon.stub(contentMapper, "fileExist").callsFake(function(localPath: string) {
-    if (assetsFiles.findIndex(file => file === localPath) !== -1) return true;
+sinon.stub(contentMapper, "fileExist").callsFake(function (localPath: string) {
+    if (assetsFiles.findIndex((file) => file === localPath) !== -1) return true;
     throw new Error(`Tried to access non-exist file: ${localPath}`);
 });
 
 sinon
     .stub(contentMapper, "getFileContent")
-    .callsFake(function(localPath: string) {
-        if (assetsFiles.findIndex(file => file === localPath) === -1) {
+    .callsFake(function (localPath: string) {
+        if (assetsFiles.findIndex((file) => file === localPath) === -1) {
             throw new Error(`Tried to access non-exist file: ${localPath}`);
         }
         if (path.extname(localPath) === ".html") {
@@ -124,7 +124,7 @@ describe("send dataset request mail", () => {
             checkConnectivityStub.restore();
         });
 
-        withStubbedConsoleError(stubbedError => {
+        withStubbedConsoleError((stubbedError) => {
             it("should return 500 if connection fails", () => {
                 checkConnectivityStub.returns(
                     Promise.reject(new Error("Fake error"))
@@ -381,7 +381,7 @@ describe("send dataset request mail", () => {
 
     function checkRegistryErrorCases(path: string) {
         describe("Registry errors", () => {
-            withStubbedConsoleError(errorStub => {
+            withStubbedConsoleError((errorStub) => {
                 it("should return 404 if getting dataset from registry returns 404", () => {
                     registryScope
                         .get(
@@ -439,7 +439,7 @@ describe("send dataset request mail", () => {
         stubGetRecordApi: boolean = false
     ) {
         describe("Email errors", () => {
-            withStubbedConsoleError(errorStub => {
+            withStubbedConsoleError((errorStub) => {
                 it("should respond with an 500 response if sendMail() was unsuccessful", () => {
                     if (stubGetRecordApi) {
                         stubGetRecordCall();
@@ -485,7 +485,7 @@ describe("send dataset request mail", () => {
     }
 
     function checkAttachments(attachments: Array<Attachment>) {
-        attachments.forEach(attachment => {
+        attachments.forEach((attachment) => {
             expect(
                 attachment.content instanceof Buffer ||
                     typeof attachment.content === "string",

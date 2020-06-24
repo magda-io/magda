@@ -91,7 +91,7 @@ export default async function minion(options: MinionOptions): Promise<void> {
         }
 
         const containsBlank = (strings: string[]) =>
-            strings.some(string => string === "");
+            strings.some((string) => string === "");
 
         if (containsBlank(options.aspects)) {
             throw new Error(
@@ -109,14 +109,14 @@ export default async function minion(options: MinionOptions): Promise<void> {
     async function putAspectDefs() {
         const aspectDefsToAdd = options.writeAspectDefs;
         console.info(
-            `Adding aspect defs ${aspectDefsToAdd.map(def => def.name)}`
+            `Adding aspect defs ${aspectDefsToAdd.map((def) => def.name)}`
         );
 
         // If magda is deployed in multi-tenant mode, any datasets from any new tenants created
         // after this call will be not be processed. To process them, run the minion again.
         const tenantIds: number[] = options.argv.enableMultiTenant
             ? await tenantClient.getTenants().then((tenants: Tenant[]) => {
-                  return tenants.map(t => t.id);
+                  return tenants.map((t) => t.id);
               })
             : [];
 
@@ -125,13 +125,15 @@ export default async function minion(options: MinionOptions): Promise<void> {
         // This approach will slightly increase the number of entries in the aspects table but
         // make the implementation simple.
         const theTenantIds: number[] = tenantIds.concat(MAGDA_ADMIN_PORTAL_ID);
-        const addPromises = aspectDefsToAdd.map(aspectDef => {
-            theTenantIds.map(id => registry.putAspectDefinition(aspectDef, id));
+        const addPromises = aspectDefsToAdd.map((aspectDef) => {
+            theTenantIds.map((id) =>
+                registry.putAspectDefinition(aspectDef, id)
+            );
         });
 
         return Promise.all(addPromises)
             .then(failIfErrors)
-            .then(result => {
+            .then((result) => {
                 console.info("Successfully added aspect defs");
                 return result;
             });

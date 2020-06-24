@@ -33,7 +33,7 @@ const API_ROUTER_CONFIG = {
     elasticSearchUrl: ES_URL
 };
 
-describe("Search API:", function(this: Mocha.ISuiteCallbackContext) {
+describe("Search API:", function (this: Mocha.ISuiteCallbackContext) {
     this.timeout(60000);
     let app: express.Application;
     casual.seed(54321);
@@ -236,10 +236,10 @@ describe("Search API:", function(this: Mocha.ISuiteCallbackContext) {
                         )}`
                     )
                     .expect(200)
-                    .expect(res => {
+                    .expect((res) => {
                         const body: SearchResult = res.body;
                         const identifiers = body.dataSets.map(
-                            dataset => dataset.identifier
+                            (dataset) => dataset.identifier
                         );
 
                         expect(identifiers).to.contain(
@@ -253,7 +253,7 @@ describe("Search API:", function(this: Mocha.ISuiteCallbackContext) {
     function randomCase(string: string): string {
         return string
             .split("")
-            .map(char =>
+            .map((char) =>
                 casual.coin_flip ? char.toLowerCase() : char.toUpperCase()
             )
             .join("");

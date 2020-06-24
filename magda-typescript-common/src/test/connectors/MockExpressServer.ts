@@ -8,7 +8,7 @@ export abstract class MockExpressServer {
 
         await this.runImplementation(app);
 
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
             this.server = app.listen(port, () => {
                 resolve(this);
             });

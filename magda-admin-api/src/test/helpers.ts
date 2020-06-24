@@ -129,9 +129,7 @@ export function putConnector(
         "http://admin.example.com",
         isAdmin,
         jwtSecret,
-        request(app)
-            .put(`/connectors/${id}`)
-            .send(body)
+        request(app).put(`/connectors/${id}`).send(body)
     );
 }
 

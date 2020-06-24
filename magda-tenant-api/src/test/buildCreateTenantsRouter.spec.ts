@@ -15,7 +15,7 @@ import {
     MAGDA_ADMIN_PORTAL_ID
 } from "magda-typescript-common/src/registry/TenantConsts";
 
-describe("Tenant api router", function(this: Mocha.ISuiteCallbackContext) {
+describe("Tenant api router", function (this: Mocha.ISuiteCallbackContext) {
     let app: express.Express;
     const nonAdminPortalId = MAGDA_ADMIN_PORTAL_ID + 1;
     const jwtSecret = "a top secret";

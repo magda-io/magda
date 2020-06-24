@@ -203,7 +203,7 @@ function findItemByExactJsonPathMatch(
     if (!jsonPath) {
         return undefined;
     }
-    return validationItems.find(item => item.jsonPath === jsonPath);
+    return validationItems.find((item) => item.jsonPath === jsonPath);
 }
 
 function findItemsByJsonPath(jsonPath: string): ValidationItem[] {
@@ -220,8 +220,8 @@ function findItemsByJsonPath(jsonPath: string): ValidationItem[] {
 
     const stateData = getStateData();
     JsonPath.paths(stateData, jsonPath)
-        .map(item => JsonPath.stringify(item))
-        .forEach(resolvedJsonPath => {
+        .map((item) => JsonPath.stringify(item))
+        .forEach((resolvedJsonPath) => {
             const item = findItemByExactJsonPathMatch(resolvedJsonPath);
             if (typeof item !== "undefined") {
                 items.push(item);
@@ -234,7 +234,7 @@ function findItemsByJsonPaths(jsonPaths: string[]): ValidationItem[] {
     if (!jsonPaths || !jsonPaths.length) {
         return [];
     }
-    return uniq(jsonPaths.flatMap(jsonPath => findItemsByJsonPath(jsonPath)));
+    return uniq(jsonPaths.flatMap((jsonPath) => findItemsByJsonPath(jsonPath)));
 }
 
 export function shouldValidate(jsonPath: string) {
@@ -246,10 +246,10 @@ export function shouldValidate(jsonPath: string) {
         return true;
     }
     const stateData = getStateData();
-    const idx = validationFieldList.findIndex(fieldPath => {
+    const idx = validationFieldList.findIndex((fieldPath) => {
         if (
             JsonPath.paths(stateData, fieldPath)
-                .map(item => JsonPath.stringify(item))
+                .map((item) => JsonPath.stringify(item))
                 .indexOf(jsonPath) !== -1
         ) {
             return true;
@@ -280,18 +280,18 @@ export const deregisterValidationItem = (
         const jsonPath = jsonPathOrItem;
         // --- should clearError when deregister
         validationItems
-            .filter(item => item.jsonPath === jsonPath)
-            .forEach(item => {
+            .filter((item) => item.jsonPath === jsonPath)
+            .forEach((item) => {
                 item.clearError();
             });
 
         validationItems = validationItems.filter(
-            item => item.jsonPath !== jsonPath
+            (item) => item.jsonPath !== jsonPath
         );
     } else {
         jsonPathOrItem.clearError();
         validationItems = validationItems.filter(
-            item => item !== jsonPathOrItem
+            (item) => item !== jsonPathOrItem
         );
     }
 };
@@ -307,7 +307,7 @@ function isEmptyValue(value: any) {
 }
 
 function getItemsFromJsonPath(jsonPath: string) {
-    return validationItems.filter(item => item.jsonPath === jsonPath);
+    return validationItems.filter((item) => item.jsonPath === jsonPath);
 }
 
 /**
@@ -367,7 +367,7 @@ export const onInputFocusOut = (jsonPath: string) => {
     if (!items || !items.length) {
         return false;
     }
-    if (items.map(item => validateItem(item)).filter(r => !r).length) {
+    if (items.map((item) => validateItem(item)).filter((r) => !r).length) {
         return false;
     } else {
         return true;
@@ -389,7 +389,7 @@ function validateSelectedItems(items: ValidationItem[]) {
     let elRef: RefType<ElementType> | undefined;
     let hasInvalidItem = false;
 
-    items.forEach(item => {
+    items.forEach((item) => {
         if (!validateItem(item)) {
             hasInvalidItem = true;
 
@@ -500,7 +500,7 @@ export const useValidation = <T extends ElementType = ElementType>(
             jsonPath: fieldJsonPath ? fieldJsonPath : "",
             label: fieldLabel ? fieldLabel : "",
             elRef: state.ref,
-            setError: errorMessage => {
+            setError: (errorMessage) => {
                 setState({
                     ref: state.ref,
                     isValidationError: true,

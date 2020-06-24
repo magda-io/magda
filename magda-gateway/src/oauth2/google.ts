@@ -33,15 +33,15 @@ export default function google(options: GoogleOptions) {
                 clientSecret: clientSecret,
                 callbackURL: `${loginBaseUrl}/google/return`
             },
-            function(
+            function (
                 accessToken: string,
                 refreshToken: string,
                 profile: Profile,
                 cb: (error: any, user?: any, info?: any) => void
             ) {
                 createOrGetUserToken(authorizationApi, profile, "google")
-                    .then(userId => cb(null, userId))
-                    .catch(error => cb(error));
+                    .then((userId) => cb(null, userId))
+                    .catch((error) => cb(error));
             }
         )
     );

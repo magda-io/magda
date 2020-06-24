@@ -81,8 +81,8 @@ export default class AuthorizedTenantClient {
                     formatServiceError("Failed to GET tenants.", e, retriesLeft)
                 )
         )
-            .then(result => result)
-            .catch(e => {
+            .then((result) => result)
+            .catch((e) => {
                 // --- we should re-throw the exception rather than return it as promise resolved value
                 throw createServiceError(e);
             });

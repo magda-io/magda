@@ -67,13 +67,9 @@ describe("proxying", () => {
     _.map(PROXY_ROOTS, (value, key) => {
         describe(`when proxying ${key} to ${value}`, () => {
             it("proxies requests", () => {
-                nock(value)
-                    .get("/")
-                    .reply(200);
+                nock(value).get("/").reply(200);
 
-                return supertest(app)
-                    .get(key)
-                    .expect(200);
+                return supertest(app).get(key).expect(200);
             });
 
             it("doesn't pass auth headers through", () => {
@@ -100,10 +96,7 @@ describe("proxying", () => {
                         return 200;
                     });
 
-                return supertest(app)
-                    .get(key)
-                    .set("Host", "test")
-                    .expect(200);
+                return supertest(app).get(key).set("Host", "test").expect(200);
             });
 
             it("should add default cache control header if not specified", (done) => {

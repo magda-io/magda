@@ -53,8 +53,8 @@ export const renderScssData = (clientRoot: string, data: string) => {
                     from: "node-sass-raw.css",
                     to: "stylesheet.css"
                 })
-                .then(function(result) {
-                    result.warnings().forEach(function(warn) {
+                .then(function (result) {
+                    result.warnings().forEach(function (warn) {
                         console.warn(warn.toString());
                     });
                     return result.css;
@@ -80,7 +80,7 @@ export const renderScssFiles = async (
 
 export const replaceParamsFromScss = (data: string, params: any = {}) => {
     let result = data;
-    Object.keys(params).forEach(key => {
+    Object.keys(params).forEach((key) => {
         const varName = escapeStringRegexp(key);
         const regex = new RegExp(`\\$${varName}:[^;]+;`, "img");
         result = result.replace(regex, `$${key}: ${params[key]};`);

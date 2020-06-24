@@ -58,7 +58,7 @@ export default function setupWebhookEndpoint(
                     registry
                         .resumeHook(options.id, success, payload.lastEventId)
                         .then(unionToThrowable)
-                        .then(result => {
+                        .then((result) => {
                             console.info(
                                 "Successfully posted back to registry for event " +
                                     payload.lastEventId
@@ -100,7 +100,7 @@ export default function setupWebhookEndpoint(
                             deferResponse: false
                         });
                     })
-                    .catch(e => {
+                    .catch((e) => {
                         console.error(e);
                         response.status(500).send({
                             status: "Error",

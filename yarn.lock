@@ -21333,12 +21333,7 @@ xmlcreate@^1.0.1:
   resolved "https://registry.yarnpkg.com/xmlcreate/-/xmlcreate-1.0.2.tgz#fa6bf762a60a413fb3dd8f4b03c5b269238d308f"
   integrity sha1-+mv3YqYKQT+z3Y9LA8WyaSONMI8=
 
-xmldom@=0.1.19:
-  version "0.1.19"
-  resolved "https://registry.yarnpkg.com/xmldom/-/xmldom-0.1.19.tgz#631fc07776efd84118bf25171b37ed4d075a0abc"
-  integrity sha1-Yx/Ad3bv2EEYvyUXGzftTQdaCrw=
-
-xmldom@auth0/xmldom#v0.1.19-auth0_1:
+xmldom@=0.1.19, xmldom@auth0/xmldom#v0.1.19-auth0_1:
   version "0.1.19"
   resolved "https://codeload.github.com/auth0/xmldom/tar.gz/3376bc7beb5551bf68e12b0cc6b0e3669f77d392"
 

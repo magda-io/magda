@@ -12,7 +12,7 @@ export default function testSearchNoQuery(
     app: () => express.Application,
     buildDatasetIndex: (datasets: Dataset[]) => Promise<void>
 ) {
-    describe("by '*'", function() {
+    describe("by '*'", function () {
         it("should return all datasets when searching by *", async () => {
             const datasets = buildNDatasets(15);
 
@@ -21,7 +21,7 @@ export default function testSearchNoQuery(
             return supertest(app())
                 .get(`/datasets?query=*&limit=${datasets.length}`)
                 .expect(200)
-                .expect(res => {
+                .expect((res) => {
                     expect(res.body.hitCount).to.equal(datasets.length);
                 });
         });
@@ -35,7 +35,7 @@ export default function testSearchNoQuery(
             return supertest(app())
                 .get(`/datasets?query=*&limit=${halfMax}`)
                 .expect(200)
-                .expect(res => {
+                .expect((res) => {
                     const body: SearchResult = res.body;
                     expect(body.hitCount).to.equal(datasets.length);
                     expect(body.dataSets.length).to.equal(halfMax);
@@ -74,7 +74,7 @@ export default function testSearchNoQuery(
                 return supertest(app())
                     .get(`/datasets?query=*`)
                     .expect(200)
-                    .expect(res => {
+                    .expect((res) => {
                         const body: SearchResult = res.body;
                         expect(body.temporal.start?.date).to.contain(
                             "2020-01-01"
@@ -99,16 +99,16 @@ export default function testSearchNoQuery(
                     await supertest(app())
                         .get(`/datasets?query=*&limit=${order.length}`)
                         .expect(200)
-                        .expect(res => {
+                        .expect((res) => {
                             const body: SearchResult = res.body;
 
                             expect(
-                                body.dataSets.map(dataset => [
+                                body.dataSets.map((dataset) => [
                                     dataset.identifier,
                                     dataset.quality
                                 ])
                             ).to.eql(
-                                datasets.map(dataset => [
+                                datasets.map((dataset) => [
                                     dataset.identifier,
                                     dataset.quality
                                 ])

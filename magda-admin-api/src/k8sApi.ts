@@ -87,7 +87,7 @@ export default class K8SApi {
             .then((result: any) => {
                 return this.deleteJob(id);
             })
-            .catch(e => {
+            .catch((e) => {
                 if (e.code === 404) {
                     return Promise.resolve();
                 } else {

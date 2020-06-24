@@ -13,15 +13,15 @@ import "mocha";
  * - use NOT
  * OpaCompileResultParser will dry the result to its most concise form so we don't need to worry about the difference
  */
-describe("Test OpaCompileResultParser with complex response", function() {
-    it("Parse sample response with no errors", function() {
+describe("Test OpaCompileResultParser with complex response", function () {
+    it("Parse sample response with no errors", function () {
         const parser = new OpaCompileResponseParser();
         const data = parser.parse(JSON.stringify(testData));
         expect(parser.hasWarns).to.be.equal(false);
         expect(data).to.be.an("array");
     });
 
-    it("Should evalute rule `allowRead` from parse result correctly", function() {
+    it("Should evalute rule `allowRead` from parse result correctly", function () {
         const parser = new OpaCompileResponseParser();
         parser.parse(JSON.stringify(testData));
         const result = parser.evaluateRule(
@@ -41,7 +41,7 @@ describe("Test OpaCompileResultParser with complex response", function() {
         ).to.be.equal('input.object.content.id = "header/navigation/datasets"');
     });
 
-    it("Should generate correct human readable string", function() {
+    it("Should generate correct human readable string", function () {
         const parser = new OpaCompileResponseParser();
         parser.parse(JSON.stringify(testData));
         const result = parser.evaluateRuleAsHumanReadableString(
@@ -54,15 +54,15 @@ describe("Test OpaCompileResultParser with complex response", function() {
     });
 });
 
-describe("Test OpaCompileResultParser with simple response", function() {
-    it("Parse sample response with no errors", function() {
+describe("Test OpaCompileResultParser with simple response", function () {
+    it("Parse sample response with no errors", function () {
         const parser = new OpaCompileResponseParser();
         const data = parser.parse(JSON.stringify(testDataSimple));
         expect(parser.hasWarns).to.be.equal(false);
         expect(data).to.be.an("array");
     });
 
-    it("Should evalute rule `allowRead` from parse result correctly", function() {
+    it("Should evalute rule `allowRead` from parse result correctly", function () {
         const parser = new OpaCompileResponseParser();
         parser.parse(JSON.stringify(testDataSimple));
         const result = parser.evaluateRule(
@@ -82,7 +82,7 @@ describe("Test OpaCompileResultParser with simple response", function() {
         ).to.be.equal('input.object.content.id = "header/navigation/datasets"');
     });
 
-    it("Should generate correct human readable string", function() {
+    it("Should generate correct human readable string", function () {
         const parser = new OpaCompileResponseParser();
         parser.parse(JSON.stringify(testDataSimple));
         const result = parser.evaluateRuleAsHumanReadableString(

@@ -13,11 +13,11 @@ import pg from "pg";
 
 export default class MockDatabase {
     getUser(id: string): Promise<Maybe<User>> {
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
             resolve(
                 arrayToMaybe(
                     mockUserDataStore.getRecordByUserId(id).map(
-                        item =>
+                        (item) =>
                             ({
                                 id: item.id,
                                 email: item.email,
@@ -36,12 +36,12 @@ export default class MockDatabase {
         source: string,
         sourceId: string
     ): Promise<Maybe<User>> {
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
             resolve(
                 arrayToMaybe(
                     mockUserDataStore
                         .getRecordBySourceAndSourceId(source, sourceId)
-                        .map(item => ({
+                        .map((item) => ({
                             id: item.id,
                             email: item.email,
                             displayName: item.displayName,
@@ -68,7 +68,7 @@ export default class MockDatabase {
     }
 
     createUser(user: User): Promise<User> {
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
             resolve(mockUserDataStore.createRecord(user));
         });
     }

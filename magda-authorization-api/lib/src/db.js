@@ -8,7 +8,7 @@ function getUser(id) {
             'SELECT id, "displayName", email, "photoURL", source FROM users WHERE "id" = $1',
             [id]
         )
-        .then(res => array_to_maybe_1.default(res.rows));
+        .then((res) => array_to_maybe_1.default(res.rows));
 }
 exports.getUser = getUser;
 function getUserByExternalDetails(source, sourceId) {
@@ -17,7 +17,7 @@ function getUserByExternalDetails(source, sourceId) {
             'SELECT id, "displayName", email, "photoURL", source, "sourceId" FROM users WHERE "sourceId" = $1 AND source = $2',
             [sourceId, source]
         )
-        .then(res => array_to_maybe_1.default(res.rows));
+        .then((res) => array_to_maybe_1.default(res.rows));
 }
 exports.getUserByExternalDetails = getUserByExternalDetails;
 function createUser(user) {
@@ -32,7 +32,7 @@ function createUser(user) {
                 user.sourceId
             ]
         )
-        .then(result => result.rows[0]);
+        .then((result) => result.rows[0]);
 }
 exports.createUser = createUser;
 //# sourceMappingURL=db.js.map

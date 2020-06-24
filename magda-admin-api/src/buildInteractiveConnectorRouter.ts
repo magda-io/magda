@@ -30,13 +30,13 @@ export default function buildInteractiveConnectorRouter(options: Options) {
 
     const router: express.Router = express.Router();
 
-    router.use(function(req, res, next) {
+    router.use(function (req, res, next) {
         ensureInteractiveConnector(k8sApi, req.connectorID, options)
-            .then(function(connectorProxy) {
+            .then(function (connectorProxy) {
                 req.connectorProxy = connectorProxy;
                 next();
             })
-            .catch(function(e) {
+            .catch(function (e) {
                 res.status(400);
                 res.send("Could not connect to Connector.");
             });
@@ -91,10 +91,10 @@ function retryUntil<T>(
     return new Promise<T>((resolve, reject) => {
         function tryIt() {
             op()
-                .then(result => {
+                .then((result) => {
                     resolve(result);
                 })
-                .catch(e => {
+                .catch((e) => {
                     if (Date.now() < expirationTime) {
                         setImmediate(tryIt);
                     } else {
@@ -133,7 +133,7 @@ async function ensureInteractiveConnectorOnce(
     id: any,
     options: Options
 ): Promise<HttpProxy> {
-    let job = await k8sApi.getJob(prefixId(id)).catch(e => undefined);
+    let job = await k8sApi.getJob(prefixId(id)).catch((e) => undefined);
 
     // A usable interactive job will have job.status.active===1.  If the job is not usable, we need to
     // distinguish between "already completed" and "not yet started".
@@ -162,7 +162,7 @@ async function ensureInteractiveConnectorOnce(
 
         let service = await k8sApi
             .getService(prefixId(id))
-            .catch(e => undefined);
+            .catch((e) => undefined);
         if (service === undefined) {
             // Service does not exist, create it.
 

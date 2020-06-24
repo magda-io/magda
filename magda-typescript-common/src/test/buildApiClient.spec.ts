@@ -13,7 +13,7 @@ const expect = chai.expect;
 
 const mockUserData = mockUserDataStore.getData();
 
-describe("Test ApiClient.ts", function() {
+describe("Test ApiClient.ts", function () {
     const argv = addJwtSecretFromEnvVar(
         yargs
             .config()
@@ -44,26 +44,26 @@ describe("Test ApiClient.ts", function() {
         argv.userId
     );
 
-    before(function() {
+    before(function () {
         sinon.stub(console, "error").callsFake(() => {});
         sinon.stub(console, "warn").callsFake(() => {});
         mockHost.start();
     });
 
-    after(function() {
+    after(function () {
         (console.error as any).restore();
         (console.warn as any).restore();
         mockHost.stop();
     });
 
-    it("`lookupUser` should return 'Unauthorised' error if called without sepecifying user ID", async function() {
+    it("`lookupUser` should return 'Unauthorised' error if called without sepecifying user ID", async function () {
         const api = new ApiClient(argv.authorizationApi);
         return expect(
             api.lookupUser("ckan", "testuser")
         ).to.eventually.rejectedWith("Unauthorised");
     });
 
-    it("`lookupUser` should return 'Can only be accessed by Admin users' error if called as a standard user", async function() {
+    it("`lookupUser` should return 'Can only be accessed by Admin users' error if called as a standard user", async function () {
         const api = new ApiClient(
             argv.authorizationApi,
             argv.jwtSecret,
@@ -74,7 +74,7 @@ describe("Test ApiClient.ts", function() {
         ).to.eventually.rejectedWith("Can only be accessed by Admin users");
     });
 
-    it("`lookupUser` should return the correct test user record if called as admin user", async function() {
+    it("`lookupUser` should return the correct test user record if called as admin user", async function () {
         const api = new ApiClient(
             argv.authorizationApi,
             argv.jwtSecret,
@@ -84,14 +84,14 @@ describe("Test ApiClient.ts", function() {
         expect(data).to.deep.equal(mockUserData[1]);
     });
 
-    it("`getUser` should return 'Unauthorised' error if called without sepecifying user ID", async function() {
+    it("`getUser` should return 'Unauthorised' error if called without sepecifying user ID", async function () {
         const api = new ApiClient(argv.authorizationApi);
         return expect(
             api.getUser(mockUserData[1].id)
         ).to.eventually.rejectedWith("Unauthorised");
     });
 
-    it("`getUser` should return 'Can only be accessed by Admin users' error if called as a standard user", async function() {
+    it("`getUser` should return 'Can only be accessed by Admin users' error if called as a standard user", async function () {
         const api = new ApiClient(
             argv.authorizationApi,
             argv.jwtSecret,
@@ -102,7 +102,7 @@ describe("Test ApiClient.ts", function() {
         );
     });
 
-    it("`getUser` should return the correct test user record if called as admin user", async function() {
+    it("`getUser` should return the correct test user record if called as admin user", async function () {
         const api = new ApiClient(
             argv.authorizationApi,
             argv.jwtSecret,
@@ -112,7 +112,7 @@ describe("Test ApiClient.ts", function() {
         expect(data).to.deep.equal(mockUserData[1]);
     });
 
-    it("`getUserPublic` should return the correct test user record if called without sepecifying user ID", async function() {
+    it("`getUserPublic` should return the correct test user record if called without sepecifying user ID", async function () {
         const api = new ApiClient(argv.authorizationApi);
         const data = (await api.getUserPublic(mockUserData[1].id)).valueOr(
             null
@@ -126,7 +126,7 @@ describe("Test ApiClient.ts", function() {
         expect(data).to.deep.equal(expectedUserData);
     });
 
-    it("`getUserPublic` should return the correct test user record if called as a standard user", async function() {
+    it("`getUserPublic` should return the correct test user record if called as a standard user", async function () {
         const api = new ApiClient(
             argv.authorizationApi,
             argv.jwtSecret,
@@ -144,7 +144,7 @@ describe("Test ApiClient.ts", function() {
         expect(data).to.deep.equal(expectedUserData);
     });
 
-    it("`getUserPublic` should return the correct test user record if called as admin user", async function() {
+    it("`getUserPublic` should return the correct test user record if called as admin user", async function () {
         const api = new ApiClient(
             argv.authorizationApi,
             argv.jwtSecret,
@@ -171,7 +171,7 @@ describe("Test ApiClient.ts", function() {
         isAdmin: false
     };
 
-    it(`\`createUser\` should return 'Encountered error 401 when POSTing new user to ${argv.authorizationApi}' error if called without sepecifying user ID`, async function() {
+    it(`\`createUser\` should return 'Encountered error 401 when POSTing new user to ${argv.authorizationApi}' error if called without sepecifying user ID`, async function () {
         const api = new ApiClient(argv.authorizationApi);
         return expect(
             api.createUser(newUserDataToBeInserted)
@@ -180,7 +180,7 @@ describe("Test ApiClient.ts", function() {
         );
     });
 
-    it(`\`createUser\` should return 'Encountered error 403 when POSTing new user to ${argv.authorizationApi}' error if called as a standard user`, async function() {
+    it(`\`createUser\` should return 'Encountered error 403 when POSTing new user to ${argv.authorizationApi}' error if called as a standard user`, async function () {
         const api = new ApiClient(
             argv.authorizationApi,
             argv.jwtSecret,
@@ -195,7 +195,7 @@ describe("Test ApiClient.ts", function() {
 
     let newlyCreatedUserId: string = null;
 
-    it("`createUser` should return the new user data if called as admin user", async function() {
+    it("`createUser` should return the new user data if called as admin user", async function () {
         const api = new ApiClient(
             argv.authorizationApi,
             argv.jwtSecret,
@@ -216,7 +216,7 @@ describe("Test ApiClient.ts", function() {
         });
     });
 
-    it("After `createUser` call, the same user record should be able to retrieved via `getUser`", async function() {
+    it("After `createUser` call, the same user record should be able to retrieved via `getUser`", async function () {
         if (!newlyCreatedUserId) {
             this.skip();
             return;

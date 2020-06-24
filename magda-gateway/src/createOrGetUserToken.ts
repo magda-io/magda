@@ -10,9 +10,9 @@ export default function createOrGetUserToken(
     profile: passport.Profile,
     source: string
 ): Promise<UserToken> {
-    return authApi.lookupUser(source, profile.id).then(maybe =>
+    return authApi.lookupUser(source, profile.id).then((maybe) =>
         maybe.caseOf({
-            just: user => Promise.resolve(userToUserToken(user)),
+            just: (user) => Promise.resolve(userToUserToken(user)),
             nothing: () =>
                 authApi
                     .createUser(profileToUser(profile, source))

@@ -28,7 +28,7 @@ export async function deleteAllTables(pool: pg.Pool) {
     if (!result || !result.rows || !result.rows.length) return;
     await pool.query(
         result.rows
-            .map(r => `DROP TABLE "${r["tablename"]}" CASCADE`)
+            .map((r) => `DROP TABLE "${r["tablename"]}" CASCADE`)
             .join(";\n")
     );
 }
@@ -49,11 +49,11 @@ export default async function runMigrationSql(
     );
     const files = await recursive(migrationSqlDir, ["*,sql"]);
     const fileObjects = files
-        .map(f => ({
+        .map((f) => ({
             path: f,
             version: getVersionNumber(path.basename(f))
         }))
-        .filter(f => f.version !== 1.2)
+        .filter((f) => f.version !== 1.2)
         .sort((a, b) => a.version - b.version);
 
     if (!fileObjects.length)
