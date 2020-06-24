@@ -67,7 +67,7 @@ class AspectsServiceRO(
       requiresTenantId { tenantId =>
         complete {
           DB readOnly { session =>
-            AspectPersistence.getAll(session, tenantId)
+            AspectPersistence.getAll(tenantId)(session)
           }
         }
       }
@@ -123,7 +123,7 @@ class AspectsServiceRO(
     path(Segment) { id: String =>
       requiresTenantId { tenantId =>
         DB readOnly { session =>
-          AspectPersistence.getById(session, id, tenantId) match {
+          AspectPersistence.getById(id, tenantId)(session) match {
             case Some(aspect) => complete(aspect)
             case None =>
               complete(

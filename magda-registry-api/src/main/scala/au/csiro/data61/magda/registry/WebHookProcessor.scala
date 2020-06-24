@@ -92,7 +92,6 @@ class WebHookProcessor(
               .foldLeft[List[RecordsPage[Record]]](Nil)((pages, tenantId) => {
                 val recordIds = tenantRecordIdsMap(tenantId)
                 pages :+ recordPersistence.getByIdsWithAspects(
-                  session,
                   SpecifiedTenantId(tenantId),
                   recordIds,
                   None,
@@ -119,7 +118,6 @@ class WebHookProcessor(
                   tenantRecordIdsExcludedMap.getOrElse(tenantId, Nil)
                 val recordIds = tenantRecordIdsMap(tenantId)
                 pages :+ recordPersistence.getRecordsLinkingToRecordIds(
-                  session,
                   SpecifiedTenantId(tenantId),
                   recordIds,
                   None,
@@ -208,7 +206,7 @@ class WebHookProcessor(
         DB readOnly { implicit session =>
           Some(
             AspectPersistence
-              .getByIds(session, aspectDefinitionIds, AllTenantsId)
+              .getByIds(aspectDefinitionIds, AllTenantsId)
           )
         }
     }

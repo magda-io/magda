@@ -48,9 +48,12 @@ abstract class ApiSpec
     with SprayJsonSupport
     with MockFactory
     with AuthProtocols {
+
   override def beforeAll(): Unit = {
     Util.clearWebHookActorsCache()
   }
+
+  val USER_ID = "57c75a42-d037-47b9-81f5-247111c43434"
 
   val databaseUrl = Option(System.getenv("POSTGRES_URL"))
     .getOrElse("jdbc:postgresql://localhost:5432/postgres")
@@ -179,18 +182,24 @@ abstract class ApiSpec
     val jws = Authentication.signToken(
       Jwts
         .builder()
-        .claim("userId", "1"),
+        .claim("userId", USER_ID),
       system.log
     )
     req.withHeaders(new RawHeader("X-Magda-Session", jws))
   }
 
-  def expectAdminCheck(httpFetcher: HttpFetcher, isAdmin: Boolean) {
-    val resFuture = Marshal(User("1", isAdmin))
+  def expectAdminCheck(
+      httpFetcher: HttpFetcher,
+      isAdmin: Boolean,
+      userId: String = USER_ID
+  ) {
+    val resFuture = Marshal(User(userId, isAdmin))
       .to[ResponseEntity]
       .map(user => HttpResponse(status = 200, entity = user))
 
-    (httpFetcher.get _).expects("/v0/public/users/1", *).returns(resFuture)
+    (httpFetcher.get _)
+      .expects(s"/v0/public/users/$userId", *)
+      .returns(resFuture)
   }
 
   def checkMustBeAdmin(role: Role)(fn: => HttpRequest) {

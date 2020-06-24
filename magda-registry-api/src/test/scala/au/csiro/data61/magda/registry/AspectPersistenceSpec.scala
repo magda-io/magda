@@ -11,6 +11,8 @@ import au.csiro.data61.magda.model.TenantId.SpecifiedTenantId
 import au.csiro.data61.magda.model.TenantId.AllTenantsId
 
 class AspectPersistenceSpec extends ApiSpec {
+  val userId = "2296943e-69d5-410a-8a86-88216984249c";
+
   it("Fetch aspects should be filtered by tenant id") { _ =>
     val aspectA = AspectDefinition(
       id = "aspect A",
@@ -28,13 +30,12 @@ class AspectPersistenceSpec extends ApiSpec {
     aspects.foreach(testAspect => {
       DB localTx { implicit session =>
         AspectPersistence
-          .create(session, testAspect, SpecifiedTenantId(TENANT_1))
+          .create(testAspect, SpecifiedTenantId(TENANT_1), userId)
       }
     })
 
     val tenant1Results = DB readOnly { implicit session =>
       AspectPersistence.getByIds(
-        session,
         aspectIds,
         SpecifiedTenantId(TENANT_1)
       )
@@ -43,7 +44,6 @@ class AspectPersistenceSpec extends ApiSpec {
 
     val allTenantsResults = DB readOnly { implicit session =>
       AspectPersistence.getByIds(
-        session,
         aspectIds,
         AllTenantsId
       )
@@ -53,7 +53,7 @@ class AspectPersistenceSpec extends ApiSpec {
     List(TENANT_2, MAGDA_ADMIN_PORTAL_ID).foreach(tenantId => {
       val result = DB readOnly { implicit session =>
         AspectPersistence
-          .getByIds(session, aspectIds, SpecifiedTenantId(tenantId))
+          .getByIds(aspectIds, SpecifiedTenantId(tenantId))
       }
       result shouldEqual Nil
     })

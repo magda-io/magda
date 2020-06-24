@@ -32,6 +32,8 @@ import org.locationtech.jts.geom.GeometryFactory
 import org.scalacheck.Arbitrary.{arbString, arbitrary}
 import org.scalacheck.{Gen, Shrink}
 
+import scala.util.Random
+
 class DataSetSearchSpec extends BaseSearchApiSpec {
 
   blockUntilNotRed()
@@ -250,10 +252,15 @@ class DataSetSearchSpec extends BaseSearchApiSpec {
       }
 
       it("for auto-generated publishers") {
+        val random = new Random
         def dataSetToQuery(dataSet: DataSet) = {
           dataSet.publisher
             .flatMap(d => getAcronymFromPublisherName(d.name))
-            .map(acronym => Generators.randomCaseGen(acronym)) match {
+            .map(
+              acronyms =>
+                Generators
+                  .randomCaseGen(acronyms(random.nextInt(acronyms.length)))
+            ) match {
             case Some(randomCaseAcronymGen) =>
               randomCaseAcronymGen.flatMap(
                 acronym => Query(freeText = Some(acronym))

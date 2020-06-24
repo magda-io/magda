@@ -67,9 +67,9 @@ object Directives extends Protocols with SprayJsonSupport {
       provide(None)
     } else {
       getJwt().flatMap { jwt =>
-        val recordPolicyIds = DB readOnly { session =>
+        val recordPolicyIds = DB readOnly { implicit session =>
           recordPersistence
-            .getPolicyIds(session, operationType, recordId.map(Set(_)))
+            .getPolicyIds(operationType, recordId.map(Set(_)))
         } get
 
         if (recordPolicyIds.isEmpty) {
@@ -141,14 +141,13 @@ object Directives extends Protocols with SprayJsonSupport {
       provide((None, None))
     } else {
       getJwt().flatMap { jwt =>
-        val recordPolicyIds = DB readOnly { session =>
+        val recordPolicyIds = DB readOnly { implicit session =>
           recordPersistence
-            .getPolicyIds(session, operationType, recordId.map(Set(_)))
+            .getPolicyIds(operationType, recordId.map(Set(_)))
         } get
 
-        val linkedRecordIds = DB readOnly { session =>
+        val linkedRecordIds = DB readOnly { implicit session =>
           recordPersistence.getLinkedRecordIds(
-            session,
             operationType,
             recordId,
             aspectIds
@@ -158,10 +157,9 @@ object Directives extends Protocols with SprayJsonSupport {
         val linkedRecordPolicyIds =
           if (linkedRecordIds.isEmpty) List()
           else
-            DB readOnly { session =>
+            DB readOnly { implicit session =>
               recordPersistence
                 .getPolicyIds(
-                  session,
                   operationType,
                   Some(linkedRecordIds.toSet)
                 )
@@ -236,9 +234,9 @@ object Directives extends Protocols with SprayJsonSupport {
           Some(recordId),
           notFoundResponse
         ) flatMap { recordQueries =>
-          DB readOnly { session =>
+          DB readOnly { implicit session =>
             recordPersistence
-              .getById(session, tenantId, recordQueries, recordId) match {
+              .getById(tenantId, recordQueries, recordId) match {
               case Some(record) => pass
               case None         => complete(notFoundResponse)
             }

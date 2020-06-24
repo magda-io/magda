@@ -43,7 +43,7 @@ class WebhookDeleteDatasetsSpec extends WebhookSpecBase {
                 id = None,
                 eventTime = None,
                 eventType = EventType.DeleteRecord,
-                userId = 0,
+                userId = Some("36bf34b8-7610-4fd3-8aab-0beaa318920a"),
                 data = JsObject("recordId" -> JsString(dataSet.identifier)),
                 tenantId = MAGDA_ADMIN_PORTAL_ID
               )

@@ -5,6 +5,8 @@ import com.typesafe.config.ConfigFactory
 import au.csiro.data61.magda.AppConfig
 
 object TestActorSystem {
+  val AUTH_USER_ID = "36bf34b8-7610-4fd3-8aab-0beaa318920a"
+
   // This has to be separated out to make overriding the config work for some stupid reason.
   val config = ConfigFactory.parseString(s"""
     akka.loglevel = ERROR
@@ -33,7 +35,7 @@ object TestActorSystem {
       baseUrl = "http://localhost:8888/v0/opa/"
       testSessionId = "general-search-api-tests"
     }
-    auth.userId = "1"
+    auth.userId = "$AUTH_USER_ID"
   """).resolve().withFallback(AppConfig.conf())
 
   def actorSystem = ActorSystem("TestActorSystem", config)

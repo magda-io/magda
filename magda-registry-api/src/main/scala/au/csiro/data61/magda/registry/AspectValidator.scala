@@ -22,7 +22,7 @@ class AspectValidator(config: Config, recordPersistence: RecordPersistence) {
       implicit session: DBSession
   ) {
     if (shouldValidate()) {
-      AspectPersistence.getById(session, aspectId, tenantId) match {
+      AspectPersistence.getById(aspectId, tenantId) match {
         case Some(aspectDef) => validateWithDefinition(aspectDef, aspectData)
         case None =>
           throw new Exception(
@@ -67,7 +67,6 @@ class AspectValidator(config: Config, recordPersistence: RecordPersistence) {
       tenantId: TenantId
   )(implicit session: DBSession): Unit = {
     val originalAspect = (recordPersistence.getRecordAspectById(
-      session,
       tenantId,
       recordId,
       aspectId,

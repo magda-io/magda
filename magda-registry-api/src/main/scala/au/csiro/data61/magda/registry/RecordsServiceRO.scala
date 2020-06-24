@@ -289,9 +289,8 @@ class RecordsServiceRO(
                     )
                   } else {
                     complete {
-                      DB readOnly { session =>
+                      DB readOnly { implicit session =>
                         recordPersistence.getAllWithAspects(
-                          session,
                           tenantId,
                           aspects,
                           optionalAspects,
@@ -428,10 +427,9 @@ class RecordsServiceRO(
               ec
             ) { opaQueries =>
               complete {
-                DB readOnly { session =>
+                DB readOnly { implicit session =>
                   recordPersistence
                     .getAll(
-                      session,
                       tenantId,
                       opaQueries,
                       pageToken,
@@ -600,11 +598,10 @@ class RecordsServiceRO(
               ec
             ) { opaQueries =>
               complete {
-                DB readOnly { session =>
+                DB readOnly { implicit session =>
                   CountResponse(
                     recordPersistence
                       .getCount(
-                        session,
                         tenantId,
                         opaQueries,
                         aspects,
@@ -697,10 +694,9 @@ class RecordsServiceRO(
               ec
             ) { opaQueries =>
               complete {
-                DB readOnly { session =>
+                DB readOnly { implicit session =>
                   "0" :: recordPersistence
                     .getPageTokens(
-                      session,
                       tenantId,
                       aspect,
                       opaQueries,
@@ -823,9 +819,8 @@ class RecordsServiceRO(
             ) { opaQueries =>
               opaQueries match {
                 case (recordQueries, linkedRecordQueries) =>
-                  DB readOnly { session =>
+                  DB readOnly { implicit session =>
                     recordPersistence.getByIdWithAspects(
-                      session,
                       tenantId,
                       id,
                       recordQueries,
@@ -927,9 +922,9 @@ class RecordsServiceRO(
           materializer,
           ec
         ) { recordQueries =>
-          DB readOnly { session =>
+          DB readOnly { implicit session =>
             recordPersistence
-              .getById(session, tenantId, recordQueries, id) match {
+              .getById(tenantId, recordQueries, id) match {
               case Some(record) => complete(record)
               case None =>
                 complete(

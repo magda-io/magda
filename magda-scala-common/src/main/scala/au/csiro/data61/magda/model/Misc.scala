@@ -138,7 +138,7 @@ package misc {
       identifier: Option[String] = None,
       name: Option[String] = None,
       description: Option[String] = None,
-      acronym: Option[String] = None,
+      acronym: Option[Seq[String]] = None,
       jurisdiction: Option[String] = None,
       aggKeywords: Option[String] = None,
       email: Option[String] = None,

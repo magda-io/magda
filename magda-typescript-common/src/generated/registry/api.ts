@@ -151,14 +151,13 @@ export class RegistryEvent {
     "id": any;
     "eventTime": Date;
     "eventType": EventType;
-    "userId": number;
+    "userId": string;
     "data": JsObject;
     "tenantId": number;
 }
 
 export class WebHook {
     "id": string;
-    "userId": any;
     "name": string;
     "active": boolean;
     "lastEvent": any;
