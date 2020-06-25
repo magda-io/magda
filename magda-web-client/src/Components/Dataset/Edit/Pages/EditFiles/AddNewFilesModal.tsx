@@ -226,7 +226,7 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
 
                 {urlDistributions.length ? (
                     <div className="url-items-area">
-                        {renderDistList(urlDistributions)}
+                        {renderDistList(urlDistributions, true)}
                     </div>
                 ) : null}
 
