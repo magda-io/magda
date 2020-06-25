@@ -18,12 +18,25 @@
     }
 
     .bottom-button-area {
+        margin-top: 25px;
         padding-top: 25px;
         text-align: center;
+        border-top: 2px solid #cccaca;
     }
 
     .dataset-add-files-fileListItem {
         margin-bottom: 65px;
+    }
+
+    .add-dataset-from-link-input-outter-container {
+        padding-left: 5px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    .content-area {
+        max-height: 76vh;
+        overflow-y: scroll;
     }
 }
 .last-row {

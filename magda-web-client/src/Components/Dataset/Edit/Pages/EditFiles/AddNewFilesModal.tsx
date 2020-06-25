@@ -10,6 +10,7 @@ import {
 } from "Components/Dataset/Add/DatasetAddCommon";
 import AsyncButton from "Components/Common/AsyncButton";
 import DatasetFile from "Components/Dataset/Add/DatasetFile";
+import AddDatasetFromLinkInput from "../../../Add/Pages/AddFiles/AddDatasetFromLinkInput";
 
 import "./AddNewFilesModal.scss";
 
@@ -32,6 +33,7 @@ type PromiseListType = {
 const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
     const { distributions } = props.stateData;
     const [error, setError] = useState<Error | null>(null);
+    const [processingErrorMessage, setProcessingErrorMessage] = useState("");
     const deletionPromisesRef = useRef<PromiseListType>({} as PromiseListType);
 
     const renderDistList = (dists: Distribution[]) => {
@@ -137,49 +139,91 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
             onClose={closeModal}
             showCloseButton={pendingDistributions.length ? false : true}
         >
-            <div className="small-heading">New files</div>
+            <div className="content-area">
+                <div className="small-heading">New files</div>
 
-            {uploadedDistributions.length ? (
-                <div className="file-items-area">
-                    {renderDistList(uploadedDistributions)}
+                {uploadedDistributions.length ? (
+                    <div className="file-items-area">
+                        {renderDistList(uploadedDistributions)}
+                    </div>
+                ) : null}
+
+                <div className="cols-sm-12 file-drop-area">
+                    <FileDropZone
+                        stateData={props.stateData}
+                        datasetId={props.datasetId}
+                        datasetStateUpdater={props.datasetStateUpdater}
+                        initDistProps={{
+                            isAddConfirmed: false,
+                            isReplacementComfired: false
+                        }}
+                        onError={(e) => {
+                            console.error(e);
+                            setError(e);
+                        }}
+                    />
                 </div>
-            ) : null}
 
-            <div className="cols-sm-12 file-drop-area">
-                <FileDropZone
-                    stateData={props.stateData}
-                    datasetId={props.datasetId}
-                    datasetStateUpdater={props.datasetStateUpdater}
+                <div className="small-heading">
+                    (and/or) New URL of an API or dataset online
+                </div>
+
+                {processingErrorMessage ? (
+                    <div className="process-url-error-message au-body au-page-alerts au-page-alerts--warning">
+                        <h3>{processingErrorMessage}</h3>
+                        <div className="heading">Here’s what you can do:</div>
+                        <ul>
+                            <li>
+                                Double check the URL below is correct and
+                                without any typos. If you need to edit the URL,
+                                do so below and press ‘Fetch’ again
+                            </li>
+                            <li>
+                                If the URL looks correct, it’s possible we can’t
+                                connect to the service or extract any meaningful
+                                metadata from it. You may want to try again
+                                later
+                            </li>
+                            <li>
+                                If you want to continue using this URL you can,
+                                however you’ll need to manually enter the
+                                dataset metadata. Use the ‘Manually enter
+                                metadata’ button below
+                            </li>
+                        </ul>
+                    </div>
+                ) : null}
+
+                <AddDatasetFromLinkInput
                     initDistProps={{
                         isAddConfirmed: false,
                         isReplacementComfired: false
                     }}
-                    onError={(e) => {
-                        console.error(e);
-                        setError(e);
+                    datasetStateUpdater={props.datasetStateUpdater}
+                    onProcessingError={(e) => {
+                        setProcessingErrorMessage(
+                            "" + (e.message ? e.message : e)
+                        );
                     }}
+                    onClearProcessingError={() => setProcessingErrorMessage("")}
                 />
-            </div>
 
-            <div className="small-heading">
-                (and/or) New URL of an API or dataset online
-            </div>
-
-            {urlDistributions.length ? (
-                <div className="url-items-area">
-                    {renderDistList(urlDistributions)}
-                </div>
-            ) : null}
-
-            {error ? (
-                <div className="au-body au-page-alerts au-page-alerts--error">
-                    <div>
-                        <span>
-                            Magda has encountered an error: {error?.message}
-                        </span>
+                {urlDistributions.length ? (
+                    <div className="url-items-area">
+                        {renderDistList(urlDistributions)}
                     </div>
-                </div>
-            ) : null}
+                ) : null}
+
+                {error ? (
+                    <div className="au-body au-page-alerts au-page-alerts--error">
+                        <div>
+                            <span>
+                                Magda has encountered an error: {error?.message}
+                            </span>
+                        </div>
+                    </div>
+                ) : null}
+            </div>
 
             <div className="bottom-button-area">
                 <AsyncButton

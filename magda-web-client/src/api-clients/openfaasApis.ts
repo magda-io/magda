@@ -95,13 +95,6 @@ export async function getOpenfaasFunctions(
 export async function getAllDataUrlProcessorsFromOpenfaasGateway(
     type?: DistributionSource
 ) {
-    if (
-        type !== DistributionSource.Api &&
-        type !== DistributionSource.DatasetUrl
-    ) {
-        throw new Error("Unknown distribution url type!");
-    }
-
     let magdaFuncType;
 
     switch (type) {
