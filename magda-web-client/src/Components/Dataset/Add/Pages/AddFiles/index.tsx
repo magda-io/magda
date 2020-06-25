@@ -29,8 +29,6 @@ type Props = {
     user: User;
     datasetId: string;
     stateData: State;
-    // --- if use as edit page
-    isEditView: boolean;
 };
 
 class AddFilesPage extends React.Component<Props> {
@@ -102,7 +100,7 @@ class AddFilesPage extends React.Component<Props> {
     }
 
     render() {
-        const { stateData: state, isEditView } = this.props;
+        const { stateData: state } = this.props;
         const localFiles = state.distributions.filter(
             (file) => file.creationSource === DistributionSource.File
         );
@@ -122,46 +120,35 @@ class AddFilesPage extends React.Component<Props> {
         };
 
         return (
-            <div
-                className={`container-fluid dataset-add-file-page ${
-                    isEditView ? "is-edit-view" : ""
-                }`}
-            >
-                {isEditView ? null : (
-                    <div className="row top-area-row">
-                        <div className="col-xs-12 top-text-area">
-                            <h1>Add your dataset to pre-populate metadata</h1>
-                            <p>
-                                Our Publishing Tool can review your dataset
-                                contents and pre-populate metadata. Just add all
-                                the files or services that make up your dataset.
-                            </p>
-                            <p>
-                                You can upload your dataset as files, add a link
-                                to files already hosted online, or add a link to
-                                a web service, or any combination of the three.
-                            </p>
-                            <p>
-                                All our processing happens in your internet
-                                browser, we only store a copy of your files if
-                                you ask us to, and you can edit or delete the
-                                metadata at any time.
-                            </p>
-                            <p>
-                                Want to upload your entire data catalogue in one
-                                go? Use our <a>Bulk Upload tool</a>
-                            </p>
-                        </div>
+            <div className={"container-fluid dataset-add-file-page"}>
+                <div className="row top-area-row">
+                    <div className="col-xs-12 top-text-area">
+                        <h1>Add your dataset to pre-populate metadata</h1>
+                        <p>
+                            Our Publishing Tool can review your dataset contents
+                            and pre-populate metadata. Just add all the files or
+                            services that make up your dataset.
+                        </p>
+                        <p>
+                            You can upload your dataset as files, add a link to
+                            files already hosted online, or add a link to a web
+                            service, or any combination of the three.
+                        </p>
+                        <p>
+                            All our processing happens in your internet browser,
+                            we only store a copy of your files if you ask us to,
+                            and you can edit or delete the metadata at any time.
+                        </p>
+                        <p>
+                            Want to upload your entire data catalogue in one go?
+                            Use our <a>Bulk Upload tool</a>
+                        </p>
                     </div>
-                )}
+                </div>
 
                 <div className="row add-files-heading">
                     <div className="col-xs-12">
-                        {isEditView ? (
-                            <h3>Your files and distributions</h3>
-                        ) : (
-                            <h3>Add files</h3>
-                        )}
+                        <h3>Add files</h3>
                         {this.renderStorageOption()}
                     </div>
 

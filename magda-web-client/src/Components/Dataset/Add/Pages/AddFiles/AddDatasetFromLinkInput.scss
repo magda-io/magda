@@ -1,0 +1,71 @@
+.add-dataset-from-link-input-outter-container {
+    input.url-input {
+        border-radius: 8px;
+        border: solid 1px #cccaca;
+        margin-right: 10px;
+    }
+
+    input.url-input.invalid {
+        border: solid 1px #d60000;
+    }
+
+    button.fetch-button {
+        border-radius: 10px;
+        border: solid 2px #30384d;
+        background-color: #30384d;
+    }
+
+    button.manual-enter-metadata-button {
+        margin-left: 15px;
+        border-radius: 10px;
+        border: solid 2px #30384d;
+
+        font-size: 16px;
+        font-weight: 300;
+        font-stretch: normal;
+        font-style: normal;
+        line-height: 1.5;
+        letter-spacing: -0.2px;
+        text-align: center;
+        color: #30384d;
+    }
+
+    .au-error-text {
+        padding-left: 5px;
+    }
+
+    .process-url-error-message {
+        h3 {
+            margin-top: 40px;
+            font-size: 25px;
+            font-weight: normal;
+            font-stretch: normal;
+            font-style: normal;
+            line-height: normal;
+            letter-spacing: normal;
+            color: #042330;
+        }
+        .heading {
+            margin-top: 33px;
+            padding-left: 5px;
+            font-size: 17px;
+            font-weight: 300;
+            font-stretch: normal;
+            font-style: normal;
+            line-height: 1.88;
+            letter-spacing: normal;
+            color: #484848;
+        }
+        ul {
+            margin-top: 0px;
+            padding-left: 35px;
+            font-size: 17px;
+            font-weight: 300;
+            font-stretch: normal;
+            font-style: normal;
+            line-height: 1.88;
+            letter-spacing: normal;
+            color: #484848;
+        }
+    }
+}
