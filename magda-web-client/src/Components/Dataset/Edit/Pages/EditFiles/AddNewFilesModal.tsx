@@ -11,6 +11,7 @@ import {
 import AsyncButton from "Components/Common/AsyncButton";
 import DatasetFile from "Components/Dataset/Add/DatasetFile";
 import AddDatasetFromLinkInput from "../../../Add/Pages/AddFiles/AddDatasetFromLinkInput";
+import DatasetLinkItem from "Components/Dataset/Add/DatasetLinkItem";
 
 import "./AddNewFilesModal.scss";
 
@@ -36,7 +37,10 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
     const [processingErrorMessage, setProcessingErrorMessage] = useState("");
     const deletionPromisesRef = useRef<PromiseListType>({} as PromiseListType);
 
-    const renderDistList = (dists: Distribution[]) => {
+    const renderDistList = (
+        dists: Distribution[],
+        isUrlItem: boolean = false
+    ) => {
         return (
             <div className="col-xs-12">
                 <div className="row">
@@ -72,14 +76,26 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
                                     isLastRow ? "last-row" : ""
                                 }`}
                             >
-                                <DatasetFile
-                                    idx={i}
-                                    file={file}
-                                    onChange={props.editDistributionHandler(
-                                        file.id!
-                                    )}
-                                    onDelete={delHandler}
-                                />
+                                {isUrlItem ? (
+                                    <DatasetLinkItem
+                                        idx={i}
+                                        key={i}
+                                        distribution={file}
+                                        datasetStateUpdater={
+                                            props.datasetStateUpdater
+                                        }
+                                    />
+                                ) : (
+                                    <DatasetFile
+                                        idx={i}
+                                        key={i}
+                                        file={file}
+                                        onChange={props.editDistributionHandler(
+                                            file.id!
+                                        )}
+                                        onDelete={delHandler}
+                                    />
+                                )}
                             </div>
                         );
                     })}

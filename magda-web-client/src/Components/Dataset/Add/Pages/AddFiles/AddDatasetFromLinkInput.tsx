@@ -276,7 +276,7 @@ const AddDatasetFromLinkInput: FunctionComponent<Props> = (props) => {
                 id: createId("dist"),
                 ...(props?.initDistProps ? props.initDistProps : {}),
                 downloadURL: url,
-                creationSource: type,
+                creationSource: type ? type : DistributionSource.DatasetUrl,
                 creationMethod: DistributionCreationMethod.Manual,
                 title: url,
                 modified: new Date(),

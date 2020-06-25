@@ -40,18 +40,6 @@ const EditFilesPage: FunctionComponent<Props> = (props) => {
         false
     );
 
-    const addDistribution = (distribution: Distribution) => {
-        props.setState((state: State) => {
-            const newDistribution = state.distributions.concat(distribution);
-            return {
-                ...state,
-                distributions: newDistribution
-            };
-        });
-    };
-
-    console.log(addDistribution);
-
     const editDistribution = (distId: string) => (
         updater: (distribution: Distribution) => Distribution
     ) => {
