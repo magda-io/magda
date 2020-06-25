@@ -11,7 +11,7 @@ export type RecordAction = {
     id?: string;
 };
 
-type TemporalCoverage = {
+export type TemporalCoverage = {
     intervals: {
         start?: string;
         end?: string;
@@ -20,17 +20,18 @@ type TemporalCoverage = {
     }[];
 };
 
-type dcatDistributionStrings = {
+export type dcatDistributionStrings = {
     format: string;
     downloadURL: string;
     accessURL: string;
+    issued?: string;
     modified: string;
     license: string;
     description: string;
     title: string;
 };
 
-type DcatDatasetStrings = {
+export type DcatDatasetStrings = {
     title: string;
     description: string;
     issued?: string;

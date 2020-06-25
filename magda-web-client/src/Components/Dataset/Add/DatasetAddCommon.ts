@@ -18,11 +18,12 @@ import { RawDataset } from "helpers/record";
 import { autocompletePublishers } from "api-clients/SearchApis";
 import ServerError from "./Errors/ServerError";
 import defer from "helpers/defer";
+import { ReactStateUpdaterType } from "helpers/promisifySetState";
 
 export type Distribution = {
     title: string;
     description?: string;
-    issued?: string;
+    issued?: Date;
     modified: Date;
     license?: string;
     rights?: string;
@@ -195,10 +196,61 @@ export type State = {
     error: Error | null;
 };
 
-export type DatasetStateUpdaterType = <State>(
-    state: ((prevState: Readonly<State>) => State) | State,
-    callback?: () => void
-) => void;
+export type DatasetStateUpdaterType = ReactStateUpdaterType<State>;
+
+export const getDistributionDeleteCallback = (
+    datasetStateUpdater: DatasetStateUpdaterType
+) => (distId: string) =>
+    new Promise((resolve, reject) => {
+        datasetStateUpdater(
+            (state) => ({
+                ...state,
+                distributions: state.distributions.filter(
+                    (item) => item.id !== distId
+                )
+            }),
+            resolve
+        );
+    });
+
+export const getDistributionAddCallback = (
+    datasetStateUpdater: DatasetStateUpdaterType
+) => (dist: Distribution) =>
+    new Promise((resolve, reject) => {
+        datasetStateUpdater(
+            (state) => ({
+                ...state,
+                distributions: [...state.distributions, dist]
+            }),
+            resolve
+        );
+    });
+
+export const getDistributionUpdateCallback = (
+    datasetStateUpdater: DatasetStateUpdaterType
+) => (
+    distId: string,
+    dist: ((prevState: Readonly<Distribution>) => Distribution) | Distribution
+) =>
+    new Promise((resolve, reject) => {
+        datasetStateUpdater((state) => {
+            try {
+                return {
+                    ...state,
+                    distributions: state.distributions.map((item) =>
+                        item.id !== distId
+                            ? item
+                            : typeof dist === "function"
+                            ? dist(item)
+                            : dist
+                    )
+                };
+            } catch (e) {
+                reject(e);
+                return state;
+            }
+        }, resolve);
+    });
 
 export type TemporalCoverage = {
     intervals: Interval[];
@@ -470,12 +522,16 @@ function populateDistributions(data: RawDataset, state: State) {
         .filter((item) => item?.aspects?.["dcat-distribution-strings"])
         .map((item) => {
             const modified = dateStringToDate(
-                item.aspects["dcat-distribution-strings"].modified
+                item?.aspects["dcat-distribution-strings"]?.modified
+            );
+            const issued = dateStringToDate(
+                item?.aspects["dcat-distribution-strings"]?.issued
             );
             const dis = {
                 ...item.aspects["dcat-distribution-strings"],
                 id: item.id,
                 modified: modified ? modified : new Date(),
+                issued: issued ? issued : undefined,
                 _state: DistributionState.Ready
             };
             return dis;
@@ -771,7 +827,7 @@ export function saveRuntimeStateToStorage(
     datasetStateUpdater: DatasetStateUpdaterType
 ): Promise<string> {
     return new Promise((resolve, reject) => {
-        datasetStateUpdater<State>((state) => {
+        datasetStateUpdater((state) => {
             // --- defer the execution to make sure the current updater return immediately
             defer(async () => {
                 try {

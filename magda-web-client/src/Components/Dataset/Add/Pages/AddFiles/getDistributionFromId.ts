@@ -1,9 +1,5 @@
 import defer from "helpers/defer";
-import {
-    State,
-    Distribution,
-    DatasetStateUpdaterType
-} from "../../DatasetAddCommon";
+import { Distribution, DatasetStateUpdaterType } from "../../DatasetAddCommon";
 
 /**
  * Retrieve distribution data from state using state updater function and call `func` with retrieved distribution data.
@@ -18,7 +14,7 @@ const getDistributionFromId = (
     datasetStateUpdater: DatasetStateUpdaterType,
     func: (dist: Distribution | undefined) => any
 ): void =>
-    datasetStateUpdater<State>((state) => {
+    datasetStateUpdater((state) => {
         const distData = state.distributions.find((item) => item.id === distId);
         // --- defer the execution to make sure the current updater return earlier so that it will be safe to update state in func
         defer(() => func(distData));

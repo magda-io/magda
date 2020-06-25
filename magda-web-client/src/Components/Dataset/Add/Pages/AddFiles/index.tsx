@@ -2,7 +2,7 @@ import React from "react";
 
 import ToolTip from "Components/Dataset/Add/ToolTip";
 import DatasetFile from "Components/Dataset/Add/DatasetFile";
-import AddDatasetLinkSection from "Components/Dataset/Add/AddDatasetLinkSection";
+import AddDatasetLinkSection from "./AddDatasetLinkSection";
 import StorageOptionsSection from "Components/Dataset/Add/StorageOptionsSection";
 import FileDropZone from "./FileDropZone";
 
@@ -116,9 +116,7 @@ class AddFilesPage extends React.Component<Props> {
             ).catch((e) => {
                 console.error(e);
                 if (e instanceof UserVisibleError) {
-                    this.props.setState({
-                        error: e
-                    });
+                    this.props.setState((state) => ({ ...state, error: e }));
                 }
             });
         };
@@ -231,9 +229,10 @@ class AddFilesPage extends React.Component<Props> {
                     onError={(e) => {
                         console.error(e);
                         if (e instanceof UserVisibleError) {
-                            this.props.setState({
+                            this.props.setState((state) => ({
+                                ...state,
                                 error: e
-                            });
+                            }));
                         }
                     }}
                 />
@@ -241,19 +240,13 @@ class AddFilesPage extends React.Component<Props> {
                 <AddDatasetLinkSection
                     type={DistributionSource.DatasetUrl}
                     distributions={state.distributions}
-                    addDistribution={this.addDistribution}
-                    editDistribution={this.editDistribution}
-                    deleteDistribution={deleteDistributionHandler}
-                    setMetadataState={this.props.setState}
+                    datasetStateUpdater={this.props.setState}
                 />
 
                 <AddDatasetLinkSection
                     type={DistributionSource.Api}
                     distributions={state.distributions}
-                    addDistribution={this.addDistribution}
-                    editDistribution={this.editDistribution}
-                    deleteDistribution={deleteDistributionHandler}
-                    setMetadataState={this.props.setState}
+                    datasetStateUpdater={this.props.setState}
                 />
             </div>
         );

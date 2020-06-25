@@ -1,4 +1,4 @@
-type ReactStateUpdaterType<T> = <T>(
+export type ReactStateUpdaterType<T> = (
     state: ((prevState: Readonly<T>) => T) | T,
     callback?: () => void
 ) => void;

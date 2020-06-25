@@ -1,17 +1,14 @@
 import React, { useState } from "react";
-import { useAsync } from "react-async-hook";
 import moment from "moment";
-import uuid from "uuid";
-import fetch from "isomorphic-fetch";
-import { config } from "config";
+import partial from "lodash/partial";
 import {
-    State,
     Distribution,
     DistributionState,
-    DistributionSource,
-    DistributionCreationMethod
+    DistributionCreationMethod,
+    DatasetStateUpdaterType,
+    getDistributionDeleteCallback,
+    getDistributionUpdateCallback
 } from "Components/Dataset/Add/DatasetAddCommon";
-import { Record } from "api-clients/RegistryApis";
 import "./DatasetLinkItem.scss";
 
 import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
@@ -24,25 +21,12 @@ import SlimTextInputWithValidation from "../Add/SlimTextInputWithValidation";
 import * as ValidationManager from "./ValidationManager";
 import ValidationRequiredLabel from "../../Dataset/Add/ValidationRequiredLabel";
 import { MultilineTextEditor } from "Components/Editing/Editors/textEditor";
-import promiseAny from "helpers/promiseAny";
-
-export type UrlProcessorResult = {
-    dataset: Record;
-    distributions: Record[];
-};
 
 type Props = {
     distribution: Distribution;
     idx: number;
-    addDistribution: (distribution: Distribution) => void;
-    editDistribution: (
-        updater: (distribution: Distribution) => Distribution
-    ) => void;
-    deleteDistribution: () => void;
     className?: string;
-    onProcessingError: (error: any) => void;
-    onProcessingComplete?: () => void;
-    setMetadataState: (updater: (state: State) => State) => void;
+    datasetStateUpdater: DatasetStateUpdaterType;
 };
 
 type ProcessingProps = {
@@ -281,235 +265,12 @@ const DatasetLinkItemEditing = (props: EditViewProps) => {
     );
 };
 
-/**
- * Talks to openfaas gateway to retrieve a list of functions with `data-url-processor` labels (or `api-url-processor` if it's for processing API urls).
- * Here the `data-url-processor` label (or `api-url-processor`) is a user-defined label that we use to distinguish the purposes of function.
- * Therefore, other connectors can opt to support this feature later without any frontend changes.
- * We only need the name field of the returned data items to invoke the function later
- * Documents of openfaas gateway can be found from:
- * https://github.com/openfaas/faas/tree/master/api-docs
- *
- * @returns
- */
-async function getAllDataUrlProcessorsFromOpenfaasGateway(
-    type?: DistributionSource
-) {
-    if (
-        type !== DistributionSource.Api &&
-        type !== DistributionSource.DatasetUrl
-    ) {
-        throw new Error("Unknown distribution url type!");
-    }
-
-    const magdaFuncType =
-        type === DistributionSource.DatasetUrl
-            ? "data-url-processor"
-            : "api-url-processor";
-    const res = await fetch(
-        `${config.openfaasBaseUrl}/system/functions`,
-        config.credentialsFetchOptions
-    );
-    if (res.status !== 200) {
-        if (res.status === 401) {
-            throw new Error(
-                "You are not authorised to access the Magda serverless function gateway."
-            );
-        } else {
-            throw new Error(
-                "Failed to contact openfaas gateway: " + res.statusText
-            );
-        }
-    }
-    const data: any[] = await res.json();
-    if (!data || !data.length) {
-        return [];
-    }
-    return data.filter(
-        (item) => item.labels && item.labels.magdaType === magdaFuncType
-    );
-}
-
-interface UrlProcessingError extends Error {
-    unableProcessUrl?: boolean;
-}
-
 const DatasetLinkItem = (props: Props) => {
     const [editMode, setEditMode] = useState(
         props.distribution?.creationMethod ===
             DistributionCreationMethod.Manual &&
             props.distribution?._state === DistributionState.Drafting
     );
-
-    function processDatasetDcat(aspectData) {
-        if (!aspectData?.title && !aspectData?.description) {
-            return;
-        }
-
-        props.setMetadataState((state) => {
-            const newDatasetData = { ...state.dataset };
-            if (aspectData?.title) {
-                newDatasetData.title = aspectData?.title;
-            }
-            if (aspectData?.description) {
-                newDatasetData.description = aspectData?.description;
-            }
-            return {
-                ...state,
-                dataset: newDatasetData
-            };
-        });
-    }
-
-    function processDatasetSpatialCoverage(aspectData) {
-        if (aspectData?.bbox?.length !== 4) {
-            return;
-        }
-
-        const bbox = aspectData.bbox
-            .map((item) => (typeof item === "string" ? parseFloat(item) : item))
-            .filter((item) => typeof item === "number" && !isNaN(item));
-
-        if (bbox.length !== 4) {
-            return;
-        }
-
-        props.setMetadataState((state) => ({
-            ...state,
-            spatialCoverage: {
-                spatialDataInputMethod: "bbox",
-                bbox
-            }
-        }));
-    }
-
-    function processDatasetData(dataset: Record) {
-        // --- implement logic of populate dataset data into add dataset page state
-
-        if (dataset?.aspects?.["dcat-dataset-strings"]) {
-            // --- populate dcat-dataset-strings
-            processDatasetDcat(dataset.aspects["dcat-dataset-strings"]);
-        }
-
-        if (dataset?.aspects?.["spatial-coverage"]) {
-            // --- populate spatial-coverage
-            processDatasetSpatialCoverage(dataset.aspects["spatial-coverage"]);
-        }
-    }
-
-    useAsync(async () => {
-        try {
-            if (props.distribution._state !== DistributionState.Processing) {
-                return;
-            }
-
-            const processors = await getAllDataUrlProcessorsFromOpenfaasGateway(
-                props.distribution.creationSource
-            );
-            if (!processors || !processors.length) {
-                throw new Error("No url processor available.");
-            }
-
-            const data = (await promiseAny<UrlProcessorResult>(
-                processors.map(async (item) => {
-                    const res = await fetch(
-                        `${config.openfaasBaseUrl}/function/${item.name}`,
-                        {
-                            ...config.credentialsFetchOptions,
-                            method: "post",
-                            body: props.distribution.downloadURL
-                        }
-                    );
-                    if (res.status !== 200) {
-                        const e: UrlProcessingError = new Error(
-                            `Failed to request function ${item.name}` +
-                                res.statusText +
-                                "\n" +
-                                (await res.text())
-                        );
-                        e.unableProcessUrl = true;
-                        throw e;
-                    }
-
-                    const data = (await res.json()) as UrlProcessorResult;
-                    if (
-                        !data ||
-                        !data.distributions ||
-                        !data.distributions.length
-                    ) {
-                        throw new Error(
-                            `Process result contains less than 1 distribution`
-                        );
-                    }
-
-                    data.distributions = data.distributions.filter(
-                        (item) =>
-                            item.aspects &&
-                            item.aspects["dcat-distribution-strings"]
-                    );
-
-                    if (!data.distributions.length) {
-                        throw new Error(
-                            `Process result contains less than 1 distribution with valid "dcat-distribution-strings" aspect`
-                        );
-                    }
-
-                    return data;
-                })
-            ).catch((e) => {
-                console.log(e);
-                const error = e?.length ? e[0] : e;
-                if (error) {
-                    // --- only deal with the first error
-                    if (error.unableProcessUrl === true) {
-                        // --- We simplify the url processing error message here
-                        // --- Different data sources might fail to recognise the url for different technical reasons but those info may be too technical to the user.
-                        throw new Error(
-                            "We weren't able to extract any information from the URL"
-                        );
-                    } else {
-                        // --- notify the user the `post processing` error as it'd be more `relevant` message (as at least the url has been recognised now).
-                        // --- i.e. url is recognised and processed but meta data is not valid or insufficient (e.g. no distributions)
-                        throw error;
-                    }
-                }
-            })) as UrlProcessorResult;
-
-            props.editDistribution((distribution) => {
-                return {
-                    ...distribution,
-                    ...data.distributions[0].aspects[
-                        "dcat-distribution-strings"
-                    ],
-                    creationSource: props.distribution.creationSource,
-                    _state: DistributionState.Ready
-                };
-            });
-
-            // --- if there are more than one distribution returned, added to the list
-            if (data.distributions.length > 1) {
-                data.distributions.slice(1).forEach((item) => {
-                    props.addDistribution({
-                        ...item.aspects["dcat-distribution-strings"],
-                        id: uuid.v4(),
-                        creationSource: props.distribution.creationSource,
-                        _state: DistributionState.Ready
-                    });
-                });
-            }
-
-            if (data?.dataset) {
-                // --- populate possible dataset level data e.g. spatial-coverage-aspect
-                processDatasetData(data.dataset);
-            }
-
-            if (typeof props.onProcessingComplete === "function") {
-                props.onProcessingComplete();
-            }
-        } catch (e) {
-            props.deleteDistribution();
-            props.onProcessingError(e);
-        }
-    }, [props.distribution.id]);
 
     if (
         props.distribution._state !== DistributionState.Ready &&
@@ -530,7 +291,12 @@ const DatasetLinkItem = (props: Props) => {
                 <DatasetLinkItemEditing
                     idx={props.idx}
                     distribution={props.distribution}
-                    editDistribution={props.editDistribution}
+                    editDistribution={partial(
+                        getDistributionUpdateCallback(
+                            props.datasetStateUpdater
+                        ),
+                        props.distribution.id!
+                    )}
                     setEditMode={setEditMode}
                     editMode={editMode}
                 />
@@ -543,7 +309,12 @@ const DatasetLinkItem = (props: Props) => {
                     distribution={props.distribution}
                     setEditMode={setEditMode}
                     editMode={editMode}
-                    deleteDistribution={props.deleteDistribution}
+                    deleteDistribution={partial(
+                        getDistributionDeleteCallback(
+                            props.datasetStateUpdater
+                        ),
+                        props.distribution.id!
+                    )}
                 />
             </div>
         );
