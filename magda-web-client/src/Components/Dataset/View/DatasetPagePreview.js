@@ -11,7 +11,7 @@ export default class DatasetPagePreview extends Component {
         }
         return distributions.find((d) => {
             // Checking if the distribution has a url
-            if (!typeof d === "string" && !d.downloadURL && !d.accessURL) {
+            if (!(typeof d === "string") && !d.downloadURL && !d.accessURL) {
                 return null;
             }
             return /(^|\W+)csv(\W+|$)/i.test(d.format);
