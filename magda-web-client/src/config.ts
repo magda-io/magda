@@ -347,7 +347,10 @@ export function getProxiedResourceUrl(
     resourceUrl: string,
     disableCache: boolean = false
 ) {
+    const serviceName = resourceUrl.split("/")[5];
     if (resourceUrl.indexOf(config.baseExternalUrl) !== -1) {
+        return resourceUrl;
+    } else if (serviceName === "storage") {
         return resourceUrl;
     } else {
         return config.proxyUrl + (disableCache ? "_0d/" : "") + resourceUrl;
