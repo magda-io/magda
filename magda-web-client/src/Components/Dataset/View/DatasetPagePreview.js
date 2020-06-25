@@ -6,10 +6,16 @@ import "./DatasetPagePreview.scss";
 
 export default class DatasetPagePreview extends Component {
     getDistributionForVis(distributions) {
-        if (!distributions || distributions.length === 0) {
+        if (!distributions || distributions?.length === 0) {
             return null;
         }
-        return distributions.find((d) => /(^|\W+)csv(\W+|$)/i.test(d.format));
+        return distributions.find((d) => {
+            // Checking if the distribution has a url
+            if (!typeof d === "string" && !d.downloadURL && !d.accessURL) {
+                return null;
+            }
+            return /(^|\W+)csv(\W+|$)/i.test(d.format);
+        });
     }
 
     render() {
