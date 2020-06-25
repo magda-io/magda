@@ -8,8 +8,7 @@ import {
     DatasetStateUpdaterType,
     createId,
     getDistributionDeleteCallback,
-    getDistributionAddCallback,
-    getDistributionUpdateCallback
+    getDistributionAddCallback
 } from "Components/Dataset/Add/DatasetAddCommon";
 import { getDataUrlProcessorResult } from "api-clients/openfaasApis";
 
@@ -28,6 +27,7 @@ type Props = {
     onProcessingError: (Error) => void;
     onClearProcessingError: () => void;
     onProcessingComplete?: (distributions: Distribution[]) => void;
+    initDistProps?: Partial<Distribution>;
 };
 
 type DistributionAspectsProcessor = (aspects: {
@@ -196,6 +196,7 @@ const AddDatasetFromLinkInput: FunctionComponent<Props> = (props) => {
             try {
                 getDistributionAddCallback(datasetStateUpdater)({
                     id: processingDistId,
+                    ...(props?.initDistProps ? props.initDistProps : {}),
                     downloadURL: url,
                     // --- when type is not specify, we don't know the url type yet until one of processor is resolved.
                     // --- before that, we set it to DistributionSource.DatasetUrl by default and update it later
@@ -213,17 +214,9 @@ const AddDatasetFromLinkInput: FunctionComponent<Props> = (props) => {
                     type
                 );
 
-                // --- set creationSource. as one of processors is resolved, we now know the type of the url
-                getDistributionUpdateCallback(datasetStateUpdater)(
-                    processingDistId,
-                    (dist) => ({
-                        ...dist,
-                        creationSource: dataType
-                    })
-                );
-
                 const dists = data.distributions.map((distRecord, idx) => ({
                     id: idx === 0 ? processingDistId : createId("dist"),
+                    ...(props?.initDistProps ? props.initDistProps : {}),
                     downloadURL: url,
                     creationSource: dataType,
                     creationMethod: DistributionCreationMethod.Auto,
@@ -281,6 +274,7 @@ const AddDatasetFromLinkInput: FunctionComponent<Props> = (props) => {
 
             getDistributionAddCallback(datasetStateUpdater)({
                 id: createId("dist"),
+                ...(props?.initDistProps ? props.initDistProps : {}),
                 downloadURL: url,
                 creationSource: type,
                 creationMethod: DistributionCreationMethod.Manual,
