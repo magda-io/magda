@@ -11,6 +11,8 @@ import ToolTip from "Components/Dataset/Add/ToolTip";
 import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
 import { codelistRadioEditor } from "Components/Editing/Editors/codelistEditor";
 import SupercedeSelectionBox from "./SupercedeSelectionBox";
+import AsyncButton from "Components/Common/AsyncButton";
+import ConfirmMetadataModal from "./ConfirmMetadataModal";
 
 type PropsType = {
     stateData: State;
@@ -44,6 +46,9 @@ const DistSupercedeSection: FunctionComponent<PropsType> = (props) => {
     );
 
     const [shouldReplace, setShouldReplace] = useState<boolean>(false);
+    const [showMetadataConfirmModal, setShowMetadataConfirmModal] = useState<
+        boolean
+    >(false);
 
     return (
         <div className="distribution-supercede-section">
@@ -93,6 +98,50 @@ const DistSupercedeSection: FunctionComponent<PropsType> = (props) => {
                     />
                 </>
             ) : null}
+
+            {showMetadataConfirmModal ? (
+                <ConfirmMetadataModal isOpen={true} />
+            ) : null}
+
+            <div className="button-area">
+                <AsyncButton
+                    onClick={() => {
+                        if (shouldReplace) {
+                            setShowMetadataConfirmModal(true);
+                        } else {
+                            // --- if not require replacement, set all pending distribution as current.
+                            props.datasetStateUpdater((state) => ({
+                                ...state,
+                                distributions: state.distributions.map((dist) =>
+                                    dist.isReplacementComfired
+                                        ? dist
+                                        : {
+                                              ...dist,
+                                              isReplacementComfired: true
+                                          }
+                                )
+                            }));
+                        }
+                    }}
+                >
+                    Confirm
+                </AsyncButton>
+                &nbsp;&nbsp;&nbsp;
+                <AsyncButton
+                    isSecondary={true}
+                    onClick={() => {
+                        // --- let use start from the begin by removing all newly added distribution
+                        props.datasetStateUpdater((state) => ({
+                            ...state,
+                            distributions: state.distributions.filter(
+                                (dist) => dist.isReplacementComfired !== false
+                            )
+                        }));
+                    }}
+                >
+                    Cancel
+                </AsyncButton>
+            </div>
         </div>
     );
 };

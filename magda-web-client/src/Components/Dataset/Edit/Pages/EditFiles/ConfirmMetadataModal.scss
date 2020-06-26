@@ -1,0 +1,44 @@
+.add-new-files-modal {
+    .small-heading {
+        color: #737373;
+        font-size: 18px;
+        letter-spacing: -0.3px;
+        line-height: 20px;
+        margin-bottom: 26px;
+    }
+    .file-drop-area {
+        margin-bottom: 43px;
+        width: 1122px;
+    }
+    .file-items-area {
+        width: 1122px;
+    }
+    .url-items-area {
+        margin-bottom: 50px;
+    }
+
+    .bottom-button-area {
+        margin-top: 25px;
+        padding-top: 25px;
+        text-align: center;
+        border-top: 2px solid #cccaca;
+    }
+
+    .dataset-add-files-fileListItem {
+        margin-bottom: 65px;
+    }
+
+    .add-dataset-from-link-input-outter-container {
+        padding-left: 5px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    .content-area {
+        max-height: 76vh;
+        overflow-y: scroll;
+    }
+}
+.last-row {
+    margin-bottom: 0px;
+}

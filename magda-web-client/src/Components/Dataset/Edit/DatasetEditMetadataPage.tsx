@@ -182,7 +182,11 @@ class EditDataset extends React.Component<Props, State> {
         const shouldRenderButtonArea = () => {
             if (
                 distributions.filter(
-                    (item) => item._state !== DistributionState.Ready
+                    (item) =>
+                        item._state !== DistributionState.Ready ||
+                        // --- distribution.isReplacementComfired might be undefined here so !item.isReplacementComfired won't work
+                        (item.isReplacementComfired === false &&
+                            this.props.step === 0)
                 ).length
             ) {
                 return false;
