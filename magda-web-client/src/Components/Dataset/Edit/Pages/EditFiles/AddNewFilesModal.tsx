@@ -80,6 +80,7 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
                                     <DatasetLinkItem
                                         idx={i}
                                         key={i}
+                                        className="small"
                                         distribution={file}
                                         datasetStateUpdater={
                                             props.datasetStateUpdater

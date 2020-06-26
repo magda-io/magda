@@ -80,7 +80,7 @@ const DatasetLinkItemComplete = (props: CompleteViewProps) => {
                         <b>Last Modified:</b>{" "}
                         {moment(distribution.modified).format("DD/MM/YYYY")}
                     </div>
-                    <div>
+                    <div className="link-item-url">
                         <b>URL:</b> {distribution.downloadURL}
                     </div>
                     <div className="description-area">
@@ -208,7 +208,7 @@ const DatasetLinkItemEditing = (props: EditViewProps) => {
             <div className="row">
                 <div className="col-sm-6 title-field-input-area">
                     <span>
-                        Title:&nbsp;&nbsp;{" "}
+                        Title:{" "}
                         <ValidationRequiredLabel
                             validationFieldPath={`$.distributions[${idx}].title`}
                         />
@@ -239,7 +239,7 @@ const DatasetLinkItemEditing = (props: EditViewProps) => {
                     />
                 </div>
             </div>
-            <div className="row">
+            <div className="row last-modified-input-area">
                 <div className="col-sm-12">
                     <span>Last Modified: </span>
                     &nbsp;&nbsp;
@@ -287,7 +287,11 @@ const DatasetLinkItem = (props: Props) => {
         );
     } else if (editMode) {
         return (
-            <div className="dataset-link-item-container">
+            <div
+                className={`dataset-link-item-container  ${
+                    props.className ? props.className : ""
+                }`}
+            >
                 <DatasetLinkItemEditing
                     idx={props.idx}
                     distribution={props.distribution}
@@ -304,7 +308,11 @@ const DatasetLinkItem = (props: Props) => {
         );
     } else {
         return (
-            <div className="dataset-link-item-container">
+            <div
+                className={`dataset-link-item-container  ${
+                    props.className ? props.className : ""
+                }`}
+            >
                 <DatasetLinkItemComplete
                     distribution={props.distribution}
                     setEditMode={setEditMode}
