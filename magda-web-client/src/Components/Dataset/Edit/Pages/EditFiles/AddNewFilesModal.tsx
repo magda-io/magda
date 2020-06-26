@@ -109,6 +109,10 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
             item._state !== DistributionState.Drafting
     );
 
+    const notReadyDistributions = distributions.filter(
+        (item) => item._state !== DistributionState.Ready
+    );
+
     const closeModal = async () => {
         try {
             setError(null);
@@ -229,7 +233,7 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
 
             <div className="bottom-button-area">
                 <AsyncButton
-                    disabled={pendingDistributions.length ? true : false}
+                    disabled={notReadyDistributions.length ? true : false}
                     onClick={() => {
                         [...uploadedDistributions, ...urlDistributions].forEach(
                             (item) => {
