@@ -9,8 +9,30 @@
         padding-top: 41px;
         padding-bottom: 41px;
         table {
-            width: 100%;
+            width: 1024px;
             border-collapse: collapse;
+
+            thead {
+                width: 1024px;
+                display: block;
+                tr {
+                    display: block;
+                    width: 1024px;
+                }
+                th {
+                    display: inline-block;
+                    width: 50%;
+                }
+            }
+
+            tbody {
+                width: 100%;
+                max-height: 500px;
+                display: block;
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+
             th {
                 text-align: center;
                 width: 50%;
@@ -21,10 +43,10 @@
                 padding: 14px;
                 border-bottom: 4px solid #cccaca;
                 &:first-of-type {
-                    border-right: 4px solid #cccaca;
+                    border-right: 2px solid #cccaca;
                 }
                 &:last-of-type {
-                    border-left: 4px solid #cccaca;
+                    border-left: 2px solid #cccaca;
                 }
             }
             tr {
@@ -38,8 +60,9 @@
             td {
                 padding-left: 20px;
                 padding-right: 20px;
-                padding-top: 42px;
-                padding-bottom: 42px;
+                padding-top: 12px;
+                padding-bottom: 2px;
+                width: 512px;
             }
             .dropable-area {
                 width: 100%;

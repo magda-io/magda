@@ -26,6 +26,12 @@ type PropsType = {
 const DistSupercedeSection: FunctionComponent<PropsType> = (props) => {
     const { stateData: state } = props;
 
+    const [shouldReplace, setShouldReplace] = useState<boolean>(false);
+    const [showMetadataConfirmModal, setShowMetadataConfirmModal] = useState<
+        boolean
+    >(false);
+    const [error, setError] = useState<Error | null>(null);
+
     const existingDistributions = state.distributions.filter(
         (item) =>
             item.isReplacementComfired !== false &&
@@ -44,11 +50,6 @@ const DistSupercedeSection: FunctionComponent<PropsType> = (props) => {
             item.creationSource === DistributionSource.Api ||
             item.creationSource === DistributionSource.DatasetUrl
     );
-
-    const [shouldReplace, setShouldReplace] = useState<boolean>(false);
-    const [showMetadataConfirmModal, setShowMetadataConfirmModal] = useState<
-        boolean
-    >(false);
 
     return (
         <div className="distribution-supercede-section">
@@ -103,22 +104,45 @@ const DistSupercedeSection: FunctionComponent<PropsType> = (props) => {
                 <ConfirmMetadataModal isOpen={true} />
             ) : null}
 
+            {error ? (
+                <div className="au-body au-page-alerts au-page-alerts--error">
+                    <div>
+                        <span>
+                            Error: {error?.message ? error.message : "" + error}
+                        </span>
+                    </div>
+                </div>
+            ) : null}
+
             <div className="button-area">
                 <AsyncButton
                     onClick={() => {
+                        setError(null);
                         if (shouldReplace) {
+                            if (
+                                !props.stateData.distributions.filter(
+                                    (item) => item.replaceDistId
+                                ).length
+                            ) {
+                                setError(
+                                    new Error(
+                                        "At least one distribution item will be assigned to supercede existing content."
+                                    )
+                                );
+                                return;
+                            }
                             setShowMetadataConfirmModal(true);
                         } else {
                             // --- if not require replacement, set all pending distribution as current.
                             props.datasetStateUpdater((state) => ({
                                 ...state,
                                 distributions: state.distributions.map((dist) =>
-                                    dist.isReplacementComfired
-                                        ? dist
-                                        : {
+                                    dist.isReplacementComfired === false
+                                        ? {
                                               ...dist,
                                               isReplacementComfired: true
                                           }
+                                        : dist
                                 )
                             }));
                         }
@@ -130,6 +154,7 @@ const DistSupercedeSection: FunctionComponent<PropsType> = (props) => {
                 <AsyncButton
                     isSecondary={true}
                     onClick={() => {
+                        setError(null);
                         // --- let use start from the begin by removing all newly added distribution
                         props.datasetStateUpdater((state) => ({
                             ...state,

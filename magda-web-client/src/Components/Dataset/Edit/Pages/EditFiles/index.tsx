@@ -150,7 +150,9 @@ const EditFilesPage: FunctionComponent<Props> = (props) => {
         );
 
         const newDistributions = state.distributions.filter(
-            (item) => item.isAddConfirmed === true
+            (item) =>
+                item.isAddConfirmed === true &&
+                item.isReplacementComfired === false
         );
 
         return (
