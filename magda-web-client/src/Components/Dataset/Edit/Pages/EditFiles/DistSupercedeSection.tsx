@@ -27,9 +27,10 @@ const DistSupercedeSection: FunctionComponent<PropsType> = (props) => {
     const { stateData: state } = props;
 
     const [shouldReplace, setShouldReplace] = useState<boolean>(false);
-    const [showMetadataConfirmModal, setShowMetadataConfirmModal] = useState<
-        boolean
-    >(false);
+    const [
+        isMetadataConfirmModalOpen,
+        setIsMetadataConfirmModalOpen
+    ] = useState<boolean>(false);
     const [error, setError] = useState<Error | null>(null);
 
     const existingDistributions = state.distributions.filter(
@@ -100,9 +101,12 @@ const DistSupercedeSection: FunctionComponent<PropsType> = (props) => {
                 </>
             ) : null}
 
-            {showMetadataConfirmModal ? (
-                <ConfirmMetadataModal isOpen={true} />
-            ) : null}
+            <ConfirmMetadataModal
+                isOpen={isMetadataConfirmModalOpen}
+                setIsOpen={setIsMetadataConfirmModalOpen}
+                stateData={props.stateData}
+                datasetStateUpdater={props.datasetStateUpdater}
+            />
 
             {error ? (
                 <div className="au-body au-page-alerts au-page-alerts--error">
@@ -131,7 +135,7 @@ const DistSupercedeSection: FunctionComponent<PropsType> = (props) => {
                                 );
                                 return;
                             }
-                            setShowMetadataConfirmModal(true);
+                            setIsMetadataConfirmModalOpen(true);
                         } else {
                             // --- if not require replacement, set all pending distribution as current.
                             props.datasetStateUpdater((state) => ({
