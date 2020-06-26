@@ -81,6 +81,10 @@
             min-height: 150px;
             .dataset-add-files-fileListItem {
                 margin-bottom: 40px;
+                .draggable-dist-item {
+                    width: 436px;
+                    border-radius: 8px;
+                }
             }
         }
     }

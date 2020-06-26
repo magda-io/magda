@@ -3,7 +3,7 @@ import React, { FunctionComponent } from "react";
 import "./SupercedeSelectionBox.scss";
 import { Distribution } from "Components/Dataset/Add/DatasetAddCommon";
 
-import DatasetFile from "Components/Dataset/Add/DatasetFile";
+import DistributionItem from "Components/Dataset/Add/DistributionItem";
 import { Draggable, Droppable } from "react-drag-and-drop";
 import { ReactComponent as DismissIcon } from "assets/dismiss.svg";
 
@@ -42,12 +42,18 @@ const SupercedeSelectionBox: FunctionComponent<PropsType> = (props) => {
                         return (
                             <tr key={idx}>
                                 <td>
-                                    <DatasetFile file={existingItem} />
+                                    <DistributionItem
+                                        className="small"
+                                        distribution={existingItem}
+                                    />
                                 </td>
                                 <td>
                                     {assignedDist ? (
                                         <div className="assigned-distribution">
-                                            <DatasetFile file={assignedDist} />
+                                            <DistributionItem
+                                                className="small"
+                                                distribution={assignedDist}
+                                            />
                                             <DismissIcon
                                                 onClick={() => {
                                                     props.editDistributionHandler(
@@ -86,28 +92,25 @@ const SupercedeSelectionBox: FunctionComponent<PropsType> = (props) => {
 
             <div className="new-files-area">
                 <div className="heading">Your new content:</div>
-                <Droppable
-                    types={["distribution"]}
-                    onDrop={({ distribution: distId }) => {
-                        props.editDistributionHandler(distId)((dist) => ({
-                            ...dist,
-                            replaceDistId: undefined
-                        }));
-                    }}
-                >
-                    <div className="new-file-items-area row">
-                        {unassignedDistributions.map((item, idx) => (
-                            <div
-                                className="col-xs-6 dataset-add-files-fileListItem"
-                                key={idx}
+                <div className="new-file-items-area row">
+                    {unassignedDistributions.map((item, idx) => (
+                        <div
+                            className="col-xs-6 dataset-add-files-fileListItem"
+                            key={idx}
+                        >
+                            <Draggable
+                                className="draggable-dist-item"
+                                type="distribution"
+                                data={item.id}
                             >
-                                <Draggable type="distribution" data={item.id}>
-                                    <DatasetFile file={item} />
-                                </Draggable>
-                            </div>
-                        ))}
-                    </div>
-                </Droppable>
+                                <DistributionItem
+                                    className="small"
+                                    distribution={item}
+                                />
+                            </Draggable>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );

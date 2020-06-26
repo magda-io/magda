@@ -2,8 +2,11 @@ import React, { useState } from "react";
 import {
     Distribution,
     DistributionSource,
-    DatasetStateUpdaterType
+    DatasetStateUpdaterType,
+    getDistributionUpdateCallback,
+    getDistributionDeleteCallback
 } from "Components/Dataset/Add/DatasetAddCommon";
+import partial from "lodash/partial";
 import "./AddDatasetLinkSection.scss";
 
 import AddDatasetFromLinkInput from "./AddDatasetFromLinkInput";
@@ -45,9 +48,18 @@ const AddDatasetLinkSection = (props: Props) => {
                                         idx={item.idx}
                                         key={item.idx}
                                         distribution={item.distribution}
-                                        datasetStateUpdater={
-                                            props.datasetStateUpdater
-                                        }
+                                        onChange={partial(
+                                            getDistributionUpdateCallback(
+                                                props.datasetStateUpdater
+                                            ),
+                                            item.distribution.id!
+                                        )}
+                                        onDelete={partial(
+                                            getDistributionDeleteCallback(
+                                                props.datasetStateUpdater
+                                            ),
+                                            item.distribution.id!
+                                        )}
                                     />
                                 ))}
                             </div>

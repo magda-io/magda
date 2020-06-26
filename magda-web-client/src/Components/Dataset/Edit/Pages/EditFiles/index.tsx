@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from "react";
 
-import DatasetFile from "Components/Dataset/Add/DatasetFile";
+import DistributionItem from "Components/Dataset/Add/DistributionItem";
 import StorageOptionsSection from "Components/Dataset/Add/StorageOptionsSection";
 
 import {
@@ -123,9 +123,10 @@ const EditFilesPage: FunctionComponent<Props> = (props) => {
                                     isLastRow ? "last-row" : ""
                                 }`}
                             >
-                                <DatasetFile
+                                <DistributionItem
                                     idx={i}
-                                    file={file}
+                                    className="small"
+                                    distribution={file}
                                     onChange={editDistribution(file.id!)}
                                     onDelete={deleteDistributionHandler(
                                         file.id!

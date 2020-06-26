@@ -182,7 +182,7 @@ class AddFilesPage extends React.Component<Props> {
                                     >
                                         <DatasetFile
                                             idx={i}
-                                            file={file}
+                                            distribution={file}
                                             onChange={this.editDistribution(
                                                 file.id!
                                             )}

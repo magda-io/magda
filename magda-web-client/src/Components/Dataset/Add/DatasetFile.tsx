@@ -26,14 +26,20 @@ import ValidationRequiredLabel from "../../Dataset/Add/ValidationRequiredLabel";
 
 import "./DatasetFile.scss";
 
-function FileInProgress({ file }: { file: Distribution }) {
+function FileInProgress({
+    file,
+    className
+}: {
+    file: Distribution;
+    className?: string;
+}) {
     const progress = file._progress ? file._progress : 0;
     let width = Math.ceil((progress / 100) * 330);
     if (width < 5) {
         width = 5;
     }
     return (
-        <div className="dataset-file-root">
+        <div className={`dataset-file-root ${className ? className : ""}`}>
             <div className="file-in-progress">
                 <div className="file-icon-area">
                     <img className="format-icon" src={getFormatIcon(file)} />
@@ -157,31 +163,37 @@ const FileEditView = ({
     );
 };
 
-export default function DatasetFile({
-    idx,
-    file,
-    onDelete,
-    onChange
-}: {
+type Props = {
+    distribution: Distribution;
     idx?: number;
-    file: Distribution;
+    className?: string;
     onDelete?: () => any;
     onChange?: (updater: (file: Distribution) => Distribution) => void;
-}) {
+};
+
+export default function DatasetFile({
+    idx,
+    distribution,
+    className,
+    onDelete,
+    onChange
+}: Props) {
     const [editMode, setEditMode] = useState(false);
     const canEdit =
         typeof idx !== "undefined" && typeof onChange === "function";
     const canDelete = typeof onDelete === "function";
 
+    const file = distribution;
+
     if (file._state !== DistributionState.Ready) {
-        return <FileInProgress file={file} />;
+        return <FileInProgress file={file} className={className} />;
     }
 
     return (
         <div
             className={`dataset-file-root complete-processing ${
                 !canEdit && !canDelete ? "read-only" : ""
-            }`}
+            } ${className ? className : ""}`}
         >
             {editMode && canEdit ? (
                 <FileEditView

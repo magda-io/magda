@@ -48,11 +48,11 @@ const DistSupercedeSection: FunctionComponent<PropsType> = (props) => {
     return (
         <div className="distribution-supercede-section">
             <ToolTip>
-                You’ve added {fileDists.length} additional file(s) and one (
-                {urlDists.length}) API to this data set. Please select if this
-                new content should replace and supercede the existing content.
-                Replaced content will always be saved as superceded versions,
-                available from the dataset page.
+                You’ve added {fileDists.length} additional file(s) and{" "}
+                {urlDists.length} additional API(s) to this data set. Please
+                select if this new content should replace and supercede the
+                existing content. Replaced content will always be saved as
+                superceded versions, available from the dataset page.
             </ToolTip>
             <div className="dataset-contents-sub-heading replace-option-heading">
                 Should any of the new contents replace the existing contents in

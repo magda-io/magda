@@ -1,13 +1,9 @@
 import React, { useState } from "react";
 import moment from "moment";
-import partial from "lodash/partial";
 import {
     Distribution,
     DistributionState,
-    DistributionCreationMethod,
-    DatasetStateUpdaterType,
-    getDistributionDeleteCallback,
-    getDistributionUpdateCallback
+    DistributionCreationMethod
 } from "Components/Dataset/Add/DatasetAddCommon";
 import "./DatasetLinkItem.scss";
 
@@ -24,9 +20,10 @@ import { MultilineTextEditor } from "Components/Editing/Editors/textEditor";
 
 type Props = {
     distribution: Distribution;
-    idx: number;
+    idx?: number;
     className?: string;
-    datasetStateUpdater: DatasetStateUpdaterType;
+    onDelete?: () => any;
+    onChange?: (updater: (file: Distribution) => Distribution) => void;
 };
 
 type ProcessingProps = {
@@ -46,8 +43,8 @@ type EditViewProps = {
 type CompleteViewProps = {
     distribution: Distribution;
     editMode: boolean;
-    setEditMode: (editMode: boolean) => void;
-    deleteDistribution: () => void;
+    setEditMode?: (editMode: boolean) => void;
+    deleteDistribution?: () => void;
 };
 
 const DatasetLinkItemComplete = (props: CompleteViewProps) => {
@@ -55,20 +52,26 @@ const DatasetLinkItemComplete = (props: CompleteViewProps) => {
 
     return (
         <div className="dataset-link-item-complete">
-            <button
-                className={`edit-button au-btn au-btn--secondary`}
-                aria-label="Edit distribution metadata"
-                onClick={() => setEditMode(!editMode)}
-            >
-                <img src={editIcon} />
-            </button>
-            <button
-                className={`delete-button au-btn au-btn--secondary`}
-                arial-label="Delete distribution metadata"
-                onClick={() => deleteDistribution()}
-            >
-                <img src={dismissIcon} />
-            </button>
+            {setEditMode ? (
+                <button
+                    className={`edit-button au-btn au-btn--secondary`}
+                    aria-label="Edit distribution metadata"
+                    onClick={() => setEditMode(!editMode)}
+                >
+                    <img src={editIcon} />
+                </button>
+            ) : null}
+
+            {deleteDistribution ? (
+                <button
+                    className={`delete-button au-btn au-btn--secondary`}
+                    arial-label="Delete distribution metadata"
+                    onClick={() => deleteDistribution()}
+                >
+                    <img src={dismissIcon} />
+                </button>
+            ) : null}
+
             <div>
                 <h3 className="link-item-title">{distribution.title}</h3>
                 <div className="link-item-details">
@@ -272,6 +275,12 @@ const DatasetLinkItem = (props: Props) => {
             props.distribution?._state === DistributionState.Drafting
     );
 
+    const canEdit =
+        typeof props.idx !== "undefined" &&
+        typeof props.onChange === "function";
+
+    const canDelete = typeof props.onDelete === "function";
+
     if (
         props.distribution._state !== DistributionState.Ready &&
         props.distribution._state !== DistributionState.Drafting
@@ -280,27 +289,22 @@ const DatasetLinkItem = (props: Props) => {
             <div
                 className={`dataset-link-item-container ${
                     props.className ? props.className : ""
-                }`}
+                } ${!canEdit && !canDelete ? "read-only" : ""}`}
             >
                 <DatasetLinkItemProcessing distribution={props.distribution} />
             </div>
         );
-    } else if (editMode) {
+    } else if (editMode && canEdit) {
         return (
             <div
                 className={`dataset-link-item-container  ${
                     props.className ? props.className : ""
-                }`}
+                } ${!canEdit && !canDelete ? "read-only" : ""}`}
             >
                 <DatasetLinkItemEditing
-                    idx={props.idx}
+                    idx={props.idx!}
                     distribution={props.distribution}
-                    editDistribution={partial(
-                        getDistributionUpdateCallback(
-                            props.datasetStateUpdater
-                        ),
-                        props.distribution.id!
-                    )}
+                    editDistribution={props.onChange!}
                     setEditMode={setEditMode}
                     editMode={editMode}
                 />
@@ -311,18 +315,14 @@ const DatasetLinkItem = (props: Props) => {
             <div
                 className={`dataset-link-item-container  ${
                     props.className ? props.className : ""
-                }`}
+                } ${!canEdit && !canDelete ? "read-only" : ""}`}
             >
+                {/* When `props.onChange` not exist, turn off the edit & delete icon */}
                 <DatasetLinkItemComplete
                     distribution={props.distribution}
-                    setEditMode={setEditMode}
+                    setEditMode={props.onChange ? setEditMode : undefined}
                     editMode={editMode}
-                    deleteDistribution={partial(
-                        getDistributionDeleteCallback(
-                            props.datasetStateUpdater
-                        ),
-                        props.distribution.id!
-                    )}
+                    deleteDistribution={props.onDelete}
                 />
             </div>
         );

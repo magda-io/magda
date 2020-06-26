@@ -9,9 +9,8 @@ import {
     DistributionState
 } from "Components/Dataset/Add/DatasetAddCommon";
 import AsyncButton from "Components/Common/AsyncButton";
-import DatasetFile from "Components/Dataset/Add/DatasetFile";
 import AddDatasetFromLinkInput from "../../../Add/Pages/AddFiles/AddDatasetFromLinkInput";
-import DatasetLinkItem from "Components/Dataset/Add/DatasetLinkItem";
+import DistributionItem from "Components/Dataset/Add/DistributionItem";
 
 import "./AddNewFilesModal.scss";
 
@@ -37,10 +36,7 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
     const [processingErrorMessage, setProcessingErrorMessage] = useState("");
     const deletionPromisesRef = useRef<PromiseListType>({} as PromiseListType);
 
-    const renderDistList = (
-        dists: Distribution[],
-        isUrlItem: boolean = false
-    ) => {
+    const renderDistList = (dists: Distribution[]) => {
         return (
             <div className="col-xs-12">
                 <div className="row">
@@ -76,27 +72,16 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
                                     isLastRow ? "last-row" : ""
                                 }`}
                             >
-                                {isUrlItem ? (
-                                    <DatasetLinkItem
-                                        idx={i}
-                                        key={i}
-                                        className="small"
-                                        distribution={file}
-                                        datasetStateUpdater={
-                                            props.datasetStateUpdater
-                                        }
-                                    />
-                                ) : (
-                                    <DatasetFile
-                                        idx={i}
-                                        key={i}
-                                        file={file}
-                                        onChange={props.editDistributionHandler(
-                                            file.id!
-                                        )}
-                                        onDelete={delHandler}
-                                    />
-                                )}
+                                <DistributionItem
+                                    idx={i}
+                                    key={i}
+                                    className="small"
+                                    distribution={file}
+                                    onChange={props.editDistributionHandler(
+                                        file.id!
+                                    )}
+                                    onDelete={delHandler}
+                                />
                             </div>
                         );
                     })}
@@ -227,7 +212,7 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
 
                 {urlDistributions.length ? (
                     <div className="url-items-area">
-                        {renderDistList(urlDistributions, true)}
+                        {renderDistList(urlDistributions)}
                     </div>
                 ) : null}
 
