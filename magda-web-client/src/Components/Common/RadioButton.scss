@@ -1,7 +1,5 @@
 .radio-button-container {
     overflow: hidden;
-    padding-left: 20px;
-    padding-right: 20px;
     margin: auto;
     &.is-disabled {
         opacity: 0.5;
@@ -20,7 +18,6 @@
         text-align: center;
         box-sizing: border-box;
         height: 34px;
-        min-width: 156px;
         border: 2px solid #30384d;
     }
     .yes-button {

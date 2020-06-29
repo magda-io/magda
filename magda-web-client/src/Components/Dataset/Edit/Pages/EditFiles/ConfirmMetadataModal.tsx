@@ -1,11 +1,18 @@
-import React, { FunctionComponent } from "react";
+import React, { FunctionComponent, useState } from "react";
 import OverlayBox from "Components/Common/OverlayBox";
 import AsyncButton from "Components/Common/AsyncButton";
 import {
     State,
-    DatasetStateUpdaterType
+    DatasetStateUpdaterType,
+    SpatialCoverage,
+    TemporalCoverage,
+    Interval
 } from "Components/Dataset/Add/DatasetAddCommon";
 import Tooltip from "Components/Dataset/Add/ToolTip";
+import RadioButton from "Components/Common/RadioButton";
+import moment from "moment";
+import uniqBy from "lodash/uniqBy";
+import SpatialDataPreviewer from "Components/Dataset/Add/SpatialAreaInput/SpatialDataPreviewer";
 
 import "./ConfirmMetadataModal.scss";
 
@@ -33,12 +40,273 @@ function retrieveNewMetadataDatasetTitle(state: State) {
     if (newTitle) {
         return newTitle;
     } else {
-        return state.dataset.title;
+        return;
     }
+}
+
+function retrieveNewMetadataDatasetIssueDate(state: State) {
+    const newDists = state.distributions.filter(
+        (item) => item.isReplacementComfired === false
+    );
+    const issueDateList: Date[] = [];
+    newDists.forEach((item) => {
+        if (item?.issued?.getTime) {
+            issueDateList.push(item.issued);
+        }
+    });
+    if (!issueDateList.length) {
+        return;
+    }
+    // --- return the `easiest` date as new suggested issue date
+    issueDateList.sort((a, b) => a.getTime() - b.getTime());
+    return issueDateList[0];
+}
+
+function retrieveNewMetadataDatasetModifiedDate(state: State) {
+    const newDists = state.distributions.filter(
+        (item) => item.isReplacementComfired === false
+    );
+    const modifiedDateList: Date[] = [];
+    newDists.forEach((item) => {
+        if (item?.modified?.getTime!) {
+            modifiedDateList.push(item.modified);
+        }
+    });
+    if (!modifiedDateList.length) {
+        return;
+    }
+    // --- return the `latest` date as new suggested modified date
+    modifiedDateList.sort((a, b) => b.getTime() - a.getTime());
+    return modifiedDateList[0];
+}
+
+function retrieveNewMetadataDatasetKeywords(state: State) {
+    const newDists = state.distributions.filter(
+        (item) => item.isReplacementComfired === false
+    );
+    let keywords: string[] = [];
+    newDists.forEach((item) => {
+        if (item?.keywords?.length) {
+            keywords = keywords.concat(item.keywords);
+        }
+    });
+    if (!keywords.length) {
+        return;
+    }
+    keywords = uniqBy(keywords, (item) => item.toLowerCase().trim());
+    return keywords;
+}
+
+// -- Bounding box in order minlon (west), minlat (south), maxlon (east), maxlat (north)
+type BoundingBoxType = [number, number, number, number];
+
+function mergeBBoxes(
+    b1?: BoundingBoxType,
+    b2?: BoundingBoxType
+): BoundingBoxType | undefined {
+    if (b1?.length !== 4 && b2?.length !== 4) {
+        return undefined;
+    }
+    if (b1?.length !== 4) {
+        return b2;
+    }
+    if (b2?.length !== 4) {
+        return b1;
+    }
+
+    const newBBox: BoundingBoxType = [...b1] as BoundingBoxType;
+
+    // --- create a bbox cover both bboxes (bigger)
+    newBBox[0] = b2[0] < newBBox[0] ? b2[0] : newBBox[0];
+    newBBox[1] = b2[1] < newBBox[1] ? b2[1] : newBBox[1];
+    newBBox[2] = b2[2] > newBBox[2] ? b2[2] : newBBox[2];
+    newBBox[3] = b2[3] > newBBox[3] ? b2[3] : newBBox[3];
+
+    return newBBox;
+}
+
+function retrieveNewMetadataDatasetSpatialExtent(
+    state: State
+): SpatialCoverage | undefined {
+    const newDists = state.distributions.filter(
+        (item) => item.isReplacementComfired === false
+    );
+
+    let newBBox: BoundingBoxType | undefined;
+
+    newDists.forEach((item) => {
+        if (item?.spatialCoverage?.bbox?.length === 4) {
+            newBBox = mergeBBoxes(newBBox, item.spatialCoverage.bbox);
+        }
+    });
+
+    if (newBBox?.length !== 4) {
+        return;
+    } else {
+        return {
+            spatialDataInputMethod: "bbox",
+            bbox: newBBox
+        };
+    }
+}
+
+const isEmptyOrInvalidTemporalInterval = (i?: Interval) =>
+    !i || (!i?.end?.getDate && !i?.start?.getDate);
+
+const isEmptyOrInvalidTemporalIntervals = (i?: Interval[]) =>
+    !i?.length || !i.find((item) => !isEmptyOrInvalidTemporalInterval(item));
+
+/**
+ * Merge two Intervals and return a new interval.
+ * If the two intervals are not mergable i.e. there is no one interval can cover another one, `undefined` will be returned.
+ *
+ * @param {Interval} i1
+ * @param {Interval} i2
+ * @returns {(Interval | undefined)}
+ */
+function mergeTemporalInterval(
+    i1: Interval,
+    i2: Interval
+): Interval | undefined {
+    if (i1?.start?.getTime && i2?.start?.getTime) {
+        if (i1.start.getTime() <= i2.start.getTime()) {
+            if (
+                !i1?.end?.getTime ||
+                (i2?.end?.getTime && i1.start.getTime() >= i2.start.getTime())
+            ) {
+                return i1;
+            } else {
+                return undefined;
+            }
+        } else {
+            if (
+                !i1?.end?.getTime ||
+                (i2?.end?.getTime && i1.start.getTime() >= i2.start.getTime())
+            ) {
+                return i1;
+            } else {
+                return undefined;
+            }
+        }
+    }
+}
+
+function mergeTemporalIntervals(i1?: Interval[], i2?: Interval[]) {
+    if (
+        isEmptyOrInvalidTemporalIntervals(i1) &&
+        isEmptyOrInvalidTemporalIntervals(i2)
+    ) {
+        return undefined;
+    }
+    if (isEmptyOrInvalidTemporalIntervals(i1)) {
+        return i2;
+    }
+    if (isEmptyOrInvalidTemporalIntervals(i2)) {
+        return i1;
+    }
+    i1 = i1!.filter((item) => !isEmptyOrInvalidTemporalInterval(item));
+    i2 = i2!.filter((item) => !isEmptyOrInvalidTemporalInterval(item));
+
+    const newIntervals = [...i1] as Interval[];
+    //const
+}
+
+function retrieveNewMetadataDatasetTemporalCoverage(
+    state: State
+): TemporalCoverage | undefined {
+    const newDists = state.distributions.filter(
+        (item) => item.isReplacementComfired === false
+    );
+
+    const intervals = [] as Interval[];
+
+    newDists.forEach((item) => {
+        if (item?.temporalCoverage?.intervals?.length) {
+            item?.temporalCoverage?.intervals;
+            newBBox = mergeBBoxes(newBBox, item.spatialCoverage.bbox);
+        }
+    });
+
+    if (newBBox?.length !== 4) {
+        return;
+    } else {
+        return {
+            spatialDataInputMethod: "bbox",
+            bbox: newBBox
+        };
+    }
+}
+
+function renderKeywordItem(keyword: string, idx: number) {
+    return (
+        <div className="keyword-item" key={idx}>
+            {keyword}
+        </div>
+    );
+}
+
+function renderBBox(spatialCoverage?: SpatialCoverage) {
+    if (spatialCoverage?.bbox?.length !== 4) {
+        return "N/A";
+    }
+
+    const bbox = spatialCoverage.bbox;
+    return (
+        <div className="spatial-coverage-info-area">
+            <div className="spatial-coverage-info-row">
+                North bounding latitude: {bbox[3]}
+            </div>
+            <div className="spatial-coverage-info-row">
+                West bounding latitude: {bbox[0]}
+            </div>
+            <div className="spatial-coverage-info-row">
+                East bounding latitude: {bbox[2]}
+            </div>
+            <div className="spatial-coverage-info-row">
+                South bounding latitude: {bbox[1]}
+            </div>
+            <div className="spatial-coverage-map">
+                <SpatialDataPreviewer
+                    bbox={{
+                        west: bbox[0],
+                        south: bbox[1],
+                        east: bbox[2],
+                        north: bbox[3]
+                    }}
+                    animate={false}
+                />
+            </div>
+        </div>
+    );
 }
 
 const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
     const { stateData } = props;
+    const newTitle = retrieveNewMetadataDatasetTitle(stateData);
+    const newIssueDate = retrieveNewMetadataDatasetIssueDate(stateData);
+    const newModifiedDate = retrieveNewMetadataDatasetModifiedDate(stateData);
+    const newKeywords = retrieveNewMetadataDatasetKeywords(stateData);
+    const newSpatialExtent = retrieveNewMetadataDatasetSpatialExtent(stateData);
+    const newTemporalCoverage = retrieveNewMetadataDatasetSpatialExtent(
+        stateData
+    );
+
+    // --- by default, replace is checked if there is new data available
+    const [keepTitle, setKeepTitle] = useState<boolean>(
+        newTitle ? false : true
+    );
+    const [keepIssueDate, setKeepIssueDate] = useState<boolean>(
+        newIssueDate ? false : true
+    );
+    const [keepModifiedDate, setKeepModifiedDate] = useState<boolean>(
+        newModifiedDate ? false : true
+    );
+    const [keepKeywords, setKeepKeywords] = useState<boolean>(
+        newKeywords?.length ? false : true
+    );
+    const [keepSpatialExtent, setKeepSpatialExtent] = useState<boolean>(
+        newSpatialExtent ? false : true
+    );
 
     return (
         <OverlayBox
@@ -72,10 +340,122 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
                             <tr>
                                 <td>Dataset title</td>
                                 <td>{stateData.dataset.title}</td>
+                                <td>{newTitle ? newTitle : "N/A"}</td>
                                 <td>
-                                    {retrieveNewMetadataDatasetTitle(stateData)}
+                                    <RadioButton
+                                        disabled={newTitle ? false : true}
+                                        value={keepTitle}
+                                        onChange={(v) => setKeepTitle(v)}
+                                        yesLabel={"Keep"}
+                                        noLabel={"Replace"}
+                                        ariaLabelledby="Whether or not to replace dataset title"
+                                    />
                                 </td>
-                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>Dataset publication / issue date</td>
+                                <td>
+                                    {stateData.dataset.issued
+                                        ? moment(
+                                              stateData.dataset.issued
+                                          ).format("DD/MM/YYYY")
+                                        : "N/A"}
+                                </td>
+                                <td>
+                                    {newIssueDate
+                                        ? moment(newIssueDate).format(
+                                              "DD/MM/YYYY"
+                                          )
+                                        : "N/A"}
+                                </td>
+                                <td>
+                                    <RadioButton
+                                        disabled={newIssueDate ? false : true}
+                                        value={keepIssueDate}
+                                        onChange={(v) => setKeepIssueDate(v)}
+                                        yesLabel={"Keep"}
+                                        noLabel={"Replace"}
+                                        ariaLabelledby="Whether or not to replace dataset publication / issue date"
+                                    />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Last modified date</td>
+                                <td>
+                                    {stateData.dataset.issued
+                                        ? moment(
+                                              stateData.dataset.modified
+                                          ).format("DD/MM/YYYY")
+                                        : "N/A"}
+                                </td>
+                                <td>
+                                    {newModifiedDate
+                                        ? moment(newIssueDate).format(
+                                              "DD/MM/YYYY"
+                                          )
+                                        : "N/A"}
+                                </td>
+                                <td>
+                                    <RadioButton
+                                        disabled={
+                                            newModifiedDate ? false : true
+                                        }
+                                        value={keepModifiedDate}
+                                        onChange={(v) => setKeepModifiedDate(v)}
+                                        yesLabel={"Keep"}
+                                        noLabel={"Replace"}
+                                        ariaLabelledby="Whether or not to replace dataset last modified date"
+                                    />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td valign="top">Keywords</td>
+                                <td>
+                                    {stateData.dataset.keywords
+                                        ? stateData.dataset.keywords.keywords.map(
+                                              (item, idx) =>
+                                                  renderKeywordItem(item, idx)
+                                          )
+                                        : "N/A"}
+                                </td>
+                                <td>
+                                    {newKeywords
+                                        ? newKeywords.map((item, idx) =>
+                                              renderKeywordItem(item, idx)
+                                          )
+                                        : "N/A"}
+                                </td>
+                                <td>
+                                    <RadioButton
+                                        disabled={newKeywords ? false : true}
+                                        value={keepKeywords}
+                                        onChange={(v) => setKeepKeywords(v)}
+                                        yesLabel={"Keep"}
+                                        noLabel={"Replace"}
+                                        ariaLabelledby="Whether or not to replace dataset keywords"
+                                    />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td valign="top">Spatial extent</td>
+                                <td>
+                                    {renderBBox(stateData?.spatialCoverage)}
+                                </td>
+                                <td>{renderBBox(newSpatialExtent)}</td>
+                                <td>
+                                    <RadioButton
+                                        disabled={
+                                            newSpatialExtent ? false : true
+                                        }
+                                        value={keepSpatialExtent}
+                                        onChange={(v) =>
+                                            setKeepSpatialExtent(v)
+                                        }
+                                        yesLabel={"Keep"}
+                                        noLabel={"Replace"}
+                                        ariaLabelledby="Whether or not to replace Spatial extent"
+                                    />
+                                </td>
                             </tr>
                         </tbody>
                     </table>
