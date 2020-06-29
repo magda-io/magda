@@ -234,8 +234,7 @@ function getAccessControlAspectData(state: State) {
 function getPublishingAspectData(state: State) {
     const { datasetPublishing } = state;
     return {
-        ...datasetPublishing,
-        publishAsOpenData: {}
+        ...datasetPublishing
     };
 }
 
