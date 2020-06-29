@@ -958,6 +958,7 @@ Others:
 -   Added spacing on byline of dataset page
 -   Made data quality rating use stars across search results and quality page, and made both use quality aspect.
 -   Fix placement and color of search box on desktop and mobile
+-   Stopped relying on visualisation minion to process a file before visualising the file as a chart
 
 ## 0.0.37
 
