@@ -6,7 +6,8 @@ import {
     DatasetStateUpdaterType,
     SpatialCoverage,
     TemporalCoverage,
-    Interval
+    Interval,
+    Distribution
 } from "Components/Dataset/Add/DatasetAddCommon";
 import Tooltip from "Components/Dataset/Add/ToolTip";
 import RadioButton from "Components/Common/RadioButton";
@@ -156,40 +157,17 @@ const isEmptyOrInvalidTemporalInterval = (i?: Interval) =>
 const isEmptyOrInvalidTemporalIntervals = (i?: Interval[]) =>
     !i?.length || !i.find((item) => !isEmptyOrInvalidTemporalInterval(item));
 
-/**
- * Merge two Intervals and return a new interval.
- * If the two intervals are not mergable i.e. there is no one interval can cover another one, `undefined` will be returned.
- *
- * @param {Interval} i1
- * @param {Interval} i2
- * @returns {(Interval | undefined)}
- */
+/*
 function mergeTemporalInterval(
     i1: Interval,
     i2: Interval
 ): Interval | undefined {
-    if (i1?.start?.getTime && i2?.start?.getTime) {
-        if (i1.start.getTime() <= i2.start.getTime()) {
-            if (
-                !i1?.end?.getTime ||
-                (i2?.end?.getTime && i1.start.getTime() >= i2.start.getTime())
-            ) {
-                return i1;
-            } else {
-                return undefined;
-            }
-        } else {
-            if (
-                !i1?.end?.getTime ||
-                (i2?.end?.getTime && i1.start.getTime() >= i2.start.getTime())
-            ) {
-                return i1;
-            } else {
-                return undefined;
-            }
-        }
+    // --- only merge it in a simple way. Do it more accurate way later.
+    if(i1?.start?.getTime && i2?.start?.getTime && i1.start.getTime() === i2.start.getTime() && i1?.end?.getTime && i2?.end?.getTime && i1.end.getTime() === i2.end.getTime()){
+        return i1;
     }
-}
+    return undefined;
+}*/
 
 function mergeTemporalIntervals(i1?: Interval[], i2?: Interval[]) {
     if (
@@ -207,8 +185,8 @@ function mergeTemporalIntervals(i1?: Interval[], i2?: Interval[]) {
     i1 = i1!.filter((item) => !isEmptyOrInvalidTemporalInterval(item));
     i2 = i2!.filter((item) => !isEmptyOrInvalidTemporalInterval(item));
 
-    const newIntervals = [...i1] as Interval[];
-    //const
+    const newIntervals = [...i1, ...i2] as Interval[];
+    return newIntervals;
 }
 
 function retrieveNewMetadataDatasetTemporalCoverage(
@@ -218,21 +196,22 @@ function retrieveNewMetadataDatasetTemporalCoverage(
         (item) => item.isReplacementComfired === false
     );
 
-    const intervals = [] as Interval[];
+    let intervals = [] as Interval[] | undefined;
 
     newDists.forEach((item) => {
         if (item?.temporalCoverage?.intervals?.length) {
-            item?.temporalCoverage?.intervals;
-            newBBox = mergeBBoxes(newBBox, item.spatialCoverage.bbox);
+            intervals = mergeTemporalIntervals(
+                intervals,
+                item.temporalCoverage.intervals
+            );
         }
     });
 
-    if (newBBox?.length !== 4) {
+    if (!intervals?.length) {
         return;
     } else {
         return {
-            spatialDataInputMethod: "bbox",
-            bbox: newBBox
+            intervals
         };
     }
 }
@@ -280,6 +259,25 @@ function renderBBox(spatialCoverage?: SpatialCoverage) {
     );
 }
 
+const date2Text = (d: Date | undefined) =>
+    d ? moment(d).format("DD/MM/YYYY") : "N/A";
+
+function renderTemporalCoverage(temporalCoverage?: TemporalCoverage) {
+    if (isEmptyOrInvalidTemporalIntervals(temporalCoverage?.intervals)) {
+        return "N/A";
+    }
+    return (
+        <div className="temporal-coverage-info-area">
+            {temporalCoverage!.intervals.map((item, idx) => (
+                <div key={idx} className="temporal-coverage-info-row">
+                    From: {date2Text(item.start)}
+                    &nbsp;To: {date2Text(item.end)}
+                </div>
+            ))}
+        </div>
+    );
+}
+
 const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
     const { stateData } = props;
     const newTitle = retrieveNewMetadataDatasetTitle(stateData);
@@ -287,7 +285,7 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
     const newModifiedDate = retrieveNewMetadataDatasetModifiedDate(stateData);
     const newKeywords = retrieveNewMetadataDatasetKeywords(stateData);
     const newSpatialExtent = retrieveNewMetadataDatasetSpatialExtent(stateData);
-    const newTemporalCoverage = retrieveNewMetadataDatasetSpatialExtent(
+    const newTemporalCoverage = retrieveNewMetadataDatasetTemporalCoverage(
         stateData
     );
 
@@ -307,6 +305,65 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
     const [keepSpatialExtent, setKeepSpatialExtent] = useState<boolean>(
         newSpatialExtent ? false : true
     );
+    const [keepTemporalCoverage, setKeepTemporalCoverage] = useState<boolean>(
+        newTemporalCoverage ? false : true
+    );
+
+    function onConfirmClick() {
+        props.datasetStateUpdater((state) => {
+            const newState = { ...state };
+            if (!keepTitle) {
+                newState.dataset.title = newTitle;
+            }
+            if (!newIssueDate) {
+                newState.dataset.issued = newIssueDate;
+            }
+            if (!keepModifiedDate) {
+                newState.dataset.modified = newModifiedDate;
+            }
+            if (!keepKeywords) {
+                if (!newState?.dataset?.keywords) {
+                    newState.dataset.keywords = {
+                        derived: false,
+                        keywords: []
+                    };
+                }
+                newState.dataset.keywords = {
+                    ...newState.dataset.keywords,
+                    keywords: [
+                        ...newState.dataset.keywords.keywords,
+                        ...newKeywords!
+                    ]
+                };
+            }
+            if (!keepSpatialExtent) {
+                newState.spatialCoverage = newSpatialExtent!;
+            }
+            if (!keepTemporalCoverage) {
+                newState.temporalCoverage = newTemporalCoverage!;
+            }
+            const replacedIds: string[] = [];
+            newState.distributions = newState.distributions
+                .map((item) => {
+                    if (item.isReplacementComfired !== false) {
+                        return item;
+                    }
+                    if (item.replaceDistId) {
+                        replacedIds.push(item.replaceDistId);
+                    }
+                    const newDist: Distribution = {
+                        ...item,
+                        isAddConfirmed: true,
+                        isReplacementComfired: true,
+                        replaceDistId: undefined
+                    };
+                    return newDist;
+                })
+                .filter((item) => !replacedIds.find((id) => id === item.id));
+            return newState;
+        });
+        props.setIsOpen(false);
+    }
 
     return (
         <OverlayBox
@@ -316,154 +373,204 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
             onClose={() => props.setIsOpen(false)}
         >
             <div className="content-area">
-                <Tooltip>
-                    You’ve selected to replace the dataset existing content
-                    (files and/or API’s) with new content. Some of the metadata
-                    we automatically generate for you might change, such as the
-                    dataset title, keywords, spatial extent, temporal coverage
-                    and creation date. Here you can decide if you want to keep
-                    the existing metadata, or replace it with the new,
-                    automatically generated metadata.
-                </Tooltip>
+                <div className="inner-content-area">
+                    <Tooltip>
+                        You’ve selected to replace the dataset existing content
+                        (files and/or API’s) with new content. Some of the
+                        metadata we automatically generate for you might change,
+                        such as the dataset title, keywords, spatial extent,
+                        temporal coverage and creation date. Here you can decide
+                        if you want to keep the existing metadata, or replace it
+                        with the new, automatically generated metadata.
+                    </Tooltip>
 
-                <div className="metadata-table-area">
-                    <table className="metadata-table">
-                        <thead>
-                            <tr>
-                                <th>Field</th>
-                                <th>Existing metadata entry</th>
-                                <th>New metadata entry</th>
-                                <th>Keep or replace?</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Dataset title</td>
-                                <td>{stateData.dataset.title}</td>
-                                <td>{newTitle ? newTitle : "N/A"}</td>
-                                <td>
-                                    <RadioButton
-                                        disabled={newTitle ? false : true}
-                                        value={keepTitle}
-                                        onChange={(v) => setKeepTitle(v)}
-                                        yesLabel={"Keep"}
-                                        noLabel={"Replace"}
-                                        ariaLabelledby="Whether or not to replace dataset title"
-                                    />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Dataset publication / issue date</td>
-                                <td>
-                                    {stateData.dataset.issued
-                                        ? moment(
-                                              stateData.dataset.issued
-                                          ).format("DD/MM/YYYY")
-                                        : "N/A"}
-                                </td>
-                                <td>
-                                    {newIssueDate
-                                        ? moment(newIssueDate).format(
-                                              "DD/MM/YYYY"
-                                          )
-                                        : "N/A"}
-                                </td>
-                                <td>
-                                    <RadioButton
-                                        disabled={newIssueDate ? false : true}
-                                        value={keepIssueDate}
-                                        onChange={(v) => setKeepIssueDate(v)}
-                                        yesLabel={"Keep"}
-                                        noLabel={"Replace"}
-                                        ariaLabelledby="Whether or not to replace dataset publication / issue date"
-                                    />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Last modified date</td>
-                                <td>
-                                    {stateData.dataset.issued
-                                        ? moment(
-                                              stateData.dataset.modified
-                                          ).format("DD/MM/YYYY")
-                                        : "N/A"}
-                                </td>
-                                <td>
-                                    {newModifiedDate
-                                        ? moment(newIssueDate).format(
-                                              "DD/MM/YYYY"
-                                          )
-                                        : "N/A"}
-                                </td>
-                                <td>
-                                    <RadioButton
-                                        disabled={
-                                            newModifiedDate ? false : true
-                                        }
-                                        value={keepModifiedDate}
-                                        onChange={(v) => setKeepModifiedDate(v)}
-                                        yesLabel={"Keep"}
-                                        noLabel={"Replace"}
-                                        ariaLabelledby="Whether or not to replace dataset last modified date"
-                                    />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td valign="top">Keywords</td>
-                                <td>
-                                    {stateData.dataset.keywords
-                                        ? stateData.dataset.keywords.keywords.map(
-                                              (item, idx) =>
+                    <div className="metadata-table-area">
+                        <table className="metadata-table">
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Existing metadata entry</th>
+                                    <th>New metadata entry</th>
+                                    <th>Keep or replace?</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Dataset title</td>
+                                    <td>{stateData.dataset.title}</td>
+                                    <td>{newTitle ? newTitle : "N/A"}</td>
+                                    <td>
+                                        <RadioButton
+                                            disabled={newTitle ? false : true}
+                                            value={keepTitle}
+                                            onChange={(v) => setKeepTitle(v)}
+                                            yesLabel={"Keep"}
+                                            noLabel={"Replace"}
+                                            ariaLabelledby="Whether or not to replace dataset title"
+                                        />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Dataset publication / issue date</td>
+                                    <td>
+                                        {stateData.dataset.issued
+                                            ? moment(
+                                                  stateData.dataset.issued
+                                              ).format("DD/MM/YYYY")
+                                            : "N/A"}
+                                    </td>
+                                    <td>
+                                        {newIssueDate
+                                            ? moment(newIssueDate).format(
+                                                  "DD/MM/YYYY"
+                                              )
+                                            : "N/A"}
+                                    </td>
+                                    <td>
+                                        <RadioButton
+                                            disabled={
+                                                newIssueDate ? false : true
+                                            }
+                                            value={keepIssueDate}
+                                            onChange={(v) =>
+                                                setKeepIssueDate(v)
+                                            }
+                                            yesLabel={"Keep"}
+                                            noLabel={"Replace"}
+                                            ariaLabelledby="Whether or not to replace dataset publication / issue date"
+                                        />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Last modified date</td>
+                                    <td>
+                                        {stateData.dataset.issued
+                                            ? moment(
+                                                  stateData.dataset.modified
+                                              ).format("DD/MM/YYYY")
+                                            : "N/A"}
+                                    </td>
+                                    <td>
+                                        {newModifiedDate
+                                            ? moment(newIssueDate).format(
+                                                  "DD/MM/YYYY"
+                                              )
+                                            : "N/A"}
+                                    </td>
+                                    <td>
+                                        <RadioButton
+                                            disabled={
+                                                newModifiedDate ? false : true
+                                            }
+                                            value={keepModifiedDate}
+                                            onChange={(v) =>
+                                                setKeepModifiedDate(v)
+                                            }
+                                            yesLabel={"Keep"}
+                                            noLabel={"Replace"}
+                                            ariaLabelledby="Whether or not to replace dataset last modified date"
+                                        />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td valign="top">Keywords</td>
+                                    <td>
+                                        {stateData.dataset.keywords
+                                            ? stateData.dataset.keywords.keywords.map(
+                                                  (item, idx) =>
+                                                      renderKeywordItem(
+                                                          item,
+                                                          idx
+                                                      )
+                                              )
+                                            : "N/A"}
+                                    </td>
+                                    <td>
+                                        {newKeywords
+                                            ? newKeywords.map((item, idx) =>
                                                   renderKeywordItem(item, idx)
-                                          )
-                                        : "N/A"}
-                                </td>
-                                <td>
-                                    {newKeywords
-                                        ? newKeywords.map((item, idx) =>
-                                              renderKeywordItem(item, idx)
-                                          )
-                                        : "N/A"}
-                                </td>
-                                <td>
-                                    <RadioButton
-                                        disabled={newKeywords ? false : true}
-                                        value={keepKeywords}
-                                        onChange={(v) => setKeepKeywords(v)}
-                                        yesLabel={"Keep"}
-                                        noLabel={"Replace"}
-                                        ariaLabelledby="Whether or not to replace dataset keywords"
-                                    />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td valign="top">Spatial extent</td>
-                                <td>
-                                    {renderBBox(stateData?.spatialCoverage)}
-                                </td>
-                                <td>{renderBBox(newSpatialExtent)}</td>
-                                <td>
-                                    <RadioButton
-                                        disabled={
-                                            newSpatialExtent ? false : true
-                                        }
-                                        value={keepSpatialExtent}
-                                        onChange={(v) =>
-                                            setKeepSpatialExtent(v)
-                                        }
-                                        yesLabel={"Keep"}
-                                        noLabel={"Replace"}
-                                        ariaLabelledby="Whether or not to replace Spatial extent"
-                                    />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                              )
+                                            : "N/A"}
+                                    </td>
+                                    <td>
+                                        <RadioButton
+                                            disabled={
+                                                newKeywords ? false : true
+                                            }
+                                            value={keepKeywords}
+                                            onChange={(v) => setKeepKeywords(v)}
+                                            yesLabel={"Keep"}
+                                            noLabel={"Replace"}
+                                            ariaLabelledby="Whether or not to replace dataset keywords"
+                                        />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td valign="top">Spatial extent</td>
+                                    <td>
+                                        {renderBBox(stateData?.spatialCoverage)}
+                                    </td>
+                                    <td>{renderBBox(newSpatialExtent)}</td>
+                                    <td>
+                                        <RadioButton
+                                            disabled={
+                                                newSpatialExtent ? false : true
+                                            }
+                                            value={keepSpatialExtent}
+                                            onChange={(v) =>
+                                                setKeepSpatialExtent(v)
+                                            }
+                                            yesLabel={"Keep"}
+                                            noLabel={"Replace"}
+                                            ariaLabelledby="Whether or not to replace Spatial extent"
+                                        />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td valign="top">
+                                        Temporal (time) coverage
+                                    </td>
+                                    <td>
+                                        {renderTemporalCoverage(
+                                            stateData?.temporalCoverage
+                                        )}
+                                    </td>
+                                    <td>
+                                        {renderTemporalCoverage(
+                                            newTemporalCoverage
+                                        )}
+                                    </td>
+                                    <td>
+                                        <RadioButton
+                                            disabled={
+                                                newTemporalCoverage
+                                                    ? false
+                                                    : true
+                                            }
+                                            value={keepTemporalCoverage}
+                                            onChange={(v) =>
+                                                setKeepTemporalCoverage(v)
+                                            }
+                                            yesLabel={"Keep"}
+                                            noLabel={"Replace"}
+                                            ariaLabelledby="Whether or not to replace Temporal (time) coverage"
+                                        />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <div className="bottom-button-area">
-                    <AsyncButton>Confirm</AsyncButton> &nbsp;&nbsp;&nbsp;
-                    <AsyncButton isSecondary={true}>Cancel</AsyncButton>
+                    <AsyncButton onClick={onConfirmClick}>Confirm</AsyncButton>{" "}
+                    &nbsp;&nbsp;&nbsp;
+                    <AsyncButton
+                        isSecondary={true}
+                        onClick={() => props.setIsOpen(false)}
+                    >
+                        Cancel
+                    </AsyncButton>
                 </div>
             </div>
         </OverlayBox>

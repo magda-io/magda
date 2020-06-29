@@ -40,7 +40,8 @@ const DistSupercedeSection: FunctionComponent<PropsType> = (props) => {
     );
 
     const newDistributions = state.distributions.filter(
-        (item) => item.isAddConfirmed === true
+        (item) =>
+            item.isAddConfirmed === true && item.isReplacementComfired === false
     );
 
     const fileDists = newDistributions.filter(

@@ -16,7 +16,11 @@
 
     .content-area {
         max-height: 76vh;
-        overflow-y: scroll;
+
+        .inner-content-area {
+            max-height: 70vh;
+            overflow-y: scroll;
+        }
 
         .metadata-table-area {
             border: 1px solid #9b9b9b;

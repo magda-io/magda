@@ -10,6 +10,7 @@
     }
     .yes-button,
     .no-button {
+        cursor: pointer;
         width: 50%;
         color: #374058;
         font-size: 14px;
@@ -21,14 +22,12 @@
         border: 2px solid #30384d;
     }
     .yes-button {
-        cursor: pointer;
         float: left;
         border-right: 1px solid #30384d;
         border-top-left-radius: 17px;
         border-bottom-left-radius: 17px;
     }
     .no-button {
-        cursor: pointer;
         margin-left: 50%;
         border-left: 1px solid #30384d;
         border-top-right-radius: 17px;
