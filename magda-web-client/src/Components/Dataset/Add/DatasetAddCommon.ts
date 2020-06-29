@@ -917,6 +917,24 @@ async function convertStateToDatasetRecord(
         ckanExport
     } = state;
 
+    let ckanExportData;
+    try {
+        const data = await fetchRecordWithNoCache(
+            datasetId,
+            [],
+            ["ckan-export"],
+            false
+        );
+        ckanExportData = data.aspects["ckan-export"];
+        ckanExportData[config.defaultCkanServer].status =
+            ckanExport[config.defaultCkanServer].status;
+        ckanExportData[config.defaultCkanServer].exportRequired =
+            ckanExport[config.defaultCkanServer].exportRequired;
+    } catch (e) {
+        // ckan-export aspect doesn't exist on the dataset
+        ckanExportData = ckanExport;
+    }
+
     let publisherId;
     if (dataset.publisher) {
         publisherId = await getOrgIdFromAutocompleteChoice(dataset.publisher);
@@ -946,7 +964,7 @@ async function convertStateToDatasetRecord(
             "dataset-distributions": {
                 distributions: distributionRecords.map((d) => d.id)
             },
-            "ckan-export": ckanExport,
+            "ckan-export": ckanExportData,
             access: datasetAccess,
             "information-security": informationSecurity,
             "dataset-access-control": getAccessControlAspectData(state),
