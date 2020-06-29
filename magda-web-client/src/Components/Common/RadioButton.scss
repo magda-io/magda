@@ -1,0 +1,45 @@
+.radio-button-container {
+    overflow: hidden;
+    padding-left: 20px;
+    padding-right: 20px;
+    margin: auto;
+    &.is-disabled {
+        opacity: 0.5;
+        .yes-button,
+        .no-button {
+            cursor: not-allowed;
+        }
+    }
+    .yes-button,
+    .no-button {
+        width: 50%;
+        color: #374058;
+        font-size: 14px;
+        letter-spacing: -0.28px;
+        line-height: 30px;
+        text-align: center;
+        box-sizing: border-box;
+        height: 34px;
+        min-width: 156px;
+        border: 2px solid #30384d;
+    }
+    .yes-button {
+        cursor: pointer;
+        float: left;
+        border-right: 1px solid #30384d;
+        border-top-left-radius: 17px;
+        border-bottom-left-radius: 17px;
+    }
+    .no-button {
+        cursor: pointer;
+        margin-left: 50%;
+        border-left: 1px solid #30384d;
+        border-top-right-radius: 17px;
+        border-bottom-right-radius: 17px;
+    }
+    .yes-button.is-checked,
+    .no-button.is-checked {
+        color: #ffffff;
+        background-color: #30384d;
+    }
+}
