@@ -38,5 +38,5 @@ Also don't forget to specify `hostedZoneID` (the hosted zone for the domain) and
 Then finally install:
 
 ```
-helm install --name cert-issuer --namespace cert-issuer deploy/helm/magda-cert-issuer --set hostedZoneID=CHANGEME,accessKeyID=CHANGEME,acmeEmail=CHANGEME,useStaging=SHOULDIUSESTAGING
+helm install --name cert-issuer --namespace cert-manager deploy/helm/magda-cert-issuer --set hostedZoneID=CHANGEME,accessKeyID=CHANGEME,acmeEmail=CHANGEME,useStaging=SHOULDIUSESTAGING
 ```

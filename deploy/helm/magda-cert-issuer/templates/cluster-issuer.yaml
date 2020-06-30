@@ -13,7 +13,10 @@ spec:
 
     solvers:
     # ACME DNS-01 provider configurations
-    - dns01:
+    - selector:
+        dnsZones:
+          - "environment.magda.io"
+      dns01:
         route53:
           region: ap-southeast-2
           hostedZoneID: {{ .Values.hostedZoneID }}
