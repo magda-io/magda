@@ -112,6 +112,10 @@ Search:
 -   Allow fetch region record by region id
 -   Use a list of acronyms for publishers that have a 'Department of' in their name
 
+Minions:
+
+-   Added a minion for publishing to CKAN
+
 Others:
 
 -   Use a "Year" column from a CSV file to extract a temporal extent

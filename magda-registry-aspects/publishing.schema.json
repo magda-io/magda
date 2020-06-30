@@ -1,5 +1,5 @@
 {
-    "$schema": "http://json-schema.org/hyper-schema#",
+    "$schema": "https://json-schema.org/draft/2019-09/hyper-schema#",
     "title": "The publishing state of a dataset",
     "description": "Specifies the state and other metadata associated with publication of data within MAGDA system.",
     "type": "object",

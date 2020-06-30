@@ -14,7 +14,7 @@ import {
 } from "api-clients/RegistryApis";
 import { config } from "config";
 import { User } from "reducers/userManagementReducer";
-import { RawDataset } from "helpers/record";
+import { RawDataset, CkanExportAspectType } from "helpers/record";
 import { autocompletePublishers } from "api-clients/SearchApis";
 import ServerError from "./Errors/ServerError";
 
@@ -179,6 +179,7 @@ export type State = {
     informationSecurity: InformationSecurity;
     provenance: Provenance;
     currency: Currency;
+    ckanExport: CkanExportAspectType;
 
     _lastModifiedDate: Date;
     _createdDate: Date;
@@ -233,8 +234,7 @@ function getAccessControlAspectData(state: State) {
 function getPublishingAspectData(state: State) {
     const { datasetPublishing } = state;
     return {
-        ...datasetPublishing,
-        publishAsOpenData: {}
+        ...datasetPublishing
     };
 }
 
@@ -470,7 +470,6 @@ function populateDistributions(data: RawDataset, state: State) {
             };
             return dis;
         });
-
     if (distributions.length) {
         state.distributions = distributions;
     }
@@ -491,6 +490,10 @@ export async function rawDatasetDataToState(
 
     if (data.aspects?.["spatial-coverage"]) {
         state.spatialCoverage = data.aspects?.["spatial-coverage"];
+    }
+
+    if (data.aspects?.["ckan-export"]) {
+        state.ckanExport = data.aspects?.["ckan-export"];
     }
 
     populateTemporalCoverageAspect(data, state);
@@ -560,7 +563,15 @@ export function createBlankState(user: User): State {
         shouldUploadToStorageApi: false,
         error: null,
         _createdDate: new Date(),
-        _lastModifiedDate: new Date()
+        _lastModifiedDate: new Date(),
+        ckanExport: {
+            [config.defaultCkanServer]: {
+                status: "withdraw",
+                hasCreated: false,
+                exportAttempted: false,
+                exportRequired: false
+            }
+        }
     };
 }
 
@@ -901,8 +912,27 @@ async function convertStateToDatasetRecord(
         informationSecurity,
         datasetAccess,
         provenance,
-        currency
+        currency,
+        ckanExport
     } = state;
+
+    let ckanExportData;
+    try {
+        const data = await fetchRecordWithNoCache(
+            datasetId,
+            [],
+            ["ckan-export"],
+            false
+        );
+        ckanExportData = data.aspects["ckan-export"];
+        ckanExportData[config.defaultCkanServer].status =
+            ckanExport[config.defaultCkanServer].status;
+        ckanExportData[config.defaultCkanServer].exportRequired =
+            ckanExport[config.defaultCkanServer].exportRequired;
+    } catch (e) {
+        // ckan-export aspect doesn't exist on the dataset
+        ckanExportData = ckanExport;
+    }
 
     let publisherId;
     if (dataset.publisher) {
@@ -933,6 +963,7 @@ async function convertStateToDatasetRecord(
             "dataset-distributions": {
                 distributions: distributionRecords.map((d) => d.id)
             },
+            "ckan-export": ckanExportData,
             access: datasetAccess,
             "information-security": informationSecurity,
             "dataset-access-control": getAccessControlAspectData(state),
@@ -1009,6 +1040,14 @@ export async function createDatasetFromState(
     setState: React.Dispatch<React.SetStateAction<State>>,
     authnReadPolicyId?: string
 ) {
+    if (state.datasetPublishing.publishAsOpenData?.dga) {
+        state.ckanExport[config.defaultCkanServer].status = "retain";
+        state.ckanExport[config.defaultCkanServer].exportRequired = true;
+    } else {
+        state.ckanExport[config.defaultCkanServer].status = "withdraw";
+        state.ckanExport[config.defaultCkanServer].exportRequired = false;
+    }
+
     const distributionRecords = await convertStateToDistributionRecords(state);
     const datasetRecord = await convertStateToDatasetRecord(
         datasetId,
@@ -1027,6 +1066,14 @@ export async function updateDatasetFromState(
     setState: React.Dispatch<React.SetStateAction<State>>,
     authnReadPolicyId?: string
 ) {
+    if (state.datasetPublishing.publishAsOpenData?.dga) {
+        state.ckanExport[config.defaultCkanServer].status = "retain";
+    } else {
+        state.ckanExport[config.defaultCkanServer].status = "withdraw";
+    }
+
+    state.ckanExport[config.defaultCkanServer].exportRequired = true;
+
     const distributionRecords = await convertStateToDistributionRecords(state);
     const datasetRecord = await convertStateToDatasetRecord(
         datasetId,

@@ -207,7 +207,7 @@ It's also possible to run what you're working on your host, and the services you
 This is super-easy, just run
 
 ```bash
- kubectl port-forward combined-db-0 5432:5432
+kubectl port-forward combined-db-0 5432:5432
 ```
 
 Now you can connect to the database in minikube as if it were running locally, while still taking advantage of all the automatic schema setup that the docker image does.
