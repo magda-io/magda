@@ -89,7 +89,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 45,
+    version = 46,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       val baseDefinition =
@@ -353,7 +353,7 @@ object IndexDefinition extends DefaultJsonProtocol {
   val publishers: IndexDefinition =
     new IndexDefinition(
       name = "publishers",
-      version = 4,
+      version = 5,
       indicesIndex = Indices.PublishersIndex,
       definition = (indices, config) =>
         createIndex(indices.getIndex(config, Indices.PublishersIndex))
