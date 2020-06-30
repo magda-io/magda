@@ -22,6 +22,7 @@ import organizationDetailsAspect from "@magda/registry-aspects/organization-deta
 import sourceAspect from "@magda/registry-aspects/source.schema.json";
 import datasetDraftAspect from "@magda/registry-aspects/dataset-draft.schema.json";
 import ckanExportAspect from "@magda/registry-aspects/ckan-export.schema.json";
+import versionAspect from "@magda/registry-aspects/version.schema.json";
 import { createNoCacheFetchOptions } from "./createNoCacheFetchOptions";
 import formUrlencode from "./formUrlencode";
 
@@ -41,7 +42,8 @@ export const aspectSchemas = {
     currency: currencyAspect,
     source: sourceAspect,
     "dataset-draft": datasetDraftAspect,
-    "ckan-export": ckanExportAspect
+    "ckan-export": ckanExportAspect,
+    version: versionAspect
 };
 
 export type DatasetTypes = "drafts" | "published";
