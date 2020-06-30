@@ -14,7 +14,6 @@ object HookPersistence extends Protocols with DiffsonProtocol {
   def getAll(implicit session: DBSession): List[WebHook] = {
     sql"""select
             webhookId,
-            userId,
             name,
             active,
             lastEvent,
@@ -38,7 +37,6 @@ object HookPersistence extends Protocols with DiffsonProtocol {
   def getById(implicit session: DBSession, id: String): Option[WebHook] = {
     sql"""select
             webhookId,
-            userId,
             name,
             active,
             lastEvent,
@@ -85,8 +83,8 @@ object HookPersistence extends Protocols with DiffsonProtocol {
       case Some(id) => id
     }
 
-    sql"""insert into WebHooks (webHookId, userId, name, active, lastEvent, url, config, enabled)
-          values ($theHookId, 0, ${hook.name}, ${hook.active}, (select eventId from Events order by eventId desc limit 1), ${hook.url}, ${hook.config.toJson.compactPrint}::jsonb, ${hook.enabled})""".update
+    sql"""insert into WebHooks (webHookId, name, active, lastEvent, url, config, enabled)
+          values ($theHookId, ${hook.name}, ${hook.active}, (select eventId from Events order by eventId desc limit 1), ${hook.url}, ${hook.config.toJson.compactPrint}::jsonb, ${hook.enabled})""".update
       .apply()
 
     val batchParameters = hook.eventTypes
@@ -102,7 +100,6 @@ object HookPersistence extends Protocols with DiffsonProtocol {
     Success(
       WebHook(
         id = Some(theHookId),
-        userId = Some(0),
         name = hook.name,
         active = hook.active,
         lastEvent = None, // TODO: include real lastEvent
@@ -166,8 +163,8 @@ object HookPersistence extends Protocols with DiffsonProtocol {
         )
       )
     } else {
-      sql"""insert into WebHooks (webHookId, userId, name, active, lastevent, url, config, enabled)
-          values (${hook.id.get}, 0, ${hook.name}, ${hook.active}, (select eventId from Events order by eventId desc limit 1), ${hook.url}, ${hook.config.toJson.compactPrint}::jsonb, ${hook.enabled})
+      sql"""insert into WebHooks (webHookId, name, active, lastevent, url, config, enabled)
+          values (${hook.id.get}, ${hook.name}, ${hook.active}, (select eventId from Events order by eventId desc limit 1), ${hook.url}, ${hook.config.toJson.compactPrint}::jsonb, ${hook.enabled})
           on conflict (webHookId) do update
           set name = ${hook.name}, active = ${hook.active}, url = ${hook.url}, config = ${hook.config.toJson.compactPrint}::jsonb""".update
         .apply()
@@ -213,7 +210,6 @@ object HookPersistence extends Protocols with DiffsonProtocol {
 
   private def rowToHook(rs: WrappedResultSet): WebHook = WebHook(
     id = Some(rs.string("webhookId")),
-    userId = Some(rs.int("userId")),
     name = rs.string("name"),
     active = rs.boolean("active"),
     lastEvent = rs.longOpt("lastEvent"),

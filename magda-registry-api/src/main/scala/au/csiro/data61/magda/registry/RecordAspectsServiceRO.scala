@@ -118,10 +118,9 @@ class RecordAspectsServiceRO(
               materializer,
               system.dispatcher
             ) { opaQueries =>
-              DB readOnly { session =>
+              DB readOnly { implicit session =>
                 recordPersistence
                   .getRecordAspectById(
-                    session,
                     tenantId,
                     recordId,
                     aspectId,

@@ -138,12 +138,9 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
             <div className="col-sm-12">
                 <h2>Access and Use</h2>
 
-                {config.featureFlags.placeholderWorkflowsOn ? (
-                    <h3 className="with-underline">Sharing</h3>
-                ) : null}
+                <h3 className="with-underline">Sharing</h3>
 
-                {config.featureFlags.placeholderWorkflowsOn &&
-                config.featureFlags.publishToDga ? (
+                {config.featureFlags.publishToDga ? (
                     <div className="question-publish-to-dga">
                         <h4 className="with-icon">
                             <span>

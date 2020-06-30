@@ -80,7 +80,8 @@ object Registry
       id: Option[Long],
       eventTime: Option[OffsetDateTime],
       eventType: EventType,
-      userId: Int,
+      /** This is an option because although it's mandatory for new events, at versions 0.0.56 and below it wasn't set */
+      userId: Option[String],
       data: JsObject,
       tenantId: BigInt
   )
@@ -178,7 +179,6 @@ object Registry
 
   case class WebHook(
       id: Option[String] = None,
-      userId: Option[Int],
       name: String,
       active: Boolean,
       lastEvent: Option[Long] = None,
@@ -292,7 +292,7 @@ object Registry
   implicit val aspectFormat = jsonFormat3(Registry.AspectDefinition)
   implicit val webHookPayloadFormat = jsonFormat6(Registry.WebHookPayload)
   implicit val webHookConfigFormat = jsonFormat6(Registry.WebHookConfig)
-  implicit val webHookFormat = jsonFormat14(Registry.WebHook)
+  implicit val webHookFormat = jsonFormat13(Registry.WebHook)
   implicit val registryRecordsResponseFormat = jsonFormat3(
     Registry.RegistryRecordsResponse.apply
   )
@@ -330,17 +330,32 @@ object Registry
 
   def getAcronymFromPublisherName(
       publisherName: Option[String]
-  ): Option[String] = {
+  ): Option[List[String]] = {
     publisherName
       .map("""[^a-zA-Z\s]""".r.replaceAllIn(_, ""))
-      .map(
-        """\s""".r
-          .split(_)
+      .map { nameStr =>
+        val nameStrParts = """\s""".r
+          .split(nameStr)
           .map(_.trim.toUpperCase)
-          .filter(!List("", "AND", "THE", "OF").contains(_))
-          .map(_.take(1))
-          .mkString
-      )
+
+        List(
+          Some(
+            nameStrParts
+              .filter(!List("", "AND", "THE", "OF").contains(_))
+              .map(_.take(1))
+              .mkString
+          ),
+          (if (nameStrParts(0) == "DEPARTMENT")
+             Some(
+               nameStrParts
+                 .drop(1)
+                 .filter(!List("", "AND", "THE", "OF").contains(_))
+                 .map(_.take(1))
+                 .mkString
+             )
+           else None)
+        ).filter(_.isDefined).map(_.get)
+      }
   }
 
   def convertPublisher(publisher: Registry.Record): Agent = {

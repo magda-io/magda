@@ -57,7 +57,7 @@ export default function OrganisationAutocomplete(props: Props) {
         async (term: string) => {
             const apiResult = await autocompletePublishers({}, term);
 
-            return apiResult.options.map(option => ({
+            return apiResult.options.map((option) => ({
                 existingId: option.identifier,
                 value: option.identifier,
                 label: option.value
@@ -71,7 +71,7 @@ export default function OrganisationAutocomplete(props: Props) {
             className="react-select"
             isMulti={props.multi}
             isSearchable={true}
-            onChange={(rawValue, action) => {
+            onChange={(rawValue, _action) => {
                 if (!rawValue) {
                     props.onOrgSelected(undefined);
                 } else if (props.multi) {

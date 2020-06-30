@@ -21,6 +21,7 @@ import datasetAccessControlAspect from "@magda/registry-aspects/dataset-access-c
 import organizationDetailsAspect from "@magda/registry-aspects/organization-details.schema.json";
 import sourceAspect from "@magda/registry-aspects/source.schema.json";
 import datasetDraftAspect from "@magda/registry-aspects/dataset-draft.schema.json";
+import ckanExportAspect from "@magda/registry-aspects/ckan-export.schema.json";
 import { createNoCacheFetchOptions } from "./createNoCacheFetchOptions";
 import formUrlencode from "./formUrlencode";
 
@@ -39,7 +40,8 @@ export const aspectSchemas = {
     "organization-details": organizationDetailsAspect,
     currency: currencyAspect,
     source: sourceAspect,
-    "dataset-draft": datasetDraftAspect
+    "dataset-draft": datasetDraftAspect,
+    "ckan-export": ckanExportAspect
 };
 
 export type DatasetTypes = "drafts" | "published";
@@ -183,7 +185,8 @@ export const DEFAULT_OPTIONAL_FETCH_ASPECT_LIST = [
     "dataset-access-control",
     "provenance",
     "information-security",
-    "currency"
+    "currency",
+    "ckan-export"
 ];
 
 export const DEFAULT_COMPULSORY_FETCH_ASPECT_LIST = ["dcat-dataset-strings"];
