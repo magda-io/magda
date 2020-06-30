@@ -10,7 +10,7 @@ import {
     Distribution
 } from "Components/Dataset/Add/DatasetAddCommon";
 import Tooltip from "Components/Dataset/Add/ToolTip";
-import RadioButton from "Components/Common/RadioButton";
+import TwoOptionsButton from "Components/Common/TwoOptionsButton";
 import moment from "moment";
 import uniqBy from "lodash/uniqBy";
 import SpatialDataPreviewer from "Components/Dataset/Add/SpatialAreaInput/SpatialDataPreviewer";
@@ -400,7 +400,7 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
                                     <td>{stateData.dataset.title}</td>
                                     <td>{newTitle ? newTitle : "N/A"}</td>
                                     <td>
-                                        <RadioButton
+                                        <TwoOptionsButton
                                             disabled={newTitle ? false : true}
                                             value={keepTitle}
                                             onChange={(v) => setKeepTitle(v)}
@@ -427,7 +427,7 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
                                             : "N/A"}
                                     </td>
                                     <td>
-                                        <RadioButton
+                                        <TwoOptionsButton
                                             disabled={
                                                 newIssueDate ? false : true
                                             }
@@ -458,7 +458,7 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
                                             : "N/A"}
                                     </td>
                                     <td>
-                                        <RadioButton
+                                        <TwoOptionsButton
                                             disabled={
                                                 newModifiedDate ? false : true
                                             }
@@ -493,7 +493,7 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
                                             : "N/A"}
                                     </td>
                                     <td>
-                                        <RadioButton
+                                        <TwoOptionsButton
                                             disabled={
                                                 newKeywords ? false : true
                                             }
@@ -512,7 +512,7 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
                                     </td>
                                     <td>{renderBBox(newSpatialExtent)}</td>
                                     <td>
-                                        <RadioButton
+                                        <TwoOptionsButton
                                             disabled={
                                                 newSpatialExtent ? false : true
                                             }
@@ -541,7 +541,7 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
                                         )}
                                     </td>
                                     <td>
-                                        <RadioButton
+                                        <TwoOptionsButton
                                             disabled={
                                                 newTemporalCoverage
                                                     ? false

@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from "react";
-import "./RadioButton.scss";
+import "./TwoOptionsButton.scss";
 
 type PropsType = {
     yesLabel?: string;
@@ -11,7 +11,7 @@ type PropsType = {
     className?: string;
 };
 
-const RadioButton: FunctionComponent<PropsType> = (props) => {
+const TwoOptionsButton: FunctionComponent<PropsType> = (props) => {
     const { yesLabel, noLabel } = props;
     const isYesChecked = typeof props.value !== "undefined" && props.value;
     const isNoChecked = typeof props.value !== "undefined" && !props.value;
@@ -48,4 +48,4 @@ const RadioButton: FunctionComponent<PropsType> = (props) => {
     );
 };
 
-export default RadioButton;
+export default TwoOptionsButton;
