@@ -157,18 +157,6 @@ const isEmptyOrInvalidTemporalInterval = (i?: Interval) =>
 const isEmptyOrInvalidTemporalIntervals = (i?: Interval[]) =>
     !i?.length || !i.find((item) => !isEmptyOrInvalidTemporalInterval(item));
 
-/*
-function mergeTemporalInterval(
-    i1: Interval,
-    i2: Interval
-): Interval | undefined {
-    // --- only merge it in a simple way. Do it more accurate way later.
-    if(i1?.start?.getTime && i2?.start?.getTime && i1.start.getTime() === i2.start.getTime() && i1?.end?.getTime && i2?.end?.getTime && i1.end.getTime() === i2.end.getTime()){
-        return i1;
-    }
-    return undefined;
-}*/
-
 function mergeTemporalIntervals(i1?: Interval[], i2?: Interval[]) {
     if (
         isEmptyOrInvalidTemporalIntervals(i1) &&
@@ -342,24 +330,25 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
             if (!keepTemporalCoverage) {
                 newState.temporalCoverage = newTemporalCoverage!;
             }
-            const replacedIds: string[] = [];
+            // --- a list new dists that has been selected to replace old ones
+            const replacedDist: Distribution[] = [];
             newState.distributions = newState.distributions
                 .map((item) => {
                     if (item.isReplacementComfired !== false) {
                         return item;
                     }
                     if (item.replaceDistId) {
-                        replacedIds.push(item.replaceDistId);
+                        replacedDist.push(item);
                     }
                     const newDist: Distribution = {
                         ...item,
                         isAddConfirmed: true,
-                        isReplacementComfired: true,
-                        replaceDistId: undefined
+                        isReplacementComfired: true
                     };
                     return newDist;
                 })
-                .filter((item) => !replacedIds.find((id) => id === item.id));
+                // --- remove the new dists that are set to replace old ones
+                .filter((item) => !item.replaceDistId);
             return newState;
         });
         props.setIsOpen(false);
