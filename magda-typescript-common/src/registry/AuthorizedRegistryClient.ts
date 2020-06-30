@@ -4,7 +4,8 @@ import {
     WebHook,
     Operation,
     WebHookAcknowledgementResponse,
-    MultipleDeleteResult
+    MultipleDeleteResult,
+    EventsPage
 } from "../generated/registry/api";
 import RegistryClient, { RegistryOptions } from "./RegistryClient";
 import retry from "../retry";
@@ -314,5 +315,36 @@ export default class AuthorizedRegistryClient extends RegistryClient {
                     )
                 )
         ).catch(createServiceError);
+    }
+
+    getRecordHistory(
+        id: string,
+        pageToken?: string,
+        start?: number,
+        limit?: number
+    ): Promise<EventsPage | Error> {
+        const operation = (id: string) => () =>
+            this.recordHistoryApi.history(
+                this.tenantId,
+                encodeURIComponent(id),
+                this.jwt,
+                pageToken,
+                start,
+                limit
+            );
+        return <any>retry(
+            operation(id),
+            this.secondsBetweenRetries,
+            this.maxRetries,
+            (e, retriesLeft) =>
+                console.log(
+                    formatServiceError("Failed to GET history.", e, retriesLeft)
+                ),
+            (e) => {
+                return !e.response || e.response.statusCode !== 404;
+            }
+        )
+            .then((result) => result.body)
+            .catch(createServiceError);
     }
 }
