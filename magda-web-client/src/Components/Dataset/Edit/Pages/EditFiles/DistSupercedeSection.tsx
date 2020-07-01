@@ -16,6 +16,7 @@ import ConfirmMetadataModal from "./ConfirmMetadataModal";
 
 type PropsType = {
     stateData: State;
+    datasetId: string;
     datasetStateUpdater: DatasetStateUpdaterType;
     deleteDistributionHandler: (dist: string) => () => Promise<void>;
     editDistributionHandler: (
@@ -103,6 +104,7 @@ const DistSupercedeSection: FunctionComponent<PropsType> = (props) => {
             ) : null}
 
             <ConfirmMetadataModal
+                datasetId={props.datasetId}
                 isOpen={isMetadataConfirmModalOpen}
                 setIsOpen={setIsMetadataConfirmModalOpen}
                 stateData={props.stateData}

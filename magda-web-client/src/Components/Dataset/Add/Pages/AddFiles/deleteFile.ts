@@ -40,6 +40,7 @@ export default async function deleteFile(
             throw new Error("Could not delete file");
         }
     } catch (err) {
+        console.error(err);
         throw new UserVisibleError(
             `Failed to remove file ${distToDelete.title} from Magda's storage. If you removed this ` +
                 `file because it shouldn't be stored on Magda, please contact ${

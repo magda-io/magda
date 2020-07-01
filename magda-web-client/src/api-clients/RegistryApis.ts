@@ -46,6 +46,28 @@ export const aspectSchemas = {
     version: versionAspect
 };
 
+export type VersionItem = {
+    versionNumber: number;
+    createTime: string;
+    description: string;
+};
+
+export type VersionAsepectData = {
+    currentVersion: number;
+    versions: VersionItem[];
+};
+
+export const getInitialVersionAspectData = () => ({
+    currentVersionNumber: 0,
+    versions: [
+        {
+            versionNumber: 0,
+            createTime: new Date().toISOString(),
+            description: "initial version"
+        }
+    ]
+});
+
 export type DatasetTypes = "drafts" | "published";
 
 export function createPublisher(inputRecord: Publisher) {
@@ -188,7 +210,8 @@ export const DEFAULT_OPTIONAL_FETCH_ASPECT_LIST = [
     "provenance",
     "information-security",
     "currency",
-    "ckan-export"
+    "ckan-export",
+    "version"
 ];
 
 export const DEFAULT_COMPULSORY_FETCH_ASPECT_LIST = ["dcat-dataset-strings"];

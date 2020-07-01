@@ -215,6 +215,7 @@ const EditFilesPage: FunctionComponent<Props> = (props) => {
 
                 {newDistributions.length ? (
                     <DistSupercedeSection
+                        datasetId={props.datasetId}
                         stateData={props.stateData}
                         datasetStateUpdater={props.setState}
                         editDistributionHandler={editDistribution}

@@ -1,4 +1,5 @@
-import React, { FunctionComponent, useState } from "react";
+import React, { FunctionComponent, useState, useRef, useEffect } from "react";
+import { config } from "config";
 import OverlayBox from "Components/Common/OverlayBox";
 import AsyncButton from "Components/Common/AsyncButton";
 import {
@@ -7,17 +8,21 @@ import {
     SpatialCoverage,
     TemporalCoverage,
     Interval,
-    Distribution
+    Distribution,
+    DistributionSource
 } from "Components/Dataset/Add/DatasetAddCommon";
+import { VersionItem } from "api-clients/RegistryApis";
 import Tooltip from "Components/Dataset/Add/ToolTip";
 import TwoOptionsButton from "Components/Common/TwoOptionsButton";
 import moment from "moment";
 import uniqBy from "lodash/uniqBy";
 import SpatialDataPreviewer from "Components/Dataset/Add/SpatialAreaInput/SpatialDataPreviewer";
+import deleteFile from "Components/Dataset/Add/Pages/AddFiles/deleteFile";
 
 import "./ConfirmMetadataModal.scss";
 
 type PropsType = {
+    datasetId: string;
     isOpen: boolean;
     setIsOpen: (boolean) => void;
     stateData: State;
@@ -266,8 +271,57 @@ function renderTemporalCoverage(temporalCoverage?: TemporalCoverage) {
     );
 }
 
+type ErrorInfo = Error | string | JSX.Element | JSX.Element[] | null;
+
+function errorInfo2ErrorMessage(
+    error: ErrorInfo,
+    ref: React.MutableRefObject<HTMLDivElement | null>
+) {
+    if (!error || (error as any).length === 0) {
+        ref.current = null;
+        return null;
+    }
+    if (typeof error === "string") {
+        return (
+            <div
+                className="au-body au-page-alerts au-page-alerts--error"
+                ref={ref}
+            >
+                <span>{error}</span>
+            </div>
+        );
+    } else if (error instanceof Error) {
+        return (
+            <div
+                className="au-body au-page-alerts au-page-alerts--error"
+                ref={ref}
+            >
+                <span>{error.message}</span>
+            </div>
+        );
+    } else {
+        return (
+            <div
+                className="au-body au-page-alerts au-page-alerts--error"
+                ref={ref}
+            >
+                {error}
+            </div>
+        );
+    }
+}
+
 const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
     const { stateData } = props;
+
+    const [error, setErrors] = useState<ErrorInfo>(null);
+    const errorContainerRef = useRef<HTMLDivElement>(null);
+    useEffect(() => () => {
+        if (errorContainerRef.current) {
+            errorContainerRef.current.scrollIntoView();
+        }
+    });
+
     const newTitle = retrieveNewMetadataDatasetTitle(stateData);
     const newIssueDate = retrieveNewMetadataDatasetIssueDate(stateData);
     const newModifiedDate = retrieveNewMetadataDatasetModifiedDate(stateData);
@@ -297,61 +351,159 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
         newTemporalCoverage ? false : true
     );
 
-    function onConfirmClick() {
-        props.datasetStateUpdater((state) => {
-            const newState = { ...state };
-            if (!keepTitle) {
-                newState.dataset.title = newTitle;
-            }
-            if (!newIssueDate) {
-                newState.dataset.issued = newIssueDate;
-            }
-            if (!keepModifiedDate) {
-                newState.dataset.modified = newModifiedDate;
-            }
-            if (!keepKeywords) {
-                if (!newState?.dataset?.keywords) {
-                    newState.dataset.keywords = {
-                        derived: false,
-                        keywords: []
-                    };
-                }
+    async function onConfirmClick() {
+        setErrors(null);
+
+        const newState = { ...stateData };
+
+        if (!keepTitle) {
+            newState.dataset.title = newTitle;
+        }
+        if (!newIssueDate) {
+            newState.dataset.issued = newIssueDate;
+        }
+        if (!keepModifiedDate) {
+            newState.dataset.modified = newModifiedDate;
+        }
+        if (!keepKeywords) {
+            if (!newState?.dataset?.keywords) {
                 newState.dataset.keywords = {
-                    ...newState.dataset.keywords,
-                    keywords: [
-                        ...newState.dataset.keywords.keywords,
-                        ...newKeywords!
-                    ]
+                    derived: false,
+                    keywords: []
                 };
             }
-            if (!keepSpatialExtent) {
-                newState.spatialCoverage = newSpatialExtent!;
-            }
-            if (!keepTemporalCoverage) {
-                newState.temporalCoverage = newTemporalCoverage!;
-            }
-            // --- a list new dists that has been selected to replace old ones
-            const replacedDist: Distribution[] = [];
-            newState.distributions = newState.distributions
-                .map((item) => {
-                    if (item.isReplacementComfired !== false) {
-                        return item;
+            newState.dataset.keywords = {
+                ...newState.dataset.keywords,
+                keywords: [
+                    ...newState.dataset.keywords.keywords,
+                    ...newKeywords!
+                ]
+            };
+        }
+        if (!keepSpatialExtent) {
+            newState.spatialCoverage = newSpatialExtent!;
+        }
+        if (!keepTemporalCoverage) {
+            newState.temporalCoverage = newTemporalCoverage!;
+        }
+        // --- a list new dists that has been selected to replace old ones
+        const replacedDists: Distribution[] = [];
+        const deleteFileList: Distribution[] = [];
+        newState.distributions = newState.distributions
+            .map((item) => {
+                if (item.isReplacementComfired !== false) {
+                    return item;
+                }
+                if (item.replaceDistId) {
+                    replacedDists.push(item);
+                }
+                const newDist: Distribution = {
+                    ...item,
+                    isAddConfirmed: true,
+                    isReplacementComfired: true
+                };
+                return newDist;
+            })
+            // --- remove the new dists that are set to replace old ones
+            .filter((item) => !item.replaceDistId)
+            .map((item) => {
+                const replaceDist = replacedDists.find(
+                    (replaceDist) => replaceDist.replaceDistId === item.id
+                );
+                if (!replaceDist) {
+                    // --- this dist is not subject to replacement
+                    return item;
+                } else {
+                    // --- replace the distribution and make a new version (only if it's already versioned)
+                    let newItem = { ...item };
+                    if (newItem?.version?.versions?.length) {
+                        // --- the version data is valid then bump version
+                        const newVersion: VersionItem = {
+                            versionNumber: 1 + newItem.version.currentVersion,
+                            createTime: new Date().toISOString(),
+                            description:
+                                "Replaced superseded by a new distribution"
+                        };
+
+                        newItem.version.currentVersion =
+                            newVersion.versionNumber;
+                        newItem.version.versions = [
+                            ...newItem.version.versions,
+                            newVersion
+                        ];
                     }
-                    if (item.replaceDistId) {
-                        replacedDist.push(item);
+
+                    const {
+                        version,
+                        id,
+                        replaceDistId,
+                        ...restReplaceDistData
+                    } = replaceDist;
+
+                    if (newItem.creationSource === DistributionSource.File) {
+                        // --- add to a list file to delete
+                        // --- deleteFile function only require two fields: dist.id & dist.title
+                        deleteFileList.push({
+                            id: newItem.id,
+                            title: newItem.title
+                        } as Distribution);
                     }
-                    const newDist: Distribution = {
-                        ...item,
-                        isAddConfirmed: true,
-                        isReplacementComfired: true
-                    };
-                    return newDist;
+
+                    // --- replace existing item with new data
+                    // --- newItem.downloadURL will be replaced with restReplaceDistData.downloadURL
+                    // --- as we currently set `Record-ID` of the uploaded object to datasetId, the downloadURL will work probably after we copy it to newItem.
+                    return { ...newItem, ...restReplaceDistData };
+                }
+            });
+
+        props.datasetStateUpdater(newState);
+
+        if (stateData.datasetAccess?.useStorageApi && deleteFileList.length) {
+            const result = await Promise.all(
+                deleteFileList.map(async (dist) => {
+                    try {
+                        await deleteFile(props.datasetId, dist);
+                        return { id: dist.id, title: dist.title, isOk: true };
+                    } catch (e) {
+                        console.error(e);
+                        return { id: dist.id, title: dist.title, isOk: false };
+                    }
                 })
-                // --- remove the new dists that are set to replace old ones
-                .filter((item) => !item.replaceDistId);
-            return newState;
-        });
+            );
+            const errorDeletionFiles = result
+                .filter((item) => !item.isOk)
+                .map((item) => item);
+            if (errorDeletionFiles.length) {
+                setErrors(
+                    <div>
+                        <div>
+                            Failed to remove the following files from Magda's
+                            storage:{" "}
+                        </div>
+                        <ul>
+                            {errorDeletionFiles.map((item, idx) => (
+                                <li key={idx}>
+                                    {item.title} (id: {item.id})
+                                </li>
+                            ))}
+                        </ul>
+                        <div>
+                            Please contact $
+                            {config.defaultContactEmail
+                                ? config.defaultContactEmail
+                                : "Administrator"}{" "}
+                            to ensure that it's properly removed.
+                        </div>
+                    </div>
+                );
+                return;
+            }
+        }
         props.setIsOpen(false);
+    }
+
+    if (!props.isOpen) {
+        return null;
     }
 
     return (
@@ -363,6 +515,8 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
         >
             <div className="content-area">
                 <div className="inner-content-area">
+                    {errorInfo2ErrorMessage(error, errorContainerRef)}
+
                     <Tooltip>
                         You’ve selected to replace the dataset existing content
                         (files and/or API’s) with new content. Some of the
@@ -552,14 +706,18 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
                 </div>
 
                 <div className="bottom-button-area">
-                    <AsyncButton onClick={onConfirmClick}>Confirm</AsyncButton>{" "}
-                    &nbsp;&nbsp;&nbsp;
-                    <AsyncButton
-                        isSecondary={true}
-                        onClick={() => props.setIsOpen(false)}
-                    >
-                        Cancel
-                    </AsyncButton>
+                    <div>
+                        <AsyncButton onClick={onConfirmClick}>
+                            Confirm
+                        </AsyncButton>{" "}
+                        &nbsp;&nbsp;&nbsp;
+                        <AsyncButton
+                            isSecondary={true}
+                            onClick={() => props.setIsOpen(false)}
+                        >
+                            Cancel
+                        </AsyncButton>
+                    </div>
                 </div>
             </div>
         </OverlayBox>

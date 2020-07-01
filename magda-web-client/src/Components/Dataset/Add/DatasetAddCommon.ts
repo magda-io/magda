@@ -10,7 +10,9 @@ import {
     createPublisher,
     updateDataset,
     deleteRecordAspect,
-    Record
+    Record,
+    getInitialVersionAspectData,
+    VersionAsepectData
 } from "api-clients/RegistryApis";
 import { config } from "config";
 import { User } from "reducers/userManagementReducer";
@@ -55,6 +57,8 @@ export type Distribution = {
     replaceDistId?: string;
     _state: DistributionState;
     _progress?: number;
+    // --- we use raw aspect data as we don't access version create time often
+    version?: VersionAsepectData;
 };
 
 export enum DistributionSource {
@@ -187,6 +191,7 @@ export type State = {
     provenance: Provenance;
     currency: Currency;
     ckanExport: CkanExportAspectType;
+    version?: VersionAsepectData;
 
     _lastModifiedDate: Date;
     _createdDate: Date;
@@ -533,7 +538,12 @@ function populateDistributions(data: RawDataset, state: State) {
                 modified: modified ? modified : new Date(),
                 issued: issued ? issued : undefined,
                 _state: DistributionState.Ready
-            };
+            } as Distribution;
+
+            if (item?.aspects?.version) {
+                dis.version = data.aspects.version;
+            }
+
             return dis;
         });
     if (distributions.length) {
@@ -599,6 +609,10 @@ export async function rawDatasetDataToState(
                 break;
             }
         }
+    }
+
+    if (data?.aspects?.version) {
+        state.version = data.aspects.version;
     }
 
     return state;
@@ -1008,7 +1022,7 @@ async function convertStateToDatasetRecord(
     setState: React.Dispatch<React.SetStateAction<State>>,
     isUpdate: boolean = false,
     authnReadPolicyId?: string
-) {
+): Promise<Record> {
     const {
         dataset,
         spatialCoverage,
@@ -1152,7 +1166,15 @@ export async function createDatasetFromState(
         state.ckanExport[config.defaultCkanServer].exportRequired = false;
     }
 
-    const distributionRecords = await convertStateToDistributionRecords(state);
+    const distributionRecords = await (
+        await convertStateToDistributionRecords(state)
+    ).map((item) => {
+        // --- set distribution initial version
+        // --- the version will be bumped when it's superseded by a new file / distribution
+        item.aspects["version"] = getInitialVersionAspectData();
+        return item;
+    });
+
     const datasetRecord = await convertStateToDatasetRecord(
         datasetId,
         distributionRecords,
@@ -1161,6 +1183,10 @@ export async function createDatasetFromState(
         false,
         authnReadPolicyId
     );
+
+    // --- set dataset initial version
+    datasetRecord.aspects.version = getInitialVersionAspectData();
+
     await createDataset(datasetRecord, distributionRecords);
 }
 

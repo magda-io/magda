@@ -2,7 +2,7 @@ import getDateString from "./getDateString";
 import { isSupportedFormat as isSupportedMapPreviewFormat } from "../Components/Common/DataPreviewMap";
 import { FetchError } from "../types";
 import weightedMean from "weighted-mean";
-import { Record } from "api-clients/RegistryApis";
+import { Record, VersionAsepectData } from "api-clients/RegistryApis";
 import { config } from "config";
 
 export type RecordAction = {
@@ -108,6 +108,7 @@ export type RawDistribution = {
         publishing: {
             state?: string;
         };
+        version?: VersionAsepectData;
     };
 };
 
@@ -146,6 +147,7 @@ export type RawDataset = {
         "temporal-coverage"?: TemporalCoverage;
         provenance?: Provenance;
         access: Access;
+        version?: VersionAsepectData;
     };
 };
 
