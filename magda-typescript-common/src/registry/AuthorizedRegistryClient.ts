@@ -41,11 +41,19 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         }
 
         if (options.userId !== undefined) {
-            if (options.userId === null || options.jwtSecret === null) {
-                throw Error("userId or jwtSecret can not be null.");
+            // jwtSecret must have a value. Pure spaces are allowed.
+            if (
+                options.userId === null ||
+                options.userId.trim().length === 0 ||
+                options.jwtSecret === null ||
+                options.jwtSecret === ""
+            ) {
+                throw Error(
+                    "userId or jwtSecret can not be null, pure spaces or empty."
+                );
             }
-        } else if (options.jwt === null) {
-            throw Error("jwt can not be null.");
+        } else if (options.jwt === null || options.jwt.trim() === "") {
+            throw Error("jwt can not be null, empty or pure spaces.");
         }
 
         super(options);

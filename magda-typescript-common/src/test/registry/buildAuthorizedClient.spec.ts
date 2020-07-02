@@ -22,7 +22,7 @@ describe("Test AuthorizedRegistryClient.ts", function () {
         expect(registry !== undefined);
     });
 
-    it("rejects null userId or jwtSecret", async function () {
+    it("rejects null, empty or pure spaces of userId and jwtSecret", async function () {
         expect(function () {
             new AuthorizedRegistryClient({
                 baseUrl: "some.where",
@@ -30,7 +30,10 @@ describe("Test AuthorizedRegistryClient.ts", function () {
                 jwtSecret: "top secret",
                 tenantId: 0
             });
-        }).to.throw(Error, "userId or jwtSecret can not be null.");
+        }).to.throw(
+            Error,
+            "userId or jwtSecret can not be null, pure spaces or empty."
+        );
 
         expect(function () {
             new AuthorizedRegistryClient({
@@ -39,7 +42,10 @@ describe("Test AuthorizedRegistryClient.ts", function () {
                 jwtSecret: null,
                 tenantId: 0
             });
-        }).to.throw(Error, "userId or jwtSecret can not be null.");
+        }).to.throw(
+            Error,
+            "userId or jwtSecret can not be null, pure spaces or empty."
+        );
 
         expect(function () {
             new AuthorizedRegistryClient({
@@ -48,7 +54,22 @@ describe("Test AuthorizedRegistryClient.ts", function () {
                 jwtSecret: null,
                 tenantId: 0
             });
-        }).to.throw(Error, "userId or jwtSecret can not be null.");
+        }).to.throw(
+            Error,
+            "userId or jwtSecret can not be null, pure spaces or empty."
+        );
+
+        expect(function () {
+            new AuthorizedRegistryClient({
+                baseUrl: "some.where",
+                userId: "some.user",
+                jwtSecret: "",
+                tenantId: 0
+            });
+        }).to.throw(
+            Error,
+            "userId or jwtSecret can not be null, pure spaces or empty."
+        );
     });
 
     it("accepts jwt", async function () {
@@ -60,13 +81,21 @@ describe("Test AuthorizedRegistryClient.ts", function () {
         expect(registry !== undefined);
     });
 
-    it("rejects null jwt", async function () {
+    it("rejects null, empty or pure spaces jwt", async function () {
         expect(function () {
             new AuthorizedRegistryClient({
                 baseUrl: "some.where",
                 jwt: null,
                 tenantId: 0
             });
-        }).to.throw(Error, "jwt can not be null.");
+        }).to.throw(Error, "jwt can not be null, empty or pure spaces.");
+
+        expect(function () {
+            new AuthorizedRegistryClient({
+                baseUrl: "some.where",
+                jwt: "  ",
+                tenantId: 0
+            });
+        }).to.throw(Error, "jwt can not be null, empty or pure spaces.");
     });
 });
