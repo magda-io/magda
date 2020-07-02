@@ -22,6 +22,17 @@ describe("Test AuthorizedRegistryClient.ts", function () {
         expect(registry !== undefined);
     });
 
+    it("rejects null jwt secret if userId is defined", async function () {
+        expect(function () {
+            new AuthorizedRegistryClient({
+                baseUrl: "some.where",
+                userId: "some.user",
+                jwtSecret: null,
+                tenantId: 0
+            });
+        }).to.throw(Error, "JWT secret can not be null.");
+    });
+
     it("accepts optional jwt", async function () {
         const registry = new AuthorizedRegistryClient({
             baseUrl: "some.where",

@@ -33,26 +33,22 @@ export type AuthorizedRegistryOptions =
 
 export default class AuthorizedRegistryClient extends RegistryClient {
     protected options: AuthorizedRegistryOptions;
-    protected jwt: string | undefined;
+    protected jwt: string;
 
     constructor(options: AuthorizedRegistryOptions) {
         if (options.tenantId === undefined || options.tenantId === null) {
             throw Error("A tenant id must be defined.");
         }
 
-        if (
-            options.userId &&
-            (options.jwtSecret === undefined || options.jwtSecret === null)
-        ) {
-            throw Error("JWT secret must be defined.");
+        if (options.userId && options.jwtSecret === null) {
+            throw Error("JWT secret can not be null.");
         }
+
         super(options);
         this.options = options;
         this.jwt = options.jwt
             ? options.jwt
-            : options.userId
-            ? buildJwt(options.jwtSecret, options.userId)
-            : undefined;
+            : buildJwt(options.jwtSecret, options.userId);
     }
 
     putAspectDefinition(
