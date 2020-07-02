@@ -551,3 +551,29 @@ export async function updateDataset(
 
     return json;
 }
+
+/**
+ * Update a record aspect. If the aspect not exist, it will be created.
+ *
+ * @export
+ * @template T
+ * @param {string} recordId
+ * @param {string} aspectId
+ * @param {T} aspectData
+ * @returns {Promise<T>} Return created aspect data
+ */
+export async function updateRecordAspect<T = any>(
+    recordId: string,
+    aspectId: string,
+    aspectData: T
+): Promise<T> {
+    await ensureAspectExists(aspectId);
+
+    const json = (await request(
+        "PUT",
+        `${config.registryFullApiUrl}records/${recordId}/aspects/${aspectId}`,
+        JSON.stringify(aspectData)
+    )) as T;
+
+    return json;
+}

@@ -33,12 +33,13 @@ import { config } from "config";
 
 import "../Add/DatasetAddMetadataPage.scss";
 import "../Add/DatasetAddCommon.scss";
-import ErrorMessageBox from "../Add/ErrorMessageBox";
+import ErrorMessageBox from "Components/Common/ErrorMessageBox";
 
 import helpIcon from "assets/help.svg";
 import { User } from "reducers/userManagementReducer";
 import * as ValidationManager from "../Add/ValidationManager";
 import URI from "urijs";
+import FileDeletionError from "helpers/FileDeletionError";
 
 type Props = {
     initialState: State;
@@ -206,7 +207,14 @@ class EditDataset extends React.Component<Props, State> {
                 {this.steps[step]()}
                 <br />
                 <br />
-                <ErrorMessageBox />
+                <ErrorMessageBox
+                    scollIntoView={false}
+                    stateErrorGetter={(state) =>
+                        state?.record?.newDataset?.error
+                            ? state.record.newDataset.error
+                            : null
+                    }
+                />
                 <br />
                 {!shouldRenderButtonArea() ? null : (
                     <>
@@ -322,11 +330,15 @@ class EditDataset extends React.Component<Props, State> {
                 isPublishing: true
             });
 
-            await submitDatasetFromState(
+            const result = await submitDatasetFromState(
                 this.props.datasetId,
                 this.state,
                 this.setState.bind(this)
             );
+
+            if (result.length) {
+                throw new FileDeletionError(result);
+            }
 
             this.props.history.push(`/dataset/edit/${this.props.datasetId}/6`);
         } catch (e) {

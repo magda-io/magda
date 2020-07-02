@@ -38,12 +38,13 @@ import "./DatasetAddCommon.scss";
 
 import ReviewFilesList from "./ReviewFilesList";
 
-import ErrorMessageBox from "./ErrorMessageBox";
+import ErrorMessageBox from "Components/Common/ErrorMessageBox";
 
 import helpIcon from "assets/help.svg";
 import { User } from "reducers/userManagementReducer";
 import * as ValidationManager from "../Add/ValidationManager";
 import URI from "urijs";
+import FileDeletionError from "helpers/FileDeletionError";
 
 type Props = {
     initialState: State;
@@ -224,7 +225,14 @@ class NewDataset extends React.Component<Props, State> {
                 {this.steps[step]()}
                 <br />
                 <br />
-                <ErrorMessageBox />
+                <ErrorMessageBox
+                    scollIntoView={false}
+                    stateErrorGetter={(state) =>
+                        state?.record?.newDataset?.error
+                            ? state.record.newDataset.error
+                            : null
+                    }
+                />
                 <br />
                 {!shouldRenderButtonArea() ? null : (
                     <>
@@ -363,7 +371,7 @@ class NewDataset extends React.Component<Props, State> {
                 }
             }));
 
-            await submitDatasetFromState(
+            const result = await submitDatasetFromState(
                 datasetId,
                 {
                     ...this.state,
@@ -374,6 +382,10 @@ class NewDataset extends React.Component<Props, State> {
                 },
                 this.setState.bind(this)
             );
+
+            if (result.length) {
+                throw new FileDeletionError(result);
+            }
 
             this.props.history.push(`/dataset/add/metadata/${datasetId}/6`);
         } catch (e) {

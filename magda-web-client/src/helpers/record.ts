@@ -129,6 +129,17 @@ export type Access = {
     note?: string;
 };
 
+export type DatasetDraft = {
+    data: string;
+    timestamp: string;
+    dataset?: {
+        title?: string;
+        description?: string;
+        themes?: string[];
+        keywords?: string[];
+    };
+};
+
 export type RawDataset = {
     id: string;
     name: string;
@@ -148,6 +159,7 @@ export type RawDataset = {
         provenance?: Provenance;
         access: Access;
         version?: VersionAsepectData;
+        "dataset-draft"?: DatasetDraft;
     };
 };
 

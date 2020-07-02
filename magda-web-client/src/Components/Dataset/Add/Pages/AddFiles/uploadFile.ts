@@ -1,10 +1,15 @@
 import { config } from "config";
 import baseStorageApiPath from "./baseStorageApiPath";
+import getDownloadUrl from "./getDownloadUrl";
+import promisifySetState from "helpers/promisifySetState";
+import { DatasetStateUpdaterType } from "../../DatasetAddCommon";
+import uniq from "lodash/uniq";
 
 export default async function uploadFile(
     datasetId: string,
     file: File,
     distId: string,
+    datasetStateUpdater: DatasetStateUpdaterType,
     onProgressUpdate: (progress: number) => void,
     saveDatasetToStorage: () => Promise<string>
 ) {
@@ -34,6 +39,18 @@ export default async function uploadFile(
         if (res.status !== 200) {
             throw new Error("Could not upload file");
         }
+        // --- sucessfully upload the file, add to state.uploadedFileUrls
+        await promisifySetState(datasetStateUpdater)((state) => ({
+            ...state,
+            uploadedFiles: uniq([
+                ...state.uploadedFileUrls,
+                getDownloadUrl(datasetId, distId, file.name)
+            ])
+        }));
+
+        // --- save a draft to storage
+        // --- we should do that even for edit flow so that there is no files will be lost track
+        await saveDatasetToStorage();
     } finally {
         uploadProgress = 1;
         onProgressUpdate(uploadProgress);

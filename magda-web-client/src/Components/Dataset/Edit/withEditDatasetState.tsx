@@ -5,7 +5,10 @@ import { useAsync } from "react-async-hook";
 import { State, rawDatasetDataToState } from "../Add/DatasetAddCommon";
 import { User } from "reducers/userManagementReducer";
 import { config } from "config";
-import { fetchRecordWithNoCache } from "api-clients/RegistryApis";
+import {
+    fetchRecordWithNoCache,
+    DEFAULT_OPTIONAL_FETCH_ASPECT_LIST
+} from "api-clients/RegistryApis";
 
 /* eslint-disable react-hooks/rules-of-hooks */
 type Props = { initialState: State; user: User } & RouterProps;
@@ -32,12 +35,12 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
                     return;
                 }
                 // --- turn off cache
-                const data = await fetchRecordWithNoCache(
-                    datasetId,
-                    undefined,
-                    undefined,
-                    true
-                );
+                // --- edit flow will also save draft after file is uploaded to storage api
+                // --- to avoid orphan uploaded files when the user drops off in the half way before submit
+                const data = await fetchRecordWithNoCache(datasetId, [
+                    ...DEFAULT_OPTIONAL_FETCH_ASPECT_LIST,
+                    "dataset-draft"
+                ]);
                 const loadedStateData = await rawDatasetDataToState(data, user);
 
                 updateData(loadedStateData);

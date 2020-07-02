@@ -82,7 +82,7 @@ const deleteDistribution = (
                         }));
 
                         // warn before closing tab
-                        await deleteFile(datasetId, distToDelete);
+                        await deleteFile(distToDelete);
                         // remove dist from state
                         removeDist();
                         resolve();

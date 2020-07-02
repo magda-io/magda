@@ -15,7 +15,7 @@ import {
     Interval,
     saveRuntimeStateToStorage
 } from "../../DatasetAddCommon";
-import baseStorageApiPath from "./baseStorageApiPath";
+import getDownloadUrl from "./getDownloadUrl";
 import processFile from "./processFile";
 import { getFiles } from "helpers/readFile";
 import updateLastModifyDate from "./updateLastModifyDate";
@@ -129,11 +129,11 @@ const FileDropZone: FunctionComponent<PropsType> = (props) => {
                 _state: DistributionState.Added,
                 license: "No license",
                 creationSource: DistributionSource.File,
+                useStorageApi: stateData.datasetAccess.useStorageApi
+                    ? true
+                    : false,
                 downloadURL: stateData.datasetAccess.useStorageApi
-                    ? `${config.storageApiUrl}${baseStorageApiPath(
-                          datasetId,
-                          distRecordId
-                      )}/${thisFile.name}`
+                    ? getDownloadUrl(datasetId, distRecordId, thisFile.name)
                     : undefined,
                 // --- allow other component to overwrite distribution status
                 ...initDistProps

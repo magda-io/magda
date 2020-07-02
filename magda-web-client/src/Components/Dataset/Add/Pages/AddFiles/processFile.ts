@@ -163,6 +163,7 @@ export default async function processFile(
                 datasetId,
                 thisFile,
                 initialDistribution.id!,
+                datasetStateUpdater,
                 handleUploadProgress,
                 saveDatasetToStorage
             );
@@ -264,7 +265,7 @@ export default async function processFile(
                         `${config.storageApiUrl}${baseStorageApiPath(
                             datasetId,
                             initialDistribution.id!
-                        )}/${thisFile.name}`,
+                        )}/${encodeURIComponent(thisFile.name)}`,
                         {
                             ...config.credentialsFetchOptions,
                             method: "DELETE"

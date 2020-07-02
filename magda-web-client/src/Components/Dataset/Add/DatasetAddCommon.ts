@@ -12,7 +12,8 @@ import {
     deleteRecordAspect,
     Record,
     getInitialVersionAspectData,
-    VersionAsepectData
+    VersionAsepectData,
+    updateRecordAspect
 } from "api-clients/RegistryApis";
 import { config } from "config";
 import { User } from "reducers/userManagementReducer";
@@ -21,6 +22,8 @@ import { autocompletePublishers } from "api-clients/SearchApis";
 import ServerError from "./Errors/ServerError";
 import defer from "helpers/defer";
 import { ReactStateUpdaterType } from "helpers/promisifySetState";
+import getDistInfoFromDownloadUrl from "./Pages/AddFiles/getDistInfoFromDownloadUrl";
+import deleteFile from "./Pages/AddFiles/deleteFile";
 
 export type Distribution = {
     title: string;
@@ -57,6 +60,8 @@ export type Distribution = {
     replaceDistId?: string;
     _state: DistributionState;
     _progress?: number;
+    // --- whether the file is stored with internal storage API
+    useStorageApi: boolean;
     // --- we use raw aspect data as we don't access version create time often
     version?: VersionAsepectData;
 };
@@ -195,6 +200,25 @@ export type State = {
 
     _lastModifiedDate: Date;
     _createdDate: Date;
+
+    /**
+     * We use this fields to track all uploaded files before submit. This info will only be saved to `dataset-draft`.
+     * Unless the user specifically asks for it, we will only clean this info (and also `dataset-draft`) after dataset changes are submited.
+     * When the user wants to discard all previous changes (that not submitted yet), we should use this array to double check if any orphan files
+     * (files are not belongs to any distributions --- could be produced by unsubmitted replacement or supercedure changes) are required to be deleted.
+     * This field store uploaded file urls
+     */
+    uploadedFileUrls: string[];
+
+    /**
+     * JSON data of the `dataset-draft`.
+     * A user may choose to recover from previous saved changes in edit workflow.
+     * Thus, we should not auto unserialize the data here and recover `State` whitout asking the user.
+     * After we recover the previous saved state, we should set `draftData` to undefined.
+     * When the user choose to discard the previous saved draft changes, `uploadedFiles` above should be examined to removed any orphan files.
+     * When save state to `dataset-draft`, this field should be omitted.
+     */
+    draftData?: string;
 
     licenseLevel: "dataset" | "distribution";
 
@@ -544,6 +568,11 @@ function populateDistributions(data: RawDataset, state: State) {
                 dis.version = data.aspects.version;
             }
 
+            if (dis.useStorageApi && dis.downloadURL) {
+                // --- add local managed file URLs to state.uploadedFileUrls for future clean-up
+                state.uploadedFileUrls.push(dis.downloadURL);
+            }
+
             return dis;
         });
     if (distributions.length) {
@@ -615,6 +644,10 @@ export async function rawDatasetDataToState(
         state.version = data.aspects.version;
     }
 
+    if (data?.aspects?.["dataset-draft"]?.data) {
+        state.draftData = data.aspects["dataset-draft"].data;
+    }
+
     return state;
 }
 
@@ -655,6 +688,8 @@ export function createBlankState(user: User): State {
         error: null,
         _createdDate: new Date(),
         _lastModifiedDate: new Date(),
+        uploadedFileUrls: [] as string[],
+        draftData: undefined,
         ckanExport: {
             [config.defaultCkanServer]: {
                 status: "withdraw",
@@ -764,6 +799,7 @@ export async function loadState(id: string, user: User): Promise<State> {
 
 export function saveStateToLocalStorage(state: State, id: string) {
     state = Object.assign({}, state);
+    state.draftData = undefined;
     state._lastModifiedDate = new Date();
 
     const dataset = JSON.stringify(state);
@@ -773,6 +809,7 @@ export function saveStateToLocalStorage(state: State, id: string) {
 
 export async function saveStateToRegistry(state: State, id: string) {
     state = Object.assign({}, state);
+    state.draftData = undefined;
     state._lastModifiedDate = new Date();
 
     const dataset = JSON.stringify(state);
@@ -781,7 +818,8 @@ export async function saveStateToRegistry(state: State, id: string) {
     let record: RawDataset | undefined;
     try {
         // --- we turned off cache here
-        record = await fetchRecordWithNoCache(id, ["dataset-draft"], [], false);
+        // --- we won't check `dataset-draft` aspect as it's possible a dataset record with no dataset-draft exist (e.g. edit flow)
+        record = await fetchRecordWithNoCache(id, [], [], false);
     } catch (e) {
         if (e! instanceof ServerError || e.statusCode !== 404) {
             // --- mute 404 error as we're gonna create one if can't find an existing one
@@ -807,13 +845,13 @@ export async function saveStateToRegistry(state: State, id: string) {
     };
 
     if (!record) {
+        // --- dataset record not exist
         await createDataset(
             {
                 id,
                 name: "",
                 authnReadPolicyId: DEFAULT_POLICY_ID,
                 aspects: {
-                    "dataset-draft": datasetDraftAspectData,
                     publishing: getPublishingAspectData(state),
                     "dataset-access-control": getAccessControlAspectData(state),
                     source: getInternalDatasetSourceAspectData()
@@ -821,12 +859,11 @@ export async function saveStateToRegistry(state: State, id: string) {
             },
             []
         );
+
+        // --- if `dataset-draft` not exist, the API will create the aspect data instead
+        await updateRecordAspect(id, "dataset-draft", datasetDraftAspectData);
     } else {
-        if (!record?.aspects) {
-            record.aspects = {} as any;
-        }
-        record.aspects["dataset-draft"] = datasetDraftAspectData;
-        await updateDataset(record, []);
+        await updateRecordAspect(id, "dataset-draft", datasetDraftAspectData);
     }
 
     return id;
@@ -1216,6 +1253,61 @@ export async function updateDatasetFromState(
     await updateDataset(datasetRecord, distributionRecords);
 }
 
+type FailedFileInfo = {
+    id?: string;
+    title: string;
+};
+
+/**
+ * Tried to delete any uploaded files that is not associated with any distributions.
+ * Return info of files that are failed to delete
+ *
+ * @export
+ * @param {State} state
+ * @returns {Promise<FailedFileInfo[]>}
+ */
+export async function cleanUpOrphanFiles(
+    state: State
+): Promise<FailedFileInfo[]> {
+    return (
+        await Promise.all(
+            state.uploadedFileUrls.map(async (fileUrl) => {
+                if (
+                    state.distributions.find(
+                        (item) => item.downloadURL === fileUrl
+                    )
+                ) {
+                    // --- do nothing if the url is allocated to a distribution
+                    return { isOk: true };
+                }
+
+                let distId, fileName;
+
+                try {
+                    const result = getDistInfoFromDownloadUrl(fileUrl);
+                    distId = result.distId;
+                    fileName = result.fileName;
+                } catch (e) {
+                    return { title: fileUrl, isOk: false };
+                }
+
+                try {
+                    await deleteFile({
+                        id: distId,
+                        title: fileName,
+                        downloadURL: fileUrl
+                    } as Distribution);
+
+                    return { isOk: true };
+                } catch (e) {
+                    console.error(e);
+                    return { id: distId, title: fileName, isOk: false };
+                }
+            })
+        )
+    ).filter((item) => !item.isOk) as FailedFileInfo[];
+}
+
 /**
  * This function will submit the dataset using different API endpoints (depends on whether the dataset has been create or not)
  * It will also delete any temporary draft data from the `dataset-draft` aspect.
@@ -1229,7 +1321,7 @@ export async function submitDatasetFromState(
     datasetId: string,
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>
-) {
+): Promise<FailedFileInfo[]> {
     if (await doesRecordExist(datasetId)) {
         await updateDatasetFromState(
             datasetId,
@@ -1247,4 +1339,6 @@ export async function submitDatasetFromState(
     }
 
     await deleteRecordAspect(datasetId, "dataset-draft");
+
+    return await cleanUpOrphanFiles(state);
 }

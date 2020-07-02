@@ -20,6 +20,7 @@ import "../../DatasetAddCommon.scss";
 import UserVisibleError from "helpers/UserVisibleError";
 import deleteDistribution from "./deleteDistribution";
 import updateLastModifyDate from "./updateLastModifyDate";
+import ErrorMessageBox from "Components/Common/ErrorMessageBox";
 
 type Props = {
     edit: <K extends keyof State>(
@@ -195,11 +196,7 @@ class AddFilesPage extends React.Component<Props> {
                             })}
                         </div>
 
-                        {state.error && (
-                            <div className="au-body au-page-alerts au-page-alerts--error">
-                                Failed to process file: {state.error?.message}
-                            </div>
-                        )}
+                        <ErrorMessageBox error={state.error} />
 
                         {localFiles.length > 0 && (
                             <div className="more-files-to-add-text">

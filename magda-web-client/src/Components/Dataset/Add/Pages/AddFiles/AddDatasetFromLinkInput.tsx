@@ -206,7 +206,8 @@ const AddDatasetFromLinkInput: FunctionComponent<Props> = (props) => {
                     modified: new Date(),
                     format: "",
                     _state: DistributionState.Processing,
-                    _progress: 50
+                    _progress: 50,
+                    useStorageApi: false
                 });
 
                 const [data, dataType] = await getDataUrlProcessorResult(
@@ -225,6 +226,7 @@ const AddDatasetFromLinkInput: FunctionComponent<Props> = (props) => {
                     format: "",
                     _state: DistributionState.Ready,
                     _progress: 100,
+                    useStorageApi: false,
                     ...processDcatDatasetStrings(data?.dataset?.aspects),
                     ...processDcatDistributionStrings(distRecord?.aspects),
                     ...processSpatialCoverage(distRecord?.aspects),
@@ -281,7 +283,8 @@ const AddDatasetFromLinkInput: FunctionComponent<Props> = (props) => {
                 title: url,
                 modified: new Date(),
                 format: "",
-                _state: DistributionState.Drafting
+                _state: DistributionState.Drafting,
+                useStorageApi: false
             });
 
             setUrl("");
