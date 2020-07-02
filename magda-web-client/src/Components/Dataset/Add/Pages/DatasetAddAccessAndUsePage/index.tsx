@@ -76,7 +76,12 @@ const classificationValidator: CustomValidatorType = (
     state,
     validationItem
 ) => {
-    if (value === "PROTECTED" || value === "SECRET" || value === "TOP SECRET") {
+    const valueUpper = value.toUpperCase();
+    if (
+        valueUpper === "PROTECTED" ||
+        valueUpper === "SECRET" ||
+        valueUpper === "TOP SECRET"
+    ) {
         return {
             valid: false,
             validationMessage:
