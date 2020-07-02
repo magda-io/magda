@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.0.58
+
+typescript-common
+
+-   The constructor of AuthorizedRegistryClient also accepts a customised jwt token.
+
 ## 0.0.57
 
 General:
