@@ -76,6 +76,15 @@ const classificationValidator: CustomValidatorType = (
     state,
     validationItem
 ) => {
+    if (value === "PROTECTED" || value === "SECRET" || value === "TOP SECRET") {
+        return {
+            valid: false,
+            validationMessage:
+                "Cannot proceed with this dataset. A dataset with security classification " +
+                "of PROTECTED or above cannot be stored in MAGDA."
+        };
+    }
+
     if (
         !ValidationManager.shouldValidate(
             "$.datasetPublishing.publishAsOpenData.dga"
