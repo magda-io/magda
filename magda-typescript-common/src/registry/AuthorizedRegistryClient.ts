@@ -14,10 +14,22 @@ import buildJwt from "../session/buildJwt";
 import { IncomingMessage } from "http";
 import { Maybe } from "tsmonad";
 
-export interface AuthorizedRegistryOptions extends RegistryOptions {
+export interface AuthorizedRegistryUserIdAndJwtSecretOptions
+    extends RegistryOptions {
+    userId: string;
     jwtSecret: string;
-    userId?: string;
+    jwt?: never;
 }
+
+export interface AuthorizedRegistryJwtOptions extends RegistryOptions {
+    jwt: string;
+    userId?: never;
+    jwtSecret?: never;
+}
+
+export type AuthorizedRegistryOptions =
+    | AuthorizedRegistryUserIdAndJwtSecretOptions
+    | AuthorizedRegistryJwtOptions;
 
 export default class AuthorizedRegistryClient extends RegistryClient {
     protected options: AuthorizedRegistryOptions;
@@ -28,13 +40,19 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             throw Error("A tenant id must be defined.");
         }
 
-        if (options.jwtSecret === undefined || options.jwtSecret === null) {
+        if (
+            options.userId &&
+            (options.jwtSecret === undefined || options.jwtSecret === null)
+        ) {
             throw Error("JWT secret must be defined.");
         }
         super(options);
         this.options = options;
-        this.jwt =
-            options.userId && buildJwt(options.jwtSecret, options.userId);
+        this.jwt = options.jwt
+            ? options.jwt
+            : options.userId
+            ? buildJwt(options.jwtSecret, options.userId)
+            : undefined;
     }
 
     putAspectDefinition(
