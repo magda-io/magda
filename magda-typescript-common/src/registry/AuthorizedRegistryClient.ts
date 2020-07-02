@@ -40,11 +40,11 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             throw Error("A tenant id must be defined.");
         }
 
-        if (options.userId && options.jwtSecret === null) {
-            throw Error("JWT secret can not be null.");
-        }
-
-        if (options.jwt !== undefined && options.jwt === null) {
+        if (options.userId !== undefined) {
+            if (options.userId === null || options.jwtSecret === null) {
+                throw Error("userId or jwtSecret can not be null.");
+            }
+        } else if (options.jwt === null) {
             throw Error("jwt can not be null.");
         }
 

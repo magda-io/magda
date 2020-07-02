@@ -22,7 +22,16 @@ describe("Test AuthorizedRegistryClient.ts", function () {
         expect(registry !== undefined);
     });
 
-    it("rejects null jwt secret if userId is defined", async function () {
+    it("rejects null userId or jwtSecret", async function () {
+        expect(function () {
+            new AuthorizedRegistryClient({
+                baseUrl: "some.where",
+                userId: null,
+                jwtSecret: "top secret",
+                tenantId: 0
+            });
+        }).to.throw(Error, "userId or jwtSecret can not be null.");
+
         expect(function () {
             new AuthorizedRegistryClient({
                 baseUrl: "some.where",
@@ -30,7 +39,16 @@ describe("Test AuthorizedRegistryClient.ts", function () {
                 jwtSecret: null,
                 tenantId: 0
             });
-        }).to.throw(Error, "JWT secret can not be null.");
+        }).to.throw(Error, "userId or jwtSecret can not be null.");
+
+        expect(function () {
+            new AuthorizedRegistryClient({
+                baseUrl: "some.where",
+                userId: null,
+                jwtSecret: null,
+                tenantId: 0
+            });
+        }).to.throw(Error, "userId or jwtSecret can not be null.");
     });
 
     it("accepts jwt", async function () {
