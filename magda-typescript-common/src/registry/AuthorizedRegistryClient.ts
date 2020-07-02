@@ -44,6 +44,10 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             throw Error("JWT secret can not be null.");
         }
 
+        if (options.jwt !== undefined && options.jwt === null) {
+            throw Error("jwt can not be null.");
+        }
+
         super(options);
         this.options = options;
         this.jwt = options.jwt

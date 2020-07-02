@@ -12,7 +12,7 @@ describe("Test AuthorizedRegistryClient.ts", function () {
         nock.cleanAll();
     });
 
-    it("accepts optional userId and jwtSecret", async function () {
+    it("accepts userId and jwtSecret", async function () {
         const registry = new AuthorizedRegistryClient({
             baseUrl: "some.where",
             userId: "some.user",
@@ -33,12 +33,22 @@ describe("Test AuthorizedRegistryClient.ts", function () {
         }).to.throw(Error, "JWT secret can not be null.");
     });
 
-    it("accepts optional jwt", async function () {
+    it("accepts jwt", async function () {
         const registry = new AuthorizedRegistryClient({
             baseUrl: "some.where",
             jwt: "some.jwt.token",
             tenantId: 0
         });
         expect(registry !== undefined);
+    });
+
+    it("rejects null jwt", async function () {
+        expect(function () {
+            new AuthorizedRegistryClient({
+                baseUrl: "some.where",
+                jwt: null,
+                tenantId: 0
+            });
+        }).to.throw(Error, "jwt can not be null.");
     });
 });
