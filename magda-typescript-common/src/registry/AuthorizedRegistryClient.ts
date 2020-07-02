@@ -40,20 +40,12 @@ export default class AuthorizedRegistryClient extends RegistryClient {
             throw Error("A tenant id must be defined.");
         }
 
-        if (options.userId !== undefined) {
-            // jwtSecret must have a value. Pure spaces are allowed.
-            if (
-                options.userId === null ||
-                options.userId.trim().length === 0 ||
-                options.jwtSecret === null ||
-                options.jwtSecret === ""
-            ) {
+        if (!options.jwt) {
+            if (!options.userId || !options.jwtSecret) {
                 throw Error(
-                    "userId or jwtSecret can not be null, pure spaces or empty."
+                    "userId or jwtSecret must be both provided when jwt doesn't present!"
                 );
             }
-        } else if (options.jwt === null || options.jwt.trim() === "") {
-            throw Error("jwt can not be null, empty or pure spaces.");
         }
 
         super(options);

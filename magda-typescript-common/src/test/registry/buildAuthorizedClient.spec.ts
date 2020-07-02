@@ -32,7 +32,7 @@ describe("Test AuthorizedRegistryClient.ts", function () {
             });
         }).to.throw(
             Error,
-            "userId or jwtSecret can not be null, pure spaces or empty."
+            "userId or jwtSecret must be both provided when jwt doesn't present!"
         );
 
         expect(function () {
@@ -44,7 +44,7 @@ describe("Test AuthorizedRegistryClient.ts", function () {
             });
         }).to.throw(
             Error,
-            "userId or jwtSecret can not be null, pure spaces or empty."
+            "userId or jwtSecret must be both provided when jwt doesn't present!"
         );
 
         expect(function () {
@@ -56,7 +56,7 @@ describe("Test AuthorizedRegistryClient.ts", function () {
             });
         }).to.throw(
             Error,
-            "userId or jwtSecret can not be null, pure spaces or empty."
+            "userId or jwtSecret must be both provided when jwt doesn't present!"
         );
 
         expect(function () {
@@ -68,7 +68,7 @@ describe("Test AuthorizedRegistryClient.ts", function () {
             });
         }).to.throw(
             Error,
-            "userId or jwtSecret can not be null, pure spaces or empty."
+            "userId or jwtSecret must be both provided when jwt doesn't present!"
         );
     });
 
@@ -81,21 +81,16 @@ describe("Test AuthorizedRegistryClient.ts", function () {
         expect(registry !== undefined);
     });
 
-    it("rejects null, empty or pure spaces jwt", async function () {
+    it("rejects null, empty jwt", async function () {
         expect(function () {
             new AuthorizedRegistryClient({
                 baseUrl: "some.where",
                 jwt: null,
                 tenantId: 0
             });
-        }).to.throw(Error, "jwt can not be null, empty or pure spaces.");
-
-        expect(function () {
-            new AuthorizedRegistryClient({
-                baseUrl: "some.where",
-                jwt: "  ",
-                tenantId: 0
-            });
-        }).to.throw(Error, "jwt can not be null, empty or pure spaces.");
+        }).to.throw(
+            Error,
+            "userId or jwtSecret must be both provided when jwt doesn't present!"
+        );
     });
 });
