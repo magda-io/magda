@@ -86,7 +86,7 @@ const classificationValidator: CustomValidatorType = (
             valid: false,
             validationMessage:
                 "Cannot proceed with this dataset. A dataset with security classification " +
-                "of PROTECTED or above cannot be stored in MAGDA."
+                "of PROTECTED or above cannot be stored in Magda."
         };
     }
 
