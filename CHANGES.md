@@ -66,6 +66,7 @@ UI:
 -   Fix magda & ckan login options are missing
 -   Always set dataset publishing state to "published" no matter the approval flow is on / off
 -   Fix a sheet file contains date would cause blank screen during processing
+-   Set an error if security classification is at PROTECTED or above
 
 Storage:
 
