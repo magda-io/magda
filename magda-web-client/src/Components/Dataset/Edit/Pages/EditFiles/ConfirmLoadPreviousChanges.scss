@@ -1,0 +1,29 @@
+.confirm-load-previous-changes-modal {
+    .small-heading {
+        color: #737373;
+        font-size: 18px;
+        letter-spacing: -0.3px;
+        line-height: 20px;
+        margin-bottom: 26px;
+    }
+
+    .bottom-button-area {
+        margin-top: 25px;
+        padding-top: 25px;
+        text-align: center;
+        //border-top: 2px solid #cccaca;
+    }
+
+    .content-area {
+        max-height: 76vh;
+
+        .inner-content-area {
+            max-height: 70vh;
+            overflow-y: scroll;
+        }
+
+        p {
+            margin-top: 15px;
+        }
+    }
+}

@@ -55,13 +55,13 @@ const ErrorMessageBox: FunctionComponent<PropsType> = (props) => {
     if (!error) return null;
     if (typeof error === "string") {
         return (
-            <div className="au-body au-page-alerts au-page-alerts--error">
+            <div className="error-message-box au-body au-page-alerts au-page-alerts--error">
                 <span>{error}</span>
             </div>
         );
     } else if (error instanceof FileDeletionError) {
         return (
-            <div className="au-body au-page-alerts au-page-alerts--error file-deletion-error">
+            <div className="error-message-box au-body au-page-alerts au-page-alerts--error file-deletion-error">
                 {error.getErrorContent()}
             </div>
         );
@@ -69,7 +69,7 @@ const ErrorMessageBox: FunctionComponent<PropsType> = (props) => {
         switch (error.statusCode) {
             case 500:
                 return (
-                    <div className="au-body au-page-alerts au-page-alerts--error server-error">
+                    <div className="error-message-box au-body au-page-alerts au-page-alerts--error server-error">
                         <div>
                             <span>
                                 Magda has encountered an error when submitting
@@ -86,7 +86,7 @@ const ErrorMessageBox: FunctionComponent<PropsType> = (props) => {
                 );
             case 400:
                 return (
-                    <div className="au-body au-page-alerts au-page-alerts--error server-error">
+                    <div className="error-message-box au-body au-page-alerts au-page-alerts--error server-error">
                         <div>
                             <span>
                                 Magda has encountered the following error:&nbsp;
@@ -109,7 +109,7 @@ const ErrorMessageBox: FunctionComponent<PropsType> = (props) => {
             case 401: //--- 401 reuse the same error message for 403
             case 403:
                 return (
-                    <div className="au-body au-page-alerts au-page-alerts--error server-error">
+                    <div className="error-message-box au-body au-page-alerts au-page-alerts--error server-error">
                         <div>
                             <span>
                                 You don't have permission to publish the dataset
@@ -127,7 +127,7 @@ const ErrorMessageBox: FunctionComponent<PropsType> = (props) => {
                 // --- any other errors that we don't have specific error message
                 // --- could be the following: 404 (Not Found), 401 (Not Authorisied)
                 return (
-                    <div className="au-body au-page-alerts au-page-alerts--error server-error">
+                    <div className="error-message-box au-body au-page-alerts au-page-alerts--error server-error">
                         <div>
                             <span>
                                 Magda has encountered an error (statusCode:{" "}
@@ -147,7 +147,7 @@ const ErrorMessageBox: FunctionComponent<PropsType> = (props) => {
     } else {
         // --- any other unknown error. Usually a front-end logic bug.
         return (
-            <div className="au-body au-page-alerts au-page-alerts--error">
+            <div className="error-message-box au-body au-page-alerts au-page-alerts--error">
                 <div>
                     <span>
                         Magda has encountered the following error:&nbsp;

@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from "react";
+import React, { FunctionComponent, useState, useCallback } from "react";
 import OverlayBox from "Components/Common/OverlayBox";
 import AsyncButton from "Components/Common/AsyncButton";
 import {
@@ -7,7 +7,8 @@ import {
     SpatialCoverage,
     TemporalCoverage,
     Interval,
-    Distribution
+    Distribution,
+    saveRuntimeStateToStorage
 } from "Components/Dataset/Add/DatasetAddCommon";
 import { VersionItem } from "api-clients/RegistryApis";
 import Tooltip from "Components/Dataset/Add/ToolTip";
@@ -304,7 +305,7 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
         newTemporalCoverage ? false : true
     );
 
-    async function onConfirmClick() {
+    const onConfirmClick = useCallback(async () => {
         setErrors(null);
 
         try {
@@ -406,12 +407,26 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
                     });
                 return newState;
             });
+            // --- save to draft
+            await saveRuntimeStateToStorage(
+                props.datasetId,
+                props.datasetStateUpdater
+            );
         } catch (e) {
             setErrors(e);
         }
 
         props.setIsOpen(false);
-    }
+    }, [
+        props.datasetId,
+        props.datasetStateUpdater,
+        keepTitle,
+        keepIssueDate,
+        keepModifiedDate,
+        keepKeywords,
+        keepSpatialExtent,
+        keepTemporalCoverage
+    ]);
 
     if (!props.isOpen) {
         return null;

@@ -572,7 +572,7 @@ export async function updateRecordAspect<T = any>(
     const json = (await request(
         "PUT",
         `${config.registryFullApiUrl}records/${recordId}/aspects/${aspectId}`,
-        JSON.stringify(aspectData)
+        aspectData
     )) as T;
 
     return json;

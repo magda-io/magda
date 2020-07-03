@@ -22,6 +22,7 @@ import AddNewFilesModal from "./AddNewFilesModal";
 import { ReactComponent as AddDatasetIcon } from "assets/add-dataset.svg";
 import AsyncButton from "Components/Common/AsyncButton";
 import DistSupercedeSection from "./DistSupercedeSection";
+import ConfirmLoadPreviousChanges from "./ConfirmLoadPreviousChanges";
 
 type Props = {
     edit: <K extends keyof State>(
@@ -159,6 +160,12 @@ const EditFilesPage: FunctionComponent<Props> = (props) => {
             <div
                 className={`container-fluid dataset-add-file-page is-edit-view`}
             >
+                <ConfirmLoadPreviousChanges
+                    datasetId={props.datasetId}
+                    stateData={props.stateData}
+                    datasetStateUpdater={props.setState}
+                />
+
                 <div className="row add-files-heading">
                     <div className="col-xs-12">
                         <h3>Your files and distributions</h3>

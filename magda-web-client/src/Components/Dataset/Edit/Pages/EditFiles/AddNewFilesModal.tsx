@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useRef, useState } from "react";
+import React, { FunctionComponent, useRef, useState, useCallback } from "react";
 import OverlayBox from "Components/Common/OverlayBox";
 import FileDropZone from "../../../Add/Pages/AddFiles/FileDropZone";
 import {
@@ -6,13 +6,15 @@ import {
     DatasetStateUpdaterType,
     Distribution,
     DistributionSource,
-    DistributionState
+    DistributionState,
+    saveRuntimeStateToStorage
 } from "Components/Dataset/Add/DatasetAddCommon";
 import AsyncButton from "Components/Common/AsyncButton";
 import AddDatasetFromLinkInput from "../../../Add/Pages/AddFiles/AddDatasetFromLinkInput";
 import DistributionItem from "Components/Dataset/Add/DistributionItem";
 
 import "./AddNewFilesModal.scss";
+import promisifySetState from "helpers/promisifySetState";
 
 type PropsType = {
     stateData: State;
@@ -113,7 +115,7 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
         (item) => item._state !== DistributionState.Ready
     );
 
-    const closeModal = async () => {
+    const closeModal = useCallback(async () => {
         try {
             setError(null);
             const deletionPromises = deletionPromisesRef.current;
@@ -135,7 +137,49 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
         } catch (e) {
             setError(e);
         }
-    };
+    }, [
+        deletionPromisesRef.current,
+        uploadedDistributions,
+        props.deleteDistributionHandler,
+        props.setIsOpen
+    ]);
+
+    const onAddFiles = useCallback(async () => {
+        try {
+            setError(null);
+            await promisifySetState(props.datasetStateUpdater)((state) => {
+                const allNewDists = uploadedDistributions.concat(
+                    urlDistributions
+                );
+                return {
+                    ...state,
+                    distributions: state.distributions.map((dist) => {
+                        if (allNewDists.find((item) => item.id === dist.id)) {
+                            return { ...dist, isAddConfirmed: true };
+                        } else {
+                            return dist;
+                        }
+                    })
+                };
+            });
+
+            // --- save to draft
+            await saveRuntimeStateToStorage(
+                props.datasetId,
+                props.datasetStateUpdater
+            );
+
+            props.setIsOpen(false);
+        } catch (e) {
+            setError(e);
+        }
+    }, [
+        uploadedDistributions,
+        urlDistributions,
+        uploadedDistributions,
+        props.datasetStateUpdater,
+        props.setIsOpen
+    ]);
 
     return (
         <OverlayBox
@@ -234,19 +278,7 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
             <div className="bottom-button-area">
                 <AsyncButton
                     disabled={notReadyDistributions.length ? true : false}
-                    onClick={() => {
-                        [...uploadedDistributions, ...urlDistributions].forEach(
-                            (item) => {
-                                props.editDistributionHandler(item.id!)(
-                                    (dist) => ({
-                                        ...dist,
-                                        isAddConfirmed: true
-                                    })
-                                );
-                            }
-                        );
-                        props.setIsOpen(false);
-                    }}
+                    onClick={onAddFiles}
                 >
                     Finish Adding
                 </AsyncButton>{" "}

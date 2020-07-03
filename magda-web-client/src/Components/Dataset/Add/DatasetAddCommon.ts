@@ -17,7 +17,7 @@ import {
 } from "api-clients/RegistryApis";
 import { config } from "config";
 import { User } from "reducers/userManagementReducer";
-import { RawDataset, CkanExportAspectType } from "helpers/record";
+import { RawDataset, CkanExportAspectType, DatasetDraft } from "helpers/record";
 import { autocompletePublishers } from "api-clients/SearchApis";
 import ServerError from "./Errors/ServerError";
 import defer from "helpers/defer";
@@ -211,14 +211,14 @@ export type State = {
     uploadedFileUrls: string[];
 
     /**
-     * JSON data of the `dataset-draft`.
+     * `dataset-draft` aspect data
      * A user may choose to recover from previous saved changes in edit workflow.
      * Thus, we should not auto unserialize the data here and recover `State` whitout asking the user.
-     * After we recover the previous saved state, we should set `draftData` to undefined.
+     * After we recover the previous saved state, we should set this `datasetDraft` field to undefined.
      * When the user choose to discard the previous saved draft changes, `uploadedFiles` above should be examined to removed any orphan files.
      * When save state to `dataset-draft`, this field should be omitted.
      */
-    draftData?: string;
+    datasetDraft?: DatasetDraft;
 
     licenseLevel: "dataset" | "distribution";
 
@@ -645,7 +645,7 @@ export async function rawDatasetDataToState(
     }
 
     if (data?.aspects?.["dataset-draft"]?.data) {
-        state.draftData = data.aspects["dataset-draft"].data;
+        state.datasetDraft = data.aspects["dataset-draft"];
     }
 
     return state;
@@ -689,7 +689,7 @@ export function createBlankState(user: User): State {
         _createdDate: new Date(),
         _lastModifiedDate: new Date(),
         uploadedFileUrls: [] as string[],
-        draftData: undefined,
+        datasetDraft: undefined,
         ckanExport: {
             [config.defaultCkanServer]: {
                 status: "withdraw",
@@ -799,7 +799,7 @@ export async function loadState(id: string, user: User): Promise<State> {
 
 export function saveStateToLocalStorage(state: State, id: string) {
     state = Object.assign({}, state);
-    state.draftData = undefined;
+    state.datasetDraft = undefined;
     state._lastModifiedDate = new Date();
 
     const dataset = JSON.stringify(state);
@@ -809,7 +809,7 @@ export function saveStateToLocalStorage(state: State, id: string) {
 
 export async function saveStateToRegistry(state: State, id: string) {
     state = Object.assign({}, state);
-    state.draftData = undefined;
+    state.datasetDraft = undefined;
     state._lastModifiedDate = new Date();
 
     const dataset = JSON.stringify(state);
@@ -827,7 +827,13 @@ export async function saveStateToRegistry(state: State, id: string) {
         }
     }
 
-    const datasetDcatString = buildDcatDatasetStrings(state.dataset);
+    let datasetDcatString;
+
+    try {
+        datasetDcatString = buildDcatDatasetStrings(state.dataset);
+    } catch (e) {
+        datasetDcatString = {};
+    }
 
     const datasetDraftAspectData = {
         data: dataset,
@@ -993,18 +999,18 @@ export async function preProcessDatasetAutocompleteChoices(
 
 function buildDcatDatasetStrings(value: Dataset) {
     return {
-        title: value.title,
-        description: value.description,
-        issued: value.issued && value.issued.toISOString(),
-        modified: value.modified && value.modified.toISOString(),
-        languages: value.languages,
-        publisher: value.publisher && value.publisher.name,
-        accrualPeriodicity: value.accrualPeriodicity,
+        title: value?.title,
+        description: value?.description,
+        issued: value?.issued?.toISOString && value.issued.toISOString(),
+        modified: value?.modified?.toISOString && value.modified.toISOString(),
+        languages: value?.languages,
+        publisher: value?.publisher?.name,
+        accrualPeriodicity: value?.accrualPeriodicity,
         accrualPeriodicityRecurrenceRule:
-            value.accrualPeriodicityRecurrenceRule,
-        themes: value.themes && value.themes.keywords,
-        keywords: value.keywords && value.keywords.keywords,
-        defaultLicense: value.defaultLicense
+            value?.accrualPeriodicityRecurrenceRule,
+        themes: value?.themes?.keywords,
+        keywords: value?.keywords?.keywords,
+        defaultLicense: value?.defaultLicense
     };
 }
 
@@ -1266,16 +1272,25 @@ type FailedFileInfo = {
  * @param {State} state
  * @returns {Promise<FailedFileInfo[]>}
  */
+
+/**
+ * Tried to delete any uploaded files that is not associated with any distributions.
+ * Return info of files that are failed to delete.
+ *
+ * @export
+ * @param {string[]} uploadedFileUrls a list of all files have been uploaded to intnernal magda storage API. Can be retrieved from state.uploadedFileUrls
+ * @param {Distribution[]} distributions all dataset's dsitributions. Can be retrieved from state.distributions
+ * @returns {Promise<FailedFileInfo[]>}
+ */
 export async function cleanUpOrphanFiles(
-    state: State
+    uploadedFileUrls: string[],
+    distributions: Distribution[]
 ): Promise<FailedFileInfo[]> {
     return (
         await Promise.all(
-            state.uploadedFileUrls.map(async (fileUrl) => {
+            uploadedFileUrls.map(async (fileUrl) => {
                 if (
-                    state.distributions.find(
-                        (item) => item.downloadURL === fileUrl
-                    )
+                    distributions.find((item) => item.downloadURL === fileUrl)
                 ) {
                     // --- do nothing if the url is allocated to a distribution
                     return { isOk: true };
@@ -1340,5 +1355,8 @@ export async function submitDatasetFromState(
 
     await deleteRecordAspect(datasetId, "dataset-draft");
 
-    return await cleanUpOrphanFiles(state);
+    return await cleanUpOrphanFiles(
+        state.uploadedFileUrls,
+        state.distributions
+    );
 }
