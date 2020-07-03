@@ -16,13 +16,13 @@ describe("Test AuthorizedRegistryClient.ts", function () {
         const registry = new AuthorizedRegistryClient({
             baseUrl: "some.where",
             userId: "some.user",
-            jwtSecret: "some.jwt.token",
+            jwtSecret: "top secret",
             tenantId: 0
         });
         expect(registry !== undefined);
     });
 
-    it("rejects null, empty or pure spaces of userId and jwtSecret", async function () {
+    it("rejects null or empty of userId and jwtSecret", async function () {
         expect(function () {
             new AuthorizedRegistryClient({
                 baseUrl: "some.where",
@@ -81,11 +81,22 @@ describe("Test AuthorizedRegistryClient.ts", function () {
         expect(registry !== undefined);
     });
 
-    it("rejects null, empty jwt", async function () {
+    it("rejects null or empty jwt", async function () {
         expect(function () {
             new AuthorizedRegistryClient({
                 baseUrl: "some.where",
                 jwt: null,
+                tenantId: 0
+            });
+        }).to.throw(
+            Error,
+            "userId or jwtSecret must be both provided when jwt doesn't present!"
+        );
+
+        expect(function () {
+            new AuthorizedRegistryClient({
+                baseUrl: "some.where",
+                jwt: "",
                 tenantId: 0
             });
         }).to.throw(
