@@ -60,7 +60,7 @@ package misc {
   )
 
   case class ProvenanceRecord(
-      id: Option[Seq[String]],
+      id: Option[String],
       name: Option[String] = None
   )
 

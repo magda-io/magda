@@ -206,7 +206,7 @@ trait RecordPersistence {
   /** Given a record and aspects being requested, returns the ids of all records that the record/aspect id combinations link to */
   def getLinkedRecordIds(
       operation: AuthOperations.OperationType,
-      recordId: Option[String] = None,
+      recordId: String,
       aspectIds: Iterable[String] = List()
   )(implicit session: DBSession): Try[Iterable[String]]
 
@@ -1307,16 +1307,12 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
 
   def getLinkedRecordIds(
       operation: AuthOperations.OperationType,
-      recordId: Option[String] = None,
+      recordId: String,
       aspectIds: Iterable[String] = List()
   )(implicit session: DBSession): Try[Iterable[String]] = {
 
     /** For aspects that have links to other aspects, a map of the ids of those aspects to the location (first-level, not path) in their JSON where the link is  */
     val referenceMap = this.buildReferenceMap(aspectIds)
-    val recordIdClause = recordId match {
-      case Some(recordId) => sqls"AND recordId = ${recordId}"
-      case none           => SQLSyntax.empty
-    }
 
     Try {
       (referenceMap
@@ -1329,7 +1325,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
 
             sql"""SELECT DISTINCT $selectClause AS recordId
               FROM recordaspects
-              WHERE aspectId = ${aspectId} ${recordIdClause}"""
+              WHERE aspectId = ${aspectId} AND recordId = ${recordId}"""
               .map(
                 rs => rs.stringOpt("recordId").toList
               )
