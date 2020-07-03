@@ -32,7 +32,7 @@ describe("Test AuthorizedRegistryClient.ts", function () {
             });
         }).to.throw(
             Error,
-            "userId or jwtSecret must be both provided when jwt doesn't present!"
+            "Either jwt or userId and jwtSecret must have values."
         );
 
         expect(function () {
@@ -44,7 +44,7 @@ describe("Test AuthorizedRegistryClient.ts", function () {
             });
         }).to.throw(
             Error,
-            "userId or jwtSecret must be both provided when jwt doesn't present!"
+            "Either jwt or userId and jwtSecret must have values."
         );
 
         expect(function () {
@@ -56,7 +56,7 @@ describe("Test AuthorizedRegistryClient.ts", function () {
             });
         }).to.throw(
             Error,
-            "userId or jwtSecret must be both provided when jwt doesn't present!"
+            "Either jwt or userId and jwtSecret must have values."
         );
 
         expect(function () {
@@ -68,7 +68,7 @@ describe("Test AuthorizedRegistryClient.ts", function () {
             });
         }).to.throw(
             Error,
-            "userId or jwtSecret must be both provided when jwt doesn't present!"
+            "Either jwt or userId and jwtSecret must have values."
         );
     });
 
@@ -90,7 +90,7 @@ describe("Test AuthorizedRegistryClient.ts", function () {
             });
         }).to.throw(
             Error,
-            "userId or jwtSecret must be both provided when jwt doesn't present!"
+            "Either jwt or userId and jwtSecret must have values."
         );
 
         expect(function () {
@@ -101,7 +101,7 @@ describe("Test AuthorizedRegistryClient.ts", function () {
             });
         }).to.throw(
             Error,
-            "userId or jwtSecret must be both provided when jwt doesn't present!"
+            "Either jwt or userId and jwtSecret must have values."
         );
     });
 });

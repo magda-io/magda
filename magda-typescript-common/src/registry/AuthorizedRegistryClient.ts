@@ -32,7 +32,6 @@ export type AuthorizedRegistryOptions =
     | AuthorizedRegistryJwtOptions;
 
 export default class AuthorizedRegistryClient extends RegistryClient {
-    protected options: AuthorizedRegistryOptions;
     protected jwt: string;
 
     constructor(options: AuthorizedRegistryOptions) {
@@ -43,13 +42,12 @@ export default class AuthorizedRegistryClient extends RegistryClient {
         if (!options.jwt) {
             if (!options.userId || !options.jwtSecret) {
                 throw Error(
-                    "userId or jwtSecret must be both provided when jwt doesn't present!"
+                    "Either jwt or userId and jwtSecret must have values."
                 );
             }
         }
 
         super(options);
-        this.options = options;
         this.jwt = options.jwt
             ? options.jwt
             : buildJwt(options.jwtSecret, options.userId);
