@@ -29,6 +29,7 @@ General:
 -   Add missing `cloud-sql-proxy` dependecy to `magda-core` chart
 -   Add more operators to Registry /records & records/count API `aspectOrQuery`
 -   Add `aspectOrQuery`, `orderBy`, `orderByDir` & `orderNullFirst` parameters to Registry API /records & records/count
+-   Upgrade [bcrypt](https://www.npmjs.com/package/bcrypt) to 5.0.0
 -   Make the constructor of AuthorizedRegistryClient also accepts a customised jwt token.
 
 UI:
