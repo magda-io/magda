@@ -1,11 +1,5 @@
 # CHANGELOG
 
-## 0.0.58
-
-typescript-common
-
--   The constructor of AuthorizedRegistryClient also accepts a customised jwt token.
-
 ## 0.0.57
 
 General:
@@ -35,6 +29,7 @@ General:
 -   Add missing `cloud-sql-proxy` dependecy to `magda-core` chart
 -   Add more operators to Registry /records & records/count API `aspectOrQuery`
 -   Add `aspectOrQuery`, `orderBy`, `orderByDir` & `orderNullFirst` parameters to Registry API /records & records/count
+-   Make the constructor of AuthorizedRegistryClient also accepts a customised jwt token.
 
 UI:
 
