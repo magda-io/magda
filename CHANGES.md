@@ -31,6 +31,7 @@ General:
 -   Add `aspectOrQuery`, `orderBy`, `orderByDir` & `orderNullFirst` parameters to Registry API /records & records/count
 -   Upgrade [bcrypt](https://www.npmjs.com/package/bcrypt) to 5.0.0
 -   Make the constructor of AuthorizedRegistryClient also accepts a customised jwt token.
+-   Set pwgen to `0.1.6` (was `^0.1.6`)
 
 UI:
 
