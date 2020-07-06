@@ -11,7 +11,7 @@ export function codelistEditor(
 ): Editor<string> {
     return {
         edit: (value: any, onChange: Function, valuesToAvoid?: any) => {
-            const callback = event => {
+            const callback = (event) => {
                 onChange(event.target.value);
             };
             value = value || "";
@@ -33,7 +33,7 @@ export function codelistEditor(
                             : "Please select one"}
                     </option>
                     {keys
-                        .filter(item => valuesToAvoid.indexOf(item) === -1)
+                        .filter((item) => valuesToAvoid.indexOf(item) === -1)
                         .map((val, i) => {
                             return (
                                 <option key={i} value={val}>
@@ -69,7 +69,7 @@ export function codelistRadioEditor(
             multiValues: any = undefined,
             extraProps = {}
         ) => {
-            const callback = event => {
+            const callback = (event) => {
                 onChange(event.target.value);
             };
             value = value || "";
@@ -118,9 +118,8 @@ export function codelistRadioEditor(
                                         className="au-control-input__input"
                                         type="radio"
                                         value={val}
-                                        name={val}
                                         id={idNamespace + "-" + val}
-                                        onChange={e => {
+                                        onChange={(e) => {
                                             callback(e);
                                             if (onBlur) {
                                                 setTimeout(onBlur, 1);
