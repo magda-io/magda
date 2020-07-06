@@ -48,7 +48,9 @@ const EditFilesPage: FunctionComponent<Props> = (props) => {
         false
     );
 
-    const [deletionModal, setDeletionModal] = useState<DeletionModalData>({
+    const [deletionModalData, setDeletionModalData] = useState<
+        DeletionModalData
+    >({
         isOpen: false,
         distId: undefined
     });
@@ -130,7 +132,7 @@ const EditFilesPage: FunctionComponent<Props> = (props) => {
                 ) {
                     // --- existing distribution items should just open deletion confirmation modal rather than doing anything else
                     // --- The deletion confirmation modal will only remove the distribution data from the state and leave the actual delete file action to clean up stage (before submit)
-                    setDeletionModal({ isOpen: true, distId: dist.id });
+                    setDeletionModalData({ isOpen: true, distId: dist.id });
                 } else {
                     // --- non existing distribution item just proceed to deletion now
                     // --- the file deletion (if necessary) will be performed straightaway
@@ -189,8 +191,8 @@ const EditFilesPage: FunctionComponent<Props> = (props) => {
     };
 
     const closeDistDeletionModalFunc = useCallback(
-        () => setDeletionModal({ isOpen: false, distId: undefined }),
-        [setDeletionModal]
+        () => setDeletionModalData({ isOpen: false, distId: undefined }),
+        [setDeletionModalData]
     );
 
     const render = () => {
@@ -220,9 +222,9 @@ const EditFilesPage: FunctionComponent<Props> = (props) => {
 
                 <DeleteFileModal
                     datasetId={props.datasetId}
-                    isOpen={deletionModal.isOpen}
+                    isOpen={deletionModalData.isOpen}
                     closeModal={closeDistDeletionModalFunc}
-                    distId={deletionModal.distId}
+                    distId={deletionModalData.distId}
                     stateData={props.stateData}
                     datasetStateUpdater={props.setState}
                 />
@@ -309,6 +311,8 @@ const EditFilesPage: FunctionComponent<Props> = (props) => {
             </div>
         );
     };
+
+    console.log("file page state:", props.stateData);
 
     return render();
 };

@@ -27,6 +27,7 @@ type PropsType = {
     setIsOpen: (boolean) => void;
     stateData: State;
     datasetStateUpdater: DatasetStateUpdaterType;
+    afterClose?: () => void;
 };
 
 function retrieveNewMetadataDatasetTitle(state: State) {
@@ -443,6 +444,7 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
             isOpen={props.isOpen}
             title="Replace the existing automated metadata fields?"
             onClose={() => props.setIsOpen(false)}
+            onAfterClose={props.afterClose}
         >
             <div className="content-area">
                 <div className="inner-content-area">

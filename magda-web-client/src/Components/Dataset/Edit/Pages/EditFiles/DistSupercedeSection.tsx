@@ -13,6 +13,8 @@ import { codelistRadioEditor } from "Components/Editing/Editors/codelistEditor";
 import SupercedeSelectionBox from "./SupercedeSelectionBox";
 import AsyncButton from "Components/Common/AsyncButton";
 import ConfirmMetadataModal from "./ConfirmMetadataModal";
+import ConfirmUnselectedExistingDists from "./ConfirmUnselectedExistingDists";
+import ConfirmUnselectedNewDists from "./ConfirmUnselectedNewDists";
 
 type PropsType = {
     stateData: State;
@@ -28,11 +30,27 @@ const DistSupercedeSection: FunctionComponent<PropsType> = (props) => {
     const { stateData: state } = props;
 
     const [shouldReplace, setShouldReplace] = useState<boolean>(false);
+
     const [
         isMetadataConfirmModalOpen,
         setIsMetadataConfirmModalOpen
     ] = useState<boolean>(false);
+
     const [error, setError] = useState<Error | null>(null);
+
+    const [
+        isConfirmUnselectedExistingDistsModalOpen,
+        setIsConfirmUnselectedExistingDistsModalOpen
+    ] = useState<boolean>(false);
+
+    const [
+        isConfirmUnselectedNewDistsModalOpen,
+        setIsConfirmUnselectedNewDistsModalOpen
+    ] = useState<boolean>(false);
+
+    const [isSelectionConfirmed, setIsSelectedConfirmed] = useState<boolean>(
+        false
+    );
 
     const existingDistributions = state.distributions.filter(
         (item) =>
@@ -54,8 +72,48 @@ const DistSupercedeSection: FunctionComponent<PropsType> = (props) => {
             item.creationSource === DistributionSource.DatasetUrl
     );
 
+    // --- selected new dists for replacement
+    const replaceDists = props.stateData.distributions.filter(
+        (item) => item.replaceDistId
+    );
+
+    const unselectedExistingDists = props.stateData.distributions.filter(
+        (dist) =>
+            dist.isReplacementComfired !== false &&
+            !replaceDists.find(
+                (replaceItem) => replaceItem.replaceDistId === dist.id
+            )
+    );
+
+    const unselectedNewDists = props.stateData.distributions.filter(
+        (dist) => dist.isReplacementComfired === false && !dist.replaceDistId
+    );
+
     return (
         <div className="distribution-supercede-section">
+            <ConfirmUnselectedExistingDists
+                distributions={unselectedExistingDists}
+                isOpen={isConfirmUnselectedExistingDistsModalOpen}
+                setIsOpen={setIsConfirmUnselectedExistingDistsModalOpen}
+                afterConfirm={() => {
+                    if (unselectedNewDists.length) {
+                        setIsConfirmUnselectedNewDistsModalOpen(true);
+                    } else {
+                        setIsSelectedConfirmed(true);
+                    }
+                }}
+            />
+
+            <ConfirmUnselectedNewDists
+                distributions={unselectedNewDists}
+                isOpen={isConfirmUnselectedNewDistsModalOpen}
+                setIsOpen={setIsConfirmUnselectedNewDistsModalOpen}
+                afterConfirm={() => {
+                    setIsSelectedConfirmed(true);
+                    setIsMetadataConfirmModalOpen(true);
+                }}
+            />
+
             <ToolTip>
                 You’ve added {fileDists.length} additional file(s) and{" "}
                 {urlDists.length} additional API(s) to this data set. Please
@@ -109,6 +167,7 @@ const DistSupercedeSection: FunctionComponent<PropsType> = (props) => {
                 setIsOpen={setIsMetadataConfirmModalOpen}
                 stateData={props.stateData}
                 datasetStateUpdater={props.datasetStateUpdater}
+                afterClose={() => setIsSelectedConfirmed(true)}
             />
 
             {error ? (
@@ -138,6 +197,21 @@ const DistSupercedeSection: FunctionComponent<PropsType> = (props) => {
                                 );
                                 return;
                             }
+
+                            if (!isSelectionConfirmed) {
+                                if (unselectedExistingDists.length) {
+                                    setIsConfirmUnselectedExistingDistsModalOpen(
+                                        true
+                                    );
+                                    return;
+                                } else if (unselectedNewDists.length) {
+                                    setIsConfirmUnselectedNewDistsModalOpen(
+                                        true
+                                    );
+                                    return;
+                                }
+                            }
+
                             setIsMetadataConfirmModalOpen(true);
                         } else {
                             // --- if not require replacement, set all pending distribution as current.

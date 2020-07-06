@@ -1,0 +1,33 @@
+.confirm-unselected-new-dists-modal {
+    .heading {
+        color: #4a4a4a;
+        font-size: 16px;
+        font-weight: 300;
+        letter-spacing: 0;
+        line-height: 26px;
+    }
+
+    .bottom-button-area {
+        margin-top: 25px;
+        padding-top: 25px;
+        text-align: center;
+        border-top: 2px solid #cccaca;
+    }
+
+    .content-area {
+        max-height: 76vh;
+        .inner-content-area {
+            max-height: 70vh;
+            overflow-y: scroll;
+            margin-bottom: 25px;
+        }
+    }
+
+    .dataset-add-files-fileListItem {
+        margin-bottom: 20px;
+    }
+
+    .files-area {
+        width: 908px;
+    }
+}
