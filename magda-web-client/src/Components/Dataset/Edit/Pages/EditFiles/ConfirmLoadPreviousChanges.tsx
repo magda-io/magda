@@ -14,12 +14,6 @@ import {
     cleanUpOrphanFiles
 } from "Components/Dataset/Add/DatasetAddCommon";
 import moment from "moment";
-/*
-import { VersionItem } from "api-clients/RegistryApis";
-import Tooltip from "Components/Dataset/Add/ToolTip";
-import TwoOptionsButton from "Components/Common/TwoOptionsButton";
-
-import promisifySetState from "helpers/promisifySetState";*/
 import ErrorMessageBox from "Components/Common/ErrorMessageBox";
 
 import "./ConfirmLoadPreviousChanges.scss";

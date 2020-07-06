@@ -12,6 +12,11 @@ type PropsType = {
 };
 
 const DistributionItem: FunctionComponent<PropsType> = (props) => {
+    if (!props.distribution) {
+        // --- props.distribution could be `undefined` due to some edge cases (seems related to render orders of parent component & child componet) of updating array in state
+        // --- it will be safer to render empty element here.
+        return null;
+    }
     if (props.distribution.creationSource === DistributionSource.File) {
         return <DatasetFile {...props} />;
     } else {

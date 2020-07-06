@@ -27,15 +27,18 @@ const deleteDistribution = (
                     )
                 }));
 
-            if (!shouldUploadToStorageApi) {
-                await removeDist();
-                resolve();
-            } else {
-                getDistributionFromId(
-                    distId,
-                    datasetStateUpdater,
-                    async (distToDelete) => {
-                        try {
+            getDistributionFromId(
+                distId,
+                datasetStateUpdater,
+                async (distToDelete) => {
+                    try {
+                        if (
+                            distToDelete?.useStorageApi !== true &&
+                            !shouldUploadToStorageApi
+                        ) {
+                            await removeDist();
+                            resolve();
+                        } else {
                             if (!distToDelete) {
                                 reject(
                                     new Error(
@@ -90,13 +93,25 @@ const deleteDistribution = (
                             await deleteFile(distToDelete);
                             // remove dist from state
                             await removeDist();
+
+                            // remove download url from uploaded file url list
+                            await promisifySetState(datasetStateUpdater)(
+                                (state: State) => ({
+                                    ...state,
+                                    uploadedFileUrls: state.uploadedFileUrls.filter(
+                                        (item) =>
+                                            item !== distToDelete.downloadURL
+                                    )
+                                })
+                            );
+
                             resolve();
-                        } catch (e) {
-                            reject(e);
                         }
+                    } catch (e) {
+                        reject(e);
                     }
-                );
-            }
+                }
+            );
         } catch (e) {
             reject(e);
         }

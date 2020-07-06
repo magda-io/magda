@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from "react";
+import React, { FunctionComponent, useState, useCallback } from "react";
 
 import DistributionItem from "Components/Dataset/Add/DistributionItem";
 import StorageOptionsSection from "Components/Dataset/Add/StorageOptionsSection";
@@ -23,6 +23,8 @@ import { ReactComponent as AddDatasetIcon } from "assets/add-dataset.svg";
 import AsyncButton from "Components/Common/AsyncButton";
 import DistSupercedeSection from "./DistSupercedeSection";
 import ConfirmLoadPreviousChanges from "./ConfirmLoadPreviousChanges";
+import DeleteFileModal from "./DeleteFileModal";
+import ErrorMessageBox from "Components/Common/ErrorMessageBox";
 
 type Props = {
     edit: <K extends keyof State>(
@@ -36,10 +38,22 @@ type Props = {
     isEditView: boolean;
 };
 
+type DeletionModalData = {
+    distId?: string;
+    isOpen: boolean;
+};
+
 const EditFilesPage: FunctionComponent<Props> = (props) => {
     const [isAddFilesModalOpen, setIsAddFilesModelOpen] = useState<boolean>(
         false
     );
+
+    const [deletionModal, setDeletionModal] = useState<DeletionModalData>({
+        isOpen: false,
+        distId: undefined
+    });
+
+    const [error, setError] = useState<Error | null>(null);
 
     const editDistribution = (distId: string) => (
         updater: (distribution: Distribution) => Distribution
@@ -98,13 +112,46 @@ const EditFilesPage: FunctionComponent<Props> = (props) => {
         );
     };
 
-    const deleteDistributionHandler = (distId: string) => () =>
-        deleteDistribution(
+    const deleteDistributionHandler = useCallback(
+        (distId: string) => async () => {
+            try {
+                setError(null);
+                const dist = props.stateData.distributions.find(
+                    (item) => item.id === distId
+                );
+                if (!dist) {
+                    throw new Error(
+                        `Cannot locate distribution dat by id: ${distId}`
+                    );
+                }
+                if (
+                    dist.isReplacementComfired !== false &&
+                    dist.isAddConfirmed !== false
+                ) {
+                    // --- existing distribution items should just open deletion confirmation modal rather than doing anything else
+                    // --- The deletion confirmation modal will only remove the distribution data from the state and leave the actual delete file action to clean up stage (before submit)
+                    setDeletionModal({ isOpen: true, distId: dist.id });
+                } else {
+                    // --- non existing distribution item just proceed to deletion now
+                    // --- the file deletion (if necessary) will be performed straightaway
+                    await deleteDistribution(
+                        props.datasetId,
+                        props.setState,
+                        props.stateData.datasetAccess.useStorageApi,
+                        distId
+                    );
+                }
+            } catch (e) {
+                setError(e);
+            }
+        },
+        [
+            props.stateData.distributions,
             props.datasetId,
             props.setState,
-            props.stateData.datasetAccess.useStorageApi,
-            distId
-        );
+            props.stateData.datasetAccess.useStorageApi
+        ]
+    );
 
     const renderDistList = (dists: Distribution[]) => {
         return (
@@ -141,6 +188,11 @@ const EditFilesPage: FunctionComponent<Props> = (props) => {
         );
     };
 
+    const closeDistDeletionModalFunc = useCallback(
+        () => setDeletionModal({ isOpen: false, distId: undefined }),
+        [setDeletionModal]
+    );
+
     const render = () => {
         const { stateData: state } = props;
         // --- existing distributions or dist confirmed `adding` and `replacement`
@@ -166,6 +218,17 @@ const EditFilesPage: FunctionComponent<Props> = (props) => {
                     datasetStateUpdater={props.setState}
                 />
 
+                <DeleteFileModal
+                    datasetId={props.datasetId}
+                    isOpen={deletionModal.isOpen}
+                    closeModal={closeDistDeletionModalFunc}
+                    distId={deletionModal.distId}
+                    stateData={props.stateData}
+                    datasetStateUpdater={props.setState}
+                />
+
+                <ErrorMessageBox error={error} scollIntoView={true} />
+
                 <div className="row add-files-heading">
                     <div className="col-xs-12">
                         <h3>Your files and distributions</h3>
@@ -183,7 +246,11 @@ const EditFilesPage: FunctionComponent<Props> = (props) => {
                     <div className="row files-area">
                         {renderDistList(existingDistributions)}
                     </div>
-                ) : null}
+                ) : (
+                    <div className="row files-area">
+                        <div className="col-sm-12">No existing content.</div>
+                    </div>
+                )}
 
                 {newDistributions.length ? (
                     <div className="has-new-files-area">
