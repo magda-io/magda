@@ -42,7 +42,7 @@ export default async function uploadFile(
         // --- sucessfully upload the file, add to state.uploadedFileUrls
         await promisifySetState(datasetStateUpdater)((state) => ({
             ...state,
-            uploadedFiles: uniq([
+            uploadedFileUrls: uniq([
                 ...state.uploadedFileUrls,
                 getDownloadUrl(datasetId, distId, file.name)
             ])

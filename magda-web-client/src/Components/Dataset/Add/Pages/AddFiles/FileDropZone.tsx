@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from "react";
+import React, { FunctionComponent, useCallback } from "react";
 import FileDrop from "react-file-drop";
 import uniq from "lodash/uniq";
 import uniqWith from "lodash/uniqWith";
@@ -83,24 +83,6 @@ function isDirItem(idx: number, event: any) {
 const FileDropZone: FunctionComponent<PropsType> = (props) => {
     const { datasetStateUpdater, stateData, datasetId } = props;
     const initDistProps = props.initDistProps ? props.initDistProps : {};
-
-    const onBrowse = async () => {
-        try {
-            await addFiles(await getFiles("*.*"));
-        } catch (e) {
-            props.onError(e);
-        }
-    };
-
-    const onDrop = async (fileList: FileList | null, event: any) => {
-        try {
-            if (fileList) {
-                await addFiles(fileList, event);
-            }
-        } catch (e) {
-            props.onError(e);
-        }
-    };
 
     const addFiles = async (fileList: FileList, event: any = null) => {
         datasetStateUpdater((state) => ({ ...state, error: null }));
@@ -257,6 +239,27 @@ const FileDropZone: FunctionComponent<PropsType> = (props) => {
         }
         updateLastModifyDate(datasetStateUpdater);
     };
+
+    const onBrowse = useCallback(async () => {
+        try {
+            await addFiles(await getFiles("*.*"));
+        } catch (e) {
+            props.onError(e);
+        }
+    }, [props.onError, addFiles]);
+
+    const onDrop = useCallback(
+        async (fileList: FileList | null, event: any) => {
+            try {
+                if (fileList) {
+                    await addFiles(fileList, event);
+                }
+            } catch (e) {
+                props.onError(e);
+            }
+        },
+        [props.onError, addFiles]
+    );
 
     return (
         <div className="file-drop-zone row justify-content-center">

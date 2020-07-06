@@ -402,7 +402,12 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
                             // --- as we currently set `Record-ID` of the uploaded object to datasetId, the downloadURL will work probably after we copy it to newItem.
                             // --- we don't need to delete the file (that is replaced). Any orphan files will be deleted upon submit.
                             // --- we also don't want to delete them now so that the user can change their mind.
-                            return { ...newItem, ...restReplaceDistData };
+                            return {
+                                ...newItem,
+                                ...restReplaceDistData,
+                                isAddConfirmed: true,
+                                isReplacementComfired: true
+                            };
                         }
                     });
                 return newState;
