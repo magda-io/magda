@@ -1273,35 +1273,42 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       operation: AuthOperations.OperationType,
       recordIds: Option[Set[String]] = None
   )(implicit session: DBSession): Try[List[String]] = {
-    val whereClause = recordIds match {
-      case Some(recordIds) if !recordIds.isEmpty =>
-        sqls"""WHERE ${SQLSyntax.joinWithOr(
-          recordIds.map(recordId => sqls"""recordid = ${recordId}""").toSeq: _*
-        )}"""
-      case _ => SQLSyntax.empty
-    }
+    if (recordIds.map(_.isEmpty) == Some(true)) {
+      // No record ids = no policy ids
+      Success(List())
+    } else {
+      val whereClause = recordIds match {
+        case Some(recordIds) =>
+          sqls"""WHERE ${SQLSyntax.joinWithOr(
+            recordIds
+              .map(recordId => sqls"""recordid = ${recordId}""")
+              .toSeq: _*
+          )}"""
+        case _ => SQLSyntax.empty
+      }
 
-    val column = operation match {
-      case AuthOperations.read => SQLSyntax.createUnsafely("authnreadpolicyid")
-      case _ =>
-        throw new NotImplementedError(
-          "Auth for operations other than read not yet implemented"
-        )
-    }
+      val column = operation match {
+        case AuthOperations.read =>
+          SQLSyntax.createUnsafely("authnreadpolicyid")
+        case _ =>
+          throw new NotImplementedError(
+            "Auth for operations other than read not yet implemented"
+          )
+      }
 
-    Try {
-      sql"""SELECT DISTINCT ${column}
+      Try {
+        sql"""SELECT DISTINCT ${column}
       FROM records
       $whereClause
-      """
-        .map(
-          rs =>
-            // If the column is null, replace it with the default opa policy id
-            rs.stringOpt(column).orElse(defaultOpaPolicyId)
-        )
-        .list()
-        .apply()
-        .flatten
+      """.map(
+            rs =>
+              // If the column is null, replace it with the default opa policy id
+              rs.stringOpt(column).orElse(defaultOpaPolicyId)
+          )
+          .list()
+          .apply()
+          .flatten
+      }
     }
   }
 
