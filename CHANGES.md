@@ -29,6 +29,9 @@ General:
 -   Add missing `cloud-sql-proxy` dependecy to `magda-core` chart
 -   Add more operators to Registry /records & records/count API `aspectOrQuery`
 -   Add `aspectOrQuery`, `orderBy`, `orderByDir` & `orderNullFirst` parameters to Registry API /records & records/count
+-   Upgrade [bcrypt](https://www.npmjs.com/package/bcrypt) to 5.0.0
+-   Make the constructor of AuthorizedRegistryClient also accepts a customised jwt token.
+-   Set pwgen to `0.1.6` (was `^0.1.6`)
 
 UI:
 
@@ -66,6 +69,7 @@ UI:
 -   Fix magda & ckan login options are missing
 -   Always set dataset publishing state to "published" no matter the approval flow is on / off
 -   Fix a sheet file contains date would cause blank screen during processing
+-   Set an error if security classification is at PROTECTED or above
 
 Storage:
 
