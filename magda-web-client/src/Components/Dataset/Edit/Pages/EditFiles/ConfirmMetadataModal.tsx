@@ -6,7 +6,6 @@ import {
     DatasetStateUpdaterType,
     SpatialCoverage,
     TemporalCoverage,
-    Interval,
     Distribution,
     saveRuntimeStateToStorage
 } from "Components/Dataset/Add/DatasetAddCommon";
@@ -14,10 +13,17 @@ import { VersionItem } from "api-clients/RegistryApis";
 import Tooltip from "Components/Dataset/Add/ToolTip";
 import TwoOptionsButton from "Components/Common/TwoOptionsButton";
 import moment from "moment";
-import uniqBy from "lodash/uniqBy";
 import SpatialDataPreviewer from "Components/Dataset/Add/SpatialAreaInput/SpatialDataPreviewer";
 import promisifySetState from "helpers/promisifySetState";
 import ErrorMessageBox from "Components/Common/ErrorMessageBox";
+import mergeDistTitle from "Components/Dataset/MergeMetadata/mergeDistTitle";
+import mergeDistIssueDate from "Components/Dataset/MergeMetadata/mergeDistIssueDate";
+import mergeDistModifiedDate from "Components/Dataset/MergeMetadata/mergeDistModifiedDate";
+import mergeDistKeywords from "Components/Dataset/MergeMetadata/mergeDistKeywords";
+import mergeDistSpatialCoverage from "Components/Dataset/MergeMetadata/mergeDistSpatialCoverage";
+import mergeDistTemporalCoverage, {
+    isEmptyOrInvalidTemporalIntervals
+} from "Components/Dataset/MergeMetadata/mergeDistTemporalCoverage";
 
 import "./ConfirmMetadataModal.scss";
 
@@ -29,186 +35,6 @@ type PropsType = {
     datasetStateUpdater: DatasetStateUpdaterType;
     afterClose?: () => void;
 };
-
-function retrieveNewMetadataDatasetTitle(state: State) {
-    const newDists = state.distributions.filter(
-        (item) => item.isReplacementComfired === false
-    );
-    let newTitle;
-    newDists.forEach((item) => {
-        if (
-            item?.datasetTitle &&
-            typeof item.datasetTitle === "string" &&
-            item.datasetTitle.trim()
-        ) {
-            newTitle = item.datasetTitle.trim();
-        }
-    });
-    if (newTitle) {
-        return newTitle;
-    } else {
-        return;
-    }
-}
-
-function retrieveNewMetadataDatasetIssueDate(state: State) {
-    const newDists = state.distributions.filter(
-        (item) => item.isReplacementComfired === false
-    );
-    const issueDateList: Date[] = [];
-    newDists.forEach((item) => {
-        if (item?.issued?.getTime) {
-            issueDateList.push(item.issued);
-        }
-    });
-    if (!issueDateList.length) {
-        return;
-    }
-    // --- return the `easiest` date as new suggested issue date
-    issueDateList.sort((a, b) => a.getTime() - b.getTime());
-    return issueDateList[0];
-}
-
-function retrieveNewMetadataDatasetModifiedDate(state: State) {
-    const newDists = state.distributions.filter(
-        (item) => item.isReplacementComfired === false
-    );
-    const modifiedDateList: Date[] = [];
-    newDists.forEach((item) => {
-        if (item?.modified?.getTime!) {
-            modifiedDateList.push(item.modified);
-        }
-    });
-    if (!modifiedDateList.length) {
-        return;
-    }
-    // --- return the `latest` date as new suggested modified date
-    modifiedDateList.sort((a, b) => b.getTime() - a.getTime());
-    return modifiedDateList[0];
-}
-
-function retrieveNewMetadataDatasetKeywords(state: State) {
-    const newDists = state.distributions.filter(
-        (item) => item.isReplacementComfired === false
-    );
-    let keywords: string[] = [];
-    newDists.forEach((item) => {
-        if (item?.keywords?.length) {
-            keywords = keywords.concat(item.keywords);
-        }
-    });
-    if (!keywords.length) {
-        return;
-    }
-    keywords = uniqBy(keywords, (item) => item.toLowerCase().trim());
-    return keywords;
-}
-
-// -- Bounding box in order minlon (west), minlat (south), maxlon (east), maxlat (north)
-type BoundingBoxType = [number, number, number, number];
-
-function mergeBBoxes(
-    b1?: BoundingBoxType,
-    b2?: BoundingBoxType
-): BoundingBoxType | undefined {
-    if (b1?.length !== 4 && b2?.length !== 4) {
-        return undefined;
-    }
-    if (b1?.length !== 4) {
-        return b2;
-    }
-    if (b2?.length !== 4) {
-        return b1;
-    }
-
-    const newBBox: BoundingBoxType = [...b1] as BoundingBoxType;
-
-    // --- create a bbox cover both bboxes (bigger)
-    newBBox[0] = b2[0] < newBBox[0] ? b2[0] : newBBox[0];
-    newBBox[1] = b2[1] < newBBox[1] ? b2[1] : newBBox[1];
-    newBBox[2] = b2[2] > newBBox[2] ? b2[2] : newBBox[2];
-    newBBox[3] = b2[3] > newBBox[3] ? b2[3] : newBBox[3];
-
-    return newBBox;
-}
-
-function retrieveNewMetadataDatasetSpatialExtent(
-    state: State
-): SpatialCoverage | undefined {
-    const newDists = state.distributions.filter(
-        (item) => item.isReplacementComfired === false
-    );
-
-    let newBBox: BoundingBoxType | undefined;
-
-    newDists.forEach((item) => {
-        if (item?.spatialCoverage?.bbox?.length === 4) {
-            newBBox = mergeBBoxes(newBBox, item.spatialCoverage.bbox);
-        }
-    });
-
-    if (newBBox?.length !== 4) {
-        return;
-    } else {
-        return {
-            spatialDataInputMethod: "bbox",
-            bbox: newBBox
-        };
-    }
-}
-
-const isEmptyOrInvalidTemporalInterval = (i?: Interval) =>
-    !i || (!i?.end?.getDate && !i?.start?.getDate);
-
-const isEmptyOrInvalidTemporalIntervals = (i?: Interval[]) =>
-    !i?.length || !i.find((item) => !isEmptyOrInvalidTemporalInterval(item));
-
-function mergeTemporalIntervals(i1?: Interval[], i2?: Interval[]) {
-    if (
-        isEmptyOrInvalidTemporalIntervals(i1) &&
-        isEmptyOrInvalidTemporalIntervals(i2)
-    ) {
-        return undefined;
-    }
-    if (isEmptyOrInvalidTemporalIntervals(i1)) {
-        return i2;
-    }
-    if (isEmptyOrInvalidTemporalIntervals(i2)) {
-        return i1;
-    }
-    i1 = i1!.filter((item) => !isEmptyOrInvalidTemporalInterval(item));
-    i2 = i2!.filter((item) => !isEmptyOrInvalidTemporalInterval(item));
-
-    const newIntervals = [...i1, ...i2] as Interval[];
-    return newIntervals;
-}
-
-function retrieveNewMetadataDatasetTemporalCoverage(
-    state: State
-): TemporalCoverage | undefined {
-    const newDists = state.distributions.filter(
-        (item) => item.isReplacementComfired === false
-    );
-
-    let intervals = [] as Interval[] | undefined;
-
-    newDists.forEach((item) => {
-        if (item?.temporalCoverage?.intervals?.length) {
-            intervals = mergeTemporalIntervals(
-                intervals,
-                item.temporalCoverage.intervals
-            );
-        }
-    });
-
-    if (!intervals?.length) {
-        return;
-    } else {
-        return {
-            intervals
-        };
-    }
-}
 
 function renderKeywordItem(keyword: string, idx: number) {
     return (
@@ -277,14 +103,12 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
 
     const [error, setErrors] = useState<Error | null>(null);
 
-    const newTitle = retrieveNewMetadataDatasetTitle(stateData);
-    const newIssueDate = retrieveNewMetadataDatasetIssueDate(stateData);
-    const newModifiedDate = retrieveNewMetadataDatasetModifiedDate(stateData);
-    const newKeywords = retrieveNewMetadataDatasetKeywords(stateData);
-    const newSpatialExtent = retrieveNewMetadataDatasetSpatialExtent(stateData);
-    const newTemporalCoverage = retrieveNewMetadataDatasetTemporalCoverage(
-        stateData
-    );
+    const newTitle = mergeDistTitle(stateData);
+    const newIssueDate = mergeDistIssueDate(stateData);
+    const newModifiedDate = mergeDistModifiedDate(stateData);
+    const newKeywords = mergeDistKeywords(stateData);
+    const newSpatialExtent = mergeDistSpatialCoverage(stateData);
+    const newTemporalCoverage = mergeDistTemporalCoverage(stateData);
 
     // --- by default, replace is checked if there is new data available
     const [keepTitle, setKeepTitle] = useState<boolean>(
@@ -313,16 +137,19 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
             await promisifySetState(datasetStateUpdater)((state) => {
                 const newState = { ...state };
 
-                if (!keepTitle) {
+                if (!keepTitle && newTitle) {
                     newState.dataset.title = newTitle;
                 }
-                if (!keepIssueDate) {
+
+                if (!keepIssueDate && newIssueDate) {
                     newState.dataset.issued = newIssueDate;
                 }
-                if (!keepModifiedDate) {
+
+                if (!keepModifiedDate && newModifiedDate) {
                     newState.dataset.modified = newModifiedDate;
                 }
-                if (!keepKeywords) {
+
+                if (!keepKeywords && newKeywords) {
                     if (!newState?.dataset?.keywords) {
                         newState.dataset.keywords = {
                             derived: false,
@@ -337,11 +164,13 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
                         ]
                     };
                 }
-                if (!keepSpatialExtent) {
-                    newState.spatialCoverage = newSpatialExtent!;
+
+                if (!keepSpatialExtent && newSpatialExtent) {
+                    newState.spatialCoverage = newSpatialExtent;
                 }
-                if (!keepTemporalCoverage) {
-                    newState.temporalCoverage = newTemporalCoverage!;
+
+                if (!keepTemporalCoverage && newTemporalCoverage) {
+                    newState.temporalCoverage = newTemporalCoverage;
                 }
                 // --- a list new dists that has been selected to replace old ones
                 const replacedDists: Distribution[] = [];
