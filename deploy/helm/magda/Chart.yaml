@@ -49,7 +49,6 @@ dependencies:
     version: 0.0.57-0
     repository: https://charts.magda.io
     tags:
-      - minions
       - minion-ckan-exporter
 
   - name: magda-ckan-connector

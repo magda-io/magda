@@ -1175,10 +1175,18 @@ export class RecordHistoryApi {
      *
      * @param xMagdaTenantId 0
      * @param recordId ID of the record for which to fetch history.
+     * @param xMagdaSession Magda internal session id
+     * @param pageToken A token that identifies the start of a page of events.  This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results.
+     * @param start The index of the first event to retrieve.  When possible, specify pageToken instead as it will result in better performance.  If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve.
+     * @param limit The maximum number of events to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
      */
     public history(
         xMagdaTenantId: number,
-        recordId: string
+        recordId: string,
+        xMagdaSession: string,
+        pageToken?: string,
+        start?: number,
+        limit?: number
     ): Promise<{ response: http.IncomingMessage; body: EventsPage }> {
         const localVarPath =
             this.basePath +
@@ -1204,7 +1212,28 @@ export class RecordHistoryApi {
             );
         }
 
+        // verify required parameter 'xMagdaSession' is not null or undefined
+        if (xMagdaSession === null || xMagdaSession === undefined) {
+            throw new Error(
+                "Required parameter xMagdaSession was null or undefined when calling history."
+            );
+        }
+
+        if (pageToken !== undefined) {
+            queryParameters["pageToken"] = pageToken;
+        }
+
+        if (start !== undefined) {
+            queryParameters["start"] = start;
+        }
+
+        if (limit !== undefined) {
+            queryParameters["limit"] = limit;
+        }
+
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;
+
+        headerParams["X-Magda-Session"] = xMagdaSession;
 
         let useFormData = false;
 

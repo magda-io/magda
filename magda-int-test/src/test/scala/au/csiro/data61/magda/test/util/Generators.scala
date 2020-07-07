@@ -546,7 +546,7 @@ object Generators {
       derivedFrom <- Gen.option(
         Gen.listOf(
           Generators.textGen
-            .map(text => ProvenanceRecord(id = Some(List(text.take(50).trim))))
+            .map(text => ProvenanceRecord(id = Some(text.take(50).trim)))
         )
       )
       affiliatedOrganizationIds <- Gen.option(
