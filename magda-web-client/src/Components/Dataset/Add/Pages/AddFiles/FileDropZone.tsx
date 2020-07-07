@@ -1,9 +1,6 @@
 import React, { FunctionComponent, useCallback } from "react";
 import FileDrop from "react-file-drop";
-import uniq from "lodash/uniq";
-import uniqWith from "lodash/uniqWith";
 import partial from "lodash/partial";
-import { config } from "config";
 import {
     State,
     DatasetStateUpdaterType,
@@ -11,15 +8,11 @@ import {
     Distribution,
     DistributionState,
     DistributionSource,
-    KeywordsLike,
-    Interval,
     saveRuntimeStateToStorage
 } from "../../DatasetAddCommon";
 import getDownloadUrl from "./getDownloadUrl";
 import processFile from "./processFile";
 import { getFiles } from "helpers/readFile";
-import updateLastModifyDate from "./updateLastModifyDate";
-import promisifySetState from "helpers/promisifySetState";
 
 import "./FileDropZone.scss";
 
@@ -29,6 +22,7 @@ type PropsType = {
     datasetId: string;
     initDistProps?: Partial<Distribution>;
     onError: (error: Error) => void;
+    onFilesProcessed?: (dists: Distribution[]) => void;
 };
 
 function trimExtension(filename: string) {
@@ -81,12 +75,20 @@ function isDirItem(idx: number, event: any) {
 }
 
 const FileDropZone: FunctionComponent<PropsType> = (props) => {
-    const { datasetStateUpdater, stateData, datasetId, onError } = props;
+    const {
+        datasetStateUpdater,
+        stateData,
+        datasetId,
+        onError,
+        onFilesProcessed
+    } = props;
     const initDistProps = props.initDistProps ? props.initDistProps : {};
 
     const addFiles = useCallback(
         async (fileList: FileList, event: any = null) => {
             datasetStateUpdater((state) => ({ ...state, error: null }));
+
+            const newDists = [] as Distribution[];
 
             for (let i = 0; i < fileList.length; i++) {
                 const thisFile = fileList.item(i);
@@ -135,103 +137,7 @@ const FileDropZone: FunctionComponent<PropsType> = (props) => {
                     stateData.datasetAccess.useStorageApi
                 );
 
-                await promisifySetState<State>(datasetStateUpdater)(
-                    (state: State) => {
-                        const newState: State = {
-                            ...state,
-                            distributions: [...state.distributions]
-                        };
-
-                        const {
-                            dataset,
-                            temporalCoverage,
-                            spatialCoverage
-                        } = state;
-
-                        if (
-                            (!dataset.title || dataset.title === "") &&
-                            distAfterProcessing?.datasetTitle
-                        ) {
-                            dataset.title = distAfterProcessing.datasetTitle;
-                        }
-
-                        for (let key of ["keywords", "themes"]) {
-                            const existing = dataset[key]
-                                ? (dataset[key] as KeywordsLike)
-                                : {
-                                      keywords: [],
-                                      derived: false
-                                  };
-                            const fileKeywords: string[] =
-                                distAfterProcessing[key] || [];
-
-                            dataset[key] = {
-                                keywords: uniq(
-                                    existing.keywords.concat(fileKeywords)
-                                ),
-                                derived:
-                                    existing.derived || fileKeywords.length > 0
-                            };
-                        }
-
-                        if (distAfterProcessing.spatialCoverage) {
-                            Object.assign(
-                                spatialCoverage,
-                                distAfterProcessing.spatialCoverage
-                            );
-                        }
-
-                        if (distAfterProcessing.temporalCoverage) {
-                            temporalCoverage.intervals = temporalCoverage.intervals.concat(
-                                distAfterProcessing.temporalCoverage
-                                    ?.intervals || []
-                            );
-                            let uniqTemporalCoverage = uniqWith(
-                                temporalCoverage.intervals,
-                                (arrVal: Interval, othVal: Interval) => {
-                                    return (
-                                        arrVal.start?.getTime() ===
-                                            othVal.start?.getTime() &&
-                                        arrVal.end?.getTime() ===
-                                            othVal.end?.getTime()
-                                    );
-                                }
-                            );
-                            temporalCoverage.intervals = uniqTemporalCoverage;
-                        }
-
-                        if (
-                            config.datasetThemes &&
-                            config.datasetThemes.length &&
-                            newState.dataset &&
-                            newState.dataset.keywords &&
-                            newState.dataset.keywords.keywords &&
-                            newState.dataset.keywords.keywords.length
-                        ) {
-                            const keywords = newState.dataset.keywords.keywords.map(
-                                (item) => item.toLowerCase()
-                            );
-                            const themesBasedOnKeywords = config.datasetThemes.filter(
-                                (theme) =>
-                                    keywords.indexOf(theme.toLowerCase()) !== -1
-                            );
-                            if (themesBasedOnKeywords.length) {
-                                const existingThemesKeywords = newState.dataset
-                                    .themes
-                                    ? newState.dataset.themes.keywords
-                                    : [];
-                                newState.dataset.themes = {
-                                    keywords: themesBasedOnKeywords.concat(
-                                        existingThemesKeywords
-                                    ),
-                                    derived: true
-                                };
-                            }
-                        }
-
-                        return newState;
-                    }
-                );
+                newDists.push(distAfterProcessing);
 
                 if (stateData.datasetAccess.useStorageApi) {
                     // Save now so that we don't end up with orphaned uploaded files
@@ -242,10 +148,13 @@ const FileDropZone: FunctionComponent<PropsType> = (props) => {
                     );
                 }
             }
-            updateLastModifyDate(datasetStateUpdater);
+            if (typeof onFilesProcessed === "function") {
+                onFilesProcessed(newDists);
+            }
         },
         [
             datasetStateUpdater,
+            onFilesProcessed,
             stateData.datasetAccess.useStorageApi,
             datasetId,
             initDistProps

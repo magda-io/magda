@@ -36,10 +36,12 @@ function mergeBBoxes(
  *
  * @export
  * @param {Distribution[]} dists
+ * @param {SpatialCoverage} [existingSpatialCoverage] Optional
  * @returns {(SpatialCoverage | undefined)}
  */
 export default function mergeDistSpatialCoverage(
-    dists: Distribution[]
+    dists: Distribution[],
+    existingSpatialCoverage?: SpatialCoverage
 ): SpatialCoverage | undefined {
     let newBBox: BoundingBoxType | undefined;
 
@@ -50,7 +52,8 @@ export default function mergeDistSpatialCoverage(
     });
 
     if (newBBox?.length !== 4) {
-        return;
+        // --- if no spatial extent found from dists, return existingSpatialCoverage
+        return existingSpatialCoverage ? existingSpatialCoverage : undefined;
     } else {
         return {
             spatialDataInputMethod: "bbox",

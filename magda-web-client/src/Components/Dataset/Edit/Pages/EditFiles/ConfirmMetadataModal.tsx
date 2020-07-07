@@ -125,7 +125,7 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
         newModifiedDate ? false : true
     );
     const [keepKeywords, setKeepKeywords] = useState<boolean>(
-        newKeywords?.length ? false : true
+        newKeywords ? false : true
     );
     const [keepSpatialExtent, setKeepSpatialExtent] = useState<boolean>(
         newSpatialExtent ? false : true
@@ -154,19 +154,7 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
                 }
 
                 if (!keepKeywords && newKeywords) {
-                    if (!newState?.dataset?.keywords) {
-                        newState.dataset.keywords = {
-                            derived: false,
-                            keywords: []
-                        };
-                    }
-                    newState.dataset.keywords = {
-                        ...newState.dataset.keywords,
-                        keywords: [
-                            ...newState.dataset.keywords.keywords,
-                            ...newKeywords!
-                        ]
-                    };
+                    newState.dataset.keywords = newKeywords;
                 }
 
                 if (!keepSpatialExtent && newSpatialExtent) {
@@ -400,8 +388,12 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
                                     </td>
                                     <td>
                                         {newKeywords
-                                            ? newKeywords.map((item, idx) =>
-                                                  renderKeywordItem(item, idx)
+                                            ? newKeywords.keywords.map(
+                                                  (item, idx) =>
+                                                      renderKeywordItem(
+                                                          item,
+                                                          idx
+                                                      )
                                               )
                                             : "N/A"}
                                     </td>

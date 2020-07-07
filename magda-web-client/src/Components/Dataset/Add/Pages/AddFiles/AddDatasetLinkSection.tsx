@@ -16,6 +16,7 @@ type Props = {
     type: DistributionSource.DatasetUrl | DistributionSource.Api;
     distributions: Distribution[];
     datasetStateUpdater: DatasetStateUpdaterType;
+    onProcessingComplete?: (distributions: Distribution[]) => void;
 };
 
 const AddDatasetLinkSection = (props: Props) => {
@@ -113,6 +114,7 @@ const AddDatasetLinkSection = (props: Props) => {
                         );
                     }}
                     onClearProcessingError={() => setProcessingErrorMessage("")}
+                    onProcessingComplete={props.onProcessingComplete}
                 />
             </div>
         </div>

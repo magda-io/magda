@@ -32,15 +32,25 @@ function mergeTemporalIntervals(i1?: Interval[], i2?: Interval[]) {
 
 /**
  * Merge all temporalCoverage field of existing distributions to determine dataset temporalCoverage
+ * Optionally merge with existingTemporalCoverage
  *
  * @export
  * @param {Distribution[]} dists
+ * @param {TemporalCoverage} [existingTemporalCoverage] optional
  * @returns {(TemporalCoverage | undefined)}
  */
 export default function mergeDistTemporalCoverage(
-    dists: Distribution[]
+    dists: Distribution[],
+    existingTemporalCoverage?: TemporalCoverage
 ): TemporalCoverage | undefined {
     let intervals = [] as Interval[] | undefined;
+
+    if (existingTemporalCoverage?.intervals?.length) {
+        intervals = mergeTemporalIntervals(
+            intervals,
+            existingTemporalCoverage.intervals
+        );
+    }
 
     dists.forEach((item) => {
         if (item?.temporalCoverage?.intervals?.length) {
@@ -52,7 +62,7 @@ export default function mergeDistTemporalCoverage(
     });
 
     if (!intervals?.length) {
-        return;
+        return existingTemporalCoverage ? existingTemporalCoverage : undefined;
     } else {
         return {
             intervals
