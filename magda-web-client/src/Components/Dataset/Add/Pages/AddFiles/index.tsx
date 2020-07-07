@@ -109,10 +109,11 @@ class AddFilesPage extends React.Component<Props> {
         );
     }
 
-    updateDatasetWithDistributions = async (dists: Distribution[]) => {
+    updateDatasetWithDistributions = async () => {
         try {
             await promisifySetState(this.props.setState)((state: State) => {
                 const {
+                    distributions: dists,
                     dataset,
                     temporalCoverage: datasetTemporalCoverage,
                     spatialCoverage: datasetSpatialCoverage
