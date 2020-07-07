@@ -138,16 +138,8 @@ const FileDropZone: FunctionComponent<PropsType> = (props) => {
                 );
 
                 newDists.push(distAfterProcessing);
-
-                if (stateData.datasetAccess.useStorageApi) {
-                    // Save now so that we don't end up with orphaned uploaded files
-                    // if the user leaves without saving
-                    await saveRuntimeStateToStorage(
-                        datasetId,
-                        datasetStateUpdater
-                    );
-                }
             }
+
             if (typeof onFilesProcessed === "function") {
                 onFilesProcessed(newDists);
             }

@@ -18,6 +18,7 @@ import * as Comlink from "comlink";
 import baseStorageApiPath from "./baseStorageApiPath";
 import uploadFile from "./uploadFile";
 import translateError from "helpers/translateError";
+import promisifySetState from "helpers/promisifySetState";
 
 const ExtractorsWorker = require("worker-loader!../../../MetadataExtraction"); // eslint-disable-line import/no-webpack-loader-syntax
 
@@ -241,7 +242,7 @@ export default async function processFile(
 
         /** Removes the distribution and displays the error */
         const removeDist = async () => {
-            datasetStateUpdater((state: State) => {
+            await promisifySetState(datasetStateUpdater)((state: State) => {
                 return {
                     ...state,
                     error: e,

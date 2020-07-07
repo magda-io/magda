@@ -10,7 +10,8 @@ import {
     State,
     Distribution,
     DistributionSource,
-    DatasetStateUpdaterType
+    DatasetStateUpdaterType,
+    saveRuntimeStateToStorage
 } from "../../DatasetAddCommon";
 
 import { User } from "reducers/userManagementReducer";
@@ -28,6 +29,7 @@ import mergeDistIssueDate from "Components/Dataset/MergeMetadata/mergeDistIssueD
 import mergeDistModifiedDate from "Components/Dataset/MergeMetadata/mergeDistModifiedDate";
 import mergeDistSpatialCoverage from "Components/Dataset/MergeMetadata/mergeDistSpatialCoverage";
 import mergeDistTemporalCoverage from "Components/Dataset/MergeMetadata/mergeDistTemporalCoverage";
+import promisifySetState from "helpers/promisifySetState";
 
 type Props = {
     edit: <K extends keyof State>(
@@ -107,37 +109,55 @@ class AddFilesPage extends React.Component<Props> {
         );
     }
 
-    updateDatasetWithDistributions = (dists: Distribution[]) =>
-        this.props.setState((state: State) => {
-            const {
-                dataset,
-                temporalCoverage: datasetTemporalCoverage,
-                spatialCoverage: datasetSpatialCoverage
-            } = state;
+    updateDatasetWithDistributions = async (dists: Distribution[]) => {
+        try {
+            await promisifySetState(this.props.setState)((state: State) => {
+                const {
+                    dataset,
+                    temporalCoverage: datasetTemporalCoverage,
+                    spatialCoverage: datasetSpatialCoverage
+                } = state;
 
-            const newKeywords = mergeDistKeywords(dists, dataset.keywords);
+                const newKeywords = mergeDistKeywords(dists, dataset.keywords);
 
-            const newState: State = {
-                ...state,
-                dataset: {
-                    ...state.dataset,
-                    title: mergeDistTitle(dists, dataset.title)!,
-                    keywords: newKeywords,
-                    themes: mergeDistThemes(dists, dataset.themes, newKeywords),
-                    issued: mergeDistIssueDate(dists, dataset.issued),
-                    modified: mergeDistModifiedDate(dists, dataset.modified)
-                },
-                spatialCoverage: mergeDistSpatialCoverage(
-                    dists,
-                    datasetSpatialCoverage
-                )!,
-                temporalCoverage: mergeDistTemporalCoverage(
-                    dists,
-                    datasetTemporalCoverage
-                )!
-            };
-            return newState;
-        });
+                const newState: State = {
+                    ...state,
+                    dataset: {
+                        ...state.dataset,
+                        title: mergeDistTitle(dists, dataset.title)!,
+                        keywords: newKeywords,
+                        themes: mergeDistThemes(
+                            dists,
+                            dataset.themes,
+                            newKeywords
+                        ),
+                        issued: mergeDistIssueDate(dists, dataset.issued),
+                        modified: mergeDistModifiedDate(dists, dataset.modified)
+                    },
+                    spatialCoverage: mergeDistSpatialCoverage(
+                        dists,
+                        datasetSpatialCoverage
+                    )!,
+                    temporalCoverage: mergeDistTemporalCoverage(
+                        dists,
+                        datasetTemporalCoverage
+                    )!
+                };
+                return newState;
+            });
+
+            if (this.props.stateData.datasetAccess.useStorageApi) {
+                // --- auto save draft after the metadata of the file is process and merged into dataset
+                await saveRuntimeStateToStorage(
+                    this.props.datasetId,
+                    this.props.setState
+                );
+            }
+        } catch (e) {
+            console.error(e);
+            this.props.setState((state) => ({ ...state, error: e }));
+        }
+    };
 
     render() {
         const { stateData: state } = this.props;
