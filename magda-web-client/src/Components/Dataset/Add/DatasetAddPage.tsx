@@ -35,18 +35,21 @@ class AddDataset extends React.Component<any, any> {
                                 <div className="row lower-header-icons">
                                     <div className="col-sm-4 block">
                                         <img
+                                            alt="icon search"
                                             src={iconSearch}
                                             className="icon-search"
                                         />
                                     </div>
                                     <div className="col-sm-4 block">
                                         <img
+                                            alt="icon document"
                                             src={iconDocument}
                                             className="icon-document"
                                         />
                                     </div>
                                     <div className="col-sm-4 block">
                                         <img
+                                            alt="icon oval"
                                             src={iconSave}
                                             className="icon-oval"
                                         />

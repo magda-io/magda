@@ -81,172 +81,184 @@ function isDirItem(idx: number, event: any) {
 }
 
 const FileDropZone: FunctionComponent<PropsType> = (props) => {
-    const { datasetStateUpdater, stateData, datasetId } = props;
+    const { datasetStateUpdater, stateData, datasetId, onError } = props;
     const initDistProps = props.initDistProps ? props.initDistProps : {};
 
-    const addFiles = async (fileList: FileList, event: any = null) => {
-        datasetStateUpdater((state) => ({ ...state, error: null }));
+    const addFiles = useCallback(
+        async (fileList: FileList, event: any = null) => {
+            datasetStateUpdater((state) => ({ ...state, error: null }));
 
-        for (let i = 0; i < fileList.length; i++) {
-            const thisFile = fileList.item(i);
+            for (let i = 0; i < fileList.length; i++) {
+                const thisFile = fileList.item(i);
 
-            if (!thisFile || isDirItem(i, event)) {
-                // --- skip the directory item
-                continue;
-            }
+                if (!thisFile || isDirItem(i, event)) {
+                    // --- skip the directory item
+                    continue;
+                }
 
-            const distRecordId = createId("dist");
+                const distRecordId = createId("dist");
 
-            const dist: Distribution = {
-                id: distRecordId,
-                datasetTitle: toTitleCase(
-                    turnPunctuationToSpaces(
-                        trimExtension(thisFile.name || "File Name")
-                    )
-                ).trim(),
-                title: thisFile.name,
-                byteSize: thisFile.size,
-                modified: new Date(thisFile.lastModified),
-                format: fileFormat(thisFile),
-                _state: DistributionState.Added,
-                license: "No license",
-                creationSource: DistributionSource.File,
-                useStorageApi: stateData.datasetAccess.useStorageApi
-                    ? true
-                    : false,
-                downloadURL: stateData.datasetAccess.useStorageApi
-                    ? getDownloadUrl(datasetId, distRecordId, thisFile.name)
-                    : undefined,
-                // --- allow other component to overwrite distribution status
-                ...initDistProps
-            };
+                const dist: Distribution = {
+                    id: distRecordId,
+                    datasetTitle: toTitleCase(
+                        turnPunctuationToSpaces(
+                            trimExtension(thisFile.name || "File Name")
+                        )
+                    ).trim(),
+                    title: thisFile.name,
+                    byteSize: thisFile.size,
+                    modified: new Date(thisFile.lastModified),
+                    format: fileFormat(thisFile),
+                    _state: DistributionState.Added,
+                    license: "No license",
+                    creationSource: DistributionSource.File,
+                    useStorageApi: stateData.datasetAccess.useStorageApi
+                        ? true
+                        : false,
+                    downloadURL: stateData.datasetAccess.useStorageApi
+                        ? getDownloadUrl(datasetId, distRecordId, thisFile.name)
+                        : undefined,
+                    // --- allow other component to overwrite distribution status
+                    ...initDistProps
+                };
 
-            const distAfterProcessing = await processFile(
-                datasetId,
-                thisFile,
-                dist,
-                partial(
-                    saveRuntimeStateToStorage,
+                const distAfterProcessing = await processFile(
                     datasetId,
-                    datasetStateUpdater
-                ),
-                datasetStateUpdater,
-                stateData.datasetAccess.useStorageApi
-            );
+                    thisFile,
+                    dist,
+                    partial(
+                        saveRuntimeStateToStorage,
+                        datasetId,
+                        datasetStateUpdater
+                    ),
+                    datasetStateUpdater,
+                    stateData.datasetAccess.useStorageApi
+                );
 
-            await promisifySetState<State>(datasetStateUpdater)(
-                (state: State) => {
-                    const newState: State = {
-                        ...state,
-                        distributions: [...state.distributions]
-                    };
-
-                    const {
-                        dataset,
-                        temporalCoverage,
-                        spatialCoverage
-                    } = state;
-
-                    if (
-                        (!dataset.title || dataset.title === "") &&
-                        distAfterProcessing?.datasetTitle
-                    ) {
-                        dataset.title = distAfterProcessing.datasetTitle;
-                    }
-
-                    for (let key of ["keywords", "themes"]) {
-                        const existing = dataset[key]
-                            ? (dataset[key] as KeywordsLike)
-                            : {
-                                  keywords: [],
-                                  derived: false
-                              };
-                        const fileKeywords: string[] =
-                            distAfterProcessing[key] || [];
-
-                        dataset[key] = {
-                            keywords: uniq(
-                                existing.keywords.concat(fileKeywords)
-                            ),
-                            derived: existing.derived || fileKeywords.length > 0
+                await promisifySetState<State>(datasetStateUpdater)(
+                    (state: State) => {
+                        const newState: State = {
+                            ...state,
+                            distributions: [...state.distributions]
                         };
-                    }
 
-                    if (distAfterProcessing.spatialCoverage) {
-                        Object.assign(
-                            spatialCoverage,
-                            distAfterProcessing.spatialCoverage
-                        );
-                    }
+                        const {
+                            dataset,
+                            temporalCoverage,
+                            spatialCoverage
+                        } = state;
 
-                    if (distAfterProcessing.temporalCoverage) {
-                        temporalCoverage.intervals = temporalCoverage.intervals.concat(
-                            distAfterProcessing.temporalCoverage?.intervals ||
-                                []
-                        );
-                        let uniqTemporalCoverage = uniqWith(
-                            temporalCoverage.intervals,
-                            (arrVal: Interval, othVal: Interval) => {
-                                return (
-                                    arrVal.start?.getTime() ===
-                                        othVal.start?.getTime() &&
-                                    arrVal.end?.getTime() ===
-                                        othVal.end?.getTime()
-                                );
-                            }
-                        );
-                        temporalCoverage.intervals = uniqTemporalCoverage;
-                    }
+                        if (
+                            (!dataset.title || dataset.title === "") &&
+                            distAfterProcessing?.datasetTitle
+                        ) {
+                            dataset.title = distAfterProcessing.datasetTitle;
+                        }
 
-                    if (
-                        config.datasetThemes &&
-                        config.datasetThemes.length &&
-                        newState.dataset &&
-                        newState.dataset.keywords &&
-                        newState.dataset.keywords.keywords &&
-                        newState.dataset.keywords.keywords.length
-                    ) {
-                        const keywords = newState.dataset.keywords.keywords.map(
-                            (item) => item.toLowerCase()
-                        );
-                        const themesBasedOnKeywords = config.datasetThemes.filter(
-                            (theme) =>
-                                keywords.indexOf(theme.toLowerCase()) !== -1
-                        );
-                        if (themesBasedOnKeywords.length) {
-                            const existingThemesKeywords = newState.dataset
-                                .themes
-                                ? newState.dataset.themes.keywords
-                                : [];
-                            newState.dataset.themes = {
-                                keywords: themesBasedOnKeywords.concat(
-                                    existingThemesKeywords
+                        for (let key of ["keywords", "themes"]) {
+                            const existing = dataset[key]
+                                ? (dataset[key] as KeywordsLike)
+                                : {
+                                      keywords: [],
+                                      derived: false
+                                  };
+                            const fileKeywords: string[] =
+                                distAfterProcessing[key] || [];
+
+                            dataset[key] = {
+                                keywords: uniq(
+                                    existing.keywords.concat(fileKeywords)
                                 ),
-                                derived: true
+                                derived:
+                                    existing.derived || fileKeywords.length > 0
                             };
                         }
+
+                        if (distAfterProcessing.spatialCoverage) {
+                            Object.assign(
+                                spatialCoverage,
+                                distAfterProcessing.spatialCoverage
+                            );
+                        }
+
+                        if (distAfterProcessing.temporalCoverage) {
+                            temporalCoverage.intervals = temporalCoverage.intervals.concat(
+                                distAfterProcessing.temporalCoverage
+                                    ?.intervals || []
+                            );
+                            let uniqTemporalCoverage = uniqWith(
+                                temporalCoverage.intervals,
+                                (arrVal: Interval, othVal: Interval) => {
+                                    return (
+                                        arrVal.start?.getTime() ===
+                                            othVal.start?.getTime() &&
+                                        arrVal.end?.getTime() ===
+                                            othVal.end?.getTime()
+                                    );
+                                }
+                            );
+                            temporalCoverage.intervals = uniqTemporalCoverage;
+                        }
+
+                        if (
+                            config.datasetThemes &&
+                            config.datasetThemes.length &&
+                            newState.dataset &&
+                            newState.dataset.keywords &&
+                            newState.dataset.keywords.keywords &&
+                            newState.dataset.keywords.keywords.length
+                        ) {
+                            const keywords = newState.dataset.keywords.keywords.map(
+                                (item) => item.toLowerCase()
+                            );
+                            const themesBasedOnKeywords = config.datasetThemes.filter(
+                                (theme) =>
+                                    keywords.indexOf(theme.toLowerCase()) !== -1
+                            );
+                            if (themesBasedOnKeywords.length) {
+                                const existingThemesKeywords = newState.dataset
+                                    .themes
+                                    ? newState.dataset.themes.keywords
+                                    : [];
+                                newState.dataset.themes = {
+                                    keywords: themesBasedOnKeywords.concat(
+                                        existingThemesKeywords
+                                    ),
+                                    derived: true
+                                };
+                            }
+                        }
+
+                        return newState;
                     }
+                );
 
-                    return newState;
+                if (stateData.datasetAccess.useStorageApi) {
+                    // Save now so that we don't end up with orphaned uploaded files
+                    // if the user leaves without saving
+                    await saveRuntimeStateToStorage(
+                        datasetId,
+                        datasetStateUpdater
+                    );
                 }
-            );
-
-            if (stateData.datasetAccess.useStorageApi) {
-                // Save now so that we don't end up with orphaned uploaded files
-                // if the user leaves without saving
-                await saveRuntimeStateToStorage(datasetId, datasetStateUpdater);
             }
-        }
-        updateLastModifyDate(datasetStateUpdater);
-    };
+            updateLastModifyDate(datasetStateUpdater);
+        },
+        [
+            datasetStateUpdater,
+            stateData.datasetAccess.useStorageApi,
+            datasetId,
+            initDistProps
+        ]
+    );
 
     const onBrowse = useCallback(async () => {
         try {
             await addFiles(await getFiles("*.*"));
         } catch (e) {
-            props.onError(e);
+            onError(e);
         }
-    }, [props.onError, addFiles]);
+    }, [onError, addFiles]);
 
     const onDrop = useCallback(
         async (fileList: FileList | null, event: any) => {
@@ -255,10 +267,10 @@ const FileDropZone: FunctionComponent<PropsType> = (props) => {
                     await addFiles(fileList, event);
                 }
             } catch (e) {
-                props.onError(e);
+                onError(e);
             }
         },
-        [props.onError, addFiles]
+        [onError, addFiles]
     );
 
     return (

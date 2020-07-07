@@ -60,7 +60,7 @@ function createRows(
                                 : "edit"
                         }/${encodeURIComponent(record.id)}`}
                     >
-                        <img src={editIcon} />
+                        <img src={editIcon} alt="edit button" />
                     </Link>
                 </td>
             </tr>

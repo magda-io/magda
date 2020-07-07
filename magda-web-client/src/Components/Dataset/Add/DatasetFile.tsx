@@ -42,7 +42,11 @@ function FileInProgress({
         <div className={`dataset-file-root ${className ? className : ""}`}>
             <div className="file-in-progress">
                 <div className="file-icon-area">
-                    <img className="format-icon" src={getFormatIcon(file)} />
+                    <img
+                        alt="format icon"
+                        className="format-icon"
+                        src={getFormatIcon(file)}
+                    />
                     <div className="format-text">{file.format}</div>
                 </div>
                 <div className="file-info">
@@ -211,7 +215,7 @@ export default function DatasetFile({
                             arial-label="Edit file metadata"
                             onClick={() => setEditMode(!editMode)}
                         >
-                            <img src={editIcon} />
+                            <img src={editIcon} alt="edit icon" />
                         </button>
                     ) : null}
 
@@ -221,7 +225,7 @@ export default function DatasetFile({
                             arial-label="Remove file"
                             onClick={() => onDelete!()}
                         >
-                            <img src={dismissIcon} />
+                            <img src={dismissIcon} alt="delete icon" />
                         </button>
                     ) : null}
 

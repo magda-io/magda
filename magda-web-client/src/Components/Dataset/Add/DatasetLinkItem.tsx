@@ -58,7 +58,7 @@ const DatasetLinkItemComplete = (props: CompleteViewProps) => {
                     aria-label="Edit distribution metadata"
                     onClick={() => setEditMode(!editMode)}
                 >
-                    <img src={editIcon} />
+                    <img src={editIcon} alt="edit button" />
                 </button>
             ) : null}
 
@@ -68,7 +68,7 @@ const DatasetLinkItemComplete = (props: CompleteViewProps) => {
                     arial-label="Delete distribution metadata"
                     onClick={() => deleteDistribution()}
                 >
-                    <img src={dismissIcon} />
+                    <img src={dismissIcon} alt="delete button" />
                 </button>
             ) : null}
 
@@ -112,6 +112,7 @@ const DatasetLinkItemProcessing = (props: ProcessingProps) => {
             <div className="distribution-in-progress">
                 <div className="distribution-icon-area">
                     <img
+                        alt="format icon"
                         className="format-icon"
                         src={getFormatIcon(
                             {

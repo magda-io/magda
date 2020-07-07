@@ -28,6 +28,7 @@ type PropsType = {
  *  For deleting a new file / distribution, we don't need to show this as a new file (before confirmed) can not be superceded.
  */
 const DeleteFileModal: FunctionComponent<PropsType> = (props) => {
+    const { datasetStateUpdater, datasetId, distId, closeModal } = props;
     const [error, setError] = useState<Error | null>(null);
     const targetDist = props.stateData.distributions.find(
         (item) => item.id === props.distId
@@ -39,29 +40,33 @@ const DeleteFileModal: FunctionComponent<PropsType> = (props) => {
 
             if (!targetDist) {
                 throw new Error(
-                    "Cannot locate distribution data by ID: " + props.distId
+                    "Cannot locate distribution data by ID: " + distId
                 );
             }
 
             // --- we won't attempt to delete the actually file from storage API now (because user has not submitted yet)
             // --- all deleted files will be all removed when submit
-            await promisifySetState(props.datasetStateUpdater)((state) => ({
+            await promisifySetState(datasetStateUpdater)((state) => ({
                 ...state,
                 distributions: state.distributions.filter(
-                    (item) => item.id !== props.distId
+                    (item) => item.id !== distId
                 )
             }));
 
-            await saveRuntimeStateToStorage(
-                props.datasetId,
-                props.datasetStateUpdater
-            );
+            await saveRuntimeStateToStorage(datasetId, datasetStateUpdater);
 
-            props.closeModal();
+            closeModal();
         } catch (e) {
             setError(e);
         }
-    }, [props.datasetStateUpdater, props.datasetId, props.distId, setError]);
+    }, [
+        datasetStateUpdater,
+        datasetId,
+        distId,
+        setError,
+        closeModal,
+        targetDist
+    ]);
 
     if (!props.isOpen || !props.distId) {
         return null;

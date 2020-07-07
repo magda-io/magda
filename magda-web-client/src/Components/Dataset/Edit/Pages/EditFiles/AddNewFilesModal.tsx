@@ -33,6 +33,12 @@ type PromiseListType = {
 };
 
 const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
+    const {
+        deleteDistributionHandler,
+        setIsOpen,
+        datasetStateUpdater,
+        datasetId
+    } = props;
     const { distributions } = props.stateData;
     const [error, setError] = useState<Error | null>(null);
     const [processingErrorMessage, setProcessingErrorMessage] = useState("");
@@ -124,30 +130,30 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
             // --- try to delete all existing files
             await Promise.all(
                 uploadedDistributions.map((item) =>
-                    props.deleteDistributionHandler(item.id!)()
+                    deleteDistributionHandler(item.id!)()
                 )
             );
             // -- try to delete all existing url distributions
             await Promise.all(
                 urlDistributions.map((item) =>
-                    props.deleteDistributionHandler(item.id!)()
+                    deleteDistributionHandler(item.id!)()
                 )
             );
-            props.setIsOpen(false);
+            setIsOpen(false);
         } catch (e) {
             setError(e);
         }
     }, [
-        deletionPromisesRef.current,
         uploadedDistributions,
-        props.deleteDistributionHandler,
-        props.setIsOpen
+        urlDistributions,
+        deleteDistributionHandler,
+        setIsOpen
     ]);
 
     const onAddFiles = useCallback(async () => {
         try {
             setError(null);
-            await promisifySetState(props.datasetStateUpdater)((state) => {
+            await promisifySetState(datasetStateUpdater)((state) => {
                 const allNewDists = uploadedDistributions.concat(
                     urlDistributions
                 );
@@ -164,21 +170,18 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
             });
 
             // --- save to draft
-            await saveRuntimeStateToStorage(
-                props.datasetId,
-                props.datasetStateUpdater
-            );
+            await saveRuntimeStateToStorage(datasetId, datasetStateUpdater);
 
-            props.setIsOpen(false);
+            setIsOpen(false);
         } catch (e) {
             setError(e);
         }
     }, [
         uploadedDistributions,
         urlDistributions,
-        uploadedDistributions,
-        props.datasetStateUpdater,
-        props.setIsOpen
+        datasetStateUpdater,
+        setIsOpen,
+        datasetId
     ]);
 
     return (

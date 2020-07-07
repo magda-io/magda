@@ -273,7 +273,7 @@ function renderTemporalCoverage(temporalCoverage?: TemporalCoverage) {
 }
 
 const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
-    const { stateData } = props;
+    const { stateData, datasetId, setIsOpen, datasetStateUpdater } = props;
 
     const [error, setErrors] = useState<Error | null>(null);
 
@@ -310,13 +310,13 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
         setErrors(null);
 
         try {
-            await promisifySetState(props.datasetStateUpdater)((state) => {
+            await promisifySetState(datasetStateUpdater)((state) => {
                 const newState = { ...state };
 
                 if (!keepTitle) {
                     newState.dataset.title = newTitle;
                 }
-                if (!newIssueDate) {
+                if (!keepIssueDate) {
                     newState.dataset.issued = newIssueDate;
                 }
                 if (!keepModifiedDate) {
@@ -414,24 +414,28 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
                 return newState;
             });
             // --- save to draft
-            await saveRuntimeStateToStorage(
-                props.datasetId,
-                props.datasetStateUpdater
-            );
+            await saveRuntimeStateToStorage(datasetId, datasetStateUpdater);
         } catch (e) {
             setErrors(e);
         }
 
-        props.setIsOpen(false);
+        setIsOpen(false);
     }, [
-        props.datasetId,
-        props.datasetStateUpdater,
+        datasetId,
+        setIsOpen,
+        datasetStateUpdater,
         keepTitle,
         keepIssueDate,
         keepModifiedDate,
         keepKeywords,
         keepSpatialExtent,
-        keepTemporalCoverage
+        keepTemporalCoverage,
+        newIssueDate,
+        newKeywords,
+        newModifiedDate,
+        newSpatialExtent,
+        newTemporalCoverage,
+        newTitle
     ]);
 
     if (!props.isOpen) {

@@ -20,16 +20,16 @@ type PropsType = {
 const ConfirmUnselectedExistingDists: FunctionComponent<PropsType> = (
     props
 ) => {
-    const onConfirm = useCallback(() => {
-        props.setIsOpen(false);
-        if (typeof props.afterConfirm === "function") {
-            props.afterConfirm();
-        }
-    }, [props.setIsOpen, props.afterConfirm]);
+    const { setIsOpen, afterConfirm } = props;
 
-    const onClose = useCallback(() => props.setIsOpen(false), [
-        props.setIsOpen
-    ]);
+    const onConfirm = useCallback(() => {
+        setIsOpen(false);
+        if (typeof afterConfirm === "function") {
+            afterConfirm();
+        }
+    }, [setIsOpen, afterConfirm]);
+
+    const onClose = useCallback(() => setIsOpen(false), [setIsOpen]);
 
     const renderDistList = (dists: Distribution[]) => {
         return (

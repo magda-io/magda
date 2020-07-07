@@ -31,17 +31,19 @@ type PropsType = {
 const ConfirmLoadPreviousChanges: FunctionComponent<PropsType> = (props) => {
     const [error, setError] = useState<Error | null>(null);
     const [draftData, setDraftData] = useState<State | null>(null);
+    const { datasetStateUpdater } = props;
+    const datasetDraftData = props?.stateData?.datasetDraft?.data;
+    const userId = props?.user?.id;
+    const uploadedFileUrls = draftData?.uploadedFileUrls;
 
     useEffect(() => {
         try {
             setError(null);
-            if (!props?.stateData?.datasetDraft?.data || !props?.user) {
+            if (!datasetDraftData || !userId) {
                 setDraftData(null);
             } else {
-                const recoverData = JSON.parse(
-                    props.stateData.datasetDraft.data
-                ) as State;
-                recoverData.dataset.editingUserId = props.user.id;
+                const recoverData = JSON.parse(datasetDraftData) as State;
+                recoverData.dataset.editingUserId = userId;
                 setDraftData(recoverData ? recoverData : null);
                 return;
             }
@@ -49,24 +51,24 @@ const ConfirmLoadPreviousChanges: FunctionComponent<PropsType> = (props) => {
             setError(e);
             setDraftData(null);
         }
-    }, [props?.stateData?.datasetDraft?.data, props?.user?.id]);
+    }, [datasetDraftData, userId, setDraftData]);
 
     const onRecover = useCallback(() => {
         // --- load saved draft state data
-        props.datasetStateUpdater(draftData!);
+        datasetStateUpdater(draftData!);
         // --- set draft data to null to close modal
         setDraftData(null);
-    }, [draftData, setDraftData, props.datasetStateUpdater]);
+    }, [draftData, setDraftData, datasetStateUpdater]);
 
     const onDiscard = useCallback(async () => {
         try {
             setError(null);
-            if (draftData?.uploadedFileUrls?.length) {
+            if (uploadedFileUrls?.length) {
                 /**
                  * clean Up OrphanFiles by compare saved unsubmitted state and submitted (registry) state
                  */
                 const result = await cleanUpOrphanFiles(
-                    draftData!.uploadedFileUrls,
+                    uploadedFileUrls,
                     props.stateData.distributions
                 );
 
@@ -90,7 +92,7 @@ const ConfirmLoadPreviousChanges: FunctionComponent<PropsType> = (props) => {
             setError(e);
         }
     }, [
-        draftData?.uploadedFileUrls,
+        uploadedFileUrls,
         props.stateData.distributions,
         props.datasetId,
         props.datasetStateUpdater
