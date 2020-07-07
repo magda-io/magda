@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React from "react";
 
 import ToolTip from "Components/Dataset/Add/ToolTip";
 import DatasetFile from "Components/Dataset/Add/DatasetFile";
@@ -107,8 +107,40 @@ class AddFilesPage extends React.Component<Props> {
         );
     }
 
+    updateDatasetWithDistributions = (dists: Distribution[]) =>
+        this.props.setState((state: State) => {
+            const {
+                dataset,
+                temporalCoverage: datasetTemporalCoverage,
+                spatialCoverage: datasetSpatialCoverage
+            } = state;
+
+            const newKeywords = mergeDistKeywords(dists, dataset.keywords);
+
+            const newState: State = {
+                ...state,
+                dataset: {
+                    ...state.dataset,
+                    title: mergeDistTitle(dists, dataset.title)!,
+                    keywords: newKeywords,
+                    themes: mergeDistThemes(dists, dataset.themes, newKeywords),
+                    issued: mergeDistIssueDate(dists, dataset.issued),
+                    modified: mergeDistModifiedDate(dists, dataset.modified)
+                },
+                spatialCoverage: mergeDistSpatialCoverage(
+                    dists,
+                    datasetSpatialCoverage
+                )!,
+                temporalCoverage: mergeDistTemporalCoverage(
+                    dists,
+                    datasetTemporalCoverage
+                )!
+            };
+            return newState;
+        });
+
     render() {
-        const { stateData: state, setState } = this.props;
+        const { stateData: state } = this.props;
         const localFiles = state.distributions.filter(
             (file) => file.creationSource === DistributionSource.File
         );
@@ -126,53 +158,6 @@ class AddFilesPage extends React.Component<Props> {
                 }
             });
         };
-
-        const updateDatasetWithDistributions = useCallback(
-            (dists: Distribution[]) => {
-                setState((state: State) => {
-                    const {
-                        dataset,
-                        temporalCoverage: datasetTemporalCoverage,
-                        spatialCoverage: datasetSpatialCoverage
-                    } = state;
-
-                    const newKeywords = mergeDistKeywords(
-                        dists,
-                        dataset.keywords
-                    );
-
-                    const newState: State = {
-                        ...state,
-                        dataset: {
-                            ...state.dataset,
-                            title: mergeDistTitle(dists, dataset.title)!,
-                            keywords: newKeywords,
-                            themes: mergeDistThemes(
-                                dists,
-                                dataset.themes,
-                                newKeywords
-                            ),
-                            issued: mergeDistIssueDate(dists, dataset.issued),
-                            modified: mergeDistModifiedDate(
-                                dists,
-                                dataset.modified
-                            )
-                        },
-                        spatialCoverage: mergeDistSpatialCoverage(
-                            dists,
-                            datasetSpatialCoverage
-                        )!,
-                        temporalCoverage: mergeDistTemporalCoverage(
-                            dists,
-                            datasetTemporalCoverage
-                        )!
-                    };
-
-                    return newState;
-                });
-            },
-            [setState]
-        );
 
         return (
             <div className={"container-fluid dataset-add-file-page"}>
@@ -273,21 +258,21 @@ class AddFilesPage extends React.Component<Props> {
                             }));
                         }
                     }}
-                    onFilesProcessed={updateDatasetWithDistributions}
+                    onFilesProcessed={this.updateDatasetWithDistributions}
                 />
 
                 <AddDatasetLinkSection
                     type={DistributionSource.DatasetUrl}
                     distributions={state.distributions}
                     datasetStateUpdater={this.props.setState}
-                    onProcessingComplete={updateDatasetWithDistributions}
+                    onProcessingComplete={this.updateDatasetWithDistributions}
                 />
 
                 <AddDatasetLinkSection
                     type={DistributionSource.Api}
                     distributions={state.distributions}
                     datasetStateUpdater={this.props.setState}
-                    onProcessingComplete={updateDatasetWithDistributions}
+                    onProcessingComplete={this.updateDatasetWithDistributions}
                 />
             </div>
         );
