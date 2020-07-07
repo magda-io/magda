@@ -1,18 +1,17 @@
-import { State } from "Components/Dataset/Add/DatasetAddCommon";
+import { Distribution } from "Components/Dataset/Add/DatasetAddCommon";
 
 /**
  * Merge all modified date field of existing distributions to determine dataset modified date
  *
  * @export
- * @param {State} state
+ * @param {Distribution[]} dists
  * @returns {(Date | undefined)}
  */
-export default function mergeDistModifiedDate(state: State): Date | undefined {
-    const newDists = state.distributions.filter(
-        (item) => item.isReplacementComfired === false
-    );
+export default function mergeDistModifiedDate(
+    dists: Distribution[]
+): Date | undefined {
     const modifiedDateList: Date[] = [];
-    newDists.forEach((item) => {
+    dists.forEach((item) => {
         if (item?.modified?.getTime!) {
             modifiedDateList.push(item.modified);
         }

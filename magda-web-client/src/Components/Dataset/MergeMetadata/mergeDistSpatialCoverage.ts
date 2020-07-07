@@ -1,5 +1,5 @@
 import {
-    State,
+    Distribution,
     SpatialCoverage
 } from "Components/Dataset/Add/DatasetAddCommon";
 
@@ -35,19 +35,15 @@ function mergeBBoxes(
  * Merge all spatialCoverage field of existing distributions to determine dataset spatialCoverage
  *
  * @export
- * @param {State} state
+ * @param {Distribution[]} dists
  * @returns {(SpatialCoverage | undefined)}
  */
 export default function mergeDistSpatialCoverage(
-    state: State
+    dists: Distribution[]
 ): SpatialCoverage | undefined {
-    const newDists = state.distributions.filter(
-        (item) => item.isReplacementComfired === false
-    );
-
     let newBBox: BoundingBoxType | undefined;
 
-    newDists.forEach((item) => {
+    dists.forEach((item) => {
         if (item?.spatialCoverage?.bbox?.length === 4) {
             newBBox = mergeBBoxes(newBBox, item.spatialCoverage.bbox);
         }

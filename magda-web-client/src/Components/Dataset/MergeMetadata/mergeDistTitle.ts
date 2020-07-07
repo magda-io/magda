@@ -1,18 +1,17 @@
-import { State } from "Components/Dataset/Add/DatasetAddCommon";
+import { Distribution } from "Components/Dataset/Add/DatasetAddCommon";
 
 /**
  * Merge all datasetTitle field of existing distributions to determine dataset title
  *
  * @export
- * @param {State} state
+ * @param {Distribution[]} dists
  * @returns {(string | undefined)}
  */
-export default function mergeDistTitle(state: State): string | undefined {
-    const newDists = state.distributions.filter(
-        (item) => item.isReplacementComfired === false
-    );
+export default function mergeDistTitle(
+    dists: Distribution[]
+): string | undefined {
     let newTitle;
-    newDists.forEach((item) => {
+    dists.forEach((item) => {
         if (
             item?.datasetTitle &&
             typeof item.datasetTitle === "string" &&

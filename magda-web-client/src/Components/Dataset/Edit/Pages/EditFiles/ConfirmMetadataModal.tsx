@@ -103,12 +103,16 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
 
     const [error, setErrors] = useState<Error | null>(null);
 
-    const newTitle = mergeDistTitle(stateData);
-    const newIssueDate = mergeDistIssueDate(stateData);
-    const newModifiedDate = mergeDistModifiedDate(stateData);
-    const newKeywords = mergeDistKeywords(stateData);
-    const newSpatialExtent = mergeDistSpatialCoverage(stateData);
-    const newTemporalCoverage = mergeDistTemporalCoverage(stateData);
+    const newDists = stateData.distributions.filter(
+        (item) => item.isReplacementComfired === false
+    );
+
+    const newTitle = mergeDistTitle(newDists);
+    const newIssueDate = mergeDistIssueDate(newDists);
+    const newModifiedDate = mergeDistModifiedDate(newDists);
+    const newKeywords = mergeDistKeywords(newDists);
+    const newSpatialExtent = mergeDistSpatialCoverage(newDists);
+    const newTemporalCoverage = mergeDistTemporalCoverage(newDists);
 
     // --- by default, replace is checked if there is new data available
     const [keepTitle, setKeepTitle] = useState<boolean>(

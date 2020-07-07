@@ -1,5 +1,5 @@
 import {
-    State,
+    Distribution,
     TemporalCoverage,
     Interval
 } from "Components/Dataset/Add/DatasetAddCommon";
@@ -34,19 +34,15 @@ function mergeTemporalIntervals(i1?: Interval[], i2?: Interval[]) {
  * Merge all temporalCoverage field of existing distributions to determine dataset temporalCoverage
  *
  * @export
- * @param {State} state
+ * @param {Distribution[]} dists
  * @returns {(TemporalCoverage | undefined)}
  */
 export default function mergeDistTemporalCoverage(
-    state: State
+    dists: Distribution[]
 ): TemporalCoverage | undefined {
-    const newDists = state.distributions.filter(
-        (item) => item.isReplacementComfired === false
-    );
-
     let intervals = [] as Interval[] | undefined;
 
-    newDists.forEach((item) => {
+    dists.forEach((item) => {
         if (item?.temporalCoverage?.intervals?.length) {
             intervals = mergeTemporalIntervals(
                 intervals,

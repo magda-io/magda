@@ -1,19 +1,18 @@
 import uniqBy from "lodash/uniqBy";
-import { State } from "Components/Dataset/Add/DatasetAddCommon";
+import { Distribution } from "Components/Dataset/Add/DatasetAddCommon";
 
 /**
  * Merge all keywords field of existing distributions to determine dataset keywords
  *
  * @export
- * @param {State} state
+ * @param {Distribution[]} dists
  * @returns {(string[] | undefined)}
  */
-export default function mergeDistKeywords(state: State): string[] | undefined {
-    const newDists = state.distributions.filter(
-        (item) => item.isReplacementComfired === false
-    );
+export default function mergeDistKeywords(
+    dists: Distribution[]
+): string[] | undefined {
     let keywords: string[] = [];
-    newDists.forEach((item) => {
+    dists.forEach((item) => {
         if (item?.keywords?.length) {
             keywords = keywords.concat(item.keywords);
         }
