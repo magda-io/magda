@@ -469,12 +469,12 @@ dockerize:scala:
     "buildtest:search-no-index-cache",
     "buildtest:search-with-index-cache"
   ]
-  dependencies:
-    - registry-typescript-api
-    - sbt-prebuild
-    - buildtest:registry
-    - buildtest:search-no-index-cache
-    - buildtest:search-with-index-cache
+  # dependencies:
+  #   - registry-typescript-api
+  #   - sbt-prebuild
+  #   - buildtest:registry
+  #   - buildtest:search-no-index-cache
+  #   - buildtest:search-with-index-cache
   services:
     - docker:dind
   script:
