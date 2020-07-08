@@ -78,6 +78,29 @@
         }
     }
 
+    &.read-only {
+        .dataset-link-item-complete {
+            background-image: url("../../../assets/purple-box.svg");
+            background-size: 434px;
+            max-width: 434px;
+            height: 127px;
+            padding-left: 47px;
+
+            .link-item-title {
+                width: 372px !important;
+                margin-bottom: 8px;
+            }
+            .link-item-details {
+                div {
+                    width: 372px !important;
+                }
+                .description-area {
+                    height: 23px !important;
+                }
+            }
+        }
+    }
+
     &.small.read-only {
         .dataset-link-item-complete {
             background-image: url("../../../assets/purple-box.svg");
