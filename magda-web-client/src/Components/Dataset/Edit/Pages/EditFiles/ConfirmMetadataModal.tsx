@@ -34,6 +34,7 @@ type PropsType = {
     stateData: State;
     datasetStateUpdater: DatasetStateUpdaterType;
     afterClose?: () => void;
+    setIsSelectedConfirmed: (boolean) => void;
 };
 
 function renderKeywordItem(keyword: string, idx: number) {
@@ -99,7 +100,13 @@ function renderTemporalCoverage(temporalCoverage?: TemporalCoverage) {
 }
 
 const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
-    const { stateData, datasetId, setIsOpen, datasetStateUpdater } = props;
+    const {
+        stateData,
+        datasetId,
+        setIsOpen,
+        datasetStateUpdater,
+        setIsSelectedConfirmed
+    } = props;
 
     const [error, setErrors] = useState<Error | null>(null);
 
@@ -241,9 +248,11 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
         }
 
         setIsOpen(false);
+        setIsSelectedConfirmed(true);
     }, [
         datasetId,
         setIsOpen,
+        setIsSelectedConfirmed,
         datasetStateUpdater,
         keepTitle,
         keepIssueDate,
@@ -259,6 +268,11 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
         newTitle
     ]);
 
+    const onCancel = useCallback(() => {
+        setIsOpen(false);
+        setIsSelectedConfirmed(false);
+    }, [setIsSelectedConfirmed, setIsOpen]);
+
     if (!props.isOpen) {
         return null;
     }
@@ -268,7 +282,7 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
             className="confirm-metadata-modal"
             isOpen={props.isOpen}
             title="Replace the existing automated metadata fields?"
-            onClose={() => props.setIsOpen(false)}
+            onClose={onCancel}
             onAfterClose={props.afterClose}
         >
             <div className="content-area">
@@ -473,10 +487,7 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
                             Confirm
                         </AsyncButton>{" "}
                         &nbsp;&nbsp;&nbsp;
-                        <AsyncButton
-                            isSecondary={true}
-                            onClick={() => props.setIsOpen(false)}
-                        >
+                        <AsyncButton isSecondary={true} onClick={onCancel}>
                             Cancel
                         </AsyncButton>
                     </div>

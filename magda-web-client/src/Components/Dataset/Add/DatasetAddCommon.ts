@@ -219,6 +219,7 @@ export type State = {
      * When save state to `dataset-draft`, this field should be omitted.
      */
     datasetDraft?: DatasetDraft;
+    loadDatasetDraftConfirmed: boolean;
 
     licenseLevel: "dataset" | "distribution";
 
@@ -690,6 +691,7 @@ export function createBlankState(user: User): State {
         _lastModifiedDate: new Date(),
         uploadedFileUrls: [] as string[],
         datasetDraft: undefined,
+        loadDatasetDraftConfirmed: false,
         ckanExport: {
             [config.defaultCkanServer]: {
                 status: "withdraw",
@@ -800,6 +802,7 @@ export async function loadState(id: string, user: User): Promise<State> {
 export function saveStateToLocalStorage(state: State, id: string) {
     state = Object.assign({}, state);
     state.datasetDraft = undefined;
+    state.loadDatasetDraftConfirmed = false;
     state._lastModifiedDate = new Date();
 
     const dataset = JSON.stringify(state);
@@ -810,6 +813,7 @@ export function saveStateToLocalStorage(state: State, id: string) {
 export async function saveStateToRegistry(state: State, id: string) {
     state = Object.assign({}, state);
     state.datasetDraft = undefined;
+    state.loadDatasetDraftConfirmed = false;
     state._lastModifiedDate = new Date();
 
     const dataset = JSON.stringify(state);

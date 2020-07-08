@@ -31,8 +31,9 @@ type PropsType = {
 const ConfirmLoadPreviousChanges: FunctionComponent<PropsType> = (props) => {
     const [error, setError] = useState<Error | null>(null);
     const [draftData, setDraftData] = useState<State | null>(null);
-    const { datasetStateUpdater } = props;
+    const { datasetStateUpdater, datasetId } = props;
     const datasetDraftData = props?.stateData?.datasetDraft?.data;
+    const { loadDatasetDraftConfirmed, distributions } = props.stateData;
     const userId = props?.user?.id;
     const uploadedFileUrls = draftData?.uploadedFileUrls;
 
@@ -58,6 +59,11 @@ const ConfirmLoadPreviousChanges: FunctionComponent<PropsType> = (props) => {
         datasetStateUpdater(draftData!);
         // --- set draft data to null to close modal
         setDraftData(null);
+        // --- make sure this modal won't show up until user reloads the page
+        datasetStateUpdater((state) => ({
+            ...state,
+            loadDatasetDraftConfirmed: true
+        }));
     }, [draftData, setDraftData, datasetStateUpdater]);
 
     const onDiscard = useCallback(async () => {
@@ -69,7 +75,7 @@ const ConfirmLoadPreviousChanges: FunctionComponent<PropsType> = (props) => {
                  */
                 const result = await cleanUpOrphanFiles(
                     uploadedFileUrls,
-                    props.stateData.distributions
+                    distributions
                 );
 
                 if (result.length) {
@@ -78,25 +84,26 @@ const ConfirmLoadPreviousChanges: FunctionComponent<PropsType> = (props) => {
             }
 
             // --- delete the draft so it won't show up again
-            await deleteRecordAspect(props.datasetId, "dataset-draft");
+            await deleteRecordAspect(datasetId, "dataset-draft");
 
             // --- remove dataset draft data from the local state
-            await promisifySetState(props.datasetStateUpdater)((state) => ({
+            await promisifySetState(datasetStateUpdater)((state) => ({
                 ...state,
                 datasetDraft: undefined
             }));
 
             // --- set draft data to null to close modal
             setDraftData(null);
+
+            // --- make sure this modal won't show up until user reloads the page
+            datasetStateUpdater((state) => ({
+                ...state,
+                loadDatasetDraftConfirmed: true
+            }));
         } catch (e) {
             setError(e);
         }
-    }, [
-        uploadedFileUrls,
-        props.stateData.distributions,
-        props.datasetId,
-        props.datasetStateUpdater
-    ]);
+    }, [uploadedFileUrls, distributions, datasetId, datasetStateUpdater]);
 
     if (!draftData || !props?.user) {
         return null;
@@ -105,7 +112,7 @@ const ConfirmLoadPreviousChanges: FunctionComponent<PropsType> = (props) => {
     return (
         <OverlayBox
             className="confirm-load-previous-changes-modal"
-            isOpen={draftData ? true : false}
+            isOpen={draftData && !loadDatasetDraftConfirmed ? true : false}
             title="Do you want to recover previously saved unsubmitted changes or discard it?"
             showCloseButton={false}
         >

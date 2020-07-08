@@ -312,8 +312,6 @@ const EditFilesPage: FunctionComponent<Props> = (props) => {
         );
     };
 
-    console.log("file page state:", props.stateData);
-
     return render();
 };
 

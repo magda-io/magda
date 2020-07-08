@@ -100,6 +100,7 @@ const DistSupercedeSection: FunctionComponent<PropsType> = (props) => {
                         setIsConfirmUnselectedNewDistsModalOpen(true);
                     } else {
                         setIsSelectedConfirmed(true);
+                        setIsMetadataConfirmModalOpen(true);
                     }
                 }}
             />
@@ -167,7 +168,7 @@ const DistSupercedeSection: FunctionComponent<PropsType> = (props) => {
                 setIsOpen={setIsMetadataConfirmModalOpen}
                 stateData={props.stateData}
                 datasetStateUpdater={props.datasetStateUpdater}
-                afterClose={() => setIsSelectedConfirmed(true)}
+                setIsSelectedConfirmed={setIsSelectedConfirmed}
             />
 
             {error ? (
