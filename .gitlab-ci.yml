@@ -49,6 +49,7 @@ builders-and-yarn:
 # Make sure sbt depenencies, plugins are in place, cached (only for this job) and pass to following stage as artifacts
 sbt-prebuild:
   stage: sbt-prebuild
+  needs: []
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   cache:
     key: $CI_JOB_NAME-$CACHE_VERSION
@@ -71,12 +72,14 @@ sbt-prebuild:
 check-scala-formatting:
   stage: prebuild
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  needs: []
   script:
     - sbt scalafmtCheckAll
 
 registry-typescript-api:
   stage: prebuild
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  needs: ["check-scala-formatting"]
   script:
     - lerna run generate --scope=@magda/typescript-common --stream
   artifacts:
@@ -430,6 +433,7 @@ buildtest:helm-charts:
   stage: buildtest
   image: dtzar/helm-kubectl:3.1.1
   dependencies: []
+  needs: []
   cache:
     paths: []
   script:
