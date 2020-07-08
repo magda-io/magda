@@ -48,38 +48,52 @@ function readFileAsArrayBuffer(file: any): Promise<ArrayBuffer> {
 const updateDistPartial = (
     datasetStateUpdater: DatasetStateUpdaterType,
     initDist: Distribution
-) => (updateFn: (state: Distribution) => Partial<Distribution>) => {
-    datasetStateUpdater((state: State) => {
-        const distIndex = state.distributions.findIndex(
-            (thisDist) => thisDist.id === initDist.id
+) => (
+    updateFn: (state: Distribution) => Partial<Distribution>
+): Promise<Distribution> =>
+    new Promise((resolve, reject) => {
+        let mergedDist: Distribution;
+        datasetStateUpdater(
+            (state: State) => {
+                try {
+                    const distIndex = state.distributions.findIndex(
+                        (thisDist) => thisDist.id === initDist.id
+                    );
+                    const upToDateDist =
+                        distIndex !== -1
+                            ? state.distributions[distIndex]
+                            : initDist;
+
+                    // Clone the existing dist array
+                    const newDists = state.distributions.concat();
+                    mergedDist = {
+                        ...upToDateDist,
+                        ...updateFn(upToDateDist)
+                    };
+
+                    // If dist already exists
+                    if (distIndex >= 0) {
+                        // Splice in the updated one
+                        newDists.splice(distIndex, 1, mergedDist);
+                    } else {
+                        // Add the new one
+                        newDists.push(mergedDist);
+                    }
+
+                    const newState: State = {
+                        ...state,
+                        distributions: newDists
+                    };
+
+                    return newState;
+                } catch (e) {
+                    reject(e);
+                    return state;
+                }
+            },
+            () => resolve(mergedDist)
         );
-        const upToDateDist =
-            distIndex !== -1 ? state.distributions[distIndex] : initDist;
-
-        // Clone the existing dist array
-        const newDists = state.distributions.concat();
-        const mergedDist = {
-            ...upToDateDist,
-            ...updateFn(upToDateDist)
-        };
-
-        // If dist already exists
-        if (distIndex >= 0) {
-            // Splice in the updated one
-            newDists.splice(distIndex, 1, mergedDist);
-        } else {
-            // Add the new one
-            newDists.push(mergedDist);
-        }
-
-        const newState: State = {
-            ...state,
-            distributions: newDists
-        };
-
-        return newState;
     });
-};
 
 /**
  * Processes the contents of a file, extracting metadata from it and returning
@@ -126,20 +140,18 @@ export default async function processFile(
      * extraction and uploading if applicable
      */
     const updateTotalProgress = () => {
-        updateThisDist(() => {
-            return {
-                // Progress % = the progress of the initial read +
-                // either just the extraction progress, or the average
-                // of both extraction and upload progress
-                _progress:
-                    READ_FILE_PROGRESS_INCREMENT +
-                    Math.round(
-                        shouldUpload
-                            ? extractionProgress * 40 + uploadProgress * 40
-                            : extractionProgress * 80
-                    )
-            };
-        });
+        updateThisDist(() => ({
+            // Progress % = the progress of the initial read +
+            // either just the extraction progress, or the average
+            // of both extraction and upload progress
+            _progress:
+                READ_FILE_PROGRESS_INCREMENT +
+                Math.round(
+                    shouldUpload
+                        ? extractionProgress * 40 + uploadProgress * 40
+                        : extractionProgress * 80
+                )
+        }));
     };
 
     /** Handles a new progress callback from uploading */
@@ -178,7 +190,7 @@ export default async function processFile(
     };
 
     // Now we've finished the read, start processing
-    updateThisDist((_state) => ({
+    updateThisDist(() => ({
         _state: DistributionState.Processing,
         _progress: READ_FILE_PROGRESS_INCREMENT
     }));
@@ -209,13 +221,7 @@ export default async function processFile(
             Comlink.proxy(handleExtractionProgress)
         );
 
-        // Now we're done!
-        updateThisDist((_dist: Distribution) => ({
-            _state: DistributionState.Ready
-        }));
-
-        return {
-            ...initialDistribution,
+        const extractedDistData = {
             format: output.format,
             title: output.datasetTitle || initialDistribution.title,
             modified: moment(output.modified).toDate(),
@@ -237,6 +243,15 @@ export default async function processFile(
                 : output.temporalCoverage,
             spatialCoverage: output.spatialCoverage
         };
+
+        // Now we're done!
+        const newDistData = await updateThisDist(() => ({
+            ...extractedDistData,
+            _progress: 100,
+            _state: DistributionState.Ready
+        }));
+
+        return newDistData;
     } catch (e) {
         // Something went wrong - remove the distribution and show the error
 
