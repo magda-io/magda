@@ -462,6 +462,13 @@ dockerize:scala:
   stage: dockerize
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   retry: 2
+  needs: [
+    "registry-typescript-api",
+    "sbt-prebuild",
+    "buildtest:registry",
+    "buildtest:search-no-index-cache",
+    "buildtest:search-with-index-cache"
+  ]
   dependencies:
     - registry-typescript-api
     - sbt-prebuild
