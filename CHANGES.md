@@ -70,6 +70,7 @@ UI:
 -   Always set dataset publishing state to "published" no matter the approval flow is on / off
 -   Fix a sheet file contains date would cause blank screen during processing
 -   Set an error if security classification is at PROTECTED or above
+-   Add revised edit flow for adding/deleting/superceding existing distributions
 
 Storage:
 
