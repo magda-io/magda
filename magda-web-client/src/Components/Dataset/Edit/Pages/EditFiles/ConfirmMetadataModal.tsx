@@ -367,7 +367,7 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
                                     </td>
                                     <td>
                                         {newModifiedDate
-                                            ? moment(newIssueDate).format(
+                                            ? moment(newModifiedDate).format(
                                                   "DD/MM/YYYY"
                                               )
                                             : "N/A"}

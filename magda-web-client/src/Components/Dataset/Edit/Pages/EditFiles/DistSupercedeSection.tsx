@@ -215,18 +215,8 @@ const DistSupercedeSection: FunctionComponent<PropsType> = (props) => {
 
                             setIsMetadataConfirmModalOpen(true);
                         } else {
-                            // --- if not require replacement, set all pending distribution as current.
-                            props.datasetStateUpdater((state) => ({
-                                ...state,
-                                distributions: state.distributions.map((dist) =>
-                                    dist.isReplacementComfired === false
-                                        ? {
-                                              ...dist,
-                                              isReplacementComfired: true
-                                          }
-                                        : dist
-                                )
-                            }));
+                            // --- if not require replacement, show metadata confirm screen rigth away
+                            setIsMetadataConfirmModalOpen(true);
                         }
                     }}
                 >
