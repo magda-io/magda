@@ -17,6 +17,7 @@ import au.csiro.data61.magda.model.TenantId.{SpecifiedTenantId}
 import au.csiro.data61.magda.util.ErrorHandling.CausedBy
 import com.typesafe.config.Config
 import au.csiro.data61.magda.client.Conversions
+import au.csiro.data61.magda.util.Collections.mapCatching
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
@@ -75,21 +76,18 @@ class WebhookApi(indexer: SearchIndexer)(
             payload.records match {
               case None | Some(Nil) => Future.successful(Unit)
               case Some(list) =>
-                val dataSets = list.map(
+                val dataSets = mapCatching[Record, DataSet](
+                  list,
                   record =>
-                    try {
-                      Some(
-                        Conversions
-                          .convertRegistryDataSet(record, Some(system.log))
-                      )
-                    } catch {
-                      case CausedBy(e: spray.json.DeserializationException) =>
-                        system.log.error(e, "When converting {}", record.id)
-                        None
-                    }
+                    Conversions
+                      .convertRegistryDataSet(record, Some(system.log)), {
+                    (e, item) =>
+                      system.log
+                        .error(e, "Could not parse item: {}", item.toString)
+                  }
                 )
 
-                indexer.index(Source(dataSets.flatten))
+                indexer.index(Source(dataSets))
             }
 
           val future = deleteOp().flatMap(_ => insertOp())

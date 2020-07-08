@@ -76,6 +76,20 @@ const classificationValidator: CustomValidatorType = (
     state,
     validationItem
 ) => {
+    const valueUpper = value.toUpperCase();
+    if (
+        valueUpper === "PROTECTED" ||
+        valueUpper === "SECRET" ||
+        valueUpper === "TOP SECRET"
+    ) {
+        return {
+            valid: false,
+            validationMessage:
+                "Cannot proceed with this dataset. A dataset with security classification " +
+                "of PROTECTED or above cannot be stored in Magda."
+        };
+    }
+
     if (
         !ValidationManager.shouldValidate(
             "$.datasetPublishing.publishAsOpenData.dga"
@@ -138,12 +152,9 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
             <div className="col-sm-12">
                 <h2>Access and Use</h2>
 
-                {config.featureFlags.placeholderWorkflowsOn ? (
-                    <h3 className="with-underline">Sharing</h3>
-                ) : null}
+                <h3 className="with-underline">Sharing</h3>
 
-                {config.featureFlags.placeholderWorkflowsOn &&
-                config.featureFlags.publishToDga ? (
+                {config.featureFlags.publishToDga ? (
                     <div className="question-publish-to-dga">
                         <h4 className="with-icon">
                             <span>

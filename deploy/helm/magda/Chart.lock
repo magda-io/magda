@@ -14,6 +14,9 @@ dependencies:
 - name: magda-minion-visualization
   repository: https://charts.magda.io
   version: 0.0.57-0
+- name: magda-minion-ckan-exporter
+  repository: https://charts.magda.io
+  version: 0.0.57-0
 - name: magda-ckan-connector
   repository: https://charts.magda.io
   version: 0.0.57-0
@@ -122,5 +125,5 @@ dependencies:
 - name: magda-esri-portal-connector
   repository: https://charts.magda.io
   version: 0.0.57-0
-digest: sha256:3ab87c4d86703cc23e8918b06d7a2567b4082121da19d28335b0adf6ad72f2cc
-generated: "2020-04-30T14:05:42.083207+10:00"
+digest: sha256:8eb2f7169154a537bd42d3e6691aa31c97850daaee3d7e7c16e50530d6d09c15
+generated: "2020-07-06T14:49:16.255172752+10:00"

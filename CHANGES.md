@@ -29,6 +29,9 @@ General:
 -   Add missing `cloud-sql-proxy` dependecy to `magda-core` chart
 -   Add more operators to Registry /records & records/count API `aspectOrQuery`
 -   Add `aspectOrQuery`, `orderBy`, `orderByDir` & `orderNullFirst` parameters to Registry API /records & records/count
+-   Upgrade [bcrypt](https://www.npmjs.com/package/bcrypt) to 5.0.0
+-   Make the constructor of AuthorizedRegistryClient also accepts a customised jwt token.
+-   Set pwgen to `0.1.6` (was `^0.1.6`)
 
 UI:
 
@@ -66,6 +69,7 @@ UI:
 -   Fix magda & ckan login options are missing
 -   Always set dataset publishing state to "published" no matter the approval flow is on / off
 -   Fix a sheet file contains date would cause blank screen during processing
+-   Set an error if security classification is at PROTECTED or above
 
 Storage:
 
@@ -100,6 +104,7 @@ Authorization:
 -   Added per-record authorization around the `/records/summary` endpoint matching the `/records` one.
 -   Added per-record authorization around the `/records/<recordid>/history` endpoint
 -   Added per-record authorization around the `/records/<recordid>/history/<eventId>` endpoint
+-   Fixed a bug where the registry would attempt to query for policies against every single record id in the registry all at once.
 
 Registry:
 
@@ -111,6 +116,10 @@ Search:
 -   Began work on a NodeJS-based search API to replace the scala one
 -   Allow fetch region record by region id
 -   Use a list of acronyms for publishers that have a 'Department of' in their name
+
+Minions:
+
+-   Added a minion for publishing to CKAN
 
 Others:
 
@@ -954,6 +963,7 @@ Others:
 -   Added spacing on byline of dataset page
 -   Made data quality rating use stars across search results and quality page, and made both use quality aspect.
 -   Fix placement and color of search box on desktop and mobile
+-   Stopped relying on visualisation minion to process a file before visualising the file as a chart
 
 ## 0.0.37
 
