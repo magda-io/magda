@@ -1391,6 +1391,15 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
           )
         )
 
+        // Should not have access to the outer record
+        Get(
+          s"/v0/records/record-2?aspect=aspect-with-link&dereference=false"
+        ) ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.NotFound
+        }
+
         // Make sure we have access to the inner record (thus expect an extra call for inner policy)
         expectOpaQueryForPolicy(
           param,
@@ -1403,14 +1412,6 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
-        }
-
-        Get(
-          s"/v0/records/record-2?aspect=aspect-with-link&dereference=false"
-        ) ~> addTenantIdHeader(
-          TENANT_1
-        ) ~> param.api(Full).routes ~> check {
-          status shouldEqual StatusCodes.NotFound
         }
 
         // Call again with dereference=true, this means more calls to OPA

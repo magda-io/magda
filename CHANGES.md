@@ -105,6 +105,7 @@ Authorization:
 -   Added per-record authorization around the `/records/summary` endpoint matching the `/records` one.
 -   Added per-record authorization around the `/records/<recordid>/history` endpoint
 -   Added per-record authorization around the `/records/<recordid>/history/<eventId>` endpoint
+-   Fixed a bug where the registry would attempt to query for policies against every single record id in the registry all at once.
 
 Registry:
 

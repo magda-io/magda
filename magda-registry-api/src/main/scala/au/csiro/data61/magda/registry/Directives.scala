@@ -146,24 +146,25 @@ object Directives extends Protocols with SprayJsonSupport {
             .getPolicyIds(operationType, recordId.map(Set(_)))
         } get
 
-        val linkedRecordIds = DB readOnly { implicit session =>
-          recordPersistence.getLinkedRecordIds(
-            operationType,
-            recordId,
-            aspectIds
-          )
-        } get
+        val linkedRecordIds = recordId.map(
+          innerRecordId =>
+            DB readOnly { implicit session =>
+              recordPersistence.getLinkedRecordIds(
+                operationType,
+                innerRecordId,
+                aspectIds
+              )
+            } get
+        )
 
         val linkedRecordPolicyIds =
-          if (linkedRecordIds.isEmpty) List()
-          else
-            DB readOnly { implicit session =>
-              recordPersistence
-                .getPolicyIds(
-                  operationType,
-                  Some(linkedRecordIds.toSet)
-                )
-            } get
+          DB readOnly { implicit session =>
+            recordPersistence
+              .getPolicyIds(
+                operationType,
+                linkedRecordIds.map(_.toSet)
+              )
+          } get
 
         val allPolicyIds = recordPolicyIds.toSet ++ linkedRecordPolicyIds
 
