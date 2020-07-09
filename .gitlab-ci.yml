@@ -564,7 +564,6 @@ dockerize:migrators:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 2
-  needs: ["registry-typescript-api"]
   cache:
     paths: []
   services:
@@ -577,7 +576,6 @@ dockerize:dockerExtensions:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 2
-  needs: ["registry-typescript-api"]
   cache:
     paths: []
   services:
