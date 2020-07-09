@@ -27,6 +27,7 @@ builders-and-yarn:
   stage: builders
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:master
   retry: 1
+  needs: []
   cache:
     key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
@@ -95,6 +96,9 @@ buildtest:search-with-index-cache:
     "builders-and-yarn",
     "sbt-prebuild"
   ]
+  dependencies:
+    - builders-and-yarn
+    - sbt-prebuild
   before_script:
     - |
       if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
@@ -157,6 +161,9 @@ buildtest:search-no-index-cache:
     "builders-and-yarn",
     "sbt-prebuild"
   ]
+  dependencies:
+    - builders-and-yarn
+    - sbt-prebuild
   before_script:
     - |
       if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
@@ -222,6 +229,8 @@ buildtest:ui:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
   retry: 1
   needs: ["builders-and-yarn"]
+  dependencies:
+    - builders-and-yarn
   cache:
     paths: []
   variables:
@@ -245,6 +254,9 @@ buildtest:registry:
     "builders-and-yarn",
     "sbt-prebuild"
   ]
+  dependencies:
+    - builders-and-yarn
+    - sbt-prebuild
   services:
   # postgres 9.6.17 (published on 15th Feb 2020) introduced an issue see here (https://gitlab.com/gitlab-com/support-forum/issues/5199)
     - postgres:9.6.16
@@ -273,6 +285,9 @@ buildtest:typescript-apis-stateless:
     "builders-and-yarn",
     "registry-typescript-api"
   ]
+  dependencies:
+    - builders-and-yarn
+    - registry-typescript-api
   script:
     - cd magda-typescript-common && yarn build && yarn test && cd ..
     - cd magda-minion-framework && yarn build && yarn test && cd ..
@@ -294,6 +309,9 @@ buildtest:typescript-apis-with-pg:
     "builders-and-yarn",
     "registry-typescript-api"
   ]
+  dependencies:
+    - builders-and-yarn
+    - registry-typescript-api
   before_script:
     - |
       if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
@@ -341,6 +359,8 @@ buildtest:typescript-apis-with-es:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 2
   needs: ["builders-and-yarn"]
+  dependencies:
+    - builders-and-yarn
   before_script:
     - |
       if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
@@ -387,6 +407,9 @@ buildtest:storage-api:
     "builders-and-yarn",
     "registry-typescript-api"
   ]
+  dependencies:
+    - builders-and-yarn
+    - registry-typescript-api
   before_script:
     - |
       if [ -z "$DOCKER_HOST" -a "$KUBERNETES_PORT" ]; then
@@ -425,6 +448,8 @@ buildtest:opa-policies:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 1
   needs: ["builders-and-yarn"]
+  dependencies:
+    - builders-and-yarn
   cache:
     paths: []
   services:
@@ -475,6 +500,12 @@ dockerize:scala:
     "buildtest:search-no-index-cache",
     "buildtest:search-with-index-cache"
   ]
+  dependencies:
+    - registry-typescript-api
+    - sbt-prebuild
+    - buildtest:registry
+    - buildtest:search-no-index-cache
+    - buildtest:search-with-index-cache
   services:
     - docker:dind
   script:
@@ -494,6 +525,10 @@ dockerize:ui:
     "registry-typescript-api",
     "buildtest:ui"
   ]
+  dependencies:
+    - builders-and-yarn
+    - registry-typescript-api
+    - buildtest:ui
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - yarn run in-submodules -- -f categories.ui=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
@@ -514,6 +549,13 @@ dockerize:typescript-apis:
     "buildtest:typescript-apis-with-es",
     "buildtest:storage-api"
   ]
+  dependencies:
+    - builders-and-yarn
+    - registry-typescript-api
+    - buildtest:typescript-apis-stateless
+    - buildtest:typescript-apis-with-pg
+    - buildtest:typescript-apis-with-es
+    - buildtest:storage-api
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
@@ -522,6 +564,7 @@ dockerize:migrators:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 2
+  needs: []
   cache:
     paths: []
   services:
@@ -534,6 +577,7 @@ dockerize:dockerExtensions:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 2
+  needs: []
   cache:
     paths: []
   services:
@@ -556,6 +600,11 @@ inttest:registryAuth:
     "buildtest:registry",
     "buildtest:helm-charts"
   ]
+  dependencies:
+    - sbt-prebuild
+    - builders-and-yarn
+    - buildtest:registry
+    - buildtest:helm-charts
   services:
     - docker:dind
   cache:
