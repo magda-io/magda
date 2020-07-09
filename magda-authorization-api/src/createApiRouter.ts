@@ -8,6 +8,8 @@ import GenericError from "magda-typescript-common/src/authorization-api/GenericE
 import AuthError from "magda-typescript-common/src/authorization-api/AuthError";
 import { installStatusRouter } from "magda-typescript-common/src/express/status";
 import { NodeNotFoundError } from "./NestedSetModelQueryer";
+import isUUID from "is-uuid";
+import bcrypt from "bcrypt";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -45,6 +47,12 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 isError: true,
                 errorCode: 404,
                 errorMessage: e.message || "Could not find resource"
+            });
+        } else if (e instanceof GenericError) {
+            res.status(e.statusCode).json({
+                isError: true,
+                errorCode: e.statusCode,
+                errorMessage: e.message
             });
         } else {
             res.status(500).json({
@@ -118,6 +126,56 @@ export default function createApiRouter(options: ApiRouterOptions) {
         });
         next();
     };
+
+    /**
+     * retrieve user info with api key id & api key
+     * this api is only meant to be accessed internally (by gateway)
+     * This route needs to run without MUST_BE_ADMIN middleware as it will authenticate request by APIkey itself
+     */
+    router.get("/private/getUserByApiKey/:apiKeyId", async function (req, res) {
+        try {
+            const apiKey = req.get("X-Magda-API-Key");
+            const apiKeyId = req.params.apiKeyId;
+
+            if (!apiKeyId || !isUUID.anyNonNil(apiKeyId)) {
+                // --- 400 Bad Request
+                throw new GenericError(
+                    "Expect the last URL segment to be valid API key ID in uuid format",
+                    400
+                );
+            }
+
+            if (!apiKey) {
+                // --- 400 Bad Request
+                throw new GenericError(
+                    "X-Magda-API-Key header cannot be empty",
+                    400
+                );
+            }
+
+            const apiKeyRecord = await database.getUserApiKeyById(apiKeyId);
+            const match = await bcrypt.compare(apiKey, apiKeyRecord.hash);
+            if (match) {
+                const user = (
+                    await database.getUser(apiKeyRecord["user_id"])
+                ).valueOr(null);
+
+                if (!user) {
+                    throw new GenericError("Unauthorized", 401);
+                }
+
+                res.json(user);
+                res.status(200);
+            } else {
+                throw new GenericError("Unauthorized", 401);
+            }
+        } catch (e) {
+            const error =
+                e instanceof GenericError ? e : new GenericError("" + e);
+            respondWithError("/private/getUserByApiKey/:apiKeyId", res, error);
+        }
+        res.end();
+    });
 
     router.all("/private/*", MUST_BE_ADMIN);
 

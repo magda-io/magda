@@ -55,7 +55,7 @@ export const peopleNameArb = jsc
         (string) => string.split(" ") as [string, string]
     );
 
-const uuidArb: jsc.Arbitrary<string> = jsc.bless({
+export const uuidArb: jsc.Arbitrary<string> = jsc.bless({
     generator: jsc.generator.bless((x) => uuid()),
     shrink: jsc.shrink.bless((x) => []),
     show: (x: string) => x

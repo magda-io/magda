@@ -2,7 +2,8 @@ import mockUserDataStore from "magda-typescript-common/src/test/mockUserDataStor
 import {
     User,
     Role,
-    Permission
+    Permission,
+    APIKeyRecord
 } from "magda-typescript-common/src/authorization-api/model";
 import { Maybe } from "tsmonad";
 import sinon from "sinon";
@@ -10,6 +11,7 @@ import arrayToMaybe from "magda-typescript-common/src/util/arrayToMaybe";
 import Database from "../Database";
 import NestedSetModelQueryer, { NodeRecord } from "../NestedSetModelQueryer";
 import pg from "pg";
+import mockApiKeyStore from "./mockApiKeyStore";
 
 export default class MockDatabase {
     getUser(id: string): Promise<Maybe<User>> {
@@ -104,5 +106,9 @@ export default class MockDatabase {
             }
         } as NestedSetModelQueryer;
         return orgQueryer;
+    }
+
+    async getUserApiKeyById(apiKeyId: string): Promise<APIKeyRecord> {
+        return mockApiKeyStore.getRecordById(apiKeyId);
     }
 }
