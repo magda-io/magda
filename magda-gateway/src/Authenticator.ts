@@ -4,6 +4,7 @@ import pg from "pg";
 import passport from "passport";
 import URI from "urijs";
 import signature from "cookie-signature";
+import createAuthenticateApiKeyMiddleware from "./createAuthenticateApiKeyMiddleware";
 
 /** This is present in the express-session types but not actually exported properly, so it needs to be copy-pasted here */
 export type SessionCookieOptions = {
@@ -22,6 +23,7 @@ export interface AuthenticatorOptions {
     sessionSecret: string;
     dbPool: pg.Pool;
     cookieOptions?: SessionCookieOptions;
+    authApiBaseUrl: string;
 }
 
 export const DEFAULT_SESSION_COOKIE_NAME: string = "connect.sid";
@@ -81,10 +83,18 @@ export default class Authenticator {
     private sessionMiddleware: express.RequestHandler;
     private passportMiddleware: express.RequestHandler;
     private passportSessionMiddleware: express.RequestHandler;
+    private apiKeyMiddleware: express.RequestHandler;
     public sessionCookieOptions: SessionCookieOptions;
     private sessionSecret: string;
+    private authApiBaseUrl: string;
 
     constructor(options: AuthenticatorOptions) {
+        this.authApiBaseUrl = options.authApiBaseUrl;
+
+        if (!this.authApiBaseUrl) {
+            throw new Error("Authenticator requires valid auth API base URL");
+        }
+
         this.sessionCookieOptions = options.cookieOptions
             ? {
                   ...DEFAULT_SESSION_COOKIE_OPTIONS,
@@ -183,7 +193,7 @@ export default class Authenticator {
      * @param {express.NextFunction} next
      * @memberof Authenticator
      */
-    authenticatorMiddleware(
+    async authenticatorMiddleware(
         req: express.Request,
         res: express.Response,
         next: express.NextFunction
@@ -254,7 +264,25 @@ export default class Authenticator {
                 }
             );
         } else {
-            // For other routes: only make session & passport data available if session has already started (cookie set)
+            // For other routes:
+            // - if valid API key headers exist, attemp to login via API key
+            // - otherwise, only make session & passport data available if session has already started (cookie set)
+            if (
+                req.header("X-Magda-API-Key-Id") &&
+                req.header("X-Magda-API-Key")
+            ) {
+                const result = await authenticateApiKey(
+                    this.authApiBaseUrl,
+                    req
+                );
+                if (result) {
+                    // --- if successfully authenticated via API key, skip rest of session processing
+                    // --- proceed to the rest of middleware chain
+                    return next();
+                }
+                // otherwise, continue to recover / valid session via cookie
+            }
+
             if (!req.cookies[DEFAULT_SESSION_COOKIE_NAME]) {
                 // --- session not started yet & no incoming session id cookie
                 // --- proceed to other non auth middlewares

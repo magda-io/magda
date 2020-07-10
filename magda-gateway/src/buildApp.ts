@@ -105,6 +105,7 @@ export default function buildApp(config: Config) {
     const authenticator = new Authenticator({
         sessionSecret: config.sessionSecret,
         cookieOptions: _.isEmpty(config.cookieJson) ? {} : config.cookieJson,
+        authApiBaseUrl: config.authorizationApi,
         dbPool
     });
 

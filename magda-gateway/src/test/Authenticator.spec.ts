@@ -74,7 +74,8 @@ describe("Test Authenticator (Session Management)", function (this: Mocha.ISuite
         const auth = new Authenticator({
             dbPool: pool,
             sessionSecret: SESSION_SECRET,
-            cookieOptions
+            cookieOptions,
+            authApiBaseUrl: "http://test-auth-api.com"
         });
 
         // --- attach auth routes to test app
