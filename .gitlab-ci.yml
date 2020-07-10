@@ -248,12 +248,13 @@ buildtest:ui:
 
 buildtest:registry:
   stage: buildtest
-  retry: 1
+  retry: 2
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   needs: [
     "builders-and-yarn",
     "sbt-prebuild"
   ]
+  timeout: 30 minutes
   dependencies:
     - builders-and-yarn
     - sbt-prebuild
