@@ -92,6 +92,7 @@ buildtest:search-with-index-cache:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   retry: 2
+  parallel: 4
   needs: [
     "builders-and-yarn",
     "sbt-prebuild"
