@@ -91,7 +91,7 @@ registry-typescript-api:
 buildtest:search-with-index-cache:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
-  retry: 3
+  retry: 2
   timeout: 18 minutes
   needs: [
     "builders-and-yarn",
@@ -157,7 +157,7 @@ buildtest:search-with-index-cache:
 buildtest:search-no-index-cache:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
-  retry: 3
+  retry: 2
   timeout: 18 minutes
   needs: [
     "builders-and-yarn",
