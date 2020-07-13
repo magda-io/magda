@@ -13,7 +13,10 @@ import mockDatabase from "./mockDatabase";
 import mockUserDataStore from "magda-typescript-common/src/test/mockUserDataStore";
 import Database from "../Database";
 import { userDataArb } from "./arbitraries";
-import { uuidArb } from "magda-typescript-common/src/test/arbitraries";
+import {
+    uuidArb,
+    lcAlphaNumStringArbNe
+} from "magda-typescript-common/src/test/arbitraries";
 import { Request } from "supertest";
 import mockApiKeyStore from "./mockApiKeyStore";
 
@@ -397,6 +400,45 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                                     id: userId,
                                     ...userData
                                 }).to.deep.include(res.body);
+
+                                return true;
+                            } catch (e) {
+                                throw e;
+                            }
+                        }
+                    ),
+                    // --- we need to limit the no. of test here as bcrypt hash is very slow
+                    { tests: 5 }
+                );
+            });
+
+            it("should deny access with incorrect API key & API Key Id", async () => {
+                await jsc.assert(
+                    jsc.forall(
+                        uuidArb,
+                        lcAlphaNumStringArbNe,
+                        userDataArb,
+                        async (apiKey, randomStr, userData) => {
+                            try {
+                                mockUserDataStore.reset();
+                                const {
+                                    id: userId
+                                } = mockUserDataStore.createRecord(userData);
+
+                                mockApiKeyStore.reset();
+                                const {
+                                    id: apiKeyId
+                                } = await mockApiKeyStore.create(
+                                    userId,
+                                    apiKey
+                                );
+
+                                const res = await request(app)
+                                    .get(`/private/getUserByApiKey/${apiKeyId}`)
+                                    // --- add non empty random string to make it incorrect key
+                                    .set("X-Magda-API-Key", apiKey + randomStr);
+
+                                expect(res.status).to.equal(401);
 
                                 return true;
                             } catch (e) {
