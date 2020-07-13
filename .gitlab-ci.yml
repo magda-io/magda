@@ -231,6 +231,10 @@ buildtest:ui:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
   retry: 1
   needs: ["builders-and-yarn"]
+  only:
+    changes:
+      - magda-web-server/*
+      - magda-web-cient/*
   dependencies:
     - builders-and-yarn
   cache:
