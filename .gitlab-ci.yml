@@ -700,6 +700,12 @@ inttest:registryAuth:
 
 (UI) Run As Preview:
   <<: *runAsPreview
+  script:
+    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,magda-core.ingress.targetService=web,tags.all=false,tags.web-server=true,magda-core.web-server.baseUrl=https://dev.magda.io,magda-core.web-server.useLocalStyleSheet=true --timeout 3600m --wait
+    - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
+
+(UI - Auto) Run As Preview:
+  <<: *runAsPreview
   when: always
   only:
     variables:
