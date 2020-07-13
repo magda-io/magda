@@ -55,7 +55,8 @@ describe("proxying", () => {
     });
 
     beforeEach(() => {
-        app = buildApp(defaultAppOptions);
+        app = express();
+        app = buildApp(app, defaultAppOptions);
     });
 
     afterEach(() => {
@@ -128,7 +129,8 @@ describe("proxying", () => {
             });
 
             it("should not set a default cache-control header if none is set", (done) => {
-                app = buildApp({
+                app = express();
+                app = buildApp(app, {
                     ...defaultAppOptions,
                     defaultCacheControl: undefined
                 });
