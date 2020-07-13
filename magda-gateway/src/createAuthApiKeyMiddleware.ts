@@ -60,7 +60,16 @@ const createAuthApiKeyMiddleware = (
 
         const user = await authRes.json();
 
-        req.logIn({ id: user.id }, next);
+        // to be consistent with all other oauth plugins, we set req.user UserToken type here
+        req.logIn(
+            { id: user.id } as any,
+            {
+                // --- by default, we do not enable session here for APIkey authentication
+                session:
+                    typeof enableSession === "boolean" ? enableSession : false
+            },
+            next
+        );
     } catch (e) {
         console.error(e);
 
