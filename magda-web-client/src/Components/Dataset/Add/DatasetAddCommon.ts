@@ -1294,19 +1294,11 @@ type FailedFileInfo = {
 
 /**
  * Tried to delete any uploaded files that is not associated with any distributions.
- * Return info of files that are failed to delete
- *
- * @export
- * @param {State} state
- * @returns {Promise<FailedFileInfo[]>}
- */
-
-/**
- * Tried to delete any uploaded files that is not associated with any distributions.
  * Return info of files that are failed to delete.
+ * If all files are deleted successfully or no files are required to deleted, it will return an empty array.
  *
  * @export
- * @param {string[]} uploadedFileUrls a list of all files have been uploaded to intnernal magda storage API. Can be retrieved from state.uploadedFileUrls
+ * @param {string[]} uploadedFileUrls a list of all files have been uploaded to internal magda storage API. Can be retrieved from state.uploadedFileUrls
  * @param {Distribution[]} distributions all dataset's dsitributions. Can be retrieved from state.distributions
  * @returns {Promise<FailedFileInfo[]>}
  */
