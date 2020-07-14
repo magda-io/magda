@@ -13,17 +13,22 @@ export function getUserId(req: Request, jwtSecret: string): Maybe<string> {
     const jwtToken = req.header("X-Magda-Session");
 
     if (jwtToken) {
-        try {
-            const jwtPayload = jwt.verify(jwtToken, jwtSecret);
-            return Maybe.just(jwtPayload.userId);
-        } catch (e) {
-            console.error(e);
-            return Maybe.nothing<string>();
-        }
+        return getUserIdFromJwtToken(jwtToken, jwtSecret);
     } else {
         if (req.user?.id) {
             return Maybe.just(req.user.id);
         }
+        return Maybe.nothing<string>();
+    }
+}
+
+// Used by external projects
+export function getUserIdFromJwtToken(jwtToken: string, jwtSecret: string) {
+    try {
+        const jwtPayload = jwt.verify(jwtToken, jwtSecret);
+        return Maybe.just(jwtPayload.userId as string);
+    } catch (e) {
+        console.error(e);
         return Maybe.nothing<string>();
     }
 }
