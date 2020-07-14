@@ -490,6 +490,8 @@ buildtest:helm-charts:
 
     - echo "helm lint magda chart using preview-multi-tenant.yml"
     - helm lint -f deploy/helm/preview-multi-tenant.yml deploy/helm/magda
+
+    - ls; pwd; echo "lmao"
   artifacts:
     paths:
       - "deploy/helm/magda/charts"
