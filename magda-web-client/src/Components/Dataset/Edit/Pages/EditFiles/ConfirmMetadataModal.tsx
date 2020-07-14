@@ -287,7 +287,7 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
         >
             <div className="content-area">
                 <div className="inner-content-area">
-                    <ErrorMessageBox error={error} scollIntoView={true} />
+                    <ErrorMessageBox error={error} scrollIntoView={true} />
 
                     <Tooltip>
                         You’ve selected to replace the dataset existing content

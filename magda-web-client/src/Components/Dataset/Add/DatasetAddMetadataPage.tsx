@@ -226,7 +226,7 @@ class NewDataset extends React.Component<Props, State> {
                 <br />
                 <br />
                 <ErrorMessageBox
-                    scollIntoView={false}
+                    scrollIntoView={false}
                     stateErrorGetter={(state) =>
                         state?.record?.newDataset?.error
                             ? state.record.newDataset.error

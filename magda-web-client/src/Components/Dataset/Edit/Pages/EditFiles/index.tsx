@@ -229,7 +229,7 @@ const EditFilesPage: FunctionComponent<Props> = (props) => {
                     datasetStateUpdater={props.setState}
                 />
 
-                <ErrorMessageBox error={error} scollIntoView={true} />
+                <ErrorMessageBox error={error} scrollIntoView={true} />
 
                 <div className="row add-files-heading">
                     <div className="col-xs-12">

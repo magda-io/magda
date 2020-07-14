@@ -6,20 +6,37 @@ import FileDeletionError from "helpers/FileDeletionError";
 import ServerError from "Components/Dataset/Add/Errors/ServerError";
 
 type PropsType = {
-    // --- redux global state data
-    // --- use to access error that shared via redux state
-    // --- available via `react-redux` should not passing via component props
+    /**
+     * redux global state data
+     * use to access error that shared via redux state
+     * available via `react-redux`. Should not passing via component props
+     *
+     * @type {*}
+     */
     state?: any;
-    // --- use for get error object from redux state
+
+    /**
+     * use for get error object from redux state
+     *
+     * @type {((state: any) => Error | null)}
+     */
     stateErrorGetter?: (state: any) => Error | null;
 
-    // --- error object that should be passed via component props
-    // --- Only of `error` or `stateErrorGetter` should be specified
-    // --- if both present, `error` has higher priority
+    /**
+     * error object that should be passed via component props
+     * Only of `error` or `stateErrorGetter` should be specified
+     * if both present, `error` has higher priority
+     *
+     * @type {(Error | null | string)}
+     */
     error?: Error | null | string;
 
-    // --- optional; auto move viewport to this error message box; default to false
-    scollIntoView?: boolean;
+    /**
+     * optional; auto move viewport to this error message box; default to false
+     *
+     * @type {boolean}
+     */
+    scrollIntoView?: boolean;
 };
 
 const ErrorMessageBox: FunctionComponent<PropsType> = (props) => {
@@ -35,12 +52,14 @@ const ErrorMessageBox: FunctionComponent<PropsType> = (props) => {
         }
     }
 
-    const scollIntoView =
-        typeof props.scollIntoView === "boolean" ? props.scollIntoView : false;
+    const scrollIntoView =
+        typeof props.scrollIntoView === "boolean"
+            ? props.scrollIntoView
+            : false;
     const errorContainerRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => () => {
-        if (errorContainerRef.current && scollIntoView) {
+        if (errorContainerRef.current && scrollIntoView) {
             errorContainerRef.current.scrollIntoView();
         }
     });
