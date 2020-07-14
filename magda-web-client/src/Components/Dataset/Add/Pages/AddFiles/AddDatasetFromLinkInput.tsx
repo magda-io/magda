@@ -292,7 +292,7 @@ const AddDatasetFromLinkInput: FunctionComponent<Props> = (props) => {
     };
 
     return (
-        <div className="add-dataset-from-link-input-outter-container">
+        <div className="add-dataset-from-link-input-outer-container">
             <div className="add-dataset-from-link-input-error-message-container">
                 <span className="au-error-text">{validationErrorMessage}</span>
             </div>
