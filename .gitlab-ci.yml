@@ -233,8 +233,8 @@ buildtest:ui:
   needs: ["builders-and-yarn"]
   only:
     changes:
-      - magda-web-server/**/*
-      - magda-web-cient/**/*
+      - magda-web-client/**/**
+      - magda-web-server/**/**
   dependencies:
     - builders-and-yarn
   cache:
@@ -491,7 +491,6 @@ buildtest:helm-charts:
     - echo "helm lint magda chart using preview-multi-tenant.yml"
     - helm lint -f deploy/helm/preview-multi-tenant.yml deploy/helm/magda
 
-    - ls; pwd; echo "lmao"
   artifacts:
     paths:
       - "deploy/helm/magda/charts"
@@ -536,8 +535,8 @@ dockerize:ui:
   ]
   only:
     changes:
-      - magda-web-server/**/*
-      - magda-web-cient/**/*
+      - magda-web-server/**/**
+      - magda-web-cient/**/**
   dependencies:
     - builders-and-yarn
     - registry-typescript-api
@@ -596,8 +595,6 @@ dockerize:dockerExtensions:
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - yarn run in-submodules -- -f categories.dockerExtension=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
-
-
 
 inttest:registryAuth:
   # https://github.com/kind-ci/examples/blob/master/.gitlab-ci.yml
