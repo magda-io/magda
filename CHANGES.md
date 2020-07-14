@@ -121,6 +121,10 @@ Minions:
 
 -   Added a minion for publishing to CKAN
 
+CI/CD:
+
+-   Use Directed Acyclic Graph in Gitlab CI
+
 Others:
 
 -   Use a "Year" column from a CSV file to extract a temporal extent
