@@ -18,7 +18,7 @@ const mockUserApiKeyData = [
 ] as APIKeyRecord[];
 
 let runtimeApiKeyStore: APIKeyRecord[];
-const SALT_ROUNDS = 12;
+const SALT_ROUNDS = 10;
 
 const mockApiKeyStore = {
     reset: function () {

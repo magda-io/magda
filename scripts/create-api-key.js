@@ -33,9 +33,9 @@ program
 /**
  * Salting round. Default is 10. means 2^10 rounds
  * When 10, approx. ~10 hashes can be generated per sec (on a 2GHz core) roughly
- * We set to 12 here (based on OWASP). Roughly 2-3 hashes/sec
+ * We set to 10 here so API key access will have reasonable performance
  */
-const SALT_ROUNDS = 12;
+const SALT_ROUNDS = 10;
 const API_KEY_LENGTH = 32;
 
 /**
