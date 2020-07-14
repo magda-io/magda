@@ -190,7 +190,7 @@ export default function Login(props) {
             )}
             {isProvidersLoading ? (
                 <div className="col-xs-12">
-                    <p>Loading available authentication providers...</p>
+                    <p>Loading all available authentication providers...</p>
                 </div>
             ) : null}
             {!isProvidersLoading && providersLoadingError ? (
