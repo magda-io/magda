@@ -123,7 +123,7 @@ Minions:
 
 CI/CD:
 
--   Use Acyclic Directed Graph in Gitlab CI
+-   Use Directed Acyclic Graph in Gitlab CI
 
 Others:
 
