@@ -534,8 +534,8 @@ dockerize:ui:
   ]
   only:
     changes:
-      - magda-web-server/*
-      - magda-web-cient/*
+      - magda-web-server/**/*
+      - magda-web-cient/**/*
   dependencies:
     - builders-and-yarn
     - registry-typescript-api
