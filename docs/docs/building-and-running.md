@@ -375,3 +375,11 @@ Node.js / TypeScript components can easily be debugged using the [Visual Studio 
 ## Debugging Scala components
 
 Scala components can easily be debugged using the IntelliJ debugger. Create a debug configuration for the `App` class of whatever component you're debugging.
+
+## How to create local users
+
+Please see document: [How to create local users](./how-to-create-local-users.md)
+
+## How to create API key
+
+Please see document: [How to create API key](./how-to-create-api-key.md)
