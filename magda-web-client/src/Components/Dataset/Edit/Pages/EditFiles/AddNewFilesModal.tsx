@@ -208,7 +208,7 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
                         datasetStateUpdater={props.datasetStateUpdater}
                         initDistProps={{
                             isAddConfirmed: false,
-                            isReplacementComfired: false
+                            isReplacementConfirmed: false
                         }}
                         onError={(e) => {
                             console.error(e);
@@ -250,7 +250,7 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
                 <AddDatasetFromLinkInput
                     initDistProps={{
                         isAddConfirmed: false,
-                        isReplacementComfired: false
+                        isReplacementConfirmed: false
                     }}
                     datasetStateUpdater={props.datasetStateUpdater}
                     onProcessingError={(e) => {

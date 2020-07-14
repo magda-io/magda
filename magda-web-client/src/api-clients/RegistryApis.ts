@@ -52,7 +52,7 @@ export type VersionItem = {
     description: string;
 };
 
-export type VersionAsepectData = {
+export type VersionAspectData = {
     currentVersion: number;
     versions: VersionItem[];
 };

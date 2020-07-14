@@ -185,8 +185,8 @@ class EditDataset extends React.Component<Props, State> {
                 distributions.filter(
                     (item) =>
                         item._state !== DistributionState.Ready ||
-                        // --- distribution.isReplacementComfired might be undefined here so !item.isReplacementComfired won't work
-                        (item.isReplacementComfired === false &&
+                        // --- distribution.isReplacementConfirmed might be undefined here so !item.isReplacementConfirmed won't work
+                        (item.isReplacementConfirmed === false &&
                             this.props.step === 0)
                 ).length
             ) {

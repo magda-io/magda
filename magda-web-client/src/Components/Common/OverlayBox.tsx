@@ -52,7 +52,7 @@ const OverlayBox: FunctionComponent<PropsType> = (props) => {
             {...restProps}
         >
             <div
-                className={`overlay-box-outter-container ${
+                className={`overlay-box-outer-container ${
                     props.className ? props.className : ""
                 }`}
             >

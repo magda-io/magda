@@ -127,7 +127,7 @@ const EditFilesPage: FunctionComponent<Props> = (props) => {
                     );
                 }
                 if (
-                    dist.isReplacementComfired !== false &&
+                    dist.isReplacementConfirmed !== false &&
                     dist.isAddConfirmed !== false
                 ) {
                     // --- existing distribution items should just open deletion confirmation modal rather than doing anything else
@@ -200,14 +200,14 @@ const EditFilesPage: FunctionComponent<Props> = (props) => {
         // --- existing distributions or dist confirmed `adding` and `replacement`
         const existingDistributions = state.distributions.filter(
             (item) =>
-                item.isReplacementComfired !== false &&
+                item.isReplacementConfirmed !== false &&
                 item.isAddConfirmed !== false
         );
 
         const newDistributions = state.distributions.filter(
             (item) =>
                 item.isAddConfirmed === true &&
-                item.isReplacementComfired === false
+                item.isReplacementConfirmed === false
         );
 
         return (

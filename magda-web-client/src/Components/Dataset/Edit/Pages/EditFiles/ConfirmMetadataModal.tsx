@@ -111,7 +111,7 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
     const [error, setErrors] = useState<Error | null>(null);
 
     const newDists = stateData.distributions.filter(
-        (item) => item.isReplacementComfired === false
+        (item) => item.isReplacementConfirmed === false
     );
 
     const newTitle = mergeDistTitle(newDists);
@@ -175,7 +175,7 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
                 const replacedDists: Distribution[] = [];
                 newState.distributions = newState.distributions
                     .map((item) => {
-                        if (item.isReplacementComfired !== false) {
+                        if (item.isReplacementConfirmed !== false) {
                             return item;
                         }
                         if (item.replaceDistId) {
@@ -184,7 +184,7 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
                         const newDist: Distribution = {
                             ...item,
                             isAddConfirmed: true,
-                            isReplacementComfired: true
+                            isReplacementConfirmed: true
                         };
                         return newDist;
                     })
@@ -235,7 +235,7 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
                                 ...newItem,
                                 ...restReplaceDistData,
                                 isAddConfirmed: true,
-                                isReplacementComfired: true
+                                isReplacementConfirmed: true
                             };
                         }
                     });

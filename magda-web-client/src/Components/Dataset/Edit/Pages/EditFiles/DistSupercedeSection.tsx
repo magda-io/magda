@@ -54,13 +54,14 @@ const DistSupercedeSection: FunctionComponent<PropsType> = (props) => {
 
     const existingDistributions = state.distributions.filter(
         (item) =>
-            item.isReplacementComfired !== false &&
+            item.isReplacementConfirmed !== false &&
             item.isAddConfirmed !== false
     );
 
     const newDistributions = state.distributions.filter(
         (item) =>
-            item.isAddConfirmed === true && item.isReplacementComfired === false
+            item.isAddConfirmed === true &&
+            item.isReplacementConfirmed === false
     );
 
     const fileDists = newDistributions.filter(
@@ -79,14 +80,14 @@ const DistSupercedeSection: FunctionComponent<PropsType> = (props) => {
 
     const unselectedExistingDists = props.stateData.distributions.filter(
         (dist) =>
-            dist.isReplacementComfired !== false &&
+            dist.isReplacementConfirmed !== false &&
             !replaceDists.find(
                 (replaceItem) => replaceItem.replaceDistId === dist.id
             )
     );
 
     const unselectedNewDists = props.stateData.distributions.filter(
-        (dist) => dist.isReplacementComfired === false && !dist.replaceDistId
+        (dist) => dist.isReplacementConfirmed === false && !dist.replaceDistId
     );
 
     return (
@@ -231,7 +232,7 @@ const DistSupercedeSection: FunctionComponent<PropsType> = (props) => {
                         props.datasetStateUpdater((state) => ({
                             ...state,
                             distributions: state.distributions.filter(
-                                (dist) => dist.isReplacementComfired !== false
+                                (dist) => dist.isReplacementConfirmed !== false
                             )
                         }));
                     }}

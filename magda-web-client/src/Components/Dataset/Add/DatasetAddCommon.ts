@@ -12,7 +12,7 @@ import {
     deleteRecordAspect,
     Record,
     getInitialVersionAspectData,
-    VersionAsepectData,
+    VersionAspectData,
     updateRecordAspect
 } from "api-clients/RegistryApis";
 import { config } from "config";
@@ -49,21 +49,45 @@ export type Distribution = {
     similarFingerprint?: any;
     equalHash?: string;
 
-    // --- An UUID for identify a file during the processing. array index is not a reliable id.
+    /**
+     * An UUID for identify a file during the processing. array index is not a reliable id.
+     *
+     * @type {string}
+     */
     id?: string;
     creationSource?: DistributionSource;
     creationMethod?: DistributionCreationMethod;
-    // --- whether it's a distribution that the user hasn't comfirm (by clicking `Finishing Adding` button in Edit flow) that it should be added to dataset
+
+    /**
+     * whether it's a distribution that the user hasn't comfirm (by clicking `Finishing Adding` button in Edit flow) that it should be added to dataset
+     *
+     * @type {boolean}
+     */
     isAddConfirmed?: boolean;
-    // --- whether it's a distribution user yet to confirm it should be replace existing distribution or not
-    isReplacementComfired?: boolean;
+
+    /**
+     * whether it's a distribution user yet to confirm it should be replace existing distribution or not
+     *
+     * @type {boolean}
+     */
+    isReplacementConfirmed?: boolean;
     replaceDistId?: string;
     _state: DistributionState;
     _progress?: number;
-    // --- whether the file is stored with internal storage API
+
+    /**
+     * whether the file is stored with internal storage API
+     *
+     * @type {boolean}
+     */
     useStorageApi: boolean;
-    // --- we use raw aspect data as we don't access version create time often
-    version?: VersionAsepectData;
+
+    /**
+     * we use raw aspect data as we don't access version create time often
+     *
+     * @type {VersionAspectData}
+     */
+    version?: VersionAspectData;
 };
 
 export enum DistributionSource {
@@ -196,7 +220,7 @@ export type State = {
     provenance: Provenance;
     currency: Currency;
     ckanExport: CkanExportAspectType;
-    version?: VersionAsepectData;
+    version?: VersionAspectData;
 
     _lastModifiedDate: Date;
     _createdDate: Date;
