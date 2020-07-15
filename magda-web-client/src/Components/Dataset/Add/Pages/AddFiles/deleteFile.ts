@@ -30,7 +30,11 @@ export default async function deleteFile(distToDelete: Distribution) {
             throw new Error("Could not delete file");
         }
     } catch (err) {
-        console.error(err);
+        console.error(
+            `Failed to delete file:\n URL: ${distToDelete.downloadURL!}\n ${
+                "" + err
+            }`
+        );
         throw new UserVisibleError(
             `Failed to remove file ${distToDelete.title} from Magda's storage. If you removed this ` +
                 `file because it shouldn't be stored on Magda, please contact ${

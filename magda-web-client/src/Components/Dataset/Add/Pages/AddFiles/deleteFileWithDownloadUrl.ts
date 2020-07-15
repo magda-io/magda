@@ -3,23 +3,20 @@ import getDistInfoFromDownloadUrl from "./getDistInfoFromDownloadUrl";
 import { Distribution } from "../../DatasetAddCommon";
 
 type ReturnValue = {
-    distId: string;
     fileName: string;
 };
 
 export default async function deleteFileWithDownloadUrl(
     url: string
 ): Promise<ReturnValue> {
-    const { fileName, distId } = getDistInfoFromDownloadUrl(url);
+    const { fileName } = getDistInfoFromDownloadUrl(url);
 
     await deleteFile({
-        id: distId,
         title: fileName,
         downloadURL: url
     } as Distribution);
 
     return {
-        distId: distId,
         fileName
     };
 }

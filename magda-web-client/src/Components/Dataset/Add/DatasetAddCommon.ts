@@ -1320,7 +1320,6 @@ export async function cleanUpOrphanFiles(
 
                 try {
                     const result = getDistInfoFromDownloadUrl(fileUrl);
-                    distId = result.distId;
                     fileName = result.fileName;
                 } catch (e) {
                     return { title: fileUrl, isOk: false };
@@ -1328,7 +1327,6 @@ export async function cleanUpOrphanFiles(
 
                 try {
                     await deleteFile({
-                        id: distId,
                         title: fileName,
                         downloadURL: fileUrl
                     } as Distribution);
