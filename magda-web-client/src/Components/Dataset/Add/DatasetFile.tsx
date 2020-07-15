@@ -26,17 +26,27 @@ import ValidationRequiredLabel from "../../Dataset/Add/ValidationRequiredLabel";
 
 import "./DatasetFile.scss";
 
-function FileInProgress({ file }: { file: Distribution }) {
+function FileInProgress({
+    file,
+    className
+}: {
+    file: Distribution;
+    className?: string;
+}) {
     const progress = file._progress ? file._progress : 0;
     let width = Math.ceil((progress / 100) * 330);
     if (width < 5) {
         width = 5;
     }
     return (
-        <div className="dataset-file-root">
+        <div className={`dataset-file-root ${className ? className : ""}`}>
             <div className="file-in-progress">
                 <div className="file-icon-area">
-                    <img className="format-icon" src={getFormatIcon(file)} />
+                    <img
+                        alt="format icon"
+                        className="format-icon"
+                        src={getFormatIcon(file)}
+                    />
                     <div className="format-text">{file.format}</div>
                 </div>
                 <div className="file-info">
@@ -157,49 +167,68 @@ const FileEditView = ({
     );
 };
 
+type Props = {
+    distribution: Distribution;
+    idx?: number;
+    className?: string;
+    onDelete?: () => any;
+    onChange?: (updater: (file: Distribution) => Distribution) => void;
+};
+
 export default function DatasetFile({
     idx,
-    file,
+    distribution,
+    className,
     onDelete,
     onChange
-}: {
-    idx: number;
-    file: Distribution;
-    onDelete: () => void;
-    onChange: (updater: (file: Distribution) => Distribution) => void;
-}) {
+}: Props) {
     const [editMode, setEditMode] = useState(false);
+    const canEdit =
+        typeof idx !== "undefined" && typeof onChange === "function";
+    const canDelete = typeof onDelete === "function";
+
+    const file = distribution;
 
     if (file._state !== DistributionState.Ready) {
-        return <FileInProgress file={file} />;
+        return <FileInProgress file={file} className={className} />;
     }
 
     return (
-        <div className="dataset-file-root complete-processing">
-            {editMode ? (
+        <div
+            className={`dataset-file-root complete-processing ${
+                !canEdit && !canDelete ? "read-only" : ""
+            } ${className ? className : ""}`}
+        >
+            {editMode && canEdit ? (
                 <FileEditView
-                    idx={idx}
+                    idx={idx!}
                     file={file}
-                    onChange={onChange}
+                    onChange={onChange!}
                     editMode={editMode}
                     setEditMode={setEditMode}
                 />
             ) : (
                 <React.Fragment>
-                    <button
-                        className={`dataset-file-edit-button au-btn au-btn--secondary`}
-                        arial-label="Edit file metadata"
-                        onClick={() => setEditMode(!editMode)}
-                    >
-                        <img src={editIcon} />
-                    </button>
-                    <button
-                        className={`dataset-file-delete-button au-btn au-btn--secondary`}
-                        arial-label="Remove file"
-                        onClick={() => onDelete()}
-                    >
-                        <img src={dismissIcon} />
-                    </button>
+                    {canEdit ? (
+                        <button
+                            className={`dataset-file-edit-button au-btn au-btn--secondary`}
+                            arial-label="Edit file metadata"
+                            onClick={() => setEditMode(!editMode)}
+                        >
+                            <img src={editIcon} alt="edit icon" />
+                        </button>
+                    ) : null}
+
+                    {canDelete ? (
+                        <button
+                            className={`dataset-file-delete-button au-btn au-btn--secondary`}
+                            arial-label="Remove file"
+                            onClick={() => onDelete!()}
+                        >
+                            <img src={dismissIcon} alt="delete icon" />
+                        </button>
+                    ) : null}
+
                     <div>
                         <h3 className="dataset-file-file-title">
                             {file.title}

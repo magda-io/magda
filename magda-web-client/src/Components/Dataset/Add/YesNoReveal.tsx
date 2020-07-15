@@ -32,7 +32,7 @@ export default function YesNoReveal<T>({
         if (shouldShow !== show && !hasUserClick) {
             setShow(shouldShow);
         }
-    }, [value]);
+    }, [value, hasUserClick, show]);
 
     const onChangeHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
         setHasUserClick(true);

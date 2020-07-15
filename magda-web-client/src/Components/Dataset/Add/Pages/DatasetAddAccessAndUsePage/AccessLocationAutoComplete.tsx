@@ -23,11 +23,11 @@ export default function OrganisationAutocomplete(props: Props) {
         : "Please input dataset access location...";
     return (
         <div className="access-location-auto-complete-input-outer-container common-auto-complete-input-outer-container">
-            <img className="edit-icon" src={editIcon} />
+            <img className="edit-icon" src={editIcon} alt="edit icon" />
             <AutoCompleteInput<string>
                 suggestionSize={8}
                 query={query}
-                objectToString={x => x}
+                objectToString={(x) => x}
                 onSuggestionSelected={onChange}
                 onTypedValueSelected={onChange}
                 defaultValue={defaultValue}

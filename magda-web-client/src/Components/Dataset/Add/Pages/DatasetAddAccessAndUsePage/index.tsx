@@ -350,6 +350,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                                 <img
                                                     className="file-icon"
                                                     src={getFormatIcon(file)}
+                                                    alt="format icon"
                                                 />
                                             </span>
                                             <span className="fileBlock-text">
@@ -519,6 +520,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                             <a
                                                 target="_blank"
                                                 href="https://www.protectivesecurity.gov.au/information/sensitive-classified-information/Pages/default.aspx"
+                                                rel="noopener noreferrer"
                                             >
                                                 https://www.protectivesecurity.gov.au/information/sensitive-classified-information/Pages/default.aspx
                                             </a>

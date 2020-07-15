@@ -8,9 +8,14 @@
     display: flex;
     justify-content: space-between;
 
+    &.read-only {
+        max-width: 434px;
+        padding: 0.5em;
+    }
+
     .dataset-file-file-title {
         margin: 0 0 0.5em 0;
-        width: 370px;
+        width: 360px;
         text-overflow: ellipsis;
         white-space: nowrap;
         overflow: hidden;
@@ -115,11 +120,18 @@
 }
 .complete-processing.dataset-file-root {
     background-image: url("../../../assets/purple-box.svg");
+
     background-repeat: no-repeat;
     padding-left: 60px;
     width: 534px;
     height: 155px;
     background-color: #f4f4f4;
+
+    &.read-only {
+        background-size: 434px;
+        height: 127px;
+        padding-left: 45px;
+    }
 
     .dataset-file-file-title {
         margin-top: 4px;
@@ -192,7 +204,7 @@
         border: none;
     }
 
-    div.textEditorEx-outter-container {
+    div.textEditorEx-outer-container {
         display: inline;
     }
 }

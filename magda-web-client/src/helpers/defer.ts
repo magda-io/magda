@@ -1,7 +1,3 @@
-function defer(time: number = 1): Promise<void> {
-    return new Promise((resolve) => {
-        setTimeout(resolve, time);
-    });
-}
+const defer = (func: () => any, time: number = 1) => setTimeout(func, time);
 
 export default defer;

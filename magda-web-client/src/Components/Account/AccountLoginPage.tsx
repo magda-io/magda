@@ -198,7 +198,7 @@ export default function Login(props) {
                     <div className="au-body au-page-alerts au-page-alerts--error">
                         <p>
                             Failed to load authentication providers:{" "}
-                            {providersLoadingError}{" "}
+                            {"" + providersLoadingError}{" "}
                         </p>
                     </div>
                 </div>

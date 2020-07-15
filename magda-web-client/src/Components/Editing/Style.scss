@@ -6,7 +6,7 @@
     margin-bottom: 5px;
 }
 
-.textEditorEx-outter-container {
+.textEditorEx-outer-container {
     position: relative;
     .edit-icon-container {
         position: absolute;
@@ -39,7 +39,7 @@
     border-color: #d60000;
 }
 
-.textEditorEx-outter-container {
+.textEditorEx-outer-container {
     .au-error-text {
         font-size: 16px;
         font-size: 1rem;
@@ -50,13 +50,13 @@
     }
 }
 
-.multilineTextEditor-outter-container.invalid {
+.multilineTextEditor-outer-container.invalid {
     .edit-icon {
         top: 45px !important;
     }
 }
 
-.multilineTextEditor-outter-container {
+.multilineTextEditor-outer-container {
     position: relative;
     .au-error-text {
         font-size: 16px;
@@ -108,7 +108,7 @@
     }
 }
 
-.contact-editor-input-outter-container {
+.contact-editor-input-outer-container {
     position: relative;
     .edit-icon-container {
         position: absolute;
@@ -121,7 +121,7 @@
     }
 }
 
-.multilineTextEditor-outter-container,
+.multilineTextEditor-outer-container,
 .toggle-editor-container {
     position: relative;
     .toggle-edit-button {

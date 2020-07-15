@@ -81,7 +81,7 @@ function getKeywordsFromText(
     text: string,
     maximum: number = MAX_KEYWORDS * 2
 ): Promise<string[]> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
         retext()
             .use(keywords, {
                 maximum

@@ -25,7 +25,7 @@ export function textEditorEx(
             multiValues: any = null,
             extraProps: any = {}
         ) => {
-            const callback = event => {
+            const callback = (event) => {
                 onChange(event.target.value);
             };
             if (options.redrawOnEmpty && !value) {
@@ -62,7 +62,7 @@ export function textEditorEx(
 
                 return (
                     <div
-                        className={`textEditorEx-outter-container ${
+                        className={`textEditorEx-outer-container ${
                             isValidationError ? "invalid" : ""
                         }`}
                         ref={ref}
@@ -136,7 +136,9 @@ const truncateByWordsCount = (str: string, limit: number): string => {
     return newStrItems.join("");
 };
 
-export const MultilineTextEditor: FunctionComponent<MultilineTextEditorPropType> = props => {
+export const MultilineTextEditor: FunctionComponent<MultilineTextEditorPropType> = (
+    props
+) => {
     const [isValidationError, validationErrorMessage, elRef] = useValidation<
         HTMLDivElement
     >(props.validationFieldPath, props.validationFieldLabel);
@@ -164,7 +166,7 @@ export const MultilineTextEditor: FunctionComponent<MultilineTextEditorPropType>
         }
         return (
             <div
-                className={`multilineTextEditor-outter-container ${
+                className={`multilineTextEditor-outer-container ${
                     isValidationError ? "invalid" : ""
                 }`}
                 ref={elRef}
@@ -178,7 +180,7 @@ export const MultilineTextEditor: FunctionComponent<MultilineTextEditorPropType>
                 ) : null}
                 <textarea
                     className={`au-text-input ${inValidClass} full-width-ctrl au-text-input--block`}
-                    onChange={event => {
+                    onChange={(event) => {
                         if (typeof props.onChange === "function") {
                             let inputValue = event.target.value
                                 ? event.target.value
@@ -217,11 +219,11 @@ export const MultilineTextEditor: FunctionComponent<MultilineTextEditorPropType>
 
 export const multilineTextEditor: Editor<string> = {
     edit: (value: any, onChange: Function) => {
-        const callback = event => {
+        const callback = (event) => {
             onChange(event.target.value);
         };
         return (
-            <div className="multilineTextEditor-outter-container">
+            <div className="multilineTextEditor-outer-container">
                 <textarea
                     className="au-text-input full-width-ctrl au-text-input--block"
                     style={{ width: "100%" }}
