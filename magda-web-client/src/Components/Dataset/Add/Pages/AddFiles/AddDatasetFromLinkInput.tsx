@@ -124,14 +124,6 @@ const processDcatDatasetStrings: DistributionAspectsProcessor = (aspects) => {
         }
     }
 
-    if (aspectData?.temporal) {
-        if (typeof aspectData.themes === "string") {
-            distData.themes = [aspectData.themes];
-        } else if (aspectData?.themes?.length) {
-            distData.themes = aspectData.themes;
-        }
-    }
-
     return distData;
 };
 
@@ -230,7 +222,14 @@ const AddDatasetFromLinkInput: FunctionComponent<Props> = (props) => {
                     ...processDcatDatasetStrings(data?.dataset?.aspects),
                     ...processDcatDistributionStrings(distRecord?.aspects),
                     ...processSpatialCoverage(distRecord?.aspects),
-                    ...processTemporalCoverage(distRecord?.aspects)
+                    // --- "temporal-coverage" is usually only attached to dataset record only
+                    // --- just in case dist level "temporal-coverage" data is also available for some connectors.
+                    // --- here we test dist aspect first
+                    ...processTemporalCoverage(
+                        distRecord?.aspects?.["temporal-coverage"]
+                            ? distRecord?.aspects
+                            : data?.dataset?.aspects
+                    )
                 }));
 
                 datasetStateUpdater((state) => {
