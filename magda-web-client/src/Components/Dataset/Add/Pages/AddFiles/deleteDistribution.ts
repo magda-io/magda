@@ -42,7 +42,7 @@ const deleteDistribution = (
                             if (!distToDelete) {
                                 reject(
                                     new Error(
-                                        `Cannot locate the distribution data (id: ${distId}) whihle tried to delete distribution`
+                                        `Cannot locate the distribution data (id: ${distId}) while tried to delete distribution`
                                     )
                                 );
                                 return;
