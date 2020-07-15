@@ -17,7 +17,7 @@ const deleteDistribution = (
     shouldUploadToStorageApi: boolean,
     distId: string
 ) =>
-    new Promise<void>(async (resolve, reject) => {
+    new Promise<void>((resolve, reject) => {
         try {
             const removeDist = () =>
                 promisifySetState(datasetStateUpdater)((state: State) => ({
