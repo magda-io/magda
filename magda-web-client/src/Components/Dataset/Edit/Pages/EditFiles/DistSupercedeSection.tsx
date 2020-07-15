@@ -223,7 +223,6 @@ const DistSupercedeSection: FunctionComponent<PropsType> = (props) => {
                 >
                     Confirm
                 </AsyncButton>
-                &nbsp;&nbsp;&nbsp;
                 <AsyncButton
                     isSecondary={true}
                     onClick={() => {

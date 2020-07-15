@@ -111,7 +111,6 @@ const DeleteFileModal: FunctionComponent<PropsType> = (props) => {
                         <AsyncButton onClick={onDeleteClick}>
                             Yes, delete it{" "}
                         </AsyncButton>{" "}
-                        &nbsp;&nbsp;&nbsp;
                         <AsyncButton
                             isSecondary={true}
                             onClick={props.closeModal}
