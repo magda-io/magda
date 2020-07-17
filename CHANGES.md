@@ -71,6 +71,7 @@ UI:
 -   Fix a sheet file contains date would cause blank screen during processing
 -   Set an error if security classification is at PROTECTED or above
 -   Add revised edit flow for adding/deleting/superceding existing distributions
+-   Fixed ckan-export aspect's fields should be only changed via JSON patch from the frontend (#2887)
 
 Storage:
 
