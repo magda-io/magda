@@ -13,17 +13,19 @@ import {
     Record,
     getInitialVersionAspectData,
     VersionAspectData,
-    updateRecordAspect
+    updateRecordAspect,
+    patchRecord
 } from "api-clients/RegistryApis";
 import { config } from "config";
 import { User } from "reducers/userManagementReducer";
-import { RawDataset, CkanExportAspectType, DatasetDraft } from "helpers/record";
+import { RawDataset, DatasetDraft } from "helpers/record";
 import { autocompletePublishers } from "api-clients/SearchApis";
 import ServerError from "./Errors/ServerError";
 import defer from "helpers/defer";
 import { ReactStateUpdaterType } from "helpers/promisifySetState";
 import getDistInfoFromDownloadUrl from "./Pages/AddFiles/getDistInfoFromDownloadUrl";
 import deleteFile from "./Pages/AddFiles/deleteFile";
+import escapeJsonPatchPointer from "helpers/escapeJsonPatchPath";
 
 export type Distribution = {
     title: string;
@@ -219,7 +221,6 @@ export type State = {
     informationSecurity: InformationSecurity;
     provenance: Provenance;
     currency: Currency;
-    ckanExport: CkanExportAspectType;
     version?: VersionAspectData;
 
     _lastModifiedDate: Date;
@@ -622,8 +623,31 @@ export async function rawDatasetDataToState(
         state.spatialCoverage = data.aspects?.["spatial-coverage"];
     }
 
-    if (data.aspects?.["ckan-export"]) {
-        state.ckanExport = data.aspects?.["ckan-export"];
+    if (
+        typeof data.aspects?.["ckan-export"]?.[config.defaultCkanServer]
+            ?.status === "boolean"
+    ) {
+        /**
+         * We need to populate data to state.datasetPublishing.publishAsOpenData.dga
+         * as that's where frontend radio ctrl read the value but data.aspects?.["ckan-export"] contains the actual effective value.
+         *
+         * We probably should combined `state.ckan-export.[http://xxx.com].status` with `state.datasetPublishing.publishAsOpenData.dga`.
+         * However, we will leave it to later now to avoid the trouble of implementing json path escape
+         * (due to possible url as object key and we need access data via JSON path for ValidationManager)
+         */
+        if (!data.aspects?.["publishing"]) {
+            data.aspects["publishing"] = {} as any;
+        }
+        data.aspects["publishing"] = {
+            ...data.aspects["publishing"],
+            publishAsOpenData: {
+                ...(data.aspects["publishing"]?.publishAsOpenData
+                    ? data.aspects["publishing"].publishAsOpenData
+                    : {}),
+                dga:
+                    data.aspects["ckan-export"][config.defaultCkanServer].status
+            }
+        };
     }
 
     populateTemporalCoverageAspect(data, state);
@@ -715,15 +739,7 @@ export function createBlankState(user: User): State {
         _lastModifiedDate: new Date(),
         uploadedFileUrls: [] as string[],
         datasetDraft: undefined,
-        loadDatasetDraftConfirmed: false,
-        ckanExport: {
-            [config.defaultCkanServer]: {
-                status: "withdraw",
-                hasCreated: false,
-                exportAttempted: false,
-                exportRequired: false
-            }
-        }
+        loadDatasetDraftConfirmed: false
     };
 }
 
@@ -1101,27 +1117,8 @@ async function convertStateToDatasetRecord(
         informationSecurity,
         datasetAccess,
         provenance,
-        currency,
-        ckanExport
+        currency
     } = state;
-
-    let ckanExportData;
-    try {
-        const data = await fetchRecordWithNoCache(
-            datasetId,
-            [],
-            ["ckan-export"],
-            false
-        );
-        ckanExportData = data.aspects["ckan-export"];
-        ckanExportData[config.defaultCkanServer].status =
-            ckanExport[config.defaultCkanServer].status;
-        ckanExportData[config.defaultCkanServer].exportRequired =
-            ckanExport[config.defaultCkanServer].exportRequired;
-    } catch (e) {
-        // ckan-export aspect doesn't exist on the dataset
-        ckanExportData = ckanExport;
-    }
 
     let publisherId;
     if (dataset.publisher) {
@@ -1152,7 +1149,6 @@ async function convertStateToDatasetRecord(
             "dataset-distributions": {
                 distributions: distributionRecords.map((d) => d.id)
             },
-            "ckan-export": ckanExportData,
             access: datasetAccess,
             "information-security": informationSecurity,
             "dataset-access-control": getAccessControlAspectData(state),
@@ -1223,20 +1219,59 @@ async function convertStateToDistributionRecords(state: State) {
     return distributionRecords;
 }
 
+/**
+ * Update ckan export aspect status acccording to UI status.
+ * We use JSON Patch request to avoid edging cases
+ *
+ * @param {string} datasetId
+ * @param {State} state
+ */
+async function updateCkanExportStatus(datasetId: string, state: State) {
+    /**
+     * Please note: any frontend code should ONLY (and should ONLY NEED to) change those three fields:
+     * - status
+     * - exportRequired
+     * Those two fields should ONLY been updated via patch request. Otherwise, other runtime fields may lose value.
+     *
+     * Other fields are all runtime status fields that are only allowed to be altered by minions.
+     * Any attempts to update those from frontend will more or less create edging cases.
+     */
+
+    const exportDataPointer = `/aspects/ckan-export/${escapeJsonPatchPointer(
+        config.defaultCkanServer
+    )}`;
+
+    const uiStatus = state?.datasetPublishing?.publishAsOpenData?.dga
+        ? true
+        : false;
+
+    await ensureAspectExists("ckan-export");
+
+    /**
+     * Here is a trick based my tests on the [JsonPatch implementation](https://github.com/gnieh/diffson) used in our scala code base:
+     * `add` operation will always work (as long as the aspect schema is loaded).
+     * If the field is already there, `add` will just `replace` the value
+     */
+    await patchRecord(datasetId, [
+        {
+            op: "add",
+            path: `${exportDataPointer}/status`,
+            value: uiStatus ? "retain" : "withdraw"
+        },
+        {
+            op: "add",
+            path: `${exportDataPointer}/exportRequired`,
+            value: true
+        }
+    ]);
+}
+
 export async function createDatasetFromState(
     datasetId: string,
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>,
     authnReadPolicyId?: string
 ) {
-    if (state.datasetPublishing.publishAsOpenData?.dga) {
-        state.ckanExport[config.defaultCkanServer].status = "retain";
-        state.ckanExport[config.defaultCkanServer].exportRequired = true;
-    } else {
-        state.ckanExport[config.defaultCkanServer].status = "withdraw";
-        state.ckanExport[config.defaultCkanServer].exportRequired = false;
-    }
-
     const distributionRecords = await (
         await convertStateToDistributionRecords(state)
     ).map((item) => {
@@ -1267,14 +1302,6 @@ export async function updateDatasetFromState(
     setState: React.Dispatch<React.SetStateAction<State>>,
     authnReadPolicyId?: string
 ) {
-    if (state.datasetPublishing.publishAsOpenData?.dga) {
-        state.ckanExport[config.defaultCkanServer].status = "retain";
-    } else {
-        state.ckanExport[config.defaultCkanServer].status = "withdraw";
-    }
-
-    state.ckanExport[config.defaultCkanServer].exportRequired = true;
-
     const distributionRecords = await convertStateToDistributionRecords(state);
     const datasetRecord = await convertStateToDatasetRecord(
         datasetId,
@@ -1372,6 +1399,8 @@ export async function submitDatasetFromState(
     }
 
     await deleteRecordAspect(datasetId, "dataset-draft");
+
+    await updateCkanExportStatus(datasetId, state);
 
     return await cleanUpOrphanFiles(
         state.uploadedFileUrls,
