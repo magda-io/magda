@@ -5,17 +5,15 @@
     }
     .top-text-area {
         h1 {
+            margin-top: 60px;
+            margin-bottom: 30px;
             font-size: 38px;
             font-weight: normal;
             font-style: normal;
             font-stretch: normal;
-            line-height: 0.79;
+            line-height: 1.61;
             letter-spacing: normal;
-            color: #30384d;
-            margin-top: 100px;
-            margin-bottom: 50px;
-            padding-bottom: 22px;
-            border-bottom: solid 1px #cccaca;
+            color: #484848;
         }
         p {
             max-width: none;
@@ -33,14 +31,14 @@
     }
     .add-files-heading {
         h3 {
-            margin-top: 0px;
-            font-size: 24px;
-            font-weight: 500;
-            font-stretch: normal;
-            font-style: normal;
-            line-height: 0.88;
-            letter-spacing: -0.3px;
-            color: #484848;
+            margin-top: 12px;
+            margin-bottom: 65px;
+            color: #30384d;
+            font-size: 29px;
+            letter-spacing: -0.5px;
+            line-height: 30px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid #cccaca;
         }
     }
 
