@@ -29,7 +29,9 @@ const customStyles = {
         top: undefined,
         bottom: undefined,
         borderRadius: "8px",
-        padding: undefined
+        padding: undefined,
+        left: 30,
+        right: 30
     }
 };
 
