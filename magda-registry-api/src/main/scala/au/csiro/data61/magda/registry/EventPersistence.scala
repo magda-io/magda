@@ -7,6 +7,7 @@ import spray.json._
 import gnieh.diffson.sprayJson._
 import scalikejdbc._
 import akka.NotUsed
+import au.csiro.data61.magda.opa.OpaTypes.OpaQuery
 
 trait EventPersistence {
 
@@ -34,8 +35,16 @@ trait EventPersistence {
       recordId: Option[String] = None,
       aspectIds: Set[String] = Set(),
       eventTypes: Set[EventType] = Set(),
-      tenantId: TenantId
+      tenantId: TenantId,
+      recordSelector: Iterable[Option[SQLSyntax]] = Iterable()
   )(implicit session: DBSession): EventsPage
+
+  def getRecordReferencedIds(
+      tenantId: TenantId,
+      recordId: String,
+      aspectIds: Seq[String] = Seq(),
+      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
+  )(implicit session: DBSession): Seq[String]
 }
 
 class DefaultEventPersistence(recordPersistence: RecordPersistence)
@@ -127,13 +136,15 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       recordId: Option[String] = None,
       aspectIds: Set[String] = Set(),
       eventTypes: Set[EventType] = Set(),
-      tenantId: TenantId
+      tenantId: TenantId,
+      recordSelector: Iterable[Option[SQLSyntax]] = Iterable()
   )(implicit session: DBSession): EventsPage = {
+
     val filters: Seq[Option[SQLSyntax]] = Seq(
       pageToken.map(v => sqls"eventId > $v"),
       lastEventId.map(v => sqls"eventId <= $v"),
       recordId.map(v => sqls"data->>'recordId' = $v")
-    )
+    ) ++ recordSelector
 
     val tenantFilter = Some(SQLUtil.tenantIdToWhereClause(tenantId))
     val theFilters = (filters ++ List(tenantFilter)).filter(_.isDefined)
@@ -201,7 +212,7 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
           from Events
           $whereClause
       ${/* for some reason if you LIMIT 1 and ORDER BY eventId, postgres chooses a weird query plan, so use eventTime in that case*/ sqls""}
-          order by ${if (limit != Some(1)) sqls"eventId" else sqls"eventTime"} asc 
+          order by ${if (limit != Some(1)) sqls"eventId" else sqls"eventTime"} asc
           offset ${start.getOrElse(0)}
           limit ${limit.getOrElse(1000)}"""
         .map(rs => {
@@ -217,6 +228,103 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       lastEventIdInPage.map(_.toString),
       events
     )
+  }
+
+  /**
+    * get Ids of all records that are or were linked to the specified record
+    *
+    * @param tenantId TenantId
+    * @param recordId the id of the record whose lined records should be queried for
+    * @param aspectIds optional; if specified, only links are defined by specified aspects will be considered
+    * @param opaRecordQueries opaRecordQueries
+    * @param session DB session
+    * @return Seq[String] A list record id
+    */
+  def getRecordReferencedIds(
+      tenantId: TenantId,
+      recordId: String,
+      aspectIds: Seq[String] = Seq(),
+      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
+  )(implicit session: DBSession): Seq[String] = {
+    // --- we don't need tenantId for this function as a record cannot belong to two tenants
+    // --- pick all aspects of the specified record mentioned in the events till now
+    val mentionedAspects = if (aspectIds.size == 0) {
+      sql"""SELECT DISTINCT data->>'aspectId' as aspectid
+        FROM events
+        WHERE data->>'recordId'=${recordId} AND data->>'aspectId' IS NOT NULL"""
+        .map(_.string(1))
+        .list
+        .apply()
+    } else {
+      aspectIds
+    }
+
+    // --- produce reference map of all possible links
+    val refMap = recordPersistence.buildReferenceMap(mentionedAspects)
+
+    if (refMap.size == 1) {
+      Seq()
+    } else {
+
+      /**
+        * Here, we retrieve all relevant linked record ids by:
+        * - Filter events table by recordId and data->'aspectId' (only includes aspect contains links) first
+        * - It's a create event when event data -> aspect field exists. Thus, retrieve property value, either array (return as rows) or single value, as record ids
+        * - When event data -> patch field (array of patch operations) exists, it could be aspectPatch, aspectPatchDelete etc. event.
+        *   We convert the `patch` array into rows and then use a subquery to filter out rows:
+        *     - `patch`->'value' is null
+        *     - `patch`->'path' is one of `/[propertyName]`, `/[propertyName]/-`(add an item to array), `/[propertyName]/xx` (replace a item at index xx)
+        *   Then return aggregated result as rows
+        * */
+      val linkedRecordIds = sql"""SELECT DISTINCT ids FROM
+      (SELECT CASE
+        ${SQLSyntax.join(
+        refMap.toSeq.map { ref =>
+          val jsonAspectDataRef =
+            sqls"data #> array['aspect', ${ref._2.propertyName}]"
+          val jsonAspectTextDataRef =
+            sqls"data #>> array['aspect', ${ref._2.propertyName}]"
+
+          sqls"""
+                WHEN data->>'aspectId'=${ref._1} AND ${jsonAspectDataRef} IS NOT NULL
+                THEN ${if (ref._2.isArray) {
+            sqls"jsonb_array_elements_text(${jsonAspectDataRef})"
+          } else { sqls"${jsonAspectTextDataRef}" }}
+                WHEN data->>'aspectId'=${ref._1} AND data->'patch' IS NOT NULL
+                THEN jsonb_array_elements_text(
+                  (select jsonb_agg(patches->'value')
+                   from jsonb_array_elements(data->'patch') patches
+                   WHERE patches->'value' IS NOT NULL AND
+                      (
+                        patches->>'path'=${s"/${ref._2.propertyName}"}
+                        OR patches->>'path'=${s"/${ref._2.propertyName}/-"}
+                        OR patches->>'path' ilike ${s"/${ref._2.propertyName}/%"}
+                      )
+                  ))
+                """
+        },
+        SQLSyntax.createUnsafely("\n"),
+        false
+      )}
+            END as ids
+         FROM events
+         WHERE data->>'recordId'=${recordId} AND ${SQLSyntax.in(
+        SQLSyntax.createUnsafely("data->>'aspectId'"),
+        refMap
+          .map(_._1)
+          .toSeq)}
+       ) linksids
+       WHERE ids IS NOT NULL AND trim(ids)!=''
+       """.map(_.string(1)).list.apply()
+
+      if (linkedRecordIds.size == 0) {
+        Seq()
+      } else {
+        recordPersistence.getValidRecordIds(tenantId,
+                                            opaRecordQueries,
+                                            linkedRecordIds)
+      }
+    }
   }
 
   private def rowToEvent(rs: WrappedResultSet): RegistryEvent = {

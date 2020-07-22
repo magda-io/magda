@@ -9,8 +9,8 @@ import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.model.TenantId._
 import au.csiro.data61.magda.opa.OpaTypes._
 import au.csiro.data61.magda.registry.SqlHelper.{
-  getOpaConditions,
-  aspectQueryToSql
+  aspectQueryToSql,
+  getOpaConditions
 }
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
@@ -22,8 +22,14 @@ import au.csiro.data61.magda.client.AuthOperations
 
 import scala.util.{Failure, Success, Try}
 import com.typesafe.config.Config
+import scalikejdbc.interpolation.SQLSyntax
 
 trait RecordPersistence {
+
+  def getValidRecordIds(
+      tenantId: TenantId,
+      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
+      recordIds: Seq[String])(implicit session: DBSession): Seq[String]
 
   def getAll(
       tenantId: TenantId,
@@ -235,6 +241,38 @@ class DefaultRecordPersistence(config: Config)
     if (config.hasPath("opa.recordPolicyId"))
       Some(config.getString("opa.recordPolicyId"))
     else None
+
+  /**
+    * Given a list of recordIds, filter out any record that the current user has not access and return the rest of ids
+    * @param tenantId
+    * @param opaRecordQueries
+    * @param recordIds
+    * @param session
+    * @return Seq[String]
+    */
+  def getValidRecordIds(
+      tenantId: TenantId,
+      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
+      recordIds: Seq[String])(implicit session: DBSession): Seq[String] = {
+    this
+      .getRecords(
+        tenantId = tenantId,
+        aspectIds = Seq(),
+        optionalAspectIds = Seq(),
+        recordOpaQueries = opaRecordQueries,
+        linkedRecordOpaQueries = None,
+        pageToken = None,
+        start = None,
+        Some(recordIds.size),
+        dereference = Some(false),
+        orderBy = None,
+        maxLimit = Some(recordIds.size),
+        recordSelector = Seq(
+          Some(SQLSyntax.in(SQLSyntax.createUnsafely("recordId"), recordIds)))
+      )
+      .records
+      .map(_.id)
+  }
 
   def getAll(
       tenantId: TenantId,
@@ -496,7 +534,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       ).toSeq.map(item => Option(item))
 
     val whereClauseParts
-        : Seq[Option[SQLSyntax]] = recordSelector.toSeq ++ requiredAspectsAndOpaQueriesSelectors :+ Some(
+      : Seq[Option[SQLSyntax]] = recordSelector.toSeq ++ requiredAspectsAndOpaQueriesSelectors :+ Some(
       recordsFilteredByTenantClause
     )
 
@@ -647,7 +685,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
           op.path match {
             case "aspects" / (name / _) => Some(name)
             case _                      => None
-          }
+        }
       )
       .filterKeys(_.isDefined)
       .map {
@@ -760,7 +798,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
             op.path match {
               case "aspects" / _ => false
               case _             => true
-            }
+          }
         )
       )
       patchedRecord <- Try {
@@ -812,7 +850,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
                 userId,
                 true
               )
-            ),
+          ),
           (aspectId: String, aspectPatch: JsonPatch) =>
             (
               aspectId,
@@ -824,7 +862,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
                 userId,
                 true
               )
-            ),
+          ),
           (aspectId: String) => {
             deleteRecordAspect(tenantId, id, aspectId, userId)
             (aspectId, Success(JsNull))
@@ -1121,7 +1159,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
                   Success(countSoFar + (if (bool) 1 else 0))
                 case (Failure(err), _) => Failure(err)
                 case (_, Failure(err)) => Failure(err)
-              }
+            }
           )
       case Failure(err) => Failure(err)
     }
@@ -1261,7 +1299,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
               ))
               JsObject(newFields)
             case _ => recordValue
-          }
+        }
       )
       .map {
         case obj: JsObject => Some(obj.convertTo[Record])
@@ -1422,7 +1460,8 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       rawLimit: Option[Int] = None,
       dereference: Option[Boolean] = None,
       recordSelector: Iterable[Option[SQLSyntax]] = Iterable(),
-      orderBy: Option[OrderByDef] = None
+      orderBy: Option[OrderByDef] = None,
+      maxLimit: Option[Int] = None
   )(implicit session: DBSession): RecordsPage[Record] = {
 
     if (orderBy.isDefined && pageToken.isDefined) {
@@ -1461,7 +1500,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
     )
 
     val limit = rawLimit
-      .map(l => Math.min(l, maxResultCount))
+      .map(l => Math.min(l, maxLimit.getOrElse(maxResultCount)))
       .getOrElse(defaultResultCount)
 
     val rawTempName = ColumnNamePrefixType.PREFIX_TEMP.toString
@@ -1567,7 +1606,8 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       sql"select count(*) from RecordAspects ${makeWhereClause(clauses)}"
     } else {
       // If there's zero or > 1 aspect ids involved then there's no advantage to querying record aspects instead.
-      sql"select count(*) from Records ${makeWhereClause(aspectIdsToWhereClause(tenantId, aspectIds) ++ theRecordSelector)}"
+      sql"select count(*) from Records ${makeWhereClause(
+        aspectIdsToWhereClause(tenantId, aspectIds) ++ theRecordSelector)}"
     }
 
     statement.map(_.long(1)).single.apply().getOrElse(0L)
