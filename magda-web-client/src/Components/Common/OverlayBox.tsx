@@ -31,7 +31,8 @@ const customStyles = {
         borderRadius: "8px",
         padding: undefined,
         left: 30,
-        right: 30
+        right: 30,
+        "max-height": "98vh"
     }
 };
 

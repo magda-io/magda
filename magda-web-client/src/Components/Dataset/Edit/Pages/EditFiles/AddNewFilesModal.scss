@@ -43,3 +43,18 @@
 .last-row {
     margin-bottom: 0px;
 }
+@media (max-height: 800px) {
+    .add-new-files-modal {
+        .content-area {
+            max-height: 63vh !important;
+        }
+    }
+}
+
+@media (max-height: 900px) {
+    .add-new-files-modal {
+        .content-area {
+            max-height: 62vh !important;
+        }
+    }
+}
