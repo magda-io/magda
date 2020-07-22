@@ -14,6 +14,7 @@ import { History } from "history";
 import { ParsedDataset } from "helpers/record";
 import queryString from "query-string";
 import ToolTip from "Components/Common/TooltipWrapper";
+import SecClassification from "Components/Common/SecClassification";
 
 interface PropsType {
     history: History;
@@ -122,6 +123,16 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                                 />
                             </div>
                         ) : null}
+                        <div>
+                            {dataset.informationSecurity?.classification ? (
+                                <SecClassification
+                                    secClass={
+                                        dataset.informationSecurity
+                                            ?.classification
+                                    }
+                                />
+                            ) : null}
+                        </div>
                         {dataset.contactPoint ? (
                             <ContactPoint contactPoint={dataset.contactPoint} />
                         ) : (
