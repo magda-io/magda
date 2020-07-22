@@ -14,7 +14,9 @@ import { History } from "history";
 import { ParsedDataset } from "helpers/record";
 import queryString from "query-string";
 import ToolTip from "Components/Common/TooltipWrapper";
-import SecClassification from "Components/Common/SecClassification";
+import SecClassification, {
+    Sensitivity
+} from "Components/Common/SecClassification";
 
 interface PropsType {
     history: History;
@@ -123,14 +125,21 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                                 />
                             </div>
                         ) : null}
-                        {dataset.informationSecurity?.classification ? (
+                        {dataset.informationSecurity?.classification && (
                             <SecClassification
                                 secClass={
                                     dataset.informationSecurity?.classification
                                 }
                             />
-                        ) : null}
-
+                        )}
+                        {dataset.informationSecurity?.disseminationLimits && (
+                            <Sensitivity
+                                sensitivityList={
+                                    dataset.informationSecurity
+                                        .disseminationLimits
+                                }
+                            />
+                        )}
                         {dataset.contactPoint ? (
                             <ContactPoint contactPoint={dataset.contactPoint} />
                         ) : (

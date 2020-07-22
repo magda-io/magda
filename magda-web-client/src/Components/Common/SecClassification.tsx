@@ -31,4 +31,17 @@ SecClassification.defaultProps = {
     secClass: "UNOFFICIAL"
 };
 
+export function Sensitivity(props) {
+    const disseminationList: Array<string> = props.sensitivityList.map((s) => {
+        return s.toLowerCase();
+    });
+    return (
+        <div className="classication-box">
+            <div className="dataset-heading">
+                Sensitivity: {disseminationList.join(", ")}
+            </div>
+        </div>
+    );
+}
+
 export default SecClassification;
