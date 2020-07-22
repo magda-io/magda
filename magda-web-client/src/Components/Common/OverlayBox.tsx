@@ -32,7 +32,7 @@ const customStyles = {
         padding: undefined,
         left: 30,
         right: 30,
-        "max-height": "98vh"
+        maxHeight: "98vh"
     }
 };
 
