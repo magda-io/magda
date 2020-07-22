@@ -123,16 +123,14 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                                 />
                             </div>
                         ) : null}
-                        <div>
-                            {dataset.informationSecurity?.classification ? (
-                                <SecClassification
-                                    secClass={
-                                        dataset.informationSecurity
-                                            ?.classification
-                                    }
-                                />
-                            ) : null}
-                        </div>
+                        {dataset.informationSecurity?.classification ? (
+                            <SecClassification
+                                secClass={
+                                    dataset.informationSecurity?.classification
+                                }
+                            />
+                        ) : null}
+
                         {dataset.contactPoint ? (
                             <ContactPoint contactPoint={dataset.contactPoint} />
                         ) : (
