@@ -139,11 +139,17 @@ class RecordHistoryService(
               complete(
                 DB readOnly { implicit session =>
                   if (dereference.getOrElse(false)) {
+                    /**
+                      * The dereference works in two steps approach:
+                      * - find out all records that are or have been linked to the specified record by searching & dereferencing with events history
+                      * - call `getEvents` to pull events of the specified record plus events of all records found in step 1
+                      */
                     val recordIds =
-                      eventPersistence.getRecordReferencedIds(tenantId,
-                                                              id,
-                                                              aspects.toSeq,
-                                                              opaQuery) :+ id
+                      eventPersistence.getRecordReferencedIds(
+                        tenantId,
+                        id,
+                        Seq(), // --- we should filter aspects in getEvents for possible linked aspects. Thus, always Seq()
+                        opaQuery) :+ id
 
                     eventPersistence.getEvents(
                       aspectIds = aspects.toSet,

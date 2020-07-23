@@ -160,6 +160,13 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
         )
 
     val linkAspects = recordPersistence.buildReferenceMap(aspectIds)
+    /**
+      * The code block below doesn't seems achieve `dereference` (i.e. includes all events of linked records) and more likely redundant logic
+      * The actual dereference logic is currently done via method `getRecordReferencedIds` and passing ids through `recordSelector` of this method
+      * The code was left here because it was used by `web hook actor` which is the key part of the system.
+      * It currently has no functionality impact to the current `dereference` function.
+      * We probably should be look at it again once we got better understanding of its impact (or/and more test cases around it)
+      */
     val dereferenceSelectors: Set[SQLSyntax] =
       linkAspects.toSet[(String, PropertyWithLink)].map {
         case (aspectId, propertyWithLink) =>
@@ -246,12 +253,13 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       aspectIds: Seq[String] = Seq(),
       opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
   )(implicit session: DBSession): Seq[String] = {
+    val tenantFilter = SQLUtil.tenantIdToWhereClause(tenantId)
     // --- we don't need tenantId for this function as a record cannot belong to two tenants
     // --- pick all aspects of the specified record mentioned in the events till now
     val mentionedAspects = if (aspectIds.size == 0) {
       sql"""SELECT DISTINCT data->>'aspectId' as aspectid
         FROM events
-        WHERE data->>'recordId'=${recordId} AND data->>'aspectId' IS NOT NULL"""
+        WHERE data->>'recordId'=${recordId} AND data->>'aspectId' IS NOT NULL AND ${tenantFilter}"""
         .map(_.string(1))
         .list
         .apply()
@@ -262,7 +270,7 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
     // --- produce reference map of all possible links
     val refMap = recordPersistence.buildReferenceMap(mentionedAspects)
 
-    if (refMap.size == 1) {
+    if (refMap.size == 0) {
       Seq()
     } else {
 
