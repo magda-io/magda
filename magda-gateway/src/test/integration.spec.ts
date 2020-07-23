@@ -67,7 +67,7 @@ describe("Integration Tests", function (this: Mocha.ISuiteCallbackContext) {
         authApiScope = nock(authApiBaseUrl);
         authApiScope
             .persist()
-            .get(/\/private\/getUserByApiKey\/[^/]+/)
+            .get(/\/private\/users\/apikey\/[^/]+/)
             .reply(function (this: any, uri, requestBody, cb) {
                 const parts = uri.split("/");
                 if (parts.length < 3) {

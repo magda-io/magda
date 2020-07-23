@@ -367,7 +367,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
         });
     });
 
-    describe("GET /private/getUserByApiKey/:apiKeyId", () => {
+    describe("GET /private/users/apikey/:apiKeyId", () => {
         silenceErrorLogs(() => {
             it("should return correct user data with correct API key & API Key Id", async () => {
                 await jsc.assert(
@@ -390,7 +390,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                                 );
 
                                 const res = await request(app)
-                                    .get(`/private/getUserByApiKey/${apiKeyId}`)
+                                    .get(`/private/users/apikey/${apiKeyId}`)
                                     .set("X-Magda-API-Key", apiKey);
 
                                 expect(res.status).to.equal(200);
@@ -434,7 +434,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
                                 );
 
                                 const res = await request(app)
-                                    .get(`/private/getUserByApiKey/${apiKeyId}`)
+                                    .get(`/private/users/apikey/${apiKeyId}`)
                                     // --- add non empty random string to make it incorrect key
                                     .set("X-Magda-API-Key", apiKey + randomStr);
 

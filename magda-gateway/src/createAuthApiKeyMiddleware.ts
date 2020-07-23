@@ -46,7 +46,7 @@ const createAuthApiKeyMiddleware = (
         }
 
         const authRes = await fetch(
-            `${authApiBaseUrl}/private/getUserByApiKey/${apiKeyId}`,
+            `${authApiBaseUrl}/private/users/apikey/${apiKeyId}`,
             {
                 headers: {
                     "X-Magda-API-Key": apiKey

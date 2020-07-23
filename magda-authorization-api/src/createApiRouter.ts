@@ -132,7 +132,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      * this api is only meant to be accessed internally (by gateway)
      * This route needs to run without MUST_BE_ADMIN middleware as it will authenticate request by APIkey itself
      */
-    router.get("/private/getUserByApiKey/:apiKeyId", async function (req, res) {
+    router.get("/private/users/apikey/:apiKeyId", async function (req, res) {
         try {
             const apiKey = req.get("X-Magda-API-Key");
             const apiKeyId = req.params.apiKeyId;
@@ -172,7 +172,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
         } catch (e) {
             const error =
                 e instanceof GenericError ? e : new GenericError("" + e);
-            respondWithError("/private/getUserByApiKey/:apiKeyId", res, error);
+            respondWithError("/private/users/apikey/:apiKeyId", res, error);
         }
         res.end();
     });

@@ -40,7 +40,7 @@ export interface User extends PublicUser {
 export interface APIKeyRecord {
     id: string;
     user_id: string;
-    timestamp: string;
+    created_timestamp: string;
     hash: string;
 }
 export interface Role {
