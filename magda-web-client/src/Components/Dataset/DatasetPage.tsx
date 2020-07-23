@@ -145,8 +145,17 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                         ) : (
                             <></>
                         )}
-                        <TagsBox tags={dataset.tags} />
-
+                        {dataset.currencyStatus ? (
+                            <div>
+                                Currency of the dataset:{" "}
+                                {dataset.currencyStatus}
+                            </div>
+                        ) : null}
+                        {dataset.accrualPeriodicity ? (
+                            <div>Updated: {dataset.accrualPeriodicity}</div>
+                        ) : null}
+                        <TagsBox content={dataset.tags} title="Tags" />
+                        <TagsBox content={dataset.themes} title="Themes" />
                         {defined(dataset.access?.location) && (
                             <div>
                                 <div className="dataset-heading">
