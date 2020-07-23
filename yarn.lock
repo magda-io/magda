@@ -3607,10 +3607,10 @@
   resolved "https://registry.yarnpkg.com/@types/urijs/-/urijs-1.19.1.tgz#da69e8479eec0bb4580c7cc218d218f107d2d526"
   integrity sha512-5waMuQ9z8pH8+5yAyX05bsA7SOl50l5ZkeMripxoOgN2+nSQb4TOSuhWoRlPt7FPIIohk6iBrX/rEktUJa8KfQ==
 
-"@types/uuid@^3.4.0":
-  version "3.4.9"
-  resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-3.4.9.tgz#fcf01997bbc9f7c09ae5f91383af076d466594e1"
-  integrity sha512-XDwyIlt/47l2kWLTzw/mtrpLdB+GPSskR2n/PIcPn+VYhVO77rGhRncIR5GPU0KRzXuqkDO+J5qqrG0Y8P6jzQ==
+"@types/uuid@^8.0.0":
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-8.0.0.tgz#165aae4819ad2174a17476dbe66feebd549556c0"
+  integrity sha512-xSQfNcvOiE5f9dyd4Kzxbof1aTrLobL278pGLKOZI6esGfZ7ts9Ka16CzIN6Y8hFHE1C7jIBZokULhK1bOgjRw==
 
 "@types/vfile-message@*", "@types/vfile-message@^2.0.0":
   version "2.0.0"
