@@ -7,7 +7,8 @@ import { User } from "reducers/userManagementReducer";
 import { config } from "config";
 import {
     fetchRecordWithNoCache,
-    DEFAULT_OPTIONAL_FETCH_ASPECT_LIST
+    DEFAULT_OPTIONAL_FETCH_ASPECT_LIST,
+    DEFAULT_COMPULSORY_FETCH_ASPECT_LIST
 } from "api-clients/RegistryApis";
 
 /* eslint-disable react-hooks/rules-of-hooks */
@@ -39,6 +40,7 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
                 // --- to avoid orphan uploaded files when the user drops off in the half way before submit
                 const data = await fetchRecordWithNoCache(datasetId, [
                     ...DEFAULT_OPTIONAL_FETCH_ASPECT_LIST,
+                    ...DEFAULT_COMPULSORY_FETCH_ASPECT_LIST,
                     "dataset-draft"
                 ]);
                 const loadedStateData = await rawDatasetDataToState(data, user);

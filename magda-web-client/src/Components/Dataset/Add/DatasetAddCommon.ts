@@ -710,7 +710,9 @@ export function createBlankState(user: User): State {
             owningOrgUnitId: user ? user.orgUnitId : undefined,
             ownerId: user ? user.id : undefined,
             editingUserId: user ? user.id : undefined,
-            defaultLicense: "No license"
+            defaultLicense: "No license",
+            issued: new Date(),
+            modified: new Date()
         },
         datasetPublishing: {
             state: "draft",
@@ -1135,12 +1137,14 @@ async function convertStateToDatasetRecord(
         }));
     }
 
+    const authPolicy = authnReadPolicyId
+        ? authnReadPolicyId
+        : DEFAULT_POLICY_ID;
+
     const inputDataset = {
         id: datasetId,
         name: dataset.title,
-        authnReadPolicyId: authnReadPolicyId
-            ? authnReadPolicyId
-            : DEFAULT_POLICY_ID,
+        authnReadPolicyId: authPolicy,
         aspects: {
             publishing: getPublishingAspectData(state),
             "dcat-dataset-strings": buildDcatDatasetStrings(dataset),
@@ -1195,9 +1199,15 @@ async function convertStateToDatasetRecord(
     return inputDataset;
 }
 
-async function convertStateToDistributionRecords(state: State) {
+async function convertStateToDistributionRecords(
+    state: State,
+    authnReadPolicyId?: string
+) {
     const { dataset, distributions, licenseLevel } = state;
 
+    const authPolicy = authnReadPolicyId
+        ? authnReadPolicyId
+        : DEFAULT_POLICY_ID;
     const distributionRecords = distributions.map((distribution) => {
         const aspect =
             licenseLevel === "dataset"
@@ -1212,7 +1222,8 @@ async function convertStateToDistributionRecords(state: State) {
             name: distribution.title,
             aspects: {
                 "dcat-distribution-strings": aspect
-            }
+            },
+            authnReadPolicyId: authPolicy
         };
     });
 
@@ -1273,7 +1284,7 @@ export async function createDatasetFromState(
     authnReadPolicyId?: string
 ) {
     const distributionRecords = await (
-        await convertStateToDistributionRecords(state)
+        await convertStateToDistributionRecords(state, authnReadPolicyId)
     ).map((item) => {
         // --- set distribution initial version
         // --- the version will be bumped when it's superseded by a new file / distribution
@@ -1302,7 +1313,10 @@ export async function updateDatasetFromState(
     setState: React.Dispatch<React.SetStateAction<State>>,
     authnReadPolicyId?: string
 ) {
-    const distributionRecords = await convertStateToDistributionRecords(state);
+    const distributionRecords = await convertStateToDistributionRecords(
+        state,
+        authnReadPolicyId
+    );
     const datasetRecord = await convertStateToDatasetRecord(
         datasetId,
         distributionRecords,

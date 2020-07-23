@@ -60,14 +60,6 @@ dependencies:
       - url-processors
       - ckan-connector-functions
   
-  - name: magda-function-esri-url-processor
-    version: 0.0.57-0
-    repository: https://charts.magda.io
-    tags:
-      - all
-      - url-processors
-      - magda-function-esri-url-processor
-
   - name: magda-ckan-connector
     version: 0.0.57-0
     alias: connector-dga
@@ -331,10 +323,3 @@ dependencies:
     tags:
       - connectors
       - connector-southern-grampians
-
-  - name: magda-esri-portal-connector
-    version: 0.0.57-0
-    alias: connector-esri-nsw
-    repository: https://charts.magda.io
-    tags:
-      - connector-esri-nsw
