@@ -4,6 +4,7 @@ import "./SideNavigation.scss";
 
 type PropsType = {};
 
+/* eslint-disable jsx-a11y/anchor-is-valid */
 const SideNavigation: FunctionComponent<PropsType> = (props) => {
     return (
         <div className="side-navigation">
@@ -18,5 +19,6 @@ const SideNavigation: FunctionComponent<PropsType> = (props) => {
         </div>
     );
 };
+/* eslint-enable jsx-a11y/anchor-is-valid */
 
 export default SideNavigation;

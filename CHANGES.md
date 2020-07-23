@@ -32,6 +32,7 @@ General:
 -   Upgrade [bcrypt](https://www.npmjs.com/package/bcrypt) to 5.0.0
 -   Make the constructor of AuthorizedRegistryClient also accepts a customised jwt token.
 -   Set pwgen to `0.1.6` (was `^0.1.6`)
+-   Remove ESRI-portal related code from deployment charts
 
 UI:
 
@@ -70,6 +71,7 @@ UI:
 -   Always set dataset publishing state to "published" no matter the approval flow is on / off
 -   Fix a sheet file contains date would cause blank screen during processing
 -   Set an error if security classification is at PROTECTED or above
+-   Add revised edit flow for adding/deleting/superceding existing distributions
 
 Storage:
 
@@ -106,6 +108,7 @@ Authorization:
 -   Added per-record authorization around the `/records/<recordid>/history/<eventId>` endpoint
 -   Fixed a bug where the registry would attempt to query for policies against every single record id in the registry all at once.
 -   Added API Key authentication support
+-   Add auth policy to distribution records
 
 Registry:
 
@@ -121,6 +124,10 @@ Search:
 Minions:
 
 -   Added a minion for publishing to CKAN
+
+CI/CD:
+
+-   Use Directed Acyclic Graph in Gitlab CI
 
 Others:
 

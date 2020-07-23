@@ -45,6 +45,7 @@ const CollapseBox: FunctionComponent<PropsType> = (props) => {
                 >
                     {isNotCollapsible ? null : (
                         <img
+                            alt="toggle button"
                             src={isOpen ? minusIcon : plusIcon}
                             onClick={onToggleClick}
                         />

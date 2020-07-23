@@ -173,8 +173,6 @@ function convertConfigFieldItem(field: string): string {
             return "$.dataset.publisher";
         case "licenseLevel":
             return "$.licenseLevel";
-        case "dataset.defaultLicense":
-            return "$.dataset.defaultLicense";
         case "informationSecurity.classification":
             return "$.informationSecurity.classification";
         case "informationSecurity.disseminationLimits":
@@ -524,7 +522,7 @@ export const useValidation = <T extends ElementType = ElementType>(
                 deregisterValidationItem(validationItem);
             }
         };
-    }, [fieldJsonPath, fieldLabel, customValidator]);
+    }, [fieldJsonPath, fieldLabel, customValidator, state.ref]);
 
     return [state.isValidationError, state.validationErrorMessage, state.ref];
 };

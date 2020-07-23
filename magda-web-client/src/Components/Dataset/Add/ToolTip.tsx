@@ -17,6 +17,7 @@ export default function ToolTip(props: any) {
                         <img
                             src={props.icon ? props.icon : LightBulbIcon}
                             className="tooltip-image"
+                            alt="tooltip icon"
                         />
                     </td>
                     <td>

@@ -27,6 +27,7 @@ builders-and-yarn:
   stage: builders
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:master
   retry: 1
+  needs: []
   cache:
     key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
@@ -49,6 +50,7 @@ builders-and-yarn:
 # Make sure sbt depenencies, plugins are in place, cached (only for this job) and pass to following stage as artifacts
 sbt-prebuild:
   stage: sbt-prebuild
+  needs: []
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   cache:
     key: $CI_JOB_NAME-$CACHE_VERSION
@@ -71,12 +73,14 @@ sbt-prebuild:
 check-scala-formatting:
   stage: prebuild
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  needs: []
   script:
     - sbt scalafmtCheckAll
 
 registry-typescript-api:
   stage: prebuild
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  needs: ["builders-and-yarn"]
   script:
     - lerna run generate --scope=@magda/typescript-common --stream
   artifacts:
@@ -88,6 +92,11 @@ buildtest:search-with-index-cache:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   retry: 2
+  timeout: 18 minutes
+  needs: [
+    "builders-and-yarn",
+    "sbt-prebuild"
+  ]
   dependencies:
     - builders-and-yarn
     - sbt-prebuild
@@ -149,6 +158,11 @@ buildtest:search-no-index-cache:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   retry: 2
+  timeout: 18 minutes
+  needs: [
+    "builders-and-yarn",
+    "sbt-prebuild"
+  ]
   dependencies:
     - builders-and-yarn
     - sbt-prebuild
@@ -216,6 +230,7 @@ buildtest:ui:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
   retry: 1
+  needs: ["builders-and-yarn"]
   dependencies:
     - builders-and-yarn
   cache:
@@ -235,8 +250,13 @@ buildtest:ui:
 
 buildtest:registry:
   stage: buildtest
-  retry: 1
+  retry: 2
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  needs: [
+    "builders-and-yarn",
+    "sbt-prebuild"
+  ]
+  timeout: 30 minutes
   dependencies:
     - builders-and-yarn
     - sbt-prebuild
@@ -264,6 +284,10 @@ buildtest:typescript-apis-stateless:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
   retry: 1
+  needs: [
+    "builders-and-yarn",
+    "registry-typescript-api"
+  ]
   dependencies:
     - builders-and-yarn
     - registry-typescript-api
@@ -284,6 +308,10 @@ buildtest:typescript-apis-with-pg:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 1
+  needs: [
+    "builders-and-yarn",
+    "registry-typescript-api"
+  ]
   dependencies:
     - builders-and-yarn
     - registry-typescript-api
@@ -333,6 +361,7 @@ buildtest:typescript-apis-with-es:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 2
+  needs: ["builders-and-yarn"]
   dependencies:
     - builders-and-yarn
   before_script:
@@ -377,6 +406,10 @@ buildtest:storage-api:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 1
+  needs: [
+    "builders-and-yarn",
+    "registry-typescript-api"
+  ]
   dependencies:
     - builders-and-yarn
     - registry-typescript-api
@@ -417,6 +450,7 @@ buildtest:opa-policies:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 1
+  needs: ["builders-and-yarn"]
   dependencies:
     - builders-and-yarn
   cache:
@@ -429,7 +463,7 @@ buildtest:opa-policies:
 buildtest:helm-charts:
   stage: buildtest
   image: dtzar/helm-kubectl:3.1.1
-  dependencies: []
+  needs: []
   cache:
     paths: []
   script:
@@ -452,6 +486,7 @@ buildtest:helm-charts:
 
     - echo "helm lint magda chart using preview-multi-tenant.yml"
     - helm lint -f deploy/helm/preview-multi-tenant.yml deploy/helm/magda
+
   artifacts:
     paths:
       - "deploy/helm/magda/charts"
@@ -462,6 +497,13 @@ dockerize:scala:
   stage: dockerize
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   retry: 2
+  needs: [
+    "registry-typescript-api",
+    "sbt-prebuild",
+    "buildtest:registry",
+    "buildtest:search-no-index-cache",
+    "buildtest:search-with-index-cache"
+  ]
   dependencies:
     - registry-typescript-api
     - sbt-prebuild
@@ -482,6 +524,11 @@ dockerize:ui:
     paths: []
   services:
     - docker:dind
+  needs: [
+    "builders-and-yarn",
+    "registry-typescript-api",
+    "buildtest:ui"
+  ]
   dependencies:
     - builders-and-yarn
     - registry-typescript-api
@@ -498,6 +545,14 @@ dockerize:typescript-apis:
     paths: []
   services:
     - docker:dind
+  needs: [
+    "builders-and-yarn",
+    "registry-typescript-api",
+    "buildtest:typescript-apis-stateless",
+    "buildtest:typescript-apis-with-pg",
+    "buildtest:typescript-apis-with-es",
+    "buildtest:storage-api"
+  ]
   dependencies:
     - builders-and-yarn
     - registry-typescript-api
@@ -533,14 +588,18 @@ dockerize:dockerExtensions:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - yarn run in-submodules -- -f categories.dockerExtension=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
 
-
-
 inttest:registryAuth:
   # https://github.com/kind-ci/examples/blob/master/.gitlab-ci.yml
   stage: preview
   retry: 1
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   allow_failure: true
+  needs: [
+    "sbt-prebuild",
+    "builders-and-yarn",
+    "buildtest:registry",
+    "buildtest:helm-charts"
+  ]
   dependencies:
     - sbt-prebuild
     - builders-and-yarn
@@ -644,6 +703,16 @@ inttest:registryAuth:
     - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,magda-core.ingress.targetService=web,tags.all=false,tags.web-server=true,magda-core.web-server.baseUrl=https://dev.magda.io,magda-core.web-server.useLocalStyleSheet=true --timeout 3600m --wait
     - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
 
+(UI - Auto) Run As Preview:
+  <<: *runAsPreview
+  when: always
+  only:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /#deploy-ui-preview/
+  script:
+    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,magda-core.ingress.targetService=web,tags.all=false,tags.web-server=true,magda-core.web-server.baseUrl=https://dev.magda.io,magda-core.web-server.useLocalStyleSheet=true --timeout 3600m --wait
+    - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
+
 (No Data) Run As Preview:
   <<: *runAsPreview
   script:
@@ -677,6 +746,7 @@ Update scripts:
     - git config --global user.name "magdabot"
     - git commit -m "Update create-secrets scripts `date`"
     - git push "https://x-access-token:$GITHUB_ACCESS_TOKEN@github.com/magda-io/magda-config" master
+
 
 Stop Preview: &stopPreview
   stage: preview

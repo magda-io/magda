@@ -1,0 +1,38 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "title": "dataset / distribution version",
+    "description": "Provides version information of a dataset or distribution record. Verison should be bumped up when key event (e.g. current distribution is replaced by an new one or other key milestone) happens.",
+    "type": "object",
+    "properties": {
+        "currentVersionNumber": {
+            "type": "number",
+            "description": "current version number",
+            "minimum": 0
+        },
+        "versions": {
+            "type": "array",
+            "description": "all existing versions for the record (including the current version)",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "versionNumber": {
+                        "type": "number",
+                        "description": "version number of the version"
+                    },
+                    "createTime": {
+                        "type": "string",
+                        "description": "creation time of the version (ISO8601 format)",
+                        "format": "date-time"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "the text description of the version"
+                    }
+                },
+                "required": ["versionNumber", "createTime", "description"]
+            },
+            "minItems": 1
+        }
+    },
+    "required": ["currentVersionNumber", "versions"]
+}

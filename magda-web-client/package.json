@@ -61,7 +61,7 @@
     "react-i18next": "^8.1.0",
     "react-leaflet": "^2.2.1",
     "react-list-drag-and-drop": "^0.9.0",
-    "react-scripts": "^3.4.1",
+    "react-scripts": "3.4.0",
     "react-select": "^3.0.4",
     "react-simplemde-editor": "^4.0.0",
     "retext": "^6.0.1",
@@ -88,6 +88,7 @@
     "@types/rrule": "^2.2.9",
     "@types/smoothscroll-polyfill": "^0.3.1",
     "@types/xlsx": "^0.0.36",
+    "@types/react-modal": "^3.10.5",
     "@types/uuid": "^8.0.0",
     "babel-eslint": "9.0.0",
     "babel-loader": "8.0.5",
@@ -152,7 +153,8 @@
     "webpack-filter-warnings-plugin": "^1.2.1",
     "weighted-mean": "^1.0.2",
     "worker-loader": "^2.0.0",
-    "yaml-front-matter": "^4.0.0"
+    "yaml-front-matter": "^4.0.0",
+    "react-drag-and-drop": "^3.0.0"
   },
   "browserslist": [
     "last 2 versions",
