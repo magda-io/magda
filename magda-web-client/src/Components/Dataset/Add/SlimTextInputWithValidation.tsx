@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from "react";
-import uuidv4 from "uuid/v4";
+import { v4 as uuidv4 } from "uuid";
 import * as ValidationManager from "../Add/ValidationManager";
 import editIcon from "assets/edit.svg";
 import "./SlimTextInputWithValidation.scss";

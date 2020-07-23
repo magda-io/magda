@@ -11,16 +11,22 @@ import { UserToken } from "magda-typescript-common/src/authorization-api/model";
 import { getUserId } from "magda-typescript-common/src/session/GetUserId";
 import buildApp, { Config as BuildAppConfig } from "../buildApp";
 import defaultAppConfig from "../defaultConfig";
-import uuid from "uuid";
+import { v4 as uuidv4 } from "uuid";
 import supertest from "supertest";
 import { expect } from "chai";
 import partial from "lodash/partial";
 
 const SESSION_SECRET = "test-session-secret";
-const JWT_SECRET = uuid.v4();
+const JWT_SECRET = uuidv4();
 const TEST_METHODS = <const>["post", "get", "put", "delete"];
 
-// --- get header value in case insensitive way from nock
+/**
+ * get header value in case insensitive way to prevent error
+ *
+ * @param {*} req
+ * @param {string} headerName
+ * @returns
+ */
 function getHeaderValue(req: any, headerName: string) {
     headerName = headerName.toLowerCase();
     const headerKeys = Object.keys(req.headers);

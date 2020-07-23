@@ -1,7 +1,7 @@
 const { curried2 } = require("jsverify/lib/utils");
 import { Record } from "../generated/registry/api";
 const lazyseq = require("lazy-seq");
-import uuid = require("uuid/v4");
+import { v4 as uuidv4 } from "uuid";
 import _ from "lodash";
 import jsc from "./jsverify";
 
@@ -56,7 +56,7 @@ export const peopleNameArb = jsc
     );
 
 export const uuidArb: jsc.Arbitrary<string> = jsc.bless({
-    generator: jsc.generator.bless((x) => uuid()),
+    generator: jsc.generator.bless((x) => uuidv4()),
     shrink: jsc.shrink.bless((x) => []),
     show: (x: string) => x
 });

@@ -1,4 +1,4 @@
-import uuid from "uuid";
+import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcrypt";
 import { APIKeyRecord } from "magda-typescript-common/src/authorization-api/model";
 
@@ -27,7 +27,7 @@ const mockApiKeyStore = {
 
     async create(userId: string, apiKey: string) {
         const newRecord = {
-            id: uuid.v4(),
+            id: uuidv4(),
             user_id: userId,
             timestamp: new Date().toISOString(),
             hash: await bcrypt.hash(apiKey, SALT_ROUNDS)
