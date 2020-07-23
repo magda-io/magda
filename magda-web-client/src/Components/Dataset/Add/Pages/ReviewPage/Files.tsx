@@ -18,7 +18,7 @@ type PropsType = {
     stateData: State;
 };
 
-const Files: FunctionComponent<PropsType> = props => {
+const Files: FunctionComponent<PropsType> = (props) => {
     const { distributions } = props.stateData;
 
     return (
@@ -37,7 +37,7 @@ const Files: FunctionComponent<PropsType> = props => {
                 </div>
                 <div className="col-sm-9 content-box">
                     {distributions?.length
-                        ? flatMap(distributions, item => [
+                        ? flatMap(distributions, (item) => [
                               <CollapseItem
                                   key={`collapsed-item-${item.id}`}
                                   showWhenCollapse={true}
@@ -45,6 +45,7 @@ const Files: FunctionComponent<PropsType> = props => {
                               >
                                   <div className="col-sm-8 file-title">
                                       <img
+                                          alt="format icon"
                                           className="file-icon"
                                           src={getFormatIcon(item)}
                                       />
@@ -97,7 +98,7 @@ const Files: FunctionComponent<PropsType> = props => {
                                       </div>
                                   </div>
                               </CollapseItem>
-                          ]).filter(item => item)
+                          ]).filter((item) => item)
                         : "No files are included."}
                 </div>
             </div>

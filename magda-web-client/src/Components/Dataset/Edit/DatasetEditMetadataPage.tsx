@@ -19,13 +19,12 @@ import {
 import {
     State,
     DistributionState,
-    submitDatasetFromState,
-    saveState
+    submitDatasetFromState
 } from "../Add/DatasetAddCommon";
 import DetailsAndContents from "../Add/Pages/DetailsAndContents";
 import DatasetAddPeoplePage from "../Add/Pages/People/DatasetAddPeoplePage";
 import DatasetAddEndPreviewPage from "../Add/Pages/DatasetAddEndPreviewPage";
-import DatasetAddFilesPage from "../Add/Pages/AddFiles";
+import DatasetEditFilesPage from "./Pages/EditFiles";
 import DatasetAddAccessAndUsePage from "../Add/Pages/DatasetAddAccessAndUsePage";
 import ReviewPage from "../Add/Pages/ReviewPage/index";
 import DatasetAddEndPage from "../Add/Pages/DatasetAddEndPage";
@@ -34,12 +33,13 @@ import { config } from "config";
 
 import "../Add/DatasetAddMetadataPage.scss";
 import "../Add/DatasetAddCommon.scss";
-import ErrorMessageBox from "../Add/ErrorMessageBox";
+import ErrorMessageBox from "Components/Common/ErrorMessageBox";
 
 import helpIcon from "assets/help.svg";
 import { User } from "reducers/userManagementReducer";
 import * as ValidationManager from "../Add/ValidationManager";
 import URI from "urijs";
+import FileDeletionError from "helpers/FileDeletionError";
 
 type Props = {
     initialState: State;
@@ -68,13 +68,13 @@ class EditDataset extends React.Component<Props, State> {
 
     steps: any = [
         () => (
-            <DatasetAddFilesPage
+            <DatasetEditFilesPage
                 edit={this.edit}
                 setState={this.setState.bind(this)}
                 stateData={this.state}
                 user={this.props.user}
                 isEditView={true}
-                save={() => saveState(this.state, this.props.datasetId)}
+                datasetId={this.props.datasetId}
             />
         ),
         () => (
@@ -183,7 +183,11 @@ class EditDataset extends React.Component<Props, State> {
         const shouldRenderButtonArea = () => {
             if (
                 distributions.filter(
-                    (item) => item._state !== DistributionState.Ready
+                    (item) =>
+                        item._state !== DistributionState.Ready ||
+                        // --- distribution.isReplacementConfirmed might be undefined here so !item.isReplacementConfirmed won't work
+                        (item.isReplacementConfirmed === false &&
+                            this.props.step === 0)
                 ).length
             ) {
                 return false;
@@ -203,7 +207,14 @@ class EditDataset extends React.Component<Props, State> {
                 {this.steps[step]()}
                 <br />
                 <br />
-                <ErrorMessageBox />
+                <ErrorMessageBox
+                    scrollIntoView={false}
+                    stateErrorGetter={(state) =>
+                        state?.record?.newDataset?.error
+                            ? state.record.newDataset.error
+                            : null
+                    }
+                />
                 <br />
                 {!shouldRenderButtonArea() ? null : (
                     <>
@@ -319,11 +330,15 @@ class EditDataset extends React.Component<Props, State> {
                 isPublishing: true
             });
 
-            await submitDatasetFromState(
+            const result = await submitDatasetFromState(
                 this.props.datasetId,
                 this.state,
                 this.setState.bind(this)
             );
+
+            if (result.length) {
+                throw new FileDeletionError(result);
+            }
 
             this.props.history.push(`/dataset/edit/${this.props.datasetId}/6`);
         } catch (e) {

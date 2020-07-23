@@ -213,7 +213,7 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
         if (params.print === "true") {
             window.print();
         }
-    }, []);
+    }, [props.history.location.search]);
 
     return renderResult;
 };

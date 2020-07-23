@@ -12,6 +12,7 @@ type PropsType = {
 
 type TabNames = DatasetTypes;
 
+/* eslint-disable jsx-a11y/anchor-is-valid */
 const DatasetList: FunctionComponent<PropsType> = (props) => {
     const [activeTab, setActiveTab] = useState<TabNames>("drafts");
     const [searchText, setSearchText] = useState<string>("");
@@ -81,6 +82,7 @@ const DatasetList: FunctionComponent<PropsType> = (props) => {
                         />
                         {searchText ? (
                             <img
+                                alt="reset search text"
                                 className="clear-search-icon"
                                 src={dismissIcon}
                                 onClick={() => {
@@ -89,7 +91,11 @@ const DatasetList: FunctionComponent<PropsType> = (props) => {
                                 }}
                             />
                         ) : (
-                            <img className="search-icon" src={searchIcon} />
+                            <img
+                                className="search-icon"
+                                src={searchIcon}
+                                alt="search icon"
+                            />
                         )}
                     </div>
                 </div>
@@ -118,5 +124,6 @@ const DatasetList: FunctionComponent<PropsType> = (props) => {
         </div>
     );
 };
+/* eslint-enable jsx-a11y/anchor-is-valid */
 
 export default DatasetList;

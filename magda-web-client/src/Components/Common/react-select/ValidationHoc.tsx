@@ -80,6 +80,7 @@ function ValidationHoc<OptionType>(
         // --- only generate once
         const errorMessageId = useMemo(
             () => `input-error-text-${uuidv4()}`,
+            // eslint-disable-next-line react-hooks/exhaustive-deps
             undefined
         );
 

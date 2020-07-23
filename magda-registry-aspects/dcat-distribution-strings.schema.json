@@ -53,6 +53,10 @@
         "format": {
             "title": "The file format of the distribution.",
             "type": "string"
+        },
+        "useStorageApi": {
+            "title": "Whether the file is stored with internal storage API.",
+            "type": "boolean"
         }
     }
 }

@@ -9,6 +9,8 @@ import iconTick from "assets/tick.svg";
 import { History, Location } from "history";
 import { config } from "config";
 
+/* eslint-disable no-template-curly-in-string */
+
 type urlFunc = (datasetId: string) => string;
 interface StepItem {
     title: string;
@@ -166,7 +168,9 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
             } else if (currentStep > idx) {
                 return {
                     class: "past-item",
-                    iconItem: <img className="step" src={iconTick} />
+                    iconItem: (
+                        <img className="step" src={iconTick} alt="step icon" />
+                    )
                 } as Status;
             } else {
                 return {
@@ -265,6 +269,7 @@ const AddDatasetProgressMeter = (props: InternalProps & ExternalProps) => {
         </div>
     );
 };
+/* eslint-enable no-template-curly-in-string */
 
 const mapDispatchToProps = (dispatch) => {
     return bindActionCreators(

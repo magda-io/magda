@@ -13,14 +13,10 @@ type PropsType = {
 };
 
 export default class DataPreviewTable extends Component<PropsType> {
-    constructor(props) {
-        super(props);
-    }
-
     removeEmptyRows(data) {
-        return data.filter(row =>
+        return data.filter((row) =>
             Object.keys(row).some(
-                key =>
+                (key) =>
                     typeof row[key] !== "string" || row[key].trim().length > 0
             )
         );
@@ -76,8 +72,8 @@ export default class DataPreviewTable extends Component<PropsType> {
             return <div>Data grid preview is not available</div>;
         const fields = this.props.dataLoadingResult.meta.fields;
         const columns = fields
-            .filter(f => f.length > 0)
-            .map(item => ({
+            .filter((f) => f.length > 0)
+            .map((item) => ({
                 Header: item,
                 accessor: item
             }));
