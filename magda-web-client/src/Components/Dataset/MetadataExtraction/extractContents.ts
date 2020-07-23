@@ -4,6 +4,7 @@ import pdfjsLib from "pdfjs-dist/build/pdf";
 import PDFWorker from "pdfjs-dist/build/pdf.worker";
 import { MAX_KEYWORDS } from "./extractKeywords";
 import uniq from "lodash/uniq";
+import moment from "moment";
 import { FileDetails } from "./types";
 (self as any).pdfjsWorker = PDFWorker; // eslint-disable-line
 
@@ -106,7 +107,18 @@ async function extractSpreadsheetFile(
             author = props.Author;
         }
         if (props.ModifiedDate) {
-            modified = props.ModifiedDate.toISOString().substr(0, 10);
+            let modifiedDate = props.ModifiedDate;
+            if (typeof modifiedDate === "string") {
+                // --- it could be string for some reason sometimes
+                // --- only happen for some particular .xls files
+                if (moment(modifiedDate).isValid()) {
+                    modifiedDate = moment(modifiedDate).toDate();
+                }
+            }
+            if ((modifiedDate as any)?.toISOString) {
+                // --- there is still chance that modifiedDate.toISOString is undefined
+                modified = modifiedDate.toISOString().substr(0, 10);
+            }
         }
     }
 

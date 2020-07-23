@@ -31,3 +31,19 @@
         width: 908px;
     }
 }
+
+@media (max-height: 800px) {
+    .confirm-unselected-new-dists-modal {
+        .inner-content-area {
+            max-height: 63vh !important;
+        }
+    }
+}
+
+@media (max-height: 900px) {
+    .confirm-metadata-modal {
+        .inner-content-area {
+            max-height: 62vh !important;
+        }
+    }
+}
