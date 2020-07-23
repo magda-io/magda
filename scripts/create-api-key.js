@@ -98,7 +98,7 @@ function printResult(result) {
             if (options.list) {
                 // --- list all api keys
                 const keys = await dbClient.query(
-                    "SELECT id, timestamp FROM api_keys WHERE user_id=$1",
+                    "SELECT id, created_timestamp FROM api_keys WHERE user_id=$1",
                     [options.userId]
                 );
 
@@ -115,7 +115,7 @@ function printResult(result) {
                 const keyHash = await bcrypt.hash(newKey, SALT_ROUNDS);
 
                 const result = await dbClient.query(
-                    `INSERT INTO "api_keys" ("id", "user_id", "timestamp", "hash") VALUES(uuid_generate_v4(), $1, CURRENT_TIMESTAMP, $2) RETURNING id`,
+                    `INSERT INTO "api_keys" ("id", "user_id", "created_timestamp", "hash") VALUES(uuid_generate_v4(), $1, CURRENT_TIMESTAMP, $2) RETURNING id`,
                     [options.userId, keyHash]
                 );
                 const apiKeyId = result.rows[0].id;
