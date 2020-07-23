@@ -209,6 +209,7 @@ export type ParsedDataset = {
     description: string;
     distributions: Array<ParsedDistribution>;
     temporalCoverage?: TemporalCoverage;
+    themes: string[];
     publisher: Publisher;
     source?: string;
     linkedDataRating: number;

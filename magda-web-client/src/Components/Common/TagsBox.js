@@ -24,13 +24,14 @@ function mergeTags(tags) {
 }
 
 function TagsBox(props) {
+    const title = props.title;
     return (
         <div className="tags-box">
-            <div className="dataset-heading">Tags: </div>
-            {props.tags && props.tags.length > 0 ? (
+            <div className="dataset-heading">{title}: </div>
+            {props.content && props.content.length > 0 ? (
                 <ul className="au-tags">
-                    {props.tags &&
-                        mergeTags(props.tags)
+                    {props.content &&
+                        mergeTags(props.content)
                             .sort((a, b) => {
                                 if (a < b) return -1;
                                 else if (a > b) return 1;
@@ -50,18 +51,20 @@ function TagsBox(props) {
                             ))}
                 </ul>
             ) : (
-                <span>No tags defined</span>
+                <span>No {title} defined</span>
             )}
         </div>
     );
 }
 
 TagsBox.propTypes = {
-    tags: PropTypes.arrayOf(PropTypes.string)
+    tags: PropTypes.arrayOf(PropTypes.string),
+    title: PropTypes.string
 };
 
 TagsBox.defaultProps = {
-    tags: []
+    tags: [],
+    title: "Tags: "
 };
 
 export default TagsBox;
