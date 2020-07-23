@@ -140,7 +140,6 @@ function printResult(result) {
             }
         }
     } catch (e) {
-        await dbClient.query("ROLLBACK");
         throw e;
     } finally {
         dbClient.release();
