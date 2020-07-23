@@ -1,7 +1,6 @@
 tags:
   all: true
   connectors: false
-  connector-esri-nsw: false
   minion-broken-link: false
   minion-linked-data-rating: false
   minion-visualization: false

@@ -218,7 +218,7 @@ abstract class ApiWithOpa
     )
 
     val esriAccessControlSchemaSource: BufferedSource = fromFile(
-      "magda-registry-aspects/esri-access-control.schema.json"
+      dataPath + "esri-access-control.schema.json"
     )
 
     val orgAspectSchemaSource: BufferedSource = fromFile(

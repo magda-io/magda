@@ -52,7 +52,7 @@ class RegistryAspectsSpec extends ApiSpec {
   it("should add esri-access-control aspect to a record") { param =>
     val aspectId = "esri-access-control"
     val aspectSchemaFilename =
-      s"$registryAspectsPath/esri-access-control.schema.json"
+      s"$testDataPath/esri-access-control.schema.json"
     val aspectDef = createAspectDefinition(aspectSchemaFilename, aspectId)
     param.asAdmin(Post("/v0/aspects", aspectDef)) ~> addTenantIdHeader(TENANT_1) ~> param
       .api(Full)
