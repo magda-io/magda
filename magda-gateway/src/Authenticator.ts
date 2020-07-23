@@ -139,6 +139,7 @@ export default class Authenticator {
             this.authApiBaseUrl,
             options.enableSessionForAPIKeyAccess
         );
+        this.validAndRecoverSession = this.validAndRecoverSession.bind(this);
     }
 
     /**
