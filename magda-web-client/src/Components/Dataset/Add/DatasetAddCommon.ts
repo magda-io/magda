@@ -1232,20 +1232,23 @@ async function convertStateToDistributionRecords(
 
 /**
  * Update ckan export aspect status acccording to UI status.
- * We use JSON Patch request to avoid edging cases
+ * We use JSON Patch request to avoid edging cases.
+ * Without using patch API, all content of the `export aspect` will always be replaced and all fields (including important backend runtime fields) will also be overwritten.
+ * If during this time (between the last time of UI retrieving the `export aspect data` and the time when the export aspect update request sent by UI arrives at registry api), backend minion updates some the important runtime fields.
+ * Those fields' value will be overwritten with outdated value.
  *
  * @param {string} datasetId
  * @param {State} state
  */
 async function updateCkanExportStatus(datasetId: string, state: State) {
     /**
-     * Please note: any frontend code should ONLY (and should ONLY NEED to) change those three fields:
+     * Please note: any frontend code should ONLY (and should ONLY NEED to) change those two fields:
      * - status
      * - exportRequired
      * Those two fields should ONLY been updated via patch request. Otherwise, other runtime fields may lose value.
      *
      * Other fields are all runtime status fields that are only allowed to be altered by minions.
-     * Any attempts to update those from frontend will more or less create edging cases.
+     * Any attempts to update those from frontend will more or less create edging cases (see comment above).
      */
 
     const exportDataPointer = `/aspects/ckan-export/${escapeJsonPatchPointer(
