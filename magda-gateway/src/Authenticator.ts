@@ -186,6 +186,65 @@ export default class Authenticator {
     }
 
     /**
+     * A middleware that:
+     * - validate the session and destory invalid session
+     * - recover session data for valid session
+     *
+     * @param {express.Request} req
+     * @param {express.Response} res
+     * @param {express.NextFunction} next
+     * @returns
+     * @memberof Authenticator
+     */
+    validAndRecoverSession(
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+    ) {
+        if (req.user) {
+            // --- api key authentication successful
+            // --- no need to recover the session
+            return next();
+        } else if (!req.cookies[DEFAULT_SESSION_COOKIE_NAME]) {
+            // --- session not started yet & no incoming session id cookie
+            // --- proceed to other non auth middlewares
+            return next();
+        } else {
+            // --- run the session middleware only first
+            return runMiddlewareList([this.sessionMiddleware], req, res, () => {
+                // --- check if the original incoming session id was invalid
+                // --- here, we test session middleware's processing result
+                // --- rather than accessing session store directly by ourself
+                const sessionId = getSessionId(req, this.sessionSecret);
+                if (req?.session?.id !== sessionId) {
+                    // --- a new session has been created
+                    // --- the original incoming session id must have been an invalid or expired one
+                    // --- we need to destroy this newly created empty session
+                    // --- destroy session here & no need to wait till `destroySession` complete
+                    this.destroySession(req).catch((err) => {
+                        // --- only log here if failed to delete session data from session store
+                        console.log(`Failed to destory session: ${err}`);
+                    });
+                    this.deleteCookie(res);
+                    // --- proceed to other middleware & no need to run passport
+                    return next();
+                } else {
+                    // --- if the session id is valid, run passport middleware
+                    return runMiddlewareList(
+                        [
+                            this.passportMiddleware,
+                            this.passportSessionMiddleware
+                        ],
+                        req,
+                        res,
+                        next
+                    );
+                }
+            });
+        }
+    }
+
+    /**
      * A middleware wraps all other cookie / session / passport related middlewares
      * to achieve fine-gain session / cookie control in Magda.
      * Generally, we want to:
@@ -198,7 +257,7 @@ export default class Authenticator {
      * @param {express.NextFunction} next
      * @memberof Authenticator
      */
-    async authenticatorMiddleware(
+    authenticatorMiddleware(
         req: express.Request,
         res: express.Response,
         next: express.NextFunction
@@ -270,61 +329,14 @@ export default class Authenticator {
             );
         } else {
             // For other routes:
-            // - if valid API key headers exist, attemp to login via API key
+            // - if valid API key headers exist, attempt to login via API key
             // - otherwise, only make session & passport data available if session has already started (cookie set)
-            this.apiKeyMiddleware(req, res, () => {
-                if (req.user) {
-                    // --- api key authentication successful
-                    // --- proceed to other non auth middlewares
-                    return next();
-                } else if (!req.cookies[DEFAULT_SESSION_COOKIE_NAME]) {
-                    // --- session not started yet & no incoming session id cookie
-                    // --- proceed to other non auth middlewares
-                    return next();
-                } else {
-                    // --- run the session middleware only first
-                    return runMiddlewareList(
-                        [this.sessionMiddleware],
-                        req,
-                        res,
-                        () => {
-                            // --- check if the original incoming session id was invalid
-                            // --- here, we test session middleware's processing result
-                            // --- rather than accessing session store directly by ourself
-                            const sessionId = getSessionId(
-                                req,
-                                this.sessionSecret
-                            );
-                            if (req?.session?.id !== sessionId) {
-                                // --- a new session has been created
-                                // --- the original incoming session id must have been an invalid or expired one
-                                // --- we need to destroy this newly created empty session
-                                // --- destroy session here & no need to wait till `destroySession` complete
-                                this.destroySession(req).catch((err) => {
-                                    // --- only log here if failed to delete session data from session store
-                                    console.log(
-                                        `Failed to destory session: ${err}`
-                                    );
-                                });
-                                this.deleteCookie(res);
-                                // --- proceed to other middleware & no need to run passport
-                                return next();
-                            } else {
-                                // --- if the session id is valid, run passport middleware
-                                return runMiddlewareList(
-                                    [
-                                        this.passportMiddleware,
-                                        this.passportSessionMiddleware
-                                    ],
-                                    req,
-                                    res,
-                                    next
-                                );
-                            }
-                        }
-                    );
-                }
-            });
+            return runMiddlewareList(
+                [this.apiKeyMiddleware, this.validAndRecoverSession],
+                req,
+                res,
+                next
+            );
         }
     }
 
