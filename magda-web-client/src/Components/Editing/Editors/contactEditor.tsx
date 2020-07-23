@@ -67,7 +67,7 @@ class ContactEditorComponent extends React.Component<any, any> {
                     .filter((contact: Contact) => {
                         return (
                             existing.filter(
-                                existingItem =>
+                                (existingItem) =>
                                     existingItem.name === contact.name
                             ).length === 0 &&
                             ((contact.name || "").match(query) ||
@@ -85,19 +85,19 @@ class ContactEditorComponent extends React.Component<any, any> {
         let { existing, onChange } = this.props;
         const { results, searched } = this.state;
 
-        const add = item => {
+        const add = (item) => {
             existing = existing.slice(0);
             existing.push(item);
             onChange(existing);
         };
-        const remove = item => {
-            existing = existing.filter(i => i !== item);
+        const remove = (item) => {
+            existing = existing.filter((i) => i !== item);
             onChange(existing);
         };
 
         return (
             <div>
-                <div className="contact-editor-input-outter-container">
+                <div className="contact-editor-input-outer-container">
                     <input
                         className="au-text-input contact-editor-input"
                         type="search"
@@ -110,7 +110,7 @@ class ContactEditorComponent extends React.Component<any, any> {
                 </div>
 
                 <div className="contactList">
-                    {existing.map(val => {
+                    {existing.map((val) => {
                         return (
                             <div className="contactList-item">
                                 {val.name} ({val.role}, {val.organisation}){" "}
@@ -172,7 +172,7 @@ export function multiContactEditor(options: any): Editor<Contact[]> {
             return (
                 <React.Fragment>
                     <ul>
-                        {value.map(val => {
+                        {value.map((val) => {
                             return (
                                 <li>
                                     {val.name || "No Name"} (

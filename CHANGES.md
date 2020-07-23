@@ -70,6 +70,7 @@ UI:
 -   Always set dataset publishing state to "published" no matter the approval flow is on / off
 -   Fix a sheet file contains date would cause blank screen during processing
 -   Set an error if security classification is at PROTECTED or above
+-   Add revised edit flow for adding/deleting/superceding existing distributions
 
 Storage:
 
@@ -105,6 +106,7 @@ Authorization:
 -   Added per-record authorization around the `/records/<recordid>/history` endpoint
 -   Added per-record authorization around the `/records/<recordid>/history/<eventId>` endpoint
 -   Fixed a bug where the registry would attempt to query for policies against every single record id in the registry all at once.
+-   Add auth policy to distribution records
 
 Registry:
 

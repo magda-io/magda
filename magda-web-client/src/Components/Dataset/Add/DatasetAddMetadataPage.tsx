@@ -38,12 +38,13 @@ import "./DatasetAddCommon.scss";
 
 import ReviewFilesList from "./ReviewFilesList";
 
-import ErrorMessageBox from "./ErrorMessageBox";
+import ErrorMessageBox from "Components/Common/ErrorMessageBox";
 
 import helpIcon from "assets/help.svg";
 import { User } from "reducers/userManagementReducer";
 import * as ValidationManager from "../Add/ValidationManager";
 import URI from "urijs";
+import FileDeletionError from "helpers/FileDeletionError";
 
 type Props = {
     initialState: State;
@@ -77,8 +78,6 @@ class NewDataset extends React.Component<Props, State> {
                 datasetId={this.props.datasetId}
                 stateData={this.state}
                 user={this.props.user}
-                isEditView={true}
-                save={() => saveState(this.state, this.props.datasetId)}
             />
         ),
         () => (
@@ -87,7 +86,7 @@ class NewDataset extends React.Component<Props, State> {
                 setState={this.setState.bind(this)}
                 stateData={this.state}
                 user={this.props.user}
-                isEditView={true}
+                isEditView={false}
             />
         ),
         () => (
@@ -97,7 +96,7 @@ class NewDataset extends React.Component<Props, State> {
                 publishing={this.state.datasetPublishing}
                 provenance={this.state.provenance}
                 user={this.props.user}
-                isEditView={true}
+                isEditView={false}
             />
         ),
         () => (
@@ -106,7 +105,7 @@ class NewDataset extends React.Component<Props, State> {
                 editState={this.editState}
                 stateData={this.state}
                 editStateWithUpdater={this.setState.bind(this)}
-                isEditView={true}
+                isEditView={false}
             />
         ),
         this.renderSubmitPage.bind(this),
@@ -226,7 +225,14 @@ class NewDataset extends React.Component<Props, State> {
                 {this.steps[step]()}
                 <br />
                 <br />
-                <ErrorMessageBox />
+                <ErrorMessageBox
+                    scrollIntoView={false}
+                    stateErrorGetter={(state) =>
+                        state?.record?.newDataset?.error
+                            ? state.record.newDataset.error
+                            : null
+                    }
+                />
                 <br />
                 {!shouldRenderButtonArea() ? null : (
                     <>
@@ -365,7 +371,7 @@ class NewDataset extends React.Component<Props, State> {
                 }
             }));
 
-            await submitDatasetFromState(
+            const result = await submitDatasetFromState(
                 datasetId,
                 {
                     ...this.state,
@@ -376,6 +382,10 @@ class NewDataset extends React.Component<Props, State> {
                 },
                 this.setState.bind(this)
             );
+
+            if (result.length) {
+                throw new FileDeletionError(result);
+            }
 
             this.props.history.push(`/dataset/add/metadata/${datasetId}/6`);
         } catch (e) {

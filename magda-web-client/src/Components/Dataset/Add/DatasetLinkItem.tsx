@@ -1,17 +1,10 @@
 import React, { useState } from "react";
-import { useAsync } from "react-async-hook";
 import moment from "moment";
-import uuid from "uuid";
-import fetch from "isomorphic-fetch";
-import { config } from "config";
 import {
-    State,
     Distribution,
     DistributionState,
-    DistributionSource,
     DistributionCreationMethod
 } from "Components/Dataset/Add/DatasetAddCommon";
-import { Record } from "api-clients/RegistryApis";
 import "./DatasetLinkItem.scss";
 
 import { AlwaysEditor } from "Components/Editing/AlwaysEditor";
@@ -24,25 +17,13 @@ import SlimTextInputWithValidation from "../Add/SlimTextInputWithValidation";
 import * as ValidationManager from "./ValidationManager";
 import ValidationRequiredLabel from "../../Dataset/Add/ValidationRequiredLabel";
 import { MultilineTextEditor } from "Components/Editing/Editors/textEditor";
-import promiseAny from "helpers/promiseAny";
-
-export type UrlProcessorResult = {
-    dataset: Record;
-    distributions: Record[];
-};
 
 type Props = {
     distribution: Distribution;
-    idx: number;
-    addDistribution: (distribution: Distribution) => void;
-    editDistribution: (
-        updater: (distribution: Distribution) => Distribution
-    ) => void;
-    deleteDistribution: () => void;
+    idx?: number;
     className?: string;
-    onProcessingError: (error: any) => void;
-    onProcessingComplete?: () => void;
-    setMetadataState: (updater: (state: State) => State) => void;
+    onDelete?: () => any;
+    onChange?: (updater: (file: Distribution) => Distribution) => void;
 };
 
 type ProcessingProps = {
@@ -62,8 +43,8 @@ type EditViewProps = {
 type CompleteViewProps = {
     distribution: Distribution;
     editMode: boolean;
-    setEditMode: (editMode: boolean) => void;
-    deleteDistribution: () => void;
+    setEditMode?: (editMode: boolean) => void;
+    deleteDistribution?: () => void;
 };
 
 const DatasetLinkItemComplete = (props: CompleteViewProps) => {
@@ -71,20 +52,26 @@ const DatasetLinkItemComplete = (props: CompleteViewProps) => {
 
     return (
         <div className="dataset-link-item-complete">
-            <button
-                className={`edit-button au-btn au-btn--secondary`}
-                aria-label="Edit distribution metadata"
-                onClick={() => setEditMode(!editMode)}
-            >
-                <img src={editIcon} />
-            </button>
-            <button
-                className={`delete-button au-btn au-btn--secondary`}
-                arial-label="Delete distribution metadata"
-                onClick={() => deleteDistribution()}
-            >
-                <img src={dismissIcon} />
-            </button>
+            {setEditMode ? (
+                <button
+                    className={`edit-button au-btn au-btn--secondary`}
+                    aria-label="Edit distribution metadata"
+                    onClick={() => setEditMode(!editMode)}
+                >
+                    <img src={editIcon} alt="edit button" />
+                </button>
+            ) : null}
+
+            {deleteDistribution ? (
+                <button
+                    className={`delete-button au-btn au-btn--secondary`}
+                    arial-label="Delete distribution metadata"
+                    onClick={() => deleteDistribution()}
+                >
+                    <img src={dismissIcon} alt="delete button" />
+                </button>
+            ) : null}
+
             <div>
                 <h3 className="link-item-title">{distribution.title}</h3>
                 <div className="link-item-details">
@@ -96,7 +83,7 @@ const DatasetLinkItemComplete = (props: CompleteViewProps) => {
                         <b>Last Modified:</b>{" "}
                         {moment(distribution.modified).format("DD/MM/YYYY")}
                     </div>
-                    <div>
+                    <div className="link-item-url">
                         <b>URL:</b> {distribution.downloadURL}
                     </div>
                     <div className="description-area">
@@ -125,6 +112,7 @@ const DatasetLinkItemProcessing = (props: ProcessingProps) => {
             <div className="distribution-in-progress">
                 <div className="distribution-icon-area">
                     <img
+                        alt="format icon"
                         className="format-icon"
                         src={getFormatIcon(
                             {
@@ -224,7 +212,7 @@ const DatasetLinkItemEditing = (props: EditViewProps) => {
             <div className="row">
                 <div className="col-sm-6 title-field-input-area">
                     <span>
-                        Title:&nbsp;&nbsp;{" "}
+                        Title:{" "}
                         <ValidationRequiredLabel
                             validationFieldPath={`$.distributions[${idx}].title`}
                         />
@@ -255,7 +243,7 @@ const DatasetLinkItemEditing = (props: EditViewProps) => {
                     />
                 </div>
             </div>
-            <div className="row">
+            <div className="row last-modified-input-area">
                 <div className="col-sm-12">
                     <span>Last Modified: </span>
                     &nbsp;&nbsp;
@@ -281,58 +269,6 @@ const DatasetLinkItemEditing = (props: EditViewProps) => {
     );
 };
 
-/**
- * Talks to openfaas gateway to retrieve a list of functions with `data-url-processor` labels (or `api-url-processor` if it's for processing API urls).
- * Here the `data-url-processor` label (or `api-url-processor`) is a user-defined label that we use to distinguish the purposes of function.
- * Therefore, other connectors can opt to support this feature later without any frontend changes.
- * We only need the name field of the returned data items to invoke the function later
- * Documents of openfaas gateway can be found from:
- * https://github.com/openfaas/faas/tree/master/api-docs
- *
- * @returns
- */
-async function getAllDataUrlProcessorsFromOpenfaasGateway(
-    type?: DistributionSource
-) {
-    if (
-        type !== DistributionSource.Api &&
-        type !== DistributionSource.DatasetUrl
-    ) {
-        throw new Error("Unknown distribution url type!");
-    }
-
-    const magdaFuncType =
-        type === DistributionSource.DatasetUrl
-            ? "data-url-processor"
-            : "api-url-processor";
-    const res = await fetch(
-        `${config.openfaasBaseUrl}/system/functions`,
-        config.credentialsFetchOptions
-    );
-    if (res.status !== 200) {
-        if (res.status === 401) {
-            throw new Error(
-                "You are not authorised to access the Magda serverless function gateway."
-            );
-        } else {
-            throw new Error(
-                "Failed to contact openfaas gateway: " + res.statusText
-            );
-        }
-    }
-    const data: any[] = await res.json();
-    if (!data || !data.length) {
-        return [];
-    }
-    return data.filter(
-        (item) => item.labels && item.labels.magdaType === magdaFuncType
-    );
-}
-
-interface UrlProcessingError extends Error {
-    unableProcessUrl?: boolean;
-}
-
 const DatasetLinkItem = (props: Props) => {
     const [editMode, setEditMode] = useState(
         props.distribution?.creationMethod ===
@@ -340,176 +276,11 @@ const DatasetLinkItem = (props: Props) => {
             props.distribution?._state === DistributionState.Drafting
     );
 
-    function processDatasetDcat(aspectData) {
-        if (!aspectData?.title && !aspectData?.description) {
-            return;
-        }
+    const canEdit =
+        typeof props.idx !== "undefined" &&
+        typeof props.onChange === "function";
 
-        props.setMetadataState((state) => {
-            const newDatasetData = { ...state.dataset };
-            if (aspectData?.title) {
-                newDatasetData.title = aspectData?.title;
-            }
-            if (aspectData?.description) {
-                newDatasetData.description = aspectData?.description;
-            }
-            return {
-                ...state,
-                dataset: newDatasetData
-            };
-        });
-    }
-
-    function processDatasetSpatialCoverage(aspectData) {
-        if (aspectData?.bbox?.length !== 4) {
-            return;
-        }
-
-        const bbox = aspectData.bbox
-            .map((item) => (typeof item === "string" ? parseFloat(item) : item))
-            .filter((item) => typeof item === "number" && !isNaN(item));
-
-        if (bbox.length !== 4) {
-            return;
-        }
-
-        props.setMetadataState((state) => ({
-            ...state,
-            spatialCoverage: {
-                spatialDataInputMethod: "bbox",
-                bbox
-            }
-        }));
-    }
-
-    function processDatasetData(dataset: Record) {
-        // --- implement logic of populate dataset data into add dataset page state
-
-        if (dataset?.aspects?.["dcat-dataset-strings"]) {
-            // --- populate dcat-dataset-strings
-            processDatasetDcat(dataset.aspects["dcat-dataset-strings"]);
-        }
-
-        if (dataset?.aspects?.["spatial-coverage"]) {
-            // --- populate spatial-coverage
-            processDatasetSpatialCoverage(dataset.aspects["spatial-coverage"]);
-        }
-    }
-
-    useAsync(async () => {
-        try {
-            if (props.distribution._state !== DistributionState.Processing) {
-                return;
-            }
-
-            const processors = await getAllDataUrlProcessorsFromOpenfaasGateway(
-                props.distribution.creationSource
-            );
-            if (!processors || !processors.length) {
-                throw new Error("No url processor available.");
-            }
-
-            const data = (await promiseAny<UrlProcessorResult>(
-                processors.map(async (item) => {
-                    const res = await fetch(
-                        `${config.openfaasBaseUrl}/function/${item.name}`,
-                        {
-                            ...config.credentialsFetchOptions,
-                            method: "post",
-                            body: props.distribution.downloadURL
-                        }
-                    );
-                    if (res.status !== 200) {
-                        const e: UrlProcessingError = new Error(
-                            `Failed to request function ${item.name}` +
-                                res.statusText +
-                                "\n" +
-                                (await res.text())
-                        );
-                        e.unableProcessUrl = true;
-                        throw e;
-                    }
-
-                    const data = (await res.json()) as UrlProcessorResult;
-                    if (
-                        !data ||
-                        !data.distributions ||
-                        !data.distributions.length
-                    ) {
-                        throw new Error(
-                            `Process result contains less than 1 distribution`
-                        );
-                    }
-
-                    data.distributions = data.distributions.filter(
-                        (item) =>
-                            item.aspects &&
-                            item.aspects["dcat-distribution-strings"]
-                    );
-
-                    if (!data.distributions.length) {
-                        throw new Error(
-                            `Process result contains less than 1 distribution with valid "dcat-distribution-strings" aspect`
-                        );
-                    }
-
-                    return data;
-                })
-            ).catch((e) => {
-                console.log(e);
-                const error = e?.length ? e[0] : e;
-                if (error) {
-                    // --- only deal with the first error
-                    if (error.unableProcessUrl === true) {
-                        // --- We simplify the url processing error message here
-                        // --- Different data sources might fail to recognise the url for different technical reasons but those info may be too technical to the user.
-                        throw new Error(
-                            "We weren't able to extract any information from the URL"
-                        );
-                    } else {
-                        // --- notify the user the `post processing` error as it'd be more `relevant` message (as at least the url has been recognised now).
-                        // --- i.e. url is recognised and processed but meta data is not valid or insufficient (e.g. no distributions)
-                        throw error;
-                    }
-                }
-            })) as UrlProcessorResult;
-
-            props.editDistribution((distribution) => {
-                return {
-                    ...distribution,
-                    ...data.distributions[0].aspects[
-                        "dcat-distribution-strings"
-                    ],
-                    creationSource: props.distribution.creationSource,
-                    _state: DistributionState.Ready
-                };
-            });
-
-            // --- if there are more than one distribution returned, added to the list
-            if (data.distributions.length > 1) {
-                data.distributions.slice(1).forEach((item) => {
-                    props.addDistribution({
-                        ...item.aspects["dcat-distribution-strings"],
-                        id: uuid.v4(),
-                        creationSource: props.distribution.creationSource,
-                        _state: DistributionState.Ready
-                    });
-                });
-            }
-
-            if (data?.dataset) {
-                // --- populate possible dataset level data e.g. spatial-coverage-aspect
-                processDatasetData(data.dataset);
-            }
-
-            if (typeof props.onProcessingComplete === "function") {
-                props.onProcessingComplete();
-            }
-        } catch (e) {
-            props.deleteDistribution();
-            props.onProcessingError(e);
-        }
-    }, [props.distribution.id]);
+    const canDelete = typeof props.onDelete === "function";
 
     if (
         props.distribution._state !== DistributionState.Ready &&
@@ -519,18 +290,22 @@ const DatasetLinkItem = (props: Props) => {
             <div
                 className={`dataset-link-item-container ${
                     props.className ? props.className : ""
-                }`}
+                } ${!canEdit && !canDelete ? "read-only" : ""}`}
             >
                 <DatasetLinkItemProcessing distribution={props.distribution} />
             </div>
         );
-    } else if (editMode) {
+    } else if (editMode && canEdit) {
         return (
-            <div className="dataset-link-item-container">
+            <div
+                className={`dataset-link-item-container  ${
+                    props.className ? props.className : ""
+                } ${!canEdit && !canDelete ? "read-only" : ""}`}
+            >
                 <DatasetLinkItemEditing
-                    idx={props.idx}
+                    idx={props.idx!}
                     distribution={props.distribution}
-                    editDistribution={props.editDistribution}
+                    editDistribution={props.onChange!}
                     setEditMode={setEditMode}
                     editMode={editMode}
                 />
@@ -538,12 +313,17 @@ const DatasetLinkItem = (props: Props) => {
         );
     } else {
         return (
-            <div className="dataset-link-item-container">
+            <div
+                className={`dataset-link-item-container  ${
+                    props.className ? props.className : ""
+                } ${!canEdit && !canDelete ? "read-only" : ""}`}
+            >
+                {/* When `props.onChange` not exist, turn off the edit & delete icon */}
                 <DatasetLinkItemComplete
                     distribution={props.distribution}
-                    setEditMode={setEditMode}
+                    setEditMode={props.onChange ? setEditMode : undefined}
                     editMode={editMode}
-                    deleteDistribution={props.deleteDistribution}
+                    deleteDistribution={props.onDelete}
                 />
             </div>
         );
