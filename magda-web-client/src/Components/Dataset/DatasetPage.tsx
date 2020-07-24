@@ -128,7 +128,7 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                         {dataset.informationSecurity?.classification && (
                             <SecClassification
                                 secClass={
-                                    dataset.informationSecurity?.classification
+                                    dataset.informationSecurity.classification
                                 }
                             />
                         )}

@@ -1,37 +1,38 @@
 import React from "react";
-import PropTypes from "prop-types";
 import "./SecClassification.scss";
+import { classification } from "../../constants/DatasetConstants";
 
-function SecClassification(props) {
-    const classification = props.secClass;
-    if (!classification) {
+interface PropsTypeClassification {
+    secClass: string;
+}
+
+interface PropsTypeSensitivity {
+    sensitivityList: Array<string>;
+}
+
+function SecClassification(props: PropsTypeClassification) {
+    const classificationVal = props.secClass;
+    if (!classificationVal) {
+        return null;
+    }
+    if (!classification[classificationVal]) {
+        // Invalid classification
         return null;
     }
     return (
-        <div className="classication-box">
+        <div className="classification-box">
             <div className="dataset-heading">
-                Security Classification: {classification}
+                Security Classification: {classificationVal}
             </div>
         </div>
     );
 }
 
-SecClassification.propTypes = {
-    secClass: PropTypes.oneOf([
-        "UNOFFICIAL",
-        "OFFICIAL",
-        "OFFICIAL:SENSITIVE",
-        "PROTECTED",
-        "SECRET",
-        "TOP SECRET"
-    ])
-};
-
 SecClassification.defaultProps = {
     secClass: "UNOFFICIAL"
 };
 
-export function Sensitivity(props) {
+export function Sensitivity(props: PropsTypeSensitivity) {
     const disseminationList: Array<string> = props.sensitivityList.map((s) => {
         return s.toLowerCase();
     });
