@@ -139,7 +139,9 @@ export default class Authenticator {
             this.authApiBaseUrl,
             options.enableSessionForAPIKeyAccess
         );
-        this.validAndRecoverSession = this.validAndRecoverSession.bind(this);
+        this.validateAndRefreshSession = this.validateAndRefreshSession.bind(
+            this
+        );
     }
 
     /**
@@ -188,8 +190,8 @@ export default class Authenticator {
 
     /**
      * A middleware that:
-     * - validate the session and destory invalid session
-     * - recover session data for valid session
+     * - Validate the session and destroy the invalid one (so the future request won't carry cookies)
+     * - If it's valid session, handle over to `this.passportMiddleware` and `this.passportSessionMiddleware` to build up full session env (i.e. pull session data and set them probably to req.user)
      *
      * @param {express.Request} req
      * @param {express.Response} res
@@ -197,7 +199,7 @@ export default class Authenticator {
      * @returns
      * @memberof Authenticator
      */
-    validAndRecoverSession(
+    validateAndRefreshSession(
         req: express.Request,
         res: express.Response,
         next: express.NextFunction
@@ -333,7 +335,7 @@ export default class Authenticator {
             // - if valid API key headers exist, attempt to login via API key
             // - otherwise, only make session & passport data available if session has already started (cookie set)
             return runMiddlewareList(
-                [this.apiKeyMiddleware, this.validAndRecoverSession],
+                [this.apiKeyMiddleware, this.validateAndRefreshSession],
                 req,
                 res,
                 next
