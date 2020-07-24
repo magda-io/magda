@@ -577,3 +577,32 @@ export async function updateRecordAspect<T = any>(
 
     return json;
 }
+
+type JSONPath = {
+    op: string;
+    path: string;
+    value: any;
+}[];
+
+/**
+ * Patch a record via JSON patch.
+ * This function does not auto check aspect definition via `ensureAspectExists`
+ *
+ * @export
+ * @template T
+ * @param {string} recordId
+ * @param {T} aspectData
+ * @returns {Promise<T>} Return created aspect data
+ */
+export async function patchRecord<T = any>(
+    recordId: string,
+    jsonPath: JSONPath
+): Promise<T> {
+    const json = (await request(
+        "PATCH",
+        `${config.registryFullApiUrl}records/${recordId}`,
+        jsonPath
+    )) as T;
+
+    return json;
+}

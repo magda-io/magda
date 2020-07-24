@@ -32,6 +32,7 @@ General:
 -   Upgrade [bcrypt](https://www.npmjs.com/package/bcrypt) to 5.0.0
 -   Make the constructor of AuthorizedRegistryClient also accepts a customised jwt token.
 -   Set pwgen to `0.1.6` (was `^0.1.6`)
+-   Remove ESRI-portal related code from deployment charts
 
 UI:
 
@@ -72,6 +73,7 @@ UI:
 -   Set an error if security classification is at PROTECTED or above
 -   Add revised edit flow for adding/deleting/superceding existing distributions
 -   Show extra metadata on the dataset page
+-   Fixed ckan-export aspect's fields should be only changed via JSON patch from the frontend (#2887)
 
 Storage:
 
