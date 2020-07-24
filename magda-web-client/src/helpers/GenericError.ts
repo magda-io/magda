@@ -1,5 +1,5 @@
 export default class GenericError extends Error {
-    statusCode: number;
+    public statusCode: number;
 
     constructor(message: string = "Unknown Error", statusCode: number = 500) {
         super(message);

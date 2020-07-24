@@ -10,18 +10,27 @@ import {
     createPublisher,
     updateDataset,
     deleteRecordAspect,
-    Record
+    Record,
+    getInitialVersionAspectData,
+    VersionAspectData,
+    updateRecordAspect,
+    patchRecord
 } from "api-clients/RegistryApis";
 import { config } from "config";
 import { User } from "reducers/userManagementReducer";
-import { RawDataset, CkanExportAspectType } from "helpers/record";
+import { RawDataset, DatasetDraft } from "helpers/record";
 import { autocompletePublishers } from "api-clients/SearchApis";
 import ServerError from "./Errors/ServerError";
+import defer from "helpers/defer";
+import { ReactStateUpdaterType } from "helpers/promisifySetState";
+import getDistInfoFromDownloadUrl from "./Pages/AddFiles/getDistInfoFromDownloadUrl";
+import deleteFile from "./Pages/AddFiles/deleteFile";
+import escapeJsonPatchPointer from "helpers/escapeJsonPatchPath";
 
 export type Distribution = {
     title: string;
     description?: string;
-    issued?: string;
+    issued?: Date;
     modified: Date;
     license?: string;
     rights?: string;
@@ -42,12 +51,45 @@ export type Distribution = {
     similarFingerprint?: any;
     equalHash?: string;
 
-    // --- An UUID for identify a file during the processing. array index is not a reliable id.
+    /**
+     * An UUID for identify a file during the processing. array index is not a reliable id.
+     *
+     * @type {string}
+     */
     id?: string;
     creationSource?: DistributionSource;
     creationMethod?: DistributionCreationMethod;
+
+    /**
+     * whether it's a distribution that the user hasn't comfirm (by clicking `Finishing Adding` button in Edit flow) that it should be added to dataset
+     *
+     * @type {boolean}
+     */
+    isAddConfirmed?: boolean;
+
+    /**
+     * whether it's a distribution user yet to confirm it should be replace existing distribution or not
+     *
+     * @type {boolean}
+     */
+    isReplacementConfirmed?: boolean;
+    replaceDistId?: string;
     _state: DistributionState;
     _progress?: number;
+
+    /**
+     * whether the file is stored with internal storage API
+     *
+     * @type {boolean}
+     */
+    useStorageApi: boolean;
+
+    /**
+     * we use raw aspect data as we don't access version create time often
+     *
+     * @type {VersionAspectData}
+     */
+    version?: VersionAspectData;
 };
 
 export enum DistributionSource {
@@ -179,18 +221,92 @@ export type State = {
     informationSecurity: InformationSecurity;
     provenance: Provenance;
     currency: Currency;
-    ckanExport: CkanExportAspectType;
+    version?: VersionAspectData;
 
     _lastModifiedDate: Date;
     _createdDate: Date;
 
-    licenseLevel: "dataset" | "distribution";
+    /**
+     * We use this fields to track all uploaded files before submit. This info will only be saved to `dataset-draft`.
+     * Unless the user specifically asks for it, we will only clean this info (and also `dataset-draft`) after dataset changes are submited.
+     * When the user wants to discard all previous changes (that not submitted yet), we should use this array to double check if any orphan files
+     * (files are not belongs to any distributions --- could be produced by unsubmitted replacement or supercedure changes) are required to be deleted.
+     * This field store uploaded file urls
+     */
+    uploadedFileUrls: string[];
 
-    shouldUploadToStorageApi: boolean;
+    /**
+     * `dataset-draft` aspect data
+     * A user may choose to recover from previous saved changes in edit workflow.
+     * Thus, we should not auto unserialize the data here and recover `State` whitout asking the user.
+     * After we recover the previous saved state, we should set this `datasetDraft` field to undefined.
+     * When the user choose to discard the previous saved draft changes, `uploadedFiles` above should be examined to removed any orphan files.
+     * When save state to `dataset-draft`, this field should be omitted.
+     */
+    datasetDraft?: DatasetDraft;
+    loadDatasetDraftConfirmed: boolean;
+
+    licenseLevel: "dataset" | "distribution";
 
     isPublishing: boolean;
     error: Error | null;
 };
+
+export type DatasetStateUpdaterType = ReactStateUpdaterType<State>;
+
+export const getDistributionDeleteCallback = (
+    datasetStateUpdater: DatasetStateUpdaterType
+) => (distId: string) =>
+    new Promise((resolve, reject) => {
+        datasetStateUpdater(
+            (state) => ({
+                ...state,
+                distributions: state.distributions.filter(
+                    (item) => item.id !== distId
+                )
+            }),
+            resolve
+        );
+    });
+
+export const getDistributionAddCallback = (
+    datasetStateUpdater: DatasetStateUpdaterType
+) => (dist: Distribution) =>
+    new Promise((resolve, reject) => {
+        datasetStateUpdater(
+            (state) => ({
+                ...state,
+                distributions: [...state.distributions, dist]
+            }),
+            resolve
+        );
+    });
+
+export const getDistributionUpdateCallback = (
+    datasetStateUpdater: DatasetStateUpdaterType
+) => (
+    distId: string,
+    dist: ((prevState: Readonly<Distribution>) => Distribution) | Distribution
+) =>
+    new Promise((resolve, reject) => {
+        datasetStateUpdater((state) => {
+            try {
+                return {
+                    ...state,
+                    distributions: state.distributions.map((item) =>
+                        item.id !== distId
+                            ? item
+                            : typeof dist === "function"
+                            ? dist(item)
+                            : dist
+                    )
+                };
+            } catch (e) {
+                reject(e);
+                return state;
+            }
+        }, resolve);
+    });
 
 export type TemporalCoverage = {
     intervals: Interval[];
@@ -203,6 +319,7 @@ export type Interval = {
 
 type Access = {
     location?: string;
+    useStorageApi: boolean;
     notes?: string;
 };
 
@@ -460,14 +577,28 @@ function populateDistributions(data: RawDataset, state: State) {
         .filter((item) => item?.aspects?.["dcat-distribution-strings"])
         .map((item) => {
             const modified = dateStringToDate(
-                item.aspects["dcat-distribution-strings"].modified
+                item?.aspects["dcat-distribution-strings"]?.modified
+            );
+            const issued = dateStringToDate(
+                item?.aspects["dcat-distribution-strings"]?.issued
             );
             const dis = {
                 ...item.aspects["dcat-distribution-strings"],
                 id: item.id,
                 modified: modified ? modified : new Date(),
+                issued: issued ? issued : undefined,
                 _state: DistributionState.Ready
-            };
+            } as Distribution;
+
+            if (item?.aspects?.version) {
+                dis.version = data.aspects.version;
+            }
+
+            if (dis.useStorageApi && dis.downloadURL) {
+                // --- add local managed file URLs to state.uploadedFileUrls for future clean-up
+                state.uploadedFileUrls.push(dis.downloadURL);
+            }
+
             return dis;
         });
     if (distributions.length) {
@@ -492,14 +623,47 @@ export async function rawDatasetDataToState(
         state.spatialCoverage = data.aspects?.["spatial-coverage"];
     }
 
-    if (data.aspects?.["ckan-export"]) {
-        state.ckanExport = data.aspects?.["ckan-export"];
+    if (
+        typeof data.aspects?.["ckan-export"]?.[config.defaultCkanServer]
+            ?.status === "boolean"
+    ) {
+        /**
+         * We need to populate data to state.datasetPublishing.publishAsOpenData.dga
+         * as that's where frontend radio ctrl read the value but data.aspects?.["ckan-export"] contains the actual effective value.
+         *
+         * We probably should combined `state.ckan-export.[http://xxx.com].status` with `state.datasetPublishing.publishAsOpenData.dga`.
+         * However, we will leave it to later now to avoid the trouble of implementing json path escape
+         * (due to possible url as object key and we need access data via JSON path for ValidationManager)
+         */
+        if (!data.aspects?.["publishing"]) {
+            data.aspects["publishing"] = {} as any;
+        }
+        data.aspects["publishing"] = {
+            ...data.aspects["publishing"],
+            publishAsOpenData: {
+                ...(data.aspects["publishing"]?.publishAsOpenData
+                    ? data.aspects["publishing"].publishAsOpenData
+                    : {}),
+                dga:
+                    data.aspects["ckan-export"][config.defaultCkanServer].status
+            }
+        };
     }
 
     populateTemporalCoverageAspect(data, state);
 
+    state.datasetAccess = {
+        useStorageApi:
+            typeof data?.aspects?.access?.useStorageApi === "boolean"
+                ? data.aspects.access.useStorageApi
+                : false
+    };
+
     if (data.aspects?.["access"]?.location || data.aspects?.["access"]?.note) {
-        state.datasetAccess = data.aspects?.["access"];
+        state.datasetAccess = {
+            ...state.datasetAccess,
+            ...data.aspects.access
+        };
     }
 
     if (data.aspects?.["information-security"]?.classification) {
@@ -525,6 +689,14 @@ export async function rawDatasetDataToState(
         }
     }
 
+    if (data?.aspects?.version) {
+        state.version = data.aspects.version;
+    }
+
+    if (data?.aspects?.["dataset-draft"]?.data) {
+        state.datasetDraft = data.aspects["dataset-draft"];
+    }
+
     return state;
 }
 
@@ -538,7 +710,9 @@ export function createBlankState(user: User): State {
             owningOrgUnitId: user ? user.orgUnitId : undefined,
             ownerId: user ? user.id : undefined,
             editingUserId: user ? user.id : undefined,
-            defaultLicense: "No license"
+            defaultLicense: "No license",
+            issued: new Date(),
+            modified: new Date()
         },
         datasetPublishing: {
             state: "draft",
@@ -552,7 +726,9 @@ export function createBlankState(user: User): State {
         temporalCoverage: {
             intervals: []
         },
-        datasetAccess: {},
+        datasetAccess: {
+            useStorageApi: false
+        },
         informationSecurity: {},
         provenance: {},
         currency: {
@@ -560,18 +736,12 @@ export function createBlankState(user: User): State {
         },
         licenseLevel: "dataset",
         isPublishing: false,
-        shouldUploadToStorageApi: false,
         error: null,
         _createdDate: new Date(),
         _lastModifiedDate: new Date(),
-        ckanExport: {
-            [config.defaultCkanServer]: {
-                status: "withdraw",
-                hasCreated: false,
-                exportAttempted: false,
-                exportRequired: false
-            }
-        }
+        uploadedFileUrls: [] as string[],
+        datasetDraft: undefined,
+        loadDatasetDraftConfirmed: false
     };
 }
 
@@ -673,6 +843,8 @@ export async function loadState(id: string, user: User): Promise<State> {
 
 export function saveStateToLocalStorage(state: State, id: string) {
     state = Object.assign({}, state);
+    state.datasetDraft = undefined;
+    state.loadDatasetDraftConfirmed = false;
     state._lastModifiedDate = new Date();
 
     const dataset = JSON.stringify(state);
@@ -682,6 +854,8 @@ export function saveStateToLocalStorage(state: State, id: string) {
 
 export async function saveStateToRegistry(state: State, id: string) {
     state = Object.assign({}, state);
+    state.datasetDraft = undefined;
+    state.loadDatasetDraftConfirmed = false;
     state._lastModifiedDate = new Date();
 
     const dataset = JSON.stringify(state);
@@ -690,7 +864,8 @@ export async function saveStateToRegistry(state: State, id: string) {
     let record: RawDataset | undefined;
     try {
         // --- we turned off cache here
-        record = await fetchRecordWithNoCache(id, ["dataset-draft"], [], false);
+        // --- we won't check `dataset-draft` aspect as it's possible a dataset record with no dataset-draft exist (e.g. edit flow)
+        record = await fetchRecordWithNoCache(id, [], [], false);
     } catch (e) {
         if (e! instanceof ServerError || e.statusCode !== 404) {
             // --- mute 404 error as we're gonna create one if can't find an existing one
@@ -698,7 +873,13 @@ export async function saveStateToRegistry(state: State, id: string) {
         }
     }
 
-    const datasetDcatString = buildDcatDatasetStrings(state.dataset);
+    let datasetDcatString;
+
+    try {
+        datasetDcatString = buildDcatDatasetStrings(state.dataset);
+    } catch (e) {
+        datasetDcatString = {};
+    }
 
     const datasetDraftAspectData = {
         data: dataset,
@@ -716,13 +897,13 @@ export async function saveStateToRegistry(state: State, id: string) {
     };
 
     if (!record) {
+        // --- dataset record not exist
         await createDataset(
             {
                 id,
                 name: "",
                 authnReadPolicyId: DEFAULT_POLICY_ID,
                 aspects: {
-                    "dataset-draft": datasetDraftAspectData,
                     publishing: getPublishingAspectData(state),
                     "dataset-access-control": getAccessControlAspectData(state),
                     source: getInternalDatasetSourceAspectData()
@@ -730,12 +911,11 @@ export async function saveStateToRegistry(state: State, id: string) {
             },
             []
         );
+
+        // --- if `dataset-draft` not exist, the API will create the aspect data instead
+        await updateRecordAspect(id, "dataset-draft", datasetDraftAspectData);
     } else {
-        if (!record?.aspects) {
-            record.aspects = {} as any;
-        }
-        record.aspects["dataset-draft"] = datasetDraftAspectData;
-        await updateDataset(record, []);
+        await updateRecordAspect(id, "dataset-draft", datasetDraftAspectData);
     }
 
     return id;
@@ -748,6 +928,33 @@ export async function saveState(state: State, id = createId()) {
     } else {
         return await saveStateToRegistry(state, id);
     }
+}
+
+/**
+ * Save latest runtime state to storage.
+ * Avoid saving outdated local copy of state
+ * @param datasetId
+ * @param datasetStateUpdater
+ */
+export function saveRuntimeStateToStorage(
+    datasetId: string,
+    datasetStateUpdater: DatasetStateUpdaterType
+): Promise<string> {
+    return new Promise((resolve, reject) => {
+        datasetStateUpdater((state) => {
+            // --- defer the execution to make sure the current updater return immediately
+            defer(async () => {
+                try {
+                    const result = await saveState(state, datasetId);
+                    resolve(result);
+                } catch (e) {
+                    reject(e);
+                }
+            });
+            // --- return the same state to avoid updating state
+            return state;
+        });
+    });
 }
 
 export function createId(type = "ds") {
@@ -838,18 +1045,18 @@ export async function preProcessDatasetAutocompleteChoices(
 
 function buildDcatDatasetStrings(value: Dataset) {
     return {
-        title: value.title,
-        description: value.description,
-        issued: value.issued && value.issued.toISOString(),
-        modified: value.modified && value.modified.toISOString(),
-        languages: value.languages,
-        publisher: value.publisher && value.publisher.name,
-        accrualPeriodicity: value.accrualPeriodicity,
+        title: value?.title,
+        description: value?.description,
+        issued: value?.issued?.toISOString && value.issued.toISOString(),
+        modified: value?.modified?.toISOString && value.modified.toISOString(),
+        languages: value?.languages,
+        publisher: value?.publisher?.name,
+        accrualPeriodicity: value?.accrualPeriodicity,
         accrualPeriodicityRecurrenceRule:
-            value.accrualPeriodicityRecurrenceRule,
-        themes: value.themes && value.themes.keywords,
-        keywords: value.keywords && value.keywords.keywords,
-        defaultLicense: value.defaultLicense
+            value?.accrualPeriodicityRecurrenceRule,
+        themes: value?.themes?.keywords,
+        keywords: value?.keywords?.keywords,
+        defaultLicense: value?.defaultLicense
     };
 }
 
@@ -904,7 +1111,7 @@ async function convertStateToDatasetRecord(
     setState: React.Dispatch<React.SetStateAction<State>>,
     isUpdate: boolean = false,
     authnReadPolicyId?: string
-) {
+): Promise<Record> {
     const {
         dataset,
         spatialCoverage,
@@ -912,27 +1119,8 @@ async function convertStateToDatasetRecord(
         informationSecurity,
         datasetAccess,
         provenance,
-        currency,
-        ckanExport
+        currency
     } = state;
-
-    let ckanExportData;
-    try {
-        const data = await fetchRecordWithNoCache(
-            datasetId,
-            [],
-            ["ckan-export"],
-            false
-        );
-        ckanExportData = data.aspects["ckan-export"];
-        ckanExportData[config.defaultCkanServer].status =
-            ckanExport[config.defaultCkanServer].status;
-        ckanExportData[config.defaultCkanServer].exportRequired =
-            ckanExport[config.defaultCkanServer].exportRequired;
-    } catch (e) {
-        // ckan-export aspect doesn't exist on the dataset
-        ckanExportData = ckanExport;
-    }
 
     let publisherId;
     if (dataset.publisher) {
@@ -949,12 +1137,14 @@ async function convertStateToDatasetRecord(
         }));
     }
 
+    const authPolicy = authnReadPolicyId
+        ? authnReadPolicyId
+        : DEFAULT_POLICY_ID;
+
     const inputDataset = {
         id: datasetId,
         name: dataset.title,
-        authnReadPolicyId: authnReadPolicyId
-            ? authnReadPolicyId
-            : DEFAULT_POLICY_ID,
+        authnReadPolicyId: authPolicy,
         aspects: {
             publishing: getPublishingAspectData(state),
             "dcat-dataset-strings": buildDcatDatasetStrings(dataset),
@@ -963,7 +1153,6 @@ async function convertStateToDatasetRecord(
             "dataset-distributions": {
                 distributions: distributionRecords.map((d) => d.id)
             },
-            "ckan-export": ckanExportData,
             access: datasetAccess,
             "information-security": informationSecurity,
             "dataset-access-control": getAccessControlAspectData(state),
@@ -1010,9 +1199,15 @@ async function convertStateToDatasetRecord(
     return inputDataset;
 }
 
-async function convertStateToDistributionRecords(state: State) {
+async function convertStateToDistributionRecords(
+    state: State,
+    authnReadPolicyId?: string
+) {
     const { dataset, distributions, licenseLevel } = state;
 
+    const authPolicy = authnReadPolicyId
+        ? authnReadPolicyId
+        : DEFAULT_POLICY_ID;
     const distributionRecords = distributions.map((distribution) => {
         const aspect =
             licenseLevel === "dataset"
@@ -1027,11 +1222,57 @@ async function convertStateToDistributionRecords(state: State) {
             name: distribution.title,
             aspects: {
                 "dcat-distribution-strings": aspect
-            }
+            },
+            authnReadPolicyId: authPolicy
         };
     });
 
     return distributionRecords;
+}
+
+/**
+ * Update ckan export aspect status acccording to UI status.
+ * We use JSON Patch request to avoid edging cases.
+ * Without using patch API, all content of the `export aspect` will always be replaced and all fields (including important backend runtime fields) will also be overwritten.
+ * If during this time (between the last time of UI retrieving the `export aspect data` and the time when the export aspect update request sent by UI arrives at registry api), backend minion updates some the important runtime fields.
+ * Those fields' value will be overwritten with outdated value.
+ *
+ * @param {string} datasetId
+ * @param {State} state
+ */
+async function updateCkanExportStatus(datasetId: string, state: State) {
+    // Please note: any frontend code should ONLY (and should ONLY NEED to) change those two fields:
+    // - status: Those two fields should ONLY been updated via patch request. Otherwise, other runtime fields may lose value.
+    // - exportRequired: Those two fields should ONLY been updated via patch request. Otherwise, other runtime fields may lose value.
+
+    // Other fields are all runtime status fields that are only allowed to be altered by minions.
+    // Any attempts to update those from frontend will more or less create edging cases (see comment above).
+
+    const exportDataPointer = `/aspects/ckan-export/${escapeJsonPatchPointer(
+        config.defaultCkanServer
+    )}`;
+
+    const uiStatus = state?.datasetPublishing?.publishAsOpenData?.dga
+        ? true
+        : false;
+
+    await ensureAspectExists("ckan-export");
+
+    // Here is a trick based my tests on the [JsonPatch implementation](https://github.com/gnieh/diffson) used in our scala code base:
+    // `add` operation will always work (as long as the aspect schema is loaded).
+    // If the field is already there, `add` will just `replace` the value
+    await patchRecord(datasetId, [
+        {
+            op: "add",
+            path: `${exportDataPointer}/status`,
+            value: uiStatus ? "retain" : "withdraw"
+        },
+        {
+            op: "add",
+            path: `${exportDataPointer}/exportRequired`,
+            value: true
+        }
+    ]);
 }
 
 export async function createDatasetFromState(
@@ -1040,15 +1281,15 @@ export async function createDatasetFromState(
     setState: React.Dispatch<React.SetStateAction<State>>,
     authnReadPolicyId?: string
 ) {
-    if (state.datasetPublishing.publishAsOpenData?.dga) {
-        state.ckanExport[config.defaultCkanServer].status = "retain";
-        state.ckanExport[config.defaultCkanServer].exportRequired = true;
-    } else {
-        state.ckanExport[config.defaultCkanServer].status = "withdraw";
-        state.ckanExport[config.defaultCkanServer].exportRequired = false;
-    }
+    const distributionRecords = await (
+        await convertStateToDistributionRecords(state, authnReadPolicyId)
+    ).map((item) => {
+        // --- set distribution initial version
+        // --- the version will be bumped when it's superseded by a new file / distribution
+        item.aspects["version"] = getInitialVersionAspectData();
+        return item;
+    });
 
-    const distributionRecords = await convertStateToDistributionRecords(state);
     const datasetRecord = await convertStateToDatasetRecord(
         datasetId,
         distributionRecords,
@@ -1057,6 +1298,10 @@ export async function createDatasetFromState(
         false,
         authnReadPolicyId
     );
+
+    // --- set dataset initial version
+    datasetRecord.aspects.version = getInitialVersionAspectData();
+
     await createDataset(datasetRecord, distributionRecords);
 }
 
@@ -1066,15 +1311,10 @@ export async function updateDatasetFromState(
     setState: React.Dispatch<React.SetStateAction<State>>,
     authnReadPolicyId?: string
 ) {
-    if (state.datasetPublishing.publishAsOpenData?.dga) {
-        state.ckanExport[config.defaultCkanServer].status = "retain";
-    } else {
-        state.ckanExport[config.defaultCkanServer].status = "withdraw";
-    }
-
-    state.ckanExport[config.defaultCkanServer].exportRequired = true;
-
-    const distributionRecords = await convertStateToDistributionRecords(state);
+    const distributionRecords = await convertStateToDistributionRecords(
+        state,
+        authnReadPolicyId
+    );
     const datasetRecord = await convertStateToDatasetRecord(
         datasetId,
         distributionRecords,
@@ -1084,6 +1324,60 @@ export async function updateDatasetFromState(
         authnReadPolicyId
     );
     await updateDataset(datasetRecord, distributionRecords);
+}
+
+type FailedFileInfo = {
+    id?: string;
+    title: string;
+};
+
+/**
+ * Tried to delete any uploaded files that is not associated with any distributions.
+ * Return info of files that are failed to delete.
+ * If all files are deleted successfully or no files are required to deleted, it will return an empty array.
+ *
+ * @export
+ * @param {string[]} uploadedFileUrls a list of all files have been uploaded to internal magda storage API. Can be retrieved from state.uploadedFileUrls
+ * @param {Distribution[]} distributions all dataset's dsitributions. Can be retrieved from state.distributions
+ * @returns {Promise<FailedFileInfo[]>}
+ */
+export async function cleanUpOrphanFiles(
+    uploadedFileUrls: string[],
+    distributions: Distribution[]
+): Promise<FailedFileInfo[]> {
+    return (
+        await Promise.all(
+            uploadedFileUrls.map(async (fileUrl) => {
+                if (
+                    distributions.find((item) => item.downloadURL === fileUrl)
+                ) {
+                    // --- do nothing if the url is allocated to a distribution
+                    return { isOk: true };
+                }
+
+                let distId, fileName;
+
+                try {
+                    const result = getDistInfoFromDownloadUrl(fileUrl);
+                    fileName = result.fileName;
+                } catch (e) {
+                    return { title: fileUrl, isOk: false };
+                }
+
+                try {
+                    await deleteFile({
+                        title: fileName,
+                        downloadURL: fileUrl
+                    } as Distribution);
+
+                    return { isOk: true };
+                } catch (e) {
+                    console.error(e);
+                    return { id: distId, title: fileName, isOk: false };
+                }
+            })
+        )
+    ).filter((item) => !item.isOk) as FailedFileInfo[];
 }
 
 /**
@@ -1099,7 +1393,7 @@ export async function submitDatasetFromState(
     datasetId: string,
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>
-) {
+): Promise<FailedFileInfo[]> {
     if (await doesRecordExist(datasetId)) {
         await updateDatasetFromState(
             datasetId,
@@ -1117,4 +1411,11 @@ export async function submitDatasetFromState(
     }
 
     await deleteRecordAspect(datasetId, "dataset-draft");
+
+    await updateCkanExportStatus(datasetId, state);
+
+    return await cleanUpOrphanFiles(
+        state.uploadedFileUrls,
+        state.distributions
+    );
 }

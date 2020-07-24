@@ -18,7 +18,7 @@ interface StateType {
 
 const ITEM_NUM_TRIGGER_SHOW_MORE = 5;
 
-const ReviewFilesList: FunctionComponent<PropsType> = props => {
+const ReviewFilesList: FunctionComponent<PropsType> = (props) => {
     const [state, setState] = useState<StateType>({
         isOpen: props.isOpen === false ? false : true,
         showMore: false
@@ -39,13 +39,14 @@ const ReviewFilesList: FunctionComponent<PropsType> = props => {
                         }
                         className="expand-button"
                         onClick={() =>
-                            setState(state => ({
+                            setState((state) => ({
                                 ...state,
                                 isOpen: state.isOpen ? false : true
                             }))
                         }
                     >
                         <img
+                            alt="expand status icon"
                             src={isOpen ? iconWhiteArrowLeft : iconWhiteArrowUp}
                         />
                     </button>
@@ -90,7 +91,7 @@ const ReviewFilesList: FunctionComponent<PropsType> = props => {
                                         showMore ? "Show Less" : "Show More"
                                     }
                                     onClick={() =>
-                                        setState(state => ({
+                                        setState((state) => ({
                                             ...state,
                                             showMore: state.showMore
                                                 ? false

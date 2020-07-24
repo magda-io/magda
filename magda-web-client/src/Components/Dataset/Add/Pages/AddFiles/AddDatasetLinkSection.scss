@@ -1,0 +1,41 @@
+.dataset-add-file-page {
+    .add-dataset-link-section {
+        margin-top: 100px;
+
+        .section-heading {
+            font-size: 38px;
+            font-weight: normal;
+            font-stretch: normal;
+            font-style: normal;
+            line-height: 0.79;
+            letter-spacing: -0.5px;
+            color: #30384d;
+            padding-bottom: 22px;
+            border-bottom: solid 1px #cccaca;
+            margin-bottom: 50px;
+        }
+
+        h4.url-input-heading {
+            font-size: 16px;
+            font-weight: normal;
+            font-stretch: normal;
+            font-style: normal;
+            line-height: 1.25;
+            letter-spacing: normal;
+            color: #484848;
+        }
+
+        .link-items-section-heading {
+            margin-top: 55px;
+            h2 {
+                font-size: 24px;
+                font-weight: 500;
+                font-stretch: normal;
+                font-style: normal;
+                line-height: 0.88;
+                letter-spacing: -0.3px;
+                color: #484848;
+            }
+        }
+    }
+}

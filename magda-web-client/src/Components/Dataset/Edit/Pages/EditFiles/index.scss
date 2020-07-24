@@ -1,0 +1,62 @@
+.dataset-add-file-page.is-edit-view {
+    h4 {
+        margin-top: 85px;
+        margin-bottom: 65px;
+        color: #30384d;
+        font-size: 29px;
+        letter-spacing: -0.5px;
+        line-height: 30px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid #cccaca;
+    }
+
+    .add-files-heading {
+        h3 {
+            margin-top: 60px;
+            margin-bottom: 30px;
+            font-size: 38px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.61;
+            letter-spacing: normal;
+            color: #484848;
+            border: none !important;
+        }
+    }
+
+    h4.dataset-contents-heading {
+        margin-bottom: 50px;
+    }
+
+    .dataset-contents-sub-heading {
+        color: #484848;
+        font-family: "IBM Plex Sans";
+        font-size: 16px;
+        letter-spacing: -0.2px;
+        line-height: 21px;
+        margin-bottom: 41px;
+    }
+
+    .new-files {
+        padding-top: 30px;
+    }
+
+    .empty-new-file-hint {
+        margin-bottom: 41px;
+    }
+
+    .has-new-files-area {
+        padding-top: 20px;
+        button {
+            float: right;
+        }
+        .empty-new-file-hint {
+            float: left;
+        }
+    }
+
+    .new-files-area {
+        margin-top: 110px;
+    }
+}

@@ -1,0 +1,23 @@
+.file-drop-zone {
+    .dataset-add-files-dropZone {
+        width: 1122px;
+        height: 179px;
+        margin: 0 auto 0 auto;
+        cursor: pointer;
+        background-image: url("../../../../../assets/upload-section.svg");
+        background-repeat: no-repeat;
+        .filedrop-zone-button.au-btn {
+            background: none;
+            border: none;
+            width: 100%;
+            height: 100%;
+        }
+    }
+
+    .dataset-add-files-dropTarget {
+        display: flex;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+    }
+}

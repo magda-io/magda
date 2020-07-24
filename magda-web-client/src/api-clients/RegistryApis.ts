@@ -22,6 +22,7 @@ import organizationDetailsAspect from "@magda/registry-aspects/organization-deta
 import sourceAspect from "@magda/registry-aspects/source.schema.json";
 import datasetDraftAspect from "@magda/registry-aspects/dataset-draft.schema.json";
 import ckanExportAspect from "@magda/registry-aspects/ckan-export.schema.json";
+import versionAspect from "@magda/registry-aspects/version.schema.json";
 import { createNoCacheFetchOptions } from "./createNoCacheFetchOptions";
 import formUrlencode from "./formUrlencode";
 
@@ -41,8 +42,31 @@ export const aspectSchemas = {
     currency: currencyAspect,
     source: sourceAspect,
     "dataset-draft": datasetDraftAspect,
-    "ckan-export": ckanExportAspect
+    "ckan-export": ckanExportAspect,
+    version: versionAspect
 };
+
+export type VersionItem = {
+    versionNumber: number;
+    createTime: string;
+    description: string;
+};
+
+export type VersionAspectData = {
+    currentVersion: number;
+    versions: VersionItem[];
+};
+
+export const getInitialVersionAspectData = () => ({
+    currentVersionNumber: 0,
+    versions: [
+        {
+            versionNumber: 0,
+            createTime: new Date().toISOString(),
+            description: "initial version"
+        }
+    ]
+});
 
 export type DatasetTypes = "drafts" | "published";
 
@@ -186,7 +210,8 @@ export const DEFAULT_OPTIONAL_FETCH_ASPECT_LIST = [
     "provenance",
     "information-security",
     "currency",
-    "ckan-export"
+    "ckan-export",
+    "version"
 ];
 
 export const DEFAULT_COMPULSORY_FETCH_ASPECT_LIST = ["dcat-dataset-strings"];
@@ -523,6 +548,61 @@ export async function updateDataset(
         `${config.registryFullApiUrl}records/${inputDataset.id}`,
         inputDataset
     )) as Record;
+
+    return json;
+}
+
+/**
+ * Update a record aspect. If the aspect not exist, it will be created.
+ *
+ * @export
+ * @template T
+ * @param {string} recordId
+ * @param {string} aspectId
+ * @param {T} aspectData
+ * @returns {Promise<T>} Return created aspect data
+ */
+export async function updateRecordAspect<T = any>(
+    recordId: string,
+    aspectId: string,
+    aspectData: T
+): Promise<T> {
+    await ensureAspectExists(aspectId);
+
+    const json = (await request(
+        "PUT",
+        `${config.registryFullApiUrl}records/${recordId}/aspects/${aspectId}`,
+        aspectData
+    )) as T;
+
+    return json;
+}
+
+type JSONPath = {
+    op: string;
+    path: string;
+    value: any;
+}[];
+
+/**
+ * Patch a record via JSON patch.
+ * This function does not auto check aspect definition via `ensureAspectExists`
+ *
+ * @export
+ * @template T
+ * @param {string} recordId
+ * @param {T} aspectData
+ * @returns {Promise<T>} Return created aspect data
+ */
+export async function patchRecord<T = any>(
+    recordId: string,
+    jsonPath: JSONPath
+): Promise<T> {
+    const json = (await request(
+        "PATCH",
+        `${config.registryFullApiUrl}records/${recordId}`,
+        jsonPath
+    )) as T;
 
     return json;
 }

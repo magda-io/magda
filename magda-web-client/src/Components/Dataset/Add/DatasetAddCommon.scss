@@ -50,6 +50,16 @@
         margin-right: 30px;
     }
 
+    .button-with-icon {
+        position: relative;
+        svg {
+            position: absolute;
+            width: 22px;
+            top: 5px;
+            left: 20px;
+        }
+    }
+
     .next-save-button-row {
         margin-top: 20px;
         margin-bottom: 80px;
@@ -78,22 +88,6 @@
             left: 445px;
             top: 10px;
             z-index: 1;
-        }
-    }
-
-    .tooltip-root {
-        font-size: 14px;
-        font-weight: 300;
-        font-style: normal;
-        font-stretch: normal;
-        line-height: 1.57;
-        letter-spacing: normal;
-        color: #636363;
-        max-width: 978px;
-        margin-top: 16px;
-        margin-bottom: 24px;
-        img {
-            margin-right: 10px;
         }
     }
 

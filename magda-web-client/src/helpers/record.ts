@@ -2,7 +2,7 @@ import getDateString from "./getDateString";
 import { isSupportedFormat as isSupportedMapPreviewFormat } from "../Components/Common/DataPreviewMap";
 import { FetchError } from "../types";
 import weightedMean from "weighted-mean";
-import { Record } from "api-clients/RegistryApis";
+import { Record, VersionAspectData } from "api-clients/RegistryApis";
 import { config } from "config";
 
 export type RecordAction = {
@@ -12,7 +12,7 @@ export type RecordAction = {
     id?: string;
 };
 
-type TemporalCoverage = {
+export type TemporalCoverage = {
     intervals: {
         start?: string;
         end?: string;
@@ -21,17 +21,18 @@ type TemporalCoverage = {
     }[];
 };
 
-type dcatDistributionStrings = {
+export type dcatDistributionStrings = {
     format: string;
     downloadURL: string;
     accessURL: string;
+    issued?: string;
     modified: string;
     license: string;
     description: string;
     title: string;
 };
 
-type DcatDatasetStrings = {
+export type DcatDatasetStrings = {
     title: string;
     description: string;
     issued?: string;
@@ -107,6 +108,7 @@ export type RawDistribution = {
         publishing: {
             state?: string;
         };
+        version?: VersionAspectData;
     };
 };
 
@@ -123,7 +125,19 @@ type Provenance = {
 
 export type Access = {
     location?: string;
+    useStorageApi?: boolean;
     note?: string;
+};
+
+export type DatasetDraft = {
+    data: string;
+    timestamp: string;
+    dataset?: {
+        title?: string;
+        description?: string;
+        themes?: string[];
+        keywords?: string[];
+    };
 };
 
 export type RawDataset = {
@@ -144,6 +158,8 @@ export type RawDataset = {
         "temporal-coverage"?: TemporalCoverage;
         provenance?: Provenance;
         access: Access;
+        version?: VersionAspectData;
+        "dataset-draft"?: DatasetDraft;
     };
 };
 
@@ -186,6 +202,7 @@ export type ParsedDataset = {
     title: string;
     accrualPeriodicity?: string;
     accrualPeriodicityRecurrenceRule?: string;
+    currencyStatus?: "CURRENT" | "SUPERSEDED" | "RETIRED";
     issuedDate?: string;
     updatedDate?: string;
     landingPage: string;
@@ -193,6 +210,7 @@ export type ParsedDataset = {
     description: string;
     distributions: Array<ParsedDistribution>;
     temporalCoverage?: TemporalCoverage;
+    themes: string[];
     publisher: Publisher;
     source?: string;
     linkedDataRating: number;
@@ -438,6 +456,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         : defaultDatasetAspects;
     const identifier = dataset && dataset.id;
     const accessControl = aspects["dataset-access-control"];
+    const currencyStatus = aspects["currency"]?.status;
     const datasetInfo = aspects["dcat-dataset-strings"];
     const distribution = aspects["dataset-distributions"];
     const temporalCoverage = aspects["temporal-coverage"] || { intervals: [] };
@@ -557,6 +576,8 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         error,
         linkedDataRating,
         hasQuality,
+        currencyStatus,
+        themes: datasetInfo["themes"],
         sourceDetails: aspects["source"],
         provenance: {
             ...(aspects?.provenance ? aspects.provenance : {}),

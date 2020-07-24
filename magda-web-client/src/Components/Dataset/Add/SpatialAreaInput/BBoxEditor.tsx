@@ -62,14 +62,14 @@ const roundNumber = (value: number) => {
     return Math.round(value * 10000) / 10000;
 };
 
-const BBoxEditor: FunctionComponent<PropsType> = props => {
+const BBoxEditor: FunctionComponent<PropsType> = (props) => {
     const [state, setState] = useState<StateType>(initialState);
 
     const onChange = (valueKey: string, props: PropsType) => (
         event: ChangeEvent<HTMLInputElement>
     ) => {
         const value = event.currentTarget.value;
-        setState(state => {
+        setState((state) => {
             const newState = {
                 ...state,
                 [valueKey]: value
@@ -78,7 +78,7 @@ const BBoxEditor: FunctionComponent<PropsType> = props => {
             const bbox = createBboxFromStateProps(newState, props);
             if (
                 typeof props.onChange === "function" &&
-                Object.keys(bbox).filter(key => typeof bbox === "undefined")
+                Object.keys(bbox).filter((key) => typeof bbox === "undefined")
                     .length === 0
             ) {
                 // --- can produce an valid bbox
@@ -93,7 +93,7 @@ const BBoxEditor: FunctionComponent<PropsType> = props => {
         const newState = { ...state };
         let isStateUpdated = false;
         if (props.bbox) {
-            VALUE_KEY_TYPES.forEach(valueKey => {
+            VALUE_KEY_TYPES.forEach((valueKey) => {
                 if (
                     state[valueKey].trim() === "" &&
                     isDefined(props.bbox, valueKey)
@@ -111,7 +111,7 @@ const BBoxEditor: FunctionComponent<PropsType> = props => {
 
     return (
         <div className="bbox-editor-container">
-            <img className="edit-button" src={editIcon} />
+            <img className="edit-button" src={editIcon} alt="edit button" />
             <table>
                 <tbody>
                     <tr>
@@ -144,7 +144,7 @@ const BBoxEditor: FunctionComponent<PropsType> = props => {
                             />
                         </td>
                         <td className="compass-icon-container">
-                            <img src={compassIcon} />
+                            <img src={compassIcon} alt="compass icon" />
                         </td>
                         <td>
                             <p>East Bounding Longitude</p>

@@ -25,10 +25,6 @@ class DistributionRow extends Component<PropType> {
         isExpanded: false
     };
 
-    constructor(props: PropType) {
-        super(props);
-    }
-
     /**
      * Replace underscores in links with spaces
      * This stops the text from going off the edge of the screen

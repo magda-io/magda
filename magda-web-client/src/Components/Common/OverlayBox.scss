@@ -1,0 +1,37 @@
+.overlay-box-outer-container {
+    padding-top: 42px;
+    padding-left: 40px;
+    padding-right: 40px;
+    padding-bottom: 45px;
+
+    .overlay-box-header {
+        position: relative;
+        border-bottom: 1px solid black;
+        height: 59;
+
+        color: #30384d;
+        font-size: 29px;
+        letter-spacing: -0.5px;
+        line-height: 30px;
+        padding-bottom: 30px;
+        border-bottom: 2px solid #cccaca;
+
+        svg {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            top: -15px;
+            right: -25px;
+            cursor: pointer;
+        }
+    }
+
+    .overlay-box-body {
+        padding-top: 27px;
+        color: #484848;
+        font-size: 18px;
+        letter-spacing: -0.3px;
+        line-height: 20px;
+        filter: none !important;
+    }
+}
