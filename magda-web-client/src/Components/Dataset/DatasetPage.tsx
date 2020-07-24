@@ -146,10 +146,7 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                             <></>
                         )}
                         {dataset.currencyStatus ? (
-                            <div>
-                                Currency of the dataset:{" "}
-                                {dataset.currencyStatus}
-                            </div>
+                            <div>Currency: {dataset.currencyStatus}</div>
                         ) : null}
                         {dataset.accrualPeriodicity ? (
                             <div>Updated: {dataset.accrualPeriodicity}</div>
