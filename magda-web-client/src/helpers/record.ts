@@ -202,6 +202,7 @@ export type ParsedDataset = {
     title: string;
     accrualPeriodicity?: string;
     accrualPeriodicityRecurrenceRule?: string;
+    currencyStatus?: "CURRENT" | "SUPERSEDED" | "RETIRED";
     issuedDate?: string;
     updatedDate?: string;
     landingPage: string;
@@ -209,6 +210,7 @@ export type ParsedDataset = {
     description: string;
     distributions: Array<ParsedDistribution>;
     temporalCoverage?: TemporalCoverage;
+    themes: string[];
     publisher: Publisher;
     source?: string;
     linkedDataRating: number;
@@ -454,6 +456,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         : defaultDatasetAspects;
     const identifier = dataset && dataset.id;
     const accessControl = aspects["dataset-access-control"];
+    const currencyStatus = aspects["currency"]?.status;
     const datasetInfo = aspects["dcat-dataset-strings"];
     const distribution = aspects["dataset-distributions"];
     const temporalCoverage = aspects["temporal-coverage"] || { intervals: [] };
@@ -573,6 +576,8 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         error,
         linkedDataRating,
         hasQuality,
+        currencyStatus,
+        themes: datasetInfo["themes"],
         sourceDetails: aspects["source"],
         provenance: {
             ...(aspects?.provenance ? aspects.provenance : {}),

@@ -14,6 +14,9 @@ import { History } from "history";
 import { ParsedDataset } from "helpers/record";
 import queryString from "query-string";
 import ToolTip from "Components/Common/TooltipWrapper";
+import SecClassification, {
+    Sensitivity
+} from "Components/Common/SecClassification";
 
 interface PropsType {
     history: History;
@@ -122,13 +125,34 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                                 />
                             </div>
                         ) : null}
+                        {dataset.informationSecurity?.classification && (
+                            <SecClassification
+                                secClass={
+                                    dataset.informationSecurity.classification
+                                }
+                            />
+                        )}
+                        {dataset.informationSecurity?.disseminationLimits && (
+                            <Sensitivity
+                                sensitivityList={
+                                    dataset.informationSecurity
+                                        .disseminationLimits
+                                }
+                            />
+                        )}
                         {dataset.contactPoint ? (
                             <ContactPoint contactPoint={dataset.contactPoint} />
                         ) : (
                             <></>
                         )}
-                        <TagsBox tags={dataset.tags} />
-
+                        {dataset.currencyStatus ? (
+                            <div>Currency: {dataset.currencyStatus}</div>
+                        ) : null}
+                        {dataset.accrualPeriodicity ? (
+                            <div>Updated: {dataset.accrualPeriodicity}</div>
+                        ) : null}
+                        <TagsBox content={dataset.tags} title="Tags" />
+                        <TagsBox content={dataset.themes} title="Themes" />
                         {defined(dataset.access?.location) && (
                             <div>
                                 <div className="dataset-heading">
