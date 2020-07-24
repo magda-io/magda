@@ -160,13 +160,14 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
         )
 
     val linkAspects = recordPersistence.buildReferenceMap(aspectIds)
-    /**
-      * The code block below doesn't seems achieve `dereference` (i.e. includes all events of linked records) and more likely redundant logic
-      * The actual dereference logic is currently done via method `getRecordReferencedIds` and passing ids through `recordSelector` of this method
-      * The code was left here because it was used by `web hook actor` which is the key part of the system.
-      * It currently has no functionality impact to the current `dereference` function.
-      * We probably should be look at it again once we got better understanding of its impact (or/and more test cases around it)
-      */
+
+    /*
+      The code block below doesn't seems achieve `dereference` (i.e. includes all events of linked records) and more likely redundant logic
+      The actual dereference logic is currently done via method `getRecordReferencedIds` and passing ids through `recordSelector` of this method
+      The code was left here because it was used by `web hook actor` which is the key part of the system.
+      It currently has no functionality impact to the current `dereference` function.
+      We probably should be look at it again once we got better understanding of its impact (or/and more test cases around it)
+     */
     val dereferenceSelectors: Set[SQLSyntax] =
       linkAspects.toSet[(String, PropertyWithLink)].map {
         case (aspectId, propertyWithLink) =>
@@ -274,16 +275,16 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       Seq()
     } else {
 
-      /**
-        * Here, we retrieve all relevant linked record ids by:
-        * - Filter events table by recordId and data->'aspectId' (only includes aspect contains links) first
-        * - It's a create event when event data -> aspect field exists. Thus, retrieve property value, either array (return as rows) or single value, as record ids
-        * - When event data -> patch field (array of patch operations) exists, it could be aspectPatch, aspectPatchDelete etc. event.
-        *   We convert the `patch` array into rows and then use a subquery to filter out rows:
-        *     - `patch`->'value' is null
-        *     - `patch`->'path' is one of `/[propertyName]`, `/[propertyName]/-`(add an item to array), `/[propertyName]/xx` (replace a item at index xx)
-        *   Then return aggregated result as rows
-        * */
+      /*
+      Here, we retrieve all relevant linked record ids by:
+      - Filter events table by recordId and data->'aspectId' (only includes aspect contains links) first
+      - It's a create event when event data -> aspect field exists. Thus, retrieve property value, either array (return as rows) or single value, as record ids
+      - When event data -> patch field (array of patch operations) exists, it could be aspectPatch, aspectPatchDelete etc. event.
+        We convert the `patch` array into rows and then use a sub-query to filter out rows:
+          - `patch`->'value' is null
+          - `patch`->'path' is one of `/[propertyName]`, `/[propertyName]/-`(add an item to array), `/[propertyName]/xx` (replace a item at index xx)
+        Then return aggregated result as rows
+       */
       val linkedRecordIds = sql"""SELECT DISTINCT ids FROM
       (SELECT CASE
         ${SQLSyntax.join(
@@ -328,6 +329,10 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       if (linkedRecordIds.size == 0) {
         Seq()
       } else {
+        // We need to filter out any records that the current user has no access
+        // We do this via `recordPersistence.getValidRecordIds`
+        // when `opaRecordQueries` is None, `recordPersistence.getValidRecordIds` will simply return `linkedRecordIds` directly
+        // as there is no need to check as user should have access to all records (likely an admin)
         recordPersistence.getValidRecordIds(tenantId,
                                             opaRecordQueries,
                                             linkedRecordIds)

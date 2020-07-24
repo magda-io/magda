@@ -253,26 +253,30 @@ class DefaultRecordPersistence(config: Config)
   def getValidRecordIds(
       tenantId: TenantId,
       opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
-      recordIds: Seq[String])(implicit session: DBSession): Seq[String] = {
-    this
-      .getRecords(
-        tenantId = tenantId,
-        aspectIds = Seq(),
-        optionalAspectIds = Seq(),
-        recordOpaQueries = opaRecordQueries,
-        linkedRecordOpaQueries = None,
-        pageToken = None,
-        start = None,
-        Some(recordIds.size),
-        dereference = Some(false),
-        orderBy = None,
-        maxLimit = Some(recordIds.size),
-        recordSelector = Seq(
-          Some(SQLSyntax.in(SQLSyntax.createUnsafely("recordId"), recordIds)))
-      )
-      .records
-      .map(_.id)
-  }
+      recordIds: Seq[String])(implicit session: DBSession): Seq[String] =
+    opaRecordQueries match {
+      case None => recordIds
+      case Some(_) =>
+        this
+          .getRecords(
+            tenantId = tenantId,
+            aspectIds = Seq(),
+            optionalAspectIds = Seq(),
+            recordOpaQueries = opaRecordQueries,
+            linkedRecordOpaQueries = None,
+            pageToken = None,
+            start = None,
+            Some(recordIds.size),
+            dereference = Some(false),
+            orderBy = None,
+            maxLimit = Some(recordIds.size),
+            recordSelector = Seq(
+              Some(
+                SQLSyntax.in(SQLSyntax.createUnsafely("recordId"), recordIds)))
+          )
+          .records
+          .map(_.id)
+    }
 
   def getAll(
       tenantId: TenantId,
