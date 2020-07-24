@@ -1241,15 +1241,12 @@ async function convertStateToDistributionRecords(
  * @param {State} state
  */
 async function updateCkanExportStatus(datasetId: string, state: State) {
-    /**
-     * Please note: any frontend code should ONLY (and should ONLY NEED to) change those two fields:
-     * - status
-     * - exportRequired
-     * Those two fields should ONLY been updated via patch request. Otherwise, other runtime fields may lose value.
-     *
-     * Other fields are all runtime status fields that are only allowed to be altered by minions.
-     * Any attempts to update those from frontend will more or less create edging cases (see comment above).
-     */
+    // Please note: any frontend code should ONLY (and should ONLY NEED to) change those two fields:
+    // - status: Those two fields should ONLY been updated via patch request. Otherwise, other runtime fields may lose value.
+    // - exportRequired: Those two fields should ONLY been updated via patch request. Otherwise, other runtime fields may lose value.
+
+    // Other fields are all runtime status fields that are only allowed to be altered by minions.
+    // Any attempts to update those from frontend will more or less create edging cases (see comment above).
 
     const exportDataPointer = `/aspects/ckan-export/${escapeJsonPatchPointer(
         config.defaultCkanServer
@@ -1261,11 +1258,9 @@ async function updateCkanExportStatus(datasetId: string, state: State) {
 
     await ensureAspectExists("ckan-export");
 
-    /**
-     * Here is a trick based my tests on the [JsonPatch implementation](https://github.com/gnieh/diffson) used in our scala code base:
-     * `add` operation will always work (as long as the aspect schema is loaded).
-     * If the field is already there, `add` will just `replace` the value
-     */
+    // Here is a trick based my tests on the [JsonPatch implementation](https://github.com/gnieh/diffson) used in our scala code base:
+    // `add` operation will always work (as long as the aspect schema is loaded).
+    // If the field is already there, `add` will just `replace` the value
     await patchRecord(datasetId, [
         {
             op: "add",
