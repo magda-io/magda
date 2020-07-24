@@ -185,6 +185,40 @@ class RecordHistoryServiceSpec extends ApiSpec {
                        aspectIds = List("dataset-publisher")).size should be > 0
       }
 
+      it("should filter events by aspect properly for selected record when dereference is false") {
+        implicit param =>
+          createAspects()
+          val records1 = createDataset("1")
+          val records2 = createDataset("2")
+
+          val events =
+            getEvents(records1._1.id,
+                      Seq("dcat-dataset-strings", "dataset-distributions"),
+                      false)
+
+          // all events are for record 1
+          // no events from record 2 or its linked records are shown up
+          selectEvents(events, recordIds = List(records1._1.id)).size shouldEqual events.size
+
+          // no events for "dcat-distribution-strings" or "organization-details"
+          // as dereference is false (even when "dataset-distributions" is selected)
+          selectEvents(events, aspectIds = List("dcat-distribution-strings")).size shouldEqual 0
+          selectEvents(events, aspectIds = List("organization-details")).size shouldEqual 0
+          // no events for "dataset-publisher" as it's not the selected aspect
+          selectEvents(events, aspectIds = List("dataset-publisher")).size shouldEqual 0
+
+          // the following dataset aspects events number should be larger than 0
+          selectEvents(
+            events,
+            recordIds = List(records1._1.id),
+            aspectIds = List("dcat-dataset-strings")).size should be > 0
+
+          selectEvents(
+            events,
+            recordIds = List(records1._1.id),
+            aspectIds = List("dataset-distributions")).size should be > 0
+      }
+
       it("should return events for selected record and all its linked records when dereference is true") {
         implicit param =>
           createAspects()
@@ -226,6 +260,122 @@ class RecordHistoryServiceSpec extends ApiSpec {
           selectEvents(events,
                        recordIds = List(records1._1.id),
                        aspectIds = List("dataset-publisher")).size should be > 0
+      }
+
+      it("should filter events by aspect properly for selected record and all its linked records when dereference is true") {
+        implicit param =>
+          createAspects()
+          val records1 = createDataset("1")
+          val records2 = createDataset("2")
+
+          var events =
+            getEvents(records1._1.id, Seq("dcat-dataset-strings"), true)
+
+          // all events are for record 1 (dataset). record 1's org record & record 1's dist record are not included
+          // as `link` aspects are not included
+          // no events from record 2 or its linked records are shown up
+          selectEvents(events, recordIds = List(records1._1.id)).size shouldEqual events.size
+
+          // only "dcat-dataset-strings" or record event should be returned
+          selectEvents(
+            events,
+            recordIds = List(records1._1.id),
+            aspectIds = List(
+              // select all event with aspect "dcat-dataset-strings" or "" (record event)
+              "dcat-dataset-strings",
+              ""
+            )
+          ).size shouldEqual events.size
+
+          // should also filter aspect contains link properly
+          // the linked record's record event should also be included but not any its aspect
+          events = getEvents(records1._1.id, Seq("dataset-distributions"), true)
+
+          selectEvents(events,
+                       recordIds = List(
+                         records1._1.id,
+                         records1._3.id
+                       )).size shouldEqual events.size
+
+          selectEvents(events,
+                       recordIds = List(
+                         records1._1.id
+                       )).size should be > 0
+
+          selectEvents(events,
+                       recordIds = List(
+                         records1._3.id
+                       )).size should be > 0
+
+          selectEvents(
+            events,
+            recordIds = List(records1._1.id, records1._3.id),
+            aspectIds = List(
+              // select all event with aspect "dataset-distributions" or "" (record event)
+              "dataset-distributions",
+              ""
+            )
+          ).size shouldEqual events.size
+
+          selectEvents(events,
+                       recordIds = List(
+                         records1._1.id
+                       ),
+                       aspectIds = List(
+                         "dataset-distributions"
+                       )).size should be > 0
+
+          // filter by linked record aspects (e.g. distributions 's `dcat-distribution-strings`)
+          // will only work if corresponding dataset aspect that contains the link is also included (e.g. `dataset-distributions`)
+          events =
+            getEvents(records1._1.id,
+                      Seq("dcat-distribution-strings", "dataset-distributions"),
+                      true)
+
+          selectEvents(events,
+                       recordIds = List(
+                         records1._1.id,
+                         records1._3.id
+                       )).size shouldEqual events.size
+
+          selectEvents(
+            events,
+            recordIds = List(records1._1.id, records1._3.id),
+            aspectIds = List(
+              // select all event with aspect "dcat-distribution-strings", "dataset-distributions" or "" (record event)
+              "dcat-distribution-strings",
+              "dataset-distributions",
+              ""
+            )
+          ).size shouldEqual events.size
+
+          selectEvents(events,
+                       recordIds = List(
+                         records1._3.id
+                       ),
+                       aspectIds = List(
+                         "dcat-distribution-strings"
+                       )).size should be > 0
+
+          selectEvents(events,
+                       recordIds = List(
+                         records1._1.id
+                       ),
+                       aspectIds = List(
+                         "dataset-distributions"
+                       )).size should be > 0
+
+          // filter by linked record aspects (e.g. distributions 's `dcat-distribution-strings`)
+          // without corresponding dataset aspect that contains the link (e.g. `dataset-distributions`)
+          // will return only selected record's record events (no record aspect events will be returned)
+          events =
+            getEvents(records1._1.id, Seq("dcat-distribution-strings"), true)
+
+          selectEvents(events,
+                       recordIds = List(
+                         records1._1.id
+                       ),
+                       aspectIds = List("")).size shouldEqual events.size
       }
 
       it("should include events from newly added distributions when dereference is true") {

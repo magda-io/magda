@@ -163,9 +163,9 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
 
     /*
       The code block below doesn't seems achieve `dereference` (i.e. includes all events of linked records) and more likely redundant logic
-      The actual dereference logic is currently done via method `getRecordReferencedIds` and passing ids through `recordSelector` of this method
+      The actual dereference logic is currently done via method `getRecordReferencedIds` and passing ids & aspect filters through `recordSelector` of this method
       The code was left here because it was used by `web hook actor` which is the key part of the system.
-      It currently has no functionality impact to the current `dereference` function.
+      It currently has no functionality impact to the current `dereference` function (as we will skip it by filtering aspect via `recordSelector`).
       We probably should be look at it again once we got better understanding of its impact (or/and more test cases around it)
      */
     val dereferenceSelectors: Set[SQLSyntax] =
@@ -255,7 +255,7 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
   )(implicit session: DBSession): Seq[String] = {
     val tenantFilter = SQLUtil.tenantIdToWhereClause(tenantId)
-    // --- we don't need tenantId for this function as a record cannot belong to two tenants
+
     // --- pick all aspects of the specified record mentioned in the events till now
     val mentionedAspects = if (aspectIds.size == 0) {
       sql"""SELECT DISTINCT data->>'aspectId' as aspectid
