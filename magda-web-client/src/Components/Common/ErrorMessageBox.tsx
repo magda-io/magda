@@ -1,7 +1,6 @@
 import React, { FunctionComponent, useRef, useEffect } from "react";
 import { connect } from "react-redux";
 import { config } from "config";
-//import ServerError from "";
 import FileDeletionError from "helpers/FileDeletionError";
 import ServerError from "Components/Dataset/Add/Errors/ServerError";
 

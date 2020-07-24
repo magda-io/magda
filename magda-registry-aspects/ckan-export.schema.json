@@ -52,12 +52,7 @@
                     "type": "string"
                 }
             },
-            "required": [
-                "status",
-                "hasCreated",
-                "exportRequired",
-                "exportAttempted"
-            ]
+            "required": ["status", "exportRequired"]
         }
     }
 }
