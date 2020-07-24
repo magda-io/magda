@@ -37,7 +37,7 @@ export function Sensitivity(props: PropsTypeSensitivity) {
         return s.toLowerCase();
     });
     return (
-        <div className="classication-box">
+        <div className="classification-box">
             <div className="dataset-heading">
                 Sensitivity: {disseminationList.join(", ")}
             </div>
