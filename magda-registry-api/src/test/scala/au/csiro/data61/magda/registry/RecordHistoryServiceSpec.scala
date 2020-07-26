@@ -1,12 +1,7 @@
 package au.csiro.data61.magda.registry
 
-import akka.event.LoggingAdapter
-import akka.http.scaladsl.model.{StatusCodes, Uri}
+import akka.http.scaladsl.model.StatusCodes
 import au.csiro.data61.magda.model.Registry._
-import au.csiro.data61.magda.model.TenantId._
-import gnieh.diffson._
-import gnieh.diffson.sprayJson._
-import scalikejdbc.DBSession
 import spray.json._
 import scala.io.Source.fromFile
 
@@ -160,8 +155,8 @@ class RecordHistoryServiceSpec extends ApiSpec {
 
           val events = getEvents(records1._1.id, Seq(), false)
 
-          // all events are for record 1
-          // no events from record 2 or its linked records are shown up
+          // all events are for dataset 1
+          // no events from dataset 2 or its linked records are shown up
           selectEvents(events, recordIds = List(records1._1.id)).size shouldEqual events.size
 
           // no events for "dcat-distribution-strings" or "organization-details"
@@ -191,13 +186,14 @@ class RecordHistoryServiceSpec extends ApiSpec {
           val records1 = createDataset("1")
           val records2 = createDataset("2")
 
-          val events =
+          // filter by "dcat-dataset-strings" & "dataset-publisher" (aspect contains array items link)
+          var events =
             getEvents(records1._1.id,
                       Seq("dcat-dataset-strings", "dataset-distributions"),
                       false)
 
-          // all events are for record 1
-          // no events from record 2 or its linked records are shown up
+          // all events are for dataset 1
+          // no events from dataset 2 or its linked records are shown up
           selectEvents(events, recordIds = List(records1._1.id)).size shouldEqual events.size
 
           // no events for "dcat-distribution-strings" or "organization-details"
@@ -217,6 +213,56 @@ class RecordHistoryServiceSpec extends ApiSpec {
             events,
             recordIds = List(records1._1.id),
             aspectIds = List("dataset-distributions")).size should be > 0
+
+          // filter by "dcat-dataset-strings" & "dataset-publisher" (aspect contains single item link)
+          events = getEvents(records1._1.id,
+                             Seq("dcat-dataset-strings", "dataset-publisher"),
+                             false)
+
+          // all events are for dataset 1
+          // no events from dataset 2 or its linked records are shown up
+          selectEvents(events, recordIds = List(records1._1.id)).size shouldEqual events.size
+
+          // no events for "dcat-distribution-strings" or "organization-details"
+          // as dereference is false (even when "dataset-distributions" is selected)
+          selectEvents(events, aspectIds = List("dcat-distribution-strings")).size shouldEqual 0
+          selectEvents(events, aspectIds = List("organization-details")).size shouldEqual 0
+          // no events for "dataset-distributions" as it's not the selected aspect
+          selectEvents(events, aspectIds = List("dataset-distributions")).size shouldEqual 0
+
+          // the following dataset aspects events number should be larger than 0
+          selectEvents(
+            events,
+            recordIds = List(records1._1.id),
+            aspectIds = List("dcat-dataset-strings")).size should be > 0
+
+          selectEvents(events,
+                       recordIds = List(records1._1.id),
+                       aspectIds = List("dataset-publisher")).size should be > 0
+
+          // filter by "dcat-dataset-strings" & "organization-details" (linked record's aspect)
+          events =
+            getEvents(records1._1.id,
+                      Seq("dcat-dataset-strings", "organization-details"),
+                      false)
+
+          // all events are for dataset 1
+          // no events from dataset 2 or its linked records are shown up
+          selectEvents(events, recordIds = List(records1._1.id)).size shouldEqual events.size
+
+          // no events for "dcat-distribution-strings" or "organization-details"
+          // as dereference is false
+          selectEvents(events, aspectIds = List("dcat-distribution-strings")).size shouldEqual 0
+          selectEvents(events, aspectIds = List("organization-details")).size shouldEqual 0
+          // no events for "dataset-distributions" or "dataset-publisher" as they are not the selected aspects
+          selectEvents(events, aspectIds = List("dataset-distributions")).size shouldEqual 0
+          selectEvents(events, aspectIds = List("dataset-publisher")).size shouldEqual 0
+
+          // the following dataset aspects events number should be larger than 0
+          selectEvents(
+            events,
+            recordIds = List(records1._1.id),
+            aspectIds = List("dcat-dataset-strings")).size should be > 0
       }
 
       it("should return events for selected record and all its linked records when dereference is true") {
@@ -228,7 +274,7 @@ class RecordHistoryServiceSpec extends ApiSpec {
           val events = getEvents(records1._1.id, Seq(), true)
 
           // all events are for record 1 (dataset), record 1's org record & record 1's dist record
-          // no events from record 2 or its linked records are shown up
+          // no events from record 2 (dataset) or its linked records are shown up
           selectEvents(events,
                        recordIds = List(
                          records1._1.id,
@@ -273,7 +319,7 @@ class RecordHistoryServiceSpec extends ApiSpec {
 
           // all events are for record 1 (dataset). record 1's org record & record 1's dist record are not included
           // as `link` aspects are not included
-          // no events from record 2 or its linked records are shown up
+          // no events from record 2 (dataset) or its linked records are shown up
           selectEvents(events, recordIds = List(records1._1.id)).size shouldEqual events.size
 
           // only "dcat-dataset-strings" or record event should be returned
