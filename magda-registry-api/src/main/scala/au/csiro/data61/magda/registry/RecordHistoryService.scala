@@ -118,84 +118,95 @@ class RecordHistoryService(
   def history: Route = get {
     path(Segment / "history") { id =>
       requiresTenantId { tenantId =>
-        parameters('aspect.*,
-                   'pageToken.as[Long].?,
-                   'start.as[Int].?,
-                   'limit.as[Int].?,
-                   'dereference.as[Boolean].?) {
-          (aspects, pageToken, start, limit, dereference) =>
-            checkUserCanAccessRecordEvents(
-              recordPersistence,
-              authApiClient,
-              id,
-              tenantId,
-              EventsPage(false, None, Nil)
-            )(
-              config,
-              system,
-              materializer,
-              ec
-            ) { opaQuery =>
-              complete(
-                DB readOnly { implicit session =>
-                  val aspectIdSet = aspects.toSet
+        parameters(
+          'aspect.*,
+          'pageToken.as[Long].?,
+          'start.as[Int].?,
+          'limit.as[Int].?,
+          'dereference.as[Boolean].?
+        ) { (aspects, pageToken, start, limit, dereference) =>
+          checkUserCanAccessRecordEvents(
+            recordPersistence,
+            authApiClient,
+            id,
+            tenantId,
+            EventsPage(false, None, Nil)
+          )(
+            config,
+            system,
+            materializer,
+            ec
+          ) { opaQuery =>
+            complete(
+              DB readOnly { implicit session =>
+                val aspectIdSet = aspects.toSet
 
-                  if (dereference.getOrElse(false)) {
+                if (dereference.getOrElse(false)) {
 
-                    /**
-                      * The dereference works in two steps approach:
-                      * - find out all records that are or have been linked to the specified record by searching & dereferencing with events history
-                      * - call `getEvents` to pull events of the specified record plus events of all records found in step 1
-                      */
-                    val recordIds =
-                      eventPersistence.getRecordReferencedIds(tenantId,
-                                                              id,
-                                                              aspectIdSet.toSeq,
-                                                              opaQuery) :+ id
+                  /**
+                    * The dereference works in two steps approach:
+                    * - find out all records that are or have been linked to the specified record by searching & dereferencing with events history
+                    * - call `getEvents` to pull events of the specified record plus events of all records found in step 1
+                    */
+                  val recordIds =
+                    eventPersistence.getRecordReferencedIds(
+                      tenantId,
+                      id,
+                      aspectIdSet.toSeq,
+                      opaQuery
+                    ) :+ id
 
-                    val aspectIdSql =
-                      SQLSyntax.createUnsafely("data->>'aspectId'")
+                  val aspectIdSql =
+                    SQLSyntax.createUnsafely("data->>'aspectId'")
 
-                    val aspectFilters = if (aspectIdSet.size == 0) {
-                      Seq()
-                    } else {
-                      Seq(Some(SQLSyntax.join(
-                        aspectIdSet.toSeq.map { aspectId: String =>
-                          SQLSyntax.eq(aspectIdSql, aspectId)
-                        } :+ (SQLSyntax
-                          .isNull(aspectIdSql)),
-                        SQLSyntax.or
-                      )))
-                    }
-
-                    eventPersistence.getEvents(
-                      aspectIds = Set(),
-                      recordId = None,
-                      pageToken = pageToken,
-                      start = start,
-                      limit = limit,
-                      tenantId = tenantId,
-                      recordSelector = Seq(
-                        Some(SQLSyntax.in(
-                          SQLSyntax.createUnsafely("data->>'recordId'"),
-                          recordIds))) ++ aspectFilters
-                    )
-
+                  val aspectFilters = if (aspectIdSet.size == 0) {
+                    Seq()
                   } else {
-                    eventPersistence.getEvents(
-                      aspectIds = aspectIdSet,
-                      recordId = Some(id),
-                      pageToken = pageToken,
-                      start = start,
-                      limit = limit,
-                      tenantId = tenantId
+                    Seq(
+                      Some(
+                        SQLSyntax.join(
+                          aspectIdSet.toSeq.map { aspectId: String =>
+                            SQLSyntax.eq(aspectIdSql, aspectId)
+                          } :+ (SQLSyntax
+                            .isNull(aspectIdSql)),
+                          SQLSyntax.or
+                        )
+                      )
                     )
                   }
 
-                }
-              )
+                  eventPersistence.getEvents(
+                    aspectIds = Set(),
+                    recordId = None,
+                    pageToken = pageToken,
+                    start = start,
+                    limit = limit,
+                    tenantId = tenantId,
+                    recordSelector = Seq(
+                      Some(
+                        SQLSyntax.in(
+                          SQLSyntax.createUnsafely("data->>'recordId'"),
+                          recordIds
+                        )
+                      )
+                    ) ++ aspectFilters
+                  )
 
-            }
+                } else {
+                  eventPersistence.getEvents(
+                    aspectIds = aspectIdSet,
+                    recordId = Some(id),
+                    pageToken = pageToken,
+                    start = start,
+                    limit = limit,
+                    tenantId = tenantId
+                  )
+                }
+
+              }
+            )
+
+          }
         }
       }
     }

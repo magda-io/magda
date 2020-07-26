@@ -43,7 +43,7 @@ trait EventPersistence {
       tenantId: TenantId,
       recordId: String,
       aspectIds: Seq[String] = Seq(),
-      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
+      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]]
   )(implicit session: DBSession): Seq[String]
 }
 
@@ -252,7 +252,7 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       tenantId: TenantId,
       recordId: String,
       aspectIds: Seq[String] = Seq(),
-      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
+      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]]
   )(implicit session: DBSession): Seq[String] = {
     val tenantFilter = SQLUtil.tenantIdToWhereClause(tenantId)
 
@@ -298,7 +298,9 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
                 WHEN data->>'aspectId'=${ref._1} AND ${jsonAspectDataRef} IS NOT NULL
                 THEN ${if (ref._2.isArray) {
             sqls"jsonb_array_elements_text(${jsonAspectDataRef})"
-          } else { sqls"${jsonAspectTextDataRef}" }}
+          } else {
+            sqls"${jsonAspectTextDataRef}"
+          }}
                 WHEN data->>'aspectId'=${ref._1} AND data->'patch' IS NOT NULL
                 THEN jsonb_array_elements_text(
                   (select jsonb_agg(patches->'value')
@@ -321,7 +323,8 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
         SQLSyntax.createUnsafely("data->>'aspectId'"),
         refMap
           .map(_._1)
-          .toSeq)}
+          .toSeq
+      )}
        ) linksids
        WHERE ids IS NOT NULL AND trim(ids)!=''
        """.map(_.string(1)).list.apply()
@@ -333,9 +336,11 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
         // We do this via `recordPersistence.getValidRecordIds`
         // when `opaRecordQueries` is None, `recordPersistence.getValidRecordIds` will simply return `linkedRecordIds` directly
         // as there is no need to check as user should have access to all records (likely an admin)
-        recordPersistence.getValidRecordIds(tenantId,
-                                            opaRecordQueries,
-                                            linkedRecordIds)
+        recordPersistence.getValidRecordIds(
+          tenantId,
+          opaRecordQueries,
+          linkedRecordIds
+        )
       }
     }
   }
