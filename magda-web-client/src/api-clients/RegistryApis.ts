@@ -197,7 +197,7 @@ export class AspectQuery {
 export const DEFAULT_OPTIONAL_FETCH_ASPECT_LIST = [
     "dcat-distribution-strings",
     "dataset-distributions",
-    "temporal-coverage&",
+    "temporal-coverage",
     "usage",
     "access",
     "dataset-publisher",
