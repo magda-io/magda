@@ -96,6 +96,37 @@ class RecordHistoryService(
         value = "ID of the record for which to fetch history."
       ),
       new ApiImplicitParam(
+        name = "pageToken",
+        required = false,
+        dataType = "string",
+        paramType = "query",
+        value =
+          "A token that identifies the start of a page of events.  This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results."
+      ),
+      new ApiImplicitParam(
+        name = "start",
+        required = false,
+        dataType = "number",
+        paramType = "query",
+        value =
+          "The index of the first event to retrieve.  When possible, specify pageToken instead as it will result in better performance.  If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve."
+      ),
+      new ApiImplicitParam(
+        name = "limit",
+        required = false,
+        dataType = "number",
+        paramType = "query",
+        value =
+          "The maximum number of events to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off."
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Session",
+        required = true,
+        dataType = "String",
+        paramType = "header",
+        value = "Magda internal session id"
+      ),
+      new ApiImplicitParam(
         name = "aspect",
         required = false,
         dataType = "string",

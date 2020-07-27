@@ -4,7 +4,8 @@ import {
     Record,
     RecordsApi,
     RecordAspectsApi,
-    WebHooksApi
+    WebHooksApi,
+    RecordHistoryApi
 } from "../generated/registry/api";
 import URI from "urijs";
 import retry from "../retry";
@@ -36,6 +37,7 @@ export default class RegistryClient {
     protected recordsApi: RecordsApi;
     protected webHooksApi: WebHooksApi;
     protected recordAspectsApi: RecordAspectsApi;
+    protected recordHistoryApi: RecordHistoryApi;
     protected maxRetries: number;
     protected secondsBetweenRetries: number;
     protected tenantId: number;
@@ -62,6 +64,7 @@ export default class RegistryClient {
         this.recordsApi.useQuerystring = true; // Use querystring instead of qs to construct URL
         this.recordAspectsApi = new RecordAspectsApi(registryApiUrl);
         this.webHooksApi = new WebHooksApi(registryApiUrl);
+        this.recordHistoryApi = new RecordHistoryApi(registryApiUrl);
     }
 
     getRecordUrl(id: string): string {
