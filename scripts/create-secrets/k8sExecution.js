@@ -182,10 +182,25 @@ function doK8sExecution(config, shouldNotAsk = false) {
             createSecret(env, namespace, configData, "oauth-secrets", data);
         }
 
+        const jwtSecret = pwgen(64);
+        const sessionSecret = pwgen();
+
         createSecret(env, namespace, configData, "auth-secrets", {
-            "jwt-secret": pwgen(64),
-            "session-secret": pwgen()
+            "jwt-secret": jwtSecret,
+            "session-secret": sessionSecret
         });
+
+        // --- create auth-secrets in openfaas function namespace as well
+        createSecret(
+            env,
+            namespace + "-openfaas-fn",
+            configData,
+            "auth-secrets",
+            {
+                "jwt-secret": jwtSecret,
+                "session-secret": sessionSecret
+            }
+        );
     });
 }
 
