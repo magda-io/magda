@@ -74,6 +74,7 @@ UI:
 -   Add revised edit flow for adding/deleting/superceding existing distributions
 -   Show extra metadata on the dataset page
 -   Fixed ckan-export aspect's fields should be only changed via JSON patch from the frontend (#2887)
+-   Fixed patch ckan-export request trigger 400 error when the aspect doesn't exist at all
 
 Storage:
 
