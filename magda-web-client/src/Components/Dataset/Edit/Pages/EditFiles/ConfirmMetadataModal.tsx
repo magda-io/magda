@@ -205,13 +205,14 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
                                 // --- the version data is valid then bump version
                                 const newVersion: VersionItem = {
                                     versionNumber:
-                                        1 + newItem.version.currentVersion,
+                                        1 +
+                                        newItem.version.currentVersionNumber,
                                     createTime: new Date().toISOString(),
-                                    description:
-                                        "Replaced superseded by a new distribution"
+                                    description: `Replaced superseded by a new distribution`,
+                                    title: replaceDist.title
                                 };
 
-                                newItem.version.currentVersion =
+                                newItem.version.currentVersionNumber =
                                     newVersion.versionNumber;
                                 newItem.version.versions = [
                                     ...newItem.version.versions,

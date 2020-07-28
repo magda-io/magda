@@ -591,7 +591,7 @@ function populateDistributions(data: RawDataset, state: State) {
             } as Distribution;
 
             if (item?.aspects?.version) {
-                dis.version = data.aspects.version;
+                dis.version = item.aspects.version;
             }
 
             if (dis.useStorageApi && dis.downloadURL) {
@@ -1188,7 +1188,11 @@ async function convertStateToDatasetRecord(
             },
             "dataset-publisher": publisherId && {
                 publisher: publisherId
-            }
+            },
+            // --- set dataset initial version
+            version: state?.version
+                ? state.version
+                : getInitialVersionAspectData(state.dataset.title)
         }
     };
 
@@ -1221,7 +1225,12 @@ async function convertStateToDistributionRecords(
             id: distribution.id ? distribution.id : createId("dist"),
             name: distribution.title,
             aspects: {
-                "dcat-distribution-strings": aspect
+                "dcat-distribution-strings": aspect,
+                // --- set distribution initial version if not exist
+                // --- the version will be bumped when it's superseded by a new file / distribution
+                version: distribution?.version
+                    ? distribution.version
+                    : getInitialVersionAspectData(distribution.title)
             },
             authnReadPolicyId: authPolicy
         };
@@ -1297,14 +1306,10 @@ export async function createDatasetFromState(
     setState: React.Dispatch<React.SetStateAction<State>>,
     authnReadPolicyId?: string
 ) {
-    const distributionRecords = await (
-        await convertStateToDistributionRecords(state, authnReadPolicyId)
-    ).map((item) => {
-        // --- set distribution initial version
-        // --- the version will be bumped when it's superseded by a new file / distribution
-        item.aspects["version"] = getInitialVersionAspectData();
-        return item;
-    });
+    const distributionRecords = await convertStateToDistributionRecords(
+        state,
+        authnReadPolicyId
+    );
 
     const datasetRecord = await convertStateToDatasetRecord(
         datasetId,
@@ -1314,9 +1319,6 @@ export async function createDatasetFromState(
         false,
         authnReadPolicyId
     );
-
-    // --- set dataset initial version
-    datasetRecord.aspects.version = getInitialVersionAspectData();
 
     await createDataset(datasetRecord, distributionRecords);
 }

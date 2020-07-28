@@ -50,20 +50,22 @@ export type VersionItem = {
     versionNumber: number;
     createTime: string;
     description: string;
+    title: string;
 };
 
 export type VersionAspectData = {
-    currentVersion: number;
+    currentVersionNumber: number;
     versions: VersionItem[];
 };
 
-export const getInitialVersionAspectData = () => ({
+export const getInitialVersionAspectData = (title: string) => ({
     currentVersionNumber: 0,
     versions: [
         {
             versionNumber: 0,
             createTime: new Date().toISOString(),
-            description: "initial version"
+            description: "initial version",
+            title
         }
     ]
 });
