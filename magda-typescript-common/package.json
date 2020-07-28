@@ -32,7 +32,7 @@
     "@types/superagent": "^3.5.5",
     "@types/supertest": "^2.0.3",
     "@types/urijs": "1.19.1",
-    "@types/uuid": "^3.4.0",
+    "@types/uuid": "^8.0.0",
     "@types/yargs": "^12.0.8",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
@@ -62,7 +62,7 @@
     "resolve": "^1.15.0",
     "tsmonad": "^0.7.2",
     "urijs": "1.19.1",
-    "uuid": "^3.1.0",
+    "uuid": "^8.2.0",
     "yargs": "^12.0.5"
   },
   "config": {

@@ -1,7 +1,7 @@
 import React, { RefObject } from "react";
 import Editor from "./Editor";
 import "../Style.scss";
-import uuidv4 from "uuid/v4";
+import { v4 as uuidv4 } from "uuid";
 import { ListMultiItemEditor } from "./multiItem";
 
 export function codelistEditor(

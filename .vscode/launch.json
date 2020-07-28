@@ -239,6 +239,9 @@
             "name": "Gatewat Test Cases",
             "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
             "cwd": "${workspaceRoot}/magda-gateway",
+            "env": {
+                "PGUSER": "postgres"
+            },
             "args": [
                 "--compilers",
                 "ts:ts-node/register",
