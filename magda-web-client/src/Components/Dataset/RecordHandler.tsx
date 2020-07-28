@@ -39,6 +39,7 @@ interface PropsType {
     hasEditPermissions: boolean;
     resetFetchRecord: Function;
     modifyRecordAspect: Function;
+    isAdmin: boolean;
 }
 
 interface StateType {
@@ -228,6 +229,7 @@ class RecordHandler extends React.Component<PropsType, StateType> {
                         breadcrumbs={this.getBreadcrumbs()}
                         searchText={searchText}
                         hasEditPermissions={hasEditPermissions}
+                        isAdmin={this.props.isAdmin}
                     />
                 );
             } else {
@@ -316,6 +318,8 @@ function mapStateToProps(state) {
             state.userManagement.user.isAdmin) ||
         config.featureFlags.previewAddDataset;
 
+    const isAdmin = state?.userManagement?.user?.isAdmin ? true : false;
+
     return {
         dataset,
         distribution,
@@ -324,7 +328,8 @@ function mapStateToProps(state) {
         distributionFetchError,
         datasetFetchError,
         strings: state.content.strings,
-        hasEditPermissions: hasEditPermissions ? true : false
+        hasEditPermissions: hasEditPermissions ? true : false,
+        isAdmin
     };
 }
 
