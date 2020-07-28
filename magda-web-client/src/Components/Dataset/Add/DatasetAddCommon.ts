@@ -1259,20 +1259,36 @@ async function updateCkanExportStatus(datasetId: string, state: State) {
     await ensureAspectExists("ckan-export");
 
     // Here is a trick based my tests on the [JsonPatch implementation](https://github.com/gnieh/diffson) used in our scala code base:
-    // `add` operation will always work (as long as the aspect schema is loaded).
+    // `add` operation will always work (as long as the aspect exists).
     // If the field is already there, `add` will just `replace` the value
-    await patchRecord(datasetId, [
-        {
-            op: "add",
-            path: `${exportDataPointer}/status`,
-            value: uiStatus ? "retain" : "withdraw"
-        },
-        {
-            op: "add",
-            path: `${exportDataPointer}/exportRequired`,
-            value: true
+    try {
+        await patchRecord(datasetId, [
+            {
+                op: "add",
+                path: `${exportDataPointer}/status`,
+                value: uiStatus ? "retain" : "withdraw"
+            },
+            {
+                op: "add",
+                path: `${exportDataPointer}/exportRequired`,
+                value: true
+            }
+        ]);
+    } catch (e) {
+        if (e instanceof ServerError && e.statusCode === 400) {
+            // 400 means Bad request. Only chance it could happend would be aspect doesn't exist at all
+            // we will create aspect instead
+            // Update Record Aspect API will actually create the aspect when it doesn't exist
+            await updateRecordAspect(datasetId, "ckan-export", {
+                [config.defaultCkanServer]: {
+                    status: uiStatus ? "retain" : "withdraw",
+                    exportRequired: true
+                }
+            });
+        } else {
+            throw e;
         }
-    ]);
+    }
 }
 
 export async function createDatasetFromState(
