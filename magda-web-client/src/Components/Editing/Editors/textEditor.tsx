@@ -2,7 +2,7 @@ import React, { ReactEventHandler, FunctionComponent } from "react";
 import Editor from "./Editor";
 import "../Style.scss";
 import editIcon from "assets/edit.svg";
-import uuidv4 from "uuid/v4";
+import { v4 as uuidv4 } from "uuid";
 import { ListMultiItemEditor } from "./multiItem";
 import * as ValidationManager from "../../Dataset/Add/ValidationManager";
 const useValidation = ValidationManager.useValidation;

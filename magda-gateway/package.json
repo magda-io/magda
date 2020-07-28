@@ -13,12 +13,14 @@
     "docker-build-local": "create-docker-context-for-node-component --build --push --tag auto --local",
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
     "retag-and-push": "retag-and-push",
-    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
+    "test": "PGUSER=postgres mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
   },
   "dependencies": {
     "@magda/tenant-api": "^0.0.57-0",
     "@magda/typescript-common": "^0.0.57-0",
     "bcrypt": "^5.0.0",
+    "is-uuid": "^1.0.2",
+    "uuid": "^8.2.0",
     "body-parser": "^1.13.2",
     "cheerio": "^0.22.0",
     "compression": "^1.7.2",
@@ -57,6 +59,8 @@
   "devDependencies": {
     "@magda/scripts": "^0.0.57-0",
     "@types/bcrypt": "^3.0.0",
+    "@types/is-uuid": "^1.0.0",
+    "@types/uuid": "^8.0.0",
     "@types/chai": "^4.0.1",
     "@types/compression": "^0.0.36",
     "@types/cookie": "^0.3.3",

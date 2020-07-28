@@ -1,4 +1,4 @@
-import uuid from "uuid";
+import { v4 as uuidv4 } from "uuid";
 import { User } from "../authorization-api/model";
 
 const mockUserData = [
@@ -46,7 +46,7 @@ const mockUserDataStore = {
         return runtimeUserDataStore[idx];
     },
     createRecord(user: User) {
-        const newRecord: any = { ...user, id: uuid.v4() };
+        const newRecord: any = { ...user, id: uuidv4() };
         runtimeUserDataStore.push(newRecord);
         return newRecord;
     },

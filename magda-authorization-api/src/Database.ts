@@ -2,7 +2,8 @@ import createPool from "./createPool";
 import {
     User,
     Role,
-    Permission
+    Permission,
+    APIKeyRecord
 } from "magda-typescript-common/src/authorization-api/model";
 import { Maybe } from "tsmonad";
 import arrayToMaybe from "magda-typescript-common/src/util/arrayToMaybe";
@@ -291,5 +292,16 @@ export default class Database {
             ).map((item) => item.id);
         }
         return user;
+    }
+
+    async getUserApiKeyById(apiKeyId: string): Promise<APIKeyRecord> {
+        const result = await this.pool.query(
+            "SELECT * FROM api_keys WHERE id=$1 LIMIT 1",
+            [apiKeyId]
+        );
+        if (!result?.rows?.length) {
+            throw new Error(`cannot find API with ID ${apiKeyId}`);
+        }
+        return result.rows[0] as APIKeyRecord;
     }
 }

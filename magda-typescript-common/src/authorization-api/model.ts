@@ -37,7 +37,12 @@ export interface User extends PublicUser {
     source: string;
     sourceId: string;
 }
-
+export interface APIKeyRecord {
+    id: string;
+    user_id: string;
+    created_timestamp: string;
+    hash: string;
+}
 export interface Role {
     id: string;
     name: string;
