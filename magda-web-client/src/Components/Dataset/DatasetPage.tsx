@@ -14,6 +14,7 @@ import { History } from "history";
 import { ParsedDataset } from "helpers/record";
 import queryString from "query-string";
 import ToolTip from "Components/Common/TooltipWrapper";
+import { config } from "config";
 import SecClassification, {
     Sensitivity
 } from "Components/Common/SecClassification";
@@ -173,7 +174,9 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                     {isAdmin ? (
                         <div className="download-history-report-button">
                             <a
-                                href={`/api/v0/openfaas/function/magda-function-history-report?recordId=${encodeURIComponent(
+                                href={`${
+                                    config.openfaasBaseUrl
+                                }/function/magda-function-history-report?recordId=${encodeURIComponent(
                                     dataset.identifier!
                                 )}`}
                                 className="au-btn au-btn--secondary"
