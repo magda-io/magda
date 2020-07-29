@@ -2,6 +2,9 @@ dependencies:
 - name: magda-core
   repository: file://../magda-core
   version: 0.0.57-0
+- name: magda-function-history-report
+  repository: https://charts.magda.io
+  version: 0.0.57-0
 - name: magda-minion-broken-link
   repository: https://charts.magda.io
   version: 0.0.57-0
@@ -119,5 +122,5 @@ dependencies:
 - name: magda-project-open-data-connector
   repository: https://charts.magda.io
   version: 0.0.57-0
-digest: sha256:fdbf0217eafbf2ed6fc7098a73925a4a7efc4143ddd0f8787d1843b14a909dfd
-generated: "2020-07-20T15:13:35.225138264+10:00"
+digest: sha256:a84ff05509be5465d19edab98653e3575be7a15e0d09d28b55d5799c80d5aed3
+generated: "2020-07-29T15:18:08.336938+10:00"

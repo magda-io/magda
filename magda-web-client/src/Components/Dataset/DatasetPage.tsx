@@ -176,7 +176,7 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                             <a
                                 href={`${
                                     config.openfaasBaseUrl
-                                }/function/magda-function-history-report?recordId=${encodeURIComponent(
+                                }function/magda-function-history-report?recordId=${encodeURIComponent(
                                     dataset.identifier!
                                 )}`}
                                 className="au-btn au-btn--secondary"

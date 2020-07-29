@@ -1192,7 +1192,10 @@ async function convertStateToDatasetRecord(
             // --- set dataset initial version
             version: state?.version
                 ? state.version
-                : getInitialVersionAspectData(state.dataset.title)
+                : getInitialVersionAspectData(
+                      state.dataset.title,
+                      state.dataset.editingUserId
+                  )
         }
     };
 
@@ -1230,7 +1233,10 @@ async function convertStateToDistributionRecords(
                 // --- the version will be bumped when it's superseded by a new file / distribution
                 version: distribution?.version
                     ? distribution.version
-                    : getInitialVersionAspectData(distribution.title)
+                    : getInitialVersionAspectData(
+                          distribution.title,
+                          state.dataset.editingUserId
+                      )
             },
             authnReadPolicyId: authPolicy
         };

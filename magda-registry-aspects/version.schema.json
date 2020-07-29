@@ -24,12 +24,25 @@
                         "description": "creation time of the version (ISO8601 format)",
                         "format": "date-time"
                     },
+                    "creatorId": {
+                        "type": "string",
+                        "description": "the ID of the user who created the version."
+                    },
                     "description": {
                         "type": "string",
                         "description": "the text description of the version"
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "the title / name of the record at the time when the version is created"
                     }
                 },
-                "required": ["versionNumber", "createTime", "description"]
+                "required": [
+                    "versionNumber",
+                    "createTime",
+                    "description",
+                    "title"
+                ]
             },
             "minItems": 1
         }

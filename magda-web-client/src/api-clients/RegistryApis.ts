@@ -49,6 +49,7 @@ export const aspectSchemas = {
 export type VersionItem = {
     versionNumber: number;
     createTime: string;
+    creatorId?: string;
     description: string;
     title: string;
 };
@@ -58,12 +59,16 @@ export type VersionAspectData = {
     versions: VersionItem[];
 };
 
-export const getInitialVersionAspectData = (title: string) => ({
+export const getInitialVersionAspectData = (
+    title: string,
+    creatorId?: string
+) => ({
     currentVersionNumber: 0,
     versions: [
         {
             versionNumber: 0,
             createTime: new Date().toISOString(),
+            creatorId,
             description: "initial version",
             title
         }

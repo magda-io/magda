@@ -13,6 +13,13 @@ dependencies:
   # Thus, no tags or condition are required.
   # You should set its sub-chart to enabled or not.
 
+  - name: magda-function-history-report
+    version: 0.0.57-0
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - magda-function-history-report
+
   - name: magda-minion-broken-link
     alias: minion-broken-link
     version: 0.0.57-0
