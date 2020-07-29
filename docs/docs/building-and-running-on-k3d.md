@@ -27,7 +27,7 @@ To build and run with K3D, Follow the instructions in [building-and-running](./b
 
 into your hosts file, so that both your local docker and k3d will be able to resolve `registry.local:5000` as a docker registry.
 
--   When running the create secrets script, select "minikube"
+-   When running the create secrets script, select "docker"
 -   Don't install the docker registry or docker registry proxy (skip "Install a local kube registry")
 -   Don't ever run `eval $(minikube docker-env)`
 -   Instead of `docker-build-local`, run `export MAGDA_DOCKER_REPOSITORY=registry.local:5000 && export MAGDA_DOCKER_VERSION=latest && yarn lerna run docker-build-prod -- --concurrency=1 --stream`

@@ -119,5 +119,8 @@ dependencies:
 - name: magda-project-open-data-connector
   repository: https://charts.magda.io
   version: 0.0.57-0
-digest: sha256:fdbf0217eafbf2ed6fc7098a73925a4a7efc4143ddd0f8787d1843b14a909dfd
-generated: "2020-07-20T15:13:35.225138264+10:00"
+- name: magda-function-esri-url-processor
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+digest: sha256:b44672d23d5097f81f6b6935ff95274bfc53adc0a70908888c2487a3571f8c4d
+generated: "2020-07-29T14:34:35.586971+10:00"

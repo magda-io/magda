@@ -11,13 +11,13 @@ client:
     limits:
       cpu: 100m
 data:
-  storage: 200Gi
+  storage: 50Gi
   pluginsInstall: ""
-  heapSize: "512m"
+  heapSize: "256m"
   resources:
     requests:
       cpu: 200m
-      memory: 1000Mi
+      memory: 500Mi
     limits:
       cpu: 500m
 master:
