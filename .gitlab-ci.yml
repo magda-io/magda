@@ -492,6 +492,7 @@ buildtest:helm-charts:
     paths:
       - "deploy/helm/magda/charts"
       - "deploy/helm/magda-core/charts"
+      - "deploy/helm/local-deployment/charts"
     expire_in: 7 days
 
 dockerize:scala:
