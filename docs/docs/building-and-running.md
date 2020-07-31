@@ -113,16 +113,6 @@ yarn run docker-build-local
 yarn run create-secrets
 ```
 
-Please note: `create-secrets` tool will only create secret in the `main` deployment namespace.
-
-You will also need to copy secret `auth-secrets` to OpenFaaS serverless function deployment namespace:
-
-```
-kubectl get secret auth-secrets --namespace=default --export -o yaml | kubectl apply --namespace=default-openfaas-function -f -
-```
-
-Here, we assume you choose to deploy magda to `default` namespace. Thus, the OpenFaas function namespace would be `default-openfaas-function`.
-
 ### Windows only: Set up a volume for Postgres data
 
 If you're using Docker Desktop on Windows, you'll need to set up a volume to store Postgres data because the standard strategy approach - a `hostpath` volume mapped to a Windows share - will result in file/directory permissions that are not to Postgres's liking. Instead, we'll set up a volume manually which is just a directory in the Docker Desktop VM's virtual disk. We use the unusual path of `/etc/kubernetes` because it is one of the few mount points backed by an actual virtual disk.
@@ -179,6 +169,18 @@ helm upgrade --install --timeout 9999s --wait -f deploy/helm/minikube-dev.yml ma
 -   By default, helm will install the latest production version. This excludes development versions (e.g. 0.0.57-0)
 -   If you need the latest version (including the development version), please add a `--devel` switch to the `helm upgrade` command above.
 -   Alternatively, you can use `--version` to specify a specific version. e.g. `--version 0.0.57-0`
+
+#### Make Secret available for Serverless Functions
+
+The `create-secrets` tool will only create secret in the main magda namespace (By default, it is `default`).
+
+As we now have some functionality packed as server-less functions, you also eed to manually copy secret `auth-secrets`from the main magda namespace to the OpenFaaS serverless function deploy namespace **AFTER** the helm deployment:
+
+```bash
+kubectl get secret auth-secrets --namespace=default --export -o yaml | kubectl apply --namespace=default-openfaas-function -f -
+```
+
+Here, we assume you choose to deploy magda to `default` namespace (Thus, the OpenFaas function namespace would be `default-openfaas-function`).
 
 ### Crawl Data
 
