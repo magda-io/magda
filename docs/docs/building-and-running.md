@@ -177,10 +177,10 @@ The `create-secrets` tool will only create secret in the main magda namespace (B
 As we now have some functionality packed as server-less functions, you also eed to manually copy secret `auth-secrets`from the main magda namespace to the OpenFaaS serverless function deploy namespace **AFTER** the helm deployment:
 
 ```bash
-kubectl get secret auth-secrets --namespace=default --export -o yaml | kubectl apply --namespace=default-openfaas-function -f -
+kubectl get secret auth-secrets --namespace=default --export -o yaml | kubectl apply --namespace=default-openfaas-fn -f -
 ```
 
-Here, we assume you choose to deploy magda to `default` namespace (Thus, the OpenFaas function namespace would be `default-openfaas-function`).
+Here, we assume you choose to deploy magda to `default` namespace (Thus, the OpenFaas function namespace would be `default-openfaas-fn`).
 
 ### Crawl Data
 
