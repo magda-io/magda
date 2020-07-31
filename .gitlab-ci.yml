@@ -471,10 +471,10 @@ buildtest:helm-charts:
     # - helm init --client-only
     - helm repo add stable https://kubernetes-charts.storage.googleapis.com
     - helm repo add magda-io https://charts.magda.io
-    - helm dep build deploy/helm/internal-charts/storage-api
-    - helm dep build deploy/helm/magda-core
-    - helm dep build deploy/helm/magda
-    - helm dep build deploy/helm/local-deployment
+    - helm dep up deploy/helm/internal-charts/storage-api
+    - helm dep up deploy/helm/magda-core
+    - helm dep up deploy/helm/magda
+    - helm dep up deploy/helm/local-deployment
 
     - echo "helm lint magda chart using magda-dev.yml"
     - helm lint -f deploy/helm/magda-dev.yml deploy/helm/magda
