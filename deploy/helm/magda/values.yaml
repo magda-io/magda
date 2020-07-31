@@ -5,6 +5,7 @@ tags:
   minion-linked-data-rating: false
   minion-visualization: false
   minion-format: false
+  minion-ckan-exporter: false
 
 global:
   connectors:

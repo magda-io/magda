@@ -83,8 +83,8 @@ function doK8sExecution(config, shouldNotAsk = false) {
                 } else {
                     createNamespace(
                         env,
-                        configData,
-                        configData["cluster-namespace"]
+                        configData["cluster-namespace"],
+                        configData
                     );
                 }
             });
