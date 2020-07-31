@@ -113,6 +113,16 @@ yarn run docker-build-local
 yarn run create-secrets
 ```
 
+Please note: `create-secrets` tool will only create secret in the `main` deployment namespace.
+
+You will also need to copy secret `auth-secrets` to OpenFaaS serverless function deployment namespace:
+
+```
+kubectl get secret auth-secrets --namespace=default --export -o yaml | kubectl apply --namespace=default-openfaas-function -f -
+```
+
+Here, we assume you choose to deploy magda to `default` namespace. Thus, the OpenFaas function namespace would be `default-openfaas-function`.
+
 ### Windows only: Set up a volume for Postgres data
 
 If you're using Docker Desktop on Windows, you'll need to set up a volume to store Postgres data because the standard strategy approach - a `hostpath` volume mapped to a Windows share - will result in file/directory permissions that are not to Postgres's liking. Instead, we'll set up a volume manually which is just a directory in the Docker Desktop VM's virtual disk. We use the unusual path of `/etc/kubernetes` because it is one of the few mount points backed by an actual virtual disk.
