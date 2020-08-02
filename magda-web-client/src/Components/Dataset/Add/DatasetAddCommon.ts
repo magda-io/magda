@@ -846,6 +846,7 @@ export function saveStateToLocalStorage(state: State, id: string) {
     state.datasetDraft = undefined;
     state.loadDatasetDraftConfirmed = false;
     state._lastModifiedDate = new Date();
+    state.error = null; // do not save error object
 
     const dataset = JSON.stringify(state);
     localStorage[id] = dataset;
@@ -857,6 +858,7 @@ export async function saveStateToRegistry(state: State, id: string) {
     state.datasetDraft = undefined;
     state.loadDatasetDraftConfirmed = false;
     state._lastModifiedDate = new Date();
+    state.error = null; // do not save error object
 
     const dataset = JSON.stringify(state);
     const timestamp = state._lastModifiedDate.toISOString();
