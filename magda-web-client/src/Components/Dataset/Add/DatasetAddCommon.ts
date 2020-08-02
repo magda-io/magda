@@ -10,6 +10,7 @@ import {
     createPublisher,
     updateDataset,
     deleteRecordAspect,
+    deleteRecord,
     Record,
     getInitialVersionAspectData,
     VersionAspectData,
@@ -212,6 +213,15 @@ type Currency = {
 
 export type State = {
     distributions: Distribution[];
+
+    /**
+     * This field will be prepopulated with all distributions ids of the dataset when open the editor initially.
+     * A clean up routine will be run during the dataset submit process to delete all distributions are deleted.
+     * i.e. any ids contained in this array but cannot find from the distributions array.
+     *
+     * @type {string[]}
+     */
+    involvedDistributionIds: string[];
     dataset: Dataset;
     datasetPublishing: DatasetPublishing;
     processing: boolean;
@@ -603,6 +613,7 @@ function populateDistributions(data: RawDataset, state: State) {
         });
     if (distributions.length) {
         state.distributions = distributions;
+        state.involvedDistributionIds = distributions.map((dis) => dis.id!);
     }
 }
 
@@ -703,6 +714,7 @@ export async function rawDatasetDataToState(
 export function createBlankState(user: User): State {
     return {
         distributions: [],
+        involvedDistributionIds: [],
         processing: false,
         dataset: {
             title: "",
@@ -1226,6 +1238,10 @@ async function convertStateToDistributionRecords(
                   }
                 : distribution;
 
+        // --- version property should be created as a seperate version aspect
+        // --- rather than part of `dcat-distribution-strings`
+        aspect.version = undefined;
+
         return {
             id: distribution.id ? distribution.id : createId("dist"),
             name: distribution.title,
@@ -1406,6 +1422,26 @@ export async function cleanUpOrphanFiles(
     ).filter((item) => !item.isOk) as FailedFileInfo[];
 }
 
+async function cleanUpDistributions(state: State) {
+    const { involvedDistributionIds, distributions } = state;
+
+    if (!involvedDistributionIds?.length) {
+        return;
+    }
+
+    const deletedDistIds = involvedDistributionIds.filter(
+        (id) => distributions.findIndex((dist) => dist.id === id) === -1
+    );
+
+    if (!deletedDistIds?.length) {
+        return;
+    }
+
+    for (let i = 0; i < deletedDistIds.length; i++) {
+        await deleteRecord(deletedDistIds[i]);
+    }
+}
+
 /**
  * This function will submit the dataset using different API endpoints (depends on whether the dataset has been create or not)
  * It will also delete any temporary draft data from the `dataset-draft` aspect.
@@ -1439,6 +1475,8 @@ export async function submitDatasetFromState(
     await deleteRecordAspect(datasetId, "dataset-draft");
 
     await updateCkanExportStatus(datasetId, state);
+
+    await cleanUpDistributions(state);
 
     return await cleanUpOrphanFiles(
         state.uploadedFileUrls,

@@ -454,6 +454,10 @@ export async function deleteRecordAspect(
     );
 }
 
+export async function deleteRecord(recordId: string): Promise<void> {
+    await request("DELETE", `${config.registryFullApiUrl}records/${recordId}`);
+}
+
 export async function doesRecordExist(id: string) {
     try {
         //--- we turned off cache with last `true` parameter here

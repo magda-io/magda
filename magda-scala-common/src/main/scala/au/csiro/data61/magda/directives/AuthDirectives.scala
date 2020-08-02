@@ -36,10 +36,8 @@ object AuthDirectives {
   /** Gets the X-Magda-Session header out of the request, providing it as a string without doing any verification */
   def getJwt(): Directive1[Option[String]] = {
     extractRequest flatMap { request =>
-      val sessionToken = request.headers.find {
-        case headers.RawHeader(Authentication.headerName, value) => true
-        case _                                                   => false
-      }
+      val sessionToken =
+        request.headers.find(_.is(Authentication.headerName.toLowerCase))
 
       provide(sessionToken.map(_.value()))
     }
@@ -62,10 +60,8 @@ object AuthDirectives {
     } else {
       val log = Logging(system, getClass)
       extractRequest flatMap { request =>
-        val sessionToken = request.headers.find {
-          case headers.RawHeader(Authentication.headerName, value) => true
-          case _                                                   => false
-        }
+        val sessionToken =
+          request.headers.find(_.is(Authentication.headerName.toLowerCase))
 
         sessionToken match {
           case None => provide(None)
