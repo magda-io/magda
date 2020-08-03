@@ -695,8 +695,8 @@ inttest:registryAuth:
     - kubectl create secret generic storage-secrets --from-literal=accesskey=$MINIO_ACCESS_KEY --from-literal=secretkey=$MINIO_SECRET_KEY --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
   script:
     - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600m --wait
-    # Create secret in openfaas fn namespace
-    - kubectl create secret generic auth-secrets --from-literal=jwt-secret=$JWT_SECRET --from-literal=session-secret=$SESSION_SECRET --namespace ${CI_COMMIT_REF_SLUG}-openfaas-fn --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
+    # Copy secret to openfaas fn namespace
+    - kubectl get secret auth-secrets --namespace=$CI_COMMIT_REF_SLUG --export -o yaml | kubectl apply --namespace=${CI_COMMIT_REF_SLUG}-openfaas-fn -f -
     - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
 
 (UI) Run As Preview:
@@ -719,15 +719,15 @@ inttest:registryAuth:
   <<: *runAsPreview
   script:
     - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,magda-core.combined-db.waleBackup.method=NONE,magda-core.elasticsearch.useGcsSnapshots=false,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600m --wait
-    # Create secret in openfaas fn namespace
-    - kubectl create secret generic auth-secrets --from-literal=jwt-secret=$JWT_SECRET --from-literal=session-secret=$SESSION_SECRET --namespace ${CI_COMMIT_REF_SLUG}-openfaas-fn --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
+    # Copy secret to openfaas fn namespace
+    - kubectl get secret auth-secrets --namespace=$CI_COMMIT_REF_SLUG --export -o yaml | kubectl apply --namespace=${CI_COMMIT_REF_SLUG}-openfaas-fn -f -
     - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
 (No Data) Run As Multi-tenant Preview:
   <<: *runAsPreview
   script:
     - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/magda --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview-multi-tenant.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,magda-core.combined-db.waleBackup.method=NONE,magda-core.elasticsearch.useGcsSnapshots=false,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,global.magdaAdminPortalName=admin-$CI_COMMIT_REF_SLUG.dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600 --wait
-    # Create secret in openfaas fn namespace
-    - kubectl create secret generic auth-secrets --from-literal=jwt-secret=$JWT_SECRET --from-literal=session-secret=$SESSION_SECRET --namespace ${CI_COMMIT_REF_SLUG}-openfaas-fn --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
+    # Copy secret to openfaas fn namespace
+    - kubectl get secret auth-secrets --namespace=$CI_COMMIT_REF_SLUG --export -o yaml | kubectl apply --namespace=${CI_COMMIT_REF_SLUG}-openfaas-fn -f -
     - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
 
 Update scripts:
