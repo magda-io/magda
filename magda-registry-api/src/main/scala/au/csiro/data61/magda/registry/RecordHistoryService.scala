@@ -173,56 +173,15 @@ class RecordHistoryService(
                 val aspectIdSet = aspects.toSet
 
                 if (dereference.getOrElse(false)) {
-
-                  /**
-                    * The dereference works in two steps approach:
-                    * - find out all records that are or have been linked to the specified record by searching & dereferencing with events history
-                    * - call `getEvents` to pull events of the specified record plus events of all records found in step 1
-                    */
-                  val recordIds =
-                    eventPersistence.getRecordReferencedIds(
-                      tenantId,
-                      id,
-                      aspectIdSet.toSeq,
-                      opaQuery
-                    ) :+ id
-
-                  val aspectIdSql =
-                    SQLSyntax.createUnsafely("data->>'aspectId'")
-
-                  val aspectFilters = if (aspectIdSet.size == 0) {
-                    Seq()
-                  } else {
-                    Seq(
-                      Some(
-                        SQLSyntax.join(
-                          aspectIdSet.toSeq.map { aspectId: String =>
-                            SQLSyntax.eq(aspectIdSql, aspectId)
-                          } :+ (SQLSyntax
-                            .isNull(aspectIdSql)),
-                          SQLSyntax.or
-                        )
-                      )
-                    )
-                  }
-
-                  eventPersistence.getEvents(
-                    aspectIds = Set(),
-                    recordId = None,
+                  eventPersistence.getEventsWithDereference(
+                    recordId = id,
                     pageToken = pageToken,
                     start = start,
                     limit = limit,
+                    aspectIds = aspectIdSet,
                     tenantId = tenantId,
-                    recordSelector = Seq(
-                      Some(
-                        SQLSyntax.in(
-                          SQLSyntax.createUnsafely("data->>'recordId'"),
-                          recordIds
-                        )
-                      )
-                    ) ++ aspectFilters
+                    opaRecordQueries = opaQuery
                   )
-
                 } else {
                   eventPersistence.getEvents(
                     aspectIds = aspectIdSet,

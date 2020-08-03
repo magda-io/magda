@@ -45,6 +45,20 @@ trait EventPersistence {
       aspectIds: Seq[String] = Seq(),
       opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]]
   )(implicit session: DBSession): Seq[String]
+
+  def getEventsWithDereference(
+      // without specify recordId, we don't need to `dereference` as we would be searching all records event anyway
+      // thus, recordId is compulsory here
+      recordId: String,
+      pageToken: Option[Long] = None,
+      start: Option[Int] = None,
+      limit: Option[Int] = None,
+      lastEventId: Option[Long] = None,
+      aspectIds: Set[String] = Set(),
+      eventTypes: Set[EventType] = Set(),
+      tenantId: TenantId,
+      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]]
+  )(implicit session: DBSession): EventsPage
 }
 
 class DefaultEventPersistence(recordPersistence: RecordPersistence)
@@ -126,6 +140,7 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
     * @param eventTypes The type of event must equal to one of the specified values. Optional and default to empty Set.
     * @param tenantId The returned events will be filtered by this tenant ID.
     *                 If it is a system ID, events belonging to all tenants are included (no tenant filtering).
+    * @param recordSelector the extra SQL selectors / filters that will be joined with all existing SQL WHERE conditions (using `AND`)
     * @return EventsPage containing events that meet the specified requirements
     */
   def getEvents(
@@ -162,6 +177,7 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
     val linkAspects = recordPersistence.buildReferenceMap(aspectIds)
 
     /*
+      TODO:
       The code block below doesn't seems achieve `dereference` (i.e. includes all events of linked records) and more likely redundant logic
       The actual dereference logic is currently done via method `getRecordReferencedIds` and passing ids & aspect filters through `recordSelector` of this method
       The code was left here because it was used by `web hook actor` which is the key part of the system.
@@ -343,6 +359,80 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
         )
       }
     }
+  }
+
+  /**
+    * The dereference works in two steps approach:
+    * - find out all records that are or have been linked to the specified record by searching & dereferencing with events history
+    * - call `getEvents` to pull events of the specified record plus events of all records found in step 1
+    *
+    * @param recordId
+    * @param pageToken
+    * @param start
+    * @param limit
+    * @param lastEventId
+    * @param aspectIds
+    * @param eventTypes
+    * @param tenantId
+    * @param opaRecordQueries
+    * @param session
+    * @return
+    */
+  def getEventsWithDereference(
+      recordId: String,
+      pageToken: Option[Long] = None,
+      start: Option[Int] = None,
+      limit: Option[Int] = None,
+      lastEventId: Option[Long] = None,
+      aspectIds: Set[String] = Set(),
+      eventTypes: Set[EventType] = Set(),
+      tenantId: TenantId,
+      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]]
+  )(implicit session: DBSession): EventsPage = {
+
+    val recordIds =
+      getRecordReferencedIds(
+        tenantId,
+        recordId,
+        aspectIds.toSeq,
+        opaRecordQueries
+      ) :+ recordId
+
+    val aspectIdSql =
+      SQLSyntax.createUnsafely("data->>'aspectId'")
+
+    val aspectFilters = if (aspectIds.size == 0) {
+      Seq()
+    } else {
+      Seq(
+        Some(
+          SQLSyntax.join(
+            aspectIds.toSeq.map { aspectId: String =>
+              SQLSyntax.eq(aspectIdSql, aspectId)
+            } :+ (SQLSyntax
+              .isNull(aspectIdSql)),
+            SQLSyntax.or
+          )
+        )
+      )
+    }
+
+    getEvents(
+      aspectIds = Set(),
+      recordId = None,
+      pageToken = pageToken,
+      start = start,
+      limit = limit,
+      tenantId = tenantId,
+      recordSelector = Seq(
+        Some(
+          SQLSyntax.in(
+            SQLSyntax.createUnsafely("data->>'recordId'"),
+            recordIds
+          )
+        )
+      ) ++ aspectFilters
+    )
   }
 
   private def rowToEvent(rs: WrappedResultSet): RegistryEvent = {
