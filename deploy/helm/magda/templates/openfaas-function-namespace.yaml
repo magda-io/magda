@@ -1,0 +1,9 @@
+{{- $namespacePrefix := .Values.global.openfaas.namespacePrefix | default .Release.Namespace -}}
+{{- $functionNamespace := .Values.global.openfaas.functionNamespace | default "openfaas-fn" -}}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ $functionNamespace | printf "%s-%s" $namespacePrefix | quote }}
+  labels:
+    istio-injection: enabled
+    role: openfaas-fn

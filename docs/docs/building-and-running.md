@@ -74,6 +74,32 @@ helm install docker-registry -f deploy/helm/docker-registry.yml stable/docker-re
 helm install kube-registry-proxy -f deploy/helm/kube-registry-proxy.yml magda-io/kube-registry-proxy
 ```
 
+### Install [kubernetes-replicator](https://github.com/mittwald/kubernetes-replicator)
+
+A complete Magda installation includes more than one namespaces and `kubernetes-replicator` helps to automated copy required secrets from main deployed namespace to workload (openfaas function) namespace.
+
+To install [kubernetes-replicator](https://github.com/mittwald/kubernetes-replicator):
+
+1> Add `kubernetes-replicator` helm chart repo
+
+```bash
+helm repo add mittwald https://helm.mittwald.de
+```
+
+2> Update Helm chart repo
+
+```bash
+helm repo update
+```
+
+3> Install `kubernetes-replicator`
+
+```bash
+helm repo add mittwald https://helm.mittwald.de
+```
+
+> Please note: you only need to install `kubernetes-replicator` once per k8s cluster
+
 ### Build local docker images
 
 Now you can build the docker containers locally - this might take quite a while so get a cup of tea.
@@ -169,18 +195,6 @@ helm upgrade --install --timeout 9999s --wait -f deploy/helm/minikube-dev.yml ma
 -   By default, helm will install the latest production version. This excludes development versions (e.g. 0.0.57-0)
 -   If you need the latest version (including the development version), please add a `--devel` switch to the `helm upgrade` command above.
 -   Alternatively, you can use `--version` to specify a specific version. e.g. `--version 0.0.57-0`
-
-#### Make Secret available for Serverless Functions
-
-The `create-secrets` tool will only create secret in the main magda namespace (By default, it is `default`).
-
-As we now have some functionality packed as server-less functions, you also eed to manually copy secret `auth-secrets`from the main magda namespace to the OpenFaaS serverless function deploy namespace **AFTER** the helm deployment:
-
-```bash
-kubectl get secret auth-secrets --namespace=default --export -o yaml | kubectl apply --namespace=default-openfaas-fn -f -
-```
-
-Here, we assume you choose to deploy magda to `default` namespace (Thus, the OpenFaas function namespace would be `default-openfaas-fn`).
 
 ### Crawl Data
 
