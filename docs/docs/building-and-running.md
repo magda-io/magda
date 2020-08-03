@@ -92,10 +92,18 @@ helm repo add mittwald https://helm.mittwald.de
 helm repo update
 ```
 
+3> Create a namespace for `kubernetes-replicator`
+
+As you only need one `kubernetes-replicator` instance per cluster, it's a good idea to install `kubernetes-replicator` in a seperate namespace.
+
+```bash
+kubectl create namespace kubernetes-replicator
+```
+
 3> Install `kubernetes-replicator`
 
 ```bash
-helm repo add mittwald https://helm.mittwald.de
+helm upgrade --namespace kubernetes-replicator --install kubernetes-replicator mittwald/kubernetes-replicator
 ```
 
 > Please note: you only need to install `kubernetes-replicator` once per k8s cluster
