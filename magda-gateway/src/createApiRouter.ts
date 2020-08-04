@@ -21,6 +21,7 @@ export interface ProxyTarget {
     methods?: string[];
     auth?: boolean;
     redirectTrailingSlash?: boolean;
+    statusCheck?: boolean;
 }
 
 export interface ApiRouterOptions {

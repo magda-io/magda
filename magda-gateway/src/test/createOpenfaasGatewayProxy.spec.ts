@@ -52,6 +52,7 @@ const nonAdminUserData = {
 
 describe("Test createOpenfaasGatewayProxy", () => {
     const openfaasGatewayUrl = "http://gateway.openfaas.com";
+    const jwtSecret = "test-jwt";
     let openfaasGatewayScope: Scope;
 
     const authApiBaseUrl = "http://authApi";
@@ -120,6 +121,7 @@ describe("Test createOpenfaasGatewayProxy", () => {
                 gatewayUrl: openfaasGatewayUrl,
                 allowAdminOnly: allowAdminOnly,
                 baseAuthUrl: authApiBaseUrl,
+                jwtSecret,
                 apiRouterOptions: {
                     jwtSecret: "test",
                     tenantMode,

@@ -13,7 +13,7 @@ import express from "express";
 import fs from "fs";
 import path from "path";
 import process from "process";
-import uuid from "uuid";
+import { v4 as uuidv4 } from "uuid";
 import _ from "lodash";
 
 /**
@@ -32,7 +32,7 @@ export default class JsonConnector {
         transformer,
         registry,
         maxConcurrency = 1,
-        sourceTag = uuid.v4()
+        sourceTag = uuidv4()
     }: JsonConnectorOptions) {
         this.source = source;
         this.transformer = transformer;

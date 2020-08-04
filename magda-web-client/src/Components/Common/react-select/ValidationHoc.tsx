@@ -1,5 +1,5 @@
 import React, { useRef, useMemo } from "react";
-import uuidv4 from "uuid/v4";
+import { v4 as uuidv4 } from "uuid";
 import AsyncCreatable from "react-select/async-creatable";
 import Async, { AsyncProps } from "react-select/async";
 import Select, { Props as SelectProps } from "react-select/src/Select";

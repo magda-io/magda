@@ -2,7 +2,7 @@ package au.csiro.data61.magda.registry
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server._
+import akka.http.scaladsl.server.{Directive1, _}
 import akka.stream.Materializer
 import au.csiro.data61.magda.directives.AuthDirectives._
 import au.csiro.data61.magda.opa.OpaTypes._
@@ -74,9 +74,9 @@ object Directives extends Protocols with SprayJsonSupport {
 
         if (recordPolicyIds.isEmpty) {
           system.log.warning(
-            s"""Could not find any policy for operation $operationType on 
+            s"""Could not find any policy for operation $operationType on
             ${if (recordId.isDefined) s"record $recordId" else "records"}.
-            This will result in the record being completely inaccessible - 
+            This will result in the record being completely inaccessible -
             if this isn't what you want, define a default policy in config,
             or set one for all records"""
           )
@@ -209,6 +209,7 @@ object Directives extends Protocols with SprayJsonSupport {
     * @param recordPersistence A RecordPersistence instance to look up record policies etc through
     * @param authApiClient An auth api client to query OPA through
     * @param recordId The id of the record in question
+    * @param tenantId tenantId
     * @param notFoundResponse What to respond with if there are no valid policies to query for (defaults to 404)
     * @return If the record exists and the user is allowed to access it, will pass through, otherwise will complete with 404.
     */
@@ -223,10 +224,10 @@ object Directives extends Protocols with SprayJsonSupport {
       system: ActorSystem,
       materializer: Materializer,
       ec: ExecutionContext
-  ): Directive0 = {
+  ): Directive1[Option[List[(String, List[List[OpaQuery]])]]] = {
     provideUser(authApiClient) flatMap {
       // If the user is an admin, we should allow this even if they can't access the record
-      case Some(User(_, true)) => pass
+      case Some(User(_, true)) => provide(None)
       case _ =>
         withRecordOpaQuery(
           AuthOperations.read,
@@ -238,7 +239,7 @@ object Directives extends Protocols with SprayJsonSupport {
           DB readOnly { implicit session =>
             recordPersistence
               .getById(tenantId, recordQueries, recordId) match {
-              case Some(record) => pass
+              case Some(record) => provide(recordQueries)
               case None         => complete(notFoundResponse)
             }
           }

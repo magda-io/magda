@@ -33,6 +33,7 @@ General:
 -   Make the constructor of AuthorizedRegistryClient also accepts a customised jwt token.
 -   Set pwgen to `0.1.6` (was `^0.1.6`)
 -   Remove ESRI-portal related code from deployment charts
+-   Allow admin users to download history report of a dataset
 
 UI:
 
@@ -74,6 +75,7 @@ UI:
 -   Add revised edit flow for adding/deleting/superceding existing distributions
 -   Show extra metadata on the dataset page
 -   Fixed ckan-export aspect's fields should be only changed via JSON patch from the frontend (#2887)
+-   Fixed patch ckan-export request trigger 400 error when the aspect doesn't exist at all
 
 Storage:
 
@@ -109,6 +111,7 @@ Authorization:
 -   Added per-record authorization around the `/records/<recordid>/history` endpoint
 -   Added per-record authorization around the `/records/<recordid>/history/<eventId>` endpoint
 -   Fixed a bug where the registry would attempt to query for policies against every single record id in the registry all at once.
+-   Added API Key authentication support
 -   Add auth policy to distribution records
 
 Registry:

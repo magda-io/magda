@@ -1,6 +1,6 @@
 import yargs from "yargs";
 import _ from "lodash";
-
+import express from "express";
 import buildApp from "./buildApp";
 
 import addJwtSecretFromEnvVar from "magda-typescript-common/src/session/addJwtSecretFromEnvVar";
@@ -317,7 +317,9 @@ const argv = addJwtSecretFromEnvVar(
         }).argv
 );
 
-const app = buildApp(argv as any);
+// Create a new Express application.
+const app = express();
+buildApp(app, argv as any);
 app.listen(argv.listenPort);
 console.log("Listening on port " + argv.listenPort);
 

@@ -83,8 +83,8 @@ function doK8sExecution(config, shouldNotAsk = false) {
                 } else {
                     createNamespace(
                         env,
-                        configData,
-                        configData["cluster-namespace"]
+                        configData["cluster-namespace"],
+                        configData
                     );
                 }
             });
@@ -339,7 +339,10 @@ function buildTemplateObject(name, namespace) {
         metadata: {
             name,
             namespace,
-            annotations: {},
+            annotations: {
+                "replicator.v1.mittwald.de/replication-allowed": "true",
+                "replicator.v1.mittwald.de/replication-allowed-namespaces": `${namespace}-openfaas-fn`
+            },
             creationTimestamp: null
         }
     };

@@ -417,26 +417,30 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *        "message": "Encountered error while deleting file. This has been logged and we are looking into this."
      *    }
      */
-    router.delete("/:bucket/*", async function (req, res) {
-        const filePath = req.params[0];
-        const bucket = req.params.bucket;
+    router.delete(
+        "/:bucket/*",
+        mustBeAdmin(options.authApiUrl, options.jwtSecret),
+        async function (req, res) {
+            const filePath = req.params[0];
+            const bucket = req.params.bucket;
 
-        const encodeBucketname = encodeURIComponent(bucket);
-        const deletionSuccess = await options.objectStoreClient.deleteFile(
-            encodeBucketname,
-            filePath
-        );
-        if (deletionSuccess) {
-            return res.status(200).send({
-                message: "File deleted successfully"
+            const encodeBucketname = encodeURIComponent(bucket);
+            const deletionSuccess = await options.objectStoreClient.deleteFile(
+                encodeBucketname,
+                filePath
+            );
+            if (deletionSuccess) {
+                return res.status(200).send({
+                    message: "File deleted successfully"
+                });
+            }
+            return res.status(500).send({
+                message:
+                    "Encountered error while deleting file." +
+                    "This has been logged and we are looking into this."
             });
         }
-        return res.status(500).send({
-            message:
-                "Encountered error while deleting file." +
-                "This has been logged and we are looking into this."
-        });
-    });
+    );
 
     return router;
 }

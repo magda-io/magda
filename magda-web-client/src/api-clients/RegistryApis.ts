@@ -49,21 +49,28 @@ export const aspectSchemas = {
 export type VersionItem = {
     versionNumber: number;
     createTime: string;
+    creatorId?: string;
     description: string;
+    title: string;
 };
 
 export type VersionAspectData = {
-    currentVersion: number;
+    currentVersionNumber: number;
     versions: VersionItem[];
 };
 
-export const getInitialVersionAspectData = () => ({
+export const getInitialVersionAspectData = (
+    title: string,
+    creatorId?: string
+) => ({
     currentVersionNumber: 0,
     versions: [
         {
             versionNumber: 0,
             createTime: new Date().toISOString(),
-            description: "initial version"
+            creatorId,
+            description: "initial version",
+            title
         }
     ]
 });
@@ -197,7 +204,7 @@ export class AspectQuery {
 export const DEFAULT_OPTIONAL_FETCH_ASPECT_LIST = [
     "dcat-distribution-strings",
     "dataset-distributions",
-    "temporal-coverage&",
+    "temporal-coverage",
     "usage",
     "access",
     "dataset-publisher",
@@ -445,6 +452,10 @@ export async function deleteRecordAspect(
         "DELETE",
         `${config.registryFullApiUrl}records/${recordId}/aspects/${aspectId}`
     );
+}
+
+export async function deleteRecord(recordId: string): Promise<void> {
+    await request("DELETE", `${config.registryFullApiUrl}records/${recordId}`);
 }
 
 export async function doesRecordExist(id: string) {

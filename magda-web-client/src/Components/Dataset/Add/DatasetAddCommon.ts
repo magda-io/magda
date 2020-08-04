@@ -1,4 +1,4 @@
-import uuidv4 from "uuid/v4";
+import { v4 as uuidv4 } from "uuid";
 
 import { ContactPointDisplayOption } from "constants/DatasetConstants";
 import {
@@ -10,6 +10,7 @@ import {
     createPublisher,
     updateDataset,
     deleteRecordAspect,
+    deleteRecord,
     Record,
     getInitialVersionAspectData,
     VersionAspectData,
@@ -212,6 +213,15 @@ type Currency = {
 
 export type State = {
     distributions: Distribution[];
+
+    /**
+     * This field will be prepopulated with all distributions ids of the dataset when open the editor initially.
+     * A clean up routine will be run during the dataset submit process to delete all distributions are deleted.
+     * i.e. any ids contained in this array but cannot find from the distributions array.
+     *
+     * @type {string[]}
+     */
+    involvedDistributionIds: string[];
     dataset: Dataset;
     datasetPublishing: DatasetPublishing;
     processing: boolean;
@@ -591,7 +601,7 @@ function populateDistributions(data: RawDataset, state: State) {
             } as Distribution;
 
             if (item?.aspects?.version) {
-                dis.version = data.aspects.version;
+                dis.version = item.aspects.version;
             }
 
             if (dis.useStorageApi && dis.downloadURL) {
@@ -603,6 +613,7 @@ function populateDistributions(data: RawDataset, state: State) {
         });
     if (distributions.length) {
         state.distributions = distributions;
+        state.involvedDistributionIds = distributions.map((dis) => dis.id!);
     }
 }
 
@@ -703,6 +714,7 @@ export async function rawDatasetDataToState(
 export function createBlankState(user: User): State {
     return {
         distributions: [],
+        involvedDistributionIds: [],
         processing: false,
         dataset: {
             title: "",
@@ -846,6 +858,7 @@ export function saveStateToLocalStorage(state: State, id: string) {
     state.datasetDraft = undefined;
     state.loadDatasetDraftConfirmed = false;
     state._lastModifiedDate = new Date();
+    state.error = null; // do not save error object
 
     const dataset = JSON.stringify(state);
     localStorage[id] = dataset;
@@ -857,6 +870,7 @@ export async function saveStateToRegistry(state: State, id: string) {
     state.datasetDraft = undefined;
     state.loadDatasetDraftConfirmed = false;
     state._lastModifiedDate = new Date();
+    state.error = null; // do not save error object
 
     const dataset = JSON.stringify(state);
     const timestamp = state._lastModifiedDate.toISOString();
@@ -1188,7 +1202,14 @@ async function convertStateToDatasetRecord(
             },
             "dataset-publisher": publisherId && {
                 publisher: publisherId
-            }
+            },
+            // --- set dataset initial version
+            version: state?.version
+                ? state.version
+                : getInitialVersionAspectData(
+                      state.dataset.title,
+                      state.dataset.editingUserId
+                  )
         }
     };
 
@@ -1217,11 +1238,23 @@ async function convertStateToDistributionRecords(
                   }
                 : distribution;
 
+        // --- version property should be created as a seperate version aspect
+        // --- rather than part of `dcat-distribution-strings`
+        aspect.version = undefined;
+
         return {
             id: distribution.id ? distribution.id : createId("dist"),
             name: distribution.title,
             aspects: {
-                "dcat-distribution-strings": aspect
+                "dcat-distribution-strings": aspect,
+                // --- set distribution initial version if not exist
+                // --- the version will be bumped when it's superseded by a new file / distribution
+                version: distribution?.version
+                    ? distribution.version
+                    : getInitialVersionAspectData(
+                          distribution.title,
+                          state.dataset.editingUserId
+                      )
             },
             authnReadPolicyId: authPolicy
         };
@@ -1259,20 +1292,36 @@ async function updateCkanExportStatus(datasetId: string, state: State) {
     await ensureAspectExists("ckan-export");
 
     // Here is a trick based my tests on the [JsonPatch implementation](https://github.com/gnieh/diffson) used in our scala code base:
-    // `add` operation will always work (as long as the aspect schema is loaded).
+    // `add` operation will always work (as long as the aspect exists).
     // If the field is already there, `add` will just `replace` the value
-    await patchRecord(datasetId, [
-        {
-            op: "add",
-            path: `${exportDataPointer}/status`,
-            value: uiStatus ? "retain" : "withdraw"
-        },
-        {
-            op: "add",
-            path: `${exportDataPointer}/exportRequired`,
-            value: true
+    try {
+        await patchRecord(datasetId, [
+            {
+                op: "add",
+                path: `${exportDataPointer}/status`,
+                value: uiStatus ? "retain" : "withdraw"
+            },
+            {
+                op: "add",
+                path: `${exportDataPointer}/exportRequired`,
+                value: true
+            }
+        ]);
+    } catch (e) {
+        if (e instanceof ServerError && e.statusCode === 400) {
+            // 400 means Bad request. Only chance it could happend would be aspect doesn't exist at all
+            // we will create aspect instead
+            // Update Record Aspect API will actually create the aspect when it doesn't exist
+            await updateRecordAspect(datasetId, "ckan-export", {
+                [config.defaultCkanServer]: {
+                    status: uiStatus ? "retain" : "withdraw",
+                    exportRequired: true
+                }
+            });
+        } else {
+            throw e;
         }
-    ]);
+    }
 }
 
 export async function createDatasetFromState(
@@ -1281,14 +1330,10 @@ export async function createDatasetFromState(
     setState: React.Dispatch<React.SetStateAction<State>>,
     authnReadPolicyId?: string
 ) {
-    const distributionRecords = await (
-        await convertStateToDistributionRecords(state, authnReadPolicyId)
-    ).map((item) => {
-        // --- set distribution initial version
-        // --- the version will be bumped when it's superseded by a new file / distribution
-        item.aspects["version"] = getInitialVersionAspectData();
-        return item;
-    });
+    const distributionRecords = await convertStateToDistributionRecords(
+        state,
+        authnReadPolicyId
+    );
 
     const datasetRecord = await convertStateToDatasetRecord(
         datasetId,
@@ -1298,9 +1343,6 @@ export async function createDatasetFromState(
         false,
         authnReadPolicyId
     );
-
-    // --- set dataset initial version
-    datasetRecord.aspects.version = getInitialVersionAspectData();
 
     await createDataset(datasetRecord, distributionRecords);
 }
@@ -1380,6 +1422,26 @@ export async function cleanUpOrphanFiles(
     ).filter((item) => !item.isOk) as FailedFileInfo[];
 }
 
+async function cleanUpDistributions(state: State) {
+    const { involvedDistributionIds, distributions } = state;
+
+    if (!involvedDistributionIds?.length) {
+        return;
+    }
+
+    const deletedDistIds = involvedDistributionIds.filter(
+        (id) => distributions.findIndex((dist) => dist.id === id) === -1
+    );
+
+    if (!deletedDistIds?.length) {
+        return;
+    }
+
+    for (let i = 0; i < deletedDistIds.length; i++) {
+        await deleteRecord(deletedDistIds[i]);
+    }
+}
+
 /**
  * This function will submit the dataset using different API endpoints (depends on whether the dataset has been create or not)
  * It will also delete any temporary draft data from the `dataset-draft` aspect.
@@ -1413,6 +1475,8 @@ export async function submitDatasetFromState(
     await deleteRecordAspect(datasetId, "dataset-draft");
 
     await updateCkanExportStatus(datasetId, state);
+
+    await cleanUpDistributions(state);
 
     return await cleanUpOrphanFiles(
         state.uploadedFileUrls,

@@ -5,6 +5,7 @@ tags:
   minion-linked-data-rating: false
   minion-visualization: false
   minion-format: false
+  minion-ckan-exporter: false
 
 global:
   connectors:
@@ -15,6 +16,13 @@ global:
     functionNamespace: openfaas-fn  # Default namespace for functions
     mainNamespace: openfaas # Default namespace for gateway and other core modules
     allowAdminOnly: true # Only allow logged-in Admin to access openfaas gateway
+    secrets:
+      authSecrets: true
+
+magda-core:
+  openfaas:
+    # function namespace will be created by magda chart so it's there before secrets container creation
+    createFunctionNamespace: false
 
 ckan-connector-functions:
   includeInitialJobs: false

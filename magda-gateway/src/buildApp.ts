@@ -40,7 +40,7 @@ type Routes = {
     [host: string]: Route;
 };
 
-type Config = {
+export type Config = {
     listenPort: number;
     externalUrl: string;
     dbHost: string;
@@ -94,7 +94,7 @@ type Config = {
     defaultCacheControl?: string;
 };
 
-export default function buildApp(config: Config) {
+export default function buildApp(app: express.Application, config: Config) {
     const tenantMode = setupTenantMode(config);
 
     const routes = _.isEmpty(config.proxyRoutesJson)
@@ -105,11 +105,9 @@ export default function buildApp(config: Config) {
     const authenticator = new Authenticator({
         sessionSecret: config.sessionSecret,
         cookieOptions: _.isEmpty(config.cookieJson) ? {} : config.cookieJson,
+        authApiBaseUrl: config.authorizationApi,
         dbPool
     });
-
-    // Create a new Express application.
-    var app = express();
 
     // Log everything
     app.use(require("morgan")("combined"));
@@ -226,6 +224,7 @@ export default function buildApp(config: Config) {
                 gatewayUrl: config.openfaasGatewayUrl,
                 allowAdminOnly: config.openfaasAllowAdminOnly,
                 baseAuthUrl: config.authorizationApi,
+                jwtSecret: config.jwtSecret,
                 apiRouterOptions
             })
         );
