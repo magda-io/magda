@@ -14,6 +14,7 @@ import { History } from "history";
 import { ParsedDataset } from "helpers/record";
 import queryString from "query-string";
 import ToolTip from "Components/Common/TooltipWrapper";
+import { config } from "config";
 import SecClassification, {
     Sensitivity
 } from "Components/Common/SecClassification";
@@ -25,12 +26,13 @@ interface PropsType {
     hasEditPermissions: boolean;
     breadcrumbs: JSX.Element | null;
     searchText: string;
+    isAdmin: boolean;
 }
 
 const DatasetPage: FunctionComponent<PropsType> = (props) => {
     const [addMargin, setAddMargin] = useState<boolean>(false);
 
-    const { dataset, breadcrumbs, hasEditPermissions } = props;
+    const { dataset, breadcrumbs, hasEditPermissions, isAdmin } = props;
 
     const baseUrlDataset = `/dataset/${encodeURI(props.datasetId)}`;
 
@@ -169,6 +171,21 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                         toggleMargin={setAddMargin}
                         datasetId={dataset.identifier}
                     />
+                    {isAdmin ? (
+                        <div className="download-history-report-button">
+                            <a
+                                href={`${
+                                    config.openfaasBaseUrl
+                                }function/magda-function-history-report?recordId=${encodeURIComponent(
+                                    dataset.identifier!
+                                )}`}
+                                className="au-btn au-btn--secondary"
+                                target="__blank"
+                            >
+                                Download History Report
+                            </a>
+                        </div>
+                    ) : null}
                     {hasEditPermissions ? (
                         <div className="dataset-edit-button-container no-print">
                             <button

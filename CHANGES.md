@@ -33,6 +33,7 @@ General:
 -   Make the constructor of AuthorizedRegistryClient also accepts a customised jwt token.
 -   Set pwgen to `0.1.6` (was `^0.1.6`)
 -   Remove ESRI-portal related code from deployment charts
+-   Allow admin users to download history report of a dataset
 
 UI:
 

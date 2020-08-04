@@ -74,6 +74,40 @@ helm install docker-registry -f deploy/helm/docker-registry.yml stable/docker-re
 helm install kube-registry-proxy -f deploy/helm/kube-registry-proxy.yml magda-io/kube-registry-proxy
 ```
 
+### Install [kubernetes-replicator](https://github.com/mittwald/kubernetes-replicator)
+
+A complete Magda installation includes more than one namespaces and `kubernetes-replicator` helps to automated copy required secrets from main deployed namespace to workload (openfaas function) namespace.
+
+To install [kubernetes-replicator](https://github.com/mittwald/kubernetes-replicator):
+
+1> Add `kubernetes-replicator` helm chart repo
+
+```bash
+helm repo add mittwald https://helm.mittwald.de
+```
+
+2> Update Helm chart repo
+
+```bash
+helm repo update
+```
+
+3> Create a namespace for `kubernetes-replicator`
+
+As you only need one `kubernetes-replicator` instance per cluster, it's a good idea to install `kubernetes-replicator` in a seperate namespace.
+
+```bash
+kubectl create namespace kubernetes-replicator
+```
+
+3> Install `kubernetes-replicator`
+
+```bash
+helm upgrade --namespace kubernetes-replicator --install kubernetes-replicator mittwald/kubernetes-replicator
+```
+
+> Please note: you only need to install `kubernetes-replicator` once per k8s cluster
+
 ### Build local docker images
 
 Now you can build the docker containers locally - this might take quite a while so get a cup of tea.

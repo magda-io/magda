@@ -18,6 +18,8 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import scalikejdbc.DB
 import com.typesafe.config.Config
+import scalikejdbc.interpolation.SQLSyntax
+
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
@@ -92,29 +94,97 @@ class RecordHistoryService(
         dataType = "string",
         paramType = "path",
         value = "ID of the record for which to fetch history."
+      ),
+      new ApiImplicitParam(
+        name = "pageToken",
+        required = false,
+        dataType = "string",
+        paramType = "query",
+        value =
+          "A token that identifies the start of a page of events.  This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results."
+      ),
+      new ApiImplicitParam(
+        name = "start",
+        required = false,
+        dataType = "number",
+        paramType = "query",
+        value =
+          "The index of the first event to retrieve.  When possible, specify pageToken instead as it will result in better performance.  If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve."
+      ),
+      new ApiImplicitParam(
+        name = "limit",
+        required = false,
+        dataType = "number",
+        paramType = "query",
+        value =
+          "The maximum number of events to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off."
+      ),
+      new ApiImplicitParam(
+        name = "X-Magda-Session",
+        required = true,
+        dataType = "String",
+        paramType = "header",
+        value = "Magda internal session id"
+      ),
+      new ApiImplicitParam(
+        name = "aspect",
+        required = false,
+        dataType = "string",
+        paramType = "query",
+        allowMultiple = true,
+        value =
+          "The aspects for which to included in event history, specified as multiple occurrences of this query parameter."
+      ),
+      new ApiImplicitParam(
+        name = "dereference",
+        required = false,
+        defaultValue = "false",
+        dataType = "boolean",
+        paramType = "query",
+        value =
+          "true to automatically dereference links to other records; false to leave them as links.  Dereferencing a link means including the record itself where the link would be.  Dereferencing only happens one level deep, regardless of the value of this parameter."
       )
     )
   )
   def history: Route = get {
     path(Segment / "history") { id =>
       requiresTenantId { tenantId =>
-        parameters('pageToken.as[Long].?, 'start.as[Int].?, 'limit.as[Int].?) {
-          (pageToken, start, limit) =>
-            checkUserCanAccessRecordEvents(
-              recordPersistence,
-              authApiClient,
-              id,
-              tenantId,
-              EventsPage(false, None, Nil)
-            )(
-              config,
-              system,
-              materializer,
-              ec
-            ) {
-              complete(
-                DB readOnly { implicit session =>
+        parameters(
+          'aspect.*,
+          'pageToken.as[Long].?,
+          'start.as[Int].?,
+          'limit.as[Int].?,
+          'dereference.as[Boolean].?
+        ) { (aspects, pageToken, start, limit, dereference) =>
+          checkUserCanAccessRecordEvents(
+            recordPersistence,
+            authApiClient,
+            id,
+            tenantId,
+            EventsPage(false, None, Nil)
+          )(
+            config,
+            system,
+            materializer,
+            ec
+          ) { opaQuery =>
+            complete(
+              DB readOnly { implicit session =>
+                val aspectIdSet = aspects.toSet
+
+                if (dereference.getOrElse(false)) {
+                  eventPersistence.getEventsWithDereference(
+                    recordId = id,
+                    pageToken = pageToken,
+                    start = start,
+                    limit = limit,
+                    aspectIds = aspectIdSet,
+                    tenantId = tenantId,
+                    opaRecordQueries = opaQuery
+                  )
+                } else {
                   eventPersistence.getEvents(
+                    aspectIds = aspectIdSet,
                     recordId = Some(id),
                     pageToken = pageToken,
                     start = start,
@@ -122,8 +192,11 @@ class RecordHistoryService(
                     tenantId = tenantId
                   )
                 }
-              )
-            }
+
+              }
+            )
+
+          }
         }
       }
     }
@@ -222,7 +295,7 @@ class RecordHistoryService(
               system,
               materializer,
               ec
-            ) {
+            ) { opaQuery =>
               DB readOnly { session =>
                 val events = eventPersistence.streamEventsUpTo(
                   version.toLong,

@@ -39,6 +39,13 @@ tags:
   minion-visualization: true
   minion-format: true
 
+magda-function-history-report:
+  image:
+    repository: docker.io/data61
+    tag: 0.0.57-0
+    pullPolicy: IfNotPresent
+    imagePullSecret: false
+
 magda-core:
   ingress:
     hostname: dev.magda.io

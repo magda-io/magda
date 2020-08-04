@@ -9,8 +9,8 @@ import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.model.TenantId._
 import au.csiro.data61.magda.opa.OpaTypes._
 import au.csiro.data61.magda.registry.SqlHelper.{
-  getOpaConditions,
-  aspectQueryToSql
+  aspectQueryToSql,
+  getOpaConditions
 }
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
@@ -22,8 +22,15 @@ import au.csiro.data61.magda.client.AuthOperations
 
 import scala.util.{Failure, Success, Try}
 import com.typesafe.config.Config
+import scalikejdbc.interpolation.SQLSyntax
 
 trait RecordPersistence {
+
+  def getValidRecordIds(
+      tenantId: TenantId,
+      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
+      recordIds: Seq[String]
+  )(implicit session: DBSession): Seq[String]
 
   def getAll(
       tenantId: TenantId,
@@ -235,6 +242,45 @@ class DefaultRecordPersistence(config: Config)
     if (config.hasPath("opa.recordPolicyId"))
       Some(config.getString("opa.recordPolicyId"))
     else None
+
+  /**
+    * Given a list of recordIds, filter out any record that the current user has not access and return the rest of ids
+    * @param tenantId
+    * @param opaRecordQueries
+    * @param recordIds
+    * @param session
+    * @return Seq[String]
+    */
+  def getValidRecordIds(
+      tenantId: TenantId,
+      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
+      recordIds: Seq[String]
+  )(implicit session: DBSession): Seq[String] =
+    opaRecordQueries match {
+      case None => recordIds
+      case Some(_) =>
+        this
+          .getRecords(
+            tenantId = tenantId,
+            aspectIds = Seq(),
+            optionalAspectIds = Seq(),
+            recordOpaQueries = opaRecordQueries,
+            linkedRecordOpaQueries = None,
+            pageToken = None,
+            start = None,
+            Some(recordIds.size),
+            dereference = Some(false),
+            orderBy = None,
+            maxLimit = Some(recordIds.size),
+            recordSelector = Seq(
+              Some(
+                SQLSyntax.in(SQLSyntax.createUnsafely("recordId"), recordIds)
+              )
+            )
+          )
+          .records
+          .map(_.id)
+    }
 
   def getAll(
       tenantId: TenantId,
@@ -1422,7 +1468,8 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       rawLimit: Option[Int] = None,
       dereference: Option[Boolean] = None,
       recordSelector: Iterable[Option[SQLSyntax]] = Iterable(),
-      orderBy: Option[OrderByDef] = None
+      orderBy: Option[OrderByDef] = None,
+      maxLimit: Option[Int] = None
   )(implicit session: DBSession): RecordsPage[Record] = {
 
     if (orderBy.isDefined && pageToken.isDefined) {
@@ -1461,7 +1508,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
     )
 
     val limit = rawLimit
-      .map(l => Math.min(l, maxResultCount))
+      .map(l => Math.min(l, maxLimit.getOrElse(maxResultCount)))
       .getOrElse(defaultResultCount)
 
     val rawTempName = ColumnNamePrefixType.PREFIX_TEMP.toString
