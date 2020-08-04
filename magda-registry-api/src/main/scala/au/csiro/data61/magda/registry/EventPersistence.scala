@@ -35,8 +35,7 @@ trait EventPersistence {
       recordId: Option[String] = None,
       aspectIds: Set[String] = Set(),
       eventTypes: Set[EventType] = Set(),
-      tenantId: TenantId,
-      recordSelector: Iterable[Option[SQLSyntax]] = Iterable()
+      tenantId: TenantId
   )(implicit session: DBSession): EventsPage
 
   def getRecordReferencedIds(
@@ -140,10 +139,31 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
     * @param eventTypes The type of event must equal to one of the specified values. Optional and default to empty Set.
     * @param tenantId The returned events will be filtered by this tenant ID.
     *                 If it is a system ID, events belonging to all tenants are included (no tenant filtering).
-    * @param recordSelector the extra SQL selectors / filters that will be joined with all existing SQL WHERE conditions (using `AND`)
     * @return EventsPage containing events that meet the specified requirements
     */
   def getEvents(
+      pageToken: Option[Long] = None,
+      start: Option[Int] = None,
+      limit: Option[Int] = None,
+      lastEventId: Option[Long] = None,
+      recordId: Option[String] = None,
+      aspectIds: Set[String] = Set(),
+      eventTypes: Set[EventType] = Set(),
+      tenantId: TenantId
+  )(implicit session: DBSession): EventsPage = {
+    getEventsWithRecordSelector(
+      pageToken = pageToken,
+      start = start,
+      limit = limit,
+      lastEventId = lastEventId,
+      recordId = recordId,
+      aspectIds = aspectIds,
+      eventTypes = eventTypes,
+      tenantId = tenantId
+    )
+  }
+
+  private def getEventsWithRecordSelector(
       pageToken: Option[Long] = None,
       start: Option[Int] = None,
       limit: Option[Int] = None,
@@ -417,7 +437,7 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       )
     }
 
-    getEvents(
+    getEventsWithRecordSelector(
       aspectIds = Set(),
       recordId = None,
       pageToken = pageToken,
