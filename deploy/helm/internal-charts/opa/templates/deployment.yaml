@@ -46,15 +46,10 @@ spec:
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         volumeMounts:
-        - readOnly: true
-          mountPath: /opa-data
-          name: opa-policies-volume
+        - name: default-opa-policies
+          mountPath: /opa-raw-policy-data-files
+          readOnly: true
       volumes:
-        - name: opa-policies-volume
+        - name: default-opa-policies
           configMap:
-            name: opa-policies
-            items:
-            {{- range $path, $bytes := .Files.Glob "policies/**/*" }}
-            - key: {{ base $path }}
-              path: {{ dir $path }}/{{ base $path }}
-            {{- end }}
+            name: default-opa-policies

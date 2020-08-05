@@ -11,3 +11,4 @@ resources:
     memory: 50Mi
   limits:
     cpu: 100m
+customPolicyConfigMaps: []
