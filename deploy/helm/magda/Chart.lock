@@ -23,5 +23,8 @@ dependencies:
 - name: magda-ckan-connector
   repository: https://charts.magda.io
   version: 0.0.57-0
-digest: sha256:0d528ccd195c763be8d4893a23fd68c71320cfa5ccd52ce92e751fb989962507
-generated: "2020-07-31T11:45:31.430222+10:00"
+- name: magda-function-esri-url-processor
+  repository: https://charts.magda.io
+  version: 0.0.57-0
+digest: sha256:e662e0b91671fe7f9a314b84401e31de25eee68ae57d1aaed4fa130847b49ba0
+generated: "2020-08-04T16:13:34.741659+10:00"
