@@ -19,11 +19,6 @@ global:
     secrets:
       authSecrets: true
 
-magda-core:
-  openfaas:
-    # function namespace will be created by magda chart so it's there before secrets container creation
-    createFunctionNamespace: false
-
 ckan-connector-functions:
   includeInitialJobs: false
   includeCronJobs: false
