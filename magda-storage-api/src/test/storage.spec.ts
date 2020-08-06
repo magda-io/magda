@@ -20,7 +20,7 @@ const USER_ID = "b1fddd6f-e230-4068-bd2c-1a21844f1598";
 /** A gif of a funky banana */
 const bananadance: Buffer = fs.readFileSync("src/test/bananadance.gif");
 
-function injectUserId(jwtSecret: string, req: Test): Promise<Response> {
+function injectUserId(jwtSecret: string, req: Test): Test {
     const userId = USER_ID;
     const id = jwt.sign({ userId: userId }, jwtSecret);
     return req.set("X-Magda-Session", id);
@@ -461,19 +461,20 @@ describe("Storage API tests", () => {
                         .send("Testing delete")
                         .expect(200)
                 ).then((_res) => {
-                    return request(app)
-                        .delete("/v0/" + bucketName + "/delete-test-file-1")
-                        .expect(200)
-                        .expect({ message: "File deleted successfully" })
-                        .then((_res) => {
-                            return request(app)
-                                .get(
-                                    "/v0/" + bucketName + "/delete-test-file-1"
-                                )
-                                .set("Accept", "application/json")
-                                .set("Accept", "text/plain")
-                                .expect(404);
-                        });
+                    return mockAuthorization(
+                        true,
+                        jwtSecret,
+                        request(app)
+                            .delete("/v0/" + bucketName + "/delete-test-file-1")
+                            .expect(200)
+                            .expect({ message: "File deleted successfully" })
+                    ).then((_res) => {
+                        return request(app)
+                            .get("/v0/" + bucketName + "/delete-test-file-1")
+                            .set("Accept", "application/json")
+                            .set("Accept", "text/plain")
+                            .expect(404);
+                    });
                 });
             });
 
@@ -492,23 +493,24 @@ describe("Storage API tests", () => {
                         .send("Testing delete")
                         .expect(200)
                 ).then((_res) => {
-                    return request(app)
-                        .delete(
-                            "/v0/" +
-                                bucketName +
-                                "/path/path/path/delete-test-file-1"
-                        )
-                        .expect(200)
-                        .expect({ message: "File deleted successfully" })
-                        .then((_res) => {
-                            return request(app)
-                                .get(
-                                    "/v0/" + bucketName + "/delete-test-file-1"
-                                )
-                                .set("Accept", "application/json")
-                                .set("Accept", "text/plain")
-                                .expect(404);
-                        });
+                    return mockAuthorization(
+                        true,
+                        jwtSecret,
+                        request(app)
+                            .delete(
+                                "/v0/" +
+                                    bucketName +
+                                    "/path/path/path/delete-test-file-1"
+                            )
+                            .expect(200)
+                            .expect({ message: "File deleted successfully" })
+                    ).then((_res) => {
+                        return request(app)
+                            .get("/v0/" + bucketName + "/delete-test-file-1")
+                            .set("Accept", "application/json")
+                            .set("Accept", "text/plain")
+                            .expect(404);
+                    });
                 });
             });
 
@@ -523,26 +525,33 @@ describe("Storage API tests", () => {
                         .send("")
                         .expect(200)
                 ).then((_res) => {
-                    return request(app)
-                        .delete("/v0/" + bucketName + "/delete-test-file-2")
-                        .expect(200)
-                        .expect({ message: "File deleted successfully" })
-                        .then((_res) => {
-                            return request(app)
-                                .get(
-                                    "/v0/" + bucketName + "/delete-test-file-2"
-                                )
-                                .set("Accept", "application/json")
-                                .set("Accept", "text/plain")
-                                .expect(404);
-                        });
+                    return mockAuthorization(
+                        true,
+                        jwtSecret,
+                        request(app)
+                            .delete("/v0/" + bucketName + "/delete-test-file-2")
+                            .expect(200)
+                            .expect({ message: "File deleted successfully" })
+                    ).then((_res) => {
+                        return request(app)
+                            .get("/v0/" + bucketName + "/delete-test-file-2")
+                            .set("Accept", "application/json")
+                            .set("Accept", "text/plain")
+                            .expect(404);
+                    });
                 });
             });
 
             it("Deleting non-existent file should simply return 200", () => {
-                return request(app)
-                    .delete("/v0/" + bucketName + "/nonexistent-file-dfijgy45")
-                    .expect(200);
+                return mockAuthorization(
+                    true,
+                    jwtSecret,
+                    request(app)
+                        .delete(
+                            "/v0/" + bucketName + "/nonexistent-file-dfijgy45"
+                        )
+                        .expect(200)
+                );
             });
         });
     });

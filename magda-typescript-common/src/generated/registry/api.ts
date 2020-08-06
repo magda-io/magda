@@ -1179,6 +1179,8 @@ export class RecordHistoryApi {
      * @param pageToken A token that identifies the start of a page of events.  This token should not be interpreted as having any meaning, but it can be obtained from a previous page of results.
      * @param start The index of the first event to retrieve.  When possible, specify pageToken instead as it will result in better performance.  If this parameter and pageToken are both specified, this parameter is interpreted as the index after the pageToken of the first record to retrieve.
      * @param limit The maximum number of events to receive.  The response will include a token that can be passed as the pageToken parameter to a future request to continue receiving results where this query leaves off.
+     * @param aspect The aspects for which to included in event history, specified as multiple occurrences of this query parameter.
+     * @param dereference true to automatically dereference links to other records; false to leave them as links.  Dereferencing a link means including the record itself where the link would be.  Dereferencing only happens one level deep, regardless of the value of this parameter.
      */
     public history(
         xMagdaTenantId: number,
@@ -1186,7 +1188,9 @@ export class RecordHistoryApi {
         xMagdaSession: string,
         pageToken?: string,
         start?: number,
-        limit?: number
+        limit?: number,
+        aspect?: Array<string>,
+        dereference?: boolean
     ): Promise<{ response: http.IncomingMessage; body: EventsPage }> {
         const localVarPath =
             this.basePath +
@@ -1229,6 +1233,14 @@ export class RecordHistoryApi {
 
         if (limit !== undefined) {
             queryParameters["limit"] = limit;
+        }
+
+        if (aspect !== undefined) {
+            queryParameters["aspect"] = aspect;
+        }
+
+        if (dereference !== undefined) {
+            queryParameters["dereference"] = dereference;
         }
 
         headerParams["X-Magda-Tenant-Id"] = xMagdaTenantId;

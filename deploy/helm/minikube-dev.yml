@@ -16,14 +16,16 @@ global:
   openfaas:
     # turn off auth over openfass gateway for ease of debugging
     allowAdminOnly: false
+  
+  # Remove the section to make url processors pull your test docker images from your local docker registry
+  # Make sure you build & push the connector docker images to your local docker registry
   urlProcessors:
-    # Remove the image section to make url processors pull your test docker images from your local docker registry
-    # Make sure you build & push the connector docker images to your local docker registry
     image:
       repository: docker.io/data61
       tag: 0.0.57-0
       pullPolicy: IfNotPresent
       imagePullSecret: false
+  
   connectors:
     includeInitialJobs: true
     includeCronJobs: false
@@ -34,83 +36,91 @@ global:
       tag: 0.0.57-0
       pullPolicy: IfNotPresent
       imagePullSecret: false
-  minions: {}
-    # Remove the image section to make minions pull your test docker images from local docker registry
-    # Make sure you build & push the connector docker images to your local docker registry
-    # image:
-    #   repository: docker.io/data61
-    #   tag: 0.0.57-0
-    #   pullPolicy: IfNotPresent
-    #   imagePullSecret: false
-
-magda-core:
-  gateway:
-    ckanRedirectionDomain: "ckan.data.gov.au"
-    ckanRedirectionPath: ""
-    enableCkanRedirection: false
-    enableAuthEndpoint: true
-    cors:
-      credentials: true
-      origin: true
-    auth:
-      facebookClientId: "173073926555600"
-      arcgisClientId: "d0MgVUbbg5Z6vmWo"
-      googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
-      ckanAuthenticationUrl: https://data.gov.au/data
-    cookie:
-      # Set sameSite to "none" to explicitly allow cross-site cookie
-      # It's only for allowing frontend local dev site to login to remote dev instance
-      # Should not be set to "none" for a production site
-      sameSite: "none"
-
-  registry-api:
-    skipAuthorization: false
-
-  correspondence-api:
-    smtpPort: 2525
-    smtpHostname: "smtp.mailgun.org"
-
-  web-server:
-    fallbackUrl: "https://data.gov.au"
-    showNotificationBanner: false
-    featureFlags:
-      cataloguing: true
-      publishToDga: true
-      placeholderWorkflowsOn: true
-      datasetApprovalWorkflowOn: true
-    dateConfig:
-      dateFormats:
-        - YYYY
-        - YYYY-MM
-        - DD-MM-YYYY
-        - MM-DD-YYYY
-        - YYYY-MM-DD
-        - YYYY-MM-DDThh:mmTZD
-        - YYYY-MM-DDThh:mm:ssTZD
-        - YYYY-MM-DDThh:mm:ss.sTZD
-        - DD-MMM-YYYY
-        - MMM-DD-YYYY
-      dateRegexes:
-          dateRegex: "(date|dt|year|decade)"
-          startDateRegex: "(start|st).*(date|dt|year|decade)"
-          endDateRegex: "(end).*(date|dt|year|decade)"
-
-  preview-map:
+  
+  # Remove the section to make minions pull your test docker images from local docker registry
+  # Make sure you build & push the connector docker images to your local docker registry
+  minions: 
     image:
       repository: docker.io/data61
       tag: 0.0.57-0
       pullPolicy: IfNotPresent
       imagePullSecret: false
 
-  openfaas:
-    faasnetes:
-      imagePullPolicy: Always
+magda:
+  magda-function-history-report:
+    image:
+      repository: docker.io/data61
+      tag: 0.0.57-0
+      pullPolicy: IfNotPresent
+      imagePullSecret: false
+  magda-core:
+    gateway:
+      ckanRedirectionDomain: "ckan.data.gov.au"
+      ckanRedirectionPath: ""
+      enableCkanRedirection: false
+      enableAuthEndpoint: true
+      cors:
+        credentials: true
+        origin: true
+      auth:
+        facebookClientId: "173073926555600"
+        arcgisClientId: "d0MgVUbbg5Z6vmWo"
+        googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
+        ckanAuthenticationUrl: https://data.gov.au/data
+      cookie:
+        # Set sameSite to "none" to explicitly allow cross-site cookie
+        # It's only for allowing frontend local dev site to login to remote dev instance
+        # Should not be set to "none" for a production site
+        sameSite: "none"
 
-  elasticsearch:
-    data:
-      resources:
-        limits:
-          cpu: 1000m
+    registry-api:
+      skipAuthorization: false
+
+    correspondence-api:
+      smtpPort: 2525
+      smtpHostname: "smtp.mailgun.org"
+
+    web-server:
+      fallbackUrl: "https://data.gov.au"
+      showNotificationBanner: false
+      featureFlags:
+        cataloguing: true
+        publishToDga: true
+        placeholderWorkflowsOn: true
+        datasetApprovalWorkflowOn: true
+      dateConfig:
+        dateFormats:
+          - YYYY
+          - YYYY-MM
+          - DD-MM-YYYY
+          - MM-DD-YYYY
+          - YYYY-MM-DD
+          - YYYY-MM-DDThh:mmTZD
+          - YYYY-MM-DDThh:mm:ssTZD
+          - YYYY-MM-DDThh:mm:ss.sTZD
+          - DD-MMM-YYYY
+          - MMM-DD-YYYY
+        dateRegexes:
+            dateRegex: "(date|dt|year|decade)"
+            startDateRegex: "(start|st).*(date|dt|year|decade)"
+            endDateRegex: "(end).*(date|dt|year|decade)"
+
+    preview-map:
+      image:
+        repository: docker.io/data61
+        tag: 0.0.57-0
+        pullPolicy: IfNotPresent
+        imagePullSecret: false
+
+    openfaas:
+      faasnetes:
+        imagePullPolicy: Always
+
+    elasticsearch:
+      data:
+        resources:
+          limits:
+            cpu: 1000m
 
 tags:
   all: true

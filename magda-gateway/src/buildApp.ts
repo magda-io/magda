@@ -224,6 +224,7 @@ export default function buildApp(app: express.Application, config: Config) {
                 gatewayUrl: config.openfaasGatewayUrl,
                 allowAdminOnly: config.openfaasAllowAdminOnly,
                 baseAuthUrl: config.authorizationApi,
+                jwtSecret: config.jwtSecret,
                 apiRouterOptions
             })
         );

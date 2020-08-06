@@ -2,12 +2,14 @@ import express from "express";
 import createBaseProxy from "./createBaseProxy";
 import { mustBeAdmin } from "magda-typescript-common/src/authorization-api/authMiddleware";
 import { ApiRouterOptions } from "./createApiRouter";
+import buildJwt from "magda-typescript-common/src/session/buildJwt";
 
 interface OptionsType {
     gatewayUrl: string;
     baseAuthUrl: string;
     allowAdminOnly?: boolean;
     apiRouterOptions: ApiRouterOptions;
+    jwtSecret: string;
 }
 
 export default function createOpenfaasGatewayProxy(
@@ -15,9 +17,20 @@ export default function createOpenfaasGatewayProxy(
 ): express.Router {
     const router = express.Router();
     const proxy = createBaseProxy(options.apiRouterOptions);
+    const jwtSecret = options.jwtSecret;
+
+    options.apiRouterOptions.authenticator.applyToRoute(router);
+
+    proxy.on("proxyReq", (proxyReq, req: any, _res, _options) => {
+        if (jwtSecret && req.user) {
+            proxyReq.setHeader(
+                "X-Magda-Session",
+                buildJwt(jwtSecret, req.user.id, { session: req.user.session })
+            );
+        }
+    });
 
     if (options.allowAdminOnly) {
-        options.apiRouterOptions.authenticator.applyToRoute(router);
         router.use(
             mustBeAdmin(options.baseAuthUrl, options.apiRouterOptions.jwtSecret)
         );

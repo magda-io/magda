@@ -1,0 +1,1 @@
+This is intended for when you want to do a deployment using a local chart, rather than directly from the magda repository, similar to what's in the magda-config repo. This chart is not published to our charts repository, but it does have dependencies on charts that are in there.

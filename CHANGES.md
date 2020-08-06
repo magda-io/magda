@@ -33,6 +33,7 @@ General:
 -   Make the constructor of AuthorizedRegistryClient also accepts a customised jwt token.
 -   Set pwgen to `0.1.6` (was `^0.1.6`)
 -   Remove ESRI-portal related code from deployment charts
+-   Allow admin users to download history report of a dataset
 
 UI:
 
@@ -131,6 +132,7 @@ Minions:
 CI/CD:
 
 -   Use Directed Acyclic Graph in Gitlab CI
+-   Moved data.gov.au specific connector config out of the magda helm chart
 
 Others:
 
