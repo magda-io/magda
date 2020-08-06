@@ -243,9 +243,3 @@ dependencies:
     tags:
       - connectors
       - connector-southern-grampians
-  # - name: magda-esri-portal-connector
-  #   version: 0.0.57-0
-  #   alias: connector-esri-nsw
-  #   repository: https://charts.magda.io
-  #   tags:
-  #     - connector-esri-nsw

@@ -33,14 +33,13 @@ tags:
   priorities: false
   connectors: false
 
-magda-function-history-report:
-  image:
-    repository: docker.io/data61
-    tag: 0.0.57-0
-    pullPolicy: IfNotPresent
-    imagePullSecret: false
-
 magda:
+  magda-function-history-report:
+    image:
+      repository: docker.io/data61
+      tag: 0.0.57-0
+      pullPolicy: IfNotPresent
+      imagePullSecret: false
   magda-core:
     ingress:
       ingressClass: nginx

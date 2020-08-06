@@ -39,14 +39,18 @@ tags:
   minion-visualization: true
   minion-format: true
 
-magda-function-history-report:
-  image:
-    repository: docker.io/data61
-    tag: 0.0.57-0
-    pullPolicy: IfNotPresent
-    imagePullSecret: false
-
 magda:
+  magda-function-history-report:
+    image:
+      repository: docker.io/data61
+      tag: 0.0.57-0
+      pullPolicy: IfNotPresent
+      imagePullSecret: false
+  minion-broken-link:
+    domainWaitTimeConfig:
+      data.csiro.au: 5
+      data.gov.au: 5
+      data.act.gov.au: 30
   magda-core:
     ingress:
       hostname: dev.magda.io
@@ -157,11 +161,6 @@ magda:
       operator: 
         createCRD: false
 
-minion-broken-link:
-  domainWaitTimeConfig:
-    data.csiro.au: 5
-    data.gov.au: 5
-    data.act.gov.au: 30
 
 # Connectors settings is built in Magda chart value file but you can override as the followings:
 # e.g. dga connector:
