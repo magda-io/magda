@@ -169,7 +169,7 @@ helm dep build deploy/helm/internal-charts/storage-api
 helm dep build deploy/helm/magda-core
 helm dep build deploy/helm/magda
 # deploy the magda chart from magda helm repo
-helm upgrade --install --timeout 9999s --wait -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
+helm upgrade --install --timeout 9999s --wait -f deploy/helm/minikube-dev.yml magda deploy/helm/local-deployment
 ```
 
 This can take a while as it does a lot - downloading all the docker images, starting them up and running database migration jobs. You can see what's happening by opening another tab and running `kubectl get pods -w`.
@@ -186,7 +186,7 @@ helm dep build deploy/helm/internal-charts/storage-api
 helm dep build deploy/helm/magda-core
 helm dep build deploy/helm/magda
 # deploy the magda chart from magda helm repo
-helm upgrade --install --timeout 9999s --wait -f deploy/helm/docker-desktop-windows.yml -f deploy/helm/minikube-dev.yml magda deploy/helm/magda
+helm upgrade --install --timeout 9999s --wait -f deploy/helm/docker-desktop-windows.yml -f deploy/helm/minikube-dev.yml magda deploy/helm/local-deployment
 ```
 
 If you want to deploy the packed & production ready helm chart in our helm repo:
@@ -263,7 +263,7 @@ data:
 Then update helm:
 
 ```bash
-helm upgrade magda -f deploy/helm/minikube-dev.yml deploy/helm/magda
+helm upgrade magda -f deploy/helm/minikube-dev.yml deploy/helm/local-deployment
 ```
 
 Now when I go to `http://${minikube ip}/api/v0/search`, it'll be proxied to my local search rather than the one in minikube.
@@ -371,7 +371,7 @@ Like `combined-db`, elastic search can only be started in `minikube` via `helm` 
 You need to upgrade previously installed `helm` chart `magda` to include `magda-elastic-search` component:
 
 ```bash
-helm upgrade magda deploy/helm/magda -f deploy/helm/minikube-dev.yml --set tags.all=false --set tags.combined-db=true --set tags.elasticsearch=true
+helm upgrade magda deploy/helm/local-deployment -f deploy/helm/minikube-dev.yml --set tags.all=false --set tags.combined-db=true --set tags.elasticsearch=true
 ```
 
 And then, port forward `elasticsearch` so that you can run other components that may need to connect to `elasticsearch` outside the `minikube`:
