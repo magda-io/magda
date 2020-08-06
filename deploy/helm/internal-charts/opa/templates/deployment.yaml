@@ -46,10 +46,20 @@ spec:
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         volumeMounts:
-        - name: default-opa-policies
-          mountPath: /opa-raw-policy-data-files
-          readOnly: true
+          - name: default-opa-policies
+            mountPath: /opa-raw-policy-data-files
+            readOnly: true
+          {{ range .Values.customPolicyConfigMaps -}}
+          - name: {{.}}
+            mountPath: /opa-raw-policy-data-files
+            readOnly: true
+          {{ end }}
       volumes:
         - name: default-opa-policies
           configMap:
             name: default-opa-policies
+        {{ range .Values.customPolicyConfigMaps -}}
+        - name: {{.}}
+          configMap:
+            name: {{.}}
+        {{ end }}
