@@ -132,6 +132,7 @@ Minions:
 CI/CD:
 
 -   Use Directed Acyclic Graph in Gitlab CI
+-   Moved data.gov.au specific connector config out of the magda helm chart
 
 Others:
 
