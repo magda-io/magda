@@ -162,7 +162,7 @@ magda:
         createCRD: false
 
 
-# Connectors settings is built in Magda chart value file but you can override as the followings:
+# Connectors settings is built in local-deployment chart value file but you can override as the followings:
 # e.g. dga connector:
 # connector-dga:
 #   config:
