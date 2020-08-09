@@ -111,7 +111,12 @@ magda:
 
     elasticsearch:
       data:
+        storage: 200Gi
         heapSize: 500m
+        resources:
+          requests:
+            cpu: 200m
+            memory: 1000Mi
         affinity:
           nodeAffinity:
             requiredDuringSchedulingIgnoredDuringExecution:
