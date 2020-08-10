@@ -141,5 +141,10 @@ magda:
         createCRD: false
 
     opa:
+      loaderImage:
+        repository: docker.io/data61
+        tag: 0.0.57-0
+        pullPolicy: IfNotPresent
+        imagePullSecret: false
       customPolicyConfigMaps:
       - my-custom-opa-policies

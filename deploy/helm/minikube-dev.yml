@@ -122,6 +122,13 @@ magda:
           limits:
             cpu: 1000m
 
+    opa:
+      loaderImage:
+        repository: docker.io/data61
+        tag: 0.0.57-0
+        pullPolicy: IfNotPresent
+        imagePullSecret: false
+
 tags:
   all: true
   search-api-node: true
