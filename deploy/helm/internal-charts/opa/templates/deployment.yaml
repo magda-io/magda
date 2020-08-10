@@ -18,6 +18,28 @@ spec:
 {{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1beta1") .Values.global.enablePriorityClass }}
       priorityClassName: magda-8
 {{- end }}
+      initContainers:
+      - name: policy-files-loader
+        image: "{{ .Values.loaderImage.repository | default .Values.image.repository | default .Values.global.image.repository }}/magda-configmap-dir-loader:{{ .Values.loaderImage.tag | default .Values.image.tag | default .Values.global.image.tag }}"
+        imagePullPolicy: {{ .Values.loaderImage.pullPolicy | default .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        env:
+          - name: DEFAULT_CFG_MAP_DIR
+            value: "/opa-raw-default-policy-data-files"
+          - name: TARGET_DIR
+            value: "/opa-data/policies"
+          - name: EXTRA_CFG_MAP_DIR
+            value: "/opa-raw-policy-data-files"
+        volumeMounts:
+          - name: policy-dir
+            mountPath: /opa-data/policies
+          - name: default-opa-policies
+            mountPath: /opa-raw-default-policy-data-files
+            readOnly: true
+          {{ range .Values.customPolicyConfigMaps -}}
+          - name: {{.}}
+            mountPath: /opa-raw-policy-data-files
+            readOnly: true
+          {{ end }}
       containers:
       - name: opa
         image: openpolicyagent/opa:0.17.1
@@ -27,6 +49,8 @@ spec:
         - "--ignore=.*"  # exclude hidden dirs created by Kubernetes
         - "--server"
         - "/opa-data/policies"
+        ports:
+        - containerPort: 8181
         readinessProbe:
           httpGet:
             path: "/health"
@@ -46,20 +70,16 @@ spec:
         resources:
 {{ toYaml .Values.resources | indent 10 }}
         volumeMounts:
-          - name: default-opa-policies
-            mountPath: /opa-raw-policy-data-files
-            readOnly: true
-          {{ range .Values.customPolicyConfigMaps -}}
-          - name: {{.}}
-            mountPath: /opa-raw-policy-data-files
-            readOnly: true
-          {{ end }}
+        - name: policy-dir
+          mountPath: /opa-data/policies
       volumes:
-        - name: default-opa-policies
-          configMap:
-            name: default-opa-policies
-        {{ range .Values.customPolicyConfigMaps -}}
-        - name: {{.}}
-          configMap:
-            name: {{.}}
-        {{ end }}
+      - name: policy-dir
+        emptyDir: {}
+      - name: default-opa-policies
+        configMap:
+          name: default-opa-policies
+      {{ range .Values.customPolicyConfigMaps -}}
+      - name: {{.}}
+        configMap:
+          name: {{.}}
+      {{ end }}

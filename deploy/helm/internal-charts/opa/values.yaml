@@ -1,4 +1,5 @@
 image: {}
+loaderImage: {}
 autoscaler:
   enabled: false
   minReplicas: 1
