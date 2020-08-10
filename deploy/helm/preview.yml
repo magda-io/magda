@@ -139,3 +139,7 @@ magda:
     openfaas:
       operator: 
         createCRD: false
+
+    opa:
+      customPolicyConfigMaps:
+      - my-custom-opa-policies
