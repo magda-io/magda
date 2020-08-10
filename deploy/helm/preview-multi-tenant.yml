@@ -136,4 +136,11 @@ magda:
 
     openfaas:
       operator: 
-        createCRD: false  
+        createCRD: false
+    
+    opa:
+      loaderImage:
+        repository: docker.io/data61
+        tag: 0.0.57-0
+        pullPolicy: IfNotPresent
+        imagePullSecret: false

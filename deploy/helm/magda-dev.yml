@@ -166,6 +166,13 @@ magda:
       operator: 
         createCRD: false
 
+    opa:
+      loaderImage:
+        repository: docker.io/data61
+        tag: 0.0.57-0
+        pullPolicy: IfNotPresent
+        imagePullSecret: false
+
 
 # Connectors settings is built in local-deployment chart value file but you can override as the followings:
 # e.g. dga connector:
