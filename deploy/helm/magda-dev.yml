@@ -111,7 +111,12 @@ magda:
 
     elasticsearch:
       data:
+        storage: 200Gi
         heapSize: 500m
+        resources:
+          requests:
+            cpu: 200m
+            memory: 1000Mi
         affinity:
           nodeAffinity:
             requiredDuringSchedulingIgnoredDuringExecution:
@@ -162,7 +167,7 @@ magda:
         createCRD: false
 
 
-# Connectors settings is built in Magda chart value file but you can override as the followings:
+# Connectors settings is built in local-deployment chart value file but you can override as the followings:
 # e.g. dga connector:
 # connector-dga:
 #   config:
