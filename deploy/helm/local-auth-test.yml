@@ -18,3 +18,12 @@ tags:
   registry-db: true
   opa: true
   authorization-api: true
+
+magda-core:
+  opa:
+    loaderImage:
+      # Should use docker hub image for [configMap loader image](https://github.com/magda-io/magda-configmap-dir-loader)
+      repository: docker.io/data61
+      tag: 0.0.57-0
+      pullPolicy: IfNotPresent
+      imagePullSecret: false
