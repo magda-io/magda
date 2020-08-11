@@ -20,7 +20,7 @@ spec:
 {{- end }}
       initContainers:
       - name: policy-files-loader
-        image: "{{ .Values.loaderImage.repository | default .Values.image.repository | default .Values.global.image.repository }}/magda-configmap-dir-loader:{{ .Values.loaderImage.tag | default .Values.image.tag | default .Values.global.image.tag }}"
+        image: "{{ .Values.loaderImage.repository }}/magda-configmap-dir-loader:{{ .Values.loaderImage.tag }}"
         imagePullPolicy: {{ .Values.loaderImage.pullPolicy | default .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
         env:
           - name: DEFAULT_CFG_MAP_DIR
