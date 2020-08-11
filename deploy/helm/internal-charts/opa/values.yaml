@@ -2,9 +2,9 @@ image: {}
 loaderImage: 
   # Github repo: https://github.com/magda-io/magda-configmap-dir-loader
   repository: docker.io/data61
-    tag: 0.0.57-0
-    pullPolicy: IfNotPresent
-    imagePullSecret: false
+  tag: 0.0.57-0
+  pullPolicy: IfNotPresent
+  imagePullSecret: false
 autoscaler:
   enabled: false
   minReplicas: 1
