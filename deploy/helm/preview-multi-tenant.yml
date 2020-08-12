@@ -136,4 +136,4 @@ magda:
 
     openfaas:
       operator: 
-        createCRD: false  
+        createCRD: false

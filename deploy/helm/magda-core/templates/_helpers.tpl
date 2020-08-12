@@ -229,3 +229,25 @@ Generating the openfaas gateway url.
 {{- end -}}
 {{- .Values.global.openfaas.mainNamespace | printf "http://gateway.%s-%s.svc.cluster.local:8080" (required "Please provide namespacePrefix for generating openfaas gateway url" (.Values.global.openfaas.namespacePrefix | default .Release.Namespace)) -}}
 {{- end -}}
+
+{{/*
+  Generating the json string from all files (includes files path & pattern) that matches pattern.
+  Normally used to generate string data for configMap
+  Parameters:
+  `filePattern`: Glob file search pattern string
+  `pathPrefix` : Optional. Add pathPrefix to all file path generated in JSON
+  Usage: 
+  files.json: {{ include "magda.filesToJson" (dict "root" . "filePattern" "ddsd/sss/**" ) }}
+  OR
+  files.json: {{ include "magda.filesToJson" (dict "root" . "filePattern" "ddsd/sss/**" "pathPrefix" "test/" ) }}
+*/}}
+{{- define "magda.filesToJson" -}}
+{{ $data := dict -}}
+{{- $pathPrefix := empty .pathPrefix | ternary "" .pathPrefix -}}
+  {{- range $path, $bytes := .root.Files.Glob .filePattern -}}
+  {{-   $str := toString $bytes -}}
+  {{-   $fullPath := print $pathPrefix $path -}}
+  {{-   $_ := set $data $fullPath $str -}}
+  {{- end -}}
+{{- mustToRawJson $data | quote -}} 
+{{- end -}}

@@ -113,6 +113,7 @@ Authorization:
 -   Fixed a bug where the registry would attempt to query for policies against every single record id in the registry all at once.
 -   Added API Key authentication support
 -   Add auth policy to distribution records
+-   Allowed custom opa policy files to be supplied during the deployment
 
 Registry:
 
