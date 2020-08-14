@@ -10,7 +10,7 @@ Before start to use the `set-user-password script, you need to:
     -   `kubectl port-forward combined-db-0 5432:5432`
     -   If you didn't install magda to the default namespace, you can use: `kubectl port-forward -n [namespace] combined-db-0 5432:5432`
 
-After the installation is done, run `yset-user-password` will list help information as below:
+After the installation is done, run `yarn set-user-password` will list help information as below:
 
 ```
 Usage: set-user-password [options]
