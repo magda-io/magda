@@ -12,6 +12,7 @@ global:
     includeInitialJobs: false
     includeCronJobs: true
   openfaas:
+    enabled: true
     namespacePrefix: ""
     functionNamespace: openfaas-fn  # Default namespace for functions
     mainNamespace: openfaas # Default namespace for gateway and other core modules

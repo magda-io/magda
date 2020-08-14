@@ -10,6 +10,8 @@ global:
   useCloudSql: false
   useCombinedDb: true
   enablePriorityClass: false
+  openfaas:
+    enabled: false
 
 tags:
   all: false
