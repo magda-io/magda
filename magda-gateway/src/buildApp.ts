@@ -25,6 +25,7 @@ import defaultConfig from "./defaultConfig";
 import { ProxyTarget } from "./createApiRouter";
 import setupTenantMode from "./setupTenantMode";
 import createPool from "./createPool";
+import rateLimit from "express-rate-limit";
 
 // Tell typescript about the semi-private __express field of ejs.
 declare module "ejs" {
@@ -259,6 +260,22 @@ export default function buildApp(app: express.Application, config: Config) {
             );
         }
     }
+
+    const limiter = rateLimit({
+        windowMs: 5 * 60 * 1000, // 5 minutes
+        max: 200, // limit each IP/API Key to 200 requests per windowMs
+        keyGenerator: function (req /*, res*/) {
+            // let key = req.header("X-Magda-API-Key");
+            let key = req.connection.remoteAddress;
+            if (!key) {
+                key = req.ip;
+            }
+            return key;
+        }
+    });
+
+    // apply to all requests
+    app.use("/api/v0", limiter);
 
     // Proxy any other URL to magda-web
     app.use("/", createGenericProxy(config.web, apiRouterOptions));

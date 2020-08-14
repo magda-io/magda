@@ -34,6 +34,7 @@ General:
 -   Set pwgen to `0.1.6` (was `^0.1.6`)
 -   Remove ESRI-portal related code from deployment charts
 -   Allow admin users to download history report of a dataset
+-   Add rate-limiting by IP
 
 UI:
 
