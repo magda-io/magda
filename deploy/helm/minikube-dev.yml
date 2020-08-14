@@ -85,7 +85,7 @@ magda:
         opa:
           to: http://authorization-api/v0/opa
           auth: true
-        statusCheck: false   
+          statusCheck: false   
         content:
           to: http://content-api/v0
           auth: true
