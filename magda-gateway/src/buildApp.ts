@@ -265,9 +265,10 @@ export default function buildApp(app: express.Application, config: Config) {
         windowMs: 5 * 60 * 1000, // 5 minutes
         max: 200, // limit each IP/API Key to 200 requests per windowMs
         keyGenerator: function (req /*, res*/) {
-            let key = req.header("X-Magda-API-Key");
+            // let key = req.header("X-Magda-API-Key");
+            let key = req.connection.remoteAddress;
             if (!key) {
-                key = req.connection.remoteAddress;
+                key = req.ip;
             }
             return key;
         }
