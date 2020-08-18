@@ -77,5 +77,5 @@ dependencies:
 - name: ingress
   repository: file://../internal-charts/ingress
   version: 0.0.57-0
-digest: sha256:e11f9dd597d72666d34c82c57b0d5dfc34f20d9201c9243482ffbc853ed927ef
-generated: "2020-07-06T14:48:45.723033326+10:00"
+digest: sha256:1836ae127f8fcee4946e2189b5d43033231426ca8a09cd98845512ee3fb6a389
+generated: "2020-08-14T10:29:10.243231+10:00"

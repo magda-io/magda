@@ -16,6 +16,10 @@ global:
   gapiIds: []
   enablePriorityClass: false
   openfaas:
+    # turn on / off openfaas
+    # All openfaas dependents should check this field to decide deployment logic (`tags` unfortunately not available to ).
+    # They choose to simply not deploy or prompt an error message via [helm required function](https://helm.sh/docs/howto/charts_tips_and_tricks/#know-your-template-functions)
+    enabled: true 
     namespacePrefix: ""
     functionNamespace: openfaas-fn  # Default namespace for functions
     mainNamespace: openfaas # Default namespace for gateway and other core modules
@@ -41,6 +45,7 @@ openfaas:
     dryRun: false
 
 tags:
+  # to turn on/off openfaas, please set value to `global.openfaas.enabled`
   priorities: true
   all: true
   apidocs-server: false

@@ -165,9 +165,7 @@ Note: If using docker desktop for Windows older than version 19, change the valu
 helm repo add stable https://kubernetes-charts.storage.googleapis.com/
 helm repo update
 # update magda chart dependencies
-helm dep build deploy/helm/internal-charts/storage-api
-helm dep build deploy/helm/magda-core
-helm dep build deploy/helm/magda
+yarn update-all-charts
 # deploy the magda chart from magda helm repo
 helm upgrade --install --timeout 9999s --wait -f deploy/helm/minikube-dev.yml magda deploy/helm/local-deployment
 ```
@@ -182,9 +180,7 @@ If you're using Docker Desktop on Windows, add `-f deploy/helm/docker-desktop-wi
 # update magda helm repo
 helm repo update
 # update magda chart dependencies
-helm dep build deploy/helm/internal-charts/storage-api
-helm dep build deploy/helm/magda-core
-helm dep build deploy/helm/magda
+yarn update-all-charts
 # deploy the magda chart from magda helm repo
 helm upgrade --install --timeout 9999s --wait -f deploy/helm/docker-desktop-windows.yml -f deploy/helm/minikube-dev.yml magda deploy/helm/local-deployment
 ```

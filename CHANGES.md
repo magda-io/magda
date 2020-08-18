@@ -34,6 +34,10 @@ General:
 -   Set pwgen to `0.1.6` (was `^0.1.6`)
 -   Remove ESRI-portal related code from deployment charts
 -   Allow admin users to download history report of a dataset
+-   Fixed `building-and-running` doc: instruct users to update helm charts with `yarn update-all-charts`
+-   Added Docs of supplying custom policy files
+-   Openfaas should be turn on / of via condition field `global.openfaas.enabled` instead of `tags`.
+-   When `global.openfaas.enabled` is false, all openfaas dependent objects will either report error to users or be skiped for creation.
 
 UI:
 
