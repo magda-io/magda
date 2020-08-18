@@ -123,6 +123,7 @@ Registry:
 
 -   Made events record the correct user id
 -   Fixed Registry History API Performance Issue when limit=1 & Updated Registry History API Document
+-   Fixed not support `Neg` operator in OPA policy
 
 Search:
 
