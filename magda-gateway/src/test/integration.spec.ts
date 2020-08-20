@@ -55,6 +55,7 @@ describe("Integration Tests", function (this: Mocha.ISuiteCallbackContext) {
     let pool: pg.Pool = null;
     const dbConfig = getTestDBConfig();
     const authApiBaseUrl = "http://auth-api.example.com";
+    const tentantApiUrl = "http://tenant-api.example.com";
     let authApiScope: nock.Scope;
 
     const mockApiKeyId = "5e73cfcc-a098-4b89-855f-ac4da5a12fa1";
@@ -119,7 +120,7 @@ describe("Integration Tests", function (this: Mocha.ISuiteCallbackContext) {
             ckanRedirectionDomain: "redirect-ckan.exmaple.com",
             ckanRedirectionPath: "",
             fetchTenantsMinIntervalInMs: 60000,
-            tenantUrl: "http://localhost:6130/v0",
+            tenantUrl: tentantApiUrl,
             enableMultiTenants: false,
             defaultCacheControl: "public, max-age=60",
             openfaasGatewayUrl: undefined,
@@ -374,6 +375,50 @@ describe("Integration Tests", function (this: Mocha.ISuiteCallbackContext) {
             TEST_METHODS.forEach((method) => {
                 expect(result[method]).to.be.undefined;
             });
+        });
+    });
+
+    describe("Check `enableMultiTenants` field", () => {
+        it("should proxy tenant api when `enableMultiTenants`=true", async () => {
+            const tenantApiUrl = tentantApiUrl;
+
+            nock(tenantApiUrl).get("/xxx").reply(200);
+
+            const app = setupTestApp({
+                proxyRoutesJson: {
+                    tenant: tenantApiUrl
+                },
+                magdaAdminPortalName: "my-test-domain",
+                enableMultiTenants: true
+            });
+
+            await app
+                .get("/api/v0/tenant/xxx")
+                // --- make it pass multi tenant table lookup
+                .set("Host", "my-test-domain")
+                .expect(200);
+        });
+
+        it("should NOT proxy tenant api when `enableMultiTenants`=false", async () => {
+            const tenantApiUrl = tentantApiUrl;
+            const defaultWebUrl = "http://web.test.com";
+
+            nock(defaultWebUrl).get(/.*/).reply(404);
+
+            const app = setupTestApp({
+                proxyRoutesJson: {
+                    tenant: tenantApiUrl
+                },
+                magdaAdminPortalName: "my-test-domain",
+                web: defaultWebUrl,
+                enableMultiTenants: false
+            });
+
+            await app
+                .get("/api/v0/tenant/xxx")
+                // --- make it pass multi tenant table lookup
+                .set("Host", "my-test-domain")
+                .expect(404);
         });
     });
 });

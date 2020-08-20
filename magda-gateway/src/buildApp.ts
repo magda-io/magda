@@ -92,14 +92,24 @@ export type Config = {
     openfaasAllowAdminOnly?: boolean;
     enableInternalAuthProvider?: boolean;
     defaultCacheControl?: string;
+    magdaAdminPortalName?: string;
 };
 
 export default function buildApp(app: express.Application, config: Config) {
     const tenantMode = setupTenantMode(config);
 
-    const routes = _.isEmpty(config.proxyRoutesJson)
+    let routes = _.isEmpty(config.proxyRoutesJson)
         ? defaultConfig.proxyRoutes
         : ((config.proxyRoutesJson as unknown) as Routes);
+
+    if (!tenantMode.multiTenantsMode && routes) {
+        // --- skip tenant api route if multiTenantsMode is off
+        const filteredRoute = {} as any;
+        Object.keys(routes)
+            .filter((key) => key !== "tenant")
+            .forEach((key) => (filteredRoute[key] = (routes as any)[key]));
+        routes = filteredRoute;
+    }
 
     const extraWebRoutes = config.webProxyRoutesJson
         ? ((config.webProxyRoutesJson as unknown) as Routes)
@@ -122,20 +132,13 @@ export default function buildApp(app: express.Application, config: Config) {
      * Should use config.routes to setup probes
      * so that no prob will be setup when run locally for testing
      */
-    _.forEach(
-        (config.proxyRoutesJson as unknown) as Routes,
-        (value: any, key: string) => {
-            // --- skip tenant api status prob if multiTenantsMode is off
-            if (key === "tenant" && !tenantMode.multiTenantsMode) {
-                return;
-            }
-            // --- skip install status probs if statusCheck == false
-            if (value && value.statusCheck === false) {
-                return;
-            }
-            probes[key] = createServiceProbe(value.to);
+    _.forEach(routes, (value: any, key: string) => {
+        // --- skip install status probs if statusCheck == false
+        if (value && value.statusCheck === false) {
+            return;
         }
-    );
+        probes[key] = createServiceProbe(value.to);
+    });
     installStatusRouter(app, { probes });
 
     // Redirect http url to https

@@ -123,10 +123,6 @@ export default function createGenericProxyRouter(
                 ? getDefaultProxyTargetDefinition(value)
                 : value;
 
-        // --- skip tenant api router if multiTenantsMode is off
-        if (key === "tenant" && !options.tenantMode.multiTenantsMode) {
-            return;
-        }
         proxyRoute(
             `/${key}`,
             target.to,
