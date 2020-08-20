@@ -14,7 +14,7 @@ import {
     installStatusRouter,
     createServiceProbe
 } from "magda-typescript-common/src/express/status";
-import createApiRouter from "./createApiRouter";
+import createGenericProxyRouter from "./createGenericProxyRouter";
 import createAuthRouter from "./createAuthRouter";
 import createGenericProxy from "./createGenericProxy";
 import createCkanRedirectionRouter from "./createCkanRedirectionRouter";
@@ -22,7 +22,7 @@ import createHttpsRedirectionMiddleware from "./createHttpsRedirectionMiddleware
 import createOpenfaasGatewayProxy from "./createOpenfaasGatewayProxy";
 import Authenticator, { SessionCookieOptions } from "./Authenticator";
 import defaultConfig from "./defaultConfig";
-import { ProxyTarget } from "./createApiRouter";
+import { ProxyTarget } from "./createGenericProxyRouter";
 import setupTenantMode from "./setupTenantMode";
 import createPool from "./createPool";
 
@@ -230,12 +230,16 @@ export default function buildApp(app: express.Application, config: Config) {
         );
     }
 
-    app.use("/api/v0", createApiRouter(apiRouterOptions));
+    app.use("/api/v0", createGenericProxyRouter(apiRouterOptions));
 
     if (config.webProxyRoutesJson) {
-        _.forEach(config.webProxyRoutesJson, (value: string, key: string) => {
-            app.use("/" + key, createGenericProxy(value, apiRouterOptions));
-        });
+        app.use(
+            "/",
+            createGenericProxyRouter({
+                ...apiRouterOptions,
+                routes: config.webProxyRoutesJson
+            })
+        );
     }
 
     app.use(
