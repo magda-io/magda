@@ -24,7 +24,7 @@ export interface ProxyTarget {
     statusCheck?: boolean;
 }
 
-export interface ApiRouterOptions {
+export interface GenericProxyRouterOptions {
     authenticator: Authenticator;
     jwtSecret: string;
     routes: {
@@ -34,7 +34,9 @@ export interface ApiRouterOptions {
     defaultCacheControl?: string;
 }
 
-export default function createApiRouter(options: ApiRouterOptions): Router {
+export default function createGenericProxyRouter(
+    options: GenericProxyRouterOptions
+): Router {
     const proxy = createBaseProxy(options);
 
     const authenticator = options.authenticator;
