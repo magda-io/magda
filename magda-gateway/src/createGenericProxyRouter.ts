@@ -16,7 +16,8 @@ declare global {
     }
 }
 
-export interface ProxyTarget {
+export type ProxyTarget = DetailedProxyTarget | string;
+interface DetailedProxyTarget {
     to: string;
     methods?: string[];
     auth?: boolean;
@@ -32,6 +33,33 @@ export interface GenericProxyRouterOptions {
     };
     tenantMode: TenantMode;
     defaultCacheControl?: string;
+}
+
+/**
+ * Allow simply form of route target definition. E.g.
+ * webRoutes:
+ *   xxx1: http://xxx
+ *   xxx2: http://xxxxxxx
+ *
+ * Router will assume it's a router that is:
+ * - GET only
+ * - no auth (i.e. don't need session)
+ * - don't need statusCheck
+ *
+ * @export
+ * @param {string} targetUrl
+ * @returns {DetailedProxyTarget}
+ */
+export function getDefaultProxyTargetDefinition(
+    targetUrl: string
+): DetailedProxyTarget {
+    return {
+        to: targetUrl,
+        methods: ["get"],
+        auth: false,
+        redirectTrailingSlash: false,
+        statusCheck: false
+    };
 }
 
 export default function createGenericProxyRouter(
@@ -90,16 +118,21 @@ export default function createGenericProxyRouter(
     }
 
     _.forEach(options.routes, (value: ProxyTarget, key: string) => {
+        const target =
+            typeof value === "string"
+                ? getDefaultProxyTargetDefinition(value)
+                : value;
+
         // --- skip tenant api router if multiTenantsMode is off
         if (key === "tenant" && !options.tenantMode.multiTenantsMode) {
             return;
         }
         proxyRoute(
             `/${key}`,
-            value.to,
-            value.methods,
-            !!value.auth,
-            value.redirectTrailingSlash
+            target.to,
+            target.methods,
+            !!target.auth,
+            target.redirectTrailingSlash
         );
     });
 
