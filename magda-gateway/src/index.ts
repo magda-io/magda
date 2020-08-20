@@ -92,11 +92,6 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: "http://localhost:6104/v0"
         })
-        .option("previewMap", {
-            describe: "The base URL of the preview map.",
-            type: "string",
-            default: "http://localhost:6110"
-        })
         .option("web", {
             describe: "The base URL of the web site.",
             type: "string",

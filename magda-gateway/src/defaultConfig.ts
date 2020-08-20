@@ -27,6 +27,9 @@ export default {
             auth: true
         }
     },
+    extraWebRoutes: {
+        "preview-map": "http://localhost:6110"
+    },
     csp: {
         directives: {
             scriptSrc: ["'self'"],

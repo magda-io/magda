@@ -51,7 +51,7 @@ export type Config = {
         [localRoute: string]: ProxyTarget;
     };
     webProxyRoutesJson: {
-        [localRoute: string]: string;
+        [localRoute: string]: ProxyTarget;
     };
     helmetJson: IHelmetConfiguration;
     cspJson: IHelmetContentSecurityPolicyConfiguration;
@@ -100,6 +100,10 @@ export default function buildApp(app: express.Application, config: Config) {
     const routes = _.isEmpty(config.proxyRoutesJson)
         ? defaultConfig.proxyRoutes
         : ((config.proxyRoutesJson as unknown) as Routes);
+
+    const extraWebRoutes = config.webProxyRoutesJson
+        ? ((config.webProxyRoutesJson as unknown) as Routes)
+        : defaultConfig.extraWebRoutes;
 
     const dbPool = createPool(config);
     const authenticator = new Authenticator({
@@ -232,20 +236,15 @@ export default function buildApp(app: express.Application, config: Config) {
 
     app.use("/api/v0", createGenericProxyRouter(apiRouterOptions));
 
-    if (config.webProxyRoutesJson) {
+    if (extraWebRoutes && Object.keys(extraWebRoutes).length) {
         app.use(
             "/",
             createGenericProxyRouter({
                 ...apiRouterOptions,
-                routes: config.webProxyRoutesJson
+                routes: extraWebRoutes
             })
         );
     }
-
-    app.use(
-        "/preview-map",
-        createGenericProxy(config.previewMap, apiRouterOptions)
-    );
 
     if (config.enableCkanRedirection) {
         if (!routes.registry) {

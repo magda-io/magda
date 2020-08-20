@@ -1,10 +1,10 @@
 import express from "express";
 import createBaseProxy from "./createBaseProxy";
-import { ApiRouterOptions } from "./createApiRouter";
+import { GenericProxyRouterOptions } from "./createGenericProxyRouter";
 
 export default function createGenericProxy(
     target: string,
-    options: ApiRouterOptions
+    options: GenericProxyRouterOptions
 ): express.Router {
     const webRouter = express.Router();
     const proxy = createBaseProxy(options);

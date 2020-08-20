@@ -28,6 +28,8 @@ resources:
   limits:
     cpu: 200m
 
+# Routes list here are available under `/api/v0/` path
+# See `Proxy Target Definition` below for route format
 defaultRoutes:
   search:
     to: http://search-api/v0
@@ -66,7 +68,24 @@ defaultRoutes:
     to: http://tenant-api/v0
     auth: true
 
-webRoutes: {}
+# extra web routes
+# See `Proxy Target Definition` below for route format
+webRoutes:
+  preview-map: http://preview-map:6110
+
+### Proxy Target Definition
+# A proxy target definition that defines `defaultRoutes` or `webRoutes` above support the following fields:
+# - `to`: target url
+# - `methods`: array of string. "all" means all methods
+# - `auth`: whether this target requires session. Otherwise, session / password related midddleware won't run
+# - `redirectTrailingSlash`: make /xxx auto redirect to /xxxx/
+# - `statusCheck`: check target's live status from the gateway
+# A proxy target be also specify in a simply string form, in which case, Gateway assumes a GET method, no auth proxy route is requested.
+
+# Default web route. 
+# This is the last route of the proxy
+# Main UI should be served from here
+web: http://web
 
 csp:
   browserSniff: false
