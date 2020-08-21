@@ -184,15 +184,216 @@ For simple authorization queries where a service within Magda simply needs to kn
 
 ### Partial Evaluation
 
-OPA also has the ability to do _partial evaluation_. If you want to query some kind of collection but the user is only allowed to see some records in that collection, you can effectively ask OPA "what should I put in a query to only return what the user is allowed to see".
+OPA also has the ability to do [partial evaluation](https://blog.openpolicyagent.org/partial-evaluation-162750eaf422). If you want to query some kind of collection but the user is only allowed to see some records in that collection, you can effectively ask OPA "what should I put in a query to only return what the user is allowed to see".
 
-E.g.
+E.g. Alyce wants to look at a collection of 1,000,000 rows in a database table. The auth policy that applies to these records says that users are only allowed to look at records that they own - so Alyce can only view records that have `"Alyce"` as the value of their `owner` column, and this is only true for 10 evenly distributed records within the 1,000,000.
+
+In order to make this work we could either:
+
+-   Retrieve all 1,000,000 records and send them one-by-one to OPA to see whether Alyce is allowed to see them or not. This will almost certainly be slow.
+-   Hard-code the authorisation logic so that we can do a query along the lines of `SELECT * FROM records WHERE owner = 'alyce'` - but then the policy can't be changed without also changing the code, and we've lost any benefit from policy-based auth.
+-   _OR_ combining the two, we could send OPA a request with what we know (Alyce's details), what we don't know (the `owner` column), and get it to figure out what we should be asking the database.
+
+This last option is called _partial compilation_, and is a great killer feature in OPA, although the documentation for it is a bit lacking. When queried correctly, OPA will respond with a JSON-based Abstract Syntax Tree (AST), which with a bit of code can be translated into SQL, an ElasticSearch query or whatever else we need.
 
 ![diagram-opa-partial-compilation.png](./_resources/7069e0d3c2ad4995b755ad82370ccc06.png)
 
-### How it works in the Registry API
+There are more details on how to turn partial evaluation into SQL evaluation [here](https://blog.openpolicyagent.org/write-policy-in-opa-enforce-policy-in-sql-d9d24db93bf4).
+
+### How Authorization Works in the Registry API
+
+In the registry, we want to ensure that:
+
+-   Different records can have different policies
+-   Policies are able to depend on the values inside the record's aspects
+
+In order to make this work, each record in the registry has a policy for read (and eventually for write), which is stored in a column alongside the record. Policies are free to make reference to a value in any aspect.
+
+When retrieving records, the Registry API first does a `SELECT DISTINCT` to get all the individual policies that could possibly apply to the records that are being requested. It then uses partial compilation in order to retrieve an AST for every policy, passing in the details of the user.
+
+It then turns each policy's AST into an SQL clause, `AND`s that together with a `policyId = <that policy id>` statement, and assembles all of those connected by `OR`.
+
+E.g. say there are two policies in the Registry - `clearance` and `ownerOnly`. `clearance` grants access based on whether or not a user has the right security clearance to see the dataset, and `ownerOnly` only grants access to the user who owns that dataset.
+
+So the `clearance` policy might have the rule:
+
+```rego
+# in Magda this is actually a string so you can't do <=, but you get the idea
+input.object.registry.record["information-security"].classification <= input.user.securityClearance
+```
+
+and the `ownerOnly` policy might have the rule:
+
+```rego
+input.object.registry.record["dataset-access-control"].ownerId = input.user.id
+```
+
+As you can see, these reference different aspects attached to the record, and compare them to the details of the user making the call. So when the call comes in at `/api/v0/registry/records`, the Registry API will first make an API call to get all the possible policies, and the result will be something like `clearance, ownerOnly`.
+
+It'll then make two calls to OPA (one for each policy), passing in the user's details, and get back ASTs of each policy. At the time of writing the AST that comes back is a massive ugly JSON file and parsing it is complicated, but translated to Javascript, a simplified version might look something like:
+
+`clearance`:
+
+```javascript
+data.partial.object.registry.record["information-security"].classification <= 2;
+```
+
+`ownerOnly`:
+
+```javascript
+data.partial.object.registry.record["dataset-access-control"].ownerId ===
+    "09c10fd6-ad27-4a48-9b3a-0c0807cfe257";
+```
+
+... assuming that the user looks something like:
+
+```json
+{
+    "classification": 2,
+    "userId": "09c10fd6-ad27-4a48-9b3a-0c0807cfe257"
+}
+```
+
+As you can see, it's used the user details to form a query that we can then turn into SQL:
+
+```sql
+# Note: I haven't actually tested this but it should give you the idea
+SELECT *
+FROM Records
+WHERE
+	(policyId = 'clearance' AND EXISTS (
+		SELECT 1 FROM RecordAspects
+		WHERE aspectId = 'information-security'
+			AND RecordAspects.recordId = Records.recordId
+			AND data->'classification' < 2
+	))
+	OR
+	(policyId = 'ownerOnly' AND EXISTS (
+		SELECT 1 FROM RecordAspects
+		WHERE aspectId = 'dataset-access-control'
+			AND RecordAspects.recordId = Records.recordId
+			AND data->'ownerId' = '09c10fd6-ad27-4a48-9b3a-0c0807cfe257'
+	))
+```
+
+This is a pretty banal example, but the greater implication is that administrators of Magda can write policies to meet their requirements and change them without having to actually change the Magda code - within reason, they can use whatever rules they want in order to figure out whether a user should be able to see a record and implement it just by changing policies in OPA.
+
+![Sequence Diagram OPA.png](./_resources/d7654e0ca55643deba8b0d8bb81a11fb.png)
+[Sequence Diagram OPA.drawio](./_resources/9b3b7c3017bb44109aca0d58c844ac66.drawio)
+
+# Structure
+
+## Core Components
+
+Currently, Magda has core components, which are needed by most Magda deployments, and non-core components, which are components that serve specific purposes and are unlikely to be needed in all installations.
+
+The core components are managed in a single monorepo at https://github.com/magda-io/magda. In order to manage the components that are in the monorepo, we use [Lerna](https://github.com/lerna/lerna) and [Yarn Workspaces](https://classic.yarnpkg.com/en/docs/workspaces/). This allows us to run a command like `lerna run build`, which will do the equivalent of running `yarn run build` in every component that has a `build` command in `scripts`.
+
+Most of the core repo's components are written in Typescript, but there are a few Scala-based ones too. Each of these are built by [SBT](https://www.scala-sbt.org/), and there's a parent SBT project to link them all together in the route. Scala-based components also have `package.json` files in them that attempt to glue `lerna` and SBT together - e.g. it the Scala components' package.json files usually define a `build` script that runs `sbt build` when invoked.
+
+The core repo also contains a `scripts` directory, containing a number of javascript-based scripts that perform various utility tasks for Magda, including:
+
+-   Building docker images
+-   Generating API documentation
+-   Running typescript-based node.js services through nodemon
+-   Creating user passwords
+-   Creating API keys
+
+## Non-Core Components
+
+In addition to the core of Magda, there are a number of components that are either maintained as separate repositories in the github.com/magda-io organisation, or by completely different developers. These include all minions and connectors maintained by the core Magda team.
+
+In general, the idea is that these are built into separate docker images and helm charts, and seperately deployed into the same Kubernetes namespace as Magda, so that they can interact with the core Magda components.
+
+## Serverless Functions
+
+Recently Magda has introduced serverless functions through [OpenFAAS](https://www.openfaas.com/). These are generally generated from [this template](https://github.com/magda-io/magda-function-template). They're deployed very simililarly to normal non-core components in that you ship a Docker image and a Helm chart, with a few differences:
+
+-   Rather than deploy a stand-alone docker image, you deploy an image that's based on [OpenFAAS' of-watchdog image](https://github.com/openfaas/of-watchdog).
+-   Rather than the helm chart being based around a Kubernetes Deployment or some other kind of core Kubernetes object, it will deploy a `Function` object from the `openfaas.com/v1` namespace.
+-   Rather than being directly managed by Kubernetes, the function will be managed by an existing installation of OpenFAAS in the Kubernetes namespace being deployed to.
+
+In general, it's advantageous to use a serverless function when the workload is likely to be inconsistent - i.e. if a service will have no load a lot of the time, but a lot of load at other times. This is because OpenFAAS functions are capable of scaling to zero - that is, they can be unloaded when not in use, taking up no resources, and then re-loaded and scaled up when they're called later on.
+
+# Practices
+
+## Formatting
+
+Javascript/Typescript code is formatted via [prettier](https://prettier.io/) - this should happen automatically upon commit. In `magda-web-client`, if code is submitted that hasn't been formatted with prettier, the build will fail.
+
+Similarly, all Scala should be formatted via [scalafmt](https://scalameta.org/scalafmt/). There's no automatic step to do this currently (it takes a lot longer than prettier), but there is an `sbt` task to do it for you, as well as a bunch of editor plugins. If Scala code is committed that hasn't been formatted, it'll fail the build.
+
+## Testing
+
+In general all functionality in Magda should have a test - however, unfortunately not all of it does. If you add _new_ functionality to a back-end component, even if it didn't have a test before, you should try to add them.
+
+The exception to this is the front-end: currently there's no testing of the front-end at all, so it's not expected that these will be added (at least not yet).
+
+In general, Magda favours testing end-to-end inside its microservices, rather than doing pure unit testing. In practice this means that the REST API is tested directly using [supertest](https://github.com/visionmedia/supertest) or [akka http testkit](https://doc.akka.io/docs/akka-http/current/routing-dsl/testkit.html), and only calls out to other services or databases are mocked (and in some cases even those aren't mocked!). This is so we can test the _interface_ of each service, which changes slowly, instead of the _implementation_, which could be totally changed without changing the interface.
+
+### Property-Based Testing
+
+In some places, particularly the Search API and Indexer, Magda makes use of [Property Testing](https://en.wikipedia.org/wiki/Property_testing). This is a style of testing often used in functional programming - rather than create a bunch of tests with manually-created test inputs, you define the range of values that a certain _property_ should hold true for, and the test framework repeatedly runs your test with a range of values.
+
+In general we've been transitioning away from property testing because it makes onboarding so difficult, but they're still present in a number of tests within the codebase, so will probably need to be retained for a while.
+
+## Review
+
+# Build / Continuous Integration
+
+Instructions on building Magda locally can be found [here](https://magda.io/docs/building-and-running.html).
+
+Magda is also built in a CI pipeline on Gitlab CI. You can see recent builds [here](https://gitlab.com/magda-data/magda/pipelines).
+
+The CI pipeline consists of a large number of individual jobs, so that:
+
+-   Jobs can be run in parallel for quicker builds
+-   More intensive jobs (particularly anything involving Scala!) can be split off and run on a specific, powerful test runner
+
+Gitlab CI does its builds based on Docker images, so in general the build process looks like:
+
+1. Build the docker images to do the build on, using the last valid images built for `master`
+2. Pull in dependencies
+3. Compile and test
+4. Build docker images
+5. (manual) Preview
+6. (sometimes) Release
+
+## Previews
+
+One of the cooler things that Magda's CI setup does is allow for complete previews to be deployed into their own namespace on the dev cluster from a branch. If you're logged into Gitlab with the right permissions, and the build is finished, then you can click the "Play" button on one of the preview jobs. There are a few options:
+
+-   Full Preview: This creates a new namespace with a full Magda deployment, then pulls in the most up to date database backup from the dev server. This used to be useful, but as the dev database has grown it's got to the point where it takes days to deploy. Hopefully eventually we'll develop a way to reduce the number of events in the database, and this will become viable again.
+-   Full Preview (no data): This creates a new namespace with a full Magda deployment, but sets up the data from scratch rather than pulling in a backup. This is much much quicker (~15 minutes usually), but means that you've got to do the work to create your own test data. Subsequent deployments will _not_ erase the data, so feel free to click it again if you push another commit
+-   UI Only Preview: This deploys only the Magda web server, which will use the Magda dev server for an API to back it. Use this if you've made a change that only affects the UI and doesn't change anything in the backend.
+-   Stop Preview: Make sure you click this once the branch has been merged, it pulls down whatever preview has been created to free up resources.
+
+# Release
+
+As an application that consists of a number of microservices, databases etc, Magda can't be distributed just as code. As such, there are three main channels of distribution:
+
+-   A Helm chart, which contains Kubernetes configuration that explains: - What docker images to download - How they should communicate - How they should scale - What resources they should take - How to start them up - etc.
+-   Docker images, which contain the actual code and runtime for the services
+-   NPM packages, which distribute common libraries that can be used by third-party code
+
+## Helm
+
+Magda's Kubernetes configuration is fairly complex - it's distributed as a number of Helm charts:
+
+-   `magda-core`, which contains the core Magda services (see [components](#components))
+-   `magda`, which bundles `magda-core` and non-core components like minions and connectors
+
+## Docker
+
+## NPM
 
 # Deployment
+
+## Kubernetes
+
+## Helm
+
+## Terraform
 
 # Architectural Decisions
 
@@ -207,6 +408,8 @@ E.g.
 ### Why Node.js?
 
 ### Why ElasticSearch?
+
+### Why Gitlab CI?
 
 ## Front-end
 
