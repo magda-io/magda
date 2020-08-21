@@ -8,7 +8,7 @@ INSERT INTO user_roles
 	WHERE u.id NOT IN (SELECT user_roles.user_id FROM user_roles WHERE user_roles.role_id = '00000000-0000-0002-0000-000000000000'::uuid) 
 );
 
--- Add default Admin Users role to existing admin users
+-- Add default Authenticated Users role to existing admin users
 INSERT INTO user_roles 
 (id, user_id, role_id)
 (
