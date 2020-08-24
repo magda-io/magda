@@ -88,7 +88,6 @@ spec:
             "--web", {{ .Values.web | default "http://web" | quote }},
             "--authorizationApi", "http://authorization-api/v0",
             "--tenantUrl", "http://tenant-api/v0",
-            "--previewMap", "http://preview-map:6110",
 {{- if .Values.global.openfaas.mainNamespace }}
             "--openfaasGatewayUrl", {{ include "magda.openfaasGatewayUrl" . | quote }},
             "--openfaasAllowAdminOnly", {{ .Values.global.openfaas.allowAdminOnly | quote }},

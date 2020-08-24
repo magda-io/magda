@@ -14,7 +14,7 @@ import {
     installStatusRouter,
     createServiceProbe
 } from "magda-typescript-common/src/express/status";
-import createApiRouter from "./createApiRouter";
+import createGenericProxyRouter from "./createGenericProxyRouter";
 import createAuthRouter from "./createAuthRouter";
 import createGenericProxy from "./createGenericProxy";
 import createCkanRedirectionRouter from "./createCkanRedirectionRouter";
@@ -22,7 +22,7 @@ import createHttpsRedirectionMiddleware from "./createHttpsRedirectionMiddleware
 import createOpenfaasGatewayProxy from "./createOpenfaasGatewayProxy";
 import Authenticator, { SessionCookieOptions } from "./Authenticator";
 import defaultConfig from "./defaultConfig";
-import { ProxyTarget } from "./createApiRouter";
+import { ProxyTarget } from "./createGenericProxyRouter";
 import setupTenantMode from "./setupTenantMode";
 import createPool from "./createPool";
 
@@ -51,7 +51,7 @@ export type Config = {
         [localRoute: string]: ProxyTarget;
     };
     webProxyRoutesJson: {
-        [localRoute: string]: string;
+        [localRoute: string]: ProxyTarget;
     };
     helmetJson: IHelmetConfiguration;
     cspJson: IHelmetContentSecurityPolicyConfiguration;
@@ -92,14 +92,28 @@ export type Config = {
     openfaasAllowAdminOnly?: boolean;
     enableInternalAuthProvider?: boolean;
     defaultCacheControl?: string;
+    magdaAdminPortalName?: string;
 };
 
 export default function buildApp(app: express.Application, config: Config) {
     const tenantMode = setupTenantMode(config);
 
-    const routes = _.isEmpty(config.proxyRoutesJson)
+    let routes = _.isEmpty(config.proxyRoutesJson)
         ? defaultConfig.proxyRoutes
         : ((config.proxyRoutesJson as unknown) as Routes);
+
+    if (!tenantMode.multiTenantsMode && routes) {
+        // --- skip tenant api route if multiTenantsMode is off
+        const filteredRoute = {} as any;
+        Object.keys(routes)
+            .filter((key) => key !== "tenant")
+            .forEach((key) => (filteredRoute[key] = (routes as any)[key]));
+        routes = filteredRoute;
+    }
+
+    const extraWebRoutes = config.webProxyRoutesJson
+        ? ((config.webProxyRoutesJson as unknown) as Routes)
+        : defaultConfig.extraWebRoutes;
 
     const dbPool = createPool(config);
     const authenticator = new Authenticator({
@@ -118,20 +132,13 @@ export default function buildApp(app: express.Application, config: Config) {
      * Should use config.routes to setup probes
      * so that no prob will be setup when run locally for testing
      */
-    _.forEach(
-        (config.proxyRoutesJson as unknown) as Routes,
-        (value: any, key: string) => {
-            // --- skip tenant api status prob if multiTenantsMode is off
-            if (key === "tenant" && !tenantMode.multiTenantsMode) {
-                return;
-            }
-            // --- skip install status probs if statusCheck == false
-            if (value && value.statusCheck === false) {
-                return;
-            }
-            probes[key] = createServiceProbe(value.to);
+    _.forEach(routes, (value: any, key: string) => {
+        // --- skip install status probs if statusCheck == false
+        if (value && value.statusCheck === false) {
+            return;
         }
-    );
+        probes[key] = createServiceProbe(value.to);
+    });
     installStatusRouter(app, { probes });
 
     // Redirect http url to https
@@ -230,18 +237,17 @@ export default function buildApp(app: express.Application, config: Config) {
         );
     }
 
-    app.use("/api/v0", createApiRouter(apiRouterOptions));
+    app.use("/api/v0", createGenericProxyRouter(apiRouterOptions));
 
-    if (config.webProxyRoutesJson) {
-        _.forEach(config.webProxyRoutesJson, (value: string, key: string) => {
-            app.use("/" + key, createGenericProxy(value, apiRouterOptions));
-        });
+    if (extraWebRoutes && Object.keys(extraWebRoutes).length) {
+        app.use(
+            "/",
+            createGenericProxyRouter({
+                ...apiRouterOptions,
+                routes: extraWebRoutes
+            })
+        );
     }
-
-    app.use(
-        "/preview-map",
-        createGenericProxy(config.previewMap, apiRouterOptions)
-    );
 
     if (config.enableCkanRedirection) {
         if (!routes.registry) {

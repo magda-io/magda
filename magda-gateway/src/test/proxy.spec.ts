@@ -11,7 +11,7 @@ import { expect } from "chai";
 
 const PROXY_ROOTS = {
     "/api/v0/registry": "http://registry",
-    "/preview-map": "http://preview-map/",
+    "/preview-map": "http://preview-map",
     "/map/": "http://map/",
     "/other/foo/bar/": "http://otherplace/foo/bar"
 };
@@ -30,6 +30,7 @@ const defaultAppOptions = {
         }
     },
     webProxyRoutesJson: {
+        "preview-map": "http://preview-map",
         map: "http://map",
         other: "http://otherplace"
     },
@@ -42,7 +43,6 @@ const defaultAppOptions = {
     jwtSecret: "othersecret",
     userId: "b1fddd6f-e230-4068-bd2c-1a21844f1598",
     web: "https://127.0.0.1",
-    previewMap: "http://preview-map",
     tenantUrl: "http://tenant",
     defaultCacheControl: "DEFAULT CACHE CONTROL"
 };
