@@ -40,7 +40,7 @@ function FooterLink({ link }) {
         );
     } else {
         return (
-            <CommonLink to={`/${encodeURI(link.href)}`}>
+            <CommonLink href={`/${encodeURI(link.href)}`}>
                 {link.label}
             </CommonLink>
         );
