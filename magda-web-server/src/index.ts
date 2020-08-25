@@ -12,6 +12,8 @@ import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/Tena
 import buildSitemapRouter from "./buildSitemapRouter";
 import getIndexFileContent from "./getIndexFileContent";
 
+import standardiseUiBaseUrl from "./standardiseUiBaseUrl";
+
 const argv = yargs
     .config()
     .help()
@@ -52,6 +54,12 @@ const argv = yargs
     .option("baseUrl", {
         describe:
             "The base URL of the MAGDA Gateway, for building the base URLs of the APIs when not manually specified. Can be relative.",
+        type: "string",
+        default: "/"
+    })
+    .option("uiBaseUrl", {
+        describe:
+            "The base url where the UI serves at. If not specify (or empty string), it assumes the UI serves at '/'. It should have a leading slash, but no trailing slash",
         type: "string",
         default: "/"
     })
@@ -225,10 +233,13 @@ const apiBaseUrl = addTrailingSlash(
     argv.apiBaseUrl || new URI(argv.baseUrl).segment("api").toString()
 );
 
+const uiBaseUrl = standardiseUiBaseUrl(argv.uiBaseUrl);
+
 const webServerConfig = {
     disableAuthenticationFeatures: argv.disableAuthenticationFeatures,
     baseUrl: addTrailingSlash(argv.baseUrl),
     baseExternalUrl: argv.baseExternalUrl,
+    uiBaseUrl,
     apiBaseUrl: apiBaseUrl,
     contentApiBaseUrl: addTrailingSlash(
         argv.contentApiBaseUrl ||
@@ -259,7 +270,7 @@ const webServerConfig = {
     ),
     previewMapBaseUrl: addTrailingSlash(
         argv.previewMapBaseUrl ||
-            new URI(apiBaseUrl).segment("..").segment("preview-map").toString()
+            new URI(argv.baseUrl).segment("preview-map").toString()
     ),
     correspondenceApiBaseUrl: addTrailingSlash(
         argv.correspondenceApiBaseUrl ||
@@ -310,7 +321,8 @@ function getIndexFileContentZeroArgs() {
     return getIndexFileContent(
         clientRoot,
         argv.useLocalStyleSheet,
-        argv.contentApiBaseUrlInternal
+        argv.contentApiBaseUrlInternal,
+        uiBaseUrl
     );
 }
 

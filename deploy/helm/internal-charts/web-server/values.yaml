@@ -25,6 +25,10 @@ featureFlags:
  placeholderWorkflowsOn: false
  datasetApprovalWorkflowOn: true
 
+# The base url where the UI serves at. If not specify (or empty string), it assumes the UI serves at '/'.
+# it should have a leading slash, but no trailing slash
+# uiBaseUrl: "/"
+
 vocabularyApiEndpoints: []
 defaultContactEmail: "mail@example.com"
 custodianOrgLevel: 2

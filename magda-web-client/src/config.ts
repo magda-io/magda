@@ -3,6 +3,7 @@ import Format from "./Components/Dataset/Search/Facets/Format";
 import Region from "./Components/Dataset/Search/Facets/Region";
 import Temporal from "./Components/Dataset/Search/Facets/Temporal";
 import { ValidationFieldList } from "./Components/Dataset/Add/ValidationManager";
+import URI from "urijs";
 
 declare global {
     interface Window {
@@ -64,6 +65,7 @@ const serverConfig: {
     authApiBaseUrl?: string;
     baseUrl?: string;
     baseExternalUrl?: string;
+    uiBaseUrl?: string;
     showNotificationBanner?: boolean;
     contentApiBaseUrl?: string;
     previewMapBaseUrl?: string;
@@ -155,7 +157,7 @@ const registryFullApiUrl =
 
 const previewMapUrl =
     serverConfig.previewMapBaseUrl || fallbackApiHost + "preview-map/";
-const proxyUrl = previewMapUrl + "proxy/";
+const proxyUrl = getProxyUrl();
 const baseUrl = serverConfig.baseUrl || fallbackApiHost;
 const baseExternalUrl = serverConfig.baseExternalUrl
     ? serverConfig.baseExternalUrl
@@ -212,12 +214,32 @@ function getFullUrlIfNotEmpty(relativeUrl: string | undefined) {
     }
 }
 
+/**
+ * Make sure proxyUrl is an absolute url
+ * When baseUrl tag present, relative url or partial url won't work in Web worker
+ * You will get Failed to execute 'open' on 'XMLHttpRequest': Invalid URL Error
+ *
+ * @returns
+ */
+function getProxyUrl() {
+    const uri =
+        previewMapUrl.indexOf("http") === 0
+            ? URI(previewMapUrl)
+            : URI(window.location.href)
+                  .search("")
+                  .fragment("")
+                  .segment([previewMapUrl]);
+
+    return uri.segment("proxy").toString() + "/";
+}
+
 export const config = {
     credentialsFetchOptions: credentialsFetchOptions,
     homePageConfig: homePageConfig,
     showNotificationBanner: !!serverConfig.showNotificationBanner,
     baseUrl,
     baseExternalUrl,
+    uiBaseUrl: serverConfig.uiBaseUrl ? serverConfig.uiBaseUrl : "/",
     contentApiURL,
     searchApiUrl:
         serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search/",
