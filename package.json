@@ -44,7 +44,7 @@
     "update-magda-core-chart": "helm dep up deploy/helm/internal-charts/storage-api && helm dep up deploy/helm/magda-core",
     "update-magda-chart": "yarn update-magda-core-chart && helm dep up deploy/helm/magda",
     "update-local-deployment-chart": "yarn update-magda-chart && helm dep up deploy/helm/local-deployment",
-    "update-all-charts": "yarn update-local-deployment-chart",
+    "update-all-charts": "yarn clean-up-all-charts && yarn update-local-deployment-chart",
     "clean-up-all-charts": "rm -rf deploy/helm/internal-charts/storage-api/charts deploy/helm/magda-core/charts deploy/helm/magda/charts deploy/helm/local-deployment/charts"
   },
   "pancake": {
