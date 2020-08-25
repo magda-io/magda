@@ -176,11 +176,11 @@ function parseContent(content) {
     if (filteredHighlights.length === 0) {
         highlights.default = {
             backgroundImageUrls: [
-                "/assets/homepage/0w.jpg",
-                "/assets/homepage/720w.jpg",
-                "/assets/homepage/1080w.jpg",
-                "/assets/homepage/1440w.jpg",
-                "/assets/homepage/2160w.jpg"
+                "assets/homepage/0w.jpg",
+                "assets/homepage/720w.jpg",
+                "assets/homepage/1080w.jpg",
+                "assets/homepage/1440w.jpg",
+                "assets/homepage/2160w.jpg"
             ]
         };
         filteredHighlights.push("default");

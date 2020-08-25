@@ -22,7 +22,7 @@ class CustomIcons extends Component {
         if (iconTypes.indexOf(name) > 0) {
             type = iconTypes.indexOf(name);
         }
-        return `/assets/file-icons/${iconTypes[type]}.png`;
+        return `./assets/file-icons/${iconTypes[type]}.png`;
     }
 
     render() {
