@@ -13,6 +13,7 @@ import { bindActionCreators } from "redux";
 import { ToggleEditor } from "Components/Editing/ToggleEditor";
 import { textEditor } from "Components/Editing/Editors/textEditor";
 import { markdownEditor } from "Components/Editing/Editors/markdownEditor";
+import CommonLink from "Components/Common/CommonLink";
 
 class StaticPage extends Component {
     componentDidMount() {
@@ -80,7 +81,9 @@ class StaticPage extends Component {
                             />{" "}
                             {hasEditPermissions && (
                                 <p>
-                                    <a href="/admin/pages">Manage Pages</a>
+                                    <CommonLink href="/admin/pages">
+                                        Manage Pages
+                                    </CommonLink>
                                 </p>
                             )}
                         </div>

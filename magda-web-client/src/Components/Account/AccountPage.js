@@ -8,6 +8,7 @@ import MagdaDocumentTitle from "Components/i18n/MagdaDocumentTitle";
 import { bindActionCreators } from "redux";
 import Breadcrumbs from "Components/Common/Breadcrumbs";
 import { Medium } from "Components/Common/Responsive";
+import CommonLink from "Components/Common/CommonLink";
 
 class Account extends React.Component {
     constructor(props) {
@@ -111,9 +112,9 @@ class Account extends React.Component {
                             <p>Email: {this.props.user.email}</p>
                             {this.renderRoles()}
                             {this.props.user.isAdmin && (
-                                <a href="/admin" className="au-btn">
+                                <CommonLink href="/admin" className="au-btn">
                                     Administrate
-                                </a>
+                                </CommonLink>
                             )}
                         </div>
                     )}

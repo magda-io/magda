@@ -7,6 +7,8 @@ import { withRouter } from "react-router";
 
 import { readContent, updateContent } from "actions/contentActions";
 
+import CommonLink from "Components/Common/CommonLink";
+
 class StoriesAdminPage extends Component<any, any> {
     state = {
         category: null
@@ -18,7 +20,7 @@ class StoriesAdminPage extends Component<any, any> {
     componentDidMount() {
         const { category, size } = this.props.match.params;
         const categoryPathPrefix = `footer/navigation/${size}/category/${category}`;
-        readContent(categoryPathPrefix).then(category =>
+        readContent(categoryPathPrefix).then((category) =>
             this.updateState({ category })
         );
     }
@@ -29,7 +31,7 @@ class StoriesAdminPage extends Component<any, any> {
         let cat: any = this.state.category;
         const categoryLabel = cat ? cat.label : "Loading...";
         const categoryPathPrefix = `footer/navigation/${size}/category/${category}`;
-        const saveCategoryLabel = value => {
+        const saveCategoryLabel = (value) => {
             updateContent(categoryPathPrefix, {
                 label: value
             });
@@ -39,8 +41,8 @@ class StoriesAdminPage extends Component<any, any> {
                 <ContentAdminPage
                     title={categoryLabel}
                     itemTitle="Link"
-                    generateNewId={id => `${pathPrefix}/${Date.now()}`}
-                    titleFromItem={item => item.content.label}
+                    generateNewId={(id) => `${pathPrefix}/${Date.now()}`}
+                    titleFromItem={(item) => item.content.label}
                     pattern={`${pathPrefix}/*`}
                     newContent={{
                         order: 999,
@@ -60,16 +62,16 @@ class StoriesAdminPage extends Component<any, any> {
                     />
                 </p>
                 <p>
-                    <a href={`/admin/footer-navigation/${size}`}>
+                    <CommonLink href={`/admin/footer-navigation/${size}`}>
                         Back to Footer Navigation
-                    </a>
+                    </CommonLink>
                 </p>
             </div>
         );
     }
     edit(item, onChange) {
-        const save = field => {
-            return value => {
+        const save = (field) => {
+            return (value) => {
                 onChange(
                     Object.assign({}, item.content, {
                         [field]: value

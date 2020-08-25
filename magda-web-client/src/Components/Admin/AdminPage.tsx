@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import AdminHeader from "./AdminHeader";
+import CommonLink from "Components/Common/CommonLink";
 
 export default class AdminPage extends Component {
     render() {
@@ -8,37 +9,51 @@ export default class AdminPage extends Component {
                 <AdminHeader />
                 <ul>
                     <li>
-                        <a href="/admin/home">Home</a>
+                        <CommonLink href="/admin/home">Home</CommonLink>
                     </li>
                     <li>
-                        <a href="/admin/home-stories">Home Stories</a>
+                        <CommonLink href="/admin/home-stories">
+                            Home Stories
+                        </CommonLink>
                     </li>
                     <li>
-                        <a href="/admin/home-highlights">Home Highlights</a>
+                        <CommonLink href="/admin/home-highlights">
+                            Home Highlights
+                        </CommonLink>
                     </li>
 
                     <li>
-                        <a href="/admin/header-navigation">Header Navigation</a>
+                        <CommonLink href="/admin/header-navigation">
+                            Header Navigation
+                        </CommonLink>
                     </li>
                     <li>
-                        <a href="/admin/footer-navigation/medium">
+                        <CommonLink href="/admin/footer-navigation/medium">
                             Footer Navigation
-                        </a>
+                        </CommonLink>
                     </li>
                     <li>
-                        <a href="/admin/footer-copyright">Footer Copyright</a>
+                        <CommonLink href="/admin/footer-copyright">
+                            Footer Copyright
+                        </CommonLink>
                     </li>
                     <li>
-                        <a href="/admin/accounts">User Accounts</a>
+                        <CommonLink href="/admin/accounts">
+                            User Accounts
+                        </CommonLink>
                     </li>
                     <li>
-                        <a href="/admin/i18n">Language</a>
+                        <CommonLink href="/admin/i18n">Language</CommonLink>
                     </li>
                     <li>
-                        <a href="/admin/connectors">Connectors</a>
+                        <CommonLink href="/admin/connectors">
+                            Connectors
+                        </CommonLink>
                     </li>
                     <li>
-                        <a href="/admin/pages">Content Pages</a>
+                        <CommonLink href="/admin/pages">
+                            Content Pages
+                        </CommonLink>
                     </li>
                 </ul>
             </div>
