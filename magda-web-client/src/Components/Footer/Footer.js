@@ -73,7 +73,7 @@ function Copyright({ href, logoSrc, logoClassName, logoAlt, htmlContent }) {
                 className="copyright-text"
                 dangerouslySetInnerHTML={{ __html: htmlContent }}
             />
-            <a
+            <CommonLink
                 target="_blank"
                 rel="noopener noreferrer"
                 href={href}
@@ -84,7 +84,7 @@ function Copyright({ href, logoSrc, logoClassName, logoAlt, htmlContent }) {
                     className={"logo " + logoClassName}
                     alt={logoAlt}
                 />
-            </a>
+            </CommonLink>
         </div>
     );
 }

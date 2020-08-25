@@ -19,6 +19,7 @@ import { config } from "config";
 import ValidationRequiredLabel from "../../ValidationRequiredLabel";
 import * as ValidationManager from "../../ValidationManager";
 import { CustomValidatorType } from "../../ValidationManager";
+import CommonLink from "Components/Common/CommonLink";
 
 import "./index.scss";
 
@@ -402,13 +403,13 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                         selected to protect the confidentiality,
                                         integrity and availability of the data.
                                         The framework is as follows:{" "}
-                                        <a
+                                        <CommonLink
                                             target="_blank"
                                             href="/page/security-classification"
                                         >
                                             {config.baseExternalUrl}
                                             page/security-classification
-                                        </a>
+                                        </CommonLink>
                                     </>
                                 )}
                             </TooltipWrapper>
@@ -517,13 +518,13 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                             Visit this page for more detail on
                                             Access Restrictions - Information
                                             Management Markers:{" "}
-                                            <a
+                                            <CommonLink
                                                 target="_blank"
                                                 href="https://www.protectivesecurity.gov.au/information/sensitive-classified-information/Pages/default.aspx"
                                                 rel="noopener noreferrer"
                                             >
                                                 https://www.protectivesecurity.gov.au/information/sensitive-classified-information/Pages/default.aspx
-                                            </a>
+                                            </CommonLink>
                                         </>
                                     )}
                                 </TooltipWrapper>

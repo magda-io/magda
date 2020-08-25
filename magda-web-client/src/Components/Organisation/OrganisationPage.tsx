@@ -18,6 +18,7 @@ import {
     fetchSearchResultsIfNeeded,
     resetDatasetSearch
 } from "actions/datasetSearchActions";
+import CommonLink from "Components/Common/CommonLink";
 import "./OrganisationPage.scss";
 
 class PublisherDetails extends Component<any> {
@@ -114,25 +115,25 @@ class PublisherDetails extends Component<any> {
                                     {details.email && (
                                         <div className="publisher-details-contacts-item">
                                             Email:&nbsp;
-                                            <a
+                                            <CommonLink
                                                 href={emailLink(details.email)}
                                                 className="url"
                                             >
                                                 {details.email}
-                                            </a>
+                                            </CommonLink>
                                         </div>
                                     )}
                                     {details.website && (
                                         <div className="publisher-details-contacts-item">
                                             Website:{" "}
-                                            <a
+                                            <CommonLink
                                                 href={details.website}
                                                 className="url"
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                             >
                                                 {details.website}
-                                            </a>
+                                            </CommonLink>
                                         </div>
                                     )}
                                     {details.phone && (
@@ -173,7 +174,7 @@ class PublisherDetails extends Component<any> {
     render() {
         return (
             <MagdaNamespacesConsumer ns={["publisherPage"]}>
-                {translate => {
+                {(translate) => {
                     if (this.props.error) {
                         return <ErrorHandler error={this.props.error} />;
                     } else if (this.props.isFetching) {

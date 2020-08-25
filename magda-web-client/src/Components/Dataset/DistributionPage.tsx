@@ -11,7 +11,7 @@ import "./DatasetPage.scss";
 import { getFormatIcon } from "./View/DistributionIcon";
 import apiAccessIcon from "assets/apiAccess.svg";
 import downloadWhiteIcon from "assets/download-white.svg";
-
+import CommonLink from "Components/Common/CommonLink";
 import { History } from "history";
 import { ParsedDataset, ParsedDistribution } from "helpers/record";
 import { licenseLevel } from "constants/DatasetConstants";
@@ -90,7 +90,7 @@ const DistributionPage: FunctionComponent<PropsType> = (props) => {
                     )}
                     <br />
                     {distribution.downloadURL ? (
-                        <a
+                        <CommonLink
                             className="au-btn au-btn--primary distribution-download-button"
                             href={distribution.downloadURL}
                             onClick={() => {
@@ -137,11 +137,11 @@ const DistributionPage: FunctionComponent<PropsType> = (props) => {
                                 {"  "}
                             </span>
                             Download
-                        </a>
+                        </CommonLink>
                     ) : null}{" "}
                     {distribution.ckanResource &&
                         distribution.ckanResource.datastore_active && (
-                            <a
+                            <CommonLink
                                 className="download-button au-btn au-btn--secondary"
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -161,7 +161,7 @@ const DistributionPage: FunctionComponent<PropsType> = (props) => {
                                     className="distribution-button-icon"
                                 />{" "}
                                 Access Data API
-                            </a>
+                            </CommonLink>
                         )}{" "}
                     <Small>
                         <DescriptionBox

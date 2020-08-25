@@ -1,4 +1,5 @@
 import React from "react";
+import CommonLink from "Components/Common/CommonLink";
 import "Components/Common/Choice.scss";
 
 type ChoiceProps = {
@@ -18,7 +19,7 @@ export default function Choice(props: ChoiceProps) {
                 props.className ? props.className : ""
             }`}
         >
-            <a
+            <CommonLink
                 href={!props.disabled ? props.href : undefined}
                 className={`au-btn ${
                     props.secondary ? "au-btn--secondary" : ""
@@ -31,7 +32,7 @@ export default function Choice(props: ChoiceProps) {
                         {props.blurb} {props.disabled && "(coming soon)"}
                     </div>
                 </div>
-            </a>
+            </CommonLink>
         </div>
     );
 }

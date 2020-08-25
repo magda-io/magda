@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import MarkdownViewer from "Components/Common/MarkdownViewer";
+import CommonLink from "Components/Common/CommonLink";
 import "./StoryBox.scss";
 
 export type StoryDataType = {
@@ -21,7 +22,7 @@ class StoryBox extends Component<PropsType> {
     getClickableElement(el, url, label) {
         if (!url) return el;
         return (
-            <a
+            <CommonLink
                 target="_blank"
                 rel="noopener noreferrer"
                 href={url}
@@ -29,7 +30,7 @@ class StoryBox extends Component<PropsType> {
                 aria-label={label}
             >
                 {el}
-            </a>
+            </CommonLink>
         );
     }
 

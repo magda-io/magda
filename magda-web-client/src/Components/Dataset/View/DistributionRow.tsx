@@ -10,7 +10,7 @@ import newTabIcon from "assets/external.svg";
 import { Medium } from "Components/Common/Responsive";
 import { gapi } from "analytics/ga";
 import { Dataset } from "helpers/datasetSearch";
-
+import CommonLink from "Components/Common/CommonLink";
 import { getFormatIcon, determineFormatIcon } from "./DistributionIcon";
 import { licenseLevel } from "constants/DatasetConstants";
 
@@ -99,14 +99,14 @@ class DistributionRow extends Component<PropType> {
                                     )
                                 </Link>
                                 {distribution.accessURL && (
-                                    <a
+                                    <CommonLink
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         href={distribution.accessURL}
                                         className="new-tab-button"
                                     >
                                         <img src={newTabIcon} alt="new tab" />
-                                    </a>
+                                    </CommonLink>
                                 )}
                             </div>
 
@@ -125,7 +125,7 @@ class DistributionRow extends Component<PropType> {
                     {apiUrl && (
                         <span>
                             <span className="no-print">
-                                <a
+                                <CommonLink
                                     className="download-button au-btn au-btn--secondary au-float-left"
                                     target="_blank"
                                     rel="noopener noreferrer"
@@ -133,7 +133,7 @@ class DistributionRow extends Component<PropType> {
                                 >
                                     <img src={apiAccessIcon} alt="" /> Access
                                     Data API
-                                </a>
+                                </CommonLink>
                             </span>
                             <span className="block print-only">
                                 API: {apiUrl}
@@ -143,7 +143,7 @@ class DistributionRow extends Component<PropType> {
                     {distribution.downloadURL && (
                         <span>
                             <span className="no-print">
-                                <a
+                                <CommonLink
                                     className="download-button au-btn au-btn--secondary"
                                     target="_blank"
                                     rel="noopener noreferrer"
@@ -182,7 +182,7 @@ class DistributionRow extends Component<PropType> {
                                 >
                                     <img src={downloadIcon} alt="download" />{" "}
                                     Download
-                                </a>
+                                </CommonLink>
                             </span>
                             <span className="block print-only">
                                 Download: {distribution.downloadURL}

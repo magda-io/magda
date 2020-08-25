@@ -122,11 +122,11 @@ export default function Login(props) {
                             {config.defaultContactEmail ? (
                                 <>
                                     Email{" "}
-                                    <a
+                                    <CommonLink
                                         href={`mailto:${config.defaultContactEmail}`}
                                     >
                                         {config.defaultContactEmail}
-                                    </a>
+                                    </CommonLink>
                                 </>
                             ) : (
                                 "Contact your administrator."
