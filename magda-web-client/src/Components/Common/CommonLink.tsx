@@ -40,7 +40,9 @@ const CommonLink: FunctionComponent<PropsType> = (props) => {
 
     if (
         urlStrLowerCase.indexOf("http") === 0 ||
-        urlStrLowerCase.indexOf("mailto:") === 0
+        urlStrLowerCase.indexOf("mailto:") === 0 ||
+        // magda api should always be requested from `/`
+        urlStrLowerCase.indexOf("/api/") === 0
     ) {
         return <a href={urlStr} {...restProps} />;
     } else {
