@@ -115,6 +115,7 @@ magda:
         gcsSnapshotClient: "default"
 
     web-server:
+      uiBaseUrl: "/magda-ui"
       fallbackUrl: "https://data.gov.au"
       featureFlags:
         cataloguing: true
