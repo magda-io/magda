@@ -71,6 +71,13 @@ magda:
           objectSrc:
           - "''none''"
           reportUri: https://sdga.report-uri.com/r/d/csp/enforce
+      webRoutes:
+        magda-ui: 
+          to: http://web
+          method:
+          - get
+          redirectTrailingSlash: true
+      web: http://preview-map:6110
 
     combined-db:
       waleBackup:
