@@ -4,7 +4,7 @@ import "isomorphic-fetch";
 import { throttle, memoize } from "lodash";
 
 const STATIC_STYLE_REGEX = new RegExp(
-    '<link href="\\/static\\/css\\/.*.css" rel="stylesheet">',
+    '<link href="\\.\\/static\\/css\\/.*.css" rel="stylesheet">',
     "g"
 );
 
@@ -101,8 +101,8 @@ async function getIndexFileContent(
         }
 
         indexFileContent = indexFileContent.replace(
-            "<head>",
-            `<head><base href="${uiBaseUrl}/">`
+            '<base href="/">',
+            `<base href="${uiBaseUrl}/">`
         );
     }
 
