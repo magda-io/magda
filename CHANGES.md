@@ -38,6 +38,7 @@ General:
 -   Added Docs of supplying custom policy files
 -   Openfaas should be turn on / of via condition field `global.openfaas.enabled` instead of `tags`.
 -   When `global.openfaas.enabled` is false, all openfaas dependent objects will either report error to users or be skiped for creation.
+-   Largely Reduced the web-server docker image size
 
 UI:
 
@@ -80,6 +81,8 @@ UI:
 -   Show extra metadata on the dataset page
 -   Fixed ckan-export aspect's fields should be only changed via JSON patch from the frontend (#2887)
 -   Fixed patch ckan-export request trigger 400 error when the aspect doesn't exist at all
+-   Allowed UI to be served at a different URL path
+-   Fixed: incompatible `papaparse` version makes CSV file download fail (set to version 5.1.0 now)
 
 Storage:
 
