@@ -185,20 +185,7 @@ yarn update-all-charts
 helm upgrade --install --timeout 9999s --wait -f deploy/helm/docker-desktop-windows.yml -f deploy/helm/minikube-dev.yml magda deploy/helm/local-deployment
 ```
 
-If you want to deploy the packed & production ready helm chart in our helm repo:
-
-```bash
-# update magda helm repo
-helm repo update
-# deploy the local magda chart
-helm upgrade --install --timeout 9999s --wait -f deploy/helm/minikube-dev.yml magda magda-io/magda
-```
-
-**Please Note:**
-
--   By default, helm will install the latest production version. This excludes development versions (e.g. 0.0.57-0)
--   If you need the latest version (including the development version), please add a `--devel` switch to the `helm upgrade` command above.
--   Alternatively, you can use `--version` to specify a specific version. e.g. `--version 0.0.57-0`
+If you want to deploy the packed & production ready helm chart in our helm repo, please check out this sample [config repo](https://github.com/magda-io/magda-config).
 
 ### Crawl Data
 
