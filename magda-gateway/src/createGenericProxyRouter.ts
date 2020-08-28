@@ -16,7 +16,8 @@ declare global {
     }
 }
 
-export interface ProxyTarget {
+export type ProxyTarget = DetailedProxyTarget | string;
+interface DetailedProxyTarget {
     to: string;
     methods?: string[];
     auth?: boolean;
@@ -24,7 +25,7 @@ export interface ProxyTarget {
     statusCheck?: boolean;
 }
 
-export interface ApiRouterOptions {
+export interface GenericProxyRouterOptions {
     authenticator: Authenticator;
     jwtSecret: string;
     routes: {
@@ -34,7 +35,36 @@ export interface ApiRouterOptions {
     defaultCacheControl?: string;
 }
 
-export default function createApiRouter(options: ApiRouterOptions): Router {
+/**
+ * Allow simply form of route target definition. E.g.
+ * webRoutes:
+ *   xxx1: http://xxx
+ *   xxx2: http://xxxxxxx
+ *
+ * Router will assume it's a router that is:
+ * - GET only
+ * - no auth (i.e. don't need session)
+ * - don't need statusCheck
+ *
+ * @export
+ * @param {string} targetUrl
+ * @returns {DetailedProxyTarget}
+ */
+export function getDefaultProxyTargetDefinition(
+    targetUrl: string
+): DetailedProxyTarget {
+    return {
+        to: targetUrl,
+        methods: ["get"],
+        auth: false,
+        redirectTrailingSlash: false,
+        statusCheck: false
+    };
+}
+
+export default function createGenericProxyRouter(
+    options: GenericProxyRouterOptions
+): Router {
     const proxy = createBaseProxy(options);
 
     const authenticator = options.authenticator;
@@ -88,16 +118,17 @@ export default function createApiRouter(options: ApiRouterOptions): Router {
     }
 
     _.forEach(options.routes, (value: ProxyTarget, key: string) => {
-        // --- skip tenant api router if multiTenantsMode is off
-        if (key === "tenant" && !options.tenantMode.multiTenantsMode) {
-            return;
-        }
+        const target =
+            typeof value === "string"
+                ? getDefaultProxyTargetDefinition(value)
+                : value;
+
         proxyRoute(
             `/${key}`,
-            value.to,
-            value.methods,
-            !!value.auth,
-            value.redirectTrailingSlash
+            target.to,
+            target.methods,
+            !!target.auth,
+            target.redirectTrailingSlash
         );
     });
 

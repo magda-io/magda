@@ -101,6 +101,8 @@ Gateway:
 -   Allow cookie option to be configured via helm chart
 -   Set cookie `secure` default value to `auto`
 -   Set dev site cookie `sameSite` attribute to `none`
+-   Allow to configure webRoutes in a way of similar to routes (i.e. specify method, auth etc)
+-   Make preview-map route configurable (through web route)
 
 Authorization:
 

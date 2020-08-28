@@ -1,14 +1,14 @@
 import express from "express";
 import createBaseProxy from "./createBaseProxy";
 import { mustBeAdmin } from "magda-typescript-common/src/authorization-api/authMiddleware";
-import { ApiRouterOptions } from "./createApiRouter";
+import { GenericProxyRouterOptions } from "./createGenericProxyRouter";
 import buildJwt from "magda-typescript-common/src/session/buildJwt";
 
 interface OptionsType {
     gatewayUrl: string;
     baseAuthUrl: string;
     allowAdminOnly?: boolean;
-    apiRouterOptions: ApiRouterOptions;
+    apiRouterOptions: GenericProxyRouterOptions;
     jwtSecret: string;
 }
 

@@ -7,7 +7,7 @@ import {
     MAGDA_TENANT_ID_HEADER,
     MAGDA_ADMIN_PORTAL_ID
 } from "magda-typescript-common/src/registry/TenantConsts";
-import { ApiRouterOptions } from "./createApiRouter";
+import { GenericProxyRouterOptions } from "./createGenericProxyRouter";
 
 const DO_NOT_PROXY_HEADERS = [
     "Proxy-Authorization",
@@ -24,7 +24,9 @@ const doNotProxyHeaderLookup = groupBy(
     (x: string) => x
 );
 
-export default function createBaseProxy(options: ApiRouterOptions): httpProxy {
+export default function createBaseProxy(
+    options: GenericProxyRouterOptions
+): httpProxy {
     const proxy = httpProxy.createProxyServer({
         prependUrl: false,
         changeOrigin: true
