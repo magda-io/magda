@@ -96,7 +96,7 @@
     "browser-detect": "^0.2.22",
     "d3-collection": "^1.0.4",
     "deep-freeze": "0.0.1",
-    "dompurify": "^1.0.2",
+    "dompurify": "^2.0.14",
     "echarts": "^4.1.0",
     "echarts-for-react": "^2.0.14",
     "email-validator": "^2.0.3",
