@@ -10,6 +10,7 @@ import {
 import close from "assets/close.svg";
 import success from "assets/success.svg";
 import Notification from "Components/Common/Notification";
+import CommonLink from "Components/Common/CommonLink";
 
 import "./FeedbackForm.scss";
 
@@ -196,9 +197,12 @@ class FeedbackForm extends React.Component {
                                 : "Send"}
                         </button>
                         <div className="privacy-link">
-                            <a href="/page/privacy-policy" target="_blank">
+                            <CommonLink
+                                href="/page/privacy-policy"
+                                target="_blank"
+                            >
                                 Privacy Policy
-                            </a>
+                            </CommonLink>
                         </div>
                     </div>
                 </div>

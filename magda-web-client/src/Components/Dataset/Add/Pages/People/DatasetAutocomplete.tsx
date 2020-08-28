@@ -11,6 +11,7 @@ import { User } from "reducers/userManagementReducer";
 import TooltipWrapper from "Components/Common/TooltipWrapper";
 import ExplanationTooltipContent from "Components/Common/ExplanationTooltipContent";
 import { retrieveLocalData, setLocalData } from "storage/localStorage";
+import CommonLink from "Components/Common/CommonLink";
 
 import "./DatasetAutocomplete.scss";
 import { MultiValueProps } from "react-select/src/components/MultiValue";
@@ -80,13 +81,13 @@ const CustomMultiValue = (props: MultiValueProps<Choice>) => {
                 <ExplanationTooltipContent dismiss={dismiss}>
                     This has been added as a draft dataset. You can edit it from
                     your{" "}
-                    <a
+                    <CommonLink
                         href="/dataset/list"
                         target="_blank"
                         rel="noopener noreferrer"
                     >
                         drafts page
-                    </a>
+                    </CommonLink>
                     .
                 </ExplanationTooltipContent>
             )}

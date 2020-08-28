@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import DataPreviewVis from "Components/Common/DataPreviewVis";
 import MagdaNamespacesConsumer from "Components/i18n/MagdaNamespacesConsumer";
 import ContactPoint from "Components/Common/ContactPoint";
-
+import CommonLink from "Components/Common/CommonLink";
 import { gapi } from "analytics/ga";
 
 import "./DatasetDetails.scss";
@@ -20,7 +20,7 @@ class DistributionDetails extends Component {
         const downloadText = distribution.downloadURL && (
             <div key={distribution.identifier}>
                 This data file or API can be downloaded from: <br />
-                <a
+                <CommonLink
                     className="url"
                     onClick={(distribution) => {
                         // google analytics download tracking
@@ -39,7 +39,7 @@ class DistributionDetails extends Component {
                 >
                     {" "}
                     {distribution.downloadURL}
-                </a>
+                </CommonLink>
                 {this.renderLinkStatus(
                     distribution.linkStatusAvailable,
                     distribution.linkActive
@@ -49,9 +49,9 @@ class DistributionDetails extends Component {
         const accessText = distribution.accessURL && (
             <div>
                 This dataset can be accessed from: <br />{" "}
-                <a className="url" href={distribution.accessURL}>
+                <CommonLink className="url" href={distribution.accessURL}>
                     {distribution.accessURL}
-                </a>
+                </CommonLink>
             </div>
         );
 

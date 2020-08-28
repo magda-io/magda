@@ -7,6 +7,8 @@ import giantTickIcon from "assets/giant-tick.svg";
 import draftIcon from "assets/format-active.svg";
 import printIcon from "assets/print.svg";
 
+import CommonLink from "Components/Common/CommonLink";
+
 type Props = {
     datasetId: string;
     history: any;
@@ -47,7 +49,7 @@ export default function DatasetAddEndPage(props: Props) {
                     <h2 className="end-preview-subheading">{allDoneText}</h2>
                     <p className="dataset-status-txt">
                         You can view the status of your datasets from{" "}
-                        <a href="/">your home page</a>.
+                        <CommonLink href="/">your home page</CommonLink>.
                     </p>
                 </div>
             </div>

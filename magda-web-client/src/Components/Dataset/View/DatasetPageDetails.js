@@ -5,6 +5,7 @@ import { connect } from "react-redux";
 import DistributionRow from "./DistributionRow";
 import queryString from "query-string";
 import defined from "helpers/defined";
+import CommonLink from "Components/Common/CommonLink";
 import "./DatasetDetails.scss";
 import "./DatasetPageDetails.scss";
 
@@ -60,12 +61,12 @@ class DatasetPageDetails extends Component {
                                         truncate={false}
                                     />
                                 )}
-                                <a
+                                <CommonLink
                                     className="landing-page"
                                     href={dataset.landingPage}
                                 >
                                     {dataset.landingPage}
-                                </a>
+                                </CommonLink>
                                 {defined(dataset.provenance) &&
                                 defined(dataset.provenance.isOpenData) ? (
                                     <h3 className="section-heading">

@@ -18,6 +18,7 @@ import { config } from "config";
 import SecClassification, {
     Sensitivity
 } from "Components/Common/SecClassification";
+import CommonLink from "Components/Common/CommonLink";
 
 interface PropsType {
     history: History;
@@ -173,7 +174,7 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                     />
                     {isAdmin ? (
                         <div className="download-history-report-button">
-                            <a
+                            <CommonLink
                                 href={`${
                                     config.openfaasBaseUrl
                                 }function/magda-function-history-report?recordId=${encodeURIComponent(
@@ -183,7 +184,7 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                                 target="__blank"
                             >
                                 Download History Report
-                            </a>
+                            </CommonLink>
                         </div>
                     ) : null}
                     {hasEditPermissions ? (

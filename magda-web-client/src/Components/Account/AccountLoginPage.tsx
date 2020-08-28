@@ -9,7 +9,9 @@ import "./AccountLoginPage.scss";
 import { getAuthProviders } from "api-clients/AuthApis";
 import { config } from "config";
 import { useAsync } from "react-async-hook";
-const { baseUrl } = config;
+import CommonLink from "Components/Common/CommonLink";
+import URI from "urijs";
+const { baseUrl, uiBaseUrl } = config;
 
 function getDefaultLoginFormProvider(providers: string[]): string {
     if (!providers || !providers.length) {
@@ -43,8 +45,15 @@ export default function Login(props) {
         props.location.state.from.pathname
             ? props.location.state.from.pathname
             : "/account";
-    const baseRedirectUrl = `${window.location.protocol}//${window.location.host}`;
-    const oauthRedirect = `${baseRedirectUrl}/sign-in-redirect?redirectTo=${previousUrl}`;
+
+    const oauthRedirect = URI(window.location.href)
+        .search("")
+        .fragment("")
+        .segment([uiBaseUrl, "sign-in-redirect"])
+        .search({
+            redirectTo: previousUrl
+        })
+        .toString();
 
     const makeLoginUrl = (type) =>
         `${baseUrl}auth/login/${type}?redirect=${encodeURIComponent(
@@ -113,11 +122,11 @@ export default function Login(props) {
                             {config.defaultContactEmail ? (
                                 <>
                                     Email{" "}
-                                    <a
+                                    <CommonLink
                                         href={`mailto:${config.defaultContactEmail}`}
                                     >
                                         {config.defaultContactEmail}
-                                    </a>
+                                    </CommonLink>
                                 </>
                             ) : (
                                 "Contact your administrator."
@@ -129,14 +138,14 @@ export default function Login(props) {
                         <h2>Register</h2>
                         <p>
                             To register a new data.gov.au account,{" "}
-                            <a
+                            <CommonLink
                                 className="au-cta-link"
                                 href="https://data.gov.au/user/register"
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
                                 click here
-                            </a>
+                            </CommonLink>
                             .
                         </p>
                     </>
@@ -210,62 +219,62 @@ export default function Login(props) {
                         {loginFormProviderOptions()}
                         {providers?.indexOf("facebook") !== -1 && (
                             <li className="login__provider">
-                                <a href={makeLoginUrl("facebook")}>
+                                <CommonLink href={makeLoginUrl("facebook")}>
                                     <img
                                         src={fbLogo}
                                         className="login__logo"
                                         alt="logo"
                                     />
                                     Facebook
-                                </a>
+                                </CommonLink>
                             </li>
                         )}
                         {providers?.indexOf("google") !== -1 && (
                             <li className="login__provider">
-                                <a href={makeLoginUrl("google")}>
+                                <CommonLink href={makeLoginUrl("google")}>
                                     <img
                                         src={googleLogo}
                                         className="login__logo"
                                         alt="logo"
                                     />
                                     Google
-                                </a>
+                                </CommonLink>
                             </li>
                         )}
                         {providers?.indexOf("arcgis") !== -1 && (
                             <li className="login__provider">
-                                <a href={makeLoginUrl("arcgis")}>
+                                <CommonLink href={makeLoginUrl("arcgis")}>
                                     <img
                                         src={arcgisLogo}
                                         className="login__logo"
                                         alt="logo"
                                     />
                                     Esri
-                                </a>
+                                </CommonLink>
                             </li>
                         )}
                         {providers?.indexOf("aaf") !== -1 && (
                             <li className="login__provider">
-                                <a href={makeLoginUrl("aaf")}>
+                                <CommonLink href={makeLoginUrl("aaf")}>
                                     <img
                                         src={aafLogo}
                                         className="login__logo"
                                         alt="logo"
                                     />
                                     AAF
-                                </a>
+                                </CommonLink>
                             </li>
                         )}
                         {providers?.indexOf("vanguard") !== -1 && (
                             <li className="login__provider">
-                                <a href={makeLoginUrl("vanguard")}>
+                                <CommonLink href={makeLoginUrl("vanguard")}>
                                     <img
                                         src={aafLogo}
                                         className="login__logo"
                                         alt="logo"
                                     />
                                     Vanguard
-                                </a>
+                                </CommonLink>
                             </li>
                         )}
                     </ul>

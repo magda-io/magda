@@ -8,6 +8,7 @@ import DataPreviewJson from "Components/Common/DataPreviewJson";
 import DataPreviewChart from "Components/Common/DataPreviewChart";
 import DataPreviewNews from "Components/Common/DataPreviewNews";
 import ProgressBar from "Components/Common/ProgressBar";
+import CommonLink from "Components/Common/CommonLink";
 
 const DataPreviewHtml = ({ distribution }) => (
     <iframe
@@ -51,9 +52,13 @@ class DistributionPreview extends Component {
         return (
             <div className="data-previewer">
                 <h3 className="section-heading">
-                    <a href={url} target="_blank" rel="noopener noreferrer">
+                    <CommonLink
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
                         {url && url.substring(url.lastIndexOf("/") + 1)}
-                    </a>
+                    </CommonLink>
                 </h3>
                 {this.props.error && <div>{this.props.error}</div>}
                 {this.props.isFetching && <ProgressBar />}

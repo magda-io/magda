@@ -4,6 +4,7 @@ import fetch from "isomorphic-fetch";
 import getDateString from "helpers/getDateString";
 import defined from "helpers/defined";
 import Spinner from "Components/Common/Spinner";
+import CommonLink from "Components/Common/CommonLink";
 
 import { ParsedDistribution } from "helpers/record";
 
@@ -94,13 +95,13 @@ export default class News extends Component<
                     {defined(news.pubDate) && getDateString(news.pubDate)}
                 </div>
                 <h3 className="list-group-item-heading">
-                    <a
+                    <CommonLink
                         href={news.link}
                         target="_blank"
                         rel="noopener noreferrer"
                     >
                         {news.title}
-                    </a>
+                    </CommonLink>
                 </h3>
                 <div className="news-body list-group-item-text">
                     {news.contentSnippet}

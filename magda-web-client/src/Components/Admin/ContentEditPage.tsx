@@ -2,8 +2,8 @@ import React, { Component } from "react";
 import { withRouter } from "react-router";
 import Spinner from "Components/Common/Spinner";
 import { connect } from "react-redux";
-
 import { readContent, updateContent } from "actions/contentActions";
+import CommonLink from "Components/Common/CommonLink";
 
 class ContentEditPage extends Component<any, any> {
     state = {
@@ -21,7 +21,7 @@ class ContentEditPage extends Component<any, any> {
     refresh() {
         if (this.props.itemId) {
             readContent(this.props.itemIdPrefix + this.props.itemId).then(
-                item => {
+                (item) => {
                     this.updateState({ item });
                 }
             );
@@ -29,7 +29,7 @@ class ContentEditPage extends Component<any, any> {
     }
 
     save(field) {
-        return value => {
+        return (value) => {
             updateContent(this.props.itemIdPrefix + this.props.itemId, {
                 [field]: value
             }).then(this.refresh.bind(this));
@@ -61,7 +61,7 @@ class ContentEditPage extends Component<any, any> {
                 )}
                 {hasEditPermissions && (
                     <p>
-                        <a href={manageLink}>{manageText}</a>
+                        <CommonLink href={manageLink}>{manageText}</CommonLink>
                     </p>
                 )}
             </React.Fragment>

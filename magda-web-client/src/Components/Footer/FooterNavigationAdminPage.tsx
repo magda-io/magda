@@ -2,6 +2,7 @@ import React, { Component } from "react";
 
 import ContentAdminPage from "Components/Admin/ContentAdminPage";
 import { withRouter } from "react-router";
+import CommonLink from "Components/Common/CommonLink";
 
 class FooterNavigationAdminPage extends Component<any, any> {
     render() {
@@ -17,14 +18,14 @@ class FooterNavigationAdminPage extends Component<any, any> {
                 <ContentAdminPage
                     title={`${label} Footer Navigation`}
                     itemTitle="Footer Navigation"
-                    generateNewId={id => `${pathPrefix}/${Date.now()}`}
-                    titleFromItem={item => item.content.label}
+                    generateNewId={(id) => `${pathPrefix}/${Date.now()}`}
+                    titleFromItem={(item) => item.content.label}
                     pattern={`${pathPrefix}/*`}
                     newContent={{
                         order: 999,
                         label: "Menu Category"
                     }}
-                    link={id =>
+                    link={(id) =>
                         `/admin/footer-navigation-links/${size}/${id.substr(
                             id.lastIndexOf("/") + 1
                         )}`
@@ -32,9 +33,9 @@ class FooterNavigationAdminPage extends Component<any, any> {
                     hasOrder={true}
                 />
                 <p>
-                    <a href={`/admin/footer-navigation/${otherSize}`}>
+                    <CommonLink href={`/admin/footer-navigation/${otherSize}`}>
                         Switch to {otherSizeLabel} Footer Navigation
-                    </a>
+                    </CommonLink>
                 </p>
             </div>
         );

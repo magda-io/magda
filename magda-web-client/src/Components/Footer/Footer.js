@@ -1,8 +1,8 @@
 /* eslint-disable no-undef */
 import React from "react";
 import { connect } from "react-redux";
-import { Link } from "react-router-dom";
 import { Small } from "Components/Common/Responsive";
+import CommonLink from "Components/Common/CommonLink";
 
 import "./footer.scss";
 
@@ -30,12 +30,20 @@ function FooterLink({ link }) {
         link.href.substring(0, 1) === "/"
     ) {
         return (
-            <a target="_blank" rel="noopener noreferrer" href={link.href}>
+            <CommonLink
+                target="_blank"
+                rel="noopener noreferrer"
+                href={link.href}
+            >
                 {link.label}
-            </a>
+            </CommonLink>
         );
     } else {
-        return <Link to={`/${encodeURI(link.href)}`}>{link.label}</Link>;
+        return (
+            <CommonLink href={`/${encodeURI(link.href)}`}>
+                {link.label}
+            </CommonLink>
+        );
     }
 }
 
@@ -65,7 +73,7 @@ function Copyright({ href, logoSrc, logoClassName, logoAlt, htmlContent }) {
                 className="copyright-text"
                 dangerouslySetInnerHTML={{ __html: htmlContent }}
             />
-            <a
+            <CommonLink
                 target="_blank"
                 rel="noopener noreferrer"
                 href={href}
@@ -76,7 +84,7 @@ function Copyright({ href, logoSrc, logoClassName, logoAlt, htmlContent }) {
                     className={"logo " + logoClassName}
                     alt={logoAlt}
                 />
-            </a>
+            </CommonLink>
         </div>
     );
 }

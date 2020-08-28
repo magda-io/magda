@@ -4,6 +4,7 @@
   "description": "The MAGDA in-browser web front end.",
   "version": "0.0.57-0",
   "license": "Apache-2.0",
+  "homepage": ".",
   "scripts": {
     "dev": "pancake && yarn run start",
     "prepare": "pancake",
@@ -121,7 +122,7 @@
     "memoize-one": "^3.1.1",
     "npm-run-all": "^4.0.1",
     "openlayers": "^4.1.1",
-    "papaparse": "^5.1.0",
+    "papaparse": "5.1.0",
     "pretty-date": "^0.2.0",
     "prop-types": "^15.6.1",
     "query-string": "^4.3.4",

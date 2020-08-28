@@ -1,8 +1,8 @@
 import React, { Component } from "react";
-
 import Breadcrumbs from "Components/Common/Breadcrumbs";
 import { Medium } from "Components/Common/Responsive";
 import MagdaDocumentTitle from "Components/i18n/MagdaDocumentTitle";
+import CommonLink from "Components/Common/CommonLink";
 
 export default class AdminHeader extends Component<any, any> {
     render() {
@@ -11,7 +11,7 @@ export default class AdminHeader extends Component<any, any> {
         if (this.props.title) {
             crumbs.push(
                 <li key="admin">
-                    <a href="/admin">Admin</a>
+                    <CommonLink href="/admin">Admin</CommonLink>
                 </li>
             );
             crumbs.push(

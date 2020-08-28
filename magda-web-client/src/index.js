@@ -21,6 +21,7 @@ import AppContainer from "./AppContainer";
 import PropTypes from "prop-types";
 import ScrollToTop from "./helpers/ScrollToTop";
 import "./i18n";
+import { config } from "./config";
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 const store = createStore(
@@ -55,7 +56,7 @@ class GAListener extends React.Component {
 
 ReactDOM.render(
     <Provider store={store}>
-        <BrowserRouter>
+        <BrowserRouter basename={config.uiBaseUrl}>
             <GAListener>
                 <ScrollToTop>
                     <Route path="/" component={AppContainer} />
