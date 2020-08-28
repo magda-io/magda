@@ -50,7 +50,7 @@ builders-and-yarn:
 # Make sure sbt depenencies, plugins are in place, cached (only for this job) and pass to following stage as artifacts
 sbt-prebuild:
   stage: sbt-prebuild
-  needs: []
+  needs: ["builders-and-yarn"]
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   cache:
     key: $CI_JOB_NAME-$CACHE_VERSION
@@ -73,7 +73,7 @@ sbt-prebuild:
 check-scala-formatting:
   stage: prebuild
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
-  needs: []
+  needs: ["builders-and-yarn"]
   script:
     - sbt scalafmtCheckAll
 
