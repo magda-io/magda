@@ -144,6 +144,33 @@ describe("proxying", () => {
                         done();
                     });
             });
+
+            it("should set headers that prevent cache if incoming request's cache control header contains `no-cache` keyword", async () => {
+                nock(value).get("/").reply(200, "Ok", {
+                    // we should overwrite this header as the client side specifically ask for not caching it
+                    "Cache-Control": "public, max-age=60"
+                });
+
+                await supertest(app)
+                    .get(key)
+                    .set("Cache-Control", "bla bla no-cache")
+                    .end((_err, res) => {
+                        expect(res.header["cache-control"]).to.equal(
+                            "max-age=0, no-cache, must-revalidate, proxy-revalidate"
+                        );
+                        expect(res.header["expires"]).to.equal(
+                            "Thu, 01 Jan 1970 00:00:00 GMT"
+                        );
+                        const lastModifiedTime = new Date(
+                            res.header["expires"]
+                        );
+                        // last modified time should be closer enough to the request receive time
+                        // here we assume it take max 3 seconds for test case to run
+                        expect(
+                            new Date().getTime() - lastModifiedTime.getTime()
+                        ).to.be.within(0, 3000);
+                    });
+            });
         });
     });
 });

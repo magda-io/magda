@@ -1,5 +1,6 @@
 import httpProxy from "http-proxy";
 import express from "express";
+import { IncomingHttpHeaders } from "http";
 
 import groupBy = require("lodash/groupBy");
 
@@ -23,6 +24,53 @@ const doNotProxyHeaderLookup = groupBy(
     DO_NOT_PROXY_HEADERS.map((x) => x.toLowerCase()),
     (x: string) => x
 );
+
+/**
+ * For maximum compatibility, we don't assume header name will be all lowercase here.
+ * We already tried to cover the situation that the header name might be in different case by accessing either:
+ * `Cache-Control` or `cache-control`.
+ * This function make it more generic and cover the `cache-Control` case as well.
+ *
+ * @param {IncomingHttpHeaders} headers
+ * @param {string} headerName
+ * @returns
+ */
+function getHeaderValue(headers: IncomingHttpHeaders, headerName: string) {
+    const headerKeys = Object.keys(headers);
+    // use `for` so we can break & return value easier
+    for (let i = 0; i < headerKeys.length; i++) {
+        if (headerKeys[i].toLowerCase() === headerName.toLowerCase()) {
+            return headers[headerKeys[i]];
+        }
+    }
+    return undefined;
+}
+
+/**
+ * Set header value by header name
+ * This function will make sure any existing header value (even with different cases) is overwritten
+ *
+ * @param {IncomingHttpHeaders} headers
+ * @param {string} headerName
+ * @param {string} value
+ * @returns
+ */
+function setHeaderValue(
+    headers: IncomingHttpHeaders,
+    headerName: string,
+    value: string
+) {
+    const headerKeys = Object.keys(headers);
+    // use `for` so we can break & return value easier
+    for (let i = 0; i < headerKeys.length; i++) {
+        if (headerKeys[i].toLowerCase() === headerName.toLowerCase()) {
+            headers[headerKeys[i]] = undefined;
+            headers[headerName] = value;
+            return;
+        }
+    }
+    headers[headerName] = value;
+}
 
 export default function createBaseProxy(
     options: GenericProxyRouterOptions
@@ -71,14 +119,41 @@ export default function createBaseProxy(
     });
 
     proxy.on("proxyRes", function (proxyRes, req, res) {
-        // Add a default cache time of 60 seconds on GETs so the CDN can cache in times of high load.
+        const reqCacheControlHeaderVal = getHeaderValue(
+            req.headers,
+            "Cache-Control"
+        );
         if (
+            typeof reqCacheControlHeaderVal === "string" &&
+            reqCacheControlHeaderVal.toLowerCase().indexOf("no-cache") !== -1
+        ) {
+            // when incoming request specifically ask for a no-cache response
+            // we set the following header to make sure not only CDN will not cache it but also web browser will not cache it
+            setHeaderValue(
+                proxyRes.headers,
+                "Cache-Control",
+                "max-age=0, no-cache, must-revalidate, proxy-revalidate"
+            );
+            setHeaderValue(
+                proxyRes.headers,
+                "Expires",
+                "Thu, 01 Jan 1970 00:00:00 GMT"
+            );
+            setHeaderValue(
+                proxyRes.headers,
+                "Last-Modified",
+                // toGMTString is deprecated but `Last-Modified` requires that format:
+                // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Last-Modified
+                // A test case will be added to make sure we know when the function is not available at runtime
+                (new Date() as any)["toGMTString"]()
+            );
+        } else if (
+            // Add a default cache time of 60 seconds on GETs so the CDN can cache in times of high load.
+            // the default cache header can be configured to a different value via helm
             req.method === "GET" &&
             options.defaultCacheControl &&
-            !proxyRes.headers["Cache-Control"] &&
-            !proxyRes.headers["cache-control"] &&
-            !req.headers["Cache-Control"] &&
-            !req.headers["cache-control"]
+            !reqCacheControlHeaderVal &&
+            !getHeaderValue(proxyRes.headers, "Cache-Control")
         ) {
             proxyRes.headers["Cache-Control"] = options.defaultCacheControl;
         }
