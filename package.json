@@ -41,7 +41,8 @@
     "start-opa": "opa run deploy/helm/internal-charts/opa/policies",
     "test-opa": "opa test deploy/helm/internal-charts/opa/policies -v",
     "clean": "rm -rf pancake magda-web-client/src/pancake; rm -rf ./node_modules; for dir in magda-*; do echo \"Removing node_modules from $dir\"; rm -rf $dir/node_modules; done",
-    "update-all-charts": "cd deploy && yarn update-all-charts && cd .."
+    "update-all-charts": "cd deploy && yarn update-all-charts && cd ..",
+    "set-version": "lerna version --no-push --force-publish"
   },
   "pancake": {
     "auto-save": true,
