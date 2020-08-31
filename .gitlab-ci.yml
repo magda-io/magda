@@ -775,30 +775,6 @@ Stop Preview: &stopPreview
     - helm --namespace $CI_COMMIT_REF_SLUG del $CI_COMMIT_REF_SLUG
     - kubectl delete namespace $CI_COMMIT_REF_SLUG
 
-Manual Release NPM Packages:
-  stage: preview
-  when: manual
-  only:
-    - branches
-  except:
-    - master
-    - /^v.*RC.*$/
-  dependencies:
-    - builders-and-yarn
-    - registry-typescript-api
-    - buildtest:typescript-apis-stateless
-    - buildtest:typescript-apis-with-pg
-    - buildtest:typescript-apis-with-es
-  cache:
-    paths: []
-  image:
-    name: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
-  before_script: []
-  script:
-    # Setup NPM token
-    - yarn run in-submodules -f categories.npmPackage=true run npm-setup
-    - yarn run in-submodules -f categories.npmPackage=true run release
-
 Deploy Master To Dev:
   stage: deploy-dev
   only:
@@ -857,8 +833,9 @@ Publish NPM Packages:
     name: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
   cache: {}
   script:
-    # Setup NPM token
-    - yarn config registry "https://registry.npmjs.org/:_authToken=${NPM_TOKEN}"
+    # Setup NPM token & scoped registry
+    - npm config set @magda:registry https://registry.npmjs.org/
+    - npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
     - yarn run in-submodules -f categories.npmPackage=true run release
 
 Publish Helm Chart:

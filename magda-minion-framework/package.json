@@ -8,7 +8,6 @@
     "compile": "tsc -b && ts-module-alias-transformer dist",
     "watch": "tsc -b --watch",
     "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\"",
-    "npm-setup": "echo \"//registry.npmjs.org/:_authToken=${NPM_TOKEN}\" > .npmrc",
     "release": "npm publish || echo \"Skip releasing npm package @magda/minion-framework.\""
   },
   "author": "",

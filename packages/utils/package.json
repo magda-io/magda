@@ -7,7 +7,6 @@
     "compile": "webpack && webpack --env.target=web",
     "dts-rollup": "api-extractor run -l && api-extractor run -c api-extractor-web.json -l",
     "build": "yarn compile && yarn dts-rollup",
-    "npm-setup": "echo \"//registry.npmjs.org/:_authToken=${NPM_TOKEN}\" > .npmrc",
     "release": "npm publish || echo \"Skip releasing npm package @magda/utils.\""
   },
   "author": "",

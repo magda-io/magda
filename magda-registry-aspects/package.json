@@ -4,7 +4,6 @@
   "description": "Common aspects for use with the registry.",
   "scripts": {
     "build": "echo \"ok\"",
-    "npm-setup": "echo \"//registry.npmjs.org/:_authToken=${NPM_TOKEN}\" > .npmrc",
     "release": "npm publish || echo \"Skip releasing npm package @magda/registry-aspects.\""
   },
   "author": "",

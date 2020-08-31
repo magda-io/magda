@@ -14,7 +14,6 @@
     "create_esri_owner_jwt": "nyc mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/buildJwtForRegistryEsriOpaOwnerTest.ts\"",
     "create_esri_groups_owner_jwt": "nyc mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/buildJwtForRegistryEsriOpaGroupsAndOwnerTest.ts\"",
     "dev": "yarn run watch",
-    "npm-setup": "echo \"//registry.npmjs.org/:_authToken=${NPM_TOKEN}\" > .npmrc",
     "release": "npm publish || echo \"Skip releasing npm package @magda/typescript-common.\""
   },
   "devDependencies": {
