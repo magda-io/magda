@@ -858,8 +858,8 @@ Publish NPM Packages:
   cache: {}
   script:
     # Setup NPM token
-    - npm run in-submodules -f categories.npmPackage=true run npm-setup
-    - npm run in-submodules -f categories.npmPackage=true run release
+    - yarn config registry "https://registry.npmjs.org/:_authToken=${NPM_TOKEN}"
+    - yarn run in-submodules -f categories.npmPackage=true run release
 
 Publish Helm Chart:
   stage: release
