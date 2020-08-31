@@ -12,6 +12,11 @@ if (!pkg || !pkg["version"]) {
 }
 
 const pkgVersion = pkg["version"];
+// a list of helm chart that we want to exclude from auto update version
+const excludedCharts =
+    pkg["versionUpdateExclude"] && pkg["versionUpdateExclude"].length
+        ? pkg["versionUpdateExclude"]
+        : [];
 
 function updateChartVersion(chartFilePath) {
     try {
@@ -23,6 +28,12 @@ function updateChartVersion(chartFilePath) {
             throw new Error("Failed to read Chart.yaml");
         }
         const chart = YAML.parseDocument(chartFileContent);
+        const chartName = chart.getIn(["name"]);
+        if (excludedCharts.length && excludedCharts.indexOf(chartName) !== -1) {
+            // skip update version of excluded charts
+            return;
+        }
+
         const chartVersion = chart.getIn(["version"], true);
         if (chartVersion) {
             chartVersion.value = pkgVersion;

@@ -30,5 +30,13 @@
     "generate-registry-typescript": "generate-registry-typescript.js",
     "create-docker-context-for-node-component": "create-docker-context-for-node-component.js",
     "generate-connector-jobs": "generate-connector-jobs.js"
-  }
+  },
+  "versionUpdateExclude": [
+      "openfaas",
+      "magda-cert-issuer",
+      "magda-nginx-ingress-controller",
+      "nginx-ingress-controller",
+      "default-http-backend",
+      "magda-cert-issuer"
+  ]
 }
