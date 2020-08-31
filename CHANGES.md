@@ -106,6 +106,7 @@ Gateway:
 -   Set dev site cookie `sameSite` attribute to `none`
 -   Allow to configure webRoutes in a way of similar to routes (i.e. specify method, auth etc)
 -   Make preview-map route configurable (through web route)
+-   Gateway will auto add headers to turn off cache if the incoming request carry a `Cache-Control` header that contains `no-cache` keyword
 
 Authorization:
 
