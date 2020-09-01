@@ -6,7 +6,9 @@ global:
     maxUnavailable: 0
   exposeNodePorts: false
   image:
-    tag: 0.0.57-0
+    # When we don't specify tag here, .Chart.version will be used --- which is easier for versioning
+    # You still can specify a tag here to override the default `.Chart.version` value (e.g. for local debugging)
+    # tag: xxxxxxx
     repository: "data61"
     pullPolicy: IfNotPresent
   defaultAdminUserId: "00000000-0000-4000-8000-000000000000"
