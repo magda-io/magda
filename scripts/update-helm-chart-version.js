@@ -44,9 +44,12 @@ function updateChartVersion(chartFilePath) {
         if (deps && deps.items && deps.items.length) {
             for (let i = 0; i < deps.items.length; i++) {
                 const repoStr = chart.getIn(["dependencies", i, "repository"]);
+                const nameStr = chart.getIn(["dependencies", i, "name"]);
                 if (
                     typeof repoStr === "string" &&
-                    repoStr.indexOf("file://") === 0
+                    repoStr.indexOf("file://") === 0 &&
+                    excludedCharts.length &&
+                    excludedCharts.indexOf(nameStr) === -1
                 ) {
                     const version = chart.getIn(
                         ["dependencies", i, "version"],
