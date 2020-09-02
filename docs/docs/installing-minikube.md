@@ -9,16 +9,16 @@ You'll need to download and install:
 
 ## Setup
 
-Run the following to give your VM enough juice to run Magda and start it up:
+Run the following to give your VM enough juice (Magda requires at least 6GB ram to deploy all modules) to run Magda and start it up:
 
 ```bash
-minikube config set memory 4096
+minikube config set memory 6144
 minikube config set cpus 2
 minikube config set vm-driver virtualbox
 minikube start
 ```
 
-This reserves 4 GB of RAM for Minikube and starts it up. If you're low on RAM and only intend to run the databases on Minikube, you can likely get away with a smaller number, like 2048.
+This reserves 6 GB of RAM for Minikube and starts it up. If you're low on RAM and only intend to run the databases on Minikube, you can likely get away with a smaller number, like 2048.
 
 More detailed instructions for setting up Minikube can be found [here](https://github.com/kubernetes/minikube) if that doesn't work.
 
