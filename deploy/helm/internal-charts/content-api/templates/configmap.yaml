@@ -3,5 +3,5 @@ kind: ConfigMap
 metadata:
   name: "scss-compiler-config"
 data:
-  image: "{{ .Values.image.repository | default .Values.global.image.repository }}/magda-scss-compiler:{{ .Values.image.tag | default .Values.global.image.tag }}"
+  image: "{{ .Values.image.repository | default .Values.global.image.repository }}/magda-scss-compiler:{{ .Values.image.tag | default .Values.global.image.tag | default .Chart.Version }}"
   scssVars: {{ .Values.scssVars | quote }}

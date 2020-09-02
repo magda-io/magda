@@ -18,11 +18,11 @@
     "org-tree": "org-tree/index.js",
     "acs-cmd": "acs-cmd/index.js",
     "set-user-password": "set-user-password.js",
-    "create-api-key": "create-api-key.js"
+    "create-api-key": "create-api-key.js",
+    "update-helm-chart-version": "update-helm-chart-version.js"
   },
   "scripts": {
     "build": "echo \"ok\"",
-    "npm-setup": "echo \"//registry.npmjs.org/:_authToken=${NPM_TOKEN}\" > .npmrc",
     "release": "npm publish || echo \"Skip releasing npm package @magda/scripts.\""
   },
   "devDependencies": {
@@ -42,6 +42,7 @@
     "bcrypt": "^5.0.0",
     "chalk": "^2.4.1",
     "clear": "^0.1.0",
+    "cli-cursor": "^3.1.0",
     "commander": "^2.17.0",
     "configstore": "^4.0.0",
     "fs-extra": "^2.1.2",
@@ -70,7 +71,7 @@
     "tsconfig-paths": "^3.9.0",
     "typescript": "^3.7.2",
     "uniqid": "^5.0.3",
-    "cli-cursor": "^3.1.0",
+    "yaml": "^1.10.0",
     "yargs": "^12.0.5"
   },
   "keywords": [

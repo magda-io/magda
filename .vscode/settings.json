@@ -6,5 +6,10 @@
         "magda-web-client/**/*.css": true
     },
     "eslint.enable": true,
-    "files.associations": { "*.json": "jsonc" }
+    "files.associations": {
+        "*.json": "jsonc"
+    },
+    "files.watcherExclude": {
+        "**/target": true
+    }
 }

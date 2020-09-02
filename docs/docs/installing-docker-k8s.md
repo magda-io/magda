@@ -10,7 +10,7 @@ Make sure you get the EDGE client - as of the time of writing Kubernetes isn't i
 
 ## Setup
 
-Start up Docker for Mac. Find the icon in the top-right hand corner of the screen and open "Preferences". Then navigate to "Advanced" and set the resources so your cluster has 2 processors and 4gb of RAM.
+Start up Docker for Mac. Find the icon in the top-right hand corner of the screen and open "Preferences". Then navigate to "Advanced" and set the resources so your cluster has at least 2 processors and 6gb of RAM.
 
 ![Advanced Tab Screenshot](./screenshots/set-resources-docker-macos.png)
 

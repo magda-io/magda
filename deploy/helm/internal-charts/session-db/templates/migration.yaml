@@ -15,7 +15,7 @@ spec:
       restartPolicy: OnFailure
       containers:
       - name: session-db-migrator
-        image: "{{ .Values.image.repository | default .Values.global.image.repository }}/magda-migrator-session-db:{{ .Values.image.tag | default .Values.global.image.tag }}"
+        image: "{{ .Values.image.repository | default .Values.global.image.repository }}/magda-migrator-session-db:{{ .Values.image.tag | default .Values.global.image.tag | default .Chart.Version }}"
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
         env: 
         - name: DB_HOST

@@ -8,7 +8,14 @@
     "generate-connector-jobs-local": "generate-connector-jobs --in ./connector-config --out ./kubernetes/generated/local --local",
     "generate-connector-jobs-dev": "generate-connector-jobs --prod true --in ./connector-config --out ./kubernetes/generated/prod",
     "generate-connector-jobs-prod": "generate-connector-jobs --prod true --in ./connector-config --out ./kubernetes/generated/prod",
-    "create-config-configmap": "kubectl delete configmap config --ignore-not-found && kubectl create configmap config --from-file ./kubernetes/config/"
+    "create-config-configmap": "kubectl delete configmap config --ignore-not-found && kubectl create configmap config --from-file ./kubernetes/config/",
+    "update-magda-core-chart": "helm dep up helm/internal-charts/storage-api && helm dep up helm/magda-core",
+    "update-magda-chart": "yarn update-magda-core-chart && helm dep up helm/magda",
+    "update-local-deployment-chart": "yarn update-magda-chart && helm dep up helm/local-deployment",
+    "update-all-charts": "yarn clean-up-all-charts && yarn update-local-deployment-chart",
+    "clean-up-all-charts": "rm -rf helm/internal-charts/storage-api/charts helm/magda-core/charts helm/magda/charts helm/local-deployment/charts",
+    "add-all-chart-version-changes": "git ls-files -m | grep Chart.yaml | xargs git add && git ls-files -m | grep Chart.lock | xargs git add",
+    "version": "yarn update-helm-chart-version && yarn update-all-charts && yarn add-all-chart-version-changes"
   },
   "author": "",
   "license": "Apache-2.0",
@@ -23,5 +30,13 @@
     "generate-registry-typescript": "generate-registry-typescript.js",
     "create-docker-context-for-node-component": "create-docker-context-for-node-component.js",
     "generate-connector-jobs": "generate-connector-jobs.js"
-  }
+  },
+  "versionUpdateExclude": [
+      "openfaas",
+      "magda-cert-issuer",
+      "magda-nginx-ingress-controller",
+      "nginx-ingress-controller",
+      "default-http-backend",
+      "magda-cert-issuer"
+  ]
 }
