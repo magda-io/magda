@@ -83,6 +83,8 @@ UI:
 -   Fixed patch ckan-export request trigger 400 error when the aspect doesn't exist at all
 -   Allowed UI to be served at a different URL path
 -   Fixed: incompatible `papaparse` version makes CSV file download fail (set to version 5.1.0 now)
+-   Fixed: Upgrade dompurify to 2.0.3 (#2952)
+-   Fixed: Borken SSO links (#2951)
 
 Storage:
 
