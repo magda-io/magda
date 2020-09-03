@@ -31,7 +31,13 @@ const md = new MarkdownIt({
 
 const htmlRegex = /^\s*<[^>]+>/;
 
-export function markdownToHtml(markdownString, allowUnsafeHtml, options) {
+export function markdownToHtml(
+    markdownString,
+    allowUnsafeHtml,
+    options = {
+        FORBID_TAGS: ["svg", "math"]
+    }
+) {
     if (!defined(markdownString) || markdownString.length === 0) {
         return markdownString;
     }
