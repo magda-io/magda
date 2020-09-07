@@ -1,7 +1,7 @@
 import { OpaCompileResponse, OpaTerm } from "./OpaTypes";
 import _ from "lodash";
 
-export type AuthDecision = false | AuthOr | AuthAnd | AuthQuery;
+export type AuthDecision = boolean | AuthOr | AuthAnd | AuthQuery;
 
 export class AuthQuery {
     constructor(
@@ -31,6 +31,12 @@ export default function getAuthDecision(
     }
 
     if (response.result.queries) {
+        if (
+            response.result.queries.findIndex((query) => !query?.length) !== -1
+        ) {
+            // --- if any query is an empty array, we should consider it as an unconditional match / true
+            return true;
+        }
         return new AuthOr(
             response.result.queries.map(
                 (query) =>

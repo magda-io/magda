@@ -1,0 +1,193 @@
+{
+    "result": {
+        "queries": [
+            [],
+            [
+                {
+                    "index": 0,
+                    "terms": [
+                        {
+                            "type": "ref",
+                            "value": [
+                                {
+                                    "type": "var",
+                                    "value": "eq"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "ref",
+                            "value": [
+                                {
+                                    "type": "var",
+                                    "value": "input"
+                                },
+                                {
+                                    "type": "string",
+                                    "value": "object"
+                                },
+                                {
+                                    "type": "string",
+                                    "value": "registry"
+                                },
+                                {
+                                    "type": "string",
+                                    "value": "record"
+                                },
+                                {
+                                    "type": "string",
+                                    "value": "esri-access-control"
+                                },
+                                {
+                                    "type": "string",
+                                    "value": "access"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "string",
+                            "value": "public"
+                        }
+                    ]
+                },
+                {
+                    "index": 1,
+                    "terms": [
+                        {
+                            "type": "ref",
+                            "value": [
+                                {
+                                    "type": "var",
+                                    "value": "gt"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "ref",
+                            "value": [
+                                {
+                                    "type": "var",
+                                    "value": "input"
+                                },
+                                {
+                                    "type": "string",
+                                    "value": "object"
+                                },
+                                {
+                                    "type": "string",
+                                    "value": "registry"
+                                },
+                                {
+                                    "type": "string",
+                                    "value": "record"
+                                },
+                                {
+                                    "type": "string",
+                                    "value": "esri-access-control"
+                                },
+                                {
+                                    "type": "string",
+                                    "value": "expiration"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "number",
+                            "value": 1599191720666
+                        }
+                    ]
+                }
+            ]
+        ]
+    },
+    "explanation": [
+        "Enter data.object.registry.record.esri_owner_groups.read",
+        "| Eval data.object.registry.record.esri_owner_groups.read",
+        "| Index data.object.registry.record.esri_owner_groups.read (matched 4 rules)",
+        "| Enter read = true { data.object.registry.record.admin_role }",
+        "| | Eval data.object.registry.record.admin_role",
+        "| | Index data.object.registry.record.admin_role (matched 1 rule)",
+        "| | Enter admin_role = true { input.user.roles[_] = \"00000000-0000-0003-0000-000000000000\" }",
+        "| | | Eval input.user.roles[_] = \"00000000-0000-0003-0000-000000000000\"",
+        "| | | Exit admin_role = true { input.user.roles[_] = \"00000000-0000-0003-0000-000000000000\" }",
+        "| | Exit read = true { data.object.registry.record.admin_role }",
+        "| Exit data.object.registry.record.esri_owner_groups.read",
+        "Redo data.object.registry.record.esri_owner_groups.read",
+        "| Redo data.object.registry.record.esri_owner_groups.read",
+        "| Redo read = true { data.object.registry.record.admin_role }",
+        "| | Redo data.object.registry.record.admin_role",
+        "| | Redo admin_role = true { input.user.roles[_] = \"00000000-0000-0003-0000-000000000000\" }",
+        "| | | Redo input.user.roles[_] = \"00000000-0000-0003-0000-000000000000\"",
+        "| Enter read = true { data.object.registry.record.has_permission.read; data.object.registry.record.esri_groups; data.object.registry.record.esri_expiration }",
+        "| | Eval data.object.registry.record.has_permission.read",
+        "| | Index data.object.registry.record.has_permission.read (matched 1 rule)",
+        "| | Enter read = true { data.object.registry.record.has_permission.has_permission(\"object/registry/record/read\") }",
+        "| | | Eval data.object.registry.record.has_permission.has_permission(\"object/registry/record/read\")",
+        "| | | Index data.object.registry.record.has_permission.has_permission(\"object/registry/record/read\") (matched 1 rule)",
+        "| | | Enter has_permission(permission) = true { input.user.permissions[_].operations[_].uri = permission }",
+        "| | | | Eval input.user.permissions[_].operations[_].uri = permission",
+        "| | | | Exit has_permission(permission) = true { input.user.permissions[_].operations[_].uri = permission }",
+        "| | | Exit read = true { data.object.registry.record.has_permission.has_permission(\"object/registry/record/read\") }",
+        "| | Eval data.object.registry.record.esri_groups",
+        "| | Index data.object.registry.record.esri_groups (matched 1 rule)",
+        "| | Enter esri_groups = true { input.object.registry.record[\"esri-access-control\"].groups[_] = input.user.session.esriGroups[_] }",
+        "| | | Eval input.object.registry.record[\"esri-access-control\"].groups[_] = input.user.session.esriGroups[_]",
+        "| | | Fail input.object.registry.record[\"esri-access-control\"].groups[_] = input.user.session.esriGroups[_]",
+        "| | Fail data.object.registry.record.esri_groups",
+        "| | Redo data.object.registry.record.has_permission.read",
+        "| | Redo read = true { data.object.registry.record.has_permission.has_permission(\"object/registry/record/read\") }",
+        "| | | Redo data.object.registry.record.has_permission.has_permission(\"object/registry/record/read\")",
+        "| | | Redo has_permission(permission) = true { input.user.permissions[_].operations[_].uri = permission }",
+        "| | | | Redo input.user.permissions[_].operations[_].uri = permission",
+        "| Enter read = true { data.object.registry.record.has_permission.read; data.object.registry.record.esri_owner; data.object.registry.record.esri_expiration }",
+        "| | Eval data.object.registry.record.has_permission.read",
+        "| | Index data.object.registry.record.has_permission.read (matched 1 rule)",
+        "| | Enter read = true { data.object.registry.record.has_permission.has_permission(\"object/registry/record/read\") }",
+        "| | | Eval data.object.registry.record.has_permission.has_permission(\"object/registry/record/read\")",
+        "| | | Index data.object.registry.record.has_permission.has_permission(\"object/registry/record/read\") (matched 1 rule)",
+        "| | | Enter has_permission(permission) = true { input.user.permissions[_].operations[_].uri = permission }",
+        "| | | | Eval input.user.permissions[_].operations[_].uri = permission",
+        "| | | | Exit has_permission(permission) = true { input.user.permissions[_].operations[_].uri = permission }",
+        "| | | Exit read = true { data.object.registry.record.has_permission.has_permission(\"object/registry/record/read\") }",
+        "| | Eval data.object.registry.record.esri_owner",
+        "| | Index data.object.registry.record.esri_owner (matched 1 rule)",
+        "| | Enter esri_owner = true { input.object.registry.record[\"esri-access-control\"].owner = input.user.session.esriUser }",
+        "| | | Eval input.object.registry.record[\"esri-access-control\"].owner = input.user.session.esriUser",
+        "| | | Fail input.object.registry.record[\"esri-access-control\"].owner = input.user.session.esriUser",
+        "| | Fail data.object.registry.record.esri_owner",
+        "| | Redo data.object.registry.record.has_permission.read",
+        "| | Redo read = true { data.object.registry.record.has_permission.has_permission(\"object/registry/record/read\") }",
+        "| | | Redo data.object.registry.record.has_permission.has_permission(\"object/registry/record/read\")",
+        "| | | Redo has_permission(permission) = true { input.user.permissions[_].operations[_].uri = permission }",
+        "| | | | Redo input.user.permissions[_].operations[_].uri = permission",
+        "| Enter read = true { data.object.registry.record.esri_public; data.object.registry.record.esri_expiration }",
+        "| | Eval data.object.registry.record.esri_public",
+        "| | Index data.object.registry.record.esri_public (matched 1 rule)",
+        "| | Enter esri_public = true { input.object.registry.record[\"esri-access-control\"].access = \"public\" }",
+        "| | | Eval input.object.registry.record[\"esri-access-control\"].access = \"public\"",
+        "| | | Save input.object.registry.record[\"esri-access-control\"].access = \"public\"",
+        "| | | Exit esri_public = true { input.object.registry.record[\"esri-access-control\"].access = \"public\" }",
+        "| | Eval data.object.registry.record.esri_expiration",
+        "| | Index data.object.registry.record.esri_expiration (matched 1 rule)",
+        "| | Enter esri_expiration = true { __local0__ = input.object.registry.record[\"esri-access-control\"].expiration; __local1__ = input.timestamp; gt(__local0__, __local1__) }",
+        "| | | Eval __local0__ = input.object.registry.record[\"esri-access-control\"].expiration",
+        "| | | Save __local0__ = input.object.registry.record[\"esri-access-control\"].expiration",
+        "| | | Eval __local1__ = input.timestamp",
+        "| | | Eval gt(__local0__, __local1__)",
+        "| | | Save gt(__local0__, __local1__)",
+        "| | | Exit esri_expiration = true { __local0__ = input.object.registry.record[\"esri-access-control\"].expiration; __local1__ = input.timestamp; gt(__local0__, __local1__) }",
+        "| | Exit read = true { data.object.registry.record.esri_public; data.object.registry.record.esri_expiration }",
+        "| Exit data.object.registry.record.esri_owner_groups.read",
+        "Redo data.object.registry.record.esri_owner_groups.read",
+        "| Redo data.object.registry.record.esri_owner_groups.read",
+        "| Redo read = true { data.object.registry.record.esri_public; data.object.registry.record.esri_expiration }",
+        "| | Redo data.object.registry.record.esri_expiration",
+        "| | Redo esri_expiration = true { __local0__ = input.object.registry.record[\"esri-access-control\"].expiration; __local1__ = input.timestamp; gt(__local0__, __local1__) }",
+        "| | | Redo gt(__local0__, __local1__)",
+        "| | | Redo __local1__ = input.timestamp",
+        "| | | Redo __local0__ = input.object.registry.record[\"esri-access-control\"].expiration",
+        "| | Redo data.object.registry.record.esri_public",
+        "| | Redo esri_public = true { input.object.registry.record[\"esri-access-control\"].access = \"public\" }",
+        "| | | Redo input.object.registry.record[\"esri-access-control\"].access = \"public\""
+    ]
+}
