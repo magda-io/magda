@@ -39,6 +39,8 @@ libraryDependencies ++= {
 
     "io.jsonwebtoken" % "jjwt-api" % jjwtV,
     "io.jsonwebtoken" % "jjwt-impl" % jjwtV,
-    "io.jsonwebtoken" % "jjwt-jackson" % jjwtV
+    "io.jsonwebtoken" % "jjwt-jackson" % jjwtV,
+
+    "org.scalatest" %% "scalatest" % scalaTestV % Test
   )
 }

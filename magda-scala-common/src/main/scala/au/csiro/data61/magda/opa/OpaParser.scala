@@ -119,7 +119,7 @@ object OpaParser {
         // This happens if OPA has determined that this policy resolves to false for all possible
         // values of the unknowns
         List(List(OpaQueryNoneMatched))
-      case Some(JsArray(rules)) if rules.indexOf {
+      case Some(JsArray(rules)) if rules.indexWhere {
             case JsArray(Vector()) => true
             case _                 => false
           } != -1 =>
