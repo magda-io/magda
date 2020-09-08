@@ -42,7 +42,7 @@ object SqlHelper {
         // If this policy is the default policy, we need to also apply it to records with a null value in the policy column
         defaultPolicyId match {
           case Some(innerDefaultPolicyId) if innerDefaultPolicyId == policyId =>
-            sqls"($basePolicyIdClause OR Records.authnReadPolicyId IS NULL)"
+            sqls"($basePolicyIdClause OR Records.authnReadPolicyId IS NULL OR Records.authnReadPolicyId='')"
           case _ => basePolicyIdClause
         }
       }

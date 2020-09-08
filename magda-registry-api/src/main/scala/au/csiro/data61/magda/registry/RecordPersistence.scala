@@ -1349,7 +1349,11 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       """.map(
             rs =>
               // If the column is null, replace it with the default opa policy id
-              rs.stringOpt(column).orElse(defaultOpaPolicyId)
+              rs.stringOpt(column).orElse(defaultOpaPolicyId).flatMap {
+                // if policyId is empty string, treat it as Null as well
+                case policyId: String if (policyId.trim != "") => Some(policyId)
+                case _                                         => defaultOpaPolicyId
+              }
           )
           .list()
           .apply()
