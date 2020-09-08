@@ -124,7 +124,7 @@ object OpaParser {
             case _                 => false
           } != -1 =>
         // as long as there is one rule body in queries section resolve to [], the whole queries is matched and resolved to true
-        List(List(OpaQueryNoneMatched))
+        List(List(OpaQueryAllMatched))
       case Some(JsArray(rules)) =>
         // It is assumed that a registry record level access OPA policy consists of outer and inner
         // sub-policies where all outer OPA policies are in logical OR relationship; All inner OPA
