@@ -14,7 +14,9 @@ class OpaParserSpec extends FunSpec with Matchers {
   val opaSampleResponseFolder = "magda-typescript-common/src/test/"
 
   describe("Test sample OPA Unconditional True Response") {
-    it("should correctly parse response as true if one of rule body in queries section is an empty array") {
+    it(
+      "should correctly parse response as true if one of rule body in queries section is an empty array"
+    ) {
 
       val jsonResSource: BufferedSource = fromFile(
         opaSampleResponseFolder + "sampleOpaResponseUnconditionalTrue.json"
