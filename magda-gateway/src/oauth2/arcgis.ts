@@ -138,8 +138,7 @@ export default function arcgis(options: ArcGisOptions) {
         }
 
         // Verify that the token is still good
-        const baseUrl =
-            options.arcgisInstanceBaseUrl || "https://www.arcgis.com";
+        const baseUrl = options.arcgisInstanceBaseUrl;
         const url = `${baseUrl}/sharing/rest/community/self?f=json&token=${req.user.session.accessToken}`;
 
         let tokenGood = false;
