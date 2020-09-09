@@ -740,6 +740,7 @@ Update scripts:
   before_script:
     - yarn global add pkg
   script:
+    - yarn check-release-version
     - cd scripts/.
     - pkg create-secrets/index.js --out-path create-secrets/build
     - cd ../../
@@ -815,6 +816,7 @@ Release Tags To Docker Hub:
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 1
   script:
+    - yarn check-release-version
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker login -u magdabot -p $DOCKER_HUB_PASSWORD
     - yarn install
@@ -839,6 +841,7 @@ Publish NPM Packages:
     name: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
   cache: {}
   script:
+    - yarn check-release-version
     # Setup NPM token & scoped registry
     - npm config set @magda:registry https://registry.npmjs.org/
     - npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
@@ -862,6 +865,7 @@ Publish Helm Chart:
       - deploy/helm/chart-repo
   retry: 1
   script:
+    - yarn check-release-version
     # Get AWS CLI
     - apk -v --update add python py-pip groff less mailcap
     - pip install --upgrade awscli==1.14.5 s3cmd==2.0.1 python-magic

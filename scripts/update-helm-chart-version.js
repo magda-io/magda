@@ -7,7 +7,7 @@ const YAML = require("yaml");
 const cwdPath = process.cwd();
 const pkg = fse.readJsonSync(path.join(cwdPath, "package.json"));
 if (!pkg || !pkg["version"]) {
-    console.err("Cannot find package.json at: " + cwdPath);
+    console.error("Cannot find package.json at: " + cwdPath);
     process.exit(-1);
 }
 
@@ -67,7 +67,7 @@ function updateChartVersion(chartFilePath) {
             encoding: "utf8"
         });
     } catch (e) {
-        console.err(`Failed to process ${chartFilePath}: ${e}`);
+        console.error(`Failed to process ${chartFilePath}: ${e}`);
         process.exit(-1);
     }
 }
@@ -83,7 +83,7 @@ recursive(
     ],
     function (err, files) {
         if (err) {
-            console.err(err);
+            console.error(err);
             process.exit(-1);
         }
         files.forEach(updateChartVersion);
