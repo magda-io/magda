@@ -109,6 +109,7 @@ Gateway:
 -   Allow to configure webRoutes in a way of similar to routes (i.e. specify method, auth etc)
 -   Make preview-map route configurable (through web route)
 -   Gateway will auto add headers to turn off cache if the incoming request carry a `Cache-Control` header that contains `no-cache` keyword
+-   Upgrade arcgis oAuth plugin to latest version used by Terria team #2959
 
 Authorization:
 
@@ -126,12 +127,15 @@ Authorization:
 -   Added API Key authentication support
 -   Add auth policy to distribution records
 -   Allowed custom opa policy files to be supplied during the deployment
+-   Fixed: process `unconditional true` properly #2956
+-   Remove ESRI Policy from built-in OPA policy list (but still make them available for unit tests) #2958
 
 Registry:
 
 -   Made events record the correct user id
 -   Fixed Registry History API Performance Issue when limit=1 & Updated Registry History API Document
 -   Fixed not support `Neg` operator in OPA policy
+-   Fixed: when `authnreadpolicyid` is set to empty string, registry will throw 500 error #2955
 
 Search:
 

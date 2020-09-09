@@ -77,7 +77,7 @@ export class RegoRule {
      * @type {boolean}
      * @memberof RegoRule
      */
-    public isMatched: boolean;
+    public isMatched?: boolean;
 
     /**
      * If the rule is fully evaluate
@@ -126,7 +126,7 @@ export class RegoRule {
         }
     }
 
-    clone(): RegoRule {
+    clone(options: Partial<RegoRuleOptions> = {}): RegoRule {
         const regoRule = new RegoRule({
             name: this.name,
             fullName: this.fullName,
@@ -134,7 +134,8 @@ export class RegoRule {
             value: this.value,
             isCompleteEvaluated: this.isCompleteEvaluated,
             expressions: this.expressions.map((e) => e.clone()),
-            parser: this.parser
+            parser: this.parser,
+            ...options
         });
         regoRule.isMatched = this.isMatched;
         return regoRule;
@@ -160,6 +161,7 @@ export class RegoRule {
         } else {
             // --- filter out all expressions are evaluated
             // --- note any non-false value will considered as a match (true) i.e. 0 is equivalent to true
+            // --- empty expression array indicates unconditional match (true)
             const idx = this.expressions.findIndex(
                 (exp) => !exp.isCompleteEvaluated
             );
@@ -246,6 +248,23 @@ export class RegoRule {
             throw new Error(`Encountered empty rule body.`);
         }
         return data.map((expData) => RegoExp.parseFromData(expData, parser));
+    }
+
+    static randomRuleName(prefix: string) {
+        return (prefix + Math.random()).replace(".", "_");
+    }
+
+    static createFromValue(val: RegoValue, parser: OpaCompileResponseParser) {
+        const ruleName = RegoRule.randomRuleName("fixed_value_rule_");
+        return new RegoRule({
+            isDefault: false,
+            name: ruleName,
+            fullName: ruleName,
+            isCompleteEvaluated: true,
+            expressions: [],
+            value: val,
+            parser
+        });
     }
 }
 
@@ -928,7 +947,7 @@ export default class OpaCompileResponseParser {
      * @type {RegoRule[]}
      * @memberof OpaCompileResponseParser
      */
-    public completeRules: RegoRule[] = [];
+    public originalRules: RegoRule[] = [];
 
     /**
      * Parsed, compressed & evaluated rules
@@ -952,7 +971,25 @@ export default class OpaCompileResponseParser {
         [fullName: string]: CompleteRuleResult;
     } = {};
 
-    constructor() {}
+    /**
+     * The pseudo query rule name
+     * The parser will assign a random pseudo rule name to the query expressions you submit.
+     *
+     * @type {string}
+     * @memberof OpaCompileResponseParser
+     */
+    public readonly pseudoQueryRuleName: string = RegoRule.randomRuleName(
+        "default_rule_"
+    );
+
+    private setQueryRuleResult(val: boolean) {
+        this.completeRuleResults[this.pseudoQueryRuleName] = {
+            fullName: this.pseudoQueryRuleName,
+            name: this.pseudoQueryRuleName,
+            value: val,
+            isCompleteEvaluated: true
+        };
+    }
 
     /**
      * Parse OPA result Response
@@ -969,6 +1006,7 @@ export default class OpaCompileResponseParser {
         }
         if (!this.data.result) {
             // --- mean no rule matched
+            this.setQueryRuleResult(false);
             return [];
         }
         this.data = this.data.result;
@@ -979,26 +1017,37 @@ export default class OpaCompileResponseParser {
             (!_.isArray(this.data.support) || !this.data.support.length)
         ) {
             // --- mean no rule matched
+            this.setQueryRuleResult(false);
             return [];
         }
 
-        const queries = this.data.queries;
+        const queries: any[] = this.data.queries;
 
         if (queries) {
-            queries.forEach((q: any, i: number) => {
+            if (
+                queries.findIndex(
+                    (ruleBody) => !ruleBody || !ruleBody.length
+                ) !== -1
+            ) {
+                // --- there is an empty array --- indicates unconditional matched
+                this.setQueryRuleResult(true);
+                return [];
+            }
+            queries.forEach((ruleBody: any, i: number) => {
                 const rule = new RegoRule({
-                    name: "queryRule" + 1,
-                    fullName: "queryRule" + 1,
-                    expressions: q.map((innerQ: any) =>
-                        RegoExp.parseFromData(innerQ, this)
+                    name: this.pseudoQueryRuleName,
+                    fullName: this.pseudoQueryRuleName,
+                    expressions: RegoRule.createExpressionsFromRuleBodyData(
+                        ruleBody,
+                        this
                     ),
                     isDefault: false,
                     isCompleteEvaluated: false,
-                    value: undefined,
+                    value: true,
                     parser: this
                 });
-
-                this.completeRules.push(rule);
+                rule.evaluate();
+                this.originalRules.push(rule);
                 this.rules.push(rule);
             });
         }
@@ -1020,7 +1069,7 @@ export default class OpaCompileResponseParser {
                         packageName,
                         this
                     );
-                    this.completeRules.push(regoRule);
+                    this.originalRules.push(regoRule);
                     // --- only save matched rules
                     if (!regoRule.isCompleteEvaluated) {
                         this.rules.push(regoRule);
@@ -1033,7 +1082,7 @@ export default class OpaCompileResponseParser {
             });
         }
 
-        this.calculateCompleteResult();
+        this.calculateCompleteRuleResult();
         this.reduceDependencies();
         return this.rules;
     }
@@ -1041,14 +1090,15 @@ export default class OpaCompileResponseParser {
     /**
      * Tried to merge rules outcome so that the ref value can be established easier
      * After this step, any rules doesn't involve unknown should be merged to one value
-     * This will help to generate more concise query later
+     * This will help to generate more concise query later.
+     * `CompleteRule` rule involves no `unknowns`
      *
      * Only for internal usage
      *
      * @private
      * @memberof OpaCompileResponseParser
      */
-    private calculateCompleteResult() {
+    private calculateCompleteRuleResult() {
         const fullNames = this.rules.map((r) => r.fullName);
         fullNames.forEach((fullName) => {
             const rules = this.rules.filter((r) => r.fullName === fullName);
@@ -1074,7 +1124,7 @@ export default class OpaCompileResponseParser {
                     ] = this.createCompleteRuleResult(defaultRules[0]);
                     return;
                 } else {
-                    // --- no matched rule left; Not possible
+                    // --- no matched complete non default rule left; Not possible
                     throw new Error(
                         `Unexpected empty rule result for ${fullName}`
                     );
@@ -1082,7 +1132,7 @@ export default class OpaCompileResponseParser {
             } else {
                 // --- do nothing
                 // --- Some defaultRules might be able to strip out once
-                // --- nonCompletedRules are determined later
+                // --- nonCompleteRules are determined later
                 return;
             }
         });
@@ -1116,8 +1166,13 @@ export default class OpaCompileResponseParser {
      * @returns {CompleteRuleResult}
      * @memberof OpaCompileResponseParser
      */
-    evaluateRule(fullName: string): CompleteRuleResult {
+    evaluateRule(fullName: string): CompleteRuleResult | null {
+        if (this.completeRuleResults?.[fullName]?.isCompleteEvaluated) {
+            // --- already evaluated during paring or dependencies removal
+            return this.completeRuleResults?.[fullName];
+        }
         let rules = this.rules.filter((r) => r.fullName === fullName);
+        const originalRuleName = rules[0].name;
         if (!rules.length) {
             // --- no any rule matched; often (depends on your policy) it means a overall non-matched (false)
             return null;
@@ -1128,10 +1183,12 @@ export default class OpaCompileResponseParser {
             ? undefined
             : defaultRule.value;
 
-        // --- filter out default rules & unmatched
-        rules = rules.filter(
-            (r) => !r.isDefault && !(r.isCompleteEvaluated && !r.isMatched)
-        );
+        if (rules.find((r) => r.isCompleteEvaluated))
+            // --- filter out default rules & unmatched
+            // --- isMatch is only set when r.isCompleteEvaluated = true
+            rules = rules.filter(
+                (r) => !(r.isDefault || (r.isCompleteEvaluated && !r.isMatched))
+            );
 
         if (!rules.length) {
             return {
@@ -1141,15 +1198,127 @@ export default class OpaCompileResponseParser {
                 isCompleteEvaluated: true,
                 residualRules: []
             };
-        }
+        } else {
+            const matchedRule = rules.find((r) => r.isMatched);
+            if (matchedRule) {
+                return {
+                    fullName,
+                    name: originalRuleName,
+                    value: matchedRule.value,
+                    isCompleteEvaluated: true,
+                    residualRules: []
+                };
+            }
 
-        return {
-            fullName,
-            name: rules[0].name,
-            value: undefined,
-            isCompleteEvaluated: false,
-            residualRules: rules
-        };
+            const ruleWithEmptyExps = rules.find((r) => !r.expressions.length);
+            if (ruleWithEmptyExps) {
+                // empty exp / body means unconditional match
+                return {
+                    fullName,
+                    name: originalRuleName,
+                    value: ruleWithEmptyExps.value,
+                    isCompleteEvaluated: true,
+                    residualRules: []
+                };
+            }
+            if (rules.length === 1 && rules[0].expressions.length === 1) {
+                rules[0].expressions[0].terms.length === 1;
+            }
+            // if a rules contains one expression only, we will try to resolve any possible rule ref
+            rules = _.flatMap(rules, (rule) => {
+                if (rules.length === 1 && rules[0].expressions.length === 1) {
+                    const exp = rules[0].expressions[0];
+                    if (exp.terms.length === 1 && exp.terms[0].isRef()) {
+                        const ruleRef = exp.terms[0].fullRefString();
+                        const result = this.evaluateRule(ruleRef);
+                        if (result) {
+                            if (result.isCompleteEvaluated) {
+                                return [
+                                    RegoRule.createFromValue(result.value, this)
+                                ];
+                            } else {
+                                return result.residualRules;
+                            }
+                        } else {
+                            return [rule];
+                        }
+                    } else if (exp.terms.length === 3) {
+                        const [
+                            opStr,
+                            [op1, op2]
+                        ] = exp.toOperatorOperandsArray();
+                        if (
+                            opStr === "=" &&
+                            ((op1.isRef() && typeof op2.value === "boolean") ||
+                                (op2.isRef() && typeof op1.value === "boolean"))
+                        ) {
+                            const ruleRef = op1.isRef()
+                                ? op1.fullRefString()
+                                : op2.fullRefString();
+                            const bVal =
+                                typeof op1.value === "boolean"
+                                    ? op1.value
+                                    : op2.value;
+
+                            const result = this.evaluateRule(ruleRef);
+                            if (result) {
+                                if (result.isCompleteEvaluated) {
+                                    if (bVal === false) {
+                                        return [
+                                            RegoRule.createFromValue(
+                                                !result.value,
+                                                this
+                                            )
+                                        ];
+                                    } else {
+                                        return [
+                                            RegoRule.createFromValue(
+                                                result.value,
+                                                this
+                                            )
+                                        ];
+                                    }
+                                } else {
+                                    if (bVal === false) {
+                                        return result.residualRules.map((r) =>
+                                            r.clone({ value: !r.value })
+                                        );
+                                    } else {
+                                        return result.residualRules;
+                                    }
+                                }
+                            } else {
+                                return [rule];
+                            }
+                        } else {
+                            return [rule];
+                        }
+                    } else {
+                        return [rule];
+                    }
+                } else {
+                    return [rule];
+                }
+            });
+
+            return {
+                fullName,
+                name: rules[0].name,
+                value: undefined,
+                isCompleteEvaluated: false,
+                residualRules: rules
+            };
+        }
+    }
+
+    /**
+     * Shortcut to evalute query result directly
+     *
+     * @returns {CompleteRuleResult}
+     * @memberof OpaCompileResponseParser
+     */
+    evaluate(): CompleteRuleResult {
+        return this.evaluateRule(this.pseudoQueryRuleName);
     }
 
     /**
@@ -1170,6 +1339,16 @@ export default class OpaCompileResponseParser {
             parts = parts.map((p) => `( ${p} )`);
         }
         return parts.join("\nOR\n");
+    }
+
+    /**
+     * Shortcut to evalute query result directly and returned as human readable string
+     *
+     * @returns {string}
+     * @memberof OpaCompileResponseParser
+     */
+    evaluateAsHumanReadableString(): string {
+        return this.evaluateRuleAsHumanReadableString(this.pseudoQueryRuleName);
     }
 
     /**

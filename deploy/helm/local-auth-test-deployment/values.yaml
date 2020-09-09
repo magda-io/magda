@@ -20,3 +20,8 @@ tags:
   registry-db: true
   opa: true
   authorization-api: true
+
+magda-core:
+  opa:
+    customPolicyConfigMaps:
+    - test-opa-policies

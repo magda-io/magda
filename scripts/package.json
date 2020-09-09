@@ -19,7 +19,8 @@
     "acs-cmd": "acs-cmd/index.js",
     "set-user-password": "set-user-password.js",
     "create-api-key": "create-api-key.js",
-    "update-helm-chart-version": "update-helm-chart-version.js"
+    "update-helm-chart-version": "update-helm-chart-version.js",
+    "check-release-version": "check-release-version.js"
   },
   "scripts": {
     "build": "echo \"ok\"",

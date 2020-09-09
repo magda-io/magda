@@ -2,6 +2,9 @@ import { expect } from "chai";
 import OpaCompileResponseParser from "../OpaCompileResponseParser";
 import testData from "./sampleOpaResponse.json";
 import testDataSimple from "./sampleOpaResponseSimple.json";
+import testDataUnconditionalTrue from "./sampleOpaResponseUnconditionalTrue.json";
+import testDataUnconditionalTrueWithDefaultRule from "./sampleOpaResponseUnconditionalTrueWithDefaultRule.json";
+import testDataEsriPolicyWithDefaultRule from "./sampleOpaResponseWithDefaultRule.json";
 import "mocha";
 
 /**
@@ -24,9 +27,7 @@ describe("Test OpaCompileResultParser with complex response", function () {
     it("Should evalute rule `allowRead` from parse result correctly", function () {
         const parser = new OpaCompileResponseParser();
         parser.parse(JSON.stringify(testData));
-        const result = parser.evaluateRule(
-            "data.partial.object.content.allowRead"
-        );
+        const result = parser.evaluate();
         expect(parser.hasWarns).to.be.equal(false);
         expect(result.isCompleteEvaluated).to.be.equal(false);
         expect(result.residualRules).to.be.an("array");
@@ -44,9 +45,7 @@ describe("Test OpaCompileResultParser with complex response", function () {
     it("Should generate correct human readable string", function () {
         const parser = new OpaCompileResponseParser();
         parser.parse(JSON.stringify(testData));
-        const result = parser.evaluateRuleAsHumanReadableString(
-            "data.partial.object.content.allowRead"
-        );
+        const result = parser.evaluateAsHumanReadableString();
         expect(parser.hasWarns).to.be.equal(false);
         expect(result).to.be.equal(
             'input.object.content.id = "header/navigation/datasets"'
@@ -65,9 +64,7 @@ describe("Test OpaCompileResultParser with simple response", function () {
     it("Should evalute rule `allowRead` from parse result correctly", function () {
         const parser = new OpaCompileResponseParser();
         parser.parse(JSON.stringify(testDataSimple));
-        const result = parser.evaluateRule(
-            "data.partial.object.content.allowRead"
-        );
+        const result = parser.evaluate();
         expect(parser.hasWarns).to.be.equal(false);
         expect(result.isCompleteEvaluated).to.be.equal(false);
         expect(result.residualRules).to.be.an("array");
@@ -85,12 +82,92 @@ describe("Test OpaCompileResultParser with simple response", function () {
     it("Should generate correct human readable string", function () {
         const parser = new OpaCompileResponseParser();
         parser.parse(JSON.stringify(testDataSimple));
-        const result = parser.evaluateRuleAsHumanReadableString(
-            "data.partial.object.content.allowRead"
-        );
+        const result = parser.evaluateAsHumanReadableString();
         expect(parser.hasWarns).to.be.equal(false);
         expect(result).to.be.equal(
             'input.object.content.id = "header/navigation/datasets"'
         );
+    });
+});
+
+describe("Test OpaCompileResultParser with unconditional true response", function () {
+    it("Parse sample response with no errors", function () {
+        const parser = new OpaCompileResponseParser();
+        const data = parser.parse(JSON.stringify(testDataUnconditionalTrue));
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(data).to.be.an("array");
+    });
+
+    it("Should evalute query from parse result correctly", function () {
+        const parser = new OpaCompileResponseParser();
+        parser.parse(JSON.stringify(testDataUnconditionalTrue));
+        const result = parser.evaluate();
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(result.isCompleteEvaluated).to.be.equal(true);
+        expect(result.value).to.be.equal(true);
+    });
+
+    it("Should generate correct human readable string", function () {
+        const parser = new OpaCompileResponseParser();
+        parser.parse(JSON.stringify(testDataUnconditionalTrue));
+        const result = parser.evaluateAsHumanReadableString();
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(result).to.be.equal("true");
+    });
+});
+
+describe("Test OpaCompileResultParser with unconditional true response (policy contains default rules)", function () {
+    it("Parse sample response with no errors", function () {
+        const parser = new OpaCompileResponseParser();
+        const data = parser.parse(
+            JSON.stringify(testDataUnconditionalTrueWithDefaultRule)
+        );
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(data).to.be.an("array");
+    });
+
+    it("Should evalute query from parse result correctly", function () {
+        const parser = new OpaCompileResponseParser();
+        parser.parse(JSON.stringify(testDataUnconditionalTrueWithDefaultRule));
+        const result = parser.evaluate();
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(result.isCompleteEvaluated).to.be.equal(true);
+        expect(result.value).to.be.equal(true);
+    });
+
+    it("Should generate correct human readable string", function () {
+        const parser = new OpaCompileResponseParser();
+        parser.parse(JSON.stringify(testDataUnconditionalTrueWithDefaultRule));
+        const result = parser.evaluateAsHumanReadableString();
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(result).to.be.equal("true");
+    });
+});
+
+describe("Test OpaCompileResultParser with esri policy that contains default rules", function () {
+    it("Parse sample response with no errors", function () {
+        const parser = new OpaCompileResponseParser();
+        const data = parser.parse(
+            JSON.stringify(testDataEsriPolicyWithDefaultRule)
+        );
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(data).to.be.an("array");
+    });
+
+    it("Should evalute query from parse result correctly", function () {
+        const parser = new OpaCompileResponseParser();
+        parser.parse(JSON.stringify(testDataEsriPolicyWithDefaultRule));
+        const result = parser.evaluate();
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(result.isCompleteEvaluated).to.be.equal(true);
+        expect(result.value).to.be.equal(true);
+    });
+
+    it("Should generate correct human readable string", function () {
+        const parser = new OpaCompileResponseParser();
+        parser.parse(JSON.stringify(testDataEsriPolicyWithDefaultRule));
+        const result = parser.evaluateAsHumanReadableString();
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(result).to.be.equal("true");
     });
 });

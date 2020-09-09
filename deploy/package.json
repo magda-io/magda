@@ -11,9 +11,9 @@
     "create-config-configmap": "kubectl delete configmap config --ignore-not-found && kubectl create configmap config --from-file ./kubernetes/config/",
     "update-magda-core-chart": "helm dep up helm/internal-charts/storage-api && helm dep up helm/magda-core",
     "update-magda-chart": "yarn update-magda-core-chart && helm dep up helm/magda",
-    "update-local-deployment-chart": "yarn update-magda-chart && helm dep up helm/local-deployment",
+    "update-local-deployment-chart": "yarn update-magda-chart && helm dep up helm/local-deployment && helm dep up helm/local-auth-test-deployment",
     "update-all-charts": "yarn clean-up-all-charts && yarn update-local-deployment-chart",
-    "clean-up-all-charts": "rm -rf helm/internal-charts/storage-api/charts helm/magda-core/charts helm/magda/charts helm/local-deployment/charts",
+    "clean-up-all-charts": "rm -rf helm/internal-charts/storage-api/charts helm/magda-core/charts helm/magda/charts helm/local-deployment/charts helm/local-auth-test-deployment/charts",
     "add-all-chart-version-changes": "git ls-files -m | grep Chart.yaml | xargs git add && git ls-files -m | grep Chart.lock | xargs git add",
     "version": "yarn update-helm-chart-version && yarn update-all-charts && yarn add-all-chart-version-changes"
   },

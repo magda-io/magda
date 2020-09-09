@@ -87,6 +87,8 @@ export default class PostgresDatabase implements Database {
     ) => {
         if (result === false) {
             return { sql: "false", params: [] };
+        } else if (result === true) {
+            return { sql: "true", params: [] };
         } else if (result instanceof AuthQuery) {
             // We don't want to simply put the column name into the SQL because we wouldn't be able to parameterise it, which would leave us vulnerable to SQL injection.
             if (result.path.join(".") !== "content.id") {
