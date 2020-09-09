@@ -19,13 +19,14 @@ stages:
   - dockerize
   - preview
   - deploy-dev
+  - pre-release
   - release
   - deploy-staging
   - deploy-prod
 
 builders-and-yarn:
   stage: builders
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:master
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 1
   needs: []
   cache:
@@ -728,34 +729,6 @@ inttest:registryAuth:
     - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/local-deployment --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview-multi-tenant.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,magda.magda-core.combined-db.waleBackup.method=NONE,magda.magda-core.elasticsearch.useGcsSnapshots=false,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,global.magdaAdminPortalName=admin-$CI_COMMIT_REF_SLUG.dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600 --wait
     - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
 
-Update scripts:
-  stage: release
-  only:
-    # Strict Semvar validation
-    - /^v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
-  except:
-    - branches
-    - triggers
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
-  before_script:
-    - yarn global add pkg
-  script:
-    - yarn check-release-version
-    - cd scripts/.
-    - pkg create-secrets/index.js --out-path create-secrets/build
-    - cd ../../
-    - if [ ! -d magda-config/ ]; then git clone https://github.com/magda-io/magda-config.git; else cd magda-config && git pull && cd ..; fi
-    - cp magda/scripts/create-secrets/build/index-linux magda-config/create-secrets/index-linux
-    - cp magda/scripts/create-secrets/build/index-macos magda-config/create-secrets/index-macos
-    - cp magda/scripts/create-secrets/build/index-win.exe magda-config/create-secrets/index-win.exe
-    - cd magda-config
-    - cd create-secrets
-    - git add index-linux index-macos index-win.exe
-    - git config --global user.email "magdabot@magda.io"
-    - git config --global user.name "magdabot"
-    - git commit -m "Update create-secrets scripts `date`"
-    - git push "https://x-access-token:$GITHUB_ACCESS_TOKEN@github.com/magda-io/magda-config" master
-
 
 Stop Preview: &stopPreview
   stage: preview
@@ -800,6 +773,21 @@ Deploy Master To Dev:
     - kubectl create secret docker-registry regcred --namespace default --docker-server=registry.gitlab.com --docker-username=gitlab-ci-token --docker-password=$CI_JOB_TOKEN --docker-email=alex.gilleran@data61.csiro.au --dry-run -o json | kubectl apply --namespace default -f -
     - helm upgrade magda deploy/helm/local-deployment --install --recreate-pods -f deploy/helm/magda-dev.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=master --timeout 3600m --wait
 
+pre-release:check-release-version:
+  stage: pre-release
+  only:
+    # Strict Semvar validation
+    - /^v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
+  except:
+    - branches
+    - triggers
+  dependencies:
+    - builders-and-yarn
+  cache: {}
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  script:
+    - yarn check-release-version
+
 Release Tags To Docker Hub:
   stage: release
   only:
@@ -810,13 +798,15 @@ Release Tags To Docker Hub:
     - triggers
   dependencies:
     - builders-and-yarn
+  needs:
+    - pre-release:check-release-version
+    - builders-and-yarn
   cache: {}
   services:
     - docker:dind
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 1
   script:
-    - yarn check-release-version
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker login -u magdabot -p $DOCKER_HUB_PASSWORD
     - yarn install
@@ -837,11 +827,17 @@ Publish NPM Packages:
     - buildtest:typescript-apis-stateless
     - buildtest:typescript-apis-with-pg
     - buildtest:typescript-apis-with-es
+  needs:
+    - builders-and-yarn
+    - registry-typescript-api
+    - buildtest:typescript-apis-stateless
+    - buildtest:typescript-apis-with-pg
+    - buildtest:typescript-apis-with-es
+    - pre-release:check-release-version
   image:
     name: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
   cache: {}
   script:
-    - yarn check-release-version
     # Setup NPM token & scoped registry
     - npm config set @magda:registry https://registry.npmjs.org/
     - npm config set '//registry.npmjs.org/:_authToken' "${NPM_TOKEN}"
@@ -857,7 +853,9 @@ Publish Helm Chart:
     - triggers
   dependencies:
     - buildtest:helm-charts
-  needs: ["Release Tags To Docker Hub"]
+  needs:
+    - buildtest:helm-charts
+    - pre-release:check-release-version
   image:
     name: dtzar/helm-kubectl:3.1.1
   cache:
@@ -883,3 +881,32 @@ Publish Helm Chart:
     - mv -f sync_dir/index.yaml index_dir/index.yaml
     - aws s3 sync sync_dir s3://magda-charts/ --acl public-read
     - aws s3 cp index_dir/index.yaml s3://magda-charts/index.yaml --acl public-read
+
+Update scripts:
+  stage: release
+  only:
+    # Strict Semvar validation
+    - /^v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
+  except:
+    - branches
+    - triggers
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+  needs:
+    - pre-release:check-release-version
+  before_script:
+    - yarn global add pkg
+  script:
+    - cd scripts/.
+    - pkg create-secrets/index.js --out-path create-secrets/build
+    - cd ../../
+    - if [ ! -d magda-config/ ]; then git clone https://github.com/magda-io/magda-config.git; else cd magda-config && git pull && cd ..; fi
+    - cp magda/scripts/create-secrets/build/index-linux magda-config/create-secrets/index-linux
+    - cp magda/scripts/create-secrets/build/index-macos magda-config/create-secrets/index-macos
+    - cp magda/scripts/create-secrets/build/index-win.exe magda-config/create-secrets/index-win.exe
+    - cd magda-config
+    - cd create-secrets
+    - git add index-linux index-macos index-win.exe
+    - git config --global user.email "magdabot@magda.io"
+    - git config --global user.name "magdabot"
+    - git commit -m "Update create-secrets scripts `date`"
+    - git push "https://x-access-token:$GITHUB_ACCESS_TOKEN@github.com/magda-io/magda-config" master
