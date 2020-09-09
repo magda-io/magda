@@ -1,18 +1,19 @@
 apiVersion: v2
 name: "magda"
-description: "A complete solution for managing, publishing and discovering government data, private and open. This chart includes the magda default deployment."
-version: "0.0.57-0"
+description: "A complete solution for managing, publishing and discovering
+  government data, private and open. This chart includes the magda default
+  deployment."
+version: "0.0.57-rc.2"
 kubeVersion: ">= 1.14.0-0"
 home: "https://github.com/magda-io/magda"
-sources: ["https://github.com/magda-io/magda"]
+sources: [ "https://github.com/magda-io/magda" ]
 dependencies:
   - name: magda-core
-    version: 0.0.57-0
+    version: 0.0.57-rc.2
     repository: file://../magda-core
   # magda-core chart is always enabled.
   # Thus, no tags or condition are required.
   # You should set its sub-chart to enabled or not.
-
   - name: magda-function-history-report
     version: 0.0.57-0
     repository: https://charts.magda.io
@@ -66,7 +67,7 @@ dependencies:
       - all
       - url-processors
       - ckan-connector-functions
-  
+
   - name: magda-function-esri-url-processor
     version: 0.0.57-0
     repository: https://charts.magda.io
@@ -74,4 +75,3 @@ dependencies:
       - all
       - url-processors
       - magda-function-esri-url-processor
-
