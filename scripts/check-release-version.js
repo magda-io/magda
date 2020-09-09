@@ -4,7 +4,7 @@ const fse = require("fs-extra");
 const chalk = require("chalk");
 
 const cwdPath = process.cwd();
-const pkg = fse.readJsonSync(path.join(cwdPath, "package.json"));
+const pkg = fse.readJsonSync(path.join(cwdPath, "scripts", "package.json"));
 if (!pkg || !pkg["version"]) {
     console.error(chalk.red("Cannot find package.json at: " + cwdPath));
     process.exit(-1);

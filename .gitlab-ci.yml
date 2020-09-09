@@ -857,6 +857,7 @@ Publish Helm Chart:
     - triggers
   dependencies:
     - buildtest:helm-charts
+  needs: ["Release Tags To Docker Hub"]
   image:
     name: dtzar/helm-kubectl:3.1.1
   cache:
@@ -865,7 +866,6 @@ Publish Helm Chart:
       - deploy/helm/chart-repo
   retry: 1
   script:
-    - yarn check-release-version
     # Get AWS CLI
     - apk -v --update add python py-pip groff less mailcap
     - pip install --upgrade awscli==1.14.5 s3cmd==2.0.1 python-magic
