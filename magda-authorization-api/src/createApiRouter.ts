@@ -371,7 +371,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {get} /public/orgunits/bylevel/:orgLevel List OrgUnits at certain org tree level
+     * @api {get} /v0/auth/orgunits/bylevel/:orgLevel List OrgUnits at certain org tree level
      * @apiDescription
      * List all OrgUnits at certain org tree level
      * Optionally provide a test Org Unit Id that will be used to
@@ -432,7 +432,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {get} /public/orgunits Get orgunits by name
+     * @api {get} /v0/auth/orgunits Get orgunits by name
      * @apiDescription
      * Gets org units matching a name
      * Optionally provide a test Org Unit Id that will be used to
@@ -488,7 +488,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {get} /v0/orgunits/root Get root organisation
+     * @api {get} /v0/auth/orgunits/root Get root organisation
      * @apiDescription Gets the root organisation unit (top of the tree).
      *
      * @apiSuccessExample {json} 200
@@ -516,7 +516,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {post} /v0/orgunits/root Create root organisation
+     * @api {post} /v0/auth/orgunits/root Create root organisation
      * @apiDescription Creates the root organisation unit (top of the tree).
      *
      * @apiParamExample (Body) {json}:
@@ -549,7 +549,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {get} /public/orgunits/:nodeId Get details for a node
+     * @api {get} /v0/auth/orgunits/:nodeId Get details for a node
      * @apiDescription Gets the details of the node with this id.
      *
      * @apiParam {string} nodeId id of the node to query
@@ -580,7 +580,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {put} /public/orgunits/:nodeId Set details for a node
+     * @api {put} /v0/auth/orgunits/:nodeId Set details for a node
      * @apiDescription Creates/updates a node at the specified id
      *
      * @apiParam (Path) {string} nodeId id of the node to query
@@ -629,7 +629,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {get} /public/orgunits/:nodeId/children/immediate Get immediate children for a node
+     * @api {get} /v0/auth/orgunits/:nodeId/children/immediate Get immediate children for a node
      * @apiDescription Gets all the children immediately below the requested node. If the node doesn't exist, returns an empty list.
      *
      * @apiParam {string} nodeId id of the node to query
@@ -668,7 +668,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {get} /public/orgunits/:nodeId/children/all Get all children for a node
+     * @api {get} /v0/auth/orgunits/:nodeId/children/all Get all children for a node
      * @apiDescription Gets all the children below the requested node recursively. If node doesn't exist, returns an empty list.
      *
      * @apiParam {string} nodeId id of the node to query
@@ -707,7 +707,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {delete} /public/orgunits/:nodeId/subtree Delete subtree
+     * @api {delete} /v0/auth/orgunits/:nodeId/subtree Delete subtree
      * @apiDescription Deletes a node and all its children. Will delete the root node if that is the one specified in nodeId.
      *
      * @apiParam {string} nodeId id of the node to delete

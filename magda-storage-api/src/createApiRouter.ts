@@ -41,7 +41,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Storage
      *
-     * @api {PUT} /v0/buckets/{bucketid} Request to create a new bucket
+     * @api {PUT} /v0/storage/buckets/{bucketid} Request to create a new bucket
      *
      * @apiDescription Creates a new bucket with a specified name. Restricted to admins only.
      *
@@ -99,7 +99,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Storage
      *
-     * @api {get} /v0/{bucket}/{path} Request to download an object in {bucket} at path {path}
+     * @api {get} /v0/storage/{bucket}/{path} Request to download an object in {bucket} at path {path}
      *
      * @apiDescription Downloads an object
      *
@@ -228,7 +228,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Storage
      *
-     * @api {post} /v0/upload/{bucket}/{path} Request to upload files to {bucket}, in the directory {path}
+     * @api {post} /v0/storage/upload/{bucket}/{path} Request to upload files to {bucket}, in the directory {path}
      *
      *
      * @apiDescription Uploads a file. Restricted to admins only.
@@ -314,7 +314,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Storage
      *
-     * @api {put} /v0/{bucket}/{filePath}?{recordId} Request to upload an object to {bucket} with name {filePath}
+     * @api {put} /v0/storage/{bucket}/{filePath}?{recordId} Request to upload an object to {bucket} with name {filePath}
      *
      * @apiDescription Uploads an object. Restricted to admins only.
      *
@@ -399,7 +399,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Storage
      *
-     * @api {delete} /v0/{bucket}/{filePath} Request to delete an object at {bucket} with path {filePath}
+     * @api {delete} /v0/storage/{bucket}/{filePath} Request to delete an object at {bucket} with path {filePath}
      *
      * @apiDescription Deletes an object. This is a hard delete, and cannot be undone.
      * Note that if the {filePath} does not exist, the request will not fail.

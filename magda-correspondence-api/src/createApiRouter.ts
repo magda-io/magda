@@ -69,7 +69,7 @@ export default function createApiRouter(
     /**
      * @apiGroup Correspondence API
      *
-     * @api {post} /v0/send/dataset/request Send Dataset Request
+     * @api {post} /v0/correspondence/send/dataset/request Send Dataset Request
      *
      * @apiDescription Sends a request for a dataset to the site administrators
      *
@@ -124,7 +124,7 @@ export default function createApiRouter(
     /**
      * @apiGroup Correspondence API
      *
-     * @api {post} /v0/send/dataset/:datasetId/question Send a question about a dataest
+     * @api {post} /v0/correspondence/send/dataset/:datasetId/question Send a question about a dataest
      *
      * @apiDescription Sends a question about a dataset to the data custodian if available,
      *  and to the administrators if not
