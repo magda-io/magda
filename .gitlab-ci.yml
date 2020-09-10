@@ -26,7 +26,7 @@ stages:
 
 builders-and-yarn:
   stage: builders
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:master
   retry: 1
   needs: []
   cache:
