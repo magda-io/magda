@@ -91,15 +91,13 @@ registry-typescript-api:
 
 buildtest:search-with-index-cache:
   stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:master
   retry: 2
   timeout: 18 minutes
   needs: [
-    "builders-and-yarn",
     "sbt-prebuild"
   ]
   dependencies:
-    - builders-and-yarn
     - sbt-prebuild
   before_script:
     - |
@@ -157,15 +155,13 @@ buildtest:search-with-index-cache:
 
 buildtest:search-no-index-cache:
   stage: buildtest
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:master
   retry: 2
   timeout: 18 minutes
   needs: [
-    "builders-and-yarn",
     "sbt-prebuild"
   ]
   dependencies:
-    - builders-and-yarn
     - sbt-prebuild
   before_script:
     - |
@@ -252,14 +248,12 @@ buildtest:ui:
 buildtest:registry:
   stage: buildtest
   retry: 2
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:master
   needs: [
-    "builders-and-yarn",
     "sbt-prebuild"
   ]
   timeout: 30 minutes
   dependencies:
-    - builders-and-yarn
     - sbt-prebuild
   services:
   # postgres 9.6.17 (published on 15th Feb 2020) introduced an issue see here (https://gitlab.com/gitlab-com/support-forum/issues/5199)
