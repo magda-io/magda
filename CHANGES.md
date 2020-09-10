@@ -39,6 +39,7 @@ General:
 -   Openfaas should be turn on / of via condition field `global.openfaas.enabled` instead of `tags`.
 -   When `global.openfaas.enabled` is false, all openfaas dependent objects will either report error to users or be skiped for creation.
 -   Largely Reduced the web-server docker image size
+-   Fixed incorrect path in API docs #2964
 
 UI:
 
