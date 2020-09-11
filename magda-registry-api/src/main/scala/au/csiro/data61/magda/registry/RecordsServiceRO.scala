@@ -52,7 +52,7 @@ class RecordsServiceRO(
     *   - `value`
     *   Except `operator`, all parts must be encoded as `application/x-www-form-urlencoded` MIME format.
     *
-    *   If more than one queries is passed through the `aspectOrQuery` parameters, they will be grouped with `AND` logic.
+    *   If more than one queries is passed through the `aspectQuery` parameters, they will be grouped with `AND` logic.
     *
     *   Support the following operators in aspectQuery or `aspectOrQuery`:
     *   - `:` equal
@@ -457,7 +457,7 @@ class RecordsServiceRO(
     *   - `value`
     *   Except `operator`, all parts must be encoded as `application/x-www-form-urlencoded` MIME format.
     *
-    *   If more than one queries is passed through the `aspectOrQuery` parameters, they will be grouped with `AND` logic.
+    *   If more than one queries is passed through the `aspectQuery` parameters, they will be grouped with `AND` logic.
     *
     *   Support the following operators in aspectQuery or `aspectOrQuery`:
     *   - `:` equal
