@@ -1,4 +1,4 @@
-# How to create API key
+# How to create Local Users
 
 Magda now support creating local authenticated users (instead of SSO). You can use the `set-user-password` script to create users / set password for users. Please note: users will need to use their email address as username to login.
 

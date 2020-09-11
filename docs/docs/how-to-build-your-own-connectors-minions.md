@@ -2,20 +2,22 @@
 
 Connectors & minions are components that can be deployed in addition to the [core magda services](https://github.com/magda-io/magda/tree/master/deploy/helm/magda-core) to extend the functionality of your Magda instance by harvesting data from other sources, and enhancing that data.
 
-The default [Magda helm chart](https://github.com/magda-io/magda/tree/master/deploy/helm/magda) is an example of creating a Magda deployment that combines `magda-core` with a selection of connectors and minions. You can find out more about how to reference different components (published Magda helm charts) from its dependencies definition file [requirements.yaml](https://github.com/magda-io/magda/blob/master/deploy/helm/magda/requirements.yaml).
+The default [local deployment chart](https://github.com/magda-io/magda/tree/master/deploy/helm/local-deployment) is an example of creating a Magda deployment that combines `magda` with a selection of connectors and minions (and other components). You can find out more about how to reference different components (published Magda helm charts) from its dependencies definition file [Chart.yaml](https://github.com/magda-io/magda/blob/master/deploy/helm/local-deployment/Chart.yaml).
 
-Please note: the `requirements.yaml` above references `magda-core` as a local directory in order to use the local `magda-core` chart files in this repository. You can (and should) reference the `magda-core` helm chart that published on our helm chart repository in order to use the packed production ready version:
+Please note: the `Chart.yaml` above references `magda` as a local directory in order to use the local `magda` chart files in this repository. You can (and should) reference the `magda` helm chart that published on our helm chart repository in order to use the packed production ready version:
 
 ```yaml
 dependencies:
-    - name: magda-core
+    - name: magda
       repository: https://charts.magda.io
-      version: 0.0.57-0
+      version: 0.0.57
 ```
+
+> PS. You can also choose to depend on [magda-core](https://github.com/magda-io/magda/tree/master/deploy/helm/magda-core) chart that includes only core modules of magda.
 
 ### Package your own connector or minion as deployable component (helm chart)
 
-In order to deploy a connector or minion with `magda-core`, you need to:
+In order to deploy a connector or minion with `magda`, you need to:
 
 -   Build the docker image of the connector / minion and publish it to the docker registry that you use for your deployment (e.g. [docker hub](https://hub.docker.com/)).
 -   Create a [helm chart](https://helm.sh/docs/topics/charts/) for your connector / minion.
