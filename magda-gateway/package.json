@@ -1,7 +1,7 @@
 {
   "name": "@magda/gateway",
   "description": "The public gateway to all of MAGDA, including the API and web front end.",
-  "version": "0.0.57-0",
+  "version": "0.0.58-alpha.0",
   "license": "Apache-2.0",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
@@ -16,11 +16,9 @@
     "test": "PGUSER=postgres mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
   },
   "dependencies": {
-    "@magda/tenant-api": "^0.0.57-0",
-    "@magda/typescript-common": "^0.0.57-0",
+    "@magda/tenant-api": "^0.0.58-alpha.0",
+    "@magda/typescript-common": "^0.0.58-alpha.0",
     "bcrypt": "^5.0.0",
-    "is-uuid": "^1.0.2",
-    "uuid": "^8.2.0",
     "body-parser": "^1.13.2",
     "cheerio": "^0.22.0",
     "compression": "^1.7.2",
@@ -36,6 +34,7 @@
     "gravatar": "^1.8.0",
     "helmet": "^3.12.0",
     "http-proxy": "^1.16.2",
+    "is-uuid": "^1.0.2",
     "isomorphic-fetch": "^2.2.1",
     "isomorphic-form-data": "^1.0.0",
     "jsonwebtoken": "^8.4.0",
@@ -54,13 +53,12 @@
     "request": "^2.88.0",
     "tsmonad": "^0.7.2",
     "urijs": "^1.18.12",
+    "uuid": "^8.2.0",
     "yargs": "^12.0.5"
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.57-0",
+    "@magda/scripts": "^0.0.58-alpha.0",
     "@types/bcrypt": "^3.0.0",
-    "@types/is-uuid": "^1.0.0",
-    "@types/uuid": "^8.0.0",
     "@types/chai": "^4.0.1",
     "@types/compression": "^0.0.36",
     "@types/cookie": "^0.3.3",
@@ -71,6 +69,7 @@
     "@types/express": "^4.17.6",
     "@types/express-session": "^1.15.15",
     "@types/http-proxy": "^1.16.0",
+    "@types/is-uuid": "^1.0.0",
     "@types/lodash": "^4.14.74",
     "@types/mocha": "^2.2.41",
     "@types/nock": "^8.2.1",
@@ -85,6 +84,7 @@
     "@types/sinon": "^2.3.3",
     "@types/supertest": "^2.0.2",
     "@types/urijs": "1.19.1",
+    "@types/uuid": "^8.0.0",
     "@types/yargs": "^12.0.8",
     "chai": "^4.1.0",
     "mocha": "^3.4.2",
