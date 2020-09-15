@@ -40,3 +40,5 @@ Then finally install:
 ```
 helm install --name cert-issuer --namespace cert-issuer deploy/helm/magda-cert-issuer --set hostedZoneID=CHANGEME,accessKeyID=CHANGEME,acmeEmail=CHANGEME,useStaging=SHOULDIUSESTAGING
 ```
+
+{{ template "chart.valuesSection" . }}
