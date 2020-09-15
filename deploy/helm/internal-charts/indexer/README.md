@@ -1,0 +1,23 @@
+# indexer
+
+![Version: 0.0.58-alpha.0](https://img.shields.io/badge/Version-0.0.58-alpha.0-informational?style=flat-square)
+
+A Helm chart for Kubernetes
+
+## Requirements
+
+Kubernetes: `>= 1.14.0-0`
+
+## Values
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| elasticsearch.replicas | int | `0` |  |
+| elasticsearch.shards | int | `1` |  |
+| elasticsearch.useGcsSnapshots | bool | `false` |  |
+| image | object | `{}` |  |
+| makeSnapshots | bool | `false` |  |
+| readSnapshots | bool | `false` |  |
+| resources.limits.cpu | string | `"250m"` |  |
+| resources.requests.cpu | string | `"100m"` |  |
+| resources.requests.memory | string | `"250Mi"` |  |
