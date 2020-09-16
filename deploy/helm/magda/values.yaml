@@ -8,7 +8,9 @@ tags:
   minion-ckan-exporter: false
 
 global:
+  # connectors -- sdsjk testssss
   connectors:
+    # connectors.includeInitialJobs -- sdsjk testssss
     includeInitialJobs: false
     includeCronJobs: true
   openfaas:
