@@ -1,4 +1,5 @@
 image: {}
+# resources -- configure pod resources
 resources:
   requests:
     cpu: 50m
