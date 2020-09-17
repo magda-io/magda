@@ -2,7 +2,7 @@
 
 ![Version: 0.0.58-alpha.0](https://img.shields.io/badge/Version-0.0.58-alpha.0-informational?style=flat-square)
 
-A Helm chart for Kubernetes
+Magda's Access Control Policy Engine ([Open Policy Agent](https://www.openpolicyagent.org/))
 
 ## Requirements
 
