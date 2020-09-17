@@ -1,12 +1,18 @@
 # Magda Documentation
 
+-   [How to build and run](/docs/building-and-running)
+-   [Deploy Magda with helm charts release](https://github.com/magda-io/magda-config)
+-   [Magda Helm Chart Reference](/docs/helm-charts-docs-index)
 -   [How to use APIs](/docs/using-api)
 -   [How to document APIs](/docs/api-documentation-howto)
--   [How to build and run](/docs/building-and-running)
+-   [How to create API key](/docs/how-to-create-api-key)
+-   [How to create local users](/docs/how-to-create-local-users)
 -   [Guide to Magda internals](/docs/architecture/guide-to-magda-internals)
--   [How to design and maintain connectors for external systems](/docs/connector-howto)
+-   [How to build your own connectors / minions](/docs/how-to-build-your-own-connectors-minions)
 -   [How to deploy an HA, production deployment on GKE](/docs/deploying-for-production-on-gke)
 -   [Ports used when running locally](/docs/local-ports)
 -   [Regression test](/docs/regression-test)
 -   [Roadmap](/docs/roadmap)
 -   [Mike's Windows Setup Instructions](/docs/windows-instructions)
+
+More documentation, please check [here](https://github.com/magda-io/magda/tree/master/docs/docs)
