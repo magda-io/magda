@@ -1,0 +1,28 @@
+# opa
+
+![Version: 0.0.58-alpha.0](https://img.shields.io/badge/Version-0.0.58-alpha.0-informational?style=flat-square)
+
+Magda's Access Control Policy Engine ([Open Policy Agent](https://www.openpolicyagent.org/))
+
+## Requirements
+
+Kubernetes: `>= 1.14.0-0`
+
+## Values
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| autoscaler.enabled | bool | `false` |  |
+| autoscaler.maxReplicas | int | `3` |  |
+| autoscaler.minReplicas | int | `1` |  |
+| autoscaler.targetCPUUtilizationPercentage | int | `80` |  |
+| customPolicyConfigMaps | list | `[]` | a list of names of the configMaps that contains custom policy files. the configMap must be created using magda helm chart template: [magda.filesToJson](https://github.com/magda-io/magda/blob/21499b75c7a7ee00d68886338713217d83ccb91f/deploy/helm/magda-core/templates/_helpers.tpl#L244). More info see [here](https://github.com/magda-io/magda-configmap-dir-loader). |
+| image | object | `{}` |  |
+| loaderImage.imagePullSecret | bool | `false` |  |
+| loaderImage.pullPolicy | string | `"IfNotPresent"` |  |
+| loaderImage.repository | string | `"docker.io/data61"` |  |
+| loaderImage.tag | string | `"0.0.57-0"` |  |
+| replicas | int | `1` |  |
+| resources.limits.cpu | string | `"100m"` |  |
+| resources.requests.cpu | string | `"20m"` |  |
+| resources.requests.memory | string | `"50Mi"` |  |

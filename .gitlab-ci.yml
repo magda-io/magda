@@ -492,6 +492,32 @@ buildtest:helm-charts:
       - "deploy/helm/local-auth-test-deployment/charts"
     expire_in: 7 days
 
+buildtest:helm-docs-check:
+  stage: buildtest
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:master
+  needs: []
+  cache:
+    paths: []
+  services:
+    - docker:dind
+  script:
+    - code=0
+    - docker run --rm -v "$(pwd):/helm-docs" -u $(id -u) jnorwood/helm-docs:latest || code=$?;
+      if [ "$code" != "0" ]; then 
+        echo "Failed to run helm-docs!";
+        exit 1;
+      fi;
+    - cd deploy
+    - code=0
+    - git ls-files -m | grep -i readme.md || code=$?;
+      if [ "$code" == "0" ]; then
+        echo -e "Some of helm chart docs are required to be updated using the [helm-docs](https://github.com/norwoodj/helm-docs) tool. \n
+        Please run helm-docs at project root, review & commit docs changes and push a new commit.";
+        exit 1;
+      else 
+        echo -e "helm docs check passed. helm docs update is not required.";
+      fi;
+
 dockerize:scala:
   stage: dockerize
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG

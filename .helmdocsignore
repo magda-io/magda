@@ -1,0 +1,4 @@
+deploy/helm/local-auth-test-deployment
+deploy/helm/local-deployment
+deploy/helm/magda-nginx-ingress-controller
+deploy/helm/openfaas

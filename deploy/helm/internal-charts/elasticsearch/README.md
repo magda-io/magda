@@ -1,0 +1,33 @@
+# elasticsearch
+
+![Version: 0.0.58-alpha.0](https://img.shields.io/badge/Version-0.0.58-alpha.0-informational?style=flat-square)
+
+A Helm chart for Kubernetes
+
+## Requirements
+
+Kubernetes: `>= 1.14.0-0`
+
+## Values
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| backup.googleApplicationCreds | object | `{}` |  |
+| client.heapSize | string | `"256m"` |  |
+| client.pluginsInstall | string | `""` |  |
+| client.replicas | int | `1` |  |
+| client.resources.limits.cpu | string | `"100m"` |  |
+| client.resources.requests.cpu | string | `"50m"` |  |
+| client.resources.requests.memory | string | `"500Mi"` |  |
+| data.heapSize | string | `"256m"` |  |
+| data.pluginsInstall | string | `""` |  |
+| data.resources.limits.cpu | string | `"500m"` |  |
+| data.resources.requests.cpu | string | `"200m"` |  |
+| data.resources.requests.memory | string | `"500Mi"` |  |
+| data.storage | string | `"50Gi"` |  |
+| image | object | `{}` |  |
+| master.pluginsInstall | string | `""` |  |
+| master.resources.limits.cpu | string | `"100m"` |  |
+| master.resources.requests.cpu | string | `"50m"` |  |
+| master.resources.requests.memory | string | `"900Mi"` |  |
+| production | bool | `false` |  |

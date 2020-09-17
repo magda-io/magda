@@ -2,6 +2,8 @@
 
 ## 0.0.58
 
+-   Added Documentation for Magda Helm Charts (generated using [helm-docs](https://github.com/norwoodj/helm-docs))
+
 ## 0.0.57
 
 General:

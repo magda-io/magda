@@ -15,7 +15,8 @@ enableWebAccessControl: false
 enableCkanRedirection: false
 
 auth:
-  # Whether enable magda internal authentication provider. Default to true
+  # auth.enableInternalAuthProvider -- Whether enable magda internal authentication provider. 
+  # @default true
   enableInternalAuthProvider: true
 
 helmet:
@@ -28,8 +29,8 @@ resources:
   limits:
     cpu: 200m
 
-# Routes list here are available under `/api/v0/` path
-# See `Proxy Target Definition` below for route format
+# defaultRoutes -- Routes list here are available under `/api/v0/` path.
+# See `Proxy Target Definition` for route format.
 defaultRoutes:
   search:
     to: http://search-api/v0
@@ -68,23 +69,14 @@ defaultRoutes:
     to: http://tenant-api/v0
     auth: true
 
-# extra web routes
-# See `Proxy Target Definition` below for route format
+# webRoutes -- extra web routes.
+# See `Proxy Target Definition` for route format.
 webRoutes:
   preview-map: http://preview-map:6110
 
-### Proxy Target Definition
-# A proxy target definition that defines `defaultRoutes` or `webRoutes` above support the following fields:
-# - `to`: target url
-# - `methods`: array of string. "all" means all methods
-# - `auth`: whether this target requires session. Otherwise, session / password related midddleware won't run
-# - `redirectTrailingSlash`: make /xxx auto redirect to /xxxx/
-# - `statusCheck`: check target's live status from the gateway
-# A proxy target be also specify in a simply string form, in which case, Gateway assumes a GET method, no auth proxy route is requested.
-
-# Default web route. 
-# This is the last route of the proxy
-# Main UI should be served from here
+# web -- Default web route. 
+# This is the last route of the proxy.
+# Main UI should be served from here.
 web: http://web
 
 csp:
@@ -106,19 +98,18 @@ cors:
   - "Content-Range"
   - "X-Content-Range"
 
-# Session cookie settings
-# Default value will be used if any options are left with blank
-# Supported options are: 
-# - domain: By default, no domain is set, and most clients will consider the cookie to apply to only the current domain.
-# - expires: A fix cookie expire date. The expires option should not be set directly; instead only use the maxAge option.
-# - httpOnly: Default: true
-# - maxAge: Default: 7 * 60 * 60 * 1000
-# - path: Default: '/'
-# - sameSite: Default: false (not set)
-# - secure: Default: false (not set)
+# cookie -- Session cookie settings.
+# Default value will be used if any options are left with blank.
 # More info: https://github.com/expressjs/session#cookie
+# Supported options are: 
+# - `expires`: A fix cookie expire date. The expires option should not be set directly; instead only use the maxAge option.
+# - `httpOnly`: Default: true.
+# - `maxAge`: Default: 7 * 60 * 60 * 1000.
+# - `path`: Default: '/'.
+# - `sameSite`: Default: false (not set).
+# - `secure1: Default: false (not set).
 cookie:
   sameSite: "lax"
 
-# If a response that goes through the gateway doesn't set Cache-Control, it'll be set to this value. Set to null to disable.
+# defaultCacheControl -- If a response that goes through the gateway doesn't set Cache-Control, it'll be set to this value. Set to null to disable.
 defaultCacheControl: "public, max-age=60"

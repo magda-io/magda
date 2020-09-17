@@ -88,3 +88,9 @@ Email us at contact@magda.io.
 ## Want to contribute?
 
 Great! Take a look at https://github.com/magda-io/magda/blob/master/.github/CONTRIBUTING.md :).
+
+## Documentation links
+
+-   [Magda API Reference](https://demo.dev.magda.io/api/v0/apidocs/index.html)
+-   [Magda Helm Chart Reference](docs/docs/helm-charts-docs-index.md)
+-   [Other documentations](docs/docs/index.md)
