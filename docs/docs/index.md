@@ -11,7 +11,6 @@
 -   [How to build your own connectors / minions](/docs/how-to-build-your-own-connectors-minions)
 -   [How to deploy an HA, production deployment on GKE](/docs/deploying-for-production-on-gke)
 -   [Ports used when running locally](/docs/local-ports)
--   [Regression test](/docs/regression-test)
 -   [Roadmap](/docs/roadmap)
 -   [Mike's Windows Setup Instructions](/docs/windows-instructions)
 
