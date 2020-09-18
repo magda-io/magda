@@ -22,7 +22,7 @@
 -   [ ] Do resources with only access URLs work? (such as on https://dev.magda.io/dataset/ds-ga-a05f7892-feb5-7506-e044-00144fdd4fa6/details?q=lithgow)
 -   [ ] Does a resource link to a distribution page?
 -   [ ] Does the map preview work?
--   [ ] Does the chart preview load?
+-   [ ] Does the chart preview load? (e.g. dataset: ds-dga-fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4 & ds-qld-92b77bd9-d694-4a4c-949b-8b21513756be)
 -   [ ] Do all the four kinds of charts work?
 -   [ ] Does the table preview work?
 -   [ ] Does "Open in NationalMap" work?
