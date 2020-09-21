@@ -54,6 +54,15 @@ export type VersionItem = {
     title: string;
 };
 
+export type CurrencyData = {
+    status: "CURRENT" | "SUPERSEDED" | "RETIRED";
+    retireReason?: string;
+    supersededBy?: {
+        id?: string[];
+        name?: string;
+    }[];
+};
+
 export type VersionAspectData = {
     currentVersionNumber: number;
     versions: VersionItem[];

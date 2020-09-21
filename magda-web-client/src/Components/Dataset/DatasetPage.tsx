@@ -19,6 +19,7 @@ import SecClassification, {
     Sensitivity
 } from "Components/Common/SecClassification";
 import CommonLink from "Components/Common/CommonLink";
+import CurrencyAlert from "./CurrencyAlert";
 
 interface PropsType {
     history: History;
@@ -65,6 +66,9 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                     </p>
                 </div>
             ) : null}
+
+            <CurrencyAlert dataset={dataset} />
+
             <div className="row">
                 <div className="col-sm-8">
                     <h1 itemProp="name">{dataset?.title}</h1>
@@ -148,9 +152,6 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                         ) : (
                             <></>
                         )}
-                        {dataset.currencyStatus ? (
-                            <div>Currency: {dataset.currencyStatus}</div>
-                        ) : null}
                         {dataset.accrualPeriodicity ? (
                             <div>Updated: {dataset.accrualPeriodicity}</div>
                         ) : null}
