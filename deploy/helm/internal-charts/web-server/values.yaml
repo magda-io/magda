@@ -19,11 +19,22 @@ service: {}
 useLocalStyleSheet: false
 contentApiBaseUrlInternal: "http://content-api/v0/"
 featureFlags:
- cataloguing: false
- previewAddDataset: false
- publishToDga: false
- placeholderWorkflowsOn: false
- datasetApprovalWorkflowOn: true
+  # featureFlags.cataloguing -- turn on / off metadata creation tool. 
+  # If this option is `false`, user won't be able to access the dataset add / edit UI 
+  cataloguing: false
+  # featureFlags.previewAddDataset -- turn on / off the preview mode of metadata creation tool.
+  # Under preview mode, user can play with the metadata creation tool without requiring admin permission.
+  # No data will be saved under this mode.
+  previewAddDataset: false
+  # featureFlags.publishToDga -- turn on / off the UI switch that allow user to select whether to auto push dataset data to a CKAN instance
+  publishToDga: false
+  # featureFlags.placeholderWorkflowsOn -- turn on / off some metadata creation tool questions that are still under development
+  placeholderWorkflowsOn: false
+  # featureFlags.datasetApprovalWorkflowOn -- turn on / off dataset approval note step
+  datasetApprovalWorkflowOn: true
+  # featureFlags.useStorageApi -- turn on / off the UI option to use Magda internal storage for file storage.
+  useStorageApi: 
+
 
 # The base url where the UI serves at. If not specify (or empty string), it assumes the UI serves at '/'.
 # it should have a leading slash, but no trailing slash

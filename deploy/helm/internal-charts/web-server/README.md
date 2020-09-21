@@ -35,11 +35,12 @@ Kubernetes: `>= 1.14.0-0`
 | dateConfig.dateRegexes.startDateRegex | string | `"(start|st).*(date|dt|year|decade)"` |  |
 | defaultContactEmail | string | `"mail@example.com"` |  |
 | disableAuthenticationFeatures | bool | `false` |  |
-| featureFlags.cataloguing | bool | `false` |  |
-| featureFlags.datasetApprovalWorkflowOn | bool | `true` |  |
-| featureFlags.placeholderWorkflowsOn | bool | `false` |  |
-| featureFlags.previewAddDataset | bool | `false` |  |
-| featureFlags.publishToDga | bool | `false` |  |
+| featureFlags.cataloguing | bool | `false` | turn on / off metadata creation tool.  If this option is `false`, user won't be able to access the dataset add / edit UI  |
+| featureFlags.datasetApprovalWorkflowOn | bool | `true` | turn on / off dataset approval note step |
+| featureFlags.placeholderWorkflowsOn | bool | `false` | turn on / off some metadata creation tool questions that are still under development |
+| featureFlags.previewAddDataset | bool | `false` | turn on / off the preview mode of metadata creation tool. Under preview mode, user can play with the metadata creation tool without requiring admin permission. No data will be saved under this mode. |
+| featureFlags.publishToDga | bool | `false` | turn on / off the UI switch that allow user to select whether to auto push dataset data to a CKAN instance |
+| featureFlags.useStorageApi | bool | `true` | turn on / off the UI option to use Magda internal storage for file storage. |
 | image | object | `{}` |  |
 | keywordsBlackList[0] | string | `"Mr"` |  |
 | keywordsBlackList[10] | string | `"Mr."` |  |

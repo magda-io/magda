@@ -1,4 +1,4 @@
-.dataset-add-file-page .storage-options-section {
+.dataset-add-file-page .storage-options-section.storage-api-on {
     margin-bottom: 15px;
 
     .storage-option-heading,
@@ -74,5 +74,11 @@
             border-radius: 2px;
             background-color: #042330;
         }
+    }
+}
+
+.dataset-add-file-page .storage-options-section.storage-api-off {
+    h3 {
+        margin-bottom: 45px !important;
     }
 }
