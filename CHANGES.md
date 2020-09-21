@@ -5,6 +5,7 @@
 -   Added Documentation for Magda Helm Charts (generated using [helm-docs](https://github.com/norwoodj/helm-docs))
 -   Upgrade papaParse to 5.3.0 for the [Regular Expression Denial of Service (ReDos) vulnerability](https://github.com/magda-io/magda/network/alert/magda-web-client/package.json/papaparse/open)
 -   Fixed papaParse's chunk data loading HTTP 416 Error (on our forked repo)
+-   On dataset page, display an alert box when the dataset is superseded or retired
 
 ## 0.0.57
 
