@@ -33,7 +33,7 @@ featureFlags:
   # featureFlags.datasetApprovalWorkflowOn -- turn on / off dataset approval note step
   datasetApprovalWorkflowOn: true
   # featureFlags.useStorageApi -- turn on / off the UI option to use Magda internal storage for file storage.
-  useStorageApi: 
+  useStorageApi: true
 
 
 # The base url where the UI serves at. If not specify (or empty string), it assumes the UI serves at '/'.
