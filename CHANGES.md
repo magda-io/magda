@@ -6,6 +6,7 @@
 -   Upgrade papaParse to 5.3.0 for the [Regular Expression Denial of Service (ReDos) vulnerability](https://github.com/magda-io/magda/network/alert/magda-web-client/package.json/papaparse/open)
 -   Fixed papaParse's chunk data loading HTTP 416 Error (on our forked repo)
 -   On dataset page, display an alert box when the dataset is superseded or retired
+-   Added Helm chart option to disable "use internal storage to store file" option in metadata creation tool UI
 
 ## 0.0.57
 
