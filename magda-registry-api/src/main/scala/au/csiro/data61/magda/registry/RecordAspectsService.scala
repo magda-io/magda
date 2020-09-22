@@ -219,7 +219,7 @@ class RecordAspectsService(
                 aspectId,
                 user.id
               )(session) match {
-                case Success(result) => complete(DeleteResult(result))
+                case Success(result) => complete(DeleteResult(result._1))
                 case Failure(exception) =>
                   complete(
                     StatusCodes.BadRequest,
