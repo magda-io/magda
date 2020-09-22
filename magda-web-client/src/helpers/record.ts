@@ -2,7 +2,11 @@ import getDateString from "./getDateString";
 import { isSupportedFormat as isSupportedMapPreviewFormat } from "../Components/Common/DataPreviewMap";
 import { FetchError } from "../types";
 import weightedMean from "weighted-mean";
-import { Record, VersionAspectData } from "api-clients/RegistryApis";
+import {
+    Record,
+    VersionAspectData,
+    CurrencyData
+} from "api-clients/RegistryApis";
 import { config } from "config";
 
 export type RecordAction = {
@@ -160,6 +164,7 @@ export type RawDataset = {
         access: Access;
         version?: VersionAspectData;
         "dataset-draft"?: DatasetDraft;
+        currency?: CurrencyData;
     };
 };
 
@@ -202,7 +207,7 @@ export type ParsedDataset = {
     title: string;
     accrualPeriodicity?: string;
     accrualPeriodicityRecurrenceRule?: string;
-    currencyStatus?: "CURRENT" | "SUPERSEDED" | "RETIRED";
+    currency?: CurrencyData;
     issuedDate?: string;
     updatedDate?: string;
     landingPage: string;
@@ -456,7 +461,6 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         : defaultDatasetAspects;
     const identifier = dataset && dataset.id;
     const accessControl = aspects["dataset-access-control"];
-    const currencyStatus = aspects["currency"]?.status;
     const datasetInfo = aspects["dcat-dataset-strings"];
     const distribution = aspects["dataset-distributions"];
     const temporalCoverage = aspects["temporal-coverage"] || { intervals: [] };
@@ -576,7 +580,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         error,
         linkedDataRating,
         hasQuality,
-        currencyStatus,
+        currency: aspects?.["currency"],
         themes: datasetInfo["themes"],
         sourceDetails: aspects["source"],
         provenance: {
