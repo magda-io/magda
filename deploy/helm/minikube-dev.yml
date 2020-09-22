@@ -87,6 +87,7 @@ magda:
         publishToDga: true
         placeholderWorkflowsOn: true
         datasetApprovalWorkflowOn: true
+        useStorageApi: true
       dateConfig:
         dateFormats:
           - YYYY

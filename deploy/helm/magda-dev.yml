@@ -145,6 +145,7 @@ magda:
         publishToDga: true
         placeholderWorkflowsOn: false
         datasetApprovalWorkflowOn: true
+        useStorageApi: true
       vocabularyApiEndpoints:
         - "https://vocabs.ands.org.au/repository/api/lda/abares/australian-land-use-and-management-classification/version-8/concept.json"
         - "https://vocabs.ands.org.au/repository/api/lda/neii/australian-landscape-water-balance/version-1/concept.json"

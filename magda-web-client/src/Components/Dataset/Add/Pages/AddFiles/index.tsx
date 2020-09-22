@@ -190,7 +190,6 @@ class AddFilesPage extends React.Component<Props> {
 
                 <div className="row add-files-heading">
                     <div className="col-xs-12">
-                        <h3>Storage and location</h3>
                         {this.renderStorageOption()}
                     </div>
 

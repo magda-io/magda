@@ -43,7 +43,8 @@ const DEV_FEATURE_FLAGS = {
     publishToDga: true,
     previewAddDataset: false,
     placeholderWorkflowsOn: false,
-    datasetApprovalWorkflowOn: false
+    datasetApprovalWorkflowOn: false,
+    useStorageApi: true
 };
 
 const homePageConfig: {

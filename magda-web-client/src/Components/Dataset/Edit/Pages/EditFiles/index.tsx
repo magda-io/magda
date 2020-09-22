@@ -231,12 +231,14 @@ const EditFilesPage: FunctionComponent<Props> = (props) => {
 
                 <ErrorMessageBox error={error} scrollIntoView={true} />
 
-                <div className="row add-files-heading">
-                    <div className="col-xs-12">
-                        <h3>Your files and distributions</h3>
-                        <h4>Storage and location</h4>
-                        {renderStorageOption()}
+                <div className="row top-area-row">
+                    <div className="col-xs-12 top-text-area">
+                        <h1>Your files and distributions</h1>
                     </div>
+                </div>
+
+                <div className="row add-files-heading">
+                    <div className="col-xs-12">{renderStorageOption()}</div>
                 </div>
 
                 <h4 className="dataset-contents-heading">Dataset contents</h4>

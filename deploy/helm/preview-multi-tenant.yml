@@ -121,6 +121,7 @@ magda:
         publishToDga: true
         placeholderWorkflowsOn: false
         datasetApprovalWorkflowOn: true
+        useStorageApi: true
 
     correspondence-api:
       alwaysSendToDefaultRecipient: true
