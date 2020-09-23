@@ -799,24 +799,6 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
             "Aspect ID is missing (this shouldn't be possible)."
           )
       }
-    /*
-      .foldLeft(Try((List[T](),Option.empty[Long])))((res, item) => {
-      res match {
-        case Failure(e) => Failure(e)
-        case Success(resValue) =>
-          item match {
-            case Failure(e) => Failure(e)
-            case Success((aspect:T, itemEventId: Long)) =>
-              Success((aspect::resValue._1, resValue._2 match {
-                case Some(eventId) => Some(Math.max(itemEventId, eventId))
-                case _ => Some(itemEventId)
-              }))
-          }
-      }
-
-    })*/
-
-    //result.map(value => (value._1.toIterable, value._2.get))
   }
 
   def patchRecordById(
@@ -926,7 +908,8 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
             }
           }
         )
-        .map(value => (value._1, value._2.get))
+        // -- all eventId could be none: update record doesn't always generate events
+        .map(value => (value._1, value._2.getOrElse(eventId.getOrElse(0L))))
 
     } yield
       (
