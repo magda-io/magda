@@ -2,14 +2,15 @@ package au.csiro.data61.magda.registry
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
 import au.csiro.data61.magda.directives.TenantDirectives.{
-  requiresTenantId,
-  requiresSpecifiedTenantId
+  requiresSpecifiedTenantId,
+  requiresTenantId
 }
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
@@ -135,7 +136,12 @@ class RecordAspectsService(
                   aspect,
                   user.id
                 )(session) match {
-                  case Success(result) => complete(result)
+                  case Success(result) =>
+                    complete(
+                      StatusCodes.OK,
+                      List(RawHeader("X-Magda-Event-Id", result._2.toString)),
+                      result._1
+                    )
                   case Failure(exception) =>
                     complete(
                       StatusCodes.BadRequest,
@@ -219,7 +225,12 @@ class RecordAspectsService(
                 aspectId,
                 user.id
               )(session) match {
-                case Success(result) => complete(DeleteResult(result._1))
+                case Success(result) =>
+                  complete(
+                    StatusCodes.OK,
+                    List(RawHeader("X-Magda-Event-Id", result._2.toString)),
+                    DeleteResult(result._1)
+                  )
                 case Failure(exception) =>
                   complete(
                     StatusCodes.BadRequest,
@@ -324,7 +335,12 @@ class RecordAspectsService(
                   aspectPatch,
                   user.id
                 )(session) match {
-                  case Success(result) => complete(result)
+                  case Success(result) =>
+                    complete(
+                      StatusCodes.OK,
+                      List(RawHeader("X-Magda-Event-Id", result._2.toString)),
+                      result._1
+                    )
                   case Failure(exception) =>
                     complete(
                       StatusCodes.BadRequest,

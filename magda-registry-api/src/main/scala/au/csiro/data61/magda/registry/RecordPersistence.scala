@@ -167,7 +167,7 @@ trait RecordPersistence {
       tenantId: SpecifiedTenantId,
       recordId: String,
       userId: String
-  )(implicit session: DBSession): Try[Boolean]
+  )(implicit session: DBSession): Try[(Boolean, Long)]
 
   def trimRecordsBySource(
       tenantId: SpecifiedTenantId,
@@ -1174,7 +1174,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       tenantId: SpecifiedTenantId,
       recordId: String,
       userId: String
-  )(implicit session: DBSession): Try[Boolean] = {
+  )(implicit session: DBSession): Try[(Boolean, Long)] = {
     for {
       aspects <- Try {
         sql"select aspectId from RecordAspects where (recordId, tenantId)=($recordId, ${tenantId.tenantId})"
@@ -1190,7 +1190,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
         case Some(Failure(e)) => Failure(e)
         case _                => Success(aspects)
       }
-      _ <- Try {
+      eventId <- Try {
         val eventJson =
           DeleteRecordEvent(recordId, tenantId.tenantId).toJson.compactPrint
         sql"insert into Events (eventTypeId, userId, tenantId, data) values (${DeleteRecordEvent.Id}, ${userId}::uuid, ${tenantId.tenantId}, $eventJson::json)".updateAndReturnGeneratedKey
@@ -1200,7 +1200,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
         sql"""delete from Records where (recordId, tenantId)=($recordId, ${tenantId.tenantId})""".update
           .apply()
       }
-    } yield rowsDeleted > 0
+    } yield (rowsDeleted > 0, eventId)
   }
 
   def trimRecordsBySource(
@@ -1223,9 +1223,9 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
         ids
           .map(recordId => deleteRecord(tenantId, recordId, userId))
           .foldLeft[Try[Long]](Success(0L))(
-            (trySoFar: Try[Long], thisTry: Try[Boolean]) =>
+            (trySoFar: Try[Long], thisTry: Try[(Boolean, Long)]) =>
               (trySoFar, thisTry) match {
-                case (Success(countSoFar), Success(bool)) =>
+                case (Success(countSoFar), Success((bool, eventId))) =>
                   Success(countSoFar + (if (bool) 1 else 0))
                 case (Failure(err), _) => Failure(err)
                 case (_, Failure(err)) => Failure(err)
