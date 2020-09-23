@@ -1,5 +1,7 @@
 package au.csiro.data61.magda.registry
 
+import java.net.URLEncoder
+
 import akka.event.LoggingAdapter
 import akka.http.scaladsl.model.StatusCodes
 import au.csiro.data61.magda.model.Registry._
@@ -3664,15 +3666,63 @@ class RecordsServiceSpec extends ApiSpec {
     }
   }
 
+  def checkRecordLastEventId(
+      recordId: String,
+      eventId: Option[String],
+      tenantId: BigInt = TENANT_1
+  )(implicit param: FixtureParam): Unit = {
+    Get(
+      s"/v0/records/${URLEncoder.encode(recordId, "UTF-8").replace("+", "%20")}/history"
+    ) ~> addTenantIdHeader(tenantId) ~> param
+      .api(ReadOnly)
+      .routes ~> check {
+      status shouldEqual StatusCodes.OK
+      eventId.get shouldEqual responseAs[EventsPage].events.last.id.get.toString
+    }
+  }
+
+  def checkDeleteRecordOperationEventId(
+      recordId: String,
+      eventId: Option[String],
+      tenantId: BigInt = TENANT_1
+  )(implicit param: FixtureParam): Unit = {
+    param.asAdmin(
+      Get(
+        s"/v0/records/${URLEncoder.encode(recordId, "UTF-8").replace("+", "%20")}/history"
+      )
+    ) ~> addTenantIdHeader(
+      TENANT_1
+    ) ~> param
+      .api(ReadOnly)
+      .routes ~> check {
+      status shouldEqual StatusCodes.OK
+      // --- previous delete request response should include correct eventId as header value
+      eventId.get shouldEqual responseAs[EventsPage].events.last.id.get.toString
+    }
+
+    Get(
+      s"/v0/records/${URLEncoder.encode(recordId, "UTF-8").replace("+", "%20")}/history"
+    ) ~> addTenantIdHeader(TENANT_1) ~> param
+      .api(ReadOnly)
+      .routes ~> check {
+      status shouldEqual StatusCodes.OK
+      // --- only admin can see deleted record history
+      responseAs[EventsPage].events.size shouldEqual 0
+    }
+  }
+
   def writeTests(role: Role) {
     describe("POST") {
       it("can add a new record") { param =>
+        var eventId: Option[String] = None
         val record = Record("testId", "testName", Map(), Some("tag"))
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[Record] shouldEqual record.copy(tenantId = Some(TENANT_1))
+          // --- try to retrieve eventId generated because of this request
+          eventId = header("X-Magda-Event-Id").map(_.value())
         }
 
         Get("/v0/records/testId") ~> addTenantIdHeader(TENANT_1) ~> param
@@ -3698,6 +3748,9 @@ class RecordsServiceSpec extends ApiSpec {
             .data
             .fields("recordId")
             .convertTo[String] shouldEqual record.id
+
+          // --- check if the event id match the event id in previous POST response header
+          eventId.get shouldEqual eventsPage.events(0).id.get.toString
         }
 
         Get("/v0/records/testId") ~> addTenantIdHeader(TENANT_2) ~> param
@@ -3709,7 +3762,8 @@ class RecordsServiceSpec extends ApiSpec {
 
       it(
         "can add two new records with the same record IDs by different tenants"
-      ) { param =>
+      ) { implicit param =>
+        var eventId: Option[String] = None
         val record_1 =
           Record("aRecordId", "a default tenant", Map(), Some("tag"))
         param.asAdmin(Post("/v0/records", record_1)) ~> addTenantIdHeader(
@@ -3719,7 +3773,11 @@ class RecordsServiceSpec extends ApiSpec {
           responseAs[Record] shouldEqual record_1.copy(
             tenantId = Some(TENANT_1)
           )
+          // --- try to retrieve eventId generated because of this request
+          eventId = header("X-Magda-Event-Id").map(_.value())
         }
+
+        checkRecordLastEventId("aRecordId", eventId, TENANT_1)
 
         val record_2 = Record("aRecordId", "a new tenant", Map(), Some("tag"))
         param.asAdmin(Post("/v0/records", record_2)) ~> addTenantIdHeader(
@@ -3729,7 +3787,11 @@ class RecordsServiceSpec extends ApiSpec {
           responseAs[Record] shouldEqual record_2.copy(
             tenantId = Some(TENANT_2)
           )
+          // --- try to retrieve eventId generated because of this request
+          eventId = header("X-Magda-Event-Id").map(_.value())
         }
+
+        checkRecordLastEventId("aRecordId", eventId, TENANT_2)
 
         Get("/v0/records/aRecordId") ~> addTenantIdHeader(TENANT_1) ~> param
           .api(role)
@@ -3750,13 +3812,20 @@ class RecordsServiceSpec extends ApiSpec {
         }
       }
 
-      it("sets sourcetag to NULL by default") { param =>
+      it("sets sourcetag to NULL by default") { implicit param =>
         val record = Record("testId", "testName", Map(), None)
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[Record] shouldEqual record.copy(tenantId = Some(TENANT_1))
+
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         Get("/v0/records/testId") ~> addTenantIdHeader(TENANT_1) ~> param
@@ -3775,13 +3844,20 @@ class RecordsServiceSpec extends ApiSpec {
         }
       }
 
-      it("supports invalid URL characters in ID") { param =>
+      it("supports invalid URL characters in ID") { implicit param =>
         val record = Record("in valid", "testName", Map(), Some("blah"))
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[Record] shouldEqual record.copy(tenantId = Some(TENANT_1))
+
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "in valid",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         Get("/v0/records/in%20valid") ~> addTenantIdHeader(TENANT_1) ~> param
@@ -3804,28 +3880,47 @@ class RecordsServiceSpec extends ApiSpec {
         }
       }
 
-      it("returns 400 if a record with the given ID already exists") { param =>
-        val record = Record("testId", "testName", Map(), Some("blah"))
-        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
-          TENANT_1
-        ) ~> param.api(role).routes ~> check {
-          status shouldEqual StatusCodes.OK
-          responseAs[Record] shouldEqual record.copy(tenantId = Some(TENANT_1))
-        }
+      it("returns 400 if a record with the given ID already exists") {
+        implicit param =>
+          val record = Record("testId", "testName", Map(), Some("blah"))
+          param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(role).routes ~> check {
+            status shouldEqual StatusCodes.OK
+            responseAs[Record] shouldEqual record.copy(
+              tenantId = Some(TENANT_1)
+            )
 
-        val updated = record.copy(name = "foo")
-        param.asAdmin(Post("/v0/records", updated)) ~> addTenantIdHeader(
-          TENANT_1
-        ) ~> param.api(role).routes ~> check {
-          status shouldEqual StatusCodes.BadRequest
-          responseAs[ApiError].message should include("already exists")
-        }
+            // --- check if response eventId = latest event of the record
+            checkRecordLastEventId(
+              "testId",
+              header("X-Magda-Event-Id").map(_.value()),
+              TENANT_1
+            )
+          }
 
-        param.asAdmin(Post("/v0/records", updated)) ~> addTenantIdHeader(
-          TENANT_2
-        ) ~> param.api(role).routes ~> check {
-          status shouldEqual StatusCodes.OK
-        }
+          val updated = record.copy(name = "foo")
+          param.asAdmin(Post("/v0/records", updated)) ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(role).routes ~> check {
+            status shouldEqual StatusCodes.BadRequest
+            responseAs[ApiError].message should include("already exists")
+
+            header("X-Magda-Event-Id").isEmpty shouldBe true
+          }
+
+          param.asAdmin(Post("/v0/records", updated)) ~> addTenantIdHeader(
+            TENANT_2
+          ) ~> param.api(role).routes ~> check {
+            status shouldEqual StatusCodes.OK
+
+            // --- check if response eventId = latest event of the record
+            checkRecordLastEventId(
+              "testId",
+              header("X-Magda-Event-Id").map(_.value()),
+              TENANT_2
+            )
+          }
       }
 
       checkMustBeAdmin(role) {
@@ -3835,13 +3930,19 @@ class RecordsServiceSpec extends ApiSpec {
     }
 
     describe("PUT") {
-      it("can add a new record") { param =>
+      it("can add a new record") { implicit param =>
         val record = Record("testId", "testName", Map(), Some("policy"))
         param.asAdmin(Put("/v0/records/testId", record)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[Record] shouldEqual record.copy(tenantId = Some(TENANT_1))
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         Get("/v0/records") ~> addTenantIdHeader(TENANT_1) ~> param
@@ -3881,7 +3982,7 @@ class RecordsServiceSpec extends ApiSpec {
         }
       }
 
-      it("can update an existing record") { param =>
+      it("can update an existing record") { implicit param =>
         val record =
           Record(
             "testId",
@@ -3895,6 +3996,13 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
+
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         val newRecord =
@@ -3906,6 +4014,13 @@ class RecordsServiceSpec extends ApiSpec {
           responseAs[Record] shouldEqual newRecord.copy(
             tenantId = Some(TENANT_1)
           )
+
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         param.asAdmin(Put("/v0/records/testId", newRecord)) ~> addTenantIdHeader(
@@ -3914,6 +4029,13 @@ class RecordsServiceSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
           responseAs[Record] shouldEqual newRecord.copy(
             tenantId = Some(TENANT_2)
+          )
+
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_2
           )
         }
 
@@ -3960,7 +4082,7 @@ class RecordsServiceSpec extends ApiSpec {
         }
       }
 
-      it("can set authnReadPolicyId to NULL") { param =>
+      it("can set authnReadPolicyId to NULL") { implicit param =>
         val record =
           Record(
             "testId",
@@ -3973,6 +4095,12 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         val newRecord =
@@ -3983,6 +4111,12 @@ class RecordsServiceSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
           responseAs[Record] shouldEqual newRecord.copy(
             tenantId = Some(TENANT_1)
+          )
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
           )
         }
 
@@ -4002,12 +4136,18 @@ class RecordsServiceSpec extends ApiSpec {
 
       it(
         "updates the sourcetag of an otherwise identical record without generating events"
-      ) { param =>
+      ) { implicit param =>
         val record = Record("testId", "testName", Map(), Some("tag1"))
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         Get(s"/v0/records/${record.id}/history") ~> addTenantIdHeader(TENANT_1) ~> param
@@ -4032,6 +4172,8 @@ class RecordsServiceSpec extends ApiSpec {
           responseAs[Record] shouldEqual newRecord.copy(
             tenantId = Some(TENANT_1)
           )
+          // -- as no event generated, the header value should be "0"
+          header("X-Magda-Event-Id").map(_.value()).get shouldEqual "0"
         }
 
         param.asAdmin(Put("/v0/records/testId", newRecord)) ~> addTenantIdHeader(
@@ -4040,6 +4182,12 @@ class RecordsServiceSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
           responseAs[Record] shouldEqual newRecord.copy(
             tenantId = Some(TENANT_2)
+          )
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_2
           )
         }
 
@@ -4074,13 +4222,19 @@ class RecordsServiceSpec extends ApiSpec {
         }
       }
 
-      it("cannot change the ID of an existing record") { param =>
+      it("cannot change the ID of an existing record") { implicit param =>
         val record = Record("testId", "testName", Map(), Some("blah"))
         param.asAdmin(Put("/v0/records/testId", record)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[Record] shouldEqual record.copy(tenantId = Some(TENANT_1))
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         val updated = record.copy(id = "foo")
@@ -4091,22 +4245,30 @@ class RecordsServiceSpec extends ApiSpec {
           responseAs[ApiError].message should include(
             "does not match the record"
           )
+          header("X-Magda-Event-Id").isEmpty shouldBe true
         }
 
         param.asAdmin(Put("/v0/records/testId", updated)) ~> addTenantIdHeader(
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
+          header("X-Magda-Event-Id").isEmpty shouldBe true
         }
       }
 
-      it("supports invalid URL characters in ID") { param =>
+      it("supports invalid URL characters in ID") { implicit param =>
         val record = Record("in valid", "testName", Map(), Some("blah"))
         param.asAdmin(Put("/v0/records/in%20valid", record)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[Record] shouldEqual record.copy(tenantId = Some(TENANT_1))
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "in valid",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         Get("/v0/records/in%20valid") ~> addTenantIdHeader(TENANT_1) ~> param
@@ -4117,7 +4279,7 @@ class RecordsServiceSpec extends ApiSpec {
         }
       }
 
-      it("can add an aspect") { param =>
+      it("can add an aspect") { implicit param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
         param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
           TENANT_1
@@ -4130,6 +4292,12 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         val updated = record.copy(aspects = Map("test" -> JsObject()))
@@ -4138,6 +4306,12 @@ class RecordsServiceSpec extends ApiSpec {
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[Record] shouldEqual updated.copy(tenantId = Some(TENANT_1))
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         Get("/v0/records/testId?aspect=test") ~> addTenantIdHeader(TENANT_1) ~> param
@@ -4148,7 +4322,7 @@ class RecordsServiceSpec extends ApiSpec {
         }
       }
 
-      it("can modify an aspect") { param =>
+      it("can modify an aspect") { implicit param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
         param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
           TENANT_1
@@ -4166,6 +4340,12 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         val updated = record.copy(
@@ -4176,6 +4356,12 @@ class RecordsServiceSpec extends ApiSpec {
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[Record] shouldEqual updated.copy(tenantId = Some(TENANT_1))
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         Get("/v0/records/testId?aspect=test") ~> addTenantIdHeader(TENANT_1) ~> param
@@ -4188,7 +4374,7 @@ class RecordsServiceSpec extends ApiSpec {
 
       it(
         "does not remove aspects simply because they're missing from the PUT payload"
-      ) { param =>
+      ) { implicit param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
         param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
           TENANT_1
@@ -4206,6 +4392,12 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         // TODO: the PUT should return the real record, not just echo back what the user provided.
@@ -4216,6 +4408,8 @@ class RecordsServiceSpec extends ApiSpec {
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[Record] shouldEqual updated.copy(tenantId = Some(TENANT_1))
+          // -- as no event generated, the header value should be "0"
+          header("X-Magda-Event-Id").map(_.value()).get shouldEqual "0"
         }
 
         Get("/v0/records/testId?aspect=test") ~> addTenantIdHeader(TENANT_1) ~> param
@@ -4241,15 +4435,22 @@ class RecordsServiceSpec extends ApiSpec {
           status shouldEqual StatusCodes.BadRequest
           responseAs[ApiError].message should include("exists")
           responseAs[ApiError].message should include("ID")
+          header("X-Magda-Event-Id").isEmpty shouldBe true
         }
       }
 
-      it("can modify a record's name") { param =>
+      it("can modify a record's name") { implicit param =>
         val record = Record("testId", "testName", Map(), Some("blah"))
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         val patch = JsonPatch(Replace(Pointer.root / "name", JsString("foo")))
@@ -4264,12 +4465,19 @@ class RecordsServiceSpec extends ApiSpec {
             Some("blah"),
             tenantId = Some(TENANT_1)
           )
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
+          header("X-Magda-Event-Id").isEmpty shouldBe true
         }
 
         Get("/v0/records/testId") ~> addTenantIdHeader(TENANT_1) ~> param
@@ -4308,7 +4516,7 @@ class RecordsServiceSpec extends ApiSpec {
         }
       }
 
-      it("can modify authnReadPolicyId") { param =>
+      it("can modify authnReadPolicyId") { implicit param =>
         val record = Record(
           "testId",
           "testName",
@@ -4319,6 +4527,12 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         val patch = JsonPatch(
@@ -4335,15 +4549,27 @@ class RecordsServiceSpec extends ApiSpec {
             tenantId = Some(TENANT_1),
             authnReadPolicyId = Some("policyB")
           )
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
       }
 
-      it("cannot modify a record's ID") { param =>
+      it("cannot modify a record's ID") { implicit param =>
         val record = Record("testId", "testName", Map(), Some("blah"))
         param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         val patch = JsonPatch(Replace(Pointer.root / "id", JsString("foo")))
@@ -4352,10 +4578,11 @@ class RecordsServiceSpec extends ApiSpec {
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
           responseAs[ApiError].message should include("ID")
+          header("X-Magda-Event-Id").isEmpty shouldBe true
         }
       }
 
-      it("can add an aspect") { param =>
+      it("can add an aspect") { implicit param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
         param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
           TENANT_1
@@ -4368,6 +4595,12 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         val patch =
@@ -4383,12 +4616,19 @@ class RecordsServiceSpec extends ApiSpec {
             Some("blah"),
             tenantId = Some(TENANT_1)
           )
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
+          header("X-Magda-Event-Id").isEmpty shouldBe true
         }
 
         Get("/v0/records/testId?aspect=test") ~> addTenantIdHeader(TENANT_1) ~> param
@@ -4411,7 +4651,7 @@ class RecordsServiceSpec extends ApiSpec {
         }
       }
 
-      it("can modify an aspect") { param =>
+      it("can modify an aspect") { implicit param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
         param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
           TENANT_1
@@ -4429,6 +4669,12 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         val patch = JsonPatch(
@@ -4445,12 +4691,19 @@ class RecordsServiceSpec extends ApiSpec {
             Some("blah"),
             tenantId = Some(TENANT_1)
           )
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
+          header("X-Magda-Event-Id").isEmpty shouldBe true
         }
 
         Get("/v0/records/testId?aspect=test") ~> addTenantIdHeader(TENANT_1) ~> param
@@ -4473,7 +4726,7 @@ class RecordsServiceSpec extends ApiSpec {
         }
       }
 
-      it("can add a new property to an aspect") { param =>
+      it("can add a new property to an aspect") { implicit param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
         param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
           TENANT_1
@@ -4491,6 +4744,12 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         val patch = JsonPatch(
@@ -4512,12 +4771,19 @@ class RecordsServiceSpec extends ApiSpec {
             Some("blah"),
             tenantId = Some(TENANT_1)
           )
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
+          header("X-Magda-Event-Id").isEmpty shouldBe true
         }
 
         Get("/v0/records/testId?aspect=test") ~> addTenantIdHeader(TENANT_1) ~> param
@@ -4545,7 +4811,7 @@ class RecordsServiceSpec extends ApiSpec {
         }
       }
 
-      it("can remove an aspect") { param =>
+      it("can remove an aspect") { implicit param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
         param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
           TENANT_1
@@ -4563,6 +4829,12 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         val patch = JsonPatch(Remove(Pointer.root / "aspects" / "test"))
@@ -4577,12 +4849,19 @@ class RecordsServiceSpec extends ApiSpec {
             Some("blah"),
             tenantId = Some(TENANT_1)
           )
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
+          header("X-Magda-Event-Id").isEmpty shouldBe true
         }
 
         Get("/v0/records/testId?optionalAspect=test") ~> addTenantIdHeader(
@@ -4605,7 +4884,7 @@ class RecordsServiceSpec extends ApiSpec {
         }
       }
 
-      it("can remove a property from an aspect") { param =>
+      it("can remove a property from an aspect") { implicit param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
         param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
           TENANT_1
@@ -4628,6 +4907,12 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         val patch =
@@ -4643,12 +4928,19 @@ class RecordsServiceSpec extends ApiSpec {
             Some("blah"),
             tenantId = Some(TENANT_1)
           )
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
+          header("X-Magda-Event-Id").isEmpty shouldBe true
         }
 
         Get("/v0/records/testId?optionalAspect=test") ~> addTenantIdHeader(
@@ -4671,7 +4963,7 @@ class RecordsServiceSpec extends ApiSpec {
         }
       }
 
-      it("supports Move within an aspect") { param =>
+      it("supports Move within an aspect") { implicit param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
         param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
           TENANT_1
@@ -4689,6 +4981,12 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         val patch = JsonPatch(
@@ -4708,12 +5006,19 @@ class RecordsServiceSpec extends ApiSpec {
             Some("blah"),
             tenantId = Some(TENANT_1)
           )
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
+          header("X-Magda-Event-Id").isEmpty shouldBe true
         }
 
         Get("/v0/records/testId?optionalAspect=test") ~> addTenantIdHeader(
@@ -4736,7 +5041,7 @@ class RecordsServiceSpec extends ApiSpec {
         }
       }
 
-      it("supports Copy within an aspect") { param =>
+      it("supports Copy within an aspect") { implicit param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
         param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
           TENANT_1
@@ -4754,6 +5059,12 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         val patch = JsonPatch(
@@ -4778,12 +5089,19 @@ class RecordsServiceSpec extends ApiSpec {
             Some("blah"),
             tenantId = Some(TENANT_1)
           )
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
+          header("X-Magda-Event-Id").isEmpty shouldBe true
         }
 
         Get("/v0/records/testId?optionalAspect=test") ~> addTenantIdHeader(
@@ -4811,7 +5129,7 @@ class RecordsServiceSpec extends ApiSpec {
         }
       }
 
-      it("evaluates Test operations") { param =>
+      it("evaluates Test operations") { implicit param =>
         val A = AspectDefinition("A", "A", None)
         param.asAdmin(Post("/v0/aspects", A)) ~> addTenantIdHeader(TENANT_1) ~> param
           .api(role)
@@ -4829,6 +5147,12 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         val patchSuccess = JsonPatch(
@@ -4845,12 +5169,15 @@ class RecordsServiceSpec extends ApiSpec {
             Some("blah"),
             tenantId = Some(TENANT_1)
           )
+          // --- as it's a test operation, no event should be created
+          header("X-Magda-Event-Id").map(_.value()).get shouldEqual "0"
         }
 
         param.asAdmin(Patch("/v0/records/testId", patchSuccess)) ~> addTenantIdHeader(
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
+          header("X-Magda-Event-Id").isEmpty shouldBe true
         }
 
         val patchFail = JsonPatch(
@@ -4864,10 +5191,11 @@ class RecordsServiceSpec extends ApiSpec {
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
           responseAs[ApiError].message should include("test failed")
+          header("X-Magda-Event-Id").isEmpty shouldBe true
         }
       }
 
-      it("does not support Move between aspects") { param =>
+      it("does not support Move between aspects") { implicit param =>
         val A = AspectDefinition("A", "A", None)
         param.asAdmin(Post("/v0/aspects", A)) ~> addTenantIdHeader(TENANT_1) ~> param
           .api(role)
@@ -4892,6 +5220,12 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         val patch = JsonPatch(
@@ -4905,10 +5239,11 @@ class RecordsServiceSpec extends ApiSpec {
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
           responseAs[ApiError].message should include("two different aspects")
+          header("X-Magda-Event-Id").isEmpty shouldBe true
         }
       }
 
-      it("does not support Copy between aspects") { param =>
+      it("does not support Copy between aspects") { implicit param =>
         val A = AspectDefinition("A", "A", None)
         param.asAdmin(Post("/v0/aspects", A)) ~> addTenantIdHeader(TENANT_1) ~> param
           .api(role)
@@ -4933,6 +5268,12 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
+          // --- check if response eventId = latest event of the record
+          checkRecordLastEventId(
+            "testId",
+            header("X-Magda-Event-Id").map(_.value()),
+            TENANT_1
+          )
         }
 
         val patch = JsonPatch(
@@ -4946,6 +5287,7 @@ class RecordsServiceSpec extends ApiSpec {
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
           responseAs[ApiError].message should include("two different aspects")
+          header("X-Magda-Event-Id").isEmpty shouldBe true
         }
       }
 
@@ -4957,19 +5299,27 @@ class RecordsServiceSpec extends ApiSpec {
 
     describe("DELETE") {
       describe("by id") {
-        it("can delete a record without any aspects") { param =>
+        it("can delete a record without any aspects") { implicit param =>
           val record = Record("without", "without", Map(), Some("blah"))
           param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
+            // --- check if response eventId = latest event of the record
+            checkRecordLastEventId(
+              "without",
+              header("X-Magda-Event-Id").map(_.value()),
+              TENANT_1
+            )
           }
 
+          var eventId: Option[String] = None
           param.asAdmin(Delete("/v0/records/without")) ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
             responseAs[DeleteResult].deleted shouldBe true
+            eventId = header("X-Magda-Event-Id").map(_.value())
           }
 
           param.asAdmin(Get(s"/v0/records/without/history")) ~> addTenantIdHeader(
@@ -4988,6 +5338,19 @@ class RecordsServiceSpec extends ApiSpec {
               .data
               .fields("recordId")
               .convertTo[String] shouldEqual record.id
+
+            // --- previous delete request response should include correct eventId as header value
+            eventId.get shouldEqual responseAs[EventsPage].events.last.id.get.toString
+          }
+
+          Get(
+            s"/v0/records/without/history"
+          ) ~> addTenantIdHeader(TENANT_1) ~> param
+            .api(ReadOnly)
+            .routes ~> check {
+            status shouldEqual StatusCodes.OK
+            // --- only admin can see deleted record history
+            responseAs[EventsPage].events.size shouldEqual 0
           }
 
           param.asAdmin(Delete("/v0/records/without")) ~> addTenantIdHeader(
@@ -4995,6 +5358,8 @@ class RecordsServiceSpec extends ApiSpec {
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
             responseAs[DeleteResult].deleted shouldBe false
+            // --- event id is 0 as no event is generated
+            header("X-Magda-Event-Id").map(_.value()).get shouldEqual "0"
           }
         }
 
@@ -5006,10 +5371,12 @@ class RecordsServiceSpec extends ApiSpec {
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
             responseAs[DeleteResult].deleted shouldBe false
+            // --- event id is 0 as no event is generated
+            header("X-Magda-Event-Id").map(_.value()).get shouldEqual "0"
           }
         }
 
-        it("can delete a record with an aspect") { param =>
+        it("can delete a record with an aspect") { implicit param =>
           val aspectDefinition = AspectDefinition("test", "test", None)
           param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
             TENANT_1
@@ -5023,6 +5390,12 @@ class RecordsServiceSpec extends ApiSpec {
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
+            // --- check if response eventId = latest event of the record
+            checkRecordLastEventId(
+              "with",
+              header("X-Magda-Event-Id").map(_.value()),
+              TENANT_1
+            )
           }
 
           param.asAdmin(Delete("/v0/records/with")) ~> addTenantIdHeader(
@@ -5030,6 +5403,8 @@ class RecordsServiceSpec extends ApiSpec {
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
             responseAs[DeleteResult].deleted shouldBe false
+            // --- event id is 0 as no event is generated
+            header("X-Magda-Event-Id").map(_.value()).get shouldEqual "0"
           }
 
           param.asAdmin(Delete("/v0/records/with")) ~> addTenantIdHeader(
@@ -5037,6 +5412,12 @@ class RecordsServiceSpec extends ApiSpec {
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
             responseAs[DeleteResult].deleted shouldBe true
+            // --- check if response eventId is correct
+            checkDeleteRecordOperationEventId(
+              "with",
+              header("X-Magda-Event-Id").map(_.value()),
+              TENANT_1
+            )
           }
         }
 

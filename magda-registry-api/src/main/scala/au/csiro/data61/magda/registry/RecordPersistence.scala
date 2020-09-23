@@ -1173,15 +1173,22 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
         case Some(Failure(e)) => Failure(e)
         case _                => Success(aspects)
       }
-      eventId <- Try {
-        val eventJson =
-          DeleteRecordEvent(recordId, tenantId.tenantId).toJson.compactPrint
-        sql"insert into Events (eventTypeId, userId, tenantId, data) values (${DeleteRecordEvent.Id}, ${userId}::uuid, ${tenantId.tenantId}, $eventJson::json)".updateAndReturnGeneratedKey
-          .apply()
-      }
       rowsDeleted <- Try {
         sql"""delete from Records where (recordId, tenantId)=($recordId, ${tenantId.tenantId})""".update
           .apply()
+      }
+      eventId <- Try {
+        if (rowsDeleted > 0) {
+          // --- only generate event when the record did removed
+          val eventJson =
+            DeleteRecordEvent(recordId, tenantId.tenantId).toJson.compactPrint
+          sql"insert into Events (eventTypeId, userId, tenantId, data) values (${DeleteRecordEvent.Id}, ${userId}::uuid, ${tenantId.tenantId}, $eventJson::json)".updateAndReturnGeneratedKey
+            .apply()
+        } else {
+          // --- No record has been deleted, return - as event ID
+          0L
+        }
+
       }
     } yield (rowsDeleted > 0, eventId)
   }
