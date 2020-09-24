@@ -28,6 +28,7 @@ import { ReactStateUpdaterType } from "helpers/promisifySetState";
 import getDistInfoFromDownloadUrl from "./Pages/AddFiles/getDistInfoFromDownloadUrl";
 import deleteFile from "./Pages/AddFiles/deleteFile";
 import escapeJsonPatchPointer from "helpers/escapeJsonPatchPath";
+import uniq from "lodash/uniq";
 
 export type Distribution = {
     title: string;
@@ -603,6 +604,15 @@ function populateDistributions(data: RawDataset, state: State) {
 
             if (item?.aspects?.version) {
                 dis.version = item.aspects.version;
+                if (dis.version?.versions?.length) {
+                    dis.version.versions.forEach((ver) => {
+                        if (ver.internalDataFileUrl) {
+                            state.uploadedFileUrls.push(
+                                ver.internalDataFileUrl
+                            );
+                        }
+                    });
+                }
             }
 
             if (dis.useStorageApi && dis.downloadURL) {
@@ -616,6 +626,8 @@ function populateDistributions(data: RawDataset, state: State) {
         state.distributions = distributions;
         state.involvedDistributionIds = distributions.map((dis) => dis.id!);
     }
+
+    state.uploadedFileUrls = uniq(state.uploadedFileUrls);
 }
 
 export async function rawDatasetDataToState(
@@ -1380,7 +1392,7 @@ type FailedFileInfo = {
 };
 
 /**
- * Tried to delete any uploaded files that is not associated with any distributions.
+ * Tried to delete any uploaded files that is not associated with any distributions (this also include any files associated with distribution versions).
  * Return info of files that are failed to delete.
  * If all files are deleted successfully or no files are required to deleted, it will return an empty array.
  *
@@ -1393,12 +1405,27 @@ export async function cleanUpOrphanFiles(
     uploadedFileUrls: string[],
     distributions: Distribution[]
 ): Promise<FailedFileInfo[]> {
+    let distOwnedFiles: string[] = [];
+
+    distributions.forEach((dist) => {
+        if (dist.useStorageApi && dist.downloadURL) {
+            distOwnedFiles.push(dist.downloadURL);
+        }
+        if (dist?.version?.versions?.length) {
+            dist.version.versions.forEach((ver) => {
+                if (ver.internalDataFileUrl) {
+                    distOwnedFiles.push(ver.internalDataFileUrl);
+                }
+            });
+        }
+    });
+
+    distOwnedFiles = uniq(distOwnedFiles);
+
     return (
         await Promise.all(
             uploadedFileUrls.map(async (fileUrl) => {
-                if (
-                    distributions.find((item) => item.downloadURL === fileUrl)
-                ) {
+                if (distOwnedFiles.indexOf(fileUrl) !== -1) {
                     // --- do nothing if the url is allocated to a distribution
                     return { isOk: true };
                 }
