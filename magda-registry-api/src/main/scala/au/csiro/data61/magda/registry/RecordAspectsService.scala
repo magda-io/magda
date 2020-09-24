@@ -61,6 +61,11 @@ class RecordAspectsService(
     *    }
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
+    *
+    * @apiHeader {string} X-Magda-Event-Id This is a **response header** that is **ONLY** available when the operation is completed successfully.
+    *           If the operation did make changes and triggered an event, the header value will be the eventId.
+    *           Otherwise (i.e. no change are made), this header value will be "0".
+    *
     * @apiSuccess (Success 200) {json} Response the aspect detail
     * @apiSuccessExample {json} Response:
     *    {
@@ -166,6 +171,11 @@ class RecordAspectsService(
     * @apiParam (path) {string} aspectId ID of the aspect to update
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
+    *
+    * @apiHeader {string} X-Magda-Event-Id This is a **response header** that is **ONLY** available when the operation is completed successfully.
+    *           If the operation did make changes and triggered an event, the header value will be the eventId.
+    *           Otherwise (i.e. no change are made), this header value will be "0".
+    *
     * @apiSuccess (Success 200) {json} Response operation result
     * @apiSuccessExample {json} Response:
     * {
@@ -260,6 +270,11 @@ class RecordAspectsService(
     *    ]
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
+    *
+    * @apiHeader {string} X-Magda-Event-Id This is a **response header** that is **ONLY** available when the operation is completed successfully.
+    *           If the operation did make changes and triggered an event, the header value will be the eventId.
+    *           Otherwise (i.e. no change are made), this header value will be "0".
+    *
     * @apiSuccess (Success 200) {json} Response operation result
     * @apiSuccessExample {json} Response:
     *    {
