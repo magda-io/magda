@@ -12,6 +12,9 @@ minio:
   nameOverride: "magda-minio"
   fullnameOverride: "magda-minio"
   existingSecret: "storage-secrets"
+  resources:
+    requests:
+      memory: 256Mi
   DeploymentUpdate:
     type: Recreate
 
