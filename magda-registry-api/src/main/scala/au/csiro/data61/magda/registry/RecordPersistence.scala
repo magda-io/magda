@@ -1317,14 +1317,18 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
               JsObject(
                 "id" -> event.data.fields("recordId"),
                 "name" -> event.data.fields("name"),
+                "tenantId" -> JsNumber(event.tenantId),
+                "authnReadPolicyId" -> JsNull,
+                "sourceTag" -> JsNull,
                 "aspects" -> JsObject()
               )
             case EventType.PatchRecord =>
               event.data.fields("patch").convertTo[JsonPatch].apply(recordValue)
             case EventType.DeleteRecord => JsNull
             case EventType.CreateRecordAspect =>
-              val createAspectEvent =
-                event.data.convertTo[CreateRecordAspectEvent]
+              val createAspectEvent = (JsObject(
+                event.data.fields + ("tenantId" -> JsNumber(event.tenantId))
+              )).convertTo[CreateRecordAspectEvent]
               val record = recordValue.asJsObject
               val existingFields = record.fields
               val existingAspects = record.fields("aspects").asJsObject.fields
@@ -1334,8 +1338,9 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
               ))
               JsObject(newFields)
             case EventType.PatchRecordAspect =>
-              val patchRecordAspectEvent =
-                event.data.convertTo[PatchRecordAspectEvent]
+              val patchRecordAspectEvent = (JsObject(
+                event.data.fields + ("tenantId" -> JsNumber(event.tenantId))
+              )).convertTo[PatchRecordAspectEvent]
               val record = recordValue.asJsObject
               val existingFields = record.fields
               val existingAspects = record.fields("aspects").asJsObject.fields
@@ -1349,7 +1354,9 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
               JsObject(newFields)
             case EventType.DeleteRecordAspect =>
               val deleteRecordAspectEvent =
-                event.data.convertTo[DeleteRecordAspectEvent]
+                (JsObject(
+                  event.data.fields + ("tenantId" -> JsNumber(event.tenantId))
+                )).convertTo[DeleteRecordAspectEvent]
               val record = recordValue.asJsObject
               val existingFields = record.fields
               val existingAspects = record.fields("aspects").asJsObject.fields
