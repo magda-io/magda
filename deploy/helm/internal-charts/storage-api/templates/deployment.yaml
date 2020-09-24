@@ -33,7 +33,6 @@ spec:
 {{- if .Values.minioRegion }}
             "--minioRegion", {{ .Values.minioRegion | quote }},
 {{- end }}
-            "--minioPort", "9000",
             "--authApiUrl", "http://authorization-api/v0",
             "--tenantId", "0",
             "--uploadLimit", "100mb",
