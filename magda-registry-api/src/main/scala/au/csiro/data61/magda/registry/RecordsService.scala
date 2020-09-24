@@ -516,7 +516,7 @@ class RecordsService(
     *    "aspects": {},
     *    "sourceTag": "string"
     * }
-    * 
+    *
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
     *
