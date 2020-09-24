@@ -5,5 +5,5 @@ version: 0.0.58-alpha.0
 kubeVersion: ">= 1.14.0-0"
 dependencies:
   - name: minio
-    version: 5.0.18
+    version: 5.0.33
     repository: https://kubernetes-charts.storage.googleapis.com
