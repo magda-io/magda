@@ -15,7 +15,8 @@ import {
     getInitialVersionAspectData,
     VersionAspectData,
     updateRecordAspect,
-    patchRecord
+    patchRecord,
+    tagRecordVersionEventId
 } from "api-clients/RegistryApis";
 import { config } from "config";
 import { User } from "reducers/userManagementReducer";
@@ -1253,7 +1254,10 @@ async function convertStateToDistributionRecords(
                     ? distribution.version
                     : getInitialVersionAspectData(
                           distribution.title,
-                          state.dataset.editingUserId
+                          state.dataset.editingUserId,
+                          distribution.useStorageApi
+                              ? distribution.downloadURL
+                              : undefined
                       )
             },
             authnReadPolicyId: authPolicy
@@ -1328,7 +1332,8 @@ export async function createDatasetFromState(
     datasetId: string,
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>,
-    authnReadPolicyId?: string
+    authnReadPolicyId?: string,
+    tagVersion: boolean = false
 ) {
     const distributionRecords = await convertStateToDistributionRecords(
         state,
@@ -1344,14 +1349,15 @@ export async function createDatasetFromState(
         authnReadPolicyId
     );
 
-    await createDataset(datasetRecord, distributionRecords);
+    return await createDataset(datasetRecord, distributionRecords, tagVersion);
 }
 
 export async function updateDatasetFromState(
     datasetId: string,
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>,
-    authnReadPolicyId?: string
+    authnReadPolicyId?: string,
+    tagVersion: boolean = false
 ) {
     const distributionRecords = await convertStateToDistributionRecords(
         state,
@@ -1365,7 +1371,7 @@ export async function updateDatasetFromState(
         true,
         authnReadPolicyId
     );
-    await updateDataset(datasetRecord, distributionRecords);
+    return await updateDataset(datasetRecord, distributionRecords, tagVersion);
 }
 
 type FailedFileInfo = {
@@ -1456,23 +1462,35 @@ export async function submitDatasetFromState(
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>
 ): Promise<FailedFileInfo[]> {
+    let datasetData: Record, eventId: number;
     if (await doesRecordExist(datasetId)) {
-        await updateDatasetFromState(
+        [datasetData, eventId] = await updateDatasetFromState(
             datasetId,
             state,
             setState,
-            PUBLISHED_DATASET_POLICY_ID
+            PUBLISHED_DATASET_POLICY_ID,
+            true
         );
     } else {
-        await createDatasetFromState(
+        [datasetData, eventId] = await createDatasetFromState(
             datasetId,
             state,
             setState,
-            PUBLISHED_DATASET_POLICY_ID
+            PUBLISHED_DATASET_POLICY_ID,
+            true
         );
     }
 
-    await deleteRecordAspect(datasetId, "dataset-draft");
+    const [, draftDetetionEventId] = await deleteRecordAspect(
+        datasetId,
+        "dataset-draft"
+    );
+
+    // --- attempt to tag dataset version
+    await tagRecordVersionEventId(
+        datasetData,
+        Math.max(draftDetetionEventId, eventId)
+    );
 
     await updateCkanExportStatus(datasetId, state);
 

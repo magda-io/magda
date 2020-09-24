@@ -2,12 +2,42 @@ import { config } from "config";
 import fetch from "isomorphic-fetch";
 import ServerError from "../Components/Dataset/Add/Errors/ServerError";
 
-export default async function request(
+type RequestContentTypeJson = "application/json";
+type RequestContentTypePlainText = "text/plain";
+type RequestContentTypeForm = "application/x-www-form-urlencoded";
+type RequestContentTypeBinary = "application/octet-stream";
+type RequestContentTypeMultipartForm = "multipart/form-data";
+
+type RequestContentType =
+    | RequestContentTypeJson
+    | RequestContentTypePlainText
+    | RequestContentTypeForm
+    | RequestContentTypeBinary
+    | RequestContentTypeMultipartForm;
+
+export default async function request<T = any, CT = string>(
+    method: string,
+    url: string,
+    body?: any,
+    contentType?: CT | RequestContentType | undefined,
+    returnHeaders?: false
+): Promise<T>;
+
+export default async function request<T = any, CT = string>(
+    method: string,
+    url: string,
+    body?: any,
+    contentType?: CT | RequestContentType | undefined,
+    returnHeaders?: true
+): Promise<[T, Headers]>;
+
+export default async function request<T = any, CT = string>(
     method: string,
     url: string,
     body: any = undefined,
-    contentType: string = "application/json"
-) {
+    contentType: CT | RequestContentType | undefined = "application/json",
+    returnHeaders: boolean = false
+): Promise<[T, Headers] | T> {
     const fetchOptions = Object.assign({}, config.credentialsFetchOptions, {
         method
     });
@@ -19,9 +49,11 @@ export default async function request(
             };
         } else {
             fetchOptions.body = body;
-            fetchOptions.headers = {
-                "Content-type": contentType
-            };
+            if (typeof contentType === "string") {
+                fetchOptions.headers = {
+                    "Content-type": contentType
+                };
+            }
         }
     }
 
@@ -30,7 +62,9 @@ export default async function request(
     if (response.status >= 200 && response.status < 300) {
         // wrapping this in try/catch as the request succeeded
         // this is just haggling over response content
-        return await response.json();
+        return returnHeaders
+            ? ([(await response.json()) as T, response.headers] as [T, Headers])
+            : ((await response.json()) as T);
     }
     // --- get responseText and remove any HTML tags
     const responseText = (await response.text()).replace(/<(.|\n)*?>/g, "");

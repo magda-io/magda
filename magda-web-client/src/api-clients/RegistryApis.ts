@@ -52,6 +52,8 @@ export type VersionItem = {
     creatorId?: string;
     description: string;
     title: string;
+    internalDataFileUrl?: string;
+    eventId?: number;
 };
 
 export type CurrencyData = {
@@ -68,9 +70,24 @@ export type VersionAspectData = {
     versions: VersionItem[];
 };
 
+export const getEventIdFromHeaders = (headers: Headers): number => {
+    const headerVal = headers.get("X-Magda-Event-Id");
+    if (headerVal === null) {
+        return 0;
+    } else {
+        const eventId = parseInt(headerVal);
+        if (isNaN(eventId)) {
+            return 0;
+        } else {
+            return 0;
+        }
+    }
+};
+
 export const getInitialVersionAspectData = (
     title: string,
-    creatorId?: string
+    creatorId?: string,
+    internalDataFileUrl?: string
 ) => ({
     currentVersionNumber: 0,
     versions: [
@@ -79,15 +96,16 @@ export const getInitialVersionAspectData = (
             createTime: new Date().toISOString(),
             creatorId,
             description: "initial version",
-            title
+            title,
+            ...(internalDataFileUrl ? { internalDataFileUrl } : {})
         }
     ]
 });
 
 export type DatasetTypes = "drafts" | "published";
 
-export function createPublisher(inputRecord: Publisher) {
-    return createRecord(inputRecord);
+export async function createPublisher(inputRecord: Publisher) {
+    return await createRecord(inputRecord);
 }
 
 export function fetchOrganization(
@@ -456,15 +474,28 @@ export async function fetchRecordsCount({
 export async function deleteRecordAspect(
     recordId: string,
     aspectId: string
-): Promise<void> {
-    await request(
+): Promise<[boolean, number]> {
+    const [res, headers] = await request<{ deleted: boolean }>(
         "DELETE",
-        `${config.registryFullApiUrl}records/${recordId}/aspects/${aspectId}`
+        `${config.registryFullApiUrl}records/${recordId}/aspects/${aspectId}`,
+        undefined,
+        undefined,
+        true
     );
+    return [res.deleted, getEventIdFromHeaders(headers)];
 }
 
-export async function deleteRecord(recordId: string): Promise<void> {
-    await request("DELETE", `${config.registryFullApiUrl}records/${recordId}`);
+export async function deleteRecord(
+    recordId: string
+): Promise<[boolean, number]> {
+    const [res, headers] = await request<{ deleted: boolean }>(
+        "DELETE",
+        `${config.registryFullApiUrl}records/${recordId}`,
+        undefined,
+        undefined,
+        true
+    );
+    return [res.deleted, getEventIdFromHeaders(headers)];
 }
 
 export async function doesRecordExist(id: string) {
@@ -487,8 +518,15 @@ export type Record = {
     aspects: { [aspectId: string]: any };
 };
 
-function createRecord(inputRecord: Record) {
-    return request("POST", `${config.registryFullApiUrl}records`, inputRecord);
+async function createRecord(inputRecord: Record): Promise<[Record, number]> {
+    const [res, headers] = await request<Record>(
+        "POST",
+        `${config.registryFullApiUrl}records`,
+        inputRecord,
+        "application/json",
+        true
+    );
+    return [res, getEventIdFromHeaders(headers)];
 }
 
 export type JsonSchema = {
@@ -512,8 +550,9 @@ function getRecordsAspectIds(records: Record[]): string[] {
 
 export async function createDataset(
     inputDataset: Record,
-    inputDistributions: Record[]
-) {
+    inputDistributions: Record[],
+    tagDistributionVersion: boolean = false
+): Promise<[Record, number]> {
     // make sure all the aspects exist (this should be improved at some point, but will do for now)
     const aspectPromises = getRecordsAspectIds(
         [inputDataset].concat(inputDistributions)
@@ -522,25 +561,36 @@ export async function createDataset(
     await Promise.all(aspectPromises);
 
     for (const distribution of inputDistributions) {
-        await request(
+        const [distRecord, headers] = await request<Record>(
             "POST",
             `${config.registryFullApiUrl}records`,
-            distribution
+            distribution,
+            "application/json",
+            true
         );
+        if (tagDistributionVersion) {
+            await tagRecordVersionEventId(
+                distRecord,
+                getEventIdFromHeaders(headers)
+            );
+        }
     }
-    const json = (await request(
+    const [json, headers] = await request<Record>(
         "POST",
         `${config.registryFullApiUrl}records`,
-        inputDataset
-    )) as Record;
+        inputDataset,
+        "application/json",
+        true
+    );
 
-    return json;
+    return [json, getEventIdFromHeaders(headers)];
 }
 
 export async function updateDataset(
     inputDataset: Record,
-    inputDistributions: Record[]
-) {
+    inputDistributions: Record[],
+    tagDistributionVersion: boolean = false
+): Promise<[Record, number]> {
     // make sure all the aspects exist (this should be improved at some point, but will do for now)
     const aspectPromises = getRecordsAspectIds(
         [inputDataset].concat(inputDistributions)
@@ -549,27 +599,40 @@ export async function updateDataset(
     await Promise.all(aspectPromises);
 
     for (const distribution of inputDistributions) {
+        let distRecord: Record, headers: Headers;
         if (await doesRecordExist(distribution.id)) {
-            await request(
+            [distRecord, headers] = await request(
                 "PUT",
                 `${config.registryFullApiUrl}records/${distribution.id}`,
-                distribution
+                distribution,
+                "application/json",
+                true
             );
         } else {
-            await request(
+            [distRecord, headers] = await request(
                 "POST",
                 `${config.registryFullApiUrl}records`,
-                distribution
+                distribution,
+                "application/json",
+                true
+            );
+        }
+        if (tagDistributionVersion) {
+            await tagRecordVersionEventId(
+                distRecord,
+                getEventIdFromHeaders(headers)
             );
         }
     }
-    const json = (await request(
+    const [json, headers] = await request<Record>(
         "PUT",
         `${config.registryFullApiUrl}records/${inputDataset.id}`,
-        inputDataset
-    )) as Record;
+        inputDataset,
+        "application/json",
+        true
+    );
 
-    return json;
+    return [json, getEventIdFromHeaders(headers)];
 }
 
 /**
@@ -580,22 +643,24 @@ export async function updateDataset(
  * @param {string} recordId
  * @param {string} aspectId
  * @param {T} aspectData
- * @returns {Promise<T>} Return created aspect data
+ * @returns {Promise<T>} Return array of updated aspect data and eventId
  */
 export async function updateRecordAspect<T = any>(
     recordId: string,
     aspectId: string,
     aspectData: T
-): Promise<T> {
+): Promise<[T, number]> {
     await ensureAspectExists(aspectId);
 
-    const json = (await request(
+    const [json, headers] = await request<T>(
         "PUT",
         `${config.registryFullApiUrl}records/${recordId}/aspects/${aspectId}`,
-        aspectData
-    )) as T;
+        aspectData,
+        "application/json",
+        true
+    );
 
-    return json;
+    return [json, getEventIdFromHeaders(headers)];
 }
 
 type JSONPath = {
@@ -612,17 +677,46 @@ type JSONPath = {
  * @template T
  * @param {string} recordId
  * @param {T} aspectData
- * @returns {Promise<T>} Return created aspect data
+ * @returns {Promise<[T, number]>} Return array of patched aspect data and eventId
  */
 export async function patchRecord<T = any>(
     recordId: string,
     jsonPath: JSONPath
-): Promise<T> {
-    const json = (await request(
+): Promise<[T, number]> {
+    const [json, headers] = await request<T>(
         "PATCH",
         `${config.registryFullApiUrl}records/${recordId}`,
-        jsonPath
-    )) as T;
+        jsonPath,
+        "application/json",
+        true
+    );
 
-    return json;
+    return [json, getEventIdFromHeaders(headers)];
+}
+
+/**
+ * If a record's current version's eventId has not been set, this function set it to specified eventId.
+ * The eventId later can be used to retrieve the record data as it was when the event had been created.
+ * i.e. the `version` emulate the `tag` concept of git where eventId can be considered as the `commit hash`.
+ *
+ * @param {Record} record
+ * @param {number} eventId
+ * @returns
+ */
+export async function tagRecordVersionEventId(record: Record, eventId: number) {
+    if (!record?.aspects?.["version"] || !eventId) {
+        return;
+    }
+    const versionData = record.aspects["version"] as VersionAspectData;
+    const currentVersion =
+        versionData?.versions?.[versionData?.currentVersionNumber];
+    if (!currentVersion) {
+        return;
+    }
+    if (currentVersion.eventId) {
+        return;
+    }
+    versionData.versions[versionData.currentVersionNumber].eventId = eventId;
+
+    return await updateRecordAspect(record.id, "version", versionData);
 }

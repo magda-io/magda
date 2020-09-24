@@ -210,7 +210,13 @@ const ConfirmMetadataModal: FunctionComponent<PropsType> = (props) => {
                                     createTime: new Date().toISOString(),
                                     creatorId: state.dataset.editingUserId,
                                     description: `Replaced superseded by a new distribution`,
-                                    title: replaceDist.title
+                                    title: replaceDist.title,
+                                    ...(replaceDist.useStorageApi
+                                        ? {
+                                              internalDataFileUrl:
+                                                  replaceDist.downloadURL
+                                          }
+                                        : {})
                                 };
 
                                 newItem.version.currentVersionNumber =

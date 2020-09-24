@@ -35,6 +35,14 @@
                     "title": {
                         "type": "string",
                         "description": "the title / name of the record at the time when the version is created"
+                    },
+                    "eventId": {
+                        "type": "number",
+                        "description": "the id of the event that this verion points to. With the event ID, you can the record data of the version from `time travel` API. It's an optional field and an frontend feature for tagging versions. Event id can be retrieved from any registry update/patch APIs `X-Magda-Event-Id` response header."
+                    },
+                    "internalDataFileUrl": {
+                        "type": "string",
+                        "description": "Optional; Only available if this version is for a distribution record and its data file is stored with internal storage. We need to keep track of all files kept in internal storage for all versions of the distribution record. Although,it's possible to trackt them through time travel API, a seperate field here is much easier to implement."
                     }
                 },
                 "required": [
