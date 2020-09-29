@@ -13,7 +13,8 @@ spec:
   replicas: 3
   selector:
     matchLabels:
-      service: es-master
+      component: elasticsearch
+      role: master
   template:
     metadata:
       labels:

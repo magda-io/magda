@@ -7,6 +7,7 @@
 -   Fixed papaParse's chunk data loading HTTP 416 Error (on our forked repo)
 -   On dataset page, display an alert box when the dataset is superseded or retired
 -   Added Helm chart option to disable "use internal storage to store file" option in metadata creation tool UI
+-   Fixed: elasticsearch helm chart incorrect selector
 
 ## 0.0.57
 
