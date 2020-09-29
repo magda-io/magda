@@ -1,11 +1,7 @@
-Before you install this chart install `cert-manager`:
+Before you install this chart install `cert-manager` (required version v1.0 or higher) by following instruction here: 
 
-```
-helm install \
-    --name cert-manager \
-    --namespace cert-manager \
-    stable/cert-manager \
-```
+https://cert-manager.io/docs/installation/kubernetes/
+
 
 This requires you to create a secret for the route 53 credentials in the right namespace:
 
