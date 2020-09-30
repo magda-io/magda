@@ -1,7 +1,7 @@
 {
   "name": "@magda/arbitraries",
   "description": "MAGDA jsverify property-based testing arbitraries definitions",
-  "version": "0.0.58-alpha.0",
+  "version": "0.0.58-rc.0",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "webpack && api-extractor run -l",
@@ -12,7 +12,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "devDependencies": {
-    "@magda/minion-framework": "^0.0.58-alpha.0",
+    "@magda/minion-framework": "^0.0.58-rc.0",
     "@microsoft/api-extractor": "^7.7.8",
     "ts-loader": "^6.2.1",
     "typescript": "^3.7.2",

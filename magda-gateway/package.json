@@ -1,7 +1,7 @@
 {
   "name": "@magda/gateway",
   "description": "The public gateway to all of MAGDA, including the API and web front end.",
-  "version": "0.0.58-alpha.0",
+  "version": "0.0.58-rc.0",
   "license": "Apache-2.0",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
@@ -16,8 +16,8 @@
     "test": "PGUSER=postgres mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
   },
   "dependencies": {
-    "@magda/tenant-api": "^0.0.58-alpha.0",
-    "@magda/typescript-common": "^0.0.58-alpha.0",
+    "@magda/tenant-api": "^0.0.58-rc.0",
+    "@magda/typescript-common": "^0.0.58-rc.0",
     "bcrypt": "^5.0.0",
     "body-parser": "^1.13.2",
     "cheerio": "^0.22.0",
@@ -57,7 +57,7 @@
     "yargs": "^12.0.5"
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.58-alpha.0",
+    "@magda/scripts": "^0.0.58-rc.0",
     "@types/bcrypt": "^3.0.0",
     "@types/chai": "^4.0.1",
     "@types/compression": "^0.0.36",
