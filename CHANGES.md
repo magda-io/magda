@@ -9,6 +9,7 @@
 -   Added Helm chart option to disable "use internal storage to store file" option in metadata creation tool UI
 -   Fixed: elasticsearch helm chart incorrect selector
 -   Updated cluster-issuer & certificate api version to be compatible with [cert-manager](https://cert-manager.io) v1.0
+-   Fixed: some helm chart (gateway & web) deployment doesn't allow setting `replicas` value properly
 
 ## 0.0.57
 

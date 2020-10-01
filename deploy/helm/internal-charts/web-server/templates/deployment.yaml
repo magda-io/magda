@@ -6,7 +6,7 @@ spec:
   strategy:
     rollingUpdate:
       maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
-  replicas: 1
+  replicas: {{ .Values.replicas | default 1 }}
   selector:
     matchLabels:
       service: web
