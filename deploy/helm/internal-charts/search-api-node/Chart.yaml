@@ -2,4 +2,4 @@ apiVersion: v2
 kubeVersion: ">= 1.14.0-0"
 description: A Helm chart for Kubernetes
 name: search-api-node
-version: 0.0.58-alpha.0
+version: 0.0.58-terria.0
