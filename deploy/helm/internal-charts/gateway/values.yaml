@@ -97,6 +97,8 @@ cors:
   exposedHeaders:
   - "Content-Range"
   - "X-Content-Range"
+  - "Accept-Ranges"
+  - "Content-Length"
 
 # cookie -- Session cookie settings.
 # Default value will be used if any options are left with blank.

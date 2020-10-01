@@ -165,18 +165,9 @@ const argv = yargs
         describe: "Data custodian org unit tree level",
         type: "number"
     })
-    .option("maxChartProcessingRows", {
+    .option("automaticPreviewMaxFileSize", {
         describe:
-            "Max number of CSV data file rows that chart preview will module process",
-        type: "number"
-    })
-    .option("maxTableProcessingRows", {
-        describe:
-            "Max number of CSV data file rows that table preview will module process",
-        type: "number"
-    })
-    .option("csvLoaderChunkSize", {
-        describe: "The size of the csv loader processing chunk (in bytes)",
+            "The maximum size (in bytes) to automatically preview a file in the UI. If the file is determined to be over this size the user will be prompted before previewing",
         type: "number"
     })
     .option("mandatoryFields", {
@@ -295,9 +286,7 @@ const webServerConfig = {
     defaultOrganizationId: argv.defaultOrganizationId,
     defaultContactEmail: argv.defaultContactEmail,
     custodianOrgLevel: argv.custodianOrgLevel,
-    maxChartProcessingRows: argv.maxChartProcessingRows,
-    maxTableProcessingRows: argv.maxTableProcessingRows,
-    csvLoaderChunkSize: argv.csvLoaderChunkSize,
+    automaticPreviewMaxFileSize: argv.automaticPreviewMaxFileSize,
     mandatoryFields: argv.mandatoryFields,
     dateFormats: argv.dateFormats,
     datasetThemes: argv.datasetThemes,

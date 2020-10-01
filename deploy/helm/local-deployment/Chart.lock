@@ -1,7 +1,7 @@
 dependencies:
 - name: magda
   repository: file://../magda
-  version: 0.0.58-alpha.0
+  version: 0.0.58-rc.1
 - name: magda-ckan-connector
   repository: https://charts.magda.io
   version: 0.0.57-0
@@ -101,5 +101,5 @@ dependencies:
 - name: magda-project-open-data-connector
   repository: https://charts.magda.io
   version: 0.0.57-0
-digest: sha256:208b9af646fdf23c3faaf52b32ba1af4f5efa82c27a006ae9485bfe7171dcaf8
-generated: "2020-09-14T15:34:03.963763+10:00"
+digest: sha256:2e8431e35d4c8bc8115f4ce6bc1e1f8408a56981da3e9b9b558b728985e383c9
+generated: "2020-10-01T21:22:11.77782+10:00"

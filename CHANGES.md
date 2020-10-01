@@ -9,6 +9,7 @@
 -   Added Helm chart option to disable "use internal storage to store file" option in metadata creation tool UI
 -   Fixed: elasticsearch helm chart incorrect selector
 -   Updated cluster-issuer & certificate api version to be compatible with [cert-manager](https://cert-manager.io) v1.0
+-   Added an opt-in for chart/map/table previews if files are large.
 
 ## 0.0.57
 
@@ -360,6 +361,7 @@ Others:
 -   Upgrade Scala dependencies versions & added scalafmt support
 -   Fixed doc to reflect [lerna deprecating an option](https://github.com/lerna/lerna/commit/f2c3a92fe41b6fdc5d11269f0f2c3e27761b4c85)
 -   Fix potential memory leak by deregistering listener when Header is unmounted
+-   Removed unnecessary requirement for >= 1 keyword in the dcat-dataset-strings schema.
 
 ## 0.0.55
 
