@@ -1,11 +1,11 @@
 apiVersion: v2
 name: "magda-local-deployment"
 description: ""
-version: "0.0.58-alpha.0"
+version: "0.0.58-rc.3"
 kubeVersion: ">= 1.14.0-0"
 dependencies:
   - name: magda
-    version: 0.0.58-alpha.0
+    version: 0.0.58-rc.3
     repository: "file://../magda"
 
   ## Data.gov.au connector to provide some initial data. Remove this if you
