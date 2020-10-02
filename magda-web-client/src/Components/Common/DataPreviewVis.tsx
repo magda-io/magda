@@ -3,9 +3,15 @@ import React, { Component } from "react";
 import DataPreviewTable from "./DataPreviewTable";
 import DataPreviewChart from "./DataPreviewChart";
 import { ParsedDistribution } from "helpers/record";
+import DataPreviewSizeWarning from "./DataPreviewSizeWarning";
 import CsvDataLoader, { DataLoadingResult } from "helpers/CsvDataLoader";
-import "./DataPreviewVis.scss";
+import {
+    checkFileForPreview,
+    FileSizeCheckResult,
+    FileSizeCheckStatus
+} from "../../helpers/DistributionPreviewUtils";
 
+import "./DataPreviewVis.scss";
 type VisType = "chart" | "table";
 
 type StateType = {
@@ -13,6 +19,7 @@ type StateType = {
     isDataLoading: boolean;
     dataLoadingError: Error | null;
     dataLoadingResult: DataLoadingResult | null;
+    fileSizeCheckResult: FileSizeCheckResult | null;
 };
 
 class DataPreviewVis extends Component<
@@ -29,7 +36,8 @@ class DataPreviewVis extends Component<
             visType: "chart",
             isDataLoading: true,
             dataLoadingError: null,
-            dataLoadingResult: null
+            dataLoadingResult: null,
+            fileSizeCheckResult: null
         };
         this.onChangeTab = this.onChangeTab.bind(this);
         this.dataLoader = null;
@@ -53,7 +61,12 @@ class DataPreviewVis extends Component<
         }
     }
 
-    async loadData() {
+    /**
+     * Load the data for preview
+     *
+     * @param ignoreOversize Whether to download the file even if it's oversize
+     */
+    async loadData(ignoreOversize?: boolean) {
         try {
             // If none of chart & table compatiblePreviews option is false, no need to load data
             const distribution = this.props.distribution;
@@ -66,12 +79,34 @@ class DataPreviewVis extends Component<
                 return;
             }
 
-            this.dataLoader = new CsvDataLoader(this.props.distribution);
+            // We can preview this - set loading to true
             this.setState({
                 isDataLoading: true,
                 dataLoadingError: null,
-                dataLoadingResult: null
+                dataLoadingResult: null,
+                fileSizeCheckResult: null
             });
+
+            // Check the size - if it's too big we shouldn't preview until the user opts in
+            if (!ignoreOversize) {
+                const fileSizeCheckResult = await checkFileForPreview(
+                    distribution
+                );
+
+                if (
+                    fileSizeCheckResult.fileSizeCheckStatus !==
+                    FileSizeCheckStatus.Ok
+                ) {
+                    this.setState({
+                        isDataLoading: false,
+                        fileSizeCheckResult
+                    });
+                    return;
+                }
+            }
+
+            this.dataLoader = new CsvDataLoader(this.props.distribution);
+
             const result = await this.dataLoader.load();
 
             this.setState({
@@ -82,8 +117,11 @@ class DataPreviewVis extends Component<
             // --- the CSV processing error could be caused by many reasons
             // --- most them here should be source file problem
             // --- But we might still want to keep monitor any rare non-source-file related issues here
-            if (result.errors.length) {
-                console.log("CSV data processing error: ", result.errors);
+            if (result.parseResult && result.parseResult.errors.length) {
+                console.log(
+                    "CSV data processing error: ",
+                    result.parseResult.errors
+                );
             }
         } catch (e) {
             this.setState({
@@ -136,7 +174,7 @@ class DataPreviewVis extends Component<
         return (
             <nav className="tab-navigation">
                 <ul className="au-link-list au-link-list--inline tab-list">
-                    {tabs.map(t => (
+                    {tabs.map((t) => (
                         <li key={t.value}>
                             <button
                                 className={`${t.value.toLowerCase()} au-link ${
@@ -161,6 +199,19 @@ class DataPreviewVis extends Component<
     }
 
     renderByState() {
+        if (
+            this.state.fileSizeCheckResult &&
+            this.state.fileSizeCheckResult.fileSizeCheckStatus !==
+                FileSizeCheckStatus.Ok
+        ) {
+            return (
+                <DataPreviewSizeWarning
+                    fileSizeCheckResult={this.state.fileSizeCheckResult}
+                    preview={() => this.loadData(true)}
+                />
+            );
+        }
+
         const distribution = this.props.distribution;
         if (distribution && distribution.identifier) {
             // Render chart if there's chart fields, table if fields, both if both
@@ -169,7 +220,7 @@ class DataPreviewVis extends Component<
                     TabItem("chart", "Chart", this.renderChart()),
                 distribution.compatiblePreviews.table &&
                     TabItem("table", "Table", this.renderTable())
-            ].filter(x => !!x);
+            ].filter((x) => !!x);
 
             return tabs.length ? this.renderTabs(tabs) : null;
         }
@@ -182,6 +233,7 @@ class DataPreviewVis extends Component<
         return (
             <div className="data-preview-vis no-print">
                 <h3 className="section-heading">Data Preview</h3>
+
                 {bodyRenderResult}
             </div>
         );
