@@ -3,13 +3,13 @@ name: "magda"
 description: "A complete solution for managing, publishing and discovering
   government data, private and open. This chart includes the magda default
   deployment."
-version: "0.0.58-rc.1"
+version: "0.0.58-alpha.0"
 kubeVersion: ">= 1.14.0-0"
 home: "https://github.com/magda-io/magda"
 sources: [ "https://github.com/magda-io/magda" ]
 dependencies:
   - name: magda-core
-    version: 0.0.58-rc.1
+    version: 0.0.58-alpha.0
     repository: file://../magda-core
   # magda-core chart is always enabled.
   # Thus, no tags or condition are required.
