@@ -1,0 +1,18 @@
+@import "variables";
+@import "./pancake/sass/core.scss";
+
+$color: darken($AU-color-info, 30%);
+
+.preview-anyway-btn {
+    border: 0;
+    border-bottom: 1px solid $color;
+    padding-bottom: 4px;
+    text-decoration: none;
+    color: $color;
+    font-size: 1rem;
+    padding: 0;
+    &:hover,
+    &:focus {
+        cursor: pointer;
+    }
+}

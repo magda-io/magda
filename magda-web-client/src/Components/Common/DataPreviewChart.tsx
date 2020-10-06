@@ -5,6 +5,7 @@ import ChartDatasetEncoder from "helpers/ChartDatasetEncoder";
 import ChartConfig from "./ChartConfig";
 import downArrowIcon from "assets/downArrow.svg";
 import upArrowIcon from "assets/upArrow.svg";
+import AUpageAlert from "pancake/react/page-alerts";
 import memoize from "memoize-one";
 import { gapi } from "analytics/ga";
 import { DataLoadingResult } from "helpers/CsvDataLoader";
@@ -39,7 +40,7 @@ const defaultChartType = "bar";
 // we only do the auto redirect in the first time,
 // subsequent tab switching does not trigger redirect
 const switchTabOnFirstGo = memoize(
-    props => props.onChangeTab("table"),
+    (props) => props.onChangeTab("table"),
     (prev, next) =>
         prev.distribution.identifier === next.distribution.identifier
 );
@@ -90,7 +91,17 @@ class DataPreviewChart extends Component<PropsType, StateType> {
             return;
         }
 
-        if (this.props.dataLoadError || !this.props.dataLoadingResult) {
+        if (
+            this.props.isLoading ||
+            (this.props.dataLoadingResult &&
+                this.props.dataLoadingResult.failureReason)
+        ) {
+            return;
+        }
+
+        if (this.props.dataLoadError) {
+            console.error(this.props.dataLoadingResult);
+            console.error(this.props.dataLoadError);
             this.resetChartState({
                 error: this.props.dataLoadError
                     ? this.props.dataLoadError
@@ -133,6 +144,8 @@ class DataPreviewChart extends Component<PropsType, StateType> {
             }
             this.processChartDataUpdates();
         } catch (e) {
+            console.error(e);
+
             this.resetChartState({
                 error: e
             });
@@ -153,6 +166,7 @@ class DataPreviewChart extends Component<PropsType, StateType> {
         try {
             this.processChartDataUpdates(prevProps, prevState);
         } catch (e) {
+            console.error(e);
             // we do not automatically switch to table view here because chart has already successfully rendered.
             // for subsequent error cause the chart to not render, we will just display an error message
             this.setState(
@@ -182,9 +196,7 @@ class DataPreviewChart extends Component<PropsType, StateType> {
     render() {
         if (this.state.error)
             return (
-                <div
-                    className={`au-page-alerts au-page-alerts--error notification__inner`}
-                >
+                <AUpageAlert as="error" className="notification__inner">
                     <h3>Oops</h3>
                     <p>Chart preview not available, please try table preview</p>
                     <button
@@ -193,34 +205,15 @@ class DataPreviewChart extends Component<PropsType, StateType> {
                     >
                         Switch to table preview
                     </button>
-                </div>
+                </AUpageAlert>
             );
         if (this.props.isLoading) return <Spinner height="420px" />;
         if (!ReactEcharts)
-            return <div>Unexpected Error: failed to load chart component.</div>;
-
-        if (
-            this.props.dataLoadingResult &&
-            this.props.dataLoadingResult.isPartialData
-        ) {
             return (
-                <div
-                    className={`au-page-alerts au-page-alerts--error notification__inner`}
-                >
-                    <h3>Oops</h3>
-                    <p>
-                        Chart preview not available due to the overlimit data
-                        file size, please try table preview
-                    </p>
-                    <button
-                        onClick={this.onDismissError}
-                        className="switch-tab-btn"
-                    >
-                        Switch to table preview
-                    </button>
-                </div>
+                <AUpageAlert as="error" className="notification__inner">
+                    Unexpected Error: failed to load chart component.
+                </AUpageAlert>
             );
-        }
 
         return (
             <div className="row data-preview-chart">
@@ -254,7 +247,7 @@ class DataPreviewChart extends Component<PropsType, StateType> {
                         {this.state.isExpanded ? (
                             <button
                                 className="toggle-button"
-                                onClick={e => this.onToggleButtonClick(e)}
+                                onClick={(e) => this.onToggleButtonClick(e)}
                             >
                                 <span>Hide chart options</span>
                                 <img src={upArrowIcon} alt="upArrowIcon" />
@@ -262,7 +255,7 @@ class DataPreviewChart extends Component<PropsType, StateType> {
                         ) : (
                             <button
                                 className="toggle-button"
-                                onClick={e => this.onToggleButtonClick(e)}
+                                onClick={(e) => this.onToggleButtonClick(e)}
                             >
                                 <span>Show chart options</span>
                                 <img src={downArrowIcon} alt="downArrow" />

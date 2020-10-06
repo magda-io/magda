@@ -86,9 +86,7 @@ const serverConfig: {
     defaultOrganizationId?: string;
     defaultContactEmail?: string;
     custodianOrgLevel: number;
-    maxChartProcessingRows: number;
-    maxTableProcessingRows: number;
-    csvLoaderChunkSize: number;
+    automaticPreviewMaxFileSize: number;
     mandatoryFields: ValidationFieldList;
     dateConfig?: DateConfig;
     noManualKeywords?: boolean;
@@ -310,16 +308,10 @@ export const config = {
     custodianOrgLevel: serverConfig.custodianOrgLevel
         ? serverConfig.custodianOrgLevel
         : 2,
-    maxChartProcessingRows: serverConfig.maxChartProcessingRows
-        ? serverConfig.maxChartProcessingRows
-        : 20000, // --- `-1` means no limit
-    maxTableProcessingRows: serverConfig.maxTableProcessingRows
-        ? serverConfig.maxTableProcessingRows
-        : 200, // --- `-1` means no limit
-    // --- CSV loader download / processing chunk size
-    // --- default to 2MB
-    csvLoaderChunkSize: serverConfig.csvLoaderChunkSize
-        ? serverConfig.csvLoaderChunkSize
+    // The maximum size that a file can be in order to be automatically previewed
+    // by the ui as a map, graph or table.
+    automaticPreviewMaxFileSize: serverConfig.automaticPreviewMaxFileSize
+        ? serverConfig.automaticPreviewMaxFileSize
         : 2097152,
     mandatoryFields: serverConfig.mandatoryFields
         ? serverConfig.mandatoryFields

@@ -19,14 +19,12 @@ data:
     "defaultContactEmail": {{ toJson .Values.defaultContactEmail }},
     {{- end }}
     "custodianOrgLevel": {{ toJson .Values.custodianOrgLevel | quote }},
-    "maxChartProcessingRows": {{ toJson .Values.maxChartProcessingRows | quote }},
-    "maxTableProcessingRows": {{ toJson .Values.maxTableProcessingRows | quote }},
-    "csvLoaderChunkSize": {{ toJson .Values.csvLoaderChunkSize | quote }},
     "dateConfig": {{ toJson .Values.dateConfig | quote }},
     "datasetThemes": {{ toJson .Values.datasetThemes | quote }},
     "noManualThemes": {{ .Values.noManualThemes }},
     "noManualKeywords": {{ .Values.noManualKeywords }},
     "keywordsBlackList": {{ toJson .Values.keywordsBlackList | quote }},
+    "automaticPreviewMaxFileSize": {{ toJson .Values.automaticPreviewMaxFileSize | quote }},
     {{- if .Values.mandatoryFields }}
     "mandatoryFields": {{ toJson .Values.mandatoryFields | quote }}
     {{- end }}
