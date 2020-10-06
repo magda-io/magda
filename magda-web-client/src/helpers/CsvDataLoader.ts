@@ -1,12 +1,15 @@
-import { config, getProxiedResourceUrl } from "../config";
-import URI from "urijs";
+import { getProxiedResourceUrl } from "../config";
 // --- as we only import types here, no runtime code will be emitted.
 // --- And papaparse will not be included by the main js bundle
 import { Parser, ParseResult, ParseError, ParseMeta } from "papaparse";
 import { ParsedDistribution } from "./record";
+import { getSourceUrl } from "./DistributionPreviewUtils";
 
-export interface DataLoadingResult extends ParseResult<any> {
-    isPartialData: boolean;
+export type CsvFailureReason = "toobig" | "sizeunknown" | null;
+export interface DataLoadingResult {
+    parseResult?: ParseResult<any>;
+    failureReason?: CsvFailureReason;
+    fileLength?: number;
 }
 
 type CsvUrlType = string;
@@ -38,28 +41,11 @@ const retryLater: <T>(f: () => Promise<T>, delay?: number) => Promise<T> = (
 };
 
 class CsvDataLoader {
-    private maxChartProcessingRows: number;
-    private maxTableProcessingRows: number;
-    /**
-     * maxProcessRows is the max rows CsvDataLoader will attempt to process.
-     * It's auto calcated from Math.max(`maxChartProcessingRows`,`maxTableProcessingRows`).
-     * Or if any of `maxChartProcessingRows` or `maxTableProcessingRows` === -1, `maxProcessRows` = -1
-     * When `maxProcessRows` = -1, `CsvDataLoader` will attempt to download the whole data file.
-     * Please note: the actual rows produced by `CsvDataLoader` may larger than `maxProcessRows`,
-     * as `CsvDataLoader` will not discard excess rows when processes the most recent chunk --- they are downloaded & processed anyway.
-     *
-     * @private
-     * @type {number}
-     * @memberof CsvDataLoader
-     */
-    private maxProcessRows: number;
-
     private url: CsvUrlType;
     private data: any[] = [];
     private errors: ParseError[] = [];
     private metaData: ParseMeta | null = null;
     private isLoading: boolean = false;
-    private isPartialData: boolean = false;
 
     /**
      * When download & parse process is aborted as result of user or client side event (e.g. component will be unmounted),
@@ -69,7 +55,7 @@ class CsvDataLoader {
      * @type {boolean}
      * @memberof CsvDataLoader
      */
-    private toBeAbort: boolean = false;
+    private toBeAborted: boolean = false;
 
     /**
      * Flag to skip handling the next call to `complete`.
@@ -84,34 +70,7 @@ class CsvDataLoader {
     private skipComplete: boolean = false;
 
     constructor(source: CsvSourceType) {
-        this.maxChartProcessingRows = config.maxChartProcessingRows;
-        this.maxTableProcessingRows = config.maxTableProcessingRows;
-
-        this.maxProcessRows =
-            this.maxChartProcessingRows === -1 ||
-            this.maxTableProcessingRows === -1
-                ? -1
-                : Math.max(
-                      this.maxChartProcessingRows,
-                      this.maxTableProcessingRows
-                  );
-
-        this.url = this.getSourceUrl(source);
-    }
-
-    private getSourceUrl(source: CsvSourceType): string {
-        if (typeof source === "string") {
-            return source;
-        }
-        if (source.downloadURL) {
-            return source.downloadURL;
-        }
-        if (source.accessURL) {
-            return source.accessURL;
-        }
-        throw new Error(
-            `Failed to determine CSV data source url for distribution id: ${source.identifier}`
-        );
+        this.url = getSourceUrl(source);
     }
 
     private resetDownloadData() {
@@ -119,29 +78,29 @@ class CsvDataLoader {
         this.errors = [];
         this.metaData = null;
         this.isLoading = false;
-        this.toBeAbort = false;
-        this.isPartialData = false;
+        this.toBeAborted = false;
         this.skipComplete = false;
     }
 
     abort() {
         if (!this.isLoading) return;
-        this.toBeAbort = true;
-    }
-
-    convertToAbsoluteUrl(url) {
-        if (url[0] !== "/") return url;
-        return URI(window.location.href).origin() + url;
+        this.toBeAborted = true;
     }
 
     async load(overrideNewLine?: string): Promise<DataLoadingResult> {
         this.resetDownloadData();
-        const Papa = await getPapaParse();
         const proxyUrl = getProxiedResourceUrl(this.url, true);
-        return new Promise((resolve, reject) => {
+
+        const csvRes = await fetch(proxyUrl);
+
+        if (!csvRes.ok) {
+            throw new Error("Could not retrieve csv: " + csvRes.statusText);
+        }
+
+        const Papa = await getPapaParse();
+        return new Promise(async (resolve, reject) => {
             const options = {
                 worker: true,
-                download: true,
                 header: true,
                 // --- Papa Parser by default will decide whether to use `fastMode` by itself.
                 // --- Disable it to avoid random issues
@@ -149,11 +108,10 @@ class CsvDataLoader {
                 skipEmptyLines: true,
                 newline: overrideNewLine,
                 trimHeader: true,
-                chunkSize: config.csvLoaderChunkSize,
                 // --- the `bind` is required here even for arrow function under worker mode
                 chunk: ((results: ParseResult<any>, parser: Parser) => {
                     try {
-                        if (this.toBeAbort) {
+                        if (this.toBeAborted) {
                             parser.abort();
                             reject(
                                 new Error("Data processing has been aborted.")
@@ -190,16 +148,9 @@ class CsvDataLoader {
                             if (!this.metaData) {
                                 this.metaData = results.meta;
                             }
-                            if (
-                                this.maxProcessRows !== -1 &&
-                                this.data.length >= this.maxProcessRows
-                            ) {
-                                // --- abort the download & parsing
-                                this.isPartialData = true;
-                                parser.abort();
-                            }
                         }
                     } catch (e) {
+                        console.error(e);
                         reject(e);
                     }
                 }).bind(this),
@@ -210,10 +161,11 @@ class CsvDataLoader {
                             return;
                         }
                         const result = {
-                            data: this.data,
-                            errors: this.errors,
-                            meta: this.metaData as ParseMeta,
-                            isPartialData: this.isPartialData
+                            parseResult: {
+                                data: this.data,
+                                errors: this.errors,
+                                meta: this.metaData as ParseMeta
+                            }
                         };
                         this.resetDownloadData();
                         resolve(result);
@@ -221,15 +173,16 @@ class CsvDataLoader {
                         reject(e);
                     }
                 }).bind(this),
-                error: (err) =>
+                error: (err) => {
                     reject(
                         err
                             ? err
                             : Error("Failed to retrieve or parse the file.")
-                    )
+                    );
+                }
             };
             if (overrideNewLine) options["newline"] = overrideNewLine;
-            Papa.parse(proxyUrl, options);
+            Papa.parse(await csvRes.text(), options);
         });
     }
 }

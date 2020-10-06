@@ -3,4 +3,4 @@ dependencies:
   repository: file://../magda-core
   version: 0.0.58-alpha.0
 digest: sha256:7ee255fb4bc4e79bc09d022039860c78bc5ffdf7756f6857275ca27ff7fb11c0
-generated: "2020-09-14T15:34:16.944107+10:00"
+generated: "2020-10-02T15:48:55.982529+10:00"

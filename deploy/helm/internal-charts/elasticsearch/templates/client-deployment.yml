@@ -13,7 +13,8 @@ spec:
       maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
   selector:
     matchLabels:
-      service: es-client
+      component: elasticsearch
+      role: client
   template:
     metadata:
       labels:
