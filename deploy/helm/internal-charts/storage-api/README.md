@@ -22,8 +22,10 @@ Kubernetes: `>= 1.14.0-0`
 | minio.fullnameOverride | string | `"magda-minio"` |  |
 | minio.host | string | `"minio"` |  |
 | minio.nameOverride | string | `"magda-minio"` |  |
+| minio.persistence.size | string | `"10Gi"` |  |
 | minio.port | int | `9000` |  |
 | minio.resources.requests.memory | string | `"256Mi"` |  |
+| minioRegion | string | "unspecified-region" | specify bucket region |
 | resources.limits.cpu | string | `"50m"` |  |
 | resources.requests.cpu | string | `"10m"` |  |
 | resources.requests.memory | string | `"30Mi"` |  |

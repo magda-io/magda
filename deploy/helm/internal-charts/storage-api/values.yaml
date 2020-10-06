@@ -6,6 +6,10 @@ resources:
   limits:
     cpu: 50m
 
+# -- specify bucket region
+# @default -- "unspecified-region"
+minioRegion: ""
+
 minio:
   host: "minio"
   port: 9000
@@ -15,6 +19,8 @@ minio:
   resources:
     requests:
       memory: 256Mi
+  persistence:
+    size: 10Gi
   DeploymentUpdate:
     type: Recreate
 

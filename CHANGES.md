@@ -12,6 +12,9 @@
 -   Fixed: some helm chart (gateway & web) deployment doesn't allow setting `replicas` value properly
 -   Added an opt-in for chart/map/table previews if files are large.
 -   Upgraded helm-docs to v1.2.1
+-   Upgraded minio to 5.0.33
+-   Allowed region to be specified for storage API
+-   Made storage API process `BucketAlreadyExists` error code correctly when create bucket
 
 ## 0.0.57
 
