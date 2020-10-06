@@ -63,6 +63,10 @@ trait RecordPersistence {
       aspectOrQueries: Iterable[AspectQuery] = Nil
   )(implicit session: DBSession): Long
 
+  def getReadiness(
+    logger: Option[LoggingAdapter] = None
+      )(implicit session: DBSession): Option[Boolean]
+
   def getById(
       tenantId: TenantId,
       opaQueries: Option[List[(String, List[List[OpaQuery]])]],
@@ -321,6 +325,41 @@ class DefaultRecordPersistence(config: Config)
         Some(SQLSyntax.roundBracket(sqlPart))
       case _ => None
     }
+  }
+
+  def getReadiness(logger: Option[LoggingAdapter] = None
+                  )(implicit session: DBSession): Option[Boolean] = {
+    def checkTableExists(table: String): Boolean = {
+      try {
+        val schemaAndTable = "public." + table
+        val regclass = sql"select to_regclass(${schemaAndTable})"
+
+        val tableExists = regclass.map(_.toMap).list.apply()
+          .map { res => {
+            res("to_regclass").toString == table
+          }
+          }.forall(x => x);
+        tableExists
+      } catch {
+        case e: Exception => {
+          if (logger.isDefined) {
+            logger.get.error(e, s"Error occurred on getReadiness probe for table ${table}")
+          }
+          false
+        }
+      }
+    }
+
+    Some(
+      List(
+        checkTableExists("aspects"),
+        checkTableExists("events"),
+        checkTableExists("eventtypes"),
+        checkTableExists("recordaspects"),
+        checkTableExists("records"),
+        checkTableExists("webhookevents"),
+        checkTableExists("webhooks")
+      ).forall(x => x))
   }
 
   def getAllWithAspects(

@@ -133,10 +133,18 @@ class Api(
 
   val routes = handleExceptions(myExceptionHandler) {
     pathPrefix("v0") {
-      path("ping") { complete("OK") } ~
+      path("ping") {
+        complete("OK")
+      } ~
         pathPrefix("status") {
-          path("live") { complete("OK") } ~
-            path("ready") { complete(ReadyStatus(true)) }
+          new ProbesService(
+            config,
+            authApiClient,
+            system,
+            materializer,
+            recordPersistence,
+            eventPersistence
+          ).route
         } ~ roleDependentRoutes
     }
   }
