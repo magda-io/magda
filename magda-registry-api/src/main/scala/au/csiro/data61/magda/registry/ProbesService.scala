@@ -50,7 +50,8 @@ class ProbesService(
         recordPersistence.getReadiness(Some(logger))(session)
       } match {
         case Some(true) => complete("OK")
-        case Some(false) | None => complete(StatusCodes.InternalServerError, "Database not ready")
+        case Some(false) | None =>
+          complete(StatusCodes.InternalServerError, "Database not ready")
       }
     }
   }

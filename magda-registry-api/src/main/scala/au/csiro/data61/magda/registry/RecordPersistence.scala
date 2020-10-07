@@ -64,8 +64,8 @@ trait RecordPersistence {
   )(implicit session: DBSession): Long
 
   def getReadiness(
-    logger: Option[LoggingAdapter] = None
-      )(implicit session: DBSession): Option[Boolean]
+      logger: Option[LoggingAdapter] = None
+  )(implicit session: DBSession): Option[Boolean]
 
   def getById(
       tenantId: TenantId,
@@ -249,6 +249,7 @@ class DefaultRecordPersistence(config: Config)
 
   /**
     * Given a list of recordIds, filter out any record that the current user has not access and return the rest of ids
+    *
     * @param tenantId
     * @param opaRecordQueries
     * @param recordIds
@@ -327,23 +328,32 @@ class DefaultRecordPersistence(config: Config)
     }
   }
 
-  def getReadiness(logger: Option[LoggingAdapter] = None
-                  )(implicit session: DBSession): Option[Boolean] = {
+  def getReadiness(
+      logger: Option[LoggingAdapter] = None
+  )(implicit session: DBSession): Option[Boolean] = {
     def checkTableExists(table: String): Boolean = {
       try {
         val schemaAndTable = "public." + table
         val regclass = sql"select to_regclass(${schemaAndTable})"
 
-        val tableExists = regclass.map(_.toMap).list.apply()
-          .map { res => {
-            res("to_regclass").toString == table
+        val tableExists = regclass
+          .map(_.toMap)
+          .list
+          .apply()
+          .map { res =>
+            {
+              res("to_regclass").toString == table
+            }
           }
-          }.forall(x => x);
+          .forall(x => x);
         tableExists
       } catch {
         case e: Exception => {
           if (logger.isDefined) {
-            logger.get.error(e, s"Error occurred on getReadiness probe for table ${table}")
+            logger.get.error(
+              e,
+              s"Error occurred on getReadiness probe for table ${table}"
+            )
           }
           false
         }
@@ -359,7 +369,8 @@ class DefaultRecordPersistence(config: Config)
         checkTableExists("records"),
         checkTableExists("webhookevents"),
         checkTableExists("webhooks")
-      ).forall(x => x))
+      ).forall(x => x)
+    )
   }
 
   def getAllWithAspects(
@@ -715,7 +726,9 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
         case _                           => Success(result)
       }
       // No failed aspects, so unwrap the aspects from the Success Trys.
-      resultAspects <- Try { patchedAspects.mapValues(_.get) }
+      resultAspects <- Try {
+        patchedAspects.mapValues(_.get)
+      }
     } yield
       result.copy(aspects = resultAspects, sourceTag = newRecord.sourceTag)
   }
@@ -1407,7 +1420,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       aspectIds: Iterable[String] = List()
   )(implicit session: DBSession): Try[Iterable[String]] = {
 
-    /** For aspects that have links to other aspects, a map of the ids of those aspects to the location (first-level, not path) in their JSON where the link is  */
+    /** For aspects that have links to other aspects, a map of the ids of those aspects to the location (first-level, not path) in their JSON where the link is */
     val referenceMap = this.buildReferenceMap(aspectIds)
 
     Try {
@@ -1991,6 +2004,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       case _            => throw new Exception("Invalid tenant value " + tenantId)
     }
   }
+
   private def aspectIdsToWhereClause(
       tenantId: TenantId,
       aspectIds: Iterable[String]
