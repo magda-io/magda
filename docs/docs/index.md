@@ -7,7 +7,6 @@
 -   [How to document APIs](/docs/api-documentation-howto)
 -   [How to create API key](/docs/how-to-create-api-key)
 -   [How to create local users](/docs/how-to-create-local-users)
--   [Guide to Magda internals](/docs/architecture/guide-to-magda-internals)
 -   [How to build your own connectors / minions](/docs/how-to-build-your-own-connectors-minions)
 -   [How to deploy an HA, production deployment on GKE](/docs/deploying-for-production-on-gke)
 -   [Ports used when running locally](/docs/local-ports)
