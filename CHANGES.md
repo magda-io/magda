@@ -12,6 +12,7 @@
 -   Fixed: some helm chart (gateway & web) deployment doesn't allow setting `replicas` value properly
 -   Added an opt-in for chart/map/table previews if files are large.
 -   Upgraded helm-docs to v1.2.1
+-   Added basic readiness check for registry API
 
 ## 0.0.57
 
