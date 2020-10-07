@@ -15,6 +15,7 @@
 -   Upgraded minio to 5.0.33
 -   Allowed region to be specified for storage API
 -   Made storage API process `BucketAlreadyExists` error code correctly when create bucket
+-   CI upgrade
 
 ## 0.0.57
 
