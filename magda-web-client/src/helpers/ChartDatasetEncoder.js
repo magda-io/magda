@@ -377,7 +377,7 @@ class ChartDatasetEncoder {
             return;
         }
         this.distribution = distribution;
-        this.data = dataLoadingResult.data;
+        this.data = dataLoadingResult.parseResult.data;
         this.preProcessData();
     }
 

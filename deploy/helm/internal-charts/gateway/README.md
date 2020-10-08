@@ -1,6 +1,6 @@
 # gateway
 
-![Version: 0.0.58-alpha.0](https://img.shields.io/badge/Version-0.0.58-alpha.0-informational?style=flat-square)
+![Version: 0.0.58-alpha.0](https://img.shields.io/badge/Version-0.0.58--alpha.0-informational?style=flat-square)
 
 The Gateway Component of Magda that routes incoming requets to other magda components.
 
@@ -32,6 +32,8 @@ A proxy target be also specify in a simply string form, in which case, Gateway a
 | cookie | object | `{"sameSite":"lax"}` | Session cookie settings. Default value will be used if any options are left with blank. More info: https://github.com/expressjs/session#cookie Supported options are:  - `expires`: A fix cookie expire date. The expires option should not be set directly; instead only use the maxAge option. - `httpOnly`: Default: true. - `maxAge`: Default: 7 * 60 * 60 * 1000. - `path`: Default: '/'. - `sameSite`: Default: false (not set). - `secure1: Default: false (not set). |
 | cors.exposedHeaders[0] | string | `"Content-Range"` |  |
 | cors.exposedHeaders[1] | string | `"X-Content-Range"` |  |
+| cors.exposedHeaders[2] | string | `"Accept-Ranges"` |  |
+| cors.exposedHeaders[3] | string | `"Content-Length"` |  |
 | csp.browserSniff | bool | `false` |  |
 | csp.directives.objectSrc[0] | string | `"''none''"` |  |
 | csp.directives.scriptSrc[0] | string | `"''self''"` |  |
