@@ -3722,7 +3722,7 @@ class RecordsServiceSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
           responseAs[Record] shouldEqual record.copy(tenantId = Some(TENANT_1))
           // --- try to retrieve eventId generated because of this request
-          eventId = header("X-Magda-Event-Id").map(_.value())
+          eventId = header("x-magda-event-id").map(_.value())
         }
 
         Get("/v0/records/testId") ~> addTenantIdHeader(TENANT_1) ~> param
@@ -3774,7 +3774,7 @@ class RecordsServiceSpec extends ApiSpec {
             tenantId = Some(TENANT_1)
           )
           // --- try to retrieve eventId generated because of this request
-          eventId = header("X-Magda-Event-Id").map(_.value())
+          eventId = header("x-magda-event-id").map(_.value())
         }
 
         checkRecordLastEventId("aRecordId", eventId, TENANT_1)
@@ -3788,7 +3788,7 @@ class RecordsServiceSpec extends ApiSpec {
             tenantId = Some(TENANT_2)
           )
           // --- try to retrieve eventId generated because of this request
-          eventId = header("X-Magda-Event-Id").map(_.value())
+          eventId = header("x-magda-event-id").map(_.value())
         }
 
         checkRecordLastEventId("aRecordId", eventId, TENANT_2)
@@ -3823,7 +3823,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -3855,7 +3855,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "in valid",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -3894,7 +3894,7 @@ class RecordsServiceSpec extends ApiSpec {
             // --- check if response eventId = latest event of the record
             checkRecordLastEventId(
               "testId",
-              header("X-Magda-Event-Id").map(_.value()),
+              header("x-magda-event-id").map(_.value()),
               TENANT_1
             )
           }
@@ -3906,7 +3906,7 @@ class RecordsServiceSpec extends ApiSpec {
             status shouldEqual StatusCodes.BadRequest
             responseAs[ApiError].message should include("already exists")
 
-            header("X-Magda-Event-Id").isEmpty shouldBe true
+            header("x-magda-event-id").isEmpty shouldBe true
           }
 
           param.asAdmin(Post("/v0/records", updated)) ~> addTenantIdHeader(
@@ -3917,7 +3917,7 @@ class RecordsServiceSpec extends ApiSpec {
             // --- check if response eventId = latest event of the record
             checkRecordLastEventId(
               "testId",
-              header("X-Magda-Event-Id").map(_.value()),
+              header("x-magda-event-id").map(_.value()),
               TENANT_2
             )
           }
@@ -3940,7 +3940,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4000,7 +4000,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4018,7 +4018,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4034,7 +4034,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_2
           )
         }
@@ -4098,7 +4098,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4115,7 +4115,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4145,7 +4145,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4173,7 +4173,7 @@ class RecordsServiceSpec extends ApiSpec {
             tenantId = Some(TENANT_1)
           )
           // -- as no event generated, the header value should be "0"
-          header("X-Magda-Event-Id").map(_.value()).get shouldEqual "0"
+          header("x-magda-event-id").map(_.value()).get shouldEqual "0"
         }
 
         param.asAdmin(Put("/v0/records/testId", newRecord)) ~> addTenantIdHeader(
@@ -4186,7 +4186,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_2
           )
         }
@@ -4232,7 +4232,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4245,14 +4245,14 @@ class RecordsServiceSpec extends ApiSpec {
           responseAs[ApiError].message should include(
             "does not match the record"
           )
-          header("X-Magda-Event-Id").isEmpty shouldBe true
+          header("x-magda-event-id").isEmpty shouldBe true
         }
 
         param.asAdmin(Put("/v0/records/testId", updated)) ~> addTenantIdHeader(
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
-          header("X-Magda-Event-Id").isEmpty shouldBe true
+          header("x-magda-event-id").isEmpty shouldBe true
         }
       }
 
@@ -4266,7 +4266,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "in valid",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4295,7 +4295,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4309,7 +4309,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4343,7 +4343,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4359,7 +4359,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4395,7 +4395,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4409,7 +4409,7 @@ class RecordsServiceSpec extends ApiSpec {
           status shouldEqual StatusCodes.OK
           responseAs[Record] shouldEqual updated.copy(tenantId = Some(TENANT_1))
           // -- as no event generated, the header value should be "0"
-          header("X-Magda-Event-Id").map(_.value()).get shouldEqual "0"
+          header("x-magda-event-id").map(_.value()).get shouldEqual "0"
         }
 
         Get("/v0/records/testId?aspect=test") ~> addTenantIdHeader(TENANT_1) ~> param
@@ -4435,7 +4435,7 @@ class RecordsServiceSpec extends ApiSpec {
           status shouldEqual StatusCodes.BadRequest
           responseAs[ApiError].message should include("exists")
           responseAs[ApiError].message should include("ID")
-          header("X-Magda-Event-Id").isEmpty shouldBe true
+          header("x-magda-event-id").isEmpty shouldBe true
         }
       }
 
@@ -4448,7 +4448,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4468,7 +4468,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4477,7 +4477,7 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
-          header("X-Magda-Event-Id").isEmpty shouldBe true
+          header("x-magda-event-id").isEmpty shouldBe true
         }
 
         Get("/v0/records/testId") ~> addTenantIdHeader(TENANT_1) ~> param
@@ -4530,7 +4530,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4552,7 +4552,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4567,7 +4567,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4578,7 +4578,7 @@ class RecordsServiceSpec extends ApiSpec {
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
           responseAs[ApiError].message should include("ID")
-          header("X-Magda-Event-Id").isEmpty shouldBe true
+          header("x-magda-event-id").isEmpty shouldBe true
         }
       }
 
@@ -4598,7 +4598,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4619,7 +4619,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4628,7 +4628,7 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
-          header("X-Magda-Event-Id").isEmpty shouldBe true
+          header("x-magda-event-id").isEmpty shouldBe true
         }
 
         Get("/v0/records/testId?aspect=test") ~> addTenantIdHeader(TENANT_1) ~> param
@@ -4672,7 +4672,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4694,7 +4694,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4703,7 +4703,7 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
-          header("X-Magda-Event-Id").isEmpty shouldBe true
+          header("x-magda-event-id").isEmpty shouldBe true
         }
 
         Get("/v0/records/testId?aspect=test") ~> addTenantIdHeader(TENANT_1) ~> param
@@ -4747,7 +4747,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4774,7 +4774,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4783,7 +4783,7 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
-          header("X-Magda-Event-Id").isEmpty shouldBe true
+          header("x-magda-event-id").isEmpty shouldBe true
         }
 
         Get("/v0/records/testId?aspect=test") ~> addTenantIdHeader(TENANT_1) ~> param
@@ -4832,7 +4832,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4852,7 +4852,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4861,7 +4861,7 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
-          header("X-Magda-Event-Id").isEmpty shouldBe true
+          header("x-magda-event-id").isEmpty shouldBe true
         }
 
         Get("/v0/records/testId?optionalAspect=test") ~> addTenantIdHeader(
@@ -4910,7 +4910,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4931,7 +4931,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -4940,7 +4940,7 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
-          header("X-Magda-Event-Id").isEmpty shouldBe true
+          header("x-magda-event-id").isEmpty shouldBe true
         }
 
         Get("/v0/records/testId?optionalAspect=test") ~> addTenantIdHeader(
@@ -4984,7 +4984,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -5009,7 +5009,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -5018,7 +5018,7 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
-          header("X-Magda-Event-Id").isEmpty shouldBe true
+          header("x-magda-event-id").isEmpty shouldBe true
         }
 
         Get("/v0/records/testId?optionalAspect=test") ~> addTenantIdHeader(
@@ -5062,7 +5062,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -5092,7 +5092,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -5101,7 +5101,7 @@ class RecordsServiceSpec extends ApiSpec {
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
-          header("X-Magda-Event-Id").isEmpty shouldBe true
+          header("x-magda-event-id").isEmpty shouldBe true
         }
 
         Get("/v0/records/testId?optionalAspect=test") ~> addTenantIdHeader(
@@ -5150,7 +5150,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -5170,14 +5170,14 @@ class RecordsServiceSpec extends ApiSpec {
             tenantId = Some(TENANT_1)
           )
           // --- as it's a test operation, no event should be created
-          header("X-Magda-Event-Id").map(_.value()).get shouldEqual "0"
+          header("x-magda-event-id").map(_.value()).get shouldEqual "0"
         }
 
         param.asAdmin(Patch("/v0/records/testId", patchSuccess)) ~> addTenantIdHeader(
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
-          header("X-Magda-Event-Id").isEmpty shouldBe true
+          header("x-magda-event-id").isEmpty shouldBe true
         }
 
         val patchFail = JsonPatch(
@@ -5191,7 +5191,7 @@ class RecordsServiceSpec extends ApiSpec {
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
           responseAs[ApiError].message should include("test failed")
-          header("X-Magda-Event-Id").isEmpty shouldBe true
+          header("x-magda-event-id").isEmpty shouldBe true
         }
       }
 
@@ -5223,7 +5223,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -5239,7 +5239,7 @@ class RecordsServiceSpec extends ApiSpec {
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
           responseAs[ApiError].message should include("two different aspects")
-          header("X-Magda-Event-Id").isEmpty shouldBe true
+          header("x-magda-event-id").isEmpty shouldBe true
         }
       }
 
@@ -5271,7 +5271,7 @@ class RecordsServiceSpec extends ApiSpec {
           // --- check if response eventId = latest event of the record
           checkRecordLastEventId(
             "testId",
-            header("X-Magda-Event-Id").map(_.value()),
+            header("x-magda-event-id").map(_.value()),
             TENANT_1
           )
         }
@@ -5287,7 +5287,7 @@ class RecordsServiceSpec extends ApiSpec {
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
           responseAs[ApiError].message should include("two different aspects")
-          header("X-Magda-Event-Id").isEmpty shouldBe true
+          header("x-magda-event-id").isEmpty shouldBe true
         }
       }
 
@@ -5308,7 +5308,7 @@ class RecordsServiceSpec extends ApiSpec {
             // --- check if response eventId = latest event of the record
             checkRecordLastEventId(
               "without",
-              header("X-Magda-Event-Id").map(_.value()),
+              header("x-magda-event-id").map(_.value()),
               TENANT_1
             )
           }
@@ -5319,7 +5319,7 @@ class RecordsServiceSpec extends ApiSpec {
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
             responseAs[DeleteResult].deleted shouldBe true
-            eventId = header("X-Magda-Event-Id").map(_.value())
+            eventId = header("x-magda-event-id").map(_.value())
           }
 
           param.asAdmin(Get(s"/v0/records/without/history")) ~> addTenantIdHeader(
@@ -5359,7 +5359,7 @@ class RecordsServiceSpec extends ApiSpec {
             status shouldEqual StatusCodes.OK
             responseAs[DeleteResult].deleted shouldBe false
             // --- event id is 0 as no event is generated
-            header("X-Magda-Event-Id").map(_.value()).get shouldEqual "0"
+            header("x-magda-event-id").map(_.value()).get shouldEqual "0"
           }
         }
 
@@ -5372,7 +5372,7 @@ class RecordsServiceSpec extends ApiSpec {
             status shouldEqual StatusCodes.OK
             responseAs[DeleteResult].deleted shouldBe false
             // --- event id is 0 as no event is generated
-            header("X-Magda-Event-Id").map(_.value()).get shouldEqual "0"
+            header("x-magda-event-id").map(_.value()).get shouldEqual "0"
           }
         }
 
@@ -5393,7 +5393,7 @@ class RecordsServiceSpec extends ApiSpec {
             // --- check if response eventId = latest event of the record
             checkRecordLastEventId(
               "with",
-              header("X-Magda-Event-Id").map(_.value()),
+              header("x-magda-event-id").map(_.value()),
               TENANT_1
             )
           }
@@ -5404,7 +5404,7 @@ class RecordsServiceSpec extends ApiSpec {
             status shouldEqual StatusCodes.OK
             responseAs[DeleteResult].deleted shouldBe false
             // --- event id is 0 as no event is generated
-            header("X-Magda-Event-Id").map(_.value()).get shouldEqual "0"
+            header("x-magda-event-id").map(_.value()).get shouldEqual "0"
           }
 
           param.asAdmin(Delete("/v0/records/with")) ~> addTenantIdHeader(
@@ -5415,7 +5415,7 @@ class RecordsServiceSpec extends ApiSpec {
             // --- check if response eventId is correct
             checkDeleteRecordOperationEventId(
               "with",
-              header("X-Magda-Event-Id").map(_.value()),
+              header("x-magda-event-id").map(_.value()),
               TENANT_1
             )
           }

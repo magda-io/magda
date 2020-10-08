@@ -38,7 +38,7 @@
                     },
                     "eventId": {
                         "type": "number",
-                        "description": "the id of the event that this verion points to. With the event ID, you can the record data of the version from `time travel` API. It's an optional field and an frontend feature for tagging versions. Event id can be retrieved from any registry update/patch APIs `X-Magda-Event-Id` response header."
+                        "description": "the id of the event that this verion points to. With the event ID, you can the record data of the version from `time travel` API. It's an optional field and an frontend feature for tagging versions. Event id can be retrieved from any registry update/patch APIs `x-magda-event-id` response header."
                     },
                     "internalDataFileUrl": {
                         "type": "string",

@@ -71,7 +71,7 @@ export type VersionAspectData = {
 };
 
 export const getEventIdFromHeaders = (headers: Headers): number => {
-    const headerVal = headers.get("X-Magda-Event-Id");
+    const headerVal = headers.get("x-magda-event-id");
     if (headerVal === null) {
         return 0;
     } else {

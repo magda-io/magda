@@ -57,7 +57,7 @@ class RecordsService(
     * @apiParam (path) {string} recordId ID of the record to delete.
     * @apiHeader {string} X-Magda-Session Magda internal session id
     *
-    * @apiHeader {string} X-Magda-Event-Id This is a **response header** that is **ONLY** available when the operation is completed successfully.
+    * @apiHeader {string} x-magda-event-id This is a **response header** that is **ONLY** available when the operation is completed successfully.
     *           If the operation did make changes and triggered an event, the header value will be the eventId.
     *           Otherwise (i.e. no change are made), this header value will be "0".
     *
@@ -119,7 +119,7 @@ class RecordsService(
               case Success(result) =>
                 complete(
                   StatusCodes.OK,
-                  List(RawHeader("X-Magda-Event-Id", result._2.toString)),
+                  List(RawHeader("x-magda-event-id", result._2.toString)),
                   DeleteResult(result._1)
                 )
               case Failure(exception) =>
@@ -286,7 +286,7 @@ class RecordsService(
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
     *
-    * @apiHeader {string} X-Magda-Event-Id This is a **response header** that is **ONLY** available when the operation is completed successfully.
+    * @apiHeader {string} x-magda-event-id This is a **response header** that is **ONLY** available when the operation is completed successfully.
     *           If the operation did make changes and triggered an event, the header value will be the eventId.
     *           Otherwise (i.e. no change are made), this header value will be "0".
     *
@@ -357,7 +357,7 @@ class RecordsService(
                   case Success(result) =>
                     complete(
                       StatusCodes.OK,
-                      List(RawHeader("X-Magda-Event-Id", result._2.toString)),
+                      List(RawHeader("x-magda-event-id", result._2.toString)),
                       result._1
                     )
                   // If the exception is from validation then reveal the message to the caller,
@@ -408,7 +408,7 @@ class RecordsService(
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
     *
-    * @apiHeader {string} X-Magda-Event-Id This is a **response header** that is **ONLY** available when the operation is completed successfully.
+    * @apiHeader {string} x-magda-event-id This is a **response header** that is **ONLY** available when the operation is completed successfully.
     *           If the operation did make changes and triggered an event, the header value will be the eventId.
     *           Otherwise (i.e. no change are made), this header value will be "0".
     *
@@ -477,7 +477,7 @@ class RecordsService(
                 case Success(result) =>
                   complete(
                     StatusCodes.OK,
-                    List(RawHeader("X-Magda-Event-Id", result._2.toString)),
+                    List(RawHeader("x-magda-event-id", result._2.toString)),
                     result._1
                   )
                 case Failure(exception) =>
@@ -520,7 +520,7 @@ class RecordsService(
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
     *
-    * @apiHeader {string} X-Magda-Event-Id This is a **response header** that is **ONLY** available when the operation is completed successfully.
+    * @apiHeader {string} x-magda-event-id This is a **response header** that is **ONLY** available when the operation is completed successfully.
     *           If the operation did make changes and triggered an event, the header value will be the eventId.
     *           Otherwise (i.e. no change are made), this header value will be "0".
     *
@@ -587,7 +587,7 @@ class RecordsService(
                 case Success(theResult) =>
                   complete(
                     StatusCodes.OK,
-                    List(RawHeader("X-Magda-Event-Id", theResult._2.toString)),
+                    List(RawHeader("x-magda-event-id", theResult._2.toString)),
                     theResult._1
                   )
                 case Failure(exception) =>
