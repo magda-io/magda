@@ -79,7 +79,7 @@ export const getEventIdFromHeaders = (headers: Headers): number => {
         if (isNaN(eventId)) {
             return 0;
         } else {
-            return 0;
+            return eventId;
         }
     }
 };
@@ -250,13 +250,13 @@ export const DEFAULT_OPTIONAL_FETCH_ASPECT_LIST = [
 
 export const DEFAULT_COMPULSORY_FETCH_ASPECT_LIST = ["dcat-dataset-strings"];
 
-export async function fetchRecord(
+export async function fetchRecord<T = RawDataset>(
     id: string,
     optionalAspects: string[] = DEFAULT_OPTIONAL_FETCH_ASPECT_LIST,
     aspects: string[] = DEFAULT_COMPULSORY_FETCH_ASPECT_LIST,
     dereference: boolean = true,
     noCache: boolean = false
-): Promise<RawDataset> {
+): Promise<T> {
     const parameters: string[] = [];
 
     if (dereference) {
