@@ -376,11 +376,14 @@ export const defaultConfiguration = {
     searchResultsPerPage: 10
 };
 
+export const isStorageApiUrl = (resourceUrl: string) =>
+    resourceUrl.indexOf(config.storageApiUrl) !== -1 ? true : false;
+
 export function getProxiedResourceUrl(
     resourceUrl: string,
     disableCache: boolean = false
 ) {
-    if (resourceUrl.indexOf(config.storageApiUrl) !== -1) {
+    if (isStorageApiUrl(resourceUrl)) {
         return resourceUrl;
     } else {
         return config.proxyUrl + (disableCache ? "_0d/" : "") + resourceUrl;

@@ -1,11 +1,5 @@
-import URI from "urijs";
-import { config } from "../config";
+import { config, getProxiedResourceUrl, isStorageApiUrl } from "config";
 import { ParsedDistribution } from "./record";
-
-export function convertToAbsoluteUrl(url) {
-    if (url[0] !== "/") return url;
-    return URI(window.location.href).origin() + url;
-}
 
 /**
  * Gets the source url from a dataset, checking downloadURL and accessURL. If
@@ -34,28 +28,42 @@ export function getSourceUrl(source: ParsedDistribution | string): string {
  */
 export async function getFileLength(file: ParsedDistribution | string) {
     const sourceUrl = getSourceUrl(file);
-    const proxyUrl = convertToAbsoluteUrl(config.proxyUrl) + "_0d/" + sourceUrl;
+    const proxyUrl = getProxiedResourceUrl(sourceUrl, true);
 
-    const res = await fetch(proxyUrl, {
-        method: "HEAD"
-    });
+    try {
+        const res = await fetch(proxyUrl, {
+            method: "HEAD",
+            ...(isStorageApiUrl(sourceUrl)
+                ? config.credentialsFetchOptions
+                : {})
+        });
 
-    const contentLength = res.headers.get("content-length");
-    if (contentLength !== null) {
-        return Number(contentLength);
-    }
-
-    const contentRange = res.headers.get("content-range");
-    if (contentRange !== null) {
-        const split = contentRange.split("/");
-        const length = split[1];
-
-        if (length !== "*" && !Number.isNaN(Number.parseInt(length))) {
-            return Number.parseInt(length);
+        if (!res.ok) {
+            throw new Error(
+                `${res.status} Error: ${res.statusText} ${await res.text()}`
+            );
         }
-    }
 
-    return null;
+        const contentLength = res.headers.get("content-length");
+        if (contentLength !== null) {
+            return Number(contentLength);
+        }
+
+        const contentRange = res.headers.get("content-range");
+        if (contentRange !== null) {
+            const split = contentRange.split("/");
+            const length = split[1];
+
+            if (length !== "*" && !Number.isNaN(Number.parseInt(length))) {
+                return Number.parseInt(length);
+            }
+        }
+
+        return null;
+    } catch (e) {
+        console.log(`HEAD request to ${proxyUrl} failed:`, e);
+        return null;
+    }
 }
 
 /**

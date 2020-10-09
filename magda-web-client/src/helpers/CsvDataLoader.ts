@@ -1,4 +1,4 @@
-import { getProxiedResourceUrl } from "../config";
+import { config, getProxiedResourceUrl, isStorageApiUrl } from "config";
 // --- as we only import types here, no runtime code will be emitted.
 // --- And papaparse will not be included by the main js bundle
 import { Parser, ParseResult, ParseError, ParseMeta } from "papaparse";
@@ -91,7 +91,10 @@ class CsvDataLoader {
         this.resetDownloadData();
         const proxyUrl = getProxiedResourceUrl(this.url, true);
 
-        const csvRes = await fetch(proxyUrl);
+        const csvRes = await fetch(
+            proxyUrl,
+            isStorageApiUrl(this.url) ? config.credentialsFetchOptions : {}
+        );
 
         if (!csvRes.ok) {
             throw new Error("Could not retrieve csv: " + csvRes.statusText);
