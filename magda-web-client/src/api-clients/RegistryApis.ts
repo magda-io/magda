@@ -306,6 +306,37 @@ export async function fetchRecord<T = RawDataset>(
     }
 }
 
+export async function fetchHistoricalRecord<T = RawDataset>(
+    id: string,
+    eventId: number,
+    noCache: boolean = false
+): Promise<T> {
+    if (typeof eventId !== "number") {
+        throw new Error("eventId parameter needs to be a number.");
+    }
+
+    const url =
+        config.registryReadOnlyApiUrl +
+        `records/${encodeURIComponent(id)}/history/${eventId}`;
+
+    const response = await fetch(
+        url,
+        noCache
+            ? createNoCacheFetchOptions(config.credentialsFetchOptions)
+            : config.credentialsFetchOptions
+    );
+
+    if (!response.ok) {
+        let statusText = response.statusText;
+        // response.statusText are different in different browser, therefore we unify them here
+        if (response.status === 404) {
+            statusText = "Not Found";
+        }
+        throw new ServerError(statusText, response.status);
+    }
+    return await response.json();
+}
+
 export const fetchRecordWithNoCache = partialRight(fetchRecord, true);
 
 export type FetchRecordsOptions = {
