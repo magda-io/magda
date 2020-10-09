@@ -5,7 +5,6 @@ import Breadcrumbs from "Components/Common/Breadcrumbs";
 import defined from "helpers/defined";
 import { gapi } from "analytics/ga";
 import DistributionDetails from "./View/DistributionDetails";
-import DistributionPreview from "./View/DistributionPreview";
 import { Small, Medium } from "Components/Common/Responsive";
 import DescriptionBox from "Components/Common/DescriptionBox";
 import { getFormatIcon } from "./View/DistributionIcon";
@@ -204,11 +203,12 @@ const DistributionPageMainContent: FunctionComponent<{
                 <Switch>
                     <Route
                         path="/dataset/:datasetId/distribution/:distributionId/details"
-                        component={DistributionDetails}
-                    />
-                    <Route
-                        path="/dataset/:datasetId/distribution/:distributionId/preview"
-                        component={DistributionPreview}
+                        render={() => (
+                            <DistributionDetails
+                                distribution={distribution}
+                                dataset={dataset}
+                            />
+                        )}
                     />
                     <Redirect
                         from="/dataset/:datasetId/distribution/:distributionId"

@@ -1,14 +1,16 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
 import DataPreviewVis from "Components/Common/DataPreviewVis";
 import MagdaNamespacesConsumer from "Components/i18n/MagdaNamespacesConsumer";
 import ContactPoint from "Components/Common/ContactPoint";
 import CommonLink from "Components/Common/CommonLink";
 import { gapi } from "analytics/ga";
-
+import { ParsedDataset, ParsedDistribution } from "helpers/record";
 import "./DatasetDetails.scss";
 
-class DistributionDetails extends Component {
+class DistributionDetails extends Component<{
+    dataset: ParsedDataset;
+    distribution: ParsedDistribution;
+}> {
     renderLinkStatus(linkStatusAvailable, linkActive) {
         if (linkStatusAvailable && !linkActive) {
             return "(This link appears to be broken)";
@@ -116,8 +118,6 @@ class DistributionDetails extends Component {
                 {distribution.downloadURL && (
                     <div className="distribution-preview">
                         <DataPreviewVis
-                            location={this.props.location}
-                            dataset={this.props.dataset}
                             distribution={this.props.distribution}
                         />{" "}
                     </div>
@@ -127,13 +127,4 @@ class DistributionDetails extends Component {
     }
 }
 
-function mapStateToProps(state) {
-    const distribution = state.record.distribution;
-    const dataset = state.record.dataset;
-    return {
-        distribution,
-        dataset
-    };
-}
-
-export default connect(mapStateToProps)(DistributionDetails);
+export default DistributionDetails;
