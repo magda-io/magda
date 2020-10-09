@@ -338,7 +338,12 @@ async function extractPDFFile(_input: FileDetails, array: Uint8Array) {
         if (meta.info.Author) {
             author = meta.info.Author;
         }
-        if (meta.info.Title) {
+
+        if (
+            typeof meta.info.Title === "string" &&
+            meta.info.Title &&
+            !meta.info.Title.match(/^[\W]*untitled[\W]*$/i)
+        ) {
             datasetTitle = meta.info.Title;
         }
 
