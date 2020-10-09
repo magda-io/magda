@@ -26,6 +26,7 @@ import {
     VersionAspectData,
     fetchHistoricalRecord
 } from "api-clients/RegistryApis";
+import RecordVersionList from "./RecordVersionList";
 import "./DatasetPage.scss";
 
 interface PropsType {
@@ -39,17 +40,17 @@ interface PropsType {
     location: Location;
 }
 
-const getVersionFromLocation = (location: Location): number | null => {
+const getVersionFromLocation = (location: Location): number | undefined => {
     const queries = URI(location.search).search(true);
     try {
         const version = parseInt(queries?.version);
         if (isNaN(version)) {
-            return null;
+            return undefined;
         } else {
             return version;
         }
     } catch (e) {
-        return null;
+        return undefined;
     }
 };
 
@@ -59,6 +60,8 @@ const DistributionPageMainContent: FunctionComponent<{
     distributionId: string;
     dataset: ParsedDataset;
     searchText: string;
+    versionData?: VersionAspectData;
+    selectedVersion?: number;
 }> = (props) => {
     const { distribution, dataset } = props;
 
@@ -216,6 +219,14 @@ const DistributionPageMainContent: FunctionComponent<{
                     />
                 </Switch>
             </div>
+            <div className="version-list-section">
+                <RecordVersionList
+                    versionData={props.versionData}
+                    selectedVersion={props.selectedVersion}
+                    recordPageBaseUrl={`/dataset/${props.datasetId}/distribution/${props.distributionId}/details`}
+                    retainQueryParameterNames={["q"]}
+                />
+            </div>
         </>
     );
 };
@@ -232,11 +243,11 @@ const DistributionPage: FunctionComponent<PropsType> = (props) => {
     } = useAsync(
         async (
             identifier: string | undefined,
-            requestVersion: number | null,
+            requestVersion: number | undefined,
             currentDistribution: ParsedDistribution,
             versionData?: VersionAspectData
         ) => {
-            if (requestVersion === null || !currentDistribution) {
+            if (typeof requestVersion === "undefined" || !currentDistribution) {
                 return currentDistribution;
             }
 
@@ -296,6 +307,12 @@ const DistributionPage: FunctionComponent<PropsType> = (props) => {
                                     distributionId={props.distributionId}
                                     dataset={props.dataset}
                                     searchText={props.searchText}
+                                    versionData={versionData}
+                                    selectedVersion={
+                                        requestVersion === null
+                                            ? undefined
+                                            : requestVersion
+                                    }
                                 />
                             );
                         }

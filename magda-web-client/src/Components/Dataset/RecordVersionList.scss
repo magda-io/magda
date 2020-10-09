@@ -1,0 +1,36 @@
+@import "variables";
+
+.record-version-list {
+    .record-version-item {
+        .record-version-item-header {
+            border-bottom: 1px solid #cccaca;
+            padding-bottom: 10px;
+            h3 {
+                font-size: 1.25rem;
+                line-height: 1.6;
+                margin-bottom: 0px;
+            }
+            .record-version-item-tag {
+                color: #ffffff;
+                font-size: 0.8rem;
+                background-color: $magda-color-primary;
+                border-radius: 5px;
+                padding-top: 2px;
+                padding-bottom: 2px;
+                padding-right: 8px;
+                padding-left: 8px;
+                margin-left: 5px;
+                margin-right: 5px;
+            }
+
+            .create-time-and-author-section {
+                font-size: 0.9rem;
+            }
+        }
+
+        .record-version-item-body {
+            padding-top: 10px;
+            padding-left: 5px;
+        }
+    }
+}
