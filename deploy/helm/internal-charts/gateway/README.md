@@ -34,6 +34,7 @@ A proxy target be also specify in a simply string form, in which case, Gateway a
 | cors.exposedHeaders[1] | string | `"X-Content-Range"` |  |
 | cors.exposedHeaders[2] | string | `"Accept-Ranges"` |  |
 | cors.exposedHeaders[3] | string | `"Content-Length"` |  |
+| cors.exposedHeaders[4] | string | `"x-magda-event-id"` |  |
 | csp.browserSniff | bool | `false` |  |
 | csp.directives.objectSrc[0] | string | `"''none''"` |  |
 | csp.directives.scriptSrc[0] | string | `"''self''"` |  |
