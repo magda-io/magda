@@ -16,7 +16,8 @@ import {
     VersionAspectData,
     updateRecordAspect,
     patchRecord,
-    tagRecordVersionEventId
+    tagRecordVersionEventId,
+    VersionItem
 } from "api-clients/RegistryApis";
 import { config } from "config";
 import { User } from "reducers/userManagementReducer";
@@ -1475,6 +1476,42 @@ async function cleanUpDistributions(state: State) {
     }
 }
 
+function createVersionForDatasetSubmission(
+    eventId: number,
+    datasetData: RawDataset,
+    state: State
+) {
+    const editorId = state.dataset.editingUserId;
+    // --- check if a new version is required to create for the dataset's submission
+    const version: VersionAspectData = datasetData.aspects["version"]
+        ? datasetData.aspects["version"]
+        : getInitialVersionAspectData(state.dataset.title, editorId);
+
+    let currentVersion: VersionItem | undefined = version.versions.find(
+        (ver) => ver.versionNumber === version.currentVersionNumber
+    );
+    if (
+        !currentVersion ||
+        (currentVersion.eventId && currentVersion.eventId !== eventId)
+    ) {
+        currentVersion = {
+            versionNumber:
+                version.versions.reduce(
+                    (acc, curVer) => Math.max(acc, curVer.versionNumber),
+                    0
+                ) + 1,
+            createTime: new Date().toISOString(),
+            creatorId: editorId,
+            title: state.dataset.title,
+            description: "Version created on update submission"
+        };
+        version.versions.push(currentVersion);
+        version.currentVersionNumber = currentVersion.versionNumber;
+    }
+    datasetData.aspects["version"] = version;
+    return datasetData;
+}
+
 /**
  * This function will submit the dataset using different API endpoints (depends on whether the dataset has been create or not)
  * It will also delete any temporary draft data from the `dataset-draft` aspect.
@@ -1513,11 +1550,17 @@ export async function submitDatasetFromState(
         "dataset-draft"
     );
 
-    // --- attempt to tag dataset version
-    await tagRecordVersionEventId(
-        datasetData,
-        Math.max(draftDetetionEventId, eventId)
+    const lastEventId = Math.max(draftDetetionEventId, eventId);
+
+    // --- attempt to create a new version for dataset submission when necessary
+    datasetData = createVersionForDatasetSubmission(
+        lastEventId,
+        datasetData as RawDataset,
+        state
     );
+
+    // --- attempt to tag dataset version
+    await tagRecordVersionEventId(datasetData, lastEventId);
 
     await updateCkanExportStatus(datasetId, state);
 
