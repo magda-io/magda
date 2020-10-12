@@ -111,15 +111,17 @@ const RecordVersionList: FunctionComponent<PropsType> = (props) => {
                 <span className="section-heading">Version History</span>
             </h3>
             <div className="record-version-list-body">
-                {versionData.versions.map((item) => (
-                    <VersionItemBox
-                        key={item.versionNumber}
-                        data={item}
-                        currentVersion={versionData.currentVersionNumber}
-                        selectedVersion={selectedVersion}
-                        recordPageBaseUrl={recordPageBaseUrl}
-                    />
-                ))}
+                {versionData.versions
+                    .map((item) => (
+                        <VersionItemBox
+                            key={item.versionNumber}
+                            data={item}
+                            currentVersion={versionData.currentVersionNumber}
+                            selectedVersion={selectedVersion}
+                            recordPageBaseUrl={recordPageBaseUrl}
+                        />
+                    ))
+                    .reverse()}
             </div>
         </div>
     );
