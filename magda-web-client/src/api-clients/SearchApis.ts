@@ -5,7 +5,7 @@ import buildSearchQueryString, {
     Query
 } from "../helpers/buildSearchQueryString";
 import { DataSearchJson } from "../helpers/datasetSearch";
-import URI from "urijs";
+import urijs from "urijs";
 
 type SearchApiResult = {
     hitCount: number;
@@ -175,7 +175,7 @@ export type Region = {
 export async function getRegions(
     options: SearchRegionOptions
 ): Promise<Region[]> {
-    const uri = new URI(`${config.searchApiUrl}regions`);
+    const uri = urijs(`${config.searchApiUrl}regions`);
     const res = await fetch(uri.search(options).toString());
     if (!res.ok) {
         const bodyText = await res.text();

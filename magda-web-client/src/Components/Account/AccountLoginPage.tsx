@@ -10,7 +10,7 @@ import { getAuthProviders } from "api-clients/AuthApis";
 import { config } from "config";
 import { useAsync } from "react-async-hook";
 import CommonLink from "Components/Common/CommonLink";
-import URI from "urijs";
+import urijs from "urijs";
 const { baseUrl, uiBaseUrl } = config;
 
 function getDefaultLoginFormProvider(providers: string[]): string {
@@ -46,7 +46,7 @@ export default function Login(props) {
             ? props.location.state.from.pathname
             : "/account";
 
-    const oauthRedirect = URI(window.location.href)
+    const oauthRedirect = urijs(window.location.href)
         .search("")
         .fragment("")
         .segment([uiBaseUrl, "sign-in-redirect"])

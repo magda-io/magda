@@ -5,7 +5,7 @@ import plusIcon from "assets/noun-plus.svg";
 import minusIcon from "assets/noun-minus.svg";
 import { withRouter, RouteComponentProps } from "react-router";
 import { Link } from "react-router-dom";
-import URI from "urijs";
+import urijs from "urijs";
 
 interface PropsType extends RouteComponentProps {
     heading: string;
@@ -54,8 +54,8 @@ const CollapseBox: FunctionComponent<PropsType> = (props) => {
                     <Link
                         className="edit-link"
                         to={(() => {
-                            const uri = new URI(window.location.href);
-                            return new URI(
+                            const uri = urijs(window.location.href);
+                            return urijs(
                                 uri.segment(-1, "" + props.stepNum).path()
                             )
                                 .search({ isBackToReview: null })

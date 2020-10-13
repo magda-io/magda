@@ -1,5 +1,5 @@
 import { config, MessageSafeConfig, DATASETS_BUCKET } from "config";
-import URI from "urijs";
+import urijs from "urijs";
 import UserVisibleError from "helpers/UserVisibleError";
 import {
     State,
@@ -277,7 +277,7 @@ export default async function processFile(
                 await doUpload();
             } catch (e) {
                 try {
-                    const fetchUri = URI(config.storageApiUrl);
+                    const fetchUri = urijs(config.storageApiUrl);
                     const fetchUrl = fetchUri
                         .segmentCoded([
                             ...fetchUri.segmentCoded(),

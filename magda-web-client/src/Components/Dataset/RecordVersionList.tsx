@@ -2,7 +2,7 @@ import React, { FunctionComponent } from "react";
 import { VersionAspectData, VersionItem } from "api-clients/RegistryApis";
 import moment from "moment";
 import UserNameLabel from "Components/UserNameLabel";
-import URI from "urijs";
+import urijs from "urijs";
 import "./RecordVersionList.scss";
 import CommonLink from "Components/Common/CommonLink";
 
@@ -21,7 +21,7 @@ const createRecordPageUrl = (
     retainQueryParameterNames?: string[]
 ): string => {
     const queries = retainQueryParameterNames?.length
-        ? URI(window.location.href).search(true)
+        ? urijs(window.location.href).search(true)
         : {};
     const queriesToBeAppended = {
         version: versionNumber
@@ -36,7 +36,7 @@ const createRecordPageUrl = (
         });
     }
 
-    return URI(recordPageBaseUrl).search(queriesToBeAppended).toString();
+    return urijs(recordPageBaseUrl).search(queriesToBeAppended).toString();
 };
 
 const VersionItemBox: FunctionComponent<{

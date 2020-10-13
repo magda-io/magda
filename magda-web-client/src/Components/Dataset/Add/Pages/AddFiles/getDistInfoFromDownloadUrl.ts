@@ -1,10 +1,10 @@
-import URI from "urijs";
+import urijs from "urijs";
 
 export default function getDistInfoFromDownloadUrl(url: string) {
     if (!url) {
         throw new Error("url can't not be empty");
     }
-    const uri = new URI(url);
+    const uri = urijs(url);
 
     if (uri.protocol() === "magda" && uri.hostname() === "storage-api") {
         // [pseudo storage api resource URL](https://github.com/magda-io/magda/issues/3000)

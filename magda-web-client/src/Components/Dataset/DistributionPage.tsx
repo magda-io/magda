@@ -20,7 +20,7 @@ import {
 } from "helpers/record";
 import { licenseLevel } from "constants/DatasetConstants";
 import { useAsync } from "react-async-hook";
-import URI from "urijs";
+import urijs from "urijs";
 import {
     VersionAspectData,
     fetchHistoricalRecord
@@ -41,7 +41,7 @@ interface PropsType {
 }
 
 const getVersionFromLocation = (location: Location): number | undefined => {
-    const queries = URI(location.search).search(true);
+    const queries = urijs(location.search).search(true);
     try {
         const version = parseInt(queries?.version);
         if (isNaN(version)) {
