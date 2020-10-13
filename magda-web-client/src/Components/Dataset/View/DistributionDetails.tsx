@@ -24,7 +24,7 @@ class DistributionDetails extends Component<{
             distribution.downloadURL
         );
         const downloadText = distribution.downloadURL && (
-            <div key={distribution.identifier}>
+            <div key={"downloadText"}>
                 This data file or API can be downloaded from: <br />
                 <CommonLink
                     className="url"
@@ -53,7 +53,7 @@ class DistributionDetails extends Component<{
             </div>
         );
         const accessText = distribution.accessURL && (
-            <div>
+            <div key={"accessText"}>
                 This dataset can be accessed from: <br />{" "}
                 <CommonLink className="url" href={distribution.accessURL}>
                     {distribution.accessURL}
@@ -62,7 +62,7 @@ class DistributionDetails extends Component<{
         );
 
         const accessNotes = distribution.accessNotes && (
-            <MagdaNamespacesConsumer ns={["datasetPage"]}>
+            <MagdaNamespacesConsumer key={"accessNotes"} ns={["datasetPage"]}>
                 {(translate) => {
                     const accessNotesPrefix = translate([
                         "accessNotesPrefix",
@@ -93,7 +93,10 @@ class DistributionDetails extends Component<{
         );
 
         const contactPoint = this.props.dataset.contactPoint && (
-            <ContactPoint contactPoint={this.props.dataset.contactPoint} />
+            <ContactPoint
+                key={"contactPoint"}
+                contactPoint={this.props.dataset.contactPoint}
+            />
         );
 
         return [downloadText, accessText, accessNotes, contactPoint].filter(
