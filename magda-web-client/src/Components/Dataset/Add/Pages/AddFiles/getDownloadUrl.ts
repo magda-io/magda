@@ -1,13 +1,11 @@
-import { config } from "config";
-import baseStorageApiPath from "./baseStorageApiPath";
+import URI from "urijs";
 
 export default function getDownloadUrl(
     datasetId: string,
     distId: string,
     fileName: string
 ) {
-    return `${config.storageApiUrl}${baseStorageApiPath(
-        datasetId,
-        distId
-    )}/${encodeURIComponent(fileName)}`;
+    return URI("magda://storage-api")
+        .segmentCoded([datasetId, distId, fileName])
+        .toString();
 }

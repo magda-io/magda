@@ -1,8 +1,8 @@
-import { config } from "config";
-import baseStorageApiPath from "./baseStorageApiPath";
+import { config, DATASETS_BUCKET } from "config";
 import getDownloadUrl from "./getDownloadUrl";
 import promisifySetState from "helpers/promisifySetState";
 import { DatasetStateUpdaterType } from "../../DatasetAddCommon";
+import URI from "urijs";
 import uniq from "lodash/uniq";
 
 export default async function uploadFile(
@@ -19,10 +19,17 @@ export default async function uploadFile(
     const formData = new FormData();
     formData.append(file.name, file);
 
-    const fetchUrl = `${config.storageApiUrl}upload/${baseStorageApiPath(
-        datasetId,
-        distId
-    )}?recordId=${datasetId}`;
+    const fetchUri = URI(config.storageApiUrl);
+    const fetchUrl = fetchUri
+        .segmentCoded([
+            ...fetchUri.segmentCoded(),
+            "upload",
+            DATASETS_BUCKET,
+            datasetId,
+            distId
+        ])
+        .search({ recordId: datasetId })
+        .toString();
 
     let uploadProgress = 0;
     const fakeProgressInterval = setInterval(() => {

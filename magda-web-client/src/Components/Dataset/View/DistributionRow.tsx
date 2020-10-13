@@ -13,6 +13,7 @@ import { Dataset } from "helpers/datasetSearch";
 import CommonLink from "Components/Common/CommonLink";
 import { getFormatIcon, determineFormatIcon } from "./DistributionIcon";
 import { licenseLevel } from "constants/DatasetConstants";
+import getStorageApiResourceAccessUrl from "helpers/getStorageApiResourceAccessUrl";
 
 export type PropType = {
     dataset: Dataset;
@@ -39,6 +40,9 @@ class DistributionRow extends Component<PropType> {
 
     render() {
         const { dataset, distribution } = this.props;
+        const runtimeDownloadUrl = distribution.downloadURL
+            ? getStorageApiResourceAccessUrl(distribution.downloadURL)
+            : undefined;
 
         const distributionLink = `/dataset/${encodeURIComponent(
             dataset.identifier
@@ -147,7 +151,7 @@ class DistributionRow extends Component<PropType> {
                                     className="download-button au-btn au-btn--secondary"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    href={distribution.downloadURL}
+                                    href={runtimeDownloadUrl}
                                     onClick={() => {
                                         // google analytics download tracking
                                         const resource_url = encodeURIComponent(
@@ -185,7 +189,7 @@ class DistributionRow extends Component<PropType> {
                                 </CommonLink>
                             </span>
                             <span className="block print-only">
-                                Download: {distribution.downloadURL}
+                                Download: {runtimeDownloadUrl}
                             </span>
                         </span>
                     )}

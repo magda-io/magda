@@ -3,7 +3,7 @@ import Format from "./Components/Dataset/Search/Facets/Format";
 import Region from "./Components/Dataset/Search/Facets/Region";
 import Temporal from "./Components/Dataset/Search/Facets/Temporal";
 import { ValidationFieldList } from "./Components/Dataset/Add/ValidationManager";
-import URI from "urijs";
+import urijs from "urijs";
 
 declare global {
     interface Window {
@@ -223,8 +223,8 @@ function getFullUrlIfNotEmpty(relativeUrl: string | undefined) {
 function getProxyUrl() {
     const uri =
         previewMapUrl.indexOf("http") === 0
-            ? URI(previewMapUrl)
-            : URI(window.location.href)
+            ? urijs(previewMapUrl)
+            : urijs(window.location.href)
                   .search("")
                   .fragment("")
                   .segment([previewMapUrl]);
@@ -376,16 +376,5 @@ export const defaultConfiguration = {
     searchResultsPerPage: 10
 };
 
-export const isStorageApiUrl = (resourceUrl: string) =>
-    resourceUrl.indexOf(config.storageApiUrl) !== -1 ? true : false;
-
-export function getProxiedResourceUrl(
-    resourceUrl: string,
-    disableCache: boolean = false
-) {
-    if (isStorageApiUrl(resourceUrl)) {
-        return resourceUrl;
-    } else {
-        return config.proxyUrl + (disableCache ? "_0d/" : "") + resourceUrl;
-    }
-}
+/** The bucket in the storage API where datasets are stored */
+export const DATASETS_BUCKET = "magda-datasets";

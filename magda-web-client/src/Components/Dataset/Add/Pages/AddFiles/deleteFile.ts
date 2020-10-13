@@ -1,4 +1,5 @@
 import { config } from "config";
+import getStorageApiResourceAccessUrl from "helpers/getStorageApiResourceAccessUrl";
 import { Distribution } from "../../DatasetAddCommon";
 import UserVisibleError from "helpers/UserVisibleError";
 
@@ -21,10 +22,13 @@ export default async function deleteFile(distToDelete: Distribution) {
     // fetch to delete distribution - try to delete even if we hadn't completed the initial upload
     // just to be safe
     try {
-        const res = await fetch(distToDelete.downloadURL!, {
-            ...config.credentialsFetchOptions,
-            method: "DELETE"
-        });
+        const res = await fetch(
+            getStorageApiResourceAccessUrl(distToDelete.downloadURL!),
+            {
+                ...config.credentialsFetchOptions,
+                method: "DELETE"
+            }
+        );
         // Even a delete on a non-existent file returns 200
         if (res.status !== 200) {
             throw new Error("Could not delete file");

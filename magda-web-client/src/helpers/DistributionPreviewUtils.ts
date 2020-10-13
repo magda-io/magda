@@ -1,4 +1,6 @@
-import { config, getProxiedResourceUrl, isStorageApiUrl } from "config";
+import { config } from "config";
+import getProxiedResourceUrl from "helpers/getProxiedResourceUrl";
+import isStorageApiUrl from "helpers/isStorageApiUrl";
 import { ParsedDistribution } from "./record";
 
 /**

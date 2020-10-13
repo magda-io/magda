@@ -2,7 +2,7 @@ import React, { Component, useEffect, useState } from "react";
 import memoize from "memoize-one";
 import "./DataPreviewMap.scss";
 import DataPreviewMapOpenInNationalMapButton from "./DataPreviewMapOpenInNationalMapButton";
-import { config } from "config";
+import { config, DATASETS_BUCKET } from "config";
 import { Medium, Small } from "./Responsive";
 import Spinner from "Components/Common/Spinner";
 import { ParsedDistribution } from "helpers/record";
@@ -241,6 +241,8 @@ class DataPreviewMapTerria extends Component<
                             type: "magda-item",
                             url: config.baseUrl,
                             distributionId: selectedDistribution.identifier,
+                            // --- default internal storage bucket name
+                            defaultBucket: DATASETS_BUCKET,
                             isEnabled: true,
                             zoomOnEnable: true
                         }

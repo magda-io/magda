@@ -5,6 +5,7 @@ import ContactPoint from "Components/Common/ContactPoint";
 import CommonLink from "Components/Common/CommonLink";
 import { gapi } from "analytics/ga";
 import { ParsedDataset, ParsedDistribution } from "helpers/record";
+import getStorageApiResourceAccessUrl from "helpers/getStorageApiResourceAccessUrl";
 import "./DatasetDetails.scss";
 
 class DistributionDetails extends Component<{
@@ -19,6 +20,9 @@ class DistributionDetails extends Component<{
     }
 
     renderLinkText(distribution) {
+        const runtimeDownloadUrl = getStorageApiResourceAccessUrl(
+            distribution.downloadURL
+        );
         const downloadText = distribution.downloadURL && (
             <div key={distribution.identifier}>
                 This data file or API can be downloaded from: <br />
@@ -37,10 +41,10 @@ class DistributionDetails extends Component<{
                             });
                         }
                     }}
-                    href={distribution.downloadURL}
+                    href={runtimeDownloadUrl}
                 >
                     {" "}
-                    {distribution.downloadURL}
+                    {runtimeDownloadUrl}
                 </CommonLink>
                 {this.renderLinkStatus(
                     distribution.linkStatusAvailable,

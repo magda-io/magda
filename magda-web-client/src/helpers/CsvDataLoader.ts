@@ -1,4 +1,6 @@
-import { config, getProxiedResourceUrl, isStorageApiUrl } from "config";
+import { config } from "config";
+import getProxiedResourceUrl from "helpers/getProxiedResourceUrl";
+import isStorageApiUrl from "helpers/isStorageApiUrl";
 // --- as we only import types here, no runtime code will be emitted.
 // --- And papaparse will not be included by the main js bundle
 import { Parser, ParseResult, ParseError, ParseMeta } from "papaparse";

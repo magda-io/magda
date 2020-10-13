@@ -26,6 +26,7 @@ import {
     fetchHistoricalRecord
 } from "api-clients/RegistryApis";
 import RecordVersionList from "./RecordVersionList";
+import getStorageApiResourceAccessUrl from "helpers/getStorageApiResourceAccessUrl";
 import "./DatasetPage.scss";
 
 interface PropsType {
@@ -117,7 +118,9 @@ const DistributionPageMainContent: FunctionComponent<{
             {distribution.downloadURL ? (
                 <CommonLink
                     className="au-btn au-btn--primary distribution-download-button"
-                    href={distribution.downloadURL}
+                    href={getStorageApiResourceAccessUrl(
+                        distribution.downloadURL
+                    )}
                     onClick={() => {
                         // google analytics download tracking
                         const resource_url = encodeURIComponent(

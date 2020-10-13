@@ -1,6 +1,6 @@
 import fetch from "isomorphic-fetch";
 import { config } from "config";
-import URI from "urijs";
+import urijs from "urijs";
 
 export type OrgUnit = {
     id: string;
@@ -17,7 +17,7 @@ export async function listOrgUnits({
     orgUnitsOnly: leafNodesOnly,
     relationshipOrgUnitId
 }: ListOrgUnitParams): Promise<OrgUnitWithRelationship[]> {
-    let uri = URI(config.authApiUrl)
+    let uri = urijs(config.authApiUrl)
         .segment("orgunits")
         .addQuery("leafNodesOnly", leafNodesOnly || false);
 
