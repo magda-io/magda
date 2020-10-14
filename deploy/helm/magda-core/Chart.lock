@@ -34,7 +34,7 @@ dependencies:
   version: 0.0.58-alpha.0
 - name: magda-preview-map
   repository: https://charts.magda.io
-  version: 0.0.57-0
+  version: 0.0.58
 - name: registry-api
   repository: file://../internal-charts/registry-api
   version: 0.0.58-alpha.0
@@ -77,5 +77,5 @@ dependencies:
 - name: ingress
   repository: file://../internal-charts/ingress
   version: 0.0.58-alpha.0
-digest: sha256:b0bf1ba018cac7f6ab226aaa1ca4c31a46b505eb2c707a60c1be3cb242330c93
-generated: "2020-10-02T15:48:21.552178+10:00"
+digest: sha256:3d5b13822fb9c48cf0df63133da0a9212fbbe46f756f5233a9b4617006b45138
+generated: "2020-10-14T22:52:33.73458+11:00"

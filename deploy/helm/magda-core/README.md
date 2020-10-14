@@ -41,7 +41,7 @@ Kubernetes: `>= 1.14.0-0`
 | file://../internal-charts/tenant-db | tenant-db | 0.0.58-alpha.0 |
 | file://../internal-charts/web-server | web-server | 0.0.58-alpha.0 |
 | file://../openfaas | openfaas | 5.5.5-magda |
-| https://charts.magda.io | magda-preview-map | 0.0.57-0 |
+| https://charts.magda.io | magda-preview-map | 0.0.58 |
 
 ## Values
 
