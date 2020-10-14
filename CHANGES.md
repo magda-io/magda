@@ -20,6 +20,8 @@
 -   Keep tracking superseded data files in versions to avoid superseded data files being deleted #2981
 -   UI Changes that allow user to access the distribution page of different versions #2982
 -   Use pseudo url for data file stored in storage api #3000
+-   Turn off `Open In National Map` Button for Internal Storage data file Link
+-   Use [magda-preview-map](https://github.com/magda-io/magda-preview-map) v0.0.58
 
 ## 0.0.57
 
