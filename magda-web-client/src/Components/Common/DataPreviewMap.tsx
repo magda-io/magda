@@ -13,6 +13,8 @@ import {
     FileSizeCheckResult
 } from "helpers/DistributionPreviewUtils";
 import DataPreviewSizeWarning from "./DataPreviewSizeWarning";
+import urijs from "urijs";
+import isStorageApiUrl from "helpers/isStorageApiUrl";
 
 const DATA_SOURCE_PREFERENCE = [
     {
@@ -240,6 +242,7 @@ class DataPreviewMapTerria extends Component<
                             name: selectedDistribution.title,
                             type: "magda-item",
                             url: config.baseUrl,
+                            storageApiUrl: config.storageApiUrl,
                             distributionId: selectedDistribution.identifier,
                             // --- default internal storage bucket name
                             defaultBucket: DATASETS_BUCKET,
@@ -253,7 +256,8 @@ class DataPreviewMapTerria extends Component<
                         east: 158,
                         south: -45,
                         west: 109
-                    }
+                    },
+                    corsDomains: [urijs(config.baseExternalUrl).hostname()]
                 }
             ]
         };
@@ -283,6 +287,10 @@ class DataPreviewMapTerria extends Component<
     };
 
     render() {
+        const shouldHideOpenNationalMapButton =
+            this.props.distribution.downloadURL &&
+            isStorageApiUrl(this.props.distribution.downloadURL);
+
         return (
             <div
                 className="data-preview-map"
@@ -290,15 +298,17 @@ class DataPreviewMapTerria extends Component<
                 onMouseLeave={this.handleMapMouseLeave}
             >
                 {!this.state.loaded && <Spinner width="100%" height="420px" />}
-                <DataPreviewMapOpenInNationalMapButton
-                    distribution={this.props.distribution}
-                    buttonText="Open in NationalMap"
-                    style={{
-                        position: "absolute",
-                        right: "10px",
-                        top: "10px"
-                    }}
-                />
+                {shouldHideOpenNationalMapButton ? null : (
+                    <DataPreviewMapOpenInNationalMapButton
+                        distribution={this.props.distribution}
+                        buttonText="Open in NationalMap"
+                        style={{
+                            position: "absolute",
+                            right: "10px",
+                            top: "10px"
+                        }}
+                    />
+                )}
                 {this.props.distribution.identifier != null && (
                     <iframe
                         key={this.props.distribution.identifier}
