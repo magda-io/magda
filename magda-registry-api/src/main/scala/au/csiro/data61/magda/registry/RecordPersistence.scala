@@ -121,7 +121,7 @@ trait RecordPersistence {
       newRecord: Record,
       userId: String,
       forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[Record]
+  )(implicit session: DBSession): Try[(Record, Long)]
 
   def processRecordPatchOperationsOnAspects[T](
       recordPatch: JsonPatch,
@@ -136,7 +136,7 @@ trait RecordPersistence {
       recordPatch: JsonPatch,
       userId: String,
       forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[Record]
+  )(implicit session: DBSession): Try[(Record, Long)]
 
   def patchRecordAspectById(
       tenantId: SpecifiedTenantId,
@@ -145,7 +145,7 @@ trait RecordPersistence {
       aspectPatch: JsonPatch,
       userId: String,
       forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[JsObject]
+  )(implicit session: DBSession): Try[(JsObject, Long)]
 
   def putRecordAspectById(
       tenantId: SpecifiedTenantId,
@@ -154,20 +154,20 @@ trait RecordPersistence {
       newAspect: JsObject,
       userId: String,
       forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[JsObject]
+  )(implicit session: DBSession): Try[(JsObject, Long)]
 
   def createRecord(
       tenantId: SpecifiedTenantId,
       record: Record,
       userId: String,
       forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[Record]
+  )(implicit session: DBSession): Try[(Record, Long)]
 
   def deleteRecord(
       tenantId: SpecifiedTenantId,
       recordId: String,
       userId: String
-  )(implicit session: DBSession): Try[Boolean]
+  )(implicit session: DBSession): Try[(Boolean, Long)]
 
   def trimRecordsBySource(
       tenantId: SpecifiedTenantId,
@@ -184,14 +184,14 @@ trait RecordPersistence {
       aspect: JsObject,
       userId: String,
       forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[JsObject]
+  )(implicit session: DBSession): Try[(JsObject, Long)]
 
   def deleteRecordAspect(
       tenantId: SpecifiedTenantId,
       recordId: String,
       aspectId: String,
       userId: String
-  )(implicit session: DBSession): Try[Boolean]
+  )(implicit session: DBSession): Try[(Boolean, Long)]
 
   def reconstructRecordFromEvents(
       id: String,
@@ -570,7 +570,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       newRecord: Record,
       userId: String,
       forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[Record] = {
+  )(implicit session: DBSession): Try[(Record, Long)] = {
     val newRecordWithoutAspects = newRecord.copy(aspects = Map())
 
     for {
@@ -590,13 +590,13 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
           )
       }
 
-      oldRecordWithoutAspects <- this.getByIdWithAspects(
+      (oldRecordWithoutAspects, eventId) <- this.getByIdWithAspects(
         tenantId,
         id,
         None,
         None
       ) match {
-        case Some(record) => Success(record)
+        case Some(record) => Success((record, None))
         // Possibility of a race condition here. The record doesn't exist, so we try to create it.
         // But someone else could have created it in the meantime. So if our create fails, try one
         // more time to get an existing one. We use a nested transaction so that, if the create fails,
@@ -615,11 +615,13 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
               DB.localTx { nested =>
                 // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
                 // --- as the aspect data has been validated (unless not required) in the beginning of current method
-                createRecord(tenantId, newRecord, userId, true)(nested).map(
-                  _.copy(aspects = Map())
-                )
+                createRecord(tenantId, newRecord, userId, true)(nested).map {
+                  result =>
+                    // --- result._1: record result._2: eventId
+                    (result._1.copy(aspects = Map()), Some(result._2))
+                }
               } match {
-                case Success(record) => Success(record)
+                case Success(result) => Success(result)
                 case Failure(e) =>
                   this.getByIdWithAspects(
                     tenantId,
@@ -627,7 +629,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
                     None,
                     None
                   ) match {
-                    case Some(record) => Success(record)
+                    case Some(record) => Success((record, None))
                     case None         => Failure(e)
                   }
               }
@@ -651,15 +653,23 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
         recordPatch,
         userId,
         true
-      )
-      patchedAspects <- Try {
-        newRecord.aspects.map {
+      ) match {
+        case Failure(e) => Failure(e)
+        case Success((record, currentEventId)) =>
+          if (eventId.isDefined) {
+            Success((record, Math.max(currentEventId, eventId.get)))
+          } else {
+            Success((record, currentEventId))
+          }
+      }
+
+      (patchedAspects, latestEventId) <- newRecord.aspects
+        .map {
           case (aspectId, data) =>
-            (
-              aspectId,
-              // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
-              // --- as the aspect data has been validated (unless not required) in the beginning of current method
-              this.putRecordAspectById(
+            // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
+            // --- as the aspect data has been validated (unless not required) in the beginning of current method
+            this
+              .putRecordAspectById(
                 tenantId,
                 id,
                 aspectId,
@@ -667,18 +677,32 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
                 userId,
                 true
               )
-            )
+              .map(result => ((aspectId, result._1), result._2))
         }
-      }
-      // Report the first failed aspect, if any
-      _ <- patchedAspects.find(_._2.isFailure) match {
-        case Some((_, Failure(failure))) => Failure(failure)
-        case _                           => Success(result)
-      }
-      // No failed aspects, so unwrap the aspects from the Success Trys.
-      resultAspects <- Try { patchedAspects.mapValues(_.get) }
+        .foldLeft(Try((List[(String, JsObject)](), result._2)))((res, item) => {
+          res match {
+            case Failure(e) => Failure(e)
+            case Success((aspects, lastestEventId)) =>
+              item match {
+                case Failure(e) => Failure(e)
+                case Success(((aspectId, aspectData), currentEventId)) =>
+                  Success(
+                    (
+                      (aspectId, aspectData) :: aspects,
+                      Math.max(currentEventId, lastestEventId)
+                    )
+                  )
+              }
+          }
+        })
     } yield
-      result.copy(aspects = resultAspects, sourceTag = newRecord.sourceTag)
+      (
+        result._1.copy(
+          aspects = patchedAspects.toMap,
+          sourceTag = newRecord.sourceTag
+        ),
+        latestEventId
+      )
   }
 
   def processRecordPatchOperationsOnAspects[T](
@@ -783,7 +807,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       recordPatch: JsonPatch,
       userId: String,
       forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[Record] = {
+  )(implicit session: DBSession): Try[(Record, Long)] = {
     for {
       record <- this.getByIdWithAspects(tenantId, id, None, None) match {
         case Some(record) => Success(record)
@@ -825,7 +849,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
             .apply()
         }
       }
-      _ <- Try {
+      eventId <- Try {
         // only update / generate event if name or authnReadPolicyId have changed. Id can't change, aspect changes are handled separately
         if ((record.name, record.authnReadPolicyId) != (patchedRecord.name, patchedRecord.authnReadPolicyId)) {
           val event =
@@ -838,66 +862,71 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
                   where (recordId, tenantId) = ($id, ${tenantId.tenantId})""".update
             .apply()
 
-          eventId
+          Some(eventId)
         } else {
-          0
+          None
         }
       }
-      aspectResults <- Try {
-        // --- We have validate the Json Patch in the beginning. Thus, any aspect operations below should skip the validation
-        processRecordPatchOperationsOnAspects(
-          recordPatch,
-          (aspectId: String, aspectData: JsObject) =>
-            (
-              aspectId,
-              putRecordAspectById(
-                tenantId,
-                id,
-                aspectId,
-                aspectData,
-                userId,
-                true
-              )
-            ),
-          (aspectId: String, aspectPatch: JsonPatch) =>
-            (
-              aspectId,
-              patchRecordAspectById(
-                tenantId,
-                id,
-                aspectId,
-                aspectPatch,
-                userId,
-                true
-              )
-            ),
-          (aspectId: String) => {
-            deleteRecordAspect(tenantId, id, aspectId, userId)
-            (aspectId, Success(JsNull))
+
+      // --- We have validate the Json Patch in the beginning. Thus, any aspect operations below should skip the validation
+      (aspectResults, latestEventId) <- processRecordPatchOperationsOnAspects(
+        recordPatch,
+        (aspectId: String, aspectData: JsObject) =>
+          putRecordAspectById(
+            tenantId,
+            id,
+            aspectId,
+            aspectData,
+            userId,
+            true
+          ).map(value => ((aspectId, value._1), value._2)),
+        (aspectId: String, aspectPatch: JsonPatch) =>
+          patchRecordAspectById(
+            tenantId,
+            id,
+            aspectId,
+            aspectPatch,
+            userId,
+            true
+          ).map(value => ((aspectId, value._1), value._2)),
+        (aspectId: String) =>
+          deleteRecordAspect(tenantId, id, aspectId, userId)
+            .map(value => ((aspectId, JsNull), value._2))
+      ).foldLeft(Try((List[(String, JsValue)](), Option.empty[Long])))(
+          (res, item) => {
+            res match {
+              case Failure(e) => Failure(e)
+              case Success(resValue) =>
+                item match {
+                  case Failure(e) => Failure(e)
+                  case Success((aspect, itemEventId)) =>
+                    Success((aspect :: resValue._1, resValue._2 match {
+                      case Some(eventId) => Some(Math.max(itemEventId, eventId))
+                      case _             => Some(itemEventId)
+                    }))
+                }
+            }
           }
         )
-      }
-      // Report the first failed aspect, if any
-      _ <- aspectResults.find(_._2.isFailure) match {
-        case Some((_, failure)) => failure
-        case _                  => Success(record)
-      }
-      // No failed aspects, so unwrap the aspects from the Success Trys.
-      aspects <- Success(
-        aspectResults
-          .filter({
-            case (_, Success(JsNull)) => false // aspect was deleted
-            case _                    => true
-          })
-          .map(aspect => (aspect._1, aspect._2.get.asJsObject))
-      )
+        // -- all eventId could be none: update record doesn't always generate events
+        .map(value => (value._1, value._2.getOrElse(eventId.getOrElse(0L))))
+
     } yield
-      Record(
-        patchedRecord.id,
-        patchedRecord.name,
-        aspects.toMap,
-        patchedRecord.authnReadPolicyId,
-        tenantId = Some(tenantId.tenantId)
+      (
+        Record(
+          patchedRecord.id,
+          patchedRecord.name,
+          aspectResults
+            .filter({
+              case (_, JsNull) => false // aspect was deleted
+              case _           => true
+            })
+            .map(aspect => (aspect._1, aspect._2.asJsObject))
+            .toMap,
+          patchedRecord.authnReadPolicyId,
+          tenantId = Some(tenantId.tenantId)
+        ),
+        latestEventId
       )
   }
 
@@ -908,7 +937,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       aspectPatch: JsonPatch,
       userId: String,
       forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[JsObject] = {
+  )(implicit session: DBSession): Try[(JsObject, Long)] = {
     for {
       aspect <- (this.getRecordAspectById(
         tenantId,
@@ -970,7 +999,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
           0
         }
       }
-    } yield patchedAspect
+    } yield (patchedAspect, eventId)
   }
 
   def putRecordAspectById(
@@ -980,7 +1009,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       newAspect: JsObject,
       userId: String,
       forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[JsObject] = {
+  )(implicit session: DBSession): Try[(JsObject, Long)] = {
     for {
       // --- validate Aspect data against JSON schema
       _ <- Try {
@@ -989,13 +1018,13 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
             session
           )
       }
-      oldAspect <- this.getRecordAspectById(
+      (oldAspect, eventId) <- this.getRecordAspectById(
         tenantId,
         recordId,
         aspectId,
         None
       ) match {
-        case Some(aspect) => Success(aspect)
+        case Some(aspect) => Success((aspect, None))
         // Possibility of a race condition here. The aspect doesn't exist, so we try to create it.
         // But someone else could have created it in the meantime. So if our create fails, try one
         // more time to get an existing one. We use a nested transaction so that, if the create fails,
@@ -1013,7 +1042,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
               true
             )(nested)
           } match {
-            case Success(aspect) => Success(aspect)
+            case Success((aspect, eventId)) => Success((aspect, Some(eventId)))
             case Failure(e) =>
               this.getRecordAspectById(
                 tenantId,
@@ -1021,7 +1050,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
                 aspectId,
                 None
               ) match {
-                case Some(aspect) => Success(aspect)
+                case Some(aspect) => Success((aspect, None))
                 case None         => Failure(e)
               }
           }
@@ -1042,7 +1071,15 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
         recordAspectPatch,
         userId,
         true
-      )
+      ) match {
+        case Failure(e) => Failure(e)
+        case Success((aspectData, patchEventId)) =>
+          if (eventId.isDefined) {
+            Success(aspectData, Math.max(patchEventId, eventId.get))
+          } else {
+            Success(aspectData, patchEventId)
+          }
+      }
     } yield result
   }
 
@@ -1051,7 +1088,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       record: Record,
       userId: String,
       forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[Record] = {
+  )(implicit session: DBSession): Try[(Record, Long)] = {
     for {
 
       // --- validate aspects data against json schema
@@ -1089,7 +1126,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
 
       // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
       // --- as the aspect data has been validated (unless not required) in the beginning of current method
-      hasAspectFailure <- record.aspects
+      lastestEventId <- record.aspects
         .map(
           aspect =>
             createRecordAspect(
@@ -1101,18 +1138,26 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
               true
             )(session)
         )
-        .find(_.isFailure) match {
-        case Some(Failure(e)) => Failure(e)
-        case _                => Success(record.copy(tenantId = Some(tenantId.tenantId)))
-      }
-    } yield hasAspectFailure
+        .foldLeft(Try(eventId))((finalResult, result) => {
+          if (finalResult.isFailure) {
+            finalResult
+          } else {
+            result match {
+              case Failure(e) => Failure(e)
+              case Success((_, aspectEventId)) =>
+                Success(Math.max(finalResult.get, aspectEventId))
+            }
+          }
+        })
+
+    } yield (record.copy(tenantId = Some(tenantId.tenantId)), lastestEventId)
   }
 
   def deleteRecord(
       tenantId: SpecifiedTenantId,
       recordId: String,
       userId: String
-  )(implicit session: DBSession): Try[Boolean] = {
+  )(implicit session: DBSession): Try[(Boolean, Long)] = {
     for {
       aspects <- Try {
         sql"select aspectId from RecordAspects where (recordId, tenantId)=($recordId, ${tenantId.tenantId})"
@@ -1128,17 +1173,24 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
         case Some(Failure(e)) => Failure(e)
         case _                => Success(aspects)
       }
-      _ <- Try {
-        val eventJson =
-          DeleteRecordEvent(recordId, tenantId.tenantId).toJson.compactPrint
-        sql"insert into Events (eventTypeId, userId, tenantId, data) values (${DeleteRecordEvent.Id}, ${userId}::uuid, ${tenantId.tenantId}, $eventJson::json)".updateAndReturnGeneratedKey
-          .apply()
-      }
       rowsDeleted <- Try {
         sql"""delete from Records where (recordId, tenantId)=($recordId, ${tenantId.tenantId})""".update
           .apply()
       }
-    } yield rowsDeleted > 0
+      eventId <- Try {
+        if (rowsDeleted > 0) {
+          // --- only generate event when the record did removed
+          val eventJson =
+            DeleteRecordEvent(recordId, tenantId.tenantId).toJson.compactPrint
+          sql"insert into Events (eventTypeId, userId, tenantId, data) values (${DeleteRecordEvent.Id}, ${userId}::uuid, ${tenantId.tenantId}, $eventJson::json)".updateAndReturnGeneratedKey
+            .apply()
+        } else {
+          // --- No record has been deleted, return - as event ID
+          0L
+        }
+
+      }
+    } yield (rowsDeleted > 0, eventId)
   }
 
   def trimRecordsBySource(
@@ -1161,9 +1213,9 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
         ids
           .map(recordId => deleteRecord(tenantId, recordId, userId))
           .foldLeft[Try[Long]](Success(0L))(
-            (trySoFar: Try[Long], thisTry: Try[Boolean]) =>
+            (trySoFar: Try[Long], thisTry: Try[(Boolean, Long)]) =>
               (trySoFar, thisTry) match {
-                case (Success(countSoFar), Success(bool)) =>
+                case (Success(countSoFar), Success((bool, eventId))) =>
                   Success(countSoFar + (if (bool) 1 else 0))
                 case (Failure(err), _) => Failure(err)
                 case (_, Failure(err)) => Failure(err)
@@ -1194,7 +1246,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       aspect: JsObject,
       userId: String,
       forceSkipAspectValidation: Boolean = false
-  )(implicit session: DBSession): Try[JsObject] = {
+  )(implicit session: DBSession): Try[(JsObject, Long)] = {
     for {
 
       _ <- Try {
@@ -1227,7 +1279,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
           )
         case anythingElse => anythingElse
       }
-    } yield insertResult
+    } yield (insertResult, eventId)
   }
 
   def deleteRecordAspect(
@@ -1235,9 +1287,9 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       recordId: String,
       aspectId: String,
       userId: String
-  )(implicit session: DBSession): Try[Boolean] = {
+  )(implicit session: DBSession): Try[(Boolean, Long)] = {
     for {
-      _ <- Try {
+      eventId <- Try {
         val eventJson =
           DeleteRecordAspectEvent(recordId, tenantId.tenantId, aspectId).toJson.compactPrint
         sql"insert into Events (eventTypeId, userId, tenantId, data) values (${DeleteRecordAspectEvent.Id}, ${userId}::uuid, ${tenantId.tenantId}, $eventJson::json)".updateAndReturnGeneratedKey
@@ -1247,7 +1299,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
         sql"""delete from RecordAspects where (aspectId, recordId, tenantId)=($aspectId, $recordId, ${tenantId.tenantId})""".update
           .apply()
       }
-    } yield rowsDeleted > 0
+    } yield (rowsDeleted > 0, eventId)
   }
 
   def reconstructRecordFromEvents(
@@ -1265,14 +1317,18 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
               JsObject(
                 "id" -> event.data.fields("recordId"),
                 "name" -> event.data.fields("name"),
+                "tenantId" -> JsNumber(event.tenantId),
+                "authnReadPolicyId" -> JsNull,
+                "sourceTag" -> JsNull,
                 "aspects" -> JsObject()
               )
             case EventType.PatchRecord =>
               event.data.fields("patch").convertTo[JsonPatch].apply(recordValue)
             case EventType.DeleteRecord => JsNull
             case EventType.CreateRecordAspect =>
-              val createAspectEvent =
-                event.data.convertTo[CreateRecordAspectEvent]
+              val createAspectEvent = (JsObject(
+                event.data.fields + ("tenantId" -> JsNumber(event.tenantId))
+              )).convertTo[CreateRecordAspectEvent]
               val record = recordValue.asJsObject
               val existingFields = record.fields
               val existingAspects = record.fields("aspects").asJsObject.fields
@@ -1282,8 +1338,9 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
               ))
               JsObject(newFields)
             case EventType.PatchRecordAspect =>
-              val patchRecordAspectEvent =
-                event.data.convertTo[PatchRecordAspectEvent]
+              val patchRecordAspectEvent = (JsObject(
+                event.data.fields + ("tenantId" -> JsNumber(event.tenantId))
+              )).convertTo[PatchRecordAspectEvent]
               val record = recordValue.asJsObject
               val existingFields = record.fields
               val existingAspects = record.fields("aspects").asJsObject.fields
@@ -1297,7 +1354,9 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
               JsObject(newFields)
             case EventType.DeleteRecordAspect =>
               val deleteRecordAspectEvent =
-                event.data.convertTo[DeleteRecordAspectEvent]
+                (JsObject(
+                  event.data.fields + ("tenantId" -> JsNumber(event.tenantId))
+                )).convertTo[DeleteRecordAspectEvent]
               val record = recordValue.asJsObject
               val existingFields = record.fields
               val existingAspects = record.fields("aspects").asJsObject.fields

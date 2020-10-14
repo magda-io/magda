@@ -99,6 +99,7 @@ cors:
   - "X-Content-Range"
   - "Accept-Ranges"
   - "Content-Length"
+  - "x-magda-event-id"
 
 # cookie -- Session cookie settings.
 # Default value will be used if any options are left with blank.

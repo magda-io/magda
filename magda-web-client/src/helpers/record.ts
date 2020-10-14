@@ -186,6 +186,7 @@ export type ParsedDistribution = {
     visualizationInfo: any;
     sourceDetails: any;
     ckanResource: any;
+    version?: VersionAspectData;
 };
 
 export type ParsedProvenance = {
@@ -431,7 +432,8 @@ export function parseDistribution(
             : null,
         compatiblePreviews,
         sourceDetails: aspects["source"],
-        ckanResource: aspects["ckan-resource"]
+        ckanResource: aspects["ckan-resource"],
+        version: aspects["version"]
     };
 }
 

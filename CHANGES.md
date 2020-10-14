@@ -13,6 +13,13 @@
 -   Added an opt-in for chart/map/table previews if files are large.
 -   Upgraded helm-docs to v1.2.1
 -   Fixed `magda-builder-scala` docker image failed to build due to expired resource link
+-   Fixed: Registry should not create an event when failed to delete the record #2976
+-   Fixed: Time Travel API response 500 sometimes #2977
+-   All registry APIs that create / changes / updates the data will now return the eventId of the event created for the operation #2983
+-   When submit a dataset, system will try to tag current version with relevant EventId #2980
+-   Keep tracking superseded data files in versions to avoid superseded data files being deleted #2981
+-   UI Changes that allow user to access the distribution page of different versions #2982
+-   Use pseudo url for data file stored in storage api #3000
 
 ## 0.0.57
 

@@ -1,4 +1,5 @@
-import { config, MessageSafeConfig } from "config";
+import { config, MessageSafeConfig, DATASETS_BUCKET } from "config";
+import urijs from "urijs";
 import UserVisibleError from "helpers/UserVisibleError";
 import {
     State,
@@ -15,7 +16,6 @@ import {
 import moment from "moment";
 import * as Comlink from "comlink";
 
-import baseStorageApiPath from "./baseStorageApiPath";
 import uploadFile from "./uploadFile";
 import translateError from "helpers/translateError";
 import promisifySetState from "helpers/promisifySetState";
@@ -277,16 +277,20 @@ export default async function processFile(
                 await doUpload();
             } catch (e) {
                 try {
-                    const res = await fetch(
-                        `${config.storageApiUrl}${baseStorageApiPath(
+                    const fetchUri = urijs(config.storageApiUrl);
+                    const fetchUrl = fetchUri
+                        .segmentCoded([
+                            ...fetchUri.segmentCoded(),
+                            DATASETS_BUCKET,
                             datasetId,
-                            initialDistribution.id!
-                        )}/${encodeURIComponent(thisFile.name)}`,
-                        {
-                            ...config.credentialsFetchOptions,
-                            method: "DELETE"
-                        }
-                    );
+                            initialDistribution.id!,
+                            thisFile.name
+                        ])
+                        .toString();
+                    const res = await fetch(fetchUrl, {
+                        ...config.credentialsFetchOptions,
+                        method: "DELETE"
+                    });
 
                     // 404 is fine because it means the file never got created.
                     if (res.status !== 200 && res.status !== 404) {

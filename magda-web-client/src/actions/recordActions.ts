@@ -1,7 +1,7 @@
 import fetch from "isomorphic-fetch";
 import { config } from "../config";
 import { actionTypes } from "../constants/ActionTypes";
-import { RecordAction, RawDataset } from "../helpers/record";
+import { RecordAction, RawDataset, RawDistribution } from "../helpers/record";
 import { FetchError } from "../types";
 import {
     ensureAspectExists,
@@ -119,36 +119,33 @@ export function fetchDatasetFromRegistry(id: string): Function {
 }
 
 export function fetchDistributionFromRegistry(id: string): any {
-    return (dispatch: Function) => {
+    return async (dispatch: Function) => {
         dispatch(requestDistribution(id));
-        let url: string =
-            config.registryReadOnlyApiUrl +
-            `records/${encodeURIComponent(
-                id
-            )}?aspect=dcat-distribution-strings&optionalAspect=source-link-status&optionalAspect=source&optionalAspect=visualization-info&optionalAspect=access&optionalAspect=usage&optionalAspect=dataset-format&optionalAspect=ckan-resource&optionalAspect=publishing`;
-        return fetch(url, config.credentialsFetchOptions)
-            .then((response) => {
-                if (!response.ok) {
-                    let statusText = response.statusText;
-                    // response.statusText are different in different browser, therefore we unify them here
-                    if (response.status === 404) {
-                        statusText = "Not Found";
-                    }
-                    throw Error(statusText);
-                }
-                return response.json();
-            })
-            .then((json: any) => {
-                return dispatch(receiveDistribution(json));
-            })
-            .catch((error) =>
-                dispatch(
-                    requestDistributionError({
-                        title: error.name,
-                        detail: error.message
-                    })
-                )
+        try {
+            const data = await fetchRecord<RawDistribution>(
+                id,
+                [
+                    "source-link-status",
+                    "source",
+                    "visualization-info",
+                    "access",
+                    "usage",
+                    "dataset-format",
+                    "ckan-resource",
+                    "publishing",
+                    "version"
+                ],
+                ["dcat-distribution-strings"]
             );
+            return dispatch(receiveDistribution(data));
+        } catch (e) {
+            return dispatch(
+                requestDistributionError({
+                    title: "",
+                    detail: e?.message ? e.message : `${e}`
+                })
+            );
+        }
     };
 }
 

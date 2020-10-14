@@ -1,14 +1,17 @@
 import React, { Component } from "react";
-import { connect } from "react-redux";
 import DataPreviewVis from "Components/Common/DataPreviewVis";
 import MagdaNamespacesConsumer from "Components/i18n/MagdaNamespacesConsumer";
 import ContactPoint from "Components/Common/ContactPoint";
 import CommonLink from "Components/Common/CommonLink";
 import { gapi } from "analytics/ga";
-
+import { ParsedDataset, ParsedDistribution } from "helpers/record";
+import getStorageApiResourceAccessUrl from "helpers/getStorageApiResourceAccessUrl";
 import "./DatasetDetails.scss";
 
-class DistributionDetails extends Component {
+class DistributionDetails extends Component<{
+    dataset: ParsedDataset;
+    distribution: ParsedDistribution;
+}> {
     renderLinkStatus(linkStatusAvailable, linkActive) {
         if (linkStatusAvailable && !linkActive) {
             return "(This link appears to be broken)";
@@ -17,8 +20,11 @@ class DistributionDetails extends Component {
     }
 
     renderLinkText(distribution) {
+        const runtimeDownloadUrl = getStorageApiResourceAccessUrl(
+            distribution.downloadURL
+        );
         const downloadText = distribution.downloadURL && (
-            <div key={distribution.identifier}>
+            <div key={"downloadText"}>
                 This data file or API can be downloaded from: <br />
                 <CommonLink
                     className="url"
@@ -35,10 +41,10 @@ class DistributionDetails extends Component {
                             });
                         }
                     }}
-                    href={distribution.downloadURL}
+                    href={runtimeDownloadUrl}
                 >
                     {" "}
-                    {distribution.downloadURL}
+                    {runtimeDownloadUrl}
                 </CommonLink>
                 {this.renderLinkStatus(
                     distribution.linkStatusAvailable,
@@ -47,7 +53,7 @@ class DistributionDetails extends Component {
             </div>
         );
         const accessText = distribution.accessURL && (
-            <div>
+            <div key={"accessText"}>
                 This dataset can be accessed from: <br />{" "}
                 <CommonLink className="url" href={distribution.accessURL}>
                     {distribution.accessURL}
@@ -56,7 +62,7 @@ class DistributionDetails extends Component {
         );
 
         const accessNotes = distribution.accessNotes && (
-            <MagdaNamespacesConsumer ns={["datasetPage"]}>
+            <MagdaNamespacesConsumer key={"accessNotes"} ns={["datasetPage"]}>
                 {(translate) => {
                     const accessNotesPrefix = translate([
                         "accessNotesPrefix",
@@ -87,7 +93,10 @@ class DistributionDetails extends Component {
         );
 
         const contactPoint = this.props.dataset.contactPoint && (
-            <ContactPoint contactPoint={this.props.dataset.contactPoint} />
+            <ContactPoint
+                key={"contactPoint"}
+                contactPoint={this.props.dataset.contactPoint}
+            />
         );
 
         return [downloadText, accessText, accessNotes, contactPoint].filter(
@@ -116,8 +125,6 @@ class DistributionDetails extends Component {
                 {distribution.downloadURL && (
                     <div className="distribution-preview">
                         <DataPreviewVis
-                            location={this.props.location}
-                            dataset={this.props.dataset}
                             distribution={this.props.distribution}
                         />{" "}
                     </div>
@@ -127,13 +134,4 @@ class DistributionDetails extends Component {
     }
 }
 
-function mapStateToProps(state) {
-    const distribution = state.record.distribution;
-    const dataset = state.record.dataset;
-    return {
-        distribution,
-        dataset
-    };
-}
-
-export default connect(mapStateToProps)(DistributionDetails);
+export default DistributionDetails;

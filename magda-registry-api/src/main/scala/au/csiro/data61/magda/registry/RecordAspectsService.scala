@@ -2,14 +2,15 @@ package au.csiro.data61.magda.registry
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
 import au.csiro.data61.magda.directives.TenantDirectives.{
-  requiresTenantId,
-  requiresSpecifiedTenantId
+  requiresSpecifiedTenantId,
+  requiresTenantId
 }
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
@@ -60,6 +61,11 @@ class RecordAspectsService(
     *    }
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
+    *
+    * @apiHeader {string} x-magda-event-id This is a **response header** that is **ONLY** available when the operation is completed successfully.
+    *           If the operation did make changes and triggered an event, the header value will be the eventId.
+    *           Otherwise (i.e. no change are made), this header value will be "0".
+    *
     * @apiSuccess (Success 200) {json} Response the aspect detail
     * @apiSuccessExample {json} Response:
     *    {
@@ -135,7 +141,12 @@ class RecordAspectsService(
                   aspect,
                   user.id
                 )(session) match {
-                  case Success(result) => complete(result)
+                  case Success(result) =>
+                    complete(
+                      StatusCodes.OK,
+                      List(RawHeader("x-magda-event-id", result._2.toString)),
+                      result._1
+                    )
                   case Failure(exception) =>
                     complete(
                       StatusCodes.BadRequest,
@@ -160,6 +171,11 @@ class RecordAspectsService(
     * @apiParam (path) {string} aspectId ID of the aspect to update
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
+    *
+    * @apiHeader {string} x-magda-event-id This is a **response header** that is **ONLY** available when the operation is completed successfully.
+    *           If the operation did make changes and triggered an event, the header value will be the eventId.
+    *           Otherwise (i.e. no change are made), this header value will be "0".
+    *
     * @apiSuccess (Success 200) {json} Response operation result
     * @apiSuccessExample {json} Response:
     * {
@@ -219,7 +235,12 @@ class RecordAspectsService(
                 aspectId,
                 user.id
               )(session) match {
-                case Success(result) => complete(DeleteResult(result))
+                case Success(result) =>
+                  complete(
+                    StatusCodes.OK,
+                    List(RawHeader("x-magda-event-id", result._2.toString)),
+                    DeleteResult(result._1)
+                  )
                 case Failure(exception) =>
                   complete(
                     StatusCodes.BadRequest,
@@ -249,6 +270,11 @@ class RecordAspectsService(
     *    ]
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
+    *
+    * @apiHeader {string} x-magda-event-id This is a **response header** that is **ONLY** available when the operation is completed successfully.
+    *           If the operation did make changes and triggered an event, the header value will be the eventId.
+    *           Otherwise (i.e. no change are made), this header value will be "0".
+    *
     * @apiSuccess (Success 200) {json} Response operation result
     * @apiSuccessExample {json} Response:
     *    {
@@ -324,7 +350,12 @@ class RecordAspectsService(
                   aspectPatch,
                   user.id
                 )(session) match {
-                  case Success(result) => complete(result)
+                  case Success(result) =>
+                    complete(
+                      StatusCodes.OK,
+                      List(RawHeader("x-magda-event-id", result._2.toString)),
+                      result._1
+                    )
                   case Failure(exception) =>
                     complete(
                       StatusCodes.BadRequest,

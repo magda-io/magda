@@ -20,7 +20,7 @@ import ValidationRequiredLabel from "../../ValidationRequiredLabel";
 import * as ValidationManager from "../../ValidationManager";
 import { CustomValidatorType } from "../../ValidationManager";
 import CommonLink from "Components/Common/CommonLink";
-import URI from "urijs";
+import urijs from "urijs";
 
 import "./index.scss";
 
@@ -408,7 +408,7 @@ export default function DatasetAddAccessAndUsePage(props: Props) {
                                             target="_blank"
                                             href="/page/security-classification"
                                         >
-                                            {URI(config.baseExternalUrl)
+                                            {urijs(config.baseExternalUrl)
                                                 .segment(
                                                     "page/security-classification"
                                                 )
