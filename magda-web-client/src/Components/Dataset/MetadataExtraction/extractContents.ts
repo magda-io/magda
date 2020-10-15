@@ -19,6 +19,20 @@ interface ContentExtractorOutput {
     largeTextBlockIdentified?: boolean;
 }
 
+function getFileExtension(filename?: string) {
+    if (!filename) {
+        return "";
+    }
+    const ext = filename.split(".").pop();
+    if (ext === filename) return "";
+    return ext;
+}
+
+const getFormatFromFileName = (filename?: string) => {
+    const ext = getFileExtension(filename);
+    return ext ? ext.toUpperCase() : "UNKNOWN";
+};
+
 /**
  * Extract contents of file as text if they are text based file formats
  *
@@ -56,7 +70,9 @@ export default async function extract(
                 format: "DOCX"
             };
         } else {
-            return {};
+            return {
+                format: getFormatFromFileName(input.fileName)
+            };
         }
     })();
 
