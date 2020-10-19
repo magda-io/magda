@@ -15,7 +15,9 @@
 
 {{ template "chart.valuesHeader" . }}
 
-##### Proxy Target Definition
+{{ template "chart.valuesTable" . }}
+
+#### Proxy Target Definition
 
 A proxy target definition that defines `defaultRoutes` or `webRoutes` above support the following fields:
 - `to`: target url
@@ -25,8 +27,56 @@ A proxy target definition that defines `defaultRoutes` or `webRoutes` above supp
 - `statusCheck`: check target's live status from the gateway
 A proxy target be also specify in a simply string form, in which case, Gateway assumes a GET method, no auth proxy route is requested.
 
-##### Cookie Settings
+#### Authentication Plugin Config
 
+Each authentication plugin config item can contain the following fields:
+- `key`: (string) the unique key of the auth plugin. Allowed characters: [a-zA-Z0-9\-]
+- `name`: (string) the display name of the auth plugin
+- `iconUrl`: (string) the display icon of the auth plugin
+- `authenticationMethod`: (string) The authentication method of the plugin. Support values are:
+  - "IDP-URI-REDIRECTION": the plugin will rediredct user agent to idp (identity provider) for authentication. e.g. Google & fackebook oauth etc.
+  - "PASSWORD": the plugin expect frontend do a form post that contains username & password to the plugin for authentication.
+  - "REPLY-PARTY-QR-CODE": the plugin offers a QR-code image url and expect the user scan the QR code with a mobile app to complete the authentication.
+- `qrCodeImgUrl`: (string) Optional; Only applicable when authenticationMethod = "REPLY-PARTY-QR-CODE". 
 
+#### Default Value for `defaultRoutes` field
 
-{{ template "chart.valuesTable" . }}
+```yaml
+defaultRoutes:
+  search:
+    to: http://search-api/v0
+    auth: true
+  registry:
+    to: http://registry-api/v0
+    auth: true
+  registry-read-only:
+    to: http://registry-api-read-only/v0
+    auth: true
+  registry-auth: #left here for legacy reasons - use /registry
+    to: http://registry-api/v0
+    auth: true
+  auth:
+    to: http://authorization-api/v0/public
+    auth: true
+  opa:
+    to: http://authorization-api/v0/opa
+    auth: true
+    statusCheck: false
+  admin:
+    to: http://admin-api/v0
+    auth: true
+  content:
+    to: http://content-api/v0
+    auth: true
+  storage:
+    to: http://storage-api/v0
+    auth: true
+  correspondence:
+    to: http://correspondence-api/v0/public
+  apidocs:
+    to: http://apidocs-server/
+    redirectTrailingSlash: true
+  tenant:
+    to: http://tenant-api/v0
+    auth: true
+```

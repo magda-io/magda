@@ -1,6 +1,9 @@
 import { Router } from "express";
 import ApiClient from "magda-typescript-common/src/authorization-api/ApiClient";
 import Authenticator from "./Authenticator";
+import createAuthPluginRouter, {
+    AuthPluginConfig
+} from "./createAuthPluginRouter";
 import passport from "passport";
 import pg from "pg";
 
@@ -26,6 +29,7 @@ export interface AuthRouterOptions {
     vanguardWsFedRealm: string;
     vanguardWsFedCertificate: string;
     enableInternalAuthProvider: boolean;
+    plugins: AuthPluginConfig[];
 }
 
 export default function createAuthRouter(options: AuthRouterOptions): Router {
@@ -148,6 +152,32 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
     authRouter.get("/admin", function (req, res) {
         res.render("admin");
     });
+
+    /**
+     * @apiGroup Gateway
+     * @api {get} /login/plugins Get the list of available authentication plugins
+     * @apiDescription Returns all installed authentication plugins. This endpoint is only available when gateway `enableAuthEndpoint`=true
+     *
+     * @apiSuccessExample {json} 200
+     *    [{
+     *        "key":"google",
+     *        "name":"Google",
+     *        "iconUrl":"http://xxx/sds/sds.jpg",
+     *        "authenticationMethod": "IDP-URI-REDIRECTION"
+     *    }]
+     *
+     */
+    authRouter.get("/login/plugins", (req, res) =>
+        res.send(options?.plugins?.length ? options.plugins : [])
+    );
+
+    // setup auth plugin routes
+    if (options?.plugins?.length) {
+        authRouter.use(
+            "/login/plugin",
+            createAuthPluginRouter({ plugins: options.plugins })
+        );
+    }
 
     providers
         .filter((provider) => provider.enabled)
