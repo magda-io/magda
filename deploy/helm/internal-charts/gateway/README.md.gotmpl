@@ -53,7 +53,7 @@ Each authentication plugin config item can contain the following fields:
 - `qrCodeAuthResultPollUrl`: (string) Only applicable & compulsory when authenticationMethod = "QR-CODE".
   - The url that is used by frontend to poll the authentication processing result.
   - The url should response a JSON object the following fields:
-    - `status`: a text field represent the processing status. 
+    - `result`: a text field represent the processing status. 
       - `pending`: default status. the authentication request is still processing.
       - `success`: the authentication request is processed completed. 
       - `failure`: the authentication request is failed.
