@@ -16,6 +16,7 @@ enableCkanRedirection: false
 
 # -- a list of authentication plugin config item. More info of config item see [Authentication Plugin Config](#authentication-plugin-config) section below.
 authPlugins: []
+
 # -- the redirection url after the whole authentication process is completed.
 # The following query paramaters can be used to supply the authentication result:
 # <ul>

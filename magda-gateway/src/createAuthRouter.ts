@@ -154,8 +154,8 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
     });
 
     /**
-     * @apiGroup Gateway
-     * @api {get} /login/plugins Get the list of available authentication plugins
+     * @apiGroup Authentication API
+     * @api {get} /auth/plugins Get the list of available authentication plugins
      * @apiDescription Returns all installed authentication plugins. This endpoint is only available when gateway `enableAuthEndpoint`=true
      *
      * @apiSuccessExample {json} 200
@@ -167,8 +167,8 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
      *    }]
      *
      */
-    authRouter.get("/login/plugins", (req, res) =>
-        res.send(options?.plugins?.length ? options.plugins : [])
+    authRouter.get("/plugins", (req, res) =>
+        res.json(options?.plugins?.length ? options.plugins : [])
     );
 
     // setup auth plugin routes
@@ -188,6 +188,17 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
             authRouter.use("/login/" + provider.id, provider.authRouter);
         });
 
+    /**
+     * @apiGroup Authentication API
+     * @api {get} /auth/providers Get the list of available authentication providers
+     * @apiDescription Returns all installed authentication providers.
+     *  This endpoint is only available when gateway `enableAuthEndpoint`=true.
+     *  Please note: We are gradually replacing non-plugable authenticaiton providers with [authentication plugins](https://github.com/magda-io/magda/tree/master/deploy/helm/internal-charts/gateway#authentication-plugin-config)
+     *
+     * @apiSuccessExample {string} 200
+     *    ["internal","facebook","google","arcgis","ckan","vanguard"]
+     *
+     */
     authRouter.get("/providers", (req, res) => {
         res.json(
             providers
