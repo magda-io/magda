@@ -175,7 +175,10 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
     if (options?.plugins?.length) {
         authRouter.use(
             "/login/plugin",
-            createAuthPluginRouter({ plugins: options.plugins })
+            createAuthPluginRouter({
+                plugins: options.plugins,
+                cookieOptions: options.authenticator.sessionCookieOptions
+            })
         );
     }
 
