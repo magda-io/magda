@@ -36,6 +36,7 @@ Each authentication plugin config item can contain the following fields:
 - `authenticationMethod`: (string) The authentication method of the plugin. Support values are:
   - "IDP-URI-REDIRECTION": the plugin will rediredct user agent to idp (identity provider) for authentication. e.g. Google & fackebook oauth etc.
   - "PASSWORD": the plugin expect frontend do a form post that contains username & password to the plugin for authentication.
+    - The frontend will always post username & password to auth plugin root url.
   - "QR-CODE": the plugin offers a url that is used by the frontend to request auth challenge data. The data will be encoded into a QR-code image and expect the user scan the QR code with a mobile app to complete the authentication request.
     - Once the QR-code image is generated, the frontend is expected to start polling a pre-defined plugin url to check whether the authentication is complete or not.
 - `loginFormExtraInfoHeading`: (string) Optional; Only applicable when authenticationMethod = "PASSWORD".
