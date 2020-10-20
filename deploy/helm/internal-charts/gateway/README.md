@@ -68,7 +68,8 @@ Each authentication plugin config item can contain the following fields:
 - `authenticationMethod`: (string) The authentication method of the plugin. Support values are:
   - "IDP-URI-REDIRECTION": the plugin will rediredct user agent to idp (identity provider) for authentication. e.g. Google & fackebook oauth etc.
   - "PASSWORD": the plugin expect frontend do a form post that contains username & password to the plugin for authentication.
-  - "REPLY-PARTY-QR-CODE": the plugin offers a QR-code image url and expect the user scan the QR code with a mobile app to complete the authentication.
+  - "QR-CODE": the plugin offers a url that is used by the frontend to request auth challenge data. The data will be encoded into a QR-code image and expect the user scan the QR code with a mobile app to complete the authentication request.
+    - Once the QR-code image is generated, the frontend is expected to start polling a pre-defined plugin url to check whether the authentication is complete or not.
 - `loginFormExtraInfoHeading`: (string) Optional; Only applicable when authenticationMethod = "PASSWORD".
   - If present, will displayed the heading underneath the login form to provide extra info to users. e.g. how to reset password
 - `loginFormExtraInfoContent`: (string) Optional; Only applicable when authenticationMethod = "PASSWORD".
@@ -76,8 +77,20 @@ Each authentication plugin config item can contain the following fields:
   - Can support content in markdown format
 - `loginFormUsernameFieldLabel`: (string) Optional; Only applicable when authenticationMethod = "PASSWORD". Default value: `Username`
 - `loginFormPasswordFieldLabel`: (string) Optional; Only applicable when authenticationMethod = "PASSWORD". Default value: `Password`
-- `qrCodeImgUrl`: (string) Only applicable & compulsory when authenticationMethod = "REPLY-PARTY-QR-CODE".
-- `qrCodeExtraInfoHeading`: (string) Optional; Only applicable when authenticationMethod = "REPLY-PARTY-QR-CODE".
+- `qrCodeImgDataRequestUrl`: (string) Only applicable & compulsory when authenticationMethod = "QR-CODE".
+  - the url that is used by frontend client to request auth challenge data from the authentication plugin. The received auth challenge data will be encoded into a QR Code Image and expect the user process the auth challenge data by scaning the QR code using a mobile app.
+  - the url should return a JSON object with two fields:
+    - `token`: an auth request token that can used by frontend to poll the authentication result.
+    - `data`: the auth challenge data that expected to be processed by user's mobile app via QR code scaning.
+- `qrCodeAuthResultPollUrl`: (string) Only applicable & compulsory when authenticationMethod = "QR-CODE".
+  - The url that is used by frontend to poll the authentication processing result.
+  - The url should response a JSON object the following fields:
+    - `status`: a text field represent the processing status.
+      - `pending`: default status. the authentication request is still processing.
+      - `success`: the authentication request is processed completed.
+      - `failure`: the authentication request is failed.
+    - `errorMessage`: optional; details error message for users.
+- `qrCodeExtraInfoHeading`: (string) Optional; Only applicable when authenticationMethod = "QR-CODE".
   - If present, will displayed the heading underneath the QR Code image to provide extra instruction to users. e.g. how to download moile app to scan the QR Code
 - `qrCodeExtraInfoContent`: (string) Optional; Only applicable when authenticationMethod = "PASSWORD".
   - If present, will displayed the content underneath the login form to provide extra info to users. e.g. how to download moile app to scan the QR Code

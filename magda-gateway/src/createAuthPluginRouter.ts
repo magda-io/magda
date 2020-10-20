@@ -13,13 +13,13 @@ export const EXPRESS_SESSION_DEFAULT_COOKIE_NAME: string = "connect.sid";
  * - IDP-URI-REDIRECTION: the plugin will rediredct user agent to idp (identity provider) for authentication. e.g. Google & fackebook oauth etc.
  *   - This is the default method.
  * - PASSWORD: the plugin expect frontend do a form post that contains username & password to the plugin for authentication
- * - REPLY-PARTY-QR-CODE: the plugin offers a url for QR-code generation and expect the user scan the QR code with a mobile app to complete the authentication.
- *   - Once the QR-code is generated, the frontend is expected to polling a predefined plugin url to check whether the authentication is complete.
+ * - QR-CODE: the plugin offers a url that is used by the frontend to request auth challenge data. The data will be encoded into a QR-code image and expect the user scan the QR code with a mobile app to complete the authentication request.
+ *   - Once the QR-code image is generated, the frontend is expected to start polling a pre-defined plugin url to check whether the authentication is complete or not.
  */
 export type AuthenticationMethod =
     | "IDP-URI-REDIRECTION"
     | "PASSWORD"
-    | "REPLY-PARTY-QR-CODE";
+    | "QR-CODE";
 
 export type AuthPluginConfig = {
     // plugin key. allowed chars [a-zA-Z\-]
@@ -34,8 +34,8 @@ export type AuthPluginConfig = {
     loginFormExtraInfoContent?: string;
     loginFormUsernameFieldLabel?: string;
     loginFormPasswordFieldLabel?: string;
-    // Compulsory when authenticationMethod === "REPLY-PARTY-QR-CODE"
-    qrCodeUrlPath?: string;
+    qrCodeImgDataRequestUrl?: string; // Compulsory when authenticationMethod = "QR-CODE"
+    qrCodeAuthResultPollUrl?: string; // Compulsory when authenticationMethod = "QR-CODE"
     qrCodeExtraInfoHeading?: string;
     qrCodeExtraInfoContent?: string;
 };
