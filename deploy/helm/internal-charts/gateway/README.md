@@ -69,7 +69,19 @@ Each authentication plugin config item can contain the following fields:
   - "IDP-URI-REDIRECTION": the plugin will rediredct user agent to idp (identity provider) for authentication. e.g. Google & fackebook oauth etc.
   - "PASSWORD": the plugin expect frontend do a form post that contains username & password to the plugin for authentication.
   - "REPLY-PARTY-QR-CODE": the plugin offers a QR-code image url and expect the user scan the QR code with a mobile app to complete the authentication.
-- `qrCodeImgUrl`: (string) Optional; Only applicable when authenticationMethod = "REPLY-PARTY-QR-CODE".
+- `loginFormExtraInfoHeading`: (string) Optional; Only applicable when authenticationMethod = "PASSWORD".
+  - If present, will displayed the heading underneath the login form to provide extra info to users. e.g. how to reset password
+- `loginFormExtraInfoContent`: (string) Optional; Only applicable when authenticationMethod = "PASSWORD".
+  - If present, will displayed the content underneath the login form to provide extra info to users. e.g. how to reset password
+  - Can support content in markdown format
+- `loginFormUsernameFieldLabel`: (string) Optional; Only applicable when authenticationMethod = "PASSWORD". Default value: `Username`
+- `loginFormPasswordFieldLabel`: (string) Optional; Only applicable when authenticationMethod = "PASSWORD". Default value: `Password`
+- `qrCodeImgUrl`: (string) Only applicable & compulsory when authenticationMethod = "REPLY-PARTY-QR-CODE".
+- `qrCodeExtraInfoHeading`: (string) Optional; Only applicable when authenticationMethod = "REPLY-PARTY-QR-CODE".
+  - If present, will displayed the heading underneath the QR Code image to provide extra instruction to users. e.g. how to download moile app to scan the QR Code
+- `qrCodeExtraInfoContent`: (string) Optional; Only applicable when authenticationMethod = "PASSWORD".
+  - If present, will displayed the content underneath the login form to provide extra info to users. e.g. how to download moile app to scan the QR Code
+  - Can support content in markdown format
 
 #### Default Value for `defaultRoutes` field
 

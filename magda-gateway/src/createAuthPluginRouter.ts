@@ -30,7 +30,14 @@ export type AuthPluginConfig = {
     baseUrl: string;
     iconUrl: string;
     authenticationMethod: AuthenticationMethod;
+    loginFormExtraInfoHeading?: string;
+    loginFormExtraInfoContent?: string;
+    loginFormUsernameFieldLabel?: string;
+    loginFormPasswordFieldLabel?: string;
+    // Compulsory when authenticationMethod === "REPLY-PARTY-QR-CODE"
     qrCodeUrlPath?: string;
+    qrCodeExtraInfoHeading?: string;
+    qrCodeExtraInfoContent?: string;
 };
 
 export interface AuthPluginRouterOptions {
