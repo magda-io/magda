@@ -189,6 +189,25 @@ type LoginOptionList = {
     authConfigItems: AuthConfig[] | undefined;
 };
 
+const isPasswordAuthItem = (config: AuthConfig): boolean => {
+    if (
+        !config.isAuthPlugin &&
+        (config.config === "internal" || config.config === "ckan")
+    ) {
+        return true;
+    } else if (
+        config.isAuthPlugin &&
+        config.config.authenticationMethod === "PASSWORD"
+    ) {
+        return true;
+    } else {
+        return false;
+    }
+};
+
+const getSortingStringFromAuthConfig = (config: AuthConfig): string =>
+    config.isAuthPlugin ? config.config.name : config.config;
+
 export default function Login(props) {
     const {
         result: authConfigItems,
@@ -240,6 +259,26 @@ export default function Login(props) {
         if (!defaultSelectedAuthConfig && commonAuthModuleConfig.length) {
             defaultSelectedAuthConfig = commonAuthModuleConfig[0];
         }
+
+        function sortAuthConfigItems(a: AuthConfig, b: AuthConfig): number {
+            if (defaultSelectedAuthConfig === a) {
+                // --- selected default provider / plugin always show as no.1
+                return -1;
+            } else if (defaultSelectedAuthConfig === b) {
+                return 1;
+            } else if (isPasswordAuthItem(a) && !isPasswordAuthItem(b)) {
+                return -1;
+            } else if (!isPasswordAuthItem(a) && isPasswordAuthItem(b)) {
+                return 1;
+            } else {
+                return getSortingStringFromAuthConfig(a) <
+                    getSortingStringFromAuthConfig(b)
+                    ? -1
+                    : 1;
+            }
+        }
+
+        commonAuthModuleConfig.sort(sortAuthConfigItems);
 
         setSelectedAuthConfig(defaultSelectedAuthConfig);
 
@@ -382,22 +421,6 @@ export default function Login(props) {
                 })}
             </ul>
         );
-    };
-
-    const isPasswordAuthItem = (config: AuthConfig): boolean => {
-        if (
-            !config.isAuthPlugin &&
-            (config.config === "internal" || config.config === "ckan")
-        ) {
-            return true;
-        } else if (
-            config.isAuthPlugin &&
-            config.config.authenticationMethod === "PASSWORD"
-        ) {
-            return true;
-        } else {
-            return false;
-        }
     };
 
     function renderSelectedAuthConfig() {
