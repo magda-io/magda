@@ -910,6 +910,7 @@ Update scripts:
     - pre-release:check-release-version
   dependencies:
     - builders-and-yarn
+    - pre-release:check-release-version
   script:
     - cd scripts
     - yarn pkg create-secrets/index.js --out-path create-secrets/build
