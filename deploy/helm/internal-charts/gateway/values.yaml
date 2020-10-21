@@ -14,20 +14,17 @@ enableAuthEndpoint: false
 enableWebAccessControl: false
 enableCkanRedirection: false
 
-# -- a list of authentication plugin config item. More info of config item see [Authentication Plugin Config](#authentication-plugin-config) section below.
-authPlugins: []
-
-# -- the redirection url after the whole authentication process is completed.
-# The following query paramaters can be used to supply the authentication result:
+# -- a list of authentication plugin config item. 
+# Each authentication plugin config item can contain the following fields:
 # <ul>
-# <li>result: (string) Compulsory. Possible value: "success" or "failure". </li>
-# <li>errorMessage: (string) Optional. Text message to provide more information on the error to the user. </li>
+# <li>`key`: (string) the unique key of the auth plugin. Allowed characters: [a-zA-Z0-9\-] </li>
+# <li>`baseUrl`: (string) the `baseUrl` where gateway proxy request to. </li>
 # </ul>
-authPluginRedirectUrl: "/sign-in-redirect"
+authPlugins: []
 
 auth:
   # auth.enableInternalAuthProvider -- Whether enable magda internal authentication provider. 
-  # @default true
+  # @default -- true
   enableInternalAuthProvider: true
 
 helmet:
