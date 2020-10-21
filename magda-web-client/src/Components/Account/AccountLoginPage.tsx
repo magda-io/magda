@@ -5,7 +5,7 @@ import arcgisLogo from "assets/login/esri-logo.svg";
 import aafLogo from "assets/login/aaf-logo.png";
 import ckanLogo from "assets/login/ckan.png";
 import magdaLogo from "assets/login/magda.png";
-import commonLogo from "assert/login/login-black-36dp.svg";
+import genericLogo from "assets/login/generic-logo.svg";
 import "./AccountLoginPage.scss";
 import { getAuthProviders, getAuthPlugins } from "api-clients/AuthApis";
 import { config } from "config";
@@ -278,7 +278,7 @@ export default function Login(props) {
                             </li>
                         );
                     } else if (!item.isAuthPlugin) {
-                        let logo = commonLogo;
+                        let logo = genericLogo;
                         let name = ucwords(item.config);
                         switch (item.config) {
                             case "facebook":
