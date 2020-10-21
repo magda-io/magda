@@ -909,9 +909,11 @@ Update scripts:
     - builders-and-yarn
   dependencies:
     - builders-and-yarn
+  before_script:
+    - yarn global add pkg
   script:
     - cd scripts
-    - yarn pkg create-secrets/index.js --out-path create-secrets/build
+    - pkg create-secrets/index.js --out-path create-secrets/build
     - cd ../../
     - if [ ! -d magda-config/ ]; then git clone https://github.com/magda-io/magda-config.git; else cd magda-config && git pull && cd ..; fi
     - cp magda/scripts/create-secrets/build/index-linux magda-config/create-secrets/index-linux
