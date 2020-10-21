@@ -7,22 +7,22 @@ import ckanLogo from "assets/login/ckan.png";
 import magdaLogo from "assets/login/magda.png";
 import genericLogo from "assets/login/generic-logo.svg";
 import "./AccountLoginPage.scss";
-import { getAuthProviders, getAuthPlugins } from "api-clients/AuthApis";
+import {
+    getAuthProviders,
+    getAuthPlugins,
+    AuthConfig
+} from "api-clients/AuthApis";
 import { config } from "config";
 import { useAsync } from "react-async-hook";
 import CommonLink from "Components/Common/CommonLink";
 import urijs from "urijs";
-import { AuthPluginConfig } from "@magda/gateway/src/createAuthPluginRouter";
 import { markdownToHtml } from "Components/Common/MarkdownViewer";
+import QrCodeLoginArea from "./QrCodeLoginArea";
 const { baseUrl, uiBaseUrl } = config;
 
 function getDefaultLoginFormProvider(
     authConfigItems: AuthConfig[]
 ): AuthConfig | null {
-    if (!authConfigItems || !authConfigItems.length) {
-        return null;
-    }
-
     let selectConfigItem = authConfigItems.find(
         (config) => !config.isAuthPlugin && config.config === "internal"
     );
@@ -48,16 +48,6 @@ function getDefaultLoginFormProvider(
 
     return null;
 }
-
-export type AuthConfig =
-    | {
-          isAuthPlugin: false;
-          config: string;
-      }
-    | {
-          isAuthPlugin: true;
-          config: AuthPluginConfig;
-      };
 
 const makeLoginUrl = (authConfig: AuthConfig) => {
     if (!authConfig.isAuthPlugin) {
@@ -205,23 +195,43 @@ export default function Login(props) {
         loading: isProvidersLoading,
         error: providersLoadingError
     } = useAsync(async () => {
-        const authPlugins = (await getAuthPlugins()).map(
-            (item) =>
-                ({
-                    isAuthPlugin: true,
-                    config: item
-                } as AuthConfig)
-        );
+        let commonAuthModuleConfig: AuthConfig[] = [];
+        let authPlugins;
+        let providers;
 
-        const providers = (await getAuthProviders()).map(
-            (item) =>
-                ({
-                    isAuthPlugin: false,
-                    config: item
-                } as AuthConfig)
-        );
+        try {
+            authPlugins = (await getAuthPlugins()).map(
+                (item) =>
+                    ({
+                        isAuthPlugin: true,
+                        config: item
+                    } as AuthConfig)
+            );
+            commonAuthModuleConfig = [
+                ...commonAuthModuleConfig,
+                ...authPlugins
+            ];
+        } catch (e) {
+            console.error(e);
+        }
 
-        const commonAuthModuleConfig = providers.concat(authPlugins);
+        try {
+            providers = (await getAuthProviders()).map(
+                (item) =>
+                    ({
+                        isAuthPlugin: false,
+                        config: item
+                    } as AuthConfig)
+            );
+            commonAuthModuleConfig = [...commonAuthModuleConfig, ...providers];
+        } catch (e) {
+            if (typeof authPlugins === "undefined") {
+                // -- if both authPlugins & provider loading failed
+                throw e;
+            } else {
+                console.error(e);
+            }
+        }
 
         let defaultSelectedAuthConfig = getDefaultLoginFormProvider(
             commonAuthModuleConfig
@@ -374,12 +384,31 @@ export default function Login(props) {
         );
     };
 
+    const isPasswordAuthItem = (config: AuthConfig): boolean => {
+        if (
+            !config.isAuthPlugin &&
+            (config.config === "internal" || config.config === "ckan")
+        ) {
+            return true;
+        } else if (
+            config.isAuthPlugin &&
+            config.config.authenticationMethod === "PASSWORD"
+        ) {
+            return true;
+        } else {
+            return false;
+        }
+    };
+
     function renderSelectedAuthConfig() {
         if (!selectedAuthConfig) {
             if (authConfigItems?.length) {
                 return (
                     <p>Please select an authentication option from the list.</p>
                 );
+            }
+            if (isProvidersLoading) {
+                return null;
             } else {
                 return (
                     <p>
@@ -388,12 +417,23 @@ export default function Login(props) {
                     </p>
                 );
             }
-        } else {
+        } else if (isPasswordAuthItem(selectedAuthConfig)) {
             return (
                 <>
                     <LoginFormArea authConfig={selectedAuthConfig} />
                 </>
             );
+        } else if (
+            selectedAuthConfig.isAuthPlugin &&
+            selectedAuthConfig.config.authenticationMethod === "QR-CODE"
+        ) {
+            return (
+                <>
+                    <QrCodeLoginArea authConfig={selectedAuthConfig.config} />
+                </>
+            );
+        } else {
+            return null;
         }
     }
 
