@@ -902,31 +902,32 @@ Publish Helm Chart:
     - aws s3 sync sync_dir s3://magda-charts/ --acl public-read
     - aws s3 cp index_dir/index.yaml s3://magda-charts/index.yaml --acl public-read
 
-Update scripts:
-  stage: release
-  only:
-    # Strict Semvar validation
-    - /^v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
-  except:
-    - branches
-    - triggers
-  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
-  needs:
-    - pre-release:check-release-version
-  before_script:
-    - yarn global add pkg
-  script:
-    - cd scripts/.
-    - pkg create-secrets/index.js --out-path create-secrets/build
-    - cd ../../
-    - if [ ! -d magda-config/ ]; then git clone https://github.com/magda-io/magda-config.git; else cd magda-config && git pull && cd ..; fi
-    - cp magda/scripts/create-secrets/build/index-linux magda-config/create-secrets/index-linux
-    - cp magda/scripts/create-secrets/build/index-macos magda-config/create-secrets/index-macos
-    - cp magda/scripts/create-secrets/build/index-win.exe magda-config/create-secrets/index-win.exe
-    - cd magda-config
-    - cd create-secrets
-    - git add index-linux index-macos index-win.exe
-    - git config --global user.email "magdabot@magda.io"
-    - git config --global user.name "magdabot"
-    - git commit -m "Update create-secrets scripts `date`"
-    - git push "https://x-access-token:$GITHUB_ACCESS_TOKEN@github.com/magda-io/magda-config" master
+# Update scripts:
+#   stage: release
+#   only:
+#     # Strict Semvar validation
+#     - /^v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
+#   except:
+#     - branches
+#     - triggers
+#   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
+#   needs:
+#     - builders-and-yarn
+#     - pre-release:check-release-version
+#   dependencies:
+#     - builders-and-yarn
+#   script:
+#     - cd scripts
+#     - yarn pkg create-secrets/index.js --out-path create-secrets/build
+#     - cd ../../
+#     - if [ ! -d magda-config/ ]; then git clone https://github.com/magda-io/magda-config.git; else cd magda-config && git pull && cd ..; fi
+#     - cp magda/scripts/create-secrets/build/index-linux magda-config/create-secrets/index-linux
+#     - cp magda/scripts/create-secrets/build/index-macos magda-config/create-secrets/index-macos
+#     - cp magda/scripts/create-secrets/build/index-win.exe magda-config/create-secrets/index-win.exe
+#     - cd magda-config
+#     - cd create-secrets
+#     - git add index-linux index-macos index-win.exe
+#     - git config --global user.email "magdabot@magda.io"
+#     - git config --global user.name "magdabot"
+#     - git commit -m "Update create-secrets scripts `date`"
+#     - git push "https://x-access-token:$GITHUB_ACCESS_TOKEN@github.com/magda-io/magda-config" master
