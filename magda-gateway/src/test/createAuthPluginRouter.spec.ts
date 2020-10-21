@@ -45,10 +45,7 @@ describe("Test createAuthPluginRouter", function (this: Mocha.ISuiteCallbackCont
                 plugins: [
                     {
                         key: "test-plugin",
-                        name: "Test Auth Plugin",
-                        baseUrl: "http://my-cluster-service-name/",
-                        iconUrl: "http://my-cluster-service-name/sss.jpg",
-                        authenticationMethod: "IDP-URI-REDIRECTION"
+                        baseUrl: "http://my-cluster-service-name"
                     }
                 ],
                 cookieOptions: {

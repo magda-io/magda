@@ -1,7 +1,10 @@
 import { Router } from "express";
+import fetch from "isomorphic-fetch";
 import ApiClient from "magda-typescript-common/src/authorization-api/ApiClient";
+import addTrailingSlash from "magda-typescript-common/src/addTrailingSlash";
 import Authenticator from "./Authenticator";
 import createAuthPluginRouter, {
+    AuthPluginBasicConfig,
     AuthPluginConfig
 } from "./createAuthPluginRouter";
 import passport from "passport";
@@ -29,7 +32,7 @@ export interface AuthRouterOptions {
     vanguardWsFedRealm: string;
     vanguardWsFedCertificate: string;
     enableInternalAuthProvider: boolean;
-    plugins: AuthPluginConfig[];
+    plugins: AuthPluginBasicConfig[];
 }
 
 export default function createAuthRouter(options: AuthRouterOptions): Router {
@@ -167,9 +170,27 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
      *    }]
      *
      */
-    authRouter.get("/plugins", (req, res) =>
-        res.json(options?.plugins?.length ? options.plugins : [])
-    );
+    authRouter.get("/plugins", async (req, res) => {
+        if (!options?.plugins?.length) {
+            res.json([]);
+            return;
+        }
+
+        const data = await Promise.all(
+            options.plugins.map(async (plugin) => {
+                const res = await fetch(
+                    addTrailingSlash(plugin.baseUrl) + "config"
+                );
+                const data = (await res.json()) as AuthPluginConfig;
+                return {
+                    ...data,
+                    key: plugin.key
+                };
+            })
+        );
+
+        res.json(data);
+    });
 
     // setup auth plugin routes
     if (options?.plugins?.length) {

@@ -21,13 +21,14 @@ export type AuthenticationMethod =
     | "PASSWORD"
     | "QR-CODE";
 
-export type AuthPluginConfig = {
-    // plugin key. allowed chars [a-zA-Z\-]
-    key: string;
+/**
+ * AuthPluginConfig is retrieved by fetching config data from auth plugin using `AuthPluginBasicConfig.baseUrl` info below.
+ * Gateway will tried to access /auth/login/plugin/[plugin-name]/config to retrieve the config and then expose to frontend via `/auth/plugins` API
+ */
+export interface AuthPluginConfig
+    extends Omit<AuthPluginBasicConfig, "baseUrl"> {
     // plugin display name
     name: string;
-    // plugin serving base url. Getway will forward all request to it
-    baseUrl: string;
     iconUrl: string;
     authenticationMethod: AuthenticationMethod;
     loginFormExtraInfoHeading?: string;
@@ -38,10 +39,21 @@ export type AuthPluginConfig = {
     qrCodeAuthResultPollUrl?: string; // Compulsory when authenticationMethod = "QR-CODE"
     qrCodeExtraInfoHeading?: string;
     qrCodeExtraInfoContent?: string;
+}
+
+/**
+ * Basic Auth Plugin are the config info that supplied to Gateway
+ * via [authPlugins](https://github.com/magda-io/magda/tree/master/deploy/helm/internal-charts/gateway) helm chart config
+ */
+export type AuthPluginBasicConfig = {
+    // plugin key. allowed chars [a-zA-Z\-]
+    key: string;
+    // plugin serving base url. Getway will forward all request to it
+    baseUrl: string;
 };
 
 export interface AuthPluginRouterOptions {
-    plugins: AuthPluginConfig[];
+    plugins: AuthPluginBasicConfig[];
     cookieOptions: SessionCookieOptions;
     trustProxy?: boolean;
 }

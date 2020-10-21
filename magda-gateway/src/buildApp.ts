@@ -25,7 +25,7 @@ import defaultConfig from "./defaultConfig";
 import { ProxyTarget } from "./createGenericProxyRouter";
 import setupTenantMode from "./setupTenantMode";
 import createPool from "./createPool";
-import { AuthPluginConfig } from "./createAuthPluginRouter";
+import { AuthPluginBasicConfig } from "./createAuthPluginRouter";
 
 // Tell typescript about the semi-private __express field of ejs.
 declare module "ejs" {
@@ -54,7 +54,7 @@ export type Config = {
     webProxyRoutesJson: {
         [localRoute: string]: ProxyTarget;
     };
-    authPluginConfigJson: AuthPluginConfig[];
+    authPluginConfigJson: AuthPluginBasicConfig[];
     helmetJson: IHelmetConfiguration;
     cspJson: IHelmetContentSecurityPolicyConfiguration;
     corsJson: CorsOptions;

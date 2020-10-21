@@ -13,7 +13,6 @@ Kubernetes: `>= 1.14.0-0`
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | auth.enableInternalAuthProvider | bool | `true` | Whether enable magda internal authentication provider.  @default true |
-| authPluginRedirectUrl | string | `"/sign-in-redirect"` | the redirection url after the whole authentication process is completed. The following query paramaters can be used to supply the authentication result: <ul> <li>result: (string) Compulsory. Possible value: "success" or "failure". </li> <li>errorMessage: (string) Optional. Text message to provide more information on the error to the user. </li> </ul> |
 | authPlugins | list | `[]` | a list of authentication plugin config item. More info of config item see [Authentication Plugin Config](#authentication-plugin-config) section below. |
 | autoscaler.enabled | bool | `false` |  |
 | autoscaler.maxReplicas | int | `3` |  |

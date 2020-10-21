@@ -8,7 +8,7 @@ import URI from "urijs";
 
 import buildApp from "../buildApp";
 import { expect } from "chai";
-import { AuthPluginConfig } from "../createAuthPluginRouter";
+import { AuthPluginBasicConfig } from "../createAuthPluginRouter";
 
 const PROXY_ROOTS = {
     "/api/v0/registry": "http://registry",
@@ -46,7 +46,7 @@ const defaultAppOptions = {
     web: "https://127.0.0.1",
     tenantUrl: "http://tenant",
     defaultCacheControl: "DEFAULT CACHE CONTROL",
-    authPluginConfigJson: [] as AuthPluginConfig[]
+    authPluginConfigJson: [] as AuthPluginBasicConfig[]
 };
 
 describe("proxying", () => {
