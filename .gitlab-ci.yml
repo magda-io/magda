@@ -912,12 +912,13 @@ Update scripts:
     - triggers
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
   needs:
+    - builders-and-yarn
     - pre-release:check-release-version
-  before_script:
-    - yarn global add pkg
+  dependencies:
+    - builders-and-yarn
   script:
-    - cd scripts/.
-    - pkg create-secrets/index.js --out-path create-secrets/build
+    - cd scripts
+    - yarn pkg create-secrets/index.js --out-path create-secrets/build
     - cd ../../
     - if [ ! -d magda-config/ ]; then git clone https://github.com/magda-io/magda-config.git; else cd magda-config && git pull && cd ..; fi
     - cp magda/scripts/create-secrets/build/index-linux magda-config/create-secrets/index-linux
