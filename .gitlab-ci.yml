@@ -904,9 +904,6 @@ Publish Helm Chart:
 
 Update scripts:
   stage: release
-  except:
-    - branches
-    - triggers
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
   needs:
     - builders-and-yarn
