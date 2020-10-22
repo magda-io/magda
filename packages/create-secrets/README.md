@@ -22,7 +22,7 @@ Found previous saved config (September 2nd 2020, 1:58:17 pm).
   YES (Create Secrets in Cluster using existing config now)
 ```
 
--   Run with --help will all options:
+-   Run with --help will show all options:
 
 ```
 $ create-secrets --help
