@@ -47,7 +47,7 @@ export function convertAuthPluginApiUrl(
     optionalQueries?: { [key: string]: string }
 ): string {
     const uri = urijs(apiUrl);
-    if (uri.protocol()) {
+    if (uri.hostname()) {
         // --- absolute url, return directly
         return apiUrl;
     } else {

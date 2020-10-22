@@ -1,6 +1,7 @@
 import { default as AuthApiClient } from "@magda/typescript-common/dist/authorization-api/ApiClient";
 export {
     User,
+    UserToken,
     OrgUnit,
     Operation,
     Permission,
