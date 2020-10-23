@@ -111,12 +111,12 @@ const QrCodeLoginArea: FunctionComponent<PropsType> = (props) => {
         pollTimer.current = timer;
 
         return clearTimer;
-    }, [key, qrCodeAuthResultPollUrl]);
+    }, [key, qrCodeAuthResultPollUrl, pollAuthResult]);
 
     useEffect(() => {
         // --- re-genrate image when auth plugin changned
         fetchQrCodeImage.execute(key, qrCodeImgDataRequestUrl);
-    }, [key, qrCodeImgDataRequestUrl]);
+    }, [key, qrCodeImgDataRequestUrl, fetchQrCodeImage]);
 
     return (
         <div className="col-sm-6 col-md-5">

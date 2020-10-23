@@ -6,11 +6,11 @@ metadata:
     pod: "gateway"
 data:
   # When the config map is mounted as a volume, these will be created as files.
-  webRoutes.json: {{ .Values.routes | default .Values.defaultRoute | mustToRawJson | quote }}
-  webRoutes.json: {{ .Values.webRoutes | default {} | mustToRawJson | quote }}
-  helmet.json: {{ .Values.helmet | default {} | mustToRawJson | quote }}
-  cors.json: {{ .Values.cors | default {} | mustToRawJson | quote }}
-  csp.json: {{ .Values.csp | default {} | mustToRawJson | quote }}
-  cookie.json: {{ .Values.cookie | default {} | mustToRawJson | quote }}
-  authPlugins.json: {{ .Values.global.authPlugins | default [] | mustToRawJson | quote }}
+  routes.json: {{ .Values.routes | default .Values.defaultRoutes | mustToRawJson | quote }}
+  webRoutes.json: {{ .Values.webRoutes | default dict | mustToRawJson | quote }}
+  helmet.json: {{ .Values.helmet | default dict | mustToRawJson | quote }}
+  cors.json: {{ .Values.cors | default dict | mustToRawJson | quote }}
+  csp.json: {{ .Values.csp | default dict | mustToRawJson | quote }}
+  cookie.json: {{ .Values.cookie | default dict | mustToRawJson | quote }}
+  authPlugins.json: {{ .Values.authPlugins | default list | mustToRawJson | quote }}
 

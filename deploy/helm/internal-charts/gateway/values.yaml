@@ -38,7 +38,12 @@ resources:
   limits:
     cpu: 200m
 
-# -- Routes list here are available under `/api/v0/` path.
+# -- routes list here are available under `/api/v0/` path.
+# If empty, the value of `defaultRoutes` will be used. See below.
+# @default -- {}
+routes: {}
+
+# -- Default routes list here are available under `/api/v0/` path.
 # See [Proxy Target Definition](#proxy-target-definition) section below for route format.
 # @default -- Default value see [defaultRoutes Default Value](#default-value-for-defaultroutes-field) section below
 defaultRoutes:

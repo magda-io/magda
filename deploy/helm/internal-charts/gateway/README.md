@@ -33,7 +33,7 @@ Kubernetes: `>= 1.14.0-0`
 | csp.directives.workerSrc[0] | string | `"''self''"` |  |
 | csp.directives.workerSrc[1] | string | `"blob:"` |  |
 | defaultCacheControl | string | `"public, max-age=60"` | If a response that goes through the gateway doesn't set Cache-Control, it'll be set to this value. Set to null to disable. |
-| defaultRoutes | object | Default value see [defaultRoutes Default Value](#default-value-for-defaultroutes-field) section below | Routes list here are available under `/api/v0/` path. See [Proxy Target Definition](#proxy-target-definition) section below for route format. |
+| defaultRoutes | object | Default value see [defaultRoutes Default Value](#default-value-for-defaultroutes-field) section below | Default routes list here are available under `/api/v0/` path. See [Proxy Target Definition](#proxy-target-definition) section below for route format. |
 | enableAuthEndpoint | bool | `false` |  |
 | enableCkanRedirection | bool | `false` |  |
 | enableWebAccessControl | bool | `false` |  |
@@ -42,6 +42,7 @@ Kubernetes: `>= 1.14.0-0`
 | resources.limits.cpu | string | `"200m"` |  |
 | resources.requests.cpu | string | `"50m"` |  |
 | resources.requests.memory | string | `"40Mi"` |  |
+| routes | string | `nil` | routes list here are available under `/api/v0/` path. If not specified, the value of `defaultRoutes` will be used. See below. |
 | service.externalPort | int | `80` |  |
 | service.internalPort | int | `80` |  |
 | service.type | string | `"NodePort"` |  |
