@@ -8,6 +8,7 @@ import magdaLogo from "assets/login/magda.png";
 import genericLogo from "assets/login/generic-logo.svg";
 import "./AccountLoginPage.scss";
 import {
+    convertAuthPluginApiUrl,
     getAuthProviders,
     getAuthPlugins,
     AuthConfig
@@ -299,10 +300,10 @@ export default function Login(props) {
 
         return (
             <ul className="login__providers">
-                {authConfigItems.map((item) => {
+                {authConfigItems.map((item, idx) => {
                     if (!item.isAuthPlugin && item.config === "internal") {
                         return (
-                            <li className="login__provider">
+                            <li key={idx} className="login__provider">
                                 <a onClick={() => setSelectedAuthConfig(item)}>
                                     <img
                                         src={magdaLogo}
@@ -315,7 +316,7 @@ export default function Login(props) {
                         );
                     } else if (!item.isAuthPlugin && item.config === "ckan") {
                         return (
-                            <li className="login__provider">
+                            <li key={idx} className="login__provider">
                                 <a onClick={() => setSelectedAuthConfig(item)}>
                                     <img
                                         src={ckanLogo}
@@ -348,7 +349,7 @@ export default function Login(props) {
                         }
 
                         return (
-                            <li className="login__provider">
+                            <li key={idx} className="login__provider">
                                 <CommonLink href={makeLoginUrl(item)}>
                                     <img
                                         src={logo}
@@ -362,14 +363,17 @@ export default function Login(props) {
                     } else {
                         if (item.config.authenticationMethod === "PASSWORD") {
                             return (
-                                <li className="login__provider">
+                                <li key={idx} className="login__provider">
                                     <a
                                         onClick={() =>
                                             setSelectedAuthConfig(item)
                                         }
                                     >
                                         <img
-                                            src={item.config.iconUrl}
+                                            src={convertAuthPluginApiUrl(
+                                                item.config.key,
+                                                item.config.iconUrl
+                                            )}
                                             className="login__logo"
                                             alt="logo"
                                         />
@@ -382,10 +386,13 @@ export default function Login(props) {
                             "IDP-URI-REDIRECTION"
                         ) {
                             return (
-                                <li className="login__provider">
+                                <li key={idx} className="login__provider">
                                     <CommonLink href={makeLoginUrl(item)}>
                                         <img
-                                            src={item.config.iconUrl}
+                                            src={convertAuthPluginApiUrl(
+                                                item.config.key,
+                                                item.config.iconUrl
+                                            )}
                                             className="login__logo"
                                             alt="logo"
                                         />
@@ -397,14 +404,17 @@ export default function Login(props) {
                             item.config.authenticationMethod === "QR-CODE"
                         ) {
                             return (
-                                <li className="login__provider">
+                                <li key={idx} className="login__provider">
                                     <a
                                         onClick={() =>
                                             setSelectedAuthConfig(item)
                                         }
                                     >
                                         <img
-                                            src={item.config.iconUrl}
+                                            src={convertAuthPluginApiUrl(
+                                                item.config.key,
+                                                item.config.iconUrl
+                                            )}
                                             className="login__logo"
                                             alt="logo"
                                         />
@@ -414,7 +424,10 @@ export default function Login(props) {
                             );
                         } else {
                             return (
-                                <li className="login__provider">{`Unrecognised Auth Plugin: ${item.config.name}`}</li>
+                                <li
+                                    key={idx}
+                                    className="login__provider"
+                                >{`Unrecognised Auth Plugin: ${item.config.name}`}</li>
                             );
                         }
                     }
