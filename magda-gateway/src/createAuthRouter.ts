@@ -43,11 +43,11 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
         options.userId
     );
 
-    if (options.authenticator) {
-        options.authenticator.applyToRoute(authRouter);
-    }
-
-    authRouter.use(require("body-parser").urlencoded({ extended: true }));
+    // Auth Plugin routes will be add to this router as they are expected to manage session by themselves
+    // this outer is added to authRouter fiest to ensure no unnecessary middlewares are run
+    const sessionRouter: Router = Router();
+    // authenticator routes are always added to `sessionRouter`
+    options.authenticator.applyToRoute(sessionRouter);
 
     const providers = [
         {
@@ -144,15 +144,15 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
     ];
 
     // Define routes.
-    authRouter.get("/", function (req, res) {
+    authRouter.get("/", sessionRouter, function (req, res) {
         res.render("home", { user: req.user });
     });
 
-    authRouter.get("/login", function (req, res) {
+    authRouter.get("/login", sessionRouter, function (req, res) {
         res.render("login");
     });
 
-    authRouter.get("/admin", function (req, res) {
+    authRouter.get("/admin", sessionRouter, function (req, res) {
         res.render("admin");
     });
 
@@ -206,7 +206,13 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
     providers
         .filter((provider) => provider.enabled)
         .forEach((provider) => {
-            authRouter.use("/login/" + provider.id, provider.authRouter);
+            authRouter.use("/login/" + provider.id, [
+                // actually, body-parser is only required by localStrategy (i.e. `internal` & ckan provider)
+                // since we are moving all auth providers to external auth plugins soon, we add bodyParser to all providers routes as before
+                require("body-parser").urlencoded({ extended: true }),
+                sessionRouter,
+                provider.authRouter
+            ]);
         });
 
     /**
@@ -230,6 +236,7 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
 
     authRouter.get(
         "/profile",
+        sessionRouter,
         require("connect-ensure-login").ensureLoggedIn(),
         function (req, res) {
             authApi
