@@ -98,14 +98,14 @@ csp:
   browserSniff: false
   directives:
     scriptSrc:
-    - "''self''"
-    - "''unsafe-inline''"
+    - "'self'"
+    - "'unsafe-inline'"
     - browser-update.org
     - "blob:"
     objectSrc:
-    - "''none''"
+    - "'none'"
     workerSrc:
-    - "''self''"
+    - "'self'"
     - "blob:"
 
 cors:
