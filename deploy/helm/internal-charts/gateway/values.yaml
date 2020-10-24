@@ -129,6 +129,7 @@ cors:
 # <li>`secure1: Default: false (not set).</li>
 # </ul>
 cookie:
+  httpOnly: true
   sameSite: "lax"
 
 # defaultCacheControl -- If a response that goes through the gateway doesn't set Cache-Control, it'll be set to this value. Set to null to disable.
