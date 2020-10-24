@@ -18,19 +18,19 @@ Kubernetes: `>= 1.14.0-0`
 | autoscaler.maxReplicas | int | `3` |  |
 | autoscaler.minReplicas | int | `1` |  |
 | autoscaler.targetCPUUtilizationPercentage | int | `80` |  |
-| cookie | object | `{"sameSite":"lax"}` | Session cookie settings. <br/> Default value will be used if any options are left with blank.<br/> More info: https://github.com/expressjs/session#cookie <br/> Supported options are:<br/> <ul> <li>`expires`: A fix cookie expire date. The expires option should not be set directly; instead only use the maxAge option.</li> <li>`httpOnly`: Default: true.</li> <li>`maxAge`: Default: 7 * 60 * 60 * 1000.</li> <li>`path`: Default: '/'.</li> <li>`sameSite`: Default: false (not set).</li> <li>`secure1: Default: false (not set).</li> </ul> |
+| cookie | object | default value see `Description` | Session cookie settings. <br/> More info: https://github.com/expressjs/session#cookie <br/> Supported options are:<br/> <ul> <li>`expires`: A fix cookie expire date. The expires option should not be set directly; instead only use the maxAge option.</li> <li>`httpOnly`: Default: true.</li> <li>`maxAge`: Default: 7 * 60 * 60 * 1000.</li> <li>`path`: Default: '/'.</li> <li>`sameSite`: Default: lax </li> <li>`secure`: Default: true (only avaiable to https connection) </li> </ul> |
 | cors.exposedHeaders[0] | string | `"Content-Range"` |  |
 | cors.exposedHeaders[1] | string | `"X-Content-Range"` |  |
 | cors.exposedHeaders[2] | string | `"Accept-Ranges"` |  |
 | cors.exposedHeaders[3] | string | `"Content-Length"` |  |
 | cors.exposedHeaders[4] | string | `"x-magda-event-id"` |  |
 | csp.browserSniff | bool | `false` |  |
-| csp.directives.objectSrc[0] | string | `"''none''"` |  |
-| csp.directives.scriptSrc[0] | string | `"''self''"` |  |
-| csp.directives.scriptSrc[1] | string | `"''unsafe-inline''"` |  |
+| csp.directives.objectSrc[0] | string | `"'none'"` |  |
+| csp.directives.scriptSrc[0] | string | `"'self'"` |  |
+| csp.directives.scriptSrc[1] | string | `"'unsafe-inline'"` |  |
 | csp.directives.scriptSrc[2] | string | `"browser-update.org"` |  |
 | csp.directives.scriptSrc[3] | string | `"blob:"` |  |
-| csp.directives.workerSrc[0] | string | `"''self''"` |  |
+| csp.directives.workerSrc[0] | string | `"'self'"` |  |
 | csp.directives.workerSrc[1] | string | `"blob:"` |  |
 | defaultCacheControl | string | `"public, max-age=60"` | If a response that goes through the gateway doesn't set Cache-Control, it'll be set to this value. Set to null to disable. |
 | defaultRoutes | object | Default value see [defaultRoutes Default Value](#default-value-for-defaultroutes-field) section below | Default routes list here are available under `/api/v0/` path. See [Proxy Target Definition](#proxy-target-definition) section below for route format. |
@@ -42,7 +42,7 @@ Kubernetes: `>= 1.14.0-0`
 | resources.limits.cpu | string | `"200m"` |  |
 | resources.requests.cpu | string | `"50m"` |  |
 | resources.requests.memory | string | `"40Mi"` |  |
-| routes | string | `nil` | routes list here are available under `/api/v0/` path. If not specified, the value of `defaultRoutes` will be used. See below. |
+| routes | object | {} | routes list here are available under `/api/v0/` path. If empty, the value of `defaultRoutes` will be used. See below. |
 | service.externalPort | int | `80` |  |
 | service.internalPort | int | `80` |  |
 | service.type | string | `"NodePort"` |  |

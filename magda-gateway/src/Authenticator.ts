@@ -30,8 +30,9 @@ export interface AuthenticatorOptions {
 export const DEFAULT_SESSION_COOKIE_NAME: string = "connect.sid";
 export let DEFAULT_SESSION_COOKIE_OPTIONS: SessionCookieOptions = {
     maxAge: 7 * 60 * 60 * 1000,
-    // -- auto: secure will be auto set depends on the http or https connection
-    secure: "auto"
+    sameSite: "lax",
+    httpOnly: true,
+    secure: true
 };
 
 /**
@@ -142,6 +143,7 @@ export default class Authenticator {
         this.validateAndRefreshSession = this.validateAndRefreshSession.bind(
             this
         );
+        this.authenticatorMiddleware = this.authenticatorMiddleware.bind(this);
     }
 
     /**
@@ -350,6 +352,6 @@ export default class Authenticator {
 
     applyToRoute(router: express.Router) {
         // --- apply our wrapper as the delegate for other middlewares
-        router.use(this.authenticatorMiddleware.bind(this));
+        router.use(this.authenticatorMiddleware);
     }
 }

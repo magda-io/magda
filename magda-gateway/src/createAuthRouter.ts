@@ -246,7 +246,26 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
         }
     );
 
-    // --- /auth/logout route is now handled by Authenticator.ts
+    /**
+     * @apiGroup Authentication API
+     * @api {get} /auth/logout Explicitly logout current user session
+     * @apiDescription Returns result of logout action.
+     * This endpoint is only available when gateway `enableAuthEndpoint`=true
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *        "isError": false
+     *    }
+     *
+     * @apiErrorExample {json} 500
+     *    {
+     *        "isError": true,
+     *        "errorCode": 500,
+     *        "errorMessage": "xxxxxx"
+     *    }
+     *
+     */
+    authRouter.get("/logout", authenticatorMiddleware);
 
     return authRouter;
 }
