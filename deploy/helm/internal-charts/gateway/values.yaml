@@ -117,22 +117,22 @@ cors:
   - "x-magda-event-id"
 
 # -- Session cookie settings. <br/>
-# Default value will be used if any options are left with blank.<br/>
 # More info: https://github.com/expressjs/session#cookie <br/>
 # Supported options are:<br/>
 # <ul>
 # <li>`expires`: A fix cookie expire date. The expires option should not be set directly; instead only use the maxAge option.</li>
 # <li>`httpOnly`: Default: true.</li>
-# <li>`maxAge`: Default: 7 * 60 * 60 * 1000.</li>
+# <li>`maxAge`: Default: 7 * 60 * 60 * 1000 (7 hours)</li>
 # <li>`path`: Default: '/'.</li>
 # <li>`sameSite`: Default: lax </li>
-# <li>`secure`: Default: true (only avaiable to https connection) </li>
+# <li>`secure`: Default: "auto" </li>
 # </ul>
+# @default -- default value see `Description`
 cookie:
   maxAge: 25200000
   httpOnly: true
   sameSite: "lax"
-  secure: true
+  secure: "auto"
 
 # defaultCacheControl -- If a response that goes through the gateway doesn't set Cache-Control, it'll be set to this value. Set to null to disable.
 defaultCacheControl: "public, max-age=60"

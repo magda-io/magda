@@ -32,7 +32,7 @@ export let DEFAULT_SESSION_COOKIE_OPTIONS: SessionCookieOptions = {
     maxAge: 7 * 60 * 60 * 1000,
     sameSite: "lax",
     httpOnly: true,
-    secure: true
+    secure: "auto"
 };
 
 /**
@@ -131,7 +131,8 @@ export default class Authenticator {
             cookie: { ...this.sessionCookieOptions },
             resave: false,
             saveUninitialized: false,
-            rolling: true
+            rolling: true,
+            proxy: true
         });
 
         this.passportMiddleware = passport.initialize();
