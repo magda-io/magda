@@ -272,6 +272,7 @@ export default class Authenticator {
             // --- start session / passport here
             return runMiddlewareList(
                 [
+                    this.cookieParserMiddleware,
                     this.sessionMiddleware,
                     this.passportMiddleware,
                     this.passportSessionMiddleware
@@ -293,7 +294,7 @@ export default class Authenticator {
             // --- Only make session / store available
             // --- passport midddleware should not be run
             return runMiddlewareList(
-                [this.sessionMiddleware],
+                [this.cookieParserMiddleware, this.sessionMiddleware],
                 req,
                 res,
                 async () => {
@@ -335,7 +336,11 @@ export default class Authenticator {
             // - if valid API key headers exist, attempt to login via API key
             // - otherwise, only make session & passport data available if session has already started (cookie set)
             return runMiddlewareList(
-                [this.apiKeyMiddleware, this.validateAndRefreshSession],
+                [
+                    this.apiKeyMiddleware,
+                    this.cookieParserMiddleware,
+                    this.validateAndRefreshSession
+                ],
                 req,
                 res,
                 next
@@ -344,8 +349,6 @@ export default class Authenticator {
     }
 
     applyToRoute(router: express.Router) {
-        // --- we always need cooker parser middle in place
-        router.use(this.cookieParserMiddleware);
         // --- apply our wrapper as the delegate for other middlewares
         router.use(this.authenticatorMiddleware.bind(this));
     }
