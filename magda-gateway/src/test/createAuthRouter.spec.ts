@@ -2,7 +2,7 @@ import {} from "mocha";
 import { expect } from "chai";
 import sinon from "sinon";
 import pg from "pg";
-import express, { Router } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import request from "supertest";
 import nock from "nock";
 import createAuthRouter from "../createAuthRouter";
@@ -64,11 +64,13 @@ describe("Test createAuthRouter", function (this: Mocha.ISuiteCallbackContext) {
 
         const dummyAuthenticator = sinon.createStubInstance(Authenticator);
 
-        dummyAuthenticator.applyToRoute = (router: Router) => {
-            router.use((req, res, next) => {
-                isSessionMiddlewareCalled = true;
-                next();
-            });
+        dummyAuthenticator.authenticatorMiddleware = (
+            req: Request,
+            res: Response,
+            next: NextFunction
+        ) => {
+            isSessionMiddlewareCalled = true;
+            next();
         };
 
         const myAuthPluginResponse = Math.random().toString();
@@ -101,11 +103,13 @@ describe("Test createAuthRouter", function (this: Mocha.ISuiteCallbackContext) {
             authenticationMethod: "IDP-URI-REDIRECTION"
         };
 
-        dummyAuthenticator.applyToRoute = (router: Router) => {
-            router.use((req, res, next) => {
-                isSessionMiddlewareCalled = true;
-                next();
-            });
+        dummyAuthenticator.authenticatorMiddleware = (
+            req: Request,
+            res: Response,
+            next: NextFunction
+        ) => {
+            isSessionMiddlewareCalled = true;
+            next();
         };
 
         const myAuthPluginResponse = Math.random().toString();
@@ -136,11 +140,13 @@ describe("Test createAuthRouter", function (this: Mocha.ISuiteCallbackContext) {
 
         const dummyAuthenticator = sinon.createStubInstance(Authenticator);
 
-        dummyAuthenticator.applyToRoute = (router: Router) => {
-            router.use((req, res, next) => {
-                isSessionMiddlewareCalled = true;
-                next();
-            });
+        dummyAuthenticator.authenticatorMiddleware = (
+            req: Request,
+            res: Response,
+            next: NextFunction
+        ) => {
+            isSessionMiddlewareCalled = true;
+            next();
         };
 
         nock("http://my-auth-plugin").get("/").reply(200, "ok");
