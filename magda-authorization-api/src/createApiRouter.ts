@@ -213,6 +213,202 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
+     * @api {post} /v0/auth/user/:userId/roles Add Roles to a user
+     * @apiDescription Returns the JSON response indicates the operation has been done successfully or not
+     * Required admin access.
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *        isError: false
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.post("/public/user/:userId/roles", MUST_BE_ADMIN, async function (
+        req,
+        res
+    ) {
+        try {
+            const userId = req.params.userId;
+            const user = await database.addUserRoles(userId, req.body);
+            res.json(user);
+        } catch (e) {
+            respondWithError("POST /public/user/:userId/roles", res, e);
+        }
+    });
+
+    /**
+     * @apiGroup Auth
+     * @api {delete} /v0/auth/user/:userId/roles Remove a list roles from a user
+     * @apiDescription Returns the JSON response indicates the operation has been done successfully or not
+     * Required admin access.
+     *
+     * @apiSuccessExample {json} 200
+     *    {
+     *        isError: false
+     *    }
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.delete("/public/user/:userId/roles", MUST_BE_ADMIN, async function (
+        req,
+        res
+    ) {
+        try {
+            const userId = req.params.userId;
+            const user = await database.deleteUserRoles(userId, req.body);
+            res.json(user);
+        } catch (e) {
+            respondWithError("DELETE /public/user/:userId/roles", res, e);
+        }
+    });
+
+    /**
+     * @apiGroup Auth
+     * @api {get} /v0/auth/user/:userId/roles Get all roles of a user
+     * @apiDescription Returns an array of roles. When no roles can be found, an empty array will be returned
+     * Required admin access.
+     *
+     * @apiSuccessExample {json} 200
+     *    [{
+     *        id: "xxx-xxx-xxxx-xxxx-xx",
+     *        name: "Admin Roles",
+     *        permissionIds: ["xxx-xxx-xxx-xxx-xx", "xxx-xx-xxx-xx-xxx-xx"],
+     *        description?: "This is an admin role"
+     *    }]
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.get("/public/user/:userId/roles", MUST_BE_ADMIN, async function (
+        req,
+        res
+    ) {
+        try {
+            const userId = req.params.userId;
+            const roles = await database.getUserRoles(userId);
+            res.json(roles);
+        } catch (e) {
+            respondWithError("GET /public/user/:userId/roles", res, e);
+        }
+    });
+
+    /**
+     * @apiGroup Auth
+     * @api {get} /v0/auth/user/:userId/permissions Get all permissions of a user
+     * @apiDescription Returns an array of permissions. When no permissions can be found, an empty array will be returned.
+     * Required admin access.
+     *
+     * @apiSuccessExample {json} 200
+     *    [{
+     *        id: "xxx-xxx-xxxx-xxxx-xx",
+     *        name: "View Datasets",
+     *        resourceId: "xxx-xxx-xxxx-xx",
+     *        resourceId: "object/dataset/draft",
+     *        userOwnershipConstraint: true,
+     *        orgUnitOwnershipConstraint: false,
+     *        preAuthorisedConstraint: false,
+     *        operations: [{
+     *          id: "xxxxx-xxx-xxx-xxxx",
+     *          name: "Read Draft Dataset",
+     *          uri: "object/dataset/draft/read",
+     *          description: "xxxxxx"
+     *        }],
+     *        permissionIds: ["xxx-xxx-xxx-xxx-xx", "xxx-xx-xxx-xx-xxx-xx"],
+     *        description?: "This is an admin role",
+     *    }]
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.get(
+        "/public/user/:userId/permissions",
+        MUST_BE_ADMIN,
+        async function (req, res) {
+            try {
+                const userId = req.params.userId;
+                const permissions = await database.getUserPermissions(userId);
+                res.json(permissions);
+            } catch (e) {
+                respondWithError(
+                    "GET /public/user/:userId/permissions",
+                    res,
+                    e
+                );
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth
+     * @api {get} /v0/auth/role/:roleId/permissions Get all permissions of a role
+     * @apiDescription Returns an array of permissions. When no permissions can be found, an empty array will be returned.
+     * Required admin access.
+     *
+     * @apiSuccessExample {json} 200
+     *    [{
+     *        id: "xxx-xxx-xxxx-xxxx-xx",
+     *        name: "View Datasets",
+     *        resourceId: "xxx-xxx-xxxx-xx",
+     *        resourceId: "object/dataset/draft",
+     *        userOwnershipConstraint: true,
+     *        orgUnitOwnershipConstraint: false,
+     *        preAuthorisedConstraint: false,
+     *        operations: [{
+     *          id: "xxxxx-xxx-xxx-xxxx",
+     *          name: "Read Draft Dataset",
+     *          uri: "object/dataset/draft/read",
+     *          description: "xxxxxx"
+     *        }],
+     *        permissionIds: ["xxx-xxx-xxx-xxx-xx", "xxx-xx-xxx-xx-xxx-xx"],
+     *        description?: "This is an admin role",
+     *    }]
+     *
+     * @apiErrorExample {json} 401/500
+     *    {
+     *      "isError": true,
+     *      "errorCode": 401, //--- or 500 depends on error type
+     *      "errorMessage": "Not authorized"
+     *    }
+     */
+    router.get(
+        "/public/role/:roleId/permissions",
+        MUST_BE_ADMIN,
+        async function (req, res) {
+            try {
+                const roleId = req.params.userId;
+                const permissions = await database.getRolePermissions(roleId);
+                res.json(permissions);
+            } catch (e) {
+                respondWithError(
+                    "GET /public/role/:roleId/permissions",
+                    res,
+                    e
+                );
+            }
+        }
+    );
+
+    /**
+     * @apiGroup Auth
      * @api {get} /v0/auth/users/whoami Get Current User
      * @apiDescription Returns current user
      *

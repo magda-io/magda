@@ -304,4 +304,100 @@ export default class Database {
         }
         return result.rows[0] as APIKeyRecord;
     }
+
+    /**
+     * Add a list of roleIds to the user if the user don't has the role. Return a list of current role ids after the changes.
+     *
+     * @param {string} userId
+     * @param {string[]} roleIds
+     * @returns {Promise<string[]>}
+     * @memberof Database
+     */
+    async addUserRoles(userId: string, roleIds: string[]): Promise<string[]> {
+        if (!isUuid(userId)) {
+            throw new Error(`Invalid user id: ${userId}`);
+        }
+
+        const dbClient = await this.pool.connect();
+        let finalRoleList: string[];
+
+        try {
+            await dbClient.query("BEGIN");
+
+            let result = await dbClient.query(
+                `SELECT role_id
+                    FROM user_roles
+                    WHERE user_id = $1`,
+                [userId]
+            );
+
+            const currentRoleIds = !result.rows.length
+                ? []
+                : result.rows.map((item) => item.role_id as string);
+            const roleIdsToAdd = !roleIds?.length
+                ? []
+                : roleIds.filter(
+                      (roleId) => currentRoleIds.indexOf(roleId) === -1
+                  );
+
+            if (roleIdsToAdd.length) {
+                await Promise.all(
+                    roleIdsToAdd.map((roleId) => {
+                        if (!isUuid(roleId)) {
+                            throw new Error(`Invalid role ID: ${roleId}`);
+                        }
+                        dbClient.query(
+                            "INSERT INTO user_roles (role_id, user_id) VALUES($1, $2)",
+                            [roleId, userId]
+                        );
+                    })
+                );
+                finalRoleList = [...currentRoleIds, ...roleIdsToAdd];
+            } else {
+                finalRoleList = currentRoleIds;
+            }
+
+            await dbClient.query("COMMIT");
+        } catch (e) {
+            await dbClient.query("ROLLBACK");
+            throw e;
+        } finally {
+            dbClient.release();
+        }
+
+        return finalRoleList;
+    }
+
+    /**
+     * Delete roles from a user.
+     * @param userId
+     * @param roleIds
+     */
+    async deleteUserRoles(userId: string, roleIds: string[]): Promise<void> {
+        if (!isUuid(userId)) {
+            throw new Error(`Invalid user id: ${userId}`);
+        }
+
+        const roleIdParams = [] as string[];
+        const roleIdToBeDeleted = !roleIds?.length
+            ? []
+            : roleIds.map((roleId, idx) => {
+                  if (!isUuid(roleId)) {
+                      throw new Error(`Invalid role ID: ${roleId}`);
+                  }
+                  roleIdParams.push(`$${idx + 2}`);
+                  return roleId;
+              });
+
+        if (!roleIdToBeDeleted.length) {
+            return;
+        }
+
+        await this.pool.query(
+            `DELETE FROM user_roles WHERE user_id = $1 AND role_id IN (${roleIdParams.join(
+                ", "
+            )})`,
+            [userId, ...roleIdToBeDeleted]
+        );
+    }
 }

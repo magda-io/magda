@@ -7,16 +7,26 @@ export default {
             to: "http://localhost:6101/v0",
             auth: true
         },
+        "registry-read-only": {
+            to: "http://localhost:6101/v0",
+            auth: true
+        },
         auth: {
             to: "http://localhost:6104/v0/public",
             auth: true
+        },
+        opa: {
+            to: "http://localhost:6104/v0/opa",
+            auth: true,
+            statusCheck: false
         },
         admin: {
             to: "http://localhost:6112/v0",
             auth: true
         },
         apidocs: {
-            to: "http://localhost:6118"
+            to: "http://localhost:6118",
+            redirectTrailingSlash: true
         },
         content: {
             to: "http://localhost:6119/v0",
