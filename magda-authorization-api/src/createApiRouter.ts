@@ -212,13 +212,11 @@ export default function createApiRouter(options: ApiRouterOptions) {
     /**
      * @apiGroup Auth
      * @api {post} /v0/auth/user/:userId/roles Add Roles to a user
-     * @apiDescription Returns the JSON response indicates the operation has been done successfully or not
+     * @apiDescription Returns a list of current role ids of the user.
      * Required admin access.
      *
      * @apiSuccessExample {json} 200
-     *    {
-     *        isError: false
-     *    }
+     *    ["xxxx-xxxx-xxx-xxx-xx", "xx-xx-xxx-xxxx-xxxxx"]
      *
      * @apiErrorExample {json} 401/500
      *    {
@@ -233,8 +231,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
     ) {
         try {
             const userId = req.params.userId;
-            const user = await database.addUserRoles(userId, req.body);
-            res.json(user);
+            const roleIds = await database.addUserRoles(userId, req.body);
+            res.json(roleIds);
         } catch (e) {
             respondWithError("POST /public/user/:userId/roles", res, e);
         }
@@ -264,8 +262,8 @@ export default function createApiRouter(options: ApiRouterOptions) {
     ) {
         try {
             const userId = req.params.userId;
-            const user = await database.deleteUserRoles(userId, req.body);
-            res.json(user);
+            await database.deleteUserRoles(userId, req.body);
+            res.json({ isError: false });
         } catch (e) {
             respondWithError("DELETE /public/user/:userId/roles", res, e);
         }
@@ -392,7 +390,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
         MUST_BE_ADMIN,
         async function (req, res) {
             try {
-                const roleId = req.params.userId;
+                const roleId = req.params.roleId;
                 const permissions = await database.getRolePermissions(roleId);
                 res.json(permissions);
             } catch (e) {

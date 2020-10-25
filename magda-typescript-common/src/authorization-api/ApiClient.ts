@@ -1,9 +1,10 @@
 require("isomorphic-fetch");
 
-import { User } from "./model";
+import { User, Role, Permission } from "./model";
 import { Maybe } from "tsmonad";
 import lodash from "lodash";
 import buildJwt from "../session/buildJwt";
+import GenericError from "./GenericError";
 
 export default class ApiClient {
     private jwt: string = null;
@@ -28,6 +29,22 @@ export default class ApiClient {
         return lodash.merge({}, this.requestInitOption, extraOptions);
     }
 
+    async processJsonResponse<T = any>(res: Response) {
+        if (res.status >= 200 && res.status < 300) {
+            return (await res.json()) as T;
+        } else {
+            const responseText = (await res.text()).replace(/<(.|\n)*?>/g, "");
+            throw new GenericError(responseText, res.status);
+        }
+    }
+
+    /**
+     * Get the data of a user.
+     *
+     * @param {string} userId
+     * @returns {Promise<Maybe<User>>}
+     * @memberof ApiClient
+     */
     async getUser(userId: string): Promise<Maybe<User>> {
         return await this.handleGetResult(
             fetch(
@@ -37,6 +54,14 @@ export default class ApiClient {
         );
     }
 
+    /**
+     * Get the data of a user.
+     * This is the public facing API and will return less fields
+     *
+     * @param {string} userId
+     * @returns {Promise<Maybe<User>>}
+     * @memberof ApiClient
+     */
     async getUserPublic(userId: string): Promise<Maybe<User>> {
         return await this.handleGetResult(
             fetch(
@@ -46,6 +71,14 @@ export default class ApiClient {
         );
     }
 
+    /**
+     * Lookup user by source & sourceId
+     *
+     * @param {string} source
+     * @param {string} sourceId
+     * @returns {Promise<Maybe<User>>}
+     * @memberof ApiClient
+     */
     async lookupUser(source: string, sourceId: string): Promise<Maybe<User>> {
         return this.handleGetResult(
             fetch(
@@ -55,6 +88,13 @@ export default class ApiClient {
         );
     }
 
+    /**
+     * create a user
+     *
+     * @param {User} user
+     * @returns {Promise<User>}
+     * @memberof ApiClient
+     */
     async createUser(user: User): Promise<User> {
         try {
             const res = await fetch(
@@ -78,6 +118,96 @@ export default class ApiClient {
             console.error(e);
             throw e;
         }
+    }
+
+    /**
+     * Add Roles to a user.
+     * Returns a list of current role ids of the user.
+     *
+     * @param {string} userId
+     * @param {string[]} roleIds
+     * @returns {Promise<string[]>}
+     * @memberof ApiClient
+     */
+    async addUserRoles(userId: string, roleIds: string[]): Promise<string[]> {
+        const res = await fetch(
+            `${this.baseUrl}/public/user/${userId}/roles`,
+            this.getMergeRequestInitOption({
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(roleIds)
+            })
+        );
+        return await this.processJsonResponse<string[]>(res);
+    }
+
+    /**
+     * Remove a list roles from a user.
+     *
+     * @param {string} userId
+     * @param {string[]} roleIds
+     * @returns {Promise<void>}
+     * @memberof ApiClient
+     */
+    async deleteUserRoles(userId: string, roleIds: string[]): Promise<void> {
+        const res = await fetch(
+            `${this.baseUrl}/public/user/${userId}/roles`,
+            this.getMergeRequestInitOption({
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(roleIds)
+            })
+        );
+        await this.processJsonResponse(res);
+    }
+
+    /**
+     * Get all roles of a user
+     *
+     * @param {string} userId
+     * @returns {Promise<Role[]>}
+     * @memberof ApiClient
+     */
+    async getUserRoles(userId: string): Promise<Role[]> {
+        const res = await fetch(
+            `${this.baseUrl}/public/user/${userId}/roles`,
+            this.getMergeRequestInitOption()
+        );
+        return await this.processJsonResponse<Role[]>(res);
+    }
+
+    /**
+     * Get all permissions of a user
+     *
+     * @param {string} userId
+     * @returns {Promise<Permission[]>}
+     * @memberof ApiClient
+     */
+    async getUserPermissions(userId: string): Promise<Permission[]> {
+        const res = await fetch(
+            `${this.baseUrl}/public/user/${userId}/permissions`,
+            this.getMergeRequestInitOption()
+        );
+        return await this.processJsonResponse<Permission[]>(res);
+    }
+
+    /**
+     * Get all permissions of a role
+     *
+     * @param {string} roleId
+     * @returns {Promise<Permission[]>}
+     * @memberof ApiClient
+     */
+    async getRolePermissions(roleId: string): Promise<Permission[]> {
+        const res = await fetch(
+            `${this.baseUrl}/public/role/${roleId}/permissions`,
+            this.getMergeRequestInitOption()
+        );
+        return await this.processJsonResponse<Permission[]>(res);
     }
 
     private async handleGetResult(
