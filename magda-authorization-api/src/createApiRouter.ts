@@ -204,11 +204,9 @@ export default function createApiRouter(options: ApiRouterOptions) {
         try {
             const user = await database.createUser(req.body);
             res.json(user);
-            res.status(201);
         } catch (e) {
             respondWithError("/private/users", res, e);
         }
-        res.end();
     });
 
     /**
