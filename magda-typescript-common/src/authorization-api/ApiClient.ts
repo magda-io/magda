@@ -56,7 +56,7 @@ export default class ApiClient {
 
     /**
      * Get the data of a user.
-     * This is the public facing API and will return less fields
+     * (Deprecated) This is the public facing API and will return less fields.
      *
      * @param {string} userId
      * @returns {Promise<Maybe<User>>}
@@ -72,7 +72,7 @@ export default class ApiClient {
     }
 
     /**
-     * Lookup user by source & sourceId
+     * Lookup user by source (identity provider) & sourceId (identity ID)
      *
      * @param {string} source
      * @param {string} sourceId
