@@ -17,6 +17,7 @@ export interface PublicUser {
     roles?: Role[];
     permissions?: Permission[];
     managingOrgUnitIds?: string[];
+    orgUnitId?: string;
     orgUnit?: OrgUnit;
 }
 

@@ -30,7 +30,9 @@
     "express": "^4.17.1",
     "urijs": "^1.18.12",
     "express-session": "^1.17.1",
-    "lodash": "^4.17.4"
+    "lodash": "^4.17.4",
+    "cookie-parser": "^1.4.5",
+    "connect-pg-simple": "^6.0.1"
   },
   "magda": {
     "language": "typescript",

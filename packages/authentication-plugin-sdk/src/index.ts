@@ -210,7 +210,7 @@ export function redirectOnError(
  *         userData: User,
  *         profile: passport.Profile
  *     ) => Promise<User>} [beforeUserCreated] an optional handler that will be called just before a user is created.
- * The user data returned by this handler will be used to create a user record. The following parameters will be provided to the handler:
+ * The user data returned by this handler will be used to create the user record. The following parameters will be provided to the handler:
  * - authApiClient: Auth API Client. You can use it to add a role to the user.
  * - userData: the user data that is converted from the user profile received using the default conversion logic.
  * - profile: the user profile received

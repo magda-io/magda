@@ -210,17 +210,39 @@ export default class Database {
     }
 
     async createUser(user: User): Promise<User> {
+        const paramFields = [
+            "displayName",
+            "email",
+            "photoURL",
+            "source",
+            "sourceId",
+            "isAdmin"
+        ];
+        const params = paramFields.map((item, idx) => `$${idx + 1}`);
+        const paramData = [
+            user.displayName,
+            user.email,
+            user.photoURL,
+            user.source,
+            user.sourceId,
+            user.isAdmin
+        ];
+
+        if (user.orgUnitId) {
+            paramFields.push("orgUnitId");
+            params.push(`$${paramFields.length}`);
+            paramData.push(user.orgUnitId);
+        }
+
         const result = await this.pool.query(
-            'INSERT INTO users(id, "displayName", email, "photoURL", source, "sourceId", "isAdmin") VALUES(uuid_generate_v4(), $1, $2, $3, $4, $5, $6) RETURNING id',
-            [
-                user.displayName,
-                user.email,
-                user.photoURL,
-                user.source,
-                user.sourceId,
-                user.isAdmin
-            ]
+            `INSERT INTO users("id", ${paramFields
+                .map((field) => `"${field}"`)
+                .join(", ")}) VALUES(uuid_generate_v4(), ${params.join(
+                ", "
+            )}) RETURNING id`,
+            paramData
         );
+
         const userInfo = result.rows[0];
         const userId = userInfo.id;
 
