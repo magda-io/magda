@@ -67,10 +67,12 @@ magda:
       auth:
         facebookClientId: "173073926555600"
         arcgisClientId: "d0MgVUbbg5Z6vmWo"
-        googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
         ckanAuthenticationUrl: https://data.gov.au/data
         vanguardWsFedIdpUrl: https://thirdparty.authentication.business.gov.au/fas/v2/wsfed12/authenticate
         vanguardWsFedRealm: https://environment.magda.io/integration-test-2
+      authPlugins:
+      - key: google
+        baseUrl: http://magda-auth-google
       cors:
         credentials: true
         origin: true
@@ -167,6 +169,9 @@ magda:
       operator: 
         createCRD: false
 
+# auth plugin for google
+magda-auth-google:
+  googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
 
 # Connectors settings is built in local-deployment chart value file but you can override as the followings:
 # e.g. dga connector:

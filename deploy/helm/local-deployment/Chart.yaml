@@ -8,6 +8,13 @@ dependencies:
     version: 0.0.58-alpha.0
     repository: "file://../magda"
 
+  - name: magda-auth-google
+    version: 1.0.0
+    repository: https://charts.magda.io
+    tags:
+      - all
+      - magda-auth-google
+
   ## Data.gov.au connector to provide some initial data. Remove this if you
   ## don't want any data.gov.au connector
   - name: magda-ckan-connector
