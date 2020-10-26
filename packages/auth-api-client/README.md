@@ -82,5 +82,70 @@ export default class ApiClient {
      * @memberof ApiClient
      */
     getRolePermissions(roleId: string): Promise<Permission[]>;
+
+    /**
+     * List OrgUnits at certain org tree level.
+     * Optionally provide a test Org Unit Id that will be used to test the relationship with each of returned orgUnit item.
+     * Possible Value: 'ancestor', 'descendant', 'equal', 'unrelated'
+     *
+     * @param {string} orgLevel The level number (starts from 1) where org Units of the tree are taken horizontally.
+     * @param {string} [relationshipOrgUnitId] Optional; The org unit id that is used to test the relationship with each of returned orgUnit item.
+     * @returns {Promise<OrgUnit[]>}
+     * @memberof ApiClient
+     */
+    getOrgUnitsByLevel(
+        orgLevel: string,
+        relationshipOrgUnitId?: string
+    ): Promise<OrgUnit[]>;
+
+    /**
+     * Get orgunits by name
+     *
+     * @param {string} nodeName
+     * @param {boolean} [leafNodesOnly=false] Whether only leaf nodes should be returned
+     * @param {string} [relationshipOrgUnitId] Optional; The org unit id that is used to test the relationship with each of returned orgUnit item.
+     * @returns {Promise<OrgUnit[]>}
+     * @memberof ApiClient
+     */
+    getOrgUnitsByName(
+        nodeName: string,
+        leafNodesOnly?: boolean,
+        relationshipOrgUnitId?: string
+    ): Promise<OrgUnit[]>;
+
+    /**
+     * Gets the root organisation unit (top of the tree).
+     *
+     * @returns {Promise<OrgUnit>}
+     * @memberof ApiClient
+     */
+    getRootOrgUnit(): Promise<OrgUnit>;
+
+    /**
+     * Gets the details of the node with its id.
+     *
+     * @param {string} nodeId
+     * @returns {Promise<OrgUnit>}
+     * @memberof ApiClient
+     */
+    getOrgUnitById(nodeId: string): Promise<OrgUnit>;
+
+    /**
+     * Gets all the children immediately below the requested node. If the node doesn't exist, returns an empty list.
+     *
+     * @param {string} nodeId
+     * @returns {Promise<OrgUnit[]>}
+     * @memberof ApiClient
+     */
+    getImmediateOrgUnitChildren(nodeId: string): Promise<OrgUnit[]>;
+
+    /**
+     * Gets all the children below the requested node recursively. If node doesn't exist, returns an empty list.
+     *
+     * @param {string} nodeId
+     * @returns {Promise<OrgUnit[]>}
+     * @memberof ApiClient
+     */
+    getAllOrgUnitChildren(nodeId: string): Promise<OrgUnit[]>;
 }
 ```

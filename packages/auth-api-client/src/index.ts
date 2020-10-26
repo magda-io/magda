@@ -3,6 +3,7 @@ export {
     User,
     UserToken,
     OrgUnit,
+    OrgUnitRelationshipType,
     Operation,
     Permission,
     PublicUser,

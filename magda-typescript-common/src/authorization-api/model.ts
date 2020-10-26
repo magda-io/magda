@@ -21,10 +21,18 @@ export interface PublicUser {
     orgUnit?: OrgUnit;
 }
 
+export type OrgUnitRelationshipType =
+    | "ancestor"
+    | "descendant"
+    | "equal"
+    | "unrelated";
+
 export interface OrgUnit {
     id?: string;
     name?: string;
     description?: string;
+    // only available when query the orgUnit relationship against a node with some APIs
+    relationship?: OrgUnitRelationshipType;
     left?: number;
     right?: number;
     createBy?: string;

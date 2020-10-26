@@ -1,20 +1,24 @@
-require("isomorphic-fetch");
-
-import { User, Role, Permission } from "./model";
+import fetch from "isomorphic-fetch";
+import { User, Role, Permission, OrgUnit } from "./model";
 import { Maybe } from "tsmonad";
 import lodash from "lodash";
 import buildJwt from "../session/buildJwt";
 import GenericError from "./GenericError";
+import addTrailingSlash from "../addTrailingSlash";
+import urijs from "urijs";
 
 export default class ApiClient {
     private jwt: string = null;
     private requestInitOption: RequestInit = null;
+    private baseUrl: string = "";
 
     constructor(
-        readonly baseUrl: string,
+        // e.g. http://authorization-api/v0
+        baseUrl: string,
         jwtSecret: string = null,
         userId: string = null
     ) {
+        this.baseUrl = addTrailingSlash(baseUrl);
         if (jwtSecret && userId) {
             this.jwt = buildJwt(jwtSecret, userId);
         }
@@ -48,7 +52,7 @@ export default class ApiClient {
     async getUser(userId: string): Promise<Maybe<User>> {
         return await this.handleGetResult(
             fetch(
-                `${this.baseUrl}/private/users/${userId}`,
+                `${this.baseUrl}private/users/${userId}`,
                 this.getMergeRequestInitOption()
             )
         );
@@ -65,7 +69,7 @@ export default class ApiClient {
     async getUserPublic(userId: string): Promise<Maybe<User>> {
         return await this.handleGetResult(
             fetch(
-                `${this.baseUrl}/public/users/${userId}`,
+                `${this.baseUrl}public/users/${userId}`,
                 this.getMergeRequestInitOption()
             )
         );
@@ -82,7 +86,7 @@ export default class ApiClient {
     async lookupUser(source: string, sourceId: string): Promise<Maybe<User>> {
         return this.handleGetResult(
             fetch(
-                `${this.baseUrl}/private/users/lookup?source=${source}&sourceId=${sourceId}`,
+                `${this.baseUrl}private/users/lookup?source=${source}&sourceId=${sourceId}`,
                 this.getMergeRequestInitOption()
             )
         );
@@ -98,7 +102,7 @@ export default class ApiClient {
     async createUser(user: User): Promise<User> {
         try {
             const res = await fetch(
-                `${this.baseUrl}/private/users`,
+                `${this.baseUrl}private/users`,
                 this.getMergeRequestInitOption({
                     method: "POST",
                     headers: {
@@ -131,7 +135,7 @@ export default class ApiClient {
      */
     async addUserRoles(userId: string, roleIds: string[]): Promise<string[]> {
         const res = await fetch(
-            `${this.baseUrl}/public/user/${userId}/roles`,
+            `${this.baseUrl}public/user/${userId}/roles`,
             this.getMergeRequestInitOption({
                 method: "POST",
                 headers: {
@@ -153,7 +157,7 @@ export default class ApiClient {
      */
     async deleteUserRoles(userId: string, roleIds: string[]): Promise<void> {
         const res = await fetch(
-            `${this.baseUrl}/public/user/${userId}/roles`,
+            `${this.baseUrl}public/user/${userId}/roles`,
             this.getMergeRequestInitOption({
                 method: "DELETE",
                 headers: {
@@ -174,7 +178,7 @@ export default class ApiClient {
      */
     async getUserRoles(userId: string): Promise<Role[]> {
         const res = await fetch(
-            `${this.baseUrl}/public/user/${userId}/roles`,
+            `${this.baseUrl}public/user/${userId}/roles`,
             this.getMergeRequestInitOption()
         );
         return await this.processJsonResponse<Role[]>(res);
@@ -189,7 +193,7 @@ export default class ApiClient {
      */
     async getUserPermissions(userId: string): Promise<Permission[]> {
         const res = await fetch(
-            `${this.baseUrl}/public/user/${userId}/permissions`,
+            `${this.baseUrl}public/user/${userId}/permissions`,
             this.getMergeRequestInitOption()
         );
         return await this.processJsonResponse<Permission[]>(res);
@@ -204,10 +208,146 @@ export default class ApiClient {
      */
     async getRolePermissions(roleId: string): Promise<Permission[]> {
         const res = await fetch(
-            `${this.baseUrl}/public/role/${roleId}/permissions`,
+            `${this.baseUrl}public/role/${roleId}/permissions`,
             this.getMergeRequestInitOption()
         );
         return await this.processJsonResponse<Permission[]>(res);
+    }
+
+    /**
+     * List OrgUnits at certain org tree level.
+     * Optionally provide a test Org Unit Id that will be used to test the relationship with each of returned orgUnit item.
+     * Possible Value: 'ancestor', 'descendant', 'equal', 'unrelated'
+     *
+     * @param {string} orgLevel The level number (starts from 1) where org Units of the tree are taken horizontally.
+     * @param {string} [relationshipOrgUnitId] Optional; The org unit id that is used to test the relationship with each of returned orgUnit item.
+     * @returns {Promise<OrgUnit[]>}
+     * @memberof ApiClient
+     */
+    async getOrgUnitsByLevel(
+        orgLevel: number,
+        relationshipOrgUnitId?: string
+    ): Promise<OrgUnit[]> {
+        const uri = urijs(
+            `${this.baseUrl}public/orgunits/bylevel`
+        ).segmentCoded(`${orgLevel}`);
+
+        const queries = {} as any;
+        if (relationshipOrgUnitId) {
+            queries["relationshipOrgUnitId"] = relationshipOrgUnitId;
+        }
+
+        const res = await fetch(
+            Object.keys(queries).length
+                ? uri.search(queries).toString()
+                : uri.toString(),
+            this.getMergeRequestInitOption()
+        );
+        return await this.processJsonResponse<OrgUnit[]>(res);
+    }
+
+    /**
+     * Get orgunits by name
+     *
+     * @param {string} nodeName
+     * @param {boolean} [leafNodesOnly=false] Whether only leaf nodes should be returned
+     * @param {string} [relationshipOrgUnitId] Optional; The org unit id that is used to test the relationship with each of returned orgUnit item.
+     * @returns {Promise<OrgUnit[]>}
+     * @memberof ApiClient
+     */
+    async getOrgUnitsByName(
+        nodeName: string,
+        leafNodesOnly: boolean = false,
+        relationshipOrgUnitId?: string
+    ): Promise<OrgUnit[]> {
+        const uri = urijs(`${this.baseUrl}public/orgunits`);
+
+        const queries = {
+            nodeName,
+            leafNodesOnly
+        } as any;
+        if (relationshipOrgUnitId) {
+            queries["relationshipOrgUnitId"] = relationshipOrgUnitId;
+        }
+
+        const res = await fetch(
+            uri.search(queries).toString(),
+            this.getMergeRequestInitOption()
+        );
+        return await this.processJsonResponse<OrgUnit[]>(res);
+    }
+
+    /**
+     * Gets the root organisation unit (top of the tree).
+     *
+     * @returns {Promise<OrgUnit>}
+     * @memberof ApiClient
+     */
+    async getRootOrgUnit(): Promise<OrgUnit> {
+        const res = await fetch(
+            `${this.baseUrl}public/orgunits/root`,
+            this.getMergeRequestInitOption()
+        );
+        return await this.processJsonResponse<OrgUnit>(res);
+    }
+
+    /**
+     * Gets the details of the node with its id.
+     *
+     * @param {string} nodeId
+     * @returns {Promise<OrgUnit>}
+     * @memberof ApiClient
+     */
+    async getOrgUnitById(nodeId: string): Promise<OrgUnit> {
+        const uri = urijs(`${this.baseUrl}public/orgunits`).segmentCoded(
+            nodeId
+        );
+
+        const res = await fetch(
+            uri.toString(),
+            this.getMergeRequestInitOption()
+        );
+        return await this.processJsonResponse<OrgUnit>(res);
+    }
+
+    /**
+     * Gets all the children immediately below the requested node. If the node doesn't exist, returns an empty list.
+     *
+     * @param {string} nodeId
+     * @returns {Promise<OrgUnit[]>}
+     * @memberof ApiClient
+     */
+    async getImmediateOrgUnitChildren(nodeId: string): Promise<OrgUnit[]> {
+        const uri = urijs(`${this.baseUrl}public/orgunits`)
+            .segmentCoded(nodeId)
+            .segmentCoded("children")
+            .segmentCoded("immediate");
+
+        const res = await fetch(
+            uri.toString(),
+            this.getMergeRequestInitOption()
+        );
+        return await this.processJsonResponse<OrgUnit[]>(res);
+    }
+
+    /**
+     * Gets all the children below the requested node recursively. If node doesn't exist, returns an empty list.
+     *
+     * @param {string} nodeId
+     * @returns {Promise<OrgUnit[]>}
+     * @memberof ApiClient
+     */
+    async getAllOrgUnitChildren(nodeId: string): Promise<OrgUnit[]> {
+        const uri = urijs(`${this.baseUrl}public/orgunits`)
+            .segmentCoded(nodeId)
+            .segmentCoded("children")
+            .segmentCoded("all");
+
+        const res = await fetch(
+            uri.toString(),
+            this.getMergeRequestInitOption()
+        );
+        return await this.processJsonResponse<OrgUnit[]>(res);
     }
 
     private async handleGetResult(
