@@ -72,7 +72,7 @@ export default class Database {
     getUser(id: string): Promise<Maybe<User>> {
         return this.pool
             .query(
-                'SELECT id, "displayName", email, "photoURL", source, "isAdmin", "orgUnitId" FROM users WHERE "id" = $1',
+                'SELECT "id", "displayName", "email", "photoURL", "source", "sourceId", "isAdmin", "orgUnitId" FROM users WHERE "id" = $1',
                 [id]
             )
             .then((res) => arrayToMaybe(res.rows));

@@ -21,6 +21,7 @@ import {
     createServiceProbe
 } from "magda-typescript-common/src/express/status";
 import AccessControlError from "magda-typescript-common/src/authorization-api/AccessControlError";
+import { User } from "magda-typescript-common/src/authorization-api/model";
 
 export interface ApiRouterOptions {
     database: Database;
@@ -96,7 +97,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 const contentItem = findContentItemById(item.id);
 
                 if (contentItem && contentItem.private) {
-                    return req.user?.isAdmin;
+                    return (req.user as User)?.isAdmin;
                 } else {
                     return true;
                 }
