@@ -185,7 +185,7 @@ export default class Database {
     getUsers(): Promise<User[]> {
         return this.pool
             .query(
-                `SELECT id, "displayName", email, "photoURL", source, "isAdmin" FROM users WHERE id <> '00000000-0000-4000-8000-000000000000'`
+                `SELECT "id", "displayName", "email", "photoURL", "source", "sourceId", "isAdmin", "orgUnitId" FROM users WHERE id <> '00000000-0000-4000-8000-000000000000'`
             )
             .then((res) => res.rows);
     }
@@ -203,7 +203,7 @@ export default class Database {
     ): Promise<Maybe<User>> {
         return this.pool
             .query(
-                'SELECT id, "displayName", email, "photoURL", source, "sourceId", "isAdmin" FROM users WHERE "sourceId" = $1 AND source = $2',
+                'SELECT "id", "displayName", "email", "photoURL", "source", "sourceId", "isAdmin", "orgUnitId" FROM users WHERE "sourceId" = $1 AND source = $2',
                 [sourceId, source]
             )
             .then((res) => arrayToMaybe(res.rows));
