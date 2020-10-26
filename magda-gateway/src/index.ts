@@ -131,21 +131,6 @@ const argv = addJwtSecretFromEnvVar(
                 process.env.FACEBOOK_CLIENT_SECRET ||
                 process.env.npm_package_config_facebookClientSecret
         })
-        .option("googleClientId", {
-            describe: "The client ID to use for Google OAuth.",
-            type: "string",
-            default:
-                process.env.GOOGLE_CLIENT_ID ||
-                process.env.npm_package_config_googleClientId
-        })
-        .option("googleClientSecret", {
-            describe:
-                "The secret to use for Google OAuth.  This can also be specified with the GOOGLE_CLIENT_SECRET environment variable.",
-            type: "string",
-            default:
-                process.env.GOOGLE_CLIENT_SECRET ||
-                process.env.npm_package_config_googleClientSecret
-        })
         .option("arcgisClientId", {
             describe: "The client ID to use for ArcGIS OAuth.",
             type: "string",

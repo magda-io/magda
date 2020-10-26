@@ -55,9 +55,6 @@ spec:
 {{- if .Values.auth.esriOrgGroup}}
             "--esriOrgGroup", {{ .Values.auth.esriOrgGroup| quote }},
 {{- end }}
-{{- if .Values.auth.googleClientId }}
-            "--googleClientId", {{ .Values.auth.googleClientId | quote }},
-{{- end }}
 {{- if .Values.auth.vanguardWsFedIdpUrl }}
             "--vanguardWsFedIdpUrl", {{ .Values.auth.vanguardWsFedIdpUrl | quote }},
 {{- end }}
@@ -177,14 +174,6 @@ spec:
             secretKeyRef:
               name: oauth-secrets
               key: arcgis-client-secret
-              optional: true
-{{- end }}
-{{- if .Values.auth.googleClientId }}
-        - name: GOOGLE_CLIENT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: oauth-secrets
-              key: google-client-secret
               optional: true
 {{- end }}
 {{- if .Values.auth.aafClientUri }}

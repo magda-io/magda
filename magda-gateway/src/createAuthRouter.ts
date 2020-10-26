@@ -16,8 +16,6 @@ export interface AuthRouterOptions {
     jwtSecret: string;
     facebookClientId: string;
     facebookClientSecret: string;
-    googleClientId: string;
-    googleClientSecret: string;
     aafClientUri: string;
     aafClientSecret: string;
     arcgisClientId: string;
@@ -66,19 +64,6 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
                       passport: passport,
                       clientId: options.facebookClientId,
                       clientSecret: options.facebookClientSecret,
-                      externalAuthHome: `${options.externalUrl}/auth`
-                  })
-                : null
-        },
-        {
-            id: "google",
-            enabled: options.googleClientId ? true : false,
-            authRouter: options.googleClientId
-                ? require("./oauth2/google").default({
-                      authorizationApi: authApi,
-                      passport: passport,
-                      clientId: options.googleClientId,
-                      clientSecret: options.googleClientSecret,
                       externalAuthHome: `${options.externalUrl}/auth`
                   })
                 : null

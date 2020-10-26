@@ -134,7 +134,7 @@ describe("Test createAuthRouter", function (this: Mocha.ISuiteCallbackContext) {
         expect(isSessionMiddlewareCalled).to.be.false;
     });
 
-    it("should apply Authenticator routes (session management) to auth providers (e.g. google) routes", async () => {
+    it("should apply Authenticator routes (session management) to auth providers (e.g. facebook) routes", async () => {
         const app = express();
         let isSessionMiddlewareCalled = false;
 
@@ -156,7 +156,7 @@ describe("Test createAuthRouter", function (this: Mocha.ISuiteCallbackContext) {
             createAuthRouter(getDummyAuthRouterConfig(dummyAuthenticator))
         );
 
-        await request(app).get("/auth/login/google").expect(302);
+        await request(app).get("/auth/login/facebook").expect(302);
 
         expect(isSessionMiddlewareCalled).to.be.true;
     });

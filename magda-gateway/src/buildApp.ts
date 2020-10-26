@@ -72,8 +72,6 @@ export type Config = {
     enableAuthEndpoint?: boolean;
     facebookClientId?: string;
     facebookClientSecret?: string;
-    googleClientId?: string;
-    googleClientSecret?: string;
     aafClientUri?: string;
     aafClientSecret?: string;
     arcgisClientId?: string;
@@ -206,8 +204,6 @@ export default function buildApp(app: express.Application, config: Config) {
                 jwtSecret: config.jwtSecret,
                 facebookClientId: config.facebookClientId,
                 facebookClientSecret: config.facebookClientSecret,
-                googleClientId: config.googleClientId,
-                googleClientSecret: config.googleClientSecret,
                 aafClientUri: config.aafClientUri,
                 aafClientSecret: config.aafClientSecret,
                 arcgisClientId: config.arcgisClientId,
