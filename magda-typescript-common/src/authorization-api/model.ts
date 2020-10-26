@@ -1,13 +1,16 @@
 declare global {
     namespace Express {
-        interface User extends MagdaUser {}
+        /**
+         * This defines magda session data type.
+         * the default session data type is `UserToken` (i.e. only user id field is available and is a compulsory field)
+         * But any auth plugin provider could choose to customise the session by adding more fields (e.g. `arcgis`).
+         * We also make sure it allows extra fields here.
+         */
+        interface User extends UserToken {
+            [key: string]: any;
+        }
     }
 }
-
-// Exporting MagdaUser as PublicUser because it's not guaranteed
-// that user will have email, source, sourceId, etc
-// Make it export `User` if that's more appropriate
-export type MagdaUser = PublicUser;
 
 export interface PublicUser {
     id?: string;

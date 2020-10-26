@@ -6,6 +6,7 @@ import buildJwt from "../session/buildJwt";
 import GenericError from "./GenericError";
 import addTrailingSlash from "../addTrailingSlash";
 import urijs from "urijs";
+import { RequiredKeys } from "../utilityTypes";
 
 export default class ApiClient {
     private jwt: string = null;
@@ -49,7 +50,7 @@ export default class ApiClient {
      * @returns {Promise<Maybe<User>>}
      * @memberof ApiClient
      */
-    async getUser(userId: string): Promise<Maybe<User>> {
+    async getUser(userId: string): Promise<Maybe<RequiredKeys<User, "id">>> {
         return await this.handleGetResult(
             fetch(
                 `${this.baseUrl}private/users/${userId}`,
@@ -66,7 +67,9 @@ export default class ApiClient {
      * @returns {Promise<Maybe<User>>}
      * @memberof ApiClient
      */
-    async getUserPublic(userId: string): Promise<Maybe<User>> {
+    async getUserPublic(
+        userId: string
+    ): Promise<Maybe<RequiredKeys<User, "id">>> {
         return await this.handleGetResult(
             fetch(
                 `${this.baseUrl}public/users/${userId}`,
@@ -83,7 +86,10 @@ export default class ApiClient {
      * @returns {Promise<Maybe<User>>}
      * @memberof ApiClient
      */
-    async lookupUser(source: string, sourceId: string): Promise<Maybe<User>> {
+    async lookupUser(
+        source: string,
+        sourceId: string
+    ): Promise<Maybe<RequiredKeys<User, "id">>> {
         return this.handleGetResult(
             fetch(
                 `${this.baseUrl}private/users/lookup?source=${source}&sourceId=${sourceId}`,
@@ -99,7 +105,7 @@ export default class ApiClient {
      * @returns {Promise<User>}
      * @memberof ApiClient
      */
-    async createUser(user: User): Promise<User> {
+    async createUser(user: User): Promise<RequiredKeys<User, "id">> {
         try {
             const res = await fetch(
                 `${this.baseUrl}private/users`,
@@ -350,9 +356,9 @@ export default class ApiClient {
         return await this.processJsonResponse<OrgUnit[]>(res);
     }
 
-    private async handleGetResult(
+    private async handleGetResult<T = User>(
         promise: Promise<Response>
-    ): Promise<Maybe<User>> {
+    ): Promise<Maybe<T>> {
         return promise
             .then((res) => {
                 if (res.status === 404) {

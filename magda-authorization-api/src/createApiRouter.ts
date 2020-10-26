@@ -106,7 +106,13 @@ export default function createApiRouter(options: ApiRouterOptions) {
                             "Only admin users are authorised to access this API",
                             403
                         );
-                    req.user = user;
+                    req.user = {
+                        // the default session data type is UserToken
+                        // But any auth plugin provider could choose to customise the session by adding more fields
+                        // avoid losing customise session data here
+                        ...(req.user ? req.user : {}),
+                        ...user
+                    };
                     next();
                 } catch (e) {
                     console.warn(e);
