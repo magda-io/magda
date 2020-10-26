@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { Maybe } from "tsmonad";
+import "../authorization-api/model";
 const jwt = require("jsonwebtoken");
 
 export function getUserId(req: Request, jwtSecret: string): Maybe<string> {
