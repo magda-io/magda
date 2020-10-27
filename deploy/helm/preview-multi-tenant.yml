@@ -71,14 +71,14 @@ magda:
       csp:
         directives:
           scriptSrc:
-          - "''self''"
-          - "''unsafe-inline''"
+          - "'self'"
+          - "'unsafe-inline'"
           - "*.dev.magda.io"
           - "https://cdn.polyfill.io"
           - "https://dev.virtualearth.net"
           - browser-update.org
           objectSrc:
-          - "''none''"
+          - "'none'"
           reportUri: https://sdga.report-uri.com/r/d/csp/enforce
 
     combined-db:

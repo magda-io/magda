@@ -86,11 +86,11 @@ magda:
       csp:
         directives:
           scriptSrc:
-            - "''self''"
+            - "'self'"
             - browser-update.org
-            - "''unsafe-inline''"
+            - "'unsafe-inline'"
           objectSrc:
-            - "''none''"
+            - "'none'"
           reportUri: https://sdga.report-uri.com/r/d/csp/enforce
 
     combined-db:
