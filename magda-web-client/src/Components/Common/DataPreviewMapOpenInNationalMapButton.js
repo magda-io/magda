@@ -32,13 +32,12 @@ class DataPreviewMapOpenInNationalMapButton extends Component {
                     catalog: [
                         {
                             name: this.props.distribution.title,
-                            type: "magda-item",
-                            distributionId: this.props.distribution.identifier,
-                            url: config.baseExternalUrl,
-                            isEnabled: true,
-                            zoomOnEnable: true
+                            type: "magda",
+                            recordId: this.props.distribution.identifier,
+                            url: config.baseExternalUrl
                         }
-                    ]
+                    ],
+                    workbench: ["//" + this.props.distribution.title]
                 }
             ]
         };
@@ -52,7 +51,7 @@ class DataPreviewMapOpenInNationalMapButton extends Component {
     onButtonClick() {
         if (this.browser.name === "ie" && this.browser.versionNumber < 12) {
             window.open(
-                "https://nationalmap.gov.au/#start=" +
+                "http://localhost:3001/#start=" +
                     encodeURIComponent(
                         JSON.stringify(
                             this.createCatalogItemFromDistribution(true)
@@ -62,7 +61,7 @@ class DataPreviewMapOpenInNationalMapButton extends Component {
             );
             return;
         }
-        const newWinRef = window.open("https://nationalmap.gov.au", "_blank");
+        const newWinRef = window.open("http://localhost:3001", "_blank");
         if (!newWinRef) {
             this.winRef = null;
             alert(
