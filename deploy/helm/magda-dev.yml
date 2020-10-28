@@ -173,6 +173,7 @@ magda:
 magda-auth-google:
   googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
   image:
+    tag: 1.0.0
     repository: docker.io/data61
 
 # Connectors settings is built in local-deployment chart value file but you can override as the followings:
