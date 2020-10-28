@@ -10,7 +10,7 @@ declare global {
     namespace Express {
         interface User {
             id: string;
-            session: {
+            session?: {
                 esriGroups: string[];
                 esriUser: string;
                 accessToken: string;

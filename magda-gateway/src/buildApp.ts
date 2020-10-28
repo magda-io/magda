@@ -25,6 +25,7 @@ import defaultConfig from "./defaultConfig";
 import { ProxyTarget } from "./createGenericProxyRouter";
 import setupTenantMode from "./setupTenantMode";
 import createPool from "./createPool";
+import { AuthPluginBasicConfig } from "./createAuthPluginRouter";
 
 // Tell typescript about the semi-private __express field of ejs.
 declare module "ejs" {
@@ -53,6 +54,7 @@ export type Config = {
     webProxyRoutesJson: {
         [localRoute: string]: ProxyTarget;
     };
+    authPluginConfigJson: AuthPluginBasicConfig[];
     helmetJson: IHelmetConfiguration;
     cspJson: IHelmetContentSecurityPolicyConfiguration;
     corsJson: CorsOptions;
@@ -70,8 +72,6 @@ export type Config = {
     enableAuthEndpoint?: boolean;
     facebookClientId?: string;
     facebookClientSecret?: string;
-    googleClientId?: string;
-    googleClientSecret?: string;
     aafClientUri?: string;
     aafClientSecret?: string;
     arcgisClientId?: string;
@@ -204,8 +204,6 @@ export default function buildApp(app: express.Application, config: Config) {
                 jwtSecret: config.jwtSecret,
                 facebookClientId: config.facebookClientId,
                 facebookClientSecret: config.facebookClientSecret,
-                googleClientId: config.googleClientId,
-                googleClientSecret: config.googleClientSecret,
                 aafClientUri: config.aafClientUri,
                 aafClientSecret: config.aafClientSecret,
                 arcgisClientId: config.arcgisClientId,
@@ -219,7 +217,8 @@ export default function buildApp(app: express.Application, config: Config) {
                 vanguardWsFedIdpUrl: config.vanguardWsFedIdpUrl,
                 vanguardWsFedRealm: config.vanguardWsFedRealm,
                 vanguardWsFedCertificate: config.vanguardWsFedCertificate,
-                enableInternalAuthProvider: config.enableAuthEndpoint
+                enableInternalAuthProvider: config.enableAuthEndpoint,
+                plugins: config.authPluginConfigJson
             })
         );
     }

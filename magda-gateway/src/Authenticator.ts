@@ -30,7 +30,8 @@ export interface AuthenticatorOptions {
 export const DEFAULT_SESSION_COOKIE_NAME: string = "connect.sid";
 export let DEFAULT_SESSION_COOKIE_OPTIONS: SessionCookieOptions = {
     maxAge: 7 * 60 * 60 * 1000,
-    // -- auto: secure will be auto set depends on the http or https connection
+    sameSite: "lax",
+    httpOnly: true,
     secure: "auto"
 };
 
@@ -44,7 +45,7 @@ export let DEFAULT_SESSION_COOKIE_OPTIONS: SessionCookieOptions = {
  * @param {express.Response} res
  * @param {express.NextFunction} next
  */
-function runMiddlewareList(
+export function runMiddlewareList(
     middlewareList: express.RequestHandler[],
     req: express.Request,
     res: express.Response,
@@ -130,7 +131,8 @@ export default class Authenticator {
             cookie: { ...this.sessionCookieOptions },
             resave: false,
             saveUninitialized: false,
-            rolling: true
+            rolling: true,
+            proxy: true
         });
 
         this.passportMiddleware = passport.initialize();
@@ -142,6 +144,10 @@ export default class Authenticator {
         this.validateAndRefreshSession = this.validateAndRefreshSession.bind(
             this
         );
+        this.sessionManagementMiddleware = this.sessionManagementMiddleware.bind(
+            this
+        );
+        this.authenticatorMiddleware = this.authenticatorMiddleware.bind(this);
     }
 
     /**
@@ -193,13 +199,14 @@ export default class Authenticator {
      * - Validate the session and destroy the invalid one (so the future request won't carry cookies)
      * - If it's valid session, handle over to `this.passportMiddleware` and `this.passportSessionMiddleware` to build up full session env (i.e. pull session data and set them probably to req.user)
      *
+     * @private
      * @param {express.Request} req
      * @param {express.Response} res
      * @param {express.NextFunction} next
      * @returns
      * @memberof Authenticator
      */
-    validateAndRefreshSession(
+    private validateAndRefreshSession(
         req: express.Request,
         res: express.Response,
         next: express.NextFunction
@@ -255,12 +262,13 @@ export default class Authenticator {
      * - system won't mis/re-issue a new session for the same user whose request carries the session cookie
      * See https://github.com/magda-io/magda/issues/2545 for more details
      *
+     * @private
      * @param {express.Request} req
      * @param {express.Response} res
      * @param {express.NextFunction} next
      * @memberof Authenticator
      */
-    authenticatorMiddleware(
+    private sessionManagementMiddleware(
         req: express.Request,
         res: express.Response,
         next: express.NextFunction
@@ -343,10 +351,36 @@ export default class Authenticator {
         }
     }
 
+    /**
+     * A middleware waraps all required authenticator middleware.
+     * Only this middleware should be used externally
+     *
+     * @param {express.Request} req
+     * @param {express.Response} res
+     * @param {express.NextFunction} next
+     * @memberof Authenticator
+     */
+    authenticatorMiddleware(
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+    ) {
+        return runMiddlewareList(
+            [this.cookieParserMiddleware, this.sessionManagementMiddleware],
+            req,
+            res,
+            next
+        );
+    }
+
+    /**
+     * Apply authenticatorMiddleware to the specified route
+     *
+     * @param {express.Router} router
+     * @memberof Authenticator
+     */
     applyToRoute(router: express.Router) {
-        // --- we always need cooker parser middle in place
-        router.use(this.cookieParserMiddleware);
         // --- apply our wrapper as the delegate for other middlewares
-        router.use(this.authenticatorMiddleware.bind(this));
+        router.use(this.authenticatorMiddleware);
     }
 }

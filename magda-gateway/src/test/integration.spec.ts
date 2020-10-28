@@ -124,6 +124,7 @@ describe("Integration Tests", function (this: Mocha.ISuiteCallbackContext) {
             enableMultiTenants: false,
             defaultCacheControl: "public, max-age=60",
             openfaasGatewayUrl: undefined,
+            authPluginConfigJson: [],
             ...config
         });
 

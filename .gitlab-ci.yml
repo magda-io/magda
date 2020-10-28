@@ -118,6 +118,8 @@ buildtest:search-with-index-cache:
   services:
     - docker:dind
   variables:
+    # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9 
+    CRYPTOGRAPHY_ALLOW_OPENSSL_102: 1
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
     # 2.5gb heap
     # unload classes we don't need
@@ -184,6 +186,8 @@ buildtest:search-no-index-cache:
     - postgres:9.6.16
     - docker:dind
   variables:
+    # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9 
+    CRYPTOGRAPHY_ALLOW_OPENSSL_102: 1
     POSTGRES_URL: "jdbc:postgresql://postgres/postgres"
     POSTGRES_DB: postgres
     POSTGRES_USER: postgres
@@ -331,6 +335,8 @@ buildtest:typescript-apis-with-pg:
     - postgres:9.6.16
     - docker:dind
   variables:
+    # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9 
+    CRYPTOGRAPHY_ALLOW_OPENSSL_102: 1
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
     POSTGRES_HOST: postgres
     POSTGRES_DB: postgres
@@ -379,6 +385,8 @@ buildtest:typescript-apis-with-es:
   services:
     - docker:dind
   variables:
+    # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9 
+    CRYPTOGRAPHY_ALLOW_OPENSSL_102: 1
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
     TEST_ES_URL: "http://docker:9200"
   script:
@@ -427,6 +435,8 @@ buildtest:storage-api:
   services:
     - docker:dind
   variables:
+    # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9 
+    CRYPTOGRAPHY_ALLOW_OPENSSL_102: 1
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
     MINIO_HOST: "docker"
     MINIO_PORT: "9000"

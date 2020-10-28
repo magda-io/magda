@@ -72,7 +72,7 @@ export default class Database {
     getUser(id: string): Promise<Maybe<User>> {
         return this.pool
             .query(
-                'SELECT id, "displayName", email, "photoURL", source, "isAdmin", "orgUnitId" FROM users WHERE "id" = $1',
+                'SELECT "id", "displayName", "email", "photoURL", "source", "sourceId", "isAdmin", "orgUnitId" FROM users WHERE "id" = $1',
                 [id]
             )
             .then((res) => arrayToMaybe(res.rows));
@@ -185,7 +185,7 @@ export default class Database {
     getUsers(): Promise<User[]> {
         return this.pool
             .query(
-                `SELECT id, "displayName", email, "photoURL", source, "isAdmin" FROM users WHERE id <> '00000000-0000-4000-8000-000000000000'`
+                `SELECT "id", "displayName", "email", "photoURL", "source", "sourceId", "isAdmin", "orgUnitId" FROM users WHERE id <> '00000000-0000-4000-8000-000000000000'`
             )
             .then((res) => res.rows);
     }
@@ -203,24 +203,46 @@ export default class Database {
     ): Promise<Maybe<User>> {
         return this.pool
             .query(
-                'SELECT id, "displayName", email, "photoURL", source, "sourceId", "isAdmin" FROM users WHERE "sourceId" = $1 AND source = $2',
+                'SELECT "id", "displayName", "email", "photoURL", "source", "sourceId", "isAdmin", "orgUnitId" FROM users WHERE "sourceId" = $1 AND source = $2',
                 [sourceId, source]
             )
             .then((res) => arrayToMaybe(res.rows));
     }
 
     async createUser(user: User): Promise<User> {
+        const paramFields = [
+            "displayName",
+            "email",
+            "photoURL",
+            "source",
+            "sourceId",
+            "isAdmin"
+        ];
+        const params = paramFields.map((item, idx) => `$${idx + 1}`);
+        const paramData = [
+            user.displayName,
+            user.email,
+            user.photoURL,
+            user.source,
+            user.sourceId,
+            user.isAdmin
+        ];
+
+        if (user.orgUnitId) {
+            paramFields.push("orgUnitId");
+            params.push(`$${paramFields.length}`);
+            paramData.push(user.orgUnitId);
+        }
+
         const result = await this.pool.query(
-            'INSERT INTO users(id, "displayName", email, "photoURL", source, "sourceId", "isAdmin") VALUES(uuid_generate_v4(), $1, $2, $3, $4, $5, $6) RETURNING id',
-            [
-                user.displayName,
-                user.email,
-                user.photoURL,
-                user.source,
-                user.sourceId,
-                user.isAdmin
-            ]
+            `INSERT INTO users("id", ${paramFields
+                .map((field) => `"${field}"`)
+                .join(", ")}) VALUES(uuid_generate_v4(), ${params.join(
+                ", "
+            )}) RETURNING id`,
+            paramData
         );
+
         const userInfo = result.rows[0];
         const userId = userInfo.id;
 
@@ -303,5 +325,101 @@ export default class Database {
             throw new Error(`cannot find API with ID ${apiKeyId}`);
         }
         return result.rows[0] as APIKeyRecord;
+    }
+
+    /**
+     * Add a list of roleIds to the user if the user don't has the role. Return a list of current role ids after the changes.
+     *
+     * @param {string} userId
+     * @param {string[]} roleIds
+     * @returns {Promise<string[]>}
+     * @memberof Database
+     */
+    async addUserRoles(userId: string, roleIds: string[]): Promise<string[]> {
+        if (!isUuid(userId)) {
+            throw new Error(`Invalid user id: ${userId}`);
+        }
+
+        const dbClient = await this.pool.connect();
+        let finalRoleList: string[];
+
+        try {
+            await dbClient.query("BEGIN");
+
+            let result = await dbClient.query(
+                `SELECT role_id
+                    FROM user_roles
+                    WHERE user_id = $1`,
+                [userId]
+            );
+
+            const currentRoleIds = !result.rows.length
+                ? []
+                : result.rows.map((item) => item.role_id as string);
+            const roleIdsToAdd = !roleIds?.length
+                ? []
+                : roleIds.filter(
+                      (roleId) => currentRoleIds.indexOf(roleId) === -1
+                  );
+
+            if (roleIdsToAdd.length) {
+                await Promise.all(
+                    roleIdsToAdd.map((roleId) => {
+                        if (!isUuid(roleId)) {
+                            throw new Error(`Invalid role ID: ${roleId}`);
+                        }
+                        dbClient.query(
+                            "INSERT INTO user_roles (role_id, user_id) VALUES($1, $2)",
+                            [roleId, userId]
+                        );
+                    })
+                );
+                finalRoleList = [...currentRoleIds, ...roleIdsToAdd];
+            } else {
+                finalRoleList = currentRoleIds;
+            }
+
+            await dbClient.query("COMMIT");
+        } catch (e) {
+            await dbClient.query("ROLLBACK");
+            throw e;
+        } finally {
+            dbClient.release();
+        }
+
+        return finalRoleList;
+    }
+
+    /**
+     * Delete roles from a user.
+     * @param userId
+     * @param roleIds
+     */
+    async deleteUserRoles(userId: string, roleIds: string[]): Promise<void> {
+        if (!isUuid(userId)) {
+            throw new Error(`Invalid user id: ${userId}`);
+        }
+
+        const roleIdParams = [] as string[];
+        const roleIdToBeDeleted = !roleIds?.length
+            ? []
+            : roleIds.map((roleId, idx) => {
+                  if (!isUuid(roleId)) {
+                      throw new Error(`Invalid role ID: ${roleId}`);
+                  }
+                  roleIdParams.push(`$${idx + 2}`);
+                  return roleId;
+              });
+
+        if (!roleIdToBeDeleted.length) {
+            return;
+        }
+
+        await this.pool.query(
+            `DELETE FROM user_roles WHERE user_id = $1 AND role_id IN (${roleIdParams.join(
+                ", "
+            )})`,
+            [userId, ...roleIdToBeDeleted]
+        );
     }
 }
