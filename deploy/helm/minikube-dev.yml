@@ -141,3 +141,5 @@ connector-dga:
 
 magda-auth-google:
   googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
+  image:
+    repository: docker.io/data61
