@@ -6,6 +6,22 @@ import AuthApiClient, { User, UserToken, Maybe } from "@magda/auth-api-client";
 import passport from "passport";
 import _ from "lodash";
 
+// Put default req.user session data definition here.
+// so that project uses this SDK don't have to always define it
+declare global {
+    namespace Express {
+        /**
+         * This defines magda session data type.
+         * the default session data type is `UserToken` (i.e. only user id field is available and is a compulsory field)
+         * But any auth plugin provider could choose to customise the session by adding more fields (e.g. `arcgis`).
+         * We also make sure it allows extra fields here.
+         */
+        interface User extends UserToken {
+            [key: string]: any;
+        }
+    }
+}
+
 export type MagdaSessionRouterOptions = {
     cookieOptions: SessionCookieOptions;
     sessionSecret: string;

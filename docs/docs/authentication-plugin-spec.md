@@ -16,6 +16,32 @@ The template also comes with CI scripts that can automatically pushing docker im
 
 Magda also provides NPM packages [@magda/authentication-plugin-sdk](https://www.npmjs.com/package/@magda/authentication-plugin-sdk) and [@magda/auth-api-client](https://www.npmjs.com/package/@magda/auth-api-client) that can assit you with implementing your authentication logic.
 
+## Common Parameters Available Through MAGDA
+
+When deploy with MAGDA, here are a list of common paramaters are made available to the authentication plugin via various ways.
+
+### `authPluginRedirectUrl`
+
+This parameter is available through Helm chart value [global.authPluginRedirectUrl](https://github.com/magda-io/magda/blob/master/deploy/helm/magda-core/README.md#user-content-values).
+
+Its default value can be found from [magda-core helm chart document](https://github.com/magda-io/magda/blob/master/deploy/helm/magda-core/README.md#user-content-values).
+
+Once the authentication plugin complete the authentication process, the plugin is required to redirect user agent to the url specified by this parameter.
+
+When redirect the user agent, the plugin can choose to passing the following query parameters:
+
+-   `result`: Possible value: "success" or "failure".
+    -   When the parameter not present, its value should be assumed as "success"
+-   `errorMessage`: error message that should be displayed to the user. Only available when `result`="success".
+
+[authentication-plugin-sdk](https://www.npmjs.com/package/@magda/authentication-plugin-sdk) provides function `redirectOnSuccess`, `redirectOnError` & `getAbsoluteUrl` to generate the redirection.
+
+### Cookie Options
+
+Cookie options are required by [authentication-plugin-sdk](https://www.npmjs.com/package/@magda/authentication-plugin-sdk) to create session that meet Gateway's requirements.
+
+This parameter is made available through [configMaps](https://kubernetes.io/docs/concepts/configuration/configmap/) `gateway-config` key `cookie.json`.
+
 ## Required HTTP endpoints
 
 Your auth plugin can choose to serve any endpioints as you want. All HTTP endpoint will be exposed by Magda Gateway at path `/auth/login/plugin/[your auth plugin key]/*`.
@@ -71,7 +97,9 @@ The GET `/` Endpoint is supported by all authentication plugins types. When acce
 -   if the user has been authenticated already, the endpoint should issue a `302` redirection that redirect the user's web browser to a pre-configured url (Specified by Helm Chart value `global.authPluginRedirectUrl`).
 -   if the user has not been authenticated, the endpoint should:
     -   For `IDP-URI-REDIRECTION` type plugin, the endpoint should issue a `302` redirection to start the authenticaiton process accordingly.
-    -   For `PASSWORD` or `QR-CODE` type plugin, the endpoint should issue a `401` Error.
+    -   For `PASSWORD` or `QR-CODE` type plugin, the endpoint should:
+    -   When the user has been authenticated, redirect user agent to `authPluginRedirectUrl` with `result` set to "success".
+    -   When the user has not been authenticated yet, edirect user agent to `authPluginRedirectUrl` with `result` set to "failure" and `errorMessage` set to "unauthorised".
 
 > If you use [Passport.js](http://www.passportjs.org/) to build your auth plugin, this will be handled via [passport.authenticate() method](http://www.passportjs.org/docs/authenticate/).
 
