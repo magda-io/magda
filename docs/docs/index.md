@@ -8,6 +8,7 @@
 -   [How to create API key](/docs/how-to-create-api-key)
 -   [How to create local users](/docs/how-to-create-local-users)
 -   [How to build your own connectors / minions](/docs/how-to-build-your-own-connectors-minions)
+-   [Authentication Plugin Spec Document](/docs/authentication-plugin-spec)
 -   [How to deploy an HA, production deployment on GKE](/docs/deploying-for-production-on-gke)
 -   [Ports used when running locally](/docs/local-ports)
 -   [Roadmap](/docs/roadmap)
