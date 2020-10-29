@@ -6,7 +6,7 @@
     "create-secrets": "./bin/create-secrets.js"
   },
   "scripts": {
-    "prebuild": "rimraf dist",
+    "prebuild": "rimraf bin",
     "build": "webpack",
     "release": "npm publish || echo \"Skip releasing npm package @magda/create-secrets.\""
   },
@@ -32,6 +32,6 @@
     "create-secrets"
   ],
   "files": [
-    "dist"
+    "bin"
   ]
 }
