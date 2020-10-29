@@ -46,8 +46,6 @@ export type Config = {
     externalUrl: string;
     dbHost: string;
     dbPort: number;
-    authDBHost: string;
-    authDBPort: number;
     proxyRoutesJson: {
         [localRoute: string]: ProxyTarget;
     };
@@ -78,7 +76,6 @@ export type Config = {
     arcgisClientSecret?: string;
     arcgisInstanceBaseUrl?: string;
     esriOrgGroup?: string;
-    ckanUrl?: string;
     enableCkanRedirection?: boolean;
     ckanRedirectionDomain?: string;
     ckanRedirectionPath?: string;
@@ -194,12 +191,6 @@ export default function buildApp(app: express.Application, config: Config) {
         app.use(
             "/auth",
             createAuthRouter({
-                dbPool: createPool({
-                    ...config,
-                    database: "auth",
-                    dbHost: config.authDBHost,
-                    dbPort: config.authDBPort
-                }),
                 authenticator: authenticator,
                 jwtSecret: config.jwtSecret,
                 facebookClientId: config.facebookClientId,
@@ -210,7 +201,6 @@ export default function buildApp(app: express.Application, config: Config) {
                 arcgisClientSecret: config.arcgisClientSecret,
                 arcgisInstanceBaseUrl: config.arcgisInstanceBaseUrl,
                 esriOrgGroup: config.esriOrgGroup,
-                ckanUrl: config.ckanUrl,
                 authorizationApi: config.authorizationApi,
                 externalUrl: config.externalUrl,
                 userId: config.userId,
