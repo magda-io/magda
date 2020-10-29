@@ -64,4 +64,34 @@ export declare function createOrGetUserToken(
         profile: passport.Profile
     ) => Promise<void>
 ): Promise<UserToken>;
+
+/**
+ * Join `url` with `baseUrl` if `url` is not an absolute url
+ *
+ * @export
+ * @param {string} url
+ * @param {string} baseUrl
+ * @param {{ [key: string]: string }} [optionalQueries]
+ * @returns
+ */
+export declare function getAbsoluteUrl(
+    url: string,
+    baseUrl: string,
+    optionalQueries?: {
+        [key: string]: string;
+    }
+): string;
+
+export declare function redirectOnSuccess(
+    toURL: string,
+    req: Request,
+    res: Response
+): void;
+
+export declare function redirectOnError(
+    err: any,
+    toURL: string,
+    req: Request,
+    res: Response
+): void;
 ```

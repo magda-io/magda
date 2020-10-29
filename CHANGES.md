@@ -23,6 +23,13 @@
 -   Turn off `Open In National Map` Button for Internal Storage data file Link
 -   Use [magda-preview-map](https://github.com/magda-io/magda-preview-map) v0.0.58
 -   Fixed: Dataset Creation Tool may not always capture format properly #3001
+-   Add Authentication Plugin Support to Gateway & UI
+-   Authentication Plugin Documentation
+-   Publish AuthApiClient as a NPM package
+-   Publish Authentication Plugin SDK as a NPM package
+-   Publish create-secrets tool as a NPM package
+-   Replace google auth provider with auth plugin [magda-auth-google](https://github.com/magda-io/magda-auth-google)
+-   Replace ckan auth provider with auth plugin [magda-auth-ckan](https://github.com/magda-io/magda-auth-ckan)
 
 ## 0.0.57
 
