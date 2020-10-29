@@ -40,7 +40,6 @@
   "dependencies": {
     "ansi-styles": "^3.2.1",
     "apidoc": "https://github.com/magda-io/apidoc",
-    "bcrypt": "^5.0.0",
     "chalk": "^2.4.1",
     "clear": "^0.1.0",
     "cli-cursor": "^3.1.0",
