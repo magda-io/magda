@@ -95,9 +95,6 @@ describe("Integration Tests", function (this: Mocha.ISuiteCallbackContext) {
             dbHost: dbConfig.host,
             dbPort: 5432,
             enableInternalAuthProvider: false,
-            // --- internal auth has been turned off so provide dummy authDBHost here shouldn't matter
-            authDBHost: dbConfig.host,
-            authDBPort: 5432,
             proxyRoutesJson: defaultAppConfig.proxyRoutes,
             webProxyRoutesJson: undefined,
             helmetJson: defaultAppConfig.helmet,
@@ -115,7 +112,6 @@ describe("Integration Tests", function (this: Mocha.ISuiteCallbackContext) {
             enableHttpsRedirection: false,
             enableWebAccessControl: false,
             enableAuthEndpoint: true,
-            ckanUrl: "https://demo.ckan.org/",
             enableCkanRedirection: false,
             ckanRedirectionDomain: "redirect-ckan.exmaple.com",
             ckanRedirectionPath: "",

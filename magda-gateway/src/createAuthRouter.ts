@@ -8,7 +8,6 @@ import createAuthPluginRouter, {
     AuthPluginConfig
 } from "./createAuthPluginRouter";
 import passport from "passport";
-import pg from "pg";
 
 export interface AuthRouterOptions {
     authenticator: Authenticator;
