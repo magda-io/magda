@@ -8,10 +8,8 @@ import createAuthPluginRouter, {
     AuthPluginConfig
 } from "./createAuthPluginRouter";
 import passport from "passport";
-import pg from "pg";
 
 export interface AuthRouterOptions {
-    dbPool: pg.Pool;
     authenticator: Authenticator;
     jwtSecret: string;
     facebookClientId: string;
@@ -22,7 +20,6 @@ export interface AuthRouterOptions {
     arcgisClientSecret: string;
     arcgisInstanceBaseUrl: string;
     esriOrgGroup: string;
-    ckanUrl: string;
     authorizationApi: string;
     externalUrl: string;
     userId: string;
@@ -44,17 +41,6 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
         options.authenticator.authenticatorMiddleware;
 
     const providers = [
-        {
-            id: "internal",
-            enabled: options.enableInternalAuthProvider ? true : false,
-            authRouter: options.enableInternalAuthProvider
-                ? require("./oauth2/internal").default({
-                      passport: passport,
-                      dbPool: options.dbPool,
-                      externalAuthHome: `${options.externalUrl}/auth`
-                  })
-                : null
-        },
         {
             id: "facebook",
             enabled: options.facebookClientId ? true : false,
@@ -80,18 +66,6 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
                       arcgisInstanceBaseUrl: options.arcgisInstanceBaseUrl,
                       externalAuthHome: `${options.externalUrl}/auth`,
                       esriOrgGroup: options.esriOrgGroup
-                  })
-                : null
-        },
-        {
-            id: "ckan",
-            enabled: options.ckanUrl ? true : false,
-            authRouter: options.ckanUrl
-                ? require("./oauth2/ckan").default({
-                      authorizationApi: authApi,
-                      passport: passport,
-                      externalAuthHome: `${options.externalUrl}/auth`,
-                      ckanUrl: options.ckanUrl
                   })
                 : null
         },

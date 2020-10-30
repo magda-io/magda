@@ -30,6 +30,9 @@
 -   Publish create-secrets tool as a NPM package
 -   Replace google auth provider with auth plugin [magda-auth-google](https://github.com/magda-io/magda-auth-google)
 -   Replace ckan auth provider with auth plugin [magda-auth-ckan](https://github.com/magda-io/magda-auth-ckan)
+-   Replace internal auth provider with auth plugin [magda-auth-internal](https://github.com/magda-io/magda-auth-internal)
+-   Remove Google, CKAN & internal auth provider code from Gateway codebase
+-   Publish docker image utils as a seperate NPM package @magda/docker-utils
 
 ## 0.0.57
 

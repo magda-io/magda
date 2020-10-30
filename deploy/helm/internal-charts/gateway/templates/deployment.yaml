@@ -37,8 +37,6 @@ spec:
             {{- end }}
             "--dbHost", "session-db",
             "--dbPort", "5432",
-            "--authDBHost", "authorization-db",
-            "--authDBPort", "5432",
             "--enableInternalAuthProvider", {{ .Values.auth.enableInternalAuthProvider | quote }},
 {{- if .Values.auth.facebookClientId }}
             "--facebookClientId", {{ .Values.auth.facebookClientId | quote }},
@@ -72,9 +70,6 @@ spec:
 {{- end }}
 {{- if .Values.enableCkanRedirection }}
             "--enableCkanRedirection", {{ .Values.enableCkanRedirection | quote }},
-{{- end }}
-{{- if .Values.auth.ckanAuthenticationUrl }}
-            "--ckanUrl", {{ .Values.auth.ckanAuthenticationUrl | quote }},
 {{- end }}
             "--proxyRoutesJson", "/etc/config/routes.json",
             "--webProxyRoutesJson", "/etc/config/webRoutes.json",

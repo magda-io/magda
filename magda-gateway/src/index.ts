@@ -31,16 +31,6 @@ const argv = addJwtSecretFromEnvVar(
             type: "number",
             default: 5432
         })
-        .option("authDBHost", {
-            describe: "The host running the auth database.",
-            type: "string",
-            default: "localhost"
-        })
-        .option("authDBPort", {
-            describe: "The port running the auth database.",
-            type: "number",
-            default: 5432
-        })
         .option("proxyRoutesJson", {
             describe:
                 "Path of the json that defines routes to proxy. These will be merged with the defaults specified in defaultConfig.ts.",
@@ -199,10 +189,6 @@ const argv = addJwtSecretFromEnvVar(
             default:
                 process.env.AAF_CLIENT_SECRET ||
                 process.env.npm_package_config_aafClientSecret
-        })
-        .options("ckanUrl", {
-            describe: "The URL of a CKAN server to use for authentication.",
-            type: "string"
         })
         .options("enableAuthEndpoint", {
             describe: "Whether enable the AuthEndpoint",
