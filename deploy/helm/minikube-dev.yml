@@ -68,7 +68,6 @@ magda:
         origin: true
       auth:
         facebookClientId: "173073926555600"
-        arcgisClientId: "d0MgVUbbg5Z6vmWo"
       authPlugins:
       - key: google
         baseUrl: http://magda-auth-google
@@ -76,6 +75,8 @@ magda:
         baseUrl: http://magda-auth-ckan
       - key: internal
         baseUrl: http://magda-auth-internal
+      - key: arcgis
+        baseUrl: http://magda-auth-arcgis
 
     registry-api:
       skipAuthorization: false
@@ -161,6 +162,12 @@ magda-auth-ckan:
 magda-auth-internal:
   authPluginConfig:
     loginFormExtraInfoContent: "Forgot your password? Email [magda-test@googlegroups.com](magda-test@googlegroups.com)"
+  image:
+    tag: 1.0.0
+    repository: docker.io/data61
+
+magda-auth-arcgis:
+  arcgisClientId: "d0MgVUbbg5Z6vmWo"
   image:
     tag: 1.0.0
     repository: docker.io/data61

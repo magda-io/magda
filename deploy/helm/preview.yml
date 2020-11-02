@@ -50,7 +50,6 @@ magda:
       enableHttpsRedirection: true
       auth:
         facebookClientId: "173073926555600"
-        arcgisClientId: "d0MgVUbbg5Z6vmWo"
         vanguardWsFedIdpUrl: https://thirdparty.authentication.business.gov.au/fas/v2/wsfed12/authenticate
         vanguardWsFedRealm: https://environment.magda.io/integration-test-2
       authPlugins:
@@ -60,6 +59,8 @@ magda:
         baseUrl: http://magda-auth-ckan
       - key: internal
         baseUrl: http://magda-auth-internal
+      - key: arcgis
+        baseUrl: http://magda-auth-arcgis
       autoscaler:
         enabled: false
       helmet:
@@ -166,6 +167,12 @@ magda-auth-ckan:
 magda-auth-internal:
   authPluginConfig:
     loginFormExtraInfoContent: "Forgot your password? Email [magda-test@googlegroups.com](magda-test@googlegroups.com)"
+  image:
+    tag: 1.0.0
+    repository: docker.io/data61
+
+magda-auth-arcgis:
+  arcgisClientId: "d0MgVUbbg5Z6vmWo"
   image:
     tag: 1.0.0
     repository: docker.io/data61

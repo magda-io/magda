@@ -33,6 +33,7 @@
 -   Replace internal auth provider with auth plugin [magda-auth-internal](https://github.com/magda-io/magda-auth-internal)
 -   Remove Google, CKAN & internal auth provider code from Gateway codebase
 -   Publish docker image utils as a seperate NPM package @magda/docker-utils
+-   Use magda-auth-arcgis auth plugin instead
 
 ## 0.0.57
 
