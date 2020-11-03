@@ -34,6 +34,7 @@
 -   Remove Google, CKAN & internal auth provider code from Gateway codebase
 -   Publish docker image utils as a seperate NPM package @magda/docker-utils
 -   Use magda-auth-arcgis auth plugin instead
+-   Make `Add a dataset` link on Homepage (admin user only) go to metadata creation tool directly
 
 ## 0.0.57
 
