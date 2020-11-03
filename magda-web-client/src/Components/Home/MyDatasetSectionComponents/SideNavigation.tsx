@@ -12,7 +12,7 @@ const SideNavigation: FunctionComponent<PropsType> = (props) => {
                 <a className="icon-my-data active">
                     <span>My data sets</span>
                 </a>
-                <Link to="/dataset/add" className="icon-add-dataset">
+                <Link to="/dataset/add/metadata" className="icon-add-dataset">
                     <span>Add a data set</span>
                 </Link>
             </div>
