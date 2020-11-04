@@ -97,6 +97,8 @@ Based on [PassportJS](http://www.passportjs.org/), Magda's authentication system
     </video>
 </p>
 
+You can also develop your own authentication plugins to customise the authentication or user onboarding process. More information can be found from the [authentication-plugin-spec](https://github.com/magda-io/magda/blob/master/docs/docs/authentication-plugin-spec.md) document.
+
 ## Under Development
 
 We're currently finishing off these features - you can see the full roadmap [here](/docs/roadmap).

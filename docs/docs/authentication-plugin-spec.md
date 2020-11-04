@@ -20,7 +20,7 @@ Magda also provides NPM packages [@magda/authentication-plugin-sdk](https://www.
 
 When deploy with MAGDA, here are a list of common paramaters are made available to the authentication plugin via various ways.
 
-### `authPluginRedirectUrl`
+### Auth Plugin Redirect Url
 
 This parameter is available through Helm chart value [global.authPluginRedirectUrl](https://github.com/magda-io/magda/blob/master/deploy/helm/magda-core/README.md#user-content-values).
 
