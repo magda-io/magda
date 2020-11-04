@@ -94,7 +94,6 @@ describe("Integration Tests", function (this: Mocha.ISuiteCallbackContext) {
             externalUrl: "http://localhost:80",
             dbHost: dbConfig.host,
             dbPort: 5432,
-            enableInternalAuthProvider: false,
             proxyRoutesJson: defaultAppConfig.proxyRoutes,
             webProxyRoutesJson: undefined,
             helmetJson: defaultAppConfig.helmet,
@@ -416,6 +415,58 @@ describe("Integration Tests", function (this: Mocha.ISuiteCallbackContext) {
                 // --- make it pass multi tenant table lookup
                 .set("Host", "my-test-domain")
                 .expect(404);
+        });
+    });
+
+    describe("Test defaultWebRouteConfig", () => {
+        it("should proxy to the target specified by `web` field for GET method ONLY if no defaultWebRouteConfig is provided", async () => {
+            const webRouteTarget = "http://web-route.com";
+            const resText = Math.random().toString();
+
+            const scope = nock(webRouteTarget);
+            scope.get("/xxx").reply(200, resText);
+            scope.post("/xxx").reply(200, resText);
+
+            const app = setupTestApp({
+                web: webRouteTarget
+            });
+
+            await app.get("/xxx").expect(200, resText);
+
+            // by defaul only proxy to GET
+            await app.post("/xxx").expect(404);
+        });
+
+        it("should proxy to the target specified by defaultWebRouteConfig's `to` field and only for the methods specified when defaultWebRouteConfig is provided", async () => {
+            const webRouteTarget = "http://web-route.com";
+            const resText = Math.random().toString();
+
+            const webRouteTarget2 = "http://web-route2.com";
+            const resText2 = Math.random().toString();
+
+            const scope = nock(webRouteTarget);
+            scope.get("/xxx").reply(200, resText);
+            scope.post("/xxx").reply(200, resText);
+            scope.put("/xxx").reply(200, resText);
+
+            const scope2 = nock(webRouteTarget2);
+            scope2.get("/xxx").reply(200, resText2);
+            scope2.post("/xxx").reply(200, resText2);
+            scope2.put("/xxx").reply(200, resText2);
+
+            const app = setupTestApp({
+                web: webRouteTarget,
+                defaultWebRouteConfig: {
+                    // only webRouteTarget2 should be proxies
+                    // webRouteTarget is ignored
+                    to: webRouteTarget2,
+                    methods: ["GET", "PUT"]
+                }
+            });
+
+            await app.get("/xxx").expect(200, resText2);
+            await app.post("/xxx").expect(404);
+            await app.put("/xxx").expect(200, resText2);
         });
     });
 });

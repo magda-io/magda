@@ -32,7 +32,6 @@ describe("Test createAuthRouter", function (this: Mocha.ISuiteCallbackContext) {
             jwtSecret: "dummy",
             googleClientId: "xxxxx",
             googleClientSecret: "xxxxx",
-            enableInternalAuthProvider: true,
             externalUrl: "http://exmaple.com",
             userId: "000-xxxx-xxxx-xxx-xxx",
             facebookClientId: "xxxxx",
