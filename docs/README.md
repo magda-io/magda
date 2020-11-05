@@ -18,7 +18,7 @@ Magda is designed around the concept of _federation_ - providing a single view a
 
 ### Don't neglect your small data
 
-Investment in data often focuses on extracting value _big data_ - big, complex datasets that are already known to be of high value. This focus comes at the expense of _small data_ - the myriad Excel, CSV and even PDF files that are critical to the operations of every organization, but unknown outside the teams and individuals that use them.
+Investment in data often focuses on extracting value from _big data_ - big, complex datasets that are already known to be of high value. This focus comes at the expense of _small data_ - the myriad Excel, CSV and even PDF files that are critical to the operations of every organization, but unknown outside the teams and individuals that use them.
 
 This results in squandered opportunities as small datasets go undiscovered by other teams who could make use of or combine them, fragmentation as files are shared and modified via untracked, ad-hoc methods, and waste as datasets are collected or acquired multiple times, often at extreme expense.
 
@@ -46,7 +46,7 @@ When users search they expect the result to be the best result for the meaning o
 
 Magda is designed from the ground-up with the ability to pull data from many different sources into one easily searchable catalog in which all datasets are first-class citizens, regardless of where they came from. Magda can accept metadata from our easy-to-use cataloging process, existing Excel or CSV-based data inventories, existing metadata APIs such as CKAN or Data.json, or have data pushed to it from your systems via its REST API.
 
-In Magda all data is first-class, regardless of its source. Data in Magda is combined into one search index, with history tracking and even webhook notifications when metadata records are changed.
+In Magda, all data is first-class regardless of its source. Data in Magda is combined into one search index with history tracking and even webhook notifications when metadata records are changed.
 
 ### Previews
 
@@ -58,7 +58,7 @@ Easily determine if a dataset is useful with charting, spatial preview with [Ter
 
 ### Metadata enhancement
 
-Authoring of high-quality metadata has historically been difficult and time-consuming, and as a result metadata around datasets is often poorly formatted or completely absent, making them difficult to search for and hard to understand once found.
+Authoring of high-quality metadata has historically been difficult and time-consuming. As a result, metadata around datasets is often poorly formatted or completely absent making them difficult to search for and hard to understand once found.
 
 Magda is able to automatically derive and enhance metadata, without the underlying data itself ever being transmitted to a Magda server. For datasets catalogued directly, our "Add Dataset" process is able to read and derive data from files directly in the browser, without the data itself ever having to leave the user's machine, and for both internal and external datasets our minion framework is able check for broken links, normalize formats, calculate quality, determine the best means of visualisation and more. This framework for enhancement is open and extensible, allowing to build your own enhancement processes using any language that can be deployed as a docker container.
 
@@ -146,7 +146,7 @@ Magda is also completely open-source and can be used for free - to get it runnin
 
 ## See it in action
 
-A demo site exists at [demo.dev.magda.io](https://demo.dev.magda.io). This is hosted on pre-emptible instances and may go down for short periods, if so wait 5-10 minutes and it should come back up again. For an example of Magda in production, see [data.gov.au](https://data.gov.au).
+A demo site exists at [demo.dev.magda.io](https://demo.dev.magda.io). This is hosted on pre-emptible instances and may go down for short periods.  If it seems down, wait 5-10 minutes and it should come back up again. For an example of Magda in production, see [data.gov.au](https://data.gov.au).
 
 ## Want to get it running yourself?
 
