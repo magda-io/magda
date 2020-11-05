@@ -1,16 +1,18 @@
 # How to create Local Users
 
+> Please note: local authentication feature has been moved out as an [Authentication Plugin](./authentication-plugin-spec.md) to repo [magda-auth-internal](https://github.com/magda-io/magda-auth-internal). You need to deploy the plugin to turn of this feature.
+
 Magda now support creating local authenticated users (instead of SSO). You can use the `set-user-password` script to create users / set password for users. Please note: users will need to use their email address as username to login.
 
 Before start to use the `set-user-password script, you need to:
 
--   Clone Magda repo
+-   Clone [magda-auth-internal repo](https://github.com/magda-io/magda-auth-internal)
 -   Run `yarn install` to install all dependencies
 -   Port forward the Magda database to local:
     -   `kubectl port-forward combined-db-0 5432:5432`
     -   If you didn't install magda to the default namespace, you can use: `kubectl port-forward -n [namespace] combined-db-0 5432:5432`
 
-After the installation is done, run `yset-user-password` will list help information as below:
+After the installation is done, run `yarn set-user-password` will list help information as below:
 
 ```
 Usage: set-user-password [options]

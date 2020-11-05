@@ -37,8 +37,6 @@ spec:
             {{- end }}
             "--dbHost", "session-db",
             "--dbPort", "5432",
-            "--authDBHost", "authorization-db",
-            "--authDBPort", "5432",
             "--enableInternalAuthProvider", {{ .Values.auth.enableInternalAuthProvider | quote }},
 {{- if .Values.auth.facebookClientId }}
             "--facebookClientId", {{ .Values.auth.facebookClientId | quote }},
@@ -54,9 +52,6 @@ spec:
 {{- end }}
 {{- if .Values.auth.esriOrgGroup}}
             "--esriOrgGroup", {{ .Values.auth.esriOrgGroup| quote }},
-{{- end }}
-{{- if .Values.auth.googleClientId }}
-            "--googleClientId", {{ .Values.auth.googleClientId | quote }},
 {{- end }}
 {{- if .Values.auth.vanguardWsFedIdpUrl }}
             "--vanguardWsFedIdpUrl", {{ .Values.auth.vanguardWsFedIdpUrl | quote }},
@@ -76,15 +71,13 @@ spec:
 {{- if .Values.enableCkanRedirection }}
             "--enableCkanRedirection", {{ .Values.enableCkanRedirection | quote }},
 {{- end }}
-{{- if .Values.auth.ckanAuthenticationUrl }}
-            "--ckanUrl", {{ .Values.auth.ckanAuthenticationUrl | quote }},
-{{- end }}
             "--proxyRoutesJson", "/etc/config/routes.json",
             "--webProxyRoutesJson", "/etc/config/webRoutes.json",
             "--helmetJson", "/etc/config/helmet.json",
             "--cspJson", "/etc/config/csp.json",
             "--corsJson", "/etc/config/cors.json",
             "--cookieJson", "/etc/config/cookie.json",
+            "--authPluginConfigJson", "/etc/config/authPlugins.json",
             "--web", {{ .Values.web | default "http://web" | quote }},
             "--authorizationApi", "http://authorization-api/v0",
             "--tenantUrl", "http://tenant-api/v0",
@@ -176,14 +169,6 @@ spec:
             secretKeyRef:
               name: oauth-secrets
               key: arcgis-client-secret
-              optional: true
-{{- end }}
-{{- if .Values.auth.googleClientId }}
-        - name: GOOGLE_CLIENT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: oauth-secrets
-              key: google-client-secret
               optional: true
 {{- end }}
 {{- if .Values.auth.aafClientUri }}

@@ -15,6 +15,29 @@
 -   Upgraded minio to 7.1.2
 -   Allowed region to be specified for storage API
 -   Made storage API process `BucketAlreadyExists` error code correctly when create bucket
+-   Fixed `magda-builder-scala` docker image failed to build due to expired resource link
+-   Fixed: Registry should not create an event when failed to delete the record #2976
+-   Fixed: Time Travel API response 500 sometimes #2977
+-   All registry APIs that create / changes / updates the data will now return the eventId of the event created for the operation #2983
+-   When submit a dataset, system will try to tag current version with relevant EventId #2980
+-   Keep tracking superseded data files in versions to avoid superseded data files being deleted #2981
+-   UI Changes that allow user to access the distribution page of different versions #2982
+-   Use pseudo url for data file stored in storage api #3000
+-   Turn off `Open In National Map` Button for Internal Storage data file Link
+-   Use [magda-preview-map](https://github.com/magda-io/magda-preview-map) v0.0.58
+-   Fixed: Dataset Creation Tool may not always capture format properly #3001
+-   Add Authentication Plugin Support to Gateway & UI
+-   Authentication Plugin Documentation
+-   Publish AuthApiClient as a NPM package
+-   Publish Authentication Plugin SDK as a NPM package
+-   Publish create-secrets tool as a NPM package
+-   Replace google auth provider with auth plugin [magda-auth-google](https://github.com/magda-io/magda-auth-google)
+-   Replace ckan auth provider with auth plugin [magda-auth-ckan](https://github.com/magda-io/magda-auth-ckan)
+-   Replace internal auth provider with auth plugin [magda-auth-internal](https://github.com/magda-io/magda-auth-internal)
+-   Remove Google, CKAN & internal auth provider code from Gateway codebase
+-   Publish docker image utils as a seperate NPM package @magda/docker-utils
+-   Use magda-auth-arcgis auth plugin instead
+-   Make `Add a dataset` link on Homepage (admin user only) go to metadata creation tool directly
 
 ## 0.0.57
 

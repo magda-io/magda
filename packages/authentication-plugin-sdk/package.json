@@ -1,0 +1,54 @@
+{
+  "name": "@magda/authentication-plugin-sdk",
+  "description": "MAGDA Authentication Plugin SDK",
+  "version": "0.0.58-alpha.0",
+  "scripts": {
+    "prebuild": "rimraf dist tsconfig.tsbuildinfo",
+    "build": "tsc -b",
+    "release": "npm publish || echo \"Skip releasing npm package @magda/authentication-plugin-sdk.\""
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "devDependencies": {
+    "@magda/typescript-common": "^0.0.58-alpha.0",
+    "@magda/auth-api-client": "^0.0.58-alpha.0",
+    "@types/express": "^4.17.6",
+    "@types/express-session": "^1.15.15",
+    "@types/passport": "^1.0.3",
+    "@types/urijs": "1.19.1",
+    "@types/pg": "^6.1.41",
+    "@types/lodash": "^4.14.74",
+    "ts-loader": "^6.2.1",
+    "typescript": "^3.7.2",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
+  },
+  "dependencies": {
+    "pg": "^6.4.0",
+    "express": "^4.17.1",
+    "urijs": "^1.18.12",
+    "express-session": "^1.17.1",
+    "lodash": "^4.17.4",
+    "cookie-parser": "^1.4.5",
+    "connect-pg-simple": "^6.0.1"
+  },
+  "magda": {
+    "language": "typescript",
+    "categories": {
+      "npmPackage": true,
+      "useCommonLib": true
+    }
+  },
+  "keywords": [
+    "Magda",
+    "Authentication",
+    "Authentication Plugin",
+    "Passport",
+    "SDK"
+  ],
+  "files": [
+    "dist"
+  ]
+}

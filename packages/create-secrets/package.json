@@ -1,0 +1,37 @@
+{
+  "name": "@magda/create-secrets",
+  "description": "MAGDA Create Secrets Tool",
+  "version": "0.0.58-alpha.0",
+  "bin": {
+    "create-secrets": "./bin/create-secrets.js"
+  },
+  "scripts": {
+    "prebuild": "rimraf bin",
+    "build": "webpack",
+    "release": "npm publish || echo \"Skip releasing npm package @magda/create-secrets.\""
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "main": "bin/create-secrets.js",
+  "devDependencies": {
+    "@magda/scripts": "^0.0.58-alpha.0",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
+  },
+  "magda": {
+    "language": "typescript",
+    "categories": {
+      "npmPackage": true,
+      "useCommonLib": true
+    }
+  },
+  "keywords": [
+    "Magda",
+    "Kubernetes secrets",
+    "CLI Tool",
+    "create-secrets"
+  ],
+  "files": [
+    "bin"
+  ]
+}

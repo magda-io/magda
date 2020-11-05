@@ -38,7 +38,7 @@ import ErrorMessageBox from "Components/Common/ErrorMessageBox";
 import helpIcon from "assets/help.svg";
 import { User } from "reducers/userManagementReducer";
 import * as ValidationManager from "../Add/ValidationManager";
-import URI from "urijs";
+import urijs from "urijs";
 import FileDeletionError from "helpers/FileDeletionError";
 
 type Props = {
@@ -351,7 +351,7 @@ class EditDataset extends React.Component<Props, State> {
 }
 
 function mapStateToProps(state, props) {
-    const uri = new URI(window.location.href);
+    const uri = urijs(window.location.href);
     const datasetId = props.match.params.datasetId;
     let step = parseInt(props.match.params.step);
     const isBackToReview =

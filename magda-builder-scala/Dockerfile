@@ -24,6 +24,7 @@ ENV JAVA_VERSION 8u212
 ENV JAVA_ALPINE_VERSION 8.222.10-r0
 
 RUN set -x \
+	&& apk update \
 	&& apk add --no-cache openjdk8="$JAVA_ALPINE_VERSION" \
 	&& [ "$JAVA_HOME" = "$(docker-java-home)" ]
 
@@ -37,7 +38,8 @@ ENV PATH ${PATH}:${SBT_HOME}/bin
 
 # Install sbt
 RUN mkdir -p "$SBT_HOME" && \
-    apk add --no-cache --update wget bash nss && \
-    wget -qO - --no-check-certificate "https://piccolo.link/sbt-$SBT_VERSION.tgz" | tar xz -C $SBT_HOME --strip-components=1 && \
+		apk update &&\
+    apk add --no-cach wget bash nss && \
+    wget -qO - --no-check-certificate "https://github.com/sbt/sbt/releases/download/v$SBT_VERSION/sbt-$SBT_VERSION.tgz" | tar xz -C $SBT_HOME --strip-components=1 && \
     apk del wget && \
 	sbt sbtVersion

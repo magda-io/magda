@@ -15,7 +15,9 @@ import {
     getInitialVersionAspectData,
     VersionAspectData,
     updateRecordAspect,
-    patchRecord
+    patchRecord,
+    tagRecordVersionEventId,
+    VersionItem
 } from "api-clients/RegistryApis";
 import { config } from "config";
 import { User } from "reducers/userManagementReducer";
@@ -27,6 +29,7 @@ import { ReactStateUpdaterType } from "helpers/promisifySetState";
 import getDistInfoFromDownloadUrl from "./Pages/AddFiles/getDistInfoFromDownloadUrl";
 import deleteFile from "./Pages/AddFiles/deleteFile";
 import escapeJsonPatchPointer from "helpers/escapeJsonPatchPath";
+import uniq from "lodash/uniq";
 
 export type Distribution = {
     title: string;
@@ -602,6 +605,15 @@ function populateDistributions(data: RawDataset, state: State) {
 
             if (item?.aspects?.version) {
                 dis.version = item.aspects.version;
+                if (dis.version?.versions?.length) {
+                    dis.version.versions.forEach((ver) => {
+                        if (ver.internalDataFileUrl) {
+                            state.uploadedFileUrls.push(
+                                ver.internalDataFileUrl
+                            );
+                        }
+                    });
+                }
             }
 
             if (dis.useStorageApi && dis.downloadURL) {
@@ -615,6 +627,8 @@ function populateDistributions(data: RawDataset, state: State) {
         state.distributions = distributions;
         state.involvedDistributionIds = distributions.map((dis) => dis.id!);
     }
+
+    state.uploadedFileUrls = uniq(state.uploadedFileUrls);
 }
 
 export async function rawDatasetDataToState(
@@ -1253,7 +1267,10 @@ async function convertStateToDistributionRecords(
                     ? distribution.version
                     : getInitialVersionAspectData(
                           distribution.title,
-                          state.dataset.editingUserId
+                          state.dataset.editingUserId,
+                          distribution.useStorageApi
+                              ? distribution.downloadURL
+                              : undefined
                       )
             },
             authnReadPolicyId: authPolicy
@@ -1328,7 +1345,8 @@ export async function createDatasetFromState(
     datasetId: string,
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>,
-    authnReadPolicyId?: string
+    authnReadPolicyId?: string,
+    tagVersion: boolean = false
 ) {
     const distributionRecords = await convertStateToDistributionRecords(
         state,
@@ -1344,14 +1362,15 @@ export async function createDatasetFromState(
         authnReadPolicyId
     );
 
-    await createDataset(datasetRecord, distributionRecords);
+    return await createDataset(datasetRecord, distributionRecords, tagVersion);
 }
 
 export async function updateDatasetFromState(
     datasetId: string,
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>,
-    authnReadPolicyId?: string
+    authnReadPolicyId?: string,
+    tagVersion: boolean = false
 ) {
     const distributionRecords = await convertStateToDistributionRecords(
         state,
@@ -1365,7 +1384,7 @@ export async function updateDatasetFromState(
         true,
         authnReadPolicyId
     );
-    await updateDataset(datasetRecord, distributionRecords);
+    return await updateDataset(datasetRecord, distributionRecords, tagVersion);
 }
 
 type FailedFileInfo = {
@@ -1374,7 +1393,7 @@ type FailedFileInfo = {
 };
 
 /**
- * Tried to delete any uploaded files that is not associated with any distributions.
+ * Tried to delete any uploaded files that is not associated with any distributions (this also include any files associated with distribution versions).
  * Return info of files that are failed to delete.
  * If all files are deleted successfully or no files are required to deleted, it will return an empty array.
  *
@@ -1387,12 +1406,27 @@ export async function cleanUpOrphanFiles(
     uploadedFileUrls: string[],
     distributions: Distribution[]
 ): Promise<FailedFileInfo[]> {
+    let distOwnedFiles: string[] = [];
+
+    distributions.forEach((dist) => {
+        if (dist.useStorageApi && dist.downloadURL) {
+            distOwnedFiles.push(dist.downloadURL);
+        }
+        if (dist?.version?.versions?.length) {
+            dist.version.versions.forEach((ver) => {
+                if (ver.internalDataFileUrl) {
+                    distOwnedFiles.push(ver.internalDataFileUrl);
+                }
+            });
+        }
+    });
+
+    distOwnedFiles = uniq(distOwnedFiles);
+
     return (
         await Promise.all(
             uploadedFileUrls.map(async (fileUrl) => {
-                if (
-                    distributions.find((item) => item.downloadURL === fileUrl)
-                ) {
+                if (distOwnedFiles.indexOf(fileUrl) !== -1) {
                     // --- do nothing if the url is allocated to a distribution
                     return { isOk: true };
                 }
@@ -1442,6 +1476,42 @@ async function cleanUpDistributions(state: State) {
     }
 }
 
+function createVersionForDatasetSubmission(
+    eventId: number,
+    datasetData: RawDataset,
+    state: State
+) {
+    const editorId = state.dataset.editingUserId;
+    // --- check if a new version is required to create for the dataset's submission
+    const version: VersionAspectData = datasetData.aspects["version"]
+        ? datasetData.aspects["version"]
+        : getInitialVersionAspectData(state.dataset.title, editorId);
+
+    let currentVersion: VersionItem | undefined = version.versions.find(
+        (ver) => ver.versionNumber === version.currentVersionNumber
+    );
+    if (
+        !currentVersion ||
+        (currentVersion.eventId && currentVersion.eventId !== eventId)
+    ) {
+        currentVersion = {
+            versionNumber:
+                version.versions.reduce(
+                    (acc, curVer) => Math.max(acc, curVer.versionNumber),
+                    0
+                ) + 1,
+            createTime: new Date().toISOString(),
+            creatorId: editorId,
+            title: state.dataset.title,
+            description: "Version created on update submission"
+        };
+        version.versions.push(currentVersion);
+        version.currentVersionNumber = currentVersion.versionNumber;
+    }
+    datasetData.aspects["version"] = version;
+    return datasetData;
+}
+
 /**
  * This function will submit the dataset using different API endpoints (depends on whether the dataset has been create or not)
  * It will also delete any temporary draft data from the `dataset-draft` aspect.
@@ -1456,23 +1526,41 @@ export async function submitDatasetFromState(
     state: State,
     setState: React.Dispatch<React.SetStateAction<State>>
 ): Promise<FailedFileInfo[]> {
+    let datasetData: Record, eventId: number;
     if (await doesRecordExist(datasetId)) {
-        await updateDatasetFromState(
+        [datasetData, eventId] = await updateDatasetFromState(
             datasetId,
             state,
             setState,
-            PUBLISHED_DATASET_POLICY_ID
+            PUBLISHED_DATASET_POLICY_ID,
+            true
         );
     } else {
-        await createDatasetFromState(
+        [datasetData, eventId] = await createDatasetFromState(
             datasetId,
             state,
             setState,
-            PUBLISHED_DATASET_POLICY_ID
+            PUBLISHED_DATASET_POLICY_ID,
+            true
         );
     }
 
-    await deleteRecordAspect(datasetId, "dataset-draft");
+    const [, draftDetetionEventId] = await deleteRecordAspect(
+        datasetId,
+        "dataset-draft"
+    );
+
+    const lastEventId = Math.max(draftDetetionEventId, eventId);
+
+    // --- attempt to create a new version for dataset submission when necessary
+    datasetData = createVersionForDatasetSubmission(
+        lastEventId,
+        datasetData as RawDataset,
+        state
+    );
+
+    // --- attempt to tag dataset version
+    await tagRecordVersionEventId(datasetData, lastEventId);
 
     await updateCkanExportStatus(datasetId, state);
 

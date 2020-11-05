@@ -146,7 +146,7 @@ class AddDataset extends React.Component<any, any> {
                                     heading="No files to upload?"
                                     icon={iconDataEntry}
                                     blurb="Manually add the dataset record and the metadata."
-                                    href="/dataset/add/metadata/-/0"
+                                    href="/dataset/add/metadata"
                                     secondary
                                 />
                                 <Choice

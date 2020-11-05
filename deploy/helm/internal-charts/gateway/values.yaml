@@ -14,9 +14,18 @@ enableAuthEndpoint: false
 enableWebAccessControl: false
 enableCkanRedirection: false
 
+# -- a list of authentication plugin config item. 
+# Each authentication plugin config item can contain the following fields:
+# <ul>
+# <li>`key`: (string) the unique key of the auth plugin. Allowed characters: [a-zA-Z0-9\-] </li>
+# <li>`baseUrl`: (string) the `baseUrl` where gateway proxy request to. </li>
+# </ul>
+# More info on authentication plugin see [Authentication Plugin Specification](https://github.com/magda-io/magda/blob/master/docs/docs/authentication-plugin-spec.md)
+authPlugins: []
+
 auth:
   # auth.enableInternalAuthProvider -- Whether enable magda internal authentication provider. 
-  # @default true
+  # @default -- true
   enableInternalAuthProvider: true
 
 helmet:
@@ -29,8 +38,14 @@ resources:
   limits:
     cpu: 200m
 
-# defaultRoutes -- Routes list here are available under `/api/v0/` path.
-# See `Proxy Target Definition` for route format.
+# -- routes list here are available under `/api/v0/` path.
+# If empty, the value of `defaultRoutes` will be used. See below.
+# @default -- {}
+routes: {}
+
+# -- Default routes list here are available under `/api/v0/` path.
+# See [Proxy Target Definition](#proxy-target-definition) section below for route format.
+# @default -- Default value see [defaultRoutes Default Value](#default-value-for-defaultroutes-field) section below
 defaultRoutes:
   search:
     to: http://search-api/v0
@@ -69,8 +84,8 @@ defaultRoutes:
     to: http://tenant-api/v0
     auth: true
 
-# webRoutes -- extra web routes.
-# See `Proxy Target Definition` for route format.
+# -- extra web routes.
+# See [Proxy Target Definition](#proxy-target-definition) section below for route format.
 webRoutes:
   preview-map: http://preview-map:6110
 
@@ -83,14 +98,14 @@ csp:
   browserSniff: false
   directives:
     scriptSrc:
-    - "''self''"
-    - "''unsafe-inline''"
+    - "'self'"
+    - "'unsafe-inline'"
     - browser-update.org
     - "blob:"
     objectSrc:
-    - "''none''"
+    - "'none'"
     workerSrc:
-    - "''self''"
+    - "'self'"
     - "blob:"
 
 cors:
@@ -99,19 +114,25 @@ cors:
   - "X-Content-Range"
   - "Accept-Ranges"
   - "Content-Length"
+  - "x-magda-event-id"
 
-# cookie -- Session cookie settings.
-# Default value will be used if any options are left with blank.
-# More info: https://github.com/expressjs/session#cookie
-# Supported options are: 
-# - `expires`: A fix cookie expire date. The expires option should not be set directly; instead only use the maxAge option.
-# - `httpOnly`: Default: true.
-# - `maxAge`: Default: 7 * 60 * 60 * 1000.
-# - `path`: Default: '/'.
-# - `sameSite`: Default: false (not set).
-# - `secure1: Default: false (not set).
+# -- Session cookie settings. <br/>
+# More info: https://github.com/expressjs/session#cookie <br/>
+# Supported options are:<br/>
+# <ul>
+# <li>`expires`: A fix cookie expire date. The expires option should not be set directly; instead only use the maxAge option.</li>
+# <li>`httpOnly`: Default: true.</li>
+# <li>`maxAge`: Default: 7 * 60 * 60 * 1000 (7 hours)</li>
+# <li>`path`: Default: '/'.</li>
+# <li>`sameSite`: Default: lax </li>
+# <li>`secure`: Default: "auto" </li>
+# </ul>
+# @default -- default value see `Description`
 cookie:
+  maxAge: 25200000
+  httpOnly: true
   sameSite: "lax"
+  secure: "auto"
 
 # defaultCacheControl -- If a response that goes through the gateway doesn't set Cache-Control, it'll be set to this value. Set to null to disable.
 defaultCacheControl: "public, max-age=60"

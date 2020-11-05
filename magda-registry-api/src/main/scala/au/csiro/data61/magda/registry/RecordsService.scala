@@ -5,14 +5,15 @@ import java.util.concurrent.TimeoutException
 import akka.actor.{ActorRef, ActorSystem}
 import akka.event.Logging
 import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.directives.AuthDirectives.requireIsAdmin
 import au.csiro.data61.magda.directives.TenantDirectives.{
-  requiresTenantId,
-  requiresSpecifiedTenantId
+  requiresSpecifiedTenantId,
+  requiresTenantId
 }
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
@@ -55,6 +56,10 @@ class RecordsService(
     *
     * @apiParam (path) {string} recordId ID of the record to delete.
     * @apiHeader {string} X-Magda-Session Magda internal session id
+    *
+    * @apiHeader {string} x-magda-event-id This is a **response header** that is **ONLY** available when the operation is completed successfully.
+    *           If the operation did make changes and triggered an event, the header value will be the eventId.
+    *           Otherwise (i.e. no change are made), this header value will be "0".
     *
     * @apiSuccess (Success 200) {json} Response the record deletion result
     * @apiSuccessExample {json} Response:
@@ -111,7 +116,12 @@ class RecordsService(
         requiresSpecifiedTenantId { tenantId =>
           val theResult = DB localTx { implicit session =>
             recordPersistence.deleteRecord(tenantId, recordId, user.id) match {
-              case Success(result) => complete(DeleteResult(result))
+              case Success(result) =>
+                complete(
+                  StatusCodes.OK,
+                  List(RawHeader("x-magda-event-id", result._2.toString)),
+                  DeleteResult(result._1)
+                )
               case Failure(exception) =>
                 complete(
                   StatusCodes.BadRequest,
@@ -272,6 +282,14 @@ class RecordsService(
     *    "aspects": {},
     *    "sourceTag": "string"
     * }
+    *
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
+    *
+    * @apiHeader {string} x-magda-event-id This is a **response header** that is **ONLY** available when the operation is completed successfully.
+    *           If the operation did make changes and triggered an event, the header value will be the eventId.
+    *           Otherwise (i.e. no change are made), this header value will be "0".
+    *
     * @apiSuccess (Success 200) {json} Response the record detail
     * @apiSuccessExample {json} Response:
     *      {
@@ -336,8 +354,12 @@ class RecordsService(
                   recordIn,
                   user.id
                 ) match {
-                  case Success(recordOut) =>
-                    complete(recordOut)
+                  case Success(result) =>
+                    complete(
+                      StatusCodes.OK,
+                      List(RawHeader("x-magda-event-id", result._2.toString)),
+                      result._1
+                    )
                   // If the exception is from validation then reveal the message to the caller,
                   // otherwise log it and return something generic.
                   case Failure(exception: ValidationException) =>
@@ -382,6 +404,14 @@ class RecordsService(
     *        "path": "string"
     *    }
     * ]
+    *
+    * @apiHeader {string} X-Magda-Session Magda internal session id
+    * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
+    *
+    * @apiHeader {string} x-magda-event-id This is a **response header** that is **ONLY** available when the operation is completed successfully.
+    *           If the operation did make changes and triggered an event, the header value will be the eventId.
+    *           Otherwise (i.e. no change are made), this header value will be "0".
+    *
     * @apiSuccess (Success 200) {json} Response the record detail
     * @apiSuccessExample {json} Response:
     *      {
@@ -445,7 +475,11 @@ class RecordsService(
                 user.id
               ) match {
                 case Success(result) =>
-                  complete(result)
+                  complete(
+                    StatusCodes.OK,
+                    List(RawHeader("x-magda-event-id", result._2.toString)),
+                    result._1
+                  )
                 case Failure(exception) =>
                   logger.error(
                     exception,
@@ -482,7 +516,13 @@ class RecordsService(
     *    "aspects": {},
     *    "sourceTag": "string"
     * }
+    *
     * @apiHeader {string} X-Magda-Session Magda internal session id
+    * @apiHeader {number} X-Magda-Tenant-Id Magda internal tenant id
+    *
+    * @apiHeader {string} x-magda-event-id This is a **response header** that is **ONLY** available when the operation is completed successfully.
+    *           If the operation did make changes and triggered an event, the header value will be the eventId.
+    *           Otherwise (i.e. no change are made), this header value will be "0".
     *
     * @apiSuccess (Success 200) {json} Response the record created
     * @apiSuccessExample {json} Response:
@@ -544,7 +584,12 @@ class RecordsService(
             val result = DB localTx { implicit session =>
               recordPersistence
                 .createRecord(tenantId, record, user.id) match {
-                case Success(theResult) => complete(theResult)
+                case Success(theResult) =>
+                  complete(
+                    StatusCodes.OK,
+                    List(RawHeader("x-magda-event-id", theResult._2.toString)),
+                    theResult._1
+                  )
                 case Failure(exception) =>
                   complete(
                     StatusCodes.BadRequest,

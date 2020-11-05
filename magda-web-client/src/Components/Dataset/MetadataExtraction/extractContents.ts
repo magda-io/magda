@@ -19,6 +19,20 @@ interface ContentExtractorOutput {
     largeTextBlockIdentified?: boolean;
 }
 
+function getFileExtension(filename?: string) {
+    if (!filename) {
+        return "";
+    }
+    const ext = filename.split(".").pop();
+    if (ext === filename) return "";
+    return ext;
+}
+
+const getFormatFromFileName = (filename?: string) => {
+    const ext = getFileExtension(filename);
+    return ext ? ext.toUpperCase() : "UNKNOWN";
+};
+
 /**
  * Extract contents of file as text if they are text based file formats
  *
@@ -56,7 +70,9 @@ export default async function extract(
                 format: "DOCX"
             };
         } else {
-            return {};
+            return {
+                format: getFormatFromFileName(input.fileName)
+            };
         }
     })();
 
@@ -338,7 +354,12 @@ async function extractPDFFile(_input: FileDetails, array: Uint8Array) {
         if (meta.info.Author) {
             author = meta.info.Author;
         }
-        if (meta.info.Title) {
+
+        if (
+            typeof meta.info.Title === "string" &&
+            meta.info.Title &&
+            !meta.info.Title.match(/^[\W]*untitled[\W]*$/i)
+        ) {
             datasetTitle = meta.info.Title;
         }
 

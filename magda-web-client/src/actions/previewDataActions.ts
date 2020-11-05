@@ -1,4 +1,6 @@
-import { config, getProxiedResourceUrl } from "../config";
+import { config } from "../config";
+import getProxiedResourceUrl from "helpers/getProxiedResourceUrl";
+import isStorageApiUrl from "helpers/isStorageApiUrl";
 import fetch from "isomorphic-fetch";
 import { actionTypes } from "../constants/ActionTypes";
 
@@ -135,7 +137,7 @@ export function fetchPreviewData(distribution) {
             case "xml":
                 fetch(
                     getProxiedResourceUrl(url),
-                    config.credentialsFetchOptions
+                    isStorageApiUrl(url) ? config.credentialsFetchOptions : {}
                 )
                     .then((response) => {
                         if (response.status !== 200) {
@@ -166,7 +168,7 @@ export function fetchPreviewData(distribution) {
             case "json":
                 fetch(
                     getProxiedResourceUrl(url),
-                    config.credentialsFetchOptions
+                    isStorageApiUrl(url) ? config.credentialsFetchOptions : {}
                 )
                     .then((response) => {
                         if (response.status !== 200) {
@@ -203,7 +205,7 @@ export function fetchPreviewData(distribution) {
             case "txt":
                 fetch(
                     getProxiedResourceUrl(url),
-                    config.credentialsFetchOptions
+                    isStorageApiUrl(url) ? config.credentialsFetchOptions : {}
                 )
                     .then((response) => {
                         if (response.status !== 200) {
@@ -270,7 +272,7 @@ export function fetchPreviewData(distribution) {
             case "rss":
                 fetch(
                     getProxiedResourceUrl(url),
-                    config.credentialsFetchOptions
+                    isStorageApiUrl(url) ? config.credentialsFetchOptions : {}
                 )
                     .then((response) => {
                         if (response.status !== 200) {

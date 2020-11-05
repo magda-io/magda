@@ -1,5 +1,7 @@
 import React, { Component } from "react";
-import { config, getProxiedResourceUrl } from "config";
+import { config } from "config";
+import getProxiedResourceUrl from "helpers/getProxiedResourceUrl";
+import isStorageApiUrl from "helpers/isStorageApiUrl";
 import fetch from "isomorphic-fetch";
 import getDateString from "helpers/getDateString";
 import defined from "helpers/defined";
@@ -53,7 +55,10 @@ export default class News extends Component<
             loading: true,
             newsItems: null
         });
-        return fetch(getProxiedResourceUrl(url), config.credentialsFetchOptions)
+        return fetch(
+            getProxiedResourceUrl(url),
+            isStorageApiUrl(url) ? config.credentialsFetchOptions : {}
+        )
             .then((response) => {
                 if (!response.ok) {
                     throw new Error(

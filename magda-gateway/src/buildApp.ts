@@ -25,6 +25,7 @@ import defaultConfig from "./defaultConfig";
 import { ProxyTarget } from "./createGenericProxyRouter";
 import setupTenantMode from "./setupTenantMode";
 import createPool from "./createPool";
+import { AuthPluginBasicConfig } from "./createAuthPluginRouter";
 
 // Tell typescript about the semi-private __express field of ejs.
 declare module "ejs" {
@@ -45,14 +46,13 @@ export type Config = {
     externalUrl: string;
     dbHost: string;
     dbPort: number;
-    authDBHost: string;
-    authDBPort: number;
     proxyRoutesJson: {
         [localRoute: string]: ProxyTarget;
     };
     webProxyRoutesJson: {
         [localRoute: string]: ProxyTarget;
     };
+    authPluginConfigJson: AuthPluginBasicConfig[];
     helmetJson: IHelmetConfiguration;
     cspJson: IHelmetContentSecurityPolicyConfiguration;
     corsJson: CorsOptions;
@@ -70,15 +70,12 @@ export type Config = {
     enableAuthEndpoint?: boolean;
     facebookClientId?: string;
     facebookClientSecret?: string;
-    googleClientId?: string;
-    googleClientSecret?: string;
     aafClientUri?: string;
     aafClientSecret?: string;
     arcgisClientId?: string;
     arcgisClientSecret?: string;
     arcgisInstanceBaseUrl?: string;
     esriOrgGroup?: string;
-    ckanUrl?: string;
     enableCkanRedirection?: boolean;
     ckanRedirectionDomain?: string;
     ckanRedirectionPath?: string;
@@ -194,32 +191,24 @@ export default function buildApp(app: express.Application, config: Config) {
         app.use(
             "/auth",
             createAuthRouter({
-                dbPool: createPool({
-                    ...config,
-                    database: "auth",
-                    dbHost: config.authDBHost,
-                    dbPort: config.authDBPort
-                }),
                 authenticator: authenticator,
                 jwtSecret: config.jwtSecret,
                 facebookClientId: config.facebookClientId,
                 facebookClientSecret: config.facebookClientSecret,
-                googleClientId: config.googleClientId,
-                googleClientSecret: config.googleClientSecret,
                 aafClientUri: config.aafClientUri,
                 aafClientSecret: config.aafClientSecret,
                 arcgisClientId: config.arcgisClientId,
                 arcgisClientSecret: config.arcgisClientSecret,
                 arcgisInstanceBaseUrl: config.arcgisInstanceBaseUrl,
                 esriOrgGroup: config.esriOrgGroup,
-                ckanUrl: config.ckanUrl,
                 authorizationApi: config.authorizationApi,
                 externalUrl: config.externalUrl,
                 userId: config.userId,
                 vanguardWsFedIdpUrl: config.vanguardWsFedIdpUrl,
                 vanguardWsFedRealm: config.vanguardWsFedRealm,
                 vanguardWsFedCertificate: config.vanguardWsFedCertificate,
-                enableInternalAuthProvider: config.enableAuthEndpoint
+                enableInternalAuthProvider: config.enableAuthEndpoint,
+                plugins: config.authPluginConfigJson
             })
         );
     }
