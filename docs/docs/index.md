@@ -7,6 +7,7 @@
 -   [How to document APIs](/docs/api-documentation-howto)
 -   [How to create API key](/docs/how-to-create-api-key)
 -   [How to create local users](/docs/how-to-create-local-users)
+-   [How to setup HTTPS access to Local Dev Cluster](/docs/how-to-setup-https-to-local-cluster)
 -   [How to build your own connectors / minions](/docs/how-to-build-your-own-connectors-minions)
 -   [Authentication Plugin Spec Document](/docs/authentication-plugin-spec)
 -   [How to deploy an HA, production deployment on GKE](/docs/deploying-for-production-on-gke)

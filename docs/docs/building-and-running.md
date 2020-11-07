@@ -170,6 +170,8 @@ yarn update-all-charts
 helm upgrade --install --timeout 9999s --wait -f deploy/helm/minikube-dev.yml magda deploy/helm/local-deployment
 ```
 
+> If you need HTTPS access to your local dev cluster, please check [this doc](./how-to-setup-https-to-local-cluster.md) for extra setup steps.
+
 This can take a while as it does a lot - downloading all the docker images, starting them up and running database migration jobs. You can see what's happening by opening another tab and running `kubectl get pods -w`.
 
 Also note that by default there won't be any minions running, as some of them can be very CPU intensive. You can toggle them on by specifying `--set tags.minion-<minionname>=true` when you run `helm upgrade`.
