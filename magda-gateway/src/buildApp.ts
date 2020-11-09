@@ -16,13 +16,12 @@ import {
 } from "magda-typescript-common/src/express/status";
 import createGenericProxyRouter from "./createGenericProxyRouter";
 import createAuthRouter from "./createAuthRouter";
-import createGenericProxy from "./createGenericProxy";
 import createCkanRedirectionRouter from "./createCkanRedirectionRouter";
 import createHttpsRedirectionMiddleware from "./createHttpsRedirectionMiddleware";
 import createOpenfaasGatewayProxy from "./createOpenfaasGatewayProxy";
 import Authenticator, { SessionCookieOptions } from "./Authenticator";
 import defaultConfig from "./defaultConfig";
-import { ProxyTarget } from "./createGenericProxyRouter";
+import { ProxyTarget, DetailedProxyTarget } from "./createGenericProxyRouter";
 import setupTenantMode from "./setupTenantMode";
 import createPool from "./createPool";
 import { AuthPluginBasicConfig } from "./createAuthPluginRouter";
@@ -62,6 +61,7 @@ export type Config = {
     jwtSecret: string;
     userId: string;
     web: string;
+    defaultWebRouteConfig?: DetailedProxyTarget;
     previewMap?: string;
     enableHttpsRedirection?: boolean;
     enableWebAccessControl?: boolean;
@@ -87,7 +87,6 @@ export type Config = {
     vanguardWsFedCertificate?: string;
     openfaasGatewayUrl?: string;
     openfaasAllowAdminOnly?: boolean;
-    enableInternalAuthProvider?: boolean;
     defaultCacheControl?: string;
     magdaAdminPortalName?: string;
 };
@@ -207,7 +206,6 @@ export default function buildApp(app: express.Application, config: Config) {
                 vanguardWsFedIdpUrl: config.vanguardWsFedIdpUrl,
                 vanguardWsFedRealm: config.vanguardWsFedRealm,
                 vanguardWsFedCertificate: config.vanguardWsFedCertificate,
-                enableInternalAuthProvider: config.enableAuthEndpoint,
                 plugins: config.authPluginConfigJson
             })
         );
@@ -255,8 +253,19 @@ export default function buildApp(app: express.Application, config: Config) {
         }
     }
 
-    // Proxy any other URL to magda-web
-    app.use("/", createGenericProxy(config.web, apiRouterOptions));
+    const defaultWebRouteConfig = (config.defaultWebRouteConfig
+        ? config.defaultWebRouteConfig
+        : { methods: ["GET"] }) as DetailedProxyTarget;
+    if (!defaultWebRouteConfig.to) {
+        defaultWebRouteConfig.to = config.web;
+    }
+    // Proxy any other URL to default web route, usually, magda-web
+    app.use(
+        createGenericProxyRouter({
+            ...apiRouterOptions,
+            routes: { "/": defaultWebRouteConfig }
+        })
+    );
 
     return app;
 }

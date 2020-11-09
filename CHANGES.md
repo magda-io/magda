@@ -38,6 +38,8 @@
 -   Publish docker image utils as a seperate NPM package @magda/docker-utils
 -   Use magda-auth-arcgis auth plugin instead
 -   Make `Add a dataset` link on Homepage (admin user only) go to metadata creation tool directly
+-   #2985 Allow default web route to be configured like all other route (allow specify method, auth etc.)
+-   Removed `createGenericProxy` from Gateway codebase
 
 ## 0.0.57
 

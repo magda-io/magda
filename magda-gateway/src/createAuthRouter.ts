@@ -26,7 +26,6 @@ export interface AuthRouterOptions {
     vanguardWsFedIdpUrl: string;
     vanguardWsFedRealm: string;
     vanguardWsFedCertificate: string;
-    enableInternalAuthProvider: boolean;
     plugins: AuthPluginBasicConfig[];
 }
 

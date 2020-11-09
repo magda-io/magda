@@ -25,6 +25,7 @@ A proxy target definition that defines `defaultRoutes` or `webRoutes` above supp
 - `auth`: whether this target requires session. Otherwise, session / password related midddleware won't run
 - `redirectTrailingSlash`: make /xxx auto redirect to /xxxx/
 - `statusCheck`: check target's live status from the gateway
+
 A proxy target be also specify in a simply string form, in which case, Gateway assumes a GET method, no auth proxy route is requested.
 
 #### Default Value for `defaultRoutes` field

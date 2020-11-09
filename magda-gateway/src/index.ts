@@ -92,6 +92,11 @@ const argv = addJwtSecretFromEnvVar(
             type: "string",
             default: "http://localhost:6108"
         })
+        .option("defaultWebRouteConfig", {
+            describe: "Path of the json that defines default Web Route Config.",
+            type: "string",
+            coerce: coerceJson
+        })
         .option("jwtSecret", {
             describe:
                 "The secret to use to sign JSON Web Token (JWT) for authenticated requests.  This can also be specified with the JWT_SECRET environment variable.",
@@ -274,12 +279,6 @@ const argv = addJwtSecretFromEnvVar(
                 "Whether only allow admin users to access openfaas gateway.",
             type: "boolean",
             default: false
-        })
-        .option("enableInternalAuthProvider", {
-            describe:
-                "Whether enable magda internal authentication provider. Default to true. ",
-            type: "boolean",
-            default: true
         })
         .option("defaultCacheControl", {
             describe:
