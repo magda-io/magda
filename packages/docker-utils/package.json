@@ -1,7 +1,7 @@
 {
   "name": "@magda/docker-utils",
   "description": "MAGDA Docker Utilities",
-  "version": "0.0.58-alpha.0",
+  "version": "0.0.58-rc.4",
   "bin": {
     "create-docker-context-for-node-component": "./bin/create-docker-context-for-node-component.js",
     "retag-and-push": "./bin/retag-and-push.js"
@@ -15,7 +15,7 @@
   "license": "Apache-2.0",
   "main": "bin/create-secrets.js",
   "devDependencies": {
-    "@magda/scripts": "^0.0.58-alpha.0"
+    "@magda/scripts": "^0.0.58-rc.4"
   },
   "dependencies": {
     "fs-extra": "^2.1.2",
