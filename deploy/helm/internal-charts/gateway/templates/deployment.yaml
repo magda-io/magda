@@ -37,7 +37,6 @@ spec:
             {{- end }}
             "--dbHost", "session-db",
             "--dbPort", "5432",
-            "--enableInternalAuthProvider", {{ .Values.auth.enableInternalAuthProvider | quote }},
 {{- if .Values.auth.facebookClientId }}
             "--facebookClientId", {{ .Values.auth.facebookClientId | quote }},
 {{- end }}
@@ -79,6 +78,7 @@ spec:
             "--cookieJson", "/etc/config/cookie.json",
             "--authPluginConfigJson", "/etc/config/authPlugins.json",
             "--web", {{ .Values.web | default "http://web" | quote }},
+            "--defaultWebRouteConfig", "/etc/config/defaultWebRouteConfig.json",
             "--authorizationApi", "http://authorization-api/v0",
             "--tenantUrl", "http://tenant-api/v0",
 {{- if .Values.global.openfaas.mainNamespace }}

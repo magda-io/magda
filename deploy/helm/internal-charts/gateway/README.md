@@ -12,7 +12,13 @@ Kubernetes: `>= 1.14.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| auth.enableInternalAuthProvider | bool | true | Whether enable magda internal authentication provider.  |
+| auth.aafClientUri | string | `""` | [AAF](https://aaf.edu.au/) SSO client URI AAF client secret is avaible as `oauth-secrets` [secret](https://kubernetes.io/docs/concepts/configuration/secret/) key `aaf-client-secret`  and config via [create-secrets](https://www.npmjs.com/package/@magda/create-secrets) tool.  |
+| auth.arcgisClientId | string | `""` | ArcGIS / ESRI SSO client Id ArcGIS client secret is avaible as `oauth-secrets` [secret](https://kubernetes.io/docs/concepts/configuration/secret/) key `arcgis-client-secret`  and config via [create-secrets](https://www.npmjs.com/package/@magda/create-secrets) tool.  **This option is deprecated.** You should use [ArcGIS authentication plugin](https://github.com/magda-io/magda-auth-arcgis) instead. |
+| auth.arcgisInstanceBaseUrl | string | `""` | ArcGIS / ESRI SSO server Base Url **This option is deprecated.** You should use [ArcGIS authentication plugin](https://github.com/magda-io/magda-auth-arcgis) instead. |
+| auth.esriOrgGroup | string | `""` | ArcGIS / ESRI SSO org group **This option is deprecated.** You should use [ArcGIS authentication plugin](https://github.com/magda-io/magda-auth-arcgis) instead. |
+| auth.facebookClientId | string | `""` | facebook SSO client ID facebook client secret is avaible as `oauth-secrets` [secret](https://kubernetes.io/docs/concepts/configuration/secret/) key `facebook-client-secret`  and config via [create-secrets](https://www.npmjs.com/package/@magda/create-secrets) tool.  |
+| auth.vanguardWsFedIdpUrl | string | `""` | Vanguard integration entry point. `vanguardWsFedCertificate` is avaible as `oauth-secrets` [secret](https://kubernetes.io/docs/concepts/configuration/secret/) key `vanguard-certificate`  and config via [create-secrets](https://www.npmjs.com/package/@magda/create-secrets) tool.  |
+| auth.vanguardWsFedRealm | string | `""` | Vanguard realm id for entry point. |
 | authPlugins | list | `[]` | a list of authentication plugin config item.  Each authentication plugin config item can contain the following fields: <ul> <li>`key`: (string) the unique key of the auth plugin. Allowed characters: [a-zA-Z0-9\-] </li> <li>`baseUrl`: (string) the `baseUrl` where gateway proxy request to. </li> </ul> More info on authentication plugin see [Authentication Plugin Specification](https://github.com/magda-io/magda/blob/master/docs/docs/authentication-plugin-spec.md) |
 | autoscaler.enabled | bool | `false` |  |
 | autoscaler.maxReplicas | int | `3` |  |
@@ -34,6 +40,10 @@ Kubernetes: `>= 1.14.0-0`
 | csp.directives.workerSrc[1] | string | `"blob:"` |  |
 | defaultCacheControl | string | `"public, max-age=60"` | If a response that goes through the gateway doesn't set Cache-Control, it'll be set to this value. Set to null to disable. |
 | defaultRoutes | object | Default value see [defaultRoutes Default Value](#default-value-for-defaultroutes-field) section below | Default routes list here are available under `/api/v0/` path. See [Proxy Target Definition](#proxy-target-definition) section below for route format. |
+| defaultWebRouteConfig.auth | bool | `false` | whether this target requires session. Otherwise, session / password related midddleware won't run |
+| defaultWebRouteConfig.methods | list | `["GET"]` | array of string. "all" means all methods will be proxied  |
+| defaultWebRouteConfig.redirectTrailingSlash | bool | `false` | make /xxx auto redirect to /xxxx/ |
+| defaultWebRouteConfig.to | string | `""` | the default web router proxy target. Optional. If set, the default web route set via `web` option will be ignored. |
 | enableAuthEndpoint | bool | `false` |  |
 | enableCkanRedirection | bool | `false` |  |
 | enableWebAccessControl | bool | `false` |  |
@@ -57,6 +67,7 @@ A proxy target definition that defines `defaultRoutes` or `webRoutes` above supp
 - `auth`: whether this target requires session. Otherwise, session / password related midddleware won't run
 - `redirectTrailingSlash`: make /xxx auto redirect to /xxxx/
 - `statusCheck`: check target's live status from the gateway
+
 A proxy target be also specify in a simply string form, in which case, Gateway assumes a GET method, no auth proxy route is requested.
 
 #### Default Value for `defaultRoutes` field

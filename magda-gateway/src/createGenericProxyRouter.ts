@@ -10,7 +10,7 @@ import Authenticator from "./Authenticator";
 import { TenantMode } from "./setupTenantMode";
 
 export type ProxyTarget = DetailedProxyTarget | string;
-interface DetailedProxyTarget {
+export interface DetailedProxyTarget {
     to: string;
     methods?: string[];
     auth?: boolean;
@@ -116,8 +116,10 @@ export default function createGenericProxyRouter(
                 ? getDefaultProxyTargetDefinition(value)
                 : value;
 
+        const path = !key ? "/" : key[0] === "/" ? key : `/${key}`;
+
         proxyRoute(
-            `/${key}`,
+            path,
             target.to,
             target.methods,
             !!target.auth,

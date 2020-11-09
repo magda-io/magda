@@ -13,4 +13,5 @@ data:
   csp.json: {{ .Values.csp | default dict | mustToRawJson | quote }}
   cookie.json: {{ .Values.cookie | default dict | mustToRawJson | quote }}
   authPlugins.json: {{ .Values.authPlugins | default list | mustToRawJson | quote }}
+  defaultWebRouteConfig.json: {{ .Values.defaultWebRouteConfig | default dict | mustToRawJson | quote }}
 
