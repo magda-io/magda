@@ -1,7 +1,7 @@
 {
   "name": "@magda/magda-scss-compiler",
   "description": "The web-client SCSS compiler pod",
-  "version": "0.0.58-alpha.0",
+  "version": "0.0.58-rc.5",
   "license": "Apache-2.0",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
@@ -15,7 +15,7 @@
     "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.58-alpha.0",
+    "@magda/scripts": "^0.0.58-rc.5",
     "@types/autoprefixer": "^9.1.0",
     "@types/chai": "^4.0.1",
     "@types/clean-css": "^3.4.30",
@@ -40,8 +40,8 @@
     "typescript": "^3.7.2"
   },
   "dependencies": {
-    "@magda/typescript-common": "^0.0.58-alpha.0",
-    "@magda/web-client": "^0.0.58-alpha.0",
+    "@magda/typescript-common": "^0.0.58-rc.5",
+    "@magda/web-client": "^0.0.58-rc.5",
     "autoprefixer": "^9.2.1",
     "clean-css": "^4.2.1",
     "escape-string-regexp": "^1.0.5",

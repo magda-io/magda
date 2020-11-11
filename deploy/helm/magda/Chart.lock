@@ -1,7 +1,7 @@
 dependencies:
 - name: magda-core
   repository: file://../magda-core
-  version: 0.0.58-alpha.0
+  version: 0.0.58-rc.5
 - name: magda-function-history-report
   repository: https://charts.magda.io
   version: 0.0.57-0
@@ -26,5 +26,5 @@ dependencies:
 - name: magda-function-esri-url-processor
   repository: https://charts.magda.io
   version: 0.0.57-0
-digest: sha256:878889c021423dfe4f7630dccd5f2c898dbf6ea6e94ff442bf2f1db0e8b42989
-generated: "2020-10-02T15:48:28.787668+10:00"
+digest: sha256:81638b63df41fe941dbb920fd74cc2a8cf3a23abcc6c4443654e5f3299ab2593
+generated: "2020-11-11T23:01:24.628529+11:00"
