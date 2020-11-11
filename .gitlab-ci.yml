@@ -301,6 +301,7 @@ buildtest:typescript-apis-stateless:
     paths:
       - "*/dist"
       - "packages/*/dist"
+      - "packages/*/bin"
     expire_in: 30 days
 
 buildtest:typescript-apis-with-pg:
