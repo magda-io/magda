@@ -12,6 +12,9 @@
 -   Fixed: some helm chart (gateway & web) deployment doesn't allow setting `replicas` value properly
 -   Added an opt-in for chart/map/table previews if files are large.
 -   Upgraded helm-docs to v1.2.1
+-   Upgraded minio to 7.1.2
+-   Allowed region to be specified for storage API
+-   Made storage API process `BucketAlreadyExists` error code correctly when create bucket
 -   Fixed `magda-builder-scala` docker image failed to build due to expired resource link
 -   Fixed: Registry should not create an event when failed to delete the record #2976
 -   Fixed: Time Travel API response 500 sometimes #2977

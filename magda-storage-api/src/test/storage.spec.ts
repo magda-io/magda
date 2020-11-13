@@ -131,6 +131,23 @@ describe("Storage API tests", () => {
             expect(bucketExists).to.be.true;
         });
 
+        it("should create a bucket when given a region", async () => {
+            const name = "neko";
+            const region = "australia-southeast1";
+            const newOpts = Object.assign({}, minioClientOpts, {
+                region: region
+            });
+            const minioClient = new Minio.Client(newOpts);
+            await minioClient.makeBucket(name, region, (err: Error) => {
+                if (err && (err as any).code !== "BucketAlreadyOwnedByYou") {
+                    return console.log("Error creating bucket.", err);
+                }
+                console.log("Bucket created successfully in " + newOpts.region);
+            });
+            const bucketExists = await minioClient.bucketExists(name);
+            expect(bucketExists).to.be.true;
+        });
+
         it("while not an admin should return 401", () => {
             return mockAuthorization(
                 false,

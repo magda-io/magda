@@ -1,6 +1,6 @@
 dependencies:
 - name: minio
-  repository: https://kubernetes-charts.storage.googleapis.com
-  version: 5.0.18
-digest: sha256:b5b568598a22255cf2bfe9841fe20010b2dfae0924a759cc59133fc5ad851134
-generated: "2020-04-15T13:54:50.58767+10:00"
+  repository: https://helm.min.io
+  version: 7.1.2
+digest: sha256:05f486402d2b1496648d31330b4f5f5ad9b6de1c8e3bdfc55ccb06c382955a80
+generated: "2020-10-07T17:58:14.179822+11:00"

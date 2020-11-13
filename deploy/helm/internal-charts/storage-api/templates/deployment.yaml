@@ -30,6 +30,9 @@ spec:
             "--minioEnableSSL", "false",
             "--minioHost", "magda-minio",
             "--minioPort", "9000",
+{{- if .Values.minioRegion }}
+            "--minioRegion", {{ .Values.minioRegion | quote }},
+{{- end }}
             "--authApiUrl", "http://authorization-api/v0",
             "--tenantId", "0",
             "--uploadLimit", "100mb",
