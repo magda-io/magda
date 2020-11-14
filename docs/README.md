@@ -158,6 +158,10 @@ A demo site exists at [demo.dev.magda.io](https://demo.dev.magda.io). This is ho
 
 You can extend Madga's functionality by [building your own customised connectors / minions](https://magda.io/docs/how-to-build-your-own-connectors-minions).
 
+## Want to build your authentication plugins?
+
+You can add support to different authorization servers / identity providers or customise the user on-boarding process by [building your own customised authentication plugins](https://magda.io/docs/authentication-plugin-spec).
+
 ## Latest Release
 
 <a href="{{ site.github.url}}">{{ site.github.latest_release.tag_name }}</a>, released at {{ site.github.latest_release.published_at}}
