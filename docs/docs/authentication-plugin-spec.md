@@ -10,7 +10,7 @@ For ease of deployment, Magda requires an authentication plugin to be build as a
 
 you don't have to start from scratch to create your own authentication plugin. Instead, you can use this [Github template repo](https://github.com/magda-io/magda-auth-template) to create a blank project. Github template repo can help to generate a new repository with the same directory structure and files as an existing template repository. You can find out more details from [here](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template).
 
-After a new repo is generated from the template, you can start to implement your own authentication logic and required HTTP endpoints in `src/createAuthPluginRouter.ts`. If you use [passport.js](http://www.passportjs.org/), you can find passport.js `strategies` that support different IDPs (identity providers) or authentication servers from [here](http://www.passportjs.org/packages/).
+After a new repo is generated from the template, you can start to implement your own authentication logic and required HTTP endpoints in `src/createAuthPluginRouter.ts`. If you use [passport.js](http://www.passportjs.org/), you can find passport.js `strategies` that support different IDPs (identity providers) or authentication servers from [passportjs website](http://www.passportjs.org) `Strategies` section.
 
 The template also comes with CI scripts that can automatically pushing docker image to docker hub and publish helm chart to s3. For more details, please check [magda-auth-template](https://github.com/magda-io/magda-auth-template) repo `README.md` file.
 
