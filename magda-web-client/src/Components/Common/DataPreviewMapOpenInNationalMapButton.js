@@ -26,18 +26,23 @@ class DataPreviewMapOpenInNationalMapButton extends Component {
     }
 
     createCatalogItemFromDistribution(withoutBaseMap = false) {
+        const dga_id_prefix = "data.gov.au-postMessage-";
         const catConfig = {
             initSources: [
                 {
                     catalog: [
                         {
                             name: this.props.distribution.title,
-                            type: "magda-item",
-                            distributionId: this.props.distribution.identifier,
+                            type: "magda",
+                            recordId: this.props.distribution.identifier,
                             url: config.baseExternalUrl,
-                            isEnabled: true,
-                            zoomOnEnable: true
+                            id:
+                                dga_id_prefix +
+                                this.props.distribution.identifier
                         }
+                    ],
+                    workbench: [
+                        dga_id_prefix + this.props.distribution.identifier
                     ]
                 }
             ]
