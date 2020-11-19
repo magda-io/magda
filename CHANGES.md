@@ -2,6 +2,8 @@
 
 ## 0.0.59
 
+-   Allow Magda API endpoints to be served at non-root path
+
 ## 0.0.58
 
 -   Added Documentation for Magda Helm Charts (generated using [helm-docs](https://github.com/norwoodj/helm-docs))
