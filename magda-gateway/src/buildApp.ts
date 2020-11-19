@@ -1,7 +1,5 @@
 import cors, { CorsOptions } from "cors";
 import express from "express";
-import path from "path";
-import ejs from "ejs";
 import helmet, {
     IHelmetConfiguration,
     IHelmetContentSecurityPolicyConfiguration
@@ -26,11 +24,6 @@ import { ProxyTarget, DetailedProxyTarget } from "./createGenericProxyRouter";
 import setupTenantMode from "./setupTenantMode";
 import createPool from "./createPool";
 import { AuthPluginBasicConfig } from "./createAuthPluginRouter";
-
-// Tell typescript about the semi-private __express field of ejs.
-declare module "ejs" {
-    var __express: any;
-}
 
 type Route = {
     to: string;
@@ -163,11 +156,6 @@ export default function buildApp(app: express.Application, config: Config) {
     );
     app.options("*", configuredCors);
     app.use(configuredCors);
-
-    // Configure view engine to render EJS templates.
-    app.set("views", path.join(__dirname, "..", "views"));
-    app.set("view engine", "ejs");
-    app.engine(".ejs", ejs.__express); // This stops express trying to do its own require of 'ejs'
 
     const apiRouterOptions = {
         jwtSecret: config.jwtSecret,

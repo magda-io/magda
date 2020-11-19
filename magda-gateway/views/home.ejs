@@ -1,9 +1,0 @@
-<% if (!user) { %>
-	<p>Welcome! Please <a href="/auth/login">log in</a>.</p>
-<% } else { %>
-	<p>You are logged in. View your <a href="/auth/profile">profile</a>.</p>
-	<% if (user.isAdmin) { %>
-		<p>You are an admin. View <a href="/auth/config">configuration</a>.</p>
-	<% } %>
-	<p><a href="/auth/logout">Log Out</a></p>
-<% } %>
