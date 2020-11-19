@@ -129,8 +129,8 @@ export default function buildApp(app: express.Application, config: Config) {
      * so that no prob will be setup when run locally for testing
      */
     _.forEach(routes, (value: any, key: string) => {
-        // --- skip install status probs if statusCheck == false
-        if (value && value.statusCheck === false) {
+        // --- only install status probs if statusCheck == true
+        if (value?.statusCheck !== true) {
             return;
         }
         probes[key] = createServiceProbe(value.to);

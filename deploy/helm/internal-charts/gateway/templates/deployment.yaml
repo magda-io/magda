@@ -112,7 +112,7 @@ spec:
           timeoutSeconds: 10
         readinessProbe:
           httpGet:
-            path: /status/live
+            path: /status/ready
             port: 80
           initialDelaySeconds: 10
           periodSeconds: 10
