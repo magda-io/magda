@@ -11,7 +11,7 @@ import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/Tena
 
 import buildSitemapRouter from "./buildSitemapRouter";
 import getIndexFileContent from "./getIndexFileContent";
-
+import getBasePathFromUrl from "magda-typescript-common/src/getBasePathFromUrl";
 import standardiseUiBaseUrl from "./standardiseUiBaseUrl";
 
 const argv = yargs
@@ -220,15 +220,28 @@ const clientRoot = path.resolve(
 const clientBuild = path.join(clientRoot, "build");
 console.log("Client: " + clientBuild);
 
-const apiBaseUrl = addTrailingSlash(
-    argv.apiBaseUrl || new URI(argv.baseUrl).segment("api").toString()
+const appBasePath = getBasePathFromUrl(argv?.baseExternalUrl);
+const uiBaseUrl = standardiseUiBaseUrl(
+    argv.uiBaseUrl && argv.uiBaseUrl !== "/"
+        ? argv.uiBaseUrl
+        : appBasePath
+        ? appBasePath
+        : ""
 );
-
-const uiBaseUrl = standardiseUiBaseUrl(argv.uiBaseUrl);
+const baseUrl = addTrailingSlash(
+    argv.baseUrl && argv.baseUrl !== "/"
+        ? argv.baseUrl
+        : appBasePath
+        ? appBasePath
+        : "/"
+);
+const apiBaseUrl = addTrailingSlash(
+    argv.apiBaseUrl || new URI(baseUrl).segment("api").toString()
+);
 
 const webServerConfig = {
     disableAuthenticationFeatures: argv.disableAuthenticationFeatures,
-    baseUrl: addTrailingSlash(argv.baseUrl),
+    baseUrl: baseUrl,
     baseExternalUrl: argv.baseExternalUrl,
     uiBaseUrl,
     apiBaseUrl: apiBaseUrl,
@@ -311,7 +324,8 @@ function getIndexFileContentZeroArgs() {
         clientRoot,
         argv.useLocalStyleSheet,
         argv.contentApiBaseUrlInternal,
-        uiBaseUrl
+        uiBaseUrl,
+        appBasePath
     );
 }
 
