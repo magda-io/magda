@@ -107,6 +107,30 @@ type SpatialExtent = {
     maxLng: number;
 };
 
+function findDateHeadersFromRow(data: { [key: string]: any }): string[] {
+    if (!data) {
+        return [];
+    }
+    const headers = Object.keys(data);
+    if (!headers?.length) {
+        return [];
+    }
+    return headers.filter((key) => {
+        const str = data[key];
+        if (!str) {
+            return false;
+        }
+        if (typeof str !== "string") {
+            return false;
+        }
+        return (
+            Object.values(moment.HTML5_FMT).findIndex((format) =>
+                moment(data[key], format, true).isValid()
+            ) !== -1
+        );
+    });
+}
+
 function aggregateDates(
     rows: any[],
     headers: string[],
@@ -115,7 +139,11 @@ function aggregateDates(
     const { dateFormats, dateRegexes } = config.dateConfig;
     const { dateRegex, startDateRegex, endDateRegex } = dateRegexes;
 
-    const dateHeaders = tryFilterHeaders(headers, dateRegex);
+    const dateHeaders = uniq(
+        tryFilterHeaders(headers, dateRegex).concat(
+            findDateHeadersFromRow(rows?.length ? rows[0] : [])
+        )
+    );
     const startDateHeaders = uniq(tryFilterHeaders(headers, startDateRegex));
     const endDateHeaders = uniq(tryFilterHeaders(headers, endDateRegex));
 
@@ -132,8 +160,11 @@ function aggregateDates(
 
     rows.forEach((row) => {
         startDateHeadersInOrder.forEach((header) => {
-            var dateStr: string = row[header].toString();
-            var parsedDate: Moment = moment.utc(dateStr, dateFormats);
+            if (!row[header]) {
+                return;
+            }
+            const dateStr: string = row[header].toString();
+            const parsedDate: Moment = moment(dateStr, dateFormats, true);
             if (parsedDate) {
                 if (parsedDate.isBefore(earliestDate)) {
                     // Updating the current earliest date
@@ -143,8 +174,11 @@ function aggregateDates(
         });
 
         endDateHeadersInOrder.forEach((header) => {
-            var dateStr: string = row[header].toString();
-            var parsedDate: Moment = moment.utc(dateStr, dateFormats);
+            if (!row[header]) {
+                return;
+            }
+            const dateStr: string = row[header].toString();
+            const parsedDate: Moment = moment(dateStr, dateFormats, true);
             if (parsedDate) {
                 let extendedTime = extendIncompleteTime(parsedDate.clone());
                 if (extendedTime.isAfter(latestDate)) {

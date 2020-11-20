@@ -4,6 +4,8 @@
 
 -   Allow Magda API endpoints to be served at non-root path
 -   Fixed: Distribution Page may show a blank page when the distribution has no downloadUrl #3039
+-   Fixed: Date Extractor for metadata creation tool will fail to process CSV or excel with incomplete rows #3040
+-   Other Date Extractor extration accuracy improvement
 
 ## 0.0.58
 
