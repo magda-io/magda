@@ -2,6 +2,9 @@ import { config, DATASETS_BUCKET } from "config";
 import urijs from "urijs";
 
 export default function getStorageApiResourceAccessUrl(resourceUrl: string) {
+    if (!resourceUrl) {
+        return resourceUrl;
+    }
     const uri = urijs(resourceUrl);
     if (uri.protocol() === "magda" && uri.hostname() === "storage-api") {
         // --- convert [pseudo storage api resource URL](https://github.com/magda-io/magda/issues/3000) to http access url

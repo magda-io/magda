@@ -3,6 +3,7 @@
 ## 0.0.59
 
 -   Allow Magda API endpoints to be served at non-root path
+-   Fixed: Distribution Page may show a blank page when the distribution has no downloadUrl #3039
 
 ## 0.0.58
 
