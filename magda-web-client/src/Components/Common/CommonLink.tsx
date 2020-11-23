@@ -1,6 +1,9 @@
 import React, { FunctionComponent } from "react";
 import { Link } from "react-router-dom";
 import { Location } from "history";
+import { config } from "config";
+
+const { baseUrl, uiBaseUrl } = config;
 
 type PropsType = {
     href?: string;
@@ -43,6 +46,13 @@ const CommonLink: FunctionComponent<PropsType> = (props) => {
         urlStrLowerCase.indexOf("mailto:") === 0
     ) {
         return <a href={urlStr} {...restProps} />;
+    } else if (
+        baseUrl !== uiBaseUrl &&
+        (urlStrLowerCase.indexOf("/api/") === 0 ||
+            urlStrLowerCase.indexOf("/auth/") === 0)
+    ) {
+        // for path `/api/*` or `/auth/*` we need to handle it differently when gateway is accessilbe at different baseUrl
+        return <a href={`${baseUrl}${urlStr.substr(1)}`} {...restProps} />;
     } else {
         return <Link to={urlStr} {...restProps} />;
     }

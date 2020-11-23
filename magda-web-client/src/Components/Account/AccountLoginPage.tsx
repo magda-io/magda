@@ -13,12 +13,12 @@ import {
     getAuthPlugins,
     AuthConfig
 } from "api-clients/AuthApis";
-import { config } from "config";
+import { config, isBackendSameOrigin } from "config";
 import { useAsync } from "react-async-hook";
 import urijs from "urijs";
 import { markdownToHtml } from "Components/Common/MarkdownViewer";
 import QrCodeLoginArea from "./QrCodeLoginArea";
-const { baseUrl, uiBaseUrl } = config;
+const { baseUrl, baseExternalUrl, authPluginRedirectUrl } = config;
 
 function getDefaultLoginFormProvider(
     authConfigItems: AuthConfig[]
@@ -54,9 +54,10 @@ const makeLoginUrl = (authConfig: AuthConfig) => {
         const oauthRedirect = urijs()
             .search("")
             .fragment("")
-            .segment([uiBaseUrl, "sign-in-redirect"])
+            .segment([])
+            .segment(`${baseUrl}sign-in-redirect`)
             .search({
-                redirectTo: "/account"
+                redirectTo: `${baseExternalUrl}account`
             })
             .toString();
         return `${baseUrl}auth/login/${
@@ -64,8 +65,24 @@ const makeLoginUrl = (authConfig: AuthConfig) => {
         }?redirect=${encodeURIComponent(oauthRedirect)}`;
     } else {
         // auth plugins share the same gateway helm chart config [authPluginRedirectUrl](https://github.com/magda-io/magda/tree/master/deploy/helm/internal-charts/gateway)
-        // thus, we don't need to supply redirection url here
-        return `${baseUrl}auth/login/plugin/${authConfig.config.key}`;
+        // We don't need to supply redirection url here unless
+        // - the UI is served from different origin (domains) from backend.
+        // - And the configured redirect URL is not an absolute url
+        if (
+            isBackendSameOrigin ||
+            authPluginRedirectUrl.toLowerCase().indexOf("http") === 0
+        ) {
+            return `${baseUrl}auth/login/plugin/${authConfig.config.key}`;
+        } else {
+            return `${baseUrl}auth/login/plugin/${
+                authConfig.config.key
+            }?redirect=${encodeURIComponent(
+                baseExternalUrl +
+                    (authPluginRedirectUrl[0] === "/"
+                        ? authPluginRedirectUrl.substr(1)
+                        : authPluginRedirectUrl)
+            )}`;
+        }
     }
 };
 

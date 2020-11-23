@@ -45,6 +45,12 @@ const argv = yargs
         type: "string",
         required: true
     })
+    .option("authPluginRedirectUrl", {
+        describe:
+            "The redirect url after authentication plugin completes the auth process.",
+        type: "string",
+        default: "/sign-in-redirect"
+    })
     .option("registryApiBaseUrlInternal", {
         describe: "The url of the registry api for use within the cluster",
         type: "string",
@@ -221,12 +227,14 @@ const clientBuild = path.join(clientRoot, "build");
 console.log("Client: " + clientBuild);
 
 const appBasePath = getBasePathFromUrl(argv?.baseExternalUrl);
-const uiBaseUrl = standardiseUiBaseUrl(
-    argv.uiBaseUrl && argv.uiBaseUrl !== "/"
-        ? argv.uiBaseUrl
-        : appBasePath
-        ? appBasePath
-        : ""
+const uiBaseUrl = addTrailingSlash(
+    standardiseUiBaseUrl(
+        argv.uiBaseUrl && argv.uiBaseUrl !== "/"
+            ? argv.uiBaseUrl
+            : appBasePath
+            ? appBasePath
+            : ""
+    )
 );
 const baseUrl = addTrailingSlash(
     argv.baseUrl && argv.baseUrl !== "/"
@@ -244,6 +252,9 @@ const webServerConfig = {
     baseUrl: baseUrl,
     baseExternalUrl: argv.baseExternalUrl,
     uiBaseUrl,
+    authPluginRedirectUrl: argv.authPluginRedirectUrl
+        ? argv.authPluginRedirectUrl
+        : "",
     apiBaseUrl: apiBaseUrl,
     contentApiBaseUrl: addTrailingSlash(
         argv.contentApiBaseUrl ||
@@ -274,7 +285,7 @@ const webServerConfig = {
     ),
     previewMapBaseUrl: addTrailingSlash(
         argv.previewMapBaseUrl ||
-            new URI(argv.baseUrl).segment("preview-map").toString()
+            new URI(baseUrl).segment("preview-map").toString()
     ),
     correspondenceApiBaseUrl: addTrailingSlash(
         argv.correspondenceApiBaseUrl ||

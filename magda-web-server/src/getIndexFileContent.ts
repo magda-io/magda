@@ -101,7 +101,7 @@ async function getIndexFileContent(
         if (uiBaseUrl !== "/") {
             indexFileContent = indexFileContent.replace(
                 '<base href="/">',
-                `<base href="${uiBaseUrl}/">`
+                `<base href="${uiBaseUrl}">`
             );
         }
 

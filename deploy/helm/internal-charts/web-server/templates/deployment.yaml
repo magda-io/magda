@@ -25,9 +25,12 @@ spec:
             "--config", "/etc/config/config.json",
             "--listenPort", "80",
             "--baseExternalUrl", {{ .Values.global.externalUrl | quote }},
-            {{- if .Values.uiBaseUrl }}
+{{- if .Values.uiBaseUrl }}
             "--uiBaseUrl", {{ .Values.uiBaseUrl | quote }},
-            {{- end }}
+{{- end }}
+{{- if .Values.global.authPluginRedirectUrl }}
+            "--authPluginRedirectUrl", {{ .Values.global.authPluginRedirectUrl | quote }},
+{{- end }}
             "--useLocalStyleSheet", {{ .Values.global.useLocalStyleSheet | default .Values.useLocalStyleSheet | quote }},
             "--registryApiBaseUrlInternal", "http://registry-api/v0",
 {{- if .Values.adminApiBaseUrl }}
