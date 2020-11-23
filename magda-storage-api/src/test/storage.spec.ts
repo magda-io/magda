@@ -2,11 +2,11 @@ import {} from "mocha";
 import sinon from "sinon";
 import { expect } from "chai";
 import express from "express";
-import _ from "lodash";
 import { Test, Response } from "supertest";
 import request from "supertest";
 import nock from "nock";
 import fs from "fs";
+import delay from "magda-typescript-common/src/delay";
 
 const jwt = require("jsonwebtoken");
 const Minio = require("minio");
@@ -144,6 +144,8 @@ describe("Storage API tests", () => {
                 }
                 console.log("Bucket created successfully in " + newOpts.region);
             });
+            // delay 500ms in case check bucket too quick
+            await delay(500);
             const bucketExists = await minioClient.bucketExists(name);
             expect(bucketExists).to.be.true;
         });
