@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Location } from "history";
 import { config } from "config";
 
-const { baseUrl, uiBaseUrl } = config;
+const { baseUrl, uiBaseUrl, baseExternalUrl } = config;
 
 type PropsType = {
     href?: string;
@@ -48,11 +48,12 @@ const CommonLink: FunctionComponent<PropsType> = (props) => {
         return <a href={urlStr} {...restProps} />;
     } else if (
         baseUrl !== uiBaseUrl &&
-        (urlStrLowerCase.indexOf("/api/") === 0 ||
-            urlStrLowerCase.indexOf("/auth/") === 0)
+        urlStrLowerCase.match(/^(\/[^\/]*)*?\/(api|auth)\//)
     ) {
         // for path `/api/*` or `/auth/*` we need to handle it differently when gateway is accessilbe at different baseUrl
-        return <a href={`${baseUrl}${urlStr.substr(1)}`} {...restProps} />;
+        return (
+            <Link to={`${baseExternalUrl}${urlStr.substr(1)}`} {...restProps} />
+        );
     } else {
         return <Link to={urlStr} {...restProps} />;
     }
