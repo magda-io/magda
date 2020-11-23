@@ -171,11 +171,7 @@ const baseExternalUrl = serverConfig.baseExternalUrl
     ? serverConfig.baseExternalUrl
     : isBackendSameOrigin
     ? baseUrl
-    : urijs()
-          .segment([])
-          .search("")
-          .fragment("")
-          .toString();
+    : urijs().segment([]).search("").fragment("").toString();
 
 // when UI domain is different from backend domain, we set credentials: "include"
 const credentialsFetchOptions: RequestInit = !isBackendSameOrigin

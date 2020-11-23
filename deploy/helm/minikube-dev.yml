@@ -146,7 +146,7 @@ connector-dga:
 magda-auth-google:
   googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
   image:
-    tag: 1.0.0
+    tag: 1.0.1
     repository: docker.io/data61
 
 magda-auth-ckan:
@@ -156,18 +156,18 @@ magda-auth-ckan:
     loginFormExtraInfoHeading: "Register"
     loginFormExtraInfoContent: "To register a new [data.gov.au](https://data.gov.au/) account, [click here](https://data.gov.au/data/user/register)"
   image:
-    tag: 1.0.0
+    tag: 1.0.1
     repository: docker.io/data61
 
 magda-auth-internal:
   authPluginConfig:
     loginFormExtraInfoContent: "Forgot your password? Email [magda-test@googlegroups.com](magda-test@googlegroups.com)"
   image:
-    tag: 1.0.0
+    tag: 1.0.1
     repository: docker.io/data61
 
 magda-auth-arcgis:
   arcgisClientId: "d0MgVUbbg5Z6vmWo"
   image:
-    tag: 1.0.0
+    tag: 1.0.1
     repository: docker.io/data61
