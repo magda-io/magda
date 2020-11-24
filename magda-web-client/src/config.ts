@@ -4,6 +4,7 @@ import Region from "./Components/Dataset/Search/Facets/Region";
 import Temporal from "./Components/Dataset/Search/Facets/Temporal";
 import { ValidationFieldList } from "./Components/Dataset/Add/ValidationManager";
 import urijs from "urijs";
+import removePathPrefix from "helpers/removePathPrefix";
 
 declare global {
     interface Window {
@@ -261,9 +262,16 @@ export const config = {
     correspondenceApiUrl:
         serverConfig.correspondenceApiBaseUrl ||
         fallbackApiHost + "api/v0/correspondence/",
-    storageApiUrl:
-        getFullUrlIfNotEmpty(serverConfig.storageApiBaseUrl) ||
-        fallbackApiHost + "api/v0/storage/",
+    // before modify the logic of generating storageApiUrl, be sure you've tested the following scenarios:
+    // - gateway / backend apis amounted at non-root path (via [global.externalUrl](https://github.com/magda-io/magda/blob/master/deploy/helm/magda-core/README.md))
+    // - ui is mounted at non-root path (via web-server.uiBaseUrl)
+    // - UI only in cluster deployment
+    // - UI only local test server
+    storageApiUrl: serverConfig.storageApiBaseUrl
+        ? (getFullUrlIfNotEmpty(
+              removePathPrefix(serverConfig.storageApiBaseUrl, baseUrl)
+          ) as string)
+        : fallbackApiHost + "api/v0/storage/",
     previewMapUrl: previewMapUrl,
     proxyUrl: proxyUrl,
     rssUrl: proxyUrl + "_0d/https://blog.data.gov.au/blogs/rss.xml",
