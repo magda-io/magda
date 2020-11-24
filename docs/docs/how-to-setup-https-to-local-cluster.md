@@ -17,21 +17,24 @@ To issue a self-signed certificate for your cluster, you need to install cert-ma
 -   Installing Cert Manager CRDs with kubectl
 
 ```bash
-# If your cluster version is Kubernetes 1.15+
-$ kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.0.4/cert-manager.crds.yaml
+# If your cluster version is Kubernetes >= 1.16
+kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.0.4/cert-manager.crds.yaml
 
-# If your cluster version is Kubernetes <1.15
-$ kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.0.4/cert-manager-legacy.crds.yaml
+# If your cluster version is Kubernetes <= 1.15
+kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.0.4/cert-manager-legacy.crds.yaml
 ```
 
 -   Installing Cert Manager with Helm
 
-```
+```bash
+# Create namespace for cert-manager
+kubectl create namespace cert-manager
+
 # If you use Helm v3+
-$ helm install cert-manager jetstack/cert-manager --namespace cert-manager --version v1.0.4
+helm install cert-manager jetstack/cert-manager --namespace cert-manager --version v1.0.4
 
 # If you use Helm v2
-$ helm install --name cert-manager --namespace cert-manager --version v1.0.4 jetstack/cert-manager
+helm install --name cert-manager --namespace cert-manager --version v1.0.4 jetstack/cert-manager
 ```
 
 ### Create Self-Signed Cert Issuer
@@ -58,22 +61,21 @@ minikube addons enable ingress
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
+    name: local-ingress
     annotations:
         cert-manager.io/cluster-issuer: selfsigned-issuer
         # optional allow max file upload size 100M
         nginx.ingress.kubernetes.io/client-body-buffer-size: 100M
         nginx.ingress.kubernetes.io/proxy-body-size: 100M
-    name: local-ingress
-    namespace: magda
 spec:
     rules:
         - host: minikube.data.gov.au
           http:
               paths:
-                  - backend:
+                  - path: /
+                    backend:
                         serviceName: gateway
                         servicePort: 80
-                    path: /
     tls:
         - hosts:
               - minikube.data.gov.au

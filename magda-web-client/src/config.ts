@@ -4,6 +4,7 @@ import Region from "./Components/Dataset/Search/Facets/Region";
 import Temporal from "./Components/Dataset/Search/Facets/Temporal";
 import { ValidationFieldList } from "./Components/Dataset/Add/ValidationManager";
 import urijs from "urijs";
+import removePathPrefix from "helpers/removePathPrefix";
 
 declare global {
     interface Window {
@@ -47,12 +48,6 @@ const DEV_FEATURE_FLAGS = {
     useStorageApi: true
 };
 
-const homePageConfig: {
-    baseUrl: string;
-    backgroundImageUrls: Array<string>;
-    stories: string[];
-} = window.magda_client_homepage_config || {};
-
 interface DateConfig {
     dateFormats: string[];
     dateRegexes: {
@@ -65,6 +60,7 @@ interface DateConfig {
 const serverConfig: {
     authApiBaseUrl?: string;
     baseUrl?: string;
+    authPluginRedirectUrl?: string;
     baseExternalUrl?: string;
     uiBaseUrl?: string;
     showNotificationBanner?: boolean;
@@ -148,6 +144,15 @@ function constructDateConfig(
     return dateConfig;
 }
 
+const baseUrl = serverConfig.baseUrl || fallbackApiHost;
+export const isLocalUiServer = window.magda_server_config ? true : false;
+export const isBackendSameOrigin =
+    baseUrl.toLowerCase().indexOf("http") !== 0 ||
+    urijs(baseUrl.toLowerCase()).segment([]).toString() ===
+        urijs().segment([]).search("").fragment("").toString()
+        ? true
+        : false;
+
 const registryReadOnlyApiUrl =
     serverConfig.registryApiReadOnlyBaseUrl ||
     fallbackApiHost + "api/v0/registry-read-only/";
@@ -157,21 +162,26 @@ const registryFullApiUrl =
 const previewMapUrl =
     serverConfig.previewMapBaseUrl || fallbackApiHost + "preview-map/";
 const proxyUrl = getProxyUrl();
-const baseUrl = serverConfig.baseUrl || fallbackApiHost;
+
+/**
+ * if serverConfig.baseExternalUrl not exist:
+ * - uses browser current url if serverConfig exists (i.e. we didn't use the `fallbackApiHost`)
+ * - otherwise, use fallbackApiHost
+ */
 const baseExternalUrl = serverConfig.baseExternalUrl
     ? serverConfig.baseExternalUrl
-    : baseUrl === "/"
-    ? window.location.protocol + "//" + window.location.host + "/"
-    : baseUrl;
+    : isBackendSameOrigin
+    ? baseUrl
+    : urijs().segment([]).search("").fragment("").toString();
 
-const credentialsFetchOptions: RequestInit =
-    `${window.location.protocol}//${window.location.host}/` !== baseUrl
-        ? {
-              credentials: "include"
-          }
-        : {
-              credentials: "same-origin"
-          };
+// when UI domain is different from backend domain, we set credentials: "include"
+const credentialsFetchOptions: RequestInit = !isBackendSameOrigin
+    ? {
+          credentials: "include"
+      }
+    : {
+          credentials: "same-origin"
+      };
 
 const contentApiURL =
     serverConfig.contentApiBaseUrl || fallbackApiHost + "api/v0/content/";
@@ -234,11 +244,13 @@ function getProxyUrl() {
 
 export const config = {
     credentialsFetchOptions: credentialsFetchOptions,
-    homePageConfig: homePageConfig,
     showNotificationBanner: !!serverConfig.showNotificationBanner,
     baseUrl,
     baseExternalUrl,
     uiBaseUrl: serverConfig.uiBaseUrl ? serverConfig.uiBaseUrl : "/",
+    authPluginRedirectUrl: serverConfig.authPluginRedirectUrl
+        ? serverConfig.authPluginRedirectUrl
+        : "/sign-in-redirect",
     contentApiURL,
     searchApiUrl:
         serverConfig.searchApiBaseUrl || fallbackApiHost + "api/v0/search/",
@@ -250,9 +262,16 @@ export const config = {
     correspondenceApiUrl:
         serverConfig.correspondenceApiBaseUrl ||
         fallbackApiHost + "api/v0/correspondence/",
-    storageApiUrl:
-        getFullUrlIfNotEmpty(serverConfig.storageApiBaseUrl) ||
-        fallbackApiHost + "api/v0/storage/",
+    // before modify the logic of generating storageApiUrl, be sure you've tested the following scenarios:
+    // - gateway / backend apis amounted at non-root path (via [global.externalUrl](https://github.com/magda-io/magda/blob/master/deploy/helm/magda-core/README.md))
+    // - ui is mounted at non-root path (via web-server.uiBaseUrl)
+    // - UI only in cluster deployment
+    // - UI only local test server
+    storageApiUrl: serverConfig.storageApiBaseUrl
+        ? (getFullUrlIfNotEmpty(
+              removePathPrefix(serverConfig.storageApiBaseUrl, baseUrl)
+          ) as string)
+        : fallbackApiHost + "api/v0/storage/",
     previewMapUrl: previewMapUrl,
     proxyUrl: proxyUrl,
     rssUrl: proxyUrl + "_0d/https://blog.data.gov.au/blogs/rss.xml",
@@ -363,7 +382,7 @@ export const config = {
           ],
     openfaasBaseUrl: serverConfig.openfaasBaseUrl
         ? serverConfig.openfaasBaseUrl
-        : baseUrl + "api/v0/openfaas",
+        : baseUrl + "api/v0/openfaas/",
     ckanExportServers,
     defaultCkanServer
 };

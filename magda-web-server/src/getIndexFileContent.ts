@@ -68,12 +68,14 @@ const memoizedGetIndexHtml = memoize(getIndexHtml);
  * @param useLocalStyleSheet Whether to use a local stylesheet instead of the content api
  * @param contentApiBaseUrlInternal The base URL of the content api
  * @param uiBaseUrl the base URL where the UI serves at. If not specify or empty, assume it's "/"
+ * @param appBasePath the base URL where the app gateway / APIs serves at. If not specify or empty, assume it's "/"
  */
 async function getIndexFileContent(
     clientRoot: string,
     useLocalStyleSheet: boolean,
     contentApiBaseUrlInternal: string,
-    uiBaseUrl: string
+    uiBaseUrl: string,
+    appBasePath: string
 ) {
     const dynamicContentPromise = getIncludeHtml(contentApiBaseUrlInternal);
     const indexHtmlPromise = memoizedGetIndexHtml(clientRoot);
@@ -95,15 +97,21 @@ async function getIndexFileContent(
             `<link href="/api/v0/content/stylesheet.css" rel="stylesheet">\n</head>`
         );
 
-        if (uiBaseUrl === "/") {
-            // --- if `uiBaseUrl` is '/' do nothing
-            return indexFileContent;
+        // --- if `uiBaseUrl` is '/' do nothing
+        if (uiBaseUrl !== "/") {
+            indexFileContent = indexFileContent.replace(
+                '<base href="/">',
+                `<base href="${uiBaseUrl}">`
+            );
         }
 
-        indexFileContent = indexFileContent.replace(
-            '<base href="/">',
-            `<base href="${uiBaseUrl}/">`
-        );
+        if (appBasePath !== "/") {
+            // if appBasePath not "/", add basePath to API urls
+            indexFileContent = indexFileContent.replace(
+                /\/api\/v0\//g,
+                `${appBasePath}/api/v0/`
+            );
+        }
     }
 
     return indexFileContent;

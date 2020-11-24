@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: local-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: selfsigned-issuer
+    # optional allow max file upload size 100M
+    nginx.ingress.kubernetes.io/client-body-buffer-size: 100M
+    nginx.ingress.kubernetes.io/proxy-body-size: 100M
+spec:
+  rules:
+    - host: minikube.data.gov.au
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: gateway
+              servicePort: 80
+  tls:
+      - hosts:
+            - minikube.data.gov.au
+        secretName: magda-local-cert-tls

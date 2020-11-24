@@ -59,8 +59,7 @@ Once you have helm3 installed, add Magda Helm Chart Repo and other relavent helm
 
 ```bash
 helm repo add magda-io https://charts.magda.io
-helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
-helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+helm repo add twuni https://helm.twun.io
 # Get update from repos
 helm repo update
 ```
@@ -70,7 +69,7 @@ helm repo update
 This gives you a local docker registry that you'll upload your built images to so you can use them locally, without having to go via DockerHub or some other external registry.
 
 ```bash
-helm install docker-registry -f deploy/helm/docker-registry.yml stable/docker-registry
+helm install docker-registry -f deploy/helm/docker-registry.yml twuni/docker-registry
 helm install kube-registry-proxy -f deploy/helm/kube-registry-proxy.yml magda-io/kube-registry-proxy
 ```
 

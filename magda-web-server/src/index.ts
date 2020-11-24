@@ -11,7 +11,7 @@ import { MAGDA_ADMIN_PORTAL_ID } from "magda-typescript-common/src/registry/Tena
 
 import buildSitemapRouter from "./buildSitemapRouter";
 import getIndexFileContent from "./getIndexFileContent";
-
+import getBasePathFromUrl from "magda-typescript-common/src/getBasePathFromUrl";
 import standardiseUiBaseUrl from "./standardiseUiBaseUrl";
 
 const argv = yargs
@@ -44,6 +44,12 @@ const argv = yargs
             "The absolute base URL of the Magda site, when accessed externally. Used for building sitemap URLs which must be absolute.",
         type: "string",
         required: true
+    })
+    .option("authPluginRedirectUrl", {
+        describe:
+            "The redirect url after authentication plugin completes the auth process.",
+        type: "string",
+        default: "/sign-in-redirect"
     })
     .option("registryApiBaseUrlInternal", {
         describe: "The url of the registry api for use within the cluster",
@@ -220,17 +226,35 @@ const clientRoot = path.resolve(
 const clientBuild = path.join(clientRoot, "build");
 console.log("Client: " + clientBuild);
 
-const apiBaseUrl = addTrailingSlash(
-    argv.apiBaseUrl || new URI(argv.baseUrl).segment("api").toString()
+const appBasePath = getBasePathFromUrl(argv?.baseExternalUrl);
+const uiBaseUrl = addTrailingSlash(
+    standardiseUiBaseUrl(
+        argv.uiBaseUrl && argv.uiBaseUrl !== "/"
+            ? argv.uiBaseUrl
+            : appBasePath
+            ? appBasePath
+            : ""
+    )
 );
-
-const uiBaseUrl = standardiseUiBaseUrl(argv.uiBaseUrl);
+const baseUrl = addTrailingSlash(
+    argv.baseUrl && argv.baseUrl !== "/"
+        ? argv.baseUrl
+        : appBasePath
+        ? appBasePath
+        : "/"
+);
+const apiBaseUrl = addTrailingSlash(
+    argv.apiBaseUrl || new URI(baseUrl).segment("api").toString()
+);
 
 const webServerConfig = {
     disableAuthenticationFeatures: argv.disableAuthenticationFeatures,
-    baseUrl: addTrailingSlash(argv.baseUrl),
+    baseUrl: baseUrl,
     baseExternalUrl: argv.baseExternalUrl,
     uiBaseUrl,
+    authPluginRedirectUrl: argv.authPluginRedirectUrl
+        ? argv.authPluginRedirectUrl
+        : "",
     apiBaseUrl: apiBaseUrl,
     contentApiBaseUrl: addTrailingSlash(
         argv.contentApiBaseUrl ||
@@ -261,7 +285,7 @@ const webServerConfig = {
     ),
     previewMapBaseUrl: addTrailingSlash(
         argv.previewMapBaseUrl ||
-            new URI(argv.baseUrl).segment("preview-map").toString()
+            new URI(baseUrl).segment("preview-map").toString()
     ),
     correspondenceApiBaseUrl: addTrailingSlash(
         argv.correspondenceApiBaseUrl ||
@@ -311,7 +335,8 @@ function getIndexFileContentZeroArgs() {
         clientRoot,
         argv.useLocalStyleSheet,
         argv.contentApiBaseUrlInternal,
-        uiBaseUrl
+        uiBaseUrl,
+        appBasePath
     );
 }
 

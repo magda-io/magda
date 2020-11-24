@@ -5,6 +5,7 @@ import passport from "passport";
 import URI from "urijs";
 import signature from "cookie-signature";
 import createAuthApiKeyMiddleware from "./createAuthApiKeyMiddleware";
+import addTrailingSlash from "magda-typescript-common/src/addTrailingSlash";
 
 /** This is present in the express-session types but not actually exported properly, so it needs to be copy-pasted here */
 export type SessionCookieOptions = {
@@ -25,6 +26,7 @@ export interface AuthenticatorOptions {
     cookieOptions?: SessionCookieOptions;
     authApiBaseUrl: string;
     enableSessionForAPIKeyAccess?: boolean;
+    appBasePath?: string;
 }
 
 export const DEFAULT_SESSION_COOKIE_NAME: string = "connect.sid";
@@ -89,9 +91,13 @@ export default class Authenticator {
     public sessionCookieOptions: SessionCookieOptions;
     private sessionSecret: string;
     private authApiBaseUrl: string;
+    private appBaseUrl: string;
 
     constructor(options: AuthenticatorOptions) {
         this.authApiBaseUrl = options.authApiBaseUrl;
+        this.appBaseUrl = addTrailingSlash(
+            options.appBasePath ? options.appBasePath : "/"
+        );
 
         if (!this.authApiBaseUrl) {
             throw new Error("Authenticator requires valid auth API base URL");
@@ -276,7 +282,7 @@ export default class Authenticator {
         const uri = new URI(req.originalUrl);
         const pathname = uri.pathname().toLowerCase();
 
-        if (pathname.indexOf("/auth/login/") === 0) {
+        if (pathname.indexOf(`${this.appBaseUrl}auth/login/`) === 0) {
             // --- start session / passport here
             return runMiddlewareList(
                 [
@@ -289,8 +295,8 @@ export default class Authenticator {
                 next
             );
         } else if (
-            pathname === "/auth/logout" ||
-            (pathname === "/sign-in-redirect" &&
+            pathname === `${this.appBaseUrl}auth/logout` ||
+            (pathname === `${this.appBaseUrl}sign-in-redirect` &&
                 uri.hasQuery("result", "failure"))
         ) {
             // --- end the session here
@@ -307,7 +313,7 @@ export default class Authenticator {
                 async () => {
                     // --- destroy session here
                     // --- any session data will be removed from session store
-                    if (pathname === "/auth/logout") {
+                    if (pathname === `${this.appBaseUrl}auth/logout`) {
                         // --- based on PR review feedback, we want to report any errors happened during session destroy
                         // --- and only remove cookie from user agent when session data is destroyed successfully
                         this.destroySession(req)

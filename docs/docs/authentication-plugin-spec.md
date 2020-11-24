@@ -94,12 +94,12 @@ This endpoint is required to response the auth plugin's config information in JS
 
 The GET `/` Endpoint is supported by all authentication plugins types. When accessed by a user's web browser:
 
--   if the user has been authenticated already, the endpoint should issue a `302` redirection that redirect the user's web browser to a pre-configured url (Specified by Helm Chart value `global.authPluginRedirectUrl`).
+-   if the user has been authenticated already, the endpoint should issue a `302` redirection that redirect the user's web browser to a pre-configured url that is specified by:
+    -   either query parameter `redirect`
+    -   Or Helm Chart value `global.authPluginRedirectUrl`) when if query parameter `redirect` does not exist
 -   if the user has not been authenticated, the endpoint should:
     -   For `IDP-URI-REDIRECTION` type plugin, the endpoint should issue a `302` redirection to start the authenticaiton process accordingly.
-    -   For `PASSWORD` or `QR-CODE` type plugin, the endpoint should:
-    -   When the user has been authenticated, redirect user agent to `authPluginRedirectUrl` with `result` set to "success".
-    -   When the user has not been authenticated yet, edirect user agent to `authPluginRedirectUrl` with `result` set to "failure" and `errorMessage` set to "unauthorised".
+    -   For `PASSWORD` or `QR-CODE` type plugin, the endpoint should redirect user agent to the redirect url with `result` set to "failure" and `errorMessage` set to "unauthorised".
 
 > If you use [Passport.js](http://www.passportjs.org/) to build your auth plugin, this will be handled via [passport.authenticate() method](http://www.passportjs.org/docs/authenticate/).
 

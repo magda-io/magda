@@ -87,7 +87,11 @@ function installUpdater(options: OptionsIO) {
         options._installed = {};
         options._probes = {};
     }
-    if (!options.probes) {
+    if (!options.probes || !Object.keys(options.probes).length) {
+        // when no probes, readiness probe will behave like the liveness probe
+        options.ready = true;
+        options.since = options.last = new Date().toISOString();
+        options.details = {};
         return;
     }
     // every probe deserves to not be blocked by state of other probes
