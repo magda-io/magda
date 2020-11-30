@@ -190,11 +190,68 @@ export default class Database {
             .then((res) => res.rows);
     }
 
-    async updateUser(userId: string, update: any): Promise<void> {
-        await this.pool.query(`UPDATE users SET "isAdmin" = $1 WHERE id = $2`, [
-            update.isAdmin || false,
-            userId
-        ]);
+    getValidUserUpdateFields() {
+        return [
+            "displayName",
+            "email",
+            "photoURL",
+            "source",
+            "sourceId",
+            "isAdmin",
+            "orgUnitId"
+        ];
+    }
+
+    isValidUserUpdateField(fieldName: string) {
+        return (
+            this.getValidUserUpdateFields().findIndex(
+                (item) => item === fieldName
+            ) !== -1
+        );
+    }
+
+    async updateUser(
+        userId: string,
+        update: Partial<
+            Omit<
+                User,
+                | "id"
+                | "roles"
+                | "permissions"
+                | "managingOrgUnitIds"
+                | "orgUnit"
+            >
+        >
+    ): Promise<void> {
+        if (!update || !Object.keys(update).length) {
+            return;
+        }
+
+        const updateSql: string[] = [];
+        const params: any[] = [];
+
+        Object.keys(update).forEach((field) => {
+            if (!this.isValidUserUpdateField(field)) {
+                throw new Error(
+                    `Field ${field} is not a valid user record update field.`
+                );
+            }
+            params.push((update as any)[field]);
+            updateSql.push(`"${field}" = $${params.length}`);
+        });
+
+        if (!params.length) {
+            return;
+        }
+
+        params.push(userId);
+
+        await this.pool.query(
+            `UPDATE users SET ${updateSql.join(", ")} WHERE id = $${
+                params.length
+            }`,
+            params
+        );
     }
 
     getUserByExternalDetails(

@@ -451,7 +451,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {get} /v0/auth/users/all Get all users
+     * @api {get} /v0/auth/users Get all users
      * @apiDescription Returns all users
      *
      * @apiSuccessExample {json} 200
@@ -461,7 +461,12 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *        "email":"fred.nerk@data61.csiro.au",
      *        "photoURL":"...",
      *        "source":"google",
-     *        "isAdmin": true
+     *        "isAdmin": true,
+     *        "roles": [{
+     *          id": "...",
+     *          name: "Authenticated Users",
+     *          permissionIds: ["e5ce2fc4-9f38-4f52-8190-b770ed2074e", "a4a34ab4-67be-4806-a8de-f7e3c5d452f0"]
+     *        }]
      *    }]
      *
      * @apiErrorExample {json} 401/500
@@ -471,16 +476,23 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *      "errorMessage": "Not authorized"
      *    }
      */
-    router.get("/public/users/all", MUST_BE_ADMIN, async (req, res) => {
+    router.get("/public/users", MUST_BE_ADMIN, async (req, res) => {
         try {
-            const items = await database.getUsers();
-            res.status(200)
-                .json({
-                    items
-                })
-                .end();
+            const users = await database.getUsers();
+            if (!users?.length) {
+                res.json([]);
+                return;
+            }
+            res.json(
+                await Promise.all(
+                    users.map(async (user) => ({
+                        ...user,
+                        roles: await database.getUserRoles(user.id)
+                    }))
+                )
+            );
         } catch (e) {
-            respondWithError("/public/users/all", res, e);
+            respondWithError("GET /public/users", res, e);
         }
     });
 
@@ -526,10 +538,16 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {put} /v0/auth/users/:userId Get User By Id
-     * @apiDescription Updates a user.
+     * @api {put} /v0/auth/users/:userId Update User By Id
+     * @apiDescription Updates a user's info by Id. 
+     * Supply a JSON object that contains fields to be udpated in body.
      *
      * @apiParam {string} userId id of user
+     * @apiParamExample (Body) {json}:
+     *     {
+     *       displayName: "xxxx"
+     *       isAdmin: true
+     *     }
      *
      * @apiSuccessExample {json} 200
      *    {
@@ -545,16 +563,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      */
     router.put("/public/users/:userId", MUST_BE_ADMIN, async (req, res) => {
         const userId = req.params.userId;
-        if (userId === req.user.id) {
-            throw new AuthError(
-                "Cannot change your own details through this endpoint",
-                403
-            );
-        }
-
-        // extract fields
-        const { isAdmin } = req.body;
-        const update = { isAdmin };
+        const update = req.body;
 
         // update
         try {

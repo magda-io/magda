@@ -17,6 +17,6 @@ spec:
               serviceName: gateway
               servicePort: 80
   tls:
-      - hosts:
-            - minikube.data.gov.au
-        secretName: magda-local-cert-tls
+    - hosts:
+        - minikube.data.gov.au
+      secretName: magda-local-cert-tls

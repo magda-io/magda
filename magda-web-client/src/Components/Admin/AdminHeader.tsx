@@ -34,7 +34,7 @@ export default class AdminHeader extends Component<any, any> {
                     <Medium>
                         <Breadcrumbs breadcrumbs={crumbs} />
                     </Medium>
-                    <h1>{title.join(" ")}</h1>
+                    <h1>{title.reverse().join(" / ")}</h1>
                 </div>
             </MagdaDocumentTitle>
         );

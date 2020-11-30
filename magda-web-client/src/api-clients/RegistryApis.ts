@@ -23,7 +23,7 @@ import sourceAspect from "@magda/registry-aspects/source.schema.json";
 import datasetDraftAspect from "@magda/registry-aspects/dataset-draft.schema.json";
 import ckanExportAspect from "@magda/registry-aspects/ckan-export.schema.json";
 import versionAspect from "@magda/registry-aspects/version.schema.json";
-import { createNoCacheFetchOptions } from "./createNoCacheFetchOptions";
+import createNoCacheFetchOptions from "./createNoCacheFetchOptions";
 import formUrlencode from "./formUrlencode";
 
 export const aspectSchemas = {

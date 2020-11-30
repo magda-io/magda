@@ -20,7 +20,8 @@ export default async function request<T = any, CT = string>(
     url: string,
     body?: any,
     contentType?: CT | RequestContentType | undefined,
-    returnHeaders?: false
+    returnHeaders?: false,
+    extraRequestOptions?: RequestInit
 ): Promise<T>;
 
 export default async function request<T = any, CT = string>(
@@ -28,7 +29,8 @@ export default async function request<T = any, CT = string>(
     url: string,
     body?: any,
     contentType?: CT | RequestContentType | undefined,
-    returnHeaders?: true
+    returnHeaders?: true,
+    extraRequestOptions?: RequestInit
 ): Promise<[T, Headers]>;
 
 export default async function request<T = any, CT = string>(
@@ -36,10 +38,12 @@ export default async function request<T = any, CT = string>(
     url: string,
     body: any = undefined,
     contentType: CT | RequestContentType | undefined = "application/json",
-    returnHeaders: boolean = false
+    returnHeaders: boolean = false,
+    extraRequestOptions: RequestInit = {}
 ): Promise<[T, Headers] | T> {
     const fetchOptions = Object.assign({}, config.credentialsFetchOptions, {
-        method
+        method,
+        ...extraRequestOptions
     });
     if (body !== undefined) {
         if (contentType === "application/json") {
