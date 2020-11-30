@@ -451,7 +451,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {get} /v0/auth/users Get all users
+     * @api {get} /v0/auth/users/all Get all users
      * @apiDescription Returns all users
      *
      * @apiSuccessExample {json} 200
@@ -476,7 +476,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
      *      "errorMessage": "Not authorized"
      *    }
      */
-    router.get("/public/users", MUST_BE_ADMIN, async (req, res) => {
+    router.get("/public/users/all", MUST_BE_ADMIN, async (req, res) => {
         try {
             const users = await database.getUsers();
             if (!users?.length) {
@@ -492,7 +492,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
                 )
             );
         } catch (e) {
-            respondWithError("GET /public/users", res, e);
+            respondWithError("GET /public/users/all", res, e);
         }
     });
 

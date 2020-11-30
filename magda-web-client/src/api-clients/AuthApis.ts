@@ -72,7 +72,7 @@ export function convertAuthPluginApiUrl(
 }
 
 export async function getUsers(): Promise<User[]> {
-    return await getRequestNoCache<User[]>(config.authApiUrl + "users");
+    return await getRequestNoCache<User[]>(config.authApiUrl + "users/all");
 }
 
 /**

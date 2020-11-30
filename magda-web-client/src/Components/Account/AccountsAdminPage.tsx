@@ -33,7 +33,7 @@ const AccountsAdminPage: FunctionComponent<AccountsAdminPagePropsType> = (
             ) : (
                 <div>
                     <ErrorMessageBox
-                        error={userLoadingError ? userLoadingError : null}
+                        error={userLoadingError ? "" + userLoadingError : null}
                     />
                     <table className="account-grid">
                         <thead>
