@@ -7,6 +7,8 @@
 -   Fixed: Date Extractor for metadata creation tool will fail to process CSV or excel with incomplete rows #3040
 -   Other Date Extractor extration accuracy improvement
 -   Admin Panel User Admin feature should set/unset both isAdmin field & admin role for compatibility purpose #3033
+-   Make GET /auth/users/all API return user role info as well
+-   Make PUT /auth/users/:userId API accept other user field rather then `isAdmin` field only
 
 ## 0.0.58
 
