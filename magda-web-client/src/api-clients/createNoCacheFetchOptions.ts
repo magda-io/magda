@@ -1,4 +1,6 @@
-export function createNoCacheFetchOptions(fetchOptions: RequestInit = {}) {
+export default function createNoCacheFetchOptions(
+    fetchOptions: RequestInit = {}
+) {
     const options = { ...fetchOptions };
     if (!options.headers) {
         options.headers = {};

@@ -1,6 +1,6 @@
 import { Action } from "../types";
 
-type Role = {
+export type Role = {
     id: string;
     name: string;
     description: string;
