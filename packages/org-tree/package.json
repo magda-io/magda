@@ -3,10 +3,10 @@
   "description": "MAGDA Organizational Hierarchy Management Utilities",
   "version": "0.0.59-alpha.0",
   "bin": {
-    "acs-cmd": "./bin/org-tree/org-tree.js"
+    "org-tree": "./bin/org-tree/org-tree.js"
   },
   "scripts": {
-    "acs-cmd": "./bin/org-tree/org-tree.js",
+    "org-tree": "./bin/org-tree/org-tree.js",
     "prebuild": "rimraf bin",
     "build": "node build.js && webpack",
     "release": "npm publish || echo \"Skip releasing npm package @magda/org-tree.\""
