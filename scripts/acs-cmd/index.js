@@ -13,6 +13,10 @@ program
             `  POSTGRES_USER: database username; If not available in env var, 'postgres' will be used.\n` +
             `  POSTGRES_PASSWORD: database password; If not available in env var, '' will be used.`
     )
+    .command(
+        "admin",
+        "Make an user an Admin user or remove admin role / status from a user"
+    )
     .command("list", "List records (permissions, operations etc.)")
     .command("assign", "Assign a permission to a role or a role to a user")
     .command("remove", "Remove a permission from a role or a role from a user")
@@ -23,8 +27,9 @@ program
     )
     .on("command:*", function (cmds) {
         if (
-            ["list", "assign", "remove", "jwt", "create"].indexOf(cmds[0]) ===
-            -1
+            ["admin", "list", "assign", "remove", "jwt", "create"].indexOf(
+                cmds[0]
+            ) === -1
         ) {
             console.error(
                 chalk.red(

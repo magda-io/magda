@@ -1,0 +1,48 @@
+{
+  "name": "@magda/org-tree",
+  "description": "MAGDA Organizational Hierarchy Management Utilities",
+  "version": "0.0.59-alpha.0",
+  "bin": {
+    "acs-cmd": "./bin/org-tree/org-tree.js"
+  },
+  "scripts": {
+    "acs-cmd": "./bin/org-tree/org-tree.js",
+    "prebuild": "rimraf bin",
+    "build": "node build.js && webpack",
+    "release": "npm publish || echo \"Skip releasing npm package @magda/org-tree.\""
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@magda/typescript-common": "^0.0.59-alpha.0",
+    "@magda/authorization-api": "^0.0.59-alpha.0",
+    "@magda/scripts": "^0.0.59-alpha.0",
+    "fs-extra": "^2.1.2",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
+  },
+  "dependencies": {
+    "chalk": "^2.4.1",
+    "commander": "^2.17.0",
+    "pg": "^7.11.0"
+  },
+  "magda": {
+    "language": "typescript",
+    "categories": {
+      "npmPackage": true,
+      "useAuthApi": true
+    }
+  },
+  "keywords": [
+    "Magda",
+    "Organizational Hierarchy Management",
+    "CLI Tool",
+    "org-tree"
+  ],
+  "engines": {
+    "node": ">=10.0.0 <13.0.0"
+  },
+  "files": [
+    "bin"
+  ]
+}

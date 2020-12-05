@@ -1,7 +1,7 @@
 const path = require("path");
 const webpack = require("webpack");
 const magdaScriptEntry = require.resolve(
-    "@magda/scripts/create-secrets/index.js"
+    "@magda/scripts/acs-cmd/acs-cmd-jwt.js"
 );
 
 module.exports = {
@@ -11,14 +11,14 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /create-secrets\/index.js/,
+                test: /acs-cmd\/acs-cmd-jwt.js/,
                 use: ["remove-hashbag-loader"]
             }
         ]
     },
     stats: "errors-only",
     optimization: {
-        minimize: true
+        minimize: false
     },
     resolve: {
         extensions: [".js"]
@@ -33,9 +33,18 @@ module.exports = {
     plugins: [
         new webpack.BannerPlugin({ banner: "#!/usr/bin/env node", raw: true })
     ],
+    externals: {
+        "fs-extra": "commonjs2 fs-extra",
+        chalk: "commonjs2 chalk",
+        commander: "commonjs2 commander",
+        pg: "commonjs2 pg",
+        jsonwebtoken: "commonjs2 jsonwebtoken",
+        table: "commonjs2 table",
+        "../package.json": "commonjs2 ../package.json"
+    },
     output: {
         libraryTarget: "umd",
-        filename: "create-secrets.js",
-        path: path.resolve(__dirname, "./bin")
+        filename: "acs-cmd-jwt.js",
+        path: path.resolve(__dirname, "./bin/acs-cmd")
     }
 };
