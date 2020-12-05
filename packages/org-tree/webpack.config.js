@@ -67,7 +67,7 @@ module.exports = {
         jsonwebtoken: "commonjs2 jsonwebtoken",
         "text-treeview": "commonjs2 text-treeview",
         "@magda/authorization-api/dist/NestedSetModelQueryer":
-            "commonjs2 NestedSetModelQueryer",
+            "commonjs2 ./NestedSetModelQueryer",
         "../db/getDBPool": "commonjs2 ../db/getDBPool",
         "./getNodeIdFromNameOrId": "commonjs2 ./getNodeIdFromNameOrId",
         "./getUserIdFromNameOrId": "commonjs2 ./getUserIdFromNameOrId"
