@@ -11,11 +11,6 @@ fse.copySync(
 
 fse.copySync(path.resolve(sourceDir, "db"), path.resolve(__dirname, "bin/db"));
 
-fse.copySync(
-    path.resolve(__dirname, "package.json"),
-    path.resolve(__dirname, "bin/package.json")
-);
-
 fse.moveSync(
     path.resolve(__dirname, "bin/acs-cmd/index.js"),
     path.resolve(__dirname, "bin/acs-cmd/acs-cmd.js")

@@ -59,7 +59,7 @@ module.exports = {
         new webpack.BannerPlugin({ banner: "#!/usr/bin/env node", raw: true })
     ],
     externals: {
-        "../package.json": "commonjs2 ../package.json",
+        "../package.json": "commonjs2 ../../package.json",
         "fs-extra": "commonjs2 fs-extra",
         chalk: "commonjs2 chalk",
         commander: "commonjs2 commander",

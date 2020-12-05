@@ -1,17 +1,39 @@
 const path = require("path");
+const fse = require("fs-extra");
 const webpack = require("webpack");
-const magdaScriptEntry = require.resolve(
-    "@magda/scripts/acs-cmd/acs-cmd-jwt.js"
+const magdaScriptEntryDir = path.dirname(
+    require.resolve("@magda/scripts/acs-cmd/index.js")
 );
 
+const entries = (() => {
+    const entries = {
+        "acs-cmd": path.resolve(magdaScriptEntryDir, "index.js")
+    };
+    items = fse.readdirSync(magdaScriptEntryDir, { encoding: "utf8" });
+    if (items && items.length) {
+        items.forEach((item) => {
+            if (path.extname(item) !== ".js") {
+                return;
+            }
+            if (item !== "index.js") {
+                entries[item.replace(/\.js$/, "")] = path.join(
+                    magdaScriptEntryDir,
+                    item
+                );
+            }
+        });
+    }
+    return entries;
+})();
+
 module.exports = {
-    entry: magdaScriptEntry,
+    entry: entries,
     mode: "production",
     target: "node",
     module: {
         rules: [
             {
-                test: /acs-cmd\/acs-cmd-jwt.js/,
+                test: /acs-cmd\/(index\.js|acs-cmd-[^\.]+\.js)$/,
                 use: ["remove-hashbag-loader"]
             }
         ]
@@ -40,11 +62,11 @@ module.exports = {
         pg: "commonjs2 pg",
         jsonwebtoken: "commonjs2 jsonwebtoken",
         table: "commonjs2 table",
-        "../package.json": "commonjs2 ../package.json"
+        "../package.json": "commonjs2 ../../package.json"
     },
     output: {
         libraryTarget: "umd",
-        filename: "acs-cmd-jwt.js",
+        filename: "[name].js",
         path: path.resolve(__dirname, "./bin/acs-cmd")
     }
 };
