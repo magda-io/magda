@@ -8,6 +8,14 @@ A set of tools for managing Magda user accounts.
 $ npm install --global @magda/acs-cmd
 ```
 
+### Upgrade
+
+To update the existing installation to the latest version:
+
+```
+$ npm install --global @magda/acs-cmd@latest
+```
+
 ### Usage
 
 Run without any options will show the help information:

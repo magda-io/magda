@@ -8,6 +8,14 @@ A set of tools for managing Magda organizational hierarchy.
 $ npm install --global @magda/org-tree
 ```
 
+### Upgrade
+
+To update the existing installation to the latest version:
+
+```
+$ npm install --global @magda/org-tree@latest
+```
+
 ### Usage
 
 Run without any options will show the help information:
