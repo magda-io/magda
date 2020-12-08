@@ -1,6 +1,6 @@
 ## MAGDA acs-cmd Utility
 
-A set of tools for managing Magda user accounts.
+A set of tools for managing Magda user accounts. You might also want to have a look at [org-tree](https://www.npmjs.com/package/@magda/org-tree) utility.
 
 ### Install
 

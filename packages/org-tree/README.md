@@ -1,6 +1,6 @@
 ## MAGDA org-tree Utility
 
-A set of tools for managing Magda organizational hierarchy.
+A set of tools for managing Magda organizational hierarchy. You might also want to have a look at [acs-cmd](https://www.npmjs.com/package/@magda/acs-cmd) utility.
 
 ### Install
 
