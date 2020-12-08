@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const pkg = require("../package.json");
 const program = require("commander");
+const chalk = require("chalk");
 
 program
     .version(pkg.version)
@@ -43,4 +44,26 @@ program
         "unassign <userNameOrId>",
         "\n\tAssign the specified user from any node"
     )
+    .on("command:*", function (cmds) {
+        if (
+            [
+                "view",
+                "create",
+                "insert",
+                "delete",
+                "move",
+                "assign",
+                "unassign"
+            ].indexOf(cmds[0]) === -1
+        ) {
+            console.error(
+                chalk.red(
+                    `Invalid command: ${program.args.join(
+                        " "
+                    )}\nSee --help for a list of available commands.`
+                )
+            );
+            process.exit(1);
+        }
+    })
     .parse(process.argv);

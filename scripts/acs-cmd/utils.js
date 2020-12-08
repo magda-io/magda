@@ -19,4 +19,7 @@ async function recordExist(pool, table, record) {
     return true;
 }
 
+const ADMIN_ROLE_ID = "00000000-0000-0003-0000-000000000000";
+
 module.exports.recordExist = recordExist;
+module.exports.ADMIN_ROLE_ID = ADMIN_ROLE_ID;

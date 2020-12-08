@@ -8,6 +8,14 @@ A CLI tool that helps to create kuberneter secrets required by [Magda](https://m
 $ npm install --global @magda/create-secrets
 ```
 
+### Upgrade
+
+To update the existing installation to the latest version:
+
+```
+$ npm install --global @magda/create-secrets@latest
+```
+
 ### Usage
 
 -   Run without options will show the questionnaire to guide you through the process:

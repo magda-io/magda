@@ -9,6 +9,8 @@
 -   Admin Panel User Admin feature should set/unset both isAdmin field & admin role for compatibility purpose #3033
 -   Make GET /auth/users/all API return user role info as well
 -   Make PUT /auth/users/:userId API accept other user field rather then `isAdmin` field only
+-   Release `acs-cmd` & `org-tree` as separate NPM packages
+-   Add set admin function to `acs-cmd` commandline utility package
 
 ## 0.0.58
 

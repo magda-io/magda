@@ -25,9 +25,8 @@ module.exports = {
     },
     resolveLoader: {
         alias: {
-            "remove-hashbag-loader": path.join(
-                __dirname,
-                "./loaders/remove-hashbag-loader"
+            "remove-hashbag-loader": require.resolve(
+                "@magda/scripts/loaders/remove-hashbag-loader.js"
             )
         }
     },

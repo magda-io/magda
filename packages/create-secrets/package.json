@@ -25,6 +25,9 @@
       "useCommonLib": true
     }
   },
+  "engines": {
+    "node": ">=10.0.0 <13.0.0"
+  },
   "keywords": [
     "Magda",
     "Kubernetes secrets",

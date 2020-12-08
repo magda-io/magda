@@ -8,7 +8,9 @@ const buildJwt = require("@magda/typescript-common/dist/session/buildJwt")
 const DEFAULT_JWT_SECRET = "squirrel";
 
 program
-    .description("calculate JWT token (only for testing purpose)")
+    .description(
+        `calculate JWT token (only for testing purpose). Version: ${pkg.version}`
+    )
     .option("<userId>", "User ID")
     .option(
         "[jwtSecret]",
@@ -17,6 +19,9 @@ program
     .version(pkg.version)
     .action(async (userId, jwtSecret) => {
         try {
+            if (process.argv.slice(2).length < 1) {
+                program.help();
+            }
             console.log(`JWT token for user ${userId} is: `);
             console.log(
                 chalk.yellow(

@@ -352,11 +352,14 @@ buildtest:typescript-apis-with-pg:
     - cd magda-minion-framework && yarn build && yarn test && cd ..
     - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.uses-pg=true -- run build --include-filtered-dependencies
     - yarn run in-submodules -- -f language=typescript -f categories.api=true -f categories.uses-pg=true -- run test --include-filtered-dependencies
+    - yarn run in-submodules -- -f categories.npmPackage=true -f categories.useAuthApi=true -- run build
     - cd deploy/helm/internal-charts/opa
     - docker-compose down
   artifacts:
     paths:
       - "*/dist"
+      - "packages/*/dist"
+      - "packages/*/bin"
     expire_in: 7 days
 
 buildtest:typescript-apis-with-es:
