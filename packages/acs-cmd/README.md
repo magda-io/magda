@@ -1,4 +1,4 @@
-## MAGDA acs-cmd
+## MAGDA acs-cmd Utility
 
 A set of tools for managing Magda user accounts.
 
@@ -46,6 +46,11 @@ Commands:
   jwt <userId> [jwtSecret]  calculate JWT token (only for testing purpose)
   help [cmd]                display help for [cmd]
 ```
+
+> You will need to port forward the Magda database to localhost to make sure the utility can connect to your Magda database.
+
+-   To do so, You can run `kubectl port-forward combined-db-0 5432`.
+    -   If you didn't install magda to the default namespace, you can use: `kubectl port-forward -n [namespace] combined-db-0 5432`
 
 #### Example
 

@@ -1,4 +1,4 @@
-## MAGDA org-tree
+## MAGDA org-tree Utility
 
 A set of tools for managing Magda organizational hierarchy.
 
@@ -65,6 +65,11 @@ Commands:
         Assign the specified user from any node
   help [cmd]                                display help for [cmd]
 ```
+
+> You will need to port forward the Magda database to localhost to make sure the utility can connect to your Magda database.
+
+-   To do so, You can run `kubectl port-forward combined-db-0 5432`.
+    -   If you didn't install magda to the default namespace, you can use: `kubectl port-forward -n [namespace] combined-db-0 5432`
 
 #### Example
 
