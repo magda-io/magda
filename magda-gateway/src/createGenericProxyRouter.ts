@@ -10,9 +10,14 @@ import Authenticator from "./Authenticator";
 import { TenantMode } from "./setupTenantMode";
 
 export type ProxyTarget = DetailedProxyTarget | string;
+export type MethodWithProxyTaget = {
+    method: string;
+    target: string;
+};
+export type ProxyMethodType = string | MethodWithProxyTaget;
 export interface DetailedProxyTarget {
     to: string;
-    methods?: string[];
+    methods?: ProxyMethodType[];
     auth?: boolean;
     redirectTrailingSlash?: boolean;
     statusCheck?: boolean;
@@ -77,7 +82,7 @@ export default function createGenericProxyRouter(
     function proxyRoute(
         baseRoute: string,
         target: string,
-        verbs: string[] = ["all"],
+        verbs: ProxyMethodType[] = ["all"],
         auth = false,
         redirectTrailingSlash = false
     ) {
@@ -88,14 +93,31 @@ export default function createGenericProxyRouter(
             authenticator.applyToRoute(routeRouter);
         }
 
-        verbs.forEach((verb: string) =>
-            routeRouter[verb.toLowerCase()](
-                "*",
-                (req: express.Request, res: express.Response) => {
-                    proxy.web(req, res, { target });
+        verbs.forEach((verb: ProxyMethodType) => {
+            if (typeof verb === "string") {
+                routeRouter[verb.toLowerCase()](
+                    "*",
+                    (req: express.Request, res: express.Response) => {
+                        proxy.web(req, res, { target });
+                    }
+                );
+            } else {
+                const method: string = verb.method.toLowerCase();
+                if (!method) {
+                    throw new Error(
+                        "Invalid non-string proxy target method type"
+                    );
                 }
-            )
-        );
+                const runtimeTarget =
+                    typeof verb?.target === "string" ? verb.target : target;
+                routeRouter[method](
+                    "*",
+                    (req: express.Request, res: express.Response) => {
+                        proxy.web(req, res, { target: runtimeTarget });
+                    }
+                );
+            }
+        });
 
         if (redirectTrailingSlash) {
             // --- has to use RegEx as `req.originalUrl` will match both with & without trailing /
