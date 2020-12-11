@@ -140,4 +140,66 @@ describe("createGenericProxyRouter", () => {
         // Auth is off now
         expect(isApplyToRouteCalled).to.be.false;
     });
+
+    it("should support specifying different target for different methods", async () => {
+        const dummyAuthenticator = sinon.createStubInstance(Authenticator);
+
+        const router = createGenericProxyRouter({
+            authenticator: dummyAuthenticator,
+            jwtSecret: "xxx",
+            routes: {
+                "test-route": {
+                    to: "http://test-default-route.com",
+                    auth: false,
+                    methods: [
+                        {
+                            method: "get",
+                            target: "http://test-get-route.com"
+                        },
+                        {
+                            method: "post",
+                            target: "http://test-post-route.com"
+                        },
+                        // --- srting method will use `to` field as default target
+                        "delete",
+                        {
+                            // if target field not exist, `to` field will be used as default target
+                            method: "patch"
+                        }
+                    ]
+                }
+            },
+            tenantMode: defaultTenantMode
+        });
+
+        const app = express();
+        app.use(router);
+
+        const defaultScope = nock("http://test-default-route.com");
+        defaultScope.get("/").reply(200, { route: "default" });
+        defaultScope.post("/").reply(200, { route: "default" });
+        defaultScope.delete("/").reply(200, { route: "default" });
+        defaultScope.patch("/").reply(200, { route: "default" });
+
+        nock("http://test-get-route.com").get("/").reply(200, { route: "get" });
+        nock("http://test-post-route.com")
+            .post("/")
+            .reply(200, { route: "post" });
+
+        // GET request should reach GET route
+        let res = await supertest(app).get("/test-route").expect(200);
+        expect(res.body.route).to.equal("get");
+
+        // POST request should reach POST route
+        res = await supertest(app).post("/test-route").expect(200);
+        expect(res.body.route).to.equal("post");
+
+        // DELETE request should reach default route
+        res = await supertest(app).delete("/test-route").expect(200);
+        expect(res.body.route).to.equal("default");
+
+        // PATCH request should reach default route
+        res = await supertest(app).patch("/test-route").expect(200);
+        expect(res.body.route).to.equal("default");
+    });
 });

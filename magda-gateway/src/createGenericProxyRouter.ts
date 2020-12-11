@@ -12,7 +12,7 @@ import { TenantMode } from "./setupTenantMode";
 export type ProxyTarget = DetailedProxyTarget | string;
 export type MethodWithProxyTaget = {
     method: string;
-    target: string;
+    target?: string;
 };
 export type ProxyMethodType = string | MethodWithProxyTaget;
 export interface DetailedProxyTarget {
