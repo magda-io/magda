@@ -1,6 +1,6 @@
 # session-db
 
-![Version: 0.0.59-alpha.0](https://img.shields.io/badge/Version-0.0.59--alpha.0-informational?style=flat-square)
+![Version: 0.0.59-alpha.1](https://img.shields.io/badge/Version-0.0.59--alpha.1-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
