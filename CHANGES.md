@@ -11,6 +11,7 @@
 -   Make PUT /auth/users/:userId API accept other user field rather then `isAdmin` field only
 -   Release `acs-cmd` & `org-tree` as separate NPM packages
 -   Add set admin function to `acs-cmd` commandline utility package
+-   Make Gateway should proxy all GET requests to registry-read-only pods
 
 ## 0.0.58
 
