@@ -92,7 +92,7 @@ class RegistryExternalInterface(
   implicit val defaultOffset =
     ZoneOffset.of(config.getString("time.defaultOffset"))
   implicit val fetcher = httpFetcher
-  implicit val readOnlyfetcher = readOnlyHttpFetcher
+  implicit val readOnlyFetcher = readOnlyHttpFetcher
   implicit val logger = Logging(system, getClass)
 
   val authJws = Authentication.signToken(
@@ -126,7 +126,7 @@ class RegistryExternalInterface(
       pageToken: String,
       number: Int
   ): scala.concurrent.Future[(Option[String], List[DataSet])] = {
-    readOnlyfetcher
+    readOnlyFetcher
       .get(
         path =
           s"$baseRecordsPath&dereference=true&pageToken=$pageToken&limit=$number",
@@ -158,7 +158,7 @@ class RegistryExternalInterface(
       start: Long,
       number: Int
   ): scala.concurrent.Future[(Option[String], List[DataSet])] = {
-    readOnlyfetcher
+    readOnlyFetcher
       .get(
         path = s"$baseRecordsPath&dereference=true&start=$start&limit=$number",
         headers = Seq(systemIdHeader, authHeader)
@@ -186,7 +186,7 @@ class RegistryExternalInterface(
   }
 
   def getWebhooks(): Future[List[WebHook]] = {
-    readOnlyfetcher
+    fetcher
       .get(path = s"$baseApiPath/hooks", headers = Seq(authHeader))
       .flatMap { response =>
         response.status match {
@@ -198,7 +198,7 @@ class RegistryExternalInterface(
   }
 
   def getWebhook(id: String): Future[Option[WebHook]] = {
-    readOnlyfetcher
+    fetcher
       .get(path = s"$baseApiPath/hooks/$id", headers = Seq(authHeader))
       .flatMap { response =>
         response.status match {
