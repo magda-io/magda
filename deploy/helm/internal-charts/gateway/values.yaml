@@ -78,6 +78,9 @@ defaultRoutes:
   search:
     to: http://search-api/v0
     auth: true
+  "registry/hooks":
+    to: http://registry-api/v0/hooks
+    auth: true
   registry:
     to: http://registry-api/v0
     methods:
