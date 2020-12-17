@@ -134,6 +134,7 @@ export default function createGenericProxyRouter(
 
     Object.keys(options.routes)
         .sort((a, b) => {
+            // make sure route path has more path segment items will be installed first (i.e. higher priority when takes up requests)
             const segmentLenA = urijs(a).segment().length;
             const segmentLenB = urijs(b).segment().length;
             if (segmentLenA < segmentLenB) {
