@@ -77,6 +77,7 @@ export default function createBaseProxy(
 ): httpProxy {
     const proxy = httpProxy.createProxyServer({
         prependUrl: false,
+        ignorePath: true,
         changeOrigin: true
     } as httpProxy.ServerOptions);
 
@@ -102,6 +103,11 @@ export default function createBaseProxy(
     });
 
     proxy.on("proxyReq", function (proxyReq, req, res) {
+        // as we set `ignorePath`=true, we need append req.path to proxyReq.path
+        if (req.url !== "/") {
+            proxyReq.path = proxyReq.path + req.url;
+        }
+
         // Presume that we've already got whatever auth details we need out of the request and so remove it now.
         // If we keep it it causes scariness upstream - like anything that goes through the TerriaJS proxy will
         // be leaking auth details to wherever it proxies to.

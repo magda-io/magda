@@ -1,6 +1,6 @@
 import express from "express";
 import { Router } from "express";
-import _ from "lodash";
+import urijs from "urijs";
 import escapeStringRegexp from "escape-string-regexp";
 
 import buildJwt from "magda-typescript-common/src/session/buildJwt";
@@ -132,22 +132,39 @@ export default function createGenericProxyRouter(
         return routeRouter;
     }
 
-    _.forEach(options.routes, (value: ProxyTarget, key: string) => {
-        const target =
-            typeof value === "string"
-                ? getDefaultProxyTargetDefinition(value)
-                : value;
+    Object.keys(options.routes)
+        .sort((a, b) => {
+            const segmentLenA = urijs(a).segment().length;
+            const segmentLenB = urijs(b).segment().length;
+            if (segmentLenA < segmentLenB) {
+                return 1;
+            } else if (segmentLenA > segmentLenB) {
+                return -1;
+            } else if (a < b) {
+                return -1;
+            } else if (a > b) {
+                return 1;
+            } else {
+                return 0;
+            }
+        })
+        .map((key: string) => {
+            const value: ProxyTarget = options.routes[key];
+            const target =
+                typeof value === "string"
+                    ? getDefaultProxyTargetDefinition(value)
+                    : value;
 
-        const path = !key ? "/" : key[0] === "/" ? key : `/${key}`;
+            const path = !key ? "/" : key[0] === "/" ? key : `/${key}`;
 
-        proxyRoute(
-            path,
-            target.to,
-            target.methods,
-            !!target.auth,
-            target.redirectTrailingSlash
-        );
-    });
+            proxyRoute(
+                path,
+                target.to,
+                target.methods,
+                !!target.auth,
+                target.redirectTrailingSlash
+            );
+        });
 
     return router;
 }
