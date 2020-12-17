@@ -186,6 +186,7 @@ class RegistryExternalInterface(
   }
 
   def getWebhooks(): Future[List[WebHook]] = {
+    // cannot use readOnlyFetcher (even for read operation) as hook info can only be fetched from main registry node
     fetcher
       .get(path = s"$baseApiPath/hooks", headers = Seq(authHeader))
       .flatMap { response =>
@@ -198,6 +199,7 @@ class RegistryExternalInterface(
   }
 
   def getWebhook(id: String): Future[Option[WebHook]] = {
+    // cannot use readOnlyFetcher (even for read operation)  as hook info can only be fetched from main registry node
     fetcher
       .get(path = s"$baseApiPath/hooks/$id", headers = Seq(authHeader))
       .flatMap { response =>
