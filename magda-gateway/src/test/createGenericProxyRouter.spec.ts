@@ -237,7 +237,7 @@ describe("createGenericProxyRouter", () => {
         await supertest(app).post("/test-route").expect(404);
     });
 
-    it("should forward incoming request path incorrectly", async () => {
+    it("should forward incoming request path correctly", async () => {
         const dummyAuthenticator = sinon.createStubInstance(Authenticator);
 
         const router = createGenericProxyRouter({
@@ -332,7 +332,7 @@ describe("createGenericProxyRouter", () => {
         expect(res.body.route).to.equal("POST:route3/12");
     });
 
-    it("should forward incoming request path incorrectly when route key contains segment (e.g. test-route/abcd)", async () => {
+    it("should forward incoming request path correctly when route key contains segment (e.g. test-route/abcd)", async () => {
         const dummyAuthenticator = sinon.createStubInstance(Authenticator);
 
         const router = createGenericProxyRouter({

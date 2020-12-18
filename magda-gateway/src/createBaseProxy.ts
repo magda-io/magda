@@ -104,8 +104,16 @@ export default function createBaseProxy(
 
     proxy.on("proxyReq", function (proxyReq, req, res) {
         // as we set `ignorePath`=true, we need append req.path to proxyReq.path
+        // we need to use req.url to include query string
         if (req.url !== "/") {
-            proxyReq.path = proxyReq.path + req.url;
+            if (
+                proxyReq.path[proxyReq.path.length - 1] === "/" &&
+                req.url[0] === "/"
+            ) {
+                proxyReq.path = proxyReq.path + req.url.substr(1);
+            } else {
+                proxyReq.path = proxyReq.path + req.url;
+            }
         }
 
         // Presume that we've already got whatever auth details we need out of the request and so remove it now.
