@@ -78,8 +78,26 @@ defaultRoutes:
   search:
     to: http://search-api/v0
     auth: true
+  "registry/hooks":
+    to: http://registry-api/v0/hooks
+    auth: true
   registry:
     to: http://registry-api/v0
+    methods:
+    - method: get
+      target: http://registry-api-read-only/v0
+    - method: head
+      target: http://registry-api-read-only/v0
+    - method: options
+      target: http://registry-api-read-only/v0
+    - method: post
+      target: http://registry-api/v0
+    - method: put
+      target: http://registry-api/v0
+    - method: patch
+      target: http://registry-api/v0
+    - method: delete
+      target: http://registry-api/v0
     auth: true
   registry-read-only:
     to: http://registry-api-read-only/v0

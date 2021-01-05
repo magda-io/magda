@@ -48,19 +48,40 @@ trait RegistryInterface {
   * @param executor
   * @param materializer
   */
-class RegistryExternalInterface(httpFetcher: HttpFetcher)(
+class RegistryExternalInterface(
+    httpFetcher: HttpFetcher,
+    readOnlyHttpFetcher: HttpFetcher
+)(
     implicit val config: Config,
     implicit val system: ActorSystem,
     implicit val executor: ExecutionContext,
     implicit val materializer: Materializer
 ) extends RegistryInterface {
+
+  def this(httpFetcher: HttpFetcher)(
+      implicit config: Config,
+      system: ActorSystem,
+      executor: ExecutionContext,
+      materializer: Materializer
+  ) = {
+    this(httpFetcher, httpFetcher)(
+      config,
+      system,
+      executor,
+      materializer
+    )
+  }
+
   def this()(
       implicit config: Config,
       system: ActorSystem,
       executor: ExecutionContext,
       materializer: Materializer
   ) = {
-    this(HttpFetcher(new URL(config.getString("registry.baseUrl"))))(
+    this(
+      HttpFetcher(new URL(config.getString("registry.baseUrl"))),
+      HttpFetcher(new URL(config.getString("registry.readOnlyBaseUrl")))
+    )(
       config,
       system,
       executor,
@@ -71,6 +92,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)(
   implicit val defaultOffset =
     ZoneOffset.of(config.getString("time.defaultOffset"))
   implicit val fetcher = httpFetcher
+  implicit val readOnlyFetcher = readOnlyHttpFetcher
   implicit val logger = Logging(system, getClass)
 
   val authJws = Authentication.signToken(
@@ -104,7 +126,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)(
       pageToken: String,
       number: Int
   ): scala.concurrent.Future[(Option[String], List[DataSet])] = {
-    fetcher
+    readOnlyFetcher
       .get(
         path =
           s"$baseRecordsPath&dereference=true&pageToken=$pageToken&limit=$number",
@@ -136,7 +158,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)(
       start: Long,
       number: Int
   ): scala.concurrent.Future[(Option[String], List[DataSet])] = {
-    fetcher
+    readOnlyFetcher
       .get(
         path = s"$baseRecordsPath&dereference=true&start=$start&limit=$number",
         headers = Seq(systemIdHeader, authHeader)
@@ -164,6 +186,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)(
   }
 
   def getWebhooks(): Future[List[WebHook]] = {
+    // cannot use readOnlyFetcher (even for read operation) as hook info can only be fetched from main registry node
     fetcher
       .get(path = s"$baseApiPath/hooks", headers = Seq(authHeader))
       .flatMap { response =>
@@ -176,6 +199,7 @@ class RegistryExternalInterface(httpFetcher: HttpFetcher)(
   }
 
   def getWebhook(id: String): Future[Option[WebHook]] = {
+    // cannot use readOnlyFetcher (even for read operation)  as hook info can only be fetched from main registry node
     fetcher
       .get(path = s"$baseApiPath/hooks/$id", headers = Seq(authHeader))
       .flatMap { response =>

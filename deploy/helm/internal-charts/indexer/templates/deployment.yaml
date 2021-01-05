@@ -46,6 +46,7 @@ spec:
             "-Dhttp.port=80",
             "-Dregistry.webhookUrl=http://indexer/v0/registry-hook",
             "-Dregistry.baseUrl=http://registry-api",
+            "-Dregistry.readOnlyBaseUrl=http://registry-api-read-only",
             "-Dindexer.readSnapshots={{ .Values.readSnapshots }}",
             "-Dindexer.makeSnapshots={{ .Values.makeSnapshots }}",
             "-Dakka.loglevel={{ .Values.global.logLevel }}",
