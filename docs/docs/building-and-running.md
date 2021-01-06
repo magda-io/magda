@@ -161,7 +161,6 @@ Note: If using docker desktop for Windows older than version 19, change the valu
 
 ```bash
 # update magda helm repo
-helm repo add stable https://kubernetes-charts.storage.googleapis.com/
 helm repo update
 # update magda chart dependencies
 yarn update-all-charts
