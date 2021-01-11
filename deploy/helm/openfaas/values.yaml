@@ -224,7 +224,7 @@ ingressOperator:
 faasIdler:
   image: openfaas/faas-idler:0.2.1
   replicas: 1
-  create: true
+  create: false
   inactivityDuration: 30m               # If a function is inactive for 15 minutes, it may be scaled to zero
   reconcileInterval: 2m                 # The interval between each attempt to scale functions to zero
   dryRun: true                          # Set to false to enable the idler to apply changes and scale to zero
