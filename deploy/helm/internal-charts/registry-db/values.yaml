@@ -16,3 +16,8 @@ resources: {}
   # requests:
   #  cpu: 100m
   #  memory: 128Mi
+autoVacuum:
+  enable: true
+  # -- auto vacuum cronjob schedule string. specified using unix-cron format.
+  # @default -- "0 6 * * *": 6:00 am daily
+  schedule: "0 6 * * *" 

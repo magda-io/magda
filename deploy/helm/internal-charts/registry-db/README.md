@@ -12,6 +12,8 @@ Kubernetes: `>= 1.14.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| autoVacuum.enable | bool | `true` |  |
+| autoVacuum.schedule | string | "0 6 * * *": 6:00 am daily | auto vacuum cronjob schedule string. specified using unix-cron format. |
 | data.storage | string | `"200Gi"` |  |
 | image | object | `{}` |  |
 | resources | object | `{}` |  |
