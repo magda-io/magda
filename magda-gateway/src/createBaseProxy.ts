@@ -75,11 +75,20 @@ function setHeaderValue(
 export default function createBaseProxy(
     options: GenericProxyRouterOptions
 ): httpProxy {
-    const proxy = httpProxy.createProxyServer({
-        prependUrl: false,
+    const proxyOptions: httpProxy.ServerOptions = {
         ignorePath: true,
         changeOrigin: true
-    } as httpProxy.ServerOptions);
+    };
+
+    if (
+        typeof options.proxyTimeout === "number" &&
+        !isNaN(options.proxyTimeout)
+    ) {
+        proxyOptions.proxyTimeout = options.proxyTimeout;
+        proxyOptions.timeout = options.proxyTimeout;
+    }
+
+    const proxy = httpProxy.createProxyServer(proxyOptions);
 
     (proxy as any).before(
         "web",

@@ -98,6 +98,9 @@ spec:
 {{- if .Values.defaultCacheControl }}
             "--defaultCacheControl", {{ .Values.defaultCacheControl | quote }},
 {{- end }}
+{{- if .Values.proxyTimeout }}
+            "--proxyTimeout", {{ .Values.proxyTimeout | quote }},
+{{- end }}
         ]
         volumeMounts:
           - name: config

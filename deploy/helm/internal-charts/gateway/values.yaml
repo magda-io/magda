@@ -194,3 +194,8 @@ cookie:
 
 # defaultCacheControl -- If a response that goes through the gateway doesn't set Cache-Control, it'll be set to this value. Set to null to disable.
 defaultCacheControl: "public, max-age=60"
+
+# proxyTimeout -- (int) How long time (in seconds) before upstream service must complete request in order to avoid request timeout error.
+# If not set, the request will time out after 120 seconds.
+# @default -- nil (120 seconds default value will be used by upstream lib internally)
+proxyTimeout: 

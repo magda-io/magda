@@ -7,7 +7,9 @@ import supertest from "supertest";
 import URI from "urijs";
 
 import buildApp from "../buildApp";
-import { expect } from "chai";
+import chai from "chai";
+chai.use(require("chai-as-promised"));
+const { expect, assert } = chai;
 import { AuthPluginBasicConfig } from "../createAuthPluginRouter";
 
 const PROXY_ROOTS = {
@@ -28,7 +30,8 @@ const defaultAppOptions = {
         registry: {
             to: "http://registry",
             auth: true
-        }
+        },
+        "timeout-endpoint": "http://timeout.com"
     },
     webProxyRoutesJson: {
         "preview-map": "http://preview-map",
@@ -67,14 +70,55 @@ describe("proxying", () => {
         }
     });
 
-    _.map(PROXY_ROOTS, (value, key) => {
-        describe(`when proxying ${key} to ${value}`, () => {
-            it("proxies requests", () => {
-                nock(value).get("/").reply(200);
+    describe("Test proxy timeout setting", () => {
+        it("request should be processed sucessfully when proxyTimeout = 3000 and processing take 2 seconds ", function (this) {
+            this.timeout(5000);
 
-                return supertest(app).get(key).expect(200);
+            app = express();
+            app = buildApp(app, {
+                ...defaultAppOptions,
+                proxyTimeout: "3000"
             });
 
+            nock("http://timeout.com").get("/").delay(2000).reply(200);
+
+            return supertest(app).get("/api/v0/timeout-endpoint").expect(200);
+        });
+
+        it("request should timeout when proxyTimeout = 3000 and processing take 3.5 seconds ", async function (this) {
+            this.timeout(10000);
+
+            app = express();
+            app = buildApp(app, {
+                ...defaultAppOptions,
+                proxyTimeout: "3000"
+            });
+
+            nock("http://timeout.com").get("/").delay(3500).reply(200);
+
+            return assert.isRejected(
+                supertest(app).get("/api/v0/timeout-endpoint"),
+                "socket hang up"
+            );
+        });
+
+        it("request should be processed sucessfully when proxyTimeout = 4000 and processing take 3.5 seconds ", function (this) {
+            this.timeout(10000);
+
+            app = express();
+            app = buildApp(app, {
+                ...defaultAppOptions,
+                proxyTimeout: "4000"
+            });
+
+            nock("http://timeout.com").get("/").delay(3500).reply(200);
+
+            return supertest(app).get("/api/v0/timeout-endpoint").expect(200);
+        });
+    });
+
+    _.map(PROXY_ROOTS, (value, key) => {
+        describe(`when proxying ${key} to ${value}`, () => {
             it("doesn't pass auth headers through", () => {
                 nock(value, {
                     badheaders: ["Authorization"]
