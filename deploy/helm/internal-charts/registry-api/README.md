@@ -17,8 +17,13 @@ Kubernetes: `>= 1.14.0-0`
 | autoscaler.minReplicas | int | `1` |  |
 | autoscaler.targetCPUUtilizationPercentage | int | `80` |  |
 | db | object | `{}` |  |
-| deployments.full | object | `{}` |  |
-| deployments.readOnly.enable | bool | `false` |  |
+| deployments.full | object | `{"idleTimeout":"60s","replicas":1,"requestTimeout":"30s"}` | deployment config for full registry instance. You can also specify different `resources` config under this key. |
+| deployments.full.idleTimeout | string | `"60s"` | Default idle timeout for full instance. Make sure `idleTimeout` is longer than `requestTimeout` |
+| deployments.full.requestTimeout | string | `"30s"` | Default request timeout for full instance |
+| deployments.readOnly | object | `{"enable":false,"idleTimeout":"60s","replicas":1,"requestTimeout":"30s"}` | deployment config for readonly registry instances. You can also specify different `resources` config under this key. |
+| deployments.readOnly.idleTimeout | string | `"60s"` | Default idle timeout for readonly instance. Make sure `idleTimeout` is longer than `requestTimeout` |
+| deployments.readOnly.replicas | int | `1` | no. of replicates. Its value must no lower than `minReplicas` |
+| deployments.readOnly.requestTimeout | string | `"30s"` | Default request timeout for readonly instance |
 | image | object | `{}` |  |
 | livenessProbe | object | `{}` |  |
 | resources.limits.cpu | string | `"750m"` |  |

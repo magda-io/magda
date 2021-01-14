@@ -27,6 +27,8 @@ import scalikejdbc.LoggingSQLAndTimeSettings
 
 import scala.concurrent.ExecutionContextExecutor
 
+import scala.util.{Try, Success, Failure}
+
 object RegistryApp extends App {
 
   implicit val config: Config = AppConfig.conf()
@@ -58,6 +60,20 @@ object RegistryApp extends App {
   val logger = Logging(system, getClass)
 
   logger.info("Starting MAGDA Registry")
+
+  logger.info("akka.http.server.request-timeout: {}", Try {
+    config.getString("akka.http.server.request-timeout")
+  } match {
+    case Success(v) => v
+    case Failure(e) => "None"
+  })
+
+  logger.info("akka.http.server.idle-timeout: {}", Try {
+    config.getString("akka.http.server.idle-timeout")
+  } match {
+    case Success(v) => v
+    case Failure(e) => "None"
+  })
 
   case class DBsWithEnvSpecificConfig(configToUse: Config)
       extends DBs

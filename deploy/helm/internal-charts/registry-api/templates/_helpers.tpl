@@ -65,7 +65,9 @@ spec:
             "-Dopa.baseUrl=http://authorization-api/v0/opa",
             "-Dopa.recordPolicyId={{ .root.Values.recordPolicyId | default "object.registry.record.public" }}",
             "-Drole={{ .role }}",
-            "-DvalidateJsonSchema={{ .root.Values.validateJsonSchema | default false }}"
+            "-DvalidateJsonSchema={{ .root.Values.validateJsonSchema | default false }}",
+            "-Dakka.http.server.request-timeout={{ .deploymentConfig.requestTimeout }}",
+            "-Dakka.http.server.idle-timeout={{ .deploymentConfig.idleTimeout }}"
         ]
 {{- if .root.Values.global.enableLivenessProbes }}
         livenessProbe:
