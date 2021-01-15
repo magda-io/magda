@@ -64,7 +64,7 @@ gatewayExternal:
   annotations: {}
 
 gateway:
-  image: openfaas/gateway:0.18.10
+  image: quay.io/t1000/openfaas-gateway:0.18.10
   readTimeout : "65s"
   writeTimeout : "65s"
   upstreamTimeout : "60s"  # Must be smaller than read/write_timeout
@@ -84,7 +84,7 @@ gateway:
       cpu: "50m"
 
 basicAuthPlugin:
-  image: openfaas/basic-auth-plugin:0.17.0
+  image: quay.io/t1000/openfaas-basic-auth-plugin:0.17.0
   replicas: 1
   resources:
     requests:
@@ -110,11 +110,11 @@ oauth2Plugin:
       memory: "120Mi"
       cpu: "50m"
   replicas: 1
-  image: alexellis2/openfaas-oidc-plugin:0.2.5
+  image: quay.io/t1000/openfaas-oidc-plugin:0.2.5
   securityContext: true
 
 faasnetes:
-  image: openfaas/faas-netes:0.10.1
+  image: quay.io/t1000/openfaas-faas-netes:0.10.1
   readTimeout : "60s"
   writeTimeout : "60s"
   imagePullPolicy : "Always"    # Image pull policy for deployed functions
@@ -135,7 +135,7 @@ faasnetes:
 
 # replaces faas-netes with openfaas-operator
 operator:
-  image: openfaas/openfaas-operator:0.14.1
+  image: quay.io/t1000/openfaas-operator:0.14.1
   create: false
   # set this to false when creating multiple releases in the same cluster
   # must be true for the first one only
@@ -151,7 +151,7 @@ operator:
 queueWorker:
   durableQueueSubscription: false
   queueGroup: "faas"
-  image: openfaas/queue-worker:0.9.0
+  image: quay.io/t1000/openfaas-queue-worker:0.9.0
   ackWait : "60s"
   replicas: 1
   gatewayInvoke: true
@@ -209,7 +209,7 @@ ingress:
 # ingressOperator (optional) – component to have specific FQDN and TLS for Functions
 # https://github.com/openfaas-incubator/ingress-operator
 ingressOperator:
-  image: openfaas/ingress-operator:0.5.0
+  image: quay.io/t1000/openfaas-ingress-operator:0.5.0
   replicas: 1
   create: false
   # don't set any value to `createCRD` will leave it with value `"<nil>`
@@ -222,9 +222,9 @@ ingressOperator:
 
 # faas-idler configuration
 faasIdler:
-  image: openfaas/faas-idler:0.2.1
+  image: quay.io/t1000/openfaas-faas-idler:0.2.1
   replicas: 1
-  create: false
+  create: true
   inactivityDuration: 30m               # If a function is inactive for 15 minutes, it may be scaled to zero
   reconcileInterval: 2m                 # The interval between each attempt to scale functions to zero
   dryRun: true                          # Set to false to enable the idler to apply changes and scale to zero
