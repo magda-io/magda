@@ -9,7 +9,7 @@ import URI from "urijs";
 import buildApp from "../buildApp";
 import chai from "chai";
 chai.use(require("chai-as-promised"));
-const { expect, assert } = chai;
+const { assert, expect } = chai;
 import { AuthPluginBasicConfig } from "../createAuthPluginRouter";
 
 const PROXY_ROOTS = {
@@ -146,35 +146,27 @@ describe("proxying", () => {
                 return supertest(app).get(key).set("Host", "test").expect(200);
             });
 
-            it("should add default cache control header if not specified", (done) => {
+            it("should add default cache control header if not specified", async () => {
                 nock(value).get("/").reply(200);
 
-                supertest(app)
-                    .get(key)
-                    .end((_err, res) => {
-                        expect(res.header["cache-control"]).to.equal(
-                            "DEFAULT CACHE CONTROL"
-                        );
-                        done();
-                    });
+                const res = await supertest(app).get(key);
+                expect(res.header["cache-control"]).to.equal(
+                    "DEFAULT CACHE CONTROL"
+                );
             });
 
-            it("should not override cache control header that's set by the proxied service", (done) => {
+            it("should not override cache control header that's set by the proxied service", async () => {
                 nock(value).get("/").reply(200, "", {
                     "cache-control": "Non-default cache control"
                 });
 
-                supertest(app)
-                    .get(key)
-                    .end((_err, res) => {
-                        expect(res.header["cache-control"]).to.equal(
-                            "Non-default cache control"
-                        );
-                        done();
-                    });
+                const res = await supertest(app).get(key);
+                expect(res.header["cache-control"]).to.equal(
+                    "Non-default cache control"
+                );
             });
 
-            it("should not set a default cache-control header if none is set", (done) => {
+            it("should not set a default cache-control header if none is set", async () => {
                 app = express();
                 app = buildApp(app, {
                     ...defaultAppOptions,
@@ -183,12 +175,8 @@ describe("proxying", () => {
 
                 nock(value).get("/").reply(200);
 
-                supertest(app)
-                    .get(key)
-                    .end((_err, res) => {
-                        expect(res.header["cache-control"]).to.be.undefined;
-                        done();
-                    });
+                const res = await supertest(app).get(key);
+                expect(res.header["cache-control"]).to.be.undefined;
             });
 
             it("should set headers that prevent cache if incoming request's cache control header contains `no-cache` keyword", async () => {
@@ -197,25 +185,22 @@ describe("proxying", () => {
                     "Cache-Control": "public, max-age=60"
                 });
 
-                await supertest(app)
+                const res = await supertest(app)
                     .get(key)
-                    .set("Cache-Control", "bla bla no-cache")
-                    .end((_err, res) => {
-                        expect(res.header["cache-control"]).to.equal(
-                            "max-age=0, no-cache, must-revalidate, proxy-revalidate"
-                        );
-                        expect(res.header["expires"]).to.equal(
-                            "Thu, 01 Jan 1970 00:00:00 GMT"
-                        );
-                        const lastModifiedTime = new Date(
-                            res.header["expires"]
-                        );
-                        // last modified time should be closer enough to the request receive time
-                        // here we assume it take max 3 seconds for test case to run
-                        expect(
-                            new Date().getTime() - lastModifiedTime.getTime()
-                        ).to.be.within(0, 3000);
-                    });
+                    .set("Cache-Control", "bla bla no-cache");
+
+                expect(res.header["cache-control"]).to.equal(
+                    "max-age=0, no-cache, must-revalidate, proxy-revalidate"
+                );
+                expect(res.header["expires"]).to.equal(
+                    "Thu, 01 Jan 1970 00:00:00 GMT"
+                );
+                const lastModifiedTime = new Date(res.header["last-modified"]);
+                // last modified time should be closer enough to the request receive time
+                // here we assume it take max 3 seconds for test case to run
+                expect(
+                    new Date().getTime() - lastModifiedTime.getTime()
+                ).to.be.within(0, 3000);
             });
         });
     });
