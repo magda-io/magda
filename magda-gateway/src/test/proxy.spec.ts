@@ -71,27 +71,27 @@ describe("proxying", () => {
     });
 
     describe("Test proxy timeout setting", () => {
-        it("request should be processed sucessfully when proxyTimeout = 3000 and processing take 2 seconds ", function (this) {
+        it("request should be processed sucessfully when proxyTimeout = 2000 and processing take 1 seconds ", function (this) {
             this.timeout(5000);
 
             app = express();
             app = buildApp(app, {
                 ...defaultAppOptions,
-                proxyTimeout: "3000"
+                proxyTimeout: "2000"
             });
 
-            nock("http://timeout.com").get("/").delay(2000).reply(200);
+            nock("http://timeout.com").get("/").delay(1000).reply(200);
 
             return supertest(app).get("/api/v0/timeout-endpoint").expect(200);
         });
 
-        it("request should timeout when proxyTimeout = 3000 and processing take 3.5 seconds ", async function (this) {
+        it("request should timeout when proxyTimeout = 2000 and processing take 3.5 seconds ", async function (this) {
             this.timeout(10000);
 
             app = express();
             app = buildApp(app, {
                 ...defaultAppOptions,
-                proxyTimeout: "3000"
+                proxyTimeout: "2000"
             });
 
             nock("http://timeout.com").get("/").delay(3500).reply(200);
