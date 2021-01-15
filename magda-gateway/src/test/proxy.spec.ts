@@ -9,7 +9,7 @@ import URI from "urijs";
 import buildApp from "../buildApp";
 import chai from "chai";
 chai.use(require("chai-as-promised"));
-const { assert, expect } = chai;
+const { expect, assert } = chai;
 import { AuthPluginBasicConfig } from "../createAuthPluginRouter";
 
 const PROXY_ROOTS = {
@@ -97,7 +97,19 @@ describe("proxying", () => {
             nock("http://timeout.com").get("/").delay(3500).reply(200);
 
             return assert.isRejected(
-                supertest(app).get("/api/v0/timeout-endpoint"),
+                supertest(app)
+                    .get("/api/v0/timeout-endpoint")
+                    .then((res) => {
+                        // there are actually two places timeout can be triggered:
+                        // http-node-proxy (proxyTimeout setting) or node request socket (timeout setting)
+                        // here we tried to capture error from our proxy modules and throw an error similar to the error that would be thrown by node request socket
+                        if (
+                            res.status === 500 &&
+                            res.text === "Something went wrong."
+                        ) {
+                            throw new Error("socket hang up");
+                        }
+                    }),
                 "socket hang up"
             );
         });
