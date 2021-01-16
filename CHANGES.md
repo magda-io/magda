@@ -12,7 +12,7 @@
 -   Release `acs-cmd` & `org-tree` as separate NPM packages
 -   Add set admin function to `acs-cmd` commandline utility package
 -   #3024 Gateway will automatically proxy all GET requests received at `/api/v0/registry` to registry read-only nodes (excepts Hooks APIs)
--   #3053 Disabled `faas-idler` by default
+-   Change openfaas docker image repository
 
 ## 0.0.58
 
