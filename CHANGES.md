@@ -18,6 +18,8 @@
     -   Added daily DB VACUUM ANALYZE script
     -   Allow akka.http.server `requestTimeout` & `idleTimeout` to be configured via registry api helm chart
     -   Allow gateway proxy timeout setting to be configured via gateway helm chart
+-   Change openfaas docker image repository
+-   #3057 Fixed: API `/auth/plugins` will skip the failed loading config item and return other config items without breaking request processing
 
 ## 0.0.58
 
