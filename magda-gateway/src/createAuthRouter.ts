@@ -132,18 +132,27 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
 
         const data = await Promise.all(
             options.plugins.map(async (plugin) => {
-                const res = await fetch(
-                    addTrailingSlash(plugin.baseUrl) + "config"
-                );
-                const data = (await res.json()) as AuthPluginConfig;
-                return {
-                    ...data,
-                    key: plugin.key
-                };
+                try {
+                    const res = await fetch(
+                        addTrailingSlash(plugin.baseUrl) + "config"
+                    );
+                    const data = (await res.json()) as AuthPluginConfig;
+                    return {
+                        ...data,
+                        key: plugin.key
+                    };
+                } catch (e) {
+                    // when failed to load, skip loading this config item by returning null
+                    console.error(
+                        `Failed to load authentication plugin config from ${plugin.baseUrl}: ` +
+                            e
+                    );
+                    return null;
+                }
             })
         );
 
-        res.json(data);
+        res.json(data.filter((item) => !!item));
     });
 
     // setup auth plugin routes

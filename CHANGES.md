@@ -13,6 +13,7 @@
 -   Add set admin function to `acs-cmd` commandline utility package
 -   #3024 Gateway will automatically proxy all GET requests received at `/api/v0/registry` to registry read-only nodes (excepts Hooks APIs)
 -   Change openfaas docker image repository
+-   #3057 Fixed: API `/auth/plugins` will skip the failed loading config item and return other config items without breaking request processing
 
 ## 0.0.58
 
