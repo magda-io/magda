@@ -20,6 +20,7 @@
     -   Allow gateway proxy timeout setting to be configured via gateway helm chart
 -   Change openfaas docker image repository
 -   #3057 Fixed: API `/auth/plugins` will skip the failed loading config item and return other config items without breaking request processing
+-   #3060 Upgrade urijs to 1.19.5
 
 ## 0.0.58
 
