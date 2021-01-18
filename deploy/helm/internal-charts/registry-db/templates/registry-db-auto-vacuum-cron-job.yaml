@@ -1,0 +1,73 @@
+{{- if .Values.autoVacuum.enable -}}
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: registry-db-auto-vacuum-job
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/name: "magda"
+    app.kubernetes.io/component: {{ .Chart.Name }}
+spec:
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  schedule: {{ .Values.autoVacuum.schedule | quote }}
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      completions: 1
+      parallelism: 1
+      template:
+        metadata:
+          name: registry-db-auto-vacuum-cron-job
+        spec:
+          containers:
+            - name: registry-db-auto-vacuum-cron-job
+              image: "postgres:9.6.15"
+              imagePullPolicy: "IfNotPresent"
+              command:
+                - "/bin/bash"
+              args:
+                - "/scripts/script.sh"
+              resources: 
+                requests:
+                  cpu: 10m
+                  memory: 50Mi
+                limits:
+                  cpu: 50m
+              env:
+                - name: PGHOST
+                  value: registry-db
+                - name: PGPORT
+                  value: "5432"
+                - name: PGDATABASE
+                  value: postgres
+                - name: PGUSER
+                  value: postgres
+                {{- if .Values.global.noDbAuth }}
+                - name: PGPASSWORD
+                  value: password
+                {{- else if .Values.global.useCloudSql }}
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: cloudsql-db-credentials
+                      key: password
+                {{- else if not .Values.global.noDbAuth }}
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-passwords
+                      key: {{ .Chart.Name }}
+                {{- end }}
+              volumeMounts:
+                - name: script-volume
+                  mountPath: /scripts
+          volumes:
+            - name: script-volume
+              configMap:
+                name: registry-db-auto-vacuum-script
+          restartPolicy: "OnFailure"
+{{- end }}

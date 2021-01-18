@@ -16,3 +16,8 @@ resources: {}
   # requests:
   #  cpu: 100m
   #  memory: 128Mi
+autoVacuum:
+  enable: true
+  # -- auto vacuum cronjob schedule string. specified using unix-cron format (in UTC timezone by default).
+  # @default -- "0 19 * * *": 7:00PM UTC timezone (5:00AM in AEST Sydney timezone) daily
+  schedule: "0 19 * * *" 

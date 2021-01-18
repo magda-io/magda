@@ -31,6 +31,7 @@ export interface GenericProxyRouterOptions {
     };
     tenantMode: TenantMode;
     defaultCacheControl?: string;
+    proxyTimeout?: number;
 }
 
 /**

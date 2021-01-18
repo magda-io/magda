@@ -14,7 +14,38 @@ resources:
   limits:
     cpu: 750m
 deployments:
-  full: {}
+  # -- deployment config for full registry instance.
+  # You can also specify different `resources` config under this key.
+  full:
+    replicas: 1
+
+    # -- Default request timeout for full instance
+    requestTimeout: 30s
+
+    # -- Default idle timeout for full instance.
+    # Make sure `idleTimeout` is longer than `requestTimeout`
+    idleTimeout: 60s
+  
+  # -- deployment config for readonly registry instances.
+  # You can also specify different `resources` config under this key.
   readOnly:
     enable: false
+    # -- no. of replicates. Its value must no lower than `minReplicas`
+    replicas: 1
+
+    # -- Default request timeout for readonly instance
+    requestTimeout: 30s
+
+    # -- Default idle timeout for readonly instance.
+    # Make sure `idleTimeout` is longer than `requestTimeout`
+    idleTimeout: 60s
+
+# -- Whether registry api should validate incoming JSON data
 validateJsonSchema: true
+
+# -- Skip authorization on registry API.
+# Useful when running locally - DO NOT TURN ON IN PRODUCTION 
+skipAuthorization: false
+
+# -- Whether print all SQL in console. For DEBUG only
+printSQlInConsole: false

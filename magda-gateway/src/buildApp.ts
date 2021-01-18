@@ -83,12 +83,15 @@ export type Config = {
     openfaasAllowAdminOnly?: boolean;
     defaultCacheControl?: string;
     magdaAdminPortalName?: string;
+    proxyTimeout?: string;
 };
 
 export default function buildApp(app: express.Application, config: Config) {
     const baseUrl = getBasePathFromUrl(config?.externalUrl);
     const tenantMode = setupTenantMode(config);
     const mainRouter = express.Router();
+    const proxyTimeout = parseInt(config?.proxyTimeout);
+    console.log("proxyTimeout: ", proxyTimeout);
 
     let routes = _.isEmpty(config.proxyRoutesJson)
         ? defaultConfig.proxyRoutes
@@ -162,7 +165,8 @@ export default function buildApp(app: express.Application, config: Config) {
         tenantMode,
         authenticator,
         defaultCacheControl: config.defaultCacheControl,
-        routes
+        routes,
+        proxyTimeout
     };
 
     // --- enable http basic authentication for all users

@@ -12,6 +12,12 @@
 -   Release `acs-cmd` & `org-tree` as separate NPM packages
 -   Add set admin function to `acs-cmd` commandline utility package
 -   #3024 Gateway will automatically proxy all GET requests received at `/api/v0/registry` to registry read-only nodes (excepts Hooks APIs)
+-   #3053 Disabled `faas-idler` by default
+-   For #3010:
+    -   Set `autovacuum_freeze_max_age` & `autovacuum_multixact_freeze_max_age` default value to lower value (100k & 200K) for `events` table only
+    -   Added daily DB VACUUM ANALYZE script
+    -   Allow akka.http.server `requestTimeout` & `idleTimeout` to be configured via registry api helm chart
+    -   Allow gateway proxy timeout setting to be configured via gateway helm chart
 -   Change openfaas docker image repository
 -   #3057 Fixed: API `/auth/plugins` will skip the failed loading config item and return other config items without breaking request processing
 

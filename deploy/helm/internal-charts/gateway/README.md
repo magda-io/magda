@@ -49,6 +49,7 @@ Kubernetes: `>= 1.14.0-0`
 | enableWebAccessControl | bool | `false` |  |
 | helmet.frameguard | bool | `false` |  |
 | image | object | `{}` |  |
+| proxyTimeout | int | nil (120 seconds default value will be used by upstream lib internally) | How long time (in seconds) before upstream service must complete request in order to avoid request timeout error. If not set, the request will time out after 120 seconds. |
 | resources.limits.cpu | string | `"200m"` |  |
 | resources.requests.cpu | string | `"50m"` |  |
 | resources.requests.memory | string | `"40Mi"` |  |

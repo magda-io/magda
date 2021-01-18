@@ -1,0 +1,21 @@
+{{- if .Values.autoVacuum.enable -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "registry-db-auto-vacuum-script"
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/name: "magda"
+    app.kubernetes.io/component: {{ .Chart.Name }}
+data:
+  script.sh: |-
+    echo "Running DB maintenance routine:"
+    psql -c "VACUUM ANALYZE VERBOSE"
+    if [ "$?" == "0" ]; then
+      echo "DB maintenance routine has been run sucessfully."
+    else 
+      echo "DB maintenance routine failed."
+    fi;
+{{- end }}

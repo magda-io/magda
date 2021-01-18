@@ -284,6 +284,11 @@ const argv = addJwtSecretFromEnvVar(
             describe:
                 "A default value to put in the cache-control header of GET responses",
             type: "string"
+        })
+        .option("proxyTimeout", {
+            describe:
+                "How long time (in seconds) before upstream service must complete request in order to avoid request timeout error.",
+            type: "string"
         }).argv
 );
 

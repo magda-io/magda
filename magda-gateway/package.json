@@ -77,6 +77,7 @@
     "@types/uuid": "^8.0.0",
     "@types/yargs": "^12.0.8",
     "chai": "^4.1.0",
+    "chai-as-promised": "^7.1.1",
     "mocha": "^3.4.2",
     "nock": "git://github.com/magda-io/nock.git#master",
     "randomstring": "^1.1.5",
