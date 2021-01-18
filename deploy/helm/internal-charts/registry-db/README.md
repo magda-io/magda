@@ -13,7 +13,7 @@ Kubernetes: `>= 1.14.0-0`
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | autoVacuum.enable | bool | `true` |  |
-| autoVacuum.schedule | string | "0 6 * * *": 6:00 am daily | auto vacuum cronjob schedule string. specified using unix-cron format. |
+| autoVacuum.schedule | string | "0 19 * * *": 7:00PM UTC timezone (5:00AM in AEST Sydney timezone) daily | auto vacuum cronjob schedule string. specified using unix-cron format (in UTC timezone by default). |
 | data.storage | string | `"200Gi"` |  |
 | image | object | `{}` |  |
 | resources | object | `{}` |  |

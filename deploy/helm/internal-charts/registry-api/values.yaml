@@ -39,4 +39,13 @@ deployments:
     # -- Default idle timeout for readonly instance.
     # Make sure `idleTimeout` is longer than `requestTimeout`
     idleTimeout: 60s
+
+# -- Whether registry api should validate incoming JSON data
 validateJsonSchema: true
+
+# -- Skip authorization on registry API.
+# Useful when running locally - DO NOT TURN ON IN PRODUCTION 
+skipAuthorization: false
+
+# -- Whether print all SQL in console. For DEBUG only
+printSQlInConsole: false

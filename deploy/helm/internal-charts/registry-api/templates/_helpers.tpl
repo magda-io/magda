@@ -67,7 +67,8 @@ spec:
             "-Drole={{ .role }}",
             "-DvalidateJsonSchema={{ .root.Values.validateJsonSchema | default false }}",
             "-Dakka.http.server.request-timeout={{ .deploymentConfig.requestTimeout }}",
-            "-Dakka.http.server.idle-timeout={{ .deploymentConfig.idleTimeout }}"
+            "-Dakka.http.server.idle-timeout={{ .deploymentConfig.idleTimeout }}",
+            "-Dscalikejdbc.global.loggingSQLAndTime.enabled={{ .root.Values.printSQlInConsole | default false }}"
         ]
 {{- if .root.Values.global.enableLivenessProbes }}
         livenessProbe:
