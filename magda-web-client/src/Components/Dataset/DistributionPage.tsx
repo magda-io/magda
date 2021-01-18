@@ -43,7 +43,7 @@ interface PropsType {
 const getVersionFromLocation = (location: Location): number | undefined => {
     const queries = urijs(location.search).search(true);
     try {
-        const version = parseInt(queries?.version);
+        const version = parseInt(queries?.version as string);
         if (isNaN(version)) {
             return undefined;
         } else {

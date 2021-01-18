@@ -36,7 +36,9 @@ const createRecordPageUrl = (
         });
     }
 
-    return urijs(recordPageBaseUrl).search(queriesToBeAppended).toString();
+    return urijs(recordPageBaseUrl)
+        .search(queriesToBeAppended as any)
+        .toString();
 };
 
 const VersionItemBox: FunctionComponent<{

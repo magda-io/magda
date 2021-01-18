@@ -176,7 +176,7 @@ export async function getRegions(
     options: SearchRegionOptions
 ): Promise<Region[]> {
     const uri = urijs(`${config.searchApiUrl}regions`);
-    const res = await fetch(uri.search(options).toString());
+    const res = await fetch(uri.search(options as any).toString());
     if (!res.ok) {
         const bodyText = await res.text();
         throw new Error(`${res.statusText}${bodyText ? "\n" + bodyText : ""}`);

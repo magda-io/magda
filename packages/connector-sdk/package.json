@@ -23,7 +23,7 @@
     "webpack-node-externals": "^1.7.2"
   },
   "dependencies": {
-    "@types/urijs": "1.19.1",
+    "@types/urijs": "1.19.13",
     "@types/yargs": "^12.0.8"
   },
   "magda": {

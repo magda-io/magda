@@ -32,7 +32,7 @@ export interface RecordsPage<I extends Record> {
 }
 
 export default class RegistryClient {
-    protected baseUri: uri.URI;
+    protected baseUri: URI;
     protected aspectDefinitionsApi: AspectDefinitionsApi;
     protected recordsApi: RecordsApi;
     protected webHooksApi: WebHooksApi;

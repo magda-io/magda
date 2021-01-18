@@ -20,7 +20,7 @@
     "webpack-cli": "^3.3.10"
   },
   "dependencies": {
-    "@types/urijs": "1.19.1"
+    "@types/urijs": "1.19.13"
   },
   "magda": {
     "language": "typescript",
