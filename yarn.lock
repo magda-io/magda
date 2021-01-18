@@ -2601,26 +2601,6 @@
     npmlog "^4.1.2"
     write-file-atomic "^2.3.0"
 
-"@magda/typescript-common@^0.0.56-0":
-  version "0.0.56-terria-0"
-  resolved "https://registry.yarnpkg.com/@magda/typescript-common/-/typescript-common-0.0.56-terria-0.tgz#43c85c8d258963fb06aaa9b657f6e99c4a2f50e7"
-  integrity sha512-XOYPpE2GoT1bPnp+5XCoUOgHqSN1x1NvoFoM1AUKUDODawOmNK4fp+gJLbg8GP3ioeX/AuK4Pty1A3KCymaxJg==
-  dependencies:
-    "@types/request" "^2.48.1"
-    body-parser "^1.18.2"
-    express "^4.16.3"
-    isomorphic-fetch "^2.2.1"
-    jsonwebtoken "^8.4.0"
-    load-json-file "^1.0.0"
-    lodash "^4.17.11"
-    moment "^2.17.1"
-    read-pkg-up "^3.0.0"
-    request "^2.88.0"
-    tsmonad "^0.7.2"
-    urijs "^1.18.12"
-    uuid "^3.1.0"
-    yargs "^12.0.5"
-
 "@microsoft/api-extractor-model@7.8.8":
   version "7.8.8"
   resolved "https://registry.yarnpkg.com/@microsoft/api-extractor-model/-/api-extractor-model-7.8.8.tgz#4ba1974c9b1e2d6b65daf56f6149c88d0a784680"
@@ -8697,7 +8677,7 @@ express-validation@^3.0.2:
     "@types/express" "4.x.x"
     "@types/hapi__joi" "16.x.x"
 
-express@^4.16.3, express@^4.17.1:
+express@^4.17.1:
   version "4.17.1"
   resolved "https://registry.yarnpkg.com/express/-/express-4.17.1.tgz#4491fc38605cf51f8629d39c2b5d026f98a4c134"
   integrity sha512-mHJ9O79RqluphRrcw2X/GTh3k9tVv8YcoyY4Kkh4WDMUYKRZUq0h1o0w2rrrxBqM7VoeUVqgb27xlEMXTnYt4g==
@@ -20280,15 +20260,10 @@ uri-js@^4.2.2:
   dependencies:
     punycode "^2.1.0"
 
-urijs@1.19.1:
-  version "1.19.1"
-  resolved "https://registry.yarnpkg.com/urijs/-/urijs-1.19.1.tgz#5b0ff530c0cbde8386f6342235ba5ca6e995d25a"
-  integrity sha512-xVrGVi94ueCJNrBSTjWqjvtgvl3cyOTThp2zaMaFNGp3F542TR6sM3f2o8RqZl+AwteClSVmoCyt0ka4RjQOQg==
-
-urijs@^1.18.12, urijs@^1.19.1:
-  version "1.19.2"
-  resolved "https://registry.yarnpkg.com/urijs/-/urijs-1.19.2.tgz#f9be09f00c4c5134b7cb3cf475c1dd394526265a"
-  integrity sha512-s/UIq9ap4JPZ7H1EB5ULo/aOUbWqfDi7FKzMC2Nz+0Si8GiT1rIEaprt8hy3Vy2Ex2aJPpOQv4P4DuOZ+K1c6w==
+urijs@^1.19.4:
+  version "1.19.5"
+  resolved "https://registry.yarnpkg.com/urijs/-/urijs-1.19.5.tgz#119683ab4b2fb0bd637e5ea6dd9117bcac68d3e4"
+  integrity sha512-48z9VGWwdCV5KfizHsE05DWS5fhK6gFlx5MjO7xu0Krc5FGPWzjlXEVV0nPMrdVuP7xmMHiPZ2HoYZwKOFTZOg==
 
 urix@^0.1.0:
   version "0.1.0"
@@ -20396,7 +20371,7 @@ utils-merge@1.0.1, utils-merge@1.x.x:
   resolved "https://registry.yarnpkg.com/utils-merge/-/utils-merge-1.0.1.tgz#9f95710f50a267947b2ccc124741c1028427e713"
   integrity sha1-n5VxD1CiZ5R7LMwSR0HBAoQn5xM=
 
-uuid@^3.0.0, uuid@^3.0.1, uuid@^3.1.0, uuid@^3.3.2:
+uuid@^3.0.0, uuid@^3.0.1, uuid@^3.3.2:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"
   integrity sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==

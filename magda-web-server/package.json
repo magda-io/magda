@@ -49,7 +49,7 @@
     "read-pkg-up": "^3.0.0",
     "request": "^2.88.0",
     "sitemap": "^1.13.0",
-    "urijs": "^1.18.12",
+    "urijs": "^1.19.4",
     "yargs": "^12.0.5"
   },
   "config": {
