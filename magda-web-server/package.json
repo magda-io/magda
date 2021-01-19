@@ -30,7 +30,7 @@
     "@types/request": "^2.48.1",
     "@types/sinon": "^2.3.3",
     "@types/supertest": "^2.0.2",
-    "@types/urijs": "1.19.1",
+    "@types/urijs": "1.19.13",
     "@types/xml2js": "^0.4.0",
     "@types/yargs": "^12.0.8",
     "chai": "^4.1.0",
@@ -49,7 +49,7 @@
     "read-pkg-up": "^3.0.0",
     "request": "^2.88.0",
     "sitemap": "^1.13.0",
-    "urijs": "^1.18.12",
+    "urijs": "^1.19.4",
     "yargs": "^12.0.5"
   },
   "config": {

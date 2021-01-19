@@ -423,7 +423,7 @@ describe("ckanRedirectionRouter router", () => {
                 const uriObj = URI(uri);
                 const query = uriObj.search(true);
                 if (!query || !query.aspectQuery) return errorResponse;
-                const [path, value] = query.aspectQuery.split(":");
+                const [path, value] = (query.aspectQuery as string).split(":");
                 const aspect = query.aspect;
                 if (
                     path === "ckan-dataset.name" &&
