@@ -9,7 +9,7 @@ variables:
     -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
   # If you changed dependencies (especially for scala), you might want to prevent your branch from using old cache by increase the version blew
   # gitlab actually use the same technique when you click the `Clear Cache Button`
-  CACHE_VERSION: ts-12-scala-5
+  CACHE_VERSION: ts-12-scala-6
 
 stages:
   - builders
@@ -530,7 +530,7 @@ buildtest:helm-docs-check:
     - git ls-files -m | grep -i readme.md || code=$?;
       if [ "$code" == "0" ]; then
         echo -e "Some of helm chart docs are required to be updated using the [helm-docs](https://github.com/norwoodj/helm-docs) tool. \n
-        Please run helm-docs (v1.2.1) at project root, review & commit docs changes and push a new commit.";
+        Please run helm-docs (v1.5.0) at project root, review & commit docs changes and push a new commit.";
         exit 1;
       else 
         echo -e "helm docs check passed. helm docs update is not required.";

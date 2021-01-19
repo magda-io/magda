@@ -20,6 +20,7 @@
     -   Allow gateway proxy timeout setting to be configured via gateway helm chart
 -   Change openfaas docker image repository
 -   #3057 Fixed: API `/auth/plugins` will skip the failed loading config item and return other config items without breaking request processing
+-   Upgrade elastic4s (6.5.4) for jackson lib security patch
 
 ## 0.0.58
 
