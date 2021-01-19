@@ -21,6 +21,7 @@
 -   Change openfaas docker image repository
 -   #3057 Fixed: API `/auth/plugins` will skip the failed loading config item and return other config items without breaking request processing
 -   #3060 Upgrade urijs to 1.19.5
+-   #3051 Make command line tools DB PORT is configurable
 
 ## 0.0.58
 

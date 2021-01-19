@@ -9,6 +9,7 @@ program
         `A tool for managing magda access control data. Version: ${pkg.version}\n\n` +
             `If a database connection is required, the following environment variables will be used to create a connection:\n` +
             `  POSTGRES_HOST: database host; If not available in env var, 'localhost' will be used.\n` +
+            `  POSTGRES_PORT: database port; If not available in env var, 5432 will be used.\n` +
             `  POSTGRES_DB: database name; If not available in env var, 'auth' will be used.\n` +
             `  POSTGRES_USER: database username; If not available in env var, 'postgres' will be used.\n` +
             `  POSTGRES_PASSWORD: database password; If not available in env var, '' will be used.`
