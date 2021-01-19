@@ -1,6 +1,6 @@
 # magda-core
 
-![Version: 0.0.59-alpha.0](https://img.shields.io/badge/Version-0.0.59--alpha.0-informational?style=flat-square)
+![Version: 0.0.59-alpha.3](https://img.shields.io/badge/Version-0.0.59--alpha.3-informational?style=flat-square)
 
 A complete solution for managing, publishing and discovering government data, private and open. This chart includes all core magda modules.
 
@@ -16,30 +16,30 @@ Kubernetes: `>= 1.14.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../internal-charts/admin-api | admin-api | 0.0.59-alpha.0 |
-| file://../internal-charts/apidocs-server | apidocs-server | 0.0.59-alpha.0 |
-| file://../internal-charts/authorization-api | authorization-api | 0.0.59-alpha.0 |
-| file://../internal-charts/authorization-db | authorization-db | 0.0.59-alpha.0 |
-| file://../internal-charts/cloud-sql-proxy | cloud-sql-proxy | 0.0.59-alpha.0 |
-| file://../internal-charts/combined-db | combined-db | 0.0.59-alpha.0 |
-| file://../internal-charts/content-api | content-api | 0.0.59-alpha.0 |
-| file://../internal-charts/content-db | content-db | 0.0.59-alpha.0 |
-| file://../internal-charts/correspondence-api | correspondence-api | 0.0.59-alpha.0 |
-| file://../internal-charts/elasticsearch | elasticsearch | 0.0.59-alpha.0 |
-| file://../internal-charts/gateway | gateway | 0.0.59-alpha.0 |
-| file://../internal-charts/indexer | indexer | 0.0.59-alpha.0 |
-| file://../internal-charts/ingress | ingress | 0.0.59-alpha.0 |
-| file://../internal-charts/opa | opa | 0.0.59-alpha.0 |
-| file://../internal-charts/priorities | priorities | 0.0.59-alpha.0 |
-| file://../internal-charts/registry-api | registry-api | 0.0.59-alpha.0 |
-| file://../internal-charts/registry-db | registry-db | 0.0.59-alpha.0 |
-| file://../internal-charts/search-api-node | search-api-node | 0.0.59-alpha.0 |
-| file://../internal-charts/search-api | search-api | 0.0.59-alpha.0 |
-| file://../internal-charts/session-db | session-db | 0.0.59-alpha.0 |
-| file://../internal-charts/storage-api | storage-api | 0.0.59-alpha.0 |
-| file://../internal-charts/tenant-api | tenant-api | 0.0.59-alpha.0 |
-| file://../internal-charts/tenant-db | tenant-db | 0.0.59-alpha.0 |
-| file://../internal-charts/web-server | web-server | 0.0.59-alpha.0 |
+| file://../internal-charts/admin-api | admin-api | 0.0.59-alpha.3 |
+| file://../internal-charts/apidocs-server | apidocs-server | 0.0.59-alpha.3 |
+| file://../internal-charts/authorization-api | authorization-api | 0.0.59-alpha.3 |
+| file://../internal-charts/authorization-db | authorization-db | 0.0.59-alpha.3 |
+| file://../internal-charts/cloud-sql-proxy | cloud-sql-proxy | 0.0.59-alpha.3 |
+| file://../internal-charts/combined-db | combined-db | 0.0.59-alpha.3 |
+| file://../internal-charts/content-api | content-api | 0.0.59-alpha.3 |
+| file://../internal-charts/content-db | content-db | 0.0.59-alpha.3 |
+| file://../internal-charts/correspondence-api | correspondence-api | 0.0.59-alpha.3 |
+| file://../internal-charts/elasticsearch | elasticsearch | 0.0.59-alpha.3 |
+| file://../internal-charts/gateway | gateway | 0.0.59-alpha.3 |
+| file://../internal-charts/indexer | indexer | 0.0.59-alpha.3 |
+| file://../internal-charts/ingress | ingress | 0.0.59-alpha.3 |
+| file://../internal-charts/opa | opa | 0.0.59-alpha.3 |
+| file://../internal-charts/priorities | priorities | 0.0.59-alpha.3 |
+| file://../internal-charts/registry-api | registry-api | 0.0.59-alpha.3 |
+| file://../internal-charts/registry-db | registry-db | 0.0.59-alpha.3 |
+| file://../internal-charts/search-api-node | search-api-node | 0.0.59-alpha.3 |
+| file://../internal-charts/search-api | search-api | 0.0.59-alpha.3 |
+| file://../internal-charts/session-db | session-db | 0.0.59-alpha.3 |
+| file://../internal-charts/storage-api | storage-api | 0.0.59-alpha.3 |
+| file://../internal-charts/tenant-api | tenant-api | 0.0.59-alpha.3 |
+| file://../internal-charts/tenant-db | tenant-db | 0.0.59-alpha.3 |
+| file://../internal-charts/web-server | web-server | 0.0.59-alpha.3 |
 | file://../openfaas | openfaas | 5.5.5-magda |
 | https://charts.magda.io | magda-preview-map | 0.0.58 |
 
