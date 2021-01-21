@@ -157,6 +157,13 @@ dependencies:
     # They choose to simply not deploy or prompt an error message via [helm required function](https://helm.sh/docs/howto/charts_tips_and_tricks/#know-your-template-functions)
     condition: global.openfaas.enabled
 
+  - name: graph-db
+    version: 0.0.60-alpha.0
+    repository: file://../internal-charts/graph-db
+    # graph-db will not be turned on by default
+    tags:
+      - graph-db
+
   # K8s misc
   - name: priorities
     version: 0.0.60-alpha.0

@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: graph-db
+  labels:
+    neo4j.com/bolt: "true"
+    neo4j.com/http: "true"
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    app.kubernetes.io/name: {{ template "neo4j.name" . }}
+    app.kubernetes.io/component: core
+spec:
+{{- if (or (eq .Values.core.service.type "ClusterIP") (empty .Values.core.service.type)) }}
+  type: ClusterIP
+  clusterIP: None
+{{- else if eq .Values.core.service.type "LoadBalancer" }}
+  type: LoadBalancer
+  {{- with .Values.core.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+    {{ toYaml . | nindent 4 }}
+  {{- end -}}
+{{- else }}
+  type: {{ .Values.core.service.type }}
+{{- end }}
+  ports:
+    - name: tcp-http
+      port: 7474
+      targetPort: 7474
+    - name: tcp-bolt
+      port: 7687
+      targetPort: 7687
+    - name: tcp-https
+      port: 7473
+      targetPort: 7473
+    - name: tcp-backup
+      port: 6362
+      targetPort: 6362
+  selector:
+    app.kubernetes.io/name: {{ template "neo4j.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/component: core

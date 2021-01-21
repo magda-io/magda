@@ -1,0 +1,21 @@
+# Default values for magda-neo4j.
+neo4j:
+  fullnamePrefix: "magda-"
+  imageTag: "4.1.3"
+  # -- whether turn on auth
+  authEnabled: true
+  # a list of neo4j plugins to be turned on
+  plugins: "[\"apoc\",\"n10s\"]"
+  # -- config neo4j instance resources
+  resources: {}
+  # we can let neo4j to generate password secret automatically
+  # existingPasswordSecret: 
+  # Not support for current version. Have to use neo4j-password
+  # existingPasswordSecretKey: password
+  core:
+    # -- Whether to run in single-server `standalone` mode. If you need neo4j cluster, neo4j commercial version license is required.
+    standalone: true
+    # -- Optional configmap that contains extra env vars to be set on neo4j instance.
+    configMap: 
+    persistentVolume:
+      size: 10Gi

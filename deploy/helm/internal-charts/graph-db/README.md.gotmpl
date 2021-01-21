@@ -1,0 +1,27 @@
+{{ template "chart.header" . }}
+
+{{ template "chart.deprecationWarning" . }}
+
+{{ template "chart.versionBadge" . }}{{ template "chart.typeBadge" . }}{{ template "chart.appVersionBadge" . }}
+
+{{ template "chart.description" . }}
+
+This is a simple wraper of [neo4j offical community version helm chart](https://github.com/neo4j-contrib/neo4j-helm).
+
+By default, community version docker image is used with `standalone` mode turned on. 
+
+All neo4j helm chart configuration can be set under key `neo4j`. 
+
+For all available neo4j configuration options, please refer to [neo4j offical helm chart document](https://neo4j.com/labs/neo4j-helm/1.0.0/).
+
+{{ template "chart.homepageLine" . }}
+
+{{ template "chart.maintainersSection" . }}
+
+{{ template "chart.sourcesSection" . }}
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.valuesHeader" . }}
+
+{{ template "chart.valuesTable" . }}

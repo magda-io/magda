@@ -27,6 +27,7 @@ Kubernetes: `>= 1.14.0-0`
 | file://../internal-charts/correspondence-api | correspondence-api | 0.0.60-alpha.0 |
 | file://../internal-charts/elasticsearch | elasticsearch | 0.0.60-alpha.0 |
 | file://../internal-charts/gateway | gateway | 0.0.60-alpha.0 |
+| file://../internal-charts/graph-db | graph-db | 0.0.60-alpha.0 |
 | file://../internal-charts/indexer | indexer | 0.0.60-alpha.0 |
 | file://../internal-charts/ingress | ingress | 0.0.60-alpha.0 |
 | file://../internal-charts/opa | opa | 0.0.60-alpha.0 |
