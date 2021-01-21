@@ -1,5 +1,7 @@
 # CHANGELOG
 
+## 0.0.60
+
 ## 0.0.59
 
 -   Allow Magda API endpoints to be served at non-root path
