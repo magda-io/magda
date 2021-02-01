@@ -14,6 +14,10 @@ All neo4j helm chart configuration can be set under key `neo4j`.
 
 For all available neo4j configuration options, please refer to [neo4j offical helm chart document](https://neo4j.com/labs/neo4j-helm/1.0.0/).
 
+After deployed, by default, the DB can be accessed in cluster via `bolt://graph-db:7687`
+
+The auto-generated password can be accessed via secret `graph-db-secrets`.
+
 {{ template "chart.homepageLine" . }}
 
 {{ template "chart.maintainersSection" . }}

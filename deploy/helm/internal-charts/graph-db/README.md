@@ -12,6 +12,10 @@ All neo4j helm chart configuration can be set under key `neo4j`.
 
 For all available neo4j configuration options, please refer to [neo4j offical helm chart document](https://neo4j.com/labs/neo4j-helm/1.0.0/).
 
+After deployed, by default, the DB can be accessed in cluster via `bolt://graph-db:7687`
+
+The auto-generated password can be accessed via secret `graph-db-secrets`.
+
 ## Requirements
 
 Kubernetes: `>= 1.14.0-0`
@@ -28,7 +32,8 @@ Kubernetes: `>= 1.14.0-0`
 | neo4j.core.configMap | string | `nil` | Optional configmap that contains extra env vars to be set on neo4j instance. |
 | neo4j.core.persistentVolume.size | string | `"10Gi"` |  |
 | neo4j.core.standalone | bool | `true` | Whether to run in single-server `standalone` mode. If you need neo4j cluster, neo4j commercial version license is required. |
-| neo4j.fullnamePrefix | string | `"magda-"` |  |
+| neo4j.existingPasswordSecret | string | `nil` | the secret name that contains db access password leave blank then neo4j will auto create password & secret |
+| neo4j.fullnameOverride | string | `"graph-db"` |  |
 | neo4j.imageTag | string | `"4.1.3"` |  |
 | neo4j.plugins | string | `"[\"apoc\",\"n10s\"]"` |  |
 | neo4j.resources | object | `{}` | config neo4j instance resources |
