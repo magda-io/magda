@@ -45,7 +45,8 @@ export class Suggest extends React.Component {
             emailPlaceHolder: "dorothyhill@example.com",
             textAreaPlaceHolder:
                 "It helps if you're really specific on the kind of data you're looking for and what you would use it for. Feel free to report any problems you run into as well.",
-            textAreaLabel: "What sort of data are you looking for?"
+            textAreaLabel: "What sort of data are you looking for?",
+            successHeader: "Your suggestion has been submitted!"
         };
 
         return (
