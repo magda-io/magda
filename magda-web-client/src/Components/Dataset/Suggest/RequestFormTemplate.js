@@ -142,6 +142,8 @@ export default class RequestFormTemplate extends React.Component {
         return (
             <form className="correspondence-form" method="post">
                 {this.props.title && <h1>{this.props.title}</h1>}
+                {this.props.description && <p>{this.props.description}</p>}
+                <br />
                 <label htmlFor="message" className="field-label">
                     {this.props.textAreaLabel}
                     {!this.state.messageValid && (

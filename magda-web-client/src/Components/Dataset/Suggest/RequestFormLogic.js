@@ -125,9 +125,9 @@ export default class RequestFormLogic extends React.Component {
                     const alertProps = {
                         successMessage: translate([
                             "suggestSuccessMessage",
-                            "Your request has been sent to the maintainers of this site."
+                            "Your suggestion has been sent to the maintainers of this site."
                         ]),
-                        successHeader: "Your request has been sent!",
+                        successHeader: "Your suggestion has been submitted!",
                         failMessage: null,
                         failHeader:
                             "Uh oh. There was an error sending your form!"

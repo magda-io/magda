@@ -39,6 +39,8 @@ export class Suggest extends React.Component {
     render() {
         const formProps = {
             title: "Suggest a Dataset",
+            description:
+                "We are always interested in finding out what datasets people need.  While we cannot guarantee that we can find or publish the data, your suggestion will help improve data.gov.au.",
             namePlaceHolder: "Dorothy Hill",
             emailPlaceHolder: "dorothyhill@example.com",
             textAreaPlaceHolder:
