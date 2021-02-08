@@ -1,6 +1,7 @@
 # CHANGELOG
 
 ## 0.0.60
+-   Updated Suggest A Dataset form
 
 ## 0.0.59
 
