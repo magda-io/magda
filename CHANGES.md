@@ -2,6 +2,8 @@
 
 ## 0.0.60
 
+-   Set `CRYPTOGRAPHY_DONT_BUILD_RUST` in CI to fix the docker-compose installation issue
+
 ## 0.0.59
 
 -   Allow Magda API endpoints to be served at non-root path
