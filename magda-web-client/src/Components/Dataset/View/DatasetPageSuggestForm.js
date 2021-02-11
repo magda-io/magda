@@ -89,7 +89,8 @@ export default class DatasetPageSuggestForm extends React.Component {
             emailPlaceHolder: "dorothyhill@example.com",
             textAreaPlaceHolder:
                 "Ask a question or report a problem about this dataset.",
-            textAreaLabel: "What would you like to ask about this dataset?"
+            textAreaLabel: "What would you like to ask about this dataset?",
+            successHeader: "Your request has been submitted!"
         };
 
         return (
