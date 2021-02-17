@@ -1,6 +1,9 @@
 # CHANGELOG
 
 ## 0.0.60
+-   Updated Suggest A Dataset form
+
+-   Set `CRYPTOGRAPHY_DONT_BUILD_RUST` in CI to fix the docker-compose installation issue
 
 ## 0.0.59
 

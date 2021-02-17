@@ -1,6 +1,7 @@
 import React from "react";
 import RequestFormLogic from "./Suggest/RequestFormLogic";
 import MagdaDocumentTitle from "Components/i18n/MagdaDocumentTitle";
+import MagdaNamespacesConsumer from "Components/i18n/MagdaNamespacesConsumer";
 import Breadcrumbs from "Components/Common/Breadcrumbs";
 import { Medium } from "Components/Common/Responsive";
 import { connect } from "react-redux";
@@ -37,15 +38,6 @@ export class Suggest extends React.Component {
     };
 
     render() {
-        const formProps = {
-            title: "Suggest a Dataset",
-            namePlaceHolder: "Dorothy Hill",
-            emailPlaceHolder: "dorothyhill@example.com",
-            textAreaPlaceHolder:
-                "It helps if you're really specific on the kind of data you're looking for and what you would use it for. Feel free to report any problems you run into as well.",
-            textAreaLabel: "What sort of data are you looking for?"
-        };
-
         return (
             <MagdaDocumentTitle prefixes={["Suggest a Dataset"]}>
                 <div>
@@ -58,14 +50,34 @@ export class Suggest extends React.Component {
                             ]}
                         />
                     </Medium>
-                    <RequestFormLogic
-                        formProps={formProps}
-                        requestType="request"
-                        senderName={this.state.senderName}
-                        senderEmail={this.state.senderEmail}
-                        message={this.state.message}
-                        handleChange={this.handleChange}
-                    />
+                    <MagdaNamespacesConsumer ns={["global"]}>
+                        {(translate) => {
+                            const appName = translate(["appName", "Magda"]);
+                            const formProps = {
+                                title: "Suggest a Dataset",
+                                description: `We are always interested in finding out what datasets people need.  While we cannot guarantee that we can find or publish the data, your suggestion will help improve ${appName}.`,
+                                namePlaceHolder: "Dorothy Hill",
+                                emailPlaceHolder: "dorothyhill@example.com",
+                                textAreaPlaceHolder:
+                                    "It helps if you're really specific on the kind of data you're looking for and what you would use it for. Feel free to report any problems you run into as well.",
+                                textAreaLabel:
+                                    "What sort of data are you looking for?",
+                                successHeader:
+                                    "Your suggestion has been submitted!"
+                            };
+
+                            return (
+                                <RequestFormLogic
+                                    formProps={formProps}
+                                    requestType="request"
+                                    senderName={this.state.senderName}
+                                    senderEmail={this.state.senderEmail}
+                                    message={this.state.message}
+                                    handleChange={this.handleChange}
+                                />
+                            );
+                        }}
+                    </MagdaNamespacesConsumer>
                 </div>
             </MagdaDocumentTitle>
         );
