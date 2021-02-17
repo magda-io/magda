@@ -22,7 +22,7 @@ Kubernetes: `>= 1.14.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://neo4j-contrib.github.io/neo4j-helm/ | neo4j | 4.1.3-1 |
+| https://neo4j-contrib.github.io/neo4j-helm/ | neo4j | 4.2.2-1 |
 
 ## Values
 
