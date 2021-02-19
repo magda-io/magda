@@ -3,3 +3,19 @@ resources:
   requests:
     cpu: 50m
     memory: 50Mi
+
+serviceAccount:
+  # -- Whether or not to create service account
+  create: true
+  # -- A list of annotations to be added to the service account created
+  annotations: {}
+  # -- When empty, default name will be `magda-admin-api-service-account`
+  # You can also set this field to supply your own service account
+  name:
+
+rbac:
+  # -- Whether or not to create RBAC role & role binding
+  create: true
+
+# -- the k8s namespace contains job object. When empty, will use `.Release.Namespace`
+namespace: 

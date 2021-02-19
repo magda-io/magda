@@ -1,0 +1,13 @@
+{{- if .Values.rbac.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: magda-admin-api-rbac-role-binding
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.serviceAccount.name | default "magda-admin-api-service-account" }}
+roleRef:
+  kind: Role 
+  name: magda-admin-api-rbac-role
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}
