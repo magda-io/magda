@@ -35,12 +35,11 @@ class PublisherDetails extends Component<any> {
                 this.props.match.params.publisherId
             );
         } else if (
-            this.props.publisher.name &&
-            this.props.publisher.name !== this.props.searchPublisherName
+            this.props?.publisher?.name !== this.props.searchPublisherName
         ) {
             this.props.resetDatasetSearch();
             this.props.fetchSearchResultsIfNeeded({
-                publisher: this.props.publisher.name
+                publisher: this.props?.publisher?.name
             });
         }
     }
@@ -63,8 +62,8 @@ class PublisherDetails extends Component<any> {
                     {translate(["publishersBreadCrumb", "Publishers"])}
                 </Link>
             </li>,
-            <li key={publisher.name}>
-                <span>{publisher.name}</span>
+            <li key={publisher?.name}>
+                <span>{publisher?.name}</span>
             </li>
         ];
 
@@ -73,7 +72,7 @@ class PublisherDetails extends Component<any> {
         return (
             <MagdaDocumentTitle
                 prefixes={[
-                    publisher.name,
+                    publisher?.name,
                     translate(["publishersBreadCrumb", "Publishers"])
                 ]}
             >
@@ -85,7 +84,7 @@ class PublisherDetails extends Component<any> {
                         <div className="publisher-details__body">
                             <div className="media">
                                 <div className="media-body publisher-details-title">
-                                    <h1>{publisher.name}</h1>
+                                    <h1>{publisher?.name}</h1>
                                     {publisher.aspects &&
                                     publisher.aspects["organization-details"] &&
                                     publisher.aspects["organization-details"]
@@ -153,7 +152,7 @@ class PublisherDetails extends Component<any> {
                                     to={{
                                         pathname: "/search",
                                         search: `?organisation=${encodeURIComponent(
-                                            publisher.name
+                                            publisher?.name
                                         )}`,
                                         state: {
                                             showFilterExplanation: true
@@ -161,7 +160,7 @@ class PublisherDetails extends Component<any> {
                                     }}
                                 >
                                     View all {hitCount}
-                                    datasets from {publisher.name}
+                                    datasets from {publisher?.name}
                                 </Link>
                             </div>
                         </div>
@@ -186,7 +185,7 @@ class PublisherDetails extends Component<any> {
                     ) {
                         return (
                             <MagdaDocumentTitle
-                                prefixes={[this.props.publisher.name]}
+                                prefixes={[this.props?.publisher?.name]}
                             >
                                 {this.renderContent(translate)}
                             </MagdaDocumentTitle>

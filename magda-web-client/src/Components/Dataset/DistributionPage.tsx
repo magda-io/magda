@@ -85,7 +85,7 @@ const DistributionPageMainContent: FunctionComponent<{
             <div className="distribution-meta">
                 <div className="publisher">
                     <Link to={`/organisations/${publisherId}`}>
-                        {dataset.publisher.name}
+                        {dataset?.publisher?.name}
                     </Link>
                 </div>
 
@@ -146,7 +146,7 @@ const DistributionPageMainContent: FunctionComponent<{
                             });
                             gapi.event({
                                 category: "Download by Publisher",
-                                action: dataset.publisher.name,
+                                action: dataset?.publisher?.name,
                                 label: resource_url
                             });
                         }

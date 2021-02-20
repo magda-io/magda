@@ -457,7 +457,7 @@ function populateDatasetPublisherAspect(data: RawDataset, state: State) {
 
     if (publisher) {
         state.dataset.publisher = {
-            name: publisher.name,
+            name: publisher?.name,
             existingId: publisher.id
         };
     }

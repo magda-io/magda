@@ -42,9 +42,9 @@ export default class DatasetSummary extends Component {
                 "dcat-dataset-strings": dataset
             }
         });
-        const publisher = dataset.publisher && dataset.publisher.name;
+        const publisher = dataset.publisher && dataset?.publisher?.name;
         const publisherIdent =
-            dataset.publisher && dataset.publisher.identifier;
+            dataset.publisher && dataset?.publisher?.identifier;
         const searchText = defined(this.props.searchText)
             ? this.props.searchText
             : "";

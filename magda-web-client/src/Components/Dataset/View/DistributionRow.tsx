@@ -178,7 +178,8 @@ class DistributionRow extends Component<PropType> {
                                             gapi.event({
                                                 category:
                                                     "Download by Publisher",
-                                                action: dataset.publisher.name,
+                                                action:
+                                                    dataset?.publisher?.name,
                                                 label: resource_url
                                             });
                                         }
