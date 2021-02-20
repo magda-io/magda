@@ -12,7 +12,7 @@ function OrganisationSummary(props) {
                         encodeURIComponent(props.publisher.identifier)
                     }
                 >
-                    {props.publisher.name}
+                    {props?.publisher?.name}
                 </Link>
             </h2>
             <div className="publisher-meta">
@@ -25,7 +25,7 @@ function OrganisationSummary(props) {
                     to={{
                         pathname: "/search",
                         search: `organisation=${encodeURIComponent(
-                            props.publisher.name
+                            props?.publisher?.name
                         )}`,
                         state: {
                             showFilterExplanation: true

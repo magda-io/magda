@@ -478,6 +478,8 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
     const publishing = aspects["publishing"] || {};
     const publisher = aspects["dataset-publisher"]
         ? aspects["dataset-publisher"]["publisher"]
+            ? aspects["dataset-publisher"]["publisher"]
+            : emptyPublisher
         : emptyPublisher;
     const contactPoint: string = datasetInfo.contactPoint;
     const source: string | undefined = aspects["source"]

@@ -11,13 +11,13 @@ export default function OrganisationBox(props) {
                     <Link
                         to={`organisations/${encodeURIComponent(publisher.id)}`}
                     >
-                        {publisher.name}
+                        {publisher?.name}
                     </Link>
                 </h3>
                 <div className="">{publisher["description"]}</div>
                 <Link
                     to={`/search?organisation=${encodeURIComponent(
-                        publisher.name
+                        publisher?.name
                     )}`}
                 >
                     View all datasets

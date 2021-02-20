@@ -84,7 +84,7 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                                 itemProp="url"
                             >
                                 <span itemProp="name">
-                                    {dataset.publisher.name}
+                                    {dataset?.publisher?.name}
                                 </span>
                             </Link>
                         </span>

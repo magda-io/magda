@@ -145,10 +145,10 @@ class RecordHandler extends React.Component<PropsType, StateType> {
                     label: this.props.dataset.title
                 });
             }
-            if (this.props.dataset.publisher.name !== "") {
+            if (this.props?.dataset?.publisher?.name !== "") {
                 gapi.event({
                     category: "Dataset view by Publisher",
-                    action: this.props.dataset.publisher.name,
+                    action: this.props?.dataset?.publisher?.name,
                     label: this.props.dataset.title
                 });
             }
