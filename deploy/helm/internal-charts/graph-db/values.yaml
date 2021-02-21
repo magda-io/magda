@@ -6,8 +6,6 @@ neo4j:
   authEnabled: true
   # a list of neo4j plugins to be turned on
   plugins: "[\"apoc\",\"n10s\"]"
-  # -- config neo4j instance resources
-  resources: {}
   # -- the secret name that contains db access password
   # leave blank then neo4j will auto create password & secret
   existingPasswordSecret:
@@ -20,3 +18,11 @@ neo4j:
     configMap: 
     persistentVolume:
       size: 10Gi
+    # -- config neo4j instance resources
+    resources:
+      limits:
+        cpu: "500m"
+      requests:
+        cpu: "200m"
+        memory: 1024Mi
+
