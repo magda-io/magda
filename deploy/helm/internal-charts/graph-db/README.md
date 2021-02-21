@@ -31,9 +31,9 @@ Kubernetes: `>= 1.14.0-0`
 | neo4j.authEnabled | bool | `true` | whether turn on auth |
 | neo4j.core.configMap | string | `nil` | Optional configmap that contains extra env vars to be set on neo4j instance. |
 | neo4j.core.persistentVolume.size | string | `"10Gi"` |  |
+| neo4j.core.resources | object | `{"limits":{"cpu":"500m"},"requests":{"cpu":"200m","memory":"1024Mi"}}` | config neo4j instance resources |
 | neo4j.core.standalone | bool | `true` | Whether to run in single-server `standalone` mode. If you need neo4j cluster, neo4j commercial version license is required. |
 | neo4j.existingPasswordSecret | string | `nil` | the secret name that contains db access password leave blank then neo4j will auto create password & secret |
 | neo4j.fullnameOverride | string | `"graph-db"` |  |
 | neo4j.imageTag | string | `"4.1.3"` |  |
 | neo4j.plugins | string | `"[\"apoc\",\"n10s\"]"` |  |
-| neo4j.resources | object | `{}` | config neo4j instance resources |
