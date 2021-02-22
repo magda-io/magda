@@ -27,27 +27,46 @@ class ContactPoint extends React.Component {
             <MagdaNamespacesConsumer ns={["datasetPage"]}>
                 {(translate) => (
                     <div className="dataset-contact-point">
-                        <div className="heading">
+                        <span className="description-heading">
                             {translate(["contactPointTitle", "Contact Point"])}:
-                        </div>
-                        <div className="no-print">
-                            {this.state.reveal ? (
-                                <MarkdownViewer
-                                    markdown={this.props.contactPoint}
-                                />
-                            ) : (
-                                <ToggleButton
-                                    onClick={this.onRevealButtonClick}
+                        </span>
+                        {this.props.contactPoint ? (
+                            <React.Fragment>
+                                <div className="no-print">
+                                    {this.state.reveal ? (
+                                        <MarkdownViewer
+                                            markdown={this.props.contactPoint}
+                                        />
+                                    ) : (
+                                        <ToggleButton
+                                            onClick={this.onRevealButtonClick}
+                                        >
+                                            <span>Click to reveal</span>
+                                        </ToggleButton>
+                                    )}
+                                </div>
+                                <div className="print-only">
+                                    <MarkdownViewer
+                                        markdown={this.props.contactPoint}
+                                    />
+                                </div>
+                            </React.Fragment>
+                        ) : (
+                            <div style={{ marginTop: "0.5rem" }}>
+                                This publisher has not provided a contact point.
+                                Try visiting the original resource for more
+                                information:{" "}
+                                <a
+                                    href={this.props.landingPage}
+                                    target="_blank"
                                 >
-                                    <span>Click to reveal</span>
-                                </ToggleButton>
-                            )}
-                        </div>
-                        <div className="print-only">
-                            <MarkdownViewer
-                                markdown={this.props.contactPoint}
-                            />
-                        </div>
+                                    {this.props.source}
+                                </a>
+                                <MarkdownViewer>
+                                    {this.props.source}
+                                </MarkdownViewer>
+                            </div>
+                        )}
                     </div>
                 )}
             </MagdaNamespacesConsumer>

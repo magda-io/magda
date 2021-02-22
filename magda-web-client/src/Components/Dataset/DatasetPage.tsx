@@ -147,16 +147,23 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                                 }
                             />
                         )}
-                        {dataset.contactPoint ? (
-                            <ContactPoint contactPoint={dataset.contactPoint} />
-                        ) : (
-                            <></>
-                        )}
+
                         {dataset.accrualPeriodicity ? (
-                            <div>Updated: {dataset.accrualPeriodicity}</div>
+                            <div>
+                                <span className={"description-heading"}>
+                                    Updated:
+                                </span>{" "}
+                                {dataset.accrualPeriodicity}
+                            </div>
                         ) : null}
+
                         <TagsBox content={dataset.tags} title="Tags" />
                         <TagsBox content={dataset.themes} title="Themes" />
+                        <ContactPoint
+                            contactPoint={dataset.contactPoint}
+                            landingPage={dataset.landingPage}
+                            source={dataset.source}
+                        />
                         {defined(dataset.access?.location) && (
                             <div>
                                 <div className="dataset-heading">

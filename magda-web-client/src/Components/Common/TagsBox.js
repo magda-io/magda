@@ -27,7 +27,7 @@ function TagsBox(props) {
     const title = props.title;
     return (
         <div className="tags-box">
-            <div className="dataset-heading">{title}: </div>
+            <div className="description-heading">{title}: </div>
             {props.content && props.content.length > 0 ? (
                 <ul className="au-tags">
                     {props.content &&
