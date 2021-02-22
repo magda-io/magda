@@ -172,6 +172,7 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                         title={dataset.title}
                         toggleMargin={setAddMargin}
                         datasetId={dataset.identifier}
+                        contactPoint={dataset.contactPoint}
                     />
                     {isAdmin ? (
                         <div className="download-history-report-button">
