@@ -6,6 +6,7 @@
 -   Set `CRYPTOGRAPHY_DONT_BUILD_RUST` in CI to fix the docker-compose installation issue
 -   Fixed #1774 #2736 use non-default service account for admin-api & allow admin-api to be deployed at different namespace rather than "default"
 -   Fixed #3073 Frontend can't handle invalid `dataset-publisher` aspect data and trigger a blank screen
+-   Fixed #3080 remove `--acl public-read` in CI as cloudfront has been setup for public read only access
 
 ## 0.0.59
 
