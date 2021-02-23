@@ -85,12 +85,18 @@ export default class DatasetPageSuggestForm extends React.Component {
         };
         const formProps = {
             title: false,
+            description:
+                "Your question will be sent to the publishers of the data: " +
+                this.props.contactPoint,
             namePlaceHolder: "Dorothy Hill",
             emailPlaceHolder: "dorothyhill@example.com",
             textAreaPlaceHolder:
                 "Ask a question or report a problem about this dataset.",
             textAreaLabel: "What would you like to ask about this dataset?",
-            successHeader: "Your request has been submitted!"
+            successHeader:
+                "Your request has been submitted to: " +
+                this.props.contactPoint +
+                "!"
         };
 
         return (
