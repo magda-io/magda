@@ -918,8 +918,8 @@ Publish Helm Chart:
     - helm repo index --merge "index_dir/index.yaml" sync_dir
     # avoid conflicts & make sure the packages are in place first; upload index at the end
     - mv -f sync_dir/index.yaml index_dir/index.yaml
-    - aws s3 sync sync_dir s3://magda-charts/ --acl public-read
-    - aws s3 cp index_dir/index.yaml s3://magda-charts/index.yaml --acl public-read
+    - aws s3 sync sync_dir s3://magda-charts/
+    - aws s3 cp index_dir/index.yaml s3://magda-charts/index.yaml
 
 # Update scripts:
 #   stage: release
