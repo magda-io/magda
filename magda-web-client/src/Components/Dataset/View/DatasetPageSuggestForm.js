@@ -83,20 +83,23 @@ export default class DatasetPageSuggestForm extends React.Component {
                 maxHeight: "95vh"
             }
         };
+        var contactPointMatch = this.props.contactPoint.match(
+            /([a-zA-Z0-9.-]+@[a-zA-Z0-9.-]+.[a-zA-Z0-9._-]+)/g
+        );
+        contactPointMatch = contactPointMatch || this.props.contactPoint;
         const formProps = {
             title: false,
             description:
-                "Your question will be sent to the publishers of the data: " +
-                this.props.contactPoint,
+                "Your question will be sent to the publisher of the data" +
+                (contactPointMatch ? ": " + contactPointMatch : "."),
             namePlaceHolder: "Dorothy Hill",
             emailPlaceHolder: "dorothyhill@example.com",
             textAreaPlaceHolder:
                 "Ask a question or report a problem about this dataset.",
             textAreaLabel: "What would you like to ask about this dataset?",
             successHeader:
-                "Your request has been submitted to: " +
-                this.props.contactPoint +
-                "!"
+                "Your request has been sent" +
+                (contactPointMatch ? " to " + contactPointMatch + "!" : ".")
         };
 
         return (
@@ -112,9 +115,7 @@ export default class DatasetPageSuggestForm extends React.Component {
                                 Ask a question about this dataset
                             </button>
                         </div>
-                    ) : (
-                        <React.Fragment />
-                    ))}
+                    ) : null)}
 
                 <div className="dataset-button-container no-print">
                     <button

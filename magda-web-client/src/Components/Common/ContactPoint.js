@@ -52,7 +52,7 @@ class ContactPoint extends React.Component {
                                 </div>
                             </React.Fragment>
                         ) : (
-                            <div style={{ marginTop: "0.5rem" }}>
+                            <div className="description-text">
                                 This publisher has not provided a contact point.
                                 Try visiting the original resource for more
                                 information:{" "}
@@ -75,11 +75,13 @@ class ContactPoint extends React.Component {
 }
 
 ContactPoint.propTypes = {
-    contactPoint: PropTypes.string
+    contactPoint: PropTypes.string,
+    source: PropTypes.string
 };
 
 ContactPoint.defaultProps = {
-    contactPoint: ""
+    contactPoint: "",
+    source: ""
 };
 
 export default ContactPoint;
