@@ -1,4 +1,3 @@
-import React from "react";
 import PropTypes from "prop-types";
 
 import MarkdownViewer from "Components/Common/MarkdownViewer";
@@ -76,12 +75,14 @@ class ContactPoint extends React.Component {
 
 ContactPoint.propTypes = {
     contactPoint: PropTypes.string,
-    source: PropTypes.string
+    source: PropTypes.string,
+    landingPage: PropTypes.string
 };
 
 ContactPoint.defaultProps = {
     contactPoint: "",
-    source: ""
+    source: "",
+    landingPage: ""
 };
 
 export default ContactPoint;

@@ -83,10 +83,18 @@ export default class DatasetPageSuggestForm extends React.Component {
                 maxHeight: "95vh"
             }
         };
-        var contactPointMatch = this.props.contactPoint.match(
-            /([a-zA-Z0-9.-]+@[a-zA-Z0-9.-]+.[a-zA-Z0-9._-]+)/g
-        );
-        contactPointMatch = contactPointMatch || this.props.contactPoint;
+        let contactPointMatch;
+        if (
+            this.props?.contactPoint &&
+            typeof this.props?.contactPoint === "string"
+        ) {
+            contactPointMatch = this.props.contactPoint.match(
+                /([a-zA-Z0-9.-]+@[a-zA-Z0-9.-]+.[a-zA-Z0-9._-]+)/g
+            );
+            contactPointMatch =
+                (contactPointMatch && contactPointMatch[0].split(" ")[0]) ||
+                this.props.contactPoint;
+        }
         const formProps = {
             title: false,
             description:
