@@ -5,6 +5,7 @@ import MagdaNamespacesConsumer from "Components/i18n/MagdaNamespacesConsumer";
 import ToggleButton from "./ToggleButton";
 import { gapi } from "analytics/ga";
 
+import React from "react";
 import "./ContactPoint.scss";
 
 class ContactPoint extends React.Component {
@@ -58,6 +59,7 @@ class ContactPoint extends React.Component {
                                 <a
                                     href={this.props.landingPage}
                                     target="_blank"
+                                    rel="noreferrer"
                                 >
                                     {this.props.source}
                                 </a>
