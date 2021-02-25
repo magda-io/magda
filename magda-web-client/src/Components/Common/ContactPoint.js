@@ -1,11 +1,10 @@
-import PropTypes from "prop-types";
-
+import { gapi } from "analytics/ga";
 import MarkdownViewer from "Components/Common/MarkdownViewer";
 import MagdaNamespacesConsumer from "Components/i18n/MagdaNamespacesConsumer";
-import ToggleButton from "./ToggleButton";
-import { gapi } from "analytics/ga";
-
+import PropTypes from "prop-types";
+import React from "react";
 import "./ContactPoint.scss";
+import ToggleButton from "./ToggleButton";
 
 class ContactPoint extends React.Component {
     state = { reveal: false };
