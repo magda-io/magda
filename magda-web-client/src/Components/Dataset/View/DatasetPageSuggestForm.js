@@ -84,16 +84,12 @@ export default class DatasetPageSuggestForm extends React.Component {
             }
         };
         let contactPointMatch;
-        if (
-            this.props?.contactPoint &&
-            typeof this.props?.contactPoint === "string"
-        ) {
-            contactPointMatch = this.props.contactPoint.match(
-                /([a-zA-Z0-9.-]+@[a-zA-Z0-9.-]+.[a-zA-Z0-9._-]+)/g
-            );
-            contactPointMatch =
-                (contactPointMatch && contactPointMatch[0].split(" ")[0]) ||
-                this.props.contactPoint;
+        if (typeof this.props?.contactPoint === "string") {
+            const emailRegex = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
+            const matches = this.props.contactPoint.match(emailRegex);
+            contactPointMatch = matches?.length
+                ? matches[0]
+                : this.props.contactPoint;
         }
         const formProps = {
             title: false,
