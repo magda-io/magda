@@ -22,7 +22,7 @@ You'll also need a Kubernetes cluster - to develop locally this means installing
 
 ## Trying it out locally without building source code
 
-If you just want to try it out locally without actually changing anything, it's much easier to just install [minikube](https://magda.io/docs/installing-minikube.md) or [docker for desktop](https://github.com/magda-io/magda/blob/master/docs/docs/installing-docker-k8s.md), then following the instructions at [https://github.com/magda-io/magda-config/blob/master/legacy.md](https://github.com/magda-io/magda-config/blob/master/legacy.md). What follows is instructions on how to build _everything_, code, databases and all, from scratch into a working application.
+If you just want to try it out locally without actually changing anything, it's much easier to just install [minikube](https://magda.io/docs/installing-minikube.md) or [docker for desktop](https://github.com/magda-io/magda/blob/master/docs/docs/installing-docker-k8s.md), then following the instructions at [https://github.com/magda-io/magda-config/blob/master/existing-k8s.md](https://github.com/magda-io/magda-config/blob/master/existing-k8s.md). What follows is instructions on how to build _everything_, code, databases and all, from scratch into a working application.
 
 ## Building and running (just) the frontend
 
