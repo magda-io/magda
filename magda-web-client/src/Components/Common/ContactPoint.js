@@ -1,6 +1,5 @@
-import PropTypes from "prop-types";
-
 import React from "react";
+import PropTypes from "prop-types";
 import MarkdownViewer from "Components/Common/MarkdownViewer";
 import MagdaNamespacesConsumer from "Components/i18n/MagdaNamespacesConsumer";
 import ToggleButton from "./ToggleButton";
