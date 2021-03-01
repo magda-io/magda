@@ -29,12 +29,12 @@ dependencies:
       - all
       - magda-auth-internal
 
-  - name: magda-auth-arcgis
-    version: 1.0.1
-    repository: https://charts.magda.io
+  - name: magda-auth-okta
+    version: 1.0.0
+    repository: file://../../../../magda-auth-okta/deploy/magda-auth-okta
     tags:
       - all
-      - magda-auth-arcgis
+      - magda-auth-okta
 
   ## Data.gov.au connector to provide some initial data. Remove this if you
   ## don't want any data.gov.au connector

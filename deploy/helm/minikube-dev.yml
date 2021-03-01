@@ -3,10 +3,10 @@ global:
   rollingUpdate:
     maxUnavailable: 1
   exposeNodePorts: true
-  image:
-    repository: "localhost:5000/data61"
-    tag: "latest"
-    pullPolicy: Always
+  # image:
+  #   repository: "localhost:5000/data61"
+  #   tag: "latest"
+  #   pullPolicy: Always
   noDbAuth: true
   useCloudSql: false
   useCombinedDb: true
@@ -75,8 +75,8 @@ magda:
         baseUrl: http://magda-auth-ckan
       - key: internal
         baseUrl: http://magda-auth-internal
-      - key: arcgis
-        baseUrl: http://magda-auth-arcgis
+      - key: okta
+        baseUrl: http://magda-auth-okta
 
     registry-api:
       skipAuthorization: false
@@ -166,8 +166,12 @@ magda-auth-internal:
     tag: 1.0.1
     repository: docker.io/data61
 
-magda-auth-arcgis:
-  arcgisClientId: "d0MgVUbbg5Z6vmWo"
+magda-auth-okta:
+  clientId: "0oa7ym7ifx62BAtMQ5d6"
+  issuer: https://dev-44814446.okta.com/oauth2/default
   image:
-    tag: 1.0.1
-    repository: docker.io/data61
+    # tag: 1.0.1
+    # repository: docker.io/data61
+    repository: "localhost:5000/data61"
+    tag: latest
+    pullPolicy: Always
