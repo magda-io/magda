@@ -26,7 +26,7 @@ In order to deploy a connector or minion with `magda`, you need to:
 
 You can find an example setup in our [connector repositories](https://github.com/magda-io?utf8=%E2%9C%93&q=magda+connector) & [minions repositories](https://github.com/magda-io?utf8=%E2%9C%93&q=magda-minion).
 
-The default CI workflows (using [Github Actions](https://github.com/features/actions)) in those repositories are configured to publish to Magda's central helm chart repository, but you can find a sample CI workflow config for publishing your helm chart to a [github pages](https://pages.github.com/)-based repository [here](https://github.com/magda-io/magda-ckan-connector/tree/4b08982718efa4af63470ed7bbf48db912a1b50a/.github/workflows).
+The default CI workflows (using [Github Actions](https://github.com/features/actions)) in those repositories are configured to publish to Magda's central helm chart repository, but you can find a sample CI workflow config for publishing your helm chart to a [github pages](https://pages.github.com/)-based repository [here](https://github.com/magda-io/magda-ckan-connector/tree/e48deb3ba71d04fa2732d8fae777b783982dd518/.github/workflows).
 
 To use the sample CI workflow, you need to:
 
