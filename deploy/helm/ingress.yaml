@@ -1,0 +1,20 @@
+apiVersion: extensions/v1beta1 
+kind: Ingress 
+metadata: 
+  annotations: 
+    cert-manager.io/cluster-issuer: selfsigned-issuer 
+  name: local-ingress 
+  namespace: magda
+spec: 
+  rules: 
+  - host: minikube.data.gov.au
+    http: 
+      paths: 
+      - backend: 
+          serviceName: gateway
+          servicePort: 80 
+        path: / 
+  tls: 
+  - hosts: 
+    - minikube.data.gov.au
+    secretName: test-app-cert-tls
