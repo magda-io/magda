@@ -150,9 +150,9 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
 
                         {dataset.accrualPeriodicity ? (
                             <div>
-                                <span className={"description-heading"}>
+                                <div className={"description-heading"}>
                                     Updated:
-                                </span>{" "}
+                                </div>
                                 {dataset.accrualPeriodicity}
                             </div>
                         ) : null}

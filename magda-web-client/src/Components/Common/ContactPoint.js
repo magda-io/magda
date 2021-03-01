@@ -26,9 +26,9 @@ class ContactPoint extends React.Component {
             <MagdaNamespacesConsumer ns={["datasetPage"]}>
                 {(translate) => (
                     <div className="dataset-contact-point">
-                        <span className="description-heading">
+                        <div className="description-heading">
                             {translate(["contactPointTitle", "Contact Point"])}:
-                        </span>
+                        </div>
                         {this.props.contactPoint ? (
                             <React.Fragment>
                                 <div className="no-print">

@@ -85,7 +85,7 @@ export default class DatasetPageSuggestForm extends React.Component {
         };
         let contactPointMatch;
         if (typeof this.props?.contactPoint === "string") {
-            const emailRegex = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
+            const emailRegex = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
             const matches = this.props.contactPoint.match(emailRegex);
             contactPointMatch = matches?.length
                 ? matches[0]
