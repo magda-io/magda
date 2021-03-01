@@ -1,6 +1,5 @@
 import React from "react";
 import PropTypes from "prop-types";
-
 import MarkdownViewer from "Components/Common/MarkdownViewer";
 import MagdaNamespacesConsumer from "Components/i18n/MagdaNamespacesConsumer";
 import ToggleButton from "./ToggleButton";
@@ -27,27 +26,47 @@ class ContactPoint extends React.Component {
             <MagdaNamespacesConsumer ns={["datasetPage"]}>
                 {(translate) => (
                     <div className="dataset-contact-point">
-                        <div className="heading">
+                        <div className="description-heading">
                             {translate(["contactPointTitle", "Contact Point"])}:
                         </div>
-                        <div className="no-print">
-                            {this.state.reveal ? (
-                                <MarkdownViewer
-                                    markdown={this.props.contactPoint}
-                                />
-                            ) : (
-                                <ToggleButton
-                                    onClick={this.onRevealButtonClick}
+                        {this.props.contactPoint ? (
+                            <React.Fragment>
+                                <div className="no-print">
+                                    {this.state.reveal ? (
+                                        <MarkdownViewer
+                                            markdown={this.props.contactPoint}
+                                        />
+                                    ) : (
+                                        <ToggleButton
+                                            onClick={this.onRevealButtonClick}
+                                        >
+                                            <span>Click to reveal</span>
+                                        </ToggleButton>
+                                    )}
+                                </div>
+                                <div className="print-only">
+                                    <MarkdownViewer
+                                        markdown={this.props.contactPoint}
+                                    />
+                                </div>
+                            </React.Fragment>
+                        ) : (
+                            <div className="description-text">
+                                This publisher has not provided a contact point.
+                                Try visiting the original resource for more
+                                information:{" "}
+                                <a
+                                    href={this.props.landingPage}
+                                    target="_blank"
+                                    rel="noreferrer"
                                 >
-                                    <span>Click to reveal</span>
-                                </ToggleButton>
-                            )}
-                        </div>
-                        <div className="print-only">
-                            <MarkdownViewer
-                                markdown={this.props.contactPoint}
-                            />
-                        </div>
+                                    {this.props.source}
+                                </a>
+                                <MarkdownViewer>
+                                    {this.props.source}
+                                </MarkdownViewer>
+                            </div>
+                        )}
                     </div>
                 )}
             </MagdaNamespacesConsumer>
@@ -56,11 +75,15 @@ class ContactPoint extends React.Component {
 }
 
 ContactPoint.propTypes = {
-    contactPoint: PropTypes.string
+    contactPoint: PropTypes.string,
+    source: PropTypes.string,
+    landingPage: PropTypes.string
 };
 
 ContactPoint.defaultProps = {
-    contactPoint: ""
+    contactPoint: "",
+    source: "",
+    landingPage: ""
 };
 
 export default ContactPoint;

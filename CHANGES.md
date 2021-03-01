@@ -2,6 +2,7 @@
 
 ## 0.0.60
 
+-   Updated dataset pages and Ask A Question options for datasets with no contact points
 -   Updated Suggest A Dataset form
 -   Set `CRYPTOGRAPHY_DONT_BUILD_RUST` in CI to fix the docker-compose installation issue
 -   Fixed #1774 #2736 use non-default service account for admin-api & allow admin-api to be deployed at different namespace rather than "default"

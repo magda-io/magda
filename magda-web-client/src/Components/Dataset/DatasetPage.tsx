@@ -147,16 +147,23 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                                 }
                             />
                         )}
-                        {dataset.contactPoint ? (
-                            <ContactPoint contactPoint={dataset.contactPoint} />
-                        ) : (
-                            <></>
-                        )}
+
                         {dataset.accrualPeriodicity ? (
-                            <div>Updated: {dataset.accrualPeriodicity}</div>
+                            <div>
+                                <div className={"description-heading"}>
+                                    Updated:
+                                </div>
+                                {dataset.accrualPeriodicity}
+                            </div>
                         ) : null}
+
                         <TagsBox content={dataset.tags} title="Tags" />
                         <TagsBox content={dataset.themes} title="Themes" />
+                        <ContactPoint
+                            contactPoint={dataset.contactPoint}
+                            landingPage={dataset.landingPage}
+                            source={dataset.source}
+                        />
                         {defined(dataset.access?.location) && (
                             <div>
                                 <div className="dataset-heading">
@@ -172,6 +179,7 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                         title={dataset.title}
                         toggleMargin={setAddMargin}
                         datasetId={dataset.identifier}
+                        contactPoint={dataset.contactPoint}
                     />
                     {isAdmin ? (
                         <div className="download-history-report-button">

@@ -83,29 +83,43 @@ export default class DatasetPageSuggestForm extends React.Component {
                 maxHeight: "95vh"
             }
         };
+        let contactPointMatch;
+        if (typeof this.props?.contactPoint === "string") {
+            const emailRegex = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
+            const matches = this.props.contactPoint.match(emailRegex);
+            contactPointMatch = matches?.length
+                ? matches[0]
+                : this.props.contactPoint;
+        }
         const formProps = {
             title: false,
+            description:
+                "Your question will be sent to the publisher of the data" +
+                (contactPointMatch ? ": " + contactPointMatch : "."),
             namePlaceHolder: "Dorothy Hill",
             emailPlaceHolder: "dorothyhill@example.com",
             textAreaPlaceHolder:
                 "Ask a question or report a problem about this dataset.",
             textAreaLabel: "What would you like to ask about this dataset?",
-            successHeader: "Your request has been submitted!"
+            successHeader:
+                "Your request has been sent" +
+                (contactPointMatch ? " to " + contactPointMatch + "!" : ".")
         };
 
         return (
             <React.Fragment>
                 {/* If the form is posted don't show the text in the below para*/}
-                {!this.state.showSuggest && (
-                    <div className="dataset-button-container no-print">
-                        <button
-                            className="au-btn au-btn--secondary ask-question-button"
-                            onClick={this.toggleShowForm}
-                        >
-                            Ask a question about this dataset
-                        </button>
-                    </div>
-                )}
+                {!this.state.showSuggest &&
+                    (this.props.contactPoint ? (
+                        <div className="dataset-button-container no-print">
+                            <button
+                                className="au-btn au-btn--secondary ask-question-button"
+                                onClick={this.toggleShowForm}
+                            >
+                                Ask a question about this dataset
+                            </button>
+                        </div>
+                    ) : null)}
 
                 <div className="dataset-button-container no-print">
                     <button

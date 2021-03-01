@@ -15,7 +15,7 @@ import { DatasetMessage } from "./model";
 import renderTemplate, { Templates } from "./renderTemplate";
 import EmailTemplateRender from "./EmailTemplateRender";
 
-const EMAIL_REGEX = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/;
+const EMAIL_REGEX = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
 
 export interface ApiRouterOptions {
     registry: RegistryClient;
@@ -165,8 +165,8 @@ export default function createApiRouter(
                     dcatDatasetStrings.contactPoint.match(EMAIL_REGEX);
                 const contactPointEmail =
                     contactPointEmailMatches &&
-                    contactPointEmailMatches.length > 1 &&
-                    contactPointEmailMatches[1];
+                    contactPointEmailMatches.length &&
+                    contactPointEmailMatches[0];
 
                 const datasetPublisher = dataset.aspects["dataset-publisher"];
                 const datasetPublisherEmailMatches = _.get(
@@ -176,8 +176,8 @@ export default function createApiRouter(
                 ).match(EMAIL_REGEX);
                 const datasetPublisherEmail: string | undefined =
                     datasetPublisherEmailMatches &&
-                    datasetPublisherEmailMatches.length > 1 &&
-                    datasetPublisherEmailMatches[1];
+                    datasetPublisherEmailMatches.length &&
+                    datasetPublisherEmailMatches[0];
 
                 const emails = [contactPointEmail, datasetPublisherEmail]
                     .filter((email) => !!email)
