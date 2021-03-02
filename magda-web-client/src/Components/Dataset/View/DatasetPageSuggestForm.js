@@ -103,7 +103,7 @@ export default class DatasetPageSuggestForm extends React.Component {
             textAreaLabel: "What would you like to ask about this dataset?",
             successHeader:
                 "Your request has been sent" +
-                (contactPointMatch ? " to " + contactPointMatch + "!" : ".")
+                (contactPointMatch ? " to " + contactPointMatch : ".")
         };
 
         return (
