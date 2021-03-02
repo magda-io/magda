@@ -9,6 +9,7 @@
 -   Fixed #3073 Frontend can't handle invalid `dataset-publisher` aspect data and trigger a blank screen
 -   Fixed #3080 remove `--acl public-read` in CI as cloudfront has been setup for public read only access
 -   Upgraded JDK in base scala docker image
+-   Removed exclamation point in successHeader message for Ask A Question
 
 ## 0.0.59
 
