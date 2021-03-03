@@ -13,7 +13,7 @@ dependencies:
   version: 1.0.1
 - name: magda-auth-okta
   repository: file://../../../../magda-auth-okta/deploy/magda-auth-okta
-  version: 1.0.0
+  version: 1.0.1
 - name: magda-ckan-connector
   repository: https://charts.magda.io
   version: 0.0.57-0
@@ -113,5 +113,5 @@ dependencies:
 - name: magda-project-open-data-connector
   repository: https://charts.magda.io
   version: 0.0.57-0
-digest: sha256:f68231186a8336005fdc6d8a26c02ef4bc364b50b5fdbafab1d036357083a4a0
-generated: "2021-03-01T21:53:24.481684+11:00"
+digest: sha256:a7800832781d0cc05335e43fd703678a968e3b5b81ed84571805c3e89e913091
+generated: "2021-03-03T17:38:38.547578+11:00"
