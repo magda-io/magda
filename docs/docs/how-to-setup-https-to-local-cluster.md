@@ -27,6 +27,9 @@ kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/relea
 -   Installing Cert Manager with Helm
 
 ```bash
+# If you haven't install jetstack helm chart repo yet
+helm repo add jetstack https://charts.jetstack.io
+
 # Create namespace for cert-manager
 kubectl create namespace cert-manager
 
