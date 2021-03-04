@@ -90,6 +90,7 @@ Based on [PassportJS](http://www.passportjs.org/), Magda's authentication system
 -   AAF
 -   VANguard (WSFed)
 -   ESRI Portal
+-   [Okta](https://www.okta.com)
 
 <p class="center">
     <video autoplay="false" loop="true" controls>
