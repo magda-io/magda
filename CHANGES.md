@@ -10,6 +10,7 @@
 -   Fixed #3080 remove `--acl public-read` in CI as cloudfront has been setup for public read only access
 -   Upgraded JDK in base scala docker image
 -   Removed exclamation point in successHeader message for Ask A Question
+-   Fixed #3088: Gateway liveness probe response 301 when `enableHttpsRedirection` is on (Since v0.0.59)
 
 ## 0.0.59
 
