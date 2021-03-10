@@ -1,11 +1,11 @@
 apiVersion: v2
 name: "magda-local-deployment"
 description: ""
-version: "0.0.60-alpha.0"
+version: "0.0.60-alpha.1"
 kubeVersion: ">= 1.14.0-0"
 dependencies:
   - name: magda
-    version: 0.0.60-alpha.0
+    version: 0.0.60-alpha.1
     repository: "file://../magda"
 
   - name: magda-auth-google
@@ -36,6 +36,9 @@ dependencies:
       - all
       - magda-auth-arcgis
 
+  # - name: magda-minion-knowledge-graph
+  #   version: 1.0.0
+  #   repository: "file://../../../../magda-minion-graph/deploy/magda-minion-knowledge-graph"
   ## Data.gov.au connector to provide some initial data. Remove this if you
   ## don't want any data.gov.au connector
   - name: magda-ckan-connector
