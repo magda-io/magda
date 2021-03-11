@@ -20,6 +20,6 @@ To build and run with MicroK8S, Follow the instructions in [building-and-running
 -   When running the create secrets script, select "microk8s"
 -   Don't ever run `eval $(minikube docker-env)`
 -   Instead of `docker-build-local`, run `export MAGDA_DOCKER_REPOSITORY=localhost:32000 && export MAGDA_DOCKER_VERSION=latest && yarn lerna run docker-build-prod -- --concurrency=1 --stream`
--   Instead of `helm install <etc>`, run `microk8s helm3 upgrade --install --timeout 9999s --wait -f deploy/helm/minikube-dev.yml magda deploy/helm/magda --set global.image.repository=localhost:32000/data61`
+-   Instead of `helm install <etc>`, run `microk8s helm3 upgrade --install --timeout 9999s -f deploy/helm/minikube-dev.yml magda deploy/helm/magda --set global.image.repository=localhost:32000/data61`
 
 This will start an instance of Magda in the default namespace that uses MicroK8S' built-in docker registry instead of the Helm-based one that a minikube install would use.

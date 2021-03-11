@@ -31,6 +31,6 @@ into your hosts file, so that both your local docker and k3d will be able to res
 -   Don't install the docker registry or docker registry proxy (skip "Install a local kube registry")
 -   Don't ever run `eval $(minikube docker-env)`
 -   Instead of `docker-build-local`, run `export MAGDA_DOCKER_REPOSITORY=registry.local:5000 && export MAGDA_DOCKER_VERSION=latest && yarn lerna run docker-build-prod -- --concurrency=1 --stream`
--   Instead of `helm install <etc>`, run `helm upgrade --install --timeout 9999s --wait -f deploy/helm/minikube-dev.yml magda deploy/helm/magda --set global.image.repository=registry.local:5000/data61`
+-   Instead of `helm install <etc>`, run `helm upgrade --install --timeout 9999s -f deploy/helm/minikube-dev.yml magda deploy/helm/magda --set global.image.repository=registry.local:5000/data61`
 
 This will start an instance of Magda in the default namespace that uses K3D's built-in docker registry instead of the Helm-based one that a minikube install would use.

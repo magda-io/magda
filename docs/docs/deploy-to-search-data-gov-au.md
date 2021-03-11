@@ -72,13 +72,13 @@ kubectl config use-context <prod-cluster-name>
 If there were changes to the index versions, you'll need to set the search api to still point at the previous version of the index while the indexer builds the new one:
 
 ```bash
-helm upgrade magda --timeout 999999999 --wait -f deploy/helm/search-data-gov-au.yml deploy/helm/magda --set search-api.datasetsIndexVersion=<version>,search-api.regionsIndexVersion=<version>
+helm upgrade magda --timeout 9999s -f deploy/helm/search-data-gov-au.yml deploy/helm/magda --set search-api.datasetsIndexVersion=<version>,search-api.regionsIndexVersion=<version>
 ```
 
 Once the indexer has finished (watch `kubectl logs -f <indexer pod name>`) or if there's no changes to the indices:
 
 ```bash
-helm upgrade magda --timeout 999999999 --wait -f deploy/helm/search-data-gov-au.yml deploy/helm/magda
+helm upgrade magda --timeout 9999s -f deploy/helm/search-data-gov-au.yml deploy/helm/magda
 ```
 
 -   [ ] Look at the logs on magda-registry and the webhooks table of the database to make sure it's processing webhooks again
