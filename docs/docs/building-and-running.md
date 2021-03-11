@@ -165,7 +165,7 @@ helm repo update
 # update magda chart dependencies
 yarn update-all-charts
 # deploy the magda chart from magda helm repo
-helm upgrade --install --timeout 9999s --wait -f deploy/helm/minikube-dev.yml magda deploy/helm/local-deployment
+helm upgrade --install --timeout 9999s -f deploy/helm/minikube-dev.yml magda deploy/helm/local-deployment
 ```
 
 > If you need HTTPS access to your local dev cluster, please check [this doc](./how-to-setup-https-to-local-cluster.md) for extra setup steps.
@@ -182,7 +182,7 @@ helm repo update
 # update magda chart dependencies
 yarn update-all-charts
 # deploy the magda chart from magda helm repo
-helm upgrade --install --timeout 9999s --wait -f deploy/helm/docker-desktop-windows.yml -f deploy/helm/minikube-dev.yml magda deploy/helm/local-deployment
+helm upgrade --install --timeout 9999s -f deploy/helm/docker-desktop-windows.yml -f deploy/helm/minikube-dev.yml magda deploy/helm/local-deployment
 ```
 
 If you want to deploy the packed & production ready helm chart in our helm repo, please check out this sample [config repo](https://github.com/magda-io/magda-config).
