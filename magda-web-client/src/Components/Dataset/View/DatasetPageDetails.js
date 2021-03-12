@@ -6,6 +6,7 @@ import DistributionRow from "./DistributionRow";
 import queryString from "query-string";
 import defined from "helpers/defined";
 import CommonLink from "Components/Common/CommonLink";
+import DiscourseComments from "Components/Dataset/View/DiscourseComments.tsx";
 import "./DatasetDetails.scss";
 import "./DatasetPageDetails.scss";
 
@@ -78,6 +79,19 @@ class DatasetPageDetails extends Component {
                                 ) : null}
                             </div>
                         )}
+                    </div>
+                </div>
+
+                <div className="row">
+                    <div className="col-sm-12">
+                        <DiscourseComments
+                            title={
+                                dataset?.title
+                                    ? dataset.title
+                                    : "Untitlted Dataset"
+                            }
+                            id={dataset.id}
+                        />
                     </div>
                 </div>
             </div>
