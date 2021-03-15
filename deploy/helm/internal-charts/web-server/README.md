@@ -35,6 +35,8 @@ Kubernetes: `>= 1.14.0-0`
 | dateConfig.dateRegexes.startDateRegex | string | `"(start|st).*(date|dt|year|decade)"` |  |
 | defaultContactEmail | string | `"mail@example.com"` |  |
 | disableAuthenticationFeatures | bool | `false` |  |
+| enableCrawlerViews | bool | `true` | Whether enable crawler html view for crawlers that has limited rendering capability.  When `enableDiscourseSupport` is true, this will be overwritten to true. |
+| enableDiscourseSupport | bool | `true` | Whether enable enable discourse posts embedding support |
 | featureFlags.cataloguing | bool | `false` | turn on / off metadata creation tool.  If this option is `false`, user won't be able to access the dataset add / edit UI  |
 | featureFlags.datasetApprovalWorkflowOn | bool | `true` | turn on / off dataset approval note step |
 | featureFlags.placeholderWorkflowsOn | bool | `false` | turn on / off some metadata creation tool questions that are still under development |

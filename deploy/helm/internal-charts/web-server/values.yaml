@@ -18,6 +18,11 @@ showNotificationBanner: false
 service: {}
 useLocalStyleSheet: false
 contentApiBaseUrlInternal: "http://content-api/v0/"
+# -- Whether enable crawler html view for crawlers that has limited rendering capability. 
+# When `enableDiscourseSupport` is true, this will be overwritten to true.
+enableCrawlerViews: true
+# -- Whether enable enable discourse posts embedding support
+enableDiscourseSupport: true
 featureFlags:
   # featureFlags.cataloguing -- turn on / off metadata creation tool. 
   # If this option is `false`, user won't be able to access the dataset add / edit UI 

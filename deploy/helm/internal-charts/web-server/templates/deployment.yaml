@@ -39,6 +39,8 @@ spec:
             {{- range .Values.gapiIds }}
             "--gapiIds", {{ . | quote }},
             {{- end }}
+            "--enableCrawlerViews", {{ .Values.enableCrawlerViews | quote }},
+            "--enableDiscourseSupport", {{ .Values.enableDiscourseSupport | quote }}
         ]
         readinessProbe:
           httpGet:

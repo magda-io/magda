@@ -13,6 +13,7 @@ import buildSitemapRouter from "./buildSitemapRouter";
 import getIndexFileContent from "./getIndexFileContent";
 import getBasePathFromUrl from "magda-typescript-common/src/getBasePathFromUrl";
 import standardiseUiBaseUrl from "./standardiseUiBaseUrl";
+import createCralwerViewRouter from "./createCralwerViewRouter";
 
 const argv = yargs
     .config()
@@ -213,6 +214,17 @@ const argv = yargs
         type: "string",
         coerce: coerceJson("keywordsBlackList"),
         default: "[]"
+    })
+    .option("enableCrawlerViews", {
+        describe:
+            "Whether enable crawler html view for crawlers that has limited rendering capability. When `enableDiscourseSupport` is true, this will be overwritten to true.",
+        type: "boolean",
+        default: true
+    })
+    .option("enableDiscourseSupport", {
+        describe: "Whether enable enable discourse posts embedding support",
+        type: "boolean",
+        default: true
     }).argv;
 
 const app = express();
@@ -316,7 +328,8 @@ const webServerConfig = {
     datasetThemes: argv.datasetThemes,
     noManualKeywords: argv.noManualKeywords,
     noManualThemes: argv.noManualThemes,
-    keywordsBlackList: argv.keywordsBlackList
+    keywordsBlackList: argv.keywordsBlackList,
+    enableDiscourseSupport: argv.enableDiscourseSupport
 };
 
 app.get("/server-config.js", function (req, res) {
@@ -348,6 +361,17 @@ app.get(["/", "/index.html*"], async function (req, res) {
 
 // app.use("/admin", express.static(adminBuild));
 app.use(express.static(clientBuild));
+
+// crawler view router
+if (argv.enableCrawlerViews) {
+    app.use(
+        createCralwerViewRouter({
+            registryApiBaseUrl: argv.registryApiBaseUrlInternal,
+            baseUrl: argv.baseExternalUrl,
+            enableDiscourseSupport: argv.enableDiscourseSupport
+        })
+    );
+}
 
 // URLs in this list will load index.html and be handled by React routing.
 const topLevelRoutes = [
