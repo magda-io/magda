@@ -7,6 +7,41 @@ import URI from "urijs";
 import supertest from "supertest";
 import randomstring from "randomstring";
 import createHttpsRedirectionMiddleware from "../createHttpsRedirectionMiddleware";
+import buildApp from "../buildApp";
+import { AuthPluginBasicConfig } from "../createAuthPluginRouter";
+
+const defaultAppOptions = {
+    listenPort: 80,
+    externalUrl: "http://127.0.0.1",
+    dbHost: "localhost",
+    dbPort: 5432,
+    authDBHost: "localhost",
+    authDBPort: 5432,
+    proxyRoutesJson: {
+        registry: {
+            to: "http://registry",
+            auth: true
+        },
+        "timeout-endpoint": "http://timeout.com"
+    },
+    webProxyRoutesJson: {
+        "preview-map": "http://preview-map",
+        map: "http://map",
+        other: "http://otherplace"
+    },
+    cookieJson: {},
+    helmetJson: {},
+    cspJson: {},
+    corsJson: {},
+    authorizationApi: "http://127.0.0.1",
+    sessionSecret: "secret",
+    jwtSecret: "othersecret",
+    userId: "b1fddd6f-e230-4068-bd2c-1a21844f1598",
+    web: "https://127.0.0.1",
+    tenantUrl: "http://tenant",
+    defaultCacheControl: "DEFAULT CACHE CONTROL",
+    authPluginConfigJson: [] as AuthPluginBasicConfig[]
+};
 
 describe("Test createHttpsRedirectionMiddleware", () => {
     const testHost = "magda.example.com:8080";
@@ -117,6 +152,21 @@ describe("Test createHttpsRedirectionMiddleware", () => {
             return testRequest.expect(200).then(() => {
                 expect(isNextHandlerCalled).to.equal(true);
             });
+        });
+    });
+
+    describe("Test liveness probe", () => {
+        it("should allow liveness probe accessible via HTTP even `enableHttpsRedirection`=true", async () => {
+            let app;
+
+            app = express();
+            app = buildApp(app, {
+                ...defaultAppOptions,
+                enableHttpsRedirection: true
+            });
+
+            await supertest(app).get("/status/live").expect(200);
+            await supertest(app).get("/status/ready").expect(200);
         });
     });
 });

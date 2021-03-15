@@ -46,6 +46,7 @@ Kubernetes: `>= 1.14.0-0`
 | defaultWebRouteConfig.to | string | `""` | the default web router proxy target. Optional. If set, the default web route set via `web` option will be ignored. |
 | enableAuthEndpoint | bool | `false` |  |
 | enableCkanRedirection | bool | `false` |  |
+| enableHttpsRedirection | bool | `false` | whether or not redirect incoming request using HTTP protocol to HTTPs |
 | enableWebAccessControl | bool | `false` |  |
 | helmet.frameguard | bool | `false` |  |
 | image | object | `{}` |  |

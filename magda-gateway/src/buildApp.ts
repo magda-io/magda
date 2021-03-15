@@ -135,7 +135,7 @@ export default function buildApp(app: express.Application, config: Config) {
         }
         probes[key] = createServiceProbe(value.to);
     });
-    installStatusRouter(mainRouter, { probes });
+    installStatusRouter(app, { probes });
 
     // Redirect http url to https
     app.set("trust proxy", true);

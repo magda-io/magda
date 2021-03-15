@@ -14,6 +14,9 @@ enableAuthEndpoint: false
 enableWebAccessControl: false
 enableCkanRedirection: false
 
+# -- whether or not redirect incoming request using HTTP protocol to HTTPs
+enableHttpsRedirection: false
+
 # -- a list of authentication plugin config item. 
 # Each authentication plugin config item can contain the following fields:
 # <ul>
