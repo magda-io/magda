@@ -7,5 +7,5 @@
         "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
     },
     "references": [{ "path": "../magda-typescript-common" }],
-    "include": ["./src"]
+    "include": ["./src", "./src/**/*.json"]
 }
