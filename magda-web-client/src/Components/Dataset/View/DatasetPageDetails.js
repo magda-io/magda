@@ -90,7 +90,7 @@ class DatasetPageDetails extends Component {
                                     ? dataset.title
                                     : "Untitlted Dataset"
                             }
-                            id={dataset.id}
+                            datasetId={dataset.identifier}
                         />
                     </div>
                 </div>

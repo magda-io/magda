@@ -1,19 +1,36 @@
 import React, { FunctionComponent, useRef, useEffect } from "react";
+import { config } from "config";
 import "./DiscourseComments.scss";
 
 type PropsType = {
-    id: string;
+    datasetId: string;
+    distributionId: string;
     title: string;
+    type: "dataset" | "distribution";
 };
 
 function renderIframe(docRef: Document, props: PropsType) {
+    const type = props.type ? props.type : "dataset";
+    let baseUrl = config.baseExternalUrl;
+
+    if (baseUrl.indexOf("/") !== baseUrl.length - 1) {
+        baseUrl = baseUrl + "/";
+    }
+
+    let targetUrl;
+    if (type === "dataset") {
+        targetUrl = `${baseUrl}dataset/${props.datasetId}`;
+    } else {
+        targetUrl = `${baseUrl}dataset/${props.datasetId}/distribution/${props.distributionId}`;
+    }
+
     docRef.open();
     docRef.write(`
         <div id='discourse-comments'></div>
 
         <script type="text/javascript">
         window.DiscourseEmbed = { discourseUrl: 'https://discourse.minikube.com/',
-                            discourseEmbedUrl: 'https://www.w3schools.com/jsref/met_doc_write.asp' };
+                            discourseEmbedUrl: '${targetUrl}' };
 
         (function() {
             var d = document.createElement('script'); d.type = 'text/javascript'; d.async = true;
@@ -35,7 +52,7 @@ const DiscourseComments: FunctionComponent<PropsType> = (props) => {
         } else {
             console.error("iframeDocRef is not available!");
         }
-    }, [props.id]);
+    }, [props.datasetId, props.distributionId]);
 
     return (
         <iframe
