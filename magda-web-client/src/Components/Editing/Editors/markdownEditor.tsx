@@ -1,7 +1,7 @@
 import React from "react";
 import Editor from "./Editor";
 
-import { markdownToHtml } from "Components/Common/MarkdownViewer";
+import markdownToHtml from "@magda/typescript-common/dist/markdownToHtml";
 import starIcon from "assets/star.svg";
 
 // TODO:
@@ -13,7 +13,7 @@ import "easymde/dist/easymde.min.css";
 
 export const markdownEditor: Editor<string> = {
     edit: (value: any, onChange: Function) => {
-        const callback = text => {
+        const callback = (text) => {
             onChange(text);
         };
         return (
@@ -21,7 +21,7 @@ export const markdownEditor: Editor<string> = {
                 value={value}
                 onChange={callback}
                 importComponent={() =>
-                    import("react-simplemde-editor").then(x => x.default)
+                    import("react-simplemde-editor").then((x) => x.default)
                 }
             />
         );

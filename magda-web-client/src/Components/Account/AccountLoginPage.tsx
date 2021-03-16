@@ -16,7 +16,7 @@ import {
 import { config, isBackendSameOrigin } from "config";
 import { useAsync } from "react-async-hook";
 import urijs from "urijs";
-import { markdownToHtml } from "Components/Common/MarkdownViewer";
+import markdownToHtml from "@magda/typescript-common/dist/markdownToHtml";
 import QrCodeLoginArea from "./QrCodeLoginArea";
 const { baseUrl, baseExternalUrl, authPluginRedirectUrl } = config;
 

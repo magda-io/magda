@@ -26,9 +26,9 @@ const dataset = (record: Record, baseUrl: string) => {
         : [];
 
     return `---
-title: ${title}
+title: Dataset: ${title}
 ---
-# ${title}
+# Dataset: ${title}
 ---
 ## General Information
 

@@ -244,6 +244,7 @@ buildtest:ui:
   script:
     - yarn install
     - yarn run eslint
+    - cd magda-typescript-common && yarn build cd ..
     - yarn run in-submodules -- -f categories.ui=true -- run build --include-filtered-dependencies
     - yarn run in-submodules -- -f categories.ui=true -- run test
   artifacts:

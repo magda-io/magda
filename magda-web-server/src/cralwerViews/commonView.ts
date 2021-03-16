@@ -1,3 +1,5 @@
+import markdownToHtml from "magda-typescript-common/src/markdownToHtml";
+
 type ContentType = {
     title: string;
     __content: string;
@@ -16,7 +18,7 @@ const commonView = (
             <style></style>
         </head>
         <body>
-            ${__content}
+            ${markdownToHtml(__content)}
             ${
                 shouldShowFullVersionLink && fullVersionUrl
                     ? `<br />
