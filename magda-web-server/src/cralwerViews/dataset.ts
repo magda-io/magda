@@ -26,7 +26,7 @@ const dataset = (record: Record, baseUrl: string) => {
         : [];
 
     return `---
-title: Dataset: ${title}
+title: ${JSON.stringify(`Dataset: ${title}`)}
 ---
 # Dataset: ${title}
 ---

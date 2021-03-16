@@ -12,7 +12,7 @@ describe("Test cralwer view: dataset", () => {
             "https://test.com/"
         ).replace(/\r\n/g, "\n");
         const targetContent = fse
-            .readFileSync(path.resolve(__dirname, "./sampleDatasetView.md"), {
+            .readFileSync(path.resolve(__dirname, "./sampleDatasetView.txt"), {
                 encoding: "utf-8"
             })
             .replace(/\r\n/g, "\n");

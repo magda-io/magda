@@ -1,5 +1,5 @@
 import MarkdownIt from "markdown-it";
-const DOMPurify = require("dompurify/dist/purify");
+import DOMPurify from "dompurify";
 
 const md = new MarkdownIt({
     html: true,

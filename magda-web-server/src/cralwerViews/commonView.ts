@@ -18,7 +18,7 @@ const commonView = (
             <style></style>
         </head>
         <body>
-            ${markdownToHtml(__content)}
+            ${markdownToHtml(__content, true)}
             ${
                 shouldShowFullVersionLink && fullVersionUrl
                     ? `<br />

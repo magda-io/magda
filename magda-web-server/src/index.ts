@@ -362,8 +362,11 @@ app.get(["/", "/index.html*"], async function (req, res) {
 // app.use("/admin", express.static(adminBuild));
 app.use(express.static(clientBuild));
 
+console.log("enableCrawlerViews: ", argv.enableCrawlerViews);
+console.log("enableDiscourseSupport: ", argv.enableDiscourseSupport);
+
 // crawler view router
-if (argv.enableCrawlerViews) {
+if (argv.enableCrawlerViews || argv.enableDiscourseSupport) {
     app.use(
         createCralwerViewRouter({
             registryApiBaseUrl: argv.registryApiBaseUrlInternal,
