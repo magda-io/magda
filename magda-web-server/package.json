@@ -21,6 +21,7 @@
     "@types/chai": "^4.0.1",
     "@types/config": "0.0.32",
     "@types/express": "^4.17.6",
+    "@types/fs-extra": "^9.0.8",
     "@types/helmet": "0.0.37",
     "@types/lodash": "^4.14.68",
     "@types/mocha": "^2.2.41",
@@ -47,6 +48,7 @@
   "dependencies": {
     "@magda/typescript-common": "^0.0.60-alpha.0",
     "express": "^4.17.1",
+    "fs-extra": "^9.1.0",
     "moment": "^2.29.1",
     "morgan": "^1.9.0",
     "read-pkg-up": "^3.0.0",

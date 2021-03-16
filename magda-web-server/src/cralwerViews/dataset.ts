@@ -48,9 +48,9 @@ ${
     }${
         !dcatDatasetStrings?.keywords?.length
             ? ""
-            : "\n" +
+            : "\n- Keywords:\n" +
               dcatDatasetStrings.keywords
-                  .map((keyword: string) => `- ${keyword}`)
+                  .map((keyword: string) => `  - ${keyword}`)
                   .join("\n")
     }
 
@@ -60,27 +60,29 @@ ${dcatDatasetStrings?.description}
 
 ## Distributions
 
-${distributions.map((dis) => {
-    const aspects = dis?.aspects;
-    const dcatDisStrings = aspects?.["dcat-distribution-strings"];
-    const title = dcatDisStrings?.title ? dcatDisStrings.title : "Untitled";
+${distributions
+    .map((dis) => {
+        const aspects = dis?.aspects;
+        const dcatDisStrings = aspects?.["dcat-distribution-strings"];
+        const title = dcatDisStrings?.title ? dcatDisStrings.title : "Untitled";
 
-    return (
-        `- [${title}](${baseUrl}/dataset/${datasetId}/distribution/${dis.id})\n` +
-        `  - Format: ${
-            aspects?.["dataset-format"]?.format
-                ? aspects["dataset-format"].format
-                : dcatDisStrings?.format
-                ? dcatDisStrings.format
-                : "N/A"
-        }\n` +
-        `  - License: ${
-            dcatDisStrings?.license ? dcatDisStrings.license : "N/A"
-        }\n` +
-        `  - Create Date: ${printDate(dcatDisStrings?.issued)}\n` +
-        `  - Update Date: ${printDate(dcatDisStrings?.modified)}\n`
-    );
-})}
+        return (
+            `- [${title}](${baseUrl}/dataset/${datasetId}/distribution/${dis.id})\n` +
+            `  - Format: ${
+                aspects?.["dataset-format"]?.format
+                    ? aspects["dataset-format"].format
+                    : dcatDisStrings?.format
+                    ? dcatDisStrings.format
+                    : "N/A"
+            }\n` +
+            `  - License: ${
+                dcatDisStrings?.license ? dcatDisStrings.license : "N/A"
+            }\n` +
+            `  - Create Date: ${printDate(dcatDisStrings?.issued)}\n` +
+            `  - Update Date: ${printDate(dcatDisStrings?.modified)}`
+        );
+    })
+    .join("\n")}
 `;
 };
 
