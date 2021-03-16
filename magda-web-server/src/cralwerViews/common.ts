@@ -1,4 +1,4 @@
-import moment from "moment";
+import moment from "moment-timezone";
 
 export function printDate(str?: string) {
     if (!str || typeof str !== "string") {

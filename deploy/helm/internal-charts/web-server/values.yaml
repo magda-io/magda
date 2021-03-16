@@ -103,3 +103,7 @@ keywordsBlackList:
   - Prof.
   - Sr.
   - St.
+
+# -- Default Timezone that used to display tiem related string.
+# If not set, default value will be "Australia/Sydney"
+defaultTimeZone:

@@ -34,6 +34,7 @@ Kubernetes: `>= 1.14.0-0`
 | dateConfig.dateRegexes.endDateRegex | string | `"(end).*(date|dt|year|decade)"` |  |
 | dateConfig.dateRegexes.startDateRegex | string | `"(start|st).*(date|dt|year|decade)"` |  |
 | defaultContactEmail | string | `"mail@example.com"` |  |
+| defaultTimeZone | string | `nil` | Default Timezone that used to display tiem related string. If not set, default value will be "Australia/Sydney" |
 | disableAuthenticationFeatures | bool | `false` |  |
 | enableCrawlerViews | bool | `true` | Whether enable crawler html view for crawlers that has limited rendering capability.  When `enableDiscourseSupport` is true, this will be overwritten to true. |
 | enableDiscourseSupport | bool | `true` | Whether enable enable discourse posts embedding support |

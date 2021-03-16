@@ -14,6 +14,7 @@ import getIndexFileContent from "./getIndexFileContent";
 import getBasePathFromUrl from "magda-typescript-common/src/getBasePathFromUrl";
 import standardiseUiBaseUrl from "./standardiseUiBaseUrl";
 import createCralwerViewRouter from "./createCralwerViewRouter";
+import moment from "moment-timezone";
 
 const argv = yargs
     .config()
@@ -225,7 +226,15 @@ const argv = yargs
         describe: "Whether enable enable discourse posts embedding support",
         type: "boolean",
         default: true
+    })
+    .option("defaultTimeZone", {
+        describe: "default time zone used when display time string",
+        type: "string",
+        default: "Australia/Sydney"
     }).argv;
+
+// set default timezone
+moment.tz.setDefault(argv.defaultTimeZone);
 
 const app = express();
 
@@ -329,7 +338,8 @@ const webServerConfig = {
     noManualKeywords: argv.noManualKeywords,
     noManualThemes: argv.noManualThemes,
     keywordsBlackList: argv.keywordsBlackList,
-    enableDiscourseSupport: argv.enableDiscourseSupport
+    enableDiscourseSupport: argv.enableDiscourseSupport,
+    defaultTimeZone: argv.defaultTimeZone
 };
 
 app.get("/server-config.js", function (req, res) {
