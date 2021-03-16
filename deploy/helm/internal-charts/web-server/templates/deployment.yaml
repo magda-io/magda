@@ -36,6 +36,9 @@ spec:
 {{- if .Values.adminApiBaseUrl }}
             "--adminApiBaseUrl", {{ .Values.adminApiBaseUrl | quote }},
 {{- end }}
+{{- if .Values.defaultTimeZone }}
+            "--defaultTimeZone", {{ .Values.defaultTimeZone | quote }},
+{{- end }}
             {{- range .Values.gapiIds }}
             "--gapiIds", {{ . | quote }},
             {{- end }}
