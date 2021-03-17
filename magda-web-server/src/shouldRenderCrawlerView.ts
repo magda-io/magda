@@ -20,7 +20,7 @@ const isBot = (ua: string): boolean =>
         /curl|Bot|B-O-T|Crawler|Spider|Spyder|Yahoo|ia_archiver|Covario-IDS|findlinks|DataparkSearch|larbin|Mediapartners-Google|NG-Search|Snappy|Teoma|Jeeves|Charlotte|NewsGator|TinEye|Cerberian|SearchSight|Zao|Scrubby|Qseero|PycURL|Pompos|oegp|SBIder|yoogliFetchAgent|yacy|webcollage|VYU2|voyager|updated|truwoGPS|StackRambler|Sqworm|silk|semanticdiscovery|ScoutJet|Nymesis|NetResearchServer|MVAClient|mogimogi|Mnogosearch|Arachmo|Accoona|holmes|htdig|ichiro|webis|LinkWalker|lwp-trivial/i
     ) && !ua.match(/mobile|Playstation/i);
 
-const isDiscourseCrawler = (ua: string): boolean => !!ua.match(/ruby\//i);
+const isDiscourseCrawler = (ua: string): boolean => ua.toLowerCase() === "ruby";
 
 /**
  * Decide whether we should render crawler view for a particular page.
