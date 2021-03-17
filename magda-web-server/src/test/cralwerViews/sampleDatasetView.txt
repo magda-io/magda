@@ -3,23 +3,6 @@ title: "Dataset: ASIC – Credit Licensee Dataset"
 ---
 # Dataset: ASIC – Credit Licensee Dataset
 ---
-## General Information
-
-- Australian Securities and Investments Commission (ASIC) (Commonwealth of Australia)
-- Create Date: 22/12/2015
-- Update Date: 01/02/2021
-- Landing Page: [https://data.gov.au/dataset/fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4](https://data.gov.au/dataset/fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4)
-- Keywords:
-  - ASIC
-  - Credit
-  - Credit Licence
-  - Credit Licensee
-  - Licence
-  - Licencee
-  - Register
-  - australian government
-  - federal government
-
 ## Description
 
 ###Update April 2019 - addition of license authorisations to Credit Licensee dataset ###
@@ -57,6 +40,23 @@ The information in the downloadable dataset includes:
 Additional information about Credit Licensees can be found via ASIC's website (http://www.asic.gov.au). To view some information you may be charged a fee.
 
 More information about searching ASIC's registers (http://www.asic.gov.au/online-services/search-asics-registers/).
+
+## General Information
+
+- Australian Securities and Investments Commission (ASIC) (Commonwealth of Australia)
+- Create Date: 22/12/2015
+- Update Date: 01/02/2021
+- Landing Page: [https://data.gov.au/dataset/fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4](https://data.gov.au/dataset/fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4)
+- Keywords:
+  - ASIC
+  - Credit
+  - Credit Licence
+  - Credit Licensee
+  - Licence
+  - Licencee
+  - Register
+  - australian government
+  - federal government
 
 ## Distributions
 

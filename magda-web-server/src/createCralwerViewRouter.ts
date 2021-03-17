@@ -2,6 +2,7 @@ import { Router, Request } from "express";
 import shouldRenderCrawlerView from "./shouldRenderCrawlerView";
 import { safeLoadFront } from "yaml-front-matter";
 import datasetView from "./cralwerViews/dataset";
+import distributionView from "./cralwerViews/distribution";
 import commonView from "./cralwerViews/commonView";
 import RegistryClient from "magda-typescript-common/src/registry/RegistryClient";
 import { MAGDA_TENANT_ID_HEADER } from "magda-typescript-common/src/registry/TenantConsts";
@@ -64,6 +65,66 @@ const createCralwerViewRouter = ({
             return next();
         }
     });
+
+    router.get(
+        "/dataset/:datasetId/distribution/:distributionId",
+        async (req, res, next) => {
+            const datasetId = req?.params?.datasetId;
+            const distributionId = req?.params?.distributionId;
+            if (
+                typeof datasetId !== "string" ||
+                !datasetId ||
+                typeof distributionId !== "string" ||
+                !distributionId
+            ) {
+                return next();
+            }
+            try {
+                const uaHeader = req?.headers?.["user-agent"];
+                if (
+                    !shouldRenderCrawlerView(uaHeader, enableDiscourseSupport)
+                ) {
+                    // forward to browser view
+                    return next();
+                }
+                const registryClient = new RegistryClient({
+                    baseUrl: registryApiBaseUrl,
+                    tenantId: getTenantIdFromReq(req) as number
+                });
+                const datasetData = await registryClient.getRecord(
+                    datasetId,
+                    ["dcat-dataset-strings"],
+                    ["dcat-distribution-strings", "dataset-publisher"],
+                    true
+                );
+                if (datasetData instanceof Error) {
+                    throw datasetData;
+                }
+
+                const distributionData = await registryClient.getRecord(
+                    distributionId,
+                    ["dcat-distribution-strings"],
+                    ["dataset-format"],
+                    true
+                );
+                if (distributionData instanceof Error) {
+                    throw distributionData;
+                }
+
+                const content = safeLoadFront(
+                    distributionView(distributionData, datasetData, baseUrl)
+                );
+                res.send(commonView(content as any));
+            } catch (e) {
+                console.warn(
+                    `Failed to producing cralwer view for distributionId \`${distributionId}\`: ${
+                        "" + e
+                    } \nSkip to forwarding req to browser view.`
+                );
+                return next();
+            }
+        }
+    );
 
     return router;
 };

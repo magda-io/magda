@@ -6,14 +6,14 @@ type PropsType = {
     datasetId: string;
     distributionId: string;
     title: string;
-    type: "dataset" | "distribution";
+    type?: "dataset" | "distribution";
 };
 
 function renderIframe(docRef: Document, props: PropsType) {
     const type = props.type ? props.type : "dataset";
     let baseUrl = config.baseExternalUrl;
 
-    if (baseUrl.indexOf("/") !== baseUrl.length - 1) {
+    if (baseUrl.lastIndexOf("/") !== baseUrl.length - 1) {
         baseUrl = baseUrl + "/";
     }
 
@@ -56,6 +56,7 @@ const DiscourseComments: FunctionComponent<PropsType> = (props) => {
 
     return (
         <iframe
+            className="magda-embedded-discourse-iframe"
             ref={(ref) => (iframeRef.current = ref)}
             title={props.title}
             frameBorder={0}

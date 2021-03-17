@@ -2,6 +2,9 @@ import { Record } from "magda-typescript-common/src/generated/registry/api";
 import { printDate } from "./common";
 
 const dataset = (record: Record, baseUrl: string) => {
+    if (baseUrl.lastIndexOf("/") !== baseUrl.length - 1) {
+        baseUrl = baseUrl + "/";
+    }
     const datasetId = record.id;
     const aspects = record?.aspects;
     const dcatDatasetStrings = aspects?.["dcat-dataset-strings"];
@@ -12,7 +15,7 @@ const dataset = (record: Record, baseUrl: string) => {
 
     const title = dcatDatasetStrings?.title
         ? dcatDatasetStrings.title
-        : "Untitled";
+        : "Untitled Dataset";
 
     const orgName = dcatDatasetStrings?.publisher
         ? dcatDatasetStrings.publisher
@@ -30,6 +33,10 @@ title: ${JSON.stringify(`Dataset: ${title}`)}
 ---
 # Dataset: ${title}
 ---
+## Description
+
+${dcatDatasetStrings?.description}
+
 ## General Information
 
 ${
@@ -54,10 +61,6 @@ ${
                   .join("\n")
     }
 
-## Description
-
-${dcatDatasetStrings?.description}
-
 ## Distributions
 
 ${distributions
@@ -67,7 +70,7 @@ ${distributions
         const title = dcatDisStrings?.title ? dcatDisStrings.title : "Untitled";
 
         return (
-            `- [${title}](${baseUrl}/dataset/${datasetId}/distribution/${dis.id})\n` +
+            `- [${title}](${baseUrl}dataset/${datasetId}/distribution/${dis.id})\n` +
             `  - Format: ${
                 aspects?.["dataset-format"]?.format
                     ? aspects["dataset-format"].format

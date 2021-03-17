@@ -6,7 +6,7 @@ import DistributionRow from "./DistributionRow";
 import queryString from "query-string";
 import defined from "helpers/defined";
 import CommonLink from "Components/Common/CommonLink";
-import DiscourseComments from "Components/Dataset/View/DiscourseComments.tsx";
+import DiscourseComments from "Components/Dataset/View/DiscourseComments";
 import "./DatasetDetails.scss";
 import "./DatasetPageDetails.scss";
 
