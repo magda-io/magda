@@ -21,8 +21,17 @@ contentApiBaseUrlInternal: "http://content-api/v0/"
 # -- Whether enable crawler html view for crawlers that has limited rendering capability. 
 # When `enableDiscourseSupport` is true, this will be overwritten to true.
 enableCrawlerViews: true
-# -- Whether enable enable discourse posts embedding support
-enableDiscourseSupport: true
+
+# -- The discourse site url. 
+# Set this value to turn on the discourse post integration on dataset & distribution pages.
+discourseSiteUrl:
+
+# -- Whether the discourse post integration should be turned on on dataset page.
+discourseIntegrationDatasetPage: true
+
+# -- Whether the discourse post integration should be turned on on distribution page.
+discourseIntegrationDistributionPage: true
+
 featureFlags:
   # featureFlags.cataloguing -- turn on / off metadata creation tool. 
   # If this option is `false`, user won't be able to access the dataset add / edit UI 
