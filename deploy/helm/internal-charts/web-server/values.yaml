@@ -13,11 +13,29 @@ resources:
     memory: 30Mi
   limits:
     cpu: 100m
+
+listenPort: 80
+
 disableAuthenticationFeatures: false
+
 showNotificationBanner: false
-service: {}
+
+service:
+  # -- how to expose serice. Only used when `.Values.global.exposeNodePorts` is not true.
+  # @default ClusterIP
+  type: 
+
+# -- Google Analytics Ids
+gapiIds: []
+
 useLocalStyleSheet: false
+
 contentApiBaseUrlInternal: "http://content-api/v0/"
+
+registryApiBaseUrlInternal: "http://registry-api/v0"
+
+adminApiBaseUrl:
+
 # -- Whether enable crawler html view for crawlers that has limited rendering capability. 
 # When `enableDiscourseSupport` is true, this will be overwritten to true.
 enableCrawlerViews: true

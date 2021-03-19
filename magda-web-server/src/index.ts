@@ -338,7 +338,10 @@ const webServerConfig = {
     noManualKeywords: argv.noManualKeywords,
     noManualThemes: argv.noManualThemes,
     keywordsBlackList: argv.keywordsBlackList,
-    enableDiscourseSupport: argv.enableDiscourseSupport,
+    discourseSiteUrl: argv.discourseSiteUrl,
+    discourseIntegrationDatasetPage: argv.discourseIntegrationDatasetPage,
+    discourseIntegrationDistributionPage:
+        argv.discourseIntegrationDistributionPage,
     defaultTimeZone: argv.defaultTimeZone
 };
 
@@ -373,7 +376,7 @@ app.get(["/", "/index.html*"], async function (req, res) {
 app.use(express.static(clientBuild));
 
 console.log("enableCrawlerViews: ", argv.enableCrawlerViews);
-console.log("enableDiscourseSupport: ", argv.enableDiscourseSupport);
+console.log("Is Discourse Integration Enabled: ", !!argv.discourseSiteUrl);
 
 // crawler view router
 if (argv.enableCrawlerViews || argv.enableDiscourseSupport) {

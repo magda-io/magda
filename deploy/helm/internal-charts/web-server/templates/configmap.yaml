@@ -3,29 +3,8 @@ kind: ConfigMap
 metadata:
   name: "web-app-config"
 data:
-  # When the config map is mounted as a volume, these will be created as files.
-  web.json: '{
-    {{- if .Values.fallbackUrl -}} "fallbackUrl": {{ .Values.fallbackUrl | quote }}, {{- end -}}
-    {{- if .Values.contentApiBaseUrlInternal -}} "contentApiBaseUrlInternal": {{ .Values.contentApiBaseUrlInternal | quote }}, {{- end -}}
-    {{- if .Values.defaultOrganizationId -}} "defaultOrganizationId": {{ .Values.defaultOrganizationId | quote }}, {{- end -}}
-    "showNotificationBanner": {{ .Values.showNotificationBanner }},
-    "disableAuthenticationFeatures": {{ .Values.disableAuthenticationFeatures }},
-    "baseUrl": {{ .Values.baseUrl | default "/" | quote }},
-    "featureFlags": {{ toJson .Values.featureFlags | quote }},
-    "vocabularyApiEndpoints": {{ toJson .Values.vocabularyApiEndpoints | quote }},
-    {{- if .Values.global.defaultContactEmail }}
-    "defaultContactEmail": {{ toJson .Values.global.defaultContactEmail }},
-    {{- else }}
-    "defaultContactEmail": {{ toJson .Values.defaultContactEmail }},
-    {{- end }}
-    "custodianOrgLevel": {{ toJson .Values.custodianOrgLevel | quote }},
-    "dateConfig": {{ toJson .Values.dateConfig | quote }},
-    "datasetThemes": {{ toJson .Values.datasetThemes | quote }},
-    "noManualThemes": {{ .Values.noManualThemes }},
-    "noManualKeywords": {{ .Values.noManualKeywords }},
-    "keywordsBlackList": {{ toJson .Values.keywordsBlackList | quote }},
-    "automaticPreviewMaxFileSize": {{ toJson .Values.automaticPreviewMaxFileSize | quote }},
-    {{- if .Values.mandatoryFields }}
-    "mandatoryFields": {{ toJson .Values.mandatoryFields | quote }}
-    {{- end }}
-  }'
+  {{- $webConfigDict := omit .Values "global" "image" "autoscaler" "resources" "service" }}
+  {{- $_ := set $webConfigDict "baseExternalUrl" .Values.global.externalUrl }}
+  {{- $_ := set $webConfigDict "authPluginRedirectUrl" .Values.global.authPluginRedirectUrl }}
+  {{- $_ := .Values.global.useLocalStyleSheet | default .Values.useLocalStyleSheet | set $webConfigDict "useLocalStyleSheet" }}
+  web.json: {{ $webConfigDict | mustToRawJson | quote }}

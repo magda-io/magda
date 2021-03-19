@@ -12,6 +12,12 @@ spec:
       service: web
   template:
     metadata:
+      annotations:
+        {{- $webConfigDict := omit .Values "global" "image" "autoscaler" "resources" "service" }}
+        {{- $_ := set $webConfigDict "baseExternalUrl" .Values.global.externalUrl }}
+        {{- $_ := set $webConfigDict "authPluginRedirectUrl" .Values.global.authPluginRedirectUrl }}
+        {{- $_ := .Values.global.useLocalStyleSheet | default .Values.useLocalStyleSheet | set $webConfigDict "useLocalStyleSheet" }}
+        checksum/config: {{ $webConfigDict | mustToJson | sha256sum }}
       labels:
         service: web
     spec:
@@ -22,28 +28,7 @@ spec:
       - name: web
         command: [
             "node", "/usr/src/app/component/dist/index.js",
-            "--config", "/etc/config/config.json",
-            "--listenPort", "80",
-            "--baseExternalUrl", {{ .Values.global.externalUrl | quote }},
-{{- if .Values.uiBaseUrl }}
-            "--uiBaseUrl", {{ .Values.uiBaseUrl | quote }},
-{{- end }}
-{{- if .Values.global.authPluginRedirectUrl }}
-            "--authPluginRedirectUrl", {{ .Values.global.authPluginRedirectUrl | quote }},
-{{- end }}
-            "--useLocalStyleSheet", {{ .Values.global.useLocalStyleSheet | default .Values.useLocalStyleSheet | quote }},
-            "--registryApiBaseUrlInternal", "http://registry-api/v0",
-{{- if .Values.adminApiBaseUrl }}
-            "--adminApiBaseUrl", {{ .Values.adminApiBaseUrl | quote }},
-{{- end }}
-{{- if .Values.defaultTimeZone }}
-            "--defaultTimeZone", {{ .Values.defaultTimeZone | quote }},
-{{- end }}
-            {{- range .Values.gapiIds }}
-            "--gapiIds", {{ . | quote }},
-            {{- end }}
-            "--enableCrawlerViews", {{ .Values.enableCrawlerViews | quote }},
-            "--enableDiscourseSupport", {{ .Values.enableDiscourseSupport | quote }}
+            "--config", "/etc/config/config.json"
         ]
         readinessProbe:
           httpGet:
