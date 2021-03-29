@@ -253,6 +253,14 @@ const app = express();
 
 app.use(morgan("combined"));
 
+app.get("/status/ready", (req, res) => {
+    res.status(200).send("OK");
+});
+
+app.get("/status/live", (req, res) => {
+    res.status(200).send("OK");
+});
+
 const clientRoot = path.resolve(
     require.resolve("@magda/web-client/package.json"),
     ".."

@@ -33,7 +33,7 @@ spec:
         ]
         readinessProbe:
           httpGet:
-            path: "/"
+            path: "/status/ready"
             port: 80
           initialDelaySeconds: 10
           periodSeconds: 10
@@ -41,7 +41,7 @@ spec:
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           httpGet:
-            path: "/"
+            path: "/status/live"
             port: 80
           initialDelaySeconds: 10
           periodSeconds: 10
