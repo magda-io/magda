@@ -7,6 +7,7 @@ import queryString from "query-string";
 import defined from "helpers/defined";
 import CommonLink from "Components/Common/CommonLink";
 import DiscourseComments from "Components/Dataset/View/DiscourseComments";
+import { config } from "../../../config";
 import "./DatasetDetails.scss";
 import "./DatasetPageDetails.scss";
 
@@ -82,18 +83,21 @@ class DatasetPageDetails extends Component {
                     </div>
                 </div>
 
-                <div className="row">
-                    <div className="col-sm-12">
-                        <DiscourseComments
-                            title={
-                                dataset?.title
-                                    ? dataset.title
-                                    : "Untitlted Dataset"
-                            }
-                            datasetId={dataset.identifier}
-                        />
+                {config.discourseSiteUrl &&
+                config.discourseIntegrationDatasetPage ? (
+                    <div className="row">
+                        <div className="col-sm-12">
+                            <DiscourseComments
+                                title={
+                                    dataset?.title
+                                        ? dataset.title
+                                        : "Untitlted Dataset"
+                                }
+                                datasetId={dataset.identifier}
+                            />
+                        </div>
                     </div>
-                </div>
+                ) : null}
             </div>
         );
     }

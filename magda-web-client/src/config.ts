@@ -96,6 +96,11 @@ const serverConfig: {
         [ckanServerUrl: string]: boolean;
     };
     defultCkanServer: string;
+    defaultTimeZone?: string;
+    enableCrawlerViews?: boolean;
+    discourseSiteUrl?: string;
+    discourseIntegrationDatasetPage?: boolean;
+    discourseIntegrationDistributionPage?: boolean;
 } = window.magda_server_config || {};
 
 const DATE_REGEX = ".*(date|dt|year|decade).*";
@@ -245,6 +250,7 @@ function getProxyUrl() {
 }
 
 export const config = {
+    ...serverConfig,
     credentialsFetchOptions: credentialsFetchOptions,
     showNotificationBanner: !!serverConfig.showNotificationBanner,
     baseUrl,

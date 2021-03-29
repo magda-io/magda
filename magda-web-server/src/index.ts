@@ -222,8 +222,20 @@ const argv = yargs
         type: "boolean",
         default: true
     })
-    .option("enableDiscourseSupport", {
-        describe: "Whether enable enable discourse posts embedding support",
+    .option("discourseSiteUrl", {
+        describe:
+            "discourse Site Url. Set this value in order to enable discourse posts integration on dataset or distribution page",
+        type: "string"
+    })
+    .option("discourseIntegrationDatasetPage", {
+        describe:
+            "Whether or not to enable discourse posts integration on dataset page",
+        type: "boolean",
+        default: true
+    })
+    .option("discourseIntegrationDistributionPage", {
+        describe:
+            "Whether or not to enable discourse posts integration on distribution page",
         type: "boolean",
         default: true
     })
@@ -376,15 +388,21 @@ app.get(["/", "/index.html*"], async function (req, res) {
 app.use(express.static(clientBuild));
 
 console.log("enableCrawlerViews: ", argv.enableCrawlerViews);
-console.log("Is Discourse Integration Enabled: ", !!argv.discourseSiteUrl);
+
+const enableDiscourseSupport: boolean =
+    !!argv.discourseSiteUrl &&
+    (argv.discourseIntegrationDatasetPage ||
+        argv.discourseIntegrationDistributionPage);
+
+console.log("Is Discourse Integration Enabled: ", enableDiscourseSupport);
 
 // crawler view router
-if (argv.enableCrawlerViews || argv.enableDiscourseSupport) {
+if (argv.enableCrawlerViews || enableDiscourseSupport) {
     app.use(
         createCralwerViewRouter({
             registryApiBaseUrl: argv.registryApiBaseUrlInternal,
             baseUrl: argv.baseExternalUrl,
-            enableDiscourseSupport: argv.enableDiscourseSupport
+            enableDiscourseSupport: enableDiscourseSupport
         })
     );
 }

@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useRef, useEffect } from "react";
 import { config } from "config";
+import addTrailingSlash from "@magda/typescript-common/dist/addTrailingSlash";
 import "./DiscourseComments.scss";
 
 type PropsType = {
@@ -11,11 +12,8 @@ type PropsType = {
 
 function renderIframe(docRef: Document, props: PropsType) {
     const type = props.type ? props.type : "dataset";
-    let baseUrl = config.baseExternalUrl;
-
-    if (baseUrl.lastIndexOf("/") !== baseUrl.length - 1) {
-        baseUrl = baseUrl + "/";
-    }
+    const baseUrl = addTrailingSlash(config.baseExternalUrl);
+    const discourseUrl = addTrailingSlash(config.discourseSiteUrl!);
 
     let targetUrl;
     if (type === "dataset") {
@@ -29,7 +27,7 @@ function renderIframe(docRef: Document, props: PropsType) {
         <div id='discourse-comments'></div>
 
         <script type="text/javascript">
-        window.DiscourseEmbed = { discourseUrl: 'https://discourse.minikube.com/',
+        window.DiscourseEmbed = { discourseUrl: '${discourseUrl}',
                             discourseEmbedUrl: '${targetUrl}' };
 
         (function() {
