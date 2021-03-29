@@ -15,6 +15,7 @@ import getBasePathFromUrl from "magda-typescript-common/src/getBasePathFromUrl";
 import standardiseUiBaseUrl from "./standardiseUiBaseUrl";
 import createCralwerViewRouter from "./createCralwerViewRouter";
 import moment from "moment-timezone";
+import addTrailingSlash from "magda-typescript-common/src/addTrailingSlash";
 
 const argv = yargs
     .config()
@@ -259,7 +260,10 @@ const clientRoot = path.resolve(
 const clientBuild = path.join(clientRoot, "build");
 console.log("Client: " + clientBuild);
 
-const appBasePath = getBasePathFromUrl(argv?.baseExternalUrl);
+const baseExternalUrl = argv?.baseExternalUrl
+    ? addTrailingSlash(argv.baseExternalUrl)
+    : "";
+const appBasePath = getBasePathFromUrl(baseExternalUrl);
 const uiBaseUrl = addTrailingSlash(
     standardiseUiBaseUrl(
         argv.uiBaseUrl && argv.uiBaseUrl !== "/"
@@ -284,7 +288,7 @@ const webServerConfig = {
     image: argv.image,
     disableAuthenticationFeatures: argv.disableAuthenticationFeatures,
     baseUrl: baseUrl,
-    baseExternalUrl: argv.baseExternalUrl,
+    baseExternalUrl,
     uiBaseUrl,
     authPluginRedirectUrl: argv.authPluginRedirectUrl
         ? argv.authPluginRedirectUrl
@@ -402,7 +406,7 @@ if (argv.enableCrawlerViews || enableDiscourseSupport) {
     app.use(
         createCralwerViewRouter({
             registryApiBaseUrl: argv.registryApiBaseUrlInternal,
-            baseUrl: argv.baseExternalUrl,
+            baseUrl: baseExternalUrl,
             enableDiscourseSupport: enableDiscourseSupport
         })
     );
@@ -470,7 +474,7 @@ Crawl-delay: 100
 Disallow: /auth
 Disallow: /search
 
-Sitemap: ${argv.baseExternalUrl}/sitemap.xml
+Sitemap: ${baseExternalUrl}/sitemap.xml
 `;
 
 app.use("/robots.txt", (_, res) => {
@@ -480,7 +484,7 @@ app.use("/robots.txt", (_, res) => {
 // TODO: Use proper tenant id in multi-tenant mode.
 app.use(
     buildSitemapRouter({
-        baseExternalUrl: argv.baseExternalUrl,
+        baseExternalUrl,
         registry: new Registry({
             baseUrl: argv.registryApiBaseUrlInternal,
             maxRetries: 0,
@@ -514,15 +518,3 @@ process.on(
         console.error(reason);
     }
 );
-
-function addTrailingSlash(url: string) {
-    if (!url) {
-        return url;
-    }
-
-    if (url.lastIndexOf("/") !== url.length - 1) {
-        return url + "/";
-    } else {
-        return url;
-    }
-}

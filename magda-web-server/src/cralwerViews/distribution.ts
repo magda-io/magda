@@ -6,9 +6,6 @@ const distribution = (
     dataset: Record,
     baseUrl: string
 ) => {
-    if (baseUrl.lastIndexOf("/") !== baseUrl.length - 1) {
-        baseUrl = baseUrl + "/";
-    }
     const datasetAspects = dataset?.aspects;
     const dcatDatasetStrings = datasetAspects?.["dcat-dataset-strings"];
     const orgDetails =

@@ -2,9 +2,6 @@ import { Record } from "magda-typescript-common/src/generated/registry/api";
 import { printDate } from "./common";
 
 const dataset = (record: Record, baseUrl: string) => {
-    if (baseUrl.lastIndexOf("/") !== baseUrl.length - 1) {
-        baseUrl = baseUrl + "/";
-    }
     const datasetId = record.id;
     const aspects = record?.aspects;
     const dcatDatasetStrings = aspects?.["dcat-dataset-strings"];
