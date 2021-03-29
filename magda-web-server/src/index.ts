@@ -184,10 +184,10 @@ const argv = yargs
         coerce: coerceJson("mandatoryFields"),
         default: "[]"
     })
-    .option("dateFormats", {
-        describe: "A list of date formats supported by this Magda instance",
+    .option("dateConfig", {
+        describe: "A date format config for date extract from data file",
         type: "string",
-        coerce: coerceJson("dateFormats"),
+        coerce: coerceJson("dateConfig"),
         default: "[]"
     })
     .option("datasetThemes", {
@@ -281,6 +281,7 @@ const apiBaseUrl = addTrailingSlash(
 );
 
 const webServerConfig = {
+    image: argv.image,
     disableAuthenticationFeatures: argv.disableAuthenticationFeatures,
     baseUrl: baseUrl,
     baseExternalUrl: argv.baseExternalUrl,
@@ -345,7 +346,7 @@ const webServerConfig = {
     custodianOrgLevel: argv.custodianOrgLevel,
     automaticPreviewMaxFileSize: argv.automaticPreviewMaxFileSize,
     mandatoryFields: argv.mandatoryFields,
-    dateFormats: argv.dateFormats,
+    dateConfig: argv.dateConfig,
     datasetThemes: argv.datasetThemes,
     noManualKeywords: argv.noManualKeywords,
     noManualThemes: argv.noManualThemes,

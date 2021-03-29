@@ -2,11 +2,18 @@ image: {}
   #repository: data61/
   #tag: latest
   #pullPolicy: Always#
+
+# -- no. of replicas required for the deployment.
+# If not set, k8s will assume `1` but allows HPA (autoscaler) alters it.
+# @default 1
+replicas:
+
 autoscaler:
   enabled: false
   minReplicas: 1
   maxReplicas: 3
   targetCPUUtilizationPercentage: 80
+
 resources:
   requests:
     cpu: 10m
