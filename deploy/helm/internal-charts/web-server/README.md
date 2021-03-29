@@ -12,6 +12,7 @@ Kubernetes: `>= 1.14.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| adminApiBaseUrl | string | `nil` |  |
 | automaticPreviewMaxFileSize | int | `2097152` |  |
 | autoscaler.enabled | bool | `false` |  |
 | autoscaler.maxReplicas | int | `3` |  |
@@ -36,14 +37,17 @@ Kubernetes: `>= 1.14.0-0`
 | defaultContactEmail | string | `"mail@example.com"` |  |
 | defaultTimeZone | string | `nil` | Default Timezone that used to display tiem related string. If not set, default value will be "Australia/Sydney" |
 | disableAuthenticationFeatures | bool | `false` |  |
+| discourseIntegrationDatasetPage | bool | `true` | Whether the discourse post integration should be turned on on dataset page. |
+| discourseIntegrationDistributionPage | bool | `true` | Whether the discourse post integration should be turned on on distribution page. |
+| discourseSiteUrl | string | `nil` | The discourse site url.  Set this value to turn on the discourse post integration on dataset & distribution pages. |
 | enableCrawlerViews | bool | `true` | Whether enable crawler html view for crawlers that has limited rendering capability.  When `enableDiscourseSupport` is true, this will be overwritten to true. |
-| enableDiscourseSupport | bool | `true` | Whether enable enable discourse posts embedding support |
 | featureFlags.cataloguing | bool | `false` | turn on / off metadata creation tool.  If this option is `false`, user won't be able to access the dataset add / edit UI  |
 | featureFlags.datasetApprovalWorkflowOn | bool | `true` | turn on / off dataset approval note step |
 | featureFlags.placeholderWorkflowsOn | bool | `false` | turn on / off some metadata creation tool questions that are still under development |
 | featureFlags.previewAddDataset | bool | `false` | turn on / off the preview mode of metadata creation tool. Under preview mode, user can play with the metadata creation tool without requiring admin permission. No data will be saved under this mode. |
 | featureFlags.publishToDga | bool | `false` | turn on / off the UI switch that allow user to select whether to auto push dataset data to a CKAN instance |
 | featureFlags.useStorageApi | bool | `true` | turn on / off the UI option to use Magda internal storage for file storage. |
+| gapiIds | list | `[]` | Google Analytics Ids |
 | image | object | `{}` |  |
 | keywordsBlackList[0] | string | `"Mr"` |  |
 | keywordsBlackList[10] | string | `"Mr."` |  |
@@ -65,6 +69,7 @@ Kubernetes: `>= 1.14.0-0`
 | keywordsBlackList[7] | string | `"Prof"` |  |
 | keywordsBlackList[8] | string | `"Sr"` |  |
 | keywordsBlackList[9] | string | `"St"` |  |
+| listenPort | int | `80` |  |
 | mandatoryFields[0] | string | `"dataset.title"` |  |
 | mandatoryFields[10] | string | `"informationSecurity.disseminationLimits"` |  |
 | mandatoryFields[11] | string | `"publishToDga"` |  |
@@ -79,10 +84,12 @@ Kubernetes: `>= 1.14.0-0`
 | mandatoryFields[9] | string | `"informationSecurity.classification"` |  |
 | noManualKeywords | bool | `false` |  |
 | noManualThemes | bool | `false` |  |
+| registryApiBaseUrlInternal | string | `"http://registry-api/v0"` |  |
+| replicas | string | `nil` |  |
 | resources.limits.cpu | string | `"100m"` |  |
 | resources.requests.cpu | string | `"10m"` |  |
 | resources.requests.memory | string | `"30Mi"` |  |
-| service | object | `{}` |  |
+| service.type | string | `nil` | how to expose serice. Only used when `.Values.global.exposeNodePorts` is not true. @default ClusterIP |
 | showNotificationBanner | bool | `false` |  |
 | useLocalStyleSheet | bool | `false` |  |
 | vocabularyApiEndpoints | list | `[]` |  |
