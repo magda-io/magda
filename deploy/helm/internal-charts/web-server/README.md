@@ -40,7 +40,7 @@ Kubernetes: `>= 1.14.0-0`
 | discourseIntegrationDatasetPage | bool | `true` | Whether the discourse post integration should be turned on on dataset page. |
 | discourseIntegrationDistributionPage | bool | `true` | Whether the discourse post integration should be turned on on distribution page. |
 | discourseSiteUrl | string | `nil` | The discourse site url.  Set this value to turn on the discourse post integration on dataset & distribution pages. |
-| enableCrawlerViews | bool | `true` | Whether enable crawler html view for crawlers that has limited rendering capability.  When `enableDiscourseSupport` is true, this will be overwritten to true. |
+| enableCrawlerViews | bool | `true` | Whether enable crawler html view for crawlers that has limited rendering capability.  When discourse intergration feature is turned on (i.e. `discourseSiteUrl` is set and either `discourseIntegrationDatasetPage` or `discourseIntegrationDistributionPage` is true),  this will be overwritten to true. |
 | featureFlags.cataloguing | bool | `false` | turn on / off metadata creation tool.  If this option is `false`, user won't be able to access the dataset add / edit UI  |
 | featureFlags.datasetApprovalWorkflowOn | bool | `true` | turn on / off dataset approval note step |
 | featureFlags.placeholderWorkflowsOn | bool | `false` | turn on / off some metadata creation tool questions that are still under development |
