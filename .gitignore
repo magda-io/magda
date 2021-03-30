@@ -57,3 +57,4 @@ deploy/helm/magda-core/charts/
 deploy/helm/internal-charts/storage-api/charts/
 deploy/helm/local-deployment/charts/
 deploy/helm/local-auth-test-deployment/charts/
+magda-web-client/public/assets/libs/polyfills.min.js
