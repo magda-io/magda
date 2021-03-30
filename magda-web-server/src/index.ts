@@ -13,6 +13,9 @@ import buildSitemapRouter from "./buildSitemapRouter";
 import getIndexFileContent from "./getIndexFileContent";
 import getBasePathFromUrl from "magda-typescript-common/src/getBasePathFromUrl";
 import standardiseUiBaseUrl from "./standardiseUiBaseUrl";
+import createCralwerViewRouter from "./createCralwerViewRouter";
+import moment from "moment-timezone";
+import addTrailingSlash from "magda-typescript-common/src/addTrailingSlash";
 
 const argv = yargs
     .config()
@@ -182,10 +185,10 @@ const argv = yargs
         coerce: coerceJson("mandatoryFields"),
         default: "[]"
     })
-    .option("dateFormats", {
-        describe: "A list of date formats supported by this Magda instance",
+    .option("dateConfig", {
+        describe: "A date format config for date extract from data file",
         type: "string",
-        coerce: coerceJson("dateFormats"),
+        coerce: coerceJson("dateConfig"),
         default: "[]"
     })
     .option("datasetThemes", {
@@ -213,11 +216,50 @@ const argv = yargs
         type: "string",
         coerce: coerceJson("keywordsBlackList"),
         default: "[]"
+    })
+    .option("enableCrawlerViews", {
+        describe:
+            "Whether enable crawler html view for crawlers that has limited rendering capability. When `enableDiscourseSupport` is true, this will be overwritten to true.",
+        type: "boolean",
+        default: true
+    })
+    .option("discourseSiteUrl", {
+        describe:
+            "discourse Site Url. Set this value in order to enable discourse posts integration on dataset or distribution page",
+        type: "string"
+    })
+    .option("discourseIntegrationDatasetPage", {
+        describe:
+            "Whether or not to enable discourse posts integration on dataset page",
+        type: "boolean",
+        default: true
+    })
+    .option("discourseIntegrationDistributionPage", {
+        describe:
+            "Whether or not to enable discourse posts integration on distribution page",
+        type: "boolean",
+        default: true
+    })
+    .option("defaultTimeZone", {
+        describe: "default time zone used when display time string",
+        type: "string",
+        default: "Australia/Sydney"
     }).argv;
+
+// set default timezone
+moment.tz.setDefault(argv.defaultTimeZone);
 
 const app = express();
 
 app.use(morgan("combined"));
+
+app.get("/status/ready", (req, res) => {
+    res.status(200).send("OK");
+});
+
+app.get("/status/live", (req, res) => {
+    res.status(200).send("OK");
+});
 
 const clientRoot = path.resolve(
     require.resolve("@magda/web-client/package.json"),
@@ -226,7 +268,10 @@ const clientRoot = path.resolve(
 const clientBuild = path.join(clientRoot, "build");
 console.log("Client: " + clientBuild);
 
-const appBasePath = getBasePathFromUrl(argv?.baseExternalUrl);
+const baseExternalUrl = argv?.baseExternalUrl
+    ? addTrailingSlash(argv.baseExternalUrl)
+    : "";
+const appBasePath = getBasePathFromUrl(baseExternalUrl);
 const uiBaseUrl = addTrailingSlash(
     standardiseUiBaseUrl(
         argv.uiBaseUrl && argv.uiBaseUrl !== "/"
@@ -248,9 +293,10 @@ const apiBaseUrl = addTrailingSlash(
 );
 
 const webServerConfig = {
+    image: argv.image,
     disableAuthenticationFeatures: argv.disableAuthenticationFeatures,
     baseUrl: baseUrl,
-    baseExternalUrl: argv.baseExternalUrl,
+    baseExternalUrl,
     uiBaseUrl,
     authPluginRedirectUrl: argv.authPluginRedirectUrl
         ? argv.authPluginRedirectUrl
@@ -312,11 +358,16 @@ const webServerConfig = {
     custodianOrgLevel: argv.custodianOrgLevel,
     automaticPreviewMaxFileSize: argv.automaticPreviewMaxFileSize,
     mandatoryFields: argv.mandatoryFields,
-    dateFormats: argv.dateFormats,
+    dateConfig: argv.dateConfig,
     datasetThemes: argv.datasetThemes,
     noManualKeywords: argv.noManualKeywords,
     noManualThemes: argv.noManualThemes,
-    keywordsBlackList: argv.keywordsBlackList
+    keywordsBlackList: argv.keywordsBlackList,
+    discourseSiteUrl: argv.discourseSiteUrl,
+    discourseIntegrationDatasetPage: argv.discourseIntegrationDatasetPage,
+    discourseIntegrationDistributionPage:
+        argv.discourseIntegrationDistributionPage,
+    defaultTimeZone: argv.defaultTimeZone
 };
 
 app.get("/server-config.js", function (req, res) {
@@ -348,6 +399,26 @@ app.get(["/", "/index.html*"], async function (req, res) {
 
 // app.use("/admin", express.static(adminBuild));
 app.use(express.static(clientBuild));
+
+console.log("enableCrawlerViews: ", argv.enableCrawlerViews);
+
+const enableDiscourseSupport: boolean =
+    !!argv.discourseSiteUrl &&
+    (argv.discourseIntegrationDatasetPage ||
+        argv.discourseIntegrationDistributionPage);
+
+console.log("Is Discourse Integration Enabled: ", enableDiscourseSupport);
+
+// crawler view router
+if (argv.enableCrawlerViews || enableDiscourseSupport) {
+    app.use(
+        createCralwerViewRouter({
+            registryApiBaseUrl: argv.registryApiBaseUrlInternal,
+            baseUrl: baseExternalUrl,
+            enableDiscourseSupport: enableDiscourseSupport
+        })
+    );
+}
 
 // URLs in this list will load index.html and be handled by React routing.
 const topLevelRoutes = [
@@ -411,7 +482,7 @@ Crawl-delay: 100
 Disallow: /auth
 Disallow: /search
 
-Sitemap: ${argv.baseExternalUrl}/sitemap.xml
+Sitemap: ${baseExternalUrl}/sitemap.xml
 `;
 
 app.use("/robots.txt", (_, res) => {
@@ -421,7 +492,7 @@ app.use("/robots.txt", (_, res) => {
 // TODO: Use proper tenant id in multi-tenant mode.
 app.use(
     buildSitemapRouter({
-        baseExternalUrl: argv.baseExternalUrl,
+        baseExternalUrl,
         registry: new Registry({
             baseUrl: argv.registryApiBaseUrlInternal,
             maxRetries: 0,
@@ -455,15 +526,3 @@ process.on(
         console.error(reason);
     }
 );
-
-function addTrailingSlash(url: string) {
-    if (!url) {
-        return url;
-    }
-
-    if (url.lastIndexOf("/") !== url.length - 1) {
-        return url + "/";
-    } else {
-        return url;
-    }
-}

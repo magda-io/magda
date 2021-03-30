@@ -2,22 +2,62 @@ image: {}
   #repository: data61/
   #tag: latest
   #pullPolicy: Always#
+
+# -- no. of replicas required for the deployment.
+# If not set, k8s will assume `1` but allows HPA (autoscaler) alters it.
+# @default 1
+replicas:
+
 autoscaler:
   enabled: false
   minReplicas: 1
   maxReplicas: 3
   targetCPUUtilizationPercentage: 80
+
 resources:
   requests:
     cpu: 10m
     memory: 30Mi
   limits:
     cpu: 100m
+
+listenPort: 80
+
 disableAuthenticationFeatures: false
+
 showNotificationBanner: false
-service: {}
+
+service:
+  # -- how to expose serice. Only used when `.Values.global.exposeNodePorts` is not true.
+  # @default ClusterIP
+  type: 
+
+# -- Google Analytics Ids
+gapiIds: []
+
 useLocalStyleSheet: false
+
 contentApiBaseUrlInternal: "http://content-api/v0/"
+
+registryApiBaseUrlInternal: "http://registry-api/v0"
+
+adminApiBaseUrl:
+
+# -- Whether enable crawler html view for crawlers that has limited rendering capability. 
+# When discourse intergration feature is turned on (i.e. `discourseSiteUrl` is set and either `discourseIntegrationDatasetPage` or `discourseIntegrationDistributionPage` is true), 
+# this will be overwritten to true.
+enableCrawlerViews: true
+
+# -- The discourse site url. 
+# Set this value to turn on the discourse post integration on dataset & distribution pages.
+discourseSiteUrl:
+
+# -- Whether the discourse post integration should be turned on on dataset page.
+discourseIntegrationDatasetPage: true
+
+# -- Whether the discourse post integration should be turned on on distribution page.
+discourseIntegrationDistributionPage: true
+
 featureFlags:
   # featureFlags.cataloguing -- turn on / off metadata creation tool. 
   # If this option is `false`, user won't be able to access the dataset add / edit UI 
@@ -98,3 +138,7 @@ keywordsBlackList:
   - Prof.
   - Sr.
   - St.
+
+# -- Default Timezone that used to display tiem related string.
+# If not set, default value will be "Australia/Sydney"
+defaultTimeZone:

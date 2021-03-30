@@ -1,0 +1,276 @@
+{
+    "aspects": {
+        "dcat-dataset-strings": {
+            "accrualPeriodicity": "monthly",
+            "contactPoint": "Access.Request@asic.gov.au",
+            "description": "###Update April 2019 - addition of license authorisations to Credit Licensee dataset ###\r\n\r\nFrom 4 April 2019, the Credit Licensee dataset will include license authorisations. See the updated helpfile for further information.\r\n\r\n***\r\n\r\nASIC is Australia’s corporate, markets and financial services regulator. ASIC contributes to Australia’s economic reputation and wellbeing by ensuring that Australia's financial markets are fair and transparent, and supported by confident and informed investors and consumers. \r\n\r\nAustralian Credit Licensees are required to maintain their details on ASIC's registers. Information contained on the Credit Licensee Register is made available to the public to search via the ASIC Connect website. \r\n\r\nSelected data from the register will be uploaded each month to www.data.gov.au. The data made available will be a snapshot of the register at a point in time. Legislation prescribes the type of information ASIC is allowed to disclose to the public. \r\n\r\nThe information in the downloadable dataset includes: \r\n\r\n* Register Name\r\n* Credit licensee number\r\n* Credit licensee name\r\n* Date licence was issued\r\n* Date licence was ceased (if applicable)\r\n* Credit licensee status\r\n* Credit licensee ABN or ACN(if applicable)\r\n* AFSL number\r\n* Credit licence status history\r\n* Principal business locality\r\n* Principal business state/territory\r\n* Principal business postcode\r\n* Latitude coordinates\r\n* Longitude coordinates\r\n* EDRS code\r\n* Business name (if applicable)\r\n* License authorisations\r\n\r\nAdditional information about Credit Licensees can be found via ASIC's website (http://www.asic.gov.au). To view some information you may be charged a fee.\r\n\r\nMore information about searching ASIC's registers (http://www.asic.gov.au/online-services/search-asics-registers/).",
+            "issued": "2015-12-21T22:19:54Z",
+            "keywords": [
+                "ASIC",
+                "Credit",
+                "Credit Licence",
+                "Credit Licensee",
+                "Licence",
+                "Licencee",
+                "Register",
+                "australian government",
+                "federal government"
+            ],
+            "landingPage": "https://data.gov.au/dataset/fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4",
+            "languages": ["English"],
+            "modified": "2021-02-01T05:47:16Z",
+            "publisher": "Australian Securities and Investments Commission (ASIC)",
+            "spatial": "Australia",
+            "temporal": { "end": "", "start": "2015-12-21" },
+            "themes": [],
+            "title": "ASIC – Credit Licensee Dataset"
+        },
+        "source": {
+            "id": "dga",
+            "name": "data.gov.au",
+            "problems": [
+                {
+                    "message": "Could not parse temporal coverage:\n  from: 2015-12-21\n  to: ",
+                    "title": "Unable to interpret temporal_coverage_from/to"
+                }
+            ],
+            "type": "ckan-dataset",
+            "url": "https://data.gov.au/api/3/action/package_show?id=fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4"
+        },
+        "dataset-publisher": {
+            "publisher": {
+                "aspects": {
+                    "organization-details": {
+                        "description": "ASIC is Australia’s corporate, markets and financial services regulator.\r\nASIC contributes to Australia’s economic reputation and wellbeing by ensuring that Australia’s financial markets are fair and transparent, supported by confident and informed investors and consumers.\r\n",
+                        "email": "Access.Request@asic.gov.au",
+                        "imageUrl": "https://data.gov.au/data/uploads/group/2019-05-14-060147.648429ASIC-Master-Logo.jpg",
+                        "jurisdiction": "Commonwealth of Australia",
+                        "name": "australian-securities-and-investments-commission-asic",
+                        "phone": "1300 300 630",
+                        "title": "Australian Securities and Investments Commission (ASIC)",
+                        "website": "www.asic.gov.au"
+                    },
+                    "source": {
+                        "id": "dga",
+                        "name": "data.gov.au",
+                        "type": "ckan-organization",
+                        "url": "https://data.gov.au/api/3/action/organization_show?id=ddd3e2d8-d0e8-4d43-a1e5-39984eb8e774"
+                    }
+                },
+                "id": "org-dga-ddd3e2d8-d0e8-4d43-a1e5-39984eb8e774",
+                "name": "Australian Securities and Investments Commission (ASIC)"
+            }
+        },
+        "dataset-distributions": {
+            "distributions": [
+                {
+                    "aspects": {
+                        "ckan-resource": {
+                            "created": "2015-12-22T10:27:11.859606",
+                            "datastore_active": true,
+                            "description": "Credit Licence Dataset extract as at 01/02/2021 15:29",
+                            "format": "CSV",
+                            "hash": "e25cce4c842472b638e311d1277c8877",
+                            "id": "35953a01-a9a8-4609-8566-c9fa7de465d3",
+                            "last_modified": "2021-02-01T05:47:10.804361",
+                            "last_modified ": "01/02/2021 15:29",
+                            "mimetype": "text/csv",
+                            "name": "Credit Licence Dataset - Current",
+                            "package_id": "fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4",
+                            "position": 0,
+                            "revision_id": "b4198a1d-c8ed-4786-b23e-ccb85e808dbc",
+                            "size": 7836128,
+                            "state": "active",
+                            "url": "https://data.gov.au/data/dataset/fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4/resource/35953a01-a9a8-4609-8566-c9fa7de465d3/download/credit_lic_202102.csv",
+                            "url_type": "upload"
+                        },
+                        "dcat-distribution-strings": {
+                            "description": "Credit Licence Dataset extract as at 01/02/2021 15:29",
+                            "downloadURL": "https://data.gov.au/data/dataset/fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4/resource/35953a01-a9a8-4609-8566-c9fa7de465d3/download/credit_lic_202102.csv",
+                            "format": "CSV",
+                            "issued": "2015-12-22T10:27:11Z",
+                            "license": "Creative Commons Attribution 3.0 Australia",
+                            "mediaType": "text/csv",
+                            "modified": "2021-02-01T05:47:10Z",
+                            "title": "Credit Licence Dataset - Current"
+                        },
+                        "source": {
+                            "id": "dga",
+                            "name": "data.gov.au",
+                            "type": "ckan-resource",
+                            "url": "https://data.gov.au/api/3/action/resource_show?id=35953a01-a9a8-4609-8566-c9fa7de465d3"
+                        }
+                    },
+                    "id": "dist-dga-35953a01-a9a8-4609-8566-c9fa7de465d3",
+                    "name": "Credit Licence Dataset - Current"
+                },
+                {
+                    "aspects": {
+                        "ckan-resource": {
+                            "created": "2015-12-22T16:30:47.968592",
+                            "datastore_active": false,
+                            "description": "Help file as at 04/04/2019",
+                            "format": "PDF",
+                            "hash": "",
+                            "id": "48c6cd71-2339-41e7-bc93-34786edf3cd8",
+                            "last_modified": "2019-04-04T06:13:19.471735",
+                            "mimetype": "application/pdf",
+                            "name": "Credit Licensee - Help File",
+                            "package_id": "fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4",
+                            "position": 1,
+                            "revision_id": "a5a84c78-0ad7-45a6-8a38-c64cd4199ce6",
+                            "size": 725209,
+                            "state": "active",
+                            "url": "https://data.gov.au/data/dataset/fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4/resource/48c6cd71-2339-41e7-bc93-34786edf3cd8/download/credit-licensee-help-file.pdf",
+                            "url_type": "upload",
+                            "wms_layer": ""
+                        },
+                        "dcat-distribution-strings": {
+                            "description": "Help file as at 04/04/2019",
+                            "downloadURL": "https://data.gov.au/data/dataset/fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4/resource/48c6cd71-2339-41e7-bc93-34786edf3cd8/download/credit-licensee-help-file.pdf",
+                            "format": "PDF",
+                            "issued": "2015-12-22T16:30:47Z",
+                            "license": "Creative Commons Attribution 3.0 Australia",
+                            "mediaType": "application/pdf",
+                            "modified": "2019-04-04T06:13:19Z",
+                            "title": "Credit Licensee - Help File"
+                        },
+                        "source": {
+                            "id": "dga",
+                            "name": "data.gov.au",
+                            "type": "ckan-resource",
+                            "url": "https://data.gov.au/api/3/action/resource_show?id=48c6cd71-2339-41e7-bc93-34786edf3cd8"
+                        }
+                    },
+                    "id": "dist-dga-48c6cd71-2339-41e7-bc93-34786edf3cd8",
+                    "name": "Credit Licensee - Help File"
+                },
+                {
+                    "aspects": {
+                        "ckan-resource": {
+                            "created": "2015-12-23T14:35:33.658611",
+                            "datastore_active": true,
+                            "description": "The following changes were made to align with national map: - Delimiter changed to comma (,) - Latitude and longitude field names changed to lat and lon",
+                            "format": "CSV-GEO-AU",
+                            "hash": "e522bba8df566eeebc31e96746465600",
+                            "id": "548075a1-c36e-4837-bf26-cc00567b5c23",
+                            "last_modified": "2021-02-01T05:47:12.761572",
+                            "last_modified ": "01/02/2021 15:26",
+                            "name": "Credit Licence Dataset - National Map",
+                            "package_id": "fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4",
+                            "position": 2,
+                            "revision_id": "46b004bb-f616-4366-866a-a39848c20cd9",
+                            "size": 7671896,
+                            "state": "active",
+                            "url": "https://data.gov.au/data/dataset/fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4/resource/548075a1-c36e-4837-bf26-cc00567b5c23/download/credit_lic_202102.csv-geo-au",
+                            "url_type": "upload"
+                        },
+                        "dcat-distribution-strings": {
+                            "description": "The following changes were made to align with national map: - Delimiter changed to comma (,) - Latitude and longitude field names changed to lat and lon",
+                            "downloadURL": "https://data.gov.au/data/dataset/fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4/resource/548075a1-c36e-4837-bf26-cc00567b5c23/download/credit_lic_202102.csv-geo-au",
+                            "format": "CSV-GEO-AU",
+                            "issued": "2015-12-23T14:35:33Z",
+                            "license": "Creative Commons Attribution 3.0 Australia",
+                            "modified": "2021-02-01T05:47:12Z",
+                            "title": "Credit Licence Dataset - National Map"
+                        },
+                        "source": {
+                            "id": "dga",
+                            "name": "data.gov.au",
+                            "type": "ckan-resource",
+                            "url": "https://data.gov.au/api/3/action/resource_show?id=548075a1-c36e-4837-bf26-cc00567b5c23"
+                        }
+                    },
+                    "id": "dist-dga-548075a1-c36e-4837-bf26-cc00567b5c23",
+                    "name": "Credit Licence Dataset - National Map"
+                },
+                {
+                    "aspects": {
+                        "ckan-resource": {
+                            "created": "2016-04-06T14:00:31.478761",
+                            "datastore_active": true,
+                            "description": "Credit Licence Dataset extract as at 01/02/2021 15:25",
+                            "format": "XLSX",
+                            "hash": "",
+                            "id": "546d3dae-13db-4c1d-bfb3-b5a9d0cbbea1",
+                            "last_modified": "2021-02-01T05:47:14.689014",
+                            "last_modified ": "01/02/2021 15:25",
+                            "mimetype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            "name": "Credit Licence Dataset - Current",
+                            "package_id": "fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4",
+                            "position": 3,
+                            "revision_id": "de568441-15de-4927-bf04-0b556b5e168e",
+                            "size": 486026,
+                            "state": "active",
+                            "url": "https://data.gov.au/data/dataset/fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4/resource/546d3dae-13db-4c1d-bfb3-b5a9d0cbbea1/download/credit_lic_202102.xlsx",
+                            "url_type": "upload"
+                        },
+                        "dcat-distribution-strings": {
+                            "description": "Credit Licence Dataset extract as at 01/02/2021 15:25",
+                            "downloadURL": "https://data.gov.au/data/dataset/fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4/resource/546d3dae-13db-4c1d-bfb3-b5a9d0cbbea1/download/credit_lic_202102.xlsx",
+                            "format": "XLSX",
+                            "issued": "2016-04-06T14:00:31Z",
+                            "license": "Creative Commons Attribution 3.0 Australia",
+                            "mediaType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            "modified": "2021-02-01T05:47:14Z",
+                            "title": "Credit Licence Dataset - Current"
+                        },
+                        "source": {
+                            "id": "dga",
+                            "name": "data.gov.au",
+                            "type": "ckan-resource",
+                            "url": "https://data.gov.au/api/3/action/resource_show?id=546d3dae-13db-4c1d-bfb3-b5a9d0cbbea1"
+                        }
+                    },
+                    "id": "dist-dga-546d3dae-13db-4c1d-bfb3-b5a9d0cbbea1",
+                    "name": "Credit Licence Dataset - Current"
+                },
+                {
+                    "aspects": {
+                        "ckan-resource": {
+                            "created": "2016-11-09T12:15:27.787998",
+                            "datastore_active": true,
+                            "description": "Credit Licence Dataset extract as at 01/02/2021 15:27",
+                            "format": "TSV",
+                            "hash": "",
+                            "id": "3abf1383-c4e5-4c1a-8331-8434b17b6f10",
+                            "last_modified": "2021-02-01T05:47:16.396080",
+                            "last_modified ": "01/02/2021 15:27",
+                            "mimetype": "text/tab-separated-values",
+                            "name": "Credit Licence Dataset - Current",
+                            "package_id": "fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4",
+                            "position": 4,
+                            "revision_id": "de568441-15de-4927-bf04-0b556b5e168e",
+                            "size": 7670754,
+                            "state": "active",
+                            "url": "https://data.gov.au/data/dataset/fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4/resource/3abf1383-c4e5-4c1a-8331-8434b17b6f10/download/credit_lic_202102.tsv",
+                            "url_type": "upload"
+                        },
+                        "dcat-distribution-strings": {
+                            "description": "Credit Licence Dataset extract as at 01/02/2021 15:27",
+                            "downloadURL": "https://data.gov.au/data/dataset/fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4/resource/3abf1383-c4e5-4c1a-8331-8434b17b6f10/download/credit_lic_202102.tsv",
+                            "format": "TSV",
+                            "issued": "2016-11-09T12:15:27Z",
+                            "license": "Creative Commons Attribution 3.0 Australia",
+                            "mediaType": "text/tab-separated-values",
+                            "modified": "2021-02-01T05:47:16Z",
+                            "title": "Credit Licence Dataset - Current"
+                        },
+                        "source": {
+                            "id": "dga",
+                            "name": "data.gov.au",
+                            "type": "ckan-resource",
+                            "url": "https://data.gov.au/api/3/action/resource_show?id=3abf1383-c4e5-4c1a-8331-8434b17b6f10"
+                        }
+                    },
+                    "id": "dist-dga-3abf1383-c4e5-4c1a-8331-8434b17b6f10",
+                    "name": "Credit Licence Dataset - Current"
+                }
+            ]
+        }
+    },
+    "id": "ds-dga-fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4",
+    "name": "ASIC – Credit Licensee Dataset",
+    "sourceTag": "e54ae95c-ffd3-498f-a9d9-95157dc71af1",
+    "tenantId": 0
+}

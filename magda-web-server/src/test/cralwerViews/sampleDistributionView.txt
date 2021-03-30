@@ -1,0 +1,18 @@
+---
+title: "Distribution: Computer Monitors - mo_2021_03_17.csv"
+---
+# Distribution: Computer Monitors - mo_2021_03_17.csv
+## Dataset: [ASIC – Credit Licensee Dataset](http://test.com/dataset/ds-dga-fa0b0d71-b8b8-4af8-bc59-0b000ce0d5e4)
+---
+## Description
+
+More information at http://reg.energyrating.gov.au/comparator/product_types/74/search/
+
+## General Information
+
+- Australian Securities and Investments Commission (ASIC) (Commonwealth of Australia)
+- Create Date: 02/04/2014
+- Update Date: 17/03/2021
+- License: Creative Commons Attribution 3.0 Australia
+- Format: CSV
+- Download/Access URL: [https://data.gov.au/data/dataset/559708e5-480e-4f94-8429-c49571e82761/resource/f1ea4c89-282c-4d64-b870-10a5ab039030/download/tmpsmi6zh_mo_2021_03_17.csv](https://data.gov.au/data/dataset/559708e5-480e-4f94-8429-c49571e82761/resource/f1ea4c89-282c-4d64-b870-10a5ab039030/download/tmpsmi6zh_mo_2021_03_17.csv)

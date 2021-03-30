@@ -11,6 +11,13 @@
 -   Upgraded JDK in base scala docker image
 -   Removed exclamation point in successHeader message for Ask A Question
 -   Fixed #3088: Gateway liveness probe response 301 when `enableHttpsRedirection` is on (Since v0.0.59)
+-   #3098 Add CralwerViewRouter to web-server to serve HTML static version of dataset & distribution page for recognised crawler
+-   Change the way of encoding web-server configMap json to avoid potential invalid JSON
+-   Make web-server deployment auto-roll when configMap data changes
+-   Pass `defaultTimeZone` & `image` config data to frontend for future usage
+-   web-server module will auto add tailing slash to incoming `baseExternalUrl` config value
+-   Upgrade caniuse-lite
+-   Move markdownToHtml to typescript common module so it's shared among web-client and other modules
 
 ## 0.0.59
 

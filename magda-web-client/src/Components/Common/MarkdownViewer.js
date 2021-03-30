@@ -1,9 +1,7 @@
 import React from "react";
-import MarkdownIt from "markdown-it";
 import "./MarkdownViewer.scss";
-import defined from "helpers/defined";
 import truncate from "html-truncate";
-var DOMPurify = require("dompurify/dist/purify");
+import markdownToHtml from "@magda/typescript-common/dist/markdownToHtml";
 
 class MarkdownViewer extends React.Component {
     render() {
@@ -22,40 +20,6 @@ class MarkdownViewer extends React.Component {
 MarkdownViewer.defaultProps = { markdown: "" };
 
 export default MarkdownViewer;
-
-const md = new MarkdownIt({
-    html: true,
-    linkify: true,
-    breaks: true
-});
-
-const htmlRegex = /^\s*<[^>]+>/;
-
-export function markdownToHtml(
-    markdownString,
-    allowUnsafeHtml,
-    options = {
-        FORBID_TAGS: ["svg", "math"]
-    }
-) {
-    if (!defined(markdownString) || markdownString.length === 0) {
-        return markdownString;
-    }
-    // If the text looks like html, don't try to interpret it as Markdown because
-    // we'll probably break it in the process.
-    var unsafeHtml;
-    if (htmlRegex.test(markdownString)) {
-        unsafeHtml = markdownString;
-    } else {
-        // Note this would wrap non-standard tags such as <collapsible>hi</collapsible> in a <p></p>, which is bad.
-        unsafeHtml = md.render(markdownString);
-    }
-    if (allowUnsafeHtml) {
-        return unsafeHtml;
-    } else {
-        return DOMPurify.sanitize(unsafeHtml, options);
-    }
-}
 
 /**
  * Tell whether content provided will be truncated or not.

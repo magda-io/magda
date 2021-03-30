@@ -7,6 +7,8 @@ import { gapi } from "analytics/ga";
 import { ParsedDataset, ParsedDistribution } from "helpers/record";
 import getStorageApiResourceAccessUrl from "helpers/getStorageApiResourceAccessUrl";
 import "./DatasetDetails.scss";
+import { config } from "config";
+import DiscourseComments from "Components/Dataset/View/DiscourseComments";
 
 class DistributionDetails extends Component<{
     dataset: ParsedDataset;
@@ -105,6 +107,7 @@ class DistributionDetails extends Component<{
     }
 
     render() {
+        const dataset = this.props.dataset;
         const distribution = this.props.distribution;
         const sourceText = this.renderLinkText(distribution);
 
@@ -129,6 +132,24 @@ class DistributionDetails extends Component<{
                         />{" "}
                     </div>
                 )}
+
+                {config.discourseSiteUrl &&
+                config.discourseIntegrationDistributionPage ? (
+                    <div className="row">
+                        <div className="col-sm-12">
+                            <DiscourseComments
+                                title={
+                                    distribution?.title
+                                        ? distribution.title
+                                        : "Untitlted Distribution"
+                                }
+                                type={"distribution"}
+                                datasetId={dataset.identifier!}
+                                distributionId={distribution.identifier!}
+                            />
+                        </div>
+                    </div>
+                ) : null}
             </div>
         );
     }
