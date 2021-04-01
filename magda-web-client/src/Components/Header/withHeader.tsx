@@ -7,8 +7,10 @@ import SearchBoxSwitcher from "Components/Dataset/Search/SearchBoxSwitcher";
 import AddDatasetProgressMeter, {
     ExternalProps as AddDatasetProgressMeterProps
 } from "Components/Common/AddDatasetProgressMeter";
+import { getPluginHeader } from "externalPluginComponents";
 
 import "./withHeader.scss";
+import { User } from "reducers/userManagementReducer";
 
 type InterfaceOptions = {
     includeSearchBox?: boolean;
@@ -16,14 +18,26 @@ type InterfaceOptions = {
     noContainerClass?: boolean;
 };
 
+type PlainObject = {
+    [key: string]: any;
+};
+
+const HeaderPlugin = getPluginHeader();
+
 const mapStateToProps = (state) => {
     const datasetIsFetching = state.record.datasetIsFetching;
     const distributionIsFetching = state.record.distributionIsFetching;
     const publishersAreFetching = state.publisher.isFetchingPublishers;
     const datasetSearchIsFetching = state.datasetSearch.isFetching;
     const publisherIsFetching = state.publisher.isFetchingPublisher;
+    const isFetchingWhoAmI = state.userManagement.isFetchingWhoAmI;
+    const user = state.userManagement.user;
+    const whoAmIError = state.userManagement.whoAmIError;
 
     return {
+        user,
+        whoAmIError,
+        isFetchingWhoAmI,
         finishedFetching:
             !datasetIsFetching &&
             !publishersAreFetching &&
@@ -36,13 +50,19 @@ const mapStateToProps = (state) => {
 const connector = connect(mapStateToProps);
 type PropsFromRedux = ConnectedProps<typeof connector>;
 
-type Props = {
+interface Props extends PlainObject {
     finishedFetching?: boolean;
     location?: Location;
+}
+
+type AuthProps = {
+    user: User;
+    isFetchingWhoAmI: boolean;
+    whoAmIError: Error | null;
 };
 
-const withHeader = <P extends {}>(
-    WrappedComponent: ComponentType<P & Props>,
+const withHeader = (
+    WrappedComponent: ComponentType<Props>,
     {
         includeSearchBox,
         includeDatasetPageProgressMeter,
@@ -50,14 +70,23 @@ const withHeader = <P extends {}>(
     }: InterfaceOptions = {},
     addDatasetProgressMeterProps: AddDatasetProgressMeterProps = {}
 ) => {
-    type AllProps = P & Props & PropsFromRedux;
+    type AllProps = AuthProps & Props & PropsFromRedux;
 
     const NewComponent: React.FunctionComponent<AllProps> = (
-        props: AllProps
+        allProps: AllProps
     ) => {
+        const { user, isFetchingWhoAmI, whoAmIError, ...props } = allProps;
         return (
             <div className="other-page">
-                <Header />
+                {HeaderPlugin ? (
+                    <HeaderPlugin
+                        isFetchingWhoAmI={allProps.isFetchingWhoAmI}
+                        user={allProps.user}
+                        whoAmIError={allProps.whoAmIError}
+                    />
+                ) : (
+                    <Header />
+                )}
 
                 {includeSearchBox && (
                     <SearchBoxSwitcher
