@@ -9,6 +9,15 @@ type HeaderComponent = ComponentType<{
     whoAmIError: Error | null;
 }>;
 
+export function getComponent<T>(name: string): T | null {
+    const fullComponentName = `${PREFIX}${name}`;
+    return window?.[fullComponentName]?.default
+        ? window[fullComponentName].default
+        : window?.[fullComponentName]
+        ? window[fullComponentName]
+        : null;
+}
+
 export function getPluginHeader(): HeaderComponent | null {
-    return window?.[`${PREFIX}Header`] ? window[`${PREFIX}Header`] : null;
+    return getComponent("Header");
 }
