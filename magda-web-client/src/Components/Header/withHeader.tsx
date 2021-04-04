@@ -33,11 +33,13 @@ const mapStateToProps = (state) => {
     const isFetchingWhoAmI = state.userManagement.isFetchingWhoAmI;
     const user = state.userManagement.user;
     const whoAmIError = state.userManagement.whoAmIError;
+    const headerNavItems = state.content.headerNavigation;
 
     return {
         user,
         whoAmIError,
         isFetchingWhoAmI,
+        headerNavItems,
         finishedFetching:
             !datasetIsFetching &&
             !publishersAreFetching &&
@@ -83,6 +85,7 @@ const withHeader = (
                         isFetchingWhoAmI={allProps.isFetchingWhoAmI}
                         user={allProps.user}
                         whoAmIError={allProps.whoAmIError}
+                        headerNavItems={allProps.headerNavItems}
                     />
                 ) : (
                     <Header />
