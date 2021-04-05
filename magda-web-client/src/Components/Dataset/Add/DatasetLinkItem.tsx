@@ -196,9 +196,7 @@ const DatasetLinkItemEditing = (props: EditViewProps) => {
                         ])
                     ) {
                         setEditMode(!editMode);
-                        if (
-                            distribution?._progress !== DistributionState.Ready
-                        ) {
+                        if (distribution?._state !== DistributionState.Ready) {
                             editDistribution((distribution) => ({
                                 ...distribution,
                                 _state: DistributionState.Ready

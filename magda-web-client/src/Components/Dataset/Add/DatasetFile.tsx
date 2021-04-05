@@ -11,7 +11,8 @@ import humanFileSize from "helpers/humanFileSize";
 import {
     Distribution,
     DistributionState,
-    distributionStateToText
+    distributionStateToText,
+    DistributionCreationMethod
 } from "./DatasetAddCommon";
 
 import editIcon from "../../../assets/edit.svg";
@@ -117,6 +118,12 @@ const FileEditView = ({
                         ])
                     ) {
                         setEditMode(!editMode);
+                        if (file?._state !== DistributionState.Ready) {
+                            onChange((file) => ({
+                                ...file,
+                                _state: DistributionState.Ready
+                            }));
+                        }
                     }
                 }}
             >
@@ -182,14 +189,20 @@ export default function DatasetFile({
     onDelete,
     onChange
 }: Props) {
-    const [editMode, setEditMode] = useState(false);
+    const [editMode, setEditMode] = useState(
+        distribution?.creationMethod === DistributionCreationMethod.Manual &&
+            distribution?._state === DistributionState.Drafting
+    );
     const canEdit =
         typeof idx !== "undefined" && typeof onChange === "function";
     const canDelete = typeof onDelete === "function";
 
     const file = distribution;
 
-    if (file._state !== DistributionState.Ready) {
+    if (
+        file._state !== DistributionState.Ready &&
+        file._state !== DistributionState.Drafting
+    ) {
         return <FileInProgress file={file} className={className} />;
     }
 
