@@ -12,7 +12,7 @@ export function getComponent<T>(name: string): T | null {
         : null;
 }
 
-type HeaderNavItem = {
+export type HeaderNavItem = {
     default?: {
         href: string;
         label: string;
@@ -34,20 +34,20 @@ export function getPluginHeader(): HeaderComponent | null {
     return getComponent<HeaderComponent>("Header");
 }
 
-type CopyRightItem = {
+export type CopyRightItem = {
     href: string;
     htmlContent: string;
     logoSrc: string;
     order: number;
 };
 
-type FooterNavLink = {
+export type FooterNavLink = {
     href: string;
     label: string;
     order: number;
 };
 
-type FooterNavLinkGroup = {
+export type FooterNavLinkGroup = {
     label: string;
     links: FooterNavLink[];
     order: number;

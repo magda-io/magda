@@ -7,7 +7,7 @@ import SearchBoxSwitcher from "Components/Dataset/Search/SearchBoxSwitcher";
 import AddDatasetProgressMeter, {
     ExternalProps as AddDatasetProgressMeterProps
 } from "Components/Common/AddDatasetProgressMeter";
-import { getPluginHeader } from "externalPluginComponents";
+import { getPluginHeader, HeaderNavItem } from "externalPluginComponents";
 
 import "./withHeader.scss";
 import { User } from "reducers/userManagementReducer";
@@ -57,10 +57,11 @@ interface Props extends PlainObject {
     location?: Location;
 }
 
-type AuthProps = {
+type ExtraHeaderProps = {
     user: User;
     isFetchingWhoAmI: boolean;
     whoAmIError: Error | null;
+    headerNavItems: HeaderNavItem[];
 };
 
 const withHeader = (
@@ -72,12 +73,18 @@ const withHeader = (
     }: InterfaceOptions = {},
     addDatasetProgressMeterProps: AddDatasetProgressMeterProps = {}
 ) => {
-    type AllProps = AuthProps & Props & PropsFromRedux;
+    type AllProps = ExtraHeaderProps & Props & PropsFromRedux;
 
     const NewComponent: React.FunctionComponent<AllProps> = (
         allProps: AllProps
     ) => {
-        const { user, isFetchingWhoAmI, whoAmIError, ...props } = allProps;
+        const {
+            user,
+            isFetchingWhoAmI,
+            whoAmIError,
+            headerNavItems,
+            ...props
+        } = allProps;
         return (
             <div className="other-page">
                 {HeaderPlugin ? (
