@@ -69,13 +69,15 @@ const memoizedGetIndexHtml = memoize(getIndexHtml);
  * @param contentApiBaseUrlInternal The base URL of the content api
  * @param uiBaseUrl the base URL where the UI serves at. If not specify or empty, assume it's "/"
  * @param appBasePath the base URL where the app gateway / APIs serves at. If not specify or empty, assume it's "/"
+ * @param externalUIComponents a list of external UI component JS bundle file urls
  */
 async function getIndexFileContent(
     clientRoot: string,
     useLocalStyleSheet: boolean,
     contentApiBaseUrlInternal: string,
     uiBaseUrl: string,
-    appBasePath: string
+    appBasePath: string,
+    externalUIComponents?: string[]
 ) {
     const dynamicContentPromise = getIncludeHtml(contentApiBaseUrlInternal);
     const indexHtmlPromise = memoizedGetIndexHtml(clientRoot);
@@ -112,6 +114,15 @@ async function getIndexFileContent(
                 `${appBasePath}/api/v0/`
             );
         }
+    }
+
+    if (externalUIComponents?.length) {
+        indexFileContent = indexFileContent.replace(
+            "</head>",
+            externalUIComponents
+                .map((url) => `<script src="${url}"></script>`)
+                .join("\n") + `\n</head>`
+        );
     }
 
     return indexFileContent;

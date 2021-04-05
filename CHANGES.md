@@ -18,6 +18,7 @@
 -   web-server module will auto add tailing slash to incoming `baseExternalUrl` config value
 -   Upgrade caniuse-lite
 -   Move markdownToHtml to typescript common module so it's shared among web-client and other modules
+-   #3099 Ability to supply external react components to replace built-in UI components of magda-web-client
 
 ## 0.0.59
 

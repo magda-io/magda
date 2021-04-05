@@ -16,6 +16,9 @@ import { Location } from "history";
 import MediaQuery from "react-responsive";
 import { User } from "reducers/userManagementReducer";
 import MyDatasetSection from "./MyDatasetSection";
+import { getPluginHeader, HeaderNavItem } from "externalPluginComponents";
+
+const HeaderPlugin = getPluginHeader();
 
 const getBgImg = (backgroundImageUrls) => {
     let imageMap = {};
@@ -74,7 +77,9 @@ type PropsType = {
     lozenge: LozengePropsType;
     stories?: StoryDataType[];
     location: Location;
+    headerNavItems: HeaderNavItem[];
     isFetchingWhoAmI: boolean;
+    whoAmIError: Error | null;
     user: User;
 };
 
@@ -137,7 +142,16 @@ class HomePage extends React.Component<PropsType> {
         return (
             <div className="homepage-app-container">
                 {getBgImg(this.props.backgroundImageUrls)}
-                <Header />
+                {HeaderPlugin ? (
+                    <HeaderPlugin
+                        isFetchingWhoAmI={this.props.isFetchingWhoAmI}
+                        user={this.props.user}
+                        whoAmIError={this.props.whoAmIError}
+                        headerNavItems={this.props.headerNavItems}
+                    />
+                ) : (
+                    <Header />
+                )}
                 <Small>
                     <div className="homepage-background" />
                 </Small>
@@ -174,10 +188,11 @@ function mapStateToProps(state) {
         mobileTagLine,
         lozenge,
         backgroundImageUrls,
-        stories
+        stories,
+        headerNavItems: headerNavigation
     } = state.content;
 
-    const { isFetchingWhoAmI, user } = state.userManagement;
+    const { isFetchingWhoAmI, user, whoAmIError } = state.userManagement;
 
     return {
         isTopBannerShown: state.topBanner.isShown,
@@ -186,7 +201,9 @@ function mapStateToProps(state) {
         lozenge,
         backgroundImageUrls,
         stories,
+        headerNavigation,
         isFetchingWhoAmI,
+        whoAmIError,
         user
     };
 }

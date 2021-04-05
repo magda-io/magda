@@ -6,11 +6,12 @@
   "license": "Apache-2.0",
   "homepage": ".",
   "scripts": {
-    "dev": "pancake && yarn run start",
+    "dev": "pancake && yarn build-polyfills && yarn run start",
     "prepare": "pancake",
     "start": "craco start",
     "build2": "react-scripts build",
-    "build": "pancake && CI=false GENERATE_SOURCEMAP=false craco build",
+    "build": "pancake && yarn build-polyfills && CI=false GENERATE_SOURCEMAP=false craco build",
+    "build-polyfills": "webpack --mode production --config polyfill-bundle.config.js",
     "test": "craco test --react-scripts ../node_modules/react-scripts",
     "eject": "react-scripts eject",
     "analyze": "source-map-explorer 'build/static/js/*.js'"
@@ -40,6 +41,7 @@
     "leaflet": "^0.7.7"
   },
   "devDependencies": {
+    "webpack-cli": "3.3.11",
     "@babel/core": "^7.10.2",
     "@babel/plugin-proposal-optional-chaining": "^7.8.3",
     "@babel/runtime": "^7.8.7",
@@ -111,7 +113,6 @@
     "qr-image": "^3.2.0",
     "query-string": "^4.3.4",
     "react": "^16.8.6",
-    "react-app-polyfill": "^0.2.1",
     "react-async-hook": "^3.4.0",
     "react-autosuggest": "^9.3.2",
     "react-dates": "magda-io/react-dates#magda",

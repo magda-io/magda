@@ -244,6 +244,12 @@ const argv = yargs
         describe: "default time zone used when display time string",
         type: "string",
         default: "Australia/Sydney"
+    })
+    .option("externalUIComponents", {
+        describe: "a list of external UI component JS bundle file urls",
+        type: "string",
+        coerce: coerceJson("externalUIComponents"),
+        default: [] as string[]
     }).argv;
 
 // set default timezone
@@ -367,7 +373,8 @@ const webServerConfig = {
     discourseIntegrationDatasetPage: argv.discourseIntegrationDatasetPage,
     discourseIntegrationDistributionPage:
         argv.discourseIntegrationDistributionPage,
-    defaultTimeZone: argv.defaultTimeZone
+    defaultTimeZone: argv.defaultTimeZone,
+    externalUIComponents: argv.externalUIComponents
 };
 
 app.get("/server-config.js", function (req, res) {
@@ -387,7 +394,8 @@ function getIndexFileContentZeroArgs() {
         argv.useLocalStyleSheet,
         argv.contentApiBaseUrlInternal,
         uiBaseUrl,
-        appBasePath
+        appBasePath,
+        argv.externalUIComponents
     );
 }
 

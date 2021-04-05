@@ -23,7 +23,7 @@ import { FetchError } from "types";
 import DatasetPage from "./DatasetPage";
 import DistributionPage from "./DistributionPage";
 
-interface PropsType {
+interface RecordHandlerPropsType {
     history: History;
     location: Location;
     match: match<{
@@ -46,7 +46,7 @@ interface StateType {
     addMargin: boolean;
 }
 
-class RecordHandler extends React.Component<PropsType, StateType> {
+class RecordHandler extends React.Component<RecordHandlerPropsType, StateType> {
     constructor(props) {
         super(props);
         this.state = {
@@ -343,6 +343,6 @@ const mapDispatchToProps = (dispatch) => {
         dispatch
     );
 };
-export default (withRouter(
+export default withRouter(
     connect(mapStateToProps, mapDispatchToProps)(RecordHandler)
-) as any) as React.ComponentType<PropsType>;
+);

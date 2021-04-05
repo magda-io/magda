@@ -18,8 +18,11 @@ import { Medium } from "Components/Common/Responsive";
 
 import { Route, Switch } from "react-router-dom";
 
+import { getPluginFooter } from "externalPluginComponents";
+
 import "./AppContainer.scss";
 
+const ExternalFooterComponent = getPluginFooter();
 class AppContainer extends React.Component {
     componentDidMount() {
         this.props.requestWhoAmI();
@@ -55,9 +58,55 @@ class AppContainer extends React.Component {
                         <Route
                             exact
                             path="/"
-                            render={() => <Footer noTopMargin={true} />}
+                            render={() =>
+                                ExternalFooterComponent ? (
+                                    <ExternalFooterComponent
+                                        noTopMargin={true}
+                                        isFetchingWhoAmI={
+                                            this.props.isFetchingWhoAmI
+                                        }
+                                        user={this.props.user}
+                                        whoAmIError={this.props.whoAmIError}
+                                        footerMediumNavs={
+                                            this.props.footerMediumNavs
+                                        }
+                                        footerSmallNavs={
+                                            this.props.footerSmallNavs
+                                        }
+                                        footerCopyRightItems={
+                                            this.props.footerCopyRightItems
+                                        }
+                                    />
+                                ) : (
+                                    <Footer noTopMargin={true} />
+                                )
+                            }
                         />
-                        <Route path="/*" component={Footer} />
+                        <Route
+                            path="/*"
+                            render={() =>
+                                ExternalFooterComponent ? (
+                                    <ExternalFooterComponent
+                                        isFetchingWhoAmI={
+                                            this.props.isFetchingWhoAmI
+                                        }
+                                        user={this.props.user}
+                                        whoAmIError={this.props.whoAmIError}
+                                        footerMediumNavs={
+                                            this.props.footerMediumNavs
+                                        }
+                                        footerSmallNavs={
+                                            this.props.footerSmallNavs
+                                        }
+                                        footerCopyRightItems={
+                                            this.props.footerCopyRightItems
+                                        }
+                                    />
+                                ) : (
+                                    <Footer />
+                                )
+                            }
+                        />
                     </Switch>
 
                     {this.props.topNotification.visible ? (
@@ -88,7 +137,13 @@ class AppContainer extends React.Component {
 
 const mapStateToProps = (state) => {
     return {
-        topNotification: state.topNotification
+        topNotification: state.topNotification,
+        isFetchingWhoAmI: state.userManagement.isFetchingWhoAmI,
+        user: state.userManagement.user,
+        whoAmIError: state.userManagement.whoAmIError,
+        footerMediumNavs: state.content.footerMediumNavs,
+        footerSmallNavs: state.content.footerSmallNavs,
+        footerCopyRightItems: state.content.footerCopyRightItems
     };
 };
 
