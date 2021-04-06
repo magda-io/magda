@@ -19,6 +19,7 @@
 -   Upgrade caniuse-lite
 -   Move markdownToHtml to typescript common module so it's shared among web-client and other modules
 -   #3099 Ability to supply external react components to replace built-in UI components of magda-web-client
+-   #3071 Metadata authoring tool allows adding distributions / files without providing a data file
 
 ## 0.0.59
 

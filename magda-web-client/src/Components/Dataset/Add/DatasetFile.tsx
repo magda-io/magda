@@ -11,7 +11,8 @@ import humanFileSize from "helpers/humanFileSize";
 import {
     Distribution,
     DistributionState,
-    distributionStateToText
+    distributionStateToText,
+    DistributionCreationMethod
 } from "./DatasetAddCommon";
 
 import editIcon from "../../../assets/edit.svg";
@@ -117,6 +118,12 @@ const FileEditView = ({
                         ])
                     ) {
                         setEditMode(!editMode);
+                        if (file?._state !== DistributionState.Ready) {
+                            onChange((file) => ({
+                                ...file,
+                                _state: DistributionState.Ready
+                            }));
+                        }
                     }
                 }}
             >
@@ -182,14 +189,20 @@ export default function DatasetFile({
     onDelete,
     onChange
 }: Props) {
-    const [editMode, setEditMode] = useState(false);
+    const [editMode, setEditMode] = useState(
+        distribution?.creationMethod === DistributionCreationMethod.Manual &&
+            distribution?._state === DistributionState.Drafting
+    );
     const canEdit =
         typeof idx !== "undefined" && typeof onChange === "function";
     const canDelete = typeof onDelete === "function";
 
     const file = distribution;
 
-    if (file._state !== DistributionState.Ready) {
+    if (
+        file._state !== DistributionState.Ready &&
+        file._state !== DistributionState.Drafting
+    ) {
         return <FileInProgress file={file} className={className} />;
     }
 
@@ -237,35 +250,47 @@ export default function DatasetFile({
                             <div>
                                 <b>Format:</b> {file.format}
                             </div>
-                            <div>
-                                <b>Size:</b>{" "}
-                                {humanFileSize(file.byteSize, false)}
-                                <span className="tooltip-container">
-                                    <TooltipWrapper
-                                        className="tooltip tooltip-human-file-size"
-                                        launcher={() => (
-                                            <div className="tooltip-launcher-icon help-icon">
-                                                <img
-                                                    src={helpIcon}
-                                                    alt="Note: 1 KiB = 1024 Bytes, 1 MiB = 1024 KiB"
-                                                />
-                                            </div>
-                                        )}
-                                        innerElementClassName="inner"
-                                    >
-                                        {() => {
-                                            return (
-                                                <div>
-                                                    <div>
-                                                        Note: 1 KiB = 1024 Bytes
-                                                    </div>
-                                                    <div>1 MiB = 1024 KiB</div>
+                            {file.creationMethod !==
+                                DistributionCreationMethod.Manual &&
+                            file?.byteSize ? (
+                                <div>
+                                    <b>Size:</b>{" "}
+                                    {humanFileSize(file.byteSize, false)}
+                                    <span className="tooltip-container">
+                                        <TooltipWrapper
+                                            className="tooltip tooltip-human-file-size"
+                                            launcher={() => (
+                                                <div className="tooltip-launcher-icon help-icon">
+                                                    <img
+                                                        src={helpIcon}
+                                                        alt="Note: 1 KiB = 1024 Bytes, 1 MiB = 1024 KiB"
+                                                    />
                                                 </div>
-                                            );
-                                        }}
-                                    </TooltipWrapper>
-                                </span>
-                            </div>
+                                            )}
+                                            innerElementClassName="inner"
+                                        >
+                                            {() => {
+                                                return (
+                                                    <div>
+                                                        <div>
+                                                            Note: 1 KiB = 1024
+                                                            Bytes
+                                                        </div>
+                                                        <div>
+                                                            1 MiB = 1024 KiB
+                                                        </div>
+                                                    </div>
+                                                );
+                                            }}
+                                        </TooltipWrapper>
+                                    </span>
+                                </div>
+                            ) : (
+                                <div>
+                                    <b>Manually created file item</b>
+                                </div>
+                            )}
+
                             <div>
                                 <b>Last Modified:</b>{" "}
                                 {Moment(file.modified).format("DD/MM/YYYY")}

@@ -3,11 +3,14 @@ import OverlayBox from "Components/Common/OverlayBox";
 import FileDropZone from "../../../Add/Pages/AddFiles/FileDropZone";
 import {
     State,
+    createId,
     DatasetStateUpdaterType,
     Distribution,
     DistributionSource,
     DistributionState,
-    saveRuntimeStateToStorage
+    saveRuntimeStateToStorage,
+    DistributionCreationMethod,
+    getDistributionAddCallback
 } from "Components/Dataset/Add/DatasetAddCommon";
 import AsyncButton from "Components/Common/AsyncButton";
 import AddDatasetFromLinkInput from "../../../Add/Pages/AddFiles/AddDatasetFromLinkInput";
@@ -184,6 +187,35 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
         datasetId
     ]);
 
+    const manualCreate = useCallback(() => {
+        try {
+            setError(null);
+            if (
+                distributions.findIndex(
+                    (item) => item._state === DistributionState.Drafting
+                ) !== -1
+            ) {
+                throw new Error(
+                    "Please complete the current editing item before create a new one."
+                );
+            }
+            getDistributionAddCallback(datasetStateUpdater)({
+                id: createId("dist"),
+                creationSource: DistributionSource.File,
+                creationMethod: DistributionCreationMethod.Manual,
+                title: "Untitled",
+                modified: new Date(),
+                format: "",
+                _state: DistributionState.Drafting,
+                isAddConfirmed: false,
+                isReplacementConfirmed: false,
+                useStorageApi: false
+            });
+        } catch (e) {
+            setError(e);
+        }
+    }, [datasetStateUpdater]);
+
     return (
         <OverlayBox
             className="add-new-files-modal"
@@ -202,6 +234,12 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
                 ) : null}
 
                 <div className="cols-sm-12 file-drop-area">
+                    <button
+                        className="au-btn au-btn--secondary manual-create-file-button"
+                        onClick={() => manualCreate()}
+                    >
+                        Manually Create File
+                    </button>
                     <FileDropZone
                         stateData={props.stateData}
                         datasetId={props.datasetId}

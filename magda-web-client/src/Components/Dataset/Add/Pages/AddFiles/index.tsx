@@ -8,8 +8,11 @@ import FileDropZone from "./FileDropZone";
 
 import {
     State,
+    createId,
     Distribution,
     DistributionSource,
+    DistributionCreationMethod,
+    DistributionState,
     DatasetStateUpdaterType,
     saveRuntimeStateToStorage
 } from "../../DatasetAddCommon";
@@ -160,6 +163,36 @@ class AddFilesPage extends React.Component<Props> {
         }
     };
 
+    manualCreateFile() {
+        this.props.setState((state) => ({ ...state, error: null }));
+        try {
+            if (
+                this.props.stateData.distributions.findIndex(
+                    (item) => item._state === DistributionState.Drafting
+                ) !== -1
+            ) {
+                throw new Error(
+                    "Please complete the current editing item before create a new one."
+                );
+            }
+            const dist = {
+                id: createId("dist"),
+                creationSource: DistributionSource.File,
+                creationMethod: DistributionCreationMethod.Manual,
+                title: "Untitled",
+                modified: new Date(),
+                format: "",
+                _state: DistributionState.Drafting,
+                useStorageApi: false
+            };
+
+            this.addDistribution(dist);
+        } catch (e) {
+            console.error(e);
+            this.props.setState((state) => ({ ...state, error: e }));
+        }
+    }
+
     render() {
         const { stateData: state } = this.props;
         const localFiles = state.distributions.filter(
@@ -238,10 +271,23 @@ class AddFilesPage extends React.Component<Props> {
 
                         <ErrorMessageBox error={state.error} />
 
-                        {localFiles.length > 0 && (
+                        {localFiles.length > 0 ? (
                             <div className="more-files-to-add-text">
                                 More files to add?
+                                <button
+                                    className="au-btn au-btn--secondary manual-create-file-button"
+                                    onClick={() => this.manualCreateFile()}
+                                >
+                                    Manually Create File
+                                </button>
                             </div>
+                        ) : (
+                            <button
+                                className="au-btn au-btn--secondary manual-create-file-button"
+                                onClick={() => this.manualCreateFile()}
+                            >
+                                Manually Create File
+                            </button>
                         )}
                     </div>
                 </div>

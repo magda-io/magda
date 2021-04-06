@@ -82,4 +82,19 @@
     .dataset-add-files-fileListItem.last-row {
         margin-bottom: 0px;
     }
+
+    button.manual-create-file-button {
+        float: right;
+        border-radius: 10px;
+        border: solid 2px #30384d;
+
+        font-size: 16px;
+        font-weight: 300;
+        font-stretch: normal;
+        font-style: normal;
+        line-height: 1.5;
+        letter-spacing: -0.2px;
+        text-align: center;
+        color: #30384d !important;
+    }
 }
