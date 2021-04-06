@@ -736,7 +736,7 @@ export function createBlankState(user: User): State {
             owningOrgUnitId: user ? user.orgUnitId : undefined,
             ownerId: user ? user.id : undefined,
             editingUserId: user ? user.id : undefined,
-            defaultLicense: "No license",
+            defaultLicense: "No License",
             issued: new Date(),
             modified: new Date()
         },

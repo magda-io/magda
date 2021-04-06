@@ -95,7 +95,7 @@ const FileEditView = ({
     setEditMode: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
     const editFormat = (newValue: string | undefined) =>
-        onChange((file) => ({ ...file, format: newValue }));
+        onChange((file) => ({ ...file, format: newValue?.toUpperCase?.() }));
     const editTitle = (newValue: string | undefined) =>
         onChange((file) => ({ ...file, title: newValue ? newValue : "" }));
     const editModified = (newValue: Date | undefined) =>

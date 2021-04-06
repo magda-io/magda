@@ -161,8 +161,9 @@ csp:
     scriptSrc:
     - "'self'"
     - "'unsafe-inline'"
-    - browser-update.org
     - "blob:"
+    - browser-update.org
+    - www.google-analytics.com
     objectSrc:
     - "'none'"
     workerSrc:

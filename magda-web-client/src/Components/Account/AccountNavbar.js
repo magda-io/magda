@@ -8,6 +8,7 @@ class AccountNavbar extends React.Component {
     signOut(event) {
         event.preventDefault();
         this.props.requestSignOut();
+        return false;
     }
 
     render() {
@@ -34,13 +35,9 @@ class AccountNavbar extends React.Component {
             }
             menu.push(
                 <li key="/signOut">
-                    <button
-                        className="link-button"
-                        href="/signout"
-                        onClick={this.signOut.bind(this)}
-                    >
+                    <a href="#logout" onClick={this.signOut.bind(this)}>
                         <span>Sign Out</span>
-                    </button>
+                    </a>
                 </li>
             );
         } else {

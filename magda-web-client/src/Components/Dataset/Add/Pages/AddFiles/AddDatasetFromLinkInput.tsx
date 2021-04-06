@@ -281,6 +281,7 @@ const AddDatasetFromLinkInput: FunctionComponent<Props> = (props) => {
                 creationMethod: DistributionCreationMethod.Manual,
                 title: url,
                 modified: new Date(),
+                license: "No License",
                 format: "",
                 _state: DistributionState.Drafting,
                 useStorageApi: false

@@ -13,6 +13,12 @@ async function queryEndpoint(
         );
     }
 
+    if (typeof str !== "string") {
+        return str;
+    }
+
+    str = str.replace(/\s+/g, "");
+
     const requestUrl =
         `${apiEndpoint}?labelcontains=` + encodeURIComponent(str);
 
