@@ -1,7 +1,7 @@
 {
   "name": "@magda/connector-test-utils",
   "description": "MAGDA Connector Utils for Test Cases",
-  "version": "0.0.60-alpha.0",
+  "version": "0.0.60-alpha.3",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "webpack && api-extractor run -l",
@@ -12,7 +12,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "devDependencies": {
-    "@magda/typescript-common": "^0.0.60-alpha.0",
+    "@magda/typescript-common": "^0.0.60-alpha.3",
     "@microsoft/api-extractor": "^7.7.8",
     "ts-loader": "^6.2.1",
     "typescript": "^3.7.2",
