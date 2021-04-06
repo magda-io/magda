@@ -250,35 +250,47 @@ export default function DatasetFile({
                             <div>
                                 <b>Format:</b> {file.format}
                             </div>
-                            <div>
-                                <b>Size:</b>{" "}
-                                {humanFileSize(file.byteSize, false)}
-                                <span className="tooltip-container">
-                                    <TooltipWrapper
-                                        className="tooltip tooltip-human-file-size"
-                                        launcher={() => (
-                                            <div className="tooltip-launcher-icon help-icon">
-                                                <img
-                                                    src={helpIcon}
-                                                    alt="Note: 1 KiB = 1024 Bytes, 1 MiB = 1024 KiB"
-                                                />
-                                            </div>
-                                        )}
-                                        innerElementClassName="inner"
-                                    >
-                                        {() => {
-                                            return (
-                                                <div>
-                                                    <div>
-                                                        Note: 1 KiB = 1024 Bytes
-                                                    </div>
-                                                    <div>1 MiB = 1024 KiB</div>
+                            {file.creationMethod !==
+                                DistributionCreationMethod.Manual &&
+                            file?.byteSize ? (
+                                <div>
+                                    <b>Size:</b>{" "}
+                                    {humanFileSize(file.byteSize, false)}
+                                    <span className="tooltip-container">
+                                        <TooltipWrapper
+                                            className="tooltip tooltip-human-file-size"
+                                            launcher={() => (
+                                                <div className="tooltip-launcher-icon help-icon">
+                                                    <img
+                                                        src={helpIcon}
+                                                        alt="Note: 1 KiB = 1024 Bytes, 1 MiB = 1024 KiB"
+                                                    />
                                                 </div>
-                                            );
-                                        }}
-                                    </TooltipWrapper>
-                                </span>
-                            </div>
+                                            )}
+                                            innerElementClassName="inner"
+                                        >
+                                            {() => {
+                                                return (
+                                                    <div>
+                                                        <div>
+                                                            Note: 1 KiB = 1024
+                                                            Bytes
+                                                        </div>
+                                                        <div>
+                                                            1 MiB = 1024 KiB
+                                                        </div>
+                                                    </div>
+                                                );
+                                            }}
+                                        </TooltipWrapper>
+                                    </span>
+                                </div>
+                            ) : (
+                                <div>
+                                    <b>Manually created file item</b>
+                                </div>
+                            )}
+
                             <div>
                                 <b>Last Modified:</b>{" "}
                                 {Moment(file.modified).format("DD/MM/YYYY")}
