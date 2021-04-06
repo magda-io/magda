@@ -164,7 +164,6 @@ csp:
     - "blob:"
     - browser-update.org
     - www.google-analytics.com
-    - vocabs.ands.org.au
     objectSrc:
     - "'none'"
     workerSrc:
