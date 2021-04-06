@@ -206,7 +206,7 @@ const AddNewFilesModal: FunctionComponent<PropsType> = (props) => {
                 title: "Untitled",
                 modified: new Date(),
                 format: "",
-                license: "No license",
+                license: "No License",
                 _state: DistributionState.Drafting,
                 isAddConfirmed: false,
                 isReplacementConfirmed: false,

@@ -164,7 +164,7 @@ const DatasetLinkItemEditing = (props: EditViewProps) => {
     const editFormat = (newValue: string | undefined) =>
         editDistribution((distribution) => ({
             ...distribution,
-            format: newValue
+            format: newValue?.toUpperCase?.()
         }));
     const editTitle = (newValue: string | undefined) =>
         editDistribution((distribution) => ({

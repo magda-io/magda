@@ -112,7 +112,7 @@ const FileDropZone: FunctionComponent<PropsType> = (props) => {
                     modified: new Date(thisFile.lastModified),
                     format: fileFormat(thisFile),
                     _state: DistributionState.Added,
-                    license: "No license",
+                    license: "No License",
                     creationSource: DistributionSource.File,
                     useStorageApi: stateData.datasetAccess.useStorageApi
                         ? true

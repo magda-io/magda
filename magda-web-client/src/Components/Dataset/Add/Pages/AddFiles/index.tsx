@@ -182,6 +182,7 @@ class AddFilesPage extends React.Component<Props> {
                 title: "Untitled",
                 modified: new Date(),
                 format: "",
+                license: "No License",
                 _state: DistributionState.Drafting,
                 useStorageApi: false
             };
