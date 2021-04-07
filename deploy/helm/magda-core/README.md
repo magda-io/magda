@@ -49,6 +49,7 @@ Kubernetes: `>= 1.14.0-0`
 |-----|------|---------|-------------|
 | global.authPluginRedirectUrl | string | `"/sign-in-redirect"` | the redirection url after the whole authentication process is completed. Authentication Plugins will use this value as default setting. The following query paramaters can be used to supply the authentication result: <ul> <li>result: (string) Compulsory. Possible value: "success" or "failure". </li> <li>errorMessage: (string) Optional. Text message to provide more information on the error to the user. </li> </ul> The default "/sign-in-redirect" url supports an additional `redirectTo` query parameter. If this parameter not presents, user will be redirected further (at frontend) to account page /account. Otherwise, user will redirected to the url sepcified by `redirectTo` query parameter. |
 | global.defaultAdminUserId | string | `"00000000-0000-4000-8000-000000000000"` |  |
+| global.enableMultiTenants | bool | `false` |  |
 | global.enablePriorityClass | bool | `false` |  |
 | global.exposeNodePorts | bool | `false` |  |
 | global.externalUrl | string | `"http://localhost:6100"` |  |

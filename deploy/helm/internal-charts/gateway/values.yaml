@@ -13,8 +13,22 @@ autoscaler:
 # -- whether or not enable auth endpoint.
 # You can turn it off if you don't need to log into any account.
 enableAuthEndpoint: true
+
+# -- wether or not enable http basic auth access control.
+# `username` & `password` will be retrieved from k8s secrets `web-access-secret`, `username` & `password` fields.
 enableWebAccessControl: false
+
+# -- wether or not enable CKAN redirection.
+# when it's on, any incoming ckan alike URL will be redirected to the CKAN instance URL 
+# that is specified by config option `ckanRedirectionDomain` and `ckanRedirectionPath`.
 enableCkanRedirection: false
+
+# -- CKAN redirection target CKAN instance domain. See `enableCkanRedirection` for more details.
+ckanRedirectionDomain:
+
+# -- CKAN redirection target CKAN instance path. See `enableCkanRedirection` for more details.
+ckanRedirectionPath:
+
 
 # -- whether or not redirect incoming request using HTTP protocol to HTTPs
 enableHttpsRedirection: false

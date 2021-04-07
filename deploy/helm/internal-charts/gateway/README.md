@@ -24,6 +24,8 @@ Kubernetes: `>= 1.14.0-0`
 | autoscaler.maxReplicas | int | `3` |  |
 | autoscaler.minReplicas | int | `1` |  |
 | autoscaler.targetCPUUtilizationPercentage | int | `80` |  |
+| ckanRedirectionDomain | string | `nil` | CKAN redirection target CKAN instance domain. See `enableCkanRedirection` for more details. |
+| ckanRedirectionPath | string | `nil` | CKAN redirection target CKAN instance path. See `enableCkanRedirection` for more details. |
 | cookie | object | default value see `Description` | Session cookie settings. <br/> More info: https://github.com/expressjs/session#cookie <br/> Supported options are:<br/> <ul> <li>`expires`: A fix cookie expire date. The expires option should not be set directly; instead only use the maxAge option.</li> <li>`httpOnly`: Default: true.</li> <li>`maxAge`: Default: 7 * 60 * 60 * 1000 (7 hours)</li> <li>`path`: Default: '/'.</li> <li>`sameSite`: Default: lax </li> <li>`secure`: Default: "auto" </li> </ul> |
 | cors.exposedHeaders[0] | string | `"Content-Range"` |  |
 | cors.exposedHeaders[1] | string | `"X-Content-Range"` |  |
@@ -34,8 +36,9 @@ Kubernetes: `>= 1.14.0-0`
 | csp.directives.objectSrc[0] | string | `"'none'"` |  |
 | csp.directives.scriptSrc[0] | string | `"'self'"` |  |
 | csp.directives.scriptSrc[1] | string | `"'unsafe-inline'"` |  |
-| csp.directives.scriptSrc[2] | string | `"browser-update.org"` |  |
-| csp.directives.scriptSrc[3] | string | `"blob:"` |  |
+| csp.directives.scriptSrc[2] | string | `"blob:"` |  |
+| csp.directives.scriptSrc[3] | string | `"browser-update.org"` |  |
+| csp.directives.scriptSrc[4] | string | `"www.google-analytics.com"` |  |
 | csp.directives.workerSrc[0] | string | `"'self'"` |  |
 | csp.directives.workerSrc[1] | string | `"blob:"` |  |
 | defaultCacheControl | string | `"public, max-age=60"` | If a response that goes through the gateway doesn't set Cache-Control, it'll be set to this value. Set to null to disable. |
@@ -44,10 +47,10 @@ Kubernetes: `>= 1.14.0-0`
 | defaultWebRouteConfig.methods | list | `["GET"]` | array of string. "all" means all methods will be proxied  |
 | defaultWebRouteConfig.redirectTrailingSlash | bool | `false` | make /xxx auto redirect to /xxxx/ |
 | defaultWebRouteConfig.to | string | `""` | the default web router proxy target. Optional. If set, the default web route set via `web` option will be ignored. |
-| enableAuthEndpoint | bool | `false` |  |
-| enableCkanRedirection | bool | `false` |  |
+| enableAuthEndpoint | bool | `true` | whether or not enable auth endpoint. You can turn it off if you don't need to log into any account. |
+| enableCkanRedirection | bool | `false` | wether or not enable CKAN redirection. when it's on, any incoming ckan alike URL will be redirected to the CKAN instance URL  that is specified by config option `ckanRedirectionDomain` and `ckanRedirectionPath`. |
 | enableHttpsRedirection | bool | `false` | whether or not redirect incoming request using HTTP protocol to HTTPs |
-| enableWebAccessControl | bool | `false` |  |
+| enableWebAccessControl | bool | `false` | wether or not enable http basic auth access control. `username` & `password` will be retrieved from k8s secrets `web-access-secret`, `username` & `password` fields. |
 | helmet.frameguard | bool | `false` |  |
 | image | object | `{}` |  |
 | proxyTimeout | int | nil (120 seconds default value will be used by upstream lib internally) | How long time (in seconds) before upstream service must complete request in order to avoid request timeout error. If not set, the request will time out after 120 seconds. |
