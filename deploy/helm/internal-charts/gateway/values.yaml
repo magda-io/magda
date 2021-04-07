@@ -10,7 +10,9 @@ autoscaler:
   maxReplicas: 3
   targetCPUUtilizationPercentage: 80
 
-enableAuthEndpoint: false
+# -- whether or not enable auth endpoint.
+# You can turn it off if you don't need to log into any account.
+enableAuthEndpoint: true
 enableWebAccessControl: false
 enableCkanRedirection: false
 
