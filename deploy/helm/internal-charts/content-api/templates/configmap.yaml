@@ -4,4 +4,4 @@ metadata:
   name: "scss-compiler-config"
 data:
   image: "{{ .Values.image.repository | default .Values.global.image.repository }}/magda-scss-compiler:{{ .Values.image.tag | default .Values.global.image.tag | default .Chart.Version }}"
-  scssVars: {{ .Values.scssVars | quote }}
+  scssVars: {{ .Values.scssVars | default dict | mustToRawJson | quote }}

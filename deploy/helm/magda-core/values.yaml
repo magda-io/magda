@@ -5,6 +5,7 @@ global:
   rollingUpdate:
     maxUnavailable: 0
   exposeNodePorts: false
+  enableMultiTenants: false
   image:
     # When we don't specify tag here, .Chart.version will be used --- which is easier for versioning
     # You still can specify a tag here to override the default `.Chart.version` value (e.g. for local debugging)
