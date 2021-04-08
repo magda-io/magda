@@ -24,6 +24,9 @@
 -   Metadata authoring tool:Fixed: avoid sending invalid char (e.g. '\n') to vocabulary APIs
 -   Metadata authoring tool: Will save format string as uppercase string
 -   Metadata authoring tool: Fixed an issue that "No License" value was incorrect set
+-   Make `scssVars` option for content-api helm chart accept dictionary rather than JSON string
+-   Set default value of `enableMultiTenants` to `false` for `magda-core` chart
+-   Set gateway chart `enableAuthEndpoint` option default value to `true`
 
 ## 0.0.59
 
