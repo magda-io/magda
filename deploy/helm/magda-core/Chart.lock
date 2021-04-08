@@ -68,14 +68,11 @@ dependencies:
 - name: tenant-db
   repository: file://../internal-charts/tenant-db
   version: 0.0.60-alpha.0
-- name: openfaas
-  repository: file://../openfaas
-  version: 5.5.5-magda
 - name: priorities
   repository: file://../internal-charts/priorities
   version: 0.0.60-alpha.0
 - name: ingress
   repository: file://../internal-charts/ingress
   version: 0.0.60-alpha.0
-digest: sha256:207fc0d55ca01716b16fab485448bbaf6eea326970080ff1cfbb8fd02a121182
-generated: "2021-01-21T22:35:58.200793+11:00"
+digest: sha256:d418bd96f5c6c234e646ed69a2900e247a2de061134753bf2b21fe638918111f
+generated: "2021-04-08T12:57:35.123774+10:00"

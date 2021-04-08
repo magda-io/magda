@@ -51,6 +51,9 @@ global:
       imagePullSecret: false
 
 magda:
+  openfaas:
+    faasnetes:
+      imagePullPolicy: Always
   magda-function-history-report:
     image:
       repository: docker.io/data61
@@ -117,10 +120,6 @@ magda:
         tag: 0.0.57-0
         pullPolicy: IfNotPresent
         imagePullSecret: false
-
-    openfaas:
-      faasnetes:
-        imagePullPolicy: Always
 
     elasticsearch:
       data:

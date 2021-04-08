@@ -17,6 +17,7 @@ Kubernetes: `>= 1.14.0-0`
 | Repository | Name | Version |
 |------------|------|---------|
 | file://../magda-core | magda-core | 0.0.60-alpha.0 |
+| file://../openfaas | openfaas | 5.5.5-magda |
 | https://charts.magda.io | magda-ckan-connector | 0.0.57-0 |
 | https://charts.magda.io | magda-function-esri-url-processor | 0.0.57-0 |
 | https://charts.magda.io | magda-function-history-report | 0.0.57-0 |
@@ -42,6 +43,18 @@ Kubernetes: `>= 1.14.0-0`
 | global.openfaas.mainNamespace | string | `"openfaas"` |  |
 | global.openfaas.namespacePrefix | string | `""` |  |
 | global.openfaas.secrets.authSecrets | bool | `true` |  |
+| openfaas.basic_auth | bool | `false` |  |
+| openfaas.faasIdler.dryRun | bool | `false` |  |
+| openfaas.faasnetes.imagePullPolicy | string | `"IfNotPresent"` |  |
+| openfaas.faasnetes.readTimeout | string | `"120s"` |  |
+| openfaas.faasnetes.writeTimeout | string | `"120s"` |  |
+| openfaas.gateway.readTimeout | string | `"125s"` |  |
+| openfaas.gateway.scaleFromZero | bool | `true` |  |
+| openfaas.gateway.upstreamTimeout | string | `"120s"` |  |
+| openfaas.gateway.writeTimeout | string | `"125s"` |  |
+| openfaas.ingress.enabled | bool | `false` |  |
+| openfaas.operator.create | bool | `true` |  |
+| openfaas.serviceType | string | `"ClusterIP"` |  |
 | tags.all | bool | `true` |  |
 | tags.connectors | bool | `false` |  |
 | tags.minion-broken-link | bool | `false` |  |

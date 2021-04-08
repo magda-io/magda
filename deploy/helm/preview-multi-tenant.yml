@@ -34,6 +34,9 @@ tags:
   connectors: false
 
 magda:
+  openfaas:
+    operator: 
+      createCRD: false
   magda-function-history-report:
     image:
       repository: docker.io/data61
@@ -141,10 +144,6 @@ magda:
         tag: 0.0.57-0
         pullPolicy: IfNotPresent
         imagePullSecret: false
-
-    openfaas:
-      operator: 
-        createCRD: false
 
 # auth plugin for google
 magda-auth-google:
