@@ -11,6 +11,16 @@ dependencies:
   - name: magda-core
     version: 0.0.60-alpha.0
     repository: file://../magda-core
+
+  - name: openfaas
+    version: 5.5.5-magda
+    repository: file://../openfaas
+    # Users should turn on / off openfaas via this condition var `global.openfaas.enabled` rather than `tags`
+    # Due to a limitation of helm, the value of tags is not available in chart template.
+    # All openfaas dependents should check this field to decide deployment logic (`tags` unfortunately not available to ).
+    # They choose to simply not deploy or prompt an error message via [helm required function](https://helm.sh/docs/howto/charts_tips_and_tricks/#know-your-template-functions)
+    condition: global.openfaas.enabled
+
   # magda-core chart is always enabled.
   # Thus, no tags or condition are required.
   # You should set its sub-chart to enabled or not.

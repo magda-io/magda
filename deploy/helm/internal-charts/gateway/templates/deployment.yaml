@@ -81,9 +81,11 @@ spec:
             "--defaultWebRouteConfig", "/etc/config/defaultWebRouteConfig.json",
             "--authorizationApi", "http://authorization-api/v0",
             "--tenantUrl", "http://tenant-api/v0",
+{{- if .Values.global.openfaas }}
 {{- if .Values.global.openfaas.mainNamespace }}
             "--openfaasGatewayUrl", {{ include "magda.openfaasGatewayUrl" . | quote }},
             "--openfaasAllowAdminOnly", {{ .Values.global.openfaas.allowAdminOnly | quote }},
+{{- end }}
 {{- end }}
 {{- if .Values.global.enableMultiTenants }}
             "--enableMultiTenants", "true",

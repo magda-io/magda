@@ -27,6 +27,7 @@
 -   Make `scssVars` option for content-api helm chart accept dictionary rather than JSON string
 -   Set default value of `enableMultiTenants` to `false` for `magda-core` chart
 -   Set gateway chart `enableAuthEndpoint` option default value to `true`
+-   #3094 Make openfaas a dependecy of magda chart instead of magda-core
 
 ## 0.0.59
 

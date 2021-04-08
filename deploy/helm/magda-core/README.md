@@ -40,7 +40,6 @@ Kubernetes: `>= 1.14.0-0`
 | file://../internal-charts/tenant-api | tenant-api | 0.0.60-alpha.0 |
 | file://../internal-charts/tenant-db | tenant-db | 0.0.60-alpha.0 |
 | file://../internal-charts/web-server | web-server | 0.0.60-alpha.0 |
-| file://../openfaas | openfaas | 5.5.5-magda |
 | https://charts.magda.io | magda-preview-map | 0.0.58 |
 
 ## Values
@@ -59,26 +58,9 @@ Kubernetes: `>= 1.14.0-0`
 | global.logLevel | string | `"INFO"` |  |
 | global.namespace | string | `"default"` |  |
 | global.noDbAuth | bool | `false` |  |
-| global.openfaas.allowAdminOnly | bool | `true` |  |
-| global.openfaas.enabled | bool | `true` |  |
-| global.openfaas.functionNamespace | string | `"openfaas-fn"` |  |
-| global.openfaas.mainNamespace | string | `"openfaas"` |  |
-| global.openfaas.namespacePrefix | string | `""` |  |
 | global.rollingUpdate.maxUnavailable | int | `0` |  |
 | global.useCloudSql | bool | `false` |  |
 | global.useCombinedDb | bool | `true` |  |
-| openfaas.basic_auth | bool | `false` |  |
-| openfaas.faasIdler.dryRun | bool | `false` |  |
-| openfaas.faasnetes.imagePullPolicy | string | `"IfNotPresent"` |  |
-| openfaas.faasnetes.readTimeout | string | `"120s"` |  |
-| openfaas.faasnetes.writeTimeout | string | `"120s"` |  |
-| openfaas.gateway.readTimeout | string | `"125s"` |  |
-| openfaas.gateway.scaleFromZero | bool | `true` |  |
-| openfaas.gateway.upstreamTimeout | string | `"120s"` |  |
-| openfaas.gateway.writeTimeout | string | `"125s"` |  |
-| openfaas.ingress.enabled | bool | `false` |  |
-| openfaas.operator.create | bool | `true` |  |
-| openfaas.serviceType | string | `"ClusterIP"` |  |
 | tags | object | see default value of each individual tag below. | (object) Control on/ off of each modules.  To turn on/off openfaas, please set value to `global.openfaas.enabled` |
 | tags.admin-api | bool | `false` | turn on / off [admin-api](../internal-charts/admin-api/README.md) |
 | tags.all | bool | `true` | turn on / off all modules |
