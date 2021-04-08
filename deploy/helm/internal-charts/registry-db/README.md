@@ -1,6 +1,6 @@
 # registry-db
 
-![Version: 0.0.60-alpha.0](https://img.shields.io/badge/Version-0.0.60--alpha.0-informational?style=flat-square)
+![Version: 0.0.60-alpha.4](https://img.shields.io/badge/Version-0.0.60--alpha.4-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
