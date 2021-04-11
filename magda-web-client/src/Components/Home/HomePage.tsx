@@ -17,6 +17,7 @@ import MediaQuery from "react-responsive";
 import { User } from "reducers/userManagementReducer";
 import MyDatasetSection from "./MyDatasetSection";
 import { getPluginHeader, HeaderNavItem } from "externalPluginComponents";
+import { config } from "../../config";
 
 const HeaderPlugin = getPluginHeader();
 
@@ -113,20 +114,28 @@ class HomePage extends React.Component<PropsType> {
             return null;
         }
         if (this?.props?.user?.id) {
-            // --- my dataset section should only show for desktop due to the size of the design
-            // --- on mobile should still stories as before
-            return (
-                <Small>
-                    <Stories stories={this.props.stories} />
-                </Small>
-            );
+            if (config?.featureFlags?.cataloguing) {
+                // --- my dataset section should only show for desktop due to the size of the design
+                // --- on mobile should still stories as before
+                return (
+                    <Small>
+                        <Stories stories={this.props.stories} />
+                    </Small>
+                );
+            } else {
+                return <Stories stories={this.props.stories} />;
+            }
         } else {
             return <Stories stories={this.props.stories} />;
         }
     }
 
     getMyDatasetSection() {
-        if (this?.props?.isFetchingWhoAmI === true || !this?.props?.user?.id) {
+        if (
+            this?.props?.isFetchingWhoAmI === true ||
+            !this?.props?.user?.id ||
+            !config?.featureFlags?.cataloguing
+        ) {
             return null;
         } else {
             // --- my dataset section should only show for desktop due to the size of the design
