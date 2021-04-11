@@ -1,22 +1,22 @@
 import React from "react";
 import PropTypes from "prop-types";
-import emptyStarIcon from "assets/emptyStar.svg";
+import { ReactComponent as EmptyStarIcon } from "assets/emptyStar.svg";
+import { ReactComponent as StarIcon } from "assets/star.svg";
 import "./StarRating.scss";
-import starIcon from "assets/star.svg";
 
 function StarRating(props) {
-    const stars = Array(5).fill(emptyStarIcon).fill(starIcon, 0, props.stars);
+    const stars = Array(5).fill(EmptyStarIcon).fill(StarIcon, 0, props.stars);
     const ratingText = `${props.stars} out of 5 stars`;
     return (
         <div className="star-rating-box" aria-label={ratingText}>
-            {stars.map((icon, i) => (
+            {stars.map((Icon, i) => (
                 <span
                     key={i}
                     className={
-                        icon === starIcon ? "full-star-icon" : "empty-star-icon"
+                        Icon === StarIcon ? "full-star-icon" : "empty-star-icon"
                     }
                 >
-                    <img key={i} src={icon} alt="star rating" />
+                    <Icon key={i} aria-label="star rating" role="img" />
                 </span>
             ))}
         </div>

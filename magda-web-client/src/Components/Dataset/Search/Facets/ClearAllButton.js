@@ -2,7 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 import queryString from "query-string";
-import removePassiveIcon from "assets/remove-passive.svg";
+import { ReactComponent as RemovePassiveIcon } from "assets/remove-passive.svg";
 
 const ClearAllButton = ({ location, history, dispatch }) => {
     const query = queryString.parse(location.search);
@@ -32,10 +32,9 @@ const ClearAllButton = ({ location, history, dispatch }) => {
                             });
                         }}
                     >
-                        <img
+                        <RemovePassiveIcon
                             className="facet-icon"
-                            src={removePassiveIcon}
-                            alt="Clear all button"
+                            aria-label="Clear all button"
                         />
                         <span>Clear All</span>
                     </button>

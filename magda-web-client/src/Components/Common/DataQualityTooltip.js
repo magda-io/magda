@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 
 import TooltipWrapper from "./TooltipWrapper";
 
-import helpIcon from "assets/help-24.svg";
+import { ReactComponent as HelpIcon } from "assets/help-24.svg";
 
 export default function DataQualityTooltip(props) {
     return (
@@ -13,10 +13,9 @@ export default function DataQualityTooltip(props) {
             className="data-quality-tooltip no-print"
             launcher={() => (
                 <Link to="/page/linked-data-rating">
-                    <img
+                    <HelpIcon
                         className="data-quality-tooltip-launcher"
-                        src={helpIcon}
-                        alt="Calculated using the Linked Data Rating, click for more information"
+                        aria-label="Calculated using the Linked Data Rating, click for more information"
                     />
                 </Link>
             )}

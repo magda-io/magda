@@ -12,7 +12,7 @@ import PropTypes from "prop-types";
 import debounce from "lodash/debounce";
 import Pagination from "Components/Common/Pagination";
 import "./OrganisationsPage.scss";
-import search from "assets/search-dark.svg";
+import { ReactComponent as SearchIcon } from "assets/search-dark.svg";
 import { Medium } from "Components/Common/Responsive";
 import { withRouter } from "react-router-dom";
 import MagdaNamespacesConsumer from "Components/i18n/MagdaNamespacesConsumer";
@@ -200,7 +200,7 @@ class OrganisationsPage extends Component {
                     className="search-icon au-btn"
                     onClick={this.onClickSearch}
                 >
-                    <img src={search} alt="search" />
+                    <SearchIcon aria-label="search" />
                 </button>
             </div>
         );

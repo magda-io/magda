@@ -38,6 +38,15 @@
             background-color: transparent;
         }
     }
+    &.home {
+        .search-btn {
+            svg {
+                path {
+                    fill: #564c63;
+                }
+            }
+        }
+    }
 }
 
 .searchBox {

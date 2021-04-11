@@ -1,8 +1,8 @@
 import React from "react";
 import RequestFormLogic from "Components/Dataset/Suggest/RequestFormLogic";
-import downArrow from "assets/downArrow.svg";
-import upArrow from "assets/upArrow.svg";
-import close from "assets/close.svg";
+import { ReactComponent as DownArrowIcon } from "assets/downArrow.svg";
+import { ReactComponent as UpArrowIcon } from "assets/upArrow.svg";
+import { ReactComponent as CloseIcon } from "assets/close.svg";
 import "./SearchPageSuggest.scss";
 
 //This is the suggest form on the search results page
@@ -76,18 +76,24 @@ export default class SearchPageSuggest extends React.Component {
                             {" "}
                             Suggest a new dataset
                         </button>
-                        <img
-                            alt="close"
-                            className="suggest-dataset-icon"
-                            src={this.state.showSuggest ? upArrow : downArrow}
-                            onClick={this.toggleSuggest}
-                        />
+                        {this.state.showSuggest ? (
+                            <UpArrowIcon
+                                className="suggest-dataset-icon"
+                                aria-label="close icon"
+                                onClick={this.toggleSuggest}
+                            />
+                        ) : (
+                            <DownArrowIcon
+                                className="suggest-dataset-icon"
+                                aria-label="close icon"
+                                onClick={this.toggleSuggest}
+                            />
+                        )}
                     </h3>
                 ) : (
-                    <img
-                        src={close}
-                        className="correspondence-search-close-button "
-                        alt="close"
+                    <CloseIcon
+                        className="correspondence-search-close-button"
+                        aria-label="close icon"
                         onClick={() => {
                             this.setState(() => {
                                 return {

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import "./RegionSearchBox.scss";
 import debounce from "lodash/debounce";
-import search from "assets/search-dark.svg";
+import { ReactComponent as SearchIcon } from "assets/search-dark.svg";
 import { NoResultsLabel } from "./NoResultsLabel";
 
 /**
@@ -120,7 +120,7 @@ class RegionSearchBox extends Component {
         return (
             <div className="region-search-box  facet-search-box">
                 <form onKeyDown={this.handleKeyDown}>
-                    <img className="search-icon" src={search} alt="search" />
+                    <SearchIcon className="search-icon" aria-label="search" />
                     <input
                         className="au-text-input au-text-input--block"
                         name="type region"

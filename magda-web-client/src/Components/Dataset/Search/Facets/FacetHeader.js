@@ -1,26 +1,18 @@
 import React, { Component } from "react";
 import "./FacetHeader.scss";
-import publisher_passive from "assets/publisher-passive.svg";
-import format_passive from "assets/format-passive.svg";
-import temporal_passive from "assets/temporal-passive.svg";
-import region_passive from "assets/region-passive.svg";
-import publisher_active from "assets/publisher-active.svg";
-import format_active from "assets/format-active.svg";
-import temporal_active from "assets/temporal-active.svg";
-import region_active from "assets/region-active.svg";
-import remove_light from "assets/remove-light.svg";
+import { ReactComponent as PublisherIcon } from "assets/publisher-passive.svg";
+import { ReactComponent as FormatIcon } from "assets/format-passive.svg";
+import { ReactComponent as TemporalIcon } from "assets/temporal-passive.svg";
+import { ReactComponent as RegionIcon } from "assets/region-passive.svg";
+import { ReactComponent as RemoveIcon } from "assets/remove-light.svg";
 import { config } from "config";
 import upperFirst from "lodash/upperFirst";
 
 const IconList = {
-    publisher_passive,
-    format_passive,
-    temporal_passive,
-    region_passive,
-    publisher_active,
-    format_active,
-    temporal_active,
-    region_active
+    PublisherIcon,
+    FormatIcon,
+    TemporalIcon,
+    RegionIcon
 };
 /**
  * Facet header component, contains a title of the facet and a reset button when there is a active facet
@@ -190,7 +182,16 @@ class FacetHeader extends Component {
         return hasFilter;
     }
 
+    getButtonIcon() {
+        if (!this.props.id) {
+            return null;
+        }
+        const iconKey = upperFirst(this.props.id) + "Icon";
+        return IconList[iconKey];
+    }
+
     render() {
+        const ButtonIcon = this.getButtonIcon();
         return (
             <div
                 className={`facet-header ${
@@ -206,14 +207,11 @@ class FacetHeader extends Component {
                     aria-label={this.calculateAltText()}
                     disabled={this.props.disabled}
                 >
-                    <img
-                        className="facet-icon"
-                        alt=""
-                        src={
-                            this.state.buttonActive
-                                ? IconList[`${this.props.id}_active`]
-                                : IconList[`${this.props.id}_passive`]
-                        }
+                    <ButtonIcon
+                        className={`facet-icon ${
+                            this.state.buttonActive ? "active" : ""
+                        }`}
+                        aria-label={this.calculateTitle()}
                     />
                     {this.calculateTitle()}
                 </button>
@@ -223,7 +221,9 @@ class FacetHeader extends Component {
                         className="btn-remove au-btn"
                         aria-label={this.calculateRemoveAltText()}
                     >
-                        <img alt="" src={remove_light} />
+                        <RemoveIcon
+                            aria-label={this.calculateRemoveAltText()}
+                        />
                     </button>
                 )}
             </div>

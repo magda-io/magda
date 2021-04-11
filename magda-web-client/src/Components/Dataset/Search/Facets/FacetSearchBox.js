@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import debounce from "lodash/debounce";
 
 import "./FacetSearchBox.scss";
-import search from "assets/search-dark.svg";
+import { ReactComponent as SearchIcon } from "assets/search-dark.svg";
 
 /**
  * Searchbox for facet facet
@@ -41,7 +41,7 @@ class FacetSearchBox extends Component {
         // Finally, render it!
         return (
             <div className="facet-search-box">
-                <img className="search-icon" src={search} alt="search" />
+                <SearchIcon className="search-icon" aria-label="search" />
                 <input
                     className="au-text-input au-text-input--block"
                     {...inputProps}
