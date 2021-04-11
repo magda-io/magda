@@ -2,8 +2,8 @@ import React, { FunctionComponent, useState } from "react";
 import "./DatasetList.scss";
 import DatasetGrid from "./DatasetGrid";
 import { DatasetTypes } from "api-clients/RegistryApis";
-import dismissIcon from "assets/dismiss.svg";
-import searchIcon from "assets/search-dark.svg";
+import { ReactComponent as DismissIcon } from "assets/dismiss.svg";
+import { ReactComponent as SearchIcon } from "assets/search-dark.svg";
 import useDatasetCount from "./useDatasetCount";
 
 type PropsType = {
@@ -81,20 +81,18 @@ const DatasetList: FunctionComponent<PropsType> = (props) => {
                             }}
                         />
                         {searchText ? (
-                            <img
-                                alt="reset search text"
+                            <DismissIcon
+                                aria-label="reset search text"
                                 className="clear-search-icon"
-                                src={dismissIcon}
                                 onClick={() => {
                                     setInputText("");
                                     setSearchText("");
                                 }}
                             />
                         ) : (
-                            <img
+                            <SearchIcon
                                 className="search-icon"
-                                src={searchIcon}
-                                alt="search icon"
+                                aria-label="search icon"
                             />
                         )}
                     </div>

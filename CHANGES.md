@@ -28,6 +28,7 @@
 -   #3106 Set default value of `enableMultiTenants` to `false` for `magda-core` chart
 -   #3107 Set gateway chart `enableAuthEndpoint` option default value to `true`
 -   #3094 Make openfaas a dependecy of magda chart instead of magda-core
+-   #3111 Make SVG icons load via inline React Components rather than `<img/>`
 
 ## 0.0.59
 

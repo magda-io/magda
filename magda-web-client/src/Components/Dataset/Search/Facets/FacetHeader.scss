@@ -30,10 +30,14 @@
         text-align: center;
         padding: 0 16px 0 10px;
         text-transform: capitalize;
-        pointer: cursor;
         line-height: 1;
         .facet-icon {
-            padding: 6px 6px 4px 0;
+            margin: 6px 6px 4px 0;
+            &.active {
+                path {
+                    fill: #ffffff;
+                }
+            }
         }
         span {
             font-size: 14px;

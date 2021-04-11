@@ -6,10 +6,7 @@ import debounce from "lodash/debounce";
 import defined from "helpers/defined";
 import React, { Component } from "react";
 import { fetchRegionMapping } from "actions/regionMappingActions";
-import searchLight from "assets/search-grey.svg";
-import searchDark from "assets/search-purple.svg";
-// eslint-disable-next-line
-import PropTypes from "prop-types";
+import { ReactComponent as SearchIcon } from "assets/search-grey.svg";
 import queryString from "query-string";
 import SearchSuggestionBox from "./SearchSuggestionBox";
 import { Small } from "Components/Common/Responsive";
@@ -189,7 +186,6 @@ class SearchBox extends Component {
             />
         );
 
-        const icon = this.props.isHome ? searchDark : searchLight;
         return (
             <MagdaNamespacesConsumer ns={["global"]}>
                 {(translate) => (
@@ -224,7 +220,7 @@ class SearchBox extends Component {
                                         }`}
                                         type="button"
                                     >
-                                        <img src={icon} alt="search button" />
+                                        <SearchIcon aria-label="search button" />
                                         <span className="sr-only">
                                             submit search
                                         </span>
