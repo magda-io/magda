@@ -40,6 +40,13 @@
         }
     }
 
+    .small-screen-layout {
+        .story-title {
+            padding-top: 15px;
+            padding-left: 15px;
+        }
+    }
+
     @media (max-width: $medium) {
         .story-box-text {
             padding: 16px;

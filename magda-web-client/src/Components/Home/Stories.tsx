@@ -63,7 +63,7 @@ class Stories extends Component<PropsType, StateType> {
                                             <StoryBox
                                                 idx={index}
                                                 story={story}
-                                                className="story-box-{index}"
+                                                className={`story-box-${index} small-screen-layout`}
                                                 key={index}
                                             />
                                         ))}
@@ -109,7 +109,9 @@ class Stories extends Component<PropsType, StateType> {
                                                         <StoryBox
                                                             idx={r * 4}
                                                             story={row[0]}
-                                                            className="stories"
+                                                            className={`stories medium-screen-layout story-box-${
+                                                                r * 4
+                                                            }`}
                                                         />
                                                     </div>
                                                 </div>
@@ -129,7 +131,9 @@ class Stories extends Component<PropsType, StateType> {
                                                             <StoryBox
                                                                 idx={r * 4 + i}
                                                                 story={story}
-                                                                className="stories"
+                                                                className={`stories medium-screen-layout story-box-${
+                                                                    r * 4 + i
+                                                                }`}
                                                             />
                                                         </div>
                                                     ))}
@@ -145,7 +149,9 @@ class Stories extends Component<PropsType, StateType> {
                                                         <StoryBox
                                                             idx={r * 4 + 0}
                                                             story={row[0]}
-                                                            className="stories"
+                                                            className={`stories medium-screen-layout story-box-${
+                                                                r * 4 + 0
+                                                            }`}
                                                         />
                                                     </div>
                                                     <div className="col-3">
@@ -153,12 +159,16 @@ class Stories extends Component<PropsType, StateType> {
                                                             <StoryBox
                                                                 idx={r * 4 + 1}
                                                                 story={row[1]}
-                                                                className="row stories"
+                                                                className={`stories medium-screen-layout story-box-${
+                                                                    r * 4 + 1
+                                                                }`}
                                                             />
                                                             <StoryBox
                                                                 idx={r * 4 + 2}
                                                                 story={row[2]}
-                                                                className="row stories"
+                                                                className={`stories medium-screen-layout story-box-${
+                                                                    r * 4 + 2
+                                                                }`}
                                                             />
                                                         </div>
                                                     </div>
@@ -166,7 +176,9 @@ class Stories extends Component<PropsType, StateType> {
                                                         <StoryBox
                                                             idx={r * 4 + 3}
                                                             story={row[3]}
-                                                            className="stories"
+                                                            className={`stories medium-screen-layout story-box-${
+                                                                r * 4 + 3
+                                                            }`}
                                                         />
                                                     </div>
                                                 </div>
