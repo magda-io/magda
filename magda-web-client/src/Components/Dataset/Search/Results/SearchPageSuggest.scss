@@ -24,14 +24,20 @@
     & a:hover {
         cursor: pointer;
     }
+
+    .correspondence-alert {
+        width: 100%;
+        padding-right: 5px;
+    }
 }
 
 .correspondence-search-close-button {
     height: 2em;
     width: 2em;
     position: absolute;
-    top: 2px;
-    right: 2px;
+    top: 10px;
+    right: 10px;
+    z-index: 1;
     &:hover {
         cursor: pointer;
     }
