@@ -1,6 +1,6 @@
 # magda
 
-![Version: 0.0.60-alpha.0](https://img.shields.io/badge/Version-0.0.60--alpha.0-informational?style=flat-square)
+![Version: 0.0.60-alpha.5](https://img.shields.io/badge/Version-0.0.60--alpha.5-informational?style=flat-square)
 
 A complete solution for managing, publishing and discovering government data, private and open. This chart includes the magda default deployment.
 
@@ -16,7 +16,7 @@ Kubernetes: `>= 1.14.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../magda-core | magda-core | 0.0.60-alpha.0 |
+| file://../magda-core | magda-core | 0.0.60-alpha.5 |
 | file://../openfaas | openfaas | 5.5.5-magda |
 | https://charts.magda.io | magda-ckan-connector | 0.0.57-0 |
 | https://charts.magda.io | magda-function-esri-url-processor | 0.0.57-0 |
