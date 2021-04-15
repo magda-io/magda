@@ -31,6 +31,7 @@
 -   #3111 Make SVG icons load via inline React Components rather than `<img/>`
 -   #3113 Fixed "Suggest a Dataset Form" Styling Issue
 -   #3115 Hide Home Page "My Datasets" Section when `cataloguing` = `false`
+-   #3117 Auto passing web-client config obj to external plugin components
 
 ## 0.0.59
 

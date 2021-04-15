@@ -60,6 +60,11 @@ interface DateConfig {
 }
 
 const serverConfig: {
+    image?: {
+        pullPolicy?: string;
+        repository?: string;
+        tag?: string;
+    };
     authApiBaseUrl?: string;
     baseUrl?: string;
     authPluginRedirectUrl?: string;
@@ -95,7 +100,7 @@ const serverConfig: {
     ckanExportServers: {
         [ckanServerUrl: string]: boolean;
     };
-    defultCkanServer: string;
+    defaultCkanServer: string;
     defaultTimeZone?: string;
     enableCrawlerViews?: boolean;
     discourseSiteUrl?: string;
@@ -405,3 +410,5 @@ export const defaultConfiguration = {
 
 /** The bucket in the storage API where datasets are stored */
 export const DATASETS_BUCKET = "magda-datasets";
+
+export type ConfigType = typeof config;
