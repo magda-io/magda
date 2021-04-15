@@ -7,5 +7,5 @@ data:
   {{- $_ := set $webConfigDict "baseExternalUrl" .Values.global.externalUrl }}
   {{- $_ := set $webConfigDict "authPluginRedirectUrl" .Values.global.authPluginRedirectUrl }}
   {{- $_ := .Values.global.useLocalStyleSheet | default .Values.useLocalStyleSheet | set $webConfigDict "useLocalStyleSheet" }}
-  {{- $_ := .Values.global.image | default dict | deepCopy | merge (deepCopy .Values.image) | set $webConfigDict "image" }}
+  {{- $_ := .Chart.Version | dict "tag" | merge (.Values.global.image | default dict | deepCopy | merge (deepCopy .Values.image)) | set $webConfigDict "image" }}
   web.json: {{ $webConfigDict | mustToRawJson | quote }}
