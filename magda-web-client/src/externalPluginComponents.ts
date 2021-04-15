@@ -1,15 +1,32 @@
-import { ComponentType } from "react";
+import { ComponentType, FunctionComponent } from "react";
 import { User } from "reducers/userManagementReducer";
+import { config, ConfigType } from "./config";
+import React from "react";
 
 const PREFIX = "MagdaPluginComponent";
 
-export function getComponent<T>(name: string): T | null {
+export type ExternalCompontType<PropsType> = ComponentType<
+    PropsType & { config: ConfigType }
+>;
+
+export function getComponent<T>(name: string): FunctionComponent<T> | null {
     const fullComponentName = `${PREFIX}${name}`;
-    return window?.[fullComponentName]?.default
+    const ExternalComponent: ExternalCompontType<T> = window?.[
+        fullComponentName
+    ]?.default
         ? window[fullComponentName].default
         : window?.[fullComponentName]
         ? window[fullComponentName]
         : null;
+
+    if (!ExternalComponent) {
+        return null;
+    }
+
+    const ExternalComponentWithConfig: FunctionComponent<T> = (props) =>
+        React.createElement(ExternalComponent, { ...props, config });
+
+    return ExternalComponentWithConfig;
 }
 
 export type HeaderNavItem = {
@@ -23,15 +40,20 @@ export type HeaderNavItem = {
     order: number;
 };
 
-export type HeaderComponent = ComponentType<{
+export type HeaderComponentProps = {
     isFetchingWhoAmI: boolean;
     user: User;
     whoAmIError: Error | null;
     headerNavItems: HeaderNavItem[];
-}>;
+};
 
-export function getPluginHeader(): HeaderComponent | null {
-    return getComponent<HeaderComponent>("Header");
+export type HeaderCompontType = ComponentType<HeaderComponentProps>;
+export type ExternalHeaderCompontType = ExternalCompontType<
+    HeaderComponentProps
+>;
+
+export function getPluginHeader(): HeaderCompontType | null {
+    return getComponent<HeaderComponentProps>("Header");
 }
 
 export type CopyRightItem = {
@@ -53,7 +75,7 @@ export type FooterNavLinkGroup = {
     order: number;
 };
 
-export type FooterComponent = ComponentType<{
+type FooterComponentPropsType = {
     isFetchingWhoAmI: boolean;
     user: User;
     whoAmIError: Error | null;
@@ -61,8 +83,13 @@ export type FooterComponent = ComponentType<{
     footerMediumNavs: FooterNavLinkGroup[];
     footerSmallNavs: FooterNavLinkGroup[];
     footerCopyRightItems: CopyRightItem[];
-}>;
+};
 
-export function getPluginFooter(): FooterComponent | null {
-    return getComponent<FooterComponent>("Footer");
+export type FooterComponentType = ComponentType<FooterComponentPropsType>;
+export type ExternalFooterCompontType = ExternalCompontType<
+    FooterComponentPropsType
+>;
+
+export function getPluginFooter(): FooterComponentType | null {
+    return getComponent<FooterComponentPropsType>("Footer");
 }
