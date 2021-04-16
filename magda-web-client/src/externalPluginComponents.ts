@@ -1,15 +1,53 @@
-import { ComponentType, FunctionComponent } from "react";
+import { ComponentType } from "react";
+import { bindActionCreators } from "redux";
+import { connect } from "react-redux";
+import { withRouter } from "react-router-dom";
+import { Location, History } from "history";
 import { User } from "reducers/userManagementReducer";
+import { requestSignOut, requestWhoAmI } from "./actions/userManagementActions";
+import { fetchContent } from "./actions/contentActions";
 import { config, ConfigType } from "./config";
-import React from "react";
 
 const PREFIX = "MagdaPluginComponent";
 
-export type ExternalCompontType<PropsType> = ComponentType<
-    PropsType & { config: ConfigType }
->;
+interface CommonPropsType {
+    isFetchingWhoAmI: boolean;
+    user: User;
+    whoAmIError: Error | null;
+    config: ConfigType;
+    history: History;
+    location: Location;
+    match: any;
+    requestSignOut: () => Promise<void>;
+    requestWhoAmI: () => Promise<void>;
+    fetchContent: () => Promise<void>;
+}
 
-export function getComponent<T>(name: string): FunctionComponent<T> | null {
+export type ExternalCompontType<T> = ComponentType<T & CommonPropsType>;
+
+const mapStateToProps = (state) => {
+    const { userManagement, isFetchingWhoAmI, whoAmIError } = state;
+
+    return {
+        user: userManagement.user,
+        isFetchingWhoAmI,
+        whoAmIError,
+        config
+    };
+};
+
+const mapDispatchToProps = (dispatch) => {
+    return bindActionCreators(
+        {
+            requestSignOut,
+            requestWhoAmI,
+            fetchContent
+        },
+        dispatch
+    );
+};
+
+export function getComponent<T>(name: string): ComponentType<T> | null {
     const fullComponentName = `${PREFIX}${name}`;
     const ExternalComponent: ExternalCompontType<T> = window?.[
         fullComponentName
@@ -23,10 +61,9 @@ export function getComponent<T>(name: string): FunctionComponent<T> | null {
         return null;
     }
 
-    const ExternalComponentWithConfig: FunctionComponent<T> = (props) =>
-        React.createElement(ExternalComponent, { ...props, config });
-
-    return ExternalComponentWithConfig;
+    return withRouter(
+        connect(mapStateToProps, mapDispatchToProps)(ExternalComponent as any)
+    );
 }
 
 export type HeaderNavItem = {
@@ -41,9 +78,6 @@ export type HeaderNavItem = {
 };
 
 export type HeaderComponentProps = {
-    isFetchingWhoAmI: boolean;
-    user: User;
-    whoAmIError: Error | null;
     headerNavItems: HeaderNavItem[];
 };
 
@@ -76,9 +110,6 @@ export type FooterNavLinkGroup = {
 };
 
 type FooterComponentPropsType = {
-    isFetchingWhoAmI: boolean;
-    user: User;
-    whoAmIError: Error | null;
     noTopMargin: boolean;
     footerMediumNavs: FooterNavLinkGroup[];
     footerSmallNavs: FooterNavLinkGroup[];

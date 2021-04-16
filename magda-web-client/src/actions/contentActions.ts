@@ -25,12 +25,12 @@ export function requestContentError(error: any): Action {
 }
 
 export function fetchContent() {
-    return (dispatch: Function, getState: Function) => {
+    return async (dispatch: Function, getState: Function) => {
         // check if we need to fetch
         if (getState().content.isFetching) {
-            return false;
+            return;
         }
-        fetch(config.contentUrl, config.credentialsFetchOptions)
+        await fetch(config.contentUrl, config.credentialsFetchOptions)
             .then((response) => {
                 if (response.status === 200) {
                     return response.json();
@@ -48,7 +48,6 @@ export function fetchContent() {
                     })
                 )
             );
-        return undefined;
     };
 }
 
