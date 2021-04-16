@@ -10,7 +10,6 @@ import AddDatasetProgressMeter, {
 import { getPluginHeader, HeaderNavItem } from "externalPluginComponents";
 
 import "./withHeader.scss";
-import { User } from "reducers/userManagementReducer";
 
 type InterfaceOptions = {
     includeSearchBox?: boolean;
@@ -25,22 +24,18 @@ type PlainObject = {
 const HeaderPlugin = getPluginHeader();
 
 const mapStateToProps = (state) => {
-    const datasetIsFetching = state.record.datasetIsFetching;
-    const distributionIsFetching = state.record.distributionIsFetching;
-    const publishersAreFetching = state.publisher.isFetchingPublishers;
-    const datasetSearchIsFetching = state.datasetSearch.isFetching;
-    const publisherIsFetching = state.publisher.isFetchingPublisher;
-    const isFetchingWhoAmI = state.userManagement.isFetchingWhoAmI;
-    const user = state.userManagement.user;
-    const whoAmIError = state.userManagement.whoAmIError;
-    const headerNavItems = state.content.headerNavigation;
+    const datasetIsFetching = state?.record?.datasetIsFetching;
+    const distributionIsFetching = state?.record?.distributionIsFetching;
+    const publishersAreFetching = state?.publisher?.isFetchingPublishers;
+    const datasetSearchIsFetching = state?.datasetSearch?.isFetching;
+    const publisherIsFetching = state?.publisher?.isFetchingPublisher;
+    const headerNavItems = state?.content?.headerNavigation;
+    const isFetchingWhoAmI = state?.userManagement?.isFetchingWhoAmI;
 
     return {
-        user,
-        whoAmIError,
-        isFetchingWhoAmI,
         headerNavItems,
         finishedFetching:
+            !isFetchingWhoAmI &&
             !datasetIsFetching &&
             !publishersAreFetching &&
             !datasetSearchIsFetching &&
@@ -58,9 +53,6 @@ interface Props extends PlainObject {
 }
 
 type ExtraHeaderProps = {
-    user: User;
-    isFetchingWhoAmI: boolean;
-    whoAmIError: Error | null;
     headerNavItems: HeaderNavItem[];
 };
 
@@ -78,22 +70,11 @@ const withHeader = (
     const NewComponent: React.FunctionComponent<AllProps> = (
         allProps: AllProps
     ) => {
-        const {
-            user,
-            isFetchingWhoAmI,
-            whoAmIError,
-            headerNavItems,
-            ...props
-        } = allProps;
+        const { headerNavItems, ...props } = allProps;
         return (
             <div className="other-page">
                 {HeaderPlugin ? (
-                    <HeaderPlugin
-                        isFetchingWhoAmI={allProps.isFetchingWhoAmI}
-                        user={allProps.user}
-                        whoAmIError={allProps.whoAmIError}
-                        headerNavItems={allProps.headerNavItems}
-                    />
+                    <HeaderPlugin headerNavItems={allProps.headerNavItems} />
                 ) : (
                     <Header />
                 )}

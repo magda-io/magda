@@ -152,12 +152,7 @@ class HomePage extends React.Component<PropsType> {
             <div className="homepage-app-container">
                 {getBgImg(this.props.backgroundImageUrls)}
                 {HeaderPlugin ? (
-                    <HeaderPlugin
-                        isFetchingWhoAmI={this.props.isFetchingWhoAmI}
-                        user={this.props.user}
-                        whoAmIError={this.props.whoAmIError}
-                        headerNavItems={this.props.headerNavItems}
-                    />
+                    <HeaderPlugin headerNavItems={this.props.headerNavItems} />
                 ) : (
                     <Header />
                 )}

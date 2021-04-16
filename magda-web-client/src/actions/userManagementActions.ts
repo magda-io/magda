@@ -6,16 +6,16 @@ import { FacetAction } from "../helpers/datasetSearch";
 import { fetchContent } from "actions/contentActions";
 
 export function requestWhoAmI() {
-    return (dispatch: Dispatch, getState: GetState) => {
+    return async (dispatch: Dispatch, getState: GetState) => {
         if (getState().userManagement.isFetchingWhoAmI) {
-            return false;
+            return;
         }
 
         dispatch({
             type: actionTypes.REQUEST_WHO_AM_I
         });
 
-        fetch(config.authApiUrl + "users/whoami", {
+        await fetch(config.authApiUrl + "users/whoami", {
             ...config.credentialsFetchOptions,
             credentials: "include"
         })
@@ -40,7 +40,6 @@ export function requestWhoAmI() {
                 }
             })
             .catch((err) => dispatch(receiveWhoAmIError(err)));
-        return undefined;
     };
 }
 
@@ -85,8 +84,10 @@ export function requestSignOut() {
                 }
             }
 
-            fetchContent()(dispatch, getState);
-            requestWhoAmI()(dispatch, getState);
+            await Promise.all([
+                dispatch(fetchContent),
+                dispatch(requestWhoAmI)
+            ]);
         } catch (e) {
             // --- notify user with a simply alert box
             alert("Error signing out: " + e);
@@ -110,16 +111,19 @@ export function signOutError(error: any): FacetAction {
 }
 
 export function requestAuthProviders() {
-    return (dispatch: Dispatch, getState: GetState) => {
+    return async (dispatch: Dispatch, getState: GetState) => {
         if (getState().userManagement.isFetchingAuthProviders) {
-            return false;
+            return;
         }
 
         dispatch({
             type: actionTypes.REQUEST_AUTH_PROVIDERS
         });
 
-        fetch(config.baseUrl + "auth/providers", config.credentialsFetchOptions)
+        await fetch(
+            config.baseUrl + "auth/providers",
+            config.credentialsFetchOptions
+        )
             .then((response) => {
                 if (response.status === 200) {
                     return response
@@ -134,7 +138,6 @@ export function requestAuthProviders() {
                 }
             })
             .catch((err) => dispatch(receiveAuthProvidersError(err)));
-        return undefined;
     };
 }
 

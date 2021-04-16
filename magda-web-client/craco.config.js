@@ -65,7 +65,9 @@ module.exports = {
 
             webpackConfig.externals = {
                 react: "React",
-                "react-dom": "ReactDOM"
+                "react-dom": "ReactDOM",
+                "react-router": "ReactRouter",
+                "react-router-dom": "ReactRouterDOM"
             };
 
             return webpackConfig;

@@ -62,11 +62,6 @@ class AppContainer extends React.Component {
                                 ExternalFooterComponent ? (
                                     <ExternalFooterComponent
                                         noTopMargin={true}
-                                        isFetchingWhoAmI={
-                                            this.props.isFetchingWhoAmI
-                                        }
-                                        user={this.props.user}
-                                        whoAmIError={this.props.whoAmIError}
                                         footerMediumNavs={
                                             this.props.footerMediumNavs
                                         }
@@ -87,11 +82,6 @@ class AppContainer extends React.Component {
                             render={() =>
                                 ExternalFooterComponent ? (
                                     <ExternalFooterComponent
-                                        isFetchingWhoAmI={
-                                            this.props.isFetchingWhoAmI
-                                        }
-                                        user={this.props.user}
-                                        whoAmIError={this.props.whoAmIError}
                                         footerMediumNavs={
                                             this.props.footerMediumNavs
                                         }
@@ -138,9 +128,6 @@ class AppContainer extends React.Component {
 const mapStateToProps = (state) => {
     return {
         topNotification: state.topNotification,
-        isFetchingWhoAmI: state.userManagement.isFetchingWhoAmI,
-        user: state.userManagement.user,
-        whoAmIError: state.userManagement.whoAmIError,
         footerMediumNavs: state.content.footerMediumNavs,
         footerSmallNavs: state.content.footerSmallNavs,
         footerCopyRightItems: state.content.footerCopyRightItems
