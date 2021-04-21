@@ -67,6 +67,8 @@ to create a `ClusterIssuer` with name `selfsigned-issuer`.
         kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.30.0/deploy/static/provider/cloud-generic.yaml
         ```
 
+        This approach has been tested with v1.15.5 kubernete running on v2.2.0.5 docker desktop installed on Windows 10.
+
 -   Save the following content as file `ingress.yaml` and edit to suit your need. Here, `selfsigned-issuer` is the name of the self-signed certificate issuer that we've just created and `minikube.data.gov.au` is the local domain we intend to use.
 
 ```yaml
