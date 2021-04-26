@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rds-dev-proxy
+spec:
+  strategy:
+    rollingUpdate:
+      maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
+  replicas: {{ .Values.replicas | default 1 }}
+  selector:
+    matchLabels:
+      service: rds-dev-proxy
+  template:
+    metadata:
+      annotations:
+      labels:
+        service: rds-dev-proxy
+    spec:
+      containers:
+      - name: rds-dev-proxy
+        command:
+        - socat
+        - "TCP4-LISTEN:5432,fork,reuseaddr"
+        - "TCP4:{{ .Values.awsRdsEndpoint | default .Values.global.awsRdsEndpoint | required "global.awsRdsEndpoint or Value.awsRdsEndpoint is required" }}:5432"
+        ports:
+        - containerPort: 5432
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - netstat -an | grep 5432
+          initialDelaySeconds: 5
+          periodSeconds: 30
+          timeoutSeconds: 10
+{{- if .Values.global.enableLivenessProbes }}
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - netstat -an | grep 5432
+          initialDelaySeconds: 5
+          periodSeconds: 30
+          timeoutSeconds: 10
+{{- end }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        image: "{{ .Values.image.repository | default .Values.global.image.repository }}/{{ .Values.image.name | empty | ternary (.Chart.Name | printf "magda-%s") .Values.image.name }}:{{ .Values.image.tag | default .Values.global.image.tag | default .Chart.Version }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}

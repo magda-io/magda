@@ -1,0 +1,30 @@
+global:
+  rollingUpdate: {}
+  image: {}
+
+image:
+  name: socat
+  repository: alpine
+  tag: 1.7.4.1-r0
+  pullPolicy: IfNotPresent
+
+# -- AWS RDS DB Access Endpoint. e.g. xxxx.xxxx.ap-southeast-2.rds.amazonaws.com
+awsRdsEndpoint: 
+
+# -- no. of replicas required for the deployment.
+# If not set, k8s will assume `1` but allows HPA (autoscaler) alters it.
+# @default 1
+replicas:
+
+autoscaler:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 30Mi
+  limits:
+    cpu: 50m

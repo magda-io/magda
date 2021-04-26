@@ -7,5 +7,4 @@ spec:
   - name: postgres
     port: 5432
     targetPort: 5432
-  selector:
-    service: {{- if .Values.global.useCloudSql }} "cloud-sql-proxy" {{- else if .Values.global.useCombinedDb }} "combined-db" {{- else }} "session-db" {{- end }}
+{{- include "magda.postgres-svc-mapping" . }}

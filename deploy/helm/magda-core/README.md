@@ -31,6 +31,7 @@ Kubernetes: `>= 1.14.0-0`
 | file://../internal-charts/ingress | ingress | 0.0.60-alpha.0 |
 | file://../internal-charts/opa | opa | 0.0.60-alpha.0 |
 | file://../internal-charts/priorities | priorities | 0.0.60-alpha.0 |
+| file://../internal-charts/rds-dev-proxy | rds-dev-proxy | 0.0.60-alpha.0 |
 | file://../internal-charts/registry-api | registry-api | 0.0.60-alpha.0 |
 | file://../internal-charts/registry-db | registry-db | 0.0.60-alpha.0 |
 | file://../internal-charts/search-api-node | search-api-node | 0.0.60-alpha.0 |
@@ -47,6 +48,8 @@ Kubernetes: `>= 1.14.0-0`
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | global.authPluginRedirectUrl | string | `"/sign-in-redirect"` | the redirection url after the whole authentication process is completed. Authentication Plugins will use this value as default setting. The following query paramaters can be used to supply the authentication result: <ul> <li>result: (string) Compulsory. Possible value: "success" or "failure". </li> <li>errorMessage: (string) Optional. Text message to provide more information on the error to the user. </li> </ul> The default "/sign-in-redirect" url supports an additional `redirectTo` query parameter. If this parameter not presents, user will be redirected further (at frontend) to account page /account. Otherwise, user will redirected to the url sepcified by `redirectTo` query parameter. |
+| global.awsRdsEndpoint | string | `nil` | AWS RDS DB instance access endpoint. e.g. xxxx.xxxx.ap-southeast-2.rds.amazonaws.com. Compulsory if `useAwsRdsDb` = true |
+| global.dbMasterUsername | string | `"postgres"` | Database master username.  Although this config allows to set a different DB username, use a DB username rather than `postgres` will  trigger an error when migrate content DB until this ticket #3126 is fixed. master user password will be loaded from "cloudsql-db-credentials" secret `password` field (even for AWS RDS for backward compatibility) |
 | global.defaultAdminUserId | string | `"00000000-0000-4000-8000-000000000000"` |  |
 | global.enableMultiTenants | bool | `false` |  |
 | global.enablePriorityClass | bool | `false` |  |
@@ -59,6 +62,7 @@ Kubernetes: `>= 1.14.0-0`
 | global.namespace | string | `"default"` |  |
 | global.noDbAuth | bool | `false` |  |
 | global.rollingUpdate.maxUnavailable | int | `0` |  |
+| global.useAwsRdsDb | bool | `false` | whether to use AWS RDS DB config. When this option is on, `useCombinedDb` & `useCloudSql` must be turned off. |
 | global.useCloudSql | bool | `false` |  |
 | global.useCombinedDb | bool | `true` |  |
 | tags | object | see default value of each individual tag below. | (object) Control on/ off of each modules.  To turn on/off openfaas, please set value to `global.openfaas.enabled` |

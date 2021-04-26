@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rds-dev-proxy
+spec:
+  ports:
+    - name: postgresql
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
+  selector:
+    service: rds-dev-proxy
