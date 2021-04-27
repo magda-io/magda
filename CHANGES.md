@@ -33,6 +33,7 @@
 -   #3115 Hide Home Page "My Datasets" Section when `cataloguing` = `false`
 -   #3117 Auto passing web-client config obj to external plugin components
 -   #3119 Make key redux actions & react-router available to external plugin components
+-   #3128 Create API key utils should report an error when no switch is provided rather then assumes `-c` switch
 
 ## 0.0.59
 
