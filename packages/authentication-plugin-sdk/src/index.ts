@@ -178,6 +178,9 @@ export function getAbsoluteUrl(
         // --- absolute url, return directly
         return url;
     } else {
+        if (typeof baseUrl !== "string") {
+            baseUrl = "";
+        }
         const baseUri = urijs(baseUrl);
         const query = uri.search(true);
         const mergedUri = baseUri.segmentCoded(
