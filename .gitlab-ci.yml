@@ -92,6 +92,7 @@ registry-typescript-api:
     - lerna run generate --scope=@magda/typescript-common --stream
   artifacts:
     paths:
+      - "sbt-cache"
       - "magda-typescript-common/src/generated"
     expire_in: 7 days
 
