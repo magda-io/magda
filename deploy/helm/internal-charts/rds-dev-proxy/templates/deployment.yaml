@@ -1,3 +1,4 @@
+{{- if .Values.global.useAwsRdsDb }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -48,3 +49,4 @@ spec:
 {{ toYaml .Values.resources | indent 10 }}
         image: "{{ .Values.image.repository | default .Values.global.image.repository }}/{{ .Values.image.name | empty | ternary (.Chart.Name | printf "magda-%s") .Values.image.name }}:{{ .Values.image.tag | default .Values.global.image.tag | default .Chart.Version }}"
         imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+{{- end }}
