@@ -60,10 +60,10 @@ sbt-prebuild:
       - "$CI_PROJECT_DIR/sbt-cache"
   script:
     - |
-      if [ ! -d sbt-cache ]; then
-        cp -R /sbt-cache sbt-cache
-        mkdir -p sbt-cache/coursier/v1/https
-        cp -R dep-jars/* sbt-cache/coursier/v1/https/
+      if [ ! -d "$CI_PROJECT_DIR/sbt-cache" ]; then
+        cp -R /sbt-cache "$CI_PROJECT_DIR/sbt-cache"
+        mkdir -p "$CI_PROJECT_DIR/sbt-cache/coursier"
+        cp -R "$CI_PROJECT_DIR/dep-jars/." "$CI_PROJECT_DIR/sbt-cache/coursier/https/"
       fi
     - sbt update
   artifacts:
