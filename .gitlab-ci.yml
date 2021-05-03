@@ -60,6 +60,7 @@ sbt-prebuild:
       - "$CI_PROJECT_DIR/sbt-cache"
   script:
     - "ls sbt-cache || cp -R /sbt-cache sbt-cache"
+    - "ls sbt-cache || cp -R dep-jars/* sbt-cache/coursier/v1/https/"
     - sbt update
   artifacts:
     paths:
