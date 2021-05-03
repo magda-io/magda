@@ -9,7 +9,7 @@ variables:
     -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
   # If you changed dependencies (especially for scala), you might want to prevent your branch from using old cache by increase the version blew
   # gitlab actually use the same technique when you click the `Clear Cache Button`
-  CACHE_VERSION: ts-12-scala-5
+  CACHE_VERSION: ts-12-scala-6
   CRYPTOGRAPHY_DONT_BUILD_RUST: 1
 
 stages:
@@ -59,7 +59,12 @@ sbt-prebuild:
     paths:
       - "$CI_PROJECT_DIR/sbt-cache"
   script:
-    - "ls sbt-cache || cp -R /sbt-cache sbt-cache"
+    - |
+      if [ ! -d "$CI_PROJECT_DIR/sbt-cache" ]; then
+        cp -R /sbt-cache "$CI_PROJECT_DIR/sbt-cache"
+        mkdir -p "$CI_PROJECT_DIR/sbt-cache/coursier"
+        cp -R "$CI_PROJECT_DIR/dep-jars/." "$CI_PROJECT_DIR/sbt-cache/coursier/https/"
+      fi
     - sbt update
   artifacts:
     paths:
