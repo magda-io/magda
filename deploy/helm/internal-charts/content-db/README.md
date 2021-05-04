@@ -1,6 +1,6 @@
 # content-db
 
-![Version: 0.0.60-alpha.0](https://img.shields.io/badge/Version-0.0.60--alpha.0-informational?style=flat-square)
+![Version: 0.0.60-alpha.7](https://img.shields.io/badge/Version-0.0.60--alpha.7-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
