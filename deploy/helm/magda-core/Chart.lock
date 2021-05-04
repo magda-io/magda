@@ -74,5 +74,8 @@ dependencies:
 - name: ingress
   repository: file://../internal-charts/ingress
   version: 0.0.60-alpha.0
-digest: sha256:d418bd96f5c6c234e646ed69a2900e247a2de061134753bf2b21fe638918111f
-generated: "2021-04-08T12:57:35.123774+10:00"
+- name: rds-dev-proxy
+  repository: file://../internal-charts/rds-dev-proxy
+  version: 0.0.60-alpha.0
+digest: sha256:b226de678445b95c8a7f9fb81f128a441996e53fa016d646ff63b2719fe5d08b
+generated: "2021-04-26T17:48:41.351477+10:00"

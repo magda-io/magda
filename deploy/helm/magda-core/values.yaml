@@ -1,6 +1,16 @@
 global:
   useCombinedDb: true
   useCloudSql: false
+  # -- whether to use AWS RDS DB config. When this option is on, `useCombinedDb` & `useCloudSql` must be turned off.
+  useAwsRdsDb: false
+  # -- AWS RDS DB instance access endpoint. e.g. xxxx.xxxx.ap-southeast-2.rds.amazonaws.com.
+  # Compulsory if `useAwsRdsDb` = true
+  awsRdsEndpoint: 
+  # -- Database master username. 
+  # Although this config allows to set a different DB username, use a DB username rather than `postgres` will 
+  # trigger an error when migrate content DB until this ticket #3126 is fixed.
+  # master user password will be loaded from "cloudsql-db-credentials" secret `password` field (even for AWS RDS for backward compatibility)
+  dbMasterUsername: postgres
   externalUrl: "http://localhost:6100"
   rollingUpdate:
     maxUnavailable: 0
