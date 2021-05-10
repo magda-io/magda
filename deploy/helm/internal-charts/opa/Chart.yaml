@@ -2,5 +2,5 @@ apiVersion: v2
 description: Magda's Access Control Policy Engine ([Open Policy
   Agent](https://www.openpolicyagent.org/))
 name: opa
-version: 0.0.60-alpha.0
+version: 0.0.60-alpha.8
 kubeVersion: ">= 1.14.0-0"
