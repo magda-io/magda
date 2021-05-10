@@ -10,7 +10,18 @@ type PropsType = {
     type?: "dataset" | "distribution";
 };
 
-function renderIframe(docRef: Document, props: PropsType) {
+// in milseconds, how long time before auto adjust the iframe height according to the content again.
+const iframeHeightAdjustInterval = 200;
+
+function renderIframe(
+    iframeRef: HTMLIFrameElement | null,
+    props: PropsType
+): number | null {
+    const docRef = iframeRef?.contentWindow?.document;
+    if (!docRef) {
+        console.error("cannot locate document ref for discourse iframe!");
+        return null;
+    }
     const type = props.type ? props.type : "dataset";
     const baseUrl = addTrailingSlash(config.baseExternalUrl);
     const discourseUrl = addTrailingSlash(config.discourseSiteUrl!);
@@ -24,6 +35,11 @@ function renderIframe(docRef: Document, props: PropsType) {
 
     docRef.open();
     docRef.write(`
+        <style>
+        body {
+            margin: 0px;
+        }
+        </style>
         <div id='discourse-comments'></div>
 
         <script type="text/javascript">
@@ -38,18 +54,26 @@ function renderIframe(docRef: Document, props: PropsType) {
         </script>
     `);
     docRef.close();
+
+    return window.setInterval(() => {
+        if (iframeRef?.contentWindow?.document?.body) {
+            iframeRef.style.height =
+                iframeRef.contentWindow.document.body.scrollHeight + "px";
+        }
+    }, iframeHeightAdjustInterval);
 }
 
 const DiscourseComments: FunctionComponent<PropsType> = (props) => {
     const iframeRef = useRef<HTMLIFrameElement | null>(null);
+    const heightAdjustTimer = useRef<number | null>(null);
 
     useEffect(() => {
-        const iframeDocRef = iframeRef?.current?.contentWindow?.document;
-        if (iframeDocRef) {
-            renderIframe(iframeDocRef, props);
-        } else {
-            console.error("iframeDocRef is not available!");
-        }
+        heightAdjustTimer.current = renderIframe(iframeRef.current, props);
+        return () => {
+            if (heightAdjustTimer.current) {
+                clearInterval(heightAdjustTimer.current);
+            }
+        };
     }, [props.datasetId, props.distributionId]);
 
     return (
@@ -58,8 +82,8 @@ const DiscourseComments: FunctionComponent<PropsType> = (props) => {
             ref={(ref) => (iframeRef.current = ref)}
             title={props.title}
             frameBorder={0}
-            width={600}
-            height={500}
+            width={"100%"}
+            height={100}
         ></iframe>
     );
 };
