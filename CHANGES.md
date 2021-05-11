@@ -36,6 +36,8 @@
 -   #3124 Add AWS RDS support to Helm Charts
 -   #3128 Create API key utils should report an error when no switch is provided rather then assumes `-c` switch
 -   #3129 Auth plugin SDK getAbsoluteUrl function should check the type of the baseUrl parameter
+-   More visual adjustment to the discourse integration
+-   Use [helm-docs v1.5.0](https://github.com/norwoodj/helm-docs/releases/tag/v1.5.0) in CI
 
 ## 0.0.59
 
