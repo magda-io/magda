@@ -38,6 +38,7 @@
 -   #3129 Auth plugin SDK getAbsoluteUrl function should check the type of the baseUrl parameter
 -   More visual adjustment to the discourse integration
 -   Use [helm-docs v1.5.0](https://github.com/norwoodj/helm-docs/releases/tag/v1.5.0) in CI
+-   Related to #2925: Gateway deployment will auto roll on config map changes
 
 ## 0.0.59
 
