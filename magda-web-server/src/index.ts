@@ -245,11 +245,38 @@ const argv = yargs
         type: "string",
         default: "Australia/Sydney"
     })
+    .option("homePageUrl", {
+        describe: "an alternative home page url.",
+        type: "string"
+    })
+    .option("supportExternalTerriaMapV7", {
+        describe:
+            "When set to true, the `Open in National Map` button in Map Preview area will send data in v7 format",
+        type: "boolean",
+        default: false
+    })
+    .option("openInExternalTerriaMapButtonText", {
+        describe:
+            "When set, the string here will replace the text of the `Open in National Map` button in Map Preview area.",
+        type: "string"
+    })
     .option("externalUIComponents", {
         describe: "a list of external UI component JS bundle file urls",
         type: "string",
         coerce: coerceJson("externalUIComponents"),
         default: [] as string[]
+    })
+    .option("externalCssFiles", {
+        describe: "a list of external UI component JS bundle file urls",
+        type: "string",
+        coerce: coerceJson("externalUIComponents"),
+        default: [] as string[]
+    })
+    .option("extraConfigData", {
+        describe: "Extra config data for external UI plugins.",
+        type: "string",
+        coerce: coerceJson("extraConfigData"),
+        default: "{}"
     }).argv;
 
 // set default timezone
@@ -374,7 +401,12 @@ const webServerConfig = {
     discourseIntegrationDistributionPage:
         argv.discourseIntegrationDistributionPage,
     defaultTimeZone: argv.defaultTimeZone,
-    externalUIComponents: argv.externalUIComponents
+    externalUIComponents: argv.externalUIComponents,
+    externalCssFiles: argv.externalCssFiles,
+    homePageUrl: argv.homePageUrl,
+    supportExternalTerriaMapV7: argv.supportExternalTerriaMapV7,
+    openInExternalTerriaMapButtonText: argv.openInExternalTerriaMapButtonText,
+    extraConfigData: argv.extraConfigData
 };
 
 app.get("/server-config.js", function (req, res) {
@@ -395,7 +427,8 @@ function getIndexFileContentZeroArgs() {
         argv.contentApiBaseUrlInternal,
         uiBaseUrl,
         appBasePath,
-        argv.externalUIComponents
+        argv.externalUIComponents,
+        argv.externalCssFiles
     );
 }
 
