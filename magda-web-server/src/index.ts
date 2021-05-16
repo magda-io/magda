@@ -260,6 +260,11 @@ const argv = yargs
             "When set, the string here will replace the text of the `Open in National Map` button in Map Preview area.",
         type: "string"
     })
+    .option("openInExternalTerriaMapTargetUrl", {
+        describe:
+            "When set, the `Open in National Map` button in Map Preview area will sent map data to the URL provided",
+        type: "string"
+    })
     .option("externalUIComponents", {
         describe: "a list of external UI component JS bundle file urls",
         type: "string",
@@ -406,6 +411,7 @@ const webServerConfig = {
     homePageUrl: argv.homePageUrl,
     supportExternalTerriaMapV7: argv.supportExternalTerriaMapV7,
     openInExternalTerriaMapButtonText: argv.openInExternalTerriaMapButtonText,
+    openInExternalTerriaMapTargetUrl: argv.openInExternalTerriaMapTargetUrl,
     extraConfigData: argv.extraConfigData
 };
 

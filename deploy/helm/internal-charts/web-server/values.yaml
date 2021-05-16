@@ -164,6 +164,10 @@ supportExternalTerriaMapV7: false
 # -- When set, the string here will replace the text of the `Open in National Map` button in Map Preview area.
 openInExternalTerriaMapButtonText:
 
+# -- When set, the `Open in National Map` button in Map Preview area will sent map data to the URL provided and open the map preview there.
+# When not set, UI will by default send to the National Map.
+openInExternalTerriaMapTargetUrl:
+
 # -- Extra config data for external plugins.
 # Normally served as a way to config external UI plugin components at runtime.
 extraConfigData: {}

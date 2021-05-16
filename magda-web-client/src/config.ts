@@ -110,6 +110,7 @@ const serverConfig: {
     homePageUrl?: string;
     supportExternalTerriaMapV7?: boolean;
     openInExternalTerriaMapButtonText?: string;
+    openInExternalTerriaMapTargetUrl?: string;
     extraConfigData?: {
         // extraConfigData is mainly for config data passing to external UI plugins
         [key: string]: any;

@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import PropTypes from "prop-types";
 import browser from "browser-detect";
 import { config } from "../../config";
 import "./DataPreviewMapOpenInNationalMapButton.scss";
@@ -13,6 +12,8 @@ type PropsType = {
         [key: string]: any;
     };
 };
+
+const DEFAULT_TARGET_URL = "https://nationalmap.gov.au/";
 
 class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
     private browser: BrowserDetectInfo;
@@ -91,9 +92,12 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
     }
 
     onButtonClick() {
+        const targetUrl = config?.openInExternalTerriaMapTargetUrl
+            ? config.openInExternalTerriaMapTargetUrl
+            : DEFAULT_TARGET_URL;
         if (this.browser.name === "ie" && this.browser?.versionNumber! < 12) {
             window.open(
-                "https://nationalmap.gov.au/#start=" +
+                `${targetUrl}#start=` +
                     encodeURIComponent(
                         JSON.stringify(
                             this.createCatalogItemFromDistribution(true)
@@ -103,7 +107,7 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
             );
             return;
         }
-        const newWinRef = window.open("https://nationalmap.gov.au", "_blank");
+        const newWinRef = window.open(targetUrl, "_blank");
         if (!newWinRef) {
             this.winRef = null;
             alert(
@@ -132,7 +136,9 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
                     <div className="rectangle-2" />
                     <div className="rectangle-1" />
                     <div className="open-national-map-button-text">
-                        {this.props.buttonText}
+                        {config?.openInExternalTerriaMapButtonText
+                            ? config.openInExternalTerriaMapButtonText
+                            : this.props.buttonText}
                     </div>
                 </button>
             </div>
