@@ -1,9 +1,10 @@
 {
     "extends": "react-app",
-    "plugins": ["prettier"],
+    "plugins": ["@typescript-eslint", "prettier"],
     "rules": {
         "prettier/prettier": "error"
     },
+    "parser": "@typescript-eslint/parser",
     "settings": {
         "react": {
             "version": "detect"

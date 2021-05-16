@@ -1,5 +1,6 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import CommonLink from "./CommonLink";
+import { config } from "../../config";
 
 export default class Breadcrumbs extends React.Component {
     render() {
@@ -7,7 +8,13 @@ export default class Breadcrumbs extends React.Component {
             <nav className="au-breadcrumbs" aria-label="breadcrumb">
                 <ul className="au-link-list au-link-list--inline">
                     <li>
-                        <Link to="/#">Home</Link>
+                        <CommonLink
+                            href={
+                                config?.homePageUrl ? config.homePageUrl : "/"
+                            }
+                        >
+                            Home
+                        </CommonLink>
                     </li>
                     {this.props.breadcrumbs.map((b) => b)}
                 </ul>

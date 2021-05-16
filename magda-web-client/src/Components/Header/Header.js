@@ -1,9 +1,9 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
+import CommonLink from "../Common/CommonLink";
 import PropTypes from "prop-types";
 import HeaderNav from "./HeaderNav";
 import "./Header.scss";
-import { config } from "config";
+import { config } from "../../config";
 import { Small, Medium } from "Components/Common/Responsive";
 import MagdaNamespacesConsumer from "Components/i18n/MagdaNamespacesConsumer";
 import { needsContent } from "helpers/content";
@@ -46,8 +46,12 @@ class Header extends Component {
                                 <div className="container">
                                     <div className="row">
                                         <div className="col-md-4 col-xs-12">
-                                            <Link
-                                                to="/"
+                                            <CommonLink
+                                                to={
+                                                    config?.homePageUrl
+                                                        ? config.homePageUrl
+                                                        : "/"
+                                                }
                                                 className="au-header__brand"
                                             >
                                                 <Small>
@@ -68,7 +72,7 @@ class Header extends Component {
                                                         className="au-header__logo"
                                                     />
                                                 </Medium>
-                                            </Link>
+                                            </CommonLink>
                                         </div>
                                         <div className="col-md-8 col-xs-12">
                                             <button
