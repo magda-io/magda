@@ -26,9 +26,10 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
         this.onPopUpMessageReceived = this.onPopUpMessageReceived.bind(this);
         this.winRef = null;
         this.browser = browser();
-        this.shouldRender = !(
-            this.browser.name === "ie" && this.browser?.versionNumber! < 12
-        );
+        // support v7 turned on or not IE 11
+        this.shouldRender =
+            config?.supportExternalTerriaMapV7 === true ||
+            !(this.browser.name === "ie" && this.browser?.versionNumber! < 12);
     }
 
     componentDidMount() {
