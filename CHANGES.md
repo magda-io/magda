@@ -42,6 +42,7 @@
 -   #3137 Allow UI Home Page Link URL to be configurable
 -   #3139 Make Open in National Map button Functionality Configurable & Compatible with both v7 & v8
 -   #3140 Ability to supply external CSS files to magda-web-client via Config
+-   #3138 Allow Edit Dataset Button to be replaced by External UI Plugins
 
 ## 0.0.59
 
