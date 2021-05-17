@@ -62,6 +62,7 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
             };
         } else {
             const dga_id_prefix = "data.gov.au-postMessage-";
+            const id = dga_id_prefix + distribution?.identifier;
             catConfig = {
                 initSources: [
                     {
@@ -71,14 +72,10 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
                                 type: "magda",
                                 recordId: distribution?.identifier,
                                 url: config.baseExternalUrl,
-                                id:
-                                    dga_id_prefix +
-                                    this.props.distribution.identifier
+                                id
                             }
                         ],
-                        workbench: [
-                            dga_id_prefix + this.props.distribution.identifier
-                        ]
+                        workbench: [id]
                     }
                 ]
             };
