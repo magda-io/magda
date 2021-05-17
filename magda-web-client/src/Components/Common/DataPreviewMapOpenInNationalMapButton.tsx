@@ -18,6 +18,7 @@ const DEFAULT_TARGET_URL = "https://nationalmap.gov.au/";
 class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
     private browser: BrowserDetectInfo;
     private winRef: Window | null;
+    private shouldRender: boolean;
 
     constructor(props) {
         super(props);
@@ -25,6 +26,9 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
         this.onPopUpMessageReceived = this.onPopUpMessageReceived.bind(this);
         this.winRef = null;
         this.browser = browser();
+        this.shouldRender = !(
+            this.browser.name === "ie" && this.browser?.versionNumber! < 12
+        );
     }
 
     componentDidMount() {
@@ -61,8 +65,7 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
                 ]
             };
         } else {
-            const dga_id_prefix = "data.gov.au-postMessage-";
-            const id = dga_id_prefix + distribution?.identifier;
+            const id = "data.gov.au-postMessage-" + distribution?.identifier;
             catConfig = {
                 initSources: [
                     {
@@ -124,6 +127,9 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
     }
 
     render() {
+        if (!this.shouldRender) {
+            return null;
+        }
         return (
             <div style={this.props.style}>
                 <button

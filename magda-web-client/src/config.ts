@@ -129,7 +129,7 @@ const END_DATE_REGEX = "(end).*(date|dt|year|decade)";
 function constructDateConfig(
     serverDateConfig: DateConfig | undefined
 ): DateConfig {
-    var dateConfig: DateConfig = {
+    const dateConfig: DateConfig = {
         dateFormats: defaultDateFormats,
         dateRegexes: {
             dateRegex: new RegExp(DATE_REGEX, "i"),
