@@ -406,7 +406,8 @@ export const config = {
         ? serverConfig.openfaasBaseUrl
         : baseUrl + "api/v0/openfaas/",
     ckanExportServers,
-    defaultCkanServer
+    defaultCkanServer,
+    homePageUrl: serverConfig?.homePageUrl ? serverConfig.homePageUrl : "/"
 };
 
 export type Config = typeof config;

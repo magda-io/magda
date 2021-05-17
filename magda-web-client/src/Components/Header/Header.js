@@ -47,11 +47,7 @@ class Header extends Component {
                                     <div className="row">
                                         <div className="col-md-4 col-xs-12">
                                             <CommonLink
-                                                to={
-                                                    config?.homePageUrl
-                                                        ? config.homePageUrl
-                                                        : "/"
-                                                }
+                                                to={config.homePageUrl}
                                                 className="au-header__brand"
                                             >
                                                 <Small>

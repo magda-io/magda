@@ -8,13 +8,7 @@ export default class Breadcrumbs extends React.Component {
             <nav className="au-breadcrumbs" aria-label="breadcrumb">
                 <ul className="au-link-list au-link-list--inline">
                     <li>
-                        <CommonLink
-                            href={
-                                config?.homePageUrl ? config.homePageUrl : "/"
-                            }
-                        >
-                            Home
-                        </CommonLink>
+                        <CommonLink href={config.homePageUrl}>Home</CommonLink>
                     </li>
                     {this.props.breadcrumbs.map((b) => b)}
                 </ul>
