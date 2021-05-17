@@ -41,7 +41,6 @@
     "leaflet": "^0.7.7"
   },
   "devDependencies": {
-    "webpack-cli": "3.3.11",
     "@babel/core": "^7.10.2",
     "@babel/plugin-proposal-optional-chaining": "^7.8.3",
     "@babel/runtime": "^7.8.7",
@@ -64,6 +63,8 @@
     "@types/smoothscroll-polyfill": "^0.3.1",
     "@types/uuid": "^8.0.0",
     "@types/xlsx": "^0.0.36",
+    "@typescript-eslint/eslint-plugin": "2.34.0",
+    "@typescript-eslint/parser": "2.34.0",
     "babel-eslint": "9.0.0",
     "babel-loader": "8.0.5",
     "browser-detect": "^0.2.22",
@@ -153,6 +154,7 @@
     "urijs": "^1.19.4",
     "use-debounce": "^3.3.0",
     "uuid": "^8.2.0",
+    "webpack-cli": "3.3.11",
     "webpack-filter-warnings-plugin": "^1.2.1",
     "weighted-mean": "^1.0.2",
     "worker-loader": "^2.0.0",
