@@ -7,6 +7,7 @@ import { User } from "reducers/userManagementReducer";
 import { requestSignOut, requestWhoAmI } from "./actions/userManagementActions";
 import { fetchContent } from "./actions/contentActions";
 import { config, ConfigType } from "./config";
+import { ParsedDataset } from "helpers/record";
 
 const PREFIX = "MagdaPluginComponent";
 
@@ -123,4 +124,21 @@ export type ExternalFooterCompontType = ExternalCompontType<
 
 export function getPluginFooter(): FooterComponentType | null {
     return getComponent<FooterComponentPropsType>("Footer");
+}
+
+type DatasetEditButtonComponentPropsType = {
+    dataset: ParsedDataset;
+};
+
+export type DatasetEditButtonComponentType = ComponentType<
+    DatasetEditButtonComponentPropsType
+>;
+export type ExternalDatasetEditButtonCompontType = ExternalCompontType<
+    DatasetEditButtonComponentType
+>;
+
+export function getPluginDatasetEditButton(): DatasetEditButtonComponentType | null {
+    return getComponent<DatasetEditButtonComponentPropsType>(
+        "DatasetEditButton"
+    );
 }
