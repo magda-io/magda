@@ -13,13 +13,16 @@ import QualityIndicator from "Components/Common/QualityIndicator";
 import { History } from "history";
 import { ParsedDataset } from "helpers/record";
 import queryString from "query-string";
-import ToolTip from "Components/Common/TooltipWrapper";
 import { config } from "config";
 import SecClassification, {
     Sensitivity
 } from "Components/Common/SecClassification";
 import CommonLink from "Components/Common/CommonLink";
 import CurrencyAlert from "./CurrencyAlert";
+import DatasetEditButton from "./DatasetEditButton";
+import { getPluginDatasetEditButton } from "externalPluginComponents";
+
+const ExternalDatasetEditButton = getPluginDatasetEditButton();
 
 interface PropsType {
     history: History;
@@ -39,13 +42,6 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
     const baseUrlDataset = `/dataset/${encodeURI(props.datasetId)}`;
 
     const publisherId = dataset?.publisher?.id ? dataset.publisher.id : null;
-
-    const editButtonTooltipText =
-        "This dataset is harvested from outside the system, so it can't be edited here.";
-
-    const isDatasetEditable =
-        dataset?.sourceDetails?.id === "magda" &&
-        dataset?.sourceDetails?.type === "internal";
 
     const renderResult = (
         <div
@@ -196,40 +192,15 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                             </CommonLink>
                         </div>
                     ) : null}
-                    {hasEditPermissions ? (
-                        <div className="dataset-edit-button-container no-print">
-                            <button
-                                className="au-btn au-btn--secondary ask-question-button"
-                                disabled={!isDatasetEditable}
-                                onClick={() => {
-                                    props.history.push({
-                                        pathname: `/dataset/edit/${dataset.identifier}`
-                                    });
-                                }}
-                            >
-                                Edit the Dataset{" "}
-                            </button>
-                            {isDatasetEditable ? null : (
-                                <div className="edit-button-tooltip-container">
-                                    <ToolTip
-                                        className="no-print"
-                                        launcher={(launch) => (
-                                            <a
-                                                onClick={launch}
-                                                className="tooltip-launcher-text"
-                                            >
-                                                Why can't I edit this?
-                                            </a>
-                                        )}
-                                        innerElementClassName="inner"
-                                        orientation="below"
-                                    >
-                                        {() => editButtonTooltipText}
-                                    </ToolTip>
-                                </div>
-                            )}
-                        </div>
-                    ) : null}
+
+                    {ExternalDatasetEditButton ? (
+                        <ExternalDatasetEditButton dataset={dataset} />
+                    ) : (
+                        <DatasetEditButton
+                            dataset={dataset}
+                            hasEditPermissions={hasEditPermissions}
+                        />
+                    )}
                 </div>
             </div>
             <div className="tab-content">

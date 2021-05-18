@@ -10,7 +10,6 @@ export const ADMIN_ROLE_ID = "00000000-0000-0003-0000-000000000000";
 
 declare global {
     interface Window {
-        magda_client_homepage_config: any;
         magda_server_config: any;
     }
 }
@@ -106,6 +105,16 @@ const serverConfig: {
     discourseSiteUrl?: string;
     discourseIntegrationDatasetPage?: boolean;
     discourseIntegrationDistributionPage?: boolean;
+    externalUIComponents?: string[];
+    externalCssFiles?: string[];
+    homePageUrl?: string;
+    supportExternalTerriaMapV7?: boolean;
+    openInExternalTerriaMapButtonText?: string;
+    openInExternalTerriaMapTargetUrl?: string;
+    extraConfigData?: {
+        // extraConfigData is mainly for config data passing to external UI plugins
+        [key: string]: any;
+    };
 } = window.magda_server_config || {};
 
 const DATE_REGEX = ".*(date|dt|year|decade).*";
@@ -120,7 +129,7 @@ const END_DATE_REGEX = "(end).*(date|dt|year|decade)";
 function constructDateConfig(
     serverDateConfig: DateConfig | undefined
 ): DateConfig {
-    var dateConfig: DateConfig = {
+    const dateConfig: DateConfig = {
         dateFormats: defaultDateFormats,
         dateRegexes: {
             dateRegex: new RegExp(DATE_REGEX, "i"),
@@ -397,7 +406,8 @@ export const config = {
         ? serverConfig.openfaasBaseUrl
         : baseUrl + "api/v0/openfaas/",
     ckanExportServers,
-    defaultCkanServer
+    defaultCkanServer,
+    homePageUrl: serverConfig?.homePageUrl ? serverConfig.homePageUrl : "/"
 };
 
 export type Config = typeof config;
