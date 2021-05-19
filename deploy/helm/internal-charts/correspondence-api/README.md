@@ -1,6 +1,6 @@
 # correspondence-api
 
-![Version: 0.0.60-alpha.0](https://img.shields.io/badge/Version-0.0.60--alpha.0-informational?style=flat-square)
+![Version: 0.0.60-rc.2](https://img.shields.io/badge/Version-0.0.60--rc.2-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
