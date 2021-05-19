@@ -159,3 +159,8 @@ dependencies:
     repository: file://../internal-charts/ingress
     tags:
       - ingress
+  - name: rds-dev-proxy
+    version: 0.0.60-alpha.0
+    repository: file://../internal-charts/rds-dev-proxy
+    tags:
+      - rds-dev-proxy

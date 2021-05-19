@@ -23,6 +23,16 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 "{{ .Values.image.repository | default .Values.global.image.repository }}/magda-postgres:{{ .Values.image.tag | default .Values.global.image.tag | default .Chart.Version }}"
 {{- end -}}
 
+{{- define "magda.postgres-svc-mapping" -}}
+  {{- if .Values.global.useAwsRdsDb }}
+  type: ExternalName
+  externalName: "{{ .Values.global.awsRdsEndpoint | required "global.awsRdsEndpoint is required" }}"
+  {{- else }}
+  selector:
+    service: {{- if .Values.global.useCloudSql }} "cloud-sql-proxy" {{- else if .Values.global.useCombinedDb }} "combined-db" {{- else }} "{{ .Chart.Name }}" {{- end }}
+  {{- end -}}
+{{- end -}}
+
 {{- define "magda.postgres-client-env" -}}
         - name: CLIENT_USERNAME
           value: {{- if .Values.global.useCloudSql }} proxyuser {{- else }} client {{- end }}
@@ -35,12 +45,13 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 
 {{- define "magda.postgres-migrator-env" }}
         - name: PGUSER
-          value: postgres
+          value: {{ .Values.global.dbMasterUsername | default "postgres" }}
         {{- if .Values.global.noDbAuth }}
         - name: PGPASSWORD
           value: password
-        {{- else if .Values.global.useCloudSql }}
+        {{- else if or .Values.global.useCloudSql .Values.global.useAwsRdsDb}}
         - name: PGPASSWORD
+          # for backward compatibility, we will use `cloudsql-db-credentials` secret / password key for AWS RDS DB as well
           valueFrom:
             secretKeyRef:
               name: cloudsql-db-credentials

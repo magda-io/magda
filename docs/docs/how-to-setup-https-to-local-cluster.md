@@ -52,11 +52,22 @@ to create a `ClusterIssuer` with name `selfsigned-issuer`.
 
 ### Setting Up Ingress for deployed MAGDA
 
--   Enable the built-in [minikube ingress controller](https://kubernetes.io/docs/tasks/access-application-cluster/ingress-minikube/#enable-the-ingress-controller) by running command:
+-   Prepare ingress controller
 
-```bash
-minikube addons enable ingress
-```
+    -   If using `minikube`, enable the built-in [minikube ingress controller](https://kubernetes.io/docs/tasks/access-application-cluster/ingress-minikube/#enable-the-ingress-controller) by running command:
+
+        ```bash
+        minikube addons enable ingress
+        ```
+
+    -   If using `Docker for Desktop`, run command ([reference](https://stackoverflow.com/questions/63040492/empty-address-on-docker-desktop-kubernates-for-ingress)):
+
+        ```bash
+        kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.30.0/deploy/static/mandatory.yaml
+        kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.30.0/deploy/static/provider/cloud-generic.yaml
+        ```
+
+        This approach has been tested with v1.15.5 kubernete running on v2.2.0.5 docker desktop installed on Windows 10.
 
 -   Save the following content as file `ingress.yaml` and edit to suit your need. Here, `selfsigned-issuer` is the name of the self-signed certificate issuer that we've just created and `minikube.data.gov.au` is the local domain we intend to use.
 

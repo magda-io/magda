@@ -4,6 +4,8 @@ Since v0.0.58, Magda allows you to build external authentication plugins to add 
 
 An authentication plugin, technically, is a set of HTTP services that are integrated with [Magda gateway](https://github.com/magda-io/magda/blob/master/deploy/helm/internal-charts/gateway/README.md) and the frontend UI. Athough it is not compulsory, we recommend you to use [express.js](https://expressjs.com/) & [passport.js](http://www.passportjs.org/) to build the HTTP services for your authentication plugin. You will find all our [existing authentication plugins](https://github.com/magda-io?q=magda-auth-) are build with [express.js](https://expressjs.com/) & [passport.js](http://www.passportjs.org/).
 
+For general usage info of Authentication Plugin, please refer to [this document](./authentication-plugin-how-to-use.md).
+
 ## Build Your Own Authentication plugin
 
 For ease of deployment, Magda requires an authentication plugin to be build as a docker image, packed as a [Helm Chart](https://helm.sh/docs/topics/charts/) and to be used by your Magda deployment as Helm chart dependencies.

@@ -105,12 +105,12 @@ function printResult(result) {
 
                 if (!keys || !keys.rows || !keys.rows.length) {
                     throw new Error(
-                        `Cannot any api keys for user id: ${options.userId}`
+                        `Cannot find any api keys for user id: ${options.userId}`
                     );
                 }
 
                 printResult(keys);
-            } else {
+            } else if (options.create) {
                 // --- create a new API key
                 const newKey = await generateAPIKey(API_KEY_LENGTH);
                 const keyHash = await bcrypt.hash(newKey, SALT_ROUNDS);
@@ -128,6 +128,10 @@ function printResult(result) {
                 );
                 console.log(`   API key: ${newKey}`);
                 console.log(`API key ID: ${apiKeyId}`);
+            } else {
+                throw new Error(
+                    "When userId is supplied, either -l or -c switch must be set."
+                );
             }
         } else {
             // --- list all users

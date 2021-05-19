@@ -1,3 +1,9 @@
+magda:
+  magda-core:
+    web-server:
+      # User terria V7 format until National Map new release
+      supportExternalTerriaMapV7: true
+
 connector-dga:
   config:
     id: dga

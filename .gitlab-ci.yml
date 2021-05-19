@@ -9,7 +9,7 @@ variables:
     -Dsbt.ivy.home=$CI_PROJECT_DIR/sbt-cache/ivy
   # If you changed dependencies (especially for scala), you might want to prevent your branch from using old cache by increase the version blew
   # gitlab actually use the same technique when you click the `Clear Cache Button`
-  CACHE_VERSION: ts-12-scala-5
+  CACHE_VERSION: ts-12-scala-7
   CRYPTOGRAPHY_DONT_BUILD_RUST: 1
 
 stages:
@@ -59,7 +59,12 @@ sbt-prebuild:
     paths:
       - "$CI_PROJECT_DIR/sbt-cache"
   script:
-    - "ls sbt-cache || cp -R /sbt-cache sbt-cache"
+    - |
+      if [ ! -d "$CI_PROJECT_DIR/sbt-cache" ]; then
+        cp -R /sbt-cache "$CI_PROJECT_DIR/sbt-cache"
+        mkdir -p "$CI_PROJECT_DIR/sbt-cache/coursier"
+        cp -R "$CI_PROJECT_DIR/dep-jars/." "$CI_PROJECT_DIR/sbt-cache/coursier/https/"
+      fi
     - sbt update
   artifacts:
     paths:
@@ -82,7 +87,12 @@ check-scala-formatting:
 registry-typescript-api:
   stage: prebuild
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
-  needs: ["builders-and-yarn"]
+  needs: 
+    - builders-and-yarn
+    - sbt-prebuild
+  dependencies:
+    - builders-and-yarn
+    - sbt-prebuild
   script:
     - lerna run generate --scope=@magda/typescript-common --stream
   artifacts:
@@ -522,7 +532,7 @@ buildtest:helm-docs-check:
     - docker:dind
   script:
     - code=0
-    - docker run --rm -v "$(pwd):/helm-docs" -u $(id -u) jnorwood/helm-docs:v1.2.1 || code=$?;
+    - docker run --rm -v "$(pwd):/helm-docs" -u $(id -u) jnorwood/helm-docs:v1.5.0 || code=$?;
       if [ "$code" != "0" ]; then 
         echo "Failed to run helm-docs!";
         exit 1;
@@ -532,7 +542,7 @@ buildtest:helm-docs-check:
     - git ls-files -m | grep -i readme.md || code=$?;
       if [ "$code" == "0" ]; then
         echo -e "Some of helm chart docs are required to be updated using the [helm-docs](https://github.com/norwoodj/helm-docs) tool. \n
-        Please run helm-docs (v1.2.1) at project root, review & commit docs changes and push a new commit.";
+        Please run helm-docs (v1.5.0) at project root, review & commit docs changes and push a new commit.";
         exit 1;
       else 
         echo -e "helm docs check passed. helm docs update is not required.";
