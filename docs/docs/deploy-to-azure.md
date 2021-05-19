@@ -79,7 +79,14 @@ kubectl create secret generic storage-secrets --namespace magda --from-literal=a
 kubectl create secret generic smtp-secret --namespace magda --from-literal=username=$SMTP_USERNAME --from-literal=password=$SMTP_PASSWORD
 ```
 
-8> Install Magda via Helm
+8> Add Magda Helm Repo
+
+```bash
+helm repo add magda-io https://charts.magda.io
+helm repo update
+```
+
+9> Install Magda via Helm
 
 ```bash
 helm upgrade --namespace magda --install --timeout 9999s --set magda-core.gateway.service.type=LoadBalancer magda magda-io/magda
