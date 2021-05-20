@@ -1,6 +1,6 @@
 # How to create Local Users
 
-> Please note: local authentication feature has been moved out as an [Authentication Plugin](./authentication-plugin-spec.md) to repo [magda-auth-internal](https://github.com/magda-io/magda-auth-internal). You need to deploy the plugin to turn of this feature.
+> Please note: local authentication feature has been moved out as an [Authentication Plugin](./authentication-plugin-spec.md) to repo [magda-auth-internal](https://github.com/magda-io/magda-auth-internal). You need to deploy the plugin to turn on this feature.
 
 Magda now support creating local authenticated users (instead of SSO). You can use the `set-user-password` script to create users / set password for users. Please note: users will need to use their email address as username to login.
 
