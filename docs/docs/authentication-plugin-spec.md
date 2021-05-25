@@ -114,3 +114,22 @@ The POST `/` Endpoint is only supported by `PASSWORD` type plugin. The plugin ex
 ### Auth Plugin Icon Endpoint
 
 An auth plugin is required to serve an 36x36 image file to be used by Magda UI to be displayed on the authentication options list. This url is required to be set as the value of `iconUrl` field of the auth plugin config (see `GET`/config`Endpoint` above).
+
+### Get `/logout` Endpoint (Optional)
+
+If the auth plugin want to request identity provider to log a user out when the user logs out Magda in order. The auth plugin can choose to:
+
+-   Implment the optional `/logout` endpoint to complete the logic required by the identify provier
+    -   This GET endpoint will support the `redirect` query parameter.
+        -   When presents, the user should be redirected to the URL specified by this query parameter after the logout.
+        -   Otherwise, the user should be redirected to the url specified by Helm Chart value `global.authPluginRedirectUrl`)
+-   All logout requests will still be forwared by Gateway's `/auth/logout` endpoint.
+-   Any auth plugins that opt to handle the logout process should:
+    -   Terminate Magda's own session before inform identity provider.
+    -   Upon successful login action, the plugin should set the following fields to session data `user.authPlugin` field:
+        -   `key`: the auth plugin key.
+        -   `logoutUrl`: the absolute url of the auth plugin's `/logout` Endpoint.
+        -   Magda's Gateway module will look up this field to determine which auth plugin it should forward logout requests to.
+        -   If the Gateway can't locate this field in session, it will simply terminate Magda's own session only.
+        -   Any other data required for processing logout requests. e.g. OpenID Connect may require ID token or client id for generating the logout url.
+        -   If you use passport.js for your auth plugin, you can simply set `authPlugin` key of the user data that will be returned via `done` callback in passport.js's [verify callback](http://www.passportjs.org/docs/downloads/html/#verify-callback)
