@@ -116,6 +116,7 @@ export default function buildApp(app: express.Application, config: Config) {
         cookieOptions: _.isEmpty(config.cookieJson) ? {} : config.cookieJson,
         authApiBaseUrl: config.authorizationApi,
         dbPool,
+        externalUrl: config.externalUrl,
         appBasePath: baseUrl
     });
 

@@ -75,6 +75,7 @@ describe("Test Authenticator (Session Management)", function (this: Mocha.ISuite
             dbPool: pool,
             sessionSecret: SESSION_SECRET,
             cookieOptions,
+            externalUrl: "http://test-auth-api.com/",
             authApiBaseUrl: "http://test-auth-api.com"
         });
 

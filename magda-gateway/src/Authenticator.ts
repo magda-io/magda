@@ -2,10 +2,11 @@ import express from "express";
 import session from "express-session";
 import pg from "pg";
 import passport from "passport";
-import URI from "urijs";
+import urijs from "urijs";
 import signature from "cookie-signature";
 import createAuthApiKeyMiddleware from "./createAuthApiKeyMiddleware";
 import addTrailingSlash from "magda-typescript-common/src/addTrailingSlash";
+import getAbsoluteUrl from "magda-typescript-common/src/getAbsoluteUrl";
 
 /** This is present in the express-session types but not actually exported properly, so it needs to be copy-pasted here */
 export type SessionCookieOptions = {
@@ -26,6 +27,7 @@ export interface AuthenticatorOptions {
     cookieOptions?: SessionCookieOptions;
     authApiBaseUrl: string;
     enableSessionForAPIKeyAccess?: boolean;
+    externalUrl: string;
     appBasePath?: string;
 }
 
@@ -35,6 +37,11 @@ export let DEFAULT_SESSION_COOKIE_OPTIONS: SessionCookieOptions = {
     sameSite: "lax",
     httpOnly: true,
     secure: "auto"
+};
+
+type AuthPluginSessionData = {
+    key?: string;
+    logoutUrl?: string;
 };
 
 /**
@@ -92,12 +99,14 @@ export default class Authenticator {
     private sessionSecret: string;
     private authApiBaseUrl: string;
     private appBaseUrl: string;
+    private externalUrl: string;
 
     constructor(options: AuthenticatorOptions) {
         this.authApiBaseUrl = options.authApiBaseUrl;
         this.appBaseUrl = addTrailingSlash(
             options.appBasePath ? options.appBasePath : "/"
         );
+        this.externalUrl = addTrailingSlash(options.externalUrl);
 
         if (!this.authApiBaseUrl) {
             throw new Error("Authenticator requires valid auth API base URL");
@@ -276,34 +285,86 @@ export default class Authenticator {
      * @param {express.NextFunction} next
      * @memberof Authenticator
      */
-    private logout(req: express.Request, res: express.Response) {
+    private async logout(req: express.Request, res: express.Response) {
+        const redirectUrl: string | null = req?.query?.["redirect"]
+            ? getAbsoluteUrl(req.query["redirect"] as string, this.externalUrl)
+            : null;
+
         if (!req.cookies[DEFAULT_SESSION_COOKIE_NAME]) {
             // session not started yet
-            res.status(200).send({
-                isError: false
-            });
+            if (redirectUrl) {
+                res.redirect(redirectUrl);
+            } else {
+                // existing behaviour prior to version 0.0.60
+                res.status(200).send({
+                    isError: false
+                });
+            }
+            return;
+        }
+
+        const authPlugin = req?.user?.authPlugin as
+            | AuthPluginSessionData
+            | undefined;
+
+        const logoutUrl = authPlugin?.logoutUrl;
+
+        if (redirectUrl && logoutUrl) {
+            // if it's possible (e.g. logoutUri available and request come in with `redirect` parameter) for an auth plugin to handle the logout,
+            // leave it to the auth plugin.
+            // the Auth plugin should terminate the Magda session probably and forward to any third-party idP
+            const logoutUri = urijs(logoutUrl);
+            res.redirect(
+                logoutUri
+                    .search({
+                        ...logoutUri.search(true),
+                        redirect: redirectUrl
+                    })
+                    .toString()
+            );
             return;
         }
 
         // --- based on PR review feedback, we want to report any errors happened during session destroy
         // --- and only remove cookie from user agent when session data is destroyed successfully
-        this.destroySession(req)
-            .then(() => {
-                // --- delete the cookie and continue middleware processing chain
-                this.deleteCookie(res);
+        try {
+            await this.destroySession(req);
+            // --- delete the cookie and continue middleware processing chain
+            this.deleteCookie(res);
+            if (redirectUrl) {
+                // when `redirect` query parameter exists, redirect user rather than response outcome in JSON.
+                res.redirect(redirectUrl);
+            } else {
+                // existing behaviour prior to version 0.0.60
                 res.status(200).send({
                     isError: false
                 });
-            })
-            .catch((err) => {
-                const errorMessage = `Failed to destory session: ${err}`;
-                console.log(errorMessage);
+            }
+        } catch (err) {
+            const errorMessage = `Failed to destory session: ${err}`;
+            console.error(errorMessage);
+
+            if (redirectUrl) {
+                // when `redirect` query parameter exists, redirect user rather than response outcome in JSON.
+                const redirectUri = urijs(redirectUrl);
+                res.redirect(
+                    redirectUri
+                        .search({
+                            ...redirectUri.search(true),
+                            errorMessage
+                        })
+                        .toString()
+                );
+            } else {
+                // existing behaviour prior to version 0.0.60
                 res.status(500).send({
                     isError: true,
                     errorCode: 500,
                     errorMessage
                 });
-            });
+                return;
+            }
+        }
     }
 
     /**
@@ -325,7 +386,7 @@ export default class Authenticator {
         res: express.Response,
         next: express.NextFunction
     ) {
-        const uri = new URI(req.originalUrl);
+        const uri = new urijs(req.originalUrl);
         const pathname = uri.pathname().toLowerCase();
 
         if (pathname.indexOf(`${this.appBaseUrl}auth/login/`) === 0) {
