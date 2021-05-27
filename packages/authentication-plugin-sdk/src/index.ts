@@ -3,24 +3,9 @@ import session from "express-session";
 import urijs from "urijs";
 import createPool, { PoolCreationOptions } from "./createPool";
 import AuthApiClient, { User, UserToken, Maybe } from "@magda/auth-api-client";
+export { default as getAbsoluteUrl } from "@magda/typescript-common/dist/getAbsoluteUrl";
 import passport from "passport";
 import _ from "lodash";
-
-// Put default req.user session data definition here.
-// so that project uses this SDK don't have to always define it
-declare global {
-    namespace Express {
-        /**
-         * This defines magda session data type.
-         * the default session data type is `UserToken` (i.e. only user id field is available and is a compulsory field)
-         * But any auth plugin provider could choose to customise the session by adding more fields (e.g. `arcgis`).
-         * We also make sure it allows extra fields here.
-         */
-        interface User extends UserToken {
-            [key: string]: any;
-        }
-    }
-}
 
 export type MagdaSessionRouterOptions = {
     cookieOptions: SessionCookieOptions;
@@ -158,43 +143,6 @@ export type AuthPluginBasicConfig = {
     // plugin serving base url. Getway will forward all request to it
     baseUrl: string;
 };
-
-/**
- * Join `url` with `baseUrl` if `url` is not an absolute url
- *
- * @export
- * @param {string} url
- * @param {string} baseUrl
- * @param {{ [key: string]: string }} [optionalQueries]
- * @returns
- */
-export function getAbsoluteUrl(
-    url: string,
-    baseUrl: string,
-    optionalQueries?: { [key: string]: string }
-) {
-    const uri = urijs(url);
-    if (uri.hostname()) {
-        // --- absolute url, return directly
-        return url;
-    } else {
-        if (typeof baseUrl !== "string") {
-            baseUrl = "";
-        }
-        const baseUri = urijs(baseUrl);
-        const query = uri.search(true);
-        const mergedUri = baseUri.segmentCoded(
-            baseUri.segmentCoded().concat(uri.segmentCoded())
-        );
-
-        return mergedUri
-            .search({
-                ...(optionalQueries ? optionalQueries : {}),
-                ...(query ? query : {})
-            })
-            .toString();
-    }
-}
 
 export function redirectOnSuccess(toURL: string, req: Request, res: Response) {
     const source = urijs(toURL)
