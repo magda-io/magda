@@ -112,7 +112,7 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
 
     /**
      * @apiGroup Authentication API
-     * @api {get} /auth/plugins Get the list of available authentication plugins
+     * @api {get} https://<host>/auth/plugins Get the list of available authentication plugins
      * @apiDescription Returns all installed authentication plugins. This endpoint is only available when gateway `enableAuthEndpoint`=true
      *
      * @apiSuccessExample {json} 200
@@ -179,7 +179,7 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
 
     /**
      * @apiGroup Authentication API
-     * @api {get} /auth/providers Get the list of available authentication providers
+     * @api {get} https://<host>/auth/providers Get the list of available authentication providers
      * @apiDescription Returns all installed authentication providers.
      *  This endpoint is only available when gateway `enableAuthEndpoint`=true.
      *  Please note: We are gradually replacing non-plugable authenticaiton providers with [authentication plugins](https://github.com/magda-io/magda/tree/master/deploy/helm/internal-charts/gateway#authentication-plugin-config)
@@ -215,8 +215,14 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
 
     /**
      * @apiGroup Authentication API
-     * @api {get} /auth/logout Explicitly logout current user session
+     * @api {get} https://<host>/auth/logout Explicitly logout current user session
      * @apiDescription Returns result of logout action.
+     * This endpoint implements the behaviour that is described in [this doc](https://github.com/magda-io/magda/blob/master/docs/docs/authentication-plugin-spec.md#get-logout-endpoint-optional)
+     * in order to support auth plugin logout process.
+     * When the `redirect` query parameter does not present, this middleware should be compatible with the behaviour prior to version 0.0.60.
+     * i.e.:
+     * - Turn off Magda session only without forwarding any requests to auth plugins
+     * - Response a JSON response (that indicates the outcome of the logout action) instead of redirect users.
      * This endpoint is only available when gateway `enableAuthEndpoint`=true
      *
      * @apiSuccessExample {json} 200

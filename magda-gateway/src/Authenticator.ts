@@ -261,6 +261,52 @@ export default class Authenticator {
     }
 
     /**
+     * A middleware to handle all logout requests that are sent to Gateway.
+     * This middleware should implement the behaviour that is described in [this doc](https://github.com/magda-io/magda/blob/master/docs/docs/authentication-plugin-spec.md#get-logout-endpoint-optional)
+     * in order to support auth plugin logout process.
+     * When the `redirect` query parameter does not present, this middleware should be compatible with the behaviour prior to version 0.0.60.
+     * i.e.:
+     * - Turn off Magda session only without forwarding any requests to auth plugins
+     * - Response a JSON response (that indicates the outcome of the logout action) instead of redirect users.
+     * e.g. `{"isError": false}` indicates no error.
+     *
+     * @private
+     * @param {express.Request} req
+     * @param {express.Response} res
+     * @param {express.NextFunction} next
+     * @memberof Authenticator
+     */
+    private logout(req: express.Request, res: express.Response) {
+        if (!req.cookies[DEFAULT_SESSION_COOKIE_NAME]) {
+            // session not started yet
+            res.status(200).send({
+                isError: false
+            });
+            return;
+        }
+
+        // --- based on PR review feedback, we want to report any errors happened during session destroy
+        // --- and only remove cookie from user agent when session data is destroyed successfully
+        this.destroySession(req)
+            .then(() => {
+                // --- delete the cookie and continue middleware processing chain
+                this.deleteCookie(res);
+                res.status(200).send({
+                    isError: false
+                });
+            })
+            .catch((err) => {
+                const errorMessage = `Failed to destory session: ${err}`;
+                console.log(errorMessage);
+                res.status(500).send({
+                    isError: true,
+                    errorCode: 500,
+                    errorMessage
+                });
+            });
+    }
+
+    /**
      * A middleware wraps all other cookie / session / passport related middlewares
      * to achieve fine-gain session / cookie control in Magda.
      * Generally, we want to:
@@ -302,7 +348,12 @@ export default class Authenticator {
             // --- end the session here
             if (!req.cookies[DEFAULT_SESSION_COOKIE_NAME]) {
                 // --- session not started yet
-                return next();
+                if (pathname === `${this.appBaseUrl}auth/logout`) {
+                    // even no session we should still respond to logout requests
+                    return this.logout(req, res);
+                } else {
+                    return next();
+                }
             }
             // --- Only make session / store available
             // --- passport midddleware should not be run
@@ -314,25 +365,7 @@ export default class Authenticator {
                     // --- destroy session here
                     // --- any session data will be removed from session store
                     if (pathname === `${this.appBaseUrl}auth/logout`) {
-                        // --- based on PR review feedback, we want to report any errors happened during session destroy
-                        // --- and only remove cookie from user agent when session data is destroyed successfully
-                        this.destroySession(req)
-                            .then(() => {
-                                // --- delete the cookie and continue middleware processing chain
-                                this.deleteCookie(res);
-                                res.status(200).send({
-                                    isError: false
-                                });
-                            })
-                            .catch((err) => {
-                                const errorMessage = `Failed to destory session: ${err}`;
-                                console.log(errorMessage);
-                                res.status(500).send({
-                                    isError: true,
-                                    errorCode: 500,
-                                    errorMessage
-                                });
-                            });
+                        return this.logout(req, res);
                     } else {
                         // --- for non logout path, no need to wait till `destroySession` complete
                         this.destroySession(req).catch((err) => {
