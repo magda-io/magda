@@ -360,7 +360,7 @@ describe("Test Authenticator (Session Management)", function (this: Mocha.ISuite
                 .get("/auth/logout")
                 .expect(200)
                 .then(async (res) => {
-                    expect(isNextHandlerCalled).to.equal(true);
+                    expect(isNextHandlerCalled).to.equal(false);
                     const [sessionId, cookieOptions] = getSetCookie(
                         res.header,
                         DEFAULT_SESSION_COOKIE_NAME
