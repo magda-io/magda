@@ -108,12 +108,13 @@ export function createMagdaSessionRouter(
  * @param {Request} req
  * @param {Response} res
  * @param {SessionCookieOptions} cookieOptions
+ * @return {*}  {Promise<void>}
  */
 export async function destroyMagdaSession(
     req: Request,
     res: Response,
     cookieOptions: SessionCookieOptions
-) {
+): Promise<void> {
     await destroySession(req);
     deleteCookie(DEFAULT_SESSION_COOKIE_NAME, cookieOptions, res);
 }

@@ -15,8 +15,23 @@ You can use [this repo](https://github.com/magda-io/magda-auth-template) as [a t
  * @returns {Router}
  */
 export declare function createMagdaSessionRouter(
-    options: MagdaSessionRouterOptions
+  options: MagdaSessionRouterOptions
 ): Router;
+
+/**
+ * Complete destroy Magda session and remove session cookie from the user agent
+ *
+ * @export
+ * @param {Request} req
+ * @param {Response} res
+ * @param {SessionCookieOptions} cookieOptions
+ * @return {*}  {Promise<void>}
+ */
+export declare async function destroyMagdaSession(
+  req: Request,
+  res: Response,
+  cookieOptions: SessionCookieOptions
+): Promise<void>;
 
 /**
  * Verify the user using the user profile received during the authentication.
@@ -50,19 +65,19 @@ export declare function createMagdaSessionRouter(
  * @returns {Promise<UserToken>}
  */
 export declare function createOrGetUserToken(
-    authApi: AuthApiClient,
-    profile: passport.Profile,
-    source: string,
-    beforeUserCreated?: (
-        authApiClient: AuthApiClient,
-        userData: User,
-        profile: passport.Profile
-    ) => Promise<User>,
-    afterUserCreated?: (
-        authApiClient: AuthApiClient,
-        user: User,
-        profile: passport.Profile
-    ) => Promise<void>
+  authApi: AuthApiClient,
+  profile: passport.Profile,
+  source: string,
+  beforeUserCreated?: (
+    authApiClient: AuthApiClient,
+    userData: User,
+    profile: passport.Profile
+  ) => Promise<User>,
+  afterUserCreated?: (
+    authApiClient: AuthApiClient,
+    user: User,
+    profile: passport.Profile
+  ) => Promise<void>
 ): Promise<UserToken>;
 
 /**
@@ -75,23 +90,23 @@ export declare function createOrGetUserToken(
  * @returns
  */
 export declare function getAbsoluteUrl(
-    url: string,
-    baseUrl: string,
-    optionalQueries?: {
-        [key: string]: string;
-    }
+  url: string,
+  baseUrl: string,
+  optionalQueries?: {
+    [key: string]: string;
+  }
 ): string;
 
 export declare function redirectOnSuccess(
-    toURL: string,
-    req: Request,
-    res: Response
+  toURL: string,
+  req: Request,
+  res: Response
 ): void;
 
 export declare function redirectOnError(
-    err: any,
-    toURL: string,
-    req: Request,
-    res: Response
+  err: any,
+  toURL: string,
+  req: Request,
+  res: Response
 ): void;
 ```
