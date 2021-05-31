@@ -82,7 +82,7 @@ describe("Test Authenticator (Session Management)", function (this: Mocha.ISuite
             dbPool: pool,
             sessionSecret: SESSION_SECRET,
             cookieOptions,
-            externalUrl: "http://test-auth-api.com/",
+            externalUrl: "http://test-magda.com/",
             authApiBaseUrl: "http://test-auth-api.com"
         });
 
@@ -364,6 +364,63 @@ describe("Test Authenticator (Session Management)", function (this: Mocha.ISuite
                 });
         });
 
+        it("Should destroy the existing session, delete the sessios cookie and redirect the user when redirect query param presents", async () => {
+            const request = setupTest();
+            let sessionId: string = null;
+            let cookieOptions: PlainObject = {};
+
+            // --- visit /auth/login to create a session first
+            await request
+                .post("/auth/login/xxxxxx")
+                .expect(200)
+                .then(async (res) => {
+                    expect(isNextHandlerCalled).to.equal(true);
+                    isNextHandlerCalled = false;
+                    [sessionId, cookieOptions] = getSetCookie(
+                        res.header,
+                        DEFAULT_SESSION_COOKIE_NAME
+                    );
+                    expect(sessionId).not.to.be.null;
+                    const storeSession = await getStoreSessionById(sessionId);
+                    expect(storeSession).not.to.be.null;
+                    expect(storeSession.sid).to.equal(sessionId);
+                    expect(await getTotalStoreSessionNum()).to.equal(1);
+                });
+
+            await request
+                .get("/auth/logout?redirect=%2Flogout-landing")
+                .set("Cookie", [
+                    createCookieData(
+                        DEFAULT_SESSION_COOKIE_NAME,
+                        sessionId,
+                        SESSION_SECRET,
+                        cookieOptions
+                    )
+                ])
+                .expect((res) => {
+                    expect(res.status).to.equals(302);
+                    // when a relative URL is provided, system will auto add magda's externalUrl (global.externalUrl) to it
+                    expect(res?.header?.["location"]).to.equals(
+                        "http://test-magda.com/logout-landing"
+                    );
+                })
+                .then(async (res) => {
+                    expect(isNextHandlerCalled).to.equal(false);
+                    [sessionId, cookieOptions] = getSetCookie(
+                        res.header,
+                        DEFAULT_SESSION_COOKIE_NAME
+                    );
+                    expect(sessionId).to.equal("");
+                    expect(cookieOptions.Expires).to.equal(
+                        "Thu, 01 Jan 1970 00:00:00 GMT"
+                    );
+                    // --- give session store a chance to run before checking
+                    await wait(500);
+                    // --- existing session also destroyed in store
+                    expect(await getTotalStoreSessionNum()).to.equal(0);
+                });
+        });
+
         it("Should not set cookie header in response if request does not carry session cookie", async () => {
             const request = setupTest();
 
@@ -382,14 +439,15 @@ describe("Test Authenticator (Session Management)", function (this: Mocha.ISuite
                 });
         });
 
-        it("Should forward logout request when plugin register the logoutUrl in session and redirect query param is provided", async () => {
-            const request = setupTest({}, (req, res, next)=> {
+        it("Should simply terminate Magda session without forwarding logout request even when plugin register the logoutUrl in session but redirect query param is not provided", async () => {
+            const request = setupTest({}, (req, res, next) => {
                 // set middleware to simulate authPlugin's setting session data
                 // see https://github.com/magda-io/magda/blob/master/docs/docs/authentication-plugin-spec.md
                 req.session.authPlugin = {
                     key: "my-auth-plugin",
                     logoutUrl: "/auth/login/plugin/my-auth-plugin/logout"
                 };
+                next();
             });
             let sessionId: string = null;
             let cookieOptions: PlainObject = {};
@@ -407,6 +465,9 @@ describe("Test Authenticator (Session Management)", function (this: Mocha.ISuite
                     );
                     expect(sessionId).not.to.be.null;
                     const storeSession = await getStoreSessionById(sessionId);
+                    expect(storeSession?.sess?.authPlugin?.logoutUrl).to.equal(
+                        "/auth/login/plugin/my-auth-plugin/logout"
+                    );
                     expect(storeSession).not.to.be.null;
                     expect(storeSession.sid).to.equal(sessionId);
                     expect(await getTotalStoreSessionNum()).to.equal(1);
@@ -438,6 +499,222 @@ describe("Test Authenticator (Session Management)", function (this: Mocha.ISuite
                     await wait(500);
                     // --- existing session also destroyed in store
                     expect(await getTotalStoreSessionNum()).to.equal(0);
+                });
+        });
+
+        it("Should simply terminate Magda session without forwarding logout request even when plugin register the logoutUrl in session but redirect query param is not provided (store authPlugin info in passport session)", async () => {
+            const request = setupTest({}, (req, res, next) => {
+                // set middleware to simulate authPlugin's setting session data
+                // see https://github.com/magda-io/magda/blob/master/docs/docs/authentication-plugin-spec.md
+                req.login(
+                    {
+                        id: "my-user-id",
+                        authPlugin: {
+                            key: "my-auth-plugin",
+                            logoutUrl:
+                                "/auth/login/plugin/my-auth-plugin/logout"
+                        }
+                    },
+                    next
+                );
+            });
+            let sessionId: string = null;
+            let cookieOptions: PlainObject = {};
+
+            // --- visit /auth/login to create a session first
+            await request
+                .post("/auth/login/xxxxxx")
+                .expect(200)
+                .then(async (res) => {
+                    expect(isNextHandlerCalled).to.equal(true);
+                    isNextHandlerCalled = false;
+                    [sessionId, cookieOptions] = getSetCookie(
+                        res.header,
+                        DEFAULT_SESSION_COOKIE_NAME
+                    );
+                    expect(sessionId).not.to.be.null;
+                    const storeSession = await getStoreSessionById(sessionId);
+                    expect(
+                        storeSession?.sess?.passport?.user?.authPlugin
+                            ?.logoutUrl
+                    ).to.equal("/auth/login/plugin/my-auth-plugin/logout");
+                    expect(storeSession).not.to.be.null;
+                    expect(storeSession.sid).to.equal(sessionId);
+                    expect(await getTotalStoreSessionNum()).to.equal(1);
+                });
+
+            await request
+                .get("/auth/logout")
+                .set("Cookie", [
+                    createCookieData(
+                        DEFAULT_SESSION_COOKIE_NAME,
+                        sessionId,
+                        SESSION_SECRET,
+                        cookieOptions
+                    )
+                ])
+                .expect(200)
+                .then(async (res) => {
+                    expect(isNextHandlerCalled).to.equal(false);
+                    expect(res.body.isError).to.equal(false);
+                    [sessionId, cookieOptions] = getSetCookie(
+                        res.header,
+                        DEFAULT_SESSION_COOKIE_NAME
+                    );
+                    expect(sessionId).to.equal("");
+                    expect(cookieOptions.Expires).to.equal(
+                        "Thu, 01 Jan 1970 00:00:00 GMT"
+                    );
+                    // --- give session store a chance to run before checking
+                    await wait(500);
+                    // --- existing session also destroyed in store
+                    expect(await getTotalStoreSessionNum()).to.equal(0);
+                });
+        });
+
+        it("Should forward logout request when plugin register the logoutUrl in session and redirect query param is provided", async () => {
+            const request = setupTest({}, (req, res, next) => {
+                // set middleware to simulate authPlugin's setting session data
+                // see https://github.com/magda-io/magda/blob/master/docs/docs/authentication-plugin-spec.md
+                req.session.authPlugin = {
+                    key: "my-auth-plugin",
+                    logoutUrl: "/auth/login/plugin/my-auth-plugin/logout"
+                };
+                next();
+            });
+            let sessionId: string = null;
+            let cookieOptions: PlainObject = {};
+
+            // --- visit /auth/login to create a session first
+            await request
+                .post("/auth/login/xxxxxx")
+                .expect(200)
+                .then(async (res) => {
+                    expect(isNextHandlerCalled).to.equal(true);
+                    isNextHandlerCalled = false;
+                    [sessionId, cookieOptions] = getSetCookie(
+                        res.header,
+                        DEFAULT_SESSION_COOKIE_NAME
+                    );
+                    expect(sessionId).not.to.be.null;
+                    const storeSession = await getStoreSessionById(sessionId);
+                    expect(storeSession?.sess?.authPlugin?.logoutUrl).to.equal(
+                        "/auth/login/plugin/my-auth-plugin/logout"
+                    );
+                    expect(storeSession).not.to.be.null;
+                    expect(storeSession.sid).to.equal(sessionId);
+                    expect(await getTotalStoreSessionNum()).to.equal(1);
+                });
+
+            await request
+                .get(
+                    // should work with absolute URL
+                    "/auth/logout?redirect=http%3A%2F%2Fexample.com%2Flogout-landing"
+                )
+                .set("Cookie", [
+                    createCookieData(
+                        DEFAULT_SESSION_COOKIE_NAME,
+                        sessionId,
+                        SESSION_SECRET,
+                        cookieOptions
+                    )
+                ])
+                .expect((res) => {
+                    expect(res.status).to.equals(302);
+                    expect(res?.header?.["location"]).to.equals(
+                        "/auth/login/plugin/my-auth-plugin/logout?redirect=http%3A%2F%2Fexample.com%2Flogout-landing"
+                    );
+                })
+                .then(async (res) => {
+                    expect(isNextHandlerCalled).to.equal(false);
+                    let currentSession;
+                    [currentSession, cookieOptions] = getSetCookie(
+                        res.header,
+                        DEFAULT_SESSION_COOKIE_NAME
+                    );
+                    expect(currentSession).to.equal(sessionId);
+                    // --- give session store a chance to run before checking
+                    await wait(500);
+                    // gateway should not attempt to distroy the session
+                    // and leave the job to authPlugin (AuthPlugin might need some session data to turn off idP session properly)
+                    expect(await getTotalStoreSessionNum()).to.equal(1);
+                });
+        });
+
+        it("Should forward logout request when plugin register the logoutUrl in session and redirect query param is provided (store authPlugin info in passport session)", async () => {
+            const request = setupTest({}, (req, res, next) => {
+                // set middleware to simulate authPlugin's setting session data
+                // see https://github.com/magda-io/magda/blob/master/docs/docs/authentication-plugin-spec.md
+                req.login(
+                    {
+                        id: "my-user-id",
+                        authPlugin: {
+                            key: "my-auth-plugin",
+                            logoutUrl:
+                                "/auth/login/plugin/my-auth-plugin/logout"
+                        }
+                    },
+                    next
+                );
+            });
+            let sessionId: string = null;
+            let cookieOptions: PlainObject = {};
+
+            // --- visit /auth/login to create a session first
+            await request
+                .post("/auth/login/xxxxxx")
+                .expect(200)
+                .then(async (res) => {
+                    expect(isNextHandlerCalled).to.equal(true);
+                    isNextHandlerCalled = false;
+                    [sessionId, cookieOptions] = getSetCookie(
+                        res.header,
+                        DEFAULT_SESSION_COOKIE_NAME
+                    );
+                    expect(sessionId).not.to.be.null;
+                    const storeSession = await getStoreSessionById(sessionId);
+                    expect(
+                        storeSession?.sess?.passport?.user?.authPlugin
+                            ?.logoutUrl
+                    ).to.equal("/auth/login/plugin/my-auth-plugin/logout");
+                    expect(storeSession).not.to.be.null;
+                    expect(storeSession.sid).to.equal(sessionId);
+                    expect(await getTotalStoreSessionNum()).to.equal(1);
+                });
+
+            await request
+                .get(
+                    // should work with relative URL
+                    // when a relative URL is provided, system will auto add magda's externalUrl (global.externalUrl) to it
+                    "/auth/logout?redirect=%2Flogout-landing"
+                )
+                .set("Cookie", [
+                    createCookieData(
+                        DEFAULT_SESSION_COOKIE_NAME,
+                        sessionId,
+                        SESSION_SECRET,
+                        cookieOptions
+                    )
+                ])
+                .expect((res) => {
+                    expect(res.status).to.equals(302);
+                    expect(res?.header?.["location"]).to.equals(
+                        "/auth/login/plugin/my-auth-plugin/logout?redirect=http%3A%2F%2Ftest-magda.com%2Flogout-landing"
+                    );
+                })
+                .then(async (res) => {
+                    expect(isNextHandlerCalled).to.equal(false);
+                    let currentSession;
+                    [currentSession, cookieOptions] = getSetCookie(
+                        res.header,
+                        DEFAULT_SESSION_COOKIE_NAME
+                    );
+                    expect(currentSession).to.equal(sessionId);
+                    // --- give session store a chance to run before checking
+                    await wait(500);
+                    // gateway should not attempt to distroy the session
+                    // and leave the job to authPlugin (AuthPlugin might need some session data to turn off idP session properly)
+                    expect(await getTotalStoreSessionNum()).to.equal(1);
                 });
         });
     });

@@ -303,70 +303,79 @@ export default class Authenticator {
             return;
         }
 
-        const authPlugin = (req?.user?.authPlugin
-            ? req.user.authPlugin
-            : req?.session?.authPlugin) as AuthPluginSessionData | undefined;
+        const logoutWithSession = async () => {
+            const authPlugin = (req?.user?.authPlugin
+                ? req.user.authPlugin
+                : req?.session?.authPlugin) as
+                | AuthPluginSessionData
+                | undefined;
 
-        const logoutUrl = authPlugin?.logoutUrl;
+            const logoutUrl = authPlugin?.logoutUrl;
 
-        console.log("// session started, logout url: " + req?.user);
-
-        if (redirectUrl && logoutUrl) {
-            // if it's possible (e.g. logoutUri available and request come in with `redirect` parameter) for an auth plugin to handle the logout,
-            // leave it to the auth plugin.
-            // the Auth plugin should terminate the Magda session probably and forward to any third-party idP
-            const logoutUri = urijs(logoutUrl);
-            res.redirect(
-                logoutUri
-                    .search({
-                        ...logoutUri.search(true),
-                        redirect: redirectUrl
-                    })
-                    .toString()
-            );
-            return;
-        }
-
-        // --- based on PR review feedback, we want to report any errors happened during session destroy
-        // --- and only remove cookie from user agent when session data is destroyed successfully
-        try {
-            await this.destroySession(req);
-            // --- delete the cookie and continue middleware processing chain
-            this.deleteCookie(res);
-            if (redirectUrl) {
-                // when `redirect` query parameter exists, redirect user rather than response outcome in JSON.
-                res.redirect(redirectUrl);
-            } else {
-                // existing behaviour prior to version 0.0.60
-                res.status(200).send({
-                    isError: false
-                });
-            }
-        } catch (err) {
-            const errorMessage = `Failed to destory session: ${err}`;
-            console.error(errorMessage);
-
-            if (redirectUrl) {
-                // when `redirect` query parameter exists, redirect user rather than response outcome in JSON.
-                const redirectUri = urijs(redirectUrl);
+            if (redirectUrl && logoutUrl) {
+                // if it's possible (e.g. logoutUri available and request come in with `redirect` parameter) for an auth plugin to handle the logout,
+                // leave it to the auth plugin.
+                // the Auth plugin should terminate the Magda session probably and forward to any third-party idP
+                const logoutUri = urijs(logoutUrl);
                 res.redirect(
-                    redirectUri
+                    logoutUri
                         .search({
-                            ...redirectUri.search(true),
-                            errorMessage
+                            ...logoutUri.search(true),
+                            redirect: redirectUrl
                         })
                         .toString()
                 );
-            } else {
-                // existing behaviour prior to version 0.0.60
-                res.status(500).send({
-                    isError: true,
-                    errorCode: 500,
-                    errorMessage
-                });
                 return;
             }
-        }
+
+            // --- based on PR review feedback, we want to report any errors happened during session destroy
+            // --- and only remove cookie from user agent when session data is destroyed successfully
+            try {
+                await this.destroySession(req);
+                // --- delete the cookie and continue middleware processing chain
+                this.deleteCookie(res);
+                if (redirectUrl) {
+                    // when `redirect` query parameter exists, redirect user rather than response outcome in JSON.
+                    res.redirect(redirectUrl);
+                } else {
+                    // existing behaviour prior to version 0.0.60
+                    res.status(200).send({
+                        isError: false
+                    });
+                }
+            } catch (err) {
+                const errorMessage = `Failed to destory session: ${err}`;
+                console.error(errorMessage);
+
+                if (redirectUrl) {
+                    // when `redirect` query parameter exists, redirect user rather than response outcome in JSON.
+                    const redirectUri = urijs(redirectUrl);
+                    res.redirect(
+                        redirectUri
+                            .search({
+                                ...redirectUri.search(true),
+                                errorMessage
+                            })
+                            .toString()
+                    );
+                } else {
+                    // existing behaviour prior to version 0.0.60
+                    res.status(500).send({
+                        isError: true,
+                        errorCode: 500,
+                        errorMessage
+                    });
+                    return;
+                }
+            }
+        };
+
+        runMiddlewareList(
+            [this.passportMiddleware, this.passportSessionMiddleware],
+            req,
+            res,
+            logoutWithSession
+        );
     }
 
     /**
