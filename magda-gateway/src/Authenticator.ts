@@ -287,13 +287,13 @@ export default class Authenticator {
      */
     private async logout(req: express.Request, res: express.Response) {
         const redirectUrl: string | null = req?.query?.["redirect"]
-            ? getAbsoluteUrl(req.query["redirect"] as string, this.externalUrl)
+            ? (req.query["redirect"] as string)
             : null;
 
         if (!req.cookies[DEFAULT_SESSION_COOKIE_NAME]) {
             // session not started yet
             if (redirectUrl) {
-                res.redirect(redirectUrl);
+                res.redirect(getAbsoluteUrl(redirectUrl, this.externalUrl));
             } else {
                 // existing behaviour prior to version 0.0.60
                 res.status(200).send({
@@ -316,14 +316,10 @@ export default class Authenticator {
                 // if it's possible (e.g. logoutUri available and request come in with `redirect` parameter) for an auth plugin to handle the logout,
                 // leave it to the auth plugin.
                 // the Auth plugin should terminate the Magda session probably and forward to any third-party idP
-                const logoutUri = urijs(logoutUrl);
                 res.redirect(
-                    logoutUri
-                        .search({
-                            ...logoutUri.search(true),
-                            redirect: redirectUrl
-                        })
-                        .toString()
+                    getAbsoluteUrl(authPlugin?.logoutUrl, this.externalUrl, {
+                        redirect: redirectUrl
+                    })
                 );
                 return;
             }
@@ -336,7 +332,7 @@ export default class Authenticator {
                 this.deleteCookie(res);
                 if (redirectUrl) {
                     // when `redirect` query parameter exists, redirect user rather than response outcome in JSON.
-                    res.redirect(redirectUrl);
+                    res.redirect(getAbsoluteUrl(redirectUrl, this.externalUrl));
                 } else {
                     // existing behaviour prior to version 0.0.60
                     res.status(200).send({
@@ -349,14 +345,10 @@ export default class Authenticator {
 
                 if (redirectUrl) {
                     // when `redirect` query parameter exists, redirect user rather than response outcome in JSON.
-                    const redirectUri = urijs(redirectUrl);
                     res.redirect(
-                        redirectUri
-                            .search({
-                                ...redirectUri.search(true),
-                                errorMessage
-                            })
-                            .toString()
+                        getAbsoluteUrl(redirectUrl, this.externalUrl, {
+                            errorMessage
+                        })
                     );
                 } else {
                     // existing behaviour prior to version 0.0.60

@@ -622,7 +622,7 @@ describe("Test Authenticator (Session Management)", function (this: Mocha.ISuite
                 .expect((res) => {
                     expect(res.status).to.equals(302);
                     expect(res?.header?.["location"]).to.equals(
-                        "/auth/login/plugin/my-auth-plugin/logout?redirect=http%3A%2F%2Fexample.com%2Flogout-landing"
+                        "http://test-magda.com/auth/login/plugin/my-auth-plugin/logout?redirect=http%3A%2F%2Fexample.com%2Flogout-landing"
                     );
                 })
                 .then(async (res) => {
@@ -684,8 +684,9 @@ describe("Test Authenticator (Session Management)", function (this: Mocha.ISuite
 
             await request
                 .get(
-                    // should work with relative URL
-                    // when a relative URL is provided, system will auto add magda's externalUrl (global.externalUrl) to it
+                    // should work with relative URL provided as `redirect` query param
+                    // when a relative URL is provided, system will not add magda's externalUrl to it
+                    // in order to shorten the url as the authPlugin has the chance to further process it
                     "/auth/logout?redirect=%2Flogout-landing"
                 )
                 .set("Cookie", [
@@ -699,7 +700,7 @@ describe("Test Authenticator (Session Management)", function (this: Mocha.ISuite
                 .expect((res) => {
                     expect(res.status).to.equals(302);
                     expect(res?.header?.["location"]).to.equals(
-                        "/auth/login/plugin/my-auth-plugin/logout?redirect=http%3A%2F%2Ftest-magda.com%2Flogout-landing"
+                        "http://test-magda.com/auth/login/plugin/my-auth-plugin/logout?redirect=%2Flogout-landing"
                     );
                 })
                 .then(async (res) => {
