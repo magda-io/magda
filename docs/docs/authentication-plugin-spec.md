@@ -127,7 +127,7 @@ If the auth plugin want to request identity provider to log a user out when the 
 - All logout requests will still be forwared by Gateway's `/auth/logout` endpoint.
 - Any auth plugins that opt to handle the logout process should:
   - Terminate Magda's own session before inform identity provider.
-  - Upon successful login action, the plugin should set the following fields to session data `user.authPlugin` field:
+  - Upon successful login action, the plugin should set the following fields to session data `authPlugin` field or `passport.user.authPlugin` field:
     - `key`: the auth plugin key.
     - `logoutUrl`: the absolute url of the auth plugin's `/logout` Endpoint.
     - Magda's Gateway module will look up this field to determine which auth plugin it should forward logout requests to.

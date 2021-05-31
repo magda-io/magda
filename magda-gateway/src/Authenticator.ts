@@ -303,11 +303,13 @@ export default class Authenticator {
             return;
         }
 
-        const authPlugin = req?.user?.authPlugin as
-            | AuthPluginSessionData
-            | undefined;
+        const authPlugin = (req?.user?.authPlugin
+            ? req.user.authPlugin
+            : req?.session?.authPlugin) as AuthPluginSessionData | undefined;
 
         const logoutUrl = authPlugin?.logoutUrl;
+
+        console.log("// session started, logout url: " + req?.user);
 
         if (redirectUrl && logoutUrl) {
             // if it's possible (e.g. logoutUri available and request come in with `redirect` parameter) for an auth plugin to handle the logout,

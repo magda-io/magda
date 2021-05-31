@@ -1,7 +1,7 @@
 import {} from "mocha";
 import pg from "pg";
 import path from "path";
-import express from "express";
+import express, { NextFunction } from "express";
 import signature from "cookie-signature";
 import { expect } from "chai";
 import cookie from "cookie";
@@ -69,7 +69,14 @@ describe("Test Authenticator (Session Management)", function (this: Mocha.ISuite
         await pool.query("DELETE FROM session");
     });
 
-    function setupTest(cookieOptions: any = {}) {
+    function setupTest(
+        cookieOptions: any = {},
+        extraMiddleware: (
+            req: Express.Request,
+            res: Express.Response,
+            next: NextFunction
+        ) => void = null
+    ) {
         const app: express.Application = express();
         const auth = new Authenticator({
             dbPool: pool,
@@ -81,6 +88,10 @@ describe("Test Authenticator (Session Management)", function (this: Mocha.ISuite
 
         // --- attach auth routes to test app
         auth.applyToRoute(app);
+
+        if (extraMiddleware) {
+            app.use(extraMiddleware);
+        }
 
         app.use((req, res) => {
             // --- we should always check if middleware stuck
@@ -367,6 +378,65 @@ describe("Test Authenticator (Session Management)", function (this: Mocha.ISuite
                     );
                     expect(sessionId).to.be.null;
                     expect(cookieOptions).to.be.null;
+                    expect(await getTotalStoreSessionNum()).to.equal(0);
+                });
+        });
+
+        it("Should forward logout request when plugin register the logoutUrl in session and redirect query param is provided", async () => {
+            const request = setupTest({}, (req, res, next)=> {
+                // set middleware to simulate authPlugin's setting session data
+                // see https://github.com/magda-io/magda/blob/master/docs/docs/authentication-plugin-spec.md
+                req.session.authPlugin = {
+                    key: "my-auth-plugin",
+                    logoutUrl: "/auth/login/plugin/my-auth-plugin/logout"
+                };
+            });
+            let sessionId: string = null;
+            let cookieOptions: PlainObject = {};
+
+            // --- visit /auth/login to create a session first
+            await request
+                .post("/auth/login/xxxxxx")
+                .expect(200)
+                .then(async (res) => {
+                    expect(isNextHandlerCalled).to.equal(true);
+                    isNextHandlerCalled = false;
+                    [sessionId, cookieOptions] = getSetCookie(
+                        res.header,
+                        DEFAULT_SESSION_COOKIE_NAME
+                    );
+                    expect(sessionId).not.to.be.null;
+                    const storeSession = await getStoreSessionById(sessionId);
+                    expect(storeSession).not.to.be.null;
+                    expect(storeSession.sid).to.equal(sessionId);
+                    expect(await getTotalStoreSessionNum()).to.equal(1);
+                });
+
+            await request
+                .get("/auth/logout")
+                .set("Cookie", [
+                    createCookieData(
+                        DEFAULT_SESSION_COOKIE_NAME,
+                        sessionId,
+                        SESSION_SECRET,
+                        cookieOptions
+                    )
+                ])
+                .expect(200)
+                .then(async (res) => {
+                    expect(isNextHandlerCalled).to.equal(false);
+                    expect(res.body.isError).to.equal(false);
+                    [sessionId, cookieOptions] = getSetCookie(
+                        res.header,
+                        DEFAULT_SESSION_COOKIE_NAME
+                    );
+                    expect(sessionId).to.equal("");
+                    expect(cookieOptions.Expires).to.equal(
+                        "Thu, 01 Jan 1970 00:00:00 GMT"
+                    );
+                    // --- give session store a chance to run before checking
+                    await wait(500);
+                    // --- existing session also destroyed in store
                     expect(await getTotalStoreSessionNum()).to.equal(0);
                 });
         });
