@@ -30,8 +30,8 @@ export default function getAbsoluteUrl(
 
         return mergedUri
             .search({
-                ...(optionalQueries ? optionalQueries : {}),
-                ...(query ? query : {})
+                ...(query ? query : {}),
+                ...(optionalQueries ? optionalQueries : {})
             })
             .toString();
     }
