@@ -4,8 +4,21 @@ import urijs from "urijs";
 import createPool, { PoolCreationOptions } from "./createPool";
 import AuthApiClient, { User, UserToken, Maybe } from "@magda/auth-api-client";
 export { default as getAbsoluteUrl } from "@magda/typescript-common/dist/getAbsoluteUrl";
+export { default as getSessionId } from "magda-typescript-common/dist/session/getSessionId";
+import { default as destroySessionImport } from "magda-typescript-common/dist/session/destroySession";
+import {
+    DEFAULT_SESSION_COOKIE_NAME as DEFAULT_SESSION_COOKIE_NAME_IMPORT,
+    DEFAULT_SESSION_COOKIE_OPTIONS as DEFAULT_SESSION_COOKIE_OPTIONS_IMPORT,
+    CookieOptions as CookieOptionsImport,
+    deleteCookie as deleteCookieImport
+} from "@magda/typescript-common/dist/session/cookieUtils";
 import passport from "passport";
 import _ from "lodash";
+
+export const destroySession = destroySessionImport;
+
+export type SessionCookieOptions = CookieOptionsImport;
+export type CookieOptions = CookieOptionsImport;
 
 export type MagdaSessionRouterOptions = {
     cookieOptions: SessionCookieOptions;
@@ -18,25 +31,9 @@ export type MagdaSessionRouterOptions = {
     sessionDBName?: string;
 };
 
-export type SessionCookieOptions = {
-    maxAge?: number;
-    signed?: boolean;
-    expires?: Date;
-    httpOnly?: boolean;
-    path?: string;
-    domain?: string;
-    secure?: boolean | "auto";
-    encode?: (val: string) => string;
-    sameSite?: boolean | "lax" | "strict" | "none";
-};
-
-export const DEFAULT_SESSION_COOKIE_NAME: string = "connect.sid";
-export let DEFAULT_SESSION_COOKIE_OPTIONS: SessionCookieOptions = {
-    maxAge: 7 * 60 * 60 * 1000,
-    sameSite: "lax",
-    httpOnly: true,
-    secure: "auto"
-};
+export const DEFAULT_SESSION_COOKIE_NAME = DEFAULT_SESSION_COOKIE_NAME_IMPORT;
+export const DEFAULT_SESSION_COOKIE_OPTIONS = DEFAULT_SESSION_COOKIE_OPTIONS_IMPORT;
+export const deleteCookie = deleteCookieImport;
 
 /**
  * Create an express router that can be used to enable session on an express application.
@@ -102,6 +99,23 @@ export function createMagdaSessionRouter(
     router.use(sessionMiddleware);
 
     return router;
+}
+
+/**
+ * Complete destroy Magda session and remove session cookie from the user agent
+ *
+ * @export
+ * @param {Request} req
+ * @param {Response} res
+ * @param {SessionCookieOptions} cookieOptions
+ */
+export async function destroyMagdaSession(
+    req: Request,
+    res: Response,
+    cookieOptions: SessionCookieOptions
+) {
+    await destroySession(req);
+    deleteCookie(DEFAULT_SESSION_COOKIE_NAME, cookieOptions, res);
 }
 
 /**

@@ -8,10 +8,11 @@ import cookie from "cookie";
 import _ from "lodash";
 import supertest from "supertest";
 import randomstring from "randomstring";
-import Authenticator, {
+import Authenticator from "../Authenticator";
+import {
     DEFAULT_SESSION_COOKIE_NAME,
     DEFAULT_SESSION_COOKIE_OPTIONS
-} from "../Authenticator";
+} from "magda-typescript-common/src/session/cookieUtils";
 import getTestDBConfig from "magda-typescript-common/src/test/db/getTestDBConfig";
 import runMigrationSql, {
     deleteAllTables

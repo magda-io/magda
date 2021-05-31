@@ -3,23 +3,19 @@ import session from "express-session";
 import pg from "pg";
 import passport from "passport";
 import urijs from "urijs";
-import signature from "cookie-signature";
+import {
+    CookieOptions,
+    deleteCookie,
+    DEFAULT_SESSION_COOKIE_NAME,
+    DEFAULT_SESSION_COOKIE_OPTIONS
+} from "magda-typescript-common/src/session/cookieUtils";
+import getSessionId from "magda-typescript-common/src/session/getSessionId";
+import destroySession from "magda-typescript-common/src/session/destroySession";
 import createAuthApiKeyMiddleware from "./createAuthApiKeyMiddleware";
 import addTrailingSlash from "magda-typescript-common/src/addTrailingSlash";
 import getAbsoluteUrl from "magda-typescript-common/src/getAbsoluteUrl";
 
-/** This is present in the express-session types but not actually exported properly, so it needs to be copy-pasted here */
-export type SessionCookieOptions = {
-    maxAge?: number;
-    signed?: boolean;
-    expires?: Date;
-    httpOnly?: boolean;
-    path?: string;
-    domain?: string;
-    secure?: boolean | "auto";
-    encode?: (val: string) => string;
-    sameSite?: boolean | "lax" | "strict" | "none";
-};
+export type SessionCookieOptions = CookieOptions;
 
 export interface AuthenticatorOptions {
     sessionSecret: string;
@@ -30,14 +26,6 @@ export interface AuthenticatorOptions {
     externalUrl: string;
     appBasePath?: string;
 }
-
-export const DEFAULT_SESSION_COOKIE_NAME: string = "connect.sid";
-export let DEFAULT_SESSION_COOKIE_OPTIONS: SessionCookieOptions = {
-    maxAge: 7 * 60 * 60 * 1000,
-    sameSite: "lax",
-    httpOnly: true,
-    secure: "auto"
-};
 
 type AuthPluginSessionData = {
     key?: string;
@@ -66,27 +54,6 @@ export function runMiddlewareList(
         currentMiddleware(req, res, runNext);
     }
     runNext();
-}
-
-function getSessionId(req: express.Request, secret: string = ""): string {
-    const sessionCookie = req.cookies[DEFAULT_SESSION_COOKIE_NAME] as string;
-    if (!sessionCookie) {
-        return null;
-    } else {
-        if (sessionCookie.substr(0, 2) === "s:") {
-            // --- process signed cookie
-            const unsignResult = signature.unsign(
-                sessionCookie.slice(2),
-                secret
-            );
-            if (unsignResult === false) {
-                return null;
-            }
-            return unsignResult;
-        } else {
-            return sessionCookie;
-        }
-    }
 }
 
 export default class Authenticator {
@@ -166,47 +133,17 @@ export default class Authenticator {
     }
 
     /**
-     * destroy the session.
-     *  - will delete the session data from session store only.
-     * - will not delete session cookie (Call deleteCookie method for deleting cookie)
-     *
-     * @param {express.Request} req
-     * @returns {Promise<never>}
-     * @memberof Authenticator
-     */
-    destroySession(req: express.Request): Promise<never> {
-        return new Promise((resolve, reject) => {
-            if (req?.session?.destroy) {
-                req.session.destroy((err) => {
-                    if (err) {
-                        // Failed to access session storage to delete session data
-                        reject(err);
-                    } else {
-                        resolve();
-                    }
-                });
-            } else {
-                // --- express-session 1.17 may not always initialise session
-                // --- if req.session not exist, should just resolve promise
-                resolve();
-            }
-        });
-    }
-
-    /**
      * Delete cookie from web browser
      *
      * @param {express.Response} res
      * @memberof Authenticator
      */
     deleteCookie(res: express.Response) {
-        const deleteCookieOptions = {
-            ...this.sessionCookieOptions
-        };
-        // --- `clearCookie` works in a way like it will fail to delete cookie if maxAge presents T_T
-        // --- https://github.com/expressjs/express/issues/3856#issuecomment-502397226
-        delete deleteCookieOptions.maxAge;
-        res.clearCookie(DEFAULT_SESSION_COOKIE_NAME, deleteCookieOptions);
+        deleteCookie(
+            DEFAULT_SESSION_COOKIE_NAME,
+            this.sessionCookieOptions,
+            res
+        );
     }
 
     /**
@@ -246,7 +183,7 @@ export default class Authenticator {
                     // --- the original incoming session id must have been an invalid or expired one
                     // --- we need to destroy this newly created empty session
                     // --- destroy session here & no need to wait till `destroySession` complete
-                    this.destroySession(req).catch((err) => {
+                    destroySession(req).catch((err) => {
                         // --- only log here if failed to delete session data from session store
                         console.log(`Failed to destory session: ${err}`);
                     });
@@ -327,7 +264,7 @@ export default class Authenticator {
             // --- based on PR review feedback, we want to report any errors happened during session destroy
             // --- and only remove cookie from user agent when session data is destroyed successfully
             try {
-                await this.destroySession(req);
+                await destroySession(req);
                 // --- delete the cookie and continue middleware processing chain
                 this.deleteCookie(res);
                 if (redirectUrl) {
@@ -432,7 +369,7 @@ export default class Authenticator {
                         return this.logout(req, res);
                     } else {
                         // --- for non logout path, no need to wait till `destroySession` complete
-                        this.destroySession(req).catch((err) => {
+                        destroySession(req).catch((err) => {
                             // --- only log here if failed to delete session data from session store
                             console.log(`Failed to destory session: ${err}`);
                         });
