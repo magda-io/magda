@@ -116,7 +116,9 @@ export async function destroyMagdaSession(
     cookieOptions: SessionCookieOptions
 ): Promise<void> {
     await destroySession(req);
-    deleteCookie(DEFAULT_SESSION_COOKIE_NAME, cookieOptions, res);
+    if (req?.cookies?.[DEFAULT_SESSION_COOKIE_NAME]) {
+        deleteCookie(DEFAULT_SESSION_COOKIE_NAME, cookieOptions, res);
+    }
 }
 
 /**
