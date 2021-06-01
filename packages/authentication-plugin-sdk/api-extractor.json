@@ -60,7 +60,7 @@
      * This would direct API Extractor to embed those types directly in the .d.ts rollup, as if they had been
      * local files for library1.
      */
-    "bundledPackages": ["@magda/typescript-common"],
+    "bundledPackages": ["@magda/typescript-common", "magda-typescript-common"],
 
     /**
      * Determines how the TypeScript compiler engine will be invoked by API Extractor.
