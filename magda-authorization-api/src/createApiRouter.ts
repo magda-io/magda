@@ -411,7 +411,7 @@ export default function createApiRouter(options: ApiRouterOptions) {
 
     /**
      * @apiGroup Auth
-     * @api {get} /v0/auth/users/whoami Get Current User
+     * @api {get} /v0/auth/users/whoami Get Current User Info (whoami)
      * @apiDescription Returns current user
      *
      * @apiSuccessExample {json} 200

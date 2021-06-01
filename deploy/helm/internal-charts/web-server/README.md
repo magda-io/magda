@@ -98,6 +98,7 @@ Kubernetes: `>= 1.14.0-0`
 | service.type | string | `nil` | how to expose serice. Only used when `.Values.global.exposeNodePorts` is not true. @default ClusterIP |
 | showNotificationBanner | bool | `false` |  |
 | supportExternalTerriaMapV7 | bool | `false` | When set to true, the `Open in National Map` button in Map Preview area will send data in v7 format. |
+| uiBaseUrl | string | `nil` | Serve Magda UI at a non-root url path. e.g. `http://example.com/magda/`. Its value should have a leading slash, but no trailing slash. When not set, by default, the magda UI will be served at `/`. (e.g. `http://example.com/`)  When `global.externalUrl` is set to an URL with non-root path (e.g. http://example.com/magda-dir/),  unless `uiBaseUrl` has a non-empty value that is not `/`, the effective runtime value of `uiBaseUrl` will be overwritten to `/magda-dir`. You probably only want to manually set `uiBaseUrl` when you want to move magda UI to a non-root URL path but still leave all APIs at root path. |
 | useLocalStyleSheet | bool | `false` |  |
 | vocabularyApiEndpoints | list | `[]` |  |
 

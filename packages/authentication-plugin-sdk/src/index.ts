@@ -3,24 +3,22 @@ import session from "express-session";
 import urijs from "urijs";
 import createPool, { PoolCreationOptions } from "./createPool";
 import AuthApiClient, { User, UserToken, Maybe } from "@magda/auth-api-client";
+export { default as getAbsoluteUrl } from "@magda/typescript-common/dist/getAbsoluteUrl";
+export { default as getSessionId } from "magda-typescript-common/dist/session/getSessionId";
+import { default as destroySessionImport } from "magda-typescript-common/dist/session/destroySession";
+import {
+    DEFAULT_SESSION_COOKIE_NAME as DEFAULT_SESSION_COOKIE_NAME_IMPORT,
+    DEFAULT_SESSION_COOKIE_OPTIONS as DEFAULT_SESSION_COOKIE_OPTIONS_IMPORT,
+    CookieOptions as CookieOptionsImport,
+    deleteCookie as deleteCookieImport
+} from "@magda/typescript-common/dist/session/cookieUtils";
 import passport from "passport";
 import _ from "lodash";
 
-// Put default req.user session data definition here.
-// so that project uses this SDK don't have to always define it
-declare global {
-    namespace Express {
-        /**
-         * This defines magda session data type.
-         * the default session data type is `UserToken` (i.e. only user id field is available and is a compulsory field)
-         * But any auth plugin provider could choose to customise the session by adding more fields (e.g. `arcgis`).
-         * We also make sure it allows extra fields here.
-         */
-        interface User extends UserToken {
-            [key: string]: any;
-        }
-    }
-}
+export const destroySession = destroySessionImport;
+
+export type SessionCookieOptions = CookieOptionsImport;
+export type CookieOptions = CookieOptionsImport;
 
 export type MagdaSessionRouterOptions = {
     cookieOptions: SessionCookieOptions;
@@ -33,25 +31,9 @@ export type MagdaSessionRouterOptions = {
     sessionDBName?: string;
 };
 
-export type SessionCookieOptions = {
-    maxAge?: number;
-    signed?: boolean;
-    expires?: Date;
-    httpOnly?: boolean;
-    path?: string;
-    domain?: string;
-    secure?: boolean | "auto";
-    encode?: (val: string) => string;
-    sameSite?: boolean | "lax" | "strict" | "none";
-};
-
-export const DEFAULT_SESSION_COOKIE_NAME: string = "connect.sid";
-export let DEFAULT_SESSION_COOKIE_OPTIONS: SessionCookieOptions = {
-    maxAge: 7 * 60 * 60 * 1000,
-    sameSite: "lax",
-    httpOnly: true,
-    secure: "auto"
-};
+export const DEFAULT_SESSION_COOKIE_NAME = DEFAULT_SESSION_COOKIE_NAME_IMPORT;
+export const DEFAULT_SESSION_COOKIE_OPTIONS = DEFAULT_SESSION_COOKIE_OPTIONS_IMPORT;
+export const deleteCookie = deleteCookieImport;
 
 /**
  * Create an express router that can be used to enable session on an express application.
@@ -120,6 +102,24 @@ export function createMagdaSessionRouter(
 }
 
 /**
+ * Complete destroy Magda session and remove session cookie from the user agent
+ *
+ * @export
+ * @param {Request} req
+ * @param {Response} res
+ * @param {SessionCookieOptions} cookieOptions
+ * @return {*}  {Promise<void>}
+ */
+export async function destroyMagdaSession(
+    req: Request,
+    res: Response,
+    cookieOptions: SessionCookieOptions
+): Promise<void> {
+    await destroySession(req);
+    deleteCookie(DEFAULT_SESSION_COOKIE_NAME, cookieOptions, res);
+}
+
+/**
  * Different type of AuthenticationMethod:
  * - IDP-URI-REDIRECTION: the plugin will rediredct user agent to idp (identity provider) for authentication. e.g. Google & fackebook oauth etc.
  *   - This is the default method.
@@ -158,43 +158,6 @@ export type AuthPluginBasicConfig = {
     // plugin serving base url. Getway will forward all request to it
     baseUrl: string;
 };
-
-/**
- * Join `url` with `baseUrl` if `url` is not an absolute url
- *
- * @export
- * @param {string} url
- * @param {string} baseUrl
- * @param {{ [key: string]: string }} [optionalQueries]
- * @returns
- */
-export function getAbsoluteUrl(
-    url: string,
-    baseUrl: string,
-    optionalQueries?: { [key: string]: string }
-) {
-    const uri = urijs(url);
-    if (uri.hostname()) {
-        // --- absolute url, return directly
-        return url;
-    } else {
-        if (typeof baseUrl !== "string") {
-            baseUrl = "";
-        }
-        const baseUri = urijs(baseUrl);
-        const query = uri.search(true);
-        const mergedUri = baseUri.segmentCoded(
-            baseUri.segmentCoded().concat(uri.segmentCoded())
-        );
-
-        return mergedUri
-            .search({
-                ...(optionalQueries ? optionalQueries : {}),
-                ...(query ? query : {})
-            })
-            .toString();
-    }
-}
 
 export function redirectOnSuccess(toURL: string, req: Request, res: Response) {
     const source = urijs(toURL)

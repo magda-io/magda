@@ -2,23 +2,20 @@ import express from "express";
 import session from "express-session";
 import pg from "pg";
 import passport from "passport";
-import URI from "urijs";
-import signature from "cookie-signature";
+import urijs from "urijs";
+import {
+    CookieOptions,
+    deleteCookie,
+    DEFAULT_SESSION_COOKIE_NAME,
+    DEFAULT_SESSION_COOKIE_OPTIONS
+} from "magda-typescript-common/src/session/cookieUtils";
+import getSessionId from "magda-typescript-common/src/session/getSessionId";
+import destroySession from "magda-typescript-common/src/session/destroySession";
 import createAuthApiKeyMiddleware from "./createAuthApiKeyMiddleware";
 import addTrailingSlash from "magda-typescript-common/src/addTrailingSlash";
+import getAbsoluteUrl from "magda-typescript-common/src/getAbsoluteUrl";
 
-/** This is present in the express-session types but not actually exported properly, so it needs to be copy-pasted here */
-export type SessionCookieOptions = {
-    maxAge?: number;
-    signed?: boolean;
-    expires?: Date;
-    httpOnly?: boolean;
-    path?: string;
-    domain?: string;
-    secure?: boolean | "auto";
-    encode?: (val: string) => string;
-    sameSite?: boolean | "lax" | "strict" | "none";
-};
+export type SessionCookieOptions = CookieOptions;
 
 export interface AuthenticatorOptions {
     sessionSecret: string;
@@ -26,15 +23,13 @@ export interface AuthenticatorOptions {
     cookieOptions?: SessionCookieOptions;
     authApiBaseUrl: string;
     enableSessionForAPIKeyAccess?: boolean;
+    externalUrl: string;
     appBasePath?: string;
 }
 
-export const DEFAULT_SESSION_COOKIE_NAME: string = "connect.sid";
-export let DEFAULT_SESSION_COOKIE_OPTIONS: SessionCookieOptions = {
-    maxAge: 7 * 60 * 60 * 1000,
-    sameSite: "lax",
-    httpOnly: true,
-    secure: "auto"
+type AuthPluginSessionData = {
+    key?: string;
+    logoutUrl?: string;
 };
 
 /**
@@ -61,27 +56,6 @@ export function runMiddlewareList(
     runNext();
 }
 
-function getSessionId(req: express.Request, secret: string = ""): string {
-    const sessionCookie = req.cookies[DEFAULT_SESSION_COOKIE_NAME] as string;
-    if (!sessionCookie) {
-        return null;
-    } else {
-        if (sessionCookie.substr(0, 2) === "s:") {
-            // --- process signed cookie
-            const unsignResult = signature.unsign(
-                sessionCookie.slice(2),
-                secret
-            );
-            if (unsignResult === false) {
-                return null;
-            }
-            return unsignResult;
-        } else {
-            return sessionCookie;
-        }
-    }
-}
-
 export default class Authenticator {
     private cookieParserMiddleware: express.RequestHandler;
     private sessionMiddleware: express.RequestHandler;
@@ -92,12 +66,14 @@ export default class Authenticator {
     private sessionSecret: string;
     private authApiBaseUrl: string;
     private appBaseUrl: string;
+    private externalUrl: string;
 
     constructor(options: AuthenticatorOptions) {
         this.authApiBaseUrl = options.authApiBaseUrl;
         this.appBaseUrl = addTrailingSlash(
             options.appBasePath ? options.appBasePath : "/"
         );
+        this.externalUrl = addTrailingSlash(options.externalUrl);
 
         if (!this.authApiBaseUrl) {
             throw new Error("Authenticator requires valid auth API base URL");
@@ -157,47 +133,17 @@ export default class Authenticator {
     }
 
     /**
-     * destroy the session.
-     *  - will delete the session data from session store only.
-     * - will not delete session cookie (Call deleteCookie method for deleting cookie)
-     *
-     * @param {express.Request} req
-     * @returns {Promise<never>}
-     * @memberof Authenticator
-     */
-    destroySession(req: express.Request): Promise<never> {
-        return new Promise((resolve, reject) => {
-            if (req?.session?.destroy) {
-                req.session.destroy((err) => {
-                    if (err) {
-                        // Failed to access session storage to delete session data
-                        reject(err);
-                    } else {
-                        resolve();
-                    }
-                });
-            } else {
-                // --- express-session 1.17 may not always initialise session
-                // --- if req.session not exist, should just resolve promise
-                resolve();
-            }
-        });
-    }
-
-    /**
      * Delete cookie from web browser
      *
      * @param {express.Response} res
      * @memberof Authenticator
      */
     deleteCookie(res: express.Response) {
-        const deleteCookieOptions = {
-            ...this.sessionCookieOptions
-        };
-        // --- `clearCookie` works in a way like it will fail to delete cookie if maxAge presents T_T
-        // --- https://github.com/expressjs/express/issues/3856#issuecomment-502397226
-        delete deleteCookieOptions.maxAge;
-        res.clearCookie(DEFAULT_SESSION_COOKIE_NAME, deleteCookieOptions);
+        deleteCookie(
+            DEFAULT_SESSION_COOKIE_NAME,
+            this.sessionCookieOptions,
+            res
+        );
     }
 
     /**
@@ -237,7 +183,7 @@ export default class Authenticator {
                     // --- the original incoming session id must have been an invalid or expired one
                     // --- we need to destroy this newly created empty session
                     // --- destroy session here & no need to wait till `destroySession` complete
-                    this.destroySession(req).catch((err) => {
+                    destroySession(req).catch((err) => {
                         // --- only log here if failed to delete session data from session store
                         console.log(`Failed to destory session: ${err}`);
                     });
@@ -261,6 +207,107 @@ export default class Authenticator {
     }
 
     /**
+     * A middleware to handle all logout requests that are sent to Gateway.
+     * This middleware should implement the behaviour that is described in [this doc](https://github.com/magda-io/magda/blob/master/docs/docs/authentication-plugin-spec.md#get-logout-endpoint-optional)
+     * in order to support auth plugin logout process.
+     * When the `redirect` query parameter does not present, this middleware should be compatible with the behaviour prior to version 0.0.60.
+     * i.e.:
+     * - Turn off Magda session only without forwarding any requests to auth plugins
+     * - Response a JSON response (that indicates the outcome of the logout action) instead of redirect users.
+     * e.g. `{"isError": false}` indicates no error.
+     *
+     * @private
+     * @param {express.Request} req
+     * @param {express.Response} res
+     * @param {express.NextFunction} next
+     * @memberof Authenticator
+     */
+    private async logout(req: express.Request, res: express.Response) {
+        const redirectUrl: string | null = req?.query?.["redirect"]
+            ? (req.query["redirect"] as string)
+            : null;
+
+        if (!req.cookies[DEFAULT_SESSION_COOKIE_NAME]) {
+            // session not started yet
+            if (redirectUrl) {
+                res.redirect(getAbsoluteUrl(redirectUrl, this.externalUrl));
+            } else {
+                // existing behaviour prior to version 0.0.60
+                res.status(200).send({
+                    isError: false
+                });
+            }
+            return;
+        }
+
+        const logoutWithSession = async () => {
+            const authPlugin = (req?.user?.authPlugin
+                ? req.user.authPlugin
+                : req?.session?.authPlugin) as
+                | AuthPluginSessionData
+                | undefined;
+
+            const logoutUrl = authPlugin?.logoutUrl;
+
+            if (redirectUrl && logoutUrl) {
+                // if it's possible (e.g. logoutUri available and request come in with `redirect` parameter) for an auth plugin to handle the logout,
+                // leave it to the auth plugin.
+                // the Auth plugin should terminate the Magda session probably and forward to any third-party idP
+                res.redirect(
+                    getAbsoluteUrl(authPlugin?.logoutUrl, this.externalUrl, {
+                        redirect: redirectUrl
+                    })
+                );
+                return;
+            }
+
+            // --- based on PR review feedback, we want to report any errors happened during session destroy
+            // --- and only remove cookie from user agent when session data is destroyed successfully
+            try {
+                await destroySession(req);
+                // --- delete the cookie and continue middleware processing chain
+                this.deleteCookie(res);
+                if (redirectUrl) {
+                    // when `redirect` query parameter exists, redirect user rather than response outcome in JSON.
+                    res.redirect(getAbsoluteUrl(redirectUrl, this.externalUrl));
+                } else {
+                    // existing behaviour prior to version 0.0.60
+                    res.status(200).send({
+                        isError: false
+                    });
+                }
+            } catch (err) {
+                const errorMessage = `Failed to destory session: ${err}`;
+                console.error(errorMessage);
+
+                if (redirectUrl) {
+                    // when `redirect` query parameter exists, redirect user rather than response outcome in JSON.
+                    res.redirect(
+                        getAbsoluteUrl(redirectUrl, this.externalUrl, {
+                            errorMessage
+                        })
+                    );
+                } else {
+                    // existing behaviour prior to version 0.0.60
+                    res.status(500).send({
+                        isError: true,
+                        errorCode: 500,
+                        errorMessage
+                    });
+                    return;
+                }
+            }
+        };
+
+        runMiddlewareList(
+            [this.passportMiddleware, this.passportSessionMiddleware],
+            req,
+            res,
+            logoutWithSession
+        );
+    }
+
+    /**
      * A middleware wraps all other cookie / session / passport related middlewares
      * to achieve fine-gain session / cookie control in Magda.
      * Generally, we want to:
@@ -279,7 +326,7 @@ export default class Authenticator {
         res: express.Response,
         next: express.NextFunction
     ) {
-        const uri = new URI(req.originalUrl);
+        const uri = new urijs(req.originalUrl);
         const pathname = uri.pathname().toLowerCase();
 
         if (pathname.indexOf(`${this.appBaseUrl}auth/login/`) === 0) {
@@ -302,7 +349,12 @@ export default class Authenticator {
             // --- end the session here
             if (!req.cookies[DEFAULT_SESSION_COOKIE_NAME]) {
                 // --- session not started yet
-                return next();
+                if (pathname === `${this.appBaseUrl}auth/logout`) {
+                    // even no session we should still respond to logout requests
+                    return this.logout(req, res);
+                } else {
+                    return next();
+                }
             }
             // --- Only make session / store available
             // --- passport midddleware should not be run
@@ -314,28 +366,10 @@ export default class Authenticator {
                     // --- destroy session here
                     // --- any session data will be removed from session store
                     if (pathname === `${this.appBaseUrl}auth/logout`) {
-                        // --- based on PR review feedback, we want to report any errors happened during session destroy
-                        // --- and only remove cookie from user agent when session data is destroyed successfully
-                        this.destroySession(req)
-                            .then(() => {
-                                // --- delete the cookie and continue middleware processing chain
-                                this.deleteCookie(res);
-                                res.status(200).send({
-                                    isError: false
-                                });
-                            })
-                            .catch((err) => {
-                                const errorMessage = `Failed to destory session: ${err}`;
-                                console.log(errorMessage);
-                                res.status(500).send({
-                                    isError: true,
-                                    errorCode: 500,
-                                    errorMessage
-                                });
-                            });
+                        return this.logout(req, res);
                     } else {
                         // --- for non logout path, no need to wait till `destroySession` complete
-                        this.destroySession(req).catch((err) => {
+                        destroySession(req).catch((err) => {
                             // --- only log here if failed to delete session data from session store
                             console.log(`Failed to destory session: ${err}`);
                         });
