@@ -44,6 +44,7 @@
 - #3140 Ability to supply external CSS files to magda-web-client via Config
 - #3138 Allow Edit Dataset Button to be replaced by External UI Plugins
 - #3136 Added auth plugin customised logout process support to Gateway
+- #3145 Upgrade `magda-preview-map` to v1.0.0 for proxy host list helm chart configuration support
 
 ## 0.0.59
 
