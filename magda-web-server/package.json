@@ -1,7 +1,7 @@
 {
   "name": "@magda/web-server",
   "description": "The server that serves the MAGDA web front end.",
-  "version": "0.0.60-alpha.0",
+  "version": "0.0.60-alpha.10",
   "license": "Apache-2.0",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
@@ -16,8 +16,8 @@
     "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --require tsconfig-paths/register \"src/test/**/*.spec.ts\""
   },
   "devDependencies": {
-    "@magda/scripts": "^0.0.60-alpha.0",
-    "@magda/web-client": "^0.0.60-alpha.0",
+    "@magda/scripts": "^0.0.60-alpha.10",
+    "@magda/web-client": "^0.0.60-alpha.10",
     "@types/chai": "^4.0.1",
     "@types/config": "0.0.32",
     "@types/express": "^4.17.6",
@@ -46,7 +46,7 @@
     "xml2js": "^0.4.19"
   },
   "dependencies": {
-    "@magda/typescript-common": "^0.0.60-alpha.0",
+    "@magda/typescript-common": "^0.0.60-alpha.10",
     "express": "^4.17.1",
     "fs-extra": "^9.1.0",
     "moment-timezone": "^0.5.33",
