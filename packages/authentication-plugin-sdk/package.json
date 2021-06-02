@@ -4,7 +4,7 @@
   "version": "0.0.60-alpha.0",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
-    "build": "tsc -b && api-extractor run -l",
+    "build": "webpack && api-extractor run -l",
     "release": "npm publish || echo \"Skip releasing npm package @magda/authentication-plugin-sdk.\""
   },
   "author": "",

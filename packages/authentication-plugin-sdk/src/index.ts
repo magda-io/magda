@@ -4,8 +4,8 @@ import urijs from "urijs";
 import createPool, { PoolCreationOptions } from "./createPool";
 import AuthApiClient, { User, UserToken, Maybe } from "@magda/auth-api-client";
 export { default as getAbsoluteUrl } from "@magda/typescript-common/dist/getAbsoluteUrl";
-export { default as getSessionId } from "magda-typescript-common/dist/session/getSessionId";
-import { default as destroySessionImport } from "magda-typescript-common/dist/session/destroySession";
+export { default as getSessionId } from "@magda/typescript-common/dist/session/getSessionId";
+import { default as destroySessionImport } from "@magda/typescript-common/dist/session/destroySession";
 import {
     DEFAULT_SESSION_COOKIE_NAME as DEFAULT_SESSION_COOKIE_NAME_IMPORT,
     DEFAULT_SESSION_COOKIE_OPTIONS as DEFAULT_SESSION_COOKIE_OPTIONS_IMPORT,
