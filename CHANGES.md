@@ -46,6 +46,7 @@
 - #3136 Added auth plugin customised logout process support to Gateway
 - #3145 Upgrade `magda-preview-map` to v1.0.0 for proxy host list helm chart configuration support
 - #3148 @magda/authentication-plugin-sdk was bundled incorrectly since 0.0.60-alpha.10
+- #3150 Add a blank "Like/Dislike dataset" button as placeholder for external UI Plugin componnents
 
 ## 0.0.59
 

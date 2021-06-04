@@ -20,9 +20,18 @@ import SecClassification, {
 import CommonLink from "Components/Common/CommonLink";
 import CurrencyAlert from "./CurrencyAlert";
 import DatasetEditButton from "./DatasetEditButton";
-import { getPluginDatasetEditButton } from "externalPluginComponents";
+import DatasetLikeButtonOriginal from "../Dataset/DatasetLikeButton";
+import {
+    getPluginDatasetEditButton,
+    getPluginDatasetLikeButton
+} from "externalPluginComponents";
 
 const ExternalDatasetEditButton = getPluginDatasetEditButton();
+const ExternalDatasetLikeButton = getPluginDatasetLikeButton();
+
+const DatasetLikeButton = ExternalDatasetLikeButton
+    ? ExternalDatasetLikeButton
+    : DatasetLikeButtonOriginal;
 
 interface PropsType {
     history: History;
@@ -170,7 +179,11 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                         )}
                     </div>
                 </div>
-                <div className={` col-sm-4 ${addMargin ? "form-margin" : ""}`}>
+                <div
+                    className={` col-sm-4 datatset-details-page-function-area ${
+                        addMargin ? "form-margin" : ""
+                    }`}
+                >
                     <DatasetPageSuggestForm
                         title={dataset.title}
                         toggleMargin={setAddMargin}
@@ -201,6 +214,10 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                             hasEditPermissions={hasEditPermissions}
                         />
                     )}
+
+                    {config?.featureFlags?.datasetLikeButton ? (
+                        <DatasetLikeButton dataset={dataset} />
+                    ) : null}
                 </div>
             </div>
             <div className="tab-content">

@@ -46,6 +46,7 @@ Kubernetes: `>= 1.14.0-0`
 | extraConfigData | object | `{}` | Extra config data for external plugins. Normally served as a way to config external UI plugin components at runtime. |
 | featureFlags.cataloguing | bool | `false` | turn on / off metadata creation tool.  If this option is `false`, user won't be able to access the dataset add / edit UI  |
 | featureFlags.datasetApprovalWorkflowOn | bool | `true` | turn on / off dataset approval note step |
+| featureFlags.datasetLikeButton | bool | `false` | turn on / off like / Dislike button.  At this moment, `like / Dislike button` component is a place holder only for allowing plugin external UI plugin component. |
 | featureFlags.placeholderWorkflowsOn | bool | `false` | turn on / off some metadata creation tool questions that are still under development |
 | featureFlags.previewAddDataset | bool | `false` | turn on / off the preview mode of metadata creation tool. Under preview mode, user can play with the metadata creation tool without requiring admin permission. No data will be saved under this mode. |
 | featureFlags.publishToDga | bool | `false` | turn on / off the UI switch that allow user to select whether to auto push dataset data to a CKAN instance |

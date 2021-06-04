@@ -74,6 +74,9 @@ featureFlags:
   datasetApprovalWorkflowOn: true
   # featureFlags.useStorageApi -- turn on / off the UI option to use Magda internal storage for file storage.
   useStorageApi: true
+  # featureFlags.datasetLikeButton -- turn on / off like / Dislike button. 
+  # At this moment, `like / Dislike button` component is a place holder only for allowing plugin external UI plugin component.
+  datasetLikeButton: false
 
 
 # The base url where the UI serves at. If not specify (or empty string), it assumes the UI serves at '/'.
