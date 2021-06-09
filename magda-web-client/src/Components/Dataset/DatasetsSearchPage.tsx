@@ -211,18 +211,21 @@ class Search extends Component<Props & any> {
                                         strategy={this.props.strategy}
                                     />
 
-                                    {// redirect if we came from a 404 error and there is only one result
-                                    queryString.parse(
-                                        this.props.location.search
-                                    ).notfound &&
-                                        this.props.datasets.length === 1 && (
-                                            <Redirect
-                                                to={`/dataset/${encodeURI(
-                                                    this.props.datasets[0]
-                                                        .identifier
-                                                )}/details`}
-                                            />
-                                        )}
+                                    {
+                                        // redirect if we came from a 404 error and there is only one result
+                                        queryString.parse(
+                                            this.props.location.search
+                                        ).notfound &&
+                                            this.props.datasets.length ===
+                                                1 && (
+                                                <Redirect
+                                                    to={`/dataset/${encodeURI(
+                                                        this.props.datasets[0]
+                                                            .identifier
+                                                    )}/details`}
+                                                />
+                                            )
+                                    }
                                     <SearchResults
                                         strategy={this.props.strategy}
                                         searchResults={this.props.datasets}
@@ -266,7 +269,7 @@ class Search extends Component<Props & any> {
     }
 }
 
-const mapDispatchToProps = dispatch =>
+const mapDispatchToProps = (dispatch) =>
     bindActionCreators(
         {
             fetchSearchResultsIfNeeded: fetchSearchResultsIfNeeded,

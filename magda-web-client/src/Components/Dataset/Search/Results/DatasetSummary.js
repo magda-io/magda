@@ -8,8 +8,15 @@ import { Link } from "react-router-dom";
 import uniq from "lodash/uniq";
 import fileIcon from "assets/format-passive-dark.svg";
 import Divider from "Components/Common/Divider";
+import { getPluginDatasetLikeButton } from "../../../../externalPluginComponents";
+import DatasetLikeButtonOriginal from "../../DatasetLikeButton";
+import { config } from "../../../../config";
 import { gapi } from "analytics/ga";
 
+const DatasetLikeButtonExternal = getPluginDatasetLikeButton();
+const DatasetLikeButton = DatasetLikeButtonExternal
+    ? DatasetLikeButtonExternal
+    : DatasetLikeButtonOriginal;
 export default class DatasetSummary extends Component {
     constructor(props) {
         super(props);
@@ -95,6 +102,15 @@ export default class DatasetSummary extends Component {
                 >
                     {dataset.provenance.isOpenData ? "Public" : "Private"}
                 </div>
+            );
+        }
+
+        if (config?.featureFlags?.datasetLikeButton) {
+            datasetSummaryItems.push(
+                <DatasetLikeButton
+                    key="dataset-like-button"
+                    dataset={dataset}
+                />
             );
         }
 

@@ -142,3 +142,20 @@ export function getPluginDatasetEditButton(): DatasetEditButtonComponentType | n
         "DatasetEditButton"
     );
 }
+
+type DatasetLikeButtonComponentPropsType = {
+    dataset: ParsedDataset;
+};
+
+export type DatasetLikeButtonComponentType = ComponentType<
+    DatasetLikeButtonComponentPropsType
+>;
+export type ExternalDatasetLikeButtonCompontType = ExternalCompontType<
+    DatasetLikeButtonComponentType
+>;
+
+export function getPluginDatasetLikeButton(): DatasetLikeButtonComponentType | null {
+    return getComponent<DatasetLikeButtonComponentPropsType>(
+        "DatasetLikeButton"
+    );
+}

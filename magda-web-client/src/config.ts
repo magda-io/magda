@@ -46,7 +46,8 @@ const DEV_FEATURE_FLAGS = {
     previewAddDataset: false,
     placeholderWorkflowsOn: false,
     datasetApprovalWorkflowOn: false,
-    useStorageApi: true
+    useStorageApi: true,
+    datasetLikeButton: false
 };
 
 interface DateConfig {
