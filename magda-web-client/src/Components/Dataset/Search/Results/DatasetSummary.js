@@ -12,6 +12,7 @@ import { getPluginDatasetLikeButton } from "../../../../externalPluginComponents
 import DatasetLikeButtonOriginal from "../../DatasetLikeButton";
 import { config } from "../../../../config";
 import { gapi } from "analytics/ga";
+import striptags from "striptags";
 
 const DatasetLikeButtonExternal = getPluginDatasetLikeButton();
 const DatasetLikeButton = DatasetLikeButtonExternal
@@ -154,7 +155,9 @@ export default class DatasetSummary extends Component {
 
                 <div className="dataset-summary-description">
                     <MarkdownViewer
-                        markdown={dataset.description}
+                        markdown={striptags(
+                            dataset?.description ? dataset.description : ""
+                        )}
                         truncate={true}
                     />
                 </div>
