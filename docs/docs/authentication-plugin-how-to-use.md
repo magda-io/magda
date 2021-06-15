@@ -16,7 +16,20 @@ e.g. to add [internal authentication plugin](https://github.com/magda-io/magda-a
     - magda-auth-internal
 ```
 
-2. (Optional) Config the auth plugin in your deployment [Values file](https://helm.sh/docs/chart_template_guide/values_files/). 
+2. Turn on the plugin via [Helm tags](https://helm.sh/docs/topics/charts/#tags-and-condition-fields-in-dependencies) in your deployment [Values file](https://helm.sh/docs/chart_template_guide/values_files/).
+
+When adding the plugin as dependency in step 1, we defined two tags `all` & `magda-auth-internal`. In helm, you can turn on/off the dependencies via the tags defined. If the dependency is turned of, it won't be deployed even it's added as a dependency of your deployment chart.
+
+Therefore, you need to make sure either of the tag is enabled in your deployment [Values file](https://helm.sh/docs/chart_template_guide/values_files/).
+
+e.g. you can set `magda-auth-internal` tag to `true` under tags section in your deployment [Values file](https://helm.sh/docs/chart_template_guide/values_files/) like:
+
+```yaml
+tags:
+  magda-auth-internal: true
+```
+
+3. (Optional) Config the auth plugin in your deployment [Values file](https://helm.sh/docs/chart_template_guide/values_files/). 
 
 The complete list of available config option can normally find from the `Values` section of the authentication plugin's README.md document.
 
@@ -27,7 +40,7 @@ magda-auth-internal:
     loginFormExtraInfoContent: "Forgot your password? Email [test@test.com](test@test.com)"
 ```
 
-3. Config Gatway (in your deployment [Values file](https://helm.sh/docs/chart_template_guide/values_files/)) to add the auth plugin to Gateway's plugin list (More details see [here](https://github.com/magda-io/magda/blob/master/deploy/helm/internal-charts/gateway/README.md))
+4. Config Gatway (in your deployment [Values file](https://helm.sh/docs/chart_template_guide/values_files/)) to add the auth plugin to Gateway's plugin list (More details see [here](https://github.com/magda-io/magda/blob/master/deploy/helm/internal-charts/gateway/README.md))
 
 e.g. You can add [internal authentication plugin](https://github.com/magda-io/magda-auth-internal) support to your system as the following:
 
