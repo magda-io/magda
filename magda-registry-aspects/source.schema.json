@@ -19,6 +19,14 @@
             "title": "The human-friendly name of this source.",
             "type": "string"
         },
+        "originalUrl": {
+            "title": "The original source URL. Used when the crawling source is not the original source.",
+            "type": "string"
+        },
+        "orignalName": {
+            "title": "The original human-friendly name of this source. Used when the crawling source is not the original source.",
+            "type": "string"
+        },
         "extras": {
             "title": "Extra Metadata",
             "description": "Any extra metadata a connector may have. \nThis field is auto copied from connector configData.extras.",

@@ -19,11 +19,14 @@ class DatasetPageDetails extends Component {
         const dataset = this.props.dataset;
         const searchText =
             queryString.parse(this.props.location.search).q || "";
-        const source = this.props.dataset.source
+        const sourceName = this.props?.dataset?.sourceDetails?.originalName
+            ? this.props.dataset.sourceDetails.originalName
+            : this.props.dataset?.sourceDetails?.name;
+        const source = sourceName
             ? `This dataset was originally found on ${
                   dataset.landingPage
-                      ? `[${this.props.dataset.source}](${dataset.landingPage})`
-                      : this.props.dataset.source
+                      ? `[${sourceName}](${dataset.landingPage})`
+                      : sourceName
               }`
             : "";
         return (

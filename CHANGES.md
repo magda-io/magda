@@ -47,6 +47,9 @@
 - #3145 Upgrade `magda-preview-map` to v1.0.0 for proxy host list helm chart configuration support
 - #3148 @magda/authentication-plugin-sdk was bundled incorrectly since 0.0.60-alpha.10
 - #3150 Add a blank "Like/Dislike dataset" button as placeholder for external UI Plugin componnents
+- #3156 web UI: display original source name when it's available
+- #3157 strip html tags from dataset description on dataset result page
+- #3159 Upper case first char of text display for "Update Frequency", "Tags" & "Themes" on dataset details page
 
 ## 0.0.59
 

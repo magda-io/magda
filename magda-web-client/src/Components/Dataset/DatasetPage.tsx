@@ -25,6 +25,7 @@ import {
     getPluginDatasetEditButton,
     getPluginDatasetLikeButton
 } from "externalPluginComponents";
+import ucwords from "ucwords";
 
 const ExternalDatasetEditButton = getPluginDatasetEditButton();
 const ExternalDatasetLikeButton = getPluginDatasetLikeButton();
@@ -158,7 +159,7 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                                 <div className={"description-heading"}>
                                     Updated:
                                 </div>
-                                {dataset.accrualPeriodicity}
+                                {ucwords(dataset.accrualPeriodicity)}
                             </div>
                         ) : null}
 
@@ -168,6 +169,7 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                             contactPoint={dataset.contactPoint}
                             landingPage={dataset.landingPage}
                             source={dataset.source}
+                            sourceDetails={dataset.sourceDetails}
                         />
                         {defined(dataset.access?.location) && (
                             <div>
