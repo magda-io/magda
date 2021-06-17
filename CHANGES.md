@@ -50,6 +50,7 @@
 - #3156 web UI: display original source name when it's available
 - #3157 strip html tags from dataset description on dataset result page
 - #3159 Upper case first char of text display for "Update Frequency", "Tags" & "Themes" on dataset details page
+- #3155 Indexer will strip HTML tags from description before send to Elasticsearch
 
 ## 0.0.59
 

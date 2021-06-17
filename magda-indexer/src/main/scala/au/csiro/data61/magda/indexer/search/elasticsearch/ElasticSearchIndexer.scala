@@ -41,6 +41,11 @@ import scala.collection.JavaConversions._
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future, Promise}
 
+import org.jsoup.Jsoup
+import org.jsoup.safety.Whitelist
+
+import scala.util.{Try, Success, Failure}
+
 class ElasticSearchIndexer(
     val clientProvider: ClientProvider,
     val indices: Indices
@@ -773,6 +778,13 @@ class ElasticSearchIndexer(
       }
     }
 
+  private def stripHtmlTagsFromText(text: String): String = {
+    Try(Jsoup.clean(text, Whitelist.none())) match {
+      case Success(cleanedContent) => cleanedContent
+      case Failure(e)              => text
+    }
+  }
+
   /**
     * Indexes a number of datasets into ES using a bulk insert.
     */
@@ -780,10 +792,18 @@ class ElasticSearchIndexer(
       rawDataSet: DataSet
   ): Seq[IndexRequest] = {
     val dataSet = rawDataSet.copy(
-      description = rawDataSet.description.map(_.take(32766)),
+      description = rawDataSet.description
+        .map(text => stripHtmlTagsFromText(text).take(32766)),
       years = ElasticSearchIndexer.getYears(
         rawDataSet.temporal.flatMap(_.start.flatMap(_.date)),
         rawDataSet.temporal.flatMap(_.end.flatMap(_.date))
+      ),
+      distributions = rawDataSet.distributions.map(
+        dis =>
+          dis.copy(
+            description = dis.description
+              .map(text => stripHtmlTagsFromText(text).take(32766))
+          )
       ),
       indexed = Some(OffsetDateTime.now)
     )

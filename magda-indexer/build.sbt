@@ -24,7 +24,8 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-testkit" % akkaV % Test,
     "com.typesafe.akka" %% "akka-stream-testkit" % akkaV % Test,
     "org.scalatest" %% "scalatest" % scalaTestV % Test,
-    "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % Test
+    "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % Test,
+    "org.jsoup" % "jsoup" % "1.13.1"
   )
 }
 
