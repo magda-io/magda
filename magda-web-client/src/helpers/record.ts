@@ -25,6 +25,24 @@ export type TemporalCoverage = {
     }[];
 };
 
+export type sourceAspect = {
+    name: string;
+    url: string;
+    type: string;
+    id: string;
+    // only avaiable when dataset is not crawled from original source
+    originalName?: string;
+    originalUrl?: string;
+    problems?: {
+        title: string;
+        message: string;
+        additionalInfo?: any;
+    }[];
+    extras?: {
+        [key: string]: any;
+    };
+};
+
 export type dcatDistributionStrings = {
     format: string;
     downloadURL: string;

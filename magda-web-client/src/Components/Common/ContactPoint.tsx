@@ -1,13 +1,20 @@
 import React from "react";
-import PropTypes from "prop-types";
 import MarkdownViewer from "Components/Common/MarkdownViewer";
 import MagdaNamespacesConsumer from "Components/i18n/MagdaNamespacesConsumer";
 import ToggleButton from "./ToggleButton";
+import { sourceAspect } from "../../helpers/record";
 import { gapi } from "analytics/ga";
 
 import "./ContactPoint.scss";
 
-class ContactPoint extends React.Component {
+type PropsType = {
+    contactPoint?: string;
+    source?: string;
+    landingPage?: string;
+    sourceDetails?: sourceAspect;
+};
+
+class ContactPoint extends React.Component<PropsType> {
     state = { reveal: false };
 
     onRevealButtonClick = () => {
@@ -22,6 +29,12 @@ class ContactPoint extends React.Component {
     };
 
     render() {
+        const sourceString = this.props?.sourceDetails?.originalName
+            ? this.props.sourceDetails.originalName
+            : this.props?.source
+            ? this.props.source
+            : "";
+
         return (
             <MagdaNamespacesConsumer ns={["datasetPage"]}>
                 {(translate) => (
@@ -60,11 +73,9 @@ class ContactPoint extends React.Component {
                                     target="_blank"
                                     rel="noreferrer"
                                 >
-                                    {this.props.source}
+                                    {sourceString}
                                 </a>
-                                <MarkdownViewer>
-                                    {this.props.source}
-                                </MarkdownViewer>
+                                <MarkdownViewer>{sourceString}</MarkdownViewer>
                             </div>
                         )}
                     </div>
@@ -73,17 +84,5 @@ class ContactPoint extends React.Component {
         );
     }
 }
-
-ContactPoint.propTypes = {
-    contactPoint: PropTypes.string,
-    source: PropTypes.string,
-    landingPage: PropTypes.string
-};
-
-ContactPoint.defaultProps = {
-    contactPoint: "",
-    source: "",
-    landingPage: ""
-};
 
 export default ContactPoint;

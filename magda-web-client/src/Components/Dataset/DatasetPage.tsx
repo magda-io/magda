@@ -168,6 +168,7 @@ const DatasetPage: FunctionComponent<PropsType> = (props) => {
                             contactPoint={dataset.contactPoint}
                             landingPage={dataset.landingPage}
                             source={dataset.source}
+                            sourceDetails={dataset.sourceDetails}
                         />
                         {defined(dataset.access?.location) && (
                             <div>

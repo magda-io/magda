@@ -98,6 +98,9 @@ class DistributionDetails extends Component<{
             <ContactPoint
                 key={"contactPoint"}
                 contactPoint={this.props.dataset.contactPoint}
+                landingPage={this.props.dataset.landingPage}
+                source={this.props.dataset.source}
+                sourceDetails={this.props.dataset.sourceDetails}
             />
         );
 
