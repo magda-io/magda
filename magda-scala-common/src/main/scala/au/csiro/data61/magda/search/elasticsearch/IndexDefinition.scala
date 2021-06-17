@@ -63,6 +63,20 @@ object IndexDefinition extends DefaultJsonProtocol {
       .fields(fields)
   }
 
+  def magdaSynonymLongHtmlTextField(
+      name: String,
+      extraFields: FieldDefinition*
+  ) = {
+    val fields = extraFields ++ Seq(
+      textField("quote").analyzer("quote_partial_match")
+    )
+
+    textField(name)
+      .analyzer("english_with_synonym_strip_html")
+      .searchAnalyzer("english_without_synonym_for_search")
+      .fields(fields)
+  }
+
   val MagdaEdgeNgramFilter =
     EdgeNGramTokenFilter("magda_edge_ngram_filter", Some(1), Some(20))
 
@@ -89,7 +103,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 46,
+    version = 47,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       val baseDefinition =
@@ -144,7 +158,7 @@ object IndexDefinition extends DefaultJsonProtocol {
                 nestedField("distributions").fields(
                   keywordField("identifier"),
                   magdaTextField("title"),
-                  magdaSynonymTextField("description"),
+                  magdaSynonymLongHtmlTextField("description"),
                   magdaTextField(
                     "format",
                     textField("keyword_lowercase")
@@ -154,7 +168,7 @@ object IndexDefinition extends DefaultJsonProtocol {
                 ),
                 objectField("spatial").fields(geoshapeField("geoJson")),
                 magdaTextField("title"),
-                magdaSynonymTextField("description"),
+                magdaSynonymLongHtmlTextField("description"),
                 magdaTextField("keywords"),
                 magdaSynonymTextField("themes"),
                 doubleField("quality"),
@@ -163,6 +177,9 @@ object IndexDefinition extends DefaultJsonProtocol {
                 objectField("source").fields(
                   keywordField("id"),
                   magdaTextField("name"),
+                  keywordField("url"),
+                  magdaTextField("originalName"),
+                  keywordField("originalUrl"),
                   objectField("extras").dynamic(true)
                 ),
                 objectField("provenance").fields(
@@ -220,6 +237,33 @@ object IndexDefinition extends DefaultJsonProtocol {
               "english_with_synonym",
               StandardTokenizer,
               List(
+                LowercaseTokenFilter,
+                StemmerTokenFilter(
+                  "english_possessive_stemmer",
+                  "possessive_english"
+                ),
+                StemmerTokenFilter(
+                  "light_english_stemmer",
+                  "light_english"
+                ),
+                //Es 6.x doesn't allow `stop` before Synonym
+                //StopTokenFilter("english_stop", Some(NamedStopTokenFilter.English)),
+                MagdaSynonymTokenFilter,
+                StemmerTokenFilter(
+                  "english_possessive_stemmer",
+                  "possessive_english"
+                ),
+                StopTokenFilter(
+                  "english_stop",
+                  Some(NamedStopTokenFilter.English)
+                )
+              )
+            ),
+            CustomAnalyzerDefinition(
+              "english_with_synonym_strip_html",
+              StandardTokenizer,
+              List(
+                HtmlStripCharFilter,
                 LowercaseTokenFilter,
                 StemmerTokenFilter(
                   "english_possessive_stemmer",

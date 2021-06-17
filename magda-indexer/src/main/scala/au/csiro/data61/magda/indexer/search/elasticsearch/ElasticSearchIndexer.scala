@@ -780,7 +780,6 @@ class ElasticSearchIndexer(
       rawDataSet: DataSet
   ): Seq[IndexRequest] = {
     val dataSet = rawDataSet.copy(
-      description = rawDataSet.description.map(_.take(32766)),
       years = ElasticSearchIndexer.getYears(
         rawDataSet.temporal.flatMap(_.start.flatMap(_.date)),
         rawDataSet.temporal.flatMap(_.end.flatMap(_.date))

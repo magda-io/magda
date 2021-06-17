@@ -56,6 +56,9 @@ package misc {
   case class DataSouce(
       id: String,
       name: Option[String],
+      originalName: Option[String] = None,
+      url: Option[String] = None,
+      originalUrl: Option[String] = None,
       extras: Option[Map[String, JsValue]] = None
   )
 
@@ -423,7 +426,7 @@ package misc {
   case class License(name: Option[String] = None, url: Option[String] = None)
 
   trait Protocols extends DefaultJsonProtocol with Temporal.Protocols {
-    implicit val dataSouceFormat: RootJsonFormat[DataSouce] = jsonFormat3(
+    implicit val dataSouceFormat: RootJsonFormat[DataSouce] = jsonFormat6(
       DataSouce.apply
     )
     implicit val provenanceRecordFormat: RootJsonFormat[ProvenanceRecord] =
