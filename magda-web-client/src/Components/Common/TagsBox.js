@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import uniq from "lodash/uniq";
 import reduce from "lodash/reduce";
+import ucwords from "ucwords";
 import "./TagsBox.scss";
 
 const tagSeperatorRegex = /[,|;|/||]/g;
@@ -45,7 +46,7 @@ function TagsBox(props) {
                                         )}`}
                                         className="au-tag"
                                     >
-                                        {t}
+                                        {ucwords(t)}
                                     </Link>
                                 </li>
                             ))}

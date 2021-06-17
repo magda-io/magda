@@ -152,6 +152,7 @@
     "striptags": "^3.1.1",
     "traverse": "^0.6.6",
     "typescript": "3.8.3",
+    "ucwords": "^1.0.5",
     "urijs": "^1.19.4",
     "use-debounce": "^3.3.0",
     "uuid": "^8.2.0",
