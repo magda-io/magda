@@ -49,6 +49,7 @@
 - #3150 Add a blank "Like/Dislike dataset" button as placeholder for external UI Plugin componnents
 - #3156 web UI: display original source name when it's available
 - #3157 strip html tags from dataset description on dataset result page
+- #3159 Upper case first char of text display for "Update Frequency", "Tags" & "Themes" on dataset details page
 
 ## 0.0.59
 
