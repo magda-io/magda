@@ -41,7 +41,7 @@ export function sendMail(
 
     const message: Message = {
         to,
-        from: `${input.senderName} via data.gov.au <${defaultRecipient}>`,
+        from: `${input.senderName} via <${defaultRecipient}>`,
         replyTo: `${input.senderName} <${input.senderEmail}>`,
         subject: finalSubject,
         text: html2text.fromString(html),

@@ -52,6 +52,7 @@
 - #3159 Upper case first char of text display for "Update Frequency", "Tags" & "Themes" on dataset details page
 - #3155 remove "keyword type" defined for "description" fields to avoid "term" oversize
 - #3160 Add strip_html filter to "description" fields for elasticsearch indexing analyzer
+- Remove "data.gov.au" keyword from "correspondence-api" email "from" field
 
 ## 0.0.59
 
