@@ -13774,6 +13774,29 @@ neo-async@^2.5.0, neo-async@^2.6.0, neo-async@^2.6.1:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.1.tgz#ac27ada66167fa8849a6addd837f6b189ad2081c"
   integrity sha512-iyam8fBuCUpWeKPGpaNMetEocMt364qkCsfL9JuhjXX6dRnguRVOfk2GZaDpPjcOKiiXCPINZC1GczQ7iTq3Zw==
 
+neo4j-driver-bolt-connection@^4.3.1:
+  version "4.3.1"
+  resolved "https://registry.yarnpkg.com/neo4j-driver-bolt-connection/-/neo4j-driver-bolt-connection-4.3.1.tgz#bbaf0d2287d9be61a480397067c57e82e431fac9"
+  integrity sha512-xE7tHgoqcHM1qlXKWWxcOag2F+5OgNVeKDW9W+DKLQ7g3YGvutxcUzp1WrAc8hpFGM2IWVSNEeUt5c5SIXlHCg==
+  dependencies:
+    neo4j-driver-core "^4.3.1"
+    text-encoding-utf-8 "^1.0.2"
+
+neo4j-driver-core@^4.3.1:
+  version "4.3.1"
+  resolved "https://registry.yarnpkg.com/neo4j-driver-core/-/neo4j-driver-core-4.3.1.tgz#5d92ae3f9ee48e3af2b4a085503368b15a195a98"
+  integrity sha512-FV194GxpPvgNpettGUMit6hxbMOkBR42j1K6xwfLvm25XYaZJMJzE0ezqS0Vp0G6etUqhUQChh7WYLdTMIztpQ==
+
+neo4j-driver@^4.3.1:
+  version "4.3.1"
+  resolved "https://registry.yarnpkg.com/neo4j-driver/-/neo4j-driver-4.3.1.tgz#897c812abf631b5a520162bb1d71d6a1b320d231"
+  integrity sha512-7MguiDpGWoj10wfQvi7HRLBif39Sz67w5zOyhaDG8OcHfJbU+onlnGfE81AOlOlYSj/JSv196K1RcFXuJMZv8Q==
+  dependencies:
+    "@babel/runtime" "^7.5.5"
+    neo4j-driver-bolt-connection "^4.3.1"
+    neo4j-driver-core "^4.3.1"
+    rxjs "^6.6.3"
+
 next-tick@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/next-tick/-/next-tick-1.0.0.tgz#ca86d1fe8828169b0120208e3dc8424b9db8342c"
@@ -18036,6 +18059,13 @@ rxjs@^6.4.0, rxjs@^6.5.3:
   dependencies:
     tslib "^1.9.0"
 
+rxjs@^6.6.3:
+  version "6.6.7"
+  resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-6.6.7.tgz#90ac018acabf491bf65044235d5863c4dab804c9"
+  integrity sha512-hTdwr+7yYNIT5n4AMYp85KA6yw2Va0FLa3Rguvbpa4W3I5xynaBZo41cM3XM+4Q6fRMj3sBYIR1VAmZMXYJvRQ==
+  dependencies:
+    tslib "^1.9.0"
+
 safe-buffer@5.1.2, safe-buffer@~5.1.0, safe-buffer@~5.1.1:
   version "5.1.2"
   resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.1.2.tgz#991ec69d296e0313747d59bdfd2b745c35f8828d"
@@ -19534,6 +19564,11 @@ testcheck@^1.0.0-rc, testcheck@^1.0.0-rc.2:
   version "1.0.0-rc.2"
   resolved "https://registry.yarnpkg.com/testcheck/-/testcheck-1.0.0-rc.2.tgz#11356a25b84575efe0b0857451e85b5fa74ee4e4"
   integrity sha1-ETVqJbhFde/gsIV0UehbX6dO5OQ=
+
+text-encoding-utf-8@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/text-encoding-utf-8/-/text-encoding-utf-8-1.0.2.tgz#585b62197b0ae437e3c7b5d0af27ac1021e10d13"
+  integrity sha512-8bw4MY9WjdsD2aMtO0OzOCY3pXGYNx2d2FfHRVUKkiCPDWjKuOlhLVASS+pD7VkLTVjW268LYJHwsnPFlBpbAg==
 
 text-encoding@0.6.4:
   version "0.6.4"

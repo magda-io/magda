@@ -104,6 +104,7 @@
     "mammoth": "^1.4.7",
     "markdown-with-front-matter-loader": "^0.1.0",
     "memoize-one": "^3.1.1",
+    "neo4j-driver": "^4.3.1",
     "nlcst-to-string": "^2.0.2",
     "npm-run-all": "^4.0.1",
     "openlayers": "^4.1.1",
