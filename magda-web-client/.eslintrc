@@ -11,7 +11,8 @@
         "@typescript-eslint/no-use-before-define": 0,
         "@typescript-eslint/no-var-requires": "warn",
         "@typescript-eslint/no-this-alias": "warn",
-        "@typescript-eslint/camelcase": "warn"
+        "@typescript-eslint/camelcase": "warn",
+        "@typescript-eslint/no-inferrable-types": false
     },
     "parser": "@typescript-eslint/parser",
     "settings": {
