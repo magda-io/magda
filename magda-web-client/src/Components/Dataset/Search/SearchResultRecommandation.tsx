@@ -300,7 +300,7 @@ const SearchResultRecommandation: FunctionComponent = () => {
                 Dataset Suggestions:
             </div>
             {loading ? (
-                <p>loading...</p>
+                <p>Loading...</p>
             ) : error ? (
                 <p>{"Error:" + error}</p>
             ) : (

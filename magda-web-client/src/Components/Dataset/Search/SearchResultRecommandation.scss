@@ -7,6 +7,9 @@
     width: 350px;
     overflow-wrap: break-word;
     padding: 5px;
+    p {
+        padding-left: 5px;
+    }
     .dataset-search-result-recommandation-box-header {
         background-color: #cccaca;
         color: #30384d;
