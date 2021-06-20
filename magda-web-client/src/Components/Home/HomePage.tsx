@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import { withRouter } from "react-router-dom";
+import { withRouter, RouteComponentProps } from "react-router-dom";
 import Header from "../Header/Header";
 import SearchBoxSwitcher from "Components/Dataset/Search/SearchBoxSwitcher";
 import "./HomePage.scss";
@@ -12,7 +12,6 @@ import Lozenge, {
 import Stories from "Components/Home/Stories";
 import { StoryDataType } from "./StoryBox";
 import { Small, Medium } from "Components/Common/Responsive";
-import { Location } from "history";
 import MediaQuery from "react-responsive";
 import { User } from "reducers/userManagementReducer";
 import MyDatasetSection from "./MyDatasetSection";
@@ -71,18 +70,17 @@ const getBgImg = (backgroundImageUrls) => {
     );
 };
 
-type PropsType = {
+interface PropsType extends RouteComponentProps {
     backgroundImageUrls: string;
     mobileTagLine: string;
     desktopTagLine: string;
     lozenge: LozengePropsType;
     stories?: StoryDataType[];
-    location: Location;
     headerNavItems: HeaderNavItem[];
     isFetchingWhoAmI: boolean;
     whoAmIError: Error | null;
     user: User;
-};
+}
 
 class HomePage extends React.Component<PropsType> {
     getMainContent() {
@@ -212,4 +210,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps, null)(withRouter(HomePage));
+export default withRouter(connect(mapStateToProps, null)(HomePage));

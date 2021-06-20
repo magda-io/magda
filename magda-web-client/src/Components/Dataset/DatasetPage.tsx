@@ -1,5 +1,12 @@
 import React, { FunctionComponent, useState, useEffect } from "react";
-import { Link, Route, Switch, Redirect, withRouter } from "react-router-dom";
+import {
+    Link,
+    Route,
+    Switch,
+    Redirect,
+    withRouter,
+    RouteComponentProps
+} from "react-router-dom";
 import Breadcrumbs from "Components/Common/Breadcrumbs";
 import defined from "helpers/defined";
 import DatasetPageDetails from "./View/DatasetPageDetails";
@@ -10,7 +17,6 @@ import "./DatasetPage.scss";
 import TagsBox from "Components/Common/TagsBox";
 import ContactPoint from "Components/Common/ContactPoint";
 import QualityIndicator from "Components/Common/QualityIndicator";
-import { History } from "history";
 import { ParsedDataset } from "helpers/record";
 import queryString from "query-string";
 import { config } from "config";
@@ -34,12 +40,11 @@ const DatasetLikeButton = ExternalDatasetLikeButton
     ? ExternalDatasetLikeButton
     : DatasetLikeButtonOriginal;
 
-interface PropsType {
-    history: History;
+interface PropsType extends RouteComponentProps {
     datasetId: string;
     dataset: ParsedDataset;
     hasEditPermissions: boolean;
-    breadcrumbs: JSX.Element | null;
+    breadcrumbs: (JSX.Element | null)[];
     searchText: string;
     isAdmin: boolean;
 }

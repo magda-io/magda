@@ -1,6 +1,11 @@
 import React from "react";
 import { connect } from "react-redux";
-import { Link, Redirect, withRouter, match } from "react-router-dom";
+import {
+    Link,
+    Redirect,
+    withRouter,
+    RouteComponentProps
+} from "react-router-dom";
 import ProgressBar from "Components/Common/ProgressBar";
 import MagdaDocumentTitle from "Components/i18n/MagdaDocumentTitle";
 import { bindActionCreators } from "redux";
@@ -17,19 +22,16 @@ import queryString from "query-string";
 import "./DatasetPage.scss";
 
 import { config } from "config";
-import { History, Location } from "history";
 import { ParsedDataset, ParsedDistribution } from "helpers/record";
 import { FetchError } from "types";
 import DatasetPage from "./DatasetPage";
 import DistributionPage from "./DistributionPage";
 
-interface RecordHandlerPropsType {
-    history: History;
-    location: Location;
-    match: match<{
+interface RecordHandlerPropsType
+    extends RouteComponentProps<{
         datasetId?: string;
         distributionId?: string;
-    }>;
+    }> {
     dataset: ParsedDataset;
     distribution: ParsedDistribution;
     datasetIsFetching: boolean;
@@ -38,7 +40,6 @@ interface RecordHandlerPropsType {
     distributionFetchError?: FetchError;
     hasEditPermissions: boolean;
     resetFetchRecord: Function;
-    modifyRecordAspect: Function;
     isAdmin: boolean;
 }
 
@@ -180,8 +181,7 @@ class RecordHandler extends React.Component<RecordHandlerPropsType, StateType> {
             ) {
                 return (
                     <DistributionPage
-                        history={this.props.history}
-                        datasetId={this.props.match.params.datasetId}
+                        datasetId={this.props.match.params.datasetId!}
                         dataset={dataset}
                         distributionId={this.props.match.params.distributionId}
                         distribution={this.props.distribution}
@@ -223,7 +223,6 @@ class RecordHandler extends React.Component<RecordHandlerPropsType, StateType> {
             ) {
                 return (
                     <DatasetPage
-                        history={this.props.history}
                         datasetId={this.props.match.params.datasetId}
                         dataset={dataset}
                         breadcrumbs={this.getBreadcrumbs()}

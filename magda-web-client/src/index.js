@@ -1,7 +1,7 @@
 // eslint-disable-next-line
 import logger from "redux-logger";
 import "./index.scss";
-import { BrowserRouter, Route } from "react-router-dom";
+import { BrowserRouter, Route, withRouter } from "react-router-dom";
 
 import thunkMiddleware from "redux-thunk";
 import React from "react";
@@ -28,14 +28,14 @@ const store = createStore(
     )
 );
 
-class GAListener extends React.Component {
+class GAListenerComponent extends React.Component {
     static contextTypes = {
         router: PropTypes.object
     };
 
     componentDidMount() {
-        this.sendPageView(this.context.router.history.location);
-        this.context.router.history.listen(this.sendPageView);
+        this.sendPageView(this.props.history.location);
+        this.props.history.listen(this.sendPageView);
     }
 
     sendPageView(location) {
@@ -47,6 +47,8 @@ class GAListener extends React.Component {
         return this.props.children;
     }
 }
+
+const GAListener = withRouter(GAListenerComponent);
 
 ReactDOM.render(
     <Provider store={store}>

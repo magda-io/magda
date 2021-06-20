@@ -1,8 +1,7 @@
 import { ComponentType } from "react";
 import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
-import { withRouter } from "react-router-dom";
-import { Location, History } from "history";
+import { withRouter, RouteComponentProps } from "react-router-dom";
 import { User } from "reducers/userManagementReducer";
 import { requestSignOut, requestWhoAmI } from "./actions/userManagementActions";
 import { fetchContent } from "./actions/contentActions";
@@ -11,14 +10,11 @@ import { ParsedDataset } from "helpers/record";
 
 const PREFIX = "MagdaPluginComponent";
 
-interface CommonPropsType {
+interface CommonPropsType extends RouteComponentProps<any> {
     isFetchingWhoAmI: boolean;
     user: User;
     whoAmIError: Error | null;
     config: ConfigType;
-    history: History;
-    location: Location;
-    match: any;
     requestSignOut: () => Promise<void>;
     requestWhoAmI: () => Promise<void>;
     fetchContent: () => Promise<void>;
@@ -64,7 +60,7 @@ export function getComponent<T>(name: string): ComponentType<T> | null {
 
     return withRouter(
         connect(mapStateToProps, mapDispatchToProps)(ExternalComponent as any)
-    );
+    ) as any;
 }
 
 export type HeaderNavItem = {

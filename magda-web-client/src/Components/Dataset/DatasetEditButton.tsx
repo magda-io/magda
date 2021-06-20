@@ -1,15 +1,12 @@
 import React, { FunctionComponent } from "react";
 import ToolTip from "Components/Common/TooltipWrapper";
 import { ParsedDataset } from "helpers/record";
-import { withRouter } from "react-router-dom";
-import { Location, History } from "history";
+import { withRouter, RouteComponentProps } from "react-router-dom";
 
-type PropsType = {
+interface PropsType extends RouteComponentProps {
     dataset: ParsedDataset;
-    history: History;
-    location: Location;
     hasEditPermissions: boolean;
-};
+}
 
 const DatasetEditButton: FunctionComponent<PropsType> = (props) => {
     const { dataset, hasEditPermissions } = props;

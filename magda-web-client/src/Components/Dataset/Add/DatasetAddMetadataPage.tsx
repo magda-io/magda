@@ -426,5 +426,5 @@ const mapDispatchToProps = (dispatch) => {
 };
 
 export default withAddDatasetState(
-    withRouter(connect(mapStateToProps, mapDispatchToProps)(NewDataset))
+    withRouter(connect(mapStateToProps, mapDispatchToProps)(NewDataset)) as any
 );

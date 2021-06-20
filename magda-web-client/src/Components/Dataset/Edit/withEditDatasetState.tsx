@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { RouterProps, withRouter } from "react-router-dom";
+import { RouteComponentProps, withRouter } from "react-router-dom";
 import { connect } from "react-redux";
 import { useAsync } from "react-async-hook";
 import { State, rawDatasetDataToState } from "../Add/DatasetAddCommon";
@@ -12,7 +12,11 @@ import {
 } from "api-clients/RegistryApis";
 
 /* eslint-disable react-hooks/rules-of-hooks */
-type Props = { initialState: State; user: User } & RouterProps;
+interface Props extends RouteComponentProps<any> {
+    initialState: State;
+    user: User;
+    isFetchingWhoAmI: boolean;
+}
 
 function mapStateToProps(state: any) {
     return {
@@ -72,7 +76,7 @@ export default <T extends Props>(Component: React.ComponentType<T>) => {
         }
     };
 
-    return connect(mapStateToProps)(withRouter(withEditDatasetState));
+    return connect(mapStateToProps)(withRouter(withEditDatasetState) as any);
 };
 
 /* eslint-enable react-hooks/rules-of-hooks */

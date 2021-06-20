@@ -95,4 +95,4 @@ function mapStateToProps(state) {
 // This component is connected to redux via connect, and is not a route component,
 // therefore does not get updated when location change
 // we need to explicitly make it update by wrapping it in `withRouter`
-export default withRouter(connect(mapStateToProps)(AccountNavbar));
+export default withRouter(connect(mapStateToProps)(AccountNavbar) as any);

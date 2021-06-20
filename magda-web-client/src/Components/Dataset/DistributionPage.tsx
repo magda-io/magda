@@ -1,6 +1,13 @@
 import React, { FunctionComponent } from "react";
 import AUpageAlert from "pancake/react/page-alerts";
-import { Link, Route, Switch, Redirect, withRouter } from "react-router-dom";
+import {
+    Link,
+    Route,
+    Switch,
+    Redirect,
+    withRouter,
+    RouteComponentProps
+} from "react-router-dom";
 import Breadcrumbs from "Components/Common/Breadcrumbs";
 import defined from "helpers/defined";
 import { gapi } from "analytics/ga";
@@ -11,7 +18,6 @@ import { getFormatIcon } from "./View/DistributionIcon";
 import apiAccessIcon from "assets/apiAccess.svg";
 import downloadWhiteIcon from "assets/download-white.svg";
 import CommonLink from "Components/Common/CommonLink";
-import { History, Location } from "history";
 import {
     ParsedDataset,
     ParsedDistribution,
@@ -27,17 +33,16 @@ import {
 } from "api-clients/RegistryApis";
 import RecordVersionList from "./RecordVersionList";
 import getStorageApiResourceAccessUrl from "helpers/getStorageApiResourceAccessUrl";
+import { Location } from "history";
 import "./DatasetPage.scss";
 
-interface PropsType {
-    history: History;
+interface PropsType extends RouteComponentProps {
     datasetId: string;
     distributionId: string;
     dataset: ParsedDataset;
     distribution: ParsedDistribution;
-    breadcrumbs: JSX.Element | null;
+    breadcrumbs: (JSX.Element | null)[];
     searchText: string;
-    location: Location;
 }
 
 const getVersionFromLocation = (location: Location): number | undefined => {

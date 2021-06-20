@@ -112,7 +112,7 @@ class SearchBox extends Component {
      * eg: {'q': 'water'}
      */
     updateQuery(query) {
-        this.context.router.history.push({
+        this.props.history.push({
             pathname: "/search",
             search: queryString.stringify(
                 Object.assign(
@@ -257,9 +257,6 @@ const mapDispatchToProps = (dispatch) =>
         dispatch
     );
 
-const SearchBoxWithRouter = withRouter((props) => <SearchBox {...props} />);
-
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(SearchBoxWithRouter);
+export default withRouter(
+    connect(mapStateToProps, mapDispatchToProps)(SearchBox)
+);

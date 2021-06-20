@@ -1,7 +1,7 @@
 import React, { ComponentType } from "react";
 import { connect, ConnectedProps } from "react-redux";
+import { RouteComponentProps } from "react-router-dom";
 import { memoize } from "lodash";
-import { Location } from "history";
 import Header from "Components/Header/Header";
 import SearchBoxSwitcher from "Components/Dataset/Search/SearchBoxSwitcher";
 import AddDatasetProgressMeter, {
@@ -47,9 +47,8 @@ const mapStateToProps = (state) => {
 const connector = connect(mapStateToProps);
 type PropsFromRedux = ConnectedProps<typeof connector>;
 
-interface Props extends PlainObject {
+interface Props extends PlainObject, RouteComponentProps<any> {
     finishedFetching?: boolean;
-    location?: Location;
 }
 
 type ExtraHeaderProps = {
@@ -57,7 +56,7 @@ type ExtraHeaderProps = {
 };
 
 const withHeader = (
-    WrappedComponent: ComponentType<Props>,
+    WrappedComponent: ComponentType<any>,
     {
         includeSearchBox,
         includeDatasetPageProgressMeter,

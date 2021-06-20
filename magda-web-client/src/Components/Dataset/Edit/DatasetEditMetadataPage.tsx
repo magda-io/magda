@@ -1,5 +1,5 @@
 import React from "react";
-import { withRouter } from "react-router";
+import { withRouter, RouteComponentProps } from "react-router";
 import { MultilineTextEditor } from "Components/Editing/Editors/textEditor";
 import AsyncButton from "Components/Common/AsyncButton";
 import ToolTip from "Components/Dataset/Add/ToolTip";
@@ -41,7 +41,7 @@ import * as ValidationManager from "../Add/ValidationManager";
 import urijs from "urijs";
 import FileDeletionError from "helpers/FileDeletionError";
 
-type Props = {
+interface Props extends RouteComponentProps {
     initialState: State;
     createNewDatasetReset: Function;
     createNewDatasetError: Function;
@@ -51,10 +51,9 @@ type Props = {
     step: number;
     datasetId: string;
     isNewDataset: boolean;
-    history: any;
     user: User;
     isBackToReview: boolean;
-};
+}
 
 class EditDataset extends React.Component<Props, State> {
     state: State = this.props.initialState;
@@ -379,5 +378,5 @@ const mapDispatchToProps = (dispatch) => {
 };
 
 export default withEditDatasetState(
-    withRouter(connect(mapStateToProps, mapDispatchToProps)(EditDataset))
+    withRouter(connect(mapStateToProps, mapDispatchToProps)(EditDataset)) as any
 );

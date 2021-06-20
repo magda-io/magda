@@ -6,6 +6,7 @@ import "./Header.scss";
 import { config } from "../../config";
 import { Small, Medium } from "Components/Common/Responsive";
 import MagdaNamespacesConsumer from "Components/i18n/MagdaNamespacesConsumer";
+import { withRouter } from "react-router-dom";
 import { needsContent } from "helpers/content";
 
 class Header extends Component {
@@ -17,7 +18,7 @@ class Header extends Component {
     }
 
     componentDidMount() {
-        this.unListen = this.context.router.history.listen(() => {
+        this.unListen = this.props.history.listen(() => {
             this.setState({
                 isMobileMenuOpen: false
             });
@@ -140,4 +141,4 @@ Header.contextTypes = {
     router: PropTypes.object.isRequired
 };
 
-export default needsContent("headerNavigation")(Header);
+export default withRouter(needsContent("headerNavigation")(Header));

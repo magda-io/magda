@@ -3,6 +3,7 @@ import DatasetSummary from "./DatasetSummary";
 import "./SearchResults.scss";
 import SearchPageSuggest from "./SearchPageSuggest";
 import { needsContent } from "helpers/content";
+import SearchResultRecommandation from "../SearchResultRecommandation";
 
 function SuggestionBox() {
     return (
@@ -50,6 +51,7 @@ class SearchResults extends Component {
 
         return (
             <div className="search-results">
+                <SearchResultRecommandation />
                 <ul className="list--unstyled">
                     {/* Only show the suggestion box before the first result if we're on the first page - if we're not
                     on the first page then presumably it was already shown as the last result on the previous page */}

@@ -66,11 +66,11 @@ class OrganisationsPage extends Component {
             typeof query.q === "undefined" &&
             typeof query.page === "undefined"
         ) {
-            this.context.router.history.push({
+            this.props.history.push({
                 pathname: "/organisations"
             });
         } else {
-            this.context.router.history.push({
+            this.props.history.push({
                 pathname: "/organisations",
                 search: queryString.stringify(
                     Object.assign(
@@ -312,11 +312,6 @@ OrganisationsPage.contextTypes = {
     router: PropTypes.object.isRequired
 };
 
-const PublishersViewerWithRouter = withRouter((props) => (
-    <OrganisationsPage {...props} />
-));
-
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(PublishersViewerWithRouter);
+export default withRouter(
+    connect(mapStateToProps, mapDispatchToProps)(OrganisationsPage)
+);
