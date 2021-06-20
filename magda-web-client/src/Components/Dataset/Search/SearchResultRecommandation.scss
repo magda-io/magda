@@ -1,0 +1,46 @@
+.dataset-search-result-recommandation-box {
+    border: 2px solid #ebf0f6;
+    position: absolute;
+    right: 20px;
+    background-color: #fdfdfd;
+    width: 350px;
+    overflow-wrap: break-word;
+    padding: 5px;
+    .dataset-search-result-recommandation-box-header {
+        background-color: #cccaca;
+        color: #30384d;
+        padding-left: 15px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        font-size: 20px;
+    }
+    .tooltip-launcher-icon {
+        position: relative;
+        padding-right: 5px;
+    }
+    .recommend-dataset-list {
+        padding-left: 7px;
+        list-style-type: none;
+        a {
+            text-overflow: ellipsis;
+            max-width: 290px;
+            display: inline-block;
+            white-space: nowrap;
+            overflow: hidden !important;
+        }
+    }
+    .tooltip-container {
+        .inner {
+            width: 350px;
+            text-align: left;
+            ul {
+                margin: 0px;
+                padding-left: 30px;
+            }
+            .heading {
+                font-size: 18px;
+                margin-bottom: 10px;
+            }
+        }
+    }
+}
