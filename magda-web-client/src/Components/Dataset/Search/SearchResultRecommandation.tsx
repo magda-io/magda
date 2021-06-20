@@ -123,7 +123,7 @@ async function searchRecommandationWithEnities(
             `
             MATCH (e:Entity)-[r]-(e1:Entity)<--(d:Dataset)
             WHERE id(e)=$entityId 
-            RETURN type(r) as rel, id(d) as datasetId, d.name as datasetTitle`,
+            RETURN type(r) as rel, d.id as datasetId, d.name as datasetTitle`,
             {
                 entityId: entities[i].node.identity
             }
@@ -274,7 +274,7 @@ function renderResult(
                         </span>
                         <CommonLink
                             to={urijs("/")
-                                .segmentCoded(["datasets", item.id, "details"])
+                                .segmentCoded(["dataset", item.id, "details"])
                                 .search({ q: searchText })
                                 .toString()}
                         >
