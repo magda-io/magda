@@ -100,17 +100,23 @@ type RecommendedDatasetItem = {
     datasetId: string;
     datasetTitle: string;
     rel: string;
-    entity: string;
+    e1: string;
+    e2: string;
+    isRelLeftRoRight: boolean;
     score: number;
+};
+
+type RecommendReasonType = {
+    rel: string;
+    e1: string;
+    e2: string;
+    isRelLeftRoRight: boolean;
 };
 
 type ConsolidatedRecommendedDatasetItem = {
     id: string;
     title: string;
-    reasons: {
-        rel: string;
-        entity: string;
-    }[];
+    reasons: RecommendReasonType[];
 };
 
 async function searchRecommandationWithEnities(
@@ -121,9 +127,14 @@ async function searchRecommandationWithEnities(
     for (let i = 0; i < entities.length; i++) {
         const result = await session.run(
             `
-            MATCH (e:Entity)-[r]-(e1:Entity)<--(d:Dataset)
-            WHERE id(e)=$entityId 
-            RETURN type(r) as rel, d.id as datasetId, d.name as datasetTitle`,
+            MATCH (e1:Entity)-[r]-(e2:Entity)<--(d:Dataset)
+            WHERE id(e1)=$entityId 
+            RETURN 
+                type(r) as rel, 
+                d.id as datasetId, 
+                d.name as datasetTitle, 
+                e2.name as e2Name,
+                startNode(r)=e1 as isRelLeftRoRight`,
             {
                 entityId: entities[i].node.identity
             }
@@ -133,7 +144,9 @@ async function searchRecommandationWithEnities(
                 datasetId: item.get("datasetId"),
                 datasetTitle: item.get("datasetTitle"),
                 rel: item.get("rel"),
-                entity: entities[i].node.properties.name as string,
+                e1: entities[i].node.properties.name as string,
+                e2: item.get("e2Name"),
+                isRelLeftRoRight: item.get("isRelLeftRoRight"),
                 score: entities[i].score
             })
         );
@@ -144,7 +157,14 @@ async function searchRecommandationWithEnities(
 
     rows = uniqBy(
         rows,
-        (item) => item.datasetId + "|" + item.rel + "|" + item.entity
+        (item) =>
+            item.datasetId +
+            "|" +
+            item.rel +
+            "|" +
+            item.e1 +
+            (item.isRelLeftRoRight ? "->" : "<-") +
+            item.e2
     );
 
     if (rows.length > MAX_DATASET_NUM) {
@@ -155,6 +175,10 @@ async function searchRecommandationWithEnities(
 }
 
 const queryRecommandation = async (text: string) => {
+    if (!text || text === "*") {
+        // when search text is empty, return empty result straight away
+        return [];
+    }
     const driver: Driver = neo4j.driver(
         neo4jServerUrl,
         neo4j.auth.basic(neo4jUsername, neo4jPassword)
@@ -185,7 +209,9 @@ const queryRecommandation = async (text: string) => {
             }
             recommendedDatasetList[item.datasetId].reasons.push({
                 rel: item.rel,
-                entity: item.entity
+                isRelLeftRoRight: item.isRelLeftRoRight,
+                e1: item.e1,
+                e2: item.e2
             });
         });
 
@@ -213,12 +239,33 @@ async function getRecommandation(
     }
 }
 
+function renderReason(reason: RecommendReasonType) {
+    const startNode = reason.isRelLeftRoRight ? reason.e1 : reason.e2;
+    const endNode = reason.isRelLeftRoRight ? reason.e2 : reason.e1;
+    const relString = ucwords(reason.rel.replace("_", " ").toLowerCase());
+
+    return (
+        <>
+            <li>The dataset is related to "{startNode}"</li>
+            <ul className="reason-item">
+                <li>
+                    "{startNode}" "{relString}" "{endNode}"
+                </li>
+            </ul>
+        </>
+    );
+}
+
 function renderResult(
     result: ConsolidatedRecommendedDatasetItem[] | undefined,
     searchText: string
 ) {
     if (!result?.length) {
-        return <div>No recommendation can be made at this time.</div>;
+        return (
+            <div className="no-result-line">
+                No recommendation can be made at this time.
+            </div>
+        );
     }
 
     return (
@@ -249,21 +296,15 @@ function renderResult(
                                                 <div>This dataset might:</div>
                                                 <ul>
                                                     {item.reasons.map(
-                                                        (item, idx) => (
-                                                            <li key={idx}>
-                                                                "
-                                                                {ucwords(
-                                                                    item.rel
-                                                                        .replace(
-                                                                            "_",
-                                                                            " "
-                                                                        )
-                                                                        .toLowerCase()
-                                                                )}
-                                                                " "{item.entity}
-                                                                "
-                                                            </li>
-                                                        )
+                                                        (item, idx) => {
+                                                            return (
+                                                                <li key={idx}>
+                                                                    {renderReason(
+                                                                        item
+                                                                    )}
+                                                                </li>
+                                                            );
+                                                        }
                                                     )}
                                                 </ul>
                                             </div>

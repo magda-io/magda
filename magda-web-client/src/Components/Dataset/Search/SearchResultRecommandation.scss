@@ -7,8 +7,14 @@
     width: 350px;
     overflow-wrap: break-word;
     padding: 5px;
+    .no-result-line {
+        padding-top: 10px;
+        padding-left: 5px;
+        padding-bottom: 5px;
+    }
     p {
         padding-left: 5px;
+        padding-bottom: 5px;
     }
     .dataset-search-result-recommandation-box-header {
         background-color: #cccaca;
@@ -34,7 +40,7 @@
     }
     .tooltip-container {
         .inner {
-            width: 350px;
+            width: 450px;
             text-align: left;
             ul {
                 margin: 0px;
@@ -43,6 +49,9 @@
             .heading {
                 font-size: 18px;
                 margin-bottom: 10px;
+            }
+            ul.reason-item {
+                padding-left: 0px;
             }
         }
     }
