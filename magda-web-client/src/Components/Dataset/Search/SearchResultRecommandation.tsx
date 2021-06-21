@@ -246,7 +246,7 @@ function renderReason(reason: RecommendReasonType) {
 
     return (
         <>
-            <li>The dataset is related to "{startNode}"</li>
+            <li>Be related to "{startNode}"</li>
             <ul className="reason-item">
                 <li>
                     "{startNode}" "{relString}" "{endNode}"
