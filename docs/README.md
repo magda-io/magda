@@ -100,10 +100,6 @@ Based on [PassportJS](http://www.passportjs.org/), Magda's authentication system
 
 You can also develop your own authentication plugins to customise the authentication or user onboarding process. More information can be found from the [authentication-plugin-spec](https://github.com/magda-io/magda/blob/master/docs/docs/authentication-plugin-spec.md) document.
 
-## Under Development
-
-We're currently finishing off these features - you can see the full roadmap [here](/docs/roadmap).
-
 ### A better way to manually catalog datasets
 
 Authoring a quality dataset is hard - not only does it involve a lot of manual work, but it also requires a great deal of up-front knowledge and data literacy. We're building a guided, opinionated and heavily automated publishing process into Magda that will result in an easier time for those who publish data, and higher metadata quality to make it easier to search and use datasets for data users downstream.
