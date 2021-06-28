@@ -1,7 +1,7 @@
 {
   "name": "@magda/authentication-plugin-sdk",
   "description": "MAGDA Authentication Plugin SDK",
-  "version": "0.0.60-rc.4",
+  "version": "0.0.60-alpha.15",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "webpack && api-extractor run -l",
@@ -12,8 +12,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "devDependencies": {
-    "@magda/auth-api-client": "^0.0.60-rc.4",
-    "@magda/typescript-common": "^0.0.60-rc.4",
+    "@magda/auth-api-client": "^0.0.60-alpha.15",
+    "@magda/typescript-common": "^0.0.60-alpha.15",
     "@types/express": "^4.17.6",
     "@types/express-session": "^1.15.15",
     "@types/lodash": "^4.14.74",
