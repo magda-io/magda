@@ -54,6 +54,7 @@
 - #3160 Add strip_html filter to "description" fields for elasticsearch indexing analyzer
 - Remove "data.gov.au" keyword from "correspondence-api" email "from" field
 - #3166 Update text description under the data source section on data detail page
+- #3168 Fixed: double clicking the search icon button will clear search text input incorrectly
 
 ## 0.0.59
 
