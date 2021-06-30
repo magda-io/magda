@@ -53,6 +53,7 @@
 - #3155 remove "keyword type" defined for "description" fields to avoid "term" oversize
 - #3160 Add strip_html filter to "description" fields for elasticsearch indexing analyzer
 - Remove "data.gov.au" keyword from "correspondence-api" email "from" field
+- #3166 Update text description under the data source section on data detail page
 
 ## 0.0.59
 

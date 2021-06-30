@@ -27,6 +27,10 @@ class DatasetPageDetails extends Component {
                   dataset.landingPage
                       ? `[${sourceName}](${dataset.landingPage})`
                       : sourceName
+              } "${dataset.title}".${
+                  dataset.landingPage
+                      ? "\nPlease visit the source to access the original metadata of the dataset:"
+                      : ""
               }`
             : "";
         return (
@@ -66,12 +70,15 @@ class DatasetPageDetails extends Component {
                                         truncate={false}
                                     />
                                 )}
-                                <CommonLink
-                                    className="landing-page"
-                                    href={dataset.landingPage}
-                                >
-                                    {dataset.landingPage}
-                                </CommonLink>
+                                {dataset?.landingPage ? (
+                                    <CommonLink
+                                        className="landing-page"
+                                        href={dataset.landingPage}
+                                    >
+                                        {dataset.landingPage}
+                                    </CommonLink>
+                                ) : null}
+
                                 {defined(dataset.provenance) &&
                                 defined(dataset.provenance.isOpenData) ? (
                                     <h3 className="section-heading">
