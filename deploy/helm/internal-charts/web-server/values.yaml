@@ -182,3 +182,38 @@ extraConfigData: {}
 # unless `uiBaseUrl` has a non-empty value that is not `/`, the effective runtime value of `uiBaseUrl` will be overwritten to `/magda-dir`.
 # You probably only want to manually set `uiBaseUrl` when you want to move magda UI to a non-root URL path but still leave all APIs at root path.
 uiBaseUrl:
+
+# -- Preview map module format perference list
+# The list includes one or more `format perference item`.
+# When there are more than one data source available, "Preview Map module" will use this perference to determine which data soruce will be used.
+# It will go through the perference list. The first matched format (i.e. find a data source with the format ) will be chosen.
+# A `format perference item` can have the following fields:
+# <ul>
+#  <li>format: the format of the preferred data source. compulsory. case insensitive. </li>
+#  <li>
+#       isDataFile: Optional. Default to `false`. Indicate whether the specified format is a static data file or API. 
+#       If it's a static file, "Preview Map Module" will attempt to check the target file size and ask user to confirm whether he wants to render the file for large files.
+#       The file size threshold is specified by config option `automaticPreviewMaxFileSize`.
+#  </li>
+#  <li>
+#       urlRegex: optional; when exists, it will be used as regex string to double check the data source access url to confirm whether it's indeed the format specified.
+#       If not provided or empty, only `format` will be used to determine whether a data source matches the `format perference item`.
+#  <li>
+# </ul>
+previewMapFormatPerference:
+  - format: "WMS"
+    urlRegex: "^(?!.*(SceneServer|FeatureServer)).*$"
+  - format: "ESRI MAPSERVER"
+    urlRegex: "MapServer"
+  - format: "WFS"
+    urlRegex: "^(?!.*(SceneServer|MapServer)).*$"
+  - format: "ESRI FEATURESERVER"
+    urlRegex: "FeatureServer"
+  - format: "GeoJSON"
+    singleFile: true
+  - format: "csv-geo-au"
+    singleFile: true
+  - format: "KML"
+    singleFile: true
+  - format: "KMZ"
+    singleFile: true

@@ -59,6 +59,12 @@ interface DateConfig {
     };
 }
 
+export interface RawPreviewMapFormatPerferenceItem {
+    format: string;
+    isDataFile?: boolean;
+    urlRegex?: string;
+}
+
 const serverConfig: {
     image?: {
         pullPolicy?: string;
@@ -116,6 +122,7 @@ const serverConfig: {
         // extraConfigData is mainly for config data passing to external UI plugins
         [key: string]: any;
     };
+    previewMapFormatPerference?: RawPreviewMapFormatPerferenceItem[];
 } = window.magda_server_config || {};
 
 const DATE_REGEX = ".*(date|dt|year|decade).*";

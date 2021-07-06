@@ -55,6 +55,7 @@
 - Remove "data.gov.au" keyword from "correspondence-api" email "from" field
 - #3166 Update text description under the data source section on data detail page
 - #3168 Fixed: double clicking the search icon button will clear search text input incorrectly
+- #3171 Make Preview Map Preference Configurable
 
 ## 0.0.59
 

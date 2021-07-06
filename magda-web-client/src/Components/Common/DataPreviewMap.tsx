@@ -2,7 +2,11 @@ import React, { Component, useEffect, useState } from "react";
 import memoize from "memoize-one";
 import "./DataPreviewMap.scss";
 import DataPreviewMapOpenInNationalMapButton from "./DataPreviewMapOpenInNationalMapButton";
-import { config, DATASETS_BUCKET } from "config";
+import {
+    config,
+    DATASETS_BUCKET,
+    RawPreviewMapFormatPerferenceItem
+} from "config";
 import { Medium, Small } from "./Responsive";
 import Spinner from "Components/Common/Spinner";
 import { ParsedDistribution } from "helpers/record";
@@ -16,40 +20,80 @@ import DataPreviewSizeWarning from "./DataPreviewSizeWarning";
 import urijs from "urijs";
 import isStorageApiUrl from "helpers/isStorageApiUrl";
 
-const DATA_SOURCE_PREFERENCE = [
+const DEFAULT_DATA_SOURCE_PREFERENCE: RawPreviewMapFormatPerferenceItem[] = [
     {
         format: "WMS",
-        singleFile: false
+        urlRegex: "^(?!.*(SceneServer|FeatureServer)).*$"
     },
     {
-        format: "ESRI REST",
-        urlRegex: /MapServer/,
-        singleFile: false
+        format: "ESRI MAPSERVER",
+        urlRegex: "MapServer"
     },
     {
         format: "WFS",
-        singleFile: false
+        urlRegex: "^(?!.*(SceneServer|MapServer)).*$"
+    },
+    {
+        format: "ESRI FEATURESERVER",
+        urlRegex: "FeatureServer"
     },
     {
         format: "GeoJSON",
-        singleFile: true
+        isDataFile: true
     },
     {
         format: "csv-geo-au",
-        singleFile: true
+        isDataFile: true
     },
     {
         format: "KML",
-        singleFile: true
+        isDataFile: true
     },
     {
         format: "KMZ",
-        singleFile: true
+        isDataFile: true
     }
 ];
 
+interface PreviewMapFormatPerferenceItem {
+    format: string;
+    isDataFile?: boolean;
+    urlRegex?: RegExp;
+}
+
+let DATA_SOURCE_PREFERENCE: PreviewMapFormatPerferenceItem[];
+
+function getDataSourcePreference(): PreviewMapFormatPerferenceItem[] {
+    if (DATA_SOURCE_PREFERENCE) {
+        return DATA_SOURCE_PREFERENCE;
+    }
+    const preferenceList: RawPreviewMapFormatPerferenceItem[] = config
+        ?.previewMapFormatPerference?.map
+        ? config?.previewMapFormatPerference
+        : DEFAULT_DATA_SOURCE_PREFERENCE;
+
+    DATA_SOURCE_PREFERENCE = preferenceList.map((item) => {
+        const { urlRegex, ...newItem } = item;
+        if (!urlRegex) {
+            return newItem as PreviewMapFormatPerferenceItem;
+        }
+        try {
+            const regex = new RegExp(item.urlRegex as string);
+            (newItem as PreviewMapFormatPerferenceItem).urlRegex = regex;
+        } catch (e) {
+            console.error(
+                "Incorrect PreviewMapFormatPerferenceItem Regex: " +
+                    (newItem as PreviewMapFormatPerferenceItem).urlRegex
+            );
+        }
+        return newItem;
+    });
+
+    return DATA_SOURCE_PREFERENCE;
+}
+
 export const isSupportedFormat = function (format) {
-    const dataSourcePreference = DATA_SOURCE_PREFERENCE.map(
+    const dataSourcePreference = getDataSourcePreference().map(
         (preferenceItem) => preferenceItem.format
     );
     return (
@@ -79,7 +123,7 @@ const determineBestDistribution: (
             const dataUrl = dist.downloadURL
                 ? dist.downloadURL
                 : dist.accessURL;
-            const distributionPreferenceIndex = DATA_SOURCE_PREFERENCE.findIndex(
+            const distributionPreferenceIndex = getDataSourcePreference().findIndex(
                 (preferenceItem) => {
                     if (preferenceItem.format.toLowerCase() !== format) {
                         return false;
@@ -96,7 +140,7 @@ const determineBestDistribution: (
                 }
             );
             if (distributionPreferenceIndex === -1) {
-                return;
+                return null;
             } else {
                 return { dist, index: distributionPreferenceIndex };
             }
@@ -156,7 +200,7 @@ function DataPreviewMap(props: { bestDist: BestDist }) {
 
             // If previewing this data involves downloading a single (potentially massive)
             // file, check the file size first. If it's a service, just display it.
-            if (DATA_SOURCE_PREFERENCE[props.bestDist.index].singleFile) {
+            if (getDataSourcePreference()[props.bestDist.index].isDataFile) {
                 setFileSizeCheckResult(
                     await checkFileForPreview(props.bestDist.dist)
                 );
