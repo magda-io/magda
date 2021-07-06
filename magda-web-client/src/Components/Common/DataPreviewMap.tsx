@@ -99,7 +99,7 @@ export const isSupportedFormat = function (format) {
     return (
         dataSourcePreference
             .map((item) => item.toLowerCase())
-            .filter((item) => format.trim() === item).length !== 0
+            .filter((item) => format.trim().toLowerCase() === item).length !== 0
     );
 };
 
@@ -119,7 +119,7 @@ const determineBestDistribution: (
 ) {
     const distsWithPreferences = distributions
         .map((dist) => {
-            const format = dist.format.toLowerCase();
+            const format = dist.format.toLowerCase().trim();
             const dataUrl = dist.downloadURL
                 ? dist.downloadURL
                 : dist.accessURL;
