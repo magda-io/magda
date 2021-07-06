@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import DataPreviewVis from "Components/Common/DataPreviewVis";
+import DataPreviewMap from "Components/Common/DataPreviewMap";
 import MagdaNamespacesConsumer from "Components/i18n/MagdaNamespacesConsumer";
 import ContactPoint from "Components/Common/ContactPoint";
 import CommonLink from "Components/Common/CommonLink";
@@ -128,11 +129,12 @@ class DistributionDetails extends Component<{
                     </div>
                 </div>
 
-                {distribution.downloadURL && (
+                {(distribution?.downloadURL || distribution?.accessURL) && (
                     <div className="distribution-preview">
                         <DataPreviewVis
                             distribution={this.props.distribution}
-                        />{" "}
+                        />
+                        <DataPreviewMap distributions={[distribution]} />
                     </div>
                 )}
 
