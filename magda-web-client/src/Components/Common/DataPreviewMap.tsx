@@ -234,6 +234,7 @@ function DataPreviewMap(props: { bestDist: BestDist }) {
 
 type State = {
     loaded: boolean;
+    errorMessage: string;
     isMapInteractive: boolean;
     fileSizeCheckResult: FileSizeCheckResult | null;
 };
@@ -246,6 +247,7 @@ class DataPreviewMapTerria extends Component<
 
     state = {
         loaded: false,
+        errorMessage: "",
         isMapInteractive: false,
         fileSizeCheckResult: null
     };
@@ -264,7 +266,8 @@ class DataPreviewMapTerria extends Component<
             this.props.distribution
         ) {
             this.setState({
-                loaded: false
+                loaded: false,
+                errorMessage: ""
             });
         }
     }
@@ -313,20 +316,33 @@ class DataPreviewMapTerria extends Component<
         if (!selectedDistribution || !this.iframeRef.current) return;
         const iframeWindow = this.iframeRef.current.contentWindow;
         if (!iframeWindow || iframeWindow !== e.source) return;
+
         if (e.data === "ready") {
             iframeWindow.postMessage(
                 this.createCatalogItemFromDistribution(selectedDistribution),
                 "*"
             );
             this.setState({
-                loaded: false
+                loaded: false,
+                errorMessage: ""
             });
             return;
         } else if (e.data === "loading complete") {
             this.setState({
-                loaded: true
+                loaded: true,
+                errorMessage: ""
             });
             return;
+        } else {
+            try {
+                const data = JSON.parse(e.data);
+                if (data?.type === "error") {
+                    this.setState({
+                        loaded: true,
+                        errorMessage: data.message
+                    });
+                }
+            } catch (e) {}
         }
     };
 
@@ -334,6 +350,23 @@ class DataPreviewMapTerria extends Component<
         const shouldHideOpenNationalMapButton =
             this.props.distribution.downloadURL &&
             isStorageApiUrl(this.props.distribution.downloadURL);
+
+        if (this.state.loaded && this.state.errorMessage) {
+            return (
+                <div className="error-message-box au-body au-page-alerts au-page-alerts--warning">
+                    <h3>Map Preview Experienced an Error:</h3>
+                    <p>{this.state.errorMessage}</p>
+                    {this.state.errorMessage
+                        .toLowerCase()
+                        .indexOf("status code") !== -1 ? (
+                        <p>
+                            The requested data source might not be available at
+                            this moment.
+                        </p>
+                    ) : null}
+                </div>
+            );
+        }
 
         return (
             <div
