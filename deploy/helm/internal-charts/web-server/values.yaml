@@ -202,11 +202,11 @@ uiBaseUrl:
 # </ul>
 previewMapFormatPerference:
   - format: "WMS"
-    urlRegex: "^(?!.*(SceneServer|FeatureServer)).*$"
+    urlRegex: "^(?!.*(SceneServer)).*$"
   - format: "ESRI MAPSERVER"
     urlRegex: "MapServer"
   - format: "WFS"
-    urlRegex: "^(?!.*(SceneServer|MapServer)).*$"
+    urlRegex: "^(?!.*(SceneServer)).*$"
   - format: "ESRI FEATURESERVER"
     urlRegex: "FeatureServer"
   - format: "GeoJSON"

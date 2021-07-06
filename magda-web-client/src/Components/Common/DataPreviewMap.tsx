@@ -23,7 +23,7 @@ import isStorageApiUrl from "helpers/isStorageApiUrl";
 const DEFAULT_DATA_SOURCE_PREFERENCE: RawPreviewMapFormatPerferenceItem[] = [
     {
         format: "WMS",
-        urlRegex: "^(?!.*(SceneServer|FeatureServer)).*$"
+        urlRegex: "^(?!.*(SceneServer)).*$"
     },
     {
         format: "ESRI MAPSERVER",
@@ -31,7 +31,7 @@ const DEFAULT_DATA_SOURCE_PREFERENCE: RawPreviewMapFormatPerferenceItem[] = [
     },
     {
         format: "WFS",
-        urlRegex: "^(?!.*(SceneServer|MapServer)).*$"
+        urlRegex: "^(?!.*(SceneServer)).*$"
     },
     {
         format: "ESRI FEATURESERVER",
