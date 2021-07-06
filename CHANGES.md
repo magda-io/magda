@@ -57,6 +57,7 @@
 - #3168 Fixed: double clicking the search icon button will clear search text input incorrectly
 - #3171 Make Preview Map Preference Configurable
 - #3173 Allow External UI plugin to be supplied to add support to particular format in a customised way
+- #3177 Bring back Map Preview on Distribution Page
 
 ## 0.0.59
 
