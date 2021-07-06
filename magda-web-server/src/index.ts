@@ -287,7 +287,7 @@ const argv = yargs
         describe: "Preview map module format perference list",
         type: "string",
         coerce: coerceJson("previewMapFormatPerference"),
-        default: "[]"
+        default: undefined // allow passing [] to explictely turn all map preview off
     }).argv;
 
 // set default timezone
