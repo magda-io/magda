@@ -102,9 +102,8 @@ class SearchBox extends Component {
     /**
      * If the search button is clicked, we do the search immediately
      */
-    doSearchNow(keepFilters) {
-        this.debounceUpdateSearchQuery.cancel();
-        this.updateSearchText(this.state.searchText, true);
+    doSearchNow() {
+        this.debounceUpdateSearchQuery.flush();
     }
 
     /**
@@ -210,9 +209,7 @@ class SearchBox extends Component {
                                         {this.getSearchBoxValue()}
                                     </span>
                                     <button
-                                        onClick={() =>
-                                            this.doSearchNow(!isSmall)
-                                        }
+                                        onClick={this.doSearchNow.bind(this)}
                                         className={`search-btn ${
                                             this.getSearchBoxValue().length > 0
                                                 ? "not-empty"
