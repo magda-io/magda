@@ -22,6 +22,8 @@ import isStorageApiUrl from "helpers/isStorageApiUrl";
 import { useAsync } from "react-async-hook";
 import fetch from "isomorphic-fetch";
 import xml2json from "../../helpers/xml2json";
+import ReactSelect from "react-select";
+import CustomStyles from "../Common/react-select/ReactSelectStyles";
 
 console.log(xml2json("<a><b>2332</b></a>"));
 
@@ -255,24 +257,39 @@ export default function DataPreviewMapWrapper(props: {
                 <h3 className="section-heading">Map Preview</h3>
                 {wmsWfsGroupItems?.length ? (
                     <div className="wms-wfs-group-item-selection">
-                        <span>
-                            {isWms
-                                ? "Select WMS Layer: "
-                                : "Select WFS Feature Type:"}
-                        </span>
-                        <select
-                            onChange={(e) =>
+                        <ReactSelect
+                            placeholder={
+                                isWms
+                                    ? "Select WMS Layer..."
+                                    : "Select WFS Feature Type..."
+                            }
+                            className="accrual-periodicity-select"
+                            styles={CustomStyles}
+                            isSearchable={true}
+                            options={
+                                wmsWfsGroupItems.map((item) => ({
+                                    label: item?.title ? item.title : item.name,
+                                    value: item.name
+                                })) as any
+                            }
+                            value={
+                                selectedWmsWfsGroupItemName
+                                    ? {
+                                          label: wmsWfsGroupItems.find(
+                                              (item) =>
+                                                  item.name ===
+                                                  selectedWmsWfsGroupItemName
+                                          )?.title,
+                                          value: selectedWmsWfsGroupItemName
+                                      }
+                                    : null
+                            }
+                            onChange={(option) =>
                                 setSelectedWmsWfsGroupItemName(
-                                    e.currentTarget.value
+                                    (option as any).value
                                 )
                             }
-                        >
-                            {wmsWfsGroupItems.map((item, idx) => (
-                                <option key={idx} value={item.name}>
-                                    {item?.title ? item.title : item.name}
-                                </option>
-                            ))}
-                        </select>
+                        />
                     </div>
                 ) : null}
                 <Small>
