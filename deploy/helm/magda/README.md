@@ -18,13 +18,13 @@ Kubernetes: `>= 1.14.0-0`
 |------------|------|---------|
 | file://../magda-core | magda-core | 0.0.60-rc.4 |
 | file://../openfaas | openfaas | 5.5.5-magda |
-| https://charts.magda.io | ckan-connector-functions(magda-ckan-connector) | 0.0.57-0 |
+| https://charts.magda.io | ckan-connector-functions(magda-ckan-connector) | 1.0.1 |
 | https://charts.magda.io | magda-function-esri-url-processor | 0.0.57-0 |
 | https://charts.magda.io | magda-function-history-report | 0.0.57-0 |
 | https://charts.magda.io | minion-broken-link(magda-minion-broken-link) | 0.0.57-0 |
 | https://charts.magda.io | magda-minion-ckan-exporter | 0.0.57-0 |
-| https://charts.magda.io | minion-format(magda-minion-format) | 0.0.57-0 |
-| https://charts.magda.io | minion-linked-data-rating(magda-minion-linked-data-rating) | 0.0.57-0 |
+| https://charts.magda.io | minion-format(magda-minion-format) | 1.0.0 |
+| https://charts.magda.io | minion-linked-data-rating(magda-minion-linked-data-rating) | 1.0.0 |
 | https://charts.magda.io | minion-visualization(magda-minion-visualization) | 0.0.57-0 |
 
 ## Values

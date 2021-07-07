@@ -59,6 +59,7 @@
 - #3173 Allow External UI plugin to be supplied to add support to particular format in a customised way
 - #3177 Bring back Map Preview on Distribution Page
 - #3174 When service is WMS / WFS, render a layer selection / Feature Type dropdown if multiple layers / feature types are available
+- Upgrade format & rating minion to 1.0.0, Preview Map to 1.0.1
 
 ## 0.0.59
 
