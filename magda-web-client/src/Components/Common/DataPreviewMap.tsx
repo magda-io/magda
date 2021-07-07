@@ -213,7 +213,7 @@ async function fetchWmsWfsItemList(
                 // even only one layer, we will return [] as no need to render layer selection dropdown
                 return [];
             }
-            return jsonData.Capability.Layer.Layer.map((item) => ({
+            return jsonData.FeatureTypeList.FeatureType.map((item) => ({
                 name: item?.Name ? item.Name : "",
                 title: item?.Title ? item.Title : ""
             })).filter((item) => !!item.name);
