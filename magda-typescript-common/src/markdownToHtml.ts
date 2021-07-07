@@ -13,7 +13,7 @@ export default function markdownToHtml(
     markdownString: string,
     allowUnsafeHtml: boolean = false,
     options = {
-        FORBID_TAGS: ["svg", "math"]
+        FORBID_TAGS: ["svg", "math", "style"]
     }
 ) {
     if (!markdownString || typeof markdownString !== "string") {

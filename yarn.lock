@@ -7706,10 +7706,10 @@ domhandler@^2.3.0:
   dependencies:
     domelementtype "1"
 
-dompurify@^2.0.3:
-  version "2.0.14"
-  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-2.0.14.tgz#792f72e95bc643999e7ae81baf6e9c6d9de02429"
-  integrity sha512-oqcjyCLHLjWugZ6VwK0YfmRND/DFy/CuZhdasmymMfnxbzaaQxBSA1ATZIXWESGDj/nvq1vKLmRa7rTdbGgrmQ==
+dompurify@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-2.3.0.tgz#07bb39515e491588e5756b1d3e8375b5964814e2"
+  integrity sha512-VV5C6Kr53YVHGOBKO/F86OYX6/iLTw2yVSI721gKetxpHCK/V5TaLEf9ODjRgl1KLSWRMY6cUhAbv/c+IUnwQw==
 
 domutils@1.5.1:
   version "1.5.1"
@@ -10386,11 +10386,6 @@ html-to-text@^4.0.0:
     htmlparser2 "^3.9.2"
     lodash "^4.17.4"
     optimist "^0.6.1"
-
-html-truncate@^1.2.2:
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/html-truncate/-/html-truncate-1.2.2.tgz#db2e331dcf1cba0bd432a507d16e988609f2575f"
-  integrity sha1-2y4zHc8cugvUMqUH0W6YhgnyV18=
 
 html-webpack-plugin@4.0.0-beta.11:
   version "4.0.0-beta.11"
@@ -19534,6 +19529,11 @@ testcheck@^1.0.0-rc, testcheck@^1.0.0-rc.2:
   version "1.0.0-rc.2"
   resolved "https://registry.yarnpkg.com/testcheck/-/testcheck-1.0.0-rc.2.tgz#11356a25b84575efe0b0857451e85b5fa74ee4e4"
   integrity sha1-ETVqJbhFde/gsIV0UehbX6dO5OQ=
+
+text-clipper@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/text-clipper/-/text-clipper-2.1.0.tgz#18c615738d21a7bba9facd1069674b9088c66c4c"
+  integrity sha512-A6thWpysC0pgX+jFnW8sj0K7qgwi84SuJwMvWrAFqusnTJ1NAivm8XDU2I+BG6V2IJXT7fcQQAzebrxx+lkF2w==
 
 text-encoding@0.6.4:
   version "0.6.4"
