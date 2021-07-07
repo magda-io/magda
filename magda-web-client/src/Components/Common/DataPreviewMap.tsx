@@ -19,6 +19,11 @@ import {
 import DataPreviewSizeWarning from "./DataPreviewSizeWarning";
 import urijs from "urijs";
 import isStorageApiUrl from "helpers/isStorageApiUrl";
+import { useAsync } from "react-async-hook";
+import fetch from "isomorphic-fetch";
+import xml2json from "../../helpers/xml2json";
+
+console.log(xml2json("<a><b>2332</b></a>"));
 
 const DEFAULT_DATA_SOURCE_PREFERENCE: RawPreviewMapFormatPerferenceItem[] = [
     {
@@ -156,17 +161,120 @@ const determineBestDistribution: (
     }
 });
 
+type WmsWfsGroupItemType = {
+    name: string;
+    title: string;
+};
+
+async function fetchWmsWfsItemList(
+    url?: string,
+    format?: string
+): Promise<WmsWfsGroupItemType[]> {
+    if (!url || typeof url !== "string") {
+        return [];
+    }
+    if (!format || typeof format !== "string") {
+        return [];
+    }
+    const stdFormatStr = format.trim().toLowerCase();
+    if (stdFormatStr !== "wms" && stdFormatStr !== "wfs") {
+        return [];
+    }
+
+    if (url.match(/\W*SceneServer\W*/i)) {
+        // when url contains `SceneServer`, it will not be valid WFS / WMS url.
+        // some upstream crawler might incorrectly produce this
+        return [];
+    }
+
+    const isWms = stdFormatStr === "wms" ? true : false;
+
+    try {
+        const requestUrl = `${config.proxyUrl}_1d/${url}`;
+        const res = await fetch(requestUrl);
+        if (!res.ok) {
+            return [];
+        }
+        const resText = await res.text();
+        const jsonData = xml2json(resText.trim());
+        if (isWms) {
+            if (!jsonData?.Capability?.Layer?.Layer?.length) {
+                // even only one layer, we will return [] as no need to render layer selection dropdown
+                return [];
+            }
+            return jsonData.Capability.Layer.Layer.map((item) => ({
+                name: item?.Name ? item.Name : "",
+                title: item?.Title ? item.Title : ""
+            })).filter((item) => !!item.name);
+        } else {
+            if (!jsonData?.FeatureTypeList?.FeatureType?.length) {
+                // even only one layer, we will return [] as no need to render layer selection dropdown
+                return [];
+            }
+            return jsonData.Capability.Layer.Layer.map((item) => ({
+                name: item?.Name ? item.Name : "",
+                title: item?.Title ? item.Title : ""
+            })).filter((item) => !!item.name);
+        }
+    } catch (e) {
+        return [];
+    }
+}
+
 export default function DataPreviewMapWrapper(props: {
     distributions: ParsedDistribution[];
 }) {
+    const [
+        selectedWmsWfsGroupItemName,
+        setSelectedWmsWfsGroupItemName
+    ] = useState("");
     const bestDist = determineBestDistribution(props.distributions);
+
+    let format = bestDist?.dist?.format;
+    if (!format || typeof format !== "string") {
+        format = "";
+    }
+    format = format.toLocaleLowerCase().trim();
+
+    const isWms = format === "wms" ? true : false;
+
+    const dataUrl = bestDist?.dist?.downloadURL
+        ? bestDist.dist.downloadURL
+        : bestDist?.dist?.accessURL;
+
+    const { result: wmsWfsGroupItems } = useAsync(fetchWmsWfsItemList, [
+        dataUrl,
+        format
+    ]);
 
     if (!bestDist) {
         return null;
     } else {
         return (
-            <div className="no-print">
+            <div className="no-print data-preview-map-wrapper">
                 <h3 className="section-heading">Map Preview</h3>
+                {wmsWfsGroupItems?.length ? (
+                    <div className="wms-wfs-group-item-selection">
+                        <span>
+                            {isWms
+                                ? "Select WMS Layer: "
+                                : "Select WFS Feature Type:"}
+                        </span>
+                        <select
+                            onChange={(e) =>
+                                setSelectedWmsWfsGroupItemName(
+                                    e.currentTarget.value
+                                )
+                            }
+                        >
+                            {wmsWfsGroupItems.map((item, idx) => (
+                                <option key={idx} value={item.name}>
+                                    {item?.title ? item.title : item.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                ) : null}
                 <Small>
                     <DataPreviewMapOpenInNationalMapButton
                         distribution={bestDist.dist}
@@ -179,14 +287,24 @@ export default function DataPreviewMapWrapper(props: {
                     />
                 </Small>
                 <Medium>
-                    <DataPreviewMap bestDist={bestDist} />
+                    <DataPreviewMap
+                        bestDist={bestDist}
+                        selectedWmsWfsGroupItemName={
+                            selectedWmsWfsGroupItemName
+                        }
+                        isWms={isWms}
+                    />
                 </Medium>
             </div>
         );
     }
 }
 
-function DataPreviewMap(props: { bestDist: BestDist }) {
+function DataPreviewMap(props: {
+    bestDist: BestDist;
+    selectedWmsWfsGroupItemName: string;
+    isWms: boolean;
+}) {
     const [loading, setLoading] = useState(true);
     const [overrideFileSizeCheck, setOverrideFileSizeCheck] = useState(false);
     const [
@@ -228,7 +346,14 @@ function DataPreviewMap(props: { bestDist: BestDist }) {
             />
         );
     } else {
-        return <DataPreviewMapTerria distribution={props.bestDist.dist} />;
+        return (
+            <DataPreviewMapTerria
+                key={props.selectedWmsWfsGroupItemName}
+                distribution={props.bestDist.dist}
+                isWms={props.isWms}
+                selectedWmsWfsGroupItemName={props.selectedWmsWfsGroupItemName}
+            />
+        );
     }
 }
 
@@ -240,7 +365,11 @@ type State = {
 };
 
 class DataPreviewMapTerria extends Component<
-    { distribution: ParsedDistribution },
+    {
+        distribution: ParsedDistribution;
+        selectedWmsWfsGroupItemName: string;
+        isWms: boolean;
+    },
     State
 > {
     private iframeRef: React.RefObject<HTMLIFrameElement> = React.createRef();
@@ -280,23 +409,33 @@ class DataPreviewMapTerria extends Component<
         this.setState({ isMapInteractive: false });
     };
 
-    createCatalogItemFromDistribution(selectedDistribution) {
+    createCatalogItemFromDistribution(
+        selectedDistribution,
+        selectedWmsWfsGroupItemName: string,
+        isWms: boolean
+    ) {
+        const catalogData: any = {
+            name: selectedDistribution.title,
+            type: "magda-item",
+            url: config.baseUrl,
+            storageApiUrl: config.storageApiUrl,
+            distributionId: selectedDistribution.identifier,
+            // --- default internal storage bucket name
+            defaultBucket: DATASETS_BUCKET,
+            isEnabled: true,
+            zoomOnEnable: true
+        };
+        if (selectedWmsWfsGroupItemName) {
+            if (isWms) {
+                catalogData.selectedWmsLayerName = selectedWmsWfsGroupItemName;
+            } else {
+                catalogData.selectedWfsFeatureTypeName = selectedWmsWfsGroupItemName;
+            }
+        }
         return {
             initSources: [
                 {
-                    catalog: [
-                        {
-                            name: selectedDistribution.title,
-                            type: "magda-item",
-                            url: config.baseUrl,
-                            storageApiUrl: config.storageApiUrl,
-                            distributionId: selectedDistribution.identifier,
-                            // --- default internal storage bucket name
-                            defaultBucket: DATASETS_BUCKET,
-                            isEnabled: true,
-                            zoomOnEnable: true
-                        }
-                    ],
+                    catalog: [catalogData],
                     baseMapName: "Positron (Light)",
                     homeCamera: {
                         north: -8,
@@ -319,7 +458,11 @@ class DataPreviewMapTerria extends Component<
 
         if (e.data === "ready") {
             iframeWindow.postMessage(
-                this.createCatalogItemFromDistribution(selectedDistribution),
+                this.createCatalogItemFromDistribution(
+                    selectedDistribution,
+                    this.props.selectedWmsWfsGroupItemName,
+                    this.props.isWms
+                ),
                 "*"
             );
             this.setState({

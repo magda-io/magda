@@ -11,3 +11,9 @@
 .data-preview-map-iframe_no-scroll {
     pointer-events: none;
 }
+
+.data-preview-map-wrapper {
+    .wms-wfs-group-item-selection {
+        margin-bottom: 5px;
+    }
+}
