@@ -25,8 +25,6 @@ import xml2json from "../../helpers/xml2json";
 import ReactSelect from "react-select";
 import CustomStyles from "../Common/react-select/ReactSelectStyles";
 
-console.log(xml2json("<a><b>2332</b></a>"));
-
 const DEFAULT_DATA_SOURCE_PREFERENCE: RawPreviewMapFormatPerferenceItem[] = [
     {
         format: "WMS",
@@ -515,7 +513,6 @@ class DataPreviewMapTerria extends Component<
             return (
                 <div className="error-message-box au-body au-page-alerts au-page-alerts--warning">
                     <h3>Map Preview Experienced an Error:</h3>
-                    <p>{this.state.errorMessage}</p>
                     {this.state.errorMessage
                         .toLowerCase()
                         .indexOf("status code") !== -1 ? (
@@ -523,7 +520,12 @@ class DataPreviewMapTerria extends Component<
                             The requested data source might not be available at
                             this moment.
                         </p>
-                    ) : null}
+                    ) : (
+                        <p>
+                            The requested data source is not in the valid format
+                            or might not be available at this moment.
+                        </p>
+                    )}
                 </div>
             );
         }
