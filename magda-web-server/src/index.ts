@@ -282,6 +282,12 @@ const argv = yargs
         type: "string",
         coerce: coerceJson("extraConfigData"),
         default: "{}"
+    })
+    .option("previewMapFormatPerference", {
+        describe: "Preview map module format perference list",
+        type: "string",
+        coerce: coerceJson("previewMapFormatPerference"),
+        default: undefined // allow passing [] to explictely turn all map preview off
     }).argv;
 
 // set default timezone
@@ -412,7 +418,8 @@ const webServerConfig = {
     supportExternalTerriaMapV7: argv.supportExternalTerriaMapV7,
     openInExternalTerriaMapButtonText: argv.openInExternalTerriaMapButtonText,
     openInExternalTerriaMapTargetUrl: argv.openInExternalTerriaMapTargetUrl,
-    extraConfigData: argv.extraConfigData
+    extraConfigData: argv.extraConfigData,
+    previewMapFormatPerference: argv.previewMapFormatPerference
 };
 
 app.get("/server-config.js", function (req, res) {

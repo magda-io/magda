@@ -41,7 +41,7 @@ Kubernetes: `>= 1.14.0-0`
 | file://../internal-charts/tenant-api | tenant-api | 0.0.60-rc.4 |
 | file://../internal-charts/tenant-db | tenant-db | 0.0.60-rc.4 |
 | file://../internal-charts/web-server | web-server | 0.0.60-rc.4 |
-| https://charts.magda.io | preview-map(magda-preview-map) | 1.0.0 |
+| https://charts.magda.io | preview-map(magda-preview-map) | 1.0.1 |
 
 ## Values
 

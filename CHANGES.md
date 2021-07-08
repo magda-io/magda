@@ -55,6 +55,13 @@
 - Remove "data.gov.au" keyword from "correspondence-api" email "from" field
 - #3166 Update text description under the data source section on data detail page
 - #3168 Fixed: double clicking the search icon button will clear search text input incorrectly
+- #3171 Make Preview Map Preference Configurable
+- #3173 Allow External UI plugin to be supplied to add support to particular format in a customised way
+- #3177 Bring back Map Preview on Distribution Page
+- #3174 When service is WMS / WFS, render a layer selection / Feature Type dropdown if multiple layers / feature types are available
+- #3178 Better Error Handling for Preview Map via postMessage
+- Upgrade format & rating minion to 1.0.0, Preview Map to 1.0.1
+- #3179 Fixed Invalid HTML in description make Google Chrome Unresponsive
 
 ## 0.0.59
 
