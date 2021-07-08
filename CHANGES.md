@@ -62,6 +62,7 @@
 - #3178 Better Error Handling for Preview Map via postMessage
 - Upgrade format & rating minion to 1.0.0, Preview Map to 1.0.1
 - #3179 Fixed Invalid HTML in description make Google Chrome Unresponsive
+- Further simplify the error message from map preview module
 
 ## 0.0.59
 
