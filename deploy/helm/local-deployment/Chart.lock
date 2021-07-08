@@ -1,7 +1,7 @@
 dependencies:
 - name: magda
   repository: file://../magda
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.17
 - name: magda-auth-google
   repository: https://charts.magda.io
   version: 1.0.1
@@ -113,5 +113,5 @@ dependencies:
 - name: magda-project-open-data-connector
   repository: https://charts.magda.io
   version: 0.0.57-0
-digest: sha256:4fe520b53e42b2d09c779ba74fd5f417cad0cd4143b15a732f25e7dd1990b41e
-generated: "2021-06-22T09:48:25.812874+10:00"
+digest: sha256:f0d9905d8c152ac8bd2871627fade7470e64a384030a58b723d419a4cfa12eab
+generated: "2021-07-09T08:48:48.986727+10:00"

@@ -1,81 +1,81 @@
 dependencies:
 - name: apidocs-server
   repository: file://../internal-charts/apidocs-server
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.17
 - name: authorization-api
   repository: file://../internal-charts/authorization-api
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.17
 - name: authorization-db
   repository: file://../internal-charts/authorization-db
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.17
 - name: cloud-sql-proxy
   repository: file://../internal-charts/cloud-sql-proxy
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.17
 - name: combined-db
   repository: file://../internal-charts/combined-db
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.17
 - name: content-api
   repository: file://../internal-charts/content-api
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.17
 - name: content-db
   repository: file://../internal-charts/content-db
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.17
 - name: correspondence-api
   repository: file://../internal-charts/correspondence-api
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.17
 - name: elasticsearch
   repository: file://../internal-charts/elasticsearch
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.17
 - name: gateway
   repository: file://../internal-charts/gateway
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.17
 - name: indexer
   repository: file://../internal-charts/indexer
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.17
 - name: magda-preview-map
   repository: https://charts.magda.io
   version: 1.0.1
 - name: registry-api
   repository: file://../internal-charts/registry-api
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.17
 - name: registry-db
   repository: file://../internal-charts/registry-db
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.17
 - name: search-api
   repository: file://../internal-charts/search-api
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.17
 - name: search-api-node
   repository: file://../internal-charts/search-api-node
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.17
 - name: session-db
   repository: file://../internal-charts/session-db
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.17
 - name: web-server
   repository: file://../internal-charts/web-server
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.17
 - name: admin-api
   repository: file://../internal-charts/admin-api
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.17
 - name: opa
   repository: file://../internal-charts/opa
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.17
 - name: storage-api
   repository: file://../internal-charts/storage-api
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.17
 - name: tenant-api
   repository: file://../internal-charts/tenant-api
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.17
 - name: tenant-db
   repository: file://../internal-charts/tenant-db
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.17
 - name: priorities
   repository: file://../internal-charts/priorities
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.17
 - name: ingress
   repository: file://../internal-charts/ingress
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.17
 - name: rds-dev-proxy
   repository: file://../internal-charts/rds-dev-proxy
-  version: 0.0.60-rc.4
-digest: sha256:b678837bb6936e048c70072f18947cac81ad3f0124de74b6badffabd9d543079
-generated: "2021-07-07T14:50:12.145008+10:00"
+  version: 0.0.60-alpha.17
+digest: sha256:6fa1443d074970ee33ec7af36d22e5f29a51d83d5f5555d63a2b9b28a83142c1
+generated: "2021-07-09T08:48:25.234559+10:00"
