@@ -1,4 +1,22 @@
+global: {}
+image:
+  name: cloudsql-docker
+  repository: gcr.io
+  tag: 1.11
+  pullPolicy: IfNotPresent
+
+# -- no. of replicas required for the deployment.
+# If not set, k8s will assume `1` but allows HPA (autoscaler) alters it.
+# @default 1
+replicas:
+
+autoscaler:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+
 resources:
   requests:
-    cpu: 10m
-    memory: 10Mi
+    cpu: 50m
+    memory: 50Mi

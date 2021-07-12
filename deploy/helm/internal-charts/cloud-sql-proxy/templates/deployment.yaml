@@ -4,7 +4,10 @@ kind: Deployment
 metadata:
   name: cloud-sql-proxy
 spec:
+# when autoscaler is on, we shouldn't set value for replicas
+{{- if .Values.autoscaler.enabled }}
   replicas: {{ .Values.replicas | default 1 }}
+{{- end }}
   strategy:
     rollingUpdate:
       maxUnavailable: {{ .Values.global.rollingUpdate.maxUnavailable | default 0 }}
@@ -21,7 +24,8 @@ spec:
 {{- end }}
       containers:
       - name: cloud-sql-proxy
-        image: gcr.io/cloudsql-docker/gce-proxy:1.11
+        image: "{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         command: ["/cloud_sql_proxy",
                   "-instances={{ .Values.instanceConnectionName }}=tcp:0.0.0.0:5432",
                   "-credential_file=/secrets/cloudsql/credentials.json"]
