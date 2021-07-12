@@ -64,6 +64,7 @@
 - #3179 Fixed Invalid HTML in description make Google Chrome Unresponsive
 - Further simplify the error message from map preview module
 - #3175 Make cloud sql proxy chart image version configurable, add autoscaler support & increase default resource
+- #3185 Adjust migrator jobs running sequence so registry-db job will be run earlier
 
 ## 0.0.59
 
