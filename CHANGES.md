@@ -63,6 +63,7 @@
 - Upgrade format & rating minion to 1.0.0, Preview Map to 1.0.1
 - #3179 Fixed Invalid HTML in description make Google Chrome Unresponsive
 - Further simplify the error message from map preview module
+- #3175 Make cloud sql proxy chart image version configurable, add autoscaler support & increase default resource
 
 ## 0.0.59
 
