@@ -1,7 +1,7 @@
 dependencies:
 - name: magda
   repository: file://../magda
-  version: 0.0.60-rc.4
+  version: 0.0.60-alpha.18
 - name: magda-auth-google
   repository: https://charts.magda.io
   version: 1.0.1
@@ -16,7 +16,7 @@ dependencies:
   version: 1.0.1
 - name: magda-ckan-connector
   repository: https://charts.magda.io
-  version: 0.0.57-0
+  version: 1.0.1
 - name: magda-project-open-data-connector
   repository: https://charts.magda.io
   version: 0.0.57-0
@@ -37,7 +37,7 @@ dependencies:
   version: 0.0.57-0
 - name: magda-ckan-connector
   repository: https://charts.magda.io
-  version: 0.0.57-0
+  version: 1.0.1
 - name: magda-project-open-data-connector
   repository: https://charts.magda.io
   version: 0.0.57-0
@@ -76,16 +76,16 @@ dependencies:
   version: 0.0.57-0
 - name: magda-ckan-connector
   repository: https://charts.magda.io
-  version: 0.0.57-0
+  version: 1.0.1
 - name: magda-csw-connector
   repository: https://charts.magda.io
   version: 0.0.57-0
 - name: magda-ckan-connector
   repository: https://charts.magda.io
-  version: 0.0.57-0
+  version: 1.0.1
 - name: magda-ckan-connector
   repository: https://charts.magda.io
-  version: 0.0.57-0
+  version: 1.0.1
 - name: magda-project-open-data-connector
   repository: https://charts.magda.io
   version: 0.0.57-0
@@ -97,10 +97,10 @@ dependencies:
   version: 0.0.57-0
 - name: magda-ckan-connector
   repository: https://charts.magda.io
-  version: 0.0.57-0
+  version: 1.0.1
 - name: magda-ckan-connector
   repository: https://charts.magda.io
-  version: 0.0.57-0
+  version: 1.0.1
 - name: magda-dap-connector
   repository: https://charts.magda.io
   version: 0.0.57-0
@@ -113,5 +113,5 @@ dependencies:
 - name: magda-project-open-data-connector
   repository: https://charts.magda.io
   version: 0.0.57-0
-digest: sha256:4fe520b53e42b2d09c779ba74fd5f417cad0cd4143b15a732f25e7dd1990b41e
-generated: "2021-06-22T09:48:25.812874+10:00"
+digest: sha256:3e49a2a5e4cc447ca6929a07d36fcebca94eb908177683b562b4c8eda49c5a91
+generated: "2021-07-13T15:07:07.931108+10:00"
