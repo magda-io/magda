@@ -28,6 +28,27 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         command: ["/cloud_sql_proxy",
                   "-instances={{ .Values.instanceConnectionName }}=tcp:0.0.0.0:5432",
+{{- if .Values.enableIamLogin }}
+                  "-enable_iam_login={{ .Values.enableIamLogin }}",
+{{- end }}
+{{- if .Values.maxConnections }}
+                  "-max_connections={{ .Values.maxConnections }}",
+{{- end }}
+{{- if .Values.ipAddressTypes }}
+                  "-ip_address_types={{ .Values.ipAddressTypes }}",
+{{- end }}
+{{- if .Values.termTimeout }}
+                  "-term_timeout={{ .Values.termTimeout }}s",
+{{- end }}
+{{- if .Values.skipFailedInstanceConfig }}
+                  "-skip_failed_instance_config={{ .Values.skipFailedInstanceConfig }}",
+{{- end }}
+{{- if .Values.logDebugStdout }}
+                  "-log_debug_stdout={{ .Values.logDebugStdout }}",
+{{- end }}
+{{- if .Values.structuredLogs }}
+                  "-structured_logs={{ .Values.structuredLogs }}",
+{{- end }}
                   "-credential_file=/secrets/cloudsql/credentials.json"]
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
