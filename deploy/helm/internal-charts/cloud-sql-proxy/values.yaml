@@ -2,7 +2,7 @@ global: {}
 image:
   name: gce-proxy
   repository: gcr.io/cloudsql-docker
-  tag: 1.11
+  tag: "1.11"
   pullPolicy: IfNotPresent
 
 # -- no. of replicas required for the deployment.
