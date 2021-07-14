@@ -97,19 +97,6 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
         }
     ];
 
-    // Define routes.
-    authRouter.get("/", authenticatorMiddleware, function (req, res) {
-        res.render("home", { user: req.user });
-    });
-
-    authRouter.get("/login", authenticatorMiddleware, function (req, res) {
-        res.render("login");
-    });
-
-    authRouter.get("/admin", authenticatorMiddleware, function (req, res) {
-        res.render("admin");
-    });
-
     /**
      * @apiGroup Authentication API
      * @api {get} https://<host>/auth/plugins Get the list of available authentication plugins
@@ -195,23 +182,6 @@ export default function createAuthRouter(options: AuthRouterOptions): Router {
                 .map((provider) => provider.id)
         );
     });
-
-    authRouter.get(
-        "/profile",
-        authenticatorMiddleware,
-        require("connect-ensure-login").ensureLoggedIn(),
-        function (req, res) {
-            authApi
-                .getUser(req.user.id)
-                .then((user) =>
-                    res.render("profile", { user: user.valueOrThrow() })
-                )
-                .catch((error: Error) => {
-                    console.error(error);
-                    res.status(500).send("Error");
-                });
-        }
-    );
 
     /**
      * @apiGroup Authentication API
