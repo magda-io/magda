@@ -67,12 +67,8 @@ class SearchBox extends Component {
             return;
         }
 
-        if (text === "") {
-            if (fromTextChange) {
-                return;
-            } else {
-                text = "*";
-            }
+        if (typeof text === "string") {
+            text = text.trim();
         }
         // dismiss keyboard on mobile when new search initiates
         if (this.searchInputFieldRef) this.searchInputFieldRef.blur();
