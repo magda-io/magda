@@ -17,15 +17,14 @@ import MagdaNamespacesConsumer from "Components/i18n/MagdaNamespacesConsumer";
 class SearchBox extends Component {
     constructor(props) {
         super(props);
-        const self = this;
-        self.handleSearchFieldEnterKeyPress = this.handleSearchFieldEnterKeyPress.bind(
+        this.handleSearchFieldEnterKeyPress = this.handleSearchFieldEnterKeyPress.bind(
             this
         );
-        self.updateQuery = this.updateQuery.bind(this);
-        self.updateSearchText = this.updateSearchText.bind(this);
-        self.onClickSearch = this.doSearchNow.bind(this);
-        self.onSearchTextChange = this.onSearchTextChange.bind(this);
-        self.getSearchBoxValue = this.getSearchBoxValue.bind(this);
+        this.updateQuery = this.updateQuery.bind(this);
+        this.updateSearchText = this.updateSearchText.bind(this);
+        this.onClickSearch = this.doSearchNow.bind(this);
+        this.onSearchTextChange = this.onSearchTextChange.bind(this);
+        this.getSearchBoxValue = this.getSearchBoxValue.bind(this);
 
         // it needs to be undefined here, so the default value should be from the url
         // once this value is set, the value should always be from the user input
@@ -37,7 +36,7 @@ class SearchBox extends Component {
             selectedId: null
         };
         this.searchInputFieldRef = null;
-        props.history.listen((location) => {
+        props.history.listen(() => {
             this.debounceUpdateSearchQuery.cancel();
             this.setState({
                 searchText: null
@@ -84,14 +83,12 @@ class SearchBox extends Component {
         });
     }
 
-    handleSearchFieldEnterKeyPress(event, keepFilters) {
+    handleSearchFieldEnterKeyPress(event) {
         // when user hit enter, no need to submit the form
         if (event.charCode === 13) {
             event.preventDefault();
-            this.debounceUpdateSearchQuery.flush(
-                this.getSearchBoxValue(),
-                keepFilters
-            );
+            this.debounceUpdateSearchQuery.cancel();
+            this.updateSearchText(this.getSearchBoxValue(), true);
         }
     }
 
@@ -99,7 +96,8 @@ class SearchBox extends Component {
      * If the search button is clicked, we do the search immediately
      */
     doSearchNow() {
-        this.debounceUpdateSearchQuery.flush();
+        this.debounceUpdateSearchQuery.cancel();
+        this.updateSearchText(this.getSearchBoxValue(), true);
     }
 
     /**
@@ -144,9 +142,7 @@ class SearchBox extends Component {
                 placeholder="Search for data"
                 value={this.getSearchBoxValue()}
                 onChange={(e) => this.onSearchTextChange(e, keepFilters)}
-                onKeyPress={(e) =>
-                    this.handleSearchFieldEnterKeyPress(e, keepFilters)
-                }
+                onKeyPress={(e) => this.handleSearchFieldEnterKeyPress(e)}
                 autoComplete="off"
                 ref={(el) => (this.searchInputFieldRef = el)}
                 onFocus={() => this.setState({ isFocus: true })}
