@@ -64,6 +64,7 @@
 - #3179 Fixed Invalid HTML in description make Google Chrome Unresponsive
 - Further simplify the error message from map preview module
 - #3170 Remove unused old admin UI endpoint from Gateway
+- #3188 Publish openfaas chart & Move openfaas helm chart out of main repo
 
 ## 0.0.59
 
