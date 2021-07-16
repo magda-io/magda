@@ -64,6 +64,7 @@
 - #3179 Fixed Invalid HTML in description make Google Chrome Unresponsive
 - Further simplify the error message from map preview module
 - #3170 Remove unused old admin UI endpoint from Gateway
+- #3164 Add `showContactButtonForNoContactPointDataset` helm chart config option
 
 ## 0.0.59
 

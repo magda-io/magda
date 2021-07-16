@@ -288,6 +288,12 @@ const argv = yargs
         type: "string",
         coerce: coerceJson("previewMapFormatPerference"),
         default: undefined // allow passing [] to explictely turn all map preview off
+    })
+    .option("showContactButtonForNoContactPointDataset", {
+        describe:
+            "Whether show the 'Ask a question about this dataset' button for datasets without contact point info.",
+        type: "boolean",
+        default: false
     }).argv;
 
 // set default timezone
@@ -419,7 +425,9 @@ const webServerConfig = {
     openInExternalTerriaMapButtonText: argv.openInExternalTerriaMapButtonText,
     openInExternalTerriaMapTargetUrl: argv.openInExternalTerriaMapTargetUrl,
     extraConfigData: argv.extraConfigData,
-    previewMapFormatPerference: argv.previewMapFormatPerference
+    previewMapFormatPerference: argv.previewMapFormatPerference,
+    showContactButtonForNoContactPointDataset:
+        argv.showContactButtonForNoContactPointDataset
 };
 
 app.get("/server-config.js", function (req, res) {

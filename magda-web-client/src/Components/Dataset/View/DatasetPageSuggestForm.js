@@ -1,6 +1,6 @@
 import React from "react";
 import Modal from "react-modal";
-
+import { config } from "../../../config";
 import RequestFormLogic from "Components/Dataset/Suggest/RequestFormLogic";
 
 import "./DatasetPageSuggestForm.scss";
@@ -110,7 +110,8 @@ export default class DatasetPageSuggestForm extends React.Component {
             <React.Fragment>
                 {/* If the form is posted don't show the text in the below para*/}
                 {!this.state.showSuggest &&
-                    (this.props.contactPoint ? (
+                    (this.props.contactPoint ||
+                    config.showContactButtonForNoContactPointDataset ? (
                         <div className="dataset-button-container no-print">
                             <button
                                 className="au-btn au-btn--secondary ask-question-button"
