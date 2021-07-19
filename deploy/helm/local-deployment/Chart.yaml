@@ -9,28 +9,28 @@ dependencies:
     repository: "file://../magda"
 
   - name: magda-auth-google
-    version: 1.0.1
+    version: "1.0.1"
     repository: https://charts.magda.io
     tags:
       - all
       - magda-auth-google
 
   - name: magda-auth-ckan
-    version: 1.0.1
+    version: "1.0.1"
     repository: https://charts.magda.io
     tags:
       - all
       - magda-auth-ckan
 
   - name: magda-auth-internal
-    version: 1.0.1
+    version: "1.0.1"
     repository: https://charts.magda.io
     tags:
       - all
       - magda-auth-internal
 
   - name: magda-auth-arcgis
-    version: 1.0.1
+    version: "1.0.1"
     repository: https://charts.magda.io
     tags:
       - all
@@ -39,7 +39,7 @@ dependencies:
   ## Data.gov.au connector to provide some initial data. Remove this if you
   ## don't want any data.gov.au connector
   - name: magda-ckan-connector
-    version: 0.0.57-0
+    version: "1.0.1"
     alias: connector-dga
     repository: https://charts.magda.io
     tags:
@@ -90,7 +90,7 @@ dependencies:
       - connectors
       - connector-aurin
   - name: magda-ckan-connector
-    version: 0.0.57-0
+    version: "1.0.1"
     alias: connector-brisbane
     repository: https://charts.magda.io
     tags:
@@ -181,7 +181,7 @@ dependencies:
       - connectors
       - connector-neii
   - name: magda-ckan-connector
-    version: 0.0.57-0
+    version: "1.0.1"
     alias: connector-nsw
     repository: https://charts.magda.io
     tags:
@@ -195,14 +195,14 @@ dependencies:
       - connectors
       - connector-sdinsw
   - name: magda-ckan-connector
-    version: 0.0.57-0
+    version: "1.0.1"
     alias: connector-qld
     repository: https://charts.magda.io
     tags:
       - connectors
       - connector-qld
   - name: magda-ckan-connector
-    version: 0.0.57-0
+    version: "1.0.1"
     alias: connector-sa
     repository: https://charts.magda.io
     tags:
@@ -230,14 +230,14 @@ dependencies:
       - connectors
       - connector-tern
   - name: magda-ckan-connector
-    version: 0.0.57-0
+    version: "1.0.1"
     alias: connector-vic
     repository: https://charts.magda.io
     tags:
       - connectors
       - connector-vic
   - name: magda-ckan-connector
-    version: 0.0.57-0
+    version: "1.0.1"
     alias: connector-wa
     repository: https://charts.magda.io
     tags:
