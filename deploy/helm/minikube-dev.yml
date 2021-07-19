@@ -109,6 +109,7 @@ magda:
             dateRegex: "(date|dt|year|decade)"
             startDateRegex: "(start|st).*(date|dt|year|decade)"
             endDateRegex: "(end).*(date|dt|year|decade)"
+      showContactButtonForNoContactPointDataset: true
 
     elasticsearch:
       data:
