@@ -95,7 +95,7 @@ export default class DatasetPageSuggestForm extends React.Component {
             title: false,
             description: `Your question will be sent to ${
                 contactPointMatch
-                    ? "the publisher of the data"
+                    ? "the publisher of the dataset"
                     : "the maintainers of this site"
             }.`,
             namePlaceHolder: "Dorothy Hill",
