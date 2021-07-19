@@ -64,6 +64,8 @@
 - #3179 Fixed Invalid HTML in description make Google Chrome Unresponsive
 - Further simplify the error message from map preview module
 - #3170 Remove unused old admin UI endpoint from Gateway
+- #3164 Add `showContactButtonForNoContactPointDataset` helm chart config option
+- #3186 Fixed: avoid extra slash in inqury email dataset URLs
 - #3188 Publish openfaas chart & Move openfaas helm chart out of main repo
 - #3183 Make search input accept empty string as search query string
 

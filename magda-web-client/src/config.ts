@@ -123,6 +123,7 @@ const serverConfig: {
         [key: string]: any;
     };
     previewMapFormatPerference?: RawPreviewMapFormatPerferenceItem[];
+    showContactButtonForNoContactPointDataset?: boolean;
 } = window.magda_server_config || {};
 
 const DATE_REGEX = ".*(date|dt|year|decade).*";

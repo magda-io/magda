@@ -3,6 +3,7 @@ import { ApiRouterOptions } from "../createApiRouter";
 import { SMTPMailer, Message, Attachment } from "../SMTPMailer";
 import fs from "fs";
 import path from "path";
+import urijs from "urijs";
 
 import createApiRouter from "../createApiRouter";
 
@@ -14,6 +15,10 @@ import nock from "nock";
 import RegistryClient from "magda-typescript-common/src/registry/RegistryClient";
 import ContentApiDirMapper from "../ContentApiDirMapper";
 import EmailTemplateRender from "../EmailTemplateRender";
+
+function encodeUrlSegment(segmentStr: string) {
+    return urijs("").segmentCoded([segmentStr]).segment()[0];
+}
 
 const REGISTRY_URL: string = "https://registry.example.com";
 const CONTENT_API_URL: string = "https://content-api.example.com";
@@ -68,6 +73,7 @@ const stubbedSMTPMailer: SMTPMailer = {
     }
 } as SMTPMailer;
 
+const DEFAULT_ALWAYS_SEND_TO_DEFAULT_RECIPIENT = false;
 const DEFAULT_SENDER_NAME = "Bob Cunningham";
 const DEFAULT_SENDER_EMAIL = "bob.cunningham@example.com";
 const DEFAULT_MESSAGE_TEXT = `Gib me
@@ -78,11 +84,13 @@ a dataset
 const DEFAULT_MESSAGE_HTML = `<p>Gib me</p>\n<p>a dataset</p>\n<p>༼ つ ◕_◕ ༽つ</p>`;
 const DEFAULT_DATASET_ID =
     "ds-launceston-http://opendata.launceston.tas.gov.au/datasets/9dde05eb82174fa3b1fcf89299d959a9_2";
+// it's not correct way to encode url path segment as `encodeURIComponent` will encode `:` as well.
+// we do this only to make nock happy
 const ENCODED_DEFAULT_DATASET_ID = encodeURIComponent(DEFAULT_DATASET_ID);
 const DEFAULT_DATASET_TITLE = "thisisatitle";
 const DEFAULT_DATASET_PUBLISHER = "publisher";
 const DEFAULT_DATASET_CONTACT_POINT = "contactpoint@example.com";
-const EXTERNAL_URL = "datagov.au.example.com";
+const EXTERNAL_URL = "https://datagov.au.example.com/";
 
 describe("send dataset request mail", () => {
     const DEFAULT_RECIPIENT = "blah@example.com";
@@ -155,7 +163,13 @@ describe("send dataset request mail", () => {
                     message: DEFAULT_MESSAGE_TEXT
                 })
                 .expect(200)
-                .then(() => {
+                .then((res) => {
+                    const resData = JSON.parse(res.text);
+                    expect(resData.recipient).to.equal(DEFAULT_RECIPIENT);
+                    expect(resData.sentToDefaultRecipient).to.equal(
+                        DEFAULT_ALWAYS_SEND_TO_DEFAULT_RECIPIENT
+                    );
+
                     const args: Message = sendStub.firstCall.args[0];
 
                     expect(args.to).to.equal(DEFAULT_RECIPIENT);
@@ -175,8 +189,24 @@ describe("send dataset request mail", () => {
 
     describe("/public/send/dataset/:datasetId/question", () => {
         it("should respond with an 200 response if everything was successful", () => {
-            return sendQuestion().then(() => {
+            return sendQuestion().then((res) => {
+                const resData = JSON.parse(res.text);
+                expect(resData.recipient).to.equal(
+                    DEFAULT_DATASET_CONTACT_POINT
+                );
+                expect(resData.sentToDefaultRecipient).to.equal(
+                    DEFAULT_ALWAYS_SEND_TO_DEFAULT_RECIPIENT
+                );
+
                 const args: Message = sendStub.firstCall.args[0];
+                const defaultDatasetIdEncodedAsSegment = encodeUrlSegment(
+                    DEFAULT_DATASET_ID
+                );
+                const datasetUrl =
+                    EXTERNAL_URL +
+                    (EXTERNAL_URL[EXTERNAL_URL.length - 1] === "/" ? "" : "/") +
+                    "dataset/" +
+                    defaultDatasetIdEncodedAsSegment;
 
                 expect(args.to).to.equal(DEFAULT_DATASET_CONTACT_POINT);
                 expect(args.from).to.contain(DEFAULT_SENDER_NAME);
@@ -185,16 +215,12 @@ describe("send dataset request mail", () => {
 
                 expect(args.text).to.contain(DEFAULT_MESSAGE_TEXT);
                 expect(args.text).to.contain(DEFAULT_DATASET_PUBLISHER);
-                expect(args.text).to.contain(
-                    EXTERNAL_URL + "/dataset/" + ENCODED_DEFAULT_DATASET_ID
-                );
+                expect(args.text).to.contain(datasetUrl);
                 expect(args.text).to.contain("question");
 
                 expect(args.html).to.contain(DEFAULT_MESSAGE_HTML);
                 expect(args.html).to.contain(DEFAULT_DATASET_PUBLISHER);
-                expect(args.html).to.contain(
-                    EXTERNAL_URL + "/dataset/" + ENCODED_DEFAULT_DATASET_ID
-                );
+                expect(args.html).to.contain(datasetUrl);
                 expect(args.html).to.contain("question");
 
                 expect(args.subject).to.contain(DEFAULT_DATASET_TITLE);
@@ -504,7 +530,7 @@ describe("send dataset request mail", () => {
             smtpMailer: smtpMailer,
             registry,
             externalUrl: EXTERNAL_URL,
-            alwaysSendToDefaultRecipient: false
+            alwaysSendToDefaultRecipient: DEFAULT_ALWAYS_SEND_TO_DEFAULT_RECIPIENT
         };
     }
 });

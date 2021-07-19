@@ -1,7 +1,7 @@
 import MarkdownIt from "markdown-it";
-
 import { DatasetMessage } from "./model";
 import { Record } from "magda-typescript-common/src/generated/registry/api";
+import appendUrlSegments from "magda-typescript-common/src/appendUrlSegments";
 import EmailTemplateRender from "./EmailTemplateRender";
 import { Attachment } from "./SMTPMailer";
 
@@ -36,7 +36,7 @@ export default async function renderTemplate(
         subject,
         dataset: dataset && {
             ...dataset.aspects["dcat-dataset-strings"],
-            url: externalUrl + "/dataset/" + encodeURIComponent(dataset.id)
+            url: appendUrlSegments(externalUrl, ["dataset", dataset.id])
         }
     };
 
