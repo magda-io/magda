@@ -1,9 +1,0 @@
-{{- if .Values.createFunctionNamespace }}
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: {{ include "openfaas.functionNamespace" . | quote }}
-  labels:
-    istio-injection: enabled
-    role: openfaas-fn
-{{- end }}
