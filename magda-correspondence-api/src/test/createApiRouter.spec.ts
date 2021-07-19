@@ -166,7 +166,7 @@ describe("send dataset request mail", () => {
                 .then((res) => {
                     const resData = JSON.parse(res.text);
                     expect(resData.recipient).to.equal(DEFAULT_RECIPIENT);
-                    expect(resData.alwaysSendToDefaultRecipient).to.equal(
+                    expect(resData.sentToDefaultRecipient).to.equal(
                         DEFAULT_ALWAYS_SEND_TO_DEFAULT_RECIPIENT
                     );
 
@@ -194,7 +194,7 @@ describe("send dataset request mail", () => {
                 expect(resData.recipient).to.equal(
                     DEFAULT_DATASET_CONTACT_POINT
                 );
-                expect(resData.alwaysSendToDefaultRecipient).to.equal(
+                expect(resData.sentToDefaultRecipient).to.equal(
                     DEFAULT_ALWAYS_SEND_TO_DEFAULT_RECIPIENT
                 );
 

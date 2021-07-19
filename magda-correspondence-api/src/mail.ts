@@ -31,7 +31,10 @@ export async function sendMail(
     subject: string,
     recipient: string,
     overrideSendToDefaultRecipient: boolean = false
-): Promise<string> {
+): Promise<{
+    recipient: string;
+    sentToDefaultRecipient: boolean;
+}> {
     const overridingRecipientToDefault =
         overrideSendToDefaultRecipient && defaultRecipient !== recipient;
     const to = overridingRecipientToDefault ? defaultRecipient : recipient;
@@ -54,5 +57,8 @@ export async function sendMail(
     );
 
     await mailer.send(message);
-    return to;
+    return {
+        recipient: to,
+        sentToDefaultRecipient: overridingRecipientToDefault
+    };
 }

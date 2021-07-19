@@ -8,7 +8,6 @@ const Alert = (props) => {
                 className={`au-page-alerts au-page-alerts--${props.type} correspondence-alert`}
             >
                 {props.header ? <h4>{props.header}</h4> : null}
-                {props.header && props.message ? <br /> : null}
                 {props.message && (
                     <React.Fragment>
                         <p className="correspondence-success-message">

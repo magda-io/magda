@@ -83,7 +83,7 @@ export default function createApiRouter(
      *    {
      *         "status": "OK",
      *         "recipient": "xx@xx.com",
-     *         "alwaysSendToDefaultRecipient": false
+     *         "sentToDefaultRecipient": false
      *    }
      *
      * @apiError {string} status FAILED
@@ -108,23 +108,17 @@ export default function createApiRouter(
         );
 
         handlePromise(
-            html
-                .then(({ renderedContent, attachments }) => {
-                    return sendMail(
-                        options.smtpMailer,
-                        options.defaultRecipient,
-                        body,
-                        renderedContent,
-                        attachments,
-                        subject,
-                        options.defaultRecipient
-                    );
-                })
-                .then((recipient) => ({
-                    recipient,
-                    alwaysSendToDefaultRecipient:
-                        options.alwaysSendToDefaultRecipient
-                })),
+            html.then(({ renderedContent, attachments }) => {
+                return sendMail(
+                    options.smtpMailer,
+                    options.defaultRecipient,
+                    body,
+                    renderedContent,
+                    attachments,
+                    subject,
+                    options.defaultRecipient
+                );
+            }),
             res
         );
     });
@@ -147,7 +141,7 @@ export default function createApiRouter(
      *    {
      *         "status": "OK",
      *         "recipient": "xx@xx.com",
-     *         "alwaysSendToDefaultRecipient": false
+     *         "sentToDefaultRecipient": false
      *    }
      *
      * @apiError {string} status FAILED
@@ -213,24 +207,18 @@ export default function createApiRouter(
                     dataset
                 );
 
-                return html
-                    .then(({ renderedContent, attachments }) => {
-                        return sendMail(
-                            options.smtpMailer,
-                            options.defaultRecipient,
-                            body,
-                            renderedContent,
-                            attachments,
-                            subject,
-                            recipient,
-                            options.alwaysSendToDefaultRecipient
-                        );
-                    })
-                    .then((recipient) => ({
+                return html.then(({ renderedContent, attachments }) => {
+                    return sendMail(
+                        options.smtpMailer,
+                        options.defaultRecipient,
+                        body,
+                        renderedContent,
+                        attachments,
+                        subject,
                         recipient,
-                        alwaysSendToDefaultRecipient:
-                            options.alwaysSendToDefaultRecipient
-                    }));
+                        options.alwaysSendToDefaultRecipient
+                    );
+                });
             });
 
             handlePromise(promise, res, req.params.datasetId);

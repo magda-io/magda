@@ -93,24 +93,24 @@ export default class DatasetPageSuggestForm extends React.Component {
         }
         const formProps = {
             title: false,
-            description:
-                "Your question will be sent to the publisher of the data" +
-                (contactPointMatch ? ": " + contactPointMatch : "."),
+            description: `Your question will be sent to ${
+                contactPointMatch
+                    ? "the publisher of the data"
+                    : "the maintainers of this site"
+            }.`,
             namePlaceHolder: "Dorothy Hill",
             emailPlaceHolder: "dorothyhill@example.com",
             textAreaPlaceHolder:
                 "Ask a question or report a problem about this dataset.",
             textAreaLabel: "What would you like to ask about this dataset?",
-            successHeader:
-                "Your request has been sent" +
-                (contactPointMatch ? " to " + contactPointMatch : ".")
+            successHeader: "Your request has been successfully sent."
         };
 
         return (
             <React.Fragment>
                 {/* If the form is posted don't show the text in the below para*/}
                 {!this.state.showSuggest &&
-                    (this.props.contactPoint ||
+                    (contactPointMatch ||
                     config.showContactButtonForNoContactPointDataset ? (
                         <div className="dataset-button-container no-print">
                             <button

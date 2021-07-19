@@ -14,7 +14,9 @@ export default class RequestFormLogic extends React.Component {
             isSending: false,
             senderEmail: "",
             message: "",
-            senderName: ""
+            senderName: "",
+            recipient: "",
+            sentToDefaultRecipient: false
         };
     }
 
@@ -65,7 +67,7 @@ export default class RequestFormLogic extends React.Component {
                 senderName
             })
         })
-            .then((response) => {
+            .then(async (response) => {
                 if (!response.ok) {
                     this.setState(() => {
                         return {
@@ -78,11 +80,16 @@ export default class RequestFormLogic extends React.Component {
                         this.props.formSubmitState(true);
                     }
                 } else {
+                    const data = await response.json();
                     this.setState(() => {
                         return {
                             successResult: true,
                             posted: true,
-                            isSending: false
+                            isSending: false,
+                            recipient: data?.recipient ? data.recipient : "",
+                            sentToDefaultRecipient: data?.sentToDefaultRecipient
+                                ? true
+                                : false
                         };
                     });
 
@@ -119,6 +126,7 @@ export default class RequestFormLogic extends React.Component {
      * which is received from calling API
      */
     render() {
+        const { requestType } = this.props;
         return (
             <MagdaNamespacesConsumer ns={["datasetSuggestForm"]}>
                 {(translate) => {
@@ -141,6 +149,15 @@ export default class RequestFormLogic extends React.Component {
                             ? alertProps.successHeader
                             : alertProps.failHeader
                     };
+
+                    if (requestType === "report" && this.state.successResult) {
+                        alert.header = `Your request has been sent to ${
+                            this.state.sentToDefaultRecipient
+                                ? "the maintainers of this site."
+                                : "the data custodian of the dataset."
+                        }`;
+                    }
+
                     if (!this.state.posted) {
                         return (
                             <RequestFormTemplate
