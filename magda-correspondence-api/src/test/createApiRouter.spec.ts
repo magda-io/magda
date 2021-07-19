@@ -73,6 +73,7 @@ const stubbedSMTPMailer: SMTPMailer = {
     }
 } as SMTPMailer;
 
+const DEFAULT_ALWAYS_SEND_TO_DEFAULT_RECIPIENT = false;
 const DEFAULT_SENDER_NAME = "Bob Cunningham";
 const DEFAULT_SENDER_EMAIL = "bob.cunningham@example.com";
 const DEFAULT_MESSAGE_TEXT = `Gib me
@@ -162,7 +163,13 @@ describe("send dataset request mail", () => {
                     message: DEFAULT_MESSAGE_TEXT
                 })
                 .expect(200)
-                .then(() => {
+                .then((res) => {
+                    const resData = JSON.parse(res.text);
+                    expect(resData.recipient).to.equal(DEFAULT_RECIPIENT);
+                    expect(resData.alwaysSendToDefaultRecipient).to.equal(
+                        DEFAULT_ALWAYS_SEND_TO_DEFAULT_RECIPIENT
+                    );
+
                     const args: Message = sendStub.firstCall.args[0];
 
                     expect(args.to).to.equal(DEFAULT_RECIPIENT);
@@ -182,7 +189,15 @@ describe("send dataset request mail", () => {
 
     describe("/public/send/dataset/:datasetId/question", () => {
         it("should respond with an 200 response if everything was successful", () => {
-            return sendQuestion().then(() => {
+            return sendQuestion().then((res) => {
+                const resData = JSON.parse(res.text);
+                expect(resData.recipient).to.equal(
+                    DEFAULT_DATASET_CONTACT_POINT
+                );
+                expect(resData.alwaysSendToDefaultRecipient).to.equal(
+                    DEFAULT_ALWAYS_SEND_TO_DEFAULT_RECIPIENT
+                );
+
                 const args: Message = sendStub.firstCall.args[0];
                 const defaultDatasetIdEncodedAsSegment = encodeUrlSegment(
                     DEFAULT_DATASET_ID
@@ -515,7 +530,7 @@ describe("send dataset request mail", () => {
             smtpMailer: smtpMailer,
             registry,
             externalUrl: EXTERNAL_URL,
-            alwaysSendToDefaultRecipient: false
+            alwaysSendToDefaultRecipient: DEFAULT_ALWAYS_SEND_TO_DEFAULT_RECIPIENT
         };
     }
 });

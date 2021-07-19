@@ -81,7 +81,9 @@ export default function createApiRouter(
      *
      * @apiSuccessExample {json} 200
      *    {
-     *         "status": "OK"
+     *         "status": "OK",
+     *         "recipient": "xx@xx.com",
+     *         "alwaysSendToDefaultRecipient": false
      *    }
      *
      * @apiError {string} status FAILED
@@ -106,17 +108,23 @@ export default function createApiRouter(
         );
 
         handlePromise(
-            html.then(({ renderedContent, attachments }) => {
-                return sendMail(
-                    options.smtpMailer,
-                    options.defaultRecipient,
-                    body,
-                    renderedContent,
-                    attachments,
-                    subject,
-                    options.defaultRecipient
-                );
-            }),
+            html
+                .then(({ renderedContent, attachments }) => {
+                    return sendMail(
+                        options.smtpMailer,
+                        options.defaultRecipient,
+                        body,
+                        renderedContent,
+                        attachments,
+                        subject,
+                        options.defaultRecipient
+                    );
+                })
+                .then((recipient) => ({
+                    recipient,
+                    alwaysSendToDefaultRecipient:
+                        options.alwaysSendToDefaultRecipient
+                })),
             res
         );
     });
@@ -137,7 +145,9 @@ export default function createApiRouter(
      *
      * @apiSuccessExample {json} 200
      *    {
-     *         "status": "OK"
+     *         "status": "OK",
+     *         "recipient": "xx@xx.com",
+     *         "alwaysSendToDefaultRecipient": false
      *    }
      *
      * @apiError {string} status FAILED
@@ -203,18 +213,24 @@ export default function createApiRouter(
                     dataset
                 );
 
-                return html.then(({ renderedContent, attachments }) => {
-                    return sendMail(
-                        options.smtpMailer,
-                        options.defaultRecipient,
-                        body,
-                        renderedContent,
-                        attachments,
-                        subject,
+                return html
+                    .then(({ renderedContent, attachments }) => {
+                        return sendMail(
+                            options.smtpMailer,
+                            options.defaultRecipient,
+                            body,
+                            renderedContent,
+                            attachments,
+                            subject,
+                            recipient,
+                            options.alwaysSendToDefaultRecipient
+                        );
+                    })
+                    .then((recipient) => ({
                         recipient,
-                        options.alwaysSendToDefaultRecipient
-                    );
-                });
+                        alwaysSendToDefaultRecipient:
+                            options.alwaysSendToDefaultRecipient
+                    }));
             });
 
             handlePromise(promise, res, req.params.datasetId);
@@ -250,7 +266,11 @@ function handlePromise(
     datasetId?: string
 ): void {
     promise
-        .then(() => response.status(200).json({ status: "OK" }))
+        .then((extraData: any) =>
+            response
+                .status(200)
+                .json({ ...(extraData ? extraData : {}), status: "OK" })
+        )
         .catch((e) => {
             if (_.get(e, "e.response.statusCode") === 404) {
                 console.error(

@@ -22,7 +22,7 @@ import { DatasetMessage } from "./model";
  *   environments or if you don't want users to be able to directly
  *   send emails without someone moderating them.
  */
-export function sendMail(
+export async function sendMail(
     mailer: SMTPMailer,
     defaultRecipient: string,
     input: DatasetMessage,
@@ -31,7 +31,7 @@ export function sendMail(
     subject: string,
     recipient: string,
     overrideSendToDefaultRecipient: boolean = false
-): Promise<{}> {
+): Promise<string> {
     const overridingRecipientToDefault =
         overrideSendToDefaultRecipient && defaultRecipient !== recipient;
     const to = overridingRecipientToDefault ? defaultRecipient : recipient;
@@ -53,5 +53,6 @@ export function sendMail(
         `Sending with subject ${subject} from ${input.senderEmail} to ${to}`
     );
 
-    return mailer.send(message);
+    await mailer.send(message);
+    return to;
 }
