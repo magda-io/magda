@@ -17,7 +17,6 @@ Kubernetes: `>= 1.14.0-0`
 | Repository | Name | Version |
 |------------|------|---------|
 | file://../magda-core | magda-core | 0.0.60-rc.4 |
-| file://../openfaas | openfaas | 5.5.5-magda |
 | https://charts.magda.io | ckan-connector-functions(magda-ckan-connector) | 1.0.1 |
 | https://charts.magda.io | magda-function-esri-url-processor | 0.0.57-0 |
 | https://charts.magda.io | magda-function-history-report | 0.0.57-0 |
@@ -26,6 +25,7 @@ Kubernetes: `>= 1.14.0-0`
 | https://charts.magda.io | minion-format(magda-minion-format) | 1.0.0 |
 | https://charts.magda.io | minion-linked-data-rating(magda-minion-linked-data-rating) | 1.0.0 |
 | https://charts.magda.io | minion-visualization(magda-minion-visualization) | 0.0.57-0 |
+| https://charts.magda.io | openfaas | 5.5.5-magda |
 
 ## Values
 
