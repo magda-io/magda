@@ -68,7 +68,7 @@
     "babel-eslint": "9.0.0",
     "babel-loader": "8.0.5",
     "browser-detect": "^0.2.22",
-    "chrono-node": "^1.3.11",
+    "chrono-node": "^2.3.1",
     "comlink": "^4.3.0",
     "core-js": "^2.5.7",
     "crc-32": "^1.2.0",
