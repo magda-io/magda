@@ -50,10 +50,9 @@ export async function extractKeywords(
     if (depInput.text && depInput.largeTextBlockIdentified !== false) {
         // Only take up to a certain length - anything longer results in massive delays and the browser
         // prompting with a "Should I stop this script?" warning.
-        const trimmedText = depInput.text.slice(
-            0,
-            MAX_CHARACTERS_FOR_EXTRACTION
-        );
+        const trimmedText = depInput.text
+            .replace(/\u0000/g, "")
+            .slice(0, MAX_CHARACTERS_FOR_EXTRACTION);
 
         const candidateKeywords = keywords.concat(
             await getKeywordsFromText(trimmedText)
