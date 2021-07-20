@@ -55,7 +55,7 @@ const OVERRIDE_TO_CATEGORY_COLUMNS = [
     "country"
 ];
 /** Columns with these terms in them will be overridden as time types */
-const OVERRIDE_TO_TIME_COLUMNS = ["date", "time"];
+const OVERRIDE_TO_TIME_COLUMNS = ["date", "time", "start dt", "end dt"];
 /** Columns with these terms in them will be overridden as numeric types */
 const OVERRIDE_TO_NUMERIC_COLUMNS = [
     "amt",
@@ -188,17 +188,17 @@ function testKeywords(str, keywords) {
 }
 
 function fieldDefAdjustment(field) {
-    if (testKeywords(field.label, OVERRIDE_TO_CATEGORY_COLUMNS)) {
+    if (testKeywords(field.label, OVERRIDE_TO_TIME_COLUMNS)) {
+        field.numeric = false;
+        field.category = false;
+        field.time = true;
+    } else if (testKeywords(field.label, OVERRIDE_TO_CATEGORY_COLUMNS)) {
         return {
             ...field,
             numeric: false,
             category: true,
             time: false
         };
-    } else if (testKeywords(field.label, OVERRIDE_TO_TIME_COLUMNS)) {
-        field.numeric = false;
-        field.category = false;
-        field.time = true;
     } else if (testKeywords(field.label, OVERRIDE_TO_NUMERIC_COLUMNS)) {
         field.numeric = true;
         field.category = false;
@@ -526,8 +526,11 @@ class ChartDatasetEncoder {
         const unsortedData = inner().map((datum) => {
             const rawValue = datum[this.xAxis.name];
 
+            console.log(getFieldDataType(this.xAxis));
+
             if (getFieldDataType(this.xAxis) === "time") {
                 const parsedDate = customChrono.parseDate(rawValue);
+                console.log(rawValue, parsedDate);
                 return { ...datum, [this.xAxis.name]: parsedDate || rawValue };
             } else {
                 return datum;
