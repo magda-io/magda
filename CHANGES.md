@@ -63,6 +63,8 @@
 - Upgrade format & rating minion to 1.0.0, Preview Map to 1.0.1
 - #3179 Fixed Invalid HTML in description make Google Chrome Unresponsive
 - Further simplify the error message from map preview module
+- #3175 Make cloud sql proxy chart image version configurable, add autoscaler support & increase default resource
+- #3185 Adjust migrator jobs running sequence so registry-db job will be run earlier
 - #3170 Remove unused old admin UI endpoint from Gateway
 - #3164 Add `showContactButtonForNoContactPointDataset` helm chart config option
 - #3186 Fixed: avoid extra slash in inqury email dataset URLs
