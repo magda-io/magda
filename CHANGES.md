@@ -68,6 +68,8 @@
 - #3186 Fixed: avoid extra slash in inqury email dataset URLs
 - #3188 Publish openfaas chart & Move openfaas helm chart out of main repo
 - #3183 Make search input accept empty string as search query string
+- #3167 Upgrade chrono-node to latest version
+- Improve CSV visualisation tool date columns recognition logic
 - #3161 Fixed: UTF-16 encoded CSV causes "unsupported Unicode escape sequence" error when saving a dataset draft
 
 ## 0.0.59
