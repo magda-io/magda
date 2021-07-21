@@ -65,6 +65,14 @@
 - Further simplify the error message from map preview module
 - #3175 Make cloud sql proxy chart image version configurable, add autoscaler support & increase default resource
 - #3185 Adjust migrator jobs running sequence so registry-db job will be run earlier
+- #3170 Remove unused old admin UI endpoint from Gateway
+- #3164 Add `showContactButtonForNoContactPointDataset` helm chart config option
+- #3186 Fixed: avoid extra slash in inqury email dataset URLs
+- #3188 Publish openfaas chart & Move openfaas helm chart out of main repo
+- #3183 Make search input accept empty string as search query string
+- #3167 Upgrade chrono-node to latest version
+- Improve CSV visualisation tool date columns recognition logic
+- #3161 Fixed: UTF-16 encoded CSV causes "unsupported Unicode escape sequence" error when saving a dataset draft
 
 ## 0.0.59
 

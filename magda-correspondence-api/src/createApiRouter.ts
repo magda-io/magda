@@ -81,7 +81,9 @@ export default function createApiRouter(
      *
      * @apiSuccessExample {json} 200
      *    {
-     *         "status": "OK"
+     *         "status": "OK",
+     *         "recipient": "xx@xx.com",
+     *         "sentToDefaultRecipient": false
      *    }
      *
      * @apiError {string} status FAILED
@@ -137,7 +139,9 @@ export default function createApiRouter(
      *
      * @apiSuccessExample {json} 200
      *    {
-     *         "status": "OK"
+     *         "status": "OK",
+     *         "recipient": "xx@xx.com",
+     *         "sentToDefaultRecipient": false
      *    }
      *
      * @apiError {string} status FAILED
@@ -250,7 +254,11 @@ function handlePromise(
     datasetId?: string
 ): void {
     promise
-        .then(() => response.status(200).json({ status: "OK" }))
+        .then((extraData: any) =>
+            response
+                .status(200)
+                .json({ ...(extraData ? extraData : {}), status: "OK" })
+        )
         .catch((e) => {
             if (_.get(e, "e.response.statusCode") === 404) {
                 console.error(
