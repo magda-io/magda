@@ -82,7 +82,7 @@ connector-dga:
     id: dga
     name: "data.gov.au"
     sourceUrl: "https://data.gov.au/data/"
-    pageSize: 1000
+    pageSize: 100
     ignoreHarvestSources: ["*"]
 
 connector-act:

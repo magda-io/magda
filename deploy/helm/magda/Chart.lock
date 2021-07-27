@@ -13,7 +13,7 @@ dependencies:
   version: 0.0.57-0
 - name: magda-minion-format
   repository: https://charts.magda.io
-  version: 1.0.0
+  version: 1.0.1
 - name: magda-minion-linked-data-rating
   repository: https://charts.magda.io
   version: 1.0.0
@@ -29,5 +29,5 @@ dependencies:
 - name: magda-function-esri-url-processor
   repository: https://charts.magda.io
   version: 0.0.57-0
-digest: sha256:ab44b3ca1d58431402337d957e741e8f616761d552342723370372dabc756711
-generated: "2021-07-16T15:48:00.834828+10:00"
+digest: sha256:392b33b98deaa65efdb87bfe22f06c8affbbdcbd5a7769a34624ab003420ceab
+generated: "2021-07-27T19:59:09.354724+10:00"
