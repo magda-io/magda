@@ -74,6 +74,7 @@
 - Improve CSV visualisation tool date columns recognition logic
 - #3161 Fixed: UTF-16 encoded CSV causes "unsupported Unicode escape sequence" error when saving a dataset draft
 - Upgraded format-minion to v1.0.1
+- #3198 Indexer will by default auto reindex / trim obsolete publisher / format weekly
 
 ## 0.0.59
 
