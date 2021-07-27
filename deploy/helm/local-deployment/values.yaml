@@ -27,7 +27,7 @@ magda:
       imagePullSecret: false
   minion-format:
     image:
-      tag: 1.0.0
+      tag: 1.0.1
   minion-linked-data-rating:
     image:
       tag: 1.0.0
