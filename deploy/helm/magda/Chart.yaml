@@ -41,7 +41,7 @@ dependencies:
 
   - name: magda-minion-format
     alias: minion-format
-    version: "1.0.0"
+    version: "1.0.1"
     repository: https://charts.magda.io
     tags:
       - minions
