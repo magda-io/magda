@@ -12,6 +12,8 @@ Kubernetes: `>= 1.14.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| autoReIndex.enable | bool | `true` | Whether turn on the cronjob to trigger reindex. `publisher` & `format` indices might contains obsolete records which require the triming / reindex process to be removed. |
+| autoReIndex.schedule | string | "0 15 * * 0": 15:00PM UTC timezone (1:00AM in AEST Sydney timezone) on every Sunday | auto reindex cronjob schedule string. specified using unix-cron format (in UTC timezone by default). |
 | elasticsearch.replicas | int | `0` |  |
 | elasticsearch.shards | int | `1` |  |
 | elasticsearch.useGcsSnapshots | bool | `false` |  |
