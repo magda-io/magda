@@ -293,6 +293,29 @@ buildtest:registry:
       - "*/project/project/target"
     expire_in: 7 days
 
+buildtest:scala-others:
+  stage: buildtest
+  retry: 2
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:master
+  needs: [
+    "sbt-prebuild"
+  ]
+  timeout: 30 minutes
+  dependencies:
+    - sbt-prebuild
+  script:
+    - sbt "common/test"
+    - sbt "indexer/test"
+  artifacts:
+    paths:
+      - "target"
+      - "project/target"
+      - "project/project/target"
+      - "*/target"
+      - "*/project/target"
+      - "*/project/project/target"
+    expire_in: 7 days
+
 buildtest:typescript-apis-stateless:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-nodejs:$CI_COMMIT_REF_SLUG
