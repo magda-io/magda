@@ -75,6 +75,7 @@
 - #3161 Fixed: UTF-16 encoded CSV causes "unsupported Unicode escape sequence" error when saving a dataset draft
 - Upgraded format-minion to v1.0.1
 - #3198 Indexer will by default auto reindex / trim obsolete publisher / format weekly
+- #3201 Fixed indexer might throw an error and interrupt crawling process upon invalid data
 
 ## 0.0.59
 
