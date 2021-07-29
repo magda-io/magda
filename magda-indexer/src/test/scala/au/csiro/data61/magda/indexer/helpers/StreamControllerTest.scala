@@ -38,7 +38,8 @@ class StreamControllerTest extends FlatSpec with Matchers {
     start + r.nextInt((end - start) + 1)
   }
 
-  class MockRegistryInterface extends RegistryExternalInterface {
+  class MockRegistryInterface(simulateDatasetSkipped: Boolean = false)
+      extends RegistryExternalInterface {
     private val nextIndex = new AtomicInteger(0)
     private val dataSetCount = new AtomicInteger(0)
 
@@ -48,11 +49,14 @@ class StreamControllerTest extends FlatSpec with Matchers {
     ): Future[(Option[String], List[DataSet])] = Future {
       assert(start == 0)
       nextIndex.set(size)
-      val batch = dataSets.slice(start.toInt, size).toList
+      var batch = dataSets.slice(start.toInt, size).toList
+      if (simulateDatasetSkipped && batch.size > 2) {
+        batch = batch.take(batch.size - 2)
+      }
       dataSetCount.addAndGet(batch.size)
       val token = s"token $size"
       val tokenOption =
-        if (batch.size < size || batch.size == dataSets.size) None
+        if (!simulateDatasetSkipped && (batch.size < size || batch.size == dataSets.size)) None
         else Some(token)
 //      println(s"* start: $start, end: $size, batch: ${batch.size}, " +
 //        s"fetch: ${dataSetCount.get()}, token: $tokenOption")
@@ -74,8 +78,11 @@ class StreamControllerTest extends FlatSpec with Matchers {
         endIndex = dataSets.size
 
       nextIndex.set(endIndex)
-      val batch = dataSets.slice(startIndex, endIndex).toList
-      dataSetCount.addAndGet(batch.size)
+      var batch = dataSets.slice(startIndex, endIndex).toList
+      if (simulateDatasetSkipped && batch.size > 1) {
+        batch = batch.take(batch.size - 1)
+      }
+      dataSetCount.addAndGet(batch.size - 1)
 
       val tokenOption =
         if (startIndex >= dataSets.size ||
@@ -186,9 +193,15 @@ class StreamControllerTest extends FlatSpec with Matchers {
 
   implicit val patienceConfig = PatienceConfig(120.second)
   private val bufferSize = 8
-  private def run(dataSetNum: Int): Future[Assertion] = {
+  private def run(
+      dataSetNum: Int,
+      simulateDatasetSkipped: Boolean = false
+  ): Future[Assertion] = {
     dataSets = createDataSets(dataSetNum)
-    val mockRegistryInterface = new MockRegistryInterface()
+    val mockRegistryInterface = new MockRegistryInterface(
+      simulateDatasetSkipped
+    )
+
     sc = new StreamController(mockRegistryInterface, bufferSize)
     val source = sc.getSource
     val mockIndexer = new MockIndexer(2)
@@ -199,6 +212,11 @@ class StreamControllerTest extends FlatSpec with Matchers {
     indexResultF.map(
       indexResult => indexResult shouldEqual IndexResult(dataSets.size, List())
     )
+  }
+
+  it should "continue the processing when some dataset is skipped" in {
+    val numOfDataSets = 20
+    whenReady(run(numOfDataSets, true))(identity)
   }
 
   "The stream controller" should "support the indexer stream when the dataset number is 1" in {
