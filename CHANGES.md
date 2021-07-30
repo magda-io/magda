@@ -1,5 +1,7 @@
 # CHANGELOG
 
+## 1.0.0
+
 ## 0.0.60
 
 - Updated dataset pages and Ask A Question options for datasets with no contact points
