@@ -11,7 +11,7 @@ export type onRecordFoundType = (
     record: Record,
     registry: AuthorizedRegistryClient
 ) => Promise<void>;
-export default class MinionOptions {
+export default interface MinionOptions {
     argv: MinionArguments;
     id: string;
     aspects: string[];
@@ -22,4 +22,6 @@ export default class MinionOptions {
     express?: () => express.Express;
     maxRetries?: number;
     concurrency?: number;
+    // no.of records the crawller fetchs per request
+    crawlerRecordFetchNumber?: number;
 }

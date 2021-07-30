@@ -5,6 +5,9 @@ import AsyncPage, { forEachAsync } from "magda-typescript-common/src/AsyncPage";
 import Registry from "magda-typescript-common/src/registry/AuthorizedRegistryClient";
 import MinionOptions from "./MinionOptions";
 
+// default no. of record crawler fetechs per requests
+const DEFAULT_CRAWLER_RECORD_FETCH_NUMBER = 100;
+
 class Crawler {
     private isCrawling: boolean = false;
     private crawlingPageToken: string = null;
@@ -57,6 +60,11 @@ class Crawler {
             this.isCrawling = true;
             console.info("Crawling existing records in registry");
 
+            const crawlerRecordFetchNumber = this.options
+                ?.crawlerRecordFetchNumber
+                ? this.options.crawlerRecordFetchNumber
+                : DEFAULT_CRAWLER_RECORD_FETCH_NUMBER;
+
             const registryPage = AsyncPage.create<RecordsPage<Record>>(
                 (previous) => {
                     if (previous && previous.hasMore === false) {
@@ -81,7 +89,7 @@ class Crawler {
                                 this.options.optionalAspects,
                                 previous && previous.nextPageToken,
                                 true,
-                                10
+                                crawlerRecordFetchNumber
                             )
                             .then(unionToThrowable)
                             .then((page) => {

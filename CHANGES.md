@@ -2,6 +2,8 @@
 
 ## 1.0.0
 
+- #3197 Minion SDK: Make minion proactive crawling records number configurable
+
 ## 0.0.60
 
 - Updated dataset pages and Ask A Question options for datasets with no contact points

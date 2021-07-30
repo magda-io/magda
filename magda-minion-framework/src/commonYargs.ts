@@ -93,6 +93,11 @@ export default function commonYargs<
             describe: "The number of times to retry calling the registry",
             type: "number",
             default: process.env.RETRIES || 10
+        })
+        .option("crawlerRecordFetchNumber", {
+            describe: "The number of times to retry calling the registry",
+            type: "number",
+            default: process.env.CRAWLER_RECORD_FETCH_NUMBER || 100
         });
 
     const returnValue = addJwtSecretFromEnvVar(additions(yarr).argv);
