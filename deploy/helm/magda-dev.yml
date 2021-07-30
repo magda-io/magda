@@ -14,7 +14,7 @@ tags:
   all: true
   ingress: true
   connectors: true
-  minion-broken-link: true
+  minion-broken-link: false
   minion-linked-data-rating: true
   minion-visualization: true
   minion-format: true
@@ -26,7 +26,7 @@ magda:
   minion-broken-link:
     domainWaitTimeConfig:
       data.csiro.au: 5
-      data.gov.au: 5
+      data.gov.au: 30
       data.act.gov.au: 30
   magda-core:
     ingress:
