@@ -1,0 +1,10 @@
+apiVersion: v2
+name: postgresql-wraper
+description: "A helm wrapper chart that provides in-kubernetes postgreSQL for Magda." 
+type: application
+kubeVersion: ">= 1.14.0-0"
+version: "1.0.0-alpha.0"
+dependencies:
+- name: postgresql
+  version: "10.9.1"
+  repository: "https://charts.bitnami.com/bitnami"

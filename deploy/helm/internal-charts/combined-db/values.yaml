@@ -1,13 +1,3 @@
-image: {}
-data:
-  storage: 200Gi
-# whether turn on the debug module for plsql debug through pgAdmin
-# After that, you need to run `CREATE EXTENSION pldbgapi;` 
-# in the database that you want to debug to turn it on database level
-debug: false
-resources:
-  requests:
-    cpu: 200m
-    memory: 500Mi
-  limits:
-    cpu: 500m
+postgresql-wraper:
+  postgresql: 
+    fullnameOverride: "combined-db"

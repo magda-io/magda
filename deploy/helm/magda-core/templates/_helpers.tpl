@@ -45,7 +45,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 
 {{- define "magda.postgres-migrator-env" }}
         - name: PGUSER
-          value: {{ .Values.global.dbMasterUsername | default "postgres" }}
+          value: {{ .Values.global.postgresql.postgresqlUsername | default "postgres" }}
         {{- if .Values.global.noDbAuth }}
         - name: PGPASSWORD
           value: password

@@ -1,0 +1,18 @@
+global:
+  postgresql:
+    existingSecret: "db-main-account-secret"
+    # -- PostgreSQL username
+    # The created user will have superuser privileges if username is postgres
+    # For in k8s PostgreSQL, we should use `postgres` so it has privileges for DB schema migrators to run
+    postgresqlUsername: "postgres"
+    postgresqlDatabase: "postgres"
+# -- Whether auto create secret for db superuser account password
+autoCreateSecret: true
+postgresql:
+  image: 
+    tag: "13.3.0-debian-10-r79"
+  # -- For dev cluster, we can set it to `magda-9` to controll how combined-db is scheduled.
+  # e.g. schedule only on non-preemptible nodes
+  priorityClassName: ""
+  persistence:
+    size: "100Gi"
