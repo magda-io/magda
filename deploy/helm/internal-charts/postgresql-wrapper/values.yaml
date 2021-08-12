@@ -6,8 +6,8 @@ global:
     # For in k8s PostgreSQL, we should use `postgres` so it has privileges for DB schema migrators to run
     postgresqlUsername: "postgres"
     postgresqlDatabase: "postgres"
-# -- Whether auto create secret for db superuser account password
-autoCreateSecret: true
+    # -- Whether auto create secret for db superuser account password
+    autoCreateSecret: true
 postgresql:
   image: 
     tag: "13.3.0-debian-10-r79"
@@ -15,4 +15,9 @@ postgresql:
   # e.g. schedule only on non-preemptible nodes
   priorityClassName: ""
   persistence:
-    size: "100Gi"
+    size: "50Gi"
+  resources:
+    requests:
+      cpu: 200m
+      memory: 500Mi
+    

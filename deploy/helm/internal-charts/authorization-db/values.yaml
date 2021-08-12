@@ -1,18 +1,15 @@
-image: {}
-  #repository: data61/
-  #tag: latest
-  # pullPolicy: Always
-data:
-  storage: 200Gi
-  #storageClass: "ssd"
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #  cpu: 100m
-  #  memory: 128Mi
-  # requests:
-  #  cpu: 100m
-  #  memory: 128Mi
+# -- whether auto-create secret for client account password.
+# After the migrator runs properly, a non-superuser DB account (named `client`) will be created.
+# Its password will loaded from secret `{{ .Chart.Name }}-password` (e.g. `authorization-db-passwor`) & key: `password`.
+# Set this option to `true` will make helm auto-create the secret with random password, ONLY when the secret not exists.
+autoCreateSecret: true
+
+postgresql-wrapper:
+  postgresql: 
+    fullnameOverride: "authorization-db-postgresql"
+    persistence:
+      size: "25Gi"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi

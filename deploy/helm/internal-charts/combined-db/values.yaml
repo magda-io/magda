@@ -1,3 +1,11 @@
-postgresql-wraper:
+postgresql-wrapper:
   postgresql: 
-    fullnameOverride: "combined-db"
+    fullnameOverride: "combined-db-postgresql"
+    persistence:
+      size: "100Gi"
+    resources:
+      requests:
+        cpu: 200m
+        memory: 500Mi
+
+

@@ -3,3 +3,8 @@ description: A Helm chart for Kubernetes
 name: authorization-db
 version: 1.0.0-alpha.0
 kubeVersion: ">= 1.14.0-0"
+dependencies:
+- name: postgresql-wrapper
+  version: "1.0.0-alpha.0"
+  repository: "file://../postgresql-wrapper"
+  condition: global.useInK8sDbInstance.authorization-db

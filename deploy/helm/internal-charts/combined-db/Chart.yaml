@@ -4,6 +4,7 @@ name: combined-db
 version: 1.0.0-alpha.0
 kubeVersion: ">= 1.14.0-0"
 dependencies:
-- name: postgresql-wraper
+- name: postgresql-wrapper
   version: "1.0.0-alpha.0"
-  repository: "file://../postgresql-wraper"
+  repository: "file://../postgresql-wrapper"
+  condition: global.useCombinedDb

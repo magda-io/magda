@@ -1,5 +1,13 @@
 global:
   postgresql:
+    # -- PostgreSQL username
+    # For in-k8s PostgreSQL, a user account will be auto-created with superuser privileges when username is `postgres`.
+    # It's recommended use superuser `postgres` for both in-k8s PostgreSQL or cloud provider DB services (e.g. CloudSQL or AWS RDS).
+    # This user will only be used for DB schema migrators to cerate DB schema and restricted DB accounts used by Magda internal services to access DB.
+    # If you have to use a user account rather than `postgres`, the user account needs to have suffient permissions to run all DB migiration scripts ([e.g. here](https://github.com/magda-io/magda/tree/master/magda-migrator-registry-db/sql)).
+    # Note: Until the ticket #3126 is fixed, using a DB username rather than `postgres` will trigger an error when content DB migrate runs.
+    postgresqlUsername: "postgres"
+
     # -- the secret that contains privileged PostgreSQL account password.
     # The password will be loaded from key "postgresql-password" of the secret data.
     # Previously (before v1.0.0), we used to load the password from "cloudsql-db-credentials" secret `password` field when use cloud provider DB services.
@@ -15,16 +23,18 @@ global:
     # When in-k8s PostgreSQL instance is used, the secret will be filled with auto-generated random password.
     # Otherwise, the secret will only be auto created when "cloudsql-db-credentials" secret exist.
     # And its content, for this case, will be copied from "cloudsql-db-credentials" secret, `password` field for backward compatibility purposes.
+    # Please note: when the secret (specified by `existingSecret`) exists, the auto-create feature will leave the password unchanged.
     autoCreateSecret: true
 
-    # -- PostgreSQL username
-    # For in-k8s PostgreSQL, a user account will be auto-created with superuser privileges when username is `postgres`.
-    # It's recommended use superuser `postgres` for both in-k8s PostgreSQL or cloud provider DB services (e.g. CloudSQL or AWS RDS).
-    # This user will only be used for DB schema migrators to cerate DB schema and restricted DB accounts used by Magda internal services to access DB.
-    # If you have to use a user account rather than `postgres`, the user account needs to have suffient permissions to run all DB migiration scripts ([e.g. here](https://github.com/magda-io/magda/tree/master/magda-migrator-registry-db/sql)).
-    # Note: Until the ticket #3126 is fixed, using a DB username rather than `postgres` will trigger an error when content DB migrate runs.
-    postgresqlUsername: "postgres"
   useCombinedDb: true
+  # -- When `useCombinedDb` = false, setting any key to true will create an in-k8s DB instance for the particular database.
+  useInK8sDbInstance:
+    authorization-db: false
+    content-db: false
+    registry-db: false
+    session-db: false
+    tenant-db: false
+
   useCloudSql: false
   # -- whether to use AWS RDS DB config. When this option is on, `useCombinedDb` & `useCloudSql` must be turned off.
   useAwsRdsDb: false

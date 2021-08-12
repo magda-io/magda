@@ -1,5 +1,5 @@
 apiVersion: v2
-name: postgresql-wraper
+name: postgresql-wrapper
 description: "A helm wrapper chart that provides in-kubernetes postgreSQL for Magda." 
 type: application
 kubeVersion: ">= 1.14.0-0"

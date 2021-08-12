@@ -23,58 +23,73 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 "{{ .Values.image.repository | default .Values.global.image.repository }}/magda-postgres:{{ .Values.image.tag | default .Values.global.image.tag | default .Chart.Version }}"
 {{- end -}}
 
+{{- define "magda.db-client-password-secret-creation" -}}
+{{- if .Values.autoCreateSecret }}
+{{- $secret := (lookup "v1" "Secret" .Release.Namespace (printf "%s-password" .Chart.Name) ) }}
+{{- $legacySecret := (lookup "v1" "Secret" .Release.Namespace "db-passwords") }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: "{{ .Chart.Name }}-password"
+type: Opaque
+data:
+{{- if $secret }}
+  password: {{ get $secret.data "password" }}
+{{- else if $legacySecret }}
+  password: {{ get $legacySecret.data (printf "%s-client" .Chart.Name) }}
+{{- else }}
+  password: {{ randAlphaNum 16 | b64enc | quote }}
+{{- end }}
+{{- end }}
+{{- end -}}
+
 {{- define "magda.postgres-svc-mapping" -}}
   {{- if .Values.global.useAwsRdsDb }}
   type: ExternalName
   externalName: "{{ .Values.global.awsRdsEndpoint | required "global.awsRdsEndpoint is required" }}"
+  {{- else if .Values.global.useCloudSql }}
+  selector:
+    service: "cloud-sql-proxy"
+  {{- else if .Values.global.useCombinedDb }}
+  selector:
+    service: "combined-db-postgresql"
   {{- else }}
   selector:
-    service: {{- if .Values.global.useCloudSql }} "cloud-sql-proxy" {{- else if .Values.global.useCombinedDb }} "combined-db" {{- else }} "{{ .Chart.Name }}" {{- end }}
+    service: "{{ .Chart.Name }}-postgresql"
   {{- end -}}
-{{- end -}}
-
-{{- define "magda.postgres-client-env" -}}
-        - name: CLIENT_USERNAME
-          value: {{- if .Values.global.useCloudSql }} proxyuser {{- else }} client {{- end }}
-        - name: CLIENT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: cloudsql-db-credentials
-              key: password
 {{- end -}}
 
 {{- define "magda.postgres-migrator-env" }}
         - name: PGUSER
           value: {{ .Values.global.postgresql.postgresqlUsername | default "postgres" }}
-        {{- if .Values.global.noDbAuth }}
-        - name: PGPASSWORD
-          value: password
-        {{- else if or .Values.global.useCloudSql .Values.global.useAwsRdsDb}}
-        - name: PGPASSWORD
-          # for backward compatibility, we will use `cloudsql-db-credentials` secret / password key for AWS RDS DB as well
-          valueFrom:
-            secretKeyRef:
-              name: cloudsql-db-credentials
-              key: password
-        {{- else if not .Values.global.noDbAuth }}
         - name: PGPASSWORD
           valueFrom:
             secretKeyRef:
-              name: db-passwords
-              key: {{ .Chart.Name }}
-        {{- end }}
+              name: {{ .Values.global.postgresql.existingSecret | quote }}
+              key: "postgresql-password"
         - name: CLIENT_USERNAME
           value: client
-        {{- if .Values.global.noDbAuth }}
-        - name: CLIENT_PASSWORD
-          value: password
-        {{- else }}
         - name: CLIENT_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: db-passwords
-              key: {{ .Chart.Name }}-client
-        {{- end }}
+              name: "{{ printf "%s-password" .Chart.Name }}"
+              key: "password"
+{{- end -}}
+
+{{/*
+  Generating db client credential env vars for service deployment
+  Accept one parameters: db name
+  Usage: 
+  {{ include "magda.db-client-credential-env" "session-db" | indent 8 }}
+*/}}
+{{- define "magda.db-client-credential-env" -}}
+- name: PGUSER
+  value: client
+- name: PGPASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: "{{ . }}-password"
+      key: password
 {{- end -}}
 
 {{- define "magda.postgres-env" -}}
@@ -165,33 +180,6 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end }}
 {{- end }}
 
-{{- define "magda.postgresLivenessProbe" }}
-        readinessProbe:
-          exec:
-            command: [ "/bin/sh", "-c", "pg_isready -h 127.0.0.1 -p 5432 -t 31" ]
-          initialDelaySeconds: 10
-          periodSeconds: 30
-          timeoutSeconds: 30
-          failureThreshold: 6
-          successThreshold: 1
-{{- if .Values.global.enableLivenessProbes }}
-        livenessProbe:
-          exec:
-            command: [ "/bin/sh", "-c", "pg_isready -h 127.0.0.1 -p 5432 -t 31" ]
-          initialDelaySeconds: 3600
-          periodSeconds: 10
-          timeoutSeconds: 30
-          failureThreshold: 6
-          successThreshold: 1
-{{- end }}
-{{- end }}
-
-{{- define "magda.postgresLifecycle" }}
-        lifecycle:
-          preStop:
-            exec:
-              command: ["/bin/bash", 'pkill backup-push && gosu postgres psql -c "SELECT pg_stop_backup()"']
-{{- end }}
 
 {{- define "magda.connectorJobSpec" }}
 spec:

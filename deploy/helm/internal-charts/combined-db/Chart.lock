@@ -1,0 +1,6 @@
+dependencies:
+- name: postgresql-wrapper
+  repository: file://../postgresql-wrapper
+  version: 1.0.0-alpha.0
+digest: sha256:2c94ff66bfba78e66a868fb77700db8fc02d9f288c995f07177b24219223912a
+generated: "2021-08-12T14:42:30.484682+10:00"

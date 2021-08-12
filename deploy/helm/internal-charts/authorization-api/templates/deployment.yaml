@@ -58,15 +58,4 @@ spec:
             secretKeyRef:
               name: auth-secrets
               key: jwt-secret
-{{- if .Values.global.noDbAuth }}
-        - name: PGUSER
-          value: client
-{{- else }}
-        - name: PGUSER
-          value: client
-        - name: PGPASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-passwords
-              key: authorization-db-client
-{{- end }}
+{{ include "magda.db-client-credential-env" "authorization-db" | indent 8 }}

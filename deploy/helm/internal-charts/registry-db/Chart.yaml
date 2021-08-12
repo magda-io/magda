@@ -3,3 +3,7 @@ description: A Helm chart for Kubernetes
 name: registry-db
 version: 1.0.0-alpha.0
 kubeVersion: ">= 1.14.0-0"
+- name: postgresql-wrapper
+  version: "1.0.0-alpha.0"
+  repository: "file://../postgresql-wrapper"
+  condition: global.useInK8sDbInstance.registry-db

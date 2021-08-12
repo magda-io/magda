@@ -193,18 +193,7 @@ spec:
               key: aaf-client-secret
               optional: true
 {{- end }}
-{{- if .Values.global.noDbAuth }}
-        - name: PGUSER
-          value: client
-{{- else }}
-        - name: PGUSER
-          value: client
-        - name: PGPASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-passwords
-              key: session-db-client
-{{- end }}
+{{ include "magda.db-client-credential-env" "session-db" | indent 8 }}
       volumes:
         - name: config
           configMap:
