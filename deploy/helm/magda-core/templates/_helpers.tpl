@@ -52,10 +52,14 @@ data:
     service: "cloud-sql-proxy"
   {{- else if .Values.global.useCombinedDb }}
   selector:
-    service: "combined-db-postgresql"
+    app.kubernetes.io/instance: "{{ .Release.Name }}"
+    app.kubernetes.io/name: "combined-db-postgresql"
+    role: primary
   {{- else }}
   selector:
-    service: "{{ .Chart.Name }}-postgresql"
+    app.kubernetes.io/instance: "{{ .Release.Name }}"
+    app.kubernetes.io/name: "{{ .Chart.Name }}-postgresql"
+    role: primary
   {{- end -}}
 {{- end -}}
 

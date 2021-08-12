@@ -1,6 +1,7 @@
 postgresql-wrapper:
   postgresql: 
     fullnameOverride: "combined-db-postgresql"
+    nameOverride: "combined-db-postgresql"
     persistence:
       size: "100Gi"
     resources:

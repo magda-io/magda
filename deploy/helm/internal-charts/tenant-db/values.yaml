@@ -1,3 +1,9 @@
+# -- migrator docker image settings
+image: {}
+  #repository: data61/
+  #tag: latest
+  # pullPolicy: Always
+
 # -- whether auto-create secret for client account password.
 # After the migrator runs properly, a non-superuser DB account (named `client`) will be created.
 # Its password will loaded from secret `{{ .Chart.Name }}-password` (e.g. `authorization-db-passwor`) & key: `password`.
@@ -7,6 +13,7 @@ autoCreateSecret: true
 postgresql-wrapper:
   postgresql: 
     fullnameOverride: "tenant-db-postgresql"
+    nameOverride: "tenant-db-postgresql"
     persistence:
       size: "25Gi"
     resources:
