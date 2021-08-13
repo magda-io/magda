@@ -125,7 +125,7 @@ class HooksService(
     * @api {post} http://some-remote-host/webhook-notification-recipient-endpoint Webhook Notification Recipient Endpoint
     *
     * @apiDescription Once a remote host register an endpoint `url` as webhook via Registry `Create a new web hook` API (see the API doc in this section),
-    *   registry will send notifications as HTTP POST request when any new events are generated in the system. This section specify 
+    *   registry will send notifications as HTTP POST request when any new events are generated in the system. This section specify
     *   the expected notifcation request payload from registry and possible responses from the `Webhook Notification Recipient`.
     *
     * @apiParam (body JSON) {String="records.changed"} action The webhook action. Currently, will always be fixed string "records.changed".
@@ -211,7 +211,7 @@ class HooksService(
     *     "status": "Error",
     *     "deferResponse": false
     *   }
-    */  
+    */
 
   /**
     * @apiGroup Registry Webhooks
@@ -223,27 +223,27 @@ class HooksService(
     * @apiHeader {string} X-Magda-Session Magda internal session id
     * @apiParam (JSON Request Body) {String} [id] The ID of the webhook to be created. The ID string must be unique across the system.
     *   If no ID is provided, an UUID will be auto-created.
-    * @apiParam (JSON Request Body) {String} name The name of the webhook to be created. 
-    * @apiParam (JSON Request Body) {Boolean} active Whether set the webhook to be an active one. 
-    *   Please note: registry will try periodically wake all inactive webhook. 
+    * @apiParam (JSON Request Body) {String} name The name of the webhook to be created.
+    * @apiParam (JSON Request Body) {Boolean} active Whether set the webhook to be an active one.
+    *   Please note: registry will try periodically wake all inactive webhook.
     *   If you want to stop the webhook from working forever, please set the `enabled` field to `false`
-    * @apiParam (JSON Request Body) {Boolean} enabled Whether enable the webhook. A disabled webhook will never run. 
+    * @apiParam (JSON Request Body) {Boolean} enabled Whether enable the webhook. A disabled webhook will never run.
     * @apiParam (JSON Request Body) {String} url specify a HTTP url where registry should send notifications to.
     * @apiParam (JSON Request Body) {Object} config A webhook config object. Fields see below:
-    * @apiParam (JSON Request Body) {Boolean} [config.includeEvents] Whether include raw events in the webhook notification payload. 
+    * @apiParam (JSON Request Body) {Boolean} [config.includeEvents] Whether include raw events in the webhook notification payload.
     *   See sample webhook notification payload below.
-    * @apiParam (JSON Request Body) {Boolean} [config.includeRecords] Whether include relevant records in the webhook notification payload. 
+    * @apiParam (JSON Request Body) {Boolean} [config.includeRecords] Whether include relevant records in the webhook notification payload.
     *   See sample webhook notification payload below.
-    * @apiParam (JSON Request Body) {Boolean} [config.includeAspectDefinitions] Whether include relevant aspect definitions in the webhook notification payload. 
+    * @apiParam (JSON Request Body) {Boolean} [config.includeAspectDefinitions] Whether include relevant aspect definitions in the webhook notification payload.
     *   See sample webhook notification payload below.
     * @apiParam (JSON Request Body) {Boolean} [config.dereference] When `includeRecords` = `true`, set `dereference`=`true` will make registry automatically dereference links to other records
     *   when attach relevent records to webhook notification payload.
-    * @apiParam (JSON Request Body) {String[]} [config.aspects] When `includeRecords` = `true`, registry will only include records whose aspects have been impacted by the event 
+    * @apiParam (JSON Request Body) {String[]} [config.aspects] When `includeRecords` = `true`, registry will only include records whose aspects have been impacted by the event
     *   according to the aspects list provided here in the webhook notification payload.
-    * @apiParam (JSON Request Body) {String[]} [config.optionalAspects] When `includeRecords` = `true`, registry will also include additional (optional) aspect data in the relevant record data 
+    * @apiParam (JSON Request Body) {String[]} [config.optionalAspects] When `includeRecords` = `true`, registry will also include additional (optional) aspect data in the relevant record data
     *   in the webhook notification payload.
     * @apiParam (JSON Request Body) {Number[]} eventTypes specify a list of event types that the webhook's interested in. Possible values are:
-    *   <ul> 
+    *   <ul>
     *     <li>`0`: "CreateRecord"</li>
     *     <li>`1`: "CreateAspectDefinition"</li>
     *     <li>`2`: "CreateRecordAspect"</li>
@@ -255,7 +255,7 @@ class HooksService(
     *     <li>`8`: "DeleteRecordAspect"</li>
     *   </ul>
     *   If you are not interested in the raw events in the webhook notification payload (e.g. you set `webhook.config.includeEvents`=`false` to turn it off), you can supply empty array [] here.
-    *   
+    *
     * @apiParamExample {json} Create WebHook Request Body Example
     *  {
     *    "id": "string",
@@ -459,27 +459,27 @@ class HooksService(
     * @apiParam (path) {string} id ID of the web hook to be fetched.
     * @apiParam (JSON Request Body) {String} [id] The ID of the webhook to be created. The ID string must be unique across the system.
     *   If no ID is provided, an UUID will be auto-created.
-    * @apiParam (JSON Request Body) {String} name The name of the webhook to be created. 
-    * @apiParam (JSON Request Body) {Boolean} active Whether set the webhook to be an active one. 
-    *   Please note: registry will try periodically wake all inactive webhook. 
+    * @apiParam (JSON Request Body) {String} name The name of the webhook to be created.
+    * @apiParam (JSON Request Body) {Boolean} active Whether set the webhook to be an active one.
+    *   Please note: registry will try periodically wake all inactive webhook.
     *   If you want to stop the webhook from working forever, please set the `enabled` field to `false`
-    * @apiParam (JSON Request Body) {Boolean} enabled Whether enable the webhook. A disabled webhook will never run. 
+    * @apiParam (JSON Request Body) {Boolean} enabled Whether enable the webhook. A disabled webhook will never run.
     * @apiParam (JSON Request Body) {String} url specify a HTTP url where registry should send notifications to.
     * @apiParam (JSON Request Body) {Object} config A webhook config object. Fields see below:
-    * @apiParam (JSON Request Body) {Boolean} [config.includeEvents] Whether include raw events in the webhook notification payload. 
+    * @apiParam (JSON Request Body) {Boolean} [config.includeEvents] Whether include raw events in the webhook notification payload.
     *   See sample webhook notification payload below.
-    * @apiParam (JSON Request Body) {Boolean} [config.includeRecords] Whether include relevant records in the webhook notification payload. 
+    * @apiParam (JSON Request Body) {Boolean} [config.includeRecords] Whether include relevant records in the webhook notification payload.
     *   See sample webhook notification payload below.
-    * @apiParam (JSON Request Body) {Boolean} [config.includeAspectDefinitions] Whether include relevant aspect definitions in the webhook notification payload. 
+    * @apiParam (JSON Request Body) {Boolean} [config.includeAspectDefinitions] Whether include relevant aspect definitions in the webhook notification payload.
     *   See sample webhook notification payload below.
     * @apiParam (JSON Request Body) {Boolean} [config.dereference] When `includeRecords` = `true`, set `dereference`=`true` will make registry automatically dereference links to other records
     *   when attach relevent records to webhook notification payload.
-    * @apiParam (JSON Request Body) {String[]} [config.aspects] When `includeRecords` = `true`, registry will only include records whose aspects have been impacted by the event 
+    * @apiParam (JSON Request Body) {String[]} [config.aspects] When `includeRecords` = `true`, registry will only include records whose aspects have been impacted by the event
     *   according to the aspects list provided here in the webhook notification payload.
-    * @apiParam (JSON Request Body) {String[]} [config.optionalAspects] When `includeRecords` = `true`, registry will also include additional (optional) aspect data in the relevant record data 
+    * @apiParam (JSON Request Body) {String[]} [config.optionalAspects] When `includeRecords` = `true`, registry will also include additional (optional) aspect data in the relevant record data
     *   in the webhook notification payload.
     * @apiParam (JSON Request Body) {Number[]} eventTypes specify a list of event types that the webhook's interested in. Possible values are:
-    *   <ul> 
+    *   <ul>
     *     <li>`0`: "CreateRecord"</li>
     *     <li>`1`: "CreateAspectDefinition"</li>
     *     <li>`2`: "CreateRecordAspect"</li>
@@ -491,7 +491,7 @@ class HooksService(
     *     <li>`8`: "DeleteRecordAspect"</li>
     *   </ul>
     *   If you are not interested in the raw events in the webhook notification payload (e.g. you set `webhook.config.includeEvents`=`false` to turn it off), you can supply empty array [] here.
-    * 
+    *
     * @apiParamExample {json} Modify WebHook Request Body Example
     *  {
     *    "id": "string",
@@ -697,10 +697,10 @@ class HooksService(
     * @apiHeader {String} X-Magda-Session Magda internal session id
     * @apiParam (path) {String} id the ID of the web hook to be acknowledged.
     *
-    * @apiParam (Json Request Body) {Boolean} succeeded Whether the web hook notification was processed successfully and the `Webhook Notification Recipient` is ready for further notifications.  
+    * @apiParam (Json Request Body) {Boolean} succeeded Whether the web hook notification was processed successfully and the `Webhook Notification Recipient` is ready for further notifications.
     *   `false` indicates the web hook notification was processed unsuccessfully, the same notification will be repeated.
-    * @apiParam (Json Request Body) {Number} [lastEventIdReceived] The ID of the last event received by the `Webhook Notification Recipient`.  
-    *   This should be the value of the `lastEventId` property of the web hook notification payload that is being acknowledged.  This value is ignored if `succeeded` is `false`.  
+    * @apiParam (Json Request Body) {Number} [lastEventIdReceived] The ID of the last event received by the `Webhook Notification Recipient`.
+    *   This should be the value of the `lastEventId` property of the web hook notification payload that is being acknowledged.  This value is ignored if `succeeded` is `false`.
     * @apiParam (Json Request Body) {Boolean} [active] Should the status of webhook be changed to `active` or `inactive`.
     *   `Webhook Notification Recipient` normally only want to set this field when the previous processing was failed and want registry pause the notification delivery for a while.
     *   Please note: an inactive web hook will be waken up after certain amount of time (By default: 1 hour). This can be configured by registry `webhooks.retryInterval` option.
