@@ -84,13 +84,13 @@ Magda uses Kubernetes and Helm to allow for simple installation and minimal down
 
 Based on [PassportJS](http://www.passportjs.org/), Magda's authentication system is able to integrate with a wide and growing range of different providers. Currently supported are:
 
--   Google
--   Facebook
--   CKAN
--   AAF
--   VANguard (WSFed)
--   ESRI Portal
--   [Okta](https://www.okta.com)
+- Google
+- Facebook
+- CKAN
+- AAF
+- VANguard (WSFed)
+- ESRI Portal
+- [Okta](https://www.okta.com)
 
 <p class="center">
     <video autoplay="false" loop="true" controls>
@@ -118,9 +118,9 @@ Often the use of ad-hoc sharing mechanisms such as email or USB disks results in
 
 We're adding an integrated, customizable authorization system into Magda based on [Open Policy Agent](https://www.openpolicyagent.org/), which will allow:
 
--   Datasets to be restricted based on established access-control frameworks (e.g. role-based), or custom policies specified by your organization
--   Federated authorization - Magda will be able not only to pull data from an external source, but also mimic the same authorization policies, so that what you see from that system on Magda is exactly the same as if you logged into it directly
--   Seamless integration with search - only get back results that you have access to
+- Datasets to be restricted based on established access-control frameworks (e.g. role-based), or custom policies specified by your organization
+- Federated authorization - Magda will be able not only to pull data from an external source, but also mimic the same authorization policies, so that what you see from that system on Magda is exactly the same as if you logged into it directly
+- Seamless integration with search - only get back results that you have access to
 
 ## Work with us
 
@@ -132,12 +132,12 @@ Magda is also completely open-source and can be used for free - to get it runnin
 
 ## Current Users
 
--   [Digital Transformation Agency](https://www.dta.gov.au/) - [data.gov.au](https://data.gov.au)
--   [CSIRO Land and Water](https://www.csiro.au/en/Research/LWF) - [Knowledge Network V2](https://knowledgenet.co/)
--   [Department of Agriculture](http://www.agriculture.gov.au/) - Private Instance
--   [Department of the Environment and Energy](https://www.environment.gov.au/) - Private Instance
--   [NSW Department of Customer Service](https://www.customerservice.nsw.gov.au/) - [NSW Spatial Digital Twin](https://nsw.digitaltwin.terria.io/)
--   [QLD Department of Natural Resources, Mines and Energy](https://www.dnrme.qld.gov.au/) - Under Development
+- [Digital Transformation Agency](https://www.dta.gov.au/) - [data.gov.au](https://data.gov.au)
+- [CSIRO Land and Water](https://www.csiro.au/en/Research/LWF) - [Knowledge Network V2](https://knowledgenet.co/)
+- [Department of Agriculture](http://www.agriculture.gov.au/) - Private Instance
+- [Department of the Environment and Energy](https://www.environment.gov.au/) - Private Instance
+- [NSW Department of Customer Service](https://www.customerservice.nsw.gov.au/) - [NSW Spatial Digital Twin](https://nsw.digitaltwin.terria.io/)
+- [QLD Department of Natural Resources, Mines and Energy](https://www.dnrme.qld.gov.au/) - Under Development
 
 <p class="center">
     <img src="./assets/magdascreenshots.png">
@@ -175,9 +175,9 @@ We welcome new contributors too! please check out our [Contributor's Guide](http
 
 ## Important links
 
--   [Our Github](https://github.com/magda-io/magda)
--   [Magda API Reference](https://demo.dev.magda.io/api/v0/apidocs/index.html)
--   [Magda Helm Chart Reference](/docs/helm-charts-docs-index)
--   [Other documentations](/docs)
+- [Our Github](https://github.com/magda-io/magda)
+- [Magda API Reference](https://dev.magda.io/api/v0/apidocs/index.html)
+- [Magda Helm Chart Reference](/docs/helm-charts-docs-index)
+- [Other documentations](/docs)
 
 The project was started by CSIRO's [Data61](https://data61.csiro.au/) and Australia's [Department of Prime Minister and Cabinet](https://www.pmc.gov.au/). It's progressing thanks to Data61, the [Digital Transformation Agency](https://www.dta.gov.au/), the [Department of Agriculture](http://www.agriculture.gov.au/), the [Department of the Environment and Energy](https://www.environment.gov.au/) and [CSIRO Land and Water](https://www.csiro.au/en/Research/LWF).
