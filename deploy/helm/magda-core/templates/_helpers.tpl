@@ -31,6 +31,8 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: "{{ .Chart.Name }}-password"
+  annotations:
+    "helm.sh/resource-policy": keep
 type: Opaque
 data:
 {{- if $secret }}
