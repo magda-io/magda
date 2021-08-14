@@ -20,7 +20,7 @@ class IndexerApi(crawler: Crawler, indexer: SearchIndexer)(
 
   /**
     * @apiDefine GenericError
-    * @apiError (Error 500) {String} Response "Failure"
+    * @apiError (Error 500) {String} ResponseBody Respone body will contain further information on the error in free text format.
     */
 
   val routes =

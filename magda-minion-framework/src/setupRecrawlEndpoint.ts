@@ -3,8 +3,10 @@ import { Application } from "express";
 import Crawler from "./Crawler";
 
 /**
- * @apiDefine GenericError
- * @apiError (Error 500) {String} Response "Failure"
+ * @apiDefine GenericErrorMinionJson
+ * @apiError (Error 500 JSON Response Body) {Boolean} isSuccess Whether or not the operation is successfully done.
+ * @apiError (Error 500 JSON Response Body) {Boolean} [isNewCrawler] indicate Whether it's a new cralwer process or existing crawling process is still no-going.
+ * @apiError (Error 500 JSON Response Body) {String} errorMessage Free text error message. Only available when `isSuccess`=`false`
  * @apiErrorExample {json} Response:
  * {
  *     isSuccess: false,
@@ -40,7 +42,7 @@ export interface crawlerProgress {
  *    isSuccess: true,
  *    isNewCrawler: true
  *  }
- * @apiUse GenericError
+ * @apiUse GenericErrorMinionJson
  */
 export default function setupRecrawlEndpoint(
     server: Application,
@@ -85,7 +87,7 @@ export default function setupRecrawlEndpoint(
      *       crawledRecordNumber: 100
      *    }
      *  }
-     * @apiUse GenericError
+     * @apiUse GenericErrorMinionJson
      */
     server.get("/crawlerProgress", (request, response) => {
         try {
