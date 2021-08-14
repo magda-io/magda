@@ -28,7 +28,7 @@ import au.csiro.data61.magda.client.AuthApiClient
 
 /**
   * @apiDefine GenericError
-  * @apiError (Error 500) {String} Response "Failure"
+  * @apiError (Error 500) {String} ResponseBody Respone body will contain further information on the error in free text format.
   */
 
 class Api(
