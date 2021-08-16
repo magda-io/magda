@@ -1,0 +1,34 @@
+{{- if .Values.backupRestore.backup.enabled -}}
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: "{{ .Values.dbModuleName }}-backup-jobs"
+spec:
+  concurrencyPolicy: Forbid
+  schedule: {{ .Values.wal-g.backup.schedule | quote }}
+  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: 1
+  startingDeadlineSeconds: 120
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      completions: 1
+      parallelism: 1
+      template:
+        metadata:
+          name: "{{ .Values.dbModuleName }}-backup-job"
+          labels:
+            cron: "{{ .Values.dbModuleName }}-backup-jobs"
+        spec:
+{{- include "magda.pullSecrets" . | indent 10 }}
+          containers:
+          - image: "{{ .Values.backupRestore.image.repository }}:{{ .Values.backupRestore.image.tag }}"
+            imagePullPolicy: "{{ .Values.backupRestore.image.repository }}"
+            name: db-backup
+            command:
+              - "/bin/sh"
+              - "-c"
+              - "apk add --no-cache ca-certificates curl && curl -i -X POST http://indexer/v0/reindex"
+              - "{{ typeof "sdsd" }}"
+          restartPolicy: OnFailure
+{{- end }}

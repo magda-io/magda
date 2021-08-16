@@ -8,6 +8,11 @@ global:
     postgresqlDatabase: "postgres"
     # -- Whether auto create secret for db superuser account password
     autoCreateSecret: true
+
+# -- a name used to naming common k8s objects (e.g. backup jobs) of this chart to avoid name conflicts.
+# e.g. combined-db chart might want to set this field to "combined-db" while session-db will want to set this field to "session-db".
+dbModuleName: "default-db"
+
 postgresql:
   image: 
     tag: "13.3.0-debian-10-r79"
@@ -21,3 +26,14 @@ postgresql:
       cpu: 200m
       memory: 500Mi
     
+backupRestore:
+  image:
+    # -- wal-g docker image tag
+    tag: "1.1.0-debian-10-r3"
+    # -- wal-g docker image repo
+    repository: "bitnami/wal-g"
+     # -- wal-g docker image pull policy
+    pullPolicy: IfNotPresent
+  backup:
+    enabled: true
+  

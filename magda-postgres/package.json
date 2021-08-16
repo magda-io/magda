@@ -13,7 +13,7 @@
   "config": {
     "docker": {
       "name": "data61/magda-postgres",
-      "include": "Dockerfile start.sh docker-entrypoint.sh.patch"
+      "include": "Dockerfile"
     }
   },
   "devDependencies": {

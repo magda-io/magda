@@ -15,6 +15,30 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{- define "magda.pullSecrets" -}}
+  {{- $pullSecrets := list }}
+  {{- if eq (typeOf .Values.image.pullSecret) "string" }}
+    {{- $pullSecrets = append $pullSecrets .Values.image.pullSecret }}
+  {{- end }}
+  {{- if eq (typeOf .Values.image.pullSecrets) "[]interface {}" }}
+    {{- $pullSecrets = concat $pullSecrets .Values.image.pullSecrets }}
+  {{- end }}
+  {{- if empty $pullSecrets }}
+    {{- if eq (typeOf .Values.global.image.pullSecret) "string" }}
+      {{- $pullSecrets = append $pullSecrets .Values.global.image.pullSecret }}
+    {{- end }}
+    {{- if eq (typeOf .Values.global.image.pullSecrets) "[]interface {}" }}
+      {{- $pullSecrets = concat $pullSecrets .Values.global.image.pullSecrets }}
+    {{- end }}
+  {{- end }}
+  {{- if (not (empty $pullSecrets)) }}
+imagePullSecrets:
+    {{- range $pullSecrets }}
+  - name: {{ . }}
+    {{- end }}
+  {{- end }}
+{{- end -}}
+
 {{- define "dockerimage" -}}
 "{{ .Values.image.repository | default .Values.global.image.repository }}/magda-{{ .Chart.Name }}:{{ .Values.image.tag | default .Values.global.image.tag | default .Chart.Version }}"
 {{- end -}}
