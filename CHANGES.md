@@ -3,6 +3,7 @@
 ## 1.0.0
 
 - #3197 Minion SDK: Make minion proactive crawling records number configurable
+- #3208 rewritten Web Hook related API docs
 
 ## 0.0.60
 
