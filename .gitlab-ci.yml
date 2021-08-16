@@ -203,7 +203,7 @@ buildtest:search-no-index-cache:
     POSTGRES_URL: "jdbc:postgresql://postgres/postgres"
     POSTGRES_DB: postgres
     POSTGRES_USER: postgres
-    POSTGRES_PASSWORD: ""
+    POSTGRES_PASSWORD: "postgres"
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
     # 2.5gb heap
     # unload classes we don't need
@@ -278,7 +278,7 @@ buildtest:registry:
     POSTGRES_URL: "jdbc:postgresql://postgres/postgres"
     POSTGRES_DB: postgres
     POSTGRES_USER: postgres
-    POSTGRES_PASSWORD: ""
+    POSTGRES_PASSWORD: "postgres"
   script:
     - sbt "registryApi/testOnly au.csiro.data61.magda.registry.*"
   artifacts:
@@ -377,7 +377,9 @@ buildtest:typescript-apis-with-pg:
     POSTGRES_HOST: postgres
     POSTGRES_DB: postgres
     POSTGRES_USER: postgres
-    POSTGRES_PASSWORD: ""
+    POSTGRES_PASSWORD: "postgres"
+    PGUSER: postgres
+    PGPASSWORD: postgres
     OPA_URL: "http://docker:8181/"
   script:
     - cd deploy/helm/internal-charts/opa
