@@ -83,7 +83,7 @@ abstract class ApiSpec
     .setLevel(Level.WARN)
 
   val flyway = new Flyway()
-  flyway.setDataSource(databaseUrl, "postgres", "")
+  flyway.setDataSource(databaseUrl, "postgres", "password")
   flyway.setSchemas("test")
   flyway.setLocations("classpath:/sql")
   flyway.setPlaceholders(
