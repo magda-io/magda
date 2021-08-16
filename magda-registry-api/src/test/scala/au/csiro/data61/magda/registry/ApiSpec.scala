@@ -58,6 +58,12 @@ abstract class ApiSpec
   val databaseUrl = Option(System.getenv("POSTGRES_URL"))
     .getOrElse("jdbc:postgresql://localhost:5432/postgres")
 
+  val databaseUsername = Option(System.getenv("POSTGRES_USER"))
+    .getOrElse("postgres")
+
+  val databasePassword = Option(System.getenv("POSTGRES_PASSWORD"))
+    .getOrElse("password")
+
   def addTenantIdHeader(tenantId: BigInt): RawHeader = {
     RawHeader(MAGDA_TENANT_ID_HEADER, tenantId.toString)
   }
@@ -83,7 +89,7 @@ abstract class ApiSpec
     .setLevel(Level.WARN)
 
   val flyway = new Flyway()
-  flyway.setDataSource(databaseUrl, "postgres", "password")
+  flyway.setDataSource(databaseUrl, databaseUsername, databasePassword)
   flyway.setSchemas("test")
   flyway.setLocations("classpath:/sql")
   flyway.setPlaceholders(
