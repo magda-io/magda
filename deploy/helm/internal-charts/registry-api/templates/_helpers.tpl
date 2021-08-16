@@ -29,7 +29,7 @@ spec:
             secretKeyRef:
               name: auth-secrets
               key: jwt-secret
-{{ include "magda.db-client-credential-env" "registry-db" | indent 8 }}
+{{ include "magda.db-client-credential-env-registry" .root | indent 8 }}
         image: {{ template "dockerimage" .root }}
         imagePullPolicy: {{ .root.Values.image.pullPolicy | default .root.Values.global.image.pullPolicy }}
         command: [

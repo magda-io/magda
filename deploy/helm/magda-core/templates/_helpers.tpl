@@ -98,6 +98,17 @@ data:
       key: password
 {{- end -}}
 
+
+{{- define "magda.db-client-credential-env-registry" -}}
+- name: POSTGRES_USER
+  value: client
+- name: POSTGRES_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: "registry-db-password"
+      key: password
+{{- end -}}
+
 {{- define "magda.postgres-env" -}}
         {{- template "magda.postgres-migrator-env" . }}
         {{- if .Values.limits }}
