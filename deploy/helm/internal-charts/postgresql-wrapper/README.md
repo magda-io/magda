@@ -1,4 +1,4 @@
-# postgresql-wraper
+# postgresql-wrapper
 
 ![Version: 1.0.0-alpha.0](https://img.shields.io/badge/Version-1.0.0--alpha.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
@@ -18,11 +18,13 @@ More config postgreSQL related options, please refer to: https://github.com/bitn
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| autoCreateSecret | bool | `true` | Whether auto create secret for db superuser account password |
+| global.postgresql.autoCreateSecret | bool | `true` | Whether auto create secret for db superuser account password |
 | global.postgresql.existingSecret | string | `"db-main-account-secret"` |  |
 | global.postgresql.postgresqlDatabase | string | `"postgres"` |  |
 | global.postgresql.postgresqlUsername | string | `"postgres"` | PostgreSQL username The created user will have superuser privileges if username is postgres For in k8s PostgreSQL, we should use `postgres` so it has privileges for DB schema migrators to run |
 | postgresql.image.tag | string | `"13.3.0-debian-10-r79"` |  |
-| postgresql.persistence.size | string | `"100Gi"` |  |
+| postgresql.persistence.size | string | `"50Gi"` |  |
 | postgresql.priorityClassName | string | `""` | For dev cluster, we can set it to `magda-9` to controll how combined-db is scheduled. e.g. schedule only on non-preemptible nodes |
+| postgresql.resources.requests.cpu | string | `"200m"` |  |
+| postgresql.resources.requests.memory | string | `"500Mi"` |  |
 
