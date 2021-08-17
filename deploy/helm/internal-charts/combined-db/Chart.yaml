@@ -4,7 +4,7 @@ name: combined-db
 version: 1.0.0-alpha.0
 kubeVersion: ">= 1.14.0-0"
 dependencies:
-- name: magda-postgresql
+- name: magda-postgres
   version: "1.0.0-alpha.0"
-  repository: "file://../magda-postgresql"
+  repository: "file://../magda-postgres"
   condition: global.useCombinedDb

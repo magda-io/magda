@@ -55,7 +55,7 @@ tsconfig.tsbuildinfo
 deploy/helm/magda/charts/
 deploy/helm/magda-core/charts/
 deploy/helm/internal-charts/storage-api/charts/
-deploy/helm/internal-charts/magda-postgresql/charts/
+deploy/helm/internal-charts/magda-postgres/charts/
 deploy/helm/internal-charts/combined-db/charts/
 deploy/helm/internal-charts/authorization-db/charts/
 deploy/helm/internal-charts/content-db/charts/

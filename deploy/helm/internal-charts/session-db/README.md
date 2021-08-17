@@ -10,7 +10,7 @@ Kubernetes: `>= 1.14.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../magda-postgresql | magda-postgresql | 1.0.0-alpha.0 |
+| file://../magda-postgres | magda-postgres | 1.0.0-alpha.0 |
 
 ## Values
 
