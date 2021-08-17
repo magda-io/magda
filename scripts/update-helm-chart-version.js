@@ -35,7 +35,7 @@ function updateValuesFile(valuesFilePath, chartName) {
             return;
         }
 
-        if (!fse.exists(valuesFilePath)) {
+        if (!fse.existsSync(valuesFilePath)) {
             return;
         }
 
@@ -44,9 +44,16 @@ function updateValuesFile(valuesFilePath, chartName) {
         });
         const valueFileDoc = YAML.parseDocument(valueFileContent);
 
-        versionUpdateValuePaths.forEach((pStr) =>
-            valueFileDoc.setIn(pStr.split("."), pkgVersion)
-        );
+        versionUpdateValuePaths.forEach((pStr) => {
+            const pathItems = pStr.split(".");
+            const value = valueFileDoc.getIn(pathItems, true);
+            if (value) {
+                value.value = pkgVersion;
+                valueFileDoc.setIn(pathItems, value);
+            } else {
+                valueFileDoc.setIn(pathItems, pkgVersion);
+            }
+        });
 
         fse.writeFileSync(valuesFilePath, valueFileDoc.toString(), {
             encoding: "utf8"
