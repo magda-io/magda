@@ -41,5 +41,8 @@
     "nginx-ingress-controller",
     "default-http-backend",
     "magda-cert-issuer"
-  ]
+  ],
+  "versionUpdateValues": {
+    "magda-postgres": ["postgresql.image.tag"]
+  }
 }

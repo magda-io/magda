@@ -18,6 +18,46 @@ const excludedCharts =
         ? pkg["versionUpdateExclude"]
         : [];
 
+const versionUpdateValuesForCharts =
+    pkg["versionUpdateValues"] && typeof pkg["versionUpdateValues"] === "object"
+        ? pkg["versionUpdateValues"]
+        : {};
+
+function updateValuesFile(valuesFilePath, chartName) {
+    try {
+        const versionUpdateValuePaths =
+            versionUpdateValuesForCharts[chartName] &&
+            versionUpdateValuesForCharts[chartName].length
+                ? versionUpdateValuesForCharts[chartName]
+                : [];
+
+        if (!versionUpdateValuePaths.length) {
+            return;
+        }
+
+        if (!fse.exists(valuesFilePath)) {
+            return;
+        }
+
+        const valueFileContent = fse.readFileSync(valuesFilePath, {
+            encoding: "utf8"
+        });
+        const valueFileDoc = YAML.parseDocument(valueFileContent);
+
+        versionUpdateValuePaths.forEach((pStr) =>
+            valueFileDoc.setIn(pStr.split("."), pkgVersion)
+        );
+
+        fse.writeFileSync(valuesFilePath, valueFileDoc.toString(), {
+            encoding: "utf8"
+        });
+    } catch (e) {
+        throw new Error(
+            `Failed to update values files (${valuesFilePath}): ${e}`
+        );
+    }
+}
+
 function updateChartVersion(chartFilePath) {
     try {
         const chartDir = path.dirname(chartFilePath);
@@ -66,6 +106,8 @@ function updateChartVersion(chartFilePath) {
         fse.writeFileSync(chartFilePath, chart.toString(), {
             encoding: "utf8"
         });
+
+        updateValuesFile(path.resolve(chartDir, "./values.yaml"), chartName);
     } catch (e) {
         console.error(`Failed to process ${chartFilePath}: ${e}`);
         process.exit(-1);
