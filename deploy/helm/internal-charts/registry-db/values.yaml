@@ -10,7 +10,7 @@ image: {}
 # Set this option to `true` will make helm auto-create the secret with random password, ONLY when the secret not exists.
 autoCreateSecret: true
 
-postgresql-wrapper:
+magda-postgresql:
   postgresql: 
     fullnameOverride: "registry-db-postgresql"
     nameOverride: "registry-db-postgresql"

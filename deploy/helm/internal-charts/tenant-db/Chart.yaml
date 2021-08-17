@@ -4,7 +4,7 @@ name: tenant-db
 version: 1.0.0-alpha.0
 kubeVersion: ">= 1.14.0-0"
 dependencies:
-- name: postgresql-wrapper
+- name: magda-postgresql
   version: "1.0.0-alpha.0"
-  repository: "file://../postgresql-wrapper"
+  repository: "file://../magda-postgresql"
   condition: global.useInK8sDbInstance.tenant-db

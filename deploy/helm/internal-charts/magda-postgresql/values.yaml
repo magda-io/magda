@@ -15,7 +15,10 @@ dbModuleName: "default-db"
 
 postgresql:
   image: 
-    tag: "13.3.0-debian-10-r79"
+    # -- the default docker image tag/version used by the postgresql chart. 
+    # When dump the magda version using `yarn set-version` (at magda repo root), this default version will be auto-replaced with the new chart version number.
+    tag: "1.0.0-alpha.0"
+    repository: "data61/magda-postgres"
   # -- For dev cluster, we can set it to `magda-9` to controll how combined-db is scheduled.
   # e.g. schedule only on non-preemptible nodes
   priorityClassName: ""

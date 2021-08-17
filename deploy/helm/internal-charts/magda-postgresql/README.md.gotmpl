@@ -5,6 +5,12 @@
 
 {{ template "chart.description" . }}
 
+This chart runs the in-k8s postgreSQL instance using [bitnami postgreSQL Helm Chart](https://github.com/bitnami/charts/tree/master/bitnami/postgresql).
+
+The docker image used by the chart is built from [bitnami postgreSQL Docker Image](https://github.com/bitnami/bitnami-docker-postgresql) with postgreSQL backup utility [wal-g](https://github.com/wal-g/wal-g) included.
+
+`wal-g` is used for [Continuous Archive Backup & Point-in-Time Recovery (PITR)](https://www.postgresql.org/docs/13/continuous-archiving.html).
+
 {{ template "chart.homepageLine" . }}
 
 {{ template "chart.maintainersSection" . }}

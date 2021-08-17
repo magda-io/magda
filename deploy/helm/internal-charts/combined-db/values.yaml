@@ -1,4 +1,4 @@
-postgresql-wrapper:
+magda-postgresql:
   postgresql: 
     fullnameOverride: "combined-db-postgresql"
     nameOverride: "combined-db-postgresql"

@@ -1,6 +1,6 @@
 dependencies:
-- name: postgresql-wrapper
-  repository: file://../postgresql-wrapper
+- name: magda-postgresql
+  repository: file://../magda-postgresql
   version: 1.0.0-alpha.0
-digest: sha256:9606bc3b4c6a9fc9fb62075d05129df11d5f7e5cb1910c48cf21871419d5ea76
-generated: "2021-08-13T00:53:21.874423+10:00"
+digest: sha256:ed8d8707ae4e10168c0398bace80ad6e20008fe4c531f6a08f510a146e476a3f
+generated: "2021-08-17T10:01:42.750278+10:00"
