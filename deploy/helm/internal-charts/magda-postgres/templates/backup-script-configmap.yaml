@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ .Values.postgresql.fullnameOverride }}-backup-script"
+data:
+  backup.sh: |
+    #!/bin/sh
+    export PGHOST={{ .Values.postgresql.fullnameOverride }}
+    wal-g backup-push --pool-size 1 --cluster-read-rate-limit 10000000 "$PGDATA"
+    wal-g delete --confirm retain FULL {{ .Values.backupRestore.backup.archiveTimeout | default 7 }}
+    

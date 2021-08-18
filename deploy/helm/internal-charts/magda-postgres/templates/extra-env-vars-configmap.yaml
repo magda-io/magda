@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ .Values.postgresql.fullnameOverride }}-extra-env-vars"
+data:
+{{- if .Values.backupRestore.recoveryMode.enabled }}
+  MAGDA_RECOVERY_MODE: "true"
+{{- end }}
+{{- with .Values.extraEnvVars }}
+{{- range $key, $value := . }}
+  {{ $key }}: {{ $value | quote }}
+{{- end }}
