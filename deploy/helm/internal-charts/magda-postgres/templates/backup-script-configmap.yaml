@@ -6,6 +6,6 @@ data:
   backup.sh: |
     #!/bin/sh
     export PGHOST={{ .Values.postgresql.fullnameOverride }}
-    wal-g backup-push --pool-size 1 --cluster-read-rate-limit 10000000 "$PGDATA"
+    wal-g backup-push
     wal-g delete --confirm retain FULL {{ .Values.backupRestore.backup.archiveTimeout | default 7 }}
     
