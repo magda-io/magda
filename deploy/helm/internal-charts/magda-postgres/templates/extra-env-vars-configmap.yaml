@@ -5,6 +5,7 @@ metadata:
 data:
 {{- if .Values.backupRestore.recoveryMode.enabled }}
   MAGDA_RECOVERY_MODE: "true"
+  MAGDA_RECOVERY_BASE_BACKUP_NAME: {{ .Values.backupRestore.recoveryMode.baseBackupName | quote }}
 {{- end }}
 {{- with .Values.extraEnvVars }}
 {{- range $key, $value := . }}
