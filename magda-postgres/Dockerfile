@@ -12,6 +12,8 @@ COPY component/start.sh /usr/local/bin/
 
 COPY --chown=1001 component/wal-g /wal-g
 
+RUN mkdir -p /etc/wal-g.d/env && chown 1001 /etc/wal-g.d/env
+
 USER 1001
 
 CMD [ "/usr/local/bin/start.sh", "/opt/bitnami/scripts/postgresql/run.sh" ]

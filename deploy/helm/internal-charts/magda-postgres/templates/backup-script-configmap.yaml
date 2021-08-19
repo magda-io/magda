@@ -6,6 +6,6 @@ data:
   backup.sh: |
     #!/bin/sh
     export PGHOST={{ .Values.postgresql.fullnameOverride }}
-    wal-g backup-push
-    wal-g delete --confirm retain FULL {{ .Values.backupRestore.backup.archiveTimeout | default 7 }}
+    /usr/bin/envdir /etc/wal-g.d/env /usr/local/bin/wal-g backup-push
+    /usr/bin/envdir /etc/wal-g.d/env /usr/local/bin/wal-g delete --confirm retain FULL {{ .Values.backupRestore.backup.archiveTimeout | default 7 }}
     

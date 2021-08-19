@@ -31,10 +31,10 @@ rm -rf $PGDATA/*
 if [ -z "$MAGDA_RECOVERY_BASE_BACKUP_NAME" ]
 then 
     echo "fetch LATEST backup..."
-    wal-g backup-fetch $PGDATA LATEST
+    /usr/bin/envdir /etc/wal-g.d/env /usr/local/bin/wal-g backup-fetch $PGDATA LATEST
 else 
     echo "fetch backup: ${MAGDA_RECOVERY_BASE_BACKUP_NAME}..."
-    wal-g backup-fetch $PGDATA "$MAGDA_RECOVERY_BASE_BACKUP_NAME"
+    /usr/bin/envdir /etc/wal-g.d/env /usr/local/bin/wal-g backup-fetch $PGDATA "$MAGDA_RECOVERY_BASE_BACKUP_NAME"
 fi
 
 
