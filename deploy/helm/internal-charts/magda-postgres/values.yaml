@@ -26,11 +26,15 @@ postgresql:
   # -- the name of config map contains entended postgresql config options.
   # You should not change this value as this configMap is auto-generated.
   # If you want to override the postgresql conf option, you should add options to `.Values.config` field of `magda-postgres` chart.
+  # Please note: For this field, you can use template string e.g. "{{ .Values.fullnameOverride }}" to reference any values passed to subchat `postgresql`.
+  # See more: https://helm.sh/docs/howto/charts_tips_and_tricks/#using-the-tpl-function
   extendedConfConfigMap: "{{ .Values.fullnameOverride }}-extended-config"
 
   # -- the name of config map contains extra env vars for postgresql pod.
   # You should not change this value as this configMap is auto-generated.
   # If you want to add extra env vars, you should add vars to `.Values.envVars` field of `magda-postgres` chart.
+  # Please note: For this field, you can use template string e.g. "{{ .Values.fullnameOverride }}" to reference any values passed to subchat `postgresql`.
+  # See more: https://helm.sh/docs/howto/charts_tips_and_tricks/#using-the-tpl-function
   extraEnvVarsCM: "{{ .Values.fullnameOverride }}-extra-env-vars"
 
   primary:
@@ -76,7 +80,10 @@ backupRestore:
   # When use secret to storage secret, it's required to:
   # <ul>
   # <li>Set `.Values.backupRestore.storageSecretName` to the name of the secret contains all secret values for your storage option.</li>
-  # <li>Add the secret as a file </li>
+  # <li>
+  #   Mount the secret in a volumn for DB pod (mount to path `/etc/wal-g.d/env`) by add an additional entry to `.Values.postgresql.primary.extraVolumes` & `.Values.postgresql.primary.extraVolumeMounts`. 
+  # </li>
+  # </ul>
   storageConfig: {}
   storageSecretName: ""
   image:

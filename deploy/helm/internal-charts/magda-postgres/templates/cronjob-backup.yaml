@@ -31,6 +31,10 @@ spec:
             volumeMounts:
               - name: backup-script
                 mountPath: /usr/local/bin
+{{- if .Values.backupRestore.storageSecretName }}
+              - name: storage-secret
+                mountPath: /etc/wal-g.d/env
+{{- end }}
           restartPolicy: OnFailure
           volumes:
             - name: backup-script
@@ -39,4 +43,9 @@ spec:
                 items:
                   - key: backup.sh
                     path: backup.sh
+{{- if .Values.backupRestore.storageSecretName }}
+            - name: storage-secret
+              secret:
+                secretName: "{{ .Values.backupRestore.storageSecretName }}"
+{{- end }}
 {{- end }}
