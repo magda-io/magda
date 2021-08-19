@@ -23,4 +23,4 @@ echo "Recovery completed! postgresql config will be reload to turn off recovery 
 
 echo "To re-enter the recovery mode, please recreate the pod."
 
-bash -c "sleep 3 && /opt/bitnami/postgresql/bin/reload stop -D $PGDATA" &
+bash -c "sleep 3 && /opt/bitnami/postgresql/bin/pg_ctl reload -D $PGDATA" &
