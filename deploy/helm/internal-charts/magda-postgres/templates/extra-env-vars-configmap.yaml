@@ -7,7 +7,8 @@ data:
   MAGDA_RECOVERY_MODE: "true"
   MAGDA_RECOVERY_BASE_BACKUP_NAME: {{ .Values.backupRestore.recoveryMode.baseBackupName | quote }}
 {{- end }}
-{{- with .Values.extraEnvVars }}
-{{- range $key, $value := . }}
+{{- range $key, $value := .Values.extraEnvVars }}
+{{- if not (empty $key) -}}
   {{ $key }}: {{ $value | quote }}
+{{- end }}
 {{- end }}
