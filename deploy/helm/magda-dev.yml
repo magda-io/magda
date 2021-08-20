@@ -75,22 +75,32 @@ magda:
           reportUri: https://sdga.report-uri.com/r/d/csp/enforce
 
     combined-db:
-      waleBackup:
-        method: WAL
-        gsPrefix: "gs://magda-postgres-backups-asia/dev"
-        executionTime: 03:00
-        googleApplicationCreds:
-          secretName: storage-account-credentials
-          fileName: TerriaJS-5e042b649f8a.json
-      data:
-        storage: 250Gi
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: cloud.google.com/gke-preemptible
-                    operator: DoesNotExist
+      magda-postgres:
+        backupRestore:
+          storageConfig:
+            WALG_GS_PREFIX: "gs://magda-postgres-backups-asia//dev"
+            GCS_NORMALIZE_PREFIX: "false"
+          backup: 
+            enabled: true
+            schedule: "15 * * * 6"
+        postgresql:
+          primary:
+            affinity:
+              nodeAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  nodeSelectorTerms:
+                    - matchExpressions:
+                        - key: cloud.google.com/gke-preemptible
+                          operator: DoesNotExist
+            extraVolumes:
+              - name: storage-account
+                secret:
+                  secretName: backup-storage-account
+            extraVolumeMounts:
+              - name: storage-account
+                mountPath: /etc/wal-g.d/env
+        persistence:
+          size: "250Gi"
 
     elasticsearch:
       data:

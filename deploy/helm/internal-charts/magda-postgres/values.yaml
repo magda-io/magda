@@ -52,6 +52,7 @@ postgresql:
     # Please do not remove.
     - name: magda-walg-prefetch
       mountPath: "/bitnami/postgresql/walg_prefetch"
+      
   persistence:
     size: "50Gi"
   resources:
