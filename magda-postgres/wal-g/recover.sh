@@ -25,9 +25,10 @@ then
 fi
 
 # delete all content of $PGDATA
-# rm -rf $PGDATA/*
+rm -rf $PGDATA/*
 
 # fetch most recent full backup
+touch /wal-g/base-backup.fetching
 if [ -z "$MAGDA_RECOVERY_BASE_BACKUP_NAME" ]
 then 
     echo "fetch LATEST backup..."
@@ -37,6 +38,7 @@ else
     /usr/bin/envdir /etc/wal-g.d/env /usr/local/bin/wal-g backup-fetch $PGDATA "$MAGDA_RECOVERY_BASE_BACKUP_NAME"
 fi
 
+rm -f /wal-g/base-backup.fetching
 BACKUP_FETCH_STATUS=$?
 
 # check if previous base backup is fully completed
@@ -51,7 +53,6 @@ then
         echo "restoring a saved copy of pg_wal after fetch base backup..."
         cp -rf /wal-g/pg_wal $PGDATA/pg_wal
     fi
-
     # enable recovery mode
     touch $PGDATA/recovery.signal
 else
@@ -59,28 +60,7 @@ else
     # try to go ahead without entering recovery
     # Restore pg_wal with previous saved copy
     # Remove the saved copy at /wal-g/pg_wal
-    echo "Failed to fetch / restore base backup, will restore conf and try to go ahead without entering recovery mode..."
-    echo "You can try the recovery mode again by restarting the pod."
-    if [ -d /wal-g/pg_wal ]
-    then 
-        rm -rf $PGDATA/pg_wal
-        echo "restoring a saved copy of pg_wal..."
-        cp -rf /wal-g/pg_wal $PGDATA/pg_wal
-        rm -rf /wal-g/pg_wal
-    fi
-
-    # disable recovery mode
-    rm -f /opt/bitnami/postgresql/conf/conf.d/recovery.conf
-
-    # re-enable remote connections
-    rm -f /opt/bitnami/postgresql/conf/pg_hba.conf
-    mv -f /opt/bitnami/postgresql/conf/pg_hba.conf.orig /opt/bitnami/postgresql/conf/pg_hba.conf
-
-    # re-enable archive mode if it's on
-    if [ -f /opt/bitnami/postgresql/conf/conf.d/archive.conf.orig ]
-    then 
-        mv -f /opt/bitnami/postgresql/conf/conf.d/archive.conf.orig /opt/bitnami/postgresql/conf/conf.d/archive.conf
-    fi
-if
-
-# after this line, postgresql will start and enter recovery mode
+    echo "Failed to fetch / restore base backup, will restart the pod..."
+    rm -f touch $PGDATA/recovery.signal
+    exit 1
+fi

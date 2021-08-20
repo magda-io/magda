@@ -58,6 +58,64 @@ postgresql:
     requests:
       cpu: 200m
       memory: 500Mi
+  
+  livenessProbe:
+    # -- `customLivenessProbe` will only be used when `enabled`=`false`
+    # Otherwise, default livenessProbe will be used.
+    enabled: false
+  # -- Custom Liveness Probe for postgresql.
+  # when in recovery mode, only check whether `$PGDATA/recovery.signal` exists.
+  customLivenessProbe: |
+    exec:
+      command:
+        - /bin/sh
+        - -c
+        - |
+          if [ -f /wal-g/base-backup.fetching ]
+          then 
+          exit 0
+          fi
+        {{- if (include "postgresql.database" .) }}
+          exec pg_isready -U {{ include "postgresql.username" . | quote }} -d "dbname={{ include "postgresql.database" . }} {{- if and .Values.tls.enabled .Values.tls.certCAFilename }} sslcert={{ include "postgresql.tlsCert" . }} sslkey={{ include "postgresql.tlsCertKey" . }}{{- end }}" -h 127.0.0.1 -p {{ template "postgresql.port" . }}
+        {{- else }}
+          exec pg_isready -U {{ include "postgresql.username" . | quote }} {{- if and .Values.tls.enabled .Values.tls.certCAFilename }} -d "sslcert={{ include "postgresql.tlsCert" . }} sslkey={{ include "postgresql.tlsCertKey" . }}"{{- end }} -h 127.0.0.1 -p {{ template "postgresql.port" . }}
+        {{- end }}
+    initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+    periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+    timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+    successThreshold: {{ .Values.livenessProbe.successThreshold }}
+    failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+
+  readinessProbe:
+    # -- `customReadinessProbe` will only be used when `enabled`=`false`
+    # Otherwise, default livenessProbe will be used.
+    enabled: false
+  # -- Custom Readiness Probe for postgresql.
+  # when in recovery mode, only check whether `$PGDATA/recovery.signal` exists.
+  customReadinessProbe: |
+    exec:
+      command:
+        - /bin/sh
+        - -c
+        - -e
+        - |
+          if [ -f /wal-g/base-backup.fetching ]
+          then 
+          exit 0
+          fi
+        {{- if (include "postgresql.database" .) }}
+          exec pg_isready -U {{ include "postgresql.username" . | quote }} -d "dbname={{ include "postgresql.database" . }} {{- if .Values.tls.enabled }} sslcert={{ include "postgresql.tlsCert" . }} sslkey={{ include "postgresql.tlsCertKey" . }}{{- end }}" -h 127.0.0.1 -p {{ template "postgresql.port" . }}
+        {{- else }}
+          exec pg_isready -U {{ include "postgresql.username" . | quote }} {{- if .Values.tls.enabled }} -d "sslcert={{ include "postgresql.tlsCert" . }} sslkey={{ include "postgresql.tlsCertKey" . }}"{{- end }} -h 127.0.0.1 -p {{ template "postgresql.port" . }}
+        {{- end }}
+        {{- if contains "bitnami/" .Values.image.repository }}
+          [ -f /opt/bitnami/postgresql/tmp/.initialized ] || [ -f /bitnami/postgresql/.initialized ]
+        {{- end }}
+    initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+    periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+    timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+    successThreshold: {{ .Values.readinessProbe.successThreshold }}
+    failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
 
 # -- any postgreSQL config options here have highest priority and will override any existing config option values.
 # Be sure you understand the impact of any values set as they might override the values required for other helm chart options.
@@ -88,7 +146,7 @@ backupRestore:
   storageSecretName: ""
   image:
     # -- wal-g docker image tag
-    tag: "1.1.0-debian-10-r3"
+    tag: "1.1.0"
     # -- wal-g docker image repo
     repository: "data61/magda-wal-g"
     # -- wal-g docker image pull policy
