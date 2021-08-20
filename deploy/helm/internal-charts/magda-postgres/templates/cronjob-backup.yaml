@@ -31,14 +31,14 @@ spec:
             volumeMounts:
               - name: backup-script
                 mountPath: /usr/local/bin
-{{- if .Values.backupRestore.storageSecretName }}
+{{- if not (empty .Values.backupRestore.storageSecretName) }}
               - name: storage-secret
                 mountPath: /etc/wal-g.d/env
 {{- end }}
 {{- if not (empty .Values.backupRestore.storageConfig) }}
             env:
             {{- range $key, $value := .Values.backupRestore.storageConfig }}
-            {{- if not (empty $key) -}}
+            {{- if not (empty $key) }}
               - name: {{ $key | quote }}
                 value: {{ $value | quote }}
             {{- end }}
@@ -52,7 +52,7 @@ spec:
                 items:
                   - key: backup.sh
                     path: backup.sh
-{{- if .Values.backupRestore.storageSecretName }}
+{{- if not (empty .Values.backupRestore.storageSecretName) }}
             - name: storage-secret
               secret:
                 secretName: "{{ .Values.backupRestore.storageSecretName }}"

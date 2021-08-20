@@ -17,11 +17,13 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 
 {{- define "magda.pullSecrets" -}}
   {{- $pullSecrets := list }}
+  {{- if not (empty .Values.image) }}
   {{- if eq (typeOf .Values.image.pullSecret) "string" }}
     {{- $pullSecrets = append $pullSecrets .Values.image.pullSecret }}
   {{- end }}
-  {{- if eq (typeOf .Values.image.pullSecrets) "[]interface {}" }}
+  {{- if eq (typeOf .Values.image.pullSecret) "[]interface {}" }}
     {{- $pullSecrets = concat $pullSecrets .Values.image.pullSecrets }}
+  {{- end }}
   {{- end }}
   {{- if empty $pullSecrets }}
     {{- if eq (typeOf .Values.global.image.pullSecret) "string" }}
