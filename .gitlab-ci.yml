@@ -747,7 +747,6 @@ inttest:registryAuth:
     # Env vars
     - JWT_SECRET="${JWT_SECRET:-$(pwgen 32 1)}"
     - SESSION_SECRET="${SESSION_SECRET:-$(pwgen 32 1)}"
-    - DB_PASSWORD="${DB_PASSWORD:-p4ssw0rd}"
     - MINIO_HOST="${MINIO_HOST:-localhost}"
     - MINIO_PORT="${MINIO_PORT:-9000}"
     - MINIO_ACCESS_KEY="${MINIO_ACCESS_KEY:-}"
@@ -764,11 +763,10 @@ inttest:registryAuth:
     - kubectl create secret generic auth-secrets --from-literal=jwt-secret=$JWT_SECRET --from-literal=session-secret=$SESSION_SECRET --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
     - kubectl -n $CI_COMMIT_REF_SLUG annotate --overwrite secret auth-secrets replicator.v1.mittwald.de/replication-allowed=true replicator.v1.mittwald.de/replication-allowed-namespaces=${CI_COMMIT_REF_SLUG}-openfaas-fn
     - kubectl create secret docker-registry regcred --namespace $CI_COMMIT_REF_SLUG --docker-server=registry.gitlab.com --docker-username=gitlab-ci-token --docker-password=$CI_JOB_TOKEN --docker-email=alex.gilleran@data61.csiro.au --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
-    - kubectl create secret generic db-passwords --from-literal=combined-db=$DB_PASSWORD --from-literal=authorization-db=$DB_PASSWORD --from-literal=content-db=$DB_PASSWORD --from-literal=session-db=$DB_PASSWORD  --from-literal=registry-db=$DB_PASSWORD --from-literal=combined-db-client=$DB_PASSWORD --from-literal=authorization-db-client=$DB_PASSWORD --from-literal=content-db-client=$DB_PASSWORD --from-literal=session-db-client=$DB_PASSWORD --from-literal=registry-db-client=$DB_PASSWORD --from-literal=tenant-db=$DB_PASSWORD --from-literal=tenant-db-client=$DB_PASSWORD --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
     - kubectl create secret generic oauth-secrets --from-literal=facebook-client-secret=$FACEBOOK_CLIENT_SECRET --from-literal=google-client-secret=$GOOGLE_CLIENT_SECRET --from-literal arcgis-client-secret=$ARCGIS_CLIENT_SECRET --from-literal vanguard-certificate="$VANGUARD_CERT" --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
     - kubectl create secret generic smtp-secret --from-literal=username=$SMTP_USERNAME --from-literal=password=$SMTP_PASSWORD --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
-    - echo "$DB_SERVICE_ACCOUNT_PRIVATE_KEY" > db-service-account-private-key.json
-    - kubectl create secret generic storage-account-credentials --from-file db-service-account-private-key.json --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
+    - echo "$DB_SERVICE_ACCOUNT_PRIVATE_KEY" > backup-storage-account.json
+    - kubectl create secret generic backup-storage-account --from-file backup-storage-account.json --from-literal=GOOGLE_APPLICATION_CREDENTIALS=/etc/wal-g.d/env/backup-storage-account.json --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
     - kubectl create secret generic storage-secrets --from-literal=accesskey=$MINIO_ACCESS_KEY --from-literal=secretkey=$MINIO_SECRET_KEY --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
   script:
     - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/local-deployment --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600m --wait
