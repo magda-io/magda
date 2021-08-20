@@ -7,7 +7,7 @@ set -o nounset
 set -o pipefail
 #set -o xtrace
 
-if [ "$MAGDA_RECOVERY_MODE" = "true" ] && [ ! -f /wal-g/recovery.complete ]
+if [ "${MAGDA_RECOVERY_MODE:=false}" = "true" ] && [ ! -f /wal-g/recovery.complete ]
 then
     echo "Entering recovery mode..."
     /wal-g/recover.sh
