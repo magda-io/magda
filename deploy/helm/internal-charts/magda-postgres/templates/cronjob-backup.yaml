@@ -31,7 +31,7 @@ spec:
               - |
                 /usr/local/bin/adduser.sh
                 /usr/bin/envdir /etc/wal-g.d/env /usr/local/bin/wal-g backup-push
-                /usr/bin/envdir /etc/wal-g.d/env /usr/local/bin/wal-g delete --confirm retain FULL {{ .Values.backupRestore.backup.archiveTimeout | default 7 }}
+                /usr/bin/envdir /etc/wal-g.d/env /usr/local/bin/wal-g delete --confirm retain FULL {{ .Values.backupRestore.backup.numberOfBackupToRetain | default 7 }}
 {{- if not (empty .Values.backupRestore.storageSecretName) }}
             volumeMounts:
               - name: storage-secret
