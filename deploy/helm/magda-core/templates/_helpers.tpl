@@ -91,6 +91,16 @@ data:
   {{- end -}}
 {{- end -}}
 
+{{- define "magda.postgres-superuser-env" }}
+- name: PGUSER
+  value: {{ .Values.global.postgresql.postgresqlUsername | default "postgres" }}
+- name: PGPASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.global.postgresql.existingSecret | quote }}
+      key: "postgresql-password"
+{{- end -}}
+
 {{- define "magda.postgres-migrator-env" }}
 - name: PGUSER
   value: {{ .Values.global.postgresql.postgresqlUsername | default "postgres" }}

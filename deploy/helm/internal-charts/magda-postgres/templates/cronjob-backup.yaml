@@ -40,7 +40,7 @@ spec:
             env:
               - name: PGHOST
                 value: "{{ .Values.postgresql.fullnameOverride }}-postgresql"
-{{- include "magda.postgres-migrator-env" . | indent 14 }}
+{{- include "magda.postgres-superuser-env" . | indent 14 }}
             {{- range $key, $value := .Values.backupRestore.storageConfig }}
             {{- if not (empty $key) }}
               - name: {{ $key | quote }}
