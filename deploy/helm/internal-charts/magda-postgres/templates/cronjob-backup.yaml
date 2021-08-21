@@ -39,7 +39,7 @@ spec:
 {{- end }}
             env:
               - name: PGHOST
-                value: "{{ .Values.postgresql.fullnameOverride }}-postgresql"
+                value: {{ .Values.postgresql.fullnameOverride | quote }}
 {{- include "magda.postgres-superuser-env" . | indent 14 }}
 {{- if not (empty .Values.backupRestore.storageConfig) }}
             {{- range $key, $value := .Values.backupRestore.storageConfig }}
