@@ -18,7 +18,9 @@ RUN mkdir -p /etc/wal-g.d/env && \
     chgrp -R 0 /etc/wal-g.d/env && \
     chmod -R g=u /etc/wal-g.d/env && \
     chgrp -R 0 /wal-g && \
-    chmod -R g=u /wal-g
+    chmod -R g=u /wal-g && \
+    # Allow user to add use record (for user 1001) in /etc/passwd
+    chmod g=u /etc/passwd
 
 USER 1001
 

@@ -26,9 +26,10 @@ spec:
             imagePullPolicy: "{{ .Values.backupRestore.image.pullPolicy }}"
             name: db-backup
             command:
-              - "/bin/sh"
+              - "/bin/bash"
               - "-c"
               - |
+                /usr/local/bin/adduser.sh
                 /usr/bin/envdir /etc/wal-g.d/env /usr/local/bin/wal-g backup-push
                 /usr/bin/envdir /etc/wal-g.d/env /usr/local/bin/wal-g delete --confirm retain FULL {{ .Values.backupRestore.backup.archiveTimeout | default 7 }}
 {{- if not (empty .Values.backupRestore.storageSecretName) }}
@@ -36,11 +37,11 @@ spec:
               - name: storage-secret
                 mountPath: /etc/wal-g.d/env
 {{- end }}
-{{- if not (empty .Values.backupRestore.storageConfig) }}
             env:
               - name: PGHOST
                 value: "{{ .Values.postgresql.fullnameOverride }}-postgresql"
 {{- include "magda.postgres-superuser-env" . | indent 14 }}
+{{- if not (empty .Values.backupRestore.storageConfig) }}
             {{- range $key, $value := .Values.backupRestore.storageConfig }}
             {{- if not (empty $key) }}
               - name: {{ $key | quote }}
