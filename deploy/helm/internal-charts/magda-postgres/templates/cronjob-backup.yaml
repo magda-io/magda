@@ -27,16 +27,20 @@ spec:
             name: db-backup
             command:
               - "/bin/sh"
-              - "/usr/local/bin/backup.sh"
-            volumeMounts:
-              - name: backup-script
-                mountPath: /usr/local/bin
+              - "-c"
+              - |
+                /usr/bin/envdir /etc/wal-g.d/env /usr/local/bin/wal-g backup-push
+                /usr/bin/envdir /etc/wal-g.d/env /usr/local/bin/wal-g delete --confirm retain FULL {{ .Values.backupRestore.backup.archiveTimeout | default 7 }}
 {{- if not (empty .Values.backupRestore.storageSecretName) }}
+            volumeMounts:
               - name: storage-secret
                 mountPath: /etc/wal-g.d/env
 {{- end }}
 {{- if not (empty .Values.backupRestore.storageConfig) }}
             env:
+              - name: PGHOST
+                value: "{{ .Values.postgresql.fullnameOverride }}-postgresql"
+{{- include "magda.postgres-migrator-env" . | indent 14 }}
             {{- range $key, $value := .Values.backupRestore.storageConfig }}
             {{- if not (empty $key) }}
               - name: {{ $key | quote }}
@@ -45,14 +49,8 @@ spec:
             {{- end }}
 {{- end }}
           restartPolicy: OnFailure
-          volumes:
-            - name: backup-script
-              configMap:
-                name: "{{ .Values.postgresql.fullnameOverride }}-backup-script"
-                items:
-                  - key: backup.sh
-                    path: backup.sh
 {{- if not (empty .Values.backupRestore.storageSecretName) }}
+          volumes:
             - name: storage-secret
               secret:
                 secretName: "{{ .Values.backupRestore.storageSecretName }}"

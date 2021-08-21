@@ -10,9 +10,15 @@ RUN install_packages daemontools
 
 COPY component/start.sh /usr/local/bin/
 
-COPY --chown=1001 component/wal-g /wal-g
+COPY component/wal-g /wal-g
 
-RUN mkdir -p /etc/wal-g.d/env && chown 1001 /etc/wal-g.d/env
+# follow openshfit guidelines for supporting arbitrary user IDs
+# https://docs.openshift.com/container-platform/3.3/creating_images/guidelines.html#openshift-container-platform-specific-guidelines
+RUN mkdir -p /etc/wal-g.d/env && \
+    chgrp -R 0 /etc/wal-g.d/env && \
+    chmod -R g=u /etc/wal-g.d/env && \
+    chgrp -R 0 /wal-g && \
+    chmod -R g=u /wal-g
 
 USER 1001
 
