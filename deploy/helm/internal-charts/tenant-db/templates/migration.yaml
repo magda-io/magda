@@ -20,4 +20,4 @@ spec:
         env:
         - name: DB_HOST
           value: tenant-db
-        {{- template "magda.postgres-migrator-env" . }}
+{{- include "magda.postgres-migrator-env" . | indent 8 }}

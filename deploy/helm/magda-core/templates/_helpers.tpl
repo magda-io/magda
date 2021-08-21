@@ -92,20 +92,20 @@ data:
 {{- end -}}
 
 {{- define "magda.postgres-migrator-env" }}
-        - name: PGUSER
-          value: {{ .Values.global.postgresql.postgresqlUsername | default "postgres" }}
-        - name: PGPASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.global.postgresql.existingSecret | quote }}
-              key: "postgresql-password"
-        - name: CLIENT_USERNAME
-          value: client
-        - name: CLIENT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: "{{ printf "%s-password" .Chart.Name }}"
-              key: "password"
+- name: PGUSER
+  value: {{ .Values.global.postgresql.postgresqlUsername | default "postgres" }}
+- name: PGPASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.global.postgresql.existingSecret | quote }}
+      key: "postgresql-password"
+- name: CLIENT_USERNAME
+  value: client
+- name: CLIENT_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: "{{ printf "%s-password" .Chart.Name }}"
+      key: "password"
 {{- end -}}
 
 {{/*
