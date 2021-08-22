@@ -20,7 +20,13 @@ RUN mkdir -p /etc/wal-g.d/env && \
     chgrp -R 0 /wal-g && \
     chmod -R g=u /wal-g && \
     # Allow user to add use record (for user 1001) in /etc/passwd
-    chmod g=u /etc/passwd
+    chmod g=u /etc/passwd && \
+    # create alternative wal-g prefetch path for postgresql 13
+    mkdir -p /wal-g/prefetch && \
+    chgrp -R 0 /wal-g/prefetch && \
+    chmod -R g=u /wal-g/prefetch
+
+ENV WALG_PREFETCH_DIR="/wal-g/prefetch"
 
 USER 1001
 

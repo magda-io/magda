@@ -43,20 +43,12 @@ postgresql:
   extraEnvVarsCM: "{{ .Values.fullnameOverride }}-extra-env-vars"
 
   primary:
-    extraVolumes:
-    # -- This volume is used for storing walg prefetch data.
-    # Added to avoid pg13 pg_rewind issue:
-    # https://github.com/wal-g/wal-g/blob/master/docs/PostgreSQL.md
-    # Please do not remove.
-    - name: magda-walg-prefetch
-      emptyDir: {}
-    extraVolumeMounts:
-    # -- This volume mount is used for storing walg prefetch data
-    # This has to be outside postgresql data dir to avoid pg13 pg_rewind issue:
-    # https://github.com/wal-g/wal-g/blob/master/docs/PostgreSQL.md
-    # Please do not remove.
-    - name: magda-walg-prefetch
-      mountPath: "/bitnami/postgresql/walg_prefetch"
+    # -- extra volumes can be set here. 
+    # e.g. map backup storage config secret as files in /etc/wal-g.d/env
+    extraVolumes: []
+    # -- extra volume mount can be set here. 
+    # e.g. mount backup storage config secret and map as files in /etc/wal-g.d/env
+    extraVolumeMounts: []
       
   persistence:
     # -- set the persistence volume size of the postgresql statefulset
@@ -145,8 +137,7 @@ config: {}
 envVars: 
   # -- we move wal-g prefetch location outside PGDATA to avoid pg_rewind issue in postgresql 13.
   # See: https://github.com/wal-g/wal-g/blob/master/docs/PostgreSQL.md
-  # Please do not remove.
-  WALG_PREFETCH_DIR: "/bitnami/postgresql/walg_prefetch"
+  WALG_PREFETCH_DIR: "/wal-g/prefetch"
 
 backupRestore:
   # -- Storage config for backup & restore.
