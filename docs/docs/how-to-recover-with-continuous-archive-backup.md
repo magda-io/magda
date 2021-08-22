@@ -159,6 +159,8 @@ combined-db:
 
 > Please note, you can also manually turn on the recovery mode by manually edit the relevant postgreSQL instance statefulset and set environment variable `MAGDA_RECOVERY_MODE`=`true`.
 
+> You don't have to turn off the backup function in order to turn on recovery mode. The backup will be temporarily disabled when the recovery is in progress and will be auto turned back on (if it was on) once the recovery is complete.
+
 By default, it will recover with the "LATEST" base backup. However, you can specify a different backup name with helm config option: `combined-db.magda-postgres.backupRestore.backup.recoveryMode.baseBackupName` or manually set environment variable `MAGDA_RECOVERY_BASE_BACKUP_NAME` on the relevant postgreSQL instance statefulset.
 
 More info can also be found from [wal-g backup fetch document](https://github.com/wal-g/wal-g/blob/master/docs/PostgreSQL.md#backup-fetch).
