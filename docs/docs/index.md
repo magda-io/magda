@@ -17,6 +17,7 @@
 - [How to Customise Magda UI](/docs/how-to-customise-ui)
 - [How to build your own connectors / minions](/docs/how-to-build-your-own-connectors-minions)
 - [Authentication Plugin Spec Document](/docs/authentication-plugin-spec)
+- [How to recover with continuous archive backup](/docs/how-to-recover-with-continuous-archive-backup)
 - [Ports used when running locally](/docs/local-ports)
 - [Roadmap](/docs/roadmap)
 - [Windows Setup Instructions](/docs/windows-instructions)
