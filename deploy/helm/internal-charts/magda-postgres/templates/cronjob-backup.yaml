@@ -29,9 +29,36 @@ spec:
               - "/bin/bash"
               - "-c"
               - |
+                # Add user 1001 to /etc/passwd as postgres lib will check username in it
+                # more details see the docker image repo
                 /usr/local/bin/adduser.sh
                 /usr/bin/envdir /etc/wal-g.d/env /usr/local/bin/wal-g backup-push
-                /usr/bin/envdir /etc/wal-g.d/env /usr/local/bin/wal-g delete --confirm retain FULL {{ .Values.backupRestore.backup.numberOfBackupToRetain | default 7 }}
+                RETAIN_BACKUP_NUM="{{ .Values.backupRestore.backup.numberOfBackupToRetain | default 7 }}"
+                if [[ $? = "0" ]] 
+                then 
+                  echo "New Base Backup Creation Completed!"
+                  echo "Start to trim old backups and retain the recent $RETAIN_BACKUP_NUM backups..."
+                  # Set IFS to avoid new lines being removed
+                  IFS=
+                  OUTPUT=$(/usr/bin/envdir /etc/wal-g.d/env /usr/local/bin/wal-g delete --confirm retain FULL $RETAIN_BACKUP_NUM 2>&1)
+                  ERROR_CODE=$?
+                  echo $OUTPUT
+                  if [[ $ERROR_CODE = "1" ]]
+                  then 
+                    if [[ ${OUTPUT: -9} = "not found" ]]
+                    then
+                      echo "There are less than $RETAIN_BACKUP_NUM backups available. Nothing needs to be deleted!"
+                    else
+                      # print the error but not exit with error & make job to restart for any triming old backup errors.
+                      echo "Error: failed to trim the old backups."
+                    fi
+                  else
+                    echo "Trimming old backups Completed!"
+                  fi
+                else 
+                  echo "Failed to create new base backup!"
+                  exit 1
+                fi
 {{- if not (empty .Values.backupRestore.backup.jobResourceConfig) }}
             resources:
 {{ .Values.backupRestore.backup.jobResourceConfig | toYaml | indent 14 }}
