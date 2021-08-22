@@ -179,6 +179,12 @@ backupRestore:
     # default to every Saturday 15:00PM UTC time (Sydney Time 1:00AM Sunday).
     # The base backup is produced using [wal-g](https://github.com/wal-g/wal-g) via [base backup protocol](https://www.postgresql.org/docs/current/app-pgbasebackup.html) remotely.
     schedule: "15 * * * 6"
+    # -- resource config for the pod container that runs backup jobs. e.g.: <br/>
+    # jobResourceConfig: <br/>
+    # &nbsp;&nbsp;requests: <br/>
+    # &nbsp;&nbsp;&nbsp;&nbsp;memory: "64Mi" <br/>
+    # &nbsp;&nbsp;&nbsp;&nbsp;cpu: "250m" <br/>
+    jobResourceConfig: {}
   recoveryMode: 
     # -- Whether run the DB in the receovery mode.
     # When correct config is in place, recovery script will run (using [wal-g](https://github.com/wal-g/wal-g)) to restore DB using previous backup.
