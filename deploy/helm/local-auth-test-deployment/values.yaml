@@ -6,7 +6,6 @@ global:
   image:
     imagePullSecret: "regcred"
     pullPolicy: Always
-  noDbAuth: true
   useCloudSql: false
   useCombinedDb: true
   enablePriorityClass: false

@@ -9,7 +9,6 @@ global:
   #   repository: "localhost:5000/data61"
   #   tag: "latest"
   #   pullPolicy: Always
-  noDbAuth: true
   useCloudSql: false
   useCombinedDb: true
   enablePriorityClass: false
