@@ -711,7 +711,7 @@ inttest:registryAuth:
     - 'echo "{ \"apiVersion\": \"v1\", \"kind\": \"Secret\", \"metadata\": {\"name\": \"regcred\"}, \"type\": \"kubernetes.io/dockerconfigjson\", \"data\": { \".dockerconfigjson\": \"$DOCKERCONFIGJSON\" }}" | kubectl apply --namespace test2 -f -'
     - helm upgrade test2 deploy/helm/local-auth-test-deployment --namespace test2 --install --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG
     # Forward local ports to kind
-    - kubectl port-forward combined-db-0 5432 --namespace test2 >/dev/null 2>&1 < /dev/null &
+    - kubectl port-forward combined-db-postgresql-0 5432 --namespace test2 >/dev/null 2>&1 < /dev/null &
     - kubectl port-forward deployment/authorization-api 6104:80 --namespace test2 >/dev/null 2>&1 < /dev/null &
     # Wait for port forwarding to start
     - timeout -t 22 sh -c 'until nc -z $0 $1; do sleep 1; done' localhost 5432
