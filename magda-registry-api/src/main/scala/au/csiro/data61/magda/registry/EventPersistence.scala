@@ -321,46 +321,47 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
           - `patch`->'path' is one of `/[propertyName]`, `/[propertyName]/-`(add an item to array), `/[propertyName]/xx` (replace a item at index xx)
         Then return aggregated result as rows
        */
-      val linkedRecordIds = sql"""SELECT DISTINCT ids FROM
-      (SELECT CASE
-        ${SQLSyntax.join(
-        refMap.toSeq.map { ref =>
-          val jsonAspectDataRef =
-            sqls"data #> array['aspect', ${ref._2.propertyName}]"
-          val jsonAspectTextDataRef =
-            sqls"data #>> array['aspect', ${ref._2.propertyName}]"
+      val linkedRecordIds = sql"""SELECT DISTINCT ids FROM (
+       SELECT jsonb_array_elements_text(idsjsonb) as ids FROM
+          (SELECT CASE
+            ${SQLSyntax.join(
+            refMap.toSeq.map { ref =>
+              val jsonAspectDataRef =
+                sqls"data #> array['aspect', ${ref._2.propertyName}]"
+              val jsonAspectTextDataRef =
+                sqls"data #>> array['aspect', ${ref._2.propertyName}]"
 
-          sqls"""
-                WHEN data->>'aspectId'=${ref._1} AND ${jsonAspectDataRef} IS NOT NULL
-                THEN ${if (ref._2.isArray) {
-            sqls"jsonb_array_elements_text(${jsonAspectDataRef})"
-          } else {
-            sqls"${jsonAspectTextDataRef}"
-          }}
-                WHEN data->>'aspectId'=${ref._1} AND data->'patch' IS NOT NULL
-                THEN jsonb_array_elements_text(
-                  (select jsonb_agg(patches->'value')
-                   from jsonb_array_elements(data->'patch') patches
-                   WHERE patches->'value' IS NOT NULL AND
-                      (
-                        patches->>'path'=${s"/${ref._2.propertyName}"}
-                        OR patches->>'path'=${s"/${ref._2.propertyName}/-"}
-                        OR patches->>'path' ilike ${s"/${ref._2.propertyName}/%"}
-                      )
-                  ))
-                """
-        },
-        SQLSyntax.createUnsafely("\n"),
-        false
-      )}
-            END as ids
-         FROM events
-         WHERE data->>'recordId'=${recordId} AND ${SQLSyntax.in(
-        SQLSyntax.createUnsafely("data->>'aspectId'"),
-        refMap
-          .map(_._1)
-          .toSeq
-      )}
+              sqls"""
+                    WHEN data->>'aspectId'=${ref._1} AND ${jsonAspectDataRef} IS NOT NULL
+                    THEN ${if (ref._2.isArray) {
+                      sqls"${jsonAspectDataRef}"
+                    } else {
+                      sqls"jsonb_build_array(${jsonAspectTextDataRef})"
+                    }}
+                    WHEN data->>'aspectId'=${ref._1} AND data->'patch' IS NOT NULL
+                    THEN (select jsonb_agg(patches->'value')
+                       from jsonb_array_elements(data->'patch') patches
+                       WHERE patches->'value' IS NOT NULL AND
+                          (
+                            patches->>'path'=${s"/${ref._2.propertyName}"}
+                            OR patches->>'path'=${s"/${ref._2.propertyName}/-"}
+                            OR patches->>'path' ilike ${s"/${ref._2.propertyName}/%"}
+                          )
+                       )
+                    """
+            },
+            SQLSyntax.createUnsafely("\n"),
+            false
+          )}
+                END as idsjsonb
+             FROM events
+             WHERE data->>'recordId'=${recordId} AND ${SQLSyntax.in(
+            SQLSyntax.createUnsafely("data->>'aspectId'"),
+            refMap
+              .map(_._1)
+              .toSeq
+          )}
+           ) linksidsjsonb
        ) linksids
        WHERE ids IS NOT NULL AND trim(ids)!=''
        """.map(_.string(1)).list.apply()
