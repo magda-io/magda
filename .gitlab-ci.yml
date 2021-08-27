@@ -703,8 +703,7 @@ inttest:registryAuth:
     chmod +x /usr/local/bin/helm
     kind create cluster --config=./kind-config.yaml --wait 20m --image kindest/node:v1.16.15@sha256:83067ed51bf2a3395b24687094e283a7c7c865ccc12a8b1d7aa673ba0c5e8861
     # Set up KUBECONFIG that links to kind - we use sed to edit it so it's pointing to gitlab's docker host
-    kind get kubeconfig --internal > ./kubeconfig
-    cat ./kubeconfig
+    kind get kubeconfig | sed -E -e 's/localhost|0\.0\.0\.0/docker/g' > ./kubeconfig
     export KUBECONFIG="$(pwd)/kubeconfig"
     export JWT_SECRET=udIsbcYaKs1G4n6AdiMSIvPx5KpxQAy8FA2aIcD46iCipNAZvds4jeXFLZKhVvSJZvhYb5Pvgvmtonk7UFfhGnYcd3DXM7KzHG7gBmGO8PCsOZ4t7icqZoJbpdDqYWMmd9XnrVXtJhR6HVFBmEmbk9AmFJ1Gz9ipYPGYLoFcavPs9iZ63KPXgdt4aBdWQcmICkGPYiY8CQOvqOoiU7hUhKDTkJgRRTSaax6UQDOveTQvQnd5uyXuV4os0tlahzRX
     kubectl create ns test2
