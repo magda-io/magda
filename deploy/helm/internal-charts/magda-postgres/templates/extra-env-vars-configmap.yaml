@@ -6,9 +6,13 @@ data:
 {{- if .Values.backupRestore.recoveryMode.enabled }}
   MAGDA_RECOVERY_MODE: "true"
   MAGDA_RECOVERY_BASE_BACKUP_NAME: {{ .Values.backupRestore.recoveryMode.baseBackupName | quote }}
+{{- else }}
+  MAGDA_RECOVERY_MODE: "false"
 {{- end }}
 {{- if .Values.backupRestore.backup.enabled }}
   MAGDA_BACKUP_MODE: "true"
+{{- else }}
+  MAGDA_BACKUP_MODE: "false"
 {{- end }}
 {{- range $key, $value := (deepCopy .Values.backupRestore.storageConfig | merge (deepCopy .Values.envVars)) }}
 {{- if not (empty $key) }}

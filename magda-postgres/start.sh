@@ -17,8 +17,7 @@ if [[ "${MAGDA_BACKUP_MODE:=false}" = "true" ]]
 then
     info "Backup mode is turned on." 
     info "Making sure replication config in ${POSTGRESQL_PGHBA_FILE} is available for creating base backup remotely..."
-    FOUND_REPLICATION_ENTRY=$(cat ${POSTGRESQL_PGHBA_FILE} | grep replication)
-    if [[ "$?" = "0" ]]
+    if FOUND_REPLICATION_ENTRY=$(cat ${POSTGRESQL_PGHBA_FILE} | grep replication)
     then
         info "Found the following 'replication' entry, skip adding 'replication' entry."
         echo $FOUND_REPLICATION_ENTRY
