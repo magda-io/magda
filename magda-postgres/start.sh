@@ -30,9 +30,10 @@ then
     fi
 fi
 
+# '/wal-g/recovery.complet' will only be kept until the pod is recreated
 if is_boolean_yes "$MAGDA_RECOVERY_MODE" && [[ ! -f /wal-g/recovery.complete ]]
 then
-    info "Recovery mode is turned on. Entering recovery mode..."
+    info "Recovery mode is turned on. entering recovery mode..."
     /wal-g/recover.sh
 fi
 

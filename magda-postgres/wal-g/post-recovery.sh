@@ -26,8 +26,10 @@ then
     mv /opt/bitnami/postgresql/conf/conf.d/archive.conf.orig /opt/bitnami/postgresql/conf/conf.d/archive.conf
 fi
 
-info "Recovery completed! postgresql config will be reload to turn off recovery mode..."
+info "Recovery has been completed! Once you check the data, you might want to upgrade the config to turn off recovery mode."
 
-info "To re-enter the recovery mode, please recreate the pod."
+info "To re-enter the recovery mode, please delete the pod to make it to be auto-recreated."
+
+info "Postgresql will now reload the config to start accepting remote conenction and restore backup settings..."
 
 bash -c "sleep 3 && /opt/bitnami/postgresql/bin/pg_ctl reload -D $PGDATA" &

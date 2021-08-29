@@ -20,34 +20,40 @@ cp -f /wal-g/pg_hba.conf /opt/bitnami/postgresql/conf/pg_hba.conf
 # disable archive mode
 if [ -f /opt/bitnami/postgresql/conf/conf.d/archive.conf ]
 then 
-    info "moving away archive.conf before recover..."
+    info "Moving away archive.conf before recover to temporarily disable archiving..."
     mv -f /opt/bitnami/postgresql/conf/conf.d/archive.conf /opt/bitnami/postgresql/conf/conf.d/archive.conf.orig
 fi
 
 # backup pg_wal
 if [ ! -d /wal-g/pg_wal ] && [ -d $PGDATA/pg_wal ]
 then
-    info "saving a copy of pg_wal before fetch base backup..."
+    info "Saving a copy of pg_wal before fetch base backup..."
     mv $PGDATA/pg_wal /wal-g/pg_wal
 fi
 
 # delete all content of $PGDATA
-info "delete all content of $PGDATA before fetching base backup..."
-rm -rf $PGDATA/*
+info "Delete all content of $PGDATA before fetching base backup..."
+for DIR_ITEM in $(ls -a $PGDATA)
+do
+    if [[ $DIR_ITEM != "." ]] && [[ $DIR_ITEM != ".." ]]
+    then
+        rm -rf "$PGDATA/$DIR_ITEM"
+    fi
+done
 
 # fetch most recent full backup
 touch /wal-g/base-backup.fetching
 if [ -z "$MAGDA_RECOVERY_BASE_BACKUP_NAME" ]
 then 
-    info "fetch LATEST backup..."
+    info "Fetching LATEST backup..."
     /usr/bin/envdir /etc/wal-g.d/env /usr/local/bin/wal-g backup-fetch $PGDATA LATEST
 else 
-    info "fetch backup: ${MAGDA_RECOVERY_BASE_BACKUP_NAME}..."
+    info "Fetching backup: ${MAGDA_RECOVERY_BASE_BACKUP_NAME}..."
     /usr/bin/envdir /etc/wal-g.d/env /usr/local/bin/wal-g backup-fetch $PGDATA "$MAGDA_RECOVERY_BASE_BACKUP_NAME"
 fi
 
-rm -f /wal-g/base-backup.fetching
 BACKUP_FETCH_STATUS=$?
+rm -f /wal-g/base-backup.fetching
 
 # check if previous base backup is fully completed
 if [ "$BACKUP_FETCH_STATUS" = "0" ]
@@ -58,7 +64,7 @@ then
     if [ -d /wal-g/pg_wal ]
     then 
         rm -rf $PGDATA/pg_wal
-        info "restoring a saved copy of pg_wal after fetch base backup..."
+        info "Restoring a saved copy of pg_wal after fetched base backup..."
         cp -rf /wal-g/pg_wal $PGDATA/pg_wal
     fi
     # enable recovery mode

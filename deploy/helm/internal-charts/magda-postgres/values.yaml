@@ -181,6 +181,9 @@ backupRestore:
     # When correct config is in place, recovery script will run (using [wal-g](https://github.com/wal-g/wal-g)) to restore DB using previous backup.
     enabled: false
     # -- the name of the base backup that will be used for restoring database. 
+    # By default, the latest base backup will be used. 
+    # If the latest base backup doesn't, you might want to list all available base backups in the target storage and pick an alternative base backup.
+    # e.g. "base_000000020000000000000052".
     baseBackupName: "LATEST"
     
     
