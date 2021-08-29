@@ -20,16 +20,10 @@ rm -f /opt/bitnami/postgresql/conf/conf.d/recovery.conf
 rm -f /opt/bitnami/postgresql/conf/pg_hba.conf
 mv /opt/bitnami/postgresql/conf/pg_hba.conf.orig /opt/bitnami/postgresql/conf/pg_hba.conf
 
-# re-enable archive mode if it's on
-if [ -f /opt/bitnami/postgresql/conf/conf.d/archive.conf.orig ]
-then 
-    mv /opt/bitnami/postgresql/conf/conf.d/archive.conf.orig /opt/bitnami/postgresql/conf/conf.d/archive.conf
-fi
-
 info "Recovery has been completed! Once you check the data, you might want to upgrade the config to turn off recovery mode."
 
 info "To re-enter the recovery mode, please delete the pod to make it to be auto-recreated."
 
-info "Postgresql will now reload the config to start accepting remote conenction and restore backup settings..."
+info "Postgresql will now reload re-enable remote connections..."
 
 bash -c "sleep 3 && /opt/bitnami/postgresql/bin/pg_ctl reload -D $PGDATA" &

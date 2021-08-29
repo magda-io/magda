@@ -17,13 +17,6 @@ cp -f /wal-g/recovery.conf /opt/bitnami/postgresql/conf/conf.d/recovery.conf
 mv -f /opt/bitnami/postgresql/conf/pg_hba.conf /opt/bitnami/postgresql/conf/pg_hba.conf.orig
 cp -f /wal-g/pg_hba.conf /opt/bitnami/postgresql/conf/pg_hba.conf
 
-# disable archive mode
-if [ -f /opt/bitnami/postgresql/conf/conf.d/archive.conf ]
-then 
-    info "Moving away archive.conf before recover to temporarily disable archiving..."
-    mv -f /opt/bitnami/postgresql/conf/conf.d/archive.conf /opt/bitnami/postgresql/conf/conf.d/archive.conf.orig
-fi
-
 # backup pg_wal
 if [ ! -d /wal-g/pg_wal ] && [ -d $PGDATA/pg_wal ]
 then
