@@ -9,11 +9,13 @@ set -o pipefail
 
 # Load libraries
 . /opt/bitnami/scripts/liblog.sh
+. /opt/bitnami/scripts/libvalidations.sh
 
 # Load PostgreSQL environment variables
 . /opt/bitnami/scripts/postgresql-env.sh
 
-if [[ "${MAGDA_BACKUP_MODE:=false}" = "true" ]]
+# is_boolean_yes function can recognise both case insensitive 'yes' or 'true'
+if is_boolean_yes "$MAGDA_BACKUP_MODE"
 then
     info "Backup mode is turned on." 
     info "Making sure replication config in ${POSTGRESQL_PGHBA_FILE} is available for creating base backup remotely..."
@@ -28,7 +30,7 @@ then
     fi
 fi
 
-if [[ "${MAGDA_RECOVERY_MODE:=false}" = "true" ]] && [[ ! -f /wal-g/recovery.complete ]]
+if is_boolean_yes "$MAGDA_RECOVERY_MODE" && [[ ! -f /wal-g/recovery.complete ]]
 then
     info "Recovery mode is turned on. Entering recovery mode..."
     /wal-g/recover.sh

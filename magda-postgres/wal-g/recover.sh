@@ -3,6 +3,13 @@
 # Recovery script that implements the recommended recovery steps here:
 # https://www.postgresql.org/docs/13/continuous-archiving.html#BACKUP-PITR-RECOVERY
 
+# Load libraries
+. /opt/bitnami/scripts/liblog.sh
+. /opt/bitnami/scripts/libvalidations.sh
+
+# Load PostgreSQL environment variables
+. /opt/bitnami/scripts/postgresql-env.sh
+
 # Turn on recovery conf
 cp -f /wal-g/recovery.conf /opt/bitnami/postgresql/conf/conf.d/recovery.conf
 
@@ -13,28 +20,29 @@ cp -f /wal-g/pg_hba.conf /opt/bitnami/postgresql/conf/pg_hba.conf
 # disable archive mode
 if [ -f /opt/bitnami/postgresql/conf/conf.d/archive.conf ]
 then 
-    echo "moving away archive.conf before recover..."
+    info "moving away archive.conf before recover..."
     mv -f /opt/bitnami/postgresql/conf/conf.d/archive.conf /opt/bitnami/postgresql/conf/conf.d/archive.conf.orig
 fi
 
 # backup pg_wal
 if [ ! -d /wal-g/pg_wal ] && [ -d $PGDATA/pg_wal ]
 then
-    echo "saving a copy of pg_wal before fetch base backup..."
+    info "saving a copy of pg_wal before fetch base backup..."
     mv $PGDATA/pg_wal /wal-g/pg_wal
 fi
 
 # delete all content of $PGDATA
+info "delete all content of $PGDATA before fetching base backup..."
 rm -rf $PGDATA/*
 
 # fetch most recent full backup
 touch /wal-g/base-backup.fetching
 if [ -z "$MAGDA_RECOVERY_BASE_BACKUP_NAME" ]
 then 
-    echo "fetch LATEST backup..."
+    info "fetch LATEST backup..."
     /usr/bin/envdir /etc/wal-g.d/env /usr/local/bin/wal-g backup-fetch $PGDATA LATEST
 else 
-    echo "fetch backup: ${MAGDA_RECOVERY_BASE_BACKUP_NAME}..."
+    info "fetch backup: ${MAGDA_RECOVERY_BASE_BACKUP_NAME}..."
     /usr/bin/envdir /etc/wal-g.d/env /usr/local/bin/wal-g backup-fetch $PGDATA "$MAGDA_RECOVERY_BASE_BACKUP_NAME"
 fi
 
@@ -50,7 +58,7 @@ then
     if [ -d /wal-g/pg_wal ]
     then 
         rm -rf $PGDATA/pg_wal
-        echo "restoring a saved copy of pg_wal after fetch base backup..."
+        info "restoring a saved copy of pg_wal after fetch base backup..."
         cp -rf /wal-g/pg_wal $PGDATA/pg_wal
     fi
     # enable recovery mode
@@ -60,7 +68,7 @@ else
     # try to go ahead without entering recovery
     # Restore pg_wal with previous saved copy
     # Remove the saved copy at /wal-g/pg_wal
-    echo "Failed to fetch / restore base backup, will restart the pod..."
+    error "Failed to fetch / restore base backup, will restart the pod..."
     rm -f touch $PGDATA/recovery.signal
     exit 1
 fi
