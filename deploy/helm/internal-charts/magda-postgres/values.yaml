@@ -6,16 +6,16 @@ global:
     # The created user will have superuser privileges if username is postgres
     # For in k8s PostgreSQL, we should use `postgres` so it has privileges for DB schema migrators to run
     postgresqlUsername: "postgres"
-    # Default database name to be created. At the moment, its value must be `postgres`.
+    # -- Default database name to be created. At the moment, its value must be `postgres`.
     postgresqlDatabase: "postgres"
     # -- Whether auto create password secret. More see `magda-core` chart document
     autoCreateSecret: true
 
 postgresql:
-  # Set `fullnameOverride` & `nameOverride` to fixed value so it's easier to manage the naming pattern.
+  # -- Set `fullnameOverride` & `nameOverride` to fixed value so it's easier to manage the naming pattern.
   # And point k8s service to DB instance.
   fullnameOverride: "default-db-postgresql"
-  # Set `fullnameOverride` & `nameOverride` to fixed value so it's easier to manage the naming pattern.
+  # -- Set `fullnameOverride` & `nameOverride` to fixed value so it's easier to manage the naming pattern.
   # And point k8s service to DB instance.
   nameOverride: "default-db-postgresql"
   image: 
@@ -155,11 +155,15 @@ backupRestore:
     # -- wal-g docker image pull policy
     pullPolicy: IfNotPresent
   backup:
-    # whether backup feature should be turn on.
+    # -- whether backup feature should be turn on.
+    # The change of this field (and all other fields in backupRestore section) will take effect after restart the database pod.
     enabled: false
-    # archive timeout setting. See: https://www.postgresql.org/docs/13/runtime-config-wal.html#GUC-ARCHIVE-TIMEOUT
-    archiveTimeout: 60
-    # See: https://www.postgresql.org/docs/13/runtime-config-wal.html#GUC-WAL-LEVEL
+    # -- archive timeout setting. See: https://www.postgresql.org/docs/13/runtime-config-wal.html#GUC-ARCHIVE-TIMEOUT
+    # This setting guarantees there would be at least one WAL segment file generated (Thus, avaiable for backup) within the time frame.
+    # Lower this value will bloat your archive storage but will reduce the max. time window of data loss when you need to recover from the WAL achieve backup.
+    # Default value is 600 seconds (10 mins)
+    archiveTimeout: 600
+    # -- See: https://www.postgresql.org/docs/13/runtime-config-wal.html#GUC-WAL-LEVEL
     # You shouldn't change this option unless for special reason.
     walLevel: "replica"
     # -- old backup will be removed every time when a new backup has been created.
@@ -179,6 +183,7 @@ backupRestore:
   recoveryMode: 
     # -- Whether run the DB in the receovery mode.
     # When correct config is in place, recovery script will run (using [wal-g](https://github.com/wal-g/wal-g)) to restore DB using previous backup.
+    # The change of this field (and all other fields in backupRestore section) will take effect after restart the database pod.
     enabled: false
     # -- the name of the base backup that will be used for restoring database. 
     # By default, the latest base backup will be used. 
