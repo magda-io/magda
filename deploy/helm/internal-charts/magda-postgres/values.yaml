@@ -117,17 +117,6 @@ postgresql:
     successThreshold: {{ .Values.readinessProbe.successThreshold }}
     failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
 
-  # -- Posgresql host-based authentication config.
-  # We added `replication` entry by default in order to enable remotely base backup creation using wal-g
-  pgHbaConfiguration: |
-    host     all             all        0.0.0.0/0               md5
-    host     all             all        ::/0                    md5
-    local    all             all                                md5
-    host     all             all        127.0.0.1/32            md5
-    host     all             all        ::1/128                 md5
-    # replication keyword allows base backup to be created remotely using wal-g
-    host     replication     all        0.0.0.0/0               md5
-
 # -- any postgreSQL config options here have highest priority and will override any existing config option values.
 # Be sure you understand the impact of any values set as they might override the values required for other helm chart options.
 # More details please see here: extended-config-configmap.yaml template
