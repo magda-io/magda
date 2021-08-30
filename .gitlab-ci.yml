@@ -728,7 +728,7 @@ inttest:registryAuth:
     PGPASSWORD="${DB_PASSWORD:-$(pwgen 16 1)}"
     kubectl create secret generic db-main-account-secret --from-literal=postgresql-password=$PGPASSWORD --namespace test2
     
-    helm upgrade test2 deploy/helm/local-auth-test-deployment --debug --namespace test2 --install --timeout 1200s --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,magda-core.combined-db.magda-postgres.postgresql.image.registry=registry.gitlab.com,magda-core.combined-db.magda-postgres.postgresql.image.repository=magda-data/magda/data61/magda-postgres,magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG
+    helm upgrade test2 deploy/helm/local-auth-test-deployment --debug --namespace test2 --install --timeout 1200s --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,global.postgresql.autoCreateSecret=false,magda-core.combined-db.magda-postgres.postgresql.image.registry=registry.gitlab.com,magda-core.combined-db.magda-postgres.postgresql.image.repository=magda-data/magda/data61/magda-postgres,magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG
     
     # Forward local ports to kind
     kubectl port-forward combined-db-postgresql-0 5432 --namespace test2 >/dev/null 2>&1 < /dev/null &
