@@ -702,22 +702,32 @@ inttest:registryAuth:
         fi
       done
   script: |
-    apk add --update postgresql-client sed curl
+    apk add --update postgresql-client sed curl pwgen
     curl -Lo /usr/local/bin/kind https://github.com/kubernetes-sigs/kind/releases/download/${KIND}/kind-$(uname)-amd64 -C -
     chmod +x /usr/local/bin/kind
     curl -Lo /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/${KUBECTL}/bin/linux/amd64/kubectl -C -
     chmod +x /usr/local/bin/kubectl
     curl -L https://get.helm.sh/helm-v3.5.2-linux-amd64.tar.gz -C - | tar -xzO linux-amd64/helm > /usr/local/bin/helm
     chmod +x /usr/local/bin/helm
+    
+    # create k8s cluster
     kind create cluster --config=./kind-config.yaml --wait 20m --image kindest/node:v1.16.15@sha256:83067ed51bf2a3395b24687094e283a7c7c865ccc12a8b1d7aa673ba0c5e8861
+    
     # Set up KUBECONFIG that links to kind - we use sed to edit it so it's pointing to gitlab's docker host
     kind get kubeconfig | sed -E -e 's/localhost|0\.0\.0\.0/docker/g' > ./kubeconfig
+    
     export KUBECONFIG="$(pwd)/kubeconfig"
     export JWT_SECRET=udIsbcYaKs1G4n6AdiMSIvPx5KpxQAy8FA2aIcD46iCipNAZvds4jeXFLZKhVvSJZvhYb5Pvgvmtonk7UFfhGnYcd3DXM7KzHG7gBmGO8PCsOZ4t7icqZoJbpdDqYWMmd9XnrVXtJhR6HVFBmEmbk9AmFJ1Gz9ipYPGYLoFcavPs9iZ63KPXgdt4aBdWQcmICkGPYiY8CQOvqOoiU7hUhKDTkJgRRTSaax6UQDOveTQvQnd5uyXuV4os0tlahzRX
     kubectl create ns test2
     echo "{ \"apiVersion\": \"v1\", \"kind\": \"Secret\", \"metadata\": {\"name\": \"auth-secrets\"}, \"type\": \"Opaque\", \"data\": {\"jwt-secret\": \"dWRJc2JjWWFLczFHNG42QWRpTVNJdlB4NUtweFFBeThGQTJhSWNENDZpQ2lwTkFadmRzNGplWEZMWktoVnZTSlp2aFliNVB2Z3ZtdG9uazdVRmZoR25ZY2QzRFhNN0t6SEc3Z0JtR084UENzT1o0dDdpY3Fab0picGREcVlXTW1kOVhuclZYdEpoUjZIVkZCbUVtYms5QW1GSjFHejlpcFlQR1lMb0ZjYXZQczlpWjYzS1BYZ2R0NGFCZFdRY21JQ2tHUFlpWThDUU92cU9vaVU3aFVoS0RUa0pnUlJUU2FheDZVUURPdmVUUXZRbmQ1dXlYdVY0b3MwdGxhaHpSWA==\"}}" | kubectl apply --namespace test2 -f -
     echo "{ \"apiVersion\": \"v1\", \"kind\": \"Secret\", \"metadata\": {\"name\": \"regcred\"}, \"type\": \"kubernetes.io/dockerconfigjson\", \"data\": { \".dockerconfigjson\": \"$DOCKERCONFIGJSON\" }}" | kubectl apply --namespace test2 -f -
+    
+    # Create DB password secret
+    PGPASSWORD="${DB_PASSWORD:-$(pwgen 16 1)}"
+    kubectl create secret generic db-main-account-secret --from-literal=postgresql-password=$PGPASSWORD --namespace test2
+    
     helm upgrade test2 deploy/helm/local-auth-test-deployment --debug --namespace test2 --install --timeout 1200s --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,magda-core.combined-db.magda-postgres.postgresql.image.registry=registry.gitlab.com,magda-core.combined-db.magda-postgres.postgresql.image.repository=magda-data/magda/data61/magda-postgres,magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG
+    
     # Forward local ports to kind
     kubectl port-forward combined-db-postgresql-0 5432 --namespace test2 >/dev/null 2>&1 < /dev/null &
     kubectl port-forward deployment/authorization-api 6104:80 --namespace test2 >/dev/null 2>&1 < /dev/null &
