@@ -654,6 +654,7 @@ dockerize:dockerExtensions:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 2
+  needs: ["builders-and-yarn"]
   cache:
     paths: []
   services:
@@ -672,6 +673,7 @@ inttest:registryAuth:
     "sbt-prebuild",
     "builders-and-yarn",
     "buildtest:registry",
+    "dockerize:dockerExtensions",
     "buildtest:helm-charts"
   ]
   dependencies:
