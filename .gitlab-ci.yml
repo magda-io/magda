@@ -510,15 +510,15 @@ buildtest:opa-policies:
 
 buildtest:helm-charts:
   stage: buildtest
-  image: dtzar/helm-kubectl:3.1.1
+  image: dtzar/helm-kubectl:3.5.2
   needs: ["builders-and-yarn"]
   dependencies:
     - builders-and-yarn
   cache:
     paths: []
   script:
-    # Init helm
-    # - helm init --client-only
+    - apk add nodejs npm
+    - npm install yarn
     - helm repo add magda-io https://charts.magda.io
     - yarn update-all-charts
 
@@ -743,7 +743,7 @@ inttest:registryAuth:
   cache:
     paths: []
   image:
-    name: dtzar/helm-kubectl:3.1.1
+    name: dtzar/helm-kubectl:3.5.2
   retry: 1
   environment:
     name: preview/$CI_COMMIT_REF_NAME
@@ -820,7 +820,7 @@ Stop Preview: &stopPreview
   cache:
     paths: []
   image:
-    name: dtzar/helm-kubectl:3.1.1
+    name: dtzar/helm-kubectl:3.5.2
   retry: 1
   before_script: []
   environment:
@@ -840,7 +840,7 @@ Deploy Master To Dev:
   dependencies:
     - buildtest:helm-charts
   image:
-    name: dtzar/helm-kubectl:3.1.1
+    name: dtzar/helm-kubectl:3.5.2
   retry: 1
   before_script: []
   environment:
@@ -936,7 +936,7 @@ Publish Helm Chart:
     - buildtest:helm-charts
     - pre-release:check-release-version
   image:
-    name: dtzar/helm-kubectl:3.1.1
+    name: dtzar/helm-kubectl:3.5.2
   cache:
     key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
