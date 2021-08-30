@@ -511,7 +511,9 @@ buildtest:opa-policies:
 buildtest:helm-charts:
   stage: buildtest
   image: dtzar/helm-kubectl:3.1.1
-  needs: []
+  needs: ["builders-and-yarn"]
+  dependencies:
+    - builders-and-yarn
   cache:
     paths: []
   script:
