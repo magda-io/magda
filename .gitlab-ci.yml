@@ -517,8 +517,7 @@ buildtest:helm-charts:
   cache:
     paths: []
   script:
-    - apk add nodejs npm
-    - npm install yarn
+    - apk add nodejs npm yarn
     - helm repo add magda-io https://charts.magda.io
     - yarn update-all-charts
 
