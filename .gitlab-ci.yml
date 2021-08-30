@@ -720,8 +720,8 @@ inttest:registryAuth:
     kubectl create ns test2
     echo "{ \"apiVersion\": \"v1\", \"kind\": \"Secret\", \"metadata\": {\"name\": \"auth-secrets\"}, \"type\": \"Opaque\", \"data\": {\"jwt-secret\": \"dWRJc2JjWWFLczFHNG42QWRpTVNJdlB4NUtweFFBeThGQTJhSWNENDZpQ2lwTkFadmRzNGplWEZMWktoVnZTSlp2aFliNVB2Z3ZtdG9uazdVRmZoR25ZY2QzRFhNN0t6SEc3Z0JtR084UENzT1o0dDdpY3Fab0picGREcVlXTW1kOVhuclZYdEpoUjZIVkZCbUVtYms5QW1GSjFHejlpcFlQR1lMb0ZjYXZQczlpWjYzS1BYZ2R0NGFCZFdRY21JQ2tHUFlpWThDUU92cU9vaVU3aFVoS0RUa0pnUlJUU2FheDZVUURPdmVUUXZRbmQ1dXlYdVY0b3MwdGxhaHpSWA==\"}}" | kubectl apply --namespace test2 -f -
     echo "{ \"apiVersion\": \"v1\", \"kind\": \"Secret\", \"metadata\": {\"name\": \"regcred\"}, \"type\": \"kubernetes.io/dockerconfigjson\", \"data\": { \".dockerconfigjson\": \"$DOCKERCONFIGJSON\" }}" | kubectl apply --namespace test2 -f -
-    kubectl get pv
-    kubectl -n test2 pod
+    kubectl get pv || echo "failed!"
+    kubectl -n test2 get pod || echo "failed!"
     helm upgrade test2 deploy/helm/local-auth-test-deployment --debug --namespace test2 --install --timeout 1200s --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,magda-core.combined-db.magda-postgres.postgresql.image.registry=registry.gitlab.com,magda-core.combined-db.magda-postgres.postgresql.image.repository=magda-data/magda/data61/magda-postgres,magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG
     # Forward local ports to kind
     kubectl port-forward combined-db-postgresql-0 5432 --namespace test2 >/dev/null 2>&1 < /dev/null &
