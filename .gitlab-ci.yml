@@ -740,6 +740,8 @@ inttest:registryAuth:
     psql -h localhost -p 5432 -U postgres -d auth -f magda-registry-api/src/test/resources/data/organizations.sql
     psql -h localhost -p 5432 -U postgres -d auth -f magda-registry-api/src/test/resources/data/users.sql
     # Test!
+    export POSTGRES_USER=postgres
+    export POSTGRES_PASSWORD=$PGPASSWORD
     sbt "registryApi/testOnly au.csiro.data61.magda.opa.*"
 
 (Full) Run As Preview: &runAsPreview
