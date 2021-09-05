@@ -15,6 +15,68 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{/*
+  Return the k8s object if it's managed by current release by matching the following metadata:
+  - annotations: 
+    - "meta.helm.sh/release-name" should be $.Release.Name
+    - "meta.helm.sh/release-namespace" should be $.Release.Namespace.
+  - labels:
+    - "app.kubernetes.io/managed-by": should be $.Release.Service
+  Parameters:
+    `apiVersion`: api version of the k8s object. e.g. `v1`
+    `kind`: k8s object kind. e.g. `Secret`
+    `name`: k8s object name.
+    `namespace`: Optional; The namespace of the object. When not specified, the value of `$.Release.Namespace` will be used.
+  Return value: the JSON string of k8s object data or string "{}" (when not found)
+  Usage: 
+  {{- $secret := fromJson(include "magda.lookUpAsPartOfRelease" (dict "apiVersion" "v1" "kind" "Secret" "name" "my-secret")) }}
+  OR
+  {{- $secret := fromJson(include "magda.lookUpAsPartOfRelease" (dict "apiVersion" "v1" "kind" "Secret" "name" "my-secret" "namespace" "another-namespace")) }}
+*/}}
+{{- define "magda.lookUpAsPartOfRelease" -}}
+{{- $namespace := .namespace | default $.Release.Namespace }}
+{{- $objectData := (lookup .apiVersion .kind $namespace .name) }}
+{{- if empty $objectData }}
+{{- dict | mustToJson }}
+{{- else }}
+  {{- $metadata := (get $objectData "metadata") | default dict }}
+  {{- $annotations := (get $metadata "annotations") | default dict }}
+  {{- $labels := (get $metadata "labels") | default dict }}
+  {{- if and (get $annotations "meta.helm.sh/release-name" | eq $.Release.Name) (get $annotations "meta.helm.sh/release-namespace" | eq $.Release.Namespace) (get $labels "app.kubernetes.io/managed-by" | eq $.Release.Service) }}
+    {{- $objectData | mustToJson }}
+  {{- else }}
+    {{- dict | mustToJson }}
+  {{- end }}
+{{- end }}
+{{- end -}}
+
+{{/*
+  Given a k8s object data (in dict type), test if it's part of helm release by the following metadata:
+  - annotations: 
+    - "meta.helm.sh/release-name" should be $.Release.Name
+    - "meta.helm.sh/release-namespace" should be $.Release.Namespace.
+  - labels:
+    - "app.kubernetes.io/managed-by": should be $.Release.Service
+  Return value: string "true" (indicate it's part of release) or empty string ""
+  Usage: 
+  {{- if include "magda.isPartOfRelease" $k8sObjectData }}
+    {{- print "Is part of release"}}
+  {{- else }}
+    {{- print "Is not part of release"}}
+  {{- if}}
+*/}}
+{{- define "magda.isPartOfRelease" -}}
+{{- $objectData := . | default dict }}
+{{- $metadata := (get $objectData "metadata") | default dict }}
+{{- $annotations := (get $metadata "annotations") | default dict }}
+{{- $labels := (get $metadata "labels") | default dict }}
+{{- if and (get $annotations "meta.helm.sh/release-name" | eq $.Release.Name) (get $annotations "meta.helm.sh/release-namespace" | eq $.Release.Namespace) (get $labels "app.kubernetes.io/managed-by" | eq $.Release.Service) }}
+  {{- print "true" }}
+{{- else }}
+  {{- print "" }}
+{{- end }}
+{{- end -}}
+
 {{- define "magda.pullSecrets" -}}
   {{- $pullSecrets := list }}
   {{- if not (empty .Values.image) }}
@@ -51,8 +113,10 @@ imagePullSecrets:
 
 {{- define "magda.db-client-password-secret-creation" -}}
 {{- if .Values.autoCreateSecret }}
-{{- $secret := (lookup "v1" "Secret" .Release.Namespace (printf "%s-password" .Chart.Name) ) }}
-{{- $legacySecret := (lookup "v1" "Secret" .Release.Namespace "db-passwords") }}
+{{- $secret := (lookup "v1" "Secret" .Release.Namespace (printf "%s-password" .Chart.Name)) | default dict }}
+{{- $legacySecret := (lookup "v1" "Secret" .Release.Namespace "db-passwords") | default dict }}
+{{- /* only attempt to create secret when secret not exists or the existing secret is part of current helm release */}}
+{{- if or (empty $secret) (include "magda.isPartOfRelease" $secret | empty | not) }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -62,11 +126,12 @@ metadata:
 type: Opaque
 data:
 {{- if $secret }}
-  password: {{ get $secret.data "password" }}
+  password: {{ get (get $secret "data" | default dict) "password" }}
 {{- else if $legacySecret }}
-  password: {{ get $legacySecret.data (printf "%s-client" .Chart.Name) }}
+  password: {{ get (get $legacySecret "data" | default dict) (printf "%s-client" .Chart.Name) }}
 {{- else }}
   password: {{ randAlphaNum 16 | b64enc | quote }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end -}}

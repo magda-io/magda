@@ -77,7 +77,14 @@ global:
   # If this parameter not presents, user will be redirected further (at frontend) to account page /account.
   # Otherwise, user will redirected to the url sepcified by `redirectTo` query parameter.
   authPluginRedirectUrl: "/sign-in-redirect"
-  
+
+# -- Whether or not auto create a k8s secrets named `auth-secrets` that contains:
+# <ul>
+# <li> JWT secret, under key: `jwt-secret`. Used internally by Magda gateway to issue JWT token.</li>
+# <li> Session secret, under key: `session-secret`. Used by Magda gateway for managing session data.</li>
+# </ul>
+# The auto generated secrets will be 32 chars (256bits) long.
+autoCreateAuthSecrets: false
 
 # -- (object) Control on/ off of each modules. 
 # To turn on/off openfaas, please set value to `global.openfaas.enabled`
