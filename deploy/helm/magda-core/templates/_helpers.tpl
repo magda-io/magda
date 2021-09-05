@@ -16,41 +16,6 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 
 {{/*
-  Return the k8s object if it's managed by current release by matching the following metadata:
-  - annotations: 
-    - "meta.helm.sh/release-name" should be $.Release.Name
-    - "meta.helm.sh/release-namespace" should be $.Release.Namespace.
-  - labels:
-    - "app.kubernetes.io/managed-by": should be $.Release.Service
-  Parameters:
-    `apiVersion`: api version of the k8s object. e.g. `v1`
-    `kind`: k8s object kind. e.g. `Secret`
-    `name`: k8s object name.
-    `namespace`: Optional; The namespace of the object. When not specified, the value of `$.Release.Namespace` will be used.
-  Return value: the JSON string of k8s object data or string "{}" (when not found)
-  Usage: 
-  {{- $secret := fromJson(include "magda.lookUpAsPartOfRelease" (dict "apiVersion" "v1" "kind" "Secret" "name" "my-secret")) }}
-  OR
-  {{- $secret := fromJson(include "magda.lookUpAsPartOfRelease" (dict "apiVersion" "v1" "kind" "Secret" "name" "my-secret" "namespace" "another-namespace")) }}
-*/}}
-{{- define "magda.lookUpAsPartOfRelease" -}}
-{{- $namespace := .namespace | default $.Release.Namespace }}
-{{- $objectData := (lookup .apiVersion .kind $namespace .name) }}
-{{- if empty $objectData }}
-{{- dict | mustToJson }}
-{{- else }}
-  {{- $metadata := (get $objectData "metadata") | default dict }}
-  {{- $annotations := (get $metadata "annotations") | default dict }}
-  {{- $labels := (get $metadata "labels") | default dict }}
-  {{- if and (get $annotations "meta.helm.sh/release-name" | eq $.Release.Name) (get $annotations "meta.helm.sh/release-namespace" | eq $.Release.Namespace) (get $labels "app.kubernetes.io/managed-by" | eq $.Release.Service) }}
-    {{- $objectData | mustToJson }}
-  {{- else }}
-    {{- dict | mustToJson }}
-  {{- end }}
-{{- end }}
-{{- end -}}
-
-{{/*
   Given a k8s object data (in dict type), test if it's part of helm release by the following metadata:
   - annotations: 
     - "meta.helm.sh/release-name" should be $.Release.Name
