@@ -80,7 +80,8 @@ imagePullSecrets:
 {{- end -}}
 
 {{- define "magda.db-client-password-secret-creation" -}}
-{{- if .Values.autoCreateSecret }}
+{{- /* only create when current chart is `combined-db` or the independent k8s db instance for the current chart (logic db) is on */}}
+{{- if and .Values.autoCreateSecret (or (eq .Chart.Name "combined-db") ((get .Values.global.useInK8sDbInstance .Chart.Name) | empty | not)) }}
 {{- $secret := (lookup "v1" "Secret" .Release.Namespace (printf "%s-password" .Chart.Name)) | default dict }}
 {{- $legacySecret := (lookup "v1" "Secret" .Release.Namespace "db-passwords") | default dict }}
 {{- /* only attempt to create secret when secret not exists or the existing secret is part of current helm release */}}
