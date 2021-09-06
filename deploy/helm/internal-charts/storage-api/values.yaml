@@ -6,6 +6,16 @@ resources:
   limits:
     cpu: 50m
 
+# -- Whether or not auto create `storage-secrets`.
+# When auto created, random 20 chars will be generated for `accessKey` and random 40 chars will be generated for `secretKey`.
+# When use minio as gateway mode, you might want to manualy generate the secret in order supply cloud provider secrets. e.g.
+# <ul>
+#   <li>awsAccessKeyId: aws s3 access key id if use AWS s3</li>
+#   <li>awsSecretAccessKey: aws s3 secret access key id if use AWS s3</li>
+#   <li>gcs_key.json: GCS key file if use google GCS</li>
+# </ul>
+autoCreateSecrets: true
+
 # -- specify bucket region
 # @default -- "unspecified-region"
 minioRegion: ""
