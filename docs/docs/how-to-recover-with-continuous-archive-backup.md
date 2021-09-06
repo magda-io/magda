@@ -172,3 +172,5 @@ Since Magda version 1.0.0, we switch to [wal-g](https://github.com/wal-g) for ha
 Although `wal-g` create base backups in a slight different structure & format which is not compatibile with `wal-e`, `wal-g` can handle backups previously created with `wal-e`.
 
 > Please note: If you attempt to recover from a `wal-e` backup that is stored on Google Cloud Storage (GCS), you will need to set environment variable `GCS_NORMALIZE_PREFIX`=`false` (via `combined-db.magda-postgres.backupRestore.storageConfig` config option). It's becasue `wal-e` might create double slashes `//` when store your backup (i.e. your actually GCS prefix might be `gs://xxx//xx`). See [here](https://github.com/wal-g/wal-g/blob/master/docs/STORAGES.md#gcs) for more details.
+
+For more information of turning on backup & recovery mode on Magda v0.0.60 or earlier, please refer to [this document](./migration/0.0.60-to-1.0.0.md#turn-on-backup-mode-prior-to-v100)
