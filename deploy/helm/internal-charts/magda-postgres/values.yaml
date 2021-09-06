@@ -18,16 +18,16 @@ postgresql:
   # -- Set `fullnameOverride` & `nameOverride` to fixed value so it's easier to manage the naming pattern.
   # And point k8s service to DB instance.
   nameOverride: "default-db-postgresql"
-  image: 
+  image:
     # -- the default docker image tag/version used by the postgresql chart. 
     # When dump the magda version using `yarn set-version` (at magda repo root), this default version will be auto-replaced with the new chart version number.
-    tag: "1.0.0-alpha.0"
+    tag: "1.0.0-alpha.1"
     repository: "data61/magda-postgres"
-  
+
   # -- For dev cluster, we can set it to `magda-9` to controll how combined-db is scheduled.
   # e.g. schedule only on non-preemptible nodes
   priorityClassName: ""
-  
+
   # -- the name of config map contains entended postgresql config options.
   # You should not change this value as this configMap is auto-generated.
   # If you want to override the postgresql conf option, you should add options to `.Values.config` field of `magda-postgres` chart.
@@ -49,7 +49,7 @@ postgresql:
     # -- extra volume mount can be set here. 
     # e.g. mount backup storage config secret and map as files in /etc/wal-g.d/env
     extraVolumeMounts: []
-      
+
   persistence:
     # -- set the persistence volume size of the postgresql statefulset
     size: "50Gi"
@@ -58,7 +58,7 @@ postgresql:
     requests:
       cpu: 200m
       memory: 500Mi
-  
+
   livenessProbe:
     # -- `customLivenessProbe` will only be used when `enabled`=`false`
     # Otherwise, default livenessProbe will be used.
@@ -123,7 +123,7 @@ postgresql:
 config: {}
 
 # -- any extra env vars that will be avialable in DB pod.
-envVars: 
+envVars:
   # -- we move wal-g prefetch location outside PGDATA to avoid pg_rewind issue in postgresql 13.
   # See: https://github.com/wal-g/wal-g/blob/master/docs/PostgreSQL.md
   WALG_PREFETCH_DIR: "/wal-g/prefetch"
@@ -180,7 +180,7 @@ backupRestore:
     # &nbsp;&nbsp;&nbsp;&nbsp;memory: "64Mi" <br/>
     # &nbsp;&nbsp;&nbsp;&nbsp;cpu: "250m" <br/>
     jobResourceConfig: {}
-  recoveryMode: 
+  recoveryMode:
     # -- Whether run the DB in the receovery mode.
     # When correct config is in place, recovery script will run (using [wal-g](https://github.com/wal-g/wal-g)) to restore DB using previous backup.
     # The change of this field (and all other fields in backupRestore section) will take effect after restart the database pod.
@@ -190,11 +190,3 @@ backupRestore:
     # If the latest base backup doesn't, you might want to list all available base backups in the target storage and pick an alternative base backup.
     # e.g. "base_000000020000000000000052".
     baseBackupName: "LATEST"
-    
-    
-
-    
-
-
-
-  
