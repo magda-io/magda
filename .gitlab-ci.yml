@@ -728,7 +728,7 @@ inttest:registryAuth:
     export PGPASSWORD="${DB_PASSWORD:-$(pwgen 16 1)}"
     kubectl create secret generic db-main-account-secret --from-literal=postgresql-password=$PGPASSWORD --namespace test2
     
-    helm upgrade test2 deploy/helm/local-auth-test-deployment --debug --namespace test2 --install --timeout 1200s --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,global.postgresql.autoCreateSecret=false,magda-core.combined-db.magda-postgres.postgresql.image.registry=registry.gitlab.com,magda-core.combined-db.magda-postgres.postgresql.image.repository=magda-data/magda/data61/magda-postgres,magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG
+    helm upgrade test2 deploy/helm/local-auth-test-deployment --debug --namespace test2 --install --timeout 1200s --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,magda-core.combined-db.magda-postgres.postgresql.image.registry=registry.gitlab.com,magda-core.combined-db.magda-postgres.postgresql.image.repository=magda-data/magda/data61/magda-postgres,magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG
     
     # Forward local ports to kind
     kubectl port-forward combined-db-postgresql-0 5432 --namespace test2 >/dev/null 2>&1 < /dev/null &
@@ -769,8 +769,6 @@ inttest:registryAuth:
     # Env vars
     - MINIO_HOST="${MINIO_HOST:-localhost}"
     - MINIO_PORT="${MINIO_PORT:-9000}"
-    - MINIO_ACCESS_KEY="${MINIO_ACCESS_KEY:-}"
-    - MINIO_SECRET_KEY="${MINIO_SECRET_KEY:-}"
 
     # Kube Config
     - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
@@ -786,7 +784,6 @@ inttest:registryAuth:
     - kubectl create secret generic smtp-secret --from-literal=username=$SMTP_USERNAME --from-literal=password=$SMTP_PASSWORD --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
     - echo "$DB_SERVICE_ACCOUNT_PRIVATE_KEY" > backup-storage-account.json
     - kubectl create secret generic backup-storage-account --from-file backup-storage-account.json --from-literal=GOOGLE_APPLICATION_CREDENTIALS=/etc/wal-g.d/env/backup-storage-account.json --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
-    - kubectl create secret generic storage-secrets --from-literal=accesskey=$MINIO_ACCESS_KEY --from-literal=secretkey=$MINIO_SECRET_KEY --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
   script:
     - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/local-deployment --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600m --wait
     - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
