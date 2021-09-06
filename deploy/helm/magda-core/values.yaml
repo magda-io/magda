@@ -84,7 +84,7 @@ global:
 # <li> Session secret, under key: `session-secret`. Used by Magda gateway for managing session data.</li>
 # </ul>
 # The auto generated secrets will be 32 chars (256bits) long.
-autoCreateAuthSecrets: false
+autoCreateAuthSecrets: true
 
 # -- (object) Control on/ off of each modules. 
 # To turn on/off openfaas, please set value to `global.openfaas.enabled`
