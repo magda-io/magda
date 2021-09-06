@@ -58,4 +58,4 @@ spec:
             secretKeyRef:
               name: auth-secrets
               key: jwt-secret
-{{ include "magda.db-client-credential-env" "authorization-db" | indent 8 }}
+{{ include "magda.db-client-credential-env" (dict "dbName" "authorization-db" "root" .) | indent 8 }}

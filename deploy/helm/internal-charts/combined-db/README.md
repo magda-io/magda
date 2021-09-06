@@ -16,6 +16,7 @@ Kubernetes: `>= 1.14.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| autoCreateSecret | bool | `true` | whether auto-create secret for client account password. After the migrator runs properly, a non-superuser DB account (named `client`) will be created. If any logic databases (e.g. `content-db`, `session-db` etc.) are hosted by the single `combined-db`, its password will loaded from secret `combined-db-password` & key: `password`. Set this option to `true` will make helm auto-create the secret with random password, ONLY when the secret not exists. |
 | magda-postgres.postgresql.fullnameOverride | string | `"combined-db-postgresql"` |  |
 | magda-postgres.postgresql.nameOverride | string | `"combined-db-postgresql"` |  |
 | magda-postgres.postgresql.persistence.size | string | `"100Gi"` |  |

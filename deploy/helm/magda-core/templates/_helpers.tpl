@@ -85,6 +85,8 @@ imagePullSecrets:
 {{- $legacySecret := (lookup "v1" "Secret" .Release.Namespace "db-passwords") | default dict }}
 {{- /* only attempt to create secret when secret not exists or the existing secret is part of current helm release */}}
 {{- if or (empty $secret) (include "magda.isPartOfRelease" (dict "objectData" $secret "root" .) | empty | not) }}
+{{- $secretPassword := get (get $secret "data" | default dict) "password" }}
+{{- $legacySecretPassword := get (get $legacySecret "data" | default dict) (printf "%s-client" .Chart.Name) }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -94,9 +96,9 @@ metadata:
 type: Opaque
 data:
 {{- if $secret }}
-  password: {{ get (get $secret "data" | default dict) "password" }}
-{{- else if $legacySecret }}
-  password: {{ get (get $legacySecret "data" | default dict) (printf "%s-client" .Chart.Name) }}
+  password: {{ $secretPassword | quote }}
+{{- else if $legacySecretPassword }}
+  password: {{ $legacySecretPassword | quote }}
 {{- else }}
   password: {{ randAlphaNum 16 | b64enc | quote }}
 {{- end }}
@@ -111,7 +113,7 @@ data:
   {{- else if .Values.global.useCloudSql }}
   selector:
     service: "cloud-sql-proxy"
-  {{- else if .Values.global.useCombinedDb }}
+  {{- else if and .Values.global.useCombinedDb (empty (get .Values.global.useInK8sDbInstance .Chart.Name)) }}
   selector:
     app.kubernetes.io/instance: "{{ .Release.Name }}"
     app.kubernetes.io/name: "combined-db-postgresql"
@@ -147,24 +149,38 @@ data:
 - name: CLIENT_PASSWORD
   valueFrom:
     secretKeyRef:
+{{- if and .Values.global.useCombinedDb (empty (get .Values.global.useInK8sDbInstance .Chart.Name)) }}
+      name: "{{ printf "%s-password" "combined-db" }}"
+{{- else }}
       name: "{{ printf "%s-password" .Chart.Name }}"
+{{- end }}
       key: "password"
 {{- end -}}
 
 {{/*
   Generating db client credential env vars for service deployment
-  Accept one parameters: db name
+  Parameters:
+  - root: root scope. i.e. .
+  - dbName: the name of the DB.
   Usage: 
-  {{ include "magda.db-client-credential-env" "session-db" | indent 8 }}
+  {{ include "magda.db-client-credential-env" (dict "dbName" "content-db" "root" .) | indent 8 }}
 */}}
 {{- define "magda.db-client-credential-env" -}}
+{{- $dbName := .dbName }}
+{{- with .root }}
 - name: PGUSER
   value: client
 - name: PGPASSWORD
   valueFrom:
     secretKeyRef:
-      name: "{{ . }}-password"
+{{- if and .Values.global.useCombinedDb (empty (get .Values.global.useInK8sDbInstance $dbName)) }}
+{{- /* when logic dbs are hosted by the single combined-db, we use same client password (mapped to combined-db). */}}
+      name: "{{ printf "%s-password" "combined-db" }}"
+{{- else }}
+      name: "{{ printf "%s-password" $dbName }}"
+{{- end }}
       key: password
+{{- end }}
 {{- end -}}
 
 
@@ -174,7 +190,11 @@ data:
 - name: POSTGRES_PASSWORD
   valueFrom:
     secretKeyRef:
+{{- if and .Values.global.useCombinedDb (empty (get .Values.global.useInK8sDbInstance "registry-db")) }}
+      name: "{{ printf "%s-password" "combined-db" }}"
+{{- else }}
       name: "registry-db-password"
+{{- end }}
       key: password
 {{- end -}}
 
