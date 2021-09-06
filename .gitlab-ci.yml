@@ -951,8 +951,7 @@ Publish Helm Chart:
   retry: 1
   script:
     # Get AWS CLI
-    - apk -v --update add python py-pip groff less mailcap
-    - pip install --upgrade awscli==1.14.5 s3cmd==2.0.1 python-magic
+    - apk -v --update add aws-cli
 
     # Run deploy
     - cd deploy/helm
