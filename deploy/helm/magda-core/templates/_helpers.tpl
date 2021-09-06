@@ -22,20 +22,23 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
     - "meta.helm.sh/release-namespace" should be $.Release.Namespace.
   - labels:
     - "app.kubernetes.io/managed-by": should be $.Release.Service
+  Parameter: 
+    - "objectData": dict. the k8s object data.
+    - "root": helm root context data `.`
   Return value: string "true" (indicate it's part of release) or empty string ""
   Usage: 
-  {{- if include "magda.isPartOfRelease" $k8sObjectData }}
+  {{- if include "magda.isPartOfRelease" (dict "objectData" $k8sObjectData "root" . ) }}
     {{- print "Is part of release"}}
   {{- else }}
     {{- print "Is not part of release"}}
   {{- if}}
 */}}
 {{- define "magda.isPartOfRelease" -}}
-{{- $objectData := . | default dict }}
+{{- $objectData := .objectData | default dict }}
 {{- $metadata := (get $objectData "metadata") | default dict }}
 {{- $annotations := (get $metadata "annotations") | default dict }}
 {{- $labels := (get $metadata "labels") | default dict }}
-{{- if and (get $annotations "meta.helm.sh/release-name" | eq $.Release.Name) (get $annotations "meta.helm.sh/release-namespace" | eq $.Release.Namespace) (get $labels "app.kubernetes.io/managed-by" | eq $.Release.Service) }}
+{{- if and (get $annotations "meta.helm.sh/release-name" | eq .root.Release.Name) (get $annotations "meta.helm.sh/release-namespace" | eq .root.Release.Namespace) (get $labels "app.kubernetes.io/managed-by" | eq .root.Release.Service) }}
   {{- print "true" }}
 {{- else }}
   {{- print "" }}
@@ -81,7 +84,7 @@ imagePullSecrets:
 {{- $secret := (lookup "v1" "Secret" .Release.Namespace (printf "%s-password" .Chart.Name)) | default dict }}
 {{- $legacySecret := (lookup "v1" "Secret" .Release.Namespace "db-passwords") | default dict }}
 {{- /* only attempt to create secret when secret not exists or the existing secret is part of current helm release */}}
-{{- if or (empty $secret) (include "magda.isPartOfRelease" $secret | empty | not) }}
+{{- if or (empty $secret) (include "magda.isPartOfRelease" (dict "objectData" $secret "root" .) | empty | not) }}
 apiVersion: v1
 kind: Secret
 metadata:
