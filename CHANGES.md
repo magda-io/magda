@@ -4,6 +4,12 @@
 
 - #3197 Minion SDK: Make minion proactive crawling records number configurable
 - #3208 rewritten Web Hook related API docs
+- #3123 Upgraded to PosgreSQL 13
+- #3213 SQL Compatibility adjustments for PosgreSQL 13
+- #3212 Migrate backup / recovery solution to wal-g
+- #3207 Auto-create db password secrets (backwards-compatible change)
+- #3215 Auto-create jwtSecret & Session Secret when not exists (backwards-compatible change)
+- #3216 Auto-create storage-secrets when not exists #3216 (backwards-compatible change)
 
 ## 0.0.60
 
