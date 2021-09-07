@@ -62,7 +62,6 @@ global:
     pullPolicy: IfNotPresent
   defaultAdminUserId: "00000000-0000-4000-8000-000000000000"
   logLevel: INFO
-  noDbAuth: false
   namespace: default
   gapiIds: []
   enablePriorityClass: false

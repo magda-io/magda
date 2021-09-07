@@ -46,22 +46,11 @@ spec:
                   value: postgres
                 - name: PGUSER
                   value: postgres
-                {{- if .Values.global.noDbAuth }}
-                - name: PGPASSWORD
-                  value: password
-                {{- else if .Values.global.useCloudSql }}
                 - name: PGPASSWORD
                   valueFrom:
                     secretKeyRef:
-                      name: cloudsql-db-credentials
-                      key: password
-                {{- else if not .Values.global.noDbAuth }}
-                - name: PGPASSWORD
-                  valueFrom:
-                    secretKeyRef:
-                      name: db-passwords
-                      key: {{ .Chart.Name }}
-                {{- end }}
+                      name: {{ .Values.global.postgresql.existingSecret | quote }}
+                      key: "postgresql-password"
               volumeMounts:
                 - name: script-volume
                   mountPath: /scripts
