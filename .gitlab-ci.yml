@@ -673,6 +673,8 @@ inttest:registryAuth:
   retry: 1
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   allow_failure: true
+  tags:
+    - heavy
   needs: [
     "sbt-prebuild",
     "builders-and-yarn",
