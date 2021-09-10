@@ -11,6 +11,10 @@ variables:
   # gitlab actually use the same technique when you click the `Clear Cache Button`
   CACHE_VERSION: ts-12-scala-7
   CRYPTOGRAPHY_DONT_BUILD_RUST: 1
+  DOCKER_HOST: tcp://docker:2376
+  DOCKER_TLS_CERTDIR: "/certs"
+  DOCKER_TLS_VERIFY: 1
+  DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
 
 stages:
   - builders
