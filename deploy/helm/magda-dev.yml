@@ -12,6 +12,7 @@ global:
 
 tags:
   all: true
+  correspondence-api: true
   ingress: true
   connectors: true
   minion-broken-link: false

@@ -118,6 +118,7 @@ magda:
 
 tags:
   all: true
+  correspondence-api: true
   connectors: false
   connector-dga: true
 
