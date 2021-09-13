@@ -54,7 +54,7 @@ dependencies:
     version: 1.0.0-alpha.0
     repository: file://../internal-charts/correspondence-api
     tags:
-      - all
+      # To enable correspondence-api, please manually set `tags.correspondence-api` to true
       - correspondence-api
   - name: elasticsearch
     version: 1.0.0-alpha.0

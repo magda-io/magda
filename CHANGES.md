@@ -10,6 +10,7 @@
 - #3207 Auto-create db password secrets (backwards-compatible change)
 - #3215 Auto-create jwtSecret & Session Secret when not exists (backwards-compatible change)
 - #3216 Auto-create storage-secrets when not exists #3216 (backwards-compatible change)
+- #3221 Make correspondence-api turned off by default
 
 ## 0.0.60
 

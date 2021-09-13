@@ -77,5 +77,5 @@ dependencies:
 - name: rds-dev-proxy
   repository: file://../internal-charts/rds-dev-proxy
   version: 1.0.0-alpha.0
-digest: sha256:c16902843ddc9bbea244a9fd36e26fd9aaa7ccb4fe8a8eb15e5b688f571b3c25
-generated: "2021-07-30T13:39:22.382791+10:00"
+digest: sha256:08257e65e784d4dc14f48f97c6582f7d7d4be48f1a837e3116bd5f5e4e91db25
+generated: "2021-09-13T16:04:30.762473+10:00"

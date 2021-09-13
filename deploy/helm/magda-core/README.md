@@ -69,28 +69,29 @@ Kubernetes: `>= 1.14.0-0`
 | global.useCombinedDb | bool | `true` |  |
 | global.useInK8sDbInstance | object | `{"authorization-db":false,"content-db":false,"registry-db":false,"session-db":false,"tenant-db":false}` | When `useCombinedDb` = false, setting any key to true will create an in-k8s DB instance for the particular database. Please note: you must set `useCombinedDb` = false before set any of the field to `true`. Otherwise, all db requests will still be forwarded to the combined DB instance other than each individual database instance. |
 | tags | object | see default value of each individual tag below. | (object) Control on/ off of each modules.  To turn on/off openfaas, please set value to `global.openfaas.enabled` |
-| tags.admin-api | bool | `false` | turn on / off [admin-api](../internal-charts/admin-api/README.md) |
-| tags.all | bool | `true` | turn on / off all modules |
-| tags.apidocs-server | bool | `false` | turn on / off [apidocs-server](../internal-charts/apidocs-server/README.md) |
-| tags.authorization-api | bool | `false` | turn on / off [authorization-api](../internal-charts/authorization-api/README.md) |
-| tags.authorization-db | bool | `false` | turn on / off [authorization-db](../internal-charts/authorization-db/README.md) |
-| tags.combined-db | bool | `false` | turn on / off [combined-db](../internal-charts/combined-db/README.md) |
-| tags.content-api | bool | `false` | turn on / off [content-api](../internal-charts/content-api/README.md) |
+| tags.admin-api | bool | `false` | turn on / off [admin-api](../internal-charts/admin-api/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
+| tags.all | bool | `true` | Set to `true` to turn on all default modules.  When `tags.all` is `false`, a default module will only be turned off when the corresponding module tag is `false` as well.  Please note: since v1.0.0, correspondence-api is not part of default modules anymore.  |
+| tags.apidocs-server | bool | `false` | turn on / off [apidocs-server](../internal-charts/apidocs-server/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
+| tags.authorization-api | bool | `false` | turn on / off [authorization-api](../internal-charts/authorization-api/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
+| tags.authorization-db | bool | `false` | turn on / off [authorization-db](../internal-charts/authorization-db/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
+| tags.combined-db | bool | `false` | turn on / off [combined-db](../internal-charts/combined-db/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
+| tags.content-api | bool | `false` | turn on / off [content-api](../internal-charts/content-api/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.content-db | bool | `false` | turn on / off [content-db](../internal-charts/content-db/README.md) |
 | tags.correspondence-api | bool | `false` | turn on / off [content-db](../internal-charts/correspondence-api/README.md) |
-| tags.elasticsearch | bool | `false` | turn on / off [elasticsearch](../internal-charts/elasticsearch/README.md) |
-| tags.gateway | bool | `false` | turn on / off [gateway](../internal-charts/gateway/README.md) |
-| tags.indexer | bool | `false` | turn on / off [indexer](../internal-charts/indexer/README.md) |
+| tags.elasticsearch | bool | `false` | turn on / off [elasticsearch](../internal-charts/elasticsearch/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
+| tags.gateway | bool | `false` | turn on / off [gateway](../internal-charts/gateway/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
+| tags.indexer | bool | `false` | turn on / off [indexer](../internal-charts/indexer/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.ingress | bool | `false` | turn on / off [ingress](../internal-charts/ingress/README.md) |
-| tags.opa | bool | `false` | turn on / off [opa](../internal-charts/opa/README.md) |
-| tags.preview-map | bool | `false` | turn on / off [preview-map](https://github.com/magda-io/magda-preview-map) |
+| tags.opa | bool | `false` | turn on / off [opa](../internal-charts/opa/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
+| tags.preview-map | bool | `false` | turn on / off [preview-map](https://github.com/magda-io/magda-preview-map) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 | tags.priorities | bool | `true` | whether or not deploy Magda defined PriorityClass. Useful to schedule different payload on different nodes. |
-| tags.registry-db | bool | `false` | turn on / off [registry-db](../internal-charts/registry-db/README.md) |
-| tags.search-api | bool | `false` | turn on / off [search-api](../internal-charts/search-api/README.md) |
-| tags.search-api-node | bool | `false` | turn on / off [search-api-node](../internal-charts/search-api-node/README.md) |
-| tags.session-db | bool | `false` | turn on / off [session-db](../internal-charts/session-db/README.md) |
-| tags.storage-api | bool | `false` | turn on / off [storage-api](../internal-charts/storage-api/README.md) |
-| tags.tenant-api | bool | `false` | turn on / off [tenant-api](../internal-charts/tenant-api/README.md) |
-| tags.tenant-db | bool | `false` | turn on / off [tenant-db](../internal-charts/tenant-db/README.md) |
-| tags.web-server | bool | `false` | turn on / off [web-server](../internal-charts/web-server/README.md) |
+| tags.rds-dev-proxy | bool | `false` | turn on / off [rds-dev-proxy](../internal-charts/rds-dev-proxy/README.md) It's only for acessing AWS RDS db for admin / testing purposes within the k8s cluster. |
+| tags.registry-db | bool | `false` | turn on / off [registry-db](../internal-charts/registry-db/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
+| tags.search-api | bool | `false` | turn on / off [search-api](../internal-charts/search-api/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
+| tags.search-api-node | bool | `false` | turn on / off [search-api-node](../internal-charts/search-api-node/README.md) It's an experimental nodejs implementation of search-api. Should only be turned on for testing purposes. |
+| tags.session-db | bool | `false` | turn on / off [session-db](../internal-charts/session-db/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
+| tags.storage-api | bool | `false` | turn on / off [storage-api](../internal-charts/storage-api/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
+| tags.tenant-api | bool | `false` | turn on / off [tenant-api](../internal-charts/tenant-api/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
+| tags.tenant-db | bool | `false` | turn on / off [tenant-db](../internal-charts/tenant-db/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
+| tags.web-server | bool | `false` | turn on / off [web-server](../internal-charts/web-server/README.md) Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false. |
 
