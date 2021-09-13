@@ -1,5 +1,5 @@
 apiVersion: v2
 name: rds-dev-proxy
 description: A RDS proxy for dev / debugging purpose
-version: 1.0.0-alpha.0
+version: 1.0.0-alpha.2
 kubeVersion: ">= 1.14.0-0"
