@@ -50,6 +50,7 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
 
         if (config?.supportExternalTerriaMapV7 === true) {
             catConfig = {
+                version: "0.0.3",
                 initSources: [
                     {
                         catalog: [
@@ -68,6 +69,7 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
         } else {
             const id = "data.gov.au-postMessage-" + distribution?.identifier;
             catConfig = {
+                version: "8.0.0",
                 initSources: [
                     {
                         catalog: [

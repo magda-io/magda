@@ -4,6 +4,7 @@
 
 - #3197 Minion SDK: Make minion proactive crawling records number configurable
 - #3208 rewritten Web Hook related API docs
+- #3223 "Open in NationalMap" button will send data with the version field
 
 ## 0.0.60
 
