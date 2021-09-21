@@ -67,19 +67,27 @@ magda:
           reportUri: https://sdga.report-uri.com/r/d/csp/enforce
 
     combined-db:
-      waleBackup:
-        method: WAL
-        readOnly: "TRUE"
-        recoveryMode: "immediate"
-        gsPrefix: "gs://magda-postgres-backups-asia/dev"
-        googleApplicationCreds:
-          secretName: storage-account-credentials
-          fileName: db-service-account-private-key.json
-      data:
-        storage: 250Gi
-      resources:
-        limits:
-          cpu: 2000m
+      magda-postgres:
+        backupRestore:
+          storageConfig:
+            WALG_GS_PREFIX: "gs://magda-postgres-backups-asia/dev"
+            GCS_NORMALIZE_PREFIX: "false"
+          recoveryMode: 
+            enabled: true
+        postgresql:
+          primary:
+            extraVolumes:
+              - name: storage-account
+                secret:
+                  secretName: backup-storage-account
+            extraVolumeMounts:
+              - name: storage-account
+                mountPath: /etc/wal-g.d/env
+        persistence:
+          size: "250Gi"
+        resources:
+          limits:
+            cpu: 2000m
 
     elasticsearch:
       data:
@@ -87,7 +95,7 @@ magda:
         pluginsInstall: "repository-gcs"
       backup:
         googleApplicationCreds:
-          secretName: storage-account-credentials
+          secretName: backup-storage-account
           fileName: db-service-account-private-key.json
     indexer:
       resources:

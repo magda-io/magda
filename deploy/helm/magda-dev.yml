@@ -120,7 +120,7 @@ magda:
                       operator: DoesNotExist
       backup:
         googleApplicationCreds:
-          secretName: storage-account-credentials
+          secretName: backup-storage-account
           fileName: db-service-account-private-key.json
 
     indexer:
