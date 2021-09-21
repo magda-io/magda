@@ -126,7 +126,7 @@ We're adding an integrated, customizable authorization system into Magda based o
 
 We're always looking to help more organizations use their data better with Magda!
 
-If you'd like to become a co-creation partner, want our help getting up and running, or want to sponsor specific features, we'd love to talk to you! Please get in contact with us at [contact@magda.io](mailto:contact@magda.io).
+If you'd like to become a co-creation partner, want our help getting up and running, or want to sponsor specific features, we'd love to talk to you! Please get in contact with us at [contact@magda.io](mailto:contact@magda.io). You can also ask questions in [Our Github Discussions forum](https://github.com/magda-io/magda/discussions).
 
 Magda is also completely open-source and can be used for free - to get it running, please see the instructions [below](#want-to-get-it-running-yourself). Don't forget to let us know you're using it!
 
@@ -179,5 +179,6 @@ We welcome new contributors too! please check out our [Contributor's Guide](http
 - [Magda API Reference](https://dev.magda.io/api/v0/apidocs/index.html)
 - [Magda Helm Chart Reference](/docs/helm-charts-docs-index)
 - [Other documentations](/docs)
+- [Ask Questions on Our Github Discussions forum](https://github.com/magda-io/magda/discussions)
 
 The project was started by CSIRO's [Data61](https://data61.csiro.au/) and Australia's [Department of Prime Minister and Cabinet](https://www.pmc.gov.au/). It's progressing thanks to Data61, the [Digital Transformation Agency](https://www.dta.gov.au/), the [Department of Agriculture](http://www.agriculture.gov.au/), the [Department of the Environment and Energy](https://www.environment.gov.au/) and [CSIRO Land and Water](https://www.csiro.au/en/Research/LWF).
