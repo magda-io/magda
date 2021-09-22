@@ -1,4 +1,7 @@
 dependencies:
+- name: magda-common
+  repository: file://../magda-common
+  version: 1.0.0-alpha.2
 - name: apidocs-server
   repository: file://../internal-charts/apidocs-server
   version: 1.0.0-alpha.2
@@ -77,5 +80,5 @@ dependencies:
 - name: rds-dev-proxy
   repository: file://../internal-charts/rds-dev-proxy
   version: 1.0.0-alpha.2
-digest: sha256:281c91fe5aba408e1b3c6b07e7e3af03666ba133df1fedc4e0ac60fcb2a06b62
-generated: "2021-09-13T16:42:08.238212+10:00"
+digest: sha256:78e01a9ab8142cbc97310148689e1471a1feea1e24ea4dba44dfc098c086a09a
+generated: "2021-09-22T17:28:25.071891+10:00"

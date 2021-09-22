@@ -9,28 +9,28 @@ dependencies:
     repository: "file://../magda"
 
   - name: magda-auth-google
-    version: "1.2.0"
+    version: "1.2.1"
     repository: https://charts.magda.io
     tags:
       - all
       - magda-auth-google
 
   - name: magda-auth-ckan
-    version: "1.2.0"
+    version: "1.2.1"
     repository: https://charts.magda.io
     tags:
       - all
       - magda-auth-ckan
 
   - name: magda-auth-internal
-    version: "1.2.0"
+    version: "1.2.1"
     repository: https://charts.magda.io
     tags:
       - all
       - magda-auth-internal
 
   - name: magda-auth-arcgis
-    version: "1.2.0"
+    version: "1.2.1"
     repository: https://charts.magda.io
     tags:
       - all

@@ -12,6 +12,7 @@
 - #3216 Auto-create storage-secrets when not exists #3216 (backwards-compatible change)
 - #3221 Make correspondence-api turned off by default
 - #3223 "Open in NationalMap" button will send data with the version field
+- #3226 Release `magda-common` library Helm Chart to Share Common Deployment Logic with Plugin Developers
 
 ## 0.0.60
 

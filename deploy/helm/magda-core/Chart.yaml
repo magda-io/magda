@@ -8,6 +8,9 @@ kubeVersion: ">= 1.14.0-0"
 home: "https://github.com/magda-io/magda"
 sources: [ "https://github.com/magda-io/magda" ]
 dependencies:
+  - name: magda-common
+    version: "1.0.0-alpha.2"
+    repository: "file://../magda-common"
   - name: apidocs-server
     version: 1.0.0-alpha.2
     repository: file://../internal-charts/apidocs-server
