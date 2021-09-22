@@ -965,6 +965,7 @@ Publish Helm Chart:
     - if ! aws s3 cp s3://magda-charts/index.yaml index_dir/index.yaml; then echo "failed to copy current repo index" && exit 1; fi
     - helm package -d sync_dir magda-core
     - helm package -d sync_dir magda
+    - helm package -d sync_dir magda-common
     - helm repo index --merge "index_dir/index.yaml" sync_dir
     # avoid conflicts & make sure the packages are in place first; upload index at the end
     - mv -f sync_dir/index.yaml index_dir/index.yaml

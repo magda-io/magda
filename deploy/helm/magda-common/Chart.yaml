@@ -1,0 +1,17 @@
+apiVersion: v2
+name: magda-common
+description: |
+    A Library Helm Chart for sharing common Magda logic between charts. 
+    This chart is not deployable by itself.
+type: library
+version: 1.0.0-alpha.2
+kubeVersion: ">= 1.14.0-0"
+keywords:
+  - common
+  - helper
+  - template
+  - function
+  - Magda
+sources:
+  - https://github.com/magda-io/magda/tree/master/deploy/helm/internal-charts/common
+  - https://github.com/magda-io/magda
