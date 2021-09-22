@@ -56,15 +56,4 @@ spec:
             secretKeyRef:
               name: auth-secrets
               key: jwt-secret
-{{- if .Values.global.noDbAuth }}
-        - name: PGUSER
-          value: client
-{{- else }}
-        - name: PGUSER
-          value: client
-        - name: PGPASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-passwords
-              key: tenant-db-client
-{{- end }}
+{{ include "magda.db-client-credential-env" (dict "dbName" "tenant-db" "root" .) | indent 8 }}

@@ -10,9 +10,11 @@ Please refer to [acs-cmd utility NPM page](https://www.npmjs.com/package/@magda/
 
 Before start to use the [acs-cmd](https://www.npmjs.com/package/@magda/acs-cmd) utility, you need to:
 
--   Port forward the Magda database to local:
-    -   `kubectl port-forward combined-db-0 5432:5432`
-        -   If you didn't install magda to the default namespace, you can use: `kubectl port-forward -n [namespace] combined-db-0 5432:5432`
+- Port forward the Magda database to local:
+  - `kubectl port-forward combined-db-postgresql-0 5432:5432`
+    - If you didn't install magda to the default namespace, you can use: `kubectl port-forward -n [namespace] combined-db-postgresql-0 5432:5432`
+
+> Prior to Magda v1.0.0, you should port-forward pod combined-db-0
 
 To set a user as admin users:
 

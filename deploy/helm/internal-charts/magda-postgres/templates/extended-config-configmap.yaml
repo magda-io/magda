@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ .Values.postgresql.fullnameOverride }}-extended-config"
+data:
+  archive.conf: |
+    # Common archive settings
+    # It will be mapped to file in directory /opt/bitnami/postgresql/conf/conf.d
+{{- if .Values.backupRestore.backup.enabled }}
+    archive_mode = 'on'
+{{- else }}
+    archive_mode = 'off'
+{{- end }}
+    wal_level = '{{ .Values.backupRestore.backup.walLevel | default "replica" }}'
+    archive_command = '/usr/bin/envdir /etc/wal-g.d/env /usr/local/bin/wal-g wal-push "$PGDATA/%p"'
+    archive_timeout = {{ .Values.backupRestore.backup.archiveTimeout | default 60 }}
+  override.conf: |
+    # any config options list here will the override the default value 
+    # in the default conf file (/opt/bitnami/postgresql/conf/postgresql.conf) in the docker image
+    # config options below are generated from .Values.config and will override any config above this line
+{{- range $key, $value := .Values.config }}
+{{- if not (empty $key) -}}
+    {{- if kindIs "string" $value }}
+    {{ $key | snakecase }} = '{{ $value }}'
+    {{- else }}
+    {{ $key | snakecase }} = {{ $value }}
+    {{- end }}
+{{- end }}
+{{- end }}

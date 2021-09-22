@@ -29,18 +29,7 @@ spec:
             secretKeyRef:
               name: auth-secrets
               key: jwt-secret
-{{- if .root.Values.global.noDbAuth }}
-        - name: POSTGRES_USER
-          value: client
-{{- else }}
-        - name: POSTGRES_USER
-          value: client
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-passwords
-              key: registry-db-client
-{{- end }}
+{{ include "magda.db-client-credential-env-registry" .root | indent 8 }}
         image: {{ template "dockerimage" .root }}
         imagePullPolicy: {{ .root.Values.image.pullPolicy | default .root.Values.global.image.pullPolicy }}
         command: [

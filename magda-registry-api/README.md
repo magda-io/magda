@@ -17,7 +17,7 @@ cd <magda project directory>
 
 helm upgrade test2 deploy/helm/magda --namespace test2 --install --recreate-pods -f deploy/helm/local-auth-test.yml --set tags.all=false --set tags.combined-db=true --set tags.authorization-db=true --set tags.registry-db=true
 
-kubectl.exe -n test2 port-forward combined-db-0 5432:5432
+kubectl.exe -n test2 port-forward combined-db-postgresql-0 5432:5432
 ```
 
 If on Windows 10, run

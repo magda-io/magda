@@ -1,0 +1,90 @@
+{{- if .Values.backupRestore.backup.enabled -}}
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: "{{ .Values.postgresql.fullnameOverride }}-backup-jobs"
+spec:
+  concurrencyPolicy: Forbid
+  schedule: {{ .Values.backupRestore.backup.schedule | quote }}
+  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: 1
+  startingDeadlineSeconds: 120
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      completions: 1
+      parallelism: 1
+      template:
+        metadata:
+          name: "{{ .Values.postgresql.fullnameOverride }}-backup-job"
+          labels:
+            cron: "{{ .Values.postgresql.fullnameOverride }}-backup-jobs"
+        spec:
+{{- include "magda.pullSecrets" . | indent 10 }}
+          containers:
+          - image: "{{ .Values.backupRestore.image.repository }}:{{ .Values.backupRestore.image.tag }}"
+            imagePullPolicy: "{{ .Values.backupRestore.image.pullPolicy }}"
+            name: db-backup
+            command:
+              - "/bin/bash"
+              - "-c"
+              - |
+                # Add user 1001 to /etc/passwd as postgres lib will check username in it
+                # more details see the docker image repo
+                /usr/local/bin/adduser.sh
+                /usr/bin/envdir /etc/wal-g.d/env /usr/local/bin/wal-g backup-push
+                RETAIN_BACKUP_NUM="{{ .Values.backupRestore.backup.numberOfBackupToRetain | default 7 }}"
+                if [[ $? = "0" ]] 
+                then 
+                  echo "New Base Backup Creation Completed!"
+                  echo "Start to trim old backups and retain the recent $RETAIN_BACKUP_NUM backups..."
+                  # Set IFS to avoid new lines being removed
+                  IFS=
+                  OUTPUT=$(/usr/bin/envdir /etc/wal-g.d/env /usr/local/bin/wal-g delete --confirm retain FULL $RETAIN_BACKUP_NUM 2>&1)
+                  ERROR_CODE=$?
+                  echo $OUTPUT
+                  if [[ $ERROR_CODE = "1" ]]
+                  then 
+                    if [[ ${OUTPUT: -9} = "not found" ]]
+                    then
+                      echo "There are less than $RETAIN_BACKUP_NUM backups available. Nothing needs to be deleted!"
+                    else
+                      # print the error but not exit with error & make job to restart for any triming old backup errors.
+                      echo "Error: failed to trim the old backups."
+                    fi
+                  else
+                    echo "Trimming old backups Completed!"
+                  fi
+                else 
+                  echo "Failed to create new base backup!"
+                  exit 1
+                fi
+{{- if not (empty .Values.backupRestore.backup.jobResourceConfig) }}
+            resources:
+{{ .Values.backupRestore.backup.jobResourceConfig | toYaml | indent 14 }}
+{{- end }}
+{{- if not (empty .Values.backupRestore.storageSecretName) }}
+            volumeMounts:
+              - name: storage-secret
+                mountPath: /etc/wal-g.d/env
+{{- end }}
+            env:
+              - name: PGHOST
+                value: {{ .Values.postgresql.fullnameOverride | quote }}
+{{- include "magda.postgres-superuser-env" . | indent 14 }}
+{{- if not (empty .Values.backupRestore.storageConfig) }}
+            {{- range $key, $value := .Values.backupRestore.storageConfig }}
+            {{- if not (empty $key) }}
+              - name: {{ $key | quote }}
+                value: {{ $value | quote }}
+            {{- end }}
+            {{- end }}
+{{- end }}
+          restartPolicy: OnFailure
+{{- if not (empty .Values.backupRestore.storageSecretName) }}
+          volumes:
+            - name: storage-secret
+              secret:
+                secretName: "{{ .Values.backupRestore.storageSecretName }}"
+{{- end }}
+{{- end }}

@@ -1,16 +1,54 @@
 global:
+  postgresql:
+    # -- PostgreSQL username
+    # For in-k8s PostgreSQL, a user account will be auto-created with superuser privileges when username is `postgres`.
+    # It's recommended use superuser `postgres` for both in-k8s PostgreSQL or cloud provider DB services (e.g. CloudSQL or AWS RDS).
+    # This user will only be used for DB schema migrators to cerate DB schema and restricted DB accounts that are used by Magda internal services to access DB.
+    # If you have to use a user account rather than `postgres`, the user account needs to have suffient permissions to run all DB migiration scripts ([e.g. here](https://github.com/magda-io/magda/tree/master/magda-migrator-registry-db/sql)).
+    # Note: Until the ticket #3126 is fixed, using a DB username rather than `postgres` will trigger an error when content DB migrate runs.
+    postgresqlUsername: "postgres"
+
+    # -- the secret that contains privileged PostgreSQL account password.
+    # The password will be loaded from key "postgresql-password" of the secret data.
+    # Previously (before v1.0.0), we used to load the password from "cloudsql-db-credentials" secret `password` field when use cloud provider DB services.
+    # Since v1.0.0, our helm chart can auto-create the secret and copy the content of "cloudsql-db-credentials" secret when:
+    # <ul>
+    #   <li> "autoCreateSecret" is set to true</li>
+    #   <li> "cloudsql-db-credentials" exists </li>
+    # </ul>
+    # for backward compatibility purposes.
+    existingSecret: "db-main-account-secret"
+
+    # -- When `true`, secret with name specified by `existingSecret` will be auto-created.
+    # When in-k8s PostgreSQL instance is used, the secret will be filled with auto-generated random password.
+    # Otherwise, the secret will only be auto created when "cloudsql-db-credentials" secret exist.
+    # And its content, for this case, will be copied from "cloudsql-db-credentials" secret, `password` field for backward compatibility purposes.
+    # Please note: when the secret (specified by `existingSecret`) exists, the auto-create feature will leave the password unchanged.
+    autoCreateSecret: true
+
   useCombinedDb: true
+  # -- When `useCombinedDb` = false, setting any key to true will create an in-k8s DB instance for the particular database.
+  # Please note: you must set `useCombinedDb` = false before set any of the field to `true`.
+  # Otherwise, all db requests will still be forwarded to the combined DB instance other than each individual database instance.
+  useInK8sDbInstance:
+    authorization-db: false
+    content-db: false
+    registry-db: false
+    session-db: false
+    tenant-db: false
+
+  # -- whether to use Google Cloud SQL database. 
+  # When this option is on, all other database type e.g. `useCombinedDb` & `useAwsRdsDb` must be turned off.
   useCloudSql: false
-  # -- whether to use AWS RDS DB config. When this option is on, `useCombinedDb` & `useCloudSql` must be turned off.
+  
+  # -- whether to use AWS RDS DB config. 
+  # When this option is on, all other database type e.g. `useCombinedDb` & `useCloudSql` must be turned off.
   useAwsRdsDb: false
+  
   # -- AWS RDS DB instance access endpoint. e.g. xxxx.xxxx.ap-southeast-2.rds.amazonaws.com.
   # Compulsory if `useAwsRdsDb` = true
   awsRdsEndpoint: 
-  # -- Database master username. 
-  # Although this config allows to set a different DB username, use a DB username rather than `postgres` will 
-  # trigger an error when migrate content DB until this ticket #3126 is fixed.
-  # master user password will be loaded from "cloudsql-db-credentials" secret `password` field (even for AWS RDS for backward compatibility)
-  dbMasterUsername: postgres
+  
   externalUrl: "http://localhost:6100"
   rollingUpdate:
     maxUnavailable: 0
@@ -24,7 +62,6 @@ global:
     pullPolicy: IfNotPresent
   defaultAdminUserId: "00000000-0000-4000-8000-000000000000"
   logLevel: INFO
-  noDbAuth: false
   namespace: default
   gapiIds: []
   enablePriorityClass: false
@@ -39,7 +76,14 @@ global:
   # If this parameter not presents, user will be redirected further (at frontend) to account page /account.
   # Otherwise, user will redirected to the url sepcified by `redirectTo` query parameter.
   authPluginRedirectUrl: "/sign-in-redirect"
-  
+
+# -- Whether or not auto create a k8s secrets named `auth-secrets` that contains:
+# <ul>
+# <li> JWT secret, under key: `jwt-secret`. Used internally by Magda gateway to issue JWT token.</li>
+# <li> Session secret, under key: `session-secret`. Used by Magda gateway for managing session data.</li>
+# </ul>
+# The auto generated secrets will be 32 chars (256bits) long.
+autoCreateAuthSecrets: true
 
 # -- (object) Control on/ off of each modules. 
 # To turn on/off openfaas, please set value to `global.openfaas.enabled`
@@ -48,28 +92,37 @@ tags:
   # tags.priorities -- whether or not deploy Magda defined PriorityClass. Useful to schedule different payload on different nodes.
   priorities: true
 
-  # tags.all -- turn on / off all modules
+  # tags.all -- Set to `true` to turn on all default modules. 
+  # When `tags.all` is `false`, a default module will only be turned off when the corresponding module tag is `false` as well. 
+  # Please note: since v1.0.0, correspondence-api is not part of default modules anymore. 
   all: true
   
   # tags.apidocs-server -- turn on / off [apidocs-server](../internal-charts/apidocs-server/README.md)
+  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   apidocs-server: false
   
   # tags.admin-api -- turn on / off [admin-api](../internal-charts/admin-api/README.md)
+  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   admin-api: false
   
   # tags.authorization-api -- turn on / off [authorization-api](../internal-charts/authorization-api/README.md)
+  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   authorization-api: false
   
   # tags.opa -- turn on / off [opa](../internal-charts/opa/README.md)
+  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   opa: false
   
   # tags.authorization-db -- turn on / off [authorization-db](../internal-charts/authorization-db/README.md)
+  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   authorization-db: false
   
   # tags.combined-db -- turn on / off [combined-db](../internal-charts/combined-db/README.md)
+  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   combined-db: false
   
   # tags.content-api -- turn on / off [content-api](../internal-charts/content-api/README.md)
+  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   content-api: false
   
   # tags.content-db -- turn on / off [content-db](../internal-charts/content-db/README.md)
@@ -79,43 +132,60 @@ tags:
   correspondence-api: false
   
   # tags.elasticsearch -- turn on / off [elasticsearch](../internal-charts/elasticsearch/README.md)
+  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   elasticsearch: false
 
   # tags.gateway -- turn on / off [gateway](../internal-charts/gateway/README.md)
+  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   gateway: false
 
   # tags.indexer -- turn on / off [indexer](../internal-charts/indexer/README.md)
+  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   indexer: false
 
   # tags.preview-map -- turn on / off [preview-map](https://github.com/magda-io/magda-preview-map)
+  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   preview-map: false
 
   # tags.pregistry-api -- turn on / off [registry-api](../internal-charts/registry-api/README.md)
+  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   registry-api: false
 
   # tags.registry-db -- turn on / off [registry-db](../internal-charts/registry-db/README.md)
+  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   registry-db: false
 
   # tags.search-api -- turn on / off [search-api](../internal-charts/search-api/README.md)
+  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   search-api: false
 
   # tags.search-api-node -- turn on / off [search-api-node](../internal-charts/search-api-node/README.md)
+  # It's an experimental nodejs implementation of search-api. Should only be turned on for testing purposes.
   search-api-node: false
 
   # tags.session-db -- turn on / off [session-db](../internal-charts/session-db/README.md)
+  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   session-db: false
 
   # tags.web-server -- turn on / off [web-server](../internal-charts/web-server/README.md)
+  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   web-server: false
 
   # tags.ingress -- turn on / off [ingress](../internal-charts/ingress/README.md)
   ingress: false
 
   # tags.storage-api -- turn on / off [storage-api](../internal-charts/storage-api/README.md)
+  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   storage-api: false
 
   # tags.tenant-api -- turn on / off [tenant-api](../internal-charts/tenant-api/README.md)
+  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   tenant-api: false
 
   # tags.tenant-db -- turn on / off [tenant-db](../internal-charts/tenant-db/README.md)
+  # Part of default modules. Only need to set to `true` to manually turn on when `tags.all` is false.
   tenant-db: false
+
+  # -- turn on / off [rds-dev-proxy](../internal-charts/rds-dev-proxy/README.md)
+  # It's only for acessing AWS RDS db for admin / testing purposes within the k8s cluster.
+  rds-dev-proxy: false

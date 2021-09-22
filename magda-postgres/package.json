@@ -1,6 +1,6 @@
 {
   "name": "@magda/postgres",
-  "version": "1.0.0-alpha.0",
+  "version": "1.0.0-alpha.2",
   "description": "A base Docker image for PostgreSQL with Flyway for schema migrations.",
   "scripts": {
     "docker-build-prod": "create-docker-context-for-node-component --build --push --tag auto",
@@ -13,11 +13,11 @@
   "config": {
     "docker": {
       "name": "data61/magda-postgres",
-      "include": "Dockerfile start.sh docker-entrypoint.sh.patch"
+      "include": "Dockerfile wal-g start.sh"
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^1.0.0-alpha.0"
+    "@magda/scripts": "^1.0.0-alpha.2"
   },
   "magda": {
     "categories": {

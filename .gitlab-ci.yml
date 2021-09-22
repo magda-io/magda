@@ -199,8 +199,7 @@ buildtest:search-no-index-cache:
     paths:
       - "$CI_PROJECT_DIR/pip-cache"
   services:
-  # postgres 9.6.17 (published on 15th Feb 2020) introduced an issue see here (https://gitlab.com/gitlab-com/support-forum/issues/5199)
-    - postgres:9.6.16
+    - postgres:13.3
     - docker:dind
   variables:
     # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9 
@@ -208,7 +207,7 @@ buildtest:search-no-index-cache:
     POSTGRES_URL: "jdbc:postgresql://postgres/postgres"
     POSTGRES_DB: postgres
     POSTGRES_USER: postgres
-    POSTGRES_PASSWORD: ""
+    POSTGRES_PASSWORD: "password"
     PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
     # 2.5gb heap
     # unload classes we don't need
@@ -278,13 +277,12 @@ buildtest:registry:
   dependencies:
     - sbt-prebuild
   services:
-  # postgres 9.6.17 (published on 15th Feb 2020) introduced an issue see here (https://gitlab.com/gitlab-com/support-forum/issues/5199)
-    - postgres:9.6.16
+    - postgres:13.3
   variables:
     POSTGRES_URL: "jdbc:postgresql://postgres/postgres"
     POSTGRES_DB: postgres
     POSTGRES_USER: postgres
-    POSTGRES_PASSWORD: ""
+    POSTGRES_PASSWORD: "password"
   script:
     - sbt "registryApi/testOnly au.csiro.data61.magda.registry.*"
   artifacts:
@@ -374,8 +372,7 @@ buildtest:typescript-apis-with-pg:
     paths:
       - "$CI_PROJECT_DIR/pip-cache"
   services:
-  # postgres 9.6.17 (published on 15th Feb 2020) introduced an issue see here (https://gitlab.com/gitlab-com/support-forum/issues/5199)
-    - postgres:9.6.16
+    - postgres:13.3
     - docker:dind
   variables:
     # allow openssl 1.02 until we upgrade builder to use node12/alpine3.9 
@@ -384,7 +381,9 @@ buildtest:typescript-apis-with-pg:
     POSTGRES_HOST: postgres
     POSTGRES_DB: postgres
     POSTGRES_USER: postgres
-    POSTGRES_PASSWORD: ""
+    POSTGRES_PASSWORD: "password"
+    PGUSER: postgres
+    PGPASSWORD: password
     OPA_URL: "http://docker:8181/"
   script:
     - cd deploy/helm/internal-charts/opa
@@ -515,19 +514,16 @@ buildtest:opa-policies:
 
 buildtest:helm-charts:
   stage: buildtest
-  image: dtzar/helm-kubectl:3.1.1
-  needs: []
+  image: dtzar/helm-kubectl:3.5.2
+  needs: ["builders-and-yarn"]
+  dependencies:
+    - builders-and-yarn
   cache:
     paths: []
   script:
-    # Init helm
-    # - helm init --client-only
+    - apk add nodejs npm yarn
     - helm repo add magda-io https://charts.magda.io
-    - helm dep up deploy/helm/internal-charts/storage-api
-    - helm dep up deploy/helm/magda-core
-    - helm dep up deploy/helm/magda
-    - helm dep up deploy/helm/local-deployment
-    - helm dep up deploy/helm/local-auth-test-deployment
+    - yarn update-all-charts
 
     - echo "helm lint magda chart using magda-dev.yml"
     - helm lint -f deploy/helm/magda-dev.yml deploy/helm/local-deployment
@@ -662,6 +658,7 @@ dockerize:dockerExtensions:
   stage: buildtest
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$CI_COMMIT_REF_SLUG
   retry: 2
+  needs: ["builders-and-yarn"]
   cache:
     paths: []
   services:
@@ -676,10 +673,13 @@ inttest:registryAuth:
   retry: 1
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-scala:$CI_COMMIT_REF_SLUG
   allow_failure: true
+  tags:
+    - heavy
   needs: [
     "sbt-prebuild",
     "builders-and-yarn",
     "buildtest:registry",
+    "dockerize:dockerExtensions",
     "buildtest:helm-charts"
   ]
   dependencies:
@@ -696,36 +696,59 @@ inttest:registryAuth:
       - /usr/local/bin/kubectl
       - /usr/local/bin/helm
   variables:
-    KUBECTL: v1.15.0
-    KIND: v0.7.0
-  script:
-    - apk add --update postgresql-client sed curl
-    - curl -Lo /usr/local/bin/kind https://github.com/kubernetes-sigs/kind/releases/download/${KIND}/kind-$(uname)-amd64 -C -
-    - chmod +x /usr/local/bin/kind
-    - curl -Lo /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/${KUBECTL}/bin/linux/amd64/kubectl -C -
-    - chmod +x /usr/local/bin/kubectl
-    - curl -L https://get.helm.sh/helm-v3.2.0-linux-amd64.tar.gz -C - | tar -xzO linux-amd64/helm > /usr/local/bin/helm
-    - chmod +x /usr/local/bin/helm
-    - kind create cluster --config=./kind-config.yaml --wait 20m --image kindest/node:v1.15.7@sha256:e2df133f80ef633c53c0200114fce2ed5e1f6947477dbc83261a6a921169488d
+    KUBECTL: v1.19.14
+    KIND: v0.11.1
+  before_script:
+    - echo "Waiting for docker cli to respond before continuing build..."
+    - | 
+      for i in $(seq 1 30); do
+        if ! docker info &> /dev/null; then
+          echo "Docker not responding yet. Sleeping for 2s..." && sleep 2s
+        else
+          echo "Docker ready. Continuing build..."
+          break
+        fi
+      done
+  script: |
+    apk add --update postgresql-client sed curl pwgen
+    curl -Lo /usr/local/bin/kind https://github.com/kubernetes-sigs/kind/releases/download/${KIND}/kind-$(uname)-amd64 -C -
+    chmod +x /usr/local/bin/kind
+    curl -Lo /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/${KUBECTL}/bin/linux/amd64/kubectl -C -
+    chmod +x /usr/local/bin/kubectl
+    curl -L https://get.helm.sh/helm-v3.5.2-linux-amd64.tar.gz -C - | tar -xzO linux-amd64/helm > /usr/local/bin/helm
+    chmod +x /usr/local/bin/helm
+    
+    # create k8s cluster
+    kind create cluster --config=./kind-config.yaml --wait 20m --image kindest/node:v1.16.15@sha256:83067ed51bf2a3395b24687094e283a7c7c865ccc12a8b1d7aa673ba0c5e8861
+    
     # Set up KUBECONFIG that links to kind - we use sed to edit it so it's pointing to gitlab's docker host
-    - kind get kubeconfig | sed -E -e 's/localhost|0\.0\.0\.0/docker/g' > ./kubeconfig
-    - export KUBECONFIG="$(pwd)/kubeconfig"
-    - export JWT_SECRET=udIsbcYaKs1G4n6AdiMSIvPx5KpxQAy8FA2aIcD46iCipNAZvds4jeXFLZKhVvSJZvhYb5Pvgvmtonk7UFfhGnYcd3DXM7KzHG7gBmGO8PCsOZ4t7icqZoJbpdDqYWMmd9XnrVXtJhR6HVFBmEmbk9AmFJ1Gz9ipYPGYLoFcavPs9iZ63KPXgdt4aBdWQcmICkGPYiY8CQOvqOoiU7hUhKDTkJgRRTSaax6UQDOveTQvQnd5uyXuV4os0tlahzRX
-    - kubectl create ns test2
-    - 'echo "{ \"apiVersion\": \"v1\", \"kind\": \"Secret\", \"metadata\": {\"name\": \"auth-secrets\"}, \"type\": \"Opaque\", \"data\": {\"jwt-secret\": \"dWRJc2JjWWFLczFHNG42QWRpTVNJdlB4NUtweFFBeThGQTJhSWNENDZpQ2lwTkFadmRzNGplWEZMWktoVnZTSlp2aFliNVB2Z3ZtdG9uazdVRmZoR25ZY2QzRFhNN0t6SEc3Z0JtR084UENzT1o0dDdpY3Fab0picGREcVlXTW1kOVhuclZYdEpoUjZIVkZCbUVtYms5QW1GSjFHejlpcFlQR1lMb0ZjYXZQczlpWjYzS1BYZ2R0NGFCZFdRY21JQ2tHUFlpWThDUU92cU9vaVU3aFVoS0RUa0pnUlJUU2FheDZVUURPdmVUUXZRbmQ1dXlYdVY0b3MwdGxhaHpSWA==\"}}" | kubectl apply --namespace test2 -f -'
-    - 'echo "{ \"apiVersion\": \"v1\", \"kind\": \"Secret\", \"metadata\": {\"name\": \"regcred\"}, \"type\": \"kubernetes.io/dockerconfigjson\", \"data\": { \".dockerconfigjson\": \"$DOCKERCONFIGJSON\" }}" | kubectl apply --namespace test2 -f -'
-    - helm upgrade test2 deploy/helm/local-auth-test-deployment --namespace test2 --install --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG
+    kind get kubeconfig | sed -E -e 's/localhost|0\.0\.0\.0/docker/g' > ./kubeconfig
+    
+    export KUBECONFIG="$(pwd)/kubeconfig"
+    export JWT_SECRET=udIsbcYaKs1G4n6AdiMSIvPx5KpxQAy8FA2aIcD46iCipNAZvds4jeXFLZKhVvSJZvhYb5Pvgvmtonk7UFfhGnYcd3DXM7KzHG7gBmGO8PCsOZ4t7icqZoJbpdDqYWMmd9XnrVXtJhR6HVFBmEmbk9AmFJ1Gz9ipYPGYLoFcavPs9iZ63KPXgdt4aBdWQcmICkGPYiY8CQOvqOoiU7hUhKDTkJgRRTSaax6UQDOveTQvQnd5uyXuV4os0tlahzRX
+    kubectl create ns test2
+    echo "{ \"apiVersion\": \"v1\", \"kind\": \"Secret\", \"metadata\": {\"name\": \"auth-secrets\"}, \"type\": \"Opaque\", \"data\": {\"jwt-secret\": \"dWRJc2JjWWFLczFHNG42QWRpTVNJdlB4NUtweFFBeThGQTJhSWNENDZpQ2lwTkFadmRzNGplWEZMWktoVnZTSlp2aFliNVB2Z3ZtdG9uazdVRmZoR25ZY2QzRFhNN0t6SEc3Z0JtR084UENzT1o0dDdpY3Fab0picGREcVlXTW1kOVhuclZYdEpoUjZIVkZCbUVtYms5QW1GSjFHejlpcFlQR1lMb0ZjYXZQczlpWjYzS1BYZ2R0NGFCZFdRY21JQ2tHUFlpWThDUU92cU9vaVU3aFVoS0RUa0pnUlJUU2FheDZVUURPdmVUUXZRbmQ1dXlYdVY0b3MwdGxhaHpSWA==\"}}" | kubectl apply --namespace test2 -f -
+    echo "{ \"apiVersion\": \"v1\", \"kind\": \"Secret\", \"metadata\": {\"name\": \"regcred\"}, \"type\": \"kubernetes.io/dockerconfigjson\", \"data\": { \".dockerconfigjson\": \"$DOCKERCONFIGJSON\" }}" | kubectl apply --namespace test2 -f -
+    
+    # Create DB password secret
+    export PGPASSWORD="${DB_PASSWORD:-$(pwgen 16 1)}"
+    kubectl create secret generic db-main-account-secret --from-literal=postgresql-password=$PGPASSWORD --namespace test2
+    
+    helm upgrade test2 deploy/helm/local-auth-test-deployment --debug --namespace test2 --install --timeout 1200s --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,magda-core.combined-db.magda-postgres.postgresql.image.registry=registry.gitlab.com,magda-core.combined-db.magda-postgres.postgresql.image.repository=magda-data/magda/data61/magda-postgres,magda-core.combined-db.magda-postgres.postgresql.image.tag=$CI_COMMIT_REF_SLUG
+    
     # Forward local ports to kind
-    - kubectl port-forward combined-db-0 5432 --namespace test2 >/dev/null 2>&1 < /dev/null &
-    - kubectl port-forward deployment/authorization-api 6104:80 --namespace test2 >/dev/null 2>&1 < /dev/null &
+    kubectl port-forward combined-db-postgresql-0 5432 --namespace test2 >/dev/null 2>&1 < /dev/null &
+    kubectl port-forward deployment/authorization-api 6104:80 --namespace test2 >/dev/null 2>&1 < /dev/null &
     # Wait for port forwarding to start
-    - timeout -t 22 sh -c 'until nc -z $0 $1; do sleep 1; done' localhost 5432
-    - timeout -t 22 sh -c 'until nc -z $0 $1; do sleep 1; done' localhost 6104
+    timeout -t 22 sh -c 'until nc -z $0 $1; do sleep 1; done' localhost 5432
+    timeout -t 22 sh -c 'until nc -z $0 $1; do sleep 1; done' localhost 6104
     # Set up some values
-    - psql -h localhost -p 5432 -U postgres -d auth -f magda-registry-api/src/test/resources/data/organizations.sql
-    - psql -h localhost -p 5432 -U postgres -d auth -f magda-registry-api/src/test/resources/data/users.sql
+    psql -h localhost -p 5432 -U postgres -d auth -f magda-registry-api/src/test/resources/data/organizations.sql
+    psql -h localhost -p 5432 -U postgres -d auth -f magda-registry-api/src/test/resources/data/users.sql
     # Test!
-    - sbt "registryApi/testOnly au.csiro.data61.magda.opa.*"
+    export POSTGRES_USER=postgres
+    export POSTGRES_PASSWORD=$PGPASSWORD
+    sbt "registryApi/testOnly au.csiro.data61.magda.opa.*"
 
 (Full) Run As Preview: &runAsPreview
   stage: preview
@@ -739,7 +762,7 @@ inttest:registryAuth:
   cache:
     paths: []
   image:
-    name: dtzar/helm-kubectl:3.1.1
+    name: dtzar/helm-kubectl:3.5.2
   retry: 1
   environment:
     name: preview/$CI_COMMIT_REF_NAME
@@ -750,13 +773,8 @@ inttest:registryAuth:
     - apk add --update pwgen
 
     # Env vars
-    - JWT_SECRET="${JWT_SECRET:-$(pwgen 32 1)}"
-    - SESSION_SECRET="${SESSION_SECRET:-$(pwgen 32 1)}"
-    - DB_PASSWORD="${DB_PASSWORD:-p4ssw0rd}"
     - MINIO_HOST="${MINIO_HOST:-localhost}"
     - MINIO_PORT="${MINIO_PORT:-9000}"
-    - MINIO_ACCESS_KEY="${MINIO_ACCESS_KEY:-}"
-    - MINIO_SECRET_KEY="${MINIO_SECRET_KEY:-}"
 
     # Kube Config
     - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
@@ -766,15 +784,11 @@ inttest:registryAuth:
     - kubectl get namespace $CI_COMMIT_REF_SLUG || kubectl create namespace $CI_COMMIT_REF_SLUG
 
     # Create kube secrets
-    - kubectl create secret generic auth-secrets --from-literal=jwt-secret=$JWT_SECRET --from-literal=session-secret=$SESSION_SECRET --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
-    - kubectl -n $CI_COMMIT_REF_SLUG annotate --overwrite secret auth-secrets replicator.v1.mittwald.de/replication-allowed=true replicator.v1.mittwald.de/replication-allowed-namespaces=${CI_COMMIT_REF_SLUG}-openfaas-fn
     - kubectl create secret docker-registry regcred --namespace $CI_COMMIT_REF_SLUG --docker-server=registry.gitlab.com --docker-username=gitlab-ci-token --docker-password=$CI_JOB_TOKEN --docker-email=alex.gilleran@data61.csiro.au --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
-    - kubectl create secret generic db-passwords --from-literal=combined-db=$DB_PASSWORD --from-literal=authorization-db=$DB_PASSWORD --from-literal=content-db=$DB_PASSWORD --from-literal=session-db=$DB_PASSWORD  --from-literal=registry-db=$DB_PASSWORD --from-literal=combined-db-client=$DB_PASSWORD --from-literal=authorization-db-client=$DB_PASSWORD --from-literal=content-db-client=$DB_PASSWORD --from-literal=session-db-client=$DB_PASSWORD --from-literal=registry-db-client=$DB_PASSWORD --from-literal=tenant-db=$DB_PASSWORD --from-literal=tenant-db-client=$DB_PASSWORD --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
     - kubectl create secret generic oauth-secrets --from-literal=facebook-client-secret=$FACEBOOK_CLIENT_SECRET --from-literal=google-client-secret=$GOOGLE_CLIENT_SECRET --from-literal arcgis-client-secret=$ARCGIS_CLIENT_SECRET --from-literal vanguard-certificate="$VANGUARD_CERT" --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
     - kubectl create secret generic smtp-secret --from-literal=username=$SMTP_USERNAME --from-literal=password=$SMTP_PASSWORD --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
-    - echo "$DB_SERVICE_ACCOUNT_PRIVATE_KEY" > db-service-account-private-key.json
-    - kubectl create secret generic storage-account-credentials --from-file db-service-account-private-key.json --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
-    - kubectl create secret generic storage-secrets --from-literal=accesskey=$MINIO_ACCESS_KEY --from-literal=secretkey=$MINIO_SECRET_KEY --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
+    - echo "$DB_SERVICE_ACCOUNT_PRIVATE_KEY" > backup-storage-account.json
+    - kubectl create secret generic backup-storage-account --from-file backup-storage-account.json --from-literal=GOOGLE_APPLICATION_CREDENTIALS=/etc/wal-g.d/env/backup-storage-account.json --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
   script:
     - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/local-deployment --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600m --wait
     - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
@@ -798,12 +812,12 @@ inttest:registryAuth:
 (No Data) Run As Preview:
   <<: *runAsPreview
   script:
-    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/local-deployment --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,magda.magda-core.combined-db.waleBackup.method=NONE,magda.magda-core.elasticsearch.useGcsSnapshots=false,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600m --wait
+    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/local-deployment --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,magda.magda-core.combined-db.magda-postgres.backupRestore.recoveryMode.enabled=false,magda.magda-core.elasticsearch.useGcsSnapshots=false,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600m --wait
     - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
 (No Data) Run As Multi-tenant Preview:
   <<: *runAsPreview
   script:
-    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/local-deployment --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview-multi-tenant.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,magda.magda-core.combined-db.waleBackup.method=NONE,magda.magda-core.elasticsearch.useGcsSnapshots=false,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,global.magdaAdminPortalName=admin-$CI_COMMIT_REF_SLUG.dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600 --wait
+    - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/local-deployment --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview-multi-tenant.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,magda.magda-core.combined-db.magda-postgres.backupRestore.recoveryMode.enabled=false,magda.magda-core.elasticsearch.useGcsSnapshots=false,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,global.magdaAdminPortalName=admin-$CI_COMMIT_REF_SLUG.dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600 --wait
     - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
 
 
@@ -818,7 +832,7 @@ Stop Preview: &stopPreview
   cache:
     paths: []
   image:
-    name: dtzar/helm-kubectl:3.1.1
+    name: dtzar/helm-kubectl:3.5.2
   retry: 1
   before_script: []
   environment:
@@ -838,7 +852,7 @@ Deploy Master To Dev:
   dependencies:
     - buildtest:helm-charts
   image:
-    name: dtzar/helm-kubectl:3.1.1
+    name: dtzar/helm-kubectl:3.5.2
   retry: 1
   before_script: []
   environment:
@@ -934,7 +948,7 @@ Publish Helm Chart:
     - buildtest:helm-charts
     - pre-release:check-release-version
   image:
-    name: dtzar/helm-kubectl:3.1.1
+    name: dtzar/helm-kubectl:3.5.2
   cache:
     key: $CI_JOB_NAME-$CACHE_VERSION
     paths:
@@ -942,8 +956,7 @@ Publish Helm Chart:
   retry: 1
   script:
     # Get AWS CLI
-    - apk -v --update add python py-pip groff less mailcap
-    - pip install --upgrade awscli==1.14.5 s3cmd==2.0.1 python-magic
+    - apk -v --update add aws-cli
 
     # Run deploy
     - cd deploy/helm

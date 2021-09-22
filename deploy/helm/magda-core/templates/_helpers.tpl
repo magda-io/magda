@@ -15,6 +15,62 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{/*
+  Given a k8s object data (in dict type), test if it's part of helm release by the following metadata:
+  - annotations: 
+    - "meta.helm.sh/release-name" should be $.Release.Name
+    - "meta.helm.sh/release-namespace" should be $.Release.Namespace.
+  - labels:
+    - "app.kubernetes.io/managed-by": should be $.Release.Service
+  Parameter: 
+    - "objectData": dict. the k8s object data.
+    - "root": helm root context data `.`
+  Return value: string "true" (indicate it's part of release) or empty string ""
+  Usage: 
+  {{- if include "magda.isPartOfRelease" (dict "objectData" $k8sObjectData "root" . ) }}
+    {{- print "Is part of release"}}
+  {{- else }}
+    {{- print "Is not part of release"}}
+  {{- if}}
+*/}}
+{{- define "magda.isPartOfRelease" -}}
+{{- $objectData := .objectData | default dict }}
+{{- $metadata := (get $objectData "metadata") | default dict }}
+{{- $annotations := (get $metadata "annotations") | default dict }}
+{{- $labels := (get $metadata "labels") | default dict }}
+{{- if and (get $annotations "meta.helm.sh/release-name" | eq .root.Release.Name) (get $annotations "meta.helm.sh/release-namespace" | eq .root.Release.Namespace) (get $labels "app.kubernetes.io/managed-by" | eq .root.Release.Service) }}
+  {{- print "true" }}
+{{- else }}
+  {{- print "" }}
+{{- end }}
+{{- end -}}
+
+{{- define "magda.pullSecrets" -}}
+  {{- $pullSecrets := list }}
+  {{- if not (empty .Values.image) }}
+  {{- if eq (typeOf .Values.image.pullSecret) "string" }}
+    {{- $pullSecrets = append $pullSecrets .Values.image.pullSecret }}
+  {{- end }}
+  {{- if eq (typeOf .Values.image.pullSecret) "[]interface {}" }}
+    {{- $pullSecrets = concat $pullSecrets .Values.image.pullSecrets }}
+  {{- end }}
+  {{- end }}
+  {{- if empty $pullSecrets }}
+    {{- if eq (typeOf .Values.global.image.pullSecret) "string" }}
+      {{- $pullSecrets = append $pullSecrets .Values.global.image.pullSecret }}
+    {{- end }}
+    {{- if eq (typeOf .Values.global.image.pullSecrets) "[]interface {}" }}
+      {{- $pullSecrets = concat $pullSecrets .Values.global.image.pullSecrets }}
+    {{- end }}
+  {{- end }}
+  {{- if (not (empty $pullSecrets)) }}
+imagePullSecrets:
+    {{- range $pullSecrets }}
+  - name: {{ . }}
+    {{- end }}
+  {{- end }}
+{{- end -}}
+
 {{- define "dockerimage" -}}
 "{{ .Values.image.repository | default .Values.global.image.repository }}/magda-{{ .Chart.Name }}:{{ .Values.image.tag | default .Values.global.image.tag | default .Chart.Version }}"
 {{- end -}}
@@ -23,175 +79,125 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 "{{ .Values.image.repository | default .Values.global.image.repository }}/magda-postgres:{{ .Values.image.tag | default .Values.global.image.tag | default .Chart.Version }}"
 {{- end -}}
 
+{{- define "magda.db-client-password-secret-creation" -}}
+{{- /* only create when current chart is `combined-db` or the independent k8s db instance for the current chart (logic db) is on */}}
+{{- if and .Values.autoCreateSecret (or (eq .Chart.Name "combined-db") ((get .Values.global.useInK8sDbInstance .Chart.Name) | empty | not)) }}
+{{- $secret := (lookup "v1" "Secret" .Release.Namespace (printf "%s-password" .Chart.Name)) | default dict }}
+{{- $legacySecret := (lookup "v1" "Secret" .Release.Namespace "db-passwords") | default dict }}
+{{- /* only attempt to create secret when secret not exists or the existing secret is part of current helm release */}}
+{{- if or (empty $secret) (include "magda.isPartOfRelease" (dict "objectData" $secret "root" .) | empty | not) }}
+{{- $secretPassword := get (get $secret "data" | default dict) "password" }}
+{{- $legacySecretPassword := get (get $legacySecret "data" | default dict) (printf "%s-client" .Chart.Name) }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: "{{ .Chart.Name }}-password"
+  annotations:
+    "helm.sh/resource-policy": keep
+type: Opaque
+data:
+{{- if $secret }}
+  password: {{ $secretPassword | quote }}
+{{- else if $legacySecretPassword }}
+  password: {{ $legacySecretPassword | quote }}
+{{- else }}
+  password: {{ randAlphaNum 16 | b64enc | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end -}}
+
 {{- define "magda.postgres-svc-mapping" -}}
   {{- if .Values.global.useAwsRdsDb }}
   type: ExternalName
   externalName: "{{ .Values.global.awsRdsEndpoint | required "global.awsRdsEndpoint is required" }}"
+  {{- else if .Values.global.useCloudSql }}
+  selector:
+    service: "cloud-sql-proxy"
+  {{- else if and .Values.global.useCombinedDb (empty (get .Values.global.useInK8sDbInstance .Chart.Name)) }}
+  selector:
+    app.kubernetes.io/instance: "{{ .Release.Name }}"
+    app.kubernetes.io/name: "combined-db-postgresql"
+    role: primary
   {{- else }}
   selector:
-    service: {{- if .Values.global.useCloudSql }} "cloud-sql-proxy" {{- else if .Values.global.useCombinedDb }} "combined-db" {{- else }} "{{ .Chart.Name }}" {{- end }}
+    app.kubernetes.io/instance: "{{ .Release.Name }}"
+    app.kubernetes.io/name: "{{ .Chart.Name }}-postgresql"
+    role: primary
   {{- end -}}
 {{- end -}}
 
-{{- define "magda.postgres-client-env" -}}
-        - name: CLIENT_USERNAME
-          value: {{- if .Values.global.useCloudSql }} proxyuser {{- else }} client {{- end }}
-        - name: CLIENT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: cloudsql-db-credentials
-              key: password
+{{- define "magda.postgres-superuser-env" }}
+- name: PGUSER
+  value: {{ .Values.global.postgresql.postgresqlUsername | default "postgres" }}
+- name: PGPASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.global.postgresql.existingSecret | quote }}
+      key: "postgresql-password"
 {{- end -}}
 
 {{- define "magda.postgres-migrator-env" }}
-        - name: PGUSER
-          value: {{ .Values.global.dbMasterUsername | default "postgres" }}
-        {{- if .Values.global.noDbAuth }}
-        - name: PGPASSWORD
-          value: password
-        {{- else if or .Values.global.useCloudSql .Values.global.useAwsRdsDb}}
-        - name: PGPASSWORD
-          # for backward compatibility, we will use `cloudsql-db-credentials` secret / password key for AWS RDS DB as well
-          valueFrom:
-            secretKeyRef:
-              name: cloudsql-db-credentials
-              key: password
-        {{- else if not .Values.global.noDbAuth }}
-        - name: PGPASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-passwords
-              key: {{ .Chart.Name }}
-        {{- end }}
-        - name: CLIENT_USERNAME
-          value: client
-        {{- if .Values.global.noDbAuth }}
-        - name: CLIENT_PASSWORD
-          value: password
-        {{- else }}
-        - name: CLIENT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-passwords
-              key: {{ .Chart.Name }}-client
-        {{- end }}
+- name: PGUSER
+  value: {{ .Values.global.postgresql.postgresqlUsername | default "postgres" }}
+- name: PGPASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.global.postgresql.existingSecret | quote }}
+      key: "postgresql-password"
+- name: CLIENT_USERNAME
+  value: client
+- name: CLIENT_PASSWORD
+  valueFrom:
+    secretKeyRef:
+{{- if and .Values.global.useCombinedDb (empty (get .Values.global.useInK8sDbInstance .Chart.Name)) }}
+      name: "{{ printf "%s-password" "combined-db" }}"
+{{- else }}
+      name: "{{ printf "%s-password" .Chart.Name }}"
+{{- end }}
+      key: "password"
 {{- end -}}
 
-{{- define "magda.postgres-env" -}}
-        {{- template "magda.postgres-migrator-env" . }}
-        {{- if .Values.limits }}
-        - name: MEMORY_LIMIT
-          value: {{ .Values.limits.memory }}
-        {{- end }}
-        {{- if .Values.waleBackup }}
-        - name: BACKUP
-          value: {{ .Values.waleBackup.method | default "NONE" | quote }}
-        - name: BACKUP_RO
-          value: {{ .Values.waleBackup.readOnly | default "FALSE" | upper | quote }}
-        - name: BACKUP_RECOVERY_MODE
-          value: {{ .Values.waleBackup.recoveryMode | quote }}
-        - name: WALE_S3_PREFIX
-          value: {{ .Values.waleBackup.s3Prefix }}
-        - name: AWS_ACCESS_KEY_ID
-          value: {{ .Values.waleBackup.awsAccessKeyId }}
-        - name: AWS_SECRET_ACCESS_KEY
-          value: {{ .Values.waleBackup.secretAccessKey }}
-        - name: AWS_REGION
-          value: {{ .Values.waleBackup.awsRegion }}
-        - name: WALE_WABS_PREFIX
-          value: {{ .Values.waleBackup.wabsPrefix }}
-        - name: WABS_ACCOUNT_NAME
-          value: {{ .Values.waleBackup.wabsAccountName }}
-        - name: WABS_ACCESS_KEY
-          value: {{ .Values.waleBackup.wabsAccessKey }}
-        - name: WABS_SAS_TOKEN
-          value: {{ .Values.waleBackup.wabsSasToken }}
-        - name: WALE_GS_PREFIX
-          value: {{ .Values.waleBackup.gsPrefix }}
-        {{- if .Values.waleBackup.googleApplicationCreds }}
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: "/var/{{ .Values.waleBackup.googleApplicationCreds.secretName }}/{{ .Values.waleBackup.googleApplicationCreds.fileName }}"
-        {{- end }}
-        - name: WALE_SWIFT_PREFIX
-          value: {{ .Values.waleBackup.swiftPrefix }}
-        - name: SWIFT_AUTHURL
-          value: {{ .Values.waleBackup.swiftAuthUrl }}
-        - name: SWIFT_TENANT
-          value: {{ .Values.waleBackup.swiftTenant }}
-        - name: SWIFT_USER
-          value: {{ .Values.waleBackup.swiftUser }}
-        - name: SWIFT_PASSWORD
-          value: {{ .Values.waleBackup.swiftPassword }}
-        - name: SWIFT_AUTH_VERSION
-          value: {{ .Values.waleBackup.swiftAuthVersion }}
-        - name: SWIFT_ENDPOINT_TYPE
-          value: {{ .Values.waleBackup.swiftEndpointType }}
-        {{- if .Values.waleBackup.hostPath }}
-        - name: WALE_FILE_PREFIX
-          value: "file://localhost/var/backup"
-        {{- end }}
-        - name: BACKUP_EXECUTION_TIME
-          value: {{ .Values.waleBackup.executionTime }}
-        {{- end }}
+{{/*
+  Generating db client credential env vars for service deployment
+  Parameters:
+  - root: root scope. i.e. .
+  - dbName: the name of the DB.
+  Usage: 
+  {{ include "magda.db-client-credential-env" (dict "dbName" "content-db" "root" .) | indent 8 }}
+*/}}
+{{- define "magda.db-client-credential-env" -}}
+{{- $dbName := .dbName }}
+{{- with .root }}
+- name: PGUSER
+  value: client
+- name: PGPASSWORD
+  valueFrom:
+    secretKeyRef:
+{{- if and .Values.global.useCombinedDb (empty (get .Values.global.useInK8sDbInstance $dbName)) }}
+{{- /* when logic dbs are hosted by the single combined-db, we use same client password (mapped to combined-db). */}}
+      name: "{{ printf "%s-password" "combined-db" }}"
+{{- else }}
+      name: "{{ printf "%s-password" $dbName }}"
 {{- end }}
+      key: password
+{{- end }}
+{{- end -}}
 
-{{- define "magda.waleVolumes.volumeMount" }}
-{{- if and .Values.waleBackup }}
-{{- if .Values.waleBackup.googleApplicationCreds }}
-        - name: wale-google-account-credentials
-          mountPath: "/var/{{ .Values.waleBackup.googleApplicationCreds.secretName }}"
-          readOnly: true
-{{- end }}
-{{- if .Values.waleBackup.hostPath }}
-        - name: wale-backup-directory
-          mountPath: /var/backup
-{{- end }}
-{{- end }}
-{{- end }}
 
-{{- define "magda.waleVolumes.volume" }}
-{{- if and .Values.waleBackup }}
-{{- if .Values.waleBackup.googleApplicationCreds }}
-        - name: wale-google-account-credentials
-          secret:
-            secretName: {{ .Values.waleBackup.googleApplicationCreds.secretName }}
+{{- define "magda.db-client-credential-env-registry" -}}
+- name: POSTGRES_USER
+  value: client
+- name: POSTGRES_PASSWORD
+  valueFrom:
+    secretKeyRef:
+{{- if and .Values.global.useCombinedDb (empty (get .Values.global.useInK8sDbInstance "registry-db")) }}
+      name: "{{ printf "%s-password" "combined-db" }}"
+{{- else }}
+      name: "registry-db-password"
 {{- end }}
-{{- if .Values.waleBackup.hostPath }}
-        - name: wale-backup-directory
-          hostPath:
-            path: {{ .Values.waleBackup.hostPath }}
-            type: DirectoryOrCreate
-{{- end }}
-{{- end }}
-{{- end }}
-
-{{- define "magda.postgresLivenessProbe" }}
-        readinessProbe:
-          exec:
-            command: [ "/bin/sh", "-c", "pg_isready -h 127.0.0.1 -p 5432 -t 31" ]
-          initialDelaySeconds: 10
-          periodSeconds: 30
-          timeoutSeconds: 30
-          failureThreshold: 6
-          successThreshold: 1
-{{- if .Values.global.enableLivenessProbes }}
-        livenessProbe:
-          exec:
-            command: [ "/bin/sh", "-c", "pg_isready -h 127.0.0.1 -p 5432 -t 31" ]
-          initialDelaySeconds: 3600
-          periodSeconds: 10
-          timeoutSeconds: 30
-          failureThreshold: 6
-          successThreshold: 1
-{{- end }}
-{{- end }}
-
-{{- define "magda.postgresLifecycle" }}
-        lifecycle:
-          preStop:
-            exec:
-              command: ["/bin/bash", 'pkill backup-push && gosu postgres psql -c "SELECT pg_stop_backup()"']
-{{- end }}
+      key: password
+{{- end -}}
 
 {{- define "magda.connectorJobSpec" }}
 spec:
