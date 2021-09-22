@@ -123,9 +123,9 @@ data:
   - dbUserEnvName: optional; "PGUSER" by default.
   - dbPasswordEnvName: optional; "PGPASSWORD" by default.
   Usage: 
-  {{ include "magda.common.db-client-credential-env" (dict "dbName" "content-db" "root" .) | indent 8 }}
+  {{ include "magda.db-client-credential-env" (dict "dbName" "content-db" "root" .) | indent 8 }}
   Or 
-  {{ include "magda.common.db-client-credential-env" (dict "dbName" "content-db" "dbUserEnvName" "POSTGRES_USER" "dbPasswordEnvName" "POSTGRES_PASSWORD" "root" .) | indent 8 }}
+  {{ include "magda.db-client-credential-env" (dict "dbName" "content-db" "dbUserEnvName" "POSTGRES_USER" "dbPasswordEnvName" "POSTGRES_PASSWORD" "root" .) | indent 8 }}
 */}}
 {{- define "magda.db-client-credential-env" -}}
 {{- if not (hasKey . "root") }}
