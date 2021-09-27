@@ -6,14 +6,14 @@ cd flyway-4.2.0
 
 del_completed_scripts () {
     echo "Attempt to exclude previously executed scripts..."
-    local IFS_BAK=$IFS
-    local SUCCESS_SCRIPTS=`psql -t -A -h "${DB_HOST}" -c "SELECT script FROM schema_version WHERE success=TRUE" $(basename "$d") -t`
+    local dbName=$(basename "${1}")
+    local SUCCESS_SCRIPTS=`psql -t -A -h "${DB_HOST}" -c "SELECT script FROM schema_version WHERE success=TRUE" ${dbName} -t`
     local item=""
-    IFS="|"
-    for item in /flyway/sql/${1}/*; do
-        if [[ -f "/flyway/sql/${1}/${item}" ]] && [[ "${IFS}${SUCCESS_SCRIPTS[*]}${IFS}" =~ "${IFS}${item}${IFS}" ]]; then
-            echo "Skip ${item} as it has been sccessfully run before..."
-            rm -Rf /flyway/sql/${1}/${item}
+    for item in ${1}/*; do
+        item=$(basename "${item}")
+        if [[ -f "${1}/${item}" ]] && [[ "${SUCCESS_SCRIPTS[*]}" =~ "${item}" ]]; then
+            echo "Skip ${item} as it has been sccessfully run previously..."
+            rm -Rf ${1}/${item}
         fi
     done
 }
@@ -22,9 +22,9 @@ for d in /flyway/sql/*; do
     if [[ -d "$d" ]]; then
         echo "Creating database $(basename "$d") (this will fail if it already exists; that's ok)"
         psql -h "${DB_HOST}" -c "CREATE DATABASE $(basename "$d") WITH OWNER = ${PGUSER:-postgres} CONNECTION LIMIT = -1;" postgres
-        del_completed_scripts "$d"
+        del_completed_scripts "${d}"
         echo "Migrating database $(basename "$d")"
-        if [ -z "$(ls -A /flyway/sql/${d})" ]; then
+        if [ -z "$(ls -A ${d})" ]; then
             echo "All scripts have been successfully run previously."
             echo "No need to take migration actions."
         else
