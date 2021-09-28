@@ -7,15 +7,20 @@ cd flyway-4.2.0
 del_completed_scripts () {
     echo "Attempt to exclude previously executed scripts..."
     local dbName=$(basename "${1}")
-    local SUCCESS_SCRIPTS=`psql -t -A -h "${DB_HOST}" -c "SELECT script FROM schema_version WHERE success=TRUE" ${dbName} -t`
     local item=""
-    for item in ${1}/*; do
-        item=$(basename "${item}")
-        if [[ -f "${1}/${item}" ]] && [[ "${SUCCESS_SCRIPTS[*]}" =~ "${item}" ]]; then
-            echo "Skip ${item} as it has been sccessfully run previously..."
-            rm -Rf ${1}/${item}
-        fi
-    done
+    local SUCCESS_SCRIPTS=`psql -t -A -h "${DB_HOST}" -c "SELECT script FROM schema_version WHERE success=TRUE" ${dbName} -t`
+
+    if [[ $? -eq 1 ]]; then
+        echo "Failed to locate schema version info. Proceed to process all migration scripts..."
+    else
+        for item in ${1}/*; do
+            item=$(basename "${item}")
+            if [[ -f "${1}/${item}" ]] && [[ "${SUCCESS_SCRIPTS[*]}" =~ "${item}" ]]; then
+                echo "Skip ${item} as it has been sccessfully run previously..."
+                rm -Rf ${1}/${item}
+            fi
+        done
+    fi
 }
 
 for d in /flyway/sql/*; do
@@ -28,7 +33,8 @@ for d in /flyway/sql/*; do
             echo "All scripts have been successfully run previously."
             echo "No need to take migration actions."
         else
-            ./flyway migrate -baselineOnMigrate=true -url=jdbc:postgresql://"${DB_HOST}"/$(basename "$d") -locations=filesystem:$d -user=${PGUSER:-postgres} -password=${PGPASSWORD} -placeholders.clientUserName="${CLIENT_USERNAME}" -placeholders.clientPassword="${CLIENT_PASSWORD}" -n
+            echo "Processing migration scripts in ${d}..."
+            ./flyway migrate -ignoreMissingMigrations=true -baselineOnMigrate=true -url=jdbc:postgresql://"${DB_HOST}"/$(basename "$d") -locations=filesystem:$d -user=${PGUSER:-postgres} -password=${PGPASSWORD} -placeholders.clientUserName="${CLIENT_USERNAME}" -placeholders.clientPassword="${CLIENT_PASSWORD}" -n
         fi
     fi
 done
