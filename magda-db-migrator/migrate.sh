@@ -8,9 +8,12 @@ del_completed_scripts () {
     echo "Attempt to exclude previously executed scripts..."
     local dbName=$(basename "${1}")
     local item=""
-    local SUCCESS_SCRIPTS=`psql -t -A -h "${DB_HOST}" -c "SELECT script FROM schema_version WHERE success=TRUE" ${dbName} -t`
+    local retCode=0
+    local SUCCESS_SCRIPTS=""
 
-    if [[ $? -eq 1 ]]; then
+    SUCCESS_SCRIPTS=`psql -t -A -h "${DB_HOST}" -c "SELECT script FROM schema_version WHERE success=TRUE" ${dbName} -t` || retCode=$?
+
+    if [[ $retCode -eq "1" ]]; then
         echo "Failed to locate schema version info. Proceed to process all migration scripts..."
     else
         for item in ${1}/*; do
@@ -27,8 +30,11 @@ for d in /flyway/sql/*; do
     if [[ -d "$d" ]]; then
         echo "Creating database $(basename "$d") (this will fail if it already exists; that's ok)"
         psql -h "${DB_HOST}" -c "CREATE DATABASE $(basename "$d") WITH OWNER = ${PGUSER:-postgres} CONNECTION LIMIT = -1;" postgres
+        
+        echo "Migrating database $(basename "$d")..."
+
         del_completed_scripts "${d}"
-        echo "Migrating database $(basename "$d")"
+        
         if [ -z "$(ls -A ${d})" ]; then
             echo "All scripts have been successfully run previously."
             echo "No need to take migration actions."
