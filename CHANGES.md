@@ -13,6 +13,7 @@
 - #3221 Make correspondence-api turned off by default
 - #3223 "Open in NationalMap" button will send data with the version field
 - #3226 Release `magda-common` library Helm Chart to Share Common Deployment Logic with Plugin Developers
+- #3125 Skip previously run database migration scripts
 
 ## 0.0.60
 
