@@ -62,8 +62,7 @@ magda:
       magda-postgres:
         backupRestore:
           storageConfig:
-            WALG_GS_PREFIX: "gs://magda-postgres-backups-asia//dev"
-            GCS_NORMALIZE_PREFIX: "false"
+            WALG_GS_PREFIX: "gs://magda-postgres-backups-asia/dev"
           recoveryMode: 
             enabled: true
         postgresql:
