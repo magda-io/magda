@@ -74,11 +74,11 @@ magda:
             extraVolumeMounts:
               - name: storage-account
                 mountPath: /etc/wal-g.d/env
-        persistence:
-          size: "250Gi"
-        resources:
-          limits:
-            cpu: 2000m
+          persistence:
+            size: "250Gi"
+          resources:
+            limits:
+              cpu: 2000m
 
     elasticsearch:
       data:

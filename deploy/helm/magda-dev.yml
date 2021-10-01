@@ -99,8 +99,8 @@ magda:
             extraVolumeMounts:
               - name: storage-account
                 mountPath: /etc/wal-g.d/env
-        persistence:
-          size: "250Gi"
+          persistence:
+            size: "250Gi"
 
     elasticsearch:
       data:
