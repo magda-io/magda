@@ -78,6 +78,7 @@ magda:
     combined-db:
       magda-postgres:
         backupRestore:
+          storageSecretName: backup-storage-account
           storageConfig:
             WALG_GS_PREFIX: "gs://magda-postgres-backups-asia/dev"
           backup: 
