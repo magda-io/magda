@@ -20,7 +20,7 @@ spec:
           labels:
             cron: "{{ .Values.postgresql.fullnameOverride }}-backup-jobs"
         spec:
-{{- include "magda.pullSecrets" . | indent 10 }}
+{{- include "magda.imagePullSecrets" . | indent 10 }}
           containers:
           - image: "{{ .Values.backupRestore.image.repository }}:{{ .Values.backupRestore.image.tag }}"
             imagePullPolicy: "{{ .Values.backupRestore.image.pullPolicy }}"
