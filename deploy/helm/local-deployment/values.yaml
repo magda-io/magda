@@ -52,16 +52,6 @@ magda-auth-google:
     tag: 1.0.1
     repository: docker.io/data61
 
-magda-auth-ckan:
-  ckanUrl: "https://data.gov.au/data"
-  authPluginConfig:
-    name: "Data.gov.au"
-    loginFormExtraInfoHeading: "Register"
-    loginFormExtraInfoContent: "To register a new [data.gov.au](https://data.gov.au/) account, [click here](https://data.gov.au/data/user/register)"
-  image:
-    tag: 1.0.1
-    repository: docker.io/data61
-
 magda-auth-internal:
   authPluginConfig:
     loginFormExtraInfoContent: "Forgot your password? Email [magda-test@googlegroups.com](magda-test@googlegroups.com)"

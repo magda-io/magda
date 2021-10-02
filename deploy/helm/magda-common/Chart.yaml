@@ -6,6 +6,8 @@ description: |
 type: library
 version: 1.0.0-alpha.2
 kubeVersion: ">= 1.14.0-0"
+annotations:
+  magdaModuleType: "core"
 keywords:
   - common
   - helper
