@@ -4,3 +4,6 @@ description: Magda's Access Control Policy Engine ([Open Policy
 name: opa
 version: 1.0.0-alpha.2
 kubeVersion: ">= 1.14.0-0"
+annotations:
+  magdaModuleType: "core"
+  

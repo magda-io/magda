@@ -14,6 +14,9 @@
 - #3223 "Open in NationalMap" button will send data with the version field
 - #3226 Release `magda-common` library Helm Chart to Share Common Deployment Logic with Plugin Developers
 - #3125 Skip previously run database migration scripts
+- remove magda-auth-ckan from default CD deployment
+- Related to #3229, implement docker image related templates
+- Related to #3229, add `magdaModuleType: "core"` to all core chart annotation
 
 ## 0.0.60
 

@@ -4,3 +4,5 @@ name: cloud-sql-proxy
 version: 1.0.0-alpha.2
 appVersion: "1.11"
 kubeVersion: ">= 1.14.0-0"
+annotations:
+  magdaModuleType: "core"

@@ -42,3 +42,20 @@
   {{- end -}}
 {{- mustToRawJson $data | quote -}} 
 {{- end -}}
+
+{{/*
+  Get Magda Module Type from current chart's Chart.yaml `annotations` field
+  Parameters / input:
+    Must passing the root scope as the template input.
+  Return:
+    Magda Module Type string.
+    If not set in current chart's Chart.yaml, return "".
+  Usage: 
+    {{ include "magda.getMagdaModuleType" . }}
+*/}}
+{{- define "magda.getMagdaModuleType" -}}
+  {{- /* add `| mustToJson | mustFromJson` to convert the type to avoid type error */}}
+  {{- $annotations := .Chart.Annotations | default dict | mustToJson | mustFromJson }}
+  {{- $magdaModuleType := get $annotations "magdaModuleType" | default "" }}
+  {{- print $magdaModuleType }}
+{{- end -}}

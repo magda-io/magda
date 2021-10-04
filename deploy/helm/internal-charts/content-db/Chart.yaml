@@ -3,6 +3,8 @@ description: A Helm chart for Kubernetes
 name: content-db
 version: 1.0.0-alpha.2
 kubeVersion: ">= 1.14.0-0"
+annotations:
+  magdaModuleType: "core"
 dependencies:
   - name: magda-postgres
     version: "1.0.0-alpha.2"
