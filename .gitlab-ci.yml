@@ -790,6 +790,12 @@ inttest:registryAuth:
     - echo "$DB_SERVICE_ACCOUNT_PRIVATE_KEY" > backup-storage-account.json
     - kubectl create secret generic backup-storage-account --from-file backup-storage-account.json --from-literal=GOOGLE_APPLICATION_CREDENTIALS=/etc/wal-g.d/env/backup-storage-account.json --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
   script:
+    # Copy db secrets from master deployment (where backup is created) so that there won't be password issues after db recovery
+    - kubectl -n default get secret combined-db-password -oyaml | kubectl -n $CI_COMMIT_REF_SLUG apply -f -
+    - kubectl -n default get secret db-main-account-secret -oyaml | kubectl -n $CI_COMMIT_REF_SLUG apply -f -
+    # Remove helm annotations
+    - kubectl -n $CI_COMMIT_REF_SLUG annotate secret combined-db-password meta.helm.sh/release-name- meta.helm.sh/release-namespace-
+    - kubectl -n $CI_COMMIT_REF_SLUG annotate secret db-main-account-secret meta.helm.sh/release-name- meta.helm.sh/release-namespace-
     - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/local-deployment --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600m --wait
     - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
 
