@@ -784,18 +784,17 @@ inttest:registryAuth:
     - kubectl get namespace $CI_COMMIT_REF_SLUG || kubectl create namespace $CI_COMMIT_REF_SLUG
 
     # Create kube secrets
-    - kubectl create secret docker-registry regcred --namespace $CI_COMMIT_REF_SLUG --docker-server=registry.gitlab.com --docker-username=gitlab-ci-token --docker-password=$CI_JOB_TOKEN --docker-email=alex.gilleran@data61.csiro.au --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
-    - kubectl create secret generic oauth-secrets --from-literal=facebook-client-secret=$FACEBOOK_CLIENT_SECRET --from-literal=google-client-secret=$GOOGLE_CLIENT_SECRET --from-literal arcgis-client-secret=$ARCGIS_CLIENT_SECRET --from-literal vanguard-certificate="$VANGUARD_CERT" --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
-    - kubectl create secret generic smtp-secret --from-literal=username=$SMTP_USERNAME --from-literal=password=$SMTP_PASSWORD --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
+    - kubectl create secret docker-registry regcred --namespace $CI_COMMIT_REF_SLUG --docker-server=registry.gitlab.com --docker-username=gitlab-ci-token --docker-password=$CI_JOB_TOKEN --docker-email=alex.gilleran@data61.csiro.au --dry-run=client -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
+    - kubectl create secret generic oauth-secrets --from-literal=facebook-client-secret=$FACEBOOK_CLIENT_SECRET --from-literal=google-client-secret=$GOOGLE_CLIENT_SECRET --from-literal arcgis-client-secret=$ARCGIS_CLIENT_SECRET --from-literal vanguard-certificate="$VANGUARD_CERT" --namespace $CI_COMMIT_REF_SLUG --dry-run=client -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
+    - kubectl create secret generic smtp-secret --from-literal=username=$SMTP_USERNAME --from-literal=password=$SMTP_PASSWORD --namespace $CI_COMMIT_REF_SLUG --dry-run=client -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
     - echo "$DB_SERVICE_ACCOUNT_PRIVATE_KEY" > backup-storage-account.json
-    - kubectl create secret generic backup-storage-account --from-file backup-storage-account.json --from-literal=GOOGLE_APPLICATION_CREDENTIALS=/etc/wal-g.d/env/backup-storage-account.json --namespace $CI_COMMIT_REF_SLUG --dry-run -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
+    - kubectl create secret generic backup-storage-account --from-file backup-storage-account.json --from-literal=GOOGLE_APPLICATION_CREDENTIALS=/etc/wal-g.d/env/backup-storage-account.json --namespace $CI_COMMIT_REF_SLUG --dry-run=client -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
   script:
     # Copy db secrets from master deployment (where backup is created) so that there won't be password issues after db recovery
-    - kubectl -n default get secret combined-db-password -oyaml | kubectl -n $CI_COMMIT_REF_SLUG apply -f -
-    - kubectl -n default get secret db-main-account-secret -oyaml | kubectl -n $CI_COMMIT_REF_SLUG apply -f -
-    # Remove helm annotations
-    - kubectl -n $CI_COMMIT_REF_SLUG annotate secret combined-db-password meta.helm.sh/release-name- meta.helm.sh/release-namespace-
-    - kubectl -n $CI_COMMIT_REF_SLUG annotate secret db-main-account-secret meta.helm.sh/release-name- meta.helm.sh/release-namespace-
+    - CLIENT_DB_PASSWORD=$(kubectl --namespace=default get secret combined-db-password --template={{.data.password}} | base64 -d)
+    - SUPER_DB_PASSWORD=$(kubectl --namespace=default get secret db-main-account-secret --template={{.data.postgresql-password}} | base64 -d)
+    - kubectl create secret generic combined-db-password --from-literal=password=$CLIENT_DB_PASSWORD --dry-run=client -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
+    - kubectl create secret generic db-main-account-secret --from-literal=postgresql-password=$SUPER_DB_PASSWORD --dry-run=client -o json | kubectl apply --namespace $CI_COMMIT_REF_SLUG -f -
     - helm upgrade $CI_COMMIT_REF_SLUG deploy/helm/local-deployment --install --recreate-pods --namespace $CI_COMMIT_REF_SLUG -f deploy/helm/preview.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=$CI_COMMIT_REF_SLUG,magda.magda-core.ingress.hostname=$CI_COMMIT_REF_SLUG.dev.magda.io,global.externalUrl=https://$CI_COMMIT_REF_SLUG.dev.magda.io,global.namespace=$CI_COMMIT_REF_SLUG --timeout 3600m --wait
     - echo "Successfully deployed to https://${CI_COMMIT_REF_SLUG}.dev.magda.io"
 
@@ -867,7 +866,7 @@ Deploy Master To Dev:
   script:
     - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
     - export KUBECONFIG=kubectlconfig.yaml
-    - kubectl create secret docker-registry regcred --namespace default --docker-server=registry.gitlab.com --docker-username=gitlab-ci-token --docker-password=$CI_JOB_TOKEN --docker-email=alex.gilleran@data61.csiro.au --dry-run -o json | kubectl apply --namespace default -f -
+    - kubectl create secret docker-registry regcred --namespace default --docker-server=registry.gitlab.com --docker-username=gitlab-ci-token --docker-password=$CI_JOB_TOKEN --docker-email=alex.gilleran@data61.csiro.au --dry-run=client -o json | kubectl apply --namespace default -f -
     - helm upgrade magda deploy/helm/local-deployment --install --recreate-pods -f deploy/helm/magda-dev.yml --set global.image.repository=registry.gitlab.com/magda-data/magda/data61,global.image.tag=master --timeout 3600m --wait
 
 pre-release:check-release-version:
