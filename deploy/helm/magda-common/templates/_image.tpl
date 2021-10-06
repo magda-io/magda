@@ -16,10 +16,10 @@
   {{- include "magda.imagePullSecrets" . | indent 10 }}
 */}}
 {{- define "magda.imagePullSecrets" -}}
-  {{- $xScopeVar := dict "pullSecrets" list }}
+  {{- $pullSecrets := list }}
   {{- if not (empty .Values.image) }}
     {{- $pullSecretList := include "magda.image.getPullSecretList" .Values.image | mustFromJson }}
-    {{- $_ := set $xScopeVar "pullSecrets" (concat $xScopeVar.pullSecrets $pullSecretList) }}
+    {{- $pullSecrets = concat $pullSecrets $pullSecretList }}
   {{- end }}
   {{- $magdaModuleType := include "magda.getMagdaModuleType" . }}
   {{- $global := get .Values "global" | default dict }}
@@ -28,18 +28,17 @@
   {{- $urlProcessorsConfig := get $global "urlProcessors" | default dict }}
   {{- if and (eq $magdaModuleType "core") (get $global "image" | empty | not) }}
     {{- $pullSecretList := include "magda.image.getPullSecretList" (get $global "image") | mustFromJson }}
-    {{- $_ := set $xScopeVar "pullSecrets" (concat $xScopeVar.pullSecrets $pullSecretList) }}
+    {{- $pullSecrets = concat $pullSecrets $pullSecretList }}
   {{- else if and (eq $magdaModuleType "connector") (get $connectorsConfig "image" | empty | not) }}
     {{- $pullSecretList := include "magda.image.getPullSecretList" (get $connectorsConfig "image") | mustFromJson }}
-    {{- $_ := set $xScopeVar "pullSecrets" (concat $xScopeVar.pullSecrets $pullSecretList) }}
+    {{- $pullSecrets = concat $pullSecrets $pullSecretList }}
   {{- else if and (eq $magdaModuleType "minion") (get $minionsConfig "image" | empty | not) }}
     {{- $pullSecretList := include "magda.image.getPullSecretList" (get $minionsConfig "image") | mustFromJson }}
-    {{- $_ := set $xScopeVar "pullSecrets" (concat $xScopeVar.pullSecrets $pullSecretList) }}
+    {{- $pullSecrets = concat $pullSecrets $pullSecretList }}
   {{- else if and (eq $magdaModuleType "urlProcessor") (get $urlProcessorsConfig "image" | empty | not) }}
     {{- $pullSecretList := include "magda.image.getPullSecretList" (get $urlProcessorsConfig "image") | mustFromJson }}
-    {{- $_ := set $xScopeVar "pullSecrets" (concat $xScopeVar.pullSecrets $pullSecretList) }}
+    {{- $pullSecrets = concat $pullSecrets $pullSecretList }}
   {{- end }}
-  {{- $pullSecrets := $xScopeVar.pullSecrets }}
   {{- if (not (empty $pullSecrets)) }}
 imagePullSecrets:
     {{- range $pullSecrets }}
@@ -63,18 +62,18 @@ imagePullSecrets:
 */}}
 {{- define "magda.image.getPullSecretList" -}}
   {{- $pullSecretsConfig := false }}
-  {{- $pullSecretsConfig := (.pullSecrets | empty | not) | ternary .pullSecrets $pullSecretsConfig }}
-  {{- $pullSecretsConfig := (.pullSecret | empty | not) | ternary .pullSecret $pullSecretsConfig }}
-  {{- $pullSecretsConfig := (.imagePullSecret | empty | not) | ternary .imagePullSecret $pullSecretsConfig }}
-  {{- $pullSecretsConfig := (.imagePullSecrets | empty | not) | ternary .imagePullSecrets $pullSecretsConfig }}
-  {{- $xScopeVar := dict "pullSecretList" list }}
+  {{- $pullSecretsConfig = (.pullSecrets | empty | not) | ternary .pullSecrets $pullSecretsConfig }}
+  {{- $pullSecretsConfig = (.pullSecret | empty | not) | ternary .pullSecret $pullSecretsConfig }}
+  {{- $pullSecretsConfig = (.imagePullSecret | empty | not) | ternary .imagePullSecret $pullSecretsConfig }}
+  {{- $pullSecretsConfig = (.imagePullSecrets | empty | not) | ternary .imagePullSecrets $pullSecretsConfig }}
+  {{- $pullSecretList := list }}
   {{- if kindIs "string" $pullSecretsConfig }}
-    {{- $_ := set $xScopeVar "pullSecretList" (append $xScopeVar.pullSecretList $pullSecretsConfig) }}
+    {{- $pullSecretList = append $pullSecretList $pullSecretsConfig }}
   {{- end }}
   {{- if kindIs "slice" $pullSecretsConfig }}
-    {{- $_ := set $xScopeVar "pullSecretList" (concat $xScopeVar.pullSecretList $pullSecretsConfig) }}
+    {{- $pullSecretList = concat $pullSecretList $pullSecretsConfig }}
   {{- end }}
-  {{- $xScopeVar.pullSecretList | mustToJson }}
+  {{- $pullSecretList | mustToJson }}
 {{- end -}}
 
 
@@ -97,25 +96,25 @@ imagePullSecrets:
   {{- $connectorsConfig := get $global "connectors" | default dict }}
   {{- $minionsConfig := get $global "minions" | default dict }}
   {{- $urlProcessorsConfig := get $global "urlProcessors" | default dict }}
-  {{- $xScopeVar := dict "imageConfig" dict }}
+  {{- $imageConfig := dict }}
   {{- if and (eq $magdaModuleType "core") (get $global "image" | empty | not) }}
-    {{- $_ := set $xScopeVar "imageConfig" (get $global "image" | default dict) }}
+    {{- /* should use `=` instead of `:=` avoid creating a new local var `imageConfig` */}}
+    {{- $imageConfig = get $global "image" | default dict }}
   {{- else if and (eq $magdaModuleType "connector") (get $connectorsConfig "image" | empty | not) }}
-    {{- $_ := set $xScopeVar "imageConfig" (get $connectorsConfig "image" | default dict) }}
+    {{- $imageConfig = get $connectorsConfig "image" | default dict }}
   {{- else if and (eq $magdaModuleType "minion") (get $minionsConfig "image" | empty | not) }}
-    {{- $_ := set $xScopeVar "imageConfig" (get $minionsConfig "image" | default dict) }}
+    {{- $imageConfig = get $minionsConfig "image" | default dict }}
   {{- else if and (eq $magdaModuleType "urlProcessor") (get $urlProcessorsConfig "image" | empty | not) }}
-    {{- $_ := set $xScopeVar "imageConfig" (get $urlProcessorsConfig "image" | default dict) }}
+    {{- $imageConfig = get $urlProcessorsConfig "image" | default dict }}
   {{- end }}
-  {{- $imageConfig := $xScopeVar.imageConfig }}
-  {{- $tag := get $imageConfig "tag" | default $tag }}
-  {{- $repository := get $imageConfig "repository" | default $repository }}
-  {{- $name := get $imageConfig "name" | default $name }}
-  {{- $imageConfig := get .Values "image" | default dict }}
-  {{- $tag := get $imageConfig "tag" | default $tag }}
-  {{- $repository := get $imageConfig "repository" | default $repository }}
-  {{- $name := get $imageConfig "name" | default $name }}
-  {{- printf "%s%s%s" ($repository | empty | ternary "" (printf "%s/" $repository)) $name ($tag | empty | ternary "" (printf ":%s" $tag)) }}
+  {{- $tag = get $imageConfig "tag" | default $tag }}
+  {{- $repository = get $imageConfig "repository" | default $repository }}
+  {{- $name = get $imageConfig "name" | default $name }}
+  {{- $imageConfig = get .Values "image" | default dict }}
+  {{- $tag = get $imageConfig "tag" | default $tag | toString }}
+  {{- $repository = get $imageConfig "repository" | default $repository | toString }}
+  {{- $name = get $imageConfig "name" | default $name | toString }}
+  {{- printf "%s%s%s" ($repository | empty | ternary "" (printf "%s/" $repository)) $name ($tag | empty | ternary "" (printf ":%s" $tag )) }}
 {{- end -}}
 
 
@@ -136,18 +135,19 @@ imagePullSecrets:
   {{- $connectorsConfig := get $global "connectors" | default dict }}
   {{- $minionsConfig := get $global "minions" | default dict }}
   {{- $urlProcessorsConfig := get $global "urlProcessors" | default dict }}
-  {{- $xScopeVar := dict "imageConfig" dict }}
+  {{- $imageConfig := dict }}
   {{- if and (eq $magdaModuleType "core") (get $global "image" | empty | not) }}
-    {{- $_ := set $xScopeVar "imageConfig" (get $global "image" | default dict) }}
+    {{- /* should use `=` instead of `:=` avoid creating a new local var `imageConfig` */}}
+    {{- $imageConfig = get $global "image" | default dict }}
   {{- else if and (eq $magdaModuleType "connector") (get $connectorsConfig "image" | empty | not) }}
-    {{- $_ := set $xScopeVar "imageConfig" (get $connectorsConfig "image" | default dict) }}
+    {{- $imageConfig = get $connectorsConfig "image" | default dict }}
   {{- else if and (eq $magdaModuleType "minion") (get $minionsConfig "image" | empty | not) }}
-    {{- $_ := set $xScopeVar "imageConfig" (get $minionsConfig "image" | default dict) }}
+    {{- $imageConfig = get $minionsConfig "image" | default dict }}
   {{- else if and (eq $magdaModuleType "urlProcessor") (get $urlProcessorsConfig "image" | empty | not) }}
-    {{- $_ := set $xScopeVar "imageConfig" (get $urlProcessorsConfig "image" | default dict) }}
+    {{- $imageConfig = get $urlProcessorsConfig "image" | default dict }}
   {{- end }}
-  {{- $pullPolicy := get $xScopeVar.imageConfig "pullPolicy" | default $pullPolicy }}
-  {{- $imageConfig := get .Values "image" | default dict }}
-  {{- $pullPolicy := get $imageConfig "pullPolicy" | default $pullPolicy }}
+  {{- $pullPolicy = get $imageConfig "pullPolicy" | default $pullPolicy }}
+  {{- $imageConfig = get .Values "image" | default dict }}
+  {{- $pullPolicy = get $imageConfig "pullPolicy" | default $pullPolicy }}
   {{- print $pullPolicy }}
 {{- end -}}
