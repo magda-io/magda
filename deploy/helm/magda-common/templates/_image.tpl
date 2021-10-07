@@ -2,10 +2,10 @@
 {{/*
   Generating `imagePullSecrets` field (for a k8s deployment or pod etc.) based on:
   - `.Values.image`: this config will always be considered.
-  - `.Values.global.image.pullSecret`: Only used when `magdaModuleType` = `core`
-  - `.Values.connectors.image.pullSecret`: Only used when `magdaModuleType` = `connector`
-  - `.Values.minions.image.pullSecret`: Only used when `magdaModuleType` = `minion`
-  - `.Values.urlProcessors.image.pullSecret`: Only used when `magdaModuleType` = `urlProcessor`
+  - `.Values.global.image`: Only used when `magdaModuleType` = `core`
+  - `.Values.connectors.image`: Only used when `magdaModuleType` = `connector`
+  - `.Values.minions.image`: Only used when `magdaModuleType` = `minion`
+  - `.Values.urlProcessors.image`: Only used when `magdaModuleType` = `urlProcessor`
 
   `magdaModuleType` can be set via `annotations` field of Chart.yaml.
   If not set, it will assume `magdaModuleType` = `core`.
@@ -16,6 +16,37 @@
   {{- include "magda.imagePullSecrets" . | indent 10 }}
 */}}
 {{- define "magda.imagePullSecrets" -}}
+  {{- $pullSecrets := include "magda.image.getConsolidatedPullSecretList" . | mustFromJson }}
+  {{- if (not (empty $pullSecrets)) }}
+imagePullSecrets:
+    {{- range $pullSecrets }}
+  - name: {{ . | quote }}
+    {{- end }}
+  {{- end }}
+{{- end -}}
+
+{{/*
+  Get consolidated image pull secret lists based on:
+  - `.Values.image`: this config will always be considered.
+  - `.Values.global.image`: Only used when `magdaModuleType` = `core`
+  - `.Values.connectors.image`: Only used when `magdaModuleType` = `connector`
+  - `.Values.minions.image`: Only used when `magdaModuleType` = `minion`
+  - `.Values.urlProcessors.image`: Only used when `magdaModuleType` = `urlProcessor`
+
+  `magdaModuleType` can be set via `annotations` field of Chart.yaml.
+  If not set, it will assume `magdaModuleType` = `core`.
+
+  Parameters / Input: 
+    Must passing the root scope as the template input.
+
+  Return:
+    an array of image pull secret name as JSON string. 
+    You are supposed to call `mustFromJson` to convert it back to the original value.
+    if can't find the config, it will return string `[]` which will be convert to empty list by `mustFromJson`.
+  Usage: 
+    {{- $pullSecretList := include "magda.image.getConsolidatedPullSecretList" . | mustFromJson }}
+*/}}
+{{- define "magda.image.getConsolidatedPullSecretList" -}}
   {{- $pullSecrets := list }}
   {{- if not (empty .Values.image) }}
     {{- $pullSecretList := include "magda.image.getPullSecretList" .Values.image | mustFromJson }}
@@ -39,12 +70,7 @@
     {{- $pullSecretList := include "magda.image.getPullSecretList" (get $urlProcessorsConfig "image") | mustFromJson }}
     {{- $pullSecrets = concat $pullSecrets $pullSecretList }}
   {{- end }}
-  {{- if (not (empty $pullSecrets)) }}
-imagePullSecrets:
-    {{- range $pullSecrets }}
-  - name: {{ . | quote }}
-    {{- end }}
-  {{- end }}
+  {{- $pullSecrets | mustToJson }}
 {{- end -}}
 
 {{/*
@@ -58,7 +84,7 @@ imagePullSecrets:
     You are supposed to call `mustFromJson` to convert it back to the original value.
     if can't find the config, it will return string `[]` which will be convert to empty list by `mustFromJson`.
   Usage: 
-    {{- $pullSecretsConfig := include "magda.image.getPullSecretList" .Values.image | mustFromJson }}
+    {{- $pullSecretList := include "magda.image.getPullSecretList" .Values.image | mustFromJson }}
 */}}
 {{- define "magda.image.getPullSecretList" -}}
   {{- $pullSecretsConfig := false }}
