@@ -1,4 +1,15 @@
-image: {}
+image: 
+  name: "magda-registry-api"
+  # repository: 
+  # tag: 
+  # pullPolicy: 
+  # imagePullSecret: 
+
+defaultImage:
+  repository: docker.io/data61
+  pullPolicy: IfNotPresent
+  PullSecrets: false
+
 # autoscaler is only for readonly instance
 autoscaler:
   enabled: false

@@ -1,4 +1,15 @@
-image: {}
+image: 
+  name: "magda-gateway"
+  # repository: 
+  # tag: 
+  # pullPolicy: 
+  # imagePullSecret: 
+
+defaultImage:
+  repository: docker.io/data61
+  pullPolicy: IfNotPresent
+  PullSecrets: false
+
 service:
   type: NodePort
   externalPort: 80

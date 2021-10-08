@@ -46,6 +46,7 @@ spec:
         operator: "Equal"
         value: "statefulsets"
         effect: "NoSchedule"
+      {{- include "magda.imagePullSecrets" . | indent 6 }}
       containers:
       - name: es-data
         securityContext:
@@ -53,8 +54,8 @@ spec:
           capabilities:
             add:
               - IPC_LOCK
-        image: {{ template "dockerimage" . }}
-        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        image: {{ include "magda.image" . | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
         readinessProbe:
           httpGet:
             path: /_cluster/health

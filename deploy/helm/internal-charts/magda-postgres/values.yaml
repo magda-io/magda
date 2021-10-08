@@ -148,10 +148,12 @@ backupRestore:
   # -- For usage of this config option. Please see description of field `storageConfig`.
   storageSecretName: ""
   image:
+    # -- wal-g docker image name
+    name: "magda-wal-g"
     # -- wal-g docker image tag
     tag: "1.1.0"
     # -- wal-g docker image repo
-    repository: "data61/magda-wal-g"
+    repository: "docker.io/data61"
     # -- wal-g docker image pull policy
     pullPolicy: IfNotPresent
   backup:

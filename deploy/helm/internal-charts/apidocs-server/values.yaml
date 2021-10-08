@@ -1,4 +1,15 @@
-image: {}
+image: 
+  name: "magda-apidocs-server"
+  # repository: 
+  # tag: 
+  # pullPolicy: 
+  # imagePullSecret: 
+
+defaultImage:
+  repository: docker.io/data61
+  pullPolicy: IfNotPresent
+  imagePullSecret: false
+
 resources:
   requests:
     cpu: 10m

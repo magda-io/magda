@@ -1,8 +1,15 @@
 # -- migrator docker image settings
-image: {}
-  #repository: data61/
-  #tag: latest
-  # pullPolicy: Always
+image: 
+  name: "magda-migrator-content-db"
+  # repository: 
+  # tag: 
+  # pullPolicy: 
+  # imagePullSecret: 
+
+defaultImage:
+  repository: docker.io/data61
+  pullPolicy: IfNotPresent
+  imagePullSecret: false
 
 # -- whether auto-create secret for client account password.
 # After the migrator runs properly, a non-superuser DB account (named `client`) will be created.

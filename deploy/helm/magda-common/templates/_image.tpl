@@ -49,12 +49,14 @@ imagePullSecrets:
 {{- define "magda.image.getConsolidatedPullSecretList" -}}
   {{- /* unfortunately, `concat list list` will produce null. we need to make sure the list is not empty to fix this. */}}
   {{- $pullSecrets := list "" }}
-  {{- if not (empty .Values.image) }}
-    {{- $pullSecretList := include "magda.image.getPullSecretList" .Values.image | mustFromJson }}
+  {{- $values := get . "Values" | default dict }}
+  {{- $imageConfig := .image | default $values.image | default dict }}
+  {{- if not (empty $imageConfig) }}
+    {{- $pullSecretList := include "magda.image.getPullSecretList" $imageConfig | mustFromJson }}
     {{- $pullSecrets = concat $pullSecrets $pullSecretList }}
   {{- end }}
   {{- $magdaModuleType := include "magda.getMagdaModuleType" . }}
-  {{- $global := get .Values "global" | default dict }}
+  {{- $global := get $values "global" | default dict }}
   {{- $connectorsConfig := get $global "connectors" | default dict }}
   {{- $minionsConfig := get $global "minions" | default dict }}
   {{- $urlProcessorsConfig := get $global "urlProcessors" | default dict }}
@@ -114,12 +116,17 @@ imagePullSecrets:
     {{ include "magda.image" . }}
 */}}
 {{- define "magda.image" -}}
+  {{- $values := get . "Values" | default dict }}
+  {{- $chartVersion := "" }}
+  {{- if .Chart }}
+  {{- $chartVersion = .Chart.Version }}
+  {{- end }}
   {{- $magdaModuleType := include "magda.getMagdaModuleType" . }}
-  {{- $defaultImageConfig := get .Values "defaultImage" | default dict }}
-  {{- $tag := get $defaultImageConfig "tag" | default .Chart.Version }}
+  {{- $defaultImageConfig := get $values "defaultImage" | default dict }}
+  {{- $tag := get $defaultImageConfig "tag" | default $chartVersion }}
   {{- $repository := get $defaultImageConfig "repository" | default "" }}
   {{- $name := get $defaultImageConfig "name" | default "" }}
-  {{- $global := get .Values "global" | default dict }}
+  {{- $global := get $values "global" | default dict }}
   {{- $connectorsConfig := get $global "connectors" | default dict }}
   {{- $minionsConfig := get $global "minions" | default dict }}
   {{- $urlProcessorsConfig := get $global "urlProcessors" | default dict }}
@@ -137,7 +144,7 @@ imagePullSecrets:
   {{- $tag = get $imageConfig "tag" | default $tag }}
   {{- $repository = get $imageConfig "repository" | default $repository }}
   {{- $name = get $imageConfig "name" | default $name }}
-  {{- $imageConfig = get .Values "image" | default dict }}
+  {{- $imageConfig = .image | default $values.image | default dict }}
   {{- $tag = get $imageConfig "tag" | default $tag | toString }}
   {{- $repository = get $imageConfig "repository" | default $repository | toString }}
   {{- $name = get $imageConfig "name" | default $name | toString }}
@@ -155,10 +162,11 @@ imagePullSecrets:
     {{ include "magda.imagePullPolicy" . }}
 */}}
 {{- define "magda.imagePullPolicy" -}}
+  {{- $values := get . "Values" | default dict }}
   {{- $magdaModuleType := include "magda.getMagdaModuleType" . }}
-  {{- $defaultImageConfig := get .Values "defaultImage" | default dict }}
+  {{- $defaultImageConfig := get $values "defaultImage" | default dict }}
   {{- $pullPolicy := get $defaultImageConfig "pullPolicy" | default "IfNotPresent" }}
-  {{- $global := get .Values "global" | default dict }}
+  {{- $global := get $values "global" | default dict }}
   {{- $connectorsConfig := get $global "connectors" | default dict }}
   {{- $minionsConfig := get $global "minions" | default dict }}
   {{- $urlProcessorsConfig := get $global "urlProcessors" | default dict }}
@@ -174,7 +182,7 @@ imagePullSecrets:
     {{- $imageConfig = get $urlProcessorsConfig "image" | default dict }}
   {{- end }}
   {{- $pullPolicy = get $imageConfig "pullPolicy" | default $pullPolicy }}
-  {{- $imageConfig = get .Values "image" | default dict }}
+  {{- $imageConfig = .image | default $values.image | default dict }}
   {{- $pullPolicy = get $imageConfig "pullPolicy" | default $pullPolicy }}
   {{- print $pullPolicy }}
 {{- end -}}

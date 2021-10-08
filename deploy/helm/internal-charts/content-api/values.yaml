@@ -1,4 +1,15 @@
-image: {}
+image: 
+  name: "magda-content-api"
+  # repository: 
+  # tag: 
+  # pullPolicy: 
+  # imagePullSecret: 
+
+defaultImage:
+  repository: docker.io/data61
+  pullPolicy: IfNotPresent
+  imagePullSecret: false
+
 autoscaler:
   enabled: false
   minReplicas: 1

@@ -1,4 +1,15 @@
-image: {}
+image: 
+  name: "magda-indexer"
+  # repository: 
+  # tag: 
+  # pullPolicy: 
+  # imagePullSecret: 
+
+defaultImage:
+  repository: docker.io/data61
+  pullPolicy: IfNotPresent
+  PullSecrets: false
+
 elasticsearch:
   shards: 1
   replicas: 0

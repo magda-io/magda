@@ -21,6 +21,7 @@ spec:
         component: elasticsearch
         role: client
     spec:
+      {{- include "magda.imagePullSecrets" . | indent 6 }}
       containers:
       - name: es-client
         securityContext:
@@ -28,7 +29,8 @@ spec:
           capabilities:
             add:
               - IPC_LOCK
-        image: {{ template "dockerimage" . }}
+        image: {{ include "magda.image" . | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           tcpSocket:

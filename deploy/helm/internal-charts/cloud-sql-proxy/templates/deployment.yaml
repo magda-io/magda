@@ -22,10 +22,11 @@ spec:
 {{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1beta1") .Values.global.enablePriorityClass }}
       priorityClassName: magda-9
 {{- end }}
+      {{- include "magda.imagePullSecrets" . | indent 6 }}
       containers:
       - name: cloud-sql-proxy
-        image: "{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        image: {{ include "magda.image" . | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
         command: ["/cloud_sql_proxy",
                   "-instances={{ .Values.instanceConnectionName }}=tcp:0.0.0.0:5432",
 {{- if .Values.enableIamLogin }}

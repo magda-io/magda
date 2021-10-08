@@ -13,11 +13,12 @@ spec:
       name: "content-db-migrator"
     spec:
       restartPolicy: OnFailure
+      {{- include "magda.imagePullSecrets" . | indent 6 }}
       containers:
       - name: content-db-migrator
-        image: "{{ .Values.image.repository | default .Values.global.image.repository }}/magda-migrator-content-db:{{ .Values.image.tag | default .Values.global.image.tag | default .Chart.Version }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        image: {{ include "magda.image" . | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
         env:
         - name: DB_HOST
           value: content-db
-{{- include "magda.postgres-migrator-env" . | indent 8 }}
+        {{- include "magda.postgres-migrator-env" . | indent 8 }}

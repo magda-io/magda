@@ -13,10 +13,11 @@ spec:
       name: "tenant-db-migrator"
     spec:
       restartPolicy: OnFailure
+      {{- include "magda.imagePullSecrets" . | indent 6 }}
       containers:
       - name: tenant-db-migrator
-        image: "{{ .Values.image.repository | default .Values.global.image.repository }}/magda-migrator-tenant-db:{{ .Values.image.tag | default .Values.global.image.tag | default .Chart.Version }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        image: {{ include "magda.image" . | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
         env:
         - name: DB_HOST
           value: tenant-db

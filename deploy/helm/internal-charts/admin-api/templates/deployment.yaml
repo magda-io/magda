@@ -18,10 +18,11 @@ spec:
       priorityClassName: magda-7
 {{- end }}
       serviceAccountName: {{ .Values.serviceAccount.name | default "magda-admin-api-service-account" }}
+      {{- include "magda.imagePullSecrets" . | indent 6 }}
       containers:
       - name: admin-api
-        image: {{ template "dockerimage" . }}
-        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        image: {{ include "magda.image" . | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
         command: [
             "node",
             "/usr/src/app/component/dist/index.js",

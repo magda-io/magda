@@ -15,13 +15,14 @@ spec:
       labels:
         service: opa
     spec:
+      {{- include "magda.imagePullSecrets" . | indent 6 }}
 {{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1beta1") .Values.global.enablePriorityClass }}
       priorityClassName: magda-8
 {{- end }}
       initContainers:
       - name: policy-files-loader
-        image: "{{ .Values.loaderImage.repository }}/magda-configmap-dir-loader:{{ .Values.loaderImage.tag }}"
-        imagePullPolicy: {{ .Values.loaderImage.pullPolicy | default .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        image: {{ include "magda.image" (dict "image" .Values.loaderImage) | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" (dict "image" .Values.loaderImage) | quote }}
         env:
           - name: DEFAULT_CFG_MAP_DIR
             value: "/opa-raw-default-policy-data-files"
@@ -42,8 +43,8 @@ spec:
           {{ end }}
       containers:
       - name: opa
-        image: openpolicyagent/opa:0.17.1
-        imagePullPolicy: IfNotPresent
+        image: {{ include "magda.image" . | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
         args:
         - "run"
         - "--ignore=.*"  # exclude hidden dirs created by Kubernetes
