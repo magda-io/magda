@@ -4,7 +4,7 @@ global:
     maxUnavailable: 1
   exposeNodePorts: true
   image:
-    imagePullSecret: "regcred"
+    pullSecrets: "regcred"
     pullPolicy: Always
   useCloudSql: false
   useCombinedDb: true

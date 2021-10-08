@@ -3,12 +3,12 @@ image:
   # repository: 
   # tag: 
   # pullPolicy: 
-  # imagePullSecret: 
+  # pullSecrets: 
 
 defaultImage:
   repository: docker.io/data61
   pullPolicy: IfNotPresent
-  PullSecrets: false
+  pullSecrets: false
 
 # -- no. of replicas required for the deployment.
 # If not set, k8s will assume `1` but allows HPA (autoscaler) alters it.

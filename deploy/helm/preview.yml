@@ -2,7 +2,7 @@ global:
   rollingUpdate:
     maxUnavailable: 1000
   image:
-    imagePullSecret: "regcred"
+    pullSecrets: "regcred"
     pullPolicy: Always
   exposeNodePorts: false
   enablePriorityClass: false

@@ -29,7 +29,7 @@ global:
   #     repository: "localhost:5000/data61"
   #     tag: "latest"
   #     pullPolicy: Always
-  #     imagePullSecret: false
+  #     pullSecrets: false
   
   connectors:
     includeInitialJobs: true
@@ -40,7 +40,7 @@ global:
     #   repository: "localhost:5000/data61"
     #   tag: "latest"
     #   pullPolicy: Always
-    #   imagePullSecret: false
+    #   pullSecrets: false
   
   # Uncomment the section to make minions pull your test docker images from local docker registry
   # Make sure you build & push the connector docker images to your local docker registry
@@ -49,7 +49,7 @@ global:
   #     repository: "localhost:5000/data61"
   #     tag: "latest"
   #     pullPolicy: Always
-  #     imagePullSecret: false
+  #     pullSecrets: false
 
 magda:
   openfaas:

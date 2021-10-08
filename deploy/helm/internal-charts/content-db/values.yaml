@@ -4,12 +4,12 @@ image:
   # repository: 
   # tag: 
   # pullPolicy: 
-  # imagePullSecret: 
+  # pullSecrets: 
 
 defaultImage:
   repository: docker.io/data61
   pullPolicy: IfNotPresent
-  imagePullSecret: false
+  pullSecrets: false
 
 # -- whether auto-create secret for client account password.
 # After the migrator runs properly, a non-superuser DB account (named `client`) will be created.

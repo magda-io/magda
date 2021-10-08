@@ -3,12 +3,12 @@ image:
   # repository: 
   # tag: 
   # pullPolicy: 
-  # imagePullSecret: 
+  # pullSecrets: 
 
 defaultImage:
   repository: docker.io/data61
   pullPolicy: IfNotPresent
-  PullSecrets: false
+  pullSecrets: false
 
 service:
   type: NodePort

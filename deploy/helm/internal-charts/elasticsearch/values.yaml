@@ -19,7 +19,7 @@ image:
   # repository: 
   # tag: 
   # pullPolicy: 
-  # imagePullSecret: 
+  # pullSecrets: 
 
 defaultImage:
   repository: docker.io/data61
