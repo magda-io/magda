@@ -47,7 +47,8 @@ imagePullSecrets:
     {{- $pullSecretList := include "magda.image.getConsolidatedPullSecretList" . | mustFromJson }}
 */}}
 {{- define "magda.image.getConsolidatedPullSecretList" -}}
-  {{- $pullSecrets := list }}
+  {{- /* unfortunately, `concat list list` will produce null. we need to make sure the list is not empty to fix this. */}}
+  {{- $pullSecrets := list "" }}
   {{- if not (empty .Values.image) }}
     {{- $pullSecretList := include "magda.image.getPullSecretList" .Values.image | mustFromJson }}
     {{- $pullSecrets = concat $pullSecrets $pullSecretList }}
@@ -70,7 +71,7 @@ imagePullSecrets:
     {{- $pullSecretList := include "magda.image.getPullSecretList" (get $urlProcessorsConfig "image") | mustFromJson }}
     {{- $pullSecrets = concat $pullSecrets $pullSecretList }}
   {{- end }}
-  {{- $pullSecrets | mustToJson }}
+  {{- $pullSecrets | mustCompact | mustToJson }}
 {{- end -}}
 
 {{/*
@@ -92,14 +93,14 @@ imagePullSecrets:
   {{- $pullSecretsConfig = (.pullSecret | empty | not) | ternary .pullSecret $pullSecretsConfig }}
   {{- $pullSecretsConfig = (.imagePullSecret | empty | not) | ternary .imagePullSecret $pullSecretsConfig }}
   {{- $pullSecretsConfig = (.imagePullSecrets | empty | not) | ternary .imagePullSecrets $pullSecretsConfig }}
-  {{- $pullSecretList := list }}
+  {{- $pullSecretList := list "" }}
   {{- if kindIs "string" $pullSecretsConfig }}
     {{- $pullSecretList = append $pullSecretList $pullSecretsConfig }}
   {{- end }}
   {{- if kindIs "slice" $pullSecretsConfig }}
     {{- $pullSecretList = concat $pullSecretList $pullSecretsConfig }}
   {{- end }}
-  {{- $pullSecretList | mustToJson }}
+  {{- $pullSecretList | mustCompact | mustToJson }}
 {{- end -}}
 
 
