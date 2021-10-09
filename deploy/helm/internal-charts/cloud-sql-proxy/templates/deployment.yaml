@@ -5,7 +5,7 @@ metadata:
   name: cloud-sql-proxy
 spec:
 # when autoscaler is on, we shouldn't set value for replicas
-{{- if .Values.autoscaler.enabled }}
+{{- if empty .Values.autoscaler.enabled }}
   replicas: {{ .Values.replicas | default 1 }}
 {{- end }}
   strategy:
