@@ -19,7 +19,7 @@ spec:
       labels:
         service: cloud-sql-proxy
     spec:
-{{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1beta1") .Values.global.enablePriorityClass }}
+{{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1") .Values.global.enablePriorityClass }}
       priorityClassName: magda-9
 {{- end }}
       {{- include "magda.imagePullSecrets" . | indent 6 }}

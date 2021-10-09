@@ -18,7 +18,7 @@ spec:
         component: elasticsearch
         role: data
     spec:
-{{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1beta1") .Values.global.enablePriorityClass }}
+{{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1") .Values.global.enablePriorityClass }}
       priorityClassName: magda-9
 {{- end }}
       terminationGracePeriodSeconds: 10

@@ -18,7 +18,7 @@ spec:
       labels:
         service: {{ .name }}
     spec:
-{{- if and (.root.Capabilities.APIVersions.Has "scheduling.k8s.io/v1beta1") .root.Values.global.enablePriorityClass }}
+{{- if and (.root.Capabilities.APIVersions.Has "scheduling.k8s.io/v1") .root.Values.global.enablePriorityClass }}
       priorityClassName: magda-8
 {{- end }}
       {{- include "magda.imagePullSecrets" .root | indent 6 }}
