@@ -13,10 +13,14 @@ spec:
       name: "init-scss-compiler"
     spec:
       restartPolicy: OnFailure
+      {{- $imageEnv := omit . "Values" }}
+      {{- $_ := set $imageEnv "Values" (omit .Values "image") }}
+      {{- $_ := set $imageEnv.Values "image" .Values.scssCompilerImage }}
+      {{- include "magda.imagePullSecrets" $imageEnv | indent 6 }}
       containers:
       - name: init-scss-compiler
-        image: "{{ .Values.image.repository | default .Values.global.image.repository }}/magda-scss-compiler:{{ .Values.image.tag | default .Values.global.image.tag | default .Chart.Version }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        image: {{ include "magda.image" $imageEnv | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" $imageEnv | quote }}
         command: [
             "node",
             "/usr/src/app/component/dist/index.js"

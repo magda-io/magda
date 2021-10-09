@@ -10,6 +10,14 @@ defaultImage:
   pullPolicy: IfNotPresent
   pullSecrets: false
 
+
+scssCompilerImage: 
+  name: "magda-scss-compiler"
+  # repository: 
+  # tag: 
+  # pullPolicy: 
+  # pullSecrets: 
+
 autoscaler:
   enabled: false
   minReplicas: 1

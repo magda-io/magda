@@ -13,7 +13,7 @@
   "config": {
     "docker": {
       "name": "data61/magda-postgres",
-      "include": "Dockerfile wal-g start.sh"
+      "include": "Dockerfile wal-g start.sh adduser.sh"
     }
   },
   "devDependencies": {

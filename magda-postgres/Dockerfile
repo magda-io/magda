@@ -9,6 +9,7 @@ USER root
 RUN install_packages daemontools
 
 COPY component/start.sh /usr/local/bin/
+COPY component/adduser.sh /usr/local/bin/
 
 COPY component/wal-g /wal-g
 

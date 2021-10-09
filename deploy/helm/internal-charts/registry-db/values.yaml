@@ -6,6 +6,13 @@ image:
   # pullPolicy: 
   # pullSecrets: 
 
+vacuumJobImage: 
+  name: "magda-postgres"
+  # repository: 
+  # tag: 
+  # pullPolicy: 
+  # pullSecrets: 
+
 defaultImage:
   repository: docker.io/data61
   pullPolicy: IfNotPresent

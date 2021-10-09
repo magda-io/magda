@@ -5,6 +5,13 @@ image:
   # pullPolicy: 
   # pullSecrets: 
 
+reindexJobImage: 
+  name: "alpine"
+  repository: "docker.io"
+  tag: "latest"
+  pullPolicy: IfNotPresent
+  pullSecrets: false
+
 defaultImage:
   repository: docker.io/data61
   pullPolicy: IfNotPresent
