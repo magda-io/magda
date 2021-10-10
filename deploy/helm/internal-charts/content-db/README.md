@@ -1,6 +1,6 @@
 # content-db
 
-![Version: 1.0.0-alpha.2](https://img.shields.io/badge/Version-1.0.0--alpha.2-informational?style=flat-square)
+![Version: 1.0.0-alpha.4](https://img.shields.io/badge/Version-1.0.0--alpha.4-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -10,14 +10,17 @@ Kubernetes: `>= 1.14.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../magda-postgres | magda-postgres | 1.0.0-alpha.2 |
+| file://../magda-postgres | magda-postgres | 1.0.0-alpha.4 |
 
 ## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | autoCreateSecret | bool | `true` | whether auto-create secret for client account password. After the migrator runs properly, a non-superuser DB account (named `client`) will be created. Its password will loaded from secret `{{ .Chart.Name }}-password` (e.g. `authorization-db-passwor`) & key: `password`. Set this option to `true` will make helm auto-create the secret with random password, ONLY when the secret not exists. |
-| image | object | `{}` | migrator docker image settings |
+| defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
+| defaultImage.pullSecrets | bool | `false` |  |
+| defaultImage.repository | string | `"docker.io/data61"` |  |
+| image | object | `{"name":"magda-migrator-content-db"}` | migrator docker image settings |
 | magda-postgres.postgresql.fullnameOverride | string | `"content-db-postgresql"` |  |
 | magda-postgres.postgresql.nameOverride | string | `"content-db-postgresql"` |  |
 | magda-postgres.postgresql.persistence.size | string | `"50Gi"` |  |

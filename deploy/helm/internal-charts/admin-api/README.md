@@ -1,6 +1,6 @@
 # admin-api
 
-![Version: 1.0.0-alpha.2](https://img.shields.io/badge/Version-1.0.0--alpha.2-informational?style=flat-square)
+![Version: 1.0.0-alpha.4](https://img.shields.io/badge/Version-1.0.0--alpha.4-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -12,7 +12,10 @@ Kubernetes: `>= 1.14.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| image | object | `{}` |  |
+| defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
+| defaultImage.pullSecrets | bool | `false` |  |
+| defaultImage.repository | string | `"docker.io/data61"` |  |
+| image.name | string | `"magda-admin-api"` |  |
 | namespace | string | `nil` | the k8s namespace contains job object. When empty, will use `.Release.Namespace` |
 | rbac.create | bool | `true` | Whether or not to create RBAC role & role binding |
 | resources.requests.cpu | string | `"50m"` |  |

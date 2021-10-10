@@ -1,6 +1,6 @@
 # cloud-sql-proxy
 
-![Version: 1.0.0-alpha.2](https://img.shields.io/badge/Version-1.0.0--alpha.2-informational?style=flat-square) ![AppVersion: 1.11](https://img.shields.io/badge/AppVersion-1.11-informational?style=flat-square)
+![Version: 1.0.0-alpha.4](https://img.shields.io/badge/Version-1.0.0--alpha.4-informational?style=flat-square) ![AppVersion: 1.11](https://img.shields.io/badge/AppVersion-1.11-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -20,6 +20,7 @@ Kubernetes: `>= 1.14.0-0`
 | global | object | `{}` |  |
 | image.name | string | `"gce-proxy"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
+| image.pullSecrets | bool | `false` |  |
 | image.repository | string | `"gcr.io/cloudsql-docker"` |  |
 | image.tag | string | `"1.11"` |  |
 | ipAddressTypes | string | PUBLIC,PRIVATE | A comma-delimited list of preferred IP types for connecting to an instance.  For example, setting this to PRIVATE will force the proxy to connect to instances using an instance's associated private IP. Available from docker image 1.23.0 |
