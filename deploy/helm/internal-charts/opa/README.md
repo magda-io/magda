@@ -17,9 +17,14 @@ Kubernetes: `>= 1.14.0-0`
 | autoscaler.minReplicas | int | `1` |  |
 | autoscaler.targetCPUUtilizationPercentage | int | `80` |  |
 | customPolicyConfigMaps | list | `[]` | a list of names of the configMaps that contains custom policy files. the configMap must be created using magda helm chart template: [magda.filesToJson](https://github.com/magda-io/magda/blob/21499b75c7a7ee00d68886338713217d83ccb91f/deploy/helm/magda-core/templates/_helpers.tpl#L244). More info see [here](https://github.com/magda-io/magda-configmap-dir-loader). |
-| image | object | `{}` |  |
-| loaderImage.imagePullSecret | bool | `false` |  |
+| image.name | string | `"opa"` |  |
+| image.pullPolicy | string | `"IfNotPresent"` |  |
+| image.pullSecrets | bool | `false` |  |
+| image.repository | string | `"openpolicyagent"` |  |
+| image.tag | string | `"0.17.1"` |  |
+| loaderImage.name | string | `"magda-configmap-dir-loader"` |  |
 | loaderImage.pullPolicy | string | `"IfNotPresent"` |  |
+| loaderImage.pullSecrets | bool | `false` |  |
 | loaderImage.repository | string | `"docker.io/data61"` |  |
 | loaderImage.tag | string | `"0.0.57-0"` |  |
 | replicas | int | `1` |  |

@@ -35,6 +35,9 @@ Kubernetes: `>= 1.14.0-0`
 | dateConfig.dateRegexes.endDateRegex | string | `"(end).*(date|dt|year|decade)"` |  |
 | dateConfig.dateRegexes.startDateRegex | string | `"(start|st).*(date|dt|year|decade)"` |  |
 | defaultContactEmail | string | `"mail@example.com"` |  |
+| defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
+| defaultImage.pullSecrets | bool | `false` |  |
+| defaultImage.repository | string | `"docker.io/data61"` |  |
 | defaultTimeZone | string | `nil` | Default Timezone that used to display tiem related string. If not set, default value will be "Australia/Sydney" |
 | disableAuthenticationFeatures | bool | `false` |  |
 | discourseIntegrationDatasetPage | bool | `true` | Whether the discourse post integration should be turned on on dataset page. |
@@ -53,7 +56,7 @@ Kubernetes: `>= 1.14.0-0`
 | featureFlags.useStorageApi | bool | `true` | turn on / off the UI option to use Magda internal storage for file storage. |
 | gapiIds | list | `[]` | Google Analytics Ids |
 | homePageUrl | string | `nil` | an alternative home page url.  By default, all home page related links will take users to Magda home page. You can set a different URL here to take users to a different landing page. |
-| image | object | `{}` |  |
+| image.name | string | `"magda-web-server"` |  |
 | keywordsBlackList[0] | string | `"Mr"` |  |
 | keywordsBlackList[10] | string | `"Mr."` |  |
 | keywordsBlackList[11] | string | `"Ms."` |  |
@@ -93,7 +96,7 @@ Kubernetes: `>= 1.14.0-0`
 | openInExternalTerriaMapTargetUrl | string | `nil` | When set, the `Open in National Map` button in Map Preview area will sent map data to the URL provided and open the map preview there. When not set, UI will by default send to the National Map. |
 | previewMapFormatPerference | list | `[{"format":"WMS","urlRegex":"^(?!.*(SceneServer)).*$"},{"format":"ESRI MAPSERVER","urlRegex":"MapServer"},{"format":"WFS","urlRegex":"^(?!.*(SceneServer)).*$"},{"format":"ESRI FEATURESERVER","urlRegex":"FeatureServer"},{"format":"GeoJSON","singleFile":true},{"format":"csv-geo-au","singleFile":true},{"format":"KML","singleFile":true},{"format":"KMZ","singleFile":true}]` | Preview map module format perference list The list includes one or more `format perference item`. When there are more than one data source available, "Preview Map module" will use this perference to determine which data soruce will be used. It will go through the perference list. The first matched format (i.e. find a data source with the format ) will be chosen. A `format perference item` can have the following fields: <ul>  <li>format: the format of the preferred data source. compulsory. case insensitive. </li>  <li>       isDataFile: Optional. Default to `false`. Indicate whether the specified format is a static data file or API.        If it's a static file, "Preview Map Module" will attempt to check the target file size and ask user to confirm whether he wants to render the file for large files.       The file size threshold is specified by config option `automaticPreviewMaxFileSize`.  </li>  <li>       urlRegex: optional; when exists, it will be used as regex string to double check the data source access url to confirm whether it's indeed the format specified.       If not provided or empty, only `format` will be used to determine whether a data source matches the `format perference item`.  <li> </ul> |
 | registryApiBaseUrlInternal | string | `"http://registry-api/v0"` |  |
-| replicas | string | `nil` |  |
+| replicas | string | `nil` | no. of replicas required for the deployment. If not set, k8s will assume `1` but allows HPA (autoscaler) alters it. @default 1 |
 | resources.limits.cpu | string | `"100m"` |  |
 | resources.requests.cpu | string | `"10m"` |  |
 | resources.requests.memory | string | `"30Mi"` |  |

@@ -20,6 +20,7 @@ Kubernetes: `>= 1.14.0-0`
 | global | object | `{}` |  |
 | image.name | string | `"gce-proxy"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
+| image.pullSecrets | bool | `false` |  |
 | image.repository | string | `"gcr.io/cloudsql-docker"` |  |
 | image.tag | string | `"1.11"` |  |
 | ipAddressTypes | string | PUBLIC,PRIVATE | A comma-delimited list of preferred IP types for connecting to an instance.  For example, setting this to PRIVATE will force the proxy to connect to instances using an instance's associated private IP. Available from docker image 1.23.0 |

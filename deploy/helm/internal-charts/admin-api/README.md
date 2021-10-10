@@ -12,7 +12,10 @@ Kubernetes: `>= 1.14.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| image | object | `{}` |  |
+| defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
+| defaultImage.pullSecrets | bool | `false` |  |
+| defaultImage.repository | string | `"docker.io/data61"` |  |
+| image.name | string | `"magda-admin-api"` |  |
 | namespace | string | `nil` | the k8s namespace contains job object. When empty, will use `.Release.Namespace` |
 | rbac.create | bool | `true` | Whether or not to create RBAC role & role binding |
 | resources.requests.cpu | string | `"50m"` |  |

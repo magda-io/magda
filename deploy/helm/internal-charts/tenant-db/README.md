@@ -17,7 +17,10 @@ Kubernetes: `>= 1.14.0-0`
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | autoCreateSecret | bool | `true` | whether auto-create secret for client account password. After the migrator runs properly, a non-superuser DB account (named `client`) will be created. Its password will loaded from secret `{{ .Chart.Name }}-password` (e.g. `authorization-db-passwor`) & key: `password`. Set this option to `true` will make helm auto-create the secret with random password, ONLY when the secret not exists. |
-| image | object | `{}` | migrator docker image settings |
+| defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
+| defaultImage.pullSecrets | bool | `false` |  |
+| defaultImage.repository | string | `"docker.io/data61"` |  |
+| image | object | `{"name":"magda-migrator-tenant-db"}` | migrator docker image settings |
 | magda-postgres.postgresql.fullnameOverride | string | `"tenant-db-postgresql"` |  |
 | magda-postgres.postgresql.nameOverride | string | `"tenant-db-postgresql"` |  |
 | magda-postgres.postgresql.persistence.size | string | `"25Gi"` |  |

@@ -16,10 +16,14 @@ Kubernetes: `>= 1.14.0-0`
 | autoscaler.maxReplicas | int | `3` |  |
 | autoscaler.minReplicas | int | `1` |  |
 | autoscaler.targetCPUUtilizationPercentage | int | `80` |  |
-| image | object | `{}` |  |
+| defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
+| defaultImage.pullSecrets | bool | `false` |  |
+| defaultImage.repository | string | `"docker.io/data61"` |  |
+| image.name | string | `"magda-content-api"` |  |
 | resources.limits.cpu | string | `"50m"` |  |
 | resources.requests.cpu | string | `"10m"` |  |
 | resources.requests.memory | string | `"30Mi"` |  |
+| scssCompilerImage.name | string | `"magda-scss-compiler"` |  |
 | scssVars | object | `{}` | a list scssVars values that overrides the default UI scss values. <br/> All possible variables are defined in file: https://github.com/magda-io/magda/blob/master/magda-web-client/src/_variables.scss <br/> You can use this option to customise UI e.g. color. <br/> Example: <br/> <div style="border:1px solid #e7e7e7; padding-left: 5px;"> scssVars:<br/> &nbsp;&nbsp;&nbsp;&nbsp;"magda-color-primary": "#395063"<br/> &nbsp;&nbsp;&nbsp;&nbsp;"magda-color-secondary": "#30384d"<br/> </div> |
 
 ----------------------------------------------
