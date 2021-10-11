@@ -21,6 +21,8 @@
 - #3236 Fix VACUUM statement syntax for postgreSQL 13
 - #3237 Fix CloudSQL Chart incorrect set replicas when autoscaler is enabled
 - #3234 use scheduling.k8s.io/v1 for PriorityClass
+- Related to #3229, upgrade `connectors` to use magda-common to handle docker image related logic
+- Related to #3229, upgrade `magda-preview-map` to use magda-common to handle docker image related logic
 
 ## 0.0.60
 

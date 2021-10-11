@@ -17,7 +17,7 @@ Kubernetes: `>= 1.14.0-0`
 | Repository | Name | Version |
 |------------|------|---------|
 | file://../magda-core | magda-core | 1.0.0-alpha.2 |
-| https://charts.magda.io | ckan-connector-functions(magda-ckan-connector) | 1.0.1 |
+| https://charts.magda.io | ckan-connector-functions(magda-ckan-connector) | 1.2.0 |
 | https://charts.magda.io | magda-function-esri-url-processor | 0.0.57-0 |
 | https://charts.magda.io | magda-function-history-report | 0.0.57-0 |
 | https://charts.magda.io | minion-broken-link(magda-minion-broken-link) | 0.0.57-0 |

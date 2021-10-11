@@ -80,7 +80,7 @@ dependencies:
       - all
       - indexer
   - name: magda-preview-map
-    version: "1.0.1"
+    version: "1.1.0"
     alias: preview-map
     repository: https://charts.magda.io
     tags:
