@@ -29,6 +29,9 @@ magda:
     web-server:
       # User terria V7 format until National Map new release
       supportExternalTerriaMapV7: true
+    registry-api:
+      # turn off schema validation for dev site deployment until we fixed existing connectors schema mismatch issues.
+      validateJsonSchema: false
     preview-map:
       image:
         repository: docker.io/data61
