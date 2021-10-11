@@ -70,7 +70,7 @@ dependencies:
       - minion-ckan-exporter
 
   - name: magda-ckan-connector
-    version: "1.0.1"
+    version: "1.2.0"
     alias: ckan-connector-functions
     repository: https://charts.magda.io
     tags:

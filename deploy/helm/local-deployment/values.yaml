@@ -5,12 +5,6 @@ global:
       tag: 0.0.57-0
       pullPolicy: IfNotPresent
       imagePullSecret: false
-  connectors:
-    image:
-      repository: docker.io/data61
-      tag: 0.0.57-0
-      pullPolicy: IfNotPresent
-      imagePullSecret: false
   minions:
     image:
       repository: docker.io/data61
@@ -31,9 +25,6 @@ magda:
   minion-linked-data-rating:
     image:
       tag: 1.0.0
-  ckan-connector-functions:
-    image:
-      tag: 1.0.1
   magda-core:
     web-server:
       # User terria V7 format until National Map new release
