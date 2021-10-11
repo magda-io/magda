@@ -57,7 +57,7 @@ More config postgreSQL related options, please refer to: https://github.com/bitn
 | postgresql.persistence.size | string | `"50Gi"` | set the persistence volume size of the postgresql statefulset |
 | postgresql.primary.extraVolumeMounts | list | `[]` | extra volume mount can be set here.  e.g. mount backup storage config secret and map as files in /etc/wal-g.d/env |
 | postgresql.primary.extraVolumes | list | `[]` | extra volumes can be set here.  e.g. map backup storage config secret as files in /etc/wal-g.d/env |
-| postgresql.priorityClassName | string | `""` | For dev cluster, we can set it to `magda-9` to controll how combined-db is scheduled. e.g. schedule only on non-preemptible nodes |
+| postgresql.primary.priorityClassName | string | `""` |  |
 | postgresql.readinessProbe.enabled | bool | `false` | `customReadinessProbe` will only be used when `enabled`=`false` Otherwise, default livenessProbe will be used. |
 | postgresql.resources | object | `{"requests":{"cpu":"200m","memory":"500Mi"}}` | Set the resource config for the postgresql container |
 

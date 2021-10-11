@@ -24,10 +24,6 @@ postgresql:
     tag: "1.0.0-alpha.2"
     repository: "data61/magda-postgres"
 
-  # -- For dev cluster, we can set it to `magda-9` to controll how combined-db is scheduled.
-  # e.g. schedule only on non-preemptible nodes
-  priorityClassName: ""
-
   # -- the name of config map contains entended postgresql config options.
   # You should not change this value as this configMap is auto-generated.
   # If you want to override the postgresql conf option, you should add options to `.Values.config` field of `magda-postgres` chart.
@@ -49,6 +45,11 @@ postgresql:
     # -- extra volume mount can be set here. 
     # e.g. mount backup storage config secret and map as files in /etc/wal-g.d/env
     extraVolumeMounts: []
+    # --- Set priority class of the primary database instance.
+    # When `global.enablePriorityClass` is `true`. We should set this config to "magda-9" to make sure db instance get appropriate schedule priority.
+    # By default, Magda will create priorityClassName from "magda-10" to "magda-0"
+    # where "magda-10" indicates the highest priority. 
+    priorityClassName: ""
 
   persistence:
     # -- set the persistence volume size of the postgresql statefulset

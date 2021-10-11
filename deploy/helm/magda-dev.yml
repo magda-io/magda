@@ -86,6 +86,7 @@ magda:
             schedule: "15 * * * 6"
         postgresql:
           primary:
+            priorityClassName: "magda-9"
             affinity:
               nodeAffinity:
                 requiredDuringSchedulingIgnoredDuringExecution:
