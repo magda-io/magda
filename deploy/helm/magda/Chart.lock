@@ -28,6 +28,6 @@ dependencies:
   version: 1.2.0
 - name: magda-function-esri-url-processor
   repository: https://charts.magda.io
-  version: 0.0.57-0
-digest: sha256:36a424df0b015c266c49296d9c7d2faaf5aa353c67f83a496f8346d74d11d1a2
-generated: "2021-10-11T18:47:50.481003+11:00"
+  version: 1.0.0
+digest: sha256:bdb36ddd1e7804787bc3b7341bf162e0080ad79a7717ebc6efc5a2c3ff1c8e2a
+generated: "2021-10-11T22:47:56.764191+11:00"
