@@ -33,7 +33,7 @@ dependencies:
 
   - name: magda-minion-broken-link
     alias: minion-broken-link
-    version: 0.0.57-0
+    version: "1.0.0"
     repository: https://charts.magda.io
     tags:
       - minions
@@ -41,7 +41,7 @@ dependencies:
 
   - name: magda-minion-format
     alias: minion-format
-    version: "1.0.1"
+    version: "1.1.0"
     repository: https://charts.magda.io
     tags:
       - minions
@@ -49,7 +49,7 @@ dependencies:
 
   - name: magda-minion-linked-data-rating
     alias: minion-linked-data-rating
-    version: "1.0.0"
+    version: "1.1.0"
     repository: https://charts.magda.io
     tags:
       - minions
@@ -57,14 +57,14 @@ dependencies:
 
   - name: magda-minion-visualization
     alias: minion-visualization
-    version: 0.0.57-0
+    version: "1.0.0"
     repository: https://charts.magda.io
     tags:
       - minions
       - minion-visualization
 
   - name: magda-minion-ckan-exporter
-    version: 0.0.57-0
+    version: "1.0.0"
     repository: https://charts.magda.io
     tags:
       - minion-ckan-exporter

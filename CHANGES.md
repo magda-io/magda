@@ -23,6 +23,7 @@
 - #3234 use scheduling.k8s.io/v1 for PriorityClass
 - Related to #3229, upgrade `connectors` to use magda-common to handle docker image related logic
 - Related to #3229, upgrade `magda-preview-map` to use magda-common to handle docker image related logic
+- Related to #3229, upgrade `minions` to use magda-common to handle docker image related logic
 
 ## 0.0.60
 

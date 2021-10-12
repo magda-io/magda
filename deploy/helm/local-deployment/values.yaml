@@ -1,18 +1,4 @@
-global:
-  minions:
-    image:
-      repository: docker.io/data61
-      tag: 0.0.57-0
-      pullPolicy: IfNotPresent
-      imagePullSecret: false
-
 magda:
-  minion-format:
-    image:
-      tag: 1.0.1
-  minion-linked-data-rating:
-    image:
-      tag: 1.0.0
   magda-core:
     web-server:
       # User terria V7 format until National Map new release
