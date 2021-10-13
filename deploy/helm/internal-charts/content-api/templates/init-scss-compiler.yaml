@@ -8,6 +8,9 @@ metadata:
     "helm.sh/hook-weight": "1"
     "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
 spec:
+  backoffLimit: {{ .Values.initScssCompilerBackoffLimit | default 6 }}
+  completions: 1
+  parallelism: 1
   template:
     metadata:
       name: "init-scss-compiler"

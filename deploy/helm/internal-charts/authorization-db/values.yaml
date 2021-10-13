@@ -17,6 +17,10 @@ defaultImage:
 # Set this option to `true` will make helm auto-create the secret with random password, ONLY when the secret not exists.
 autoCreateSecret: true
 
+# -- No. of retries before the migrator job is considered as failed.
+# Failed Pods associated with the Job are recreated by the Job controller with an exponential back-off delay (10s, 20s, 40s ...) capped at six minutes.
+migratorBackoffLimit: 6
+
 magda-postgres:
   postgresql: 
     fullnameOverride: "authorization-db-postgresql"

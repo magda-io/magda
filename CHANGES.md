@@ -24,6 +24,7 @@
 - Related to #3229, upgrade `connectors` to use magda-common to handle docker image related logic
 - Related to #3229, upgrade `magda-preview-map` to use magda-common to handle docker image related logic
 - Related to #3229, upgrade `minions` to use magda-common to handle docker image related logic
+- Make migrator jobs backoff limit configurable
 
 ## 0.0.60
 

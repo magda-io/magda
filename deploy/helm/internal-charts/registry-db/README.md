@@ -28,6 +28,7 @@ Kubernetes: `>= 1.14.0-0`
 | magda-postgres.postgresql.persistence.size | string | `"100Gi"` |  |
 | magda-postgres.postgresql.resources.requests.cpu | string | `"100m"` |  |
 | magda-postgres.postgresql.resources.requests.memory | string | `"128Mi"` |  |
+| migratorBackoffLimit | int | `6` | No. of retries before the migrator job is considered as failed. Failed Pods associated with the Job are recreated by the Job controller with an exponential back-off delay (10s, 20s, 40s ...) capped at six minutes. |
 | vacuumJobImage.name | string | `"magda-postgres"` |  |
 
 ----------------------------------------------
