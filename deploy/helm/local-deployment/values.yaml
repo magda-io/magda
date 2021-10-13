@@ -17,6 +17,7 @@ magda-auth-internal:
 
 magda-auth-arcgis:
   arcgisClientId: "d0MgVUbbg5Z6vmWo"
+  arcgisInstanceBaseUrl: "https://www.arcgis.com"
 
 connector-dga:
   config:
