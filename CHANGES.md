@@ -25,6 +25,7 @@
 - Related to #3229, upgrade `magda-preview-map` to use magda-common to handle docker image related logic
 - Related to #3229, upgrade `minions` to use magda-common to handle docker image related logic
 - Make migrator jobs backoff limit configurable
+- Turn off TerriaJs V7 support in CI dev site deployment
 
 ## 0.0.60
 
