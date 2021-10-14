@@ -1,84 +1,84 @@
 dependencies:
 - name: magda-common
   repository: file://../magda-common
-  version: 1.0.0-alpha.2
+  version: 1.0.0-alpha.5
 - name: apidocs-server
   repository: file://../internal-charts/apidocs-server
-  version: 1.0.0-alpha.2
+  version: 1.0.0-alpha.5
 - name: authorization-api
   repository: file://../internal-charts/authorization-api
-  version: 1.0.0-alpha.2
+  version: 1.0.0-alpha.5
 - name: authorization-db
   repository: file://../internal-charts/authorization-db
-  version: 1.0.0-alpha.2
+  version: 1.0.0-alpha.5
 - name: cloud-sql-proxy
   repository: file://../internal-charts/cloud-sql-proxy
-  version: 1.0.0-alpha.2
+  version: 1.0.0-alpha.5
 - name: combined-db
   repository: file://../internal-charts/combined-db
-  version: 1.0.0-alpha.2
+  version: 1.0.0-alpha.5
 - name: content-api
   repository: file://../internal-charts/content-api
-  version: 1.0.0-alpha.2
+  version: 1.0.0-alpha.5
 - name: content-db
   repository: file://../internal-charts/content-db
-  version: 1.0.0-alpha.2
+  version: 1.0.0-alpha.5
 - name: correspondence-api
   repository: file://../internal-charts/correspondence-api
-  version: 1.0.0-alpha.2
+  version: 1.0.0-alpha.5
 - name: elasticsearch
   repository: file://../internal-charts/elasticsearch
-  version: 1.0.0-alpha.2
+  version: 1.0.0-alpha.5
 - name: gateway
   repository: file://../internal-charts/gateway
-  version: 1.0.0-alpha.2
+  version: 1.0.0-alpha.5
 - name: indexer
   repository: file://../internal-charts/indexer
-  version: 1.0.0-alpha.2
+  version: 1.0.0-alpha.5
 - name: magda-preview-map
   repository: https://charts.magda.io
   version: 1.1.0
 - name: registry-api
   repository: file://../internal-charts/registry-api
-  version: 1.0.0-alpha.2
+  version: 1.0.0-alpha.5
 - name: registry-db
   repository: file://../internal-charts/registry-db
-  version: 1.0.0-alpha.2
+  version: 1.0.0-alpha.5
 - name: search-api
   repository: file://../internal-charts/search-api
-  version: 1.0.0-alpha.2
+  version: 1.0.0-alpha.5
 - name: search-api-node
   repository: file://../internal-charts/search-api-node
-  version: 1.0.0-alpha.2
+  version: 1.0.0-alpha.5
 - name: session-db
   repository: file://../internal-charts/session-db
-  version: 1.0.0-alpha.2
+  version: 1.0.0-alpha.5
 - name: web-server
   repository: file://../internal-charts/web-server
-  version: 1.0.0-alpha.2
+  version: 1.0.0-alpha.5
 - name: admin-api
   repository: file://../internal-charts/admin-api
-  version: 1.0.0-alpha.2
+  version: 1.0.0-alpha.5
 - name: opa
   repository: file://../internal-charts/opa
-  version: 1.0.0-alpha.2
+  version: 1.0.0-alpha.5
 - name: storage-api
   repository: file://../internal-charts/storage-api
-  version: 1.0.0-alpha.2
+  version: 1.0.0-alpha.5
 - name: tenant-api
   repository: file://../internal-charts/tenant-api
-  version: 1.0.0-alpha.2
+  version: 1.0.0-alpha.5
 - name: tenant-db
   repository: file://../internal-charts/tenant-db
-  version: 1.0.0-alpha.2
+  version: 1.0.0-alpha.5
 - name: priorities
   repository: file://../internal-charts/priorities
-  version: 1.0.0-alpha.2
+  version: 1.0.0-alpha.5
 - name: ingress
   repository: file://../internal-charts/ingress
-  version: 1.0.0-alpha.2
+  version: 1.0.0-alpha.5
 - name: rds-dev-proxy
   repository: file://../internal-charts/rds-dev-proxy
-  version: 1.0.0-alpha.2
-digest: sha256:7bc1a20601d8ca2920e888eb6b67ca0d2df36fce5b0b93f9c28018c74ce9c8ee
-generated: "2021-10-11T20:46:21.135504+11:00"
+  version: 1.0.0-alpha.5
+digest: sha256:5b2bcaf90adcf058c91bebdeb666d8bd7178aa759107a965cb80581267567e19
+generated: "2021-10-15T09:17:47.93645+11:00"
