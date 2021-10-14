@@ -13,6 +13,12 @@ Kubernetes: `>= 1.14.0-0`
 `cloud-sql-proxy` requires a secret named `cloudsql-instance-credentials` to be created with key `credentials.json` contains
 the Google cloud service account JSON key that has access to the CloudSQL instance.
 
+You can create the rquired secret with:
+
+```bash
+kubectl -n [Magda Deploy Namespace] create secret generic cloudsql-instance-credentials --from-file=credentials.json=[local path to service account JSON key file]
+```
+
 ## Values
 
 | Key | Type | Default | Description |
