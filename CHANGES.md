@@ -17,6 +17,15 @@
 - remove magda-auth-ckan from default CD deployment
 - Related to #3229, implement docker image related templates
 - Related to #3229, add `magdaModuleType: "core"` to all core chart annotation
+- Related to #3229, internal charts use magda-common to handle docker image related logic
+- #3236 Fix VACUUM statement syntax for postgreSQL 13
+- #3237 Fix CloudSQL Chart incorrect set replicas when autoscaler is enabled
+- #3234 use scheduling.k8s.io/v1 for PriorityClass
+- Related to #3229, upgrade `connectors` to use magda-common to handle docker image related logic
+- Related to #3229, upgrade `magda-preview-map` to use magda-common to handle docker image related logic
+- Related to #3229, upgrade `minions` to use magda-common to handle docker image related logic
+- Make migrator jobs backoff limit configurable
+- Turn off TerriaJs V7 support in CI dev site deployment
 
 ## 0.0.60
 

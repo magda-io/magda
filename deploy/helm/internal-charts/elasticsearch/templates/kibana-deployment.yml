@@ -12,11 +12,13 @@ spec:
       labels:
         service: kibana
     spec:
+      {{- include "magda.imagePullSecrets" (dict "image" .Values.kibanaImage) | indent 6 }}
       containers:
       - env:
         - name: ELASTICSEARCH_URL
           value: http://elasticsearch:9200
-        image: docker.elastic.co/kibana/kibana-oss:6.5.4
+        image: {{ include "magda.image" (dict "image" .Values.kibanaImage) | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" (dict "image" .Values.kibanaImage) | quote }}
         name: kibana
         resources:
           requests:

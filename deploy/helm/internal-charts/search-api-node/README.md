@@ -1,6 +1,6 @@
 # search-api-node
 
-![Version: 1.0.0-alpha.2](https://img.shields.io/badge/Version-1.0.0--alpha.2-informational?style=flat-square)
+![Version: 1.0.0-alpha.5](https://img.shields.io/badge/Version-1.0.0--alpha.5-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -16,7 +16,10 @@ Kubernetes: `>= 1.14.0-0`
 | autoscaler.maxReplicas | int | `3` |  |
 | autoscaler.minReplicas | int | `1` |  |
 | autoscaler.targetCPUUtilizationPercentage | int | `80` |  |
-| image | object | `{}` |  |
+| defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
+| defaultImage.pullSecrets | bool | `false` |  |
+| defaultImage.repository | string | `"docker.io/data61"` |  |
+| image.name | string | `"magda-search-api-node"` |  |
 | resources.limits.cpu | string | `"50m"` |  |
 | resources.requests.cpu | string | `"10m"` |  |
 | resources.requests.memory | string | `"60Mi"` |  |

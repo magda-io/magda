@@ -20,10 +20,11 @@ spec:
           labels:
             cron: indexer-reindex
         spec:
+          {{- include "magda.imagePullSecrets" (dict "image" .Values.reindexJobImage) | indent 10 }}
           containers:
-          - image: "alpine"
-            imagePullPolicy: IfNotPresent
-            name: indexer-reindex
+          - name: indexer-reindex
+            image: {{ include "magda.image" (dict "image" .Values.reindexJobImage) | quote }}
+            imagePullPolicy: {{ include "magda.imagePullPolicy" (dict "image" .Values.reindexJobImage) | quote }}
             command:
               - "/bin/sh"
               - "-c"

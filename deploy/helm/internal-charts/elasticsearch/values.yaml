@@ -1,5 +1,31 @@
 production: false
-image: {}
+
+daemonsetImage:
+  name: startup-script
+  repository: gcr.io/google-containers
+  tag: "v1"
+  pullPolicy: IfNotPresent
+  pullSecrets: false
+
+kibanaImage:
+  name: kibana-oss
+  repository: docker.elastic.co/kibana
+  tag: "6.5.4"
+  pullPolicy: IfNotPresent
+  pullSecrets: false
+
+image: 
+  name: "magda-elasticsearch"
+  # repository: 
+  # tag: 
+  # pullPolicy: 
+  # pullSecrets: 
+
+defaultImage:
+  repository: docker.io/data61
+  pullPolicy: IfNotPresent
+  pullSecrets: false
+
 client:
   pluginsInstall: ""
   heapSize: "256m"
@@ -21,6 +47,7 @@ data:
     limits:
       cpu: 500m
 master:
+  replicas: 3
   pluginsInstall: ""
   resources:
     requests:

@@ -1,6 +1,6 @@
 # elasticsearch
 
-![Version: 1.0.0-alpha.2](https://img.shields.io/badge/Version-1.0.0--alpha.2-informational?style=flat-square)
+![Version: 1.0.0-alpha.5](https://img.shields.io/badge/Version-1.0.0--alpha.5-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -19,14 +19,28 @@ Kubernetes: `>= 1.14.0-0`
 | client.resources.limits.cpu | string | `"100m"` |  |
 | client.resources.requests.cpu | string | `"50m"` |  |
 | client.resources.requests.memory | string | `"500Mi"` |  |
+| daemonsetImage.name | string | `"startup-script"` |  |
+| daemonsetImage.pullPolicy | string | `"IfNotPresent"` |  |
+| daemonsetImage.pullSecrets | bool | `false` |  |
+| daemonsetImage.repository | string | `"gcr.io/google-containers"` |  |
+| daemonsetImage.tag | string | `"v1"` |  |
 | data.heapSize | string | `"256m"` |  |
 | data.pluginsInstall | string | `""` |  |
 | data.resources.limits.cpu | string | `"500m"` |  |
 | data.resources.requests.cpu | string | `"200m"` |  |
 | data.resources.requests.memory | string | `"500Mi"` |  |
 | data.storage | string | `"50Gi"` |  |
-| image | object | `{}` |  |
+| defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
+| defaultImage.pullSecrets | bool | `false` |  |
+| defaultImage.repository | string | `"docker.io/data61"` |  |
+| image.name | string | `"magda-elasticsearch"` |  |
+| kibanaImage.name | string | `"kibana-oss"` |  |
+| kibanaImage.pullPolicy | string | `"IfNotPresent"` |  |
+| kibanaImage.pullSecrets | bool | `false` |  |
+| kibanaImage.repository | string | `"docker.elastic.co/kibana"` |  |
+| kibanaImage.tag | string | `"6.5.4"` |  |
 | master.pluginsInstall | string | `""` |  |
+| master.replicas | int | `3` |  |
 | master.resources.limits.cpu | string | `"100m"` |  |
 | master.resources.requests.cpu | string | `"50m"` |  |
 | master.resources.requests.memory | string | `"900Mi"` |  |

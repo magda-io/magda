@@ -1,10 +1,10 @@
 apiVersion: v2
 name: magda-common
 description: |
-    A Library Helm Chart for sharing common Magda logic between charts. 
-    This chart is not deployable by itself.
+  A Library Helm Chart for sharing common Magda logic between charts. 
+  This chart is not deployable by itself.
 type: library
-version: 1.0.0-alpha.2
+version: 1.0.0-alpha.5
 kubeVersion: ">= 1.14.0-0"
 annotations:
   magdaModuleType: "core"

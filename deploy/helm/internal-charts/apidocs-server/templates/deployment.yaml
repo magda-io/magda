@@ -12,6 +12,7 @@ spec:
       labels:
         service: apidocs-server
     spec:
+      {{- include "magda.imagePullSecrets" . | indent 6 }}
       containers:
       - name: apidocs-server
         readinessProbe:
@@ -32,5 +33,5 @@ spec:
 {{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}
-        image: {{ template "dockerimage" . }}
-        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        image: {{ include "magda.image" . | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}

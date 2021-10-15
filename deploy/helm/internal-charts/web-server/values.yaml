@@ -1,7 +1,14 @@
-image: {}
-  #repository: data61/
-  #tag: latest
-  #pullPolicy: Always#
+image: 
+  name: "magda-web-server"
+  # repository: 
+  # tag: 
+  # pullPolicy: 
+  # pullSecrets: 
+
+defaultImage:
+  repository: docker.io/data61
+  pullPolicy: IfNotPresent
+  pullSecrets: false
 
 # -- no. of replicas required for the deployment.
 # If not set, k8s will assume `1` but allows HPA (autoscaler) alters it.

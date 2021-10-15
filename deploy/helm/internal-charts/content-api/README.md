@@ -1,6 +1,6 @@
 # content-api
 
-![Version: 1.0.0-alpha.2](https://img.shields.io/badge/Version-1.0.0--alpha.2-informational?style=flat-square)
+![Version: 1.0.0-alpha.5](https://img.shields.io/badge/Version-1.0.0--alpha.5-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -16,10 +16,15 @@ Kubernetes: `>= 1.14.0-0`
 | autoscaler.maxReplicas | int | `3` |  |
 | autoscaler.minReplicas | int | `1` |  |
 | autoscaler.targetCPUUtilizationPercentage | int | `80` |  |
-| image | object | `{}` |  |
+| defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
+| defaultImage.pullSecrets | bool | `false` |  |
+| defaultImage.repository | string | `"docker.io/data61"` |  |
+| image.name | string | `"magda-content-api"` |  |
+| initScssCompilerBackoffLimit | int | `6` | No. of retries before the job is considered as failed. Failed Pods associated with the Job are recreated by the Job controller with an exponential back-off delay (10s, 20s, 40s ...) capped at six minutes. |
 | resources.limits.cpu | string | `"50m"` |  |
 | resources.requests.cpu | string | `"10m"` |  |
 | resources.requests.memory | string | `"30Mi"` |  |
+| scssCompilerImage.name | string | `"magda-scss-compiler"` |  |
 | scssVars | object | `{}` | a list scssVars values that overrides the default UI scss values. <br/> All possible variables are defined in file: https://github.com/magda-io/magda/blob/master/magda-web-client/src/_variables.scss <br/> You can use this option to customise UI e.g. color. <br/> Example: <br/> <div style="border:1px solid #e7e7e7; padding-left: 5px;"> scssVars:<br/> &nbsp;&nbsp;&nbsp;&nbsp;"magda-color-primary": "#395063"<br/> &nbsp;&nbsp;&nbsp;&nbsp;"magda-color-secondary": "#30384d"<br/> </div> |
 
 ----------------------------------------------

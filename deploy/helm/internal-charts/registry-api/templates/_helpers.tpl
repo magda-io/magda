@@ -18,9 +18,10 @@ spec:
       labels:
         service: {{ .name }}
     spec:
-{{- if and (.root.Capabilities.APIVersions.Has "scheduling.k8s.io/v1beta1") .root.Values.global.enablePriorityClass }}
+{{- if and (.root.Capabilities.APIVersions.Has "scheduling.k8s.io/v1") .root.Values.global.enablePriorityClass }}
       priorityClassName: magda-8
 {{- end }}
+      {{- include "magda.imagePullSecrets" .root | indent 6 }}
       containers:
       - name: {{ .name }}
         env:
@@ -29,9 +30,9 @@ spec:
             secretKeyRef:
               name: auth-secrets
               key: jwt-secret
-{{ include "magda.db-client-credential-env" (dict "dbName" "registry-db" "dbUserEnvName" "POSTGRES_USER" "dbPasswordEnvName" "POSTGRES_PASSWORD" "root" .root)  | indent 8 }}
-        image: {{ template "dockerimage" .root }}
-        imagePullPolicy: {{ .root.Values.image.pullPolicy | default .root.Values.global.image.pullPolicy }}
+        {{- include "magda.db-client-credential-env" (dict "dbName" "registry-db" "dbUserEnvName" "POSTGRES_USER" "dbPasswordEnvName" "POSTGRES_PASSWORD" "root" .root)  | indent 8 }}
+        image: {{ include "magda.image" .root | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" .root | quote }}
         command: [
             "/app/bin/magda-registry-api",
             "-Dhttp.port=80",

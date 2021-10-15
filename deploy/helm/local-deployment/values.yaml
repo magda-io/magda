@@ -1,73 +1,22 @@
-global:
-  urlProcessors:
-    image:
-      repository: docker.io/data61
-      tag: 0.0.57-0
-      pullPolicy: IfNotPresent
-      imagePullSecret: false
-  connectors:
-    image:
-      repository: docker.io/data61
-      tag: 0.0.57-0
-      pullPolicy: IfNotPresent
-      imagePullSecret: false
-  minions:
-    image:
-      repository: docker.io/data61
-      tag: 0.0.57-0
-      pullPolicy: IfNotPresent
-      imagePullSecret: false
-
 magda:
-  magda-function-history-report:
-    image:
-      repository: docker.io/data61
-      tag: 0.0.57-0
-      pullPolicy: IfNotPresent
-      imagePullSecret: false
-  minion-format:
-    image:
-      tag: 1.0.1
-  minion-linked-data-rating:
-    image:
-      tag: 1.0.0
-  ckan-connector-functions:
-    image:
-      tag: 1.0.1
   magda-core:
-    web-server:
-      # User terria V7 format until National Map new release
-      supportExternalTerriaMapV7: true
-    preview-map:
-      image:
-        repository: docker.io/data61
-        tag: 0.0.57-0
-        pullPolicy: IfNotPresent
-        imagePullSecret: false
+    registry-api:
+      # turn off schema validation for dev site deployment until we fixed existing connectors schema mismatch issues.
+      validateJsonSchema: false
 
 # auth plugin for google
 magda-auth-google:
   googleClientId: "275237095477-f7ej2gsvbl2alb8bcqcn7r5jk0ur719p.apps.googleusercontent.com"
-  image:
-    tag: 1.0.1
-    repository: docker.io/data61
 
 magda-auth-internal:
   authPluginConfig:
     loginFormExtraInfoContent: "Forgot your password? Email [magda-test@googlegroups.com](magda-test@googlegroups.com)"
-  image:
-    tag: 1.0.1
-    repository: docker.io/data61
 
 magda-auth-arcgis:
   arcgisClientId: "d0MgVUbbg5Z6vmWo"
-  image:
-    tag: 1.0.1
-    repository: docker.io/data61
+  arcgisInstanceBaseUrl: "https://www.arcgis.com"
 
 connector-dga:
-  image:
-    tag: 1.0.1
   config:
     id: dga
     name: "data.gov.au"
@@ -116,8 +65,6 @@ connector-aurin:
     pageSize: 100
 
 connector-brisbane:
-  image:
-    tag: 1.0.1
   config:
     id: brisbane
     name: Brisbane City Council
@@ -203,8 +150,6 @@ connector-neii:
     pageSize: 100
 
 connector-nsw:
-  image:
-    tag: 1.0.1
   config:
     id: nsw
     name: New South Wales Government
@@ -220,8 +165,6 @@ connector-sdinsw:
     pageSize: 100
 
 connector-qld:
-  image:
-    tag: 1.0.1
   config:
     id: qld
     name: Queensland Government
@@ -229,8 +172,6 @@ connector-qld:
     pageSize: 100
 
 connector-sa:
-  image:
-    tag: 1.0.1
   config:
     id: sa
     name: South Australia Government
@@ -258,8 +199,6 @@ connector-tern:
     pageSize: 100
 
 connector-vic:
-  image:
-    tag: 1.0.1
   config:
     id: vic
     name: Victoria Government
@@ -267,8 +206,6 @@ connector-vic:
     pageSize: 100
 
 connector-wa:
-  image:
-    tag: 1.0.1
   config:
     id: wa
     name: Western Australia Government
