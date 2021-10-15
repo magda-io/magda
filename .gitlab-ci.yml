@@ -866,7 +866,7 @@ Deploy Master To Dev:
   script:
     - echo "$KUBECTL_CONFIG" > kubectlconfig.yaml
     - export KUBECONFIG=kubectlconfig.yaml
-    - kubectl create secret docker-registry regcred --namespace default --docker-server=registry.gitlab.com --docker-username=magdabot --docker-password=contact@magda.io --docker-email=contact@magda.io --dry-run=client -o json | kubectl apply --namespace default -f -
+    - kubectl create secret docker-registry regcred --namespace default --docker-server=registry.gitlab.com --docker-username=magdabot --docker-password=$GITLAB_DOCKER_PASSWORD --docker-email=contact@magda.io --dry-run=client -o json | kubectl apply --namespace default -f -
     - helm upgrade magda deploy/helm/local-deployment --install --recreate-pods -f deploy/helm/magda-dev.yml --timeout 3600m --wait
 
 pre-release:check-release-version:
