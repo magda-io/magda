@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.1.0
+
+- #3246 Upgrade default cloudSql proxy version to v1.26.0
+
 ## 1.0.0
 
 - #3197 Minion SDK: Make minion proactive crawling records number configurable
