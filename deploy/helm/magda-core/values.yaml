@@ -64,6 +64,13 @@ global:
   logLevel: INFO
   namespace: default
   gapiIds: []
+  # -- whether enable magda priority class. 
+  # When `true`, Magda will create priorityClassName from "magda-10" to "magda-0"
+  # where "magda-10" indicates the highest priority. 
+  # At this moment, "magda-10" is only allocated to gateway.
+  # Please note: When you use in-k8s postgreSQL, you need to manually set the priority class for db instance to `magda-9` 
+  # as it currently has no priority class set by default. 
+  # Other components will be auto-assigned appropriate priority class when `enablePriorityClass` is on.
   enablePriorityClass: false
   # -- the redirection url after the whole authentication process is completed.
   # Authentication Plugins will use this value as default setting.

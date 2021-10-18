@@ -13,10 +13,11 @@ spec:
       labels:
         name: es-ds
     spec:
+      {{- include "magda.imagePullSecrets" (dict "image" .Values.daemonsetImage) | indent 6 }}
       containers:
       - name: es-ds
-        image: gcr.io/google-containers/startup-script:v1
-        imagePullPolicy: IfNotPresent
+        image: {{ include "magda.image" (dict "image" .Values.daemonsetImage) | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" (dict "image" .Values.daemonsetImage) | quote }}
         resources:
           requests:
             cpu: 0m

@@ -1,6 +1,6 @@
 # search-api
 
-![Version: 1.0.0-alpha.2](https://img.shields.io/badge/Version-1.0.0--alpha.2-informational?style=flat-square)
+![Version: 1.1.0-alpha.0](https://img.shields.io/badge/Version-1.1.0--alpha.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -16,7 +16,12 @@ Kubernetes: `>= 1.14.0-0`
 | autoscaler.maxReplicas | int | `3` |  |
 | autoscaler.minReplicas | int | `1` |  |
 | autoscaler.targetCPUUtilizationPercentage | int | `80` |  |
-| image | object | `{}` |  |
+| datasetsIndexVersion | string | `nil` | Manually set dataset index version. If not specify, default version will be used. you want to manually set this setting when upgrade to a Magda version that involves dataset index version changes. As it takes time to rebuild the index, you could use this setting to make search API query existing old version index before the new version index is built. |
+| defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
+| defaultImage.pullSecrets | bool | `false` |  |
+| defaultImage.repository | string | `"docker.io/data61"` |  |
+| image.name | string | `"magda-search-api"` |  |
+| regionsIndexVersion | string | `nil` | Manually set region index version. If not specify, default version will be used. you want to manually set this setting when upgrade to a Magda version that involves region index version changes. As it takes time to rebuild the index, you could use this setting to make search API query existing old version index before the new version index is built. |
 | resources.limits.cpu | string | `"200m"` |  |
 | resources.requests.cpu | string | `"50m"` |  |
 | resources.requests.memory | string | `"300Mi"` |  |

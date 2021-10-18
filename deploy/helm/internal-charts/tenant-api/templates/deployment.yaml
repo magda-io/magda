@@ -15,13 +15,14 @@ spec:
       labels:
         service: tenant-api
     spec:
-{{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1beta1") .Values.global.enablePriorityClass }}
+{{- if and (.Capabilities.APIVersions.Has "scheduling.k8s.io/v1") .Values.global.enablePriorityClass }}
       priorityClassName: magda-8
 {{- end }}
+      {{- include "magda.imagePullSecrets" . | indent 6 }}
       containers:
       - name: tenant-api
-        image: {{ template "dockerimage" . }}
-        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.image.pullPolicy }}
+        image: {{ include "magda.image" . | quote }}
+        imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
         command: [
             "node",
             "/usr/src/app/component/dist/index.js",
@@ -56,4 +57,4 @@ spec:
             secretKeyRef:
               name: auth-secrets
               key: jwt-secret
-{{ include "magda.db-client-credential-env" (dict "dbName" "tenant-db" "root" .) | indent 8 }}
+        {{- include "magda.db-client-credential-env" (dict "dbName" "tenant-db" "root" .) | indent 8 }}

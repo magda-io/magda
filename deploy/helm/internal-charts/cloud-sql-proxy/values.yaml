@@ -2,8 +2,9 @@ global: {}
 image:
   name: gce-proxy
   repository: gcr.io/cloudsql-docker
-  tag: "1.11"
+  tag: "1.26.0"
   pullPolicy: IfNotPresent
+  pullSecrets: false
 
 # -- no. of replicas required for the deployment.
 # If not set, k8s will assume `1` but allows HPA (autoscaler) alters it.

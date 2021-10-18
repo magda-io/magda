@@ -1,10 +1,18 @@
-image: {}
+image: 
+  name: opa
+  repository: openpolicyagent
+  tag: 0.33.0
+  pullPolicy: IfNotPresent
+  pullSecrets: false
+
 loaderImage: 
   # Github repo: https://github.com/magda-io/magda-configmap-dir-loader
   repository: docker.io/data61
+  name: "magda-configmap-dir-loader"
   tag: 0.0.57-0
   pullPolicy: IfNotPresent
-  imagePullSecret: false
+  pullSecrets: false
+
 autoscaler:
   enabled: false
   minReplicas: 1

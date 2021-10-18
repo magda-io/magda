@@ -21,12 +21,8 @@ postgresql:
   image:
     # -- the default docker image tag/version used by the postgresql chart. 
     # When dump the magda version using `yarn set-version` (at magda repo root), this default version will be auto-replaced with the new chart version number.
-    tag: "1.0.0-alpha.2"
+    tag: "1.1.0-alpha.0"
     repository: "data61/magda-postgres"
-
-  # -- For dev cluster, we can set it to `magda-9` to controll how combined-db is scheduled.
-  # e.g. schedule only on non-preemptible nodes
-  priorityClassName: ""
 
   # -- the name of config map contains entended postgresql config options.
   # You should not change this value as this configMap is auto-generated.
@@ -49,6 +45,11 @@ postgresql:
     # -- extra volume mount can be set here. 
     # e.g. mount backup storage config secret and map as files in /etc/wal-g.d/env
     extraVolumeMounts: []
+    # --- Set priority class of the primary database instance.
+    # When `global.enablePriorityClass` is `true`. We should set this config to "magda-9" to make sure db instance get appropriate schedule priority.
+    # By default, Magda will create priorityClassName from "magda-10" to "magda-0"
+    # where "magda-10" indicates the highest priority. 
+    priorityClassName: ""
 
   persistence:
     # -- set the persistence volume size of the postgresql statefulset
@@ -148,10 +149,12 @@ backupRestore:
   # -- For usage of this config option. Please see description of field `storageConfig`.
   storageSecretName: ""
   image:
+    # -- wal-g docker image name
+    name: "magda-wal-g"
     # -- wal-g docker image tag
     tag: "1.1.0"
     # -- wal-g docker image repo
-    repository: "data61/magda-wal-g"
+    repository: "docker.io/data61"
     # -- wal-g docker image pull policy
     pullPolicy: IfNotPresent
   backup:

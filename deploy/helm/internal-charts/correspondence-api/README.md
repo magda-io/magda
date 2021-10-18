@@ -1,6 +1,6 @@
 # correspondence-api
 
-![Version: 1.0.0-alpha.2](https://img.shields.io/badge/Version-1.0.0--alpha.2-informational?style=flat-square)
+![Version: 1.1.0-alpha.0](https://img.shields.io/badge/Version-1.1.0--alpha.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -13,8 +13,11 @@ Kubernetes: `>= 1.14.0-0`
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | alwaysSendToDefaultRecipient | bool | `false` |  |
+| defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
+| defaultImage.pullSecrets | bool | `false` |  |
+| defaultImage.repository | string | `"docker.io/data61"` |  |
 | defaultRecipient | string | `"mail@example.com"` |  |
-| image | object | `{}` |  |
+| image.name | string | `"magda-correspondence-api"` |  |
 | resources.limits.cpu | string | `"50m"` |  |
 | resources.requests.cpu | string | `"10m"` |  |
 | resources.requests.memory | string | `"60Mi"` |  |

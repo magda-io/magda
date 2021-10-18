@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.1.0
+
+- #3246 Upgrade default cloudSql proxy version to v1.26.0
+
 ## 1.0.0
 
 - #3197 Minion SDK: Make minion proactive crawling records number configurable
@@ -13,10 +17,20 @@
 - #3221 Make correspondence-api turned off by default
 - #3223 "Open in NationalMap" button will send data with the version field
 - #3226 Release `magda-common` library Helm Chart to Share Common Deployment Logic with Plugin Developers
+- #3125 Skip previously run database migration scripts
 - remove magda-auth-ckan from default CD deployment
 - Related to #3229, implement docker image related templates
 - Related to #3229, add `magdaModuleType: "core"` to all core chart annotation
 - Upgraded to Open Policy Agent v0.33.0
+- Related to #3229, internal charts use magda-common to handle docker image related logic
+- #3236 Fix VACUUM statement syntax for postgreSQL 13
+- #3237 Fix CloudSQL Chart incorrect set replicas when autoscaler is enabled
+- #3234 use scheduling.k8s.io/v1 for PriorityClass
+- Related to #3229, upgrade `connectors` to use magda-common to handle docker image related logic
+- Related to #3229, upgrade `magda-preview-map` to use magda-common to handle docker image related logic
+- Related to #3229, upgrade `minions` to use magda-common to handle docker image related logic
+- Make migrator jobs backoff limit configurable
+- Turn off TerriaJs V7 support in CI dev site deployment
 
 ## 0.0.60
 

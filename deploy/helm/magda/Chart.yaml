@@ -3,13 +3,13 @@ name: "magda"
 description: "A complete solution for managing, publishing and discovering
   government data, private and open. This chart includes the magda default
   deployment."
-version: "1.0.0-alpha.2"
+version: "1.1.0-alpha.0"
 kubeVersion: ">= 1.14.0-0"
 home: "https://github.com/magda-io/magda"
 sources: [ "https://github.com/magda-io/magda" ]
 dependencies:
   - name: magda-core
-    version: 1.0.0-alpha.2
+    version: 1.1.0-alpha.0
     repository: file://../magda-core
 
   - name: openfaas
@@ -25,7 +25,7 @@ dependencies:
   # Thus, no tags or condition are required.
   # You should set its sub-chart to enabled or not.
   - name: magda-function-history-report
-    version: 0.0.57-0
+    version: "1.0.0"
     repository: https://charts.magda.io
     tags:
       - all
@@ -33,7 +33,7 @@ dependencies:
 
   - name: magda-minion-broken-link
     alias: minion-broken-link
-    version: 0.0.57-0
+    version: "1.0.0"
     repository: https://charts.magda.io
     tags:
       - minions
@@ -41,7 +41,7 @@ dependencies:
 
   - name: magda-minion-format
     alias: minion-format
-    version: "1.0.1"
+    version: "1.1.0"
     repository: https://charts.magda.io
     tags:
       - minions
@@ -49,7 +49,7 @@ dependencies:
 
   - name: magda-minion-linked-data-rating
     alias: minion-linked-data-rating
-    version: "1.0.0"
+    version: "1.1.0"
     repository: https://charts.magda.io
     tags:
       - minions
@@ -57,20 +57,20 @@ dependencies:
 
   - name: magda-minion-visualization
     alias: minion-visualization
-    version: 0.0.57-0
+    version: "1.0.0"
     repository: https://charts.magda.io
     tags:
       - minions
       - minion-visualization
 
   - name: magda-minion-ckan-exporter
-    version: 0.0.57-0
+    version: "1.0.0"
     repository: https://charts.magda.io
     tags:
       - minion-ckan-exporter
 
   - name: magda-ckan-connector
-    version: "1.0.1"
+    version: "1.2.0"
     alias: ckan-connector-functions
     repository: https://charts.magda.io
     tags:
@@ -79,7 +79,7 @@ dependencies:
       - ckan-connector-functions
 
   - name: magda-function-esri-url-processor
-    version: 0.0.57-0
+    version: "1.0.0"
     repository: https://charts.magda.io
     tags:
       - all

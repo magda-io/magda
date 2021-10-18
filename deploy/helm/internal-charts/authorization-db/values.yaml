@@ -1,14 +1,25 @@
 # -- migrator docker image settings
-image: {}
-  #repository: data61/
-  #tag: latest
-  # pullPolicy: Always
+image: 
+  name: "magda-migrator-authorization-db"
+  # repository: 
+  # tag: 
+  # pullPolicy: 
+  # pullSecrets: 
+
+defaultImage:
+  repository: docker.io/data61
+  pullPolicy: IfNotPresent
+  pullSecrets: false
 
 # -- whether auto-create secret for client account password.
 # After the migrator runs properly, a non-superuser DB account (named `client`) will be created.
 # Its password will loaded from secret `{{ .Chart.Name }}-password` (e.g. `authorization-db-passwor`) & key: `password`.
 # Set this option to `true` will make helm auto-create the secret with random password, ONLY when the secret not exists.
 autoCreateSecret: true
+
+# -- No. of retries before the migrator job is considered as failed.
+# Failed Pods associated with the Job are recreated by the Job controller with an exponential back-off delay (10s, 20s, 40s ...) capped at six minutes.
+migratorBackoffLimit: 6
 
 magda-postgres:
   postgresql: 

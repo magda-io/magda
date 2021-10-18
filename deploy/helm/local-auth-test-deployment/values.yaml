@@ -4,7 +4,8 @@ global:
     maxUnavailable: 1
   exposeNodePorts: true
   image:
-    imagePullSecret: "regcred"
+    repository: "registry.gitlab.com/magda-data/magda/data61"
+    pullSecrets: "regcred"
     pullPolicy: Always
   useCloudSql: false
   useCombinedDb: true
@@ -24,3 +25,12 @@ magda-core:
   opa:
     customPolicyConfigMaps:
     - test-opa-policies
+  combined-db:
+    magda-postgres:
+      postgresql:
+        image:
+          registry: "registry.gitlab.com"
+          repository: "magda-data/magda/data61/magda-postgres"
+          pullPolicy: "Always"
+          pullSecrets: 
+            - "regcred"

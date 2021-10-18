@@ -55,7 +55,10 @@
 */}}
 {{- define "magda.getMagdaModuleType" -}}
   {{- /* add `| mustToJson | mustFromJson` to convert the type to avoid type error */}}
-  {{- $annotations := .Chart.Annotations | default dict | mustToJson | mustFromJson }}
+  {{- $annotations := dict }}
+  {{- if .Chart }}
+    {{- $annotations = .Chart.Annotations | default dict | mustToJson | mustFromJson }}
+  {{- end }}
   {{- $magdaModuleType := get $annotations "magdaModuleType" | default "" }}
   {{- print $magdaModuleType }}
 {{- end -}}

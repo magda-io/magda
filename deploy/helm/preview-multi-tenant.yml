@@ -2,7 +2,8 @@ global:
   rollingUpdate:
     maxUnavailable: 1000
   image:
-    imagePullSecret: "regcred"
+    repository: "registry.gitlab.com/magda-data/magda/data61"
+    pullSecrets: "regcred"
     pullPolicy: Always
   exposeNodePorts: false
   enablePriorityClass: false
@@ -75,6 +76,12 @@ magda:
           recoveryMode: 
             enabled: true
         postgresql:
+          image: 
+            registry: "registry.gitlab.com"
+            repository: "magda-data/magda/data61/magda-postgres"
+            pullPolicy: "Always"
+            pullSecrets: 
+              - "regcred"
           primary:
             extraVolumes:
               - name: storage-account

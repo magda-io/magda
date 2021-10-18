@@ -1,4 +1,7 @@
 global:
+  # For testing auth related feature, you need to set externalUrl to a HTTPs url. e.g. https://minikube.data.gov.au
+  # See https://github.com/magda-io/magda/blob/master/docs/docs/how-to-setup-https-to-local-cluster.md
+  # for how to setup https access.
   externalUrl: http://minikube.data.gov.au:30100
   rollingUpdate:
     maxUnavailable: 1
@@ -29,7 +32,7 @@ global:
   #     repository: "localhost:5000/data61"
   #     tag: "latest"
   #     pullPolicy: Always
-  #     imagePullSecret: false
+  #     pullSecrets: false
   
   connectors:
     includeInitialJobs: true
@@ -40,7 +43,7 @@ global:
     #   repository: "localhost:5000/data61"
     #   tag: "latest"
     #   pullPolicy: Always
-    #   imagePullSecret: false
+    #   pullSecrets: false
   
   # Uncomment the section to make minions pull your test docker images from local docker registry
   # Make sure you build & push the connector docker images to your local docker registry
@@ -49,7 +52,7 @@ global:
   #     repository: "localhost:5000/data61"
   #     tag: "latest"
   #     pullPolicy: Always
-  #     imagePullSecret: false
+  #     pullSecrets: false
 
 magda:
   openfaas:
