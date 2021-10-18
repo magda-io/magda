@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Next
+
+- Upgraded to Open Policy Agent v0.33.0
+
 ## 1.1.0
 
 - #3246 Upgrade default cloudSql proxy version to v1.26.0
@@ -21,7 +25,6 @@
 - remove magda-auth-ckan from default CD deployment
 - Related to #3229, implement docker image related templates
 - Related to #3229, add `magdaModuleType: "core"` to all core chart annotation
-- Upgraded to Open Policy Agent v0.33.0
 - Related to #3229, internal charts use magda-common to handle docker image related logic
 - #3236 Fix VACUUM statement syntax for postgreSQL 13
 - #3237 Fix CloudSQL Chart incorrect set replicas when autoscaler is enabled
