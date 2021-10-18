@@ -7,6 +7,7 @@ class TestRecordMagdaOpaPolicyWithOrgUnitsAndOwner
   override def testConfigSource: String =
     s"""
        |opa.recordPolicyId="object.registry.record.owner_orgunit"
+       |akka.loglevel = INFO
     """.stripMargin
 
   override def beforeAll(): Unit = {
