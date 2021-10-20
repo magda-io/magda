@@ -2583,7 +2583,8 @@ abstract class BaseRecordsServiceAuthSpec extends ApiSpec {
       .post(
         _: String,
         _: HttpEntity.Strict,
-        _: List[HttpHeader]
+        _: List[HttpHeader],
+        true
       )(
         _: ToEntityMarshaller[HttpEntity.Strict]
       ))
