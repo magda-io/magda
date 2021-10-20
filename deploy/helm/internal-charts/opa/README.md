@@ -21,7 +21,7 @@ Kubernetes: `>= 1.14.0-0`
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.pullSecrets | bool | `false` |  |
 | image.repository | string | `"openpolicyagent"` |  |
-| image.tag | string | `"0.17.1"` |  |
+| image.tag | string | `"0.33.0"` |  |
 | loaderImage.name | string | `"magda-configmap-dir-loader"` |  |
 | loaderImage.pullPolicy | string | `"IfNotPresent"` |  |
 | loaderImage.pullSecrets | bool | `false` |  |

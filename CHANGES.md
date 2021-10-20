@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Next
+
+- Upgraded to Open Policy Agent v0.33.0
+
 ## 1.1.0
 
 - #3246 Upgrade default cloudSql proxy version to v1.26.0
