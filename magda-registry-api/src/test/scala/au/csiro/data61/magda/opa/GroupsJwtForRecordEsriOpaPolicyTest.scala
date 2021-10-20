@@ -11,6 +11,7 @@ trait GroupsJwtForRecordEsriOpaPolicyTest extends ApiWithOpa {
   override def testConfigSource: String =
     s"""
        |opa.recordPolicyId="object.registry.record.esri_owner_groups"
+       |akka.loglevel = DEBUG
     """.stripMargin
 
   override def addJwtToken(userId: String): RawHeader = {
