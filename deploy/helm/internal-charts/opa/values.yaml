@@ -1,7 +1,7 @@
 image: 
   name: opa
   repository: openpolicyagent
-  tag: 0.33.0
+  tag: 0.33.1
   pullPolicy: IfNotPresent
   pullSecrets: false
 
