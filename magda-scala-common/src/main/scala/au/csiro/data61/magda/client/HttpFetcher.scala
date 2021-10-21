@@ -95,8 +95,12 @@ class HttpFetcherImpl(baseUrl: URL)(
     if (!autoRetryConnection) {
       result
     } else {
+      // Retry the request for racing condition
+      // https://github.com/magda-io/magda/issues/3251
       result.recoverWith {
         case error: Throwable
+            // We have to do this as UnexpectedConnectionClosureException is a private class
+            // https://github.com/akka/akka-http/issues/768
             if error.getMessage.contains(
               "The http server closed the connection unexpectedly"
             ) =>
@@ -138,8 +142,12 @@ class HttpFetcherImpl(baseUrl: URL)(
     if (!autoRetryConnection) {
       result
     } else {
+      // Retry the request for racing condition
+      // https://github.com/magda-io/magda/issues/3251
       result.recoverWith {
         case error: Throwable
+            // We have to do this as UnexpectedConnectionClosureException is a private class
+            // https://github.com/akka/akka-http/issues/768
             if error.getMessage.contains(
               "The http server closed the connection unexpectedly"
             ) =>
