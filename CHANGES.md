@@ -2,7 +2,8 @@
 
 ## Next
 
-- Upgraded to Open Policy Agent v0.33.0
+- #3231 Upgraded to Open Policy Agent v0.33.0
+- #3251 Fixed akka HTTP client POST request racing conditions
 
 ## 1.1.0
 
