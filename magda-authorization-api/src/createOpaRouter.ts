@@ -5,6 +5,7 @@ import Database from "./Database";
 import { User } from "magda-typescript-common/src/authorization-api/model";
 import { getUserSession } from "magda-typescript-common/src/session/GetUserSession";
 import OpaCompileResponseParser from "magda-typescript-common/src/OpaCompileResponseParser";
+import setResponseNoCache from "magda-typescript-common/src/express/setResponseNoCache";
 import request from "request-promise-native";
 import bodyParser from "body-parser";
 import objectPath from "object-path";
@@ -200,11 +201,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
 
     async function proxyRequest(req: express.Request, res: express.Response) {
         try {
-            res.set({
-                "Cache-Control": "no-cache, no-store, must-revalidate",
-                Pragma: "no-cache",
-                Expires: "0"
-            });
+            setResponseNoCache(res);
             await appendUserInfoToInput(req, res);
         } catch (e) {
             res.status(e.statusCode || 500).send(
