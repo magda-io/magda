@@ -25,15 +25,16 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
 
       // Expect the new hook to be posted
       (param.authFetcher
-        .post(_: String, _: WebHook, _: Seq[HttpHeader])(
+        .post(_: String, _: WebHook, _: Seq[HttpHeader], _: Boolean)(
           _: ToEntityMarshaller[WebHook]
         ))
-        .expects(s"/v0/hooks", *, *, *)
+        .expects(s"/v0/hooks", *, *, *, *)
         .onCall(
           (
               url: String,
               webhook: WebHook,
               headers: Seq[HttpHeader],
+              autoRetry: Boolean,
               marshaller: ToEntityMarshaller[WebHook]
           ) => {
             // Forward the req to the registry api
