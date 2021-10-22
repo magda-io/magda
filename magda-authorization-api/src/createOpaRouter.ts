@@ -278,28 +278,28 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      * > - `input.user`
      * > - `input.timestamp`
      *
-     * @apiSuccess (Success JSON Response Body) {bool} partialEvaluation indicates whether or not the policy engine can make a conclusive/unconditional auth decision.
-     *  When a conclusive/unconditional auth decision is made (i.e. `partialEvaluation`=`false`), the auth decision is returned as policy evaluation value in `result` field.
+     * @apiSuccess (Success JSON Response Body) {bool} hasResidualRules indicates whether or not the policy engine can make a conclusive/unconditional auth decision.
+     *  When a conclusive/unconditional auth decision is made (i.e. `hasResidualRules`=`false`), the auth decision is returned as policy evaluation value in `result` field.
      *  Usually, `true` means the operation should be `allowed`.
      *
-     * @apiSuccess (Success JSON Response Body) {any} [result] Only presents when `partialEvaluation`=`false`.
+     * @apiSuccess (Success JSON Response Body) {any} [result] Only presents when `hasResidualRules`=`false`.
      *  The result field contains the policy evaluation result value. `true` means th eoperation is allowed and `false` means otherwise.
      *  By default, it should be in `bool` type. However, you can opt to overwite the policy to return other type of data.
      *
-     * @apiSuccess (Success JSON Response Body) {object[]} [residualRules] Only presents when `partialEvaluation`=`true`.
+     * @apiSuccess (Success JSON Response Body) {object[]} [residualRules] Only presents when `hasResidualRules`=`true`.
      * A list of residual rules as the result of the partial evaluation of policy due to `unknowns`.
      * The residual rules can be used to generate storage engine DSL (e.g. SQL or Elasticsearch DSL) for policy enforcement.
      *
      * @apiSuccessExample {json} Successful Response Example: a conclusive/unconditional auth decision is made
      *    {
-     *       "partialEvaluation" : false,
+     *       "hasResidualRules" : false,
      *       "result": true // -- the evaluation value of the policy. By default, `true` means operation should be `allowed`.
      *    }
      *
      * @apiSuccessExample {json} Successful Response Example: Partial Evaluation Result
      *
      * {
-     *    "partialEvaluation": true,
+     *    "hasResidualRules": true,
      *    "residualRules": [{"default":true,"head":{"name":"allow","value":{"type":"boolean","value":false}},"body":[{"terms":{"type":"boolean","value":true},"index":0}]},{"head":{"name":"allow","value":{"type":"boolean","value":true}},"body":[{"terms":[{"type":"ref","value":[{"type":"var","value":"eq"}]},{"type":"ref","value":[{"type":"var","value":"input"},{"type":"string","value":"object"},{"type":"string","value":"dataset"},{"type":"string","value":"publishingState"}]},{"type":"string","value":"published"}],"index":0}]}]
      * }
      *
