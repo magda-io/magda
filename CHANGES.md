@@ -4,6 +4,7 @@
 
 - #3231 Upgraded to Open Policy Agent v0.33.x
 - #3251 Fixed akka HTTP client POST request racing conditions
+- #3253 Add New /auth/opa/decision Endpoint
 
 ## 1.1.0
 

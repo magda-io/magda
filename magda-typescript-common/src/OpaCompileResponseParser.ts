@@ -1004,20 +1004,27 @@ export default class OpaCompileResponseParser {
         } else {
             this.data = json;
         }
-        if (!this.data.result) {
+        /**
+         * OPA might output {"result": {}} as unconditional `false` or never matched
+         */
+        if (!this.data.result || !Object.keys(this.data.result).length) {
             // --- mean no rule matched
             this.setQueryRuleResult(false);
             return [];
         }
         this.data = this.data.result;
         if (
-            (!this.data.queries ||
-                !_.isArray(this.data.queries) ||
-                !this.data.queries.length) &&
-            (!_.isArray(this.data.support) || !this.data.support.length)
+            !this.data.queries ||
+            !_.isArray(this.data.queries) ||
+            !this.data.queries.length
         ) {
-            // --- mean no rule matched
             this.setQueryRuleResult(false);
+            return [];
+        }
+
+        if (this.data.queries.findIndex((q: any) => !q?.length) !== -1) {
+            //  when query is always true, the "queries" value in the result will contain an empty array
+            this.setQueryRuleResult(true);
             return [];
         }
 
@@ -1153,10 +1160,35 @@ export default class OpaCompileResponseParser {
             rule.expressions = rule.expressions.map((e) => e.evaluate());
             rule.evaluate();
         }
+
+        // --- unmatched non-default rule will be stripped out
+        // if after remove any rules there is no rules with the same name left, we will create a CompleteRuleResult (with `false` as value) for rule
+        const uniqueRuleToBeRemoved = _.uniqBy(
+            this.rules.filter(
+                (r) => r.isCompleteEvaluated && !r.isMatched && !r.isDefault
+            ),
+            (r) => r.fullName
+        );
+
         // --- unmatched non-default rule can be stripped out
         this.rules = this.rules.filter(
             (r) => !(r.isCompleteEvaluated && !r.isMatched && !r.isDefault)
         );
+
+        uniqueRuleToBeRemoved.forEach((rule) => {
+            if (
+                this.rules.findIndex((r) => r.fullName === rule.fullName) ===
+                    -1 &&
+                !this.completeRuleResults[rule.fullName]
+            ) {
+                this.completeRuleResults[rule.fullName] = {
+                    fullName: rule.fullName,
+                    name: rule.name,
+                    value: false,
+                    isCompleteEvaluated: true
+                };
+            }
+        });
     }
 
     /**
@@ -1172,11 +1204,11 @@ export default class OpaCompileResponseParser {
             return this.completeRuleResults?.[fullName];
         }
         let rules = this.rules.filter((r) => r.fullName === fullName);
-        const originalRuleName = rules[0].name;
         if (!rules.length) {
             // --- no any rule matched; often (depends on your policy) it means a overall non-matched (false)
             return null;
         }
+        const originalRuleName = rules[0].name;
 
         const defaultRule = rules.find((r) => r.isDefault);
         const defaultValue = _.isUndefined(defaultRule)

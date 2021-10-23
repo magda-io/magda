@@ -423,7 +423,18 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                             parser.evaluateAsHumanReadableString()
                         );
                     } else {
-                        res.status(200).send(parser.evaluate());
+                        const result = parser.evaluate();
+                        const resData = {
+                            hasResidualRules: !result.isCompleteEvaluated
+                        } as any;
+
+                        if (result.isCompleteEvaluated) {
+                            resData.value = result.value;
+                        } else {
+                            resData.residualRules = result.residualRules;
+                        }
+
+                        res.status(200).send(resData);
                     }
                 }
             } else {
