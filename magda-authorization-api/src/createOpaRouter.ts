@@ -366,8 +366,8 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
             }
 
             const reqOpts = await appendUserInfoToInput(req);
-            reqOpts.json.operationUri = operationUri;
-            reqOpts.json.resourceUri = resourceUri;
+            reqOpts.json.input.operationUri = operationUri;
+            reqOpts.json.input.resourceUri = resourceUri;
 
             /**
              * By default, we will auto-generate `unknowns` reference list.
