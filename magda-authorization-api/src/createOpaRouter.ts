@@ -431,7 +431,9 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                         if (result.isCompleteEvaluated) {
                             resData.value = result.value;
                         } else {
-                            resData.residualRules = result.residualRules;
+                            resData.residualRules = result.residualRules.map(
+                                (rule) => rule.toData()
+                            );
                         }
 
                         res.status(200).send(resData);
@@ -441,6 +443,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                 res.status(fullResponse.statusCode).send(fullResponse.body);
             }
         } catch (e) {
+            console.log(e);
             res.status(e.statusCode || 500).send(
                 // request promise core add extra status code to error.message
                 // https://github.com/request/promise-core/blob/091bac074e6c94850b999f0f824494d8b06faa1c/lib/errors.js#L26

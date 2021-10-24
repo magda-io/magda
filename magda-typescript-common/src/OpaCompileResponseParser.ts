@@ -202,6 +202,19 @@ export class RegoRule {
         }
     }
 
+    toData() {
+        return {
+            default: this.isDefault,
+            value: this.value,
+            fullName: this.fullName,
+            expressions: this.expressions.map((exp, idx) => exp.toData(idx))
+        };
+    }
+
+    toJson() {
+        return JSON.stringify(this.toData());
+    }
+
     /**
      * Create RegoRule from Opa response data
      *
@@ -474,6 +487,21 @@ export class RegoTerm {
                 return result.value;
             }
         }
+    }
+
+    toData() {
+        if (this.isRef()) {
+            return (this.value as RegoRef).toData();
+        } else {
+            return {
+                type: this.type,
+                value: this.value
+            };
+        }
+    }
+
+    toJson(): string {
+        return JSON.stringify(this.toData());
     }
 
     static parseFromData(
@@ -756,6 +784,26 @@ export class RegoExp {
         return this;
     }
 
+    toData(index: number = 0) {
+        const terms = this.terms.map((term) => term.toData());
+        if (this.isNegated) {
+            return {
+                negated: true,
+                index,
+                terms
+            };
+        } else {
+            return {
+                index,
+                terms
+            };
+        }
+    }
+
+    toJSON(index: number = 0): string {
+        return JSON.stringify(this.toData(index));
+    }
+
     static parseFromData(
         expData: any,
         parser: OpaCompileResponseParser
@@ -799,6 +847,17 @@ export class RegoRef {
 
     clone(): RegoRef {
         return new RegoRef(this.parts.map((p) => ({ ...p })));
+    }
+
+    toData() {
+        return {
+            type: "ref",
+            value: this.parts
+        };
+    }
+
+    toJson(): string {
+        return JSON.stringify(this.toData());
     }
 
     static parseFromData(data: any): RegoRef {
