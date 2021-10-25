@@ -207,12 +207,27 @@ export class RegoRule {
             default: this.isDefault,
             value: this.value,
             fullName: this.fullName,
+            name: this.name,
             expressions: this.expressions.map((exp, idx) => exp.toData(idx))
         };
     }
 
     toJson() {
         return JSON.stringify(this.toData());
+    }
+
+    toConciseData() {
+        return {
+            default: this.isDefault,
+            value: this.value,
+            fullName: this.fullName,
+            name: this.name,
+            expressions: this.expressions.map((exp) => exp.toConciseData())
+        };
+    }
+
+    toConciseJSON() {
+        return JSON.stringify(this.toConciseData());
     }
 
     /**
@@ -804,6 +819,26 @@ export class RegoExp {
         return JSON.stringify(this.toData(index));
     }
 
+    toConciseData() {
+        const [operator, operands] = this.toOperatorOperandsArray();
+        const data = {
+            negated: this.isNegated,
+            operator,
+            operands: operands.map((item) => {
+                if (item.isRef()) {
+                    return item.fullRefString();
+                } else {
+                    return item.getValue();
+                }
+            })
+        };
+        return data;
+    }
+
+    toConciseJSON(): string {
+        return JSON.stringify(this.toConciseData());
+    }
+
     static parseFromData(
         expData: any,
         parser: OpaCompileResponseParser
@@ -905,10 +940,8 @@ export class RegoRef {
                 }
                 if (isFirstPart) isFirstPart = false;
                 return partStr;
-                //--- a.[_].[_] should be a[_][_]
             })
-            .join(".")
-            .replace(/\.\[/g, "[");
+            .join(".");
         return this.removeAllPrefixs(str, removalPrefixs);
     }
 

@@ -247,10 +247,29 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      * @apiQuery (Query String Parameters) {String} [operationUri] Use to supply / overwrite the operation uri.
      *  Any parameters supplied via `Query String Parameters` have higher priority. Thus, can overwrite the same parameter supplied via `Request Body JSON`.
      *  However, `operationUri` supplied via `Query String Parameters` can't overwrite the `operationUri` supplied via `Request URL Path`.
+     *
      * @apiParam (Query String Parameters) {String} [resourceUri] Use to supply / overwrite the resource uri.
+     *
      * @apiParam (Query String Parameters) {String[]} [unknowns] Use to supply A list of references that should be considered as "unknown" during the policy evaluation.
      * More details please see `unknowns` parameter in `Request Body JSON` section below.
      * > Please note: you can supply an array by a query string like `unknowns=ref1&unknowns=ref2`
+     *
+     * @apiParam (Query String Parameters) {string="true"} [rawAst] Output RAW AST response from OPA instead parsed & processed result.
+     * As long as the parameter present in query string, the RAW AST option will be turned on. e.g. both `?rawAst` & `?rawAst=true` will work.
+     *
+     * @apiParam (Query String Parameters) {string="full"} [explain] Include OPA decision explaination in the RAW AST response from OPA.
+     * Only work when `rawAst` is on.
+     *
+     * @apiParam (Query String Parameters) {string="true"} [pretty] Include human readable OPA decision explaination in the RAW AST response from OPA.
+     * Only work when `rawAst` is on & `explain`="full".
+     *
+     * @apiParam (Query String Parameters) {string="true"} [humanReadable] Output parsed & processed result in human readable format.
+     * This option will not work when `rawAst` is on.
+     * As long as the parameter present in query string, the `humanReadable` option will be turned on. e.g. both `?humanReadable` & `?humanReadable=true` will work.
+     *
+     * @apiParam (Query String Parameters) {string="false"} [concise] Output parsed & processed result in a concise format. This is default output format.
+     * This option will not work when `rawAst` is on.
+     * You can set `concise`=`false` to output a format more similar to original OPA AST (with more details).
      *
      * @apiParam (Request Body JSON) {String[]} [unknowns] A list of references that should be considered as "unknown" during the policy evaluation.
      * If a conclusive/unconditional auth decision can't be made without knowing "unknown" data, the residual rules of the "partial evaluation" result will be responded in [rego](https://www.openpolicyagent.org/docs/latest/policy-language/) AST JSON format.
@@ -413,12 +432,14 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                 fullResponse.statusCode >= 200 &&
                 fullResponse.statusCode < 300
             ) {
-                if (req?.query?.rawAst) {
+                if (typeof req?.query?.rawAst !== "undefined") {
                     res.status(200).send(fullResponse.body);
                 } else {
+                    const outputInConciseFormat =
+                        req?.query?.concise === "false" ? false : true;
                     const parser = new OpaCompileResponseParser();
                     parser.parse(fullResponse.body);
-                    if (req?.query?.humanReadable) {
+                    if (typeof req?.query?.humanReadable !== "undefined") {
                         res.status(200).send(
                             parser.evaluateAsHumanReadableString()
                         );
@@ -432,7 +453,10 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                             resData.value = result.value;
                         } else {
                             resData.residualRules = result.residualRules.map(
-                                (rule) => rule.toData()
+                                (rule) =>
+                                    outputInConciseFormat
+                                        ? rule.toConciseData()
+                                        : rule.toData()
                             );
                         }
 
