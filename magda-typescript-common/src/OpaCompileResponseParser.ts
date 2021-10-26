@@ -322,9 +322,7 @@ export interface RegoRefPart {
     value: string;
 }
 
-export const RegoOperators: {
-    [k: string]: string;
-} = {
+export const RegoOperators = {
     eq: "=", // --- eq & equal are different in rego but no difference for value evluation.
     equal: "=",
     neq: "!=",
@@ -332,7 +330,11 @@ export const RegoOperators: {
     gt: ">",
     lte: "<=",
     gte: ">="
-};
+} as const;
+
+export type RegoOperatorAstString = keyof typeof RegoOperators;
+
+export type RegoOperatorString = typeof RegoOperators[RegoOperatorAstString];
 
 export type RegoTermValue = RegoRef | RegoValue;
 
@@ -482,7 +484,7 @@ export class RegoTerm {
      * @returns {string}
      * @memberof RegoTerm
      */
-    asOperator(): string {
+    asOperator() {
         if (this.value instanceof RegoRef) {
             return this.value.asOperator();
         } else {
@@ -759,7 +761,7 @@ export class RegoExp {
      * @returns {[string, RegoTerm[]]}
      * @memberof RegoExp
      */
-    toOperatorOperandsArray(): [string, RegoTerm[]] {
+    toOperatorOperandsArray(): [RegoOperatorString, RegoTerm[]] {
         if (this.terms.length !== 3) {
             throw new Error(
                 `Can't get Operator & Operands from non 3 terms expression: ${this.termsAsString()}`
@@ -1055,8 +1057,9 @@ export class RegoRef {
         return refString.lastIndexOf("[_]") === refString.length - 3;
     }
 
-    asOperator(): string {
-        if (this.isOperator()) return RegoOperators[this.fullRefString()];
+    asOperator(): RegoOperatorString | null {
+        if (this.isOperator())
+            return RegoOperators[this.fullRefString() as RegoOperatorAstString];
         else return null;
     }
 }
@@ -1081,8 +1084,15 @@ export class RegoRuleSet {
     public defaultRule: RegoRule | null = null;
     public value?: any;
     public isCompleteEvaluated: boolean = false;
+    public parser: OpaCompileResponseParser;
 
-    constructor(rules: RegoRule[], fullName: string = "", name: string = "") {
+    constructor(
+        parser: OpaCompileResponseParser,
+        rules: RegoRule[],
+        fullName: string = "",
+        name: string = ""
+    ) {
+        this.parser = parser;
         if (rules?.length) {
             const defaultRuleIdx = rules.findIndex((r) => r.isDefault);
             if (defaultRuleIdx !== -1) {
@@ -1126,28 +1136,32 @@ export class RegoRuleSet {
             }
         }
         this.rules.forEach((r) => r.evaluate());
-        if (this.rules.findIndex((r) => !r.isResolvable()) !== -1) {
-            // still has rule unresolvable
-            return this;
-        }
-        const matchedRule = this.rules.find((r) => r.isMatched);
+        const matchedRule = this.rules.find(
+            (r) => r.isResolvable() && r.isMatched
+        );
         if (matchedRule) {
             this.isCompleteEvaluated = true;
             this.value = matchedRule.value;
             return this;
+        }
+
+        if (this.rules.findIndex((r) => !r.isResolvable()) !== -1) {
+            // still has rule unresolvable
+            return this;
+        }
+
+        // rest (if any) are all unmatched rules
+        if (!this.defaultRule) {
+            this.isCompleteEvaluated = true;
+            this.value = undefined;
+            return this;
         } else {
-            if (!this.defaultRule) {
+            if (this.defaultRule.isResolvable()) {
                 this.isCompleteEvaluated = true;
-                this.value = undefined;
+                this.value = this.defaultRule.value;
                 return this;
             } else {
-                if (this.defaultRule.isResolvable()) {
-                    this.isCompleteEvaluated = true;
-                    this.value = this.defaultRule.value;
-                    return this;
-                } else {
-                    return this;
-                }
+                return this;
             }
         }
     }
@@ -1160,10 +1174,88 @@ export class RegoRuleSet {
     }
 
     getResidualRules(): RegoRule[] {
-        const rules = this.rules.filter((r) => !r.isResolvable());
-        if (this.defaultRule) {
-            rules.push(this.defaultRule);
+        if (this.isResolvable()) {
+            return [];
         }
+
+        let rules = this.defaultRule
+            ? [this.defaultRule, ...this.rules]
+            : [...this.rules];
+
+        rules = this.rules.filter((r) => !r.isResolvable());
+        if (!rules.length) {
+            return [];
+        }
+
+        rules = _.flatMap(rules, (rule) => {
+            // all resolvable expressions can all be ignored as:
+            // - if the expression is resolved to "matched", it won't impact the result of the rule
+            // - if the expression is resolved to "unmatched", the rule should be resolved to "unmatched" earlier.
+            const unresolvedExpressions = rule.expressions.filter(
+                (exp) => !exp.isResolvable()
+            );
+            if (unresolvedExpressions.length !== 1) {
+                return [rule];
+            }
+            // For rules with single expression, reduce the layer by replacing it with target reference rules
+            const exp = unresolvedExpressions[0];
+            if (exp.terms.length === 1) {
+                const fullName = exp.terms[0].fullRefString();
+                const ruleSet = this.parser.ruleSets[fullName];
+                if (!ruleSet) {
+                    const compressedRule = rule.clone();
+                    compressedRule.expressions = [exp];
+                    return [compressedRule];
+                }
+                return ruleSet.getResidualRules();
+            } else if (exp.terms.length === 3) {
+                const [operator, [op1, op2]] = exp.toOperatorOperandsArray();
+                if (operator != "=" && operator != "!=") {
+                    // For now, we will only further process the ref when operator is = or !=
+                    return [rule];
+                }
+                if (!op1.isValueResolvable() && !op2.isValueResolvable()) {
+                    // when both op1 & op1 are not resolvable ref, we will not attempt to process further
+                    return [rule];
+                }
+                const value = op1.isValueResolvable()
+                    ? op1.getValue()
+                    : op2.getValue();
+                const refTerm = op1.isValueResolvable() ? op2 : op1;
+
+                const fullName = refTerm.fullRefString();
+                const ruleSet = this.parser.ruleSets[fullName];
+                if (!ruleSet) {
+                    const compressedRule = rule.clone();
+                    compressedRule.expressions = [exp];
+                    return [compressedRule];
+                }
+                let refRules = ruleSet.getResidualRules();
+
+                // when negated expression, reverse the operator
+                const convertedOperator: RegoOperatorString = exp.isNegated
+                    ? operator == "="
+                        ? "!="
+                        : "="
+                    : operator;
+
+                if (convertedOperator == "=") {
+                    refRules = refRules.filter((r) => r.value == value);
+                } else {
+                    refRules = refRules.filter((r) => r.value != value);
+                }
+                if (!refRules.length) {
+                    // this means this rule can never matched
+                    return [];
+                }
+                return refRules;
+            } else {
+                throw new Error(
+                    `Failed to produce residualRules for rule: ${rule.toJson()}`
+                );
+            }
+        });
+
         return rules;
     }
 }
@@ -1347,6 +1439,7 @@ export default class OpaCompileResponseParser {
         _.uniq(this.rules.map((r) => r.fullName)).forEach(
             (fullName) =>
                 (this.ruleSets[fullName] = new RegoRuleSet(
+                    this,
                     this.rules.filter((r) => r.fullName === fullName),
                     fullName
                 ))
@@ -1431,7 +1524,7 @@ export default class OpaCompileResponseParser {
                 fullName,
                 name: ruleSet.name,
                 value: undefined,
-                isCompleteEvaluated: true,
+                isCompleteEvaluated: false,
                 residualRules: ruleSet.getResidualRules()
             };
         }
@@ -1458,6 +1551,9 @@ export default class OpaCompileResponseParser {
         const result = this.evaluateRule(fullName);
         if (result === null) return "null";
         if (result.isCompleteEvaluated) {
+            if (typeof result.value === "undefined") {
+                return "undefined";
+            }
             return value2String(result.value);
         }
         let parts = result.residualRules.map((r) => r.toHumanReadableString());
