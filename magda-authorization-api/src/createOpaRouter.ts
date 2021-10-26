@@ -309,6 +309,12 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      * A list of residual rules as the result of the partial evaluation of policy due to `unknowns`.
      * The residual rules can be used to generate storage engine DSL (e.g. SQL or Elasticsearch DSL) for policy enforcement.
      *
+     * @apiSuccess (Success JSON Response Body) {bool} [hasWarns] indicates whether or not the warning messages have been produced during OPA AST parsing.
+     *  Not available when `rawAst` query parameter is set.
+     *
+     * @apiSuccess (Success JSON Response Body) {string[]} [warns] Any warning messages that are produced during OPA AST parsing.
+     *  Only available when `hasWarns`=`true`.
+     *
      * @apiSuccessExample {json} Successful Response Example: a conclusive/unconditional auth decision is made
      *    {
      *       "hasResidualRules" : false,
@@ -462,6 +468,11 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                                         ? rule.toConciseData()
                                         : rule.toData()
                             );
+                        }
+
+                        resData.hasWarns = parser.hasWarns;
+                        if (parser.hasWarns) {
+                            resData.warns = parser.warns;
                         }
 
                         res.status(200).send(resData);

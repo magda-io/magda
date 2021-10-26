@@ -7,6 +7,8 @@ import testDataUnconditionalTrueWithDefaultRule from "./sampleOpaResponses/uncon
 import testDataEsriPolicyWithDefaultRule from "./sampleOpaResponses/withDefaultRule.json";
 import testDataUnconditionalNotMacthed from "./sampleOpaResponses/unconditionalNotMacthed.json";
 import testDataUnconditionalNotMacthedWithExtraRefs from "./sampleOpaResponses/unconditionalNotMacthedWithExtraRefs.json";
+import testDataUnconditionalFalseSimple from "./sampleOpaResponses/unconditionalFalseSimple.json";
+import testDataUnconditionalTrueSimple from "./sampleOpaResponses/unconditionalTrueSimple.json";
 import "mocha";
 
 /**
@@ -231,5 +233,61 @@ describe("Test OpaCompileResultParser with unconditional not matched (no rule in
         const result = parser.evaluateAsHumanReadableString();
         expect(parser.hasWarns).to.be.equal(false);
         expect(result).to.be.equal("undefined");
+    });
+});
+
+describe("Test OpaCompileResultParser with unconditional true (simple response)", function () {
+    it("Parse sample response with no errors", function () {
+        const parser = new OpaCompileResponseParser();
+        const data = parser.parse(
+            JSON.stringify(testDataUnconditionalTrueSimple)
+        );
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(data).to.be.an("array");
+    });
+
+    it("Should evalute query from parse result correctly", function () {
+        const parser = new OpaCompileResponseParser();
+        parser.parse(JSON.stringify(testDataUnconditionalTrueSimple));
+        const result = parser.evaluate();
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(result.isCompleteEvaluated).to.be.equal(true);
+        expect(result.value).to.be.equal(true);
+    });
+
+    it("Should generate correct human readable string", function () {
+        const parser = new OpaCompileResponseParser();
+        parser.parse(JSON.stringify(testDataUnconditionalTrueSimple));
+        const result = parser.evaluateAsHumanReadableString();
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(result).to.be.equal("true");
+    });
+});
+
+describe("Test OpaCompileResultParser with unconditional false (simple response)", function () {
+    it("Parse sample response with no errors", function () {
+        const parser = new OpaCompileResponseParser();
+        const data = parser.parse(
+            JSON.stringify(testDataUnconditionalFalseSimple)
+        );
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(data).to.be.an("array");
+    });
+
+    it("Should evalute query from parse result correctly", function () {
+        const parser = new OpaCompileResponseParser();
+        parser.parse(JSON.stringify(testDataUnconditionalFalseSimple));
+        const result = parser.evaluate();
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(result.isCompleteEvaluated).to.be.equal(true);
+        expect(result.value).to.be.equal(false);
+    });
+
+    it("Should generate correct human readable string", function () {
+        const parser = new OpaCompileResponseParser();
+        parser.parse(JSON.stringify(testDataUnconditionalFalseSimple));
+        const result = parser.evaluateAsHumanReadableString();
+        expect(parser.hasWarns).to.be.equal(false);
+        expect(result).to.be.equal("false");
     });
 });
