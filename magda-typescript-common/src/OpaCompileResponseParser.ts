@@ -124,6 +124,7 @@ export class RegoRule {
         if (!(this.parser instanceof OpaCompileResponseParser)) {
             throw new Error("Require parser parameter to create a RegoRule");
         }
+        this.evaluate();
     }
 
     clone(options: Partial<RegoRuleOptions> = {}): RegoRule {
@@ -149,34 +150,55 @@ export class RegoRule {
      * @memberof RegoRule
      */
     evaluate() {
-        this.expressions = this.expressions.map((exp) => exp.evaluate());
-        const falseExpression = this.expressions.find(
-            (exp) => exp.isMatch() === false
-        );
-        if (!_.isUndefined(falseExpression)) {
-            // --- rule expressions are always evaluated in the context of AND
-            // --- any false expression will make the rule not match
+        if (this.isCompleteEvaluated) {
+            return this;
+        }
+
+        if (!this?.expressions?.length) {
+            // a rule with empty body / no expression is matched
             this.isCompleteEvaluated = true;
-            this.isMatched = false;
-        } else {
-            // --- filter out all expressions are evaluated
-            // --- note any non-false value will considered as a match (true) i.e. 0 is equivalent to true
-            // --- empty expression array indicates unconditional match (true)
-            const idx = this.expressions.findIndex(
-                (exp) => !exp.isCompleteEvaluated
-            );
-            if (idx === -1) {
+            this.isMatched = true;
+            return this;
+        }
+
+        let unresolvable = false;
+        for (let i = 0; i < this.expressions.length; i++) {
+            const exp = this.expressions[i];
+            exp.evaluate();
+            if (!exp.isResolvable()) {
+                unresolvable = true;
+                continue;
+            }
+            if (!exp.isMatched()) {
+                // --- rule expressions are always evaluated in the context of AND
+                // --- any false expression will make the rule not match
                 this.isCompleteEvaluated = true;
-                this.isMatched = true;
-            } else {
-                // --- further dry the rule if the rule has unsolved exps
-                // --- if a exp is matched (i.e. true) it can be strip out as true AND xxxx = xxxx
-                this.expressions = this.expressions.filter(
-                    (exp) => exp.isMatch() !== true
-                );
+                this.isMatched = false;
+                return this;
             }
         }
-        return this;
+
+        if (unresolvable) {
+            // there is at least one exp is unresolvable now
+            return this;
+        } else {
+            this.isCompleteEvaluated = true;
+            this.isMatched = true;
+            return this;
+        }
+    }
+
+    /**
+     * Whether or not the rule is resolvable (i.e. we can tell whether it's matched or not) now.
+     *
+     * @return {*}  {boolean}
+     * @memberof RegoRule
+     */
+    isResolvable(): boolean {
+        if (!this.isCompleteEvaluated) {
+            this.evaluate();
+        }
+        return this.isCompleteEvaluated;
     }
 
     /**
@@ -264,7 +286,6 @@ export class RegoRule {
             parser
         };
         const regoRule = new RegoRule(ruleOptions);
-        regoRule.evaluate();
         return regoRule;
     }
 
@@ -497,9 +518,29 @@ export class RegoTerm {
                 return undefined;
             } else {
                 const fullName = this.fullRefString();
-                const result = this.parser.completeRuleResults[fullName];
-                if (_.isUndefined(result)) return undefined;
-                return result.value;
+                if (!this.parser.isRefResolvable(fullName)) {
+                    return undefined;
+                }
+                return this.parser.getRefValue(fullName);
+            }
+        }
+    }
+
+    /**
+     * Whether or not the RegoTerm is resolvable
+     *
+     * @return {*}  {boolean}
+     * @memberof RegoTerm
+     */
+    isValueResolvable(): boolean {
+        if (!this.isRef()) {
+            return true;
+        } else {
+            if (this.isOperator()) {
+                return false;
+            } else {
+                const fullName = this.fullRefString();
+                return this.parser.isRefResolvable(fullName);
             }
         }
     }
@@ -674,15 +715,41 @@ export class RegoExp {
         }
     }
 
-    isMatch() {
-        const value = this.getValue();
-        if (_.isUndefined(value)) {
+    /**
+     * Whether or not a expression should be considered as "matched".
+     * If all expressions of a rule are "matched", the rule will be considered as "matched".
+     * Thus, the rule has a value.
+     *
+     * Please note: if an expression's value is `0`, empty string "", null etc, the expression is considered as "matched".
+     * We only consider an expression as "Not Matched" when the expression has value `false` or is undefined.
+     *
+     * @return {boolean}
+     * @memberof RegoExp
+     */
+    isMatched() {
+        if (!this.isResolvable()) {
             return undefined;
-        } else {
-            if (value === false || _.isUndefined(value)) return false;
-            // --- 0 is a match
-            return true;
         }
+        const isMatched =
+            this.value === false || _.isUndefined(this.value) ? false : true;
+        if (this.isNegated) {
+            return !isMatched;
+        } else {
+            return isMatched;
+        }
+    }
+
+    /**
+     * Whether or not the expression is resolvable now.
+     *
+     * @return {boolean}
+     * @memberof RegoExp
+     */
+    isResolvable(): boolean {
+        if (!this.isCompleteEvaluated) {
+            this.evaluate();
+        }
+        return this.isCompleteEvaluated;
     }
 
     /**
@@ -704,12 +771,7 @@ export class RegoExp {
             if (t.isOperator()) {
                 operator = t.asOperator();
             } else {
-                const value = t.getValue();
-                if (!_.isUndefined(value)) {
-                    operands.push(
-                        new RegoTerm(typeof value, value, this.parser)
-                    );
-                } else operands.push(t);
+                operands.push(t);
             }
         });
         if (!operator) {
@@ -732,19 +794,23 @@ export class RegoExp {
      * @memberof RegoExp
      */
     evaluate() {
+        if (this.isCompleteEvaluated) {
+            return this;
+        }
+        // --- so far there is no 2 terms expression e.g. ! x
+        // --- builtin function should never be included in residual rule
+        // --- as we won't apply them on unknowns
         if (this.terms.length === 0) {
             // --- exp should be considered as matched (true)
-            // --- unless isNegated is true
-            // --- will try to normalise isNegated here
             this.isCompleteEvaluated = true;
-            this.value = this.isNegated ? false : true;
-            this.isNegated = false;
-        }
-        if (this.terms.length === 1) {
+            this.value = true;
+            return this;
+        } else if (this.terms.length === 1) {
             const term = this.terms[0];
+            if (!term.isValueResolvable()) {
+                return this;
+            }
             const value = term.getValue();
-            if (_.isUndefined(value)) return this;
-
             this.value = value;
             this.isCompleteEvaluated = true;
             return this;
@@ -752,40 +818,45 @@ export class RegoExp {
             // --- 3 terms expression e.g. true == true or x >= 3
             // --- we only evalute some redundant expression e.g. true == true or false != true
             const [operator, operands] = this.toOperatorOperandsArray();
-            if (operands.findIndex((op) => op.isRef()) !== -1) {
-                // --- this expression involve unknown no need to evalute
-                return this;
-            } else {
-                const operandsValues = operands.map((op) => op.getValue());
-                let value = null;
-                switch (operator) {
-                    case "=":
-                        value = operandsValues[0] === operandsValues[1];
-                        break;
-                    case ">":
-                        value = operandsValues[0] > operandsValues[1];
-                        break;
-                    case "<":
-                        value = operandsValues[0] < operandsValues[1];
-                        break;
-                    case ">=":
-                        value = operandsValues[0] >= operandsValues[1];
-                        break;
-                    case "<=":
-                        value = operandsValues[0] <= operandsValues[1];
-                        break;
-                    case "!=":
-                        value = operandsValues[0] != operandsValues[1];
-                        break;
-                    default:
-                        throw new Error(
-                            `Invalid 3 terms rego expression, Unknown operator "${operator}": ${this.termsAsString()}`
-                        );
-                }
-                this.isCompleteEvaluated = true;
-                this.value = value;
+            if (
+                !operands[0].isValueResolvable() ||
+                !operands[1].isValueResolvable()
+            ) {
+                // if one of the term value is resolvable now, we can't evaluate further.
                 return this;
             }
+
+            const operandsValues = operands.map((op) => op.getValue());
+            if (operandsValues.findIndex((v) => typeof v === "undefined")) {
+            }
+            let value = null;
+            switch (operator) {
+                case "=":
+                    value = operandsValues[0] === operandsValues[1];
+                    break;
+                case ">":
+                    value = operandsValues[0] > operandsValues[1];
+                    break;
+                case "<":
+                    value = operandsValues[0] < operandsValues[1];
+                    break;
+                case ">=":
+                    value = operandsValues[0] >= operandsValues[1];
+                    break;
+                case "<=":
+                    value = operandsValues[0] <= operandsValues[1];
+                    break;
+                case "!=":
+                    value = operandsValues[0] != operandsValues[1];
+                    break;
+                default:
+                    throw new Error(
+                        `Invalid 3 terms rego expression, Unknown operator "${operator}": ${this.termsAsString()}`
+                    );
+            }
+            this.isCompleteEvaluated = true;
+            this.value = value;
+            return this;
         } else {
             throw new Error(
                 `Invalid ${
@@ -793,10 +864,6 @@ export class RegoExp {
                 } terms rego expression: ${this.termsAsString()}`
             );
         }
-        // --- so far there is no 2 terms expression e.g. ! x
-        // --- builtin function should never be included in residual rule
-        // --- as we won't apply them on unknowns
-        return this;
     }
 
     toData(index: number = 0) {
@@ -1007,6 +1074,100 @@ export function value2String(value: RegoValue) {
     else return JSON.stringify(value);
 }
 
+export class RegoRuleSet {
+    public fullName: string = "";
+    public name: string = "";
+    public rules: RegoRule[] = [];
+    public defaultRule: RegoRule | null = null;
+    public value?: any;
+    public isCompleteEvaluated: boolean = false;
+
+    constructor(rules: RegoRule[], fullName: string = "", name: string = "") {
+        if (rules?.length) {
+            const defaultRuleIdx = rules.findIndex((r) => r.isDefault);
+            if (defaultRuleIdx !== -1) {
+                this.defaultRule = rules[defaultRuleIdx];
+            }
+            this.rules = rules.filter((r) => !r.isDefault);
+        }
+        if (fullName) {
+            this.fullName = fullName;
+        } else if (rules?.[0]?.fullName) {
+            this.fullName = rules[0].fullName;
+        }
+
+        if (name) {
+            this.name = name;
+        } else if (rules?.[0]?.name) {
+            this.name = rules[0].name;
+        }
+
+        this.evaluate();
+    }
+
+    evaluate(): RegoRuleSet {
+        if (this.isCompleteEvaluated) {
+            return this;
+        }
+
+        if (!this.rules?.length) {
+            if (!this.defaultRule) {
+                this.isCompleteEvaluated = true;
+                this.value = undefined;
+                return this;
+            } else {
+                if (this.defaultRule.isResolvable()) {
+                    this.isCompleteEvaluated = true;
+                    this.value = this.defaultRule.value;
+                    return this;
+                } else {
+                    return this;
+                }
+            }
+        }
+        this.rules.forEach((r) => r.evaluate());
+        if (this.rules.findIndex((r) => !r.isResolvable()) !== -1) {
+            // still has rule unresolvable
+            return this;
+        }
+        const matchedRule = this.rules.find((r) => r.isMatched);
+        if (matchedRule) {
+            this.isCompleteEvaluated = true;
+            this.value = matchedRule.value;
+            return this;
+        } else {
+            if (!this.defaultRule) {
+                this.isCompleteEvaluated = true;
+                this.value = undefined;
+                return this;
+            } else {
+                if (this.defaultRule.isResolvable()) {
+                    this.isCompleteEvaluated = true;
+                    this.value = this.defaultRule.value;
+                    return this;
+                } else {
+                    return this;
+                }
+            }
+        }
+    }
+
+    isResolvable(): boolean {
+        if (!this.isCompleteEvaluated) {
+            this.evaluate();
+        }
+        return this.isCompleteEvaluated;
+    }
+
+    getResidualRules(): RegoRule[] {
+        const rules = this.rules.filter((r) => !r.isResolvable());
+        if (this.defaultRule) {
+            rules.push(this.defaultRule);
+        }
+        return rules;
+    }
+}
+
 /**
  * OPA result Parser
  *
@@ -1048,6 +1209,16 @@ export default class OpaCompileResponseParser {
      * @memberof OpaCompileResponseParser
      */
     public rules: RegoRule[] = [];
+
+    /**
+     * Parsed, compressed & evaluated rule sets
+     *
+     * @type {RegoRuleSet[]}
+     * @memberof OpaCompileResponseParser
+     */
+    public ruleSets: {
+        [fullName: string]: RegoRuleSet;
+    } = {};
 
     public queries: RegoExp[] = [];
 
@@ -1145,7 +1316,6 @@ export default class OpaCompileResponseParser {
                     value: true,
                     parser: this
                 });
-                rule.evaluate();
                 this.originalRules.push(rule);
                 this.rules.push(rule);
             });
@@ -1169,118 +1339,69 @@ export default class OpaCompileResponseParser {
                         this
                     );
                     this.originalRules.push(regoRule);
-                    // --- only save matched rules
-                    if (!regoRule.isCompleteEvaluated) {
-                        this.rules.push(regoRule);
-                    } else {
-                        if (regoRule.isMatched) {
-                            this.rules.push(regoRule);
-                        }
-                    }
+                    this.rules.push(regoRule);
                 });
             });
         }
 
-        this.calculateCompleteRuleResult();
-        this.reduceDependencies();
+        _.uniq(this.rules.map((r) => r.fullName)).forEach(
+            (fullName) =>
+                (this.ruleSets[fullName] = new RegoRuleSet(
+                    this.rules.filter((r) => r.fullName === fullName),
+                    fullName
+                ))
+        );
+
+        this.resolveAllRuleSets();
         return this.rules;
     }
 
-    /**
-     * Tried to merge rules outcome so that the ref value can be established easier
-     * After this step, any rules doesn't involve unknown should be merged to one value
-     * This will help to generate more concise query later.
-     * `CompleteRule` rule involves no `unknowns`
-     *
-     * Only for internal usage
-     *
-     * @private
-     * @memberof OpaCompileResponseParser
-     */
-    private calculateCompleteRuleResult() {
-        const fullNames = this.rules.map((r) => r.fullName);
-        fullNames.forEach((fullName) => {
-            const rules = this.rules.filter((r) => r.fullName === fullName);
-            const nonCompletedRules = rules.filter(
-                (r) => !r.isCompleteEvaluated
-            );
-            const completedRules = rules.filter((r) => r.isCompleteEvaluated);
-            const defaultRules = completedRules.filter((r) => r.isDefault);
-            const nonDefaultRules = completedRules.filter((r) => !r.isDefault);
-            if (nonDefaultRules.length) {
-                // --- if a non default complete eveluated rules exist
-                // --- it will be the final outcome
-                this.completeRuleResults[
-                    fullName
-                ] = this.createCompleteRuleResult(nonDefaultRules[0]);
-                return;
-            }
-            if (!nonCompletedRules.length) {
-                // --- if no unevaluated rule left, default rule value should be used
-                if (defaultRules.length) {
-                    this.completeRuleResults[
-                        fullName
-                    ] = this.createCompleteRuleResult(defaultRules[0]);
-                    return;
-                } else {
-                    // --- no matched complete non default rule left; Not possible
-                    throw new Error(
-                        `Unexpected empty rule result for ${fullName}`
-                    );
-                }
-            } else {
-                // --- do nothing
-                // --- Some defaultRules might be able to strip out once
-                // --- nonCompleteRules are determined later
-                return;
-            }
-        });
+    isRefResolvable(fullName: string): boolean {
+        if (this.completeRuleResults[fullName]) {
+            return true;
+        }
+        const ruleSet = this.ruleSets[fullName];
+        if (!ruleSet) {
+            return false;
+        }
+        return ruleSet.isResolvable();
     }
 
-    /**
-     * Only for internal usage
-     *
-     * @returns
-     * @private
-     * @memberof OpaCompileResponseParser
-     */
-    private reduceDependencies() {
-        const rules = this.rules.filter((r) => !r.isCompleteEvaluated);
-        if (!rules.length) return;
-        for (let i = 0; i < rules.length; i++) {
-            const rule = rules[i];
-            rule.expressions = rule.expressions.map((e) => e.evaluate());
-            rule.evaluate();
+    getRefValue(fullName: string): any {
+        const completeResult = this.completeRuleResults[fullName];
+        if (completeResult) {
+            return completeResult.value;
         }
+        const ruleSet = this.ruleSets[fullName];
+        if (!ruleSet || !ruleSet.isResolvable()) {
+            return undefined;
+        }
+        return ruleSet.value;
+    }
 
-        // --- unmatched non-default rule will be stripped out
-        // if after remove any rules there is no rules with the same name left, we will create a CompleteRuleResult (with `false` as value) for rule
-        const uniqueRuleToBeRemoved = _.uniqBy(
-            this.rules.filter(
-                (r) => r.isCompleteEvaluated && !r.isMatched && !r.isDefault
-            ),
-            (r) => r.fullName
-        );
+    private resolveAllRuleSets() {
+        while (true) {
+            const unresolvedSetsNum = Object.values(this.ruleSets).filter(
+                (rs) => !rs.isResolvable()
+            ).length;
 
-        // --- unmatched non-default rule can be stripped out
-        this.rules = this.rules.filter(
-            (r) => !(r.isCompleteEvaluated && !r.isMatched && !r.isDefault)
-        );
-
-        uniqueRuleToBeRemoved.forEach((rule) => {
-            if (
-                this.rules.findIndex((r) => r.fullName === rule.fullName) ===
-                    -1 &&
-                !this.completeRuleResults[rule.fullName]
-            ) {
-                this.completeRuleResults[rule.fullName] = {
-                    fullName: rule.fullName,
-                    name: rule.name,
-                    value: false,
-                    isCompleteEvaluated: true
-                };
+            if (!unresolvedSetsNum) {
+                break;
             }
-        });
+
+            Object.values(this.ruleSets).forEach((rs) => rs.evaluate());
+
+            const newUnresolvedSetsNum = Object.values(this.ruleSets).filter(
+                (rs) => !rs.isResolvable()
+            ).length;
+
+            if (
+                !newUnresolvedSetsNum ||
+                newUnresolvedSetsNum >= unresolvedSetsNum
+            ) {
+                break;
+            }
+        }
     }
 
     /**
@@ -1291,146 +1412,27 @@ export default class OpaCompileResponseParser {
      * @memberof OpaCompileResponseParser
      */
     evaluateRule(fullName: string): CompleteRuleResult | null {
-        if (this.completeRuleResults?.[fullName]?.isCompleteEvaluated) {
-            // --- already evaluated during paring or dependencies removal
-            return this.completeRuleResults?.[fullName];
+        if (this.completeRuleResults[fullName]) {
+            return this.completeRuleResults[fullName];
         }
-        let rules = this.rules.filter((r) => r.fullName === fullName);
-        if (!rules.length) {
-            // --- no any rule matched; often (depends on your policy) it means a overall non-matched (false)
+        const ruleSet = this.ruleSets[fullName];
+        if (!ruleSet) {
             return null;
         }
-        const originalRuleName = rules[0].name;
-
-        const defaultRule = rules.find((r) => r.isDefault);
-        const defaultValue = _.isUndefined(defaultRule)
-            ? undefined
-            : defaultRule.value;
-
-        if (rules.find((r) => r.isCompleteEvaluated))
-            // --- filter out default rules & unmatched
-            // --- isMatch is only set when r.isCompleteEvaluated = true
-            rules = rules.filter(
-                (r) => !(r.isDefault || (r.isCompleteEvaluated && !r.isMatched))
-            );
-
-        if (!rules.length) {
+        if (ruleSet.isResolvable()) {
             return {
                 fullName,
-                name: defaultRule ? defaultRule.name : "",
-                value: defaultValue,
-                isCompleteEvaluated: true,
-                residualRules: []
+                name: ruleSet.name,
+                value: ruleSet.value,
+                isCompleteEvaluated: true
             };
         } else {
-            const matchedRule = rules.find((r) => r.isMatched);
-            if (matchedRule) {
-                return {
-                    fullName,
-                    name: originalRuleName,
-                    value: matchedRule.value,
-                    isCompleteEvaluated: true,
-                    residualRules: []
-                };
-            }
-
-            const ruleWithEmptyExps = rules.find((r) => !r.expressions.length);
-            if (ruleWithEmptyExps) {
-                // empty exp / body means unconditional match
-                return {
-                    fullName,
-                    name: originalRuleName,
-                    value: ruleWithEmptyExps.value,
-                    isCompleteEvaluated: true,
-                    residualRules: []
-                };
-            }
-            if (rules.length === 1 && rules[0].expressions.length === 1) {
-                rules[0].expressions[0].terms.length === 1;
-            }
-            // if a rules contains one expression only, we will try to resolve any possible rule ref
-            rules = _.flatMap(rules, (rule) => {
-                if (rules.length === 1 && rules[0].expressions.length === 1) {
-                    const exp = rules[0].expressions[0];
-                    if (exp.terms.length === 1 && exp.terms[0].isRef()) {
-                        const ruleRef = exp.terms[0].fullRefString();
-                        const result = this.evaluateRule(ruleRef);
-                        if (result) {
-                            if (result.isCompleteEvaluated) {
-                                return [
-                                    RegoRule.createFromValue(result.value, this)
-                                ];
-                            } else {
-                                return result.residualRules;
-                            }
-                        } else {
-                            return [rule];
-                        }
-                    } else if (exp.terms.length === 3) {
-                        const [
-                            opStr,
-                            [op1, op2]
-                        ] = exp.toOperatorOperandsArray();
-                        if (
-                            opStr === "=" &&
-                            ((op1.isRef() && typeof op2.value === "boolean") ||
-                                (op2.isRef() && typeof op1.value === "boolean"))
-                        ) {
-                            const ruleRef = op1.isRef()
-                                ? op1.fullRefString()
-                                : op2.fullRefString();
-                            const bVal =
-                                typeof op1.value === "boolean"
-                                    ? op1.value
-                                    : op2.value;
-
-                            const result = this.evaluateRule(ruleRef);
-                            if (result) {
-                                if (result.isCompleteEvaluated) {
-                                    if (bVal === false) {
-                                        return [
-                                            RegoRule.createFromValue(
-                                                !result.value,
-                                                this
-                                            )
-                                        ];
-                                    } else {
-                                        return [
-                                            RegoRule.createFromValue(
-                                                result.value,
-                                                this
-                                            )
-                                        ];
-                                    }
-                                } else {
-                                    if (bVal === false) {
-                                        return result.residualRules.map((r) =>
-                                            r.clone({ value: !r.value })
-                                        );
-                                    } else {
-                                        return result.residualRules;
-                                    }
-                                }
-                            } else {
-                                return [rule];
-                            }
-                        } else {
-                            return [rule];
-                        }
-                    } else {
-                        return [rule];
-                    }
-                } else {
-                    return [rule];
-                }
-            });
-
             return {
                 fullName,
-                name: rules[0].name,
+                name: ruleSet.name,
                 value: undefined,
-                isCompleteEvaluated: false,
-                residualRules: rules
+                isCompleteEvaluated: true,
+                residualRules: ruleSet.getResidualRules()
             };
         }
     }
@@ -1473,24 +1475,6 @@ export default class OpaCompileResponseParser {
      */
     evaluateAsHumanReadableString(): string {
         return this.evaluateRuleAsHumanReadableString(this.pseudoQueryRuleName);
-    }
-
-    /**
-     * Only for internal usage
-     *
-     * @param {RegoRule} rule
-     * @returns {CompleteRuleResult}
-     * @private
-     * @memberof OpaCompileResponseParser
-     */
-    private createCompleteRuleResult(rule: RegoRule): CompleteRuleResult {
-        return {
-            fullName: rule.fullName,
-            name: rule.name,
-            value: rule.value,
-            isCompleteEvaluated: true,
-            residualRules: []
-        };
     }
 
     reportWarns(msg: string) {
