@@ -10,6 +10,11 @@ import arrayToMaybe from "magda-typescript-common/src/util/arrayToMaybe";
 import pg from "pg";
 import _ from "lodash";
 import GenericError from "magda-typescript-common/src/authorization-api/GenericError";
+import {
+    ANONYMOUS_USERS_ROLE_ID,
+    AUTHENTICATED_USERS_ROLE_ID,
+    ADMIN_USERS_ROLE_ID
+} from "magda-typescript-common/src/authorization-api/constants";
 import { getUserId } from "magda-typescript-common/src/session/GetUserId";
 import NestedSetModelQueryer from "./NestedSetModelQueryer";
 import isUuid from "magda-typescript-common/src/util/isUuid";
@@ -19,11 +24,7 @@ export interface DatabaseOptions {
     dbPort: number;
 }
 
-const ANONYMOUS_USERS_ROLE = "00000000-0000-0001-0000-000000000000";
-const AUTHENTICATED_USERS_ROLE = "00000000-0000-0002-0000-000000000000";
-const ADMIN_USERS_ROLE = "00000000-0000-0003-0000-000000000000";
-
-const defaultAnonymousUserInfo: User = {
+export const defaultAnonymousUserInfo: User = {
     id: "",
     displayName: "Anonymous User",
     email: "",
@@ -33,7 +34,7 @@ const defaultAnonymousUserInfo: User = {
     isAdmin: false,
     roles: [
         {
-            id: ANONYMOUS_USERS_ROLE,
+            id: ANONYMOUS_USERS_ROLE_ID,
             name: "Anonymous Users",
             description: "Default role for unauthenticated users",
             permissionIds: [] as string[]
@@ -306,14 +307,14 @@ export default class Database {
         //--- add default authenticated role to the newly create user
         await this.pool.query(
             "INSERT INTO user_roles (role_id, user_id) VALUES($1, $2)",
-            [AUTHENTICATED_USERS_ROLE, userId]
+            [AUTHENTICATED_USERS_ROLE_ID, userId]
         );
 
         //--- add default Admin role to the newly create user (if isAdmin is true)
         if (user.isAdmin) {
             await this.pool.query(
                 "INSERT INTO user_roles (role_id, user_id) VALUES($1, $2)",
-                [ADMIN_USERS_ROLE, userId]
+                [ADMIN_USERS_ROLE_ID, userId]
             );
         }
 

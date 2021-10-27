@@ -4,6 +4,10 @@ import { expect } from "chai";
 import nock, { Scope } from "nock";
 import supertest from "supertest";
 import randomstring from "randomstring";
+import {
+    AUTHENTICATED_USERS_ROLE_ID,
+    ADMIN_USERS_ROLE_ID
+} from "magda-typescript-common/src/authorization-api/constants";
 import createOpenfaasGatewayProxy from "../createOpenfaasGatewayProxy";
 import setupTenantMode from "../setupTenantMode";
 
@@ -17,12 +21,12 @@ const adminUserData = {
     orgUnitId: null as string | null,
     roles: [
         {
-            id: "00000000-0000-0002-0000-000000000000",
+            id: AUTHENTICATED_USERS_ROLE_ID,
             name: "Authenticated Users",
             permissionIds: [] as string[]
         },
         {
-            id: "00000000-0000-0003-0000-000000000000",
+            id: ADMIN_USERS_ROLE_ID,
             name: "Admin Users",
             permissionIds: []
         }
@@ -41,7 +45,7 @@ const nonAdminUserData = {
     orgUnitId: null as string | null,
     roles: [
         {
-            id: "00000000-0000-0002-0000-000000000000",
+            id: AUTHENTICATED_USERS_ROLE_ID,
             name: "Authenticated Users",
             permissionIds: [] as string[]
         }
@@ -58,7 +62,7 @@ describe("Test createOpenfaasGatewayProxy", () => {
     const authApiBaseUrl = "http://authApi";
     let authApiScope: Scope;
 
-    const adminUserId = "00000000-0000-4000-8000-000000000000";
+    const adminUserId = ADMIN_USERS_ROLE_ID;
     const nonAdminUserId = "00000000-0000-4000-8000-100000000000";
 
     after(() => {

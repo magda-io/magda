@@ -1,4 +1,5 @@
 import { Action } from "../types";
+import { ANONYMOUS_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants";
 
 export type Role = {
     id: string;
@@ -28,7 +29,7 @@ const defaultUserInfo: User = {
     isAdmin: false,
     roles: [
         {
-            id: "00000000-0000-0001-0000-000000000000",
+            id: ANONYMOUS_USERS_ROLE_ID,
             name: "Anonymous Users",
             description: "Default role for unauthenticated users",
             permissionIds: []

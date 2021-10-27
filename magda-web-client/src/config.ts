@@ -5,8 +5,9 @@ import Temporal from "./Components/Dataset/Search/Facets/Temporal";
 import { ValidationFieldList } from "./Components/Dataset/Add/ValidationManager";
 import urijs from "urijs";
 import removePathPrefix from "helpers/removePathPrefix";
+import { ADMIN_USERS_ROLE_ID } from "@magda/typescript-common/dist/authorization-api/constants";
 
-export const ADMIN_ROLE_ID = "00000000-0000-0003-0000-000000000000";
+export const ADMIN_ROLE_ID = ADMIN_USERS_ROLE_ID;
 
 declare global {
     interface Window {
