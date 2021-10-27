@@ -294,6 +294,10 @@ const argv = yargs
             "Whether show the 'Ask a question about this dataset' button for datasets without contact point info.",
         type: "boolean",
         default: false
+    })
+    .option("defaultDatasetBucket", {
+        describe: "Default bucket for storing datasets",
+        type: "string"
     }).argv;
 
 // set default timezone
@@ -427,7 +431,8 @@ const webServerConfig = {
     extraConfigData: argv.extraConfigData,
     previewMapFormatPerference: argv.previewMapFormatPerference,
     showContactButtonForNoContactPointDataset:
-        argv.showContactButtonForNoContactPointDataset
+        argv.showContactButtonForNoContactPointDataset,
+    defaultDatasetBucket: argv.defaultDatasetBucket
 };
 
 app.get("/server-config.js", function (req, res) {

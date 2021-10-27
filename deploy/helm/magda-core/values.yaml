@@ -84,6 +84,9 @@ global:
   # Otherwise, user will redirected to the url sepcified by `redirectTo` query parameter.
   authPluginRedirectUrl: "/sign-in-redirect"
 
+  # -- The name of the bucket to store datasets in by default
+  defaultDatasetBucket: "magda-datasets"
+
 # -- Whether or not auto create a k8s secrets named `auth-secrets` that contains:
 # <ul>
 # <li> JWT secret, under key: `jwt-secret`. Used internally by Magda gateway to issue JWT token.</li>
