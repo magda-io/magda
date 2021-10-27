@@ -7,6 +7,11 @@ import data.object.content.allowRead as content_allowRead
 default allow = false
 
 allow {
+    # users with admin roles will have access to everything
+    input.user.roles[_].id == "00000000-0000-0003-0000-000000000000"
+}
+
+allow {
      ## delegate dataset related decision to dataset_allow
     startswith(input.operationUri, "object/dataset/")
     dataset_allow
