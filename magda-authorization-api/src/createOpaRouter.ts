@@ -460,7 +460,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                                 // output unconditional "no rule matched" (value as `undefined`) as `false`
                                 typeof result.value === "undefined"
                                     ? false
-                                    : true;
+                                    : result.value;
                         } else {
                             resData.residualRules = result.residualRules.map(
                                 (rule) =>
