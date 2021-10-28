@@ -1,0 +1,73 @@
+{
+    "result": {
+        "queries": [
+            [
+                {
+                    "terms": {
+                        "type": "ref",
+                        "value": [
+                            {
+                                "type": "var",
+                                "value": "data"
+                            },
+                            {
+                                "type": "string",
+                                "value": "partial"
+                            },
+                            {
+                                "type": "string",
+                                "value": "entrypoint"
+                            },
+                            {
+                                "type": "string",
+                                "value": "allow"
+                            }
+                        ]
+                    },
+                    "index": 0
+                }
+            ]
+        ],
+        "support": [
+            {
+                "package": {
+                    "path": [
+                        {
+                            "type": "var",
+                            "value": "data"
+                        },
+                        {
+                            "type": "string",
+                            "value": "partial"
+                        },
+                        {
+                            "type": "string",
+                            "value": "entrypoint"
+                        }
+                    ]
+                },
+                "rules": [
+                    {
+                        "default": true,
+                        "head": {
+                            "name": "allow",
+                            "value": {
+                                "type": "boolean",
+                                "value": false
+                            }
+                        },
+                        "body": [
+                            {
+                                "terms": {
+                                    "type": "boolean",
+                                    "value": true
+                                },
+                                "index": 0
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import getAuthDecision from "../opa/getAuthDecision";
-import testDataUnconditionalTrue from "./sampleOpaResponseUnconditionalTrue.json";
+import testDataUnconditionalTrue from "./sampleOpaResponses/unconditionalTrue.json";
 import "mocha";
 
 /* 

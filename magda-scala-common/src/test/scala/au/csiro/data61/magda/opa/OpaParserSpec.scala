@@ -11,7 +11,8 @@ import spray.json._
 class OpaParserSpec extends FunSpec with Matchers {
   val logger = LoggerFactory.getLogger(getClass)
 
-  val opaSampleResponseFolder = "magda-typescript-common/src/test/"
+  val opaSampleResponseFolder =
+    "magda-typescript-common/src/test/sampleOpaResponses/"
 
   describe("Test sample OPA Unconditional True Response") {
     it(
@@ -19,7 +20,7 @@ class OpaParserSpec extends FunSpec with Matchers {
     ) {
 
       val jsonResSource: BufferedSource = fromFile(
-        opaSampleResponseFolder + "sampleOpaResponseUnconditionalTrue.json"
+        opaSampleResponseFolder + "unconditionalTrue.json"
       )
       val jsonRes: String =
         try {

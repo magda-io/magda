@@ -84,6 +84,7 @@ export default class MockDatabase {
         db.getUserRoles.callsFake(this.getUserRoles);
         db.getUser.callsFake(this.getUser);
         db.getCurrentUserInfo.callThrough();
+        db.getDefaultAnonymousUserInfo.callThrough();
         return await db.getCurrentUserInfo(req, jwtSecret);
     }
 
