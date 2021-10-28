@@ -18,7 +18,9 @@ Kubernetes: `>= 1.14.0-0`
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| autoCreateBuckets | bool | `true` | Create `defaultBuckets` on startup. |
 | autoCreateSecrets | bool | `true` | Whether or not auto create `storage-secrets`. When auto created, random 20 chars will be generated for `accessKey` and random 40 chars will be generated for `secretKey`. When use minio as gateway mode, you might want to manualy generate the secret in order supply cloud provider secrets. e.g. <ul>   <li>awsAccessKeyId: aws s3 access key id if use AWS s3</li>   <li>awsSecretAccessKey: aws s3 secret access key id if use AWS s3</li>   <li>gcs_key.json: GCS key file if use google GCS</li> </ul> |
+| defaultBuckets | list | `[]` | Default buckets to create on startup. If no value is provided `global.defaultDatasetBucket` will be used. |
 | defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
 | defaultImage.pullSecrets | bool | `false` |  |
 | defaultImage.repository | string | `"docker.io/data61"` |  |

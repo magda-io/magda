@@ -71,6 +71,12 @@ const argv = addJwtSecretFromEnvVar(
             describe: "Buckets to create on startup.",
             type: "array",
             default: ["magda-datasets"]
+        })
+        .option("autoCreateBuckets", {
+            describe:
+                "Whether or not to create the default buckets on startup.",
+            type: "boolean",
+            default: true
         }).argv
 );
 
@@ -87,14 +93,20 @@ const argv = addJwtSecretFromEnvVar(
             region: argv.minioRegion
         });
 
-        console.info("Ensuring that default buckets exist...");
+        if (argv.autoCreateBuckets) {
+            console.info("Ensuring that default buckets exist...");
 
-        for (let bucket of argv.defaultBuckets) {
-            console.info(`Creating default bucket ${argv.defaultBuckets}`);
-            await minioClient.createBucket(bucket);
+            for (let bucket of argv.defaultBuckets) {
+                console.info(`Creating default bucket ${bucket}`);
+                await minioClient.createBucket(bucket);
+            }
+
+            console.info("Finished creating default buckets");
+        } else {
+            console.info(
+                "Skipping creation of default buckets. (autoCreateBuckets: false)"
+            );
         }
-
-        console.info("Finished creating default buckets");
 
         app.use(
             "/v0",

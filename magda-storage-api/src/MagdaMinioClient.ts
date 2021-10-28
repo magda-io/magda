@@ -7,7 +7,6 @@ import * as Minio from "minio";
 
 export default class MagdaMinioClient implements ObjectStoreClient {
     private readonly client: Minio.Client;
-    private readonly bucketName: string = "magda-bucket";
     private readonly region: string;
 
     constructor({
@@ -27,7 +26,6 @@ export default class MagdaMinioClient implements ObjectStoreClient {
             region
         });
         this.region = region;
-        this.createBucket(this.bucketName);
     }
 
     createBucket(bucket: string): Promise<CreateBucketResponse> {

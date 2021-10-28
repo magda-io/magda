@@ -35,6 +35,7 @@ Kubernetes: `>= 1.14.0-0`
 | dateConfig.dateRegexes.endDateRegex | string | `"(end).*(date|dt|year|decade)"` |  |
 | dateConfig.dateRegexes.startDateRegex | string | `"(start|st).*(date|dt|year|decade)"` |  |
 | defaultContactEmail | string | `"mail@example.com"` |  |
+| defaultDatasetBucket | string | `nil` | Default bucket used to store datasets. If no value is provided `global.defaultDatasetBucket` will be used. |
 | defaultImage.pullPolicy | string | `"IfNotPresent"` |  |
 | defaultImage.pullSecrets | bool | `false` |  |
 | defaultImage.repository | string | `"docker.io/data61"` |  |

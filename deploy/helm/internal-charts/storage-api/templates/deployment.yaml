@@ -37,7 +37,13 @@ spec:
             "--authApiUrl", "http://authorization-api/v0",
             "--tenantId", "0",
             "--uploadLimit", "100mb",
-            "--registryApiUrl", "http://registry-api/v0"
+            "--registryApiUrl", "http://registry-api/v0",
+{{- if .Values.defaultBuckets }}
+            "--defaultBuckets", {{ range .Values.defaultBuckets }} {{ . | quote }},  {{- end }}
+{{- else }}
+            "--defaultBuckets", {{ .Values.global.defaultDatasetBucket | quote }},
+{{- end }}
+            "--autoCreateBuckets", {{ .Values.autoCreateBuckets | quote }}
         ]
         env:
         - name: MINIO_SECRET_KEY
