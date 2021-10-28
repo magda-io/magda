@@ -12,6 +12,8 @@
 ## 1.1.0
 
 - #3246 Upgrade default cloudSql proxy version to v1.26.0
+- #3242 Allow default bucket names to be configured in `storage-api` & `web-server` charts
+- #3243 Stop creating the unused bucket `magda-bucket` on startup
 
 ## 1.0.0
 

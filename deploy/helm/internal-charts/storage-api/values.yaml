@@ -27,6 +27,13 @@ resources:
 # </ul>
 autoCreateSecrets: true
 
+# -- Create `defaultBuckets` on startup.
+autoCreateBuckets: true
+
+# -- Default buckets to create on startup.
+# If no value is provided `global.defaultDatasetBucket` will be used.
+defaultBuckets: []
+
 # -- specify bucket region
 # @default -- "unspecified-region"
 minioRegion: ""

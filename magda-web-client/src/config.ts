@@ -125,6 +125,7 @@ const serverConfig: {
     };
     previewMapFormatPerference?: RawPreviewMapFormatPerferenceItem[];
     showContactButtonForNoContactPointDataset?: boolean;
+    defaultDatasetBucket?: string;
 } = window.magda_server_config || {};
 
 const DATE_REGEX = ".*(date|dt|year|decade).*";
@@ -429,6 +430,8 @@ export const defaultConfiguration = {
 };
 
 /** The bucket in the storage API where datasets are stored */
-export const DATASETS_BUCKET = "magda-datasets";
+export const DATASETS_BUCKET = serverConfig.defaultDatasetBucket
+    ? serverConfig.defaultDatasetBucket
+    : "magda-datasets";
 
 export type ConfigType = typeof config;

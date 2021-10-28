@@ -229,3 +229,7 @@ previewMapFormatPerference:
 # By default, the "Ask a question about this dataset" button is only shown for datasets has contact point info.
 # For datasets without contact point info, the inquiry will be sent to the default recipient provided by `global.defaultContactEmail`.
 showContactButtonForNoContactPointDataset: false
+
+# -- Default bucket used to store datasets.
+# If no value is provided `global.defaultDatasetBucket` will be used.
+defaultDatasetBucket:
