@@ -315,13 +315,21 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      * @apiSuccess (Success JSON Response Body) {string[]} [warns] Any warning messages that are produced during OPA AST parsing.
      *  Only available when `hasWarns`=`true`.
      *
-     * @apiSuccessExample {json} Successful Response Example: a conclusive/unconditional auth decision is made
+     * @apiSuccessExample {json} Unconditional Result Example
      *    {
      *       "hasResidualRules" : false,
      *       "result": true // -- the evaluation value of the policy. By default, `true` means operation should be `allowed`.
      *    }
      *
-     * @apiSuccessExample {json} Successful Response Example: Partial Evaluation Result
+     * @apiSuccessExample {json} Partial Evaluation Result Example (Default Concise Format)
+     *
+     * {
+     *    "hasResidualRules":true,
+     *    "residualRules": [{"default":false,"value":true,"fullName":"data.partial.object.dataset.allow","name":"allow","expressions":[{"negated":false,"operator":"=","operands":["input.object.dataset.publishingState","published"]}]}],
+     *    "hasWarns":false
+     *  }
+     *
+     * @apiSuccessExample {json} Partial Evaluation Result Example (Raw AST)
      *
      * {
      *    "hasResidualRules": true,
@@ -329,7 +337,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      * }
      *
      *
-     * @apiErrorExample {string} Status Code: 500/400
+     * @apiErrorExample {string} Error Response Example / Status Code: 500/400
      *    Failed to get auth decision: xxxxxxxxx
      */
     async function getAuthDecision(
