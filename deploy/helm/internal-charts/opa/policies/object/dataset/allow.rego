@@ -1,18 +1,9 @@
 package object.dataset
 
+import data.common.breakdownOperationUri
+import data.common.getResourceTypeFromResourceUri
+
 default allow = false
-
-breakdownOperationUri(operationUri) = [resourceType, operationType, resourceUriPrefix] {
-    parts := split(operationUri, "/")
-    operationType := parts[count(parts)-1]
-    resourceType := parts[count(parts)-2]
-    resourceUriPrefix := concat("/", array.slice(parts, 0, count(parts)-2))
-}
-
-getResourceTypeFromResourceUri(resourceUri) = resourceType {
-    parts := split(resourceUri, "/")
-    resourceType := parts[count(parts)-1]
-}
 
 # if find a permission with no any constraints
 allow {
