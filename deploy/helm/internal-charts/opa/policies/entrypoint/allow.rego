@@ -1,5 +1,6 @@
 package entrypoint
 
+import data.object.record.allow as record_allow
 import data.object.dataset.allow as dataset_allow
 import data.object.content.allowRead as content_allowRead
 
@@ -9,6 +10,12 @@ default allow = false
 allow {
     # users with admin roles will have access to everything
     input.user.roles[_].id == "00000000-0000-0003-0000-000000000000"
+}
+
+allow {
+     ## delegate generic record related decision to record_allow
+    startswith(input.operationUri, "object/record/")
+    record_allow
 }
 
 allow {
