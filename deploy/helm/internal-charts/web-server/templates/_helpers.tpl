@@ -3,9 +3,9 @@
   Generate the raw web.json from global and local values.
 
   Usage:
-    web.json: {{ include "magda.webconfig" . | quote }}
+    web.json: {{ include "magda.web-server.webconfig" . | quote }}
     OR
-    checksum/config: {{ include "magda.webconfig" . | sha256sum }}
+    checksum/config: {{ include "magda.web-server.webconfig" . | sha256sum }}
 */}}
 {{- define "magda.web-server.webconfig" -}}
 {{- $webConfigDict := omit .Values "global" "autoscaler" "resources" "service" "replicas" }}
