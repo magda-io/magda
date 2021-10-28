@@ -97,7 +97,7 @@ const argv = addJwtSecretFromEnvVar(
             console.info("Ensuring that default buckets exist...");
 
             for (let bucket of argv.defaultBuckets) {
-                console.info(`Creating default bucket ${argv.defaultBuckets}`);
+                console.info(`Creating default bucket ${bucket}`);
                 await minioClient.createBucket(bucket);
             }
 
