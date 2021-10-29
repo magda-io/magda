@@ -244,11 +244,13 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      *  Depends on policy logic, URI pattern (e.g. `object/dataset/*&#47;read`) might be supported.
      *  > If you request the decision for a non-exist resource type, the default policy will evaluate to `false` (denied).
      *
-     * @apiQuery (Query String Parameters) {String} [operationUri] Use to supply / overwrite the operation uri.
+     * @apiParam (Query String Parameters) {String} [operationUri] Use to supply / overwrite the operation uri.
      *  Any parameters supplied via `Query String Parameters` have higher priority. Thus, can overwrite the same parameter supplied via `Request Body JSON`.
      *  However, `operationUri` supplied via `Query String Parameters` can't overwrite the `operationUri` supplied via `Request URL Path`.
      *
      * @apiParam (Query String Parameters) {String} [resourceUri] Use to supply / overwrite the resource uri.
+     * Please note: Magda's built-in policies don't utilise `resourceUri` as we can figure it out from `operationUri` instead.
+     * This interface is provided to facilite users' own customised implementation only.
      *
      * @apiParam (Query String Parameters) {String[]} [unknowns] Use to supply A list of references that should be considered as "unknown" during the policy evaluation.
      * More details please see `unknowns` parameter in `Request Body JSON` section below.
@@ -270,6 +272,11 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      * @apiParam (Query String Parameters) {string="false"} [concise] Output parsed & processed result in a concise format. This is default output format.
      * This option will not work when `rawAst` is on.
      * You can set `concise`=`false` to output a format more similar to original OPA AST (with more details).
+     *
+     * @apiParam (Request Body JSON) {String} [operationUri] Same as `operationUri` in query parameter. Users can also opt to supply `operationUri` via request body instead.
+     *
+     * @apiParam (Request Body JSON) {String} [resourceUri] Same as `resourceUri` in query parameter.
+     * Users can also opt to supply `resourceUri` via request body instead.
      *
      * @apiParam (Request Body JSON) {String[]} [unknowns] A list of references that should be considered as "unknown" during the policy evaluation.
      * If a conclusive/unconditional auth decision can't be made without knowing "unknown" data, the residual rules of the "partial evaluation" result will be responded in [rego](https://www.openpolicyagent.org/docs/latest/policy-language/) AST JSON format.
