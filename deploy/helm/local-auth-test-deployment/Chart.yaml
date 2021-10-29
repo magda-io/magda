@@ -1,9 +1,9 @@
 apiVersion: v2
 name: "magda-local-auth-test-deployment"
 description: ""
-version: "1.1.0-alpha.0"
+version: "1.1.0-alpha.1"
 kubeVersion: ">= 1.14.0-0"
 dependencies:
   - name: magda-core
-    version: 1.1.0-alpha.0
+    version: 1.1.0-alpha.1
     repository: "file://../magda-core"
