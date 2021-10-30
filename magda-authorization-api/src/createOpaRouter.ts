@@ -230,7 +230,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      *
      * will be used to construct the context data object `input` that will be used to assist OPA's auth decision making.
      *
-     * Regardless the `operation uri` supplied, this endpoint will always ask OPA to make decision using entrypoint policy `entrypoint/allow.rego` at policy directory root.
+     * Regardless the `operation uri` supplied, this endpoint will always ask OPA to make decision using entrypoint policy `entrypoint/allow.rego`.
      * The `entrypoint/allow.rego` should be responsible for delegating the designated policy to make the actual auth decision for a particular type of resource.
      *
      * e.g. The default policy `entrypoint/allow.rego` will delegate polciy `object/dataset/allow.rego` to make decision for operation uri: `object/dataset/draft/read`.
@@ -281,10 +281,13 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      * @apiParam (Request Body JSON) {String[]} [unknowns] A list of references that should be considered as "unknown" during the policy evaluation.
      * If a conclusive/unconditional auth decision can't be made without knowing "unknown" data, the residual rules of the "partial evaluation" result will be responded in [rego](https://www.openpolicyagent.org/docs/latest/policy-language/) AST JSON format.
      * e.g. When `unknowns=["input.object.dataset"]`, any rules related to dataset's attributes will be kept and output as residual rules, unless existing context info is sufficient to make a conclusive/unconditional auth decision (e.g. admin can access all datasets the values of regardless dataset attributes).
-     * > Please note: When `unknowns` is NOT supplied, this endpoint will auto-generate a JSON path that is made up of string "input" and first 2 segments of `operationUri` as the unknown reference.
-     * > e.g. When `operationUri` = `object/dataset/draft/read` and `unknowns` parameter is not supplied, by default, this endpoint will set `unknowns` parameter's value to array ["input.object.dataset"].
-     * > However, when extra context data is supplied as part request data at field `input.object.dataset`, the `unknowns` will not be set.
-     * > If you prevent the endpoint from auto-generating `unknowns`, you can supply `unknowns` parameter as an empty string.
+     * > Please note: When `unknowns` is NOT supplied, this endpoint will auto-generate a JSON path that is made up of string "input" and the first segment of `operationUri` as the unknown reference.
+     * > e.g. When `operationUri` = `object/dataset/draft/read` and `unknowns` parameter is not supplied, by default, this endpoint will set `unknowns` parameter's value to array ["input.object"].
+     * > However, when extra context data is supplied as part request data at JSON path `input.object`, the `unknowns` will not be auto-set.
+     * > If you want to force stop the endpoint from auto-generating `unknowns`, you can supply `unknowns` parameter as an empty string.
+     * > Please note: When `unknowns` is not set, the request will be send to ["full evaluation endpoint"](https://www.openpolicyagent.org/docs/latest/rest-api/#get-a-document-with-input),
+     * > instead of ["partial evaluation endpoint"](https://www.openpolicyagent.org/docs/latest/rest-api/#compile-api).
+     * > You will always get definite answer from "full evaluation endpoint".
      *
      * @apiParam (Request Body JSON) {Object} [input] OPA "`input` data". Use to provide extra context data to support the auth decison making.
      * e.g. When you need to make decision on one particular dataset (rather than a group of dataset), you can supply the `input` data object as the following:
@@ -406,6 +409,17 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
             }
 
             const reqOpts = await appendUserInfoToInput(req);
+
+            // only forward 4 OPA supported qs parameters
+            if (reqOpts.qs) {
+                reqOpts.qs = _.pick(reqOpts.qs, [
+                    "pretty",
+                    "explain",
+                    "metrics",
+                    "instrument"
+                ]);
+            }
+
             reqOpts.json.input.operationUri = operationUri;
             reqOpts.json.input.resourceUri = resourceUri;
 
@@ -437,10 +451,15 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                 reqOpts.json.unknowns = [unknownRef];
             }
 
-            reqOpts.json.query = "data.entrypoint.allow";
+            if (reqOpts.json.unknowns) {
+                reqOpts.json.query = "data.entrypoint.allow";
+            }
 
             // -- request's pipe api doesn't work well with opa's chunked response
-            const fullResponse = await request(`${opaUrl}v1/compile`, reqOpts);
+            const apiEndpoint = reqOpts.json.unknowns
+                ? `${opaUrl}v1/compile`
+                : `${opaUrl}v1/data/entrypoint/allow`;
+            const fullResponse = await request(apiEndpoint, reqOpts);
 
             if (
                 fullResponse.statusCode >= 200 &&
@@ -449,6 +468,26 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                 if (typeof req?.query?.rawAst !== "undefined") {
                     res.status(200).send(fullResponse.body);
                 } else {
+                    if (!reqOpts.json.unknowns) {
+                        // result here is from policy full evaluation endpoint
+                        // response is in shape of: { result: any }
+                        if (
+                            !fullResponse?.body ||
+                            typeof fullResponse.body !== "object" ||
+                            !fullResponse.body.hasOwnProperty("result")
+                        ) {
+                            throw new Error(
+                                "Invalid response from policy query endpoint: " +
+                                    JSON.stringify(fullResponse?.body)
+                            );
+                        }
+                        const resData = {
+                            hasResidualRules: false,
+                            value: fullResponse.body.result
+                        };
+                        res.status(200).send(resData);
+                        return;
+                    }
                     const outputInConciseFormat =
                         req?.query?.concise === "false" ? false : true;
                     const parser = new OpaCompileResponseParser();

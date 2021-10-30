@@ -1359,7 +1359,7 @@ export default class OpaCompileResponseParser {
         "default_rule_"
     );
 
-    private setQueryRuleResult(val: boolean) {
+    private setQueryRuleResult(val: RegoValue) {
         this.completeRuleResults[this.pseudoQueryRuleName] = {
             fullName: this.pseudoQueryRuleName,
             name: this.pseudoQueryRuleName,
