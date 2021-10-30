@@ -5,13 +5,17 @@ import data.common.getResourceTypeFromResourceUri
 
 default allow = false
 
-# if find a permission with no any constraints
 allow {
-    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
+    verifyPermission(input.operationUri, "dataset")
+}
+
+# if find a permission with no any constraints
+verifyPermission(inputOperationUri, inputObjectRefName) {
+    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
 
     resourceType != "*"
 
-    input.object.dataset.publishing.state = resourceType
+    input.object[inputObjectRefName].publishing.state = resourceType
 
     resourceUri := concat("/", [resourceUriPrefix, resourceType])
 
@@ -21,16 +25,16 @@ allow {
     input.user.permissions[i].orgUnitOwnershipConstraint = false
     input.user.permissions[i].preAuthorisedConstraint = false
     
-    input.user.permissions[i].operations[_].uri = input.operationUri
+    input.user.permissions[i].operations[_].uri = inputOperationUri
 }
 
 # if find a permission with user ownership constraint
-allow {
-    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
+verifyPermission(inputOperationUri, inputObjectRefName) {
+    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
 
     resourceType != "*"
 
-    input.object.dataset.publishing.state = resourceType
+    input.object[inputObjectRefName].publishing.state = resourceType
 
     resourceUri := concat("/", [resourceUriPrefix, resourceType])
 
@@ -40,18 +44,18 @@ allow {
     input.user.permissions[i].orgUnitOwnershipConstraint = false
     input.user.permissions[i].preAuthorisedConstraint = false
     
-    input.user.permissions[i].operations[_].uri = input.operationUri
+    input.user.permissions[i].operations[_].uri = inputOperationUri
 
-    input.object.dataset["dataset-access-control"].ownerId = input.user.id
+    input.object[inputObjectRefName]["dataset-access-control"].ownerId = input.user.id
 }
 
 # if find a permission with org unit ownership constraint
-allow {
-    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
+verifyPermission(inputOperationUri, inputObjectRefName) {
+    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
 
     resourceType != "*"
 
-    input.object.dataset.publishing.state = resourceType
+    input.object[inputObjectRefName].publishing.state = resourceType
 
     resourceUri := concat("/", [resourceUriPrefix, resourceType])
 
@@ -61,18 +65,18 @@ allow {
     input.user.permissions[i].orgUnitOwnershipConstraint = true
     input.user.permissions[i].preAuthorisedConstraint = false
     
-    input.user.permissions[i].operations[_].uri = input.operationUri
+    input.user.permissions[i].operations[_].uri = inputOperationUri
 
-    input.user.managingOrgUnitIds[_] = input.object.dataset["dataset-access-control"].orgUnitOwnerId
+    input.user.managingOrgUnitIds[_] = input.object[inputObjectRefName]["dataset-access-control"].orgUnitOwnerId
 }
 
 # if find a permission with pre-authorised constraint
-allow {
-    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
+verifyPermission(inputOperationUri, inputObjectRefName) {
+    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
 
     resourceType != "*"
 
-    input.object.dataset.publishing.state = resourceType
+    input.object[inputObjectRefName].publishing.state = resourceType
 
     resourceUri := concat("/", [resourceUriPrefix, resourceType])
 
@@ -82,15 +86,15 @@ allow {
     input.user.permissions[i].orgUnitOwnershipConstraint = false
     input.user.permissions[i].preAuthorisedConstraint = true
     
-    input.user.permissions[i].operations[_].uri = input.operationUri
+    input.user.permissions[i].operations[_].uri = inputOperationUri
 
-    input.object.dataset["dataset-access-control"].preAuthorisedPermissionIds[_] = input.user.permissions[i].id
+    input.object[inputObjectRefName]["dataset-access-control"].preAuthorisedPermissionIds[_] = input.user.permissions[i].id
 }
 
 ##### Rules for wildcard resouce type e.g. object.dataset.*
 # if find a permission with no any constraints
-allow {
-    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
+verifyPermission(inputOperationUri, inputObjectRefName) {
+    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
 
     resourceType == "*"
 
@@ -105,12 +109,12 @@ allow {
     input.user.permissions[i].resourceUri = resourceUri
     input.user.permissions[i].operations[_].uri = operationUri
 
-    input.object.dataset.publishing.state = permissionResourceType
+    input.object[inputObjectRefName].publishing.state = permissionResourceType
 }
 
 # if find a permission with user ownership constraint
-allow {
-    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
+verifyPermission(inputOperationUri, inputObjectRefName) {
+    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
 
     resourceType == "*"
 
@@ -125,13 +129,13 @@ allow {
     input.user.permissions[i].resourceUri = resourceUri
     input.user.permissions[i].operations[_].uri = operationUri
 
-    input.object.dataset.publishing.state = permissionResourceType
-    input.object.dataset["dataset-access-control"].ownerId = input.user.id
+    input.object[inputObjectRefName].publishing.state = permissionResourceType
+    input.object[inputObjectRefName]["dataset-access-control"].ownerId = input.user.id
 }
 
 # if find a permission with org unit ownership constraint
-allow {
-    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
+verifyPermission(inputOperationUri, inputObjectRefName) {
+    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
 
     resourceType == "*"
 
@@ -146,13 +150,13 @@ allow {
     input.user.permissions[i].resourceUri = resourceUri
     input.user.permissions[i].operations[_].uri = operationUri
 
-    input.object.dataset.publishing.state = permissionResourceType
-    input.user.managingOrgUnitIds[_] = input.object.dataset["dataset-access-control"].orgUnitOwnerId
+    input.object[inputObjectRefName].publishing.state = permissionResourceType
+    input.user.managingOrgUnitIds[_] = input.object[inputObjectRefName]["dataset-access-control"].orgUnitOwnerId
 }
 
 # if find a permission with pre-authorised constraint
-allow {
-    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
+verifyPermission(inputOperationUri, inputObjectRefName) {
+    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
 
     resourceType == "*"
 
@@ -167,6 +171,6 @@ allow {
     input.user.permissions[i].resourceUri = resourceUri
     input.user.permissions[i].operations[_].uri = operationUri
 
-    input.object.dataset.publishing.state = permissionResourceType
-    input.object.dataset["dataset-access-control"].preAuthorisedPermissionIds[_] = input.user.permissions[i].id
+    input.object[inputObjectRefName].publishing.state = permissionResourceType
+    input.object[inputObjectRefName]["dataset-access-control"].preAuthorisedPermissionIds[_] = input.user.permissions[i].id
 }

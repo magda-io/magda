@@ -562,6 +562,24 @@ export class RegoTerm {
         return JSON.stringify(this.toData());
     }
 
+    toConciseData() {
+        if (this.isRef()) {
+            return {
+                isRef: true,
+                value: this.fullRefString()
+            };
+        } else {
+            return {
+                isRef: false,
+                value: this.value
+            };
+        }
+    }
+
+    toConciseJSON(): string {
+        return JSON.stringify(this.toConciseData());
+    }
+
     static parseFromData(
         data: any,
         parser: OpaCompileResponseParser
@@ -889,18 +907,22 @@ export class RegoExp {
     }
 
     toConciseData() {
-        const [operator, operands] = this.toOperatorOperandsArray();
-        const data = {
-            negated: this.isNegated,
-            operator,
-            operands: operands.map((item) => {
-                if (item.isRef()) {
-                    return item.fullRefString();
-                } else {
-                    return item.getValue();
-                }
-            })
-        };
+        let data;
+        if (this.terms.length === 1) {
+            const term = this.terms[0];
+            data = {
+                negated: this.isNegated,
+                operator: null as string | null,
+                operands: [term.toConciseData()]
+            };
+        } else {
+            const [operator, operands] = this.toOperatorOperandsArray();
+            data = {
+                negated: this.isNegated,
+                operator,
+                operands: operands.map((item) => item.toConciseData())
+            };
+        }
         return data;
     }
 

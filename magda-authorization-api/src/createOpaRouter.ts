@@ -332,7 +332,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      *
      * {
      *    "hasResidualRules":true,
-     *    "residualRules": [{"default":false,"value":true,"fullName":"data.partial.object.dataset.allow","name":"allow","expressions":[{"negated":false,"operator":"=","operands":["input.object.dataset.publishingState","published"]}]}],
+     *    "residualRules": [{"default":false,"value":true,"fullName":"data.partial.object.record.allow","name":"allow","expressions":[{"negated":false,"operator":null,"operands":[{"isRef":true,"value":"input.object.dataset.dcat-dataset-strings"}]},{"negated":false,"operator":"=","operands":[{"isRef":true,"value":"input.object.record.publishing.state"},{"isRef":false,"value":"published"}]}]}],
      *    "hasWarns":false
      *  }
      *
@@ -411,8 +411,9 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
 
             /**
              * By default, we will auto-generate `unknowns` reference list.
-             * The auto-generated `unknowns` reference list will contains a JSON path that is made up of string "input" and first 2 segments of `operationUri`.
-             * e.g. if `operationUri` is `object/dataset/draft/read`, the `unknowns`=["input.object.dataset"]
+             * The auto-generated `unknowns` reference list will contains a JSON path that is made up of string "input" and the first segment of `operationUri`.
+             * e.g. if `operationUri` is `object/dataset/draft/read`, the `unknowns`=["input.object"]
+             * We can't set `input.object.dataset` as `unknown` as OPA currently can't correctly recognise reference as input.object[objectType] while objectType="dataset"
              *
              *
              * We will not auto-generate `unknowns`, when:
@@ -420,27 +421,19 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
              * - OR non-empty `unknowns` is supplied either via query string or request body.
              * - OR context data has been supplied via request body for the auto-generated unknown reference.
              *   - e.g. When `operationUri` is `object/dataset/draft/read` and the user supplies `dataset` object at `input.object`,
-             *     there is no point to set ["input.object.dataset"] as `unknowns`, because it's supplied by the user.
+             *     there is no point to set ["input.object"] as `unknowns`, because it's supplied by the user.
              */
             const autoGenerateUnknowns =
                 req?.query?.unknowns === "" ||
                 req?.body?.unknowns === "" ||
                 reqOpts?.json?.unknowns ||
                 // test whether the context data match the auto-generated unknown json path has been supplied
-                objectPath.has(
-                    reqOpts.json.input,
-                    opUriParts.length > 2 ? opUriParts.slice(0, 2) : opUriParts
-                )
+                objectPath.has(reqOpts.json.input, [opUriParts[0]])
                     ? false
                     : true;
 
             if (autoGenerateUnknowns) {
-                const unknownRef = [
-                    "input",
-                    ...(opUriParts.length > 2
-                        ? opUriParts.slice(0, 2)
-                        : opUriParts)
-                ].join(".");
+                const unknownRef = ["input", [opUriParts[0]]].join(".");
                 reqOpts.json.unknowns = [unknownRef];
             }
 
