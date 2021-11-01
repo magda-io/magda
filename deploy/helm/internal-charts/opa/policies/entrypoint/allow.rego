@@ -3,6 +3,7 @@ package entrypoint
 import data.object.record.allow as record_allow
 import data.object.dataset.allow as dataset_allow
 import data.object.content.allowRead as content_allowRead
+import data.object.organization.allow as organization_allow
 
 # When no rule match, the decision will be `denied` 
 default allow = false
@@ -22,6 +23,12 @@ allow {
      ## delegate dataset related decision to dataset_allow
     startswith(input.operationUri, "object/dataset/")
     dataset_allow
+}
+
+allow {
+     ## delegate organization related decision to organization_allow
+    startswith(input.operationUri, "object/organization/")
+    organization_allow
 }
 
 allow {

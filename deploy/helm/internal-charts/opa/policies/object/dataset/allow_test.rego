@@ -633,7 +633,7 @@ test_allow_pre_Authorised_constraint_permission_user_permission_is_pre_authorise
     }
 }
 
-test_allow_pre_Authorised_constraint_permission_user_permission_is_pre_authorised_for_incorrect_publishing_state {
+test_allow_pre_authorised_constraint_permission_user_permission_is_pre_authorised_for_incorrect_publishing_state {
     not allow with input as {
         "operationUri": "object/dataset/draft/read",
         "object": {
