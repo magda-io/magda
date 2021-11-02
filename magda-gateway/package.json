@@ -78,7 +78,7 @@
     "chai": "^4.1.0",
     "chai-as-promised": "^7.1.1",
     "mocha": "^3.4.2",
-    "nock": "git://github.com/magda-io/nock.git#master",
+    "nock": "https://github.com/magda-io/nock.git#master",
     "randomstring": "^1.1.5",
     "sinon": "^2.4.1",
     "supertest": "^3.0.0",
