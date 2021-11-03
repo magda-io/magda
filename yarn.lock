@@ -13818,9 +13818,9 @@ nock@^9.0.14, nock@^9.1.6, nock@^9.2.5:
     qs "^6.5.1"
     semver "^5.5.0"
 
-"nock@git://github.com/magda-io/nock.git#master":
+"nock@https://github.com/magda-io/nock.git#master":
   version "0.0.0-development"
-  resolved "git://github.com/magda-io/nock.git#b82b93a80b4893f39bbdd83a81dd4db610894f2a"
+  resolved "https://github.com/magda-io/nock.git#b82b93a80b4893f39bbdd83a81dd4db610894f2a"
   dependencies:
     chai "^4.1.2"
     debug "^4.1.0"
