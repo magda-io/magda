@@ -65,6 +65,11 @@ const argv = yargs
             type: "boolean",
             default: false
         },
+        platform: {
+            description:
+                "A list of platform that the docker image build should target. Specify this value will enable multi-arch image build.",
+            type: "string"
+        },
         cacheFromVersion: {
             description:
                 "Version to cache from when building, using the --cache-from field in docker. Will use the same repository and name. Using this options causes the image to be pulled before build.",
@@ -157,9 +162,11 @@ if (argv.build) {
         "docker",
         [
             ...extraParameters,
+            ...(argv.platform ? ["buildx"] : []),
             "build",
             ...tagArgs,
             ...cacheFromArgs,
+            ...(argv.platform ? ["--platform", argv.platform] : []),
             "-f",
             `./component/Dockerfile`,
             "-"
