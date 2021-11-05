@@ -1,5 +1,3 @@
-image: docker:19.03.13
-
 variables:
   CI: "true"
   DOCKER_DRIVER: overlay2
@@ -52,7 +50,7 @@ builders-and-yarn:
     - docker buildx create --use
     - yarn install --no-progress --child-concurrency 1 --cache-folder .yarn
   services:
-    - docker:19.03.13-dind
+    - docker:dind
   script:
     - yarn run in-submodules -- -f categories.builder=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64 
   artifacts:
