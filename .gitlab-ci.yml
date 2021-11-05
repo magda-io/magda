@@ -44,7 +44,8 @@ builders-and-yarn:
     - docker:dind
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - yarn run in-submodules -- -f categories.builder=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
+    - docker buildx create --use
+    - yarn run in-submodules -- -f categories.builder=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master --platform linux/arm/v7,linux/arm64/v8,linux/amd64 
   artifacts:
     paths:
       - "node_modules"
@@ -613,7 +614,8 @@ dockerize:ui:
     - buildtest:ui
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - yarn run in-submodules -- -f categories.ui=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
+    - docker buildx create --use
+    - yarn run in-submodules -- -f categories.ui=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master --platform linux/arm/v7,linux/arm64/v8,linux/amd64 
 
 dockerize:typescript-apis:
   stage: dockerize
@@ -640,7 +642,8 @@ dockerize:typescript-apis:
     - buildtest:storage-api
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
+    - docker buildx create --use
+    - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master --platform linux/arm/v7,linux/arm64/v8,linux/amd64 
 
 dockerize:migrators:
   stage: buildtest
@@ -652,7 +655,8 @@ dockerize:migrators:
     - docker:dind
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - yarn run in-submodules -- -f categories.migrator=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
+    - docker buildx create --use
+    - yarn run in-submodules -- -f categories.migrator=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master --platform linux/arm/v7,linux/arm64/v8,linux/amd64 
 
 dockerize:dockerExtensions:
   stage: buildtest
@@ -665,7 +669,8 @@ dockerize:dockerExtensions:
     - docker:dind
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - yarn run in-submodules -- -f categories.dockerExtension=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master
+    - docker buildx create --use
+    - yarn run in-submodules -- -f categories.dockerExtension=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master --platform linux/arm/v7,linux/arm64/v8,linux/amd64 
 
 inttest:registryAuth:
   # https://github.com/kind-ci/examples/blob/master/.gitlab-ci.yml
