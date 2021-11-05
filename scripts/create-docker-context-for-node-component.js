@@ -86,6 +86,13 @@ if (!argv.build && !argv.output) {
     process.exit(1);
 }
 
+if (argv.platform && !argv.push) {
+    console.log(
+        "When --platform is specified, --push must be specified as well as multi-arch image can only be pushed to remote registry."
+    );
+    process.exit(1);
+}
+
 const componentSrcDir = path.resolve(process.cwd());
 const dockerContextDir = fse.mkdtempSync(
     path.resolve(__dirname, "..", "docker-context-")
@@ -166,7 +173,7 @@ if (argv.build) {
             "build",
             ...tagArgs,
             ...cacheFromArgs,
-            ...(argv.platform ? ["--platform", argv.platform] : []),
+            ...(argv.platform ? ["--platform", argv.platform, "--push"] : []),
             "-f",
             `./component/Dockerfile`,
             "-"
@@ -182,7 +189,7 @@ if (argv.build) {
     dockerProcess.on("close", (code) => {
         fse.removeSync(dockerContextDir);
 
-        if (code === 0 && argv.push) {
+        if (code === 0 && argv.push && !argv.platform) {
             if (tags.length === 0) {
                 console.error("Can not push an image without a tag.");
                 process.exit(1);
