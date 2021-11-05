@@ -41,13 +41,9 @@ builders-and-yarn:
     paths:
       - .yarn
   before_script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker info
     - docker -v
-    - mkdir -p ~/.docker/cli-plugins
-    - wget -O ~/.docker/cli-plugins/docker-buildx https://github.com/docker/buildx/releases/download/${BUILDX_VERSION}/buildx-${BUILDX_VERSION}.${BUILDX_ARCH}
-    - chmod +x ~/.docker/cli-plugins/docker-buildx
-    - docker buildx create --use
+    - ./gitlab-ci-buildx-setup.sh
     - yarn install --no-progress --child-concurrency 1 --cache-folder .yarn
   services:
     - docker:dind
@@ -620,8 +616,7 @@ dockerize:ui:
     - registry-typescript-api
     - buildtest:ui
   script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker buildx create --use
+    - ./gitlab-ci-buildx-setup.sh
     - yarn run in-submodules -- -f categories.ui=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64 
 
 dockerize:typescript-apis:
@@ -648,8 +643,7 @@ dockerize:typescript-apis:
     - buildtest:typescript-apis-with-es
     - buildtest:storage-api
   script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker buildx create --use
+    - ./gitlab-ci-buildx-setup.sh
     - yarn run in-submodules -- -f categories.api=true -f language=typescript -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64 
 
 dockerize:migrators:
@@ -661,8 +655,7 @@ dockerize:migrators:
   services:
     - docker:dind
   script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker buildx create --use
+    - ./gitlab-ci-buildx-setup.sh
     - yarn run in-submodules -- -f categories.migrator=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64 
 
 dockerize:dockerExtensions:
@@ -675,8 +668,7 @@ dockerize:dockerExtensions:
   services:
     - docker:dind
   script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker buildx create --use
+    - ./gitlab-ci-buildx-setup.sh
     - yarn run in-submodules -- -f categories.dockerExtension=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64 
 
 inttest:registryAuth:
