@@ -1,6 +1,8 @@
 variables:
   CI: "true"
   DOCKER_DRIVER: overlay2
+  BUILDX_VERSION: "v0.6.3"
+  BUILDX_ARCH: "linux-amd64"
   # Make sure sbt cache are captured completely
   COURSIER_CACHE: $CI_PROJECT_DIR/sbt-cache/coursier
   SBT_OPTS: >
@@ -40,11 +42,16 @@ builders-and-yarn:
       - .yarn
   before_script:
     - yarn install --no-progress --child-concurrency 1 --cache-folder .yarn
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker info
+    - docker -v
+    - mkdir -p ~/.docker/cli-plugins
+    - wget -O ~/.docker/cli-plugins/docker-buildx https://github.com/docker/buildx/releases/download/${BUILDX_VERSION}/buildx-${BUILDX_VERSION}.${BUILDX_ARCH}
+    - chmod +x ~/.docker/cli-plugins/docker-buildx
+    - docker buildx create --use
   services:
     - docker:dind
   script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker buildx create --use
     - yarn run in-submodules -- -f categories.builder=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master --platform linux/arm/v7,linux/arm64/v8,linux/amd64 
   artifacts:
     paths:
