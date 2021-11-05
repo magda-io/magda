@@ -1,3 +1,5 @@
+image: docker:19.03.13
+
 variables:
   CI: "true"
   DOCKER_DRIVER: overlay2
@@ -41,7 +43,6 @@ builders-and-yarn:
     paths:
       - .yarn
   before_script:
-    - yarn install --no-progress --child-concurrency 1 --cache-folder .yarn
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker info
     - docker -v
@@ -49,8 +50,9 @@ builders-and-yarn:
     - wget -O ~/.docker/cli-plugins/docker-buildx https://github.com/docker/buildx/releases/download/${BUILDX_VERSION}/buildx-${BUILDX_VERSION}.${BUILDX_ARCH}
     - chmod +x ~/.docker/cli-plugins/docker-buildx
     - docker buildx create --use
+    - yarn install --no-progress --child-concurrency 1 --cache-folder .yarn
   services:
-    - docker:dind
+    - docker:19.03.13-dind
   script:
     - yarn run in-submodules -- -f categories.builder=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --cacheFromVersion=master --platform linux/arm/v7,linux/arm64/v8,linux/amd64 
   artifacts:
