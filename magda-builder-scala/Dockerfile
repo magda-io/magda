@@ -1,6 +1,6 @@
 FROM data61/magda-builder-docker:buildx
 
-RUN apk add --no-cache openjdk8
+RUN apk add --update --no-cache openjdk8
 
 # Default to UTF-8 file.encoding
 ENV LANG C.UTF-8
