@@ -1,3 +1,3 @@
 FROM data61/magda-builder-nodejs:buildx
 
-RUN apk add --update --no-cache docker
+RUN apk add --no-cache docker docker-compose
