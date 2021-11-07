@@ -10,5 +10,5 @@ ENV BUILDX_VERSION "v0.6.3"
 RUN apk add --no-cache docker docker-compose
 
 RUN mkdir -p ~/.docker/cli-plugins && \
-    wget -O ~/.docker/cli-plugins/docker-buildx https://github.com/docker/buildx/releases/download/${BUILDX_VERSION}/buildx-${BUILDX_VERSION}.${BUILDX_ARCH} && \
+    wget -q -O ~/.docker/cli-plugins/docker-buildx https://github.com/docker/buildx/releases/download/${BUILDX_VERSION}/buildx-${BUILDX_VERSION}.${BUILDX_ARCH} && \
     chmod a+x ~/.docker/cli-plugins/docker-buildx
