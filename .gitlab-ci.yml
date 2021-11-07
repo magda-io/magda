@@ -611,8 +611,11 @@ dockerize:dockerExtensions:
   services:
     - docker:dind
   script:
-    - ./gitlab-ci-buildx-setup.sh
-    - yarn run in-submodules -- -f categories.dockerExtension=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG  --platform linux/arm64,linux/amd64 
+    #- ./gitlab-ci-buildx-setup.sh
+    #- yarn run in-submodules -- -f categories.dockerExtension=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG --platform linux/arm64,linux/amd64 
+    # disable multi-arch docker image build for elasticsearch & postgreSQL for now
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - yarn run in-submodules -- -f categories.dockerExtension=true -- run docker-build-prod --include-filtered-dependencies -- -- --repository=$CI_REGISTRY/magda-data/magda --version=$CI_COMMIT_REF_SLUG
 
 inttest:registryAuth:
   # https://github.com/kind-ci/examples/blob/master/.gitlab-ci.yml
