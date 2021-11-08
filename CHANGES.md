@@ -5,6 +5,8 @@
 - #3246 Upgrade default cloudSql proxy version to v1.26.0
 - #3242 Allow default bucket names to be configured in `storage-api` & `web-server` charts
 - #3243 Stop creating the unused bucket `magda-bucket` on startup
+- #3262 Make magda's docker building scripts (@magda/docker-utils) support multi-arch build
+- #3263 Build Multi-Arch (`linux/amd64` & `linux/arm64`) Docker Images in CI (Except `magda-postgres` & `magda-elastic-search`)
 
 ## 1.0.0
 
