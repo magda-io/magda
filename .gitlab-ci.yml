@@ -901,7 +901,7 @@ Release-Latest-Tag-to-Docker-Hub:
     - dockerize:typescript-apis
     - dockerize:migrators
     - dockerize:dockerExtensions
-    - Release-Tags-to-Docker-Hub
+    - Release-to-Docker-Hub
   cache: {}
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 1
