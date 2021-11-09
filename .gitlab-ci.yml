@@ -835,6 +835,8 @@ pre-release:check-release-version:
 
 Release-to-Docker-Hub:
   stage: release
+  services:
+    - docker:dind
   only:
     # Strict Semvar validation
     - /^v((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
@@ -862,6 +864,8 @@ Release-to-Docker-Hub:
 # When a PR is merged to master, all images will be pushed to docker hub to replace `master` tag
 Release-Master-Tag-to-Docker-Hub:
   stage: release
+  services:
+    - docker:dind
   only:
     - master
   needs:
@@ -885,6 +889,8 @@ Release-Master-Tag-to-Docker-Hub:
 # When a new version is released (except pre-release versions), all images will be pushed to docker hub to replace `latest` tag
 Release-Latest-Tag-to-Docker-Hub:
   stage: release
+  services:
+    - docker:dind
   only:
     # Regex matches non-pre-release version only e.g. v1.0.2
     - /^v([0-9]+)\.([0-9]+)\.([0-9]+)$/
