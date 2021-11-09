@@ -41,6 +41,8 @@ Options:
   --platform          A list of platform that the docker image build should
                       target. Specify this value will enable multi-arch image
                       build.                                            [string]
+  --noCache           Disable the cache during the docker image build.
+                                                      [boolean] [default: false]
   --cacheFromVersion  Version to cache from when building, using the
                       --cache-from field in docker. Will use the same repository
                       and name. Using this options causes the image to be pulled

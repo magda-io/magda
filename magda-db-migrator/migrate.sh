@@ -3,6 +3,7 @@
 cd /flyway
 tar xzf flyway-commandline-4.2.0-linux-x64.tar.gz
 cd flyway-4.2.0
+rm -Rf jre
 
 del_completed_scripts () {
     echo "Attempt to exclude previously executed scripts..."
