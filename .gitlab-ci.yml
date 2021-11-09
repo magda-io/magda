@@ -684,8 +684,8 @@ inttest:registryAuth:
     kubectl port-forward combined-db-postgresql-0 5432 --namespace test2 >/dev/null 2>&1 < /dev/null &
     kubectl port-forward deployment/authorization-api 6104:80 --namespace test2 >/dev/null 2>&1 < /dev/null &
     # Wait for port forwarding to start
-    timeout -t 22 sh -c 'until nc -z $0 $1; do sleep 1; done' localhost 5432
-    timeout -t 22 sh -c 'until nc -z $0 $1; do sleep 1; done' localhost 6104
+    timeout 22 sh -c 'until nc -z $0 $1; do sleep 1; done' localhost 5432
+    timeout 22 sh -c 'until nc -z $0 $1; do sleep 1; done' localhost 6104
     # Set up some values
     psql -h localhost -p 5432 -U postgres -d auth -f magda-registry-api/src/test/resources/data/organizations.sql
     psql -h localhost -p 5432 -U postgres -d auth -f magda-registry-api/src/test/resources/data/users.sql
