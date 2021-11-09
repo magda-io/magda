@@ -1,4 +1,4 @@
-FROM data61/magda-builder-docker:buildx
+FROM data61/magda-builder-docker:master
 
 RUN apk add --update --no-cache openjdk8
 

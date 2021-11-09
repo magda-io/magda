@@ -833,7 +833,7 @@ pre-release:check-release-version:
   script:
     - yarn check-release-version
 
-Release Tags To Docker Hub:
+Release-to-Docker-Hub:
   stage: release
   only:
     # Strict Semvar validation
@@ -852,16 +852,63 @@ Release Tags To Docker Hub:
     - dockerize:migrators
     - dockerize:dockerExtensions
   cache: {}
-  services:
-    - docker:dind
   image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
   retry: 1
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker login -u magdabot -p $DOCKER_HUB_PASSWORD
-    - yarn install
     - yarn run retag-and-push -- -- -- --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --copyFromRegistry=true
 
+# When a PR is merged to master, all images will be pushed to docker hub to replace `master` tag
+Release-Master-Tag-to-Docker-Hub:
+  stage: release
+  only:
+    - master
+  needs:
+    - pre-release:check-release-version
+    - yarn-install
+    - buildtest:helm-charts
+    - buildtest:helm-docs-check
+    - dockerize:scala
+    - dockerize:ui
+    - dockerize:typescript-apis
+    - dockerize:migrators
+    - dockerize:dockerExtensions
+  cache: {}
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  retry: 1
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker login -u magdabot -p $DOCKER_HUB_PASSWORD
+    - yarn run retag-and-push -- -- -- -- toVersion=master --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --copyFromRegistry=true
+
+# When a new version is released (except pre-release versions), all images will be pushed to docker hub to replace `latest` tag
+Release-Latest-Tag-to-Docker-Hub:
+  stage: release
+  only:
+    # Regex matches non-pre-release version only e.g. v1.0.2
+    - /^v([0-9]+)\.([0-9]+)\.([0-9]+)$/
+  except:
+    - branches
+    - triggers
+  needs:
+    - pre-release:check-release-version
+    - yarn-install
+    - buildtest:helm-charts
+    - buildtest:helm-docs-check
+    - dockerize:scala
+    - dockerize:ui
+    - dockerize:typescript-apis
+    - dockerize:migrators
+    - dockerize:dockerExtensions
+    - Release-Tags-to-Docker-Hub
+  cache: {}
+  image: registry.gitlab.com/magda-data/magda/data61/magda-builder-docker:$BUILDER_IMG_TAG
+  retry: 1
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker login -u magdabot -p $DOCKER_HUB_PASSWORD
+    - yarn run retag-and-push -- -- -- -- toVersion=latest --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --copyFromRegistry=true
 
 Publish NPM Packages:
   stage: release

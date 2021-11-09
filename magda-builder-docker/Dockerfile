@@ -1,4 +1,4 @@
-FROM data61/magda-builder-nodejs:buildx
+FROM data61/magda-builder-nodejs:master
 
 ARG TARGETOS
 ARG TARGETARCH
