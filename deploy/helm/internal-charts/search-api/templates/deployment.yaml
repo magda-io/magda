@@ -24,7 +24,7 @@ spec:
         image: {{ include "magda.image" . | quote }}
         imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
         command:
-          - "/app/bin/magda-search-api"
+          - "bin/magda-search-api"
           - "-Dhttp.port=80"
           - "-Dakka.loglevel={{ .Values.global.logLevel }}"
           - "-Dopa.baseUrl=http://authorization-api/v0/opa/"

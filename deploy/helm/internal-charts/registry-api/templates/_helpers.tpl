@@ -34,7 +34,7 @@ spec:
         image: {{ include "magda.image" .root | quote }}
         imagePullPolicy: {{ include "magda.imagePullPolicy" .root | quote }}
         command: [
-            "/app/bin/magda-registry-api",
+            "bin/magda-registry-api",
             "-Dhttp.port=80",
             "-Dhttp.externalUrl.v0={{ .root.Values.global.externalUrl }}/api/v0/registry",
             "-Ddb.default.url=jdbc:postgresql://registry-db/postgres",

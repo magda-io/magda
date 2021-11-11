@@ -43,7 +43,7 @@ spec:
         image: {{ include "magda.image" . | quote }}
         imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
         command: [
-            "/app/bin/magda-indexer",
+            "bin/magda-indexer",
             "-Dhttp.port=80",
             "-Dregistry.webhookUrl=http://indexer/v0/registry-hook",
             "-Dregistry.baseUrl=http://registry-api",
