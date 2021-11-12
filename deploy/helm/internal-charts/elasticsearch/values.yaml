@@ -1,8 +1,8 @@
 production: false
 
 daemonsetImage:
-  name: startup-script
-  repository: alpine
+  name: alpine
+  repository: docker.io
   tag: "latest"
   pullPolicy: IfNotPresent
   pullSecrets: false
