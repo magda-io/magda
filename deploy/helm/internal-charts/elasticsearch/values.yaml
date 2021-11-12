@@ -2,8 +2,8 @@ production: false
 
 daemonsetImage:
   name: startup-script
-  repository: gcr.io/google-containers
-  tag: "v1"
+  repository: alpine
+  tag: "latest"
   pullPolicy: IfNotPresent
   pullSecrets: false
 
