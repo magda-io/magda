@@ -23,7 +23,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 "{{ .Values.image.repository | default .Values.global.image.repository }}/magda-postgres:{{ .Values.image.tag | default .Values.global.image.tag | default .Chart.Version }}"
 {{- end -}}
 
-{{- define "magda.postgres-svc-mapping" -}}
+{{- define "magda.postgres-svc-mapping" }}
   {{- if .Values.global.useAwsRdsDb }}
   type: ExternalName
   externalName: "{{ .Values.global.awsRdsEndpoint | required "global.awsRdsEndpoint is required" }}"
@@ -41,7 +41,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
     app.kubernetes.io/name: "{{ .Chart.Name }}-postgresql"
     role: primary
   {{- end -}}
-{{- end -}}
+{{- end }}
 
 {{- define "magda.postgres-superuser-env" }}
 - name: PGUSER
@@ -51,7 +51,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
     secretKeyRef:
       name: {{ .Values.global.postgresql.existingSecret | quote }}
       key: "postgresql-password"
-{{- end -}}
+{{- end }}
 
 {{- define "magda.postgres-migrator-env" }}
 - name: PGUSER
@@ -68,4 +68,4 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
     secretKeyRef:
       name: {{ include "magda.db-client-secret-name" (dict "dbName" .Chart.Name "root" .) | quote }}
       key: {{ include "magda.db-client-secret-key" (dict "dbName" .Chart.Name "root" .) | quote }}
-{{- end -}}
+{{- end }}

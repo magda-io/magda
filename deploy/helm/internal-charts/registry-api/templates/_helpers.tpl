@@ -1,6 +1,6 @@
 {{/* vim: set filetype=mustache: */}}
 
-{{- define "magda.registry-deployment" -}}
+{{- define "magda.registry-deployment" }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -80,4 +80,4 @@ spec:
         - containerPort: 80
         resources:
 {{ .deploymentConfig.resources | default .root.Values.resources | toYaml | indent 10 }}
-{{- end -}}
+{{- end }}
