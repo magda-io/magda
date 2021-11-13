@@ -29,15 +29,5 @@ if [[ ! -z $GOOGLE_APPLICATION_CREDENTIALS ]]; then
     echo "Finished gcs permissions..."
 fi
 
-echo "Set vm.max_map_count=262144 in host"
-sysctl -w vm.max_map_count=262144
-
-echo "Current max locked memory in host: "
-ulimit -l
-echo "Set max locked memory to unlimited in host"
-ulimit -l unlimited
-echo "New max locked memory: "
-ulimit -l
-
 echo "Starting up"
 /usr/local/bin/docker-entrypoint.sh

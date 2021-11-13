@@ -1,11 +1,10 @@
 production: false
 
-daemonsetImage:
-  name: alpine
+initContainerImage:
+  name: busybox
   repository: docker.io
   tag: "latest"
   pullPolicy: IfNotPresent
-  pullSecrets: false
 
 kibanaImage:
   name: kibana-oss
