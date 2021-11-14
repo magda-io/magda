@@ -20,11 +20,21 @@ import akka.http.scaladsl.model.HttpHeader
 trait HttpFetcher {
   def get(path: String, headers: Seq[HttpHeader] = Seq()): Future[HttpResponse]
 
-  def post[T](path: String, payload: T, headers: Seq[HttpHeader] = Seq())(
+  def post[T](
+      path: String,
+      payload: T,
+      headers: Seq[HttpHeader] = Seq(),
+      autoRetryConnection: Boolean = false
+  )(
       implicit m: ToEntityMarshaller[T]
   ): Future[HttpResponse]
 
-  def put[T](path: String, payload: T, headers: Seq[HttpHeader] = Seq())(
+  def put[T](
+      path: String,
+      payload: T,
+      headers: Seq[HttpHeader] = Seq(),
+      autoRetryConnection: Boolean = false
+  )(
       implicit m: ToEntityMarshaller[T]
   ): Future[HttpResponse]
 }
@@ -59,7 +69,12 @@ class HttpFetcherImpl(baseUrl: URL)(
     }
   }
 
-  def post[T](path: String, payload: T, headers: Seq[HttpHeader] = Seq())(
+  def post[T](
+      path: String,
+      payload: T,
+      headers: Seq[HttpHeader] = Seq(),
+      autoRetryConnection: Boolean = false
+  )(
       implicit m: ToEntityMarshaller[T]
   ): Future[HttpResponse] = {
     val url = s"${baseUrl.getPath}${path}"
@@ -72,12 +87,41 @@ class HttpFetcherImpl(baseUrl: URL)(
     val request = RequestBuilding
       .Post(url, payload)
       .withHeaders(scala.collection.immutable.Seq.concat(headers))
-    Source.single((request, 0)).via(connectionFlow).runWith(Sink.head).map {
-      case (response, _) => response.get
+    val result =
+      Source.single((request, 0)).via(connectionFlow).runWith(Sink.head).map {
+        case (response, _) => response.get
+      }
+
+    if (!autoRetryConnection) {
+      result
+    } else {
+      // Retry the request for racing condition
+      // https://github.com/magda-io/magda/issues/3251
+      result.recoverWith {
+        case error: Throwable
+            // We have to do this as UnexpectedConnectionClosureException is a private class
+            // https://github.com/akka/akka-http/issues/768
+            if error.getMessage.contains(
+              "The http server closed the connection unexpectedly"
+            ) =>
+          Source
+            .single((request, 0))
+            .via(connectionFlow)
+            .runWith(Sink.head)
+            .map {
+              case (response, _) => response.get
+            }
+      }
     }
+
   }
 
-  def put[T](path: String, payload: T, headers: Seq[HttpHeader] = Seq())(
+  def put[T](
+      path: String,
+      payload: T,
+      headers: Seq[HttpHeader] = Seq(),
+      autoRetryConnection: Boolean = false
+  )(
       implicit m: ToEntityMarshaller[T]
   ): Future[HttpResponse] = {
     val url = s"${baseUrl.getPath}${path}"
@@ -90,8 +134,31 @@ class HttpFetcherImpl(baseUrl: URL)(
     val request = RequestBuilding
       .Put(url, payload)
       .withHeaders(scala.collection.immutable.Seq.concat(headers))
-    Source.single((request, 0)).via(connectionFlow).runWith(Sink.head).map {
-      case (response, _) => response.get
+    val result =
+      Source.single((request, 0)).via(connectionFlow).runWith(Sink.head).map {
+        case (response, _) => response.get
+      }
+
+    if (!autoRetryConnection) {
+      result
+    } else {
+      // Retry the request for racing condition
+      // https://github.com/magda-io/magda/issues/3251
+      result.recoverWith {
+        case error: Throwable
+            // We have to do this as UnexpectedConnectionClosureException is a private class
+            // https://github.com/akka/akka-http/issues/768
+            if error.getMessage.contains(
+              "The http server closed the connection unexpectedly"
+            ) =>
+          Source
+            .single((request, 0))
+            .via(connectionFlow)
+            .runWith(Sink.head)
+            .map {
+              case (response, _) => response.get
+            }
+      }
     }
   }
 
