@@ -19,13 +19,15 @@ spec:
       priorityClassName: magda-8
 {{- end }}
       {{- include "magda.imagePullSecrets" . | indent 6 }}
+      ports:
+        - containerPort: 6102
       containers:
       - name: search-api
         image: {{ include "magda.image" . | quote }}
         imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
         command:
           - "bin/magda-search-api"
-          - "-Dhttp.port=80"
+          - "-Dhttp.port=6102"
           - "-Dakka.loglevel={{ .Values.global.logLevel }}"
           - "-Dopa.baseUrl=http://authorization-api/v0/opa/"
           - "-DelasticSearch.serverUrl=elasticsearch://elasticsearch:9200"
@@ -51,7 +53,5 @@ spec:
           periodSeconds: 10
           timeoutSeconds: 10
 {{- end }}
-        ports:
-        - containerPort: 80
         resources:
 {{ toYaml .Values.resources | indent 10 }}

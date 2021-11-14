@@ -33,9 +33,11 @@ spec:
         {{- include "magda.db-client-credential-env" (dict "dbName" "registry-db" "dbUserEnvName" "POSTGRES_USER" "dbPasswordEnvName" "POSTGRES_PASSWORD" "root" .root)  | indent 8 }}
         image: {{ include "magda.image" .root | quote }}
         imagePullPolicy: {{ include "magda.imagePullPolicy" .root | quote }}
+        ports:
+        - containerPort: 6101
         command: [
             "bin/magda-registry-api",
-            "-Dhttp.port=80",
+            "-Dhttp.port=6101",
             "-Dhttp.externalUrl.v0={{ .root.Values.global.externalUrl }}/api/v0/registry",
             "-Ddb.default.url=jdbc:postgresql://registry-db/postgres",
 {{- if .root.Values.db.poolInitialSize }}
@@ -76,8 +78,6 @@ spec:
           periodSeconds: 10
           timeoutSeconds: 10
 {{- end }}
-        ports:
-        - containerPort: 80
         resources:
 {{ .deploymentConfig.resources | default .root.Values.resources | toYaml | indent 10 }}
 {{- end }}

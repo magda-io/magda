@@ -42,9 +42,11 @@ spec:
 {{ toYaml .Values.resources | indent 10 }}
         image: {{ include "magda.image" . | quote }}
         imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
+        ports:
+        - containerPort: 6103
         command: [
             "bin/magda-indexer",
-            "-Dhttp.port=80",
+            "-Dhttp.port=6103",
             "-Dregistry.webhookUrl=http://indexer/v0/registry-hook",
             "-Dregistry.baseUrl=http://registry-api",
             "-Dregistry.readOnlyBaseUrl=http://registry-api-read-only",
