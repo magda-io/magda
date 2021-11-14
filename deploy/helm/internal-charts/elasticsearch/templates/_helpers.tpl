@@ -13,15 +13,9 @@ initContainers:
   - |
     echo "Print current vm.max_map_count value in host: "
     sysctl vm.max_map_count
-    echo "Set vm.max_map_count=262144 in host:"
+    echo "Set vm.max_map_count=262144 in host..."
     sysctl -w vm.max_map_count=262144
     echo "Re-print current vm.max_map_count value in host: "
     sysctl vm.max_map_count
-    echo "Print current max locked memory in host: "
-    ulimit -l
-    echo "Set max locked memory to `unlimited` in host"
-    ulimit -l unlimited
-    echo "Re-print current max locked memory in host: "
-    ulimit -l
     echo "done!"
 {{- end }}
