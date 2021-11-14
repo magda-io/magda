@@ -94,7 +94,8 @@ class AuthApiClient(authHttpFetcher: HttpFetcher)(
       .post(
         s"/v0/opa/compile",
         HttpEntity(ContentTypes.`application/json`, requestData),
-        headers
+        headers,
+        true
       )
       .flatMap(receiveOpaResponse[List[List[OpaQuery]]](_, policyId) { json =>
         OpaParser.parseOpaResponse(json, policyId)
