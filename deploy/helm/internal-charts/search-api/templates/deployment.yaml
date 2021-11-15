@@ -19,12 +19,12 @@ spec:
       priorityClassName: magda-8
 {{- end }}
       {{- include "magda.imagePullSecrets" . | indent 6 }}
-      ports:
-        - containerPort: 6102
       containers:
       - name: search-api
         image: {{ include "magda.image" . | quote }}
         imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
+        ports:
+        - containerPort: 6102
         command:
           - "bin/magda-search-api"
           - "-Dhttp.port=6102"
@@ -41,14 +41,14 @@ spec:
         livenessProbe:
           httpGet:
             path: /v0/status/live
-            port: 80
+            port: 6102
           initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: 10
         readinessProbe:
           httpGet:
             path: /v0/status/ready
-            port: 80
+            port: 6102
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 10
