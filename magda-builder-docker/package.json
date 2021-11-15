@@ -12,7 +12,7 @@
   "config": {
     "docker": {
       "name": "data61/magda-builder-docker",
-      "include": "Dockerfile modprobe.sh docker-entrypoint.sh release-architectures"
+      "include": "Dockerfile"
     }
   },
   "devDependencies": {

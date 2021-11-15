@@ -6,6 +6,6 @@ spec:
   ports:
   - name: http
     port: 80
-    targetPort: 80
+    targetPort: 6101
   selector:
     service: {{- if .Values.deployments.readOnly.enable }} registry-api-read-only {{- else }} registry-api-full {{- end }}
