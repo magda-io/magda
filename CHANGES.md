@@ -10,6 +10,8 @@
 - Related to #3263, Build Multi-Arch (`linux/amd64` & `linux/arm64`) Docker Image for `magda-elasticsearch` as well.
 - Related to #3263, adjusted helm chart for elasticsearch to make it run properly on linux/arm64 platform.
 - #3251 Fixed akka HTTP client POST request racing conditions
+- Registry-api, search API & indexer are now listen at non 80 port as they now run as non-root user in docker containers.
+  Corresponding k8s svcs are still exposing services at 80 port.
 
 ## 1.0.0
 
