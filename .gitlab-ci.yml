@@ -869,7 +869,6 @@ Release-Master-Tag-to-Docker-Hub:
   only:
     - master
   needs:
-    - pre-release:check-release-version
     - yarn-install
     - buildtest:helm-charts
     - buildtest:helm-docs-check
