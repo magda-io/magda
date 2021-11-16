@@ -33,7 +33,7 @@ spec:
         livenessProbe:
           httpGet:
             path: /v0/reindex/in-progress
-            port: 80
+            port: 6103
           initialDelaySeconds: 120
           periodSeconds: 10
           timeoutSeconds: 10
@@ -42,9 +42,11 @@ spec:
 {{ toYaml .Values.resources | indent 10 }}
         image: {{ include "magda.image" . | quote }}
         imagePullPolicy: {{ include "magda.imagePullPolicy" . | quote }}
+        ports:
+        - containerPort: 6103
         command: [
-            "/app/bin/magda-indexer",
-            "-Dhttp.port=80",
+            "bin/magda-indexer",
+            "-Dhttp.port=6103",
             "-Dregistry.webhookUrl=http://indexer/v0/registry-hook",
             "-Dregistry.baseUrl=http://registry-api",
             "-Dregistry.readOnlyBaseUrl=http://registry-api-read-only",

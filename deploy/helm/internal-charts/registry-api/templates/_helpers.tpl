@@ -1,6 +1,6 @@
 {{/* vim: set filetype=mustache: */}}
 
-{{- define "magda.registry-deployment" -}}
+{{- define "magda.registry-deployment" }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -33,9 +33,11 @@ spec:
         {{- include "magda.db-client-credential-env" (dict "dbName" "registry-db" "dbUserEnvName" "POSTGRES_USER" "dbPasswordEnvName" "POSTGRES_PASSWORD" "root" .root)  | indent 8 }}
         image: {{ include "magda.image" .root | quote }}
         imagePullPolicy: {{ include "magda.imagePullPolicy" .root | quote }}
+        ports:
+        - containerPort: 6101
         command: [
-            "/app/bin/magda-registry-api",
-            "-Dhttp.port=80",
+            "bin/magda-registry-api",
+            "-Dhttp.port=6101",
             "-Dhttp.externalUrl.v0={{ .root.Values.global.externalUrl }}/api/v0/registry",
             "-Ddb.default.url=jdbc:postgresql://registry-db/postgres",
 {{- if .root.Values.db.poolInitialSize }}
@@ -64,20 +66,18 @@ spec:
         livenessProbe:
           httpGet:
             path: /v0/status/live
-            port: 80
+            port: 6101
           initialDelaySeconds: 60
           periodSeconds: 10
           timeoutSeconds: {{ .root.Values.livenessProbe.timeoutSeconds | default 10 }}
         readinessProbe:
           httpGet:
             path: /v0/status/ready
-            port: 80
+            port: 6101
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 10
 {{- end }}
-        ports:
-        - containerPort: 80
         resources:
 {{ .deploymentConfig.resources | default .root.Values.resources | toYaml | indent 10 }}
-{{- end -}}
+{{- end }}

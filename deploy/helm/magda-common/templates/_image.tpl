@@ -15,7 +15,7 @@
   Usage: 
   {{- include "magda.imagePullSecrets" . | indent 10 }}
 */}}
-{{- define "magda.imagePullSecrets" -}}
+{{- define "magda.imagePullSecrets" }}
   {{- $pullSecrets := include "magda.image.getConsolidatedPullSecretList" . | mustFromJson }}
   {{- if (not (empty $pullSecrets)) }}
 imagePullSecrets:
@@ -23,7 +23,7 @@ imagePullSecrets:
   - name: {{ . | quote }}
     {{- end }}
   {{- end }}
-{{- end -}}
+{{- end }}
 
 {{/*
   Get consolidated image pull secret lists based on:

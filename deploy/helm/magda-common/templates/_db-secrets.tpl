@@ -7,7 +7,7 @@
   Usage: 
   {{- include "magda.db-client-password-secret-creation" . }}
 */}}
-{{- define "magda.db-client-password-secret-creation" -}}
+{{- define "magda.db-client-password-secret-creation" }}
 {{- /* only create when current chart is `combined-db` or the independent k8s db instance for the current chart (logic db) is on */}}
 {{- if and .Values.autoCreateSecret (or (eq .Chart.Name "combined-db") ((get .Values.global.useInK8sDbInstance .Chart.Name) | empty | not)) }}
 {{- $secret := (lookup "v1" "Secret" .Release.Namespace (printf "%s-password" .Chart.Name)) | default dict }}
@@ -33,7 +33,7 @@ data:
 {{- end }}
 {{- end }}
 {{- end }}
-{{- end -}}
+{{- end }}
 
 {{/*
   Generating db client credential secret name
@@ -127,7 +127,7 @@ data:
   Or 
   {{ include "magda.db-client-credential-env" (dict "dbName" "content-db" "dbUserEnvName" "POSTGRES_USER" "dbPasswordEnvName" "POSTGRES_PASSWORD" "root" .) | indent 8 }}
 */}}
-{{- define "magda.db-client-credential-env" -}}
+{{- define "magda.db-client-credential-env" }}
 {{- if not (hasKey . "root") }}
     {{- fail "`root` scope is required via key `root` of the template input for template `magda.common.db-client-credential-env`." }}
 {{- end }}
@@ -151,4 +151,4 @@ data:
       key: {{ include "magda.db-client-secret-key" (dict "dbName" $dbName "root" .) | quote }}
     {{- end }}
 {{- end }}
-{{- end -}}
+{{- end }}

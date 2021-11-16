@@ -1,6 +1,6 @@
 {
   "name": "@magda/elastic-search",
-  "version": "1.1.0-alpha.0",
+  "version": "1.1.0-alpha.2",
   "description": "MAGDA's custom elasticsearch docker image.",
   "scripts": {
     "dev": "docker-compose up",
@@ -15,7 +15,7 @@
   "config": {
     "docker": {
       "name": "data61/magda-elasticsearch",
-      "include": "Dockerfile elasticsearch.yml setup.sh wn_s.pl regionSynonyms.txt"
+      "include": "Dockerfile elasticsearch.yml elasticsearch-arm64.yml setup.sh wn_s.pl regionSynonyms.txt"
     },
     "regionSources": {
       "COUNTRY": {
@@ -70,7 +70,7 @@
     }
   },
   "devDependencies": {
-    "@magda/scripts": "^1.1.0-alpha.0"
+    "@magda/scripts": "^1.1.0-alpha.2"
   },
   "magda": {
     "categories": {

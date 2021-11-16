@@ -1,11 +1,10 @@
 production: false
 
-daemonsetImage:
-  name: startup-script
-  repository: gcr.io/google-containers
-  tag: "v1"
+initContainerImage:
+  name: busybox
+  repository: docker.io
+  tag: "latest"
   pullPolicy: IfNotPresent
-  pullSecrets: false
 
 kibanaImage:
   name: kibana-oss
