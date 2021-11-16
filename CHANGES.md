@@ -3,7 +3,6 @@
 ## Next
 
 - #3231 Upgraded to Open Policy Agent v0.33.x
-- #3251 Fixed akka HTTP client POST request racing conditions
 - #3253 Add New /auth/opa/decision Endpoint
 - move pre-defined role ids into a single contants file in magda-typescript-common
 - Rewrote the OPA AST parser for better evaluation & reference handling
@@ -14,6 +13,13 @@
 - #3246 Upgrade default cloudSql proxy version to v1.26.0
 - #3242 Allow default bucket names to be configured in `storage-api` & `web-server` charts
 - #3243 Stop creating the unused bucket `magda-bucket` on startup
+- #3262 Make magda's docker building scripts (@magda/docker-utils) support multi-arch build
+- #3263 Build Multi-Arch (`linux/amd64` & `linux/arm64`) Docker Images in CI (Except `magda-postgres` & `magda-elasticsearch`)
+- Related to #3263, Build Multi-Arch (`linux/amd64` & `linux/arm64`) Docker Image for `magda-elasticsearch` as well.
+- Related to #3263, adjusted helm chart for elasticsearch to make it run properly on linux/arm64 platform.
+- #3251 Fixed akka HTTP client POST request racing conditions
+- Registry-api, search API & indexer are now listen at non 80 port as they now run as non-root user in docker containers.
+  Corresponding k8s svcs are still exposing services at 80 port.
 
 ## 1.0.0
 

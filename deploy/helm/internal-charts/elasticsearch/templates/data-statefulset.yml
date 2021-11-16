@@ -46,6 +46,7 @@ spec:
         operator: "Equal"
         value: "statefulsets"
         effect: "NoSchedule"
+      {{- include "magda.elasticsearch.initContainer" . | indent 6 }}
       {{- include "magda.imagePullSecrets" . | indent 6 }}
       containers:
       - name: es-data

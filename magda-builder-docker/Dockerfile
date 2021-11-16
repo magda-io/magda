@@ -1,55 +1,24 @@
-FROM data61/magda-builder-nodejs:latest
+FROM data61/magda-builder-nodejs:master
 
-RUN apk add --no-cache \
-		ca-certificates
+ARG TARGETOS
+ARG TARGETARCH
 
-# set up nsswitch.conf for Go's "netgo" implementation (which Docker explicitly uses)
-# - https://github.com/docker/docker-ce/blob/v17.09.0-ce/components/engine/hack/make.sh#L149
-# - https://github.com/golang/go/blob/go1.9.1/src/net/conf.go#L194-L275
-# - docker run --rm debian:stretch grep '^hosts:' /etc/nsswitch.conf
-RUN [ ! -e /etc/nsswitch.conf ] && echo 'hosts: files dns' > /etc/nsswitch.conf
+# BUILDX_ARCH should be in format e.g. linux-amd64
+# Set default to linux-amd64
+ENV BUILDX_ARCH="${TARGETOS:-linux}-${TARGETARCH:-amd64}"
+ENV BUILDX_VERSION="v0.6.3"
 
-ENV DOCKER_CHANNEL stable
-ENV DOCKER_VERSION 18.03.0-ce
-# TODO ENV DOCKER_SHA256
-# https://github.com/docker/docker-ce/blob/5b073ee2cf564edee5adca05eee574142f7627bb/components/packaging/static/hash_files !!
-# (no SHA file artifacts on download.docker.com yet as of 2017-06-07 though)
+ENV REGCLIENT_VERSION="v0.3.9"
+ENV REGCLIENT_ARCH="${TARGETOS:-linux}-${TARGETARCH:-amd64}"
 
-RUN set -ex; \
-# why we use "curl" instead of "wget":
-# + wget -O docker.tgz https://download.docker.com/linux/static/stable/x86_64/docker-17.03.1-ce.tgz
-# Connecting to download.docker.com (54.230.87.253:443)
-# wget: error getting response: Connection reset by peer
-	apk add --no-cache --virtual .fetch-deps \
-		curl \
-		tar \
-	; \
-# this "case" statement is generated via "update.sh"
-	apkArch="$(apk --print-arch)"; \
-	case "$apkArch" in \
-		x86_64) dockerArch='x86_64' ;; \
-		armhf) dockerArch='armel' ;; \
-		aarch64) dockerArch='aarch64' ;; \
-		ppc64le) dockerArch='ppc64le' ;; \
-		s390x) dockerArch='s390x' ;; \
-		*) echo >&2 "error: unsupported architecture ($apkArch)"; exit 1 ;;\
-	esac; \
-	if ! curl -fL -o docker.tgz "https://download.docker.com/linux/static/${DOCKER_CHANNEL}/${dockerArch}/docker-${DOCKER_VERSION}.tgz"; then \
-		echo >&2 "error: failed to download 'docker-${DOCKER_VERSION}' from '${DOCKER_CHANNEL}' for '${dockerArch}'"; \
-		exit 1; \
-	fi; \
-	tar --extract \
-		--file docker.tgz \
-		--strip-components 1 \
-		--directory /usr/local/bin/ \
-	; \
-	rm docker.tgz; \
-	apk del .fetch-deps; \
-	dockerd -v; \
-	docker -v
+RUN apk add --no-cache docker docker-compose
 
-COPY component/modprobe.sh /usr/local/bin/modprobe
-COPY component/docker-entrypoint.sh /usr/local/bin/
+RUN mkdir -p ~/.docker/cli-plugins && \
+    wget -nv -O ~/.docker/cli-plugins/docker-buildx https://github.com/docker/buildx/releases/download/${BUILDX_VERSION}/buildx-${BUILDX_VERSION}.${BUILDX_ARCH} && \
+    chmod a+x ~/.docker/cli-plugins/docker-buildx && \
+    echo "Successfully installed docker-buildx"
 
-ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["sh"]
+RUN wget -nv -O /usr/local/bin/regctl https://github.com/regclient/regclient/releases/download/${REGCLIENT_VERSION}/regctl-${REGCLIENT_ARCH} && \
+    chmod a+x /usr/local/bin/regctl && \
+    echo "Successfully installed regctl"
+

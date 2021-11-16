@@ -1,6 +1,6 @@
 {
   "name": "@magda/builder-docker",
-  "version": "1.1.0-alpha.0",
+  "version": "1.1.0-alpha.2",
   "description": "Builder image for nodejs magda projects",
   "scripts": {
     "docker-build-prod": "create-docker-context-for-node-component --build --push",
@@ -12,12 +12,12 @@
   "config": {
     "docker": {
       "name": "data61/magda-builder-docker",
-      "include": "Dockerfile modprobe.sh docker-entrypoint.sh release-architectures"
+      "include": "Dockerfile"
     }
   },
   "devDependencies": {
-    "@magda/builder-nodejs": "^1.1.0-alpha.0",
-    "@magda/scripts": "^1.1.0-alpha.0"
+    "@magda/builder-nodejs": "^1.1.0-alpha.2",
+    "@magda/scripts": "^1.1.0-alpha.2"
   },
   "magda": {
     "categories": {

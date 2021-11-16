@@ -21,6 +21,7 @@ spec:
         component: elasticsearch
         role: client
     spec:
+      {{- include "magda.elasticsearch.initContainer" . | indent 6 }}
       {{- include "magda.imagePullSecrets" . | indent 6 }}
       containers:
       - name: es-client
