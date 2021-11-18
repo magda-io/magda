@@ -11,3 +11,5 @@ RUN apk --no-cache add git openssh bash \
 	curl \
 	tar \
 	wget
+
+ENTRYPOINT [ "/bin/bash" ]
