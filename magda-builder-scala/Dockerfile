@@ -7,7 +7,7 @@ ENV LANG C.UTF-8
 ENV JAVA_HOME /usr/lib/jvm/java-1.8-openjdk
 ENV PATH $PATH:/usr/lib/jvm/java-1.8-openjdk/jre/bin:/usr/lib/jvm/java-1.8-openjdk/bin
 
-ENV SBT_VERSION 1.3.3
+ENV SBT_VERSION 1.4.9
 
 # make sure cache are captured completely
 ENV SBT_OPTS "-Dsbt.global.base=/sbt-cache/sbtboot -Dsbt.boot.directory=/sbt-cache/boot -Dsbt.ivy.home=/sbt-cache/ivy"
