@@ -18,5 +18,7 @@ ENV PATH ${PATH}:${SBT_HOME}/bin
 
 # Install sbt
 RUN mkdir -p "$SBT_HOME" && \
-    wget -qO - --no-check-certificate "https://github.com/sbt/sbt/releases/download/v$SBT_VERSION/sbt-$SBT_VERSION.tgz" | tar xz -C $SBT_HOME --strip-components=1 && \
+    wget -qO -  "https://github.com/sbt/sbt/releases/download/v$SBT_VERSION/sbt-$SBT_VERSION.tgz" | tar xz -C $SBT_HOME --strip-components=1 && \
+	# avoid run sbt from root directory due to https://github.com/sbt/sbt/issues/1458
+	cd /home && \
 	sbt sbtVersion
