@@ -86,7 +86,7 @@ magda:
             WALG_GS_PREFIX: "gs://magda-postgres-backups-asia/dev"
           backup: 
             enabled: true
-            schedule: "15 * * * 6"
+            schedule: "0 15 * * 6"
         postgresql:
           image: 
             registry: "registry.gitlab.com"

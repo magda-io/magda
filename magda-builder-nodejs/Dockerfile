@@ -6,8 +6,10 @@ RUN npm install -g lerna
 RUN apk --no-cache add haveged
 
 RUN apk --no-cache add git openssh bash \
-    make g++ \
-    ca-certificates \
+	make g++ \
+	ca-certificates \
 	curl \
 	tar \
 	wget
+
+ENTRYPOINT ["/bin/bash", "-l", "-c"]
