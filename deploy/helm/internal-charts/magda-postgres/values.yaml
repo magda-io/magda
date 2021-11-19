@@ -176,7 +176,7 @@ backupRestore:
     # -- schedule (in Cron Syntax) to perform [base backup](https://www.postgresql.org/docs/current/continuous-archiving.html).
     # default to every Saturday 15:00PM UTC time (Sydney Time 1:00AM Sunday).
     # The base backup is produced using [wal-g](https://github.com/wal-g/wal-g) via [base backup protocol](https://www.postgresql.org/docs/current/app-pgbasebackup.html) remotely.
-    schedule: "15 * * * 6"
+    schedule: "0 15 * * 6"
     # -- resource config for the pod container that runs backup jobs. e.g.: <br/>
     # jobResourceConfig: <br/>
     # &nbsp;&nbsp;requests: <br/>
