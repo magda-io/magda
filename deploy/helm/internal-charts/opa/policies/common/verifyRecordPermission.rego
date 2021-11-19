@@ -1,36 +1,20 @@
 package common
 
 import data.common.breakdownOperationUri
+import data.common.hasNoConstaintPermission
+import data.common.hasOwnerConstaintPermission
+import data.common.hasOrgUnitConstaintPermission
+import data.common.hasPreAuthConstaintPermission
 
 
 # if find a permission with no any constraints
 verifyRecordPermission(inputOperationUri, inputObjectRefName) {
-    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
-
-    resourceUri := concat("/", [resourceUriPrefix, resourceType])
-
-    input.user.permissions[i].resourceUri = resourceUri
-
-    input.user.permissions[i].userOwnershipConstraint = false
-    input.user.permissions[i].orgUnitOwnershipConstraint = false
-    input.user.permissions[i].preAuthorisedConstraint = false
-
-    input.user.permissions[i].operations[_].uri = inputOperationUri
+    hasNoConstaintPermission(inputOperationUri)
 }
 
 # if find a permission with user ownership constraint
 verifyRecordPermission(inputOperationUri, inputObjectRefName) {
-    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
-
-    resourceUri := concat("/", [resourceUriPrefix, resourceType])
-
-    input.user.permissions[i].resourceUri = resourceUri
-    
-    input.user.permissions[i].userOwnershipConstraint = true
-    input.user.permissions[i].orgUnitOwnershipConstraint = false
-    input.user.permissions[i].preAuthorisedConstraint = false
-    
-    input.user.permissions[i].operations[_].uri = inputOperationUri
+    hasOwnerConstaintPermission(inputOperationUri)
 
     # use inputObjectRefName and avoid hard code context data field name
     # In this way, we can control the reference output in residual rules
@@ -39,34 +23,14 @@ verifyRecordPermission(inputOperationUri, inputObjectRefName) {
 
 # if find a permission with org unit ownership constraint
 verifyRecordPermission(inputOperationUri, inputObjectRefName) {
-    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
-
-    resourceUri := concat("/", [resourceUriPrefix, resourceType])
-
-    input.user.permissions[i].resourceUri = resourceUri
-    
-    input.user.permissions[i].userOwnershipConstraint = false
-    input.user.permissions[i].orgUnitOwnershipConstraint = true
-    input.user.permissions[i].preAuthorisedConstraint = false
-    
-    input.user.permissions[i].operations[_].uri = inputOperationUri
+    hasOrgUnitConstaintPermission(inputOperationUri)
 
     input.user.managingOrgUnitIds[_] = input.object[inputObjectRefName]["dataset-access-control"].orgUnitOwnerId
 }
 
 # if find a permission with pre-authorised constraint
 verifyRecordPermission(inputOperationUri, inputObjectRefName) {
-    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(inputOperationUri)
-
-    resourceUri := concat("/", [resourceUriPrefix, resourceType])
-
-    input.user.permissions[i].resourceUri = resourceUri
-    
-    input.user.permissions[i].userOwnershipConstraint = false
-    input.user.permissions[i].orgUnitOwnershipConstraint = false
-    input.user.permissions[i].preAuthorisedConstraint = true
-    
-    input.user.permissions[i].operations[_].uri = inputOperationUri
+    hasPreAuthConstaintPermission(inputOperationUri)
 
     input.object[inputObjectRefName]["dataset-access-control"].preAuthorisedPermissionIds[_] = input.user.permissions[i].id
 }

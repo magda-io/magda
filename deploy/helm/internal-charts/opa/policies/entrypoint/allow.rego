@@ -1,10 +1,5 @@
 package entrypoint
 
-import data.object.record.allow as record_allow
-import data.object.dataset.allow as dataset_allow
-import data.object.content.allowRead as content_allowRead
-import data.object.organization.allow as organization_allow
-
 # When no rule match, the decision will be `denied` 
 default allow = false
 
@@ -16,19 +11,19 @@ allow {
 allow {
      ## delegate generic record related decision to record_allow
     startswith(input.operationUri, "object/record/")
-    record_allow
+    data.object.record.allow
 }
 
 allow {
      ## delegate dataset related decision to dataset_allow
     startswith(input.operationUri, "object/dataset/")
-    dataset_allow
+    data.object.dataset.allow
 }
 
 allow {
      ## delegate organization related decision to organization_allow
     startswith(input.operationUri, "object/organization/")
-    organization_allow
+    data.object.organization.allow
 }
 
 allow {
@@ -38,5 +33,45 @@ allow {
     ## Operation type must be read
     endswith(input.operationUri, "/read")
 
-    content_allowRead
+    data.object.content.allowRead
+}
+
+allow {
+    startswith(input.operationUri, "authObject/apiKey/")
+    data.authObject.apiKey.allow
+}
+
+allow {
+    startswith(input.operationUri, "authObject/credential/")
+    data.authObject.credential.allow
+}
+
+allow {
+    startswith(input.operationUri, "authObject/operation/")
+    data.authObject.operation.allow
+}
+
+allow {
+    startswith(input.operationUri, "authObject/orgUnit/")
+    data.authObject.orgUnit.allow
+}
+
+allow {
+    startswith(input.operationUri, "authObject/permission/")
+    data.authObject.permission.allow
+}
+
+allow {
+    startswith(input.operationUri, "authObject/resource/")
+    data.authObject.resource.allow
+}
+
+allow {
+    startswith(input.operationUri, "authObject/role/")
+    data.authObject.role.allow
+}
+
+allow {
+    startswith(input.operationUri, "authObject/user/")
+    data.authObject.user.allow
 }
