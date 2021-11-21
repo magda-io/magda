@@ -108,7 +108,9 @@ class AuthApiClient(authHttpFetcher: HttpFetcher)(
     val responseFuture = if (!usePost) {
       authHttpFetcher.get(requestUrl.toString, headers)
     } else {
-      val requestDataFields: ListBuffer[(String, JsValue)] = ListBuffer()
+      val requestDataFields: ListBuffer[(String, JsValue)] = ListBuffer(
+        "operationUri" -> JsString(config.operationUri)
+      )
       if (config.input.isDefined) {
         requestDataFields += ("input" -> config.input.get)
       }
@@ -121,10 +123,10 @@ class AuthApiClient(authHttpFetcher: HttpFetcher)(
         requestDataFields += ("resourceUri" -> JsString(config.resourceUri.get))
       }
 
-      val requestData = JsObject(requestDataFields.toMap).toString
-      authHttpFetcher.post(
+      val requestData = JsObject(requestDataFields.toMap)
+      authHttpFetcher.post[JsValue](
         requestUrl.toString,
-        HttpEntity(ContentTypes.`application/json`, requestData),
+        requestData,
         headers,
         true
       )
