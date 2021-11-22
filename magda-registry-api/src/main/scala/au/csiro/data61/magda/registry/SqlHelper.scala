@@ -14,6 +14,16 @@ import au.csiro.data61.magda.opa.OpaTypes.{
 }
 import scalikejdbc._
 import au.csiro.data61.magda.client.AuthOperations
+import au.csiro.data61.magda.model.{
+  AspectQuery,
+  AspectQueryAnyInArray,
+  AspectQueryBigDecimal,
+  AspectQueryBoolean,
+  AspectQueryExists,
+  AspectQueryNotEqualValue,
+  AspectQueryString,
+  AspectQueryWithValue
+}
 
 object SqlHelper {
 

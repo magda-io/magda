@@ -1,17 +1,13 @@
 package au.csiro.data61.magda.registry
 
 import java.sql.SQLException
-
 import akka.NotUsed
 import akka.event.LoggingAdapter
 import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.model.TenantId._
 import au.csiro.data61.magda.opa.OpaTypes._
-import au.csiro.data61.magda.registry.SqlHelper.{
-  aspectQueryToSql,
-  getOpaConditions
-}
+import au.csiro.data61.magda.registry.SqlHelper.{aspectQueryToSql, getOpaConditions}
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import scalikejdbc._
@@ -19,6 +15,7 @@ import spray.json._
 import spray.json.lenses.JsonLenses._
 import org.everit.json.schema.ValidationException
 import au.csiro.data61.magda.client.AuthOperations
+import au.csiro.data61.magda.model.{AspectQuery, AspectQueryNotEqualValue}
 
 import scala.util.{Failure, Success, Try}
 import com.typesafe.config.Config

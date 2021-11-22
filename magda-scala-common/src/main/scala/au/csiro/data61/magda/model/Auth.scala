@@ -37,15 +37,12 @@ object Auth {
       warns: Option[List[String]]
   ) {
 
-    private val SQL_TRUE = SQLSyntax.createUnsafely("TRUE")
-    private val SQL_FALSE = SQLSyntax.createUnsafely("FALSE")
-
     def toRecordSQLQueries(): Seq[SQLSyntax] = {
       if(hasResidualRules){
         result match {
           case Some(JsFalse) =>
             // use FALSE to negate the whole query
-            Seq(SQL_FALSE)
+            Seq(SQLSyntax.createUnsafely("FALSE"))
           case _ =>
             // Any non-false result will be considered as TRUE i.e. unconditional allowed
             // output empty SQL so the final query result will purely depends on business logic generated queries

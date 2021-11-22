@@ -12,9 +12,11 @@ import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.registry.Directives._
 import com.typesafe.config.Config
 import io.swagger.annotations._
+
 import javax.ws.rs.Path
 import scalikejdbc.DB
 import au.csiro.data61.magda.client.AuthOperations
+import au.csiro.data61.magda.model.AspectQuery
 import scalikejdbc.interpolation.SQLSyntax
 
 import scala.concurrent.ExecutionContext

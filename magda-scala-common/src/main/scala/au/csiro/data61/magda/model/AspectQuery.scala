@@ -1,8 +1,9 @@
-package au.csiro.data61.magda.registry
+package au.csiro.data61.magda.model
+
+import au.csiro.data61.magda.util.Regex._
+import scalikejdbc._
 
 import java.net.URLDecoder
-import scalikejdbc._
-import au.csiro.data61.magda.util.Regex._
 
 sealed trait AspectQuery {
   val aspectId: String
