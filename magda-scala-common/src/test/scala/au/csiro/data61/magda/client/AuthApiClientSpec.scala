@@ -2,13 +2,19 @@ package au.csiro.data61.magda.client
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model._
-import org.scalamock.scalatest.MockFactory
-import org.scalatest.{FunSpec, Matchers}
+import org.scalamock.scalatest.AsyncMockFactory
+import org.scalatest.{FunSpec, AsyncFunSpec, Matchers, Assertion}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.marshalling.ToEntityMarshaller
 import akka.stream.ActorMaterializer
 import akka.util.ByteString
+import au.csiro.data61.magda.model.Auth
+import au.csiro.data61.magda.model.Auth.{
+  ConciseRule,
+  ConciseExpression,
+  ConciseOperand
+}
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.model.misc.Protocols.dataSetFormat
 import com.typesafe.config.ConfigFactory
@@ -18,10 +24,13 @@ import scala.util.Random
 import scala.concurrent.Future
 import io.lemonlabs.uri.RelativeUrl
 
+import scala.io.BufferedSource
+import scala.io.Source.fromFile
+
 class AuthApiClientSpec
-    extends FunSpec
+    extends AsyncFunSpec
     with Matchers
-    with MockFactory
+    with AsyncMockFactory
     with SprayJsonSupport {
 
   implicit val system = ActorSystem()
@@ -92,10 +101,12 @@ class AuthApiClientSpec
         }
         .once()
       val client = new AuthApiClient(mockFetcher)
-      client.getAuthDecision(
-        None,
-        AuthDecisionReqConfig("object/record/read")
-      )
+      client
+        .getAuthDecision(
+          None,
+          AuthDecisionReqConfig("object/record/read")
+        )
+        .map(_ => succeed)
     }
 
     it("should process query string params correctly") {
@@ -115,17 +126,19 @@ class AuthApiClientSpec
         }
         .once()
       val client = new AuthApiClient(mockFetcher)
-      client.getAuthDecision(
-        None,
-        AuthDecisionReqConfig(
-          "object/record/read",
-          rawAst = Some(true),
-          explain = Some("full"),
-          humanReadable = Some(true),
-          pretty = Some(true),
-          concise = Some(false)
+      client
+        .getAuthDecision(
+          None,
+          AuthDecisionReqConfig(
+            "object/record/read",
+            rawAst = Some(true),
+            explain = Some("full"),
+            humanReadable = Some(true),
+            pretty = Some(true),
+            concise = Some(false)
+          )
         )
-      )
+        .map(_ => succeed)
     }
 
   }
@@ -243,15 +256,145 @@ class AuthApiClientSpec
         }
         .once()
       val client = new AuthApiClient(mockFetcher)
-      client.getAuthDecision(
-        None,
-        AuthDecisionReqConfig(
-          "object/record/read",
-          input = Some(JsObject("test" -> JsTrue)),
-          unknowns = Some(Nil)
+      client
+        .getAuthDecision(
+          None,
+          AuthDecisionReqConfig(
+            "object/record/read",
+            input = Some(JsObject("test" -> JsTrue)),
+            unknowns = Some(Nil)
+          )
         )
-      )
+        .map(_ => succeed)
     }
+
+  }
+
+  describe(
+    "getAuthDecision should unmarshal auth decision correctly"
+  ) {
+
+    val opaSampleResponseFolder =
+      "magda-typescript-common/src/test/sampleAuthDecisions/"
+
+    def testSampleResponse(
+        fileName: String,
+        checkFunc: (Auth.AuthDecision) => Assertion
+    ) = {
+      val jsonResSource: BufferedSource = fromFile(
+        opaSampleResponseFolder + fileName
+      )
+      val jsonRes: String =
+        try {
+          jsonResSource.mkString
+        } finally {
+          jsonResSource.close()
+        }
+      it(s"should unmarshal `${fileName}` correctly") {
+        val mockFetcher = mock[HttpFetcher]
+        (mockFetcher.get _)
+          .expects(*, *)
+          .onCall { (path, headers) =>
+            Future(
+              HttpResponse(
+                entity = HttpEntity(
+                  MediaTypes.`application/json`,
+                  ByteString(jsonRes)
+                )
+              )
+            )
+          }
+          .once()
+        val client = new AuthApiClient(mockFetcher)
+        client
+          .getAuthDecision(
+            None,
+            AuthDecisionReqConfig("object/someObject/someOperation")
+          )
+          .map(decison => checkFunc(decison))
+      }
+    }
+
+    testSampleResponse(
+      "simple.json",
+      decision => {
+        decision.hasWarns shouldBe false
+        decision.warns shouldBe None
+        decision.hasResidualRules shouldBe true
+        decision.result shouldBe None
+        decision.residualRules.isDefined shouldBe true
+        decision.residualRules.get.length shouldBe 1
+        val rule = decision.residualRules.get.head
+        rule.default shouldBe false
+        rule.value shouldBe JsTrue
+        rule.expressions.length shouldBe 1
+        val exp = rule.expressions.head
+        exp.negated shouldBe false
+        exp.operator shouldBe Some("=")
+        exp.operands.length shouldBe 2
+        exp.operands(0).isRef shouldBe true
+        exp.operands(0).value shouldBe JsString("input.object.content.id")
+        exp.operands(1).isRef shouldBe false
+        exp.operands(1).value shouldBe JsString("header/navigation/datasets")
+      }
+    )
+
+    testSampleResponse(
+      "singleTermAspectRef.json",
+      decision => {
+        decision.hasWarns shouldBe false
+        decision.warns shouldBe None
+        decision.hasResidualRules shouldBe true
+        decision.result shouldBe None
+        decision.residualRules.isDefined shouldBe true
+        decision.residualRules.get.length shouldBe 1
+        val rule = decision.residualRules.get.head
+        rule.default shouldBe false
+        rule.value shouldBe JsTrue
+        rule.expressions.length shouldBe 2
+        var exp = rule.expressions(0)
+        exp.negated shouldBe false
+        exp.operator shouldBe None
+        exp.operands.length shouldBe 1
+        exp.operands(0).isRef shouldBe true
+        exp.operands(0).value shouldBe JsString(
+          "input.object.record.dcat-dataset-strings"
+        )
+
+        exp = rule.expressions(1)
+        exp.negated shouldBe false
+        exp.operator shouldBe Some("=")
+        exp.operands.length shouldBe 2
+        exp.operands(0).isRef shouldBe true
+        exp.operands(0).value shouldBe JsString(
+          "input.object.record.publishing.state"
+        )
+        exp.operands(1).isRef shouldBe false
+        exp.operands(1).value shouldBe JsString("published")
+      }
+    )
+
+    testSampleResponse(
+      "unconditionalTrue.json",
+      decision => {
+        decision.hasWarns shouldBe false
+        decision.warns shouldBe None
+        decision.hasResidualRules shouldBe false
+        decision.result shouldBe Some(JsTrue)
+        decision.residualRules.isDefined shouldBe false
+      }
+    )
+
+    testSampleResponse(
+      "unconditionalFalseSimple.json",
+      decision => {
+        decision.hasWarns shouldBe false
+        decision.warns shouldBe None
+        decision.hasResidualRules shouldBe false
+        decision.result shouldBe Some(JsFalse)
+        decision.residualRules.isDefined shouldBe false
+      }
+    )
 
   }
 

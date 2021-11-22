@@ -136,7 +136,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
             );
             await req.then((res) => {
                 expect(res.body.hasResidualRules).to.be.equal(false);
-                expect(res.body.value).to.be.equal(false);
+                expect(res.body.result).to.be.equal(false);
             });
             expect(scope.isDone()).to.be.equal(true);
             expect(data.unknowns).to.have.members(["input.object"]);
@@ -230,7 +230,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
 
             await req.then((res) => {
                 expect(res.body.hasResidualRules).to.be.equal(false);
-                expect(res.body.value).to.be.equal(false);
+                expect(res.body.result).to.be.equal(false);
             });
             expect(scope.isDone()).to.be.equal(true);
 

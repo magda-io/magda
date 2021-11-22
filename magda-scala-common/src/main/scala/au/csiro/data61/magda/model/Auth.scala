@@ -31,7 +31,7 @@ object Auth {
   case class AuthDecision(
       hasResidualRules: Boolean,
       result: Option[JsValue],
-      residualRules: Option[ConciseRule],
+      residualRules: Option[List[ConciseRule]],
       hasWarns: Boolean,
       warns: Option[List[String]]
   )
