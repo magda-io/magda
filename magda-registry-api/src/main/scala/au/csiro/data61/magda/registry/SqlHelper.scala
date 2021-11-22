@@ -18,6 +18,15 @@ import au.csiro.data61.magda.client.AuthOperations
 object SqlHelper {
 
   /**
+    * Escape SQL identifier (e.g. column names, or table names).
+    * Although postgreSQL does allow non-ASCII characters in identifiers, to make it simple, we will remove any non-ASCII characters.
+    * */
+  def escapeIdentifier(idStr: String) =
+    "\"" + idStr
+      .replaceAll("[^\\x20-\\x7e]", "")
+      .replaceAll("\"", "\"\"") + "\""
+
+  /**
     * Translate multiple OPA queries into one SQL clause.
     *
     * @param opaQueries OPA queries
@@ -144,8 +153,8 @@ object SqlHelper {
     }
   }
 
-  private val SQL_TRUE = sqls"true"
-  private val SQL_FALSE = sqls"false"
+  private val SQL_TRUE = SQLSyntax.createUnsafely("TRUE")
+  private val SQL_FALSE = SQLSyntax.createUnsafely("FALSE")
   private val SQL_EQ = SQLSyntax.createUnsafely("=")
 
   private def convertToSql(operation: OpaOp): SQLSyntax = {

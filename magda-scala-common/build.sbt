@@ -38,6 +38,7 @@ libraryDependencies ++= {
     "io.jsonwebtoken"              % "jjwt-jackson"          % jjwtV,
     "org.scalatest"                %% "scalatest"            % scalaTestV % Test,
     "io.lemonlabs"                 %% "scala-uri"            % "3.6.0",
-    "org.scalamock"                %% "scalamock"            % "5.1.0" % Test
+    "org.scalamock"                %% "scalamock"            % "5.1.0" % Test,
+    "org.scalikejdbc"              %% "scalikejdbc"          % "3.0.0-RC3"
   )
 }

@@ -1,7 +1,8 @@
 package au.csiro.data61.magda.model
 
-import spray.json.DefaultJsonProtocol
-import spray.json.JsValue
+import spray.json.{DefaultJsonProtocol, JsFalse, JsValue}
+import scalikejdbc.interpolation.SQLSyntax
+import scalikejdbc._
 
 object Auth {
   case class User(
@@ -34,7 +35,28 @@ object Auth {
       residualRules: Option[List[ConciseRule]],
       hasWarns: Boolean,
       warns: Option[List[String]]
-  )
+  ) {
+
+    private val SQL_TRUE = SQLSyntax.createUnsafely("TRUE")
+    private val SQL_FALSE = SQLSyntax.createUnsafely("FALSE")
+
+    def toRecordSQLQueries(): Seq[SQLSyntax] = {
+      if(hasResidualRules){
+        result match {
+          case Some(JsFalse) =>
+            // use FALSE to negate the whole query
+            Seq(SQL_FALSE)
+          case _ =>
+            // Any non-false result will be considered as TRUE i.e. unconditional allowed
+            // output empty SQL so the final query result will purely depends on business logic generated queries
+            Seq(SQLSyntax.empty)
+        }
+      } else {
+        // generate record aspect Queries
+        Seq(SQLSyntax.empty)
+      }
+    }
+  }
 
   trait AuthProtocols extends DefaultJsonProtocol {
     implicit val userFormat = jsonFormat2(User)

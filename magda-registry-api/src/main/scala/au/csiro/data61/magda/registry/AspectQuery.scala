@@ -12,6 +12,9 @@ sealed trait AspectQuery {
 case class AspectQueryExists(val aspectId: String, val path: List[String])
     extends AspectQuery
 
+case class AspectQueryNonExists(val aspectId: String, val path: List[String])
+  extends AspectQuery
+
 case class AspectQueryWithValue(
     val aspectId: String,
     val path: List[String],
