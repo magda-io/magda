@@ -144,6 +144,57 @@ class AuthApiClientSpec
   }
 
   describe(
+    "Test getAuthDecision when `authorization.skipOpaQuery` config option is on"
+  ) {
+    it(
+      "should not contact OPA and give positive (`true`) response straight away"
+    ) {
+      implicit val testConfig = ConfigFactory.parseString(s"""
+                                                             |authApi.baseUrl = "http://localhost:6104"
+                                                             |authorization.skipOpaQuery = true
+    """.stripMargin)
+      val mockFetcher = mock[HttpFetcher]
+      val jwtVal = Random.alphanumeric.take(10).mkString
+      (mockFetcher.get _)
+        .expects(*, *)
+        .onCall { (path, headers) =>
+          Future(
+            // response false here as authorization.skipOpaQuery` = true
+            // this false response should not be used
+            HttpResponse(
+              entity = HttpEntity(
+                MediaTypes.`application/json`,
+                ByteString(
+                  s"""
+                     |{
+                     |  "hasResidualRules" : false,
+                     |  "result": false,
+                     |  "hasWarns": false
+                     |}
+                     |""".stripMargin
+                )
+              )
+            )
+          )
+        }
+        .never()
+
+      val client = new AuthApiClient(mockFetcher)
+      val resFuture = client.getAuthDecision(
+        Some(jwtVal),
+        AuthDecisionReqConfig("object/someObject/someOperation")
+      )
+      resFuture.map { decision =>
+        decision.hasWarns shouldBe false
+        decision.hasResidualRules shouldBe false
+        decision.result shouldBe Some(JsTrue)
+        decision.residualRules shouldBe None
+        decision.warns shouldBe None
+      }
+    }
+  }
+
+  describe(
     "getAuthDecision should send POST request when it's required to include complex request data"
   ) {
     it("should send correct path and include correct X-Magda-Session header") {

@@ -30,6 +30,13 @@ class AuthApiClient(authHttpFetcher: HttpFetcher)(
 
   private val logger = system.log
 
+  // for debug purpose only. When it's on, `getAuthDecision` method will always return "allowed" (`true`) response without contacting the policy engine
+  private val skipOpaQuery = if (config.hasPath("authorization.skipOpaQuery")) {
+    config.getBoolean("authorization.skipOpaQuery")
+  } else {
+    false
+  }
+
   def this()(
       implicit config: Config,
       system: ActorSystem,
@@ -62,7 +69,22 @@ class AuthApiClient(authHttpFetcher: HttpFetcher)(
   def getAuthDecision(
       jwtToken: Option[String],
       config: AuthDecisionReqConfig
-  ) = {
+  ): Future[Auth.AuthDecision] = {
+    if (skipOpaQuery) {
+      system.log.warning(
+        "WARNING: Skip OPA (policy engine) querying option is turned on! This is fine for testing or playing around, but this should NOT BE TURNED ON FOR PRODUCTION!"
+      )
+      return Future(
+        Auth.AuthDecision(
+          hasResidualRules = false,
+          result = Some(JsTrue),
+          residualRules = None,
+          hasWarns = false,
+          warns = None
+        )
+      )
+    }
+
     val authDecisionEndpoint = UrlPath.parse("/v0/opa/decision")
 
     val usePost = config.input.isDefined || config.unknowns.isDefined || config.resourceUri.isDefined
