@@ -1,4 +1,6 @@
 import {} from "mocha";
+import path from "path";
+import fse from "fs-extra";
 import request from "supertest";
 import urijs from "urijs";
 import nock from "nock";
@@ -412,5 +414,50 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
             expect(query.pretty).to.be.equal("true");
             expect(scope.isDone()).to.be.equal(true);
         });
+    });
+
+    describe("Test `/decision` endpoint decision evlautation & encoding: ", () => {
+        const testSampleRoot = path.resolve(
+            require.resolve("@magda/typescript-common/package.json"),
+            "../src/test/"
+        );
+
+        const opaSampleRoot = path.resolve(
+            testSampleRoot,
+            "./sampleOpaResponses"
+        );
+        const decisionSampleRoot = path.resolve(
+            testSampleRoot,
+            "./sampleAuthDecisions"
+        );
+
+        const items = fse.readdirSync(opaSampleRoot);
+
+        for (let i = 0; i < items.length; i++) {
+            const file = items[i];
+            if (path.extname(file).toLowerCase() !== ".json") {
+                return;
+            }
+
+            it(`should parse & evalute OPA repsonse "${file}"`, async () => {
+                const sampleOpaResponse = fse.readJSONSync(
+                    path.resolve(opaSampleRoot, file)
+                );
+                const sampleDecision = fse.readJSONSync(
+                    path.resolve(decisionSampleRoot, file)
+                );
+
+                const scope = createOpaNockScope(null, sampleOpaResponse);
+
+                const req = request(app).get(
+                    `/decision/object/someObject/someOperation`
+                );
+
+                await req.then((res) => {
+                    expect(res.body).to.be.deep.equal(sampleDecision);
+                });
+                expect(scope.isDone()).to.be.equal(true);
+            });
+        }
     });
 });

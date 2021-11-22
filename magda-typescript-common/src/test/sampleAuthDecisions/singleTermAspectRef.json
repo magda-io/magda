@@ -1,0 +1,38 @@
+{
+    "hasResidualRules": true,
+    "residualRules": [
+        {
+            "default": false,
+            "value": true,
+            "fullName": "data.partial.object.record.allow",
+            "name": "allow",
+            "expressions": [
+                {
+                    "negated": false,
+                    "operator": null,
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.dcat-dataset-strings"
+                        }
+                    ]
+                },
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.record.publishing.state"
+                        },
+                        {
+                            "isRef": false,
+                            "value": "published"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "hasWarns": false
+}

@@ -1,0 +1,28 @@
+{
+    "hasResidualRules": true,
+    "residualRules": [
+        {
+            "default": false,
+            "value": true,
+            "fullName": "data.partial.object.content.allowRead",
+            "name": "allowRead",
+            "expressions": [
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.content.id"
+                        },
+                        {
+                            "isRef": false,
+                            "value": "header/navigation/datasets"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "hasWarns": false
+}

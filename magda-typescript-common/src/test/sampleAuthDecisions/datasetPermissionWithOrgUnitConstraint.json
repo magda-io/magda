@@ -1,0 +1,78 @@
+{
+    "hasResidualRules": true,
+    "residualRules": [
+        {
+            "default": false,
+            "value": true,
+            "fullName": "data.partial.object.dataset.allow",
+            "name": "allow",
+            "expressions": [
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.dataset.publishingState"
+                        },
+                        {
+                            "isRef": false,
+                            "value": "published"
+                        }
+                    ]
+                },
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        {
+                            "isRef": false,
+                            "value": "5447fcb1-74ec-451c-b6ef-007aa736a346"
+                        },
+                        {
+                            "isRef": true,
+                            "value": "input.object.dataset.accessControl.orgUnitOwnerId"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "default": false,
+            "value": true,
+            "fullName": "data.partial.object.dataset.allow",
+            "name": "allow",
+            "expressions": [
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        {
+                            "isRef": true,
+                            "value": "input.object.dataset.publishingState"
+                        },
+                        {
+                            "isRef": false,
+                            "value": "published"
+                        }
+                    ]
+                },
+                {
+                    "negated": false,
+                    "operator": "=",
+                    "operands": [
+                        {
+                            "isRef": false,
+                            "value": "b749759e-6e6a-44c0-87ab-4590744187cf"
+                        },
+                        {
+                            "isRef": true,
+                            "value": "input.object.dataset.accessControl.orgUnitOwnerId"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "hasWarns": false
+}
