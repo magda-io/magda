@@ -1,26 +1,33 @@
 package au.csiro.data61.magda.model
 
 import au.csiro.data61.magda.util.Regex._
+import spray.json.{JsBoolean, JsFalse, JsNumber, JsString, JsValue}
 import scalikejdbc._
 
 import java.net.URLDecoder
 
 sealed trait AspectQuery {
   val aspectId: String
-  val path: List[String]
+  val path: Seq[String]
+  val negated: Boolean
 }
 
-case class AspectQueryExists(val aspectId: String, val path: List[String])
-    extends AspectQuery
-
-case class AspectQueryNonExists(val aspectId: String, val path: List[String])
-  extends AspectQuery
+case class AspectQueryExists(
+    val aspectId: String,
+    val path: Seq[String],
+    val negated: Boolean = false
+) extends AspectQuery
 
 case class AspectQueryWithValue(
     val aspectId: String,
-    val path: List[String],
+    val path: Seq[String],
     value: AspectQueryValue,
-    sqlComparator: SQLSyntax = SQLSyntax.createUnsafely("=")
+    sqlComparator: SQLSyntax = SQLSyntax.createUnsafely("="),
+    val negated: Boolean = false,
+    // when generate SQL, should in order of `reference` `operator` `value` or `value` `operator` `reference`
+    // except `=` operator, order matters for many operator
+    // there is no guarantee that auth decision will always be in order of `reference` `operator` `value`
+    placeReferenceFirst: Boolean = true
 ) extends AspectQuery
 
 /**
@@ -30,20 +37,34 @@ case class AspectQueryWithValue(
 case class AspectQueryNotEqualValue(
     val aspectId: String,
     val path: List[String],
-    value: AspectQueryValue
+    value: AspectQueryValue,
+    val negated: Boolean = false
+) extends AspectQuery
+
+case class AspectQueryCollectionNotEmpty(
+    val aspectId: String,
+    val path: Seq[String],
+    val negated: Boolean = false
 ) extends AspectQuery
 
 case class AspectQueryAnyInArray(
     val aspectId: String,
-    val path: List[String],
-    value: AspectQueryValue
+    val path: Seq[String],
+    value: AspectQueryValue,
+    val negated: Boolean = false
 ) extends AspectQuery
 
+sealed trait GenericAspectQueryGroup
+
+case class UnconditionalAspectQueryGroup(matchOrNot: Boolean)
+    extends GenericAspectQueryGroup
+
 case class AspectQueryGroup(
-    val aspectId: String,
-    val path: List[String],
-    value: AspectQueryValue
-) extends AspectQuery
+    queries: Seq[AspectQuery],
+    // determine when convert into SQL, should we use "AND" (when value is `true`) or "OR" (when value is `false`) to join all `AspectQuery` together
+    joinWithAnd: Boolean = true,
+    negated: Boolean = false
+) extends GenericAspectQueryGroup
 
 sealed trait AspectQueryValue {
   // --- should create value using sqls"${value}" so it's used as `binding parameters`
