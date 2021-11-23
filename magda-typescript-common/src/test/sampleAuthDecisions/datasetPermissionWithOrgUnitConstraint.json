@@ -74,5 +74,6 @@
             ]
         }
     ],
+    "unknowns": ["input.object"],
     "hasWarns": false
 }

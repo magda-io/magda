@@ -34,7 +34,8 @@ object Auth {
       result: Option[JsValue],
       residualRules: Option[List[ConciseRule]],
       hasWarns: Boolean,
-      warns: Option[List[String]]
+      warns: Option[List[String]],
+      unknowns: Option[List[String]] = None
   ) {
 
     def toRecordSQLQueries(): Seq[SQLSyntax] = {

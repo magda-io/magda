@@ -315,6 +315,9 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      *  The result field contains the policy evaluation result value. `true` means th eoperation is allowed and `false` means otherwise.
      *  By default, it should be in `bool` type. However, you can opt to overwite the policy to return other type of data.
      *
+     * @apiSuccess (Success JSON Response Body) {string[]} [unknowns] Will include any `unknowns` references set (either explicitly set or auto-set by this API)
+     *  when request an auth decision from the policy engine.
+     *
      * @apiSuccess (Success JSON Response Body) {object[]} [residualRules] Only presents when `hasResidualRules`=`true`.
      * A list of residual rules as the result of the partial evaluation of policy due to `unknowns`.
      * The residual rules can be used to generate storage engine DSL (e.g. SQL or Elasticsearch DSL) for policy enforcement.
@@ -328,6 +331,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      * @apiSuccessExample {json} Unconditional Result Example
      *    {
      *       "hasResidualRules" : false,
+     *       "unknowns": [],
      *       "result": true // -- the evaluation value of the policy. By default, `true` means operation should be `allowed`.
      *    }
      *
@@ -336,6 +340,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      * {
      *    "hasResidualRules":true,
      *    "residualRules": [{"default":false,"value":true,"fullName":"data.partial.object.record.allow","name":"allow","expressions":[{"negated":false,"operator":null,"operands":[{"isRef":true,"value":"input.object.dataset.dcat-dataset-strings"}]},{"negated":false,"operator":"=","operands":[{"isRef":true,"value":"input.object.record.publishing.state"},{"isRef":false,"value":"published"}]}]}],
+     *    "unknowns": ["input.object.dataset"],
      *    "hasWarns":false
      *  }
      *
@@ -343,6 +348,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      *
      * {
      *    "hasResidualRules": true,
+     *    "unknowns": ["input.object.dataset"],
      *    "residualRules": [{"default":true,"head":{"name":"allow","value":{"type":"boolean","value":false}},"body":[{"terms":{"type":"boolean","value":true},"index":0}]},{"head":{"name":"allow","value":{"type":"boolean","value":true}},"body":[{"terms":[{"type":"ref","value":[{"type":"var","value":"eq"}]},{"type":"ref","value":[{"type":"var","value":"input"},{"type":"string","value":"object"},{"type":"string","value":"dataset"},{"type":"string","value":"publishingState"}]},{"type":"string","value":"published"}],"index":0}]}]
      * }
      *
@@ -483,7 +489,8 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                         }
                         const resData = {
                             hasResidualRules: false,
-                            value: fullResponse.body.result
+                            value: fullResponse.body.result,
+                            unknowns: [] as string[]
                         };
                         res.status(200).send(resData);
                         return;
@@ -499,7 +506,8 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
                     } else {
                         const result = parser.evaluate();
                         const resData = {
-                            hasResidualRules: !result.isCompleteEvaluated
+                            hasResidualRules: !result.isCompleteEvaluated,
+                            unknowns: reqOpts.json.unknowns
                         } as any;
 
                         if (result.isCompleteEvaluated) {
