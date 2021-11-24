@@ -44,13 +44,13 @@ case class AspectQueryWithValue(
   def toSql(): SQLSyntax = {
     if (placeReferenceFirst) {
       sqls"""
-             aspectid = $aspectId AND (data #>> string_to_array(${path
-        .mkString(",")}, ','))::${value.postgresType} $sqlComparator ${value.value}::${value.postgresType}
+             aspectid = $aspectId AND COALESCE((data #>> string_to_array(${path
+        .mkString(",")}, ','))::${value.postgresType} $sqlComparator ${value.value}::${value.postgresType}, false)
           """
     } else {
       sqls"""
-             aspectid = $aspectId AND (${value.value}::${value.postgresType} $sqlComparator data #>> string_to_array(${path
-        .mkString(",")}, ','))::${value.postgresType}
+             aspectid = $aspectId AND COALESCE((${value.value}::${value.postgresType} $sqlComparator data #>> string_to_array(${path
+        .mkString(",")}, ','))::${value.postgresType}, false)
           """
     }
   }
@@ -117,9 +117,7 @@ sealed trait GenericAspectQueryGroup {
 }
 
 case class UnconditionalAspectQueryGroup(matchOrNot: Boolean)
-    extends GenericAspectQueryGroup {
-  
-}
+    extends GenericAspectQueryGroup {}
 
 case class AspectQueryGroup(
     queries: Seq[AspectQuery],
