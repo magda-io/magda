@@ -138,7 +138,7 @@ object Auth {
         val (aspectId, path, isCollection) =
           operands(0).extractAspectIdAndPath(prefixes)
         if (isCollection) {
-          AspectQueryCollectionNotEmpty(aspectId, path, negated)
+          AspectQueryArrayNotEmpty(aspectId, path, negated)
         } else {
           AspectQueryExists(aspectId, path, negated)
         }
@@ -170,7 +170,7 @@ object Auth {
         }
 
         if (isCollection && operator.get == "=") {
-          AspectQueryAnyInArray(
+          AspectQueryValueInArray(
             aspectId,
             path,
             valOperand.get.toAspectQueryValue,

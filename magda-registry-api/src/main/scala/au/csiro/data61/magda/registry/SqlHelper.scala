@@ -16,7 +16,7 @@ import scalikejdbc._
 import au.csiro.data61.magda.client.AuthOperations
 import au.csiro.data61.magda.model.{
   AspectQuery,
-  AspectQueryAnyInArray,
+  AspectQueryValueInArray,
   AspectQueryBigDecimal,
   AspectQueryBoolean,
   AspectQueryExists,
@@ -160,7 +160,7 @@ object SqlHelper {
              aspectid = $aspectId AND (data #>> string_to_array(${path
           .mkString(",")}, ','))::${value.postgresType} = ${value.value}::${value.postgresType}
         """
-      case AspectQueryAnyInArray(
+      case AspectQueryValueInArray(
           aspectId,
           path,
           value,
@@ -247,7 +247,7 @@ object SqlHelper {
             Eq,
             aValue
             ) if (restOfKeys.last) == OpaRefAnyInArray =>
-          AspectQueryAnyInArray(
+          AspectQueryValueInArray(
             aspectId = accessAspectId,
             path = restOfKeys.flatMap {
               case OpaRefObjectKey(key) => Some(key)

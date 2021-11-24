@@ -10,13 +10,24 @@ sealed trait AspectQuery {
   val aspectId: String
   val path: Seq[String]
   val negated: Boolean
+
+  def toSql(): SQLSyntax
 }
 
 case class AspectQueryExists(
     val aspectId: String,
     val path: Seq[String],
     val negated: Boolean = false
-) extends AspectQuery
+) extends AspectQuery {
+
+  def toSql(): SQLSyntax = {
+    sqls"""
+             aspectid = $aspectId AND (data #> string_to_array(${path.mkString(
+      ","
+    )}, ',')) IS NOT NULL
+        """
+  }
+}
 
 case class AspectQueryWithValue(
     val aspectId: String,
@@ -28,7 +39,22 @@ case class AspectQueryWithValue(
     // except `=` operator, order matters for many operator
     // there is no guarantee that auth decision will always be in order of `reference` `operator` `value`
     placeReferenceFirst: Boolean = true
-) extends AspectQuery
+) extends AspectQuery {
+
+  def toSql(): SQLSyntax = {
+    if (placeReferenceFirst) {
+      sqls"""
+             aspectid = $aspectId AND (data #>> string_to_array(${path
+        .mkString(",")}, ','))::${value.postgresType} $sqlComparator ${value.value}::${value.postgresType}
+          """
+    } else {
+      sqls"""
+             aspectid = $aspectId AND (${value.value}::${value.postgresType} $sqlComparator data #>> string_to_array(${path
+        .mkString(",")}, ','))::${value.postgresType}
+          """
+    }
+  }
+}
 
 /**
   * This aspect query will NOT ONLY match the situation that the aspect has specified json path and its value doesn't equal to specified value
@@ -39,25 +65,61 @@ case class AspectQueryNotEqualValue(
     val path: List[String],
     value: AspectQueryValue,
     val negated: Boolean = false
-) extends AspectQuery
+) extends AspectQuery {
 
-case class AspectQueryCollectionNotEmpty(
+  def toSql(): SQLSyntax = {
+    // --- In order to cover the situation that json path doesn't exist,
+    // --- we set SQL operator as `=` and put the generated SQL in NOT EXISTS clause instead
+    // --- data #>> string_to_array(xx,",") IS NULL won't work as, when json path doesn't exist, the higher level `EXIST` clause will always evaluate to false
+    sqls"""
+             aspectid = $aspectId AND (data #>> string_to_array(${path
+      .mkString(",")}, ','))::${value.postgresType} = ${value.value}::${value.postgresType}
+        """
+  }
+}
+
+case class AspectQueryArrayNotEmpty(
     val aspectId: String,
     val path: Seq[String],
     val negated: Boolean = false
-) extends AspectQuery
+) extends AspectQuery {
 
-case class AspectQueryAnyInArray(
+  def toSql(): SQLSyntax = {
+    // test if the given json path's `0` index is NULL
+    // Therefore, an `[null]` array will be considered as not matched
+    sqls"""
+             aspectid = $aspectId AND (data #> string_to_array(${path.mkString(
+      ","
+    ) + ".0"}, ',')) IS NOT NULL
+        """
+  }
+}
+
+case class AspectQueryValueInArray(
     val aspectId: String,
     val path: Seq[String],
     value: AspectQueryValue,
     val negated: Boolean = false
-) extends AspectQuery
+) extends AspectQuery {
 
-sealed trait GenericAspectQueryGroup
+  def toSql(): SQLSyntax = {
+    sqls"""
+            aspectid = $aspectId AND COALESCE(
+              (data::JSONB #> string_to_array(${path.mkString(",")}, ',')::JSONB) @> ${value.value}::TEXT::JSONB,
+              FALSE
+            )
+        """
+  }
+}
+
+sealed trait GenericAspectQueryGroup {
+  def toSQL(): SQLSyntax
+}
 
 case class UnconditionalAspectQueryGroup(matchOrNot: Boolean)
-    extends GenericAspectQueryGroup
+    extends GenericAspectQueryGroup {
+  
+}
 
 case class AspectQueryGroup(
     queries: Seq[AspectQuery],
