@@ -11,8 +11,6 @@ import spray.json.{
   JsNull
 }
 import scalikejdbc.interpolation.SQLSyntax
-import scalikejdbc._
-
 import scala.collection.SortedSet
 
 object Auth {
@@ -79,7 +77,7 @@ object Auth {
       if (parts.length < 2) {
         (ref, Nil, false)
       } else {
-        val isCollection = parts.tail == "[_]"
+        val isCollection = parts(parts.length - 1) == "[_]"
         (
           parts.head,
           parts
@@ -226,7 +224,7 @@ object Auth {
         prefixes: Set[String]
     ): Seq[GenericAspectQueryGroup] = {
       if (hasResidualRules) {
-        if (isTrueEquivalent(result.getOrElse(false))) {
+        if (isTrueEquivalent(result.getOrElse(JsFalse))) {
           // unconditional true
           Seq(UnconditionalAspectQueryGroup(true))
         } else {

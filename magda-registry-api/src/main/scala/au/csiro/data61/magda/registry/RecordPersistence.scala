@@ -2031,7 +2031,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
     val comparisonClause = aspectQueryToSql(query)
 
     val existClause = query match {
-      case AspectQueryNotEqualValue(_, _, _) => sqls"NOT EXISTS"
+      case AspectQueryNotEqualValue(_, _, _, _) => sqls"NOT EXISTS"
       case _                                 => sqls"EXISTS"
     }
 

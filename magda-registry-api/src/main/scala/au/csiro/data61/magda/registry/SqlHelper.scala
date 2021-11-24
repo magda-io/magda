@@ -126,7 +126,7 @@ object SqlHelper {
       query: AspectQuery
   ): SQLSyntax = {
     query match {
-      case AspectQueryExists(aspectId, path) =>
+      case AspectQueryExists(aspectId, path, _) =>
         sqls"""
              aspectid = $aspectId AND (data #> string_to_array(${path.mkString(
           ","
@@ -136,13 +136,23 @@ object SqlHelper {
           aspectId,
           path,
           value,
-          sqlComparator
+          sqlComparator,
+          _,
+          placeReferenceFirst
           ) =>
-        sqls"""
+        if (placeReferenceFirst) {
+          sqls"""
              aspectid = $aspectId AND (data #>> string_to_array(${path
-          .mkString(",")}, ','))::${value.postgresType} $sqlComparator ${value.value}::${value.postgresType}
-        """
-      case AspectQueryNotEqualValue(aspectId, path, value) =>
+            .mkString(",")}, ','))::${value.postgresType} $sqlComparator ${value.value}::${value.postgresType}
+          """
+        } else {
+          sqls"""
+             aspectid = $aspectId AND (${value.value}::${value.postgresType} $sqlComparator data #>> string_to_array(${path
+            .mkString(",")}, ','))::${value.postgresType}
+          """
+        }
+
+      case AspectQueryNotEqualValue(aspectId, path, value, _) =>
         // --- In order to cover the situation that json path doesn't exist,
         // --- we set SQL operator as `=` and put the generated SQL in NOT EXISTS clause instead
         // --- data #>> string_to_array(xx,",") IS NULL won't work as, when json path doesn't exist, the higher level `EXIST` clause will always evaluate to false
@@ -153,7 +163,8 @@ object SqlHelper {
       case AspectQueryAnyInArray(
           aspectId,
           path,
-          value
+          value,
+          _
           ) =>
         sqls"""
              aspectid = $aspectId AND jsonb_exists((data #>> string_to_array(${path
