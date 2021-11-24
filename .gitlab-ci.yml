@@ -928,6 +928,8 @@ Publish NPM Packages:
     - yarn-install
     - buildtest:helm-charts
     - buildtest:helm-docs-check
+    - buildtest:typescript-apis-stateless
+    - buildtest:typescript-apis-with-pg
     - dockerize:scala
     - dockerize:ui
     - dockerize:typescript-apis
