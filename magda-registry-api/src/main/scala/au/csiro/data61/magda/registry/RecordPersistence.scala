@@ -7,7 +7,10 @@ import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.model.TenantId._
 import au.csiro.data61.magda.opa.OpaTypes._
-import au.csiro.data61.magda.registry.SqlHelper.{aspectQueryToSql, getOpaConditions}
+import au.csiro.data61.magda.registry.SqlHelper.{
+  aspectQueryToSql,
+  getOpaConditions
+}
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import scalikejdbc._
@@ -2032,7 +2035,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
 
     val existClause = query match {
       case AspectQueryNotEqualValue(_, _, _, _) => sqls"NOT EXISTS"
-      case _                                 => sqls"EXISTS"
+      case _                                    => sqls"EXISTS"
     }
 
     sqls"""${existClause} (
