@@ -3,6 +3,7 @@ package au.csiro.data61.magda.model
 import au.csiro.data61.magda.util.Regex._
 import spray.json.{JsBoolean, JsFalse, JsNumber, JsString, JsValue}
 import scalikejdbc._
+import au.csiro.data61.magda.util.SQLUtils
 
 import java.net.URLDecoder
 
@@ -11,7 +12,49 @@ sealed trait AspectQuery {
   val path: Seq[String]
   val negated: Boolean
 
-  def toSql(): SQLSyntax
+  // interface for different type of aspectQuery implement actual SQL queries
+  def sqlQueries(): SQLSyntax
+
+  def toSql(
+      recordIdSqlRef: String = "Records.recordId",
+      tenantIdSqlRef: String = "Records.tenantId"
+  ): SQLSyntax = {
+    val sqlAspectQueries = sqls"""
+           SELECT
+              1
+            FROM
+              recordaspects
+            WHERE
+              (aspectId, recordid, tenantId)=($aspectId, ${SQLUtils
+      .escapeIdentifier(recordIdSqlRef)}, ${SQLUtils.escapeIdentifier(
+      tenantIdSqlRef
+    )}) AND (
+      ${sqlQueries}
+    )
+        """
+    if (negated) {
+      SQLSyntax.notExists(sqlAspectQueries)
+    } else {
+      SQLSyntax.exists(sqlAspectQueries)
+    }
+  }
+}
+
+case class AspectQueryTrue(
+    aspectId: String = "",
+    path: Seq[String] = Nil,
+    negated: Boolean = false
+) extends AspectQuery {
+
+  def sqlQueries(): SQLSyntax =
+    if (negated) {
+      SQLSyntax.createUnsafely("FALSE")
+    } else {
+      SQLSyntax.createUnsafely("TRUE")
+    }
+
+  override def toSql(recordIdSqlRef: String, tenantIdSqlRef: String) =
+    sqlQueries
 }
 
 case class AspectQueryExists(
@@ -20,7 +63,7 @@ case class AspectQueryExists(
     val negated: Boolean = false
 ) extends AspectQuery {
 
-  def toSql(): SQLSyntax = {
+  def sqlQueries(): SQLSyntax = {
     sqls"""
              aspectid = $aspectId AND (data #> string_to_array(${path.mkString(
       ","
@@ -41,7 +84,7 @@ case class AspectQueryWithValue(
     placeReferenceFirst: Boolean = true
 ) extends AspectQuery {
 
-  def toSql(): SQLSyntax = {
+  def sqlQueries(): SQLSyntax = {
     if (placeReferenceFirst) {
       sqls"""
              aspectid = $aspectId AND COALESCE((data #>> string_to_array(${path
@@ -67,7 +110,7 @@ case class AspectQueryNotEqualValue(
     val negated: Boolean = false
 ) extends AspectQuery {
 
-  def toSql(): SQLSyntax = {
+  def sqlQueries(): SQLSyntax = {
     // --- In order to cover the situation that json path doesn't exist,
     // --- we set SQL operator as `=` and put the generated SQL in NOT EXISTS clause instead
     // --- data #>> string_to_array(xx,",") IS NULL won't work as, when json path doesn't exist, the higher level `EXIST` clause will always evaluate to false
@@ -84,7 +127,7 @@ case class AspectQueryArrayNotEmpty(
     val negated: Boolean = false
 ) extends AspectQuery {
 
-  def toSql(): SQLSyntax = {
+  def sqlQueries(): SQLSyntax = {
     // test if the given json path's `0` index is NULL
     // Therefore, an `[null]` array will be considered as not matched
     sqls"""
@@ -102,7 +145,7 @@ case class AspectQueryValueInArray(
     val negated: Boolean = false
 ) extends AspectQuery {
 
-  def toSql(): SQLSyntax = {
+  def sqlQueries(): SQLSyntax = {
     sqls"""
             aspectid = $aspectId AND COALESCE(
               (data::JSONB #> string_to_array(${path.mkString(",")}, ',')::JSONB) @> ${value.value}::TEXT::JSONB,
@@ -112,19 +155,33 @@ case class AspectQueryValueInArray(
   }
 }
 
-sealed trait GenericAspectQueryGroup {
-  def toSQL(): SQLSyntax
-}
-
-case class UnconditionalAspectQueryGroup(matchOrNot: Boolean)
-    extends GenericAspectQueryGroup {}
-
 case class AspectQueryGroup(
     queries: Seq[AspectQuery],
     // determine when convert into SQL, should we use "AND" (when value is `true`) or "OR" (when value is `false`) to join all `AspectQuery` together
     joinWithAnd: Boolean = true,
     negated: Boolean = false
-) extends GenericAspectQueryGroup
+) {
+
+  def toSql(
+      recordIdSqlRef: String = "Records.recordId",
+      tenantIdSqlRef: String = "Records.tenantId"
+  ): SQLSyntax = {
+    val joinedQuery = if (joinWithAnd) {
+      SQLSyntax.joinWithAnd(
+        queries.map(_.toSql(recordIdSqlRef, tenantIdSqlRef)): _*
+      )
+    } else {
+      SQLSyntax.joinWithOr(
+        queries.map(_.toSql(recordIdSqlRef, tenantIdSqlRef)): _*
+      )
+    }
+    if (negated) {
+      sqls"NOT ${SQLSyntax.empty.roundBracket(joinedQuery)}"
+    } else {
+      joinedQuery
+    }
+  }
+}
 
 sealed trait AspectQueryValue {
   // --- should create value using sqls"${value}" so it's used as `binding parameters`

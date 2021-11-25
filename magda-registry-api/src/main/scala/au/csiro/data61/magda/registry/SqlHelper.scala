@@ -28,15 +28,6 @@ import au.csiro.data61.magda.model.{
 object SqlHelper {
 
   /**
-    * Escape SQL identifier (e.g. column names, or table names).
-    * Although postgreSQL does allow non-ASCII characters in identifiers, to make it simple, we will remove any non-ASCII characters.
-    * */
-  def escapeIdentifier(idStr: String) =
-    "\"" + idStr
-      .replaceAll("[^\\x20-\\x7e]", "")
-      .replaceAll("\"", "\"\"") + "\""
-
-  /**
     * Translate multiple OPA queries into one SQL clause.
     *
     * @param opaQueries OPA queries

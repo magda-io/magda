@@ -222,16 +222,17 @@ object Auth {
 
     def toAspectQueryGroups(
         prefixes: Set[String]
-    ): Seq[GenericAspectQueryGroup] = {
+    ): Seq[AspectQueryGroup] = {
       if (hasResidualRules) {
+        residualRules.toList.flatten.map(_.toAspectQueryGroup(prefixes))
+      } else {
         if (isTrueEquivalent(result.getOrElse(JsFalse))) {
           // unconditional true
-          Seq(UnconditionalAspectQueryGroup(true))
+          Seq(AspectQueryGroup(queries = Seq(AspectQueryTrue())))
         } else {
-          Seq(UnconditionalAspectQueryGroup(false))
+          Seq(AspectQueryGroup(queries = Seq(AspectQueryTrue(negated = true))))
         }
-      } else {
-        residualRules.toList.flatten.map(_.toAspectQueryGroup(prefixes))
+
       }
     }
   }
