@@ -18,7 +18,7 @@ sealed trait AspectQuery {
   def toSql(
       recordIdSqlRef: String = "Records.recordId",
       tenantIdSqlRef: String = "Records.tenantId"
-  ): SQLSyntax = {
+  ): Option[SQLSyntax] = {
     val sqlAspectQueries = sqls"""
            SELECT
               1
@@ -33,9 +33,9 @@ sealed trait AspectQuery {
     )
         """
     if (negated) {
-      SQLSyntax.notExists(sqlAspectQueries)
+      Some(SQLSyntax.notExists(sqlAspectQueries))
     } else {
-      SQLSyntax.exists(sqlAspectQueries)
+      Some(SQLSyntax.exists(sqlAspectQueries))
     }
   }
 }
@@ -54,7 +54,7 @@ case class AspectQueryTrue(
     }
 
   override def toSql(recordIdSqlRef: String, tenantIdSqlRef: String) =
-    sqlQueries
+    Some(sqlQueries)
 }
 
 case class AspectQueryExists(
@@ -165,18 +165,47 @@ case class AspectQueryGroup(
   def toSql(
       recordIdSqlRef: String = "Records.recordId",
       tenantIdSqlRef: String = "Records.tenantId"
-  ): SQLSyntax = {
+  ): Option[SQLSyntax] = {
+    if (queries.isEmpty) {
+      return None
+    }
     val joinedQuery = if (joinWithAnd) {
-      SQLSyntax.joinWithAnd(
-        queries.map(_.toSql(recordIdSqlRef, tenantIdSqlRef)): _*
-      )
+      if (queries.exists {
+            case AspectQueryTrue(_, _, false) => true
+            case _                            => false
+          }) {
+        // when unconditional FALSE exist, joinWithAnd should to evaluated to FALSE
+        Some(SQLUtils.SQL_FALSE)
+      } else {
+        SQLSyntax.toAndConditionOpt(
+          queries.map {
+            // unconditional true can be skipped in AND
+            case AspectQueryTrue(_, _, true) => None
+            case aspectQuery =>
+              aspectQuery.toSql(recordIdSqlRef, tenantIdSqlRef)
+          }: _*
+        )
+      }
     } else {
-      SQLSyntax.joinWithOr(
-        queries.map(_.toSql(recordIdSqlRef, tenantIdSqlRef)): _*
-      )
+      if (queries.exists {
+            case AspectQueryTrue(_, _, true) => true
+            case _                           => false
+          }) {
+        // when unconditional TRUE exist, joinWithOr should to evaluated to TRUE
+        Some(SQLUtils.SQL_TRUE)
+      } else {
+        SQLSyntax.toOrConditionOpt(
+          queries.map {
+            // unconditional false can be skipped in OR
+            case AspectQueryTrue(_, _, false) => None
+            case aspectQuery =>
+              aspectQuery.toSql(recordIdSqlRef, tenantIdSqlRef)
+          }: _*
+        )
+      }
     }
     if (negated) {
-      sqls"NOT ${SQLSyntax.empty.roundBracket(joinedQuery)}"
+      joinedQuery.map(sqlQuery => sqls"NOT ${SQLSyntax.roundBracket(sqlQuery)}")
     } else {
       joinedQuery
     }

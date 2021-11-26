@@ -30,4 +30,7 @@ object SQLUtils {
     SQLSyntax.createUnsafely(escapedIdStr)
   }
 
+  val SQL_TRUE = SQLSyntax.createUnsafely("TRUE")
+  val SQL_FALSE = SQLSyntax.createUnsafely("FALSE")
+
 }
