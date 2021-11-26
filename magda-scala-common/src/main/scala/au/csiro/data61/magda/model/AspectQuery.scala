@@ -20,18 +20,11 @@ sealed trait AspectQuery {
       tenantIdSqlRef: String = "Records.tenantId"
   ): Option[SQLSyntax] = {
     val sqlAspectQueries = sqls"""
-           SELECT
-              1
-            FROM
-              recordaspects
-            WHERE
-              (aspectId, recordid, tenantId)=($aspectId, ${SQLUtils
+           SELECT 1 FROM recordaspects
+           WHERE (aspectId, recordid, tenantId)=($aspectId, ${SQLUtils
       .escapeIdentifier(recordIdSqlRef)}, ${SQLUtils.escapeIdentifier(
       tenantIdSqlRef
-    )}) AND (
-      ${sqlQueries}
-    )
-        """
+    )}) AND (${sqlQueries})"""
     if (negated) {
       Some(SQLSyntax.notExists(sqlAspectQueries))
     } else {
@@ -65,7 +58,7 @@ case class AspectQueryExists(
 
   def sqlQueries(): SQLSyntax = {
     sqls"""
-             aspectid = $aspectId AND (data #> string_to_array(${path.mkString(
+           (data #> string_to_array(${path.mkString(
       ","
     )}, ',')) IS NOT NULL
         """
@@ -87,12 +80,12 @@ case class AspectQueryWithValue(
   def sqlQueries(): SQLSyntax = {
     if (placeReferenceFirst) {
       sqls"""
-             aspectid = $aspectId AND COALESCE((data #>> string_to_array(${path
+             COALESCE((data #>> string_to_array(${path
         .mkString(",")}, ','))::${value.postgresType} $sqlComparator ${value.value}::${value.postgresType}, false)
           """
     } else {
       sqls"""
-             aspectid = $aspectId AND COALESCE((${value.value}::${value.postgresType} $sqlComparator data #>> string_to_array(${path
+             COALESCE((${value.value}::${value.postgresType} $sqlComparator data #>> string_to_array(${path
         .mkString(",")}, ','))::${value.postgresType}, false)
           """
     }
@@ -115,7 +108,7 @@ case class AspectQueryNotEqualValue(
     // --- we set SQL operator as `=` and put the generated SQL in NOT EXISTS clause instead
     // --- data #>> string_to_array(xx,",") IS NULL won't work as, when json path doesn't exist, the higher level `EXIST` clause will always evaluate to false
     sqls"""
-             aspectid = $aspectId AND (data #>> string_to_array(${path
+           (data #>> string_to_array(${path
       .mkString(",")}, ','))::${value.postgresType} = ${value.value}::${value.postgresType}
         """
   }
@@ -131,7 +124,7 @@ case class AspectQueryArrayNotEmpty(
     // test if the given json path's `0` index is NULL
     // Therefore, an `[null]` array will be considered as not matched
     sqls"""
-             aspectid = $aspectId AND (data #> string_to_array(${path.mkString(
+           (data #> string_to_array(${path.mkString(
       ","
     ) + ".0"}, ',')) IS NOT NULL
         """
@@ -147,7 +140,7 @@ case class AspectQueryValueInArray(
 
   def sqlQueries(): SQLSyntax = {
     sqls"""
-            aspectid = $aspectId AND COALESCE(
+           COALESCE(
               (data::JSONB #> string_to_array(${path.mkString(",")}, ',')::JSONB) @> ${value.value}::TEXT::JSONB,
               FALSE
             )
