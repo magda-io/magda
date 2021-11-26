@@ -20,7 +20,6 @@ import au.csiro.data61.magda.model.{
   AspectQueryBigDecimal,
   AspectQueryBoolean,
   AspectQueryExists,
-  AspectQueryNotEqualValue,
   AspectQueryString,
   AspectQueryWithValue
 }
@@ -143,14 +142,6 @@ object SqlHelper {
           """
         }
 
-      case AspectQueryNotEqualValue(aspectId, path, value, _) =>
-        // --- In order to cover the situation that json path doesn't exist,
-        // --- we set SQL operator as `=` and put the generated SQL in NOT EXISTS clause instead
-        // --- data #>> string_to_array(xx,",") IS NULL won't work as, when json path doesn't exist, the higher level `EXIST` clause will always evaluate to false
-        sqls"""
-             aspectid = $aspectId AND (data #>> string_to_array(${path
-          .mkString(",")}, ','))::${value.postgresType} = ${value.value}::${value.postgresType}
-        """
       case AspectQueryValueInArray(
           aspectId,
           path,

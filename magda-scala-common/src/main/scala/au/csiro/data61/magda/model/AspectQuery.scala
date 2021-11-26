@@ -92,28 +92,6 @@ case class AspectQueryWithValue(
   }
 }
 
-/**
-  * This aspect query will NOT ONLY match the situation that the aspect has specified json path and its value doesn't equal to specified value
-  * But also match the situation that the specific json path does not exist on the aspect.
-  */
-case class AspectQueryNotEqualValue(
-    val aspectId: String,
-    val path: List[String],
-    value: AspectQueryValue,
-    val negated: Boolean = false
-) extends AspectQuery {
-
-  def sqlQueries(): SQLSyntax = {
-    // --- In order to cover the situation that json path doesn't exist,
-    // --- we set SQL operator as `=` and put the generated SQL in NOT EXISTS clause instead
-    // --- data #>> string_to_array(xx,",") IS NULL won't work as, when json path doesn't exist, the higher level `EXIST` clause will always evaluate to false
-    sqls"""
-           (data #>> string_to_array(${path
-      .mkString(",")}, ','))::${value.postgresType} = ${value.value}::${value.postgresType}
-        """
-  }
-}
-
 case class AspectQueryArrayNotEmpty(
     val aspectId: String,
     val path: Seq[String],
@@ -272,10 +250,11 @@ object AspectQuery {
     }
 
     if (opStr == ":!") {
-      AspectQueryNotEqualValue(
+      AspectQueryWithValue(
         pathParts.head,
         pathParts.tail,
-        AspectQueryString(valueStr)
+        AspectQueryString(valueStr),
+        negated = true
       )
     } else {
       val (sqlOp, sqlValue) = opStr match {

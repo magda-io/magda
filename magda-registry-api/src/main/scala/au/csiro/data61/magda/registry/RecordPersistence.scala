@@ -7,10 +7,7 @@ import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.model.TenantId._
 import au.csiro.data61.magda.opa.OpaTypes._
-import au.csiro.data61.magda.registry.SqlHelper.{
-  aspectQueryToSql,
-  getOpaConditions
-}
+import au.csiro.data61.magda.registry.SqlHelper.{getOpaConditions}
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import scalikejdbc._
@@ -18,7 +15,7 @@ import spray.json._
 import spray.json.lenses.JsonLenses._
 import org.everit.json.schema.ValidationException
 import au.csiro.data61.magda.client.AuthOperations
-import au.csiro.data61.magda.model.{AspectQuery, AspectQueryNotEqualValue}
+import au.csiro.data61.magda.model.{AspectQuery, AspectQueryGroup}
 
 import scala.util.{Failure, Success, Try}
 import com.typesafe.config.Config
@@ -293,34 +290,20 @@ class DefaultRecordPersistence(config: Config)
   }
 
   private def getSqlFromAspectQueries(
-      aspectQueries: Iterable[AspectQuery],
-      aspectOrQueries: Iterable[AspectQuery]
+      aspectQueries: Seq[AspectQuery],
+      aspectOrQueries: Seq[AspectQuery],
+      recordIdSqlRef: String = "Records.recordId",
+      tenantIdSqlRef: String = "Records.tenantId"
   ): Option[SQLSyntax] = {
 
-    val orConditions = SQLSyntax.join(
-      aspectOrQueries.map(aspectQueryToWhereClause(_)).toSeq,
-      SQLSyntax.or
-    )
-    val andConditions = SQLSyntax.join(
-      aspectQueries.map(aspectQueryToWhereClause(_)).toSeq,
-      SQLSyntax.and
-    )
+    val andConditions =
+      AspectQueryGroup(aspectQueries, joinWithAnd = true)
+        .toSql(recordIdSqlRef, tenantIdSqlRef)
+    val orConditions =
+      AspectQueryGroup(aspectOrQueries, joinWithAnd = false)
+        .toSql(recordIdSqlRef, tenantIdSqlRef)
 
-    SQLSyntax.join(
-      Seq(andConditions, orConditions).map {
-        case sqlPart if sqlPart.value.nonEmpty =>
-          // --- use () to wrap the `OR` or `AND` queries if they are not empty
-          // --- SQLSyntax.roundBracket failed to check it
-          SQLSyntax.roundBracket(sqlPart)
-        case _ => SQLSyntax.empty
-      },
-      SQLSyntax.and
-    ) match {
-      // --- use () to wrap all conditions from AspectQuery
-      case sqlPart if sqlPart.value.nonEmpty =>
-        Some(SQLSyntax.roundBracket(sqlPart))
-      case _ => None
-    }
+    SQLSyntax.toAndConditionOpt(andConditions, orConditions)
   }
 
   def getAllWithAspects(
@@ -345,7 +328,7 @@ class DefaultRecordPersistence(config: Config)
       .filter(!(aspectIds ++ optionalAspectIds).toList.contains(_))
 
     val selectors = Seq(
-      getSqlFromAspectQueries(aspectQueries, aspectOrQueries)
+      getSqlFromAspectQueries(aspectQueries.toSeq, aspectOrQueries.toSeq)
     )
 
     this.getRecords(
@@ -375,7 +358,7 @@ class DefaultRecordPersistence(config: Config)
   )(implicit session: DBSession): Long = {
 
     val selectors = Seq(
-      getSqlFromAspectQueries(aspectQueries, aspectOrQueries)
+      getSqlFromAspectQueries(aspectQueries.toSeq, aspectOrQueries.toSeq)
     )
 
     this.getCountInner(
@@ -2028,20 +2011,5 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
               where (aspectId, recordid, tenantId)=($aspectId, Records.recordId, Records.tenantId))
         """
     )
-  }
-
-  private def aspectQueryToWhereClause(query: AspectQuery) = {
-    val comparisonClause = aspectQueryToSql(query)
-
-    val existClause = query match {
-      case AspectQueryNotEqualValue(_, _, _, _) => sqls"NOT EXISTS"
-      case _                                    => sqls"EXISTS"
-    }
-
-    sqls"""${existClause} (
-             SELECT 1 FROM recordaspects
-             WHERE (aspectId, recordid, tenantId)=(${query.aspectId}, Records.recordId, Records.tenantId) AND
-             $comparisonClause )
-      """
   }
 }
