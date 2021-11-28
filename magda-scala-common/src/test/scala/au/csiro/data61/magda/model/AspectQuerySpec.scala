@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import org.scalatest.{FunSpec, Matchers}
 import au.csiro.data61.magda.util.StringUtils._
 import scalikejdbc.interpolation.SQLSyntax
-import io.lemonlabs.uri.{Url, QueryString, UrlPath}
+import io.lemonlabs.uri.{QueryString}
 
 class AspectQuerySpec extends FunSpec with Matchers {
 

@@ -10,11 +10,7 @@ import akka.http.scaladsl.marshalling.ToEntityMarshaller
 import akka.stream.ActorMaterializer
 import akka.util.ByteString
 import au.csiro.data61.magda.model.Auth
-import au.csiro.data61.magda.model.Auth.{
-  ConciseRule,
-  ConciseExpression,
-  ConciseOperand
-}
+import au.csiro.data61.magda.util.StringUtils._
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.model.misc.Protocols.dataSetFormat
 import com.typesafe.config.ConfigFactory
@@ -422,6 +418,24 @@ class AuthApiClientSpec
         )
         exp.operands(1).isRef shouldBe false
         exp.operands(1).value shouldBe JsString("published")
+
+        val aspectQueryGroups = decision
+          .toAspectQueryGroups(Set("input.object.record"))
+        val groupSqlList = aspectQueryGroups
+          .map(_.toSql())
+        groupSqlList.length shouldBe 1
+        groupSqlList.head.isDefined shouldBe true
+        groupSqlList.head.get.value.trim.stripLineEndingWhitespaces shouldBe
+          """exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid")) and  exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+            |             COALESCE((data #>> string_to_array(?, ','))::TEXT = ?::TEXT, false)
+            |          )
+            |""".trim.stripMargin.stripLineEndingWhitespaces
+        groupSqlList.head.get.parameters shouldBe Seq(
+          "dcat-dataset-strings",
+          "publishing",
+          "state",
+          "published"
+        )
       }
     )
 

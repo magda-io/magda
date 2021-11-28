@@ -72,8 +72,10 @@ object Auth {
     def extractAspectIdAndPath(
         prefixes: Set[String]
     ): (String, Seq[String], Boolean) = {
-      val ref = refStringWithoutPrefixes(prefixes)
-      val parts = ref.split("\\.")
+      // make it work for both "input.object.record" & "input.object.record." prefixe input
+      // we remove the first leading `.` char (if any)
+      val ref = refStringWithoutPrefixes(prefixes).replaceFirst("""^\.""", "")
+      val parts = ref.split("\\.").filter(_ != "")
       if (parts.length < 2) {
         (ref, Nil, false)
       } else {
