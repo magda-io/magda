@@ -17,10 +17,10 @@ import au.csiro.data61.magda.client.AuthOperations
 import au.csiro.data61.magda.model.{
   AspectQuery,
   AspectQueryValueInArray,
-  AspectQueryBigDecimal,
-  AspectQueryBoolean,
+  AspectQueryBigDecimalValue,
+  AspectQueryBooleanValue,
   AspectQueryExists,
-  AspectQueryString,
+  AspectQueryStringValue,
   AspectQueryWithValue
 }
 
@@ -126,18 +126,18 @@ object SqlHelper {
           aspectId,
           path,
           value,
-          sqlComparator,
+          operator,
           _,
           placeReferenceFirst
           ) =>
         if (placeReferenceFirst) {
           sqls"""
              aspectid = $aspectId AND (data #>> string_to_array(${path
-            .mkString(",")}, ','))::${value.postgresType} $sqlComparator ${value.value}::${value.postgresType}
+            .mkString(",")}, ','))::${value.postgresType} $operator ${value.value}::${value.postgresType}
           """
         } else {
           sqls"""
-             aspectid = $aspectId AND (${value.value}::${value.postgresType} $sqlComparator data #>> string_to_array(${path
+             aspectid = $aspectId AND (${value.value}::${value.postgresType} $operator data #>> string_to_array(${path
             .mkString(",")}, ','))::${value.postgresType}
           """
         }
@@ -258,7 +258,7 @@ object SqlHelper {
                 throw new Exception("Could not understand " + e)
             },
             value = opaValueToAspectQueryValue(aValue),
-            sqlComparator = convertToSql(operation)
+            operator = convertToSql(operation)
           )
         case e => throw new Exception(s"Could not understand $e")
       })
@@ -268,9 +268,9 @@ object SqlHelper {
 
   private def opaValueToAspectQueryValue(value: OpaValue) = {
     value match {
-      case OpaValueString(string)   => AspectQueryString(string)
-      case OpaValueBoolean(boolean) => AspectQueryBoolean(boolean)
-      case OpaValueNumber(bigDec)   => AspectQueryBigDecimal(bigDec)
+      case OpaValueString(string)   => AspectQueryStringValue(string)
+      case OpaValueBoolean(boolean) => AspectQueryBooleanValue(boolean)
+      case OpaValueNumber(bigDec)   => AspectQueryBigDecimalValue(bigDec)
     }
   }
 }

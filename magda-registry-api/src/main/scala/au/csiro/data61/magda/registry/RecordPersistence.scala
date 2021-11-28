@@ -292,8 +292,8 @@ class DefaultRecordPersistence(config: Config)
   private def getSqlFromAspectQueries(
       aspectQueries: Seq[AspectQuery],
       aspectOrQueries: Seq[AspectQuery],
-      recordIdSqlRef: String = "Records.recordId",
-      tenantIdSqlRef: String = "Records.tenantId"
+      recordIdSqlRef: String = "records.recordid",
+      tenantIdSqlRef: String = "records.tenantid"
   ): Option[SQLSyntax] = {
 
     val andConditions =

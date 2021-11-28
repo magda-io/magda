@@ -77,7 +77,7 @@ object Auth {
       if (parts.length < 2) {
         (ref, Nil, false)
       } else {
-        val isCollection = parts(parts.length - 1) == "[_]"
+        val isCollection = parts(parts.length - 1).endsWith("[_]")
         (
           parts.head,
           parts
@@ -99,9 +99,9 @@ object Auth {
         )
       }
       value match {
-        case JsString(string)   => AspectQueryString(string)
-        case JsBoolean(boolean) => AspectQueryBoolean(boolean)
-        case JsNumber(bigDec)   => AspectQueryBigDecimal(bigDec)
+        case JsString(string)   => AspectQueryStringValue(string)
+        case JsBoolean(boolean) => AspectQueryBooleanValue(boolean)
+        case JsNumber(bigDec)   => AspectQueryBigDecimalValue(bigDec)
         case _ =>
           throw new Error(
             s"Failed to convert unsupported JsValue to AspectQueryValue: ${value.toString}"
@@ -228,9 +228,9 @@ object Auth {
       } else {
         if (isTrueEquivalent(result.getOrElse(JsFalse))) {
           // unconditional true
-          Seq(AspectQueryGroup(queries = Seq(AspectQueryTrue())))
+          Seq(AspectQueryGroup(queries = Seq(new AspectQueryTrue)))
         } else {
-          Seq(AspectQueryGroup(queries = Seq(AspectQueryTrue(negated = true))))
+          Seq(AspectQueryGroup(queries = Seq(new AspectQueryFalse)))
         }
 
       }

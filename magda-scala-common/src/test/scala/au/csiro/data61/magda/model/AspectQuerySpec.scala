@@ -2,6 +2,7 @@ package au.csiro.data61.magda.model
 
 import akka.actor.ActorSystem
 import org.scalatest.{FunSpec, Matchers}
+import au.csiro.data61.magda.util.StringUtils._
 
 import scala.io.BufferedSource
 import scala.io.Source.fromFile
@@ -9,6 +10,7 @@ import spray.json._
 
 import java.io.File
 import au.csiro.data61.magda.model.Registry
+import scalikejdbc.interpolation.SQLSyntax
 
 import scala.util.{Failure, Success, Try}
 import java.time.ZoneOffset
@@ -20,14 +22,16 @@ class AspectQuerySpec extends FunSpec with Matchers {
 
   describe("AspectQueryTrue") {
     it("should produce correct sql query") {
-      val aq = AspectQueryTrue()
+      val aq = new AspectQueryTrue
       val sql = aq.toSql()
       sql.isDefined shouldBe true
       sql.get.value shouldBe "TRUE"
     }
+  }
 
-    it("should produce correct sql query when negated = true") {
-      val aq = AspectQueryTrue(negated = true)
+  describe("AspectQueryFalse") {
+    it("should produce correct sql query") {
+      val aq = new AspectQueryFalse
       val sql = aq.toSql()
       sql.isDefined shouldBe true
       sql.get.value shouldBe "FALSE"
@@ -39,11 +43,9 @@ class AspectQuerySpec extends FunSpec with Matchers {
       val aq = AspectQueryExists("testAspect", List("fieldA", "fieldB"))
       val sql = aq.toSql()
       sql.isDefined shouldBe true
-      sql.get.value.trim shouldBe """ exists (
-                                    |           SELECT 1 FROM recordaspects
-                                    |           WHERE (aspectId, recordid, tenantId)=(?, "Records"."recordId", "Records"."tenantId") AND (
-                                    |           (data #> string_to_array(?, ',')) IS NOT NULL
-                                    |        ))""".stripMargin.trim
+      sql.get.value.stripLineEndingWhitespaces shouldBe """ exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+                                                          |           (data #> string_to_array(?, ',')) IS NOT NULL
+                                                          |        )""".stripMargin.stripLineEndingWhitespaces
       sql.get.parameters shouldBe List("testAspect", "fieldA,fieldB")
     }
 
@@ -51,80 +53,493 @@ class AspectQuerySpec extends FunSpec with Matchers {
       val aq = AspectQueryExists("testAspect", List("fieldA", "fieldB"), true)
       val sql = aq.toSql()
       sql.isDefined shouldBe true
-      sql.get.value.trim shouldBe """not exists (
-                                    |           SELECT 1 FROM recordaspects
-                                    |           WHERE (aspectId, recordid, tenantId)=(?, "Records"."recordId", "Records"."tenantId") AND (
-                                    |           (data #> string_to_array(?, ',')) IS NOT NULL
-                                    |        ))""".stripMargin.trim
+      sql.get.value.stripLineEndingWhitespaces shouldBe """ not exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+                                                          |           (data #> string_to_array(?, ',')) IS NOT NULL
+                                                          |        )""".stripMargin.stripLineEndingWhitespaces
       sql.get.parameters shouldBe List("testAspect", "fieldA,fieldB")
+    }
+
+    /**
+      * The SQL generated tests the existence of `recordaspect` record actually for this case
+      */
+    it("should produce correct sql query when path is Nil") {
+      val aq = AspectQueryExists("testAspect", Nil)
+      val sql = aq.toSql()
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces shouldBe """ exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid"))""".stripMargin.stripLineEndingWhitespaces
+      sql.get.parameters shouldBe List("testAspect")
     }
 
   }
 
-  // describe("Test all sample error dataset JSON data without exception thrown") {
+  describe("AspectQueryWithValue with non-Nil path") {
+    it(
+      "should produce correct sql query with string value and default `=` operator"
+    ) {
+      val aq = AspectQueryWithValue(
+        "testAspect",
+        List("fieldA", "fieldB"),
+        value = AspectQueryStringValue("xxsdweewe2")
+      )
+      val sql = aq.toSql()
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces shouldBe """ exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+                                                          |             COALESCE((data #>> string_to_array(?, ','))::TEXT = ?::TEXT, false)
+                                                          |          )""".stripMargin.stripLineEndingWhitespaces
+      sql.get.parameters shouldBe List(
+        "testAspect",
+        "fieldA,fieldB",
+        "xxsdweewe2"
+      )
+    }
 
-  //   val path = getClass.getResource("/sampleErrorDatasetJson")
-  //   val folder = new File(path.getPath)
-  //   if (folder.exists && folder.isDirectory)
-  //     folder.listFiles.toList
-  //       .foreach[Any](
-  //         file =>
-  //           it(
-  //             s"should convert JSON file: ${file.getName} without exception thrown"
-  //           ) {
-  //             val jsonResSource: BufferedSource = fromFile(file)
-  //             val jsonRes: String =
-  //               try {
-  //                 jsonResSource.mkString
-  //               } finally {
-  //                 jsonResSource.close()
-  //               }
-  //             val dataset = jsonRes.parseJson.convertTo(Registry.recordFormat)
-  //             Try(
-  //               Conversions.convertRegistryDataSet(
-  //                 dataset,
-  //                 Some(logger)
-  //               )(ZoneOffset.UTC)
-  //             ) match {
-  //               case Failure(e) =>
-  //                 fail(s"Failed to parse dataset and throw an exception ${e}")
-  //               case _ =>
-  //             }
-  //           }
-  //       )
-  // }
+    it(
+      "should produce correct sql query with string value and `NOT LIKE` operator"
+    ) {
+      val aq = AspectQueryWithValue(
+        "testAspect",
+        List("fieldA", "fieldB"),
+        operator = SQLSyntax.createUnsafely("NOT LIKE"),
+        value = AspectQueryStringValue("xxsdweewe2")
+      )
+      val sql = aq.toSql()
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces shouldBe """ exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+                                                          |             COALESCE((data #>> string_to_array(?, ','))::TEXT NOT LIKE ?::TEXT, false)
+                                                          |          )""".stripMargin.stripLineEndingWhitespaces
+      sql.get.parameters shouldBe List(
+        "testAspect",
+        "fieldA,fieldB",
+        "xxsdweewe2"
+      )
+    }
 
-  // describe("Test all sample NO error dataset JSON data") {
+    it(
+      "should produce correct sql query with bool value and default `=` operator"
+    ) {
+      val aq = AspectQueryWithValue(
+        "testAspect",
+        List("fieldA", "fieldB"),
+        value = AspectQueryStringValue("test string"),
+        negated = true
+      )
+      val sql = aq.toSql()
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces shouldBe """ not exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+                                                          |             COALESCE((data #>> string_to_array(?, ','))::TEXT = ?::TEXT, false)
+                                                          |          )""".stripMargin.stripLineEndingWhitespaces
+      sql.get.parameters shouldBe List(
+        "testAspect",
+        "fieldA,fieldB",
+        "test string"
+      )
+    }
 
-  //   val path = getClass.getResource("/sampleNoErrorDatasetJson")
-  //   val folder = new File(path.getPath)
-  //   if (folder.exists && folder.isDirectory)
-  //     folder.listFiles.toList
-  //       .foreach[Any](
-  //         file =>
-  //           it(
-  //             s"should convert JSON file: ${file.getName} without exception thrown"
-  //           ) {
-  //             val jsonResSource: BufferedSource = fromFile(file)
-  //             val jsonRes: String =
-  //               try {
-  //                 jsonResSource.mkString
-  //               } finally {
-  //                 jsonResSource.close()
-  //               }
-  //             val dataset = jsonRes.parseJson.convertTo(Registry.recordFormat)
-  //             Try(
-  //               Conversions.convertRegistryDataSet(
-  //                 dataset,
-  //                 None
-  //               )(ZoneOffset.UTC)
-  //             ) match {
-  //               case Failure(e) =>
-  //                 fail(s"Failed to parse dataset and throw an exception ${e}")
-  //               case Success(v) =>
-  //                 v
-  //             }
-  //           }
-  //       )
-  // }
+    it(
+      "should produce correct sql query with bool value and default `=` operator & negated = true"
+    ) {
+      val aq = AspectQueryWithValue(
+        "testAspect",
+        List("fieldA", "fieldB"),
+        value = AspectQueryBooleanValue(true),
+        negated = true
+      )
+      val sql = aq.toSql()
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces shouldBe """ not exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+                                                          |             COALESCE((data #>> string_to_array(?, ','))::BOOL = ?::BOOL, false)
+                                                          |          )""".stripMargin.stripLineEndingWhitespaces
+      sql.get.parameters shouldBe List("testAspect", "fieldA,fieldB", true)
+    }
+
+    it("should produce correct sql query with numeric value and `>` operator") {
+      val aq = AspectQueryWithValue(
+        "testAspect",
+        List("fieldA", "fieldB"),
+        operator = SQLSyntax.createUnsafely(">"),
+        value = AspectQueryBigDecimalValue(1.57)
+      )
+      val sql = aq.toSql()
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces shouldBe """ exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+                                                          |             COALESCE((data #>> string_to_array(?, ','))::NUMERIC > ?::NUMERIC, false)
+                                                          |          )""".stripMargin.stripLineEndingWhitespaces
+      sql.get.parameters shouldBe List("testAspect", "fieldA,fieldB", 1.57)
+    }
+
+    it(
+      "should produce correct sql query with numeric value, `<=` operator and `placeReferenceFirst` = false"
+    ) {
+      val aq = AspectQueryWithValue(
+        "testAspect",
+        List("fieldA", "fieldB"),
+        operator = SQLSyntax.createUnsafely("<="),
+        value = AspectQueryBigDecimalValue(1.57),
+        placeReferenceFirst = false
+      )
+      val sql = aq.toSql()
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces shouldBe """ exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+                                                          |             COALESCE((?::NUMERIC <= data #>> string_to_array(?, ','))::NUMERIC, false)
+                                                          |          )""".stripMargin.stripLineEndingWhitespaces
+      sql.get.parameters shouldBe List("testAspect", 1.57, "fieldA,fieldB")
+    }
+
+  }
+
+  /**
+    * When path is nil, we assume the aspectId is one of the record property in order to support query like object.record.id="xxxxx"
+    * We only support a pre-selected list of record properties (record table column) -- see implementation for details.
+    */
+  describe("AspectQueryWithValue with Nil path") {
+    it(
+      "should query against `recordid` column and convert value as TEXT with aspectId = `recordid` & number value"
+    ) {
+      val aq = AspectQueryWithValue(
+        "recordid",
+        Nil,
+        value = AspectQueryBigDecimalValue(213233222)
+      )
+      val sql = aq.toSql()
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe " exists (SELECT 1 FROM records where (recordid, tenantid)=(\"records\".\"recordid\", \"records\".\"tenantid\") and COALESCE(recordid::TEXT = ?::TEXT, FALSE))".stripMargin.stripLineEndingWhitespaces.trim
+      sql.get.parameters shouldBe List(213233222)
+    }
+
+    it(
+      "should query against `recordid` column as well and convert value as TEXT with aspectId = `id` & string value"
+    ) {
+      val aq = AspectQueryWithValue(
+        "id",
+        Nil,
+        value = AspectQueryStringValue("sds-dsd-233222")
+      )
+      val sql = aq.toSql()
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe " exists (SELECT 1 FROM records where (recordid, tenantid)=(\"records\".\"recordid\", \"records\".\"tenantid\") and COALESCE(recordid::TEXT = ?::TEXT, FALSE))".stripMargin.stripLineEndingWhitespaces.trim
+      sql.get.parameters shouldBe List("sds-dsd-233222")
+    }
+
+    it(
+      "should query against `lastupdate` column with aspectId = `lastUpdate` & string value"
+    ) {
+      val aq = AspectQueryWithValue(
+        // different case should be convert to lowercase `lastupdate`
+        "lastUpdate",
+        Nil,
+        // String value will be converted to numeric
+        value = AspectQueryStringValue("23432879")
+      )
+      val sql = aq.toSql()
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe " exists (SELECT 1 FROM records where (recordid, tenantid)=(\"records\".\"recordid\", \"records\".\"tenantid\") and COALESCE(lastupdate::NUMERIC = ?::NUMERIC, FALSE))".stripMargin.stripLineEndingWhitespaces.trim
+      sql.get.parameters shouldBe List("23432879")
+    }
+
+    it(
+      "should query against `lastupdate` column with aspectId = `lastupdate` & numeric value"
+    ) {
+      val aq = AspectQueryWithValue(
+        "lastupdate", // lowercase also work
+        Nil,
+        value = AspectQueryBigDecimalValue(23432879) // numeric type also work
+      )
+      val sql = aq.toSql()
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe " exists (SELECT 1 FROM records where (recordid, tenantid)=(\"records\".\"recordid\", \"records\".\"tenantid\") and COALESCE(lastupdate::NUMERIC = ?::NUMERIC, FALSE))".stripMargin.stripLineEndingWhitespaces.trim
+      sql.get.parameters shouldBe List(23432879)
+    }
+
+    it(
+      "should throw an error when query against `lastupdate` column with aspectId = `lastUpdate` & bool value"
+    ) {
+      val aq = AspectQueryWithValue(
+        // different case should be convert to lowercase `lastupdate`
+        "lastUpdate",
+        Nil,
+        value = AspectQueryBooleanValue(true)
+      )
+      val thrown = the[Error] thrownBy aq.toSql()
+      thrown.getMessage shouldBe ("Failed to convert `AspectQueryWithValue` into record property query (aspectId = `lastUpdate`): cannot convert bool value to numeric value.")
+    }
+
+    it(
+      "should throw an error when query with an not exist record property name"
+    ) {
+      val aq = AspectQueryWithValue(
+        "aNonExistRecordPropertyName",
+        Nil,
+        value = AspectQueryStringValue("xxxxxweews")
+      )
+      val thrown = the[Error] thrownBy aq.toSql()
+      thrown.getMessage shouldBe ("Invalid AspectQueryWithValue: aNonExistRecordPropertyName is not valid or supported record property / aspect name.")
+    }
+
+    it(
+      "should query against `tenantid` column and convert value as TEXT with aspectId = `tenantId`, negated = true & number value"
+    ) {
+      val aq = AspectQueryWithValue(
+        "tenantId", // will be converted to lowercase in SQL
+        Nil,
+        negated = true,
+        // all id meaning column we always treat as text
+        value = AspectQueryBigDecimalValue(213233222)
+      )
+      val sql = aq.toSql()
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe " not exists (SELECT 1 FROM records where (recordid, tenantid)=(\"records\".\"recordid\", \"records\".\"tenantid\") and COALESCE(tenantid::TEXT = ?::TEXT, FALSE))".stripMargin.stripLineEndingWhitespaces.trim
+      sql.get.parameters shouldBe List(213233222)
+    }
+
+  }
+
+  describe("AspectQueryArrayNotEmpty") {
+    it("should produce correct sql query") {
+      val aq = AspectQueryArrayNotEmpty("testAspect", List("fieldA", "fieldB"))
+      val sql = aq.toSql()
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces shouldBe """ exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+                                                          |           (data #> string_to_array(?, ',')) IS NOT NULL
+                                                          |        )""".stripMargin.stripLineEndingWhitespaces
+      // we attempt to retrieve the first element and test whether it is NULL
+      sql.get.parameters shouldBe List("testAspect", "fieldA,fieldB,0")
+    }
+
+    it("should produce correct sql query when negated = true") {
+      val aq =
+        AspectQueryArrayNotEmpty("testAspect", List("fieldA", "fieldB"), true)
+      val sql = aq.toSql()
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces shouldBe """ not exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+                                                          |           (data #> string_to_array(?, ',')) IS NOT NULL
+                                                          |        )""".stripMargin.stripLineEndingWhitespaces
+      sql.get.parameters shouldBe List("testAspect", "fieldA,fieldB,0")
+    }
+
+    it("should throw an error when path is Nil") {
+      val aq = AspectQueryArrayNotEmpty("testAspect", Nil)
+      val thrown = the[Error] thrownBy aq.toSql()
+      thrown.getMessage shouldBe ("Invalid AspectQueryArrayNotEmpty for aspectId `testAspect` path cannot be empty.")
+    }
+
+  }
+
+  describe("AspectQueryValueInArray") {
+    it("should produce correct sql query") {
+      val aq = AspectQueryValueInArray(
+        "testAspect",
+        List("fieldA", "fieldB"),
+        value = AspectQueryBigDecimalValue(1.56)
+      )
+      val sql = aq.toSql()
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces shouldBe """ exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+                                                          |           COALESCE(
+                                                          |              (data::JSONB #> string_to_array(?, ',')::JSONB) @> ?::TEXT::JSONB,
+                                                          |              FALSE
+                                                          |            )
+                                                          |        )""".stripMargin.stripLineEndingWhitespaces
+      // we attempt to retrieve the first element and test whether it is NULL
+      sql.get.parameters shouldBe List("testAspect", "fieldA,fieldB", 1.56)
+    }
+
+    it("should produce correct sql query when negated = true") {
+      val aq =
+        AspectQueryValueInArray(
+          "testAspect",
+          List("fieldA", "fieldB"),
+          value = AspectQueryBooleanValue(true),
+          true
+        )
+      val sql = aq.toSql()
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces shouldBe """ not exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+                                                          |           COALESCE(
+                                                          |              (data::JSONB #> string_to_array(?, ',')::JSONB) @> ?::TEXT::JSONB,
+                                                          |              FALSE
+                                                          |            )
+                                                          |        )""".stripMargin.stripLineEndingWhitespaces
+      sql.get.parameters shouldBe List("testAspect", "fieldA,fieldB", true)
+    }
+
+    it("should throw an error when path is Nil") {
+      val aq = AspectQueryValueInArray(
+        "testAspect",
+        Nil,
+        AspectQueryStringValue("sdsdds")
+      )
+      val thrown = the[Error] thrownBy aq.toSql()
+      thrown.getMessage shouldBe ("Invalid AspectQueryValueInArray for aspectId `testAspect` path cannot be empty.")
+    }
+
+  }
+
+  describe("AspectQueryGroup") {
+    it(
+      "should by default produce sql and join aspect query together with `and`"
+    ) {
+      val qs = AspectQueryGroup(
+        queries = Seq(
+          AspectQueryValueInArray(
+            "testaspect1",
+            Seq("field1", "field2"),
+            value = AspectQueryStringValue("sssss")
+          ),
+          AspectQueryExists("testaspect2", Seq("field3", "field4"))
+        )
+      )
+      val sql = qs.toSql()
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces shouldBe """ exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+                                                          |           COALESCE(
+                                                          |              (data::JSONB #> string_to_array(?, ',')::JSONB) @> ?::TEXT::JSONB,
+                                                          |              FALSE
+                                                          |            )
+                                                          |        ) and  exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+                                                          |           (data #> string_to_array(?, ',')) IS NOT NULL
+                                                          |        )""".stripMargin.stripLineEndingWhitespaces
+      // we attempt to retrieve the first element and test whether it is NULL
+      sql.get.parameters shouldBe List(
+        "testaspect1",
+        "field1,field2",
+        "sssss",
+        "testaspect2",
+        "field3,field4"
+      )
+    }
+
+    it(
+      "should join aspect query together with `OR` with set `joinWithAnd` = false"
+    ) {
+      val qs = AspectQueryGroup(
+        queries = Seq(
+          AspectQueryValueInArray(
+            "testaspect1",
+            Seq("field1", "field2"),
+            value = AspectQueryStringValue("sssss")
+          ),
+          AspectQueryExists("testaspect2", Seq("field3", "field4"))
+        ),
+        joinWithAnd = false
+      )
+      val sql = qs.toSql()
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces shouldBe """ exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+                                                          |           COALESCE(
+                                                          |              (data::JSONB #> string_to_array(?, ',')::JSONB) @> ?::TEXT::JSONB,
+                                                          |              FALSE
+                                                          |            )
+                                                          |        ) or  exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+                                                          |           (data #> string_to_array(?, ',')) IS NOT NULL
+                                                          |        )""".stripMargin.stripLineEndingWhitespaces
+      // we attempt to retrieve the first element and test whether it is NULL
+      sql.get.parameters shouldBe List(
+        "testaspect1",
+        "field1,field2",
+        "sssss",
+        "testaspect2",
+        "field3,field4"
+      )
+    }
+
+    it(
+      "should skip other aspect queries when contains a AspectQueryFalse (joinWithAnd = true i.e. AND)"
+    ) {
+      val qs = AspectQueryGroup(
+        queries = Seq(
+          AspectQueryValueInArray(
+            "testaspect1",
+            Seq("field1", "field2"),
+            value = AspectQueryStringValue("sssss")
+          ),
+          new AspectQueryFalse,
+          AspectQueryExists("testaspect2", Seq("field3", "field4"))
+        ),
+        joinWithAnd = true
+      )
+      val sql = qs.toSql()
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces shouldBe "FALSE"
+      sql.get.parameters shouldBe Nil
+    }
+
+    it(
+      "should skip other aspect queries when contains a AspectQueryTrue (joinWithAnd = false i.e. OR)"
+    ) {
+      val qs = AspectQueryGroup(
+        queries = Seq(
+          AspectQueryValueInArray(
+            "testaspect1",
+            Seq("field1", "field2"),
+            value = AspectQueryStringValue("sssss")
+          ),
+          new AspectQueryTrue,
+          AspectQueryExists("testaspect2", Seq("field3", "field4"))
+        ),
+        joinWithAnd = false
+      )
+      val sql = qs.toSql()
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces shouldBe "TRUE"
+      sql.get.parameters shouldBe Nil
+    }
+
+    it(
+      "should produce correct SQL when negated = true"
+    ) {
+      val qs = AspectQueryGroup(
+        queries = Seq(
+          AspectQueryValueInArray(
+            "testaspect1",
+            Seq("field1", "field2"),
+            value = AspectQueryStringValue("sssss")
+          ),
+          AspectQueryExists("testaspect2", Seq("field3", "field4"))
+        ),
+        negated = true
+      )
+      val sql = qs.toSql()
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces shouldBe """NOT ( exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+                                                          |           COALESCE(
+                                                          |              (data::JSONB #> string_to_array(?, ',')::JSONB) @> ?::TEXT::JSONB,
+                                                          |              FALSE
+                                                          |            )
+                                                          |        ) and  exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
+                                                          |           (data #> string_to_array(?, ',')) IS NOT NULL
+                                                          |        ))""".stripMargin.stripLineEndingWhitespaces
+      // we attempt to retrieve the first element and test whether it is NULL
+      sql.get.parameters shouldBe List(
+        "testaspect1",
+        "field1,field2",
+        "sssss",
+        "testaspect2",
+        "field3,field4"
+      )
+    }
+
+    it(
+      "should skip other aspect queries when contains a AspectQueryTrue (joinWithAnd = false i.e. OR) and produce correct SQL when negated = true"
+    ) {
+      val qs = AspectQueryGroup(
+        queries = Seq(
+          AspectQueryValueInArray(
+            "testaspect1",
+            Seq("field1", "field2"),
+            value = AspectQueryStringValue("sssss")
+          ),
+          new AspectQueryTrue,
+          AspectQueryExists("testaspect2", Seq("field3", "field4"))
+        ),
+        joinWithAnd = false,
+        negated = true
+      )
+      val sql = qs.toSql()
+      sql.isDefined shouldBe true
+      sql.get.value.stripLineEndingWhitespaces shouldBe "NOT (TRUE)"
+      sql.get.parameters shouldBe Nil
+    }
+
+  }
+
 }
