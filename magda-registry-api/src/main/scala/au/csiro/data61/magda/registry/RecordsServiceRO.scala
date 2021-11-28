@@ -62,9 +62,9 @@ class RecordsServiceRO(
     *   - `:?`  matches a pattern, case insensitive. Use Postgresql [ILIKE](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-LIKE) operator.
     *     - e.g. `:?%rating%` will match the field contains keyword `rating`
     *     - e.g. `:?rating%` will match the field starts with keyword `rating`
-    *   - `:!?` does not match a pattern, case insensitive. Use Postgresql [NOT ILIKE](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-LIKE) operator
+    *   - `:!?` does not match a pattern, case insensitive. negative version of `:?`.
     *   - `:~`  matches POSIX regular expression, case insensitive. Use Postgresql [~*](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-POSIX-REGEXP) operator
-    *   - `:!~` does not match POSIX regular expression, case insensitive. Use Postgresql [!~*](https://www.postgresql.org/docs/9.6/functions-matching.html#FUNCTIONS-POSIX-REGEXP) operator
+    *   - `:!~` does not match POSIX regular expression, case insensitive. negative version of `:~`.
     *   - `:>`  greater than
     *   - `:>=` greater than or equal to
     *   - `:<`  less than

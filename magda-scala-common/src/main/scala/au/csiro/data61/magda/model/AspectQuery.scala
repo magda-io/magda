@@ -364,76 +364,99 @@ object AspectQuery {
       throw new Exception("Path for aspect query was empty")
     }
 
-    if (opStr == ":!") {
-      AspectQueryWithValue(
-        pathParts.head,
-        pathParts.tail,
-        AspectQueryStringValue(valueStr),
-        negated = true
-      )
-    } else {
-      val (sqlOp, sqlValue) = opStr match {
-        case ":" =>
-          // --- for =, compare as text works for other types (e.g. numeric as well)
-          (SQLSyntax.createUnsafely("="), AspectQueryStringValue(valueStr))
-        case ":?" =>
-          (
-            SQLSyntax.createUnsafely("ILIKE"),
+    opStr match {
+      case ":" =>
+        // --- for =, compare as text works for other types (e.g. numeric as well)
+        AspectQueryWithValue(
+          aspectId = pathParts.head,
+          path = pathParts.tail,
+          value = AspectQueryStringValue(valueStr),
+          operator = SQLSyntax.createUnsafely("=")
+        )
+      case ":!" =>
+        AspectQueryWithValue(
+          aspectId = pathParts.head,
+          path = pathParts.tail,
+          value = AspectQueryStringValue(valueStr),
+          operator = SQLSyntax.createUnsafely("="),
+          negated = true
+        )
+      case ":?" =>
+        AspectQueryWithValue(
+          aspectId = pathParts.head,
+          path = pathParts.tail,
+          value = AspectQueryStringValue(valueStr),
+          operator = SQLSyntax.createUnsafely("ILIKE")
+        )
+      case ":!?" =>
+        AspectQueryWithValue(
+          aspectId = pathParts.head,
+          path = pathParts.tail,
+          value = AspectQueryStringValue(valueStr),
+          operator = SQLSyntax.createUnsafely("ILIKE"),
+          negated = true
+        )
+      case ":~" =>
+        AspectQueryWithValue(
+          aspectId = pathParts.head,
+          path = pathParts.tail,
+          value = AspectQueryStringValue(valueStr),
+          operator = SQLSyntax.createUnsafely("~*")
+        )
+      case ":!~" =>
+        AspectQueryWithValue(
+          aspectId = pathParts.head,
+          path = pathParts.tail,
+          value = AspectQueryStringValue(valueStr),
+          operator = SQLSyntax.createUnsafely("~*"),
+          negated = true
+        )
+      case ":>" =>
+        AspectQueryWithValue(
+          aspectId = pathParts.head,
+          path = pathParts.tail,
+          value = if (numericValueRegex matches valueStr) {
+            AspectQueryBigDecimalValue(valueStr.toDouble)
+          } else {
             AspectQueryStringValue(valueStr)
-          )
-        case ":!?" =>
-          (
-            SQLSyntax.createUnsafely("NOT ILIKE"),
+          },
+          operator = SQLSyntax.createUnsafely(">")
+        )
+      case ":>=" =>
+        AspectQueryWithValue(
+          aspectId = pathParts.head,
+          path = pathParts.tail,
+          value = if (numericValueRegex matches valueStr) {
+            AspectQueryBigDecimalValue(valueStr.toDouble)
+          } else {
             AspectQueryStringValue(valueStr)
-          )
-        case ":~" =>
-          (
-            SQLSyntax.createUnsafely("~*"),
+          },
+          operator = SQLSyntax.createUnsafely(">=")
+        )
+      case ":<" =>
+        AspectQueryWithValue(
+          aspectId = pathParts.head,
+          path = pathParts.tail,
+          value = if (numericValueRegex matches valueStr) {
+            AspectQueryBigDecimalValue(valueStr.toDouble)
+          } else {
             AspectQueryStringValue(valueStr)
-          )
-        case ":!~" =>
-          (
-            SQLSyntax.createUnsafely("!~*"),
+          },
+          operator = SQLSyntax.createUnsafely("<")
+        )
+      case ":<=" =>
+        AspectQueryWithValue(
+          aspectId = pathParts.head,
+          path = pathParts.tail,
+          value = if (numericValueRegex matches valueStr) {
+            AspectQueryBigDecimalValue(valueStr.toDouble)
+          } else {
             AspectQueryStringValue(valueStr)
-          )
-        case ":>" =>
-          (
-            SQLSyntax.createUnsafely(">"),
-            if (numericValueRegex matches valueStr) {
-              AspectQueryBigDecimalValue(valueStr.toDouble)
-            } else {
-              AspectQueryStringValue(valueStr)
-            }
-          )
-        case ":>=" =>
-          (
-            SQLSyntax.createUnsafely(">="),
-            if (numericValueRegex matches valueStr) {
-              AspectQueryBigDecimalValue(valueStr.toDouble)
-            } else {
-              AspectQueryStringValue(valueStr)
-            }
-          )
-        case ":<" =>
-          (
-            SQLSyntax.createUnsafely("<"),
-            if (numericValueRegex matches valueStr) {
-              AspectQueryBigDecimalValue(valueStr.toDouble)
-            } else {
-              AspectQueryStringValue(valueStr)
-            }
-          )
-        case ":<=" =>
-          (SQLSyntax.createUnsafely("<="), AspectQueryStringValue(valueStr))
-        case _ =>
-          throw new Error(s"Unsupported aspectQuery operator: ${opStr}")
-      }
-      AspectQueryWithValue(
-        pathParts.head,
-        pathParts.tail,
-        sqlValue,
-        sqlOp
-      )
+          },
+          operator = SQLSyntax.createUnsafely("<=")
+        )
+      case _ =>
+        throw new Error(s"Unsupported aspectQuery operator: ${opStr}")
     }
 
   }

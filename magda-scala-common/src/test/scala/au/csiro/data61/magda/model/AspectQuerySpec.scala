@@ -3,17 +3,8 @@ package au.csiro.data61.magda.model
 import akka.actor.ActorSystem
 import org.scalatest.{FunSpec, Matchers}
 import au.csiro.data61.magda.util.StringUtils._
-
-import scala.io.BufferedSource
-import scala.io.Source.fromFile
-import spray.json._
-
-import java.io.File
-import au.csiro.data61.magda.model.Registry
 import scalikejdbc.interpolation.SQLSyntax
-
-import scala.util.{Failure, Success, Try}
-import java.time.ZoneOffset
+import io.lemonlabs.uri.{Url, QueryString, UrlPath}
 
 class AspectQuerySpec extends FunSpec with Matchers {
 
@@ -539,6 +530,197 @@ class AspectQuerySpec extends FunSpec with Matchers {
       sql.get.value.stripLineEndingWhitespaces shouldBe "NOT (TRUE)"
       sql.get.parameters shouldBe Nil
     }
+
+  }
+
+  describe("AspectQuery.parse (parse registry API query string aspect query)") {
+    def testAspectQueryString(
+        queryString: String,
+        verify: (AspectQuery => Unit)
+    ) = {
+      it(
+        s"should parse query string `${queryString}` into aspectQuery correctly"
+      ) {
+        val qs = QueryString.parse(queryString)
+        qs.param("aspectQuery").map(AspectQuery.parse(_)).map(verify(_))
+        qs.param("aspectQuery").isDefined shouldBe true
+      }
+    }
+
+    testAspectQueryString(
+      "aspectQuery=order.account.id:clientA%253Aorder%253A1234",
+      aq =>
+        aq match {
+          case AspectQueryWithValue(
+              aspectId,
+              path,
+              value,
+              operator,
+              negated,
+              placeReferenceFirst
+              ) =>
+            aspectId shouldBe "order"
+            path.mkString(".") shouldBe "account.id"
+            value shouldBe AspectQueryStringValue("clientA:order:1234")
+            operator.value shouldBe "="
+            negated shouldBe false
+            placeReferenceFirst shouldBe true
+        }
+    )
+
+    testAspectQueryString(
+      "aspectQuery=dcat-dataset-strings.title:?%2525rating%2525",
+      aq =>
+        aq match {
+          case AspectQueryWithValue(
+              aspectId,
+              path,
+              value,
+              operator,
+              negated,
+              placeReferenceFirst
+              ) =>
+            aspectId shouldBe "dcat-dataset-strings"
+            path.mkString(".") shouldBe "title"
+            value shouldBe AspectQueryStringValue("%rating%") // searching any string contains ratings keywords
+            operator.value shouldBe "ILIKE"
+            negated shouldBe false
+            placeReferenceFirst shouldBe true
+        }
+    )
+
+    testAspectQueryString(
+      "aspectQuery=testAspect.field1:!value1",
+      aq =>
+        aq match {
+          case AspectQueryWithValue(
+              aspectId,
+              path,
+              value,
+              operator,
+              negated,
+              placeReferenceFirst
+              ) =>
+            aspectId shouldBe "testAspect"
+            path.mkString(".") shouldBe "field1"
+            value shouldBe AspectQueryStringValue("value1")
+            operator.value shouldBe "="
+            negated shouldBe true
+            placeReferenceFirst shouldBe true
+        }
+    )
+
+    testAspectQueryString(
+      "aspectQuery=testAspect2.field2:!?value2",
+      aq =>
+        aq match {
+          case AspectQueryWithValue(
+              aspectId,
+              path,
+              value,
+              operator,
+              negated,
+              placeReferenceFirst
+              ) =>
+            aspectId shouldBe "testAspect2"
+            path.mkString(".") shouldBe "field2"
+            value shouldBe AspectQueryStringValue("value2")
+            operator.value shouldBe "ILIKE"
+            negated shouldBe true
+            placeReferenceFirst shouldBe true
+        }
+    )
+
+    testAspectQueryString(
+      "aspectQuery=testAspect3.field3:~value3",
+      aq =>
+        aq match {
+          case AspectQueryWithValue(
+              aspectId,
+              path,
+              value,
+              operator,
+              negated,
+              placeReferenceFirst
+              ) =>
+            aspectId shouldBe "testAspect3"
+            path.mkString(".") shouldBe "field3"
+            value shouldBe AspectQueryStringValue("value3")
+            operator.value shouldBe "~*"
+            negated shouldBe false
+            placeReferenceFirst shouldBe true
+        }
+    )
+
+    testAspectQueryString(
+      "aspectQuery=testAspect4.field4:!~value4",
+      aq =>
+        aq match {
+          case AspectQueryWithValue(
+              aspectId,
+              path,
+              value,
+              operator,
+              negated,
+              placeReferenceFirst
+              ) =>
+            aspectId shouldBe "testAspect4"
+            path.mkString(".") shouldBe "field4"
+            value shouldBe AspectQueryStringValue("value4")
+            operator.value shouldBe "~*"
+            negated shouldBe true
+            placeReferenceFirst shouldBe true
+        }
+    )
+
+    def testComparisonOperators(operators: Seq[String]): Unit = {
+      operators.map { opt =>
+        testAspectQueryString(
+          s"aspectQuery=testAspect.field:${opt}test-string-value",
+          aq =>
+            aq match {
+              case AspectQueryWithValue(
+                  aspectId,
+                  path,
+                  value,
+                  operator,
+                  negated,
+                  placeReferenceFirst
+                  ) =>
+                aspectId shouldBe "testAspect"
+                path.mkString(".") shouldBe "field"
+                value shouldBe AspectQueryStringValue("test-string-value")
+                operator.value shouldBe opt
+                negated shouldBe false
+                placeReferenceFirst shouldBe true
+            }
+        )
+
+        testAspectQueryString(
+          s"aspectQuery=testAspect.field:${opt}1.54",
+          aq =>
+            aq match {
+              case AspectQueryWithValue(
+                  aspectId,
+                  path,
+                  value,
+                  operator,
+                  negated,
+                  placeReferenceFirst
+                  ) =>
+                aspectId shouldBe "testAspect"
+                path.mkString(".") shouldBe "field"
+                // AspectQueryBigDecimalValue should be created for aspectQuery value that's in numeric text
+                value shouldBe AspectQueryBigDecimalValue(1.54)
+                operator.value shouldBe opt
+                negated shouldBe false
+                placeReferenceFirst shouldBe true
+            }
+        )
+      }
+    }
+
+    testComparisonOperators(List(">", "<", ">=", "<="))
 
   }
 
