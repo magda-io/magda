@@ -8,6 +8,7 @@ import org.json.JSONObject
 import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
 import au.csiro.data61.magda.model.TenantId._
+import au.csiro.data61.magda.model.Auth.UnconditionalTrueDecision
 
 class AspectValidator(config: Config, recordPersistence: RecordPersistence) {
   def DEFAULT_META_SCHEMA_URI = "https://json-schema.org/draft-07/schema#"
@@ -68,9 +69,9 @@ class AspectValidator(config: Config, recordPersistence: RecordPersistence) {
   )(implicit session: DBSession): Unit = {
     val originalAspect = (recordPersistence.getRecordAspectById(
       tenantId,
+      UnconditionalTrueDecision,
       recordId,
-      aspectId,
-      None
+      aspectId
     ) match {
       case Some(aspect) => aspect
       case None         => JsObject()

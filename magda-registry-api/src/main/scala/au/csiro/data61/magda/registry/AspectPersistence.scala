@@ -6,19 +6,19 @@ import spray.json.JsonParser
 import scala.util.Try
 import scala.util.{Failure, Success}
 import java.sql.SQLException
-
 import spray.json._
 import gnieh.diffson.sprayJson._
-
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.model.TenantId._
+import au.csiro.data61.magda.util.SQLUtils
 
 object AspectPersistence extends Protocols with DiffsonProtocol {
 
   def getAll(
       tenantId: TenantId
   )(implicit session: DBSession): List[AspectDefinition] = {
-    sql"select aspectId, name, jsonSchema, tenantId from Aspects where ${SQLUtil.tenantIdToWhereClause(tenantId)}"
+    sql"select aspectId, name, jsonSchema, tenantId from Aspects ${SQLSyntax
+      .where(SQLUtils.tenantIdToWhereClause(tenantId, "tenantid"))}"
       .map(rowToAspect)
       .list
       .apply()
@@ -28,8 +28,11 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
       id: String,
       tenantId: TenantId
   )(implicit session: DBSession): Option[AspectDefinition] = {
-    sql"""select aspectId, name, jsonSchema, tenantId from Aspects where aspectId=$id and ${SQLUtil
-      .tenantIdToWhereClause(tenantId)}""".map(rowToAspect).single.apply()
+    sql"select aspectId, name, jsonSchema, tenantId from Aspects ${SQLSyntax
+      .where(SQLSyntax.toAndConditionOpt(Some(sqls"aspectId=$id"), SQLUtils.tenantIdToWhereClause(tenantId, "tenantid")))}"
+      .map(rowToAspect)
+      .single
+      .apply()
   }
 
   def getByIds(
@@ -39,8 +42,8 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
     if (ids.isEmpty)
       List()
     else {
-      sql"""select aspectId, name, jsonSchema, tenantId from Aspects where ${SQLUtil
-        .tenantIdToWhereClause(tenantId)} and aspectId in ($ids)"""
+      sql"select aspectId, name, jsonSchema, tenantId from Aspects ${SQLSyntax
+        .where(SQLSyntax.toAndConditionOpt(Some(sqls"aspectId in ($ids)"), SQLUtils.tenantIdToWhereClause(tenantId, "tenantid")))}"
         .map(rowToAspect)
         .list
         .apply()
