@@ -6,8 +6,6 @@ import akka.event.LoggingAdapter
 import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.model.TenantId._
-import au.csiro.data61.magda.opa.OpaTypes._
-import au.csiro.data61.magda.registry.SqlHelper.getOpaConditions
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import scalikejdbc._
@@ -19,11 +17,16 @@ import au.csiro.data61.magda.model.Auth.{
   AuthDecision,
   UnconditionalTrueDecision
 }
-import au.csiro.data61.magda.model.{AspectQuery, AspectQueryGroup}
+import au.csiro.data61.magda.model.{
+  AspectQuery,
+  AspectQueryExists,
+  AspectQueryGroup
+}
 
 import scala.util.{Failure, Success, Try}
 import com.typesafe.config.Config
 import scalikejdbc.interpolation.SQLSyntax
+import au.csiro.data61.magda.util.SQLUtils
 
 trait RecordPersistence {
 
@@ -275,12 +278,12 @@ class DefaultRecordPersistence(config: Config)
 
   def getAll(
       tenantId: TenantId,
-      opaQueries: Option[List[(String, List[List[OpaQuery]])]],
+      authDecision: AuthDecision,
       pageToken: Option[String],
       start: Option[Int],
       limit: Option[Int]
   )(implicit session: DBSession): RecordsPage[RecordSummary] = {
-    this.getSummaries(tenantId, opaQueries, pageToken, start, limit)
+    this.getSummaries(tenantId, authDecision, pageToken, start, limit)
   }
 
   private def getSqlFromAspectQueries(
@@ -297,7 +300,9 @@ class DefaultRecordPersistence(config: Config)
       AspectQueryGroup(aspectOrQueries, joinWithAnd = false)
         .toSql(recordIdSqlRef, tenantIdSqlRef)
 
-    SQLSyntax.toAndConditionOpt(andConditions, orConditions)
+    SQLSyntax
+      .toAndConditionOpt(andConditions, orConditions)
+      .map(SQLSyntax.roundBracket(_))
   }
 
   def getAllWithAspects(
@@ -338,9 +343,6 @@ class DefaultRecordPersistence(config: Config)
     )
   }
 
-  // If a system tenant makes the request with aspectIds, it will always return 0.
-  // Is this what we want?
-  // See ticket https://github.com/magda-io/magda/issues/2360
   def getCount(
       tenantId: TenantId,
       authDecision: AuthDecision,
@@ -349,25 +351,22 @@ class DefaultRecordPersistence(config: Config)
       aspectOrQueries: Iterable[AspectQuery] = Nil
   )(implicit session: DBSession): Long = {
 
-    val selectors = Seq(
-      getSqlFromAspectQueries(aspectQueries.toSeq, aspectOrQueries.toSeq)
-    )
-
     this.getCountInner(
       tenantId,
       authDecision,
       aspectIds,
-      selectors
+      aspectQueries,
+      aspectOrQueries
     )
   }
 
   def getById(
       tenantId: TenantId,
-      opaQueries: Option[List[(String, List[List[OpaQuery]])]],
+      authDecision: AuthDecision,
       id: String
   )(implicit session: DBSession): Option[RecordSummary] = {
     this
-      .getSummaries(tenantId, opaQueries, None, None, None, Some(id))
+      .getSummaries(tenantId, authDecision, None, None, None, Some(id))
       .records
       .headOption
   }
@@ -437,12 +436,19 @@ class DefaultRecordPersistence(config: Config)
     } else {
       val dereferenceSelectors = linkAspects.map {
         case (aspectId, propertyWithLink) =>
-          sqls"""exists (select 1
-                         from RecordAspects
-                         where RecordAspects.recordId=Records.recordId
-                         and aspectId=$aspectId
-                         and ${SQLUtil.tenantIdToWhereClause(tenantId)}
-                         and jsonb_exists_any(data->${propertyWithLink.propertyName}, ARRAY[$ids]))"""
+          SQLSyntax
+            .exists(sqls"select 1 from RecordAspects")
+            .where(
+              SQLSyntax.toAndConditionOpt(
+                Some(sqls"RecordAspects.recordId=Records.recordId"),
+                Some(sqls"aspectId=$aspectId"),
+                SQLUtils
+                  .tenantIdToWhereClause(tenantId, "recordaspects.tenantid"),
+                Some(
+                  sqls"jsonb_exists_any(data->${propertyWithLink.propertyName}, ARRAY[$ids]))"
+                )
+              )
+            )
       }
 
       val excludeSelector =
@@ -470,24 +476,28 @@ class DefaultRecordPersistence(config: Config)
 
   def getRecordAspectById(
       tenantId: TenantId,
+      authDecision: AuthDecision,
       recordId: String,
-      aspectId: String,
-      opaQueries: Option[List[(String, List[List[OpaQuery]])]]
+      aspectId: String
   )(implicit session: DBSession): Option[JsObject] = {
-    val opaSql =
-      getOpaConditions(opaQueries, AuthOperations.read, defaultOpaPolicyId)
+    val authDecisionWhereClause = authDecision.toSql(
+      recordIdSqlRef = "ras.recordid",
+      tenantIdSqlRef = "ras.tenantid"
+    )
 
-    sql"""select RecordAspects.aspectId as aspectId, Aspects.name as aspectName, data, RecordAspects.tenantId
-          from RecordAspects
+    sql"""select ras.aspectId as aspectId, Aspects.name as aspectName, data, ras.tenantId
+          from RecordAspects AS ras
           inner join Aspects using (aspectId, tenantId)
           inner join Records using (recordId, tenantId)
-where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AND ${SQLUtil
-      .tenantIdToWhereClause(
-        tenantId,
-        Some(SQLSyntax.createUnsafely("RecordAspects"))
-      )}
-	        and $opaSql
-      """
+          ${SQLSyntax.where(
+      SQLSyntax.toAndConditionOpt(
+        Some(
+          sqls"(ras.recordId, ras.aspectId)=($recordId, $aspectId)"
+        ),
+        SQLUtils.tenantIdToWhereClause(tenantId, "ras.tenantid"),
+        authDecisionWhereClause
+      )
+    )}"""
       .map(rowToAspect)
       .single
       .apply()
@@ -504,14 +514,14 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
 
     val authQueryConditions = authDecision.toSql()
 
-    val aspectWhereClauses: Seq[Option[SQLSyntax]] = aspectIdsToWhereClause(
-      tenantId,
+    val aspectWhereClauses = aspectIdsToWhereClause(
       aspectIds
     )
 
-    val whereClauseParts
-        : Seq[Option[SQLSyntax]] = recordSelector.toSeq ++ aspectWhereClauses :+ authQueryConditions :+ Some(
-      recordsFilteredByTenantClause
+    val whereClause = SQLSyntax.where(
+      SQLSyntax.toAndConditionOpt(
+        (recordSelector.toSeq :+ aspectWhereClauses :+ authQueryConditions :+ recordsFilteredByTenantClause): _*
+      )
     )
 
     sql"""SELECT sequence
@@ -519,7 +529,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
         (
             SELECT sequence, ROW_NUMBER() OVER (ORDER BY sequence) AS rownum
             FROM records
-            ${makeWhereClause(whereClauseParts)}
+            ${whereClause}
         ) AS t
         WHERE t.rownum % ${limit
       .map(l => Math.min(l, maxResultCount))
@@ -572,7 +582,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
         // we don't end up with an extraneous record creation event in the database.
         case None =>
           // Check if record exists without any auth
-          this.getById(tenantId, None, id) match {
+          this.getById(tenantId, UnconditionalTrueDecision, id) match {
             case Some(record) =>
               Failure(
                 // TODO: Return a better error code.
@@ -917,9 +927,9 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
     for {
       aspect <- (this.getRecordAspectById(
         tenantId,
+        UnconditionalTrueDecision,
         recordId,
-        aspectId,
-        None
+        aspectId
       ) match {
         case Some(aspect) => Success(aspect)
         // --- should not create a default empty aspect: empty aspect will likely be invalid if schema requires certain fields
@@ -996,9 +1006,9 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       }
       (oldAspect, eventId) <- this.getRecordAspectById(
         tenantId,
+        UnconditionalTrueDecision,
         recordId,
-        aspectId,
-        None
+        aspectId
       ) match {
         case Some(aspect) => Success((aspect, None))
         // Possibility of a race condition here. The aspect doesn't exist, so we try to create it.
@@ -1022,9 +1032,9 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
             case Failure(e) =>
               this.getRecordAspectById(
                 tenantId,
+                UnconditionalTrueDecision,
                 recordId,
-                aspectId,
-                None
+                aspectId
               ) match {
                 case Some(aspect) => Success((aspect, None))
                 case None         => Failure(e)
@@ -1433,35 +1443,19 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
   // See ticket https://github.com/magda-io/magda/issues/2359
   private def getSummaries(
       tenantId: TenantId,
-      opaQueries: Option[List[(String, List[List[OpaQuery]])]],
+      authDecision: AuthDecision,
       pageToken: Option[String],
       start: Option[Int],
       rawLimit: Option[Int],
       recordId: Option[String] = None
   )(implicit session: DBSession): RecordsPage[RecordSummary] = {
-    val countWhereClauseParts =
-      if (recordId.nonEmpty)
-        Seq(
-          recordId.map(
-            id =>
-              sqls"recordId=$id and ${SQLUtil.tenantIdToWhereClause(tenantId, Some(SQLSyntax.createUnsafely("Records")))}"
-          )
-        )
-      else
-        Seq(
-          Some(
-            sqls"${SQLUtil.tenantIdToWhereClause(tenantId, Some(SQLSyntax.createUnsafely("Records")))}"
-          )
-        )
+    val idWhereClause = recordId.map(id => sqls"Records.recordId=$id")
+    val authDecisionCondition = authDecision.toSql()
 
-    val opaConditions =
-      getOpaConditions(opaQueries, AuthOperations.read, defaultOpaPolicyId)
-
-    val whereClauseParts = countWhereClauseParts :+ Option(opaConditions) :+ pageToken
+    val whereClauseParts = Seq(idWhereClause) :+ authDecisionCondition :+ SQLUtils
+      .tenantIdToWhereClause(tenantId) :+ pageToken
       .map(
-        token =>
-          sqls"Records.sequence > ${token.toLong} and ${SQLUtil
-            .tenantIdToWhereClause(tenantId, Some(SQLSyntax.createUnsafely("Records")))}"
+        token => sqls"Records.sequence > ${token.toLong}"
       )
     val limit = rawLimit.getOrElse(defaultResultCount)
 
@@ -1469,11 +1463,11 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       sql"""select Records.sequence as sequence,
                    Records.recordId as recordId,
                    Records.name as recordName,
-                   (select array_agg(aspectId) from RecordAspects where recordId = Records.recordId and ${SQLUtil
-        .tenantIdToWhereClause(tenantId)}) as aspects,
+                   (select array_agg(aspectId) from RecordAspects where recordId = Records.recordId and ${SQLUtils
+        .tenantIdToWhereClause(tenantId, "tenantid")}) as aspects,
                    Records.tenantId as tenantId
             from Records
-            ${makeWhereClause(whereClauseParts)}
+            ${SQLSyntax.where(SQLSyntax.toAndConditionOpt(whereClauseParts: _*))}
             order by sequence
             offset ${start.getOrElse(0)}
             limit ${limit + 1}"""
@@ -1515,23 +1509,22 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       )
     }
 
-    val recordsFilteredByTenantClause: SQLSyntax = filterRecordsByTenantClause(
+    val recordsFilteredByTenantClause = filterRecordsByTenantClause(
       tenantId
     )
 
     val authQueryConditions = authDecision.toSql()
 
     val theRecordSelector = recordSelector ++ Iterable(
-      Some(recordsFilteredByTenantClause)
+      recordsFilteredByTenantClause
     )
 
-    val aspectWhereClauses: Seq[Option[SQLSyntax]] = aspectIdsToWhereClause(
-      tenantId,
+    val aspectWhereClauses = aspectIdsToWhereClause(
       aspectIds
     )
 
     val whereClauseParts: Seq[Option[SQLSyntax]] =
-      (theRecordSelector.toSeq ++ aspectWhereClauses) :+ authQueryConditions :+ pageToken
+      theRecordSelector.toSeq :+ aspectWhereClauses :+ authQueryConditions :+ pageToken
         .map(token => sqls"Records.sequence > $token")
 
     val aspectSelectors = aspectIdsToSelectClauses(
@@ -1612,43 +1605,54 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       tenantId: TenantId,
       authDecision: AuthDecision,
       aspectIds: Iterable[String],
-      recordSelector: Iterable[Option[SQLSyntax]] = Iterable()
+      aspectQueries: Iterable[AspectQuery] = Nil,
+      aspectOrQueries: Iterable[AspectQuery] = Nil
   )(implicit session: DBSession): Long = {
-    val recordsFilteredByTenantClause = filterRecordsByTenantClause(tenantId)
-    val authDecisionConditions =
-      authDecision.toSql()
-    val theRecordSelector = Iterable(Some(recordsFilteredByTenantClause)) ++ recordSelector ++ Iterable(
-      authDecisionConditions
-    )
+
     val statement = if (aspectIds.size == 1) {
       // If there's only one aspect id, it's much much more efficient to query the recordaspects table rather than records.
       // Because a record cannot have more than one aspect for each type, counting the number of recordaspects with a certain aspect type
       // is equivalent to counting the records with that type
-      val aspectIdsWhereClause = aspectIds
-        .map(
-          aspectId =>
-            sqls"${SQLUtil.tenantIdToWhereClause(tenantId, Some(SQLSyntax.createUnsafely("RecordAspects")))} and RecordAspects.aspectId=$aspectId"
+      val aspectIdsWhereClause = Some(
+        sqls"ras_tbl.aspectId=${aspectIds.head}"
+      )
+
+      val aspectQueriesClause =
+        getSqlFromAspectQueries(
+          aspectQueries.toSeq,
+          aspectOrQueries.toSeq,
+          "ras_tbl.recordid",
+          "ras_tbl.tenantid"
         )
-        .toSeq
-      val recordSelectorWhereClause = theRecordSelector.flatten
-        .map(
-          recordSelectorInner =>
-            sqls"""EXISTS(
-                     SELECT 1 FROM Records
-                     WHERE ${SQLUtil
-              .tenantIdToWhereClause(
-                tenantId,
-                Some(SQLSyntax.createUnsafely("Records"))
-              )} AND RecordAspects.recordId=Records.recordId AND $recordSelectorInner)
-              """
+
+      val whereClauses = SQLSyntax.where(
+        SQLSyntax.toAndConditionOpt(
+          aspectIdsWhereClause,
+          SQLUtils.tenantIdToWhereClause(tenantId, "ras_tbl.tenantid"),
+          authDecision.toSql(
+            recordIdSqlRef = "ras_tbl.recordid",
+            tenantIdSqlRef = "ras_tbl.tenantid"
+          ),
+          aspectQueriesClause
         )
-        .toSeq
-      val clauses =
-        (aspectIdsWhereClause ++ recordSelectorWhereClause).map(Some.apply)
-      sql"select count(*) from RecordAspects ${makeWhereClause(clauses)}"
+      )
+      sql"select count(*) from RecordAspects as ras_tbl ${whereClauses}"
     } else {
       // If there's zero or > 1 aspect ids involved then there's no advantage to querying record aspects instead.
-      sql"select count(*) from Records ${makeWhereClause(aspectIdsToWhereClause(tenantId, aspectIds) ++ theRecordSelector)}"
+      val aspectIdsWhereClause = aspectIdsToWhereClause(aspectIds)
+
+      val aspectQueriesClause =
+        getSqlFromAspectQueries(aspectQueries.toSeq, aspectOrQueries.toSeq)
+
+      val whereClauses = SQLSyntax.where(
+        SQLSyntax.toAndConditionOpt(
+          aspectIdsWhereClause,
+          SQLUtils.tenantIdToWhereClause(tenantId),
+          authDecision.toSql(),
+          aspectQueriesClause
+        )
+      )
+      sql"select count(*) from Records ${whereClauses}"
     }
 
     statement.map(_.long(1)).single.apply().getOrElse(0L)
@@ -1798,7 +1802,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       aspectIds: Iterable[String],
       dereference: Boolean = false
   )(implicit session: DBSession): Iterable[scalikejdbc.SQLSyntax] = {
-    val tenantFilterCondition = Some(filterRecordsByTenantClause(tenantId))
+    val tenantFilterCondition = filterRecordsByTenantClause(tenantId)
     val authDecisionCondition = authDecision.toSql()
 
     val accessControlConditions =
@@ -1951,30 +1955,30 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
     result
   }
 
-  private def filterRecordsByTenantClause(tenantId: TenantId) = {
+  private def filterRecordsByTenantClause(
+      tenantId: TenantId,
+      tenantIdSqlRef: String = "records.tenantid"
+  ): Option[SQLSyntax] =
     tenantId match {
       case SpecifiedTenantId(inner) if (inner >= 0) =>
-        sqls"Records.tenantId=${inner}"
-      case AllTenantsId => sqls"true"
+        Some(sqls"${SQLUtils.escapeIdentifier(tenantIdSqlRef)}=${inner}")
+      case AllTenantsId => None
       case _            => throw new Exception("Invalid tenant value " + tenantId)
     }
-  }
-  private def aspectIdsToWhereClause(
-      tenantId: TenantId,
-      aspectIds: Iterable[String]
-  ): Seq[Option[SQLSyntax]] = {
-    aspectIds.map(aspectId => aspectIdToWhereClause(tenantId, aspectId)).toSeq
-  }
 
-  private def aspectIdToWhereClause(
-      tenantId: TenantId,
-      aspectId: String
-  ) = {
-    Some(
-      sqls"""exists (
-              select 1 from recordaspects
-              where (aspectid, recordid, tenantid)=($aspectId, records.recordid, records.tenantid))
-        """
+  private def aspectIdsToWhereClause(
+      aspectIds: Iterable[String],
+      recordIdSqlRef: String = "records.recordid",
+      tenantIdSqlRef: String = "records.tenantid"
+  ): Option[SQLSyntax] = {
+    SQLSyntax.toAndConditionOpt(
+      aspectIds.toSeq
+        .map(
+          aspectId =>
+            AspectQueryExists(aspectId, path = Nil)
+              .toSql(recordIdSqlRef, tenantIdSqlRef)
+        ): _*
     )
   }
+
 }

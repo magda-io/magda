@@ -85,9 +85,9 @@ class AspectQueryFalse extends AspectQuery {
 }
 
 case class AspectQueryExists(
-    val aspectId: String,
-    val path: Seq[String],
-    val negated: Boolean = false
+    aspectId: String,
+    path: Seq[String],
+    negated: Boolean = false
 ) extends AspectQuery {
 
   def sqlQueries(): Option[SQLSyntax] = {
