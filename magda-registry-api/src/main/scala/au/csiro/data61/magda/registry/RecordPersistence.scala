@@ -510,7 +510,7 @@ class DefaultRecordPersistence(config: Config)
       limit: Option[Int] = None,
       recordSelector: Iterable[Option[SQLSyntax]] = Iterable()
   )(implicit session: DBSession): List[String] = {
-    val recordsFilteredByTenantClause = filterRecordsByTenantClause(tenantId)
+    val recordsFilteredByTenantClause = SQLUtils.tenantIdToWhereClause(tenantId)
 
     val authQueryConditions = authDecision.toSql()
 
@@ -1509,7 +1509,7 @@ class DefaultRecordPersistence(config: Config)
       )
     }
 
-    val recordsFilteredByTenantClause = filterRecordsByTenantClause(
+    val recordsFilteredByTenantClause = SQLUtils.tenantIdToWhereClause(
       tenantId
     )
 
@@ -1802,7 +1802,7 @@ class DefaultRecordPersistence(config: Config)
       aspectIds: Iterable[String],
       dereference: Boolean = false
   )(implicit session: DBSession): Iterable[scalikejdbc.SQLSyntax] = {
-    val tenantFilterCondition = filterRecordsByTenantClause(tenantId)
+    val tenantFilterCondition = SQLUtils.tenantIdToWhereClause(tenantId)
     val authDecisionCondition = authDecision.toSql()
 
     val accessControlConditions =
@@ -1954,17 +1954,6 @@ class DefaultRecordPersistence(config: Config)
 
     result
   }
-
-  private def filterRecordsByTenantClause(
-      tenantId: TenantId,
-      tenantIdSqlRef: String = "records.tenantid"
-  ): Option[SQLSyntax] =
-    tenantId match {
-      case SpecifiedTenantId(inner) if (inner >= 0) =>
-        Some(sqls"${SQLUtils.escapeIdentifier(tenantIdSqlRef)}=${inner}")
-      case AllTenantsId => None
-      case _            => throw new Exception("Invalid tenant value " + tenantId)
-    }
 
   private def aspectIdsToWhereClause(
       aspectIds: Iterable[String],
