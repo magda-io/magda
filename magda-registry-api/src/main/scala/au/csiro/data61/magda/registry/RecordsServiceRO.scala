@@ -8,14 +8,14 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
+import au.csiro.data61.magda.directives.AuthDirectives.withAuthDecision
 import au.csiro.data61.magda.model.Registry._
-import au.csiro.data61.magda.registry.Directives._
 import com.typesafe.config.Config
 import io.swagger.annotations._
 
 import javax.ws.rs.Path
 import scalikejdbc.DB
-import au.csiro.data61.magda.client.AuthOperations
+import au.csiro.data61.magda.client.{AuthDecisionReqConfig}
 import au.csiro.data61.magda.model.AspectQuery
 import scalikejdbc.interpolation.SQLSyntax
 
@@ -238,102 +238,88 @@ class RecordsServiceRO(
   def getAll: Route = get {
     pathEnd {
       requiresTenantId { tenantId =>
-        parameters(
-          'aspect.*,
-          'optionalAspect.*,
-          'pageToken.as[Long] ?,
-          'start.as[Int].?,
-          'limit.as[Int].?,
-          'dereference.as[Boolean].?,
-          'aspectQuery.*,
-          'aspectOrQuery.*,
-          'orderBy.as[String].?,
-          'orderByDir.as[String].?,
-          'orderNullFirst.as[Boolean].?
-        ) {
-          (
-              aspects,
-              optionalAspects,
-              pageToken,
-              start,
-              limit,
-              dereference,
-              aspectQueries,
-              aspectOrQueries,
-              orderBy,
-              orderByDir,
-              orderNullFirst
-          ) =>
-            val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
-            val parsedAspectOrQueries = aspectOrQueries.map(AspectQuery.parse)
+        withAuthDecision(
+          authApiClient,
+          AuthDecisionReqConfig("object/record/read")
+        ) { authDecision =>
+          parameters(
+            'aspect.*,
+            'optionalAspect.*,
+            'pageToken.as[Long] ?,
+            'start.as[Int].?,
+            'limit.as[Int].?,
+            'dereference.as[Boolean].?,
+            'aspectQuery.*,
+            'aspectOrQuery.*,
+            'orderBy.as[String].?,
+            'orderByDir.as[String].?,
+            'orderNullFirst.as[Boolean].?
+          ) {
+            (
+                aspects,
+                optionalAspects,
+                pageToken,
+                start,
+                limit,
+                dereference,
+                aspectQueries,
+                aspectOrQueries,
+                orderBy,
+                orderByDir,
+                orderNullFirst
+            ) =>
+              val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
+              val parsedAspectOrQueries = aspectOrQueries.map(AspectQuery.parse)
 
-            withRecordOpaQueryIncludingLinks(
-              AuthOperations.read,
-              recordPersistence,
-              authApiClient,
-              None,
-              aspects ++ optionalAspects,
-              RecordsPage[Record](false, None, List())
-            )(
-              config,
-              system,
-              materializer,
-              ec
-            ) { opaQueries =>
-              opaQueries match {
-                case (recordQueries, linkedRecordQueries) =>
-                  if (orderBy.isDefined && pageToken.isDefined) {
-                    complete(
-                      StatusCodes.BadRequest,
-                      ApiError(
-                        "When `orderBy` parameter is specified, `pageToken` parameter is not supported. Use `start` instead."
-                      )
-                    )
-                  } else {
-                    complete {
-                      DB readOnly { implicit session =>
-                        recordPersistence.getAllWithAspects(
-                          tenantId,
-                          aspects,
-                          optionalAspects,
-                          recordQueries,
-                          linkedRecordQueries,
-                          pageToken,
-                          start,
-                          limit,
-                          dereference,
-                          parsedAspectQueries,
-                          parsedAspectOrQueries,
-                          orderBy match {
-                            case Some(field) =>
-                              Some(
-                                OrderByDef(
-                                  field,
-                                  orderByDir match {
-                                    case Some("asc")  => SQLSyntax.asc
-                                    case Some("desc") => SQLSyntax.desc
-                                    case None         => SQLSyntax.desc
-                                    case _ =>
-                                      throw new Error(
-                                        s"Invalid orderByDir parameter: ${orderByDir.toString}"
-                                      )
-                                  },
-                                  orderNullFirst match {
-                                    case Some(true)  => true
-                                    case Some(false) => false
-                                    case _           => false
-                                  }
-                                )
-                              )
-                            case _ => None
-                          }
-                        )
+              if (orderBy.isDefined && pageToken.isDefined) {
+                complete(
+                  StatusCodes.BadRequest,
+                  ApiError(
+                    "When `orderBy` parameter is specified, `pageToken` parameter is not supported. Use `start` instead."
+                  )
+                )
+              } else {
+                complete {
+                  DB readOnly { implicit session =>
+                    recordPersistence.getAllWithAspects(
+                      tenantId,
+                      authDecision,
+                      aspects,
+                      optionalAspects,
+                      pageToken,
+                      start,
+                      limit,
+                      dereference,
+                      parsedAspectQueries,
+                      parsedAspectOrQueries,
+                      orderBy match {
+                        case Some(field) =>
+                          Some(
+                            OrderByDef(
+                              field,
+                              orderByDir match {
+                                case Some("asc")  => SQLSyntax.asc
+                                case Some("desc") => SQLSyntax.desc
+                                case None         => SQLSyntax.desc
+                                case _ =>
+                                  throw new Error(
+                                    s"Invalid orderByDir parameter: ${orderByDir.toString}"
+                                  )
+                              },
+                              orderNullFirst match {
+                                case Some(true)  => true
+                                case Some(false) => false
+                                case _           => false
+                              }
+                            )
+                          )
+                        case _ => None
                       }
-                    }
+                    )
                   }
-
+                }
               }
-            }
+          }
         }
       }
     }
@@ -414,33 +400,25 @@ class RecordsServiceRO(
   def getAllSummary: Route = get {
     path("summary") {
       requiresTenantId { tenantId =>
-        parameters('pageToken.?, 'start.as[Int].?, 'limit.as[Int].?) {
-          (pageToken, start, limit) =>
-            withRecordOpaQuery(
-              AuthOperations.read,
-              recordPersistence,
-              authApiClient,
-              None,
-              RecordsPage[RecordSummary](false, None, List())
-            )(
-              config,
-              system,
-              materializer,
-              ec
-            ) { opaQueries =>
+        withAuthDecision(
+          authApiClient,
+          AuthDecisionReqConfig("object/record/read")
+        ) { authDecision =>
+          parameters('pageToken.?, 'start.as[Int].?, 'limit.as[Int].?) {
+            (pageToken, start, limit) =>
               complete {
                 DB readOnly { implicit session =>
                   recordPersistence
                     .getAll(
                       tenantId,
-                      opaQueries,
+                      authDecision,
                       pageToken,
                       start,
                       limit
                     )
                 }
               }
-            }
+          }
         }
       }
     }
@@ -582,30 +560,22 @@ class RecordsServiceRO(
   def getCount: Route = get {
     path("count") {
       requiresTenantId { tenantId =>
-        parameters('aspect.*, 'aspectQuery.*, 'aspectOrQuery.*) {
-          (aspects, aspectQueries, aspectOrQueries) =>
-            val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
-            val parsedAspectOrQueries = aspectOrQueries.map(AspectQuery.parse)
+        withAuthDecision(
+          authApiClient,
+          AuthDecisionReqConfig("object/record/read")
+        ) { authDecision =>
+          parameters('aspect.*, 'aspectQuery.*, 'aspectOrQuery.*) {
+            (aspects, aspectQueries, aspectOrQueries) =>
+              val parsedAspectQueries = aspectQueries.map(AspectQuery.parse)
+              val parsedAspectOrQueries = aspectOrQueries.map(AspectQuery.parse)
 
-            withRecordOpaQuery(
-              AuthOperations.read,
-              recordPersistence,
-              authApiClient,
-              None,
-              CountResponse(0)
-            )(
-              config,
-              system,
-              materializer,
-              ec
-            ) { opaQueries =>
               complete {
                 DB readOnly { implicit session =>
                   CountResponse(
                     recordPersistence
                       .getCount(
                         tenantId,
-                        opaQueries,
+                        authDecision,
                         aspects,
                         parsedAspectQueries,
                         parsedAspectOrQueries
@@ -613,7 +583,7 @@ class RecordsServiceRO(
                   )
                 }
               }
-            }
+          }
         }
       }
     }
@@ -681,27 +651,19 @@ class RecordsServiceRO(
     path("pagetokens") {
       pathEnd {
         requiresTenantId { tenantId =>
-          import scalikejdbc._
-          parameters('aspect.*, 'limit.as[Int].?) { (aspect, limit) =>
-            withRecordOpaQuery(
-              AuthOperations.read,
-              recordPersistence,
-              authApiClient,
-              None,
-              List[String]()
-            )(
-              this.config,
-              system,
-              materializer,
-              ec
-            ) { opaQueries =>
+          withAuthDecision(
+            authApiClient,
+            AuthDecisionReqConfig("object/record/read")
+          ) { authDecision =>
+            import scalikejdbc._
+            parameters('aspect.*, 'limit.as[Int].?) { (aspect, limit) =>
               complete {
                 DB readOnly { implicit session =>
                   "0" :: recordPersistence
                     .getPageTokens(
                       tenantId,
+                      authDecision,
                       aspect,
-                      opaQueries,
                       limit
                     )
                 }
@@ -804,45 +766,32 @@ class RecordsServiceRO(
   def getById: Route = get {
     path(Segment) { id =>
       requiresTenantId { tenantId =>
-        parameters('aspect.*, 'optionalAspect.*, 'dereference.as[Boolean].?) {
-          (aspects, optionalAspects, dereference) =>
-            withRecordOpaQueryIncludingLinks(
-              AuthOperations.read,
-              recordPersistence,
-              authApiClient,
-              Some(id),
-              aspects ++ optionalAspects,
-              StatusCodes.NotFound
-            )(
-              config,
-              system,
-              materializer,
-              ec
-            ) { opaQueries =>
-              opaQueries match {
-                case (recordQueries, linkedRecordQueries) =>
-                  DB readOnly { implicit session =>
-                    recordPersistence.getByIdWithAspects(
-                      tenantId,
-                      id,
-                      recordQueries,
-                      linkedRecordQueries,
-                      aspects,
-                      optionalAspects,
-                      dereference
-                    ) match {
-                      case Some(record) => complete(record)
-                      case None =>
-                        complete(
-                          StatusCodes.NotFound,
-                          ApiError(
-                            "No record exists with that ID or it does not have the required aspects."
-                          )
-                        )
-                    }
-                  }
+        withAuthDecision(
+          authApiClient,
+          AuthDecisionReqConfig("object/record/read")
+        ) { authDecision =>
+          parameters('aspect.*, 'optionalAspect.*, 'dereference.as[Boolean].?) {
+            (aspects, optionalAspects, dereference) =>
+              DB readOnly { implicit session =>
+                recordPersistence.getByIdWithAspects(
+                  tenantId,
+                  authDecision,
+                  id,
+                  aspects,
+                  optionalAspects,
+                  dereference
+                ) match {
+                  case Some(record) => complete(record)
+                  case None =>
+                    complete(
+                      StatusCodes.NotFound,
+                      ApiError(
+                        "No record exists with that ID or it does not have the required aspects."
+                      )
+                    )
+                }
               }
-            }
+          }
         }
       }
     }
@@ -912,21 +861,13 @@ class RecordsServiceRO(
   def getByIdSummary: Route = get {
     path("summary" / Segment) { id =>
       requiresTenantId { tenantId =>
-        withRecordOpaQuery(
-          AuthOperations.read,
-          recordPersistence,
+        withAuthDecision(
           authApiClient,
-          Some(id),
-          StatusCodes.NotFound
-        )(
-          config,
-          system,
-          materializer,
-          ec
-        ) { recordQueries =>
+          AuthDecisionReqConfig("object/record/read")
+        ) { authDecision =>
           DB readOnly { implicit session =>
             recordPersistence
-              .getById(tenantId, recordQueries, id) match {
+              .getById(tenantId, authDecision, id) match {
               case Some(record) => complete(record)
               case None =>
                 complete(

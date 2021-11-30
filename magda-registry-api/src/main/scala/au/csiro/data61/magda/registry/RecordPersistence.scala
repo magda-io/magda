@@ -7,7 +7,7 @@ import akka.stream.scaladsl.Source
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.model.TenantId._
 import au.csiro.data61.magda.opa.OpaTypes._
-import au.csiro.data61.magda.registry.SqlHelper.{getOpaConditions}
+import au.csiro.data61.magda.registry.SqlHelper.getOpaConditions
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import scalikejdbc._
@@ -15,6 +15,10 @@ import spray.json._
 import spray.json.lenses.JsonLenses._
 import org.everit.json.schema.ValidationException
 import au.csiro.data61.magda.client.AuthOperations
+import au.csiro.data61.magda.model.Auth.{
+  AuthDecision,
+  UnconditionalTrueDecision
+}
 import au.csiro.data61.magda.model.{AspectQuery, AspectQueryGroup}
 
 import scala.util.{Failure, Success, Try}
@@ -25,13 +29,13 @@ trait RecordPersistence {
 
   def getValidRecordIds(
       tenantId: TenantId,
-      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
+      authDecision: AuthDecision,
       recordIds: Seq[String]
   )(implicit session: DBSession): Seq[String]
 
   def getAll(
       tenantId: TenantId,
-      opaQueries: Option[List[(String, List[List[OpaQuery]])]],
+      authDecision: AuthDecision,
       pageToken: Option[String],
       start: Option[Int],
       limit: Option[Int]
@@ -39,10 +43,9 @@ trait RecordPersistence {
 
   def getAllWithAspects(
       tenantId: TenantId,
+      authDecision: AuthDecision,
       aspectIds: Iterable[String],
       optionalAspectIds: Iterable[String],
-      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
-      opaLinkedRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
       pageToken: Option[Long] = None,
       start: Option[Int] = None,
       limit: Option[Int] = None,
@@ -54,7 +57,7 @@ trait RecordPersistence {
 
   def getCount(
       tenantId: TenantId,
-      opaQueries: Option[List[(String, List[List[OpaQuery]])]],
+      authDecision: AuthDecision,
       aspectIds: Iterable[String],
       aspectQueries: Iterable[AspectQuery] = Nil,
       aspectOrQueries: Iterable[AspectQuery] = Nil
@@ -62,15 +65,14 @@ trait RecordPersistence {
 
   def getById(
       tenantId: TenantId,
-      opaQueries: Option[List[(String, List[List[OpaQuery]])]],
+      authDecision: AuthDecision,
       id: String
   )(implicit session: DBSession): Option[RecordSummary]
 
   def getByIdWithAspects(
       tenantId: TenantId,
+      authDecision: AuthDecision,
       id: String,
-      recordOpaQueries: Option[List[(String, List[List[OpaQuery]])]],
-      linkedRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
       aspectIds: Iterable[String] = Seq(),
       optionalAspectIds: Iterable[String] = Seq(),
       dereference: Option[Boolean] = None
@@ -78,9 +80,8 @@ trait RecordPersistence {
 
   def getByIdsWithAspects(
       tenantId: TenantId,
+      authDecision: AuthDecision,
       ids: Iterable[String],
-      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
-      opaLinkedRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
       aspectIds: Iterable[String] = Seq(),
       optionalAspectIds: Iterable[String] = Seq(),
       dereference: Option[Boolean] = None
@@ -88,9 +89,8 @@ trait RecordPersistence {
 
   def getRecordsLinkingToRecordIds(
       tenantId: TenantId,
+      authDecision: AuthDecision,
       ids: Iterable[String],
-      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
-      opaLinkedRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
       idsToExclude: Iterable[String] = Seq(),
       aspectIds: Iterable[String] = Seq(),
       optionalAspectIds: Iterable[String] = Seq(),
@@ -99,15 +99,15 @@ trait RecordPersistence {
 
   def getRecordAspectById(
       tenantId: TenantId,
+      authDecision: AuthDecision,
       recordId: String,
-      aspectId: String,
-      opaQueries: Option[List[(String, List[List[OpaQuery]])]]
+      aspectId: String
   )(implicit session: DBSession): Option[JsObject]
 
   def getPageTokens(
       tenantId: TenantId,
+      authDecision: AuthDecision,
       aspectIds: Iterable[String],
-      opaQueries: Option[List[(String, List[List[OpaQuery]])]],
       limit: Option[Int] = None,
       recordSelector: Iterable[Option[SQLSyntax]] = Iterable()
   )(implicit session: DBSession): List[String]
@@ -209,7 +209,6 @@ trait RecordPersistence {
 
   /** Given a record and aspects being requested, returns the ids of all records that the record/aspect id combinations link to */
   def getLinkedRecordIds(
-      operation: AuthOperations.OperationType,
       recordId: String,
       aspectIds: Iterable[String] = List()
   )(implicit session: DBSession): Try[Iterable[String]]
@@ -250,34 +249,29 @@ class DefaultRecordPersistence(config: Config)
     */
   def getValidRecordIds(
       tenantId: TenantId,
-      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
+      authDecision: AuthDecision,
       recordIds: Seq[String]
   )(implicit session: DBSession): Seq[String] =
-    opaRecordQueries match {
-      case None => recordIds
-      case Some(_) =>
-        this
-          .getRecords(
-            tenantId = tenantId,
-            aspectIds = Seq(),
-            optionalAspectIds = Seq(),
-            recordOpaQueries = opaRecordQueries,
-            linkedRecordOpaQueries = None,
-            pageToken = None,
-            start = None,
-            Some(recordIds.size),
-            dereference = Some(false),
-            orderBy = None,
-            maxLimit = Some(recordIds.size),
-            recordSelector = Seq(
-              Some(
-                SQLSyntax.in(SQLSyntax.createUnsafely("recordId"), recordIds)
-              )
-            )
+    this
+      .getRecords(
+        tenantId = tenantId,
+        authDecision,
+        aspectIds = Seq(),
+        optionalAspectIds = Seq(),
+        pageToken = None,
+        start = None,
+        Some(recordIds.size),
+        dereference = Some(false),
+        orderBy = None,
+        maxLimit = Some(recordIds.size),
+        recordSelector = Seq(
+          Some(
+            SQLSyntax.in(SQLSyntax.createUnsafely("recordId"), recordIds)
           )
-          .records
-          .map(_.id)
-    }
+        )
+      )
+      .records
+      .map(_.id)
 
   def getAll(
       tenantId: TenantId,
@@ -308,10 +302,9 @@ class DefaultRecordPersistence(config: Config)
 
   def getAllWithAspects(
       tenantId: TenantId,
+      authDecision: AuthDecision,
       aspectIds: Iterable[String],
       optionalAspectIds: Iterable[String],
-      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
-      opaLinkedRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
       pageToken: Option[Long] = None,
       start: Option[Int] = None,
       limit: Option[Int] = None,
@@ -333,10 +326,9 @@ class DefaultRecordPersistence(config: Config)
 
     this.getRecords(
       tenantId,
+      authDecision,
       aspectIds,
       optionalAspectIds ++ notIncludedAspectIds,
-      opaRecordQueries,
-      opaLinkedRecordQueries,
       pageToken,
       start,
       limit,
@@ -351,7 +343,7 @@ class DefaultRecordPersistence(config: Config)
   // See ticket https://github.com/magda-io/magda/issues/2360
   def getCount(
       tenantId: TenantId,
-      opaQueries: Option[List[(String, List[List[OpaQuery]])]],
+      authDecision: AuthDecision,
       aspectIds: Iterable[String],
       aspectQueries: Iterable[AspectQuery] = Nil,
       aspectOrQueries: Iterable[AspectQuery] = Nil
@@ -363,7 +355,7 @@ class DefaultRecordPersistence(config: Config)
 
     this.getCountInner(
       tenantId,
-      opaQueries,
+      authDecision,
       aspectIds,
       selectors
     )
@@ -382,9 +374,8 @@ class DefaultRecordPersistence(config: Config)
 
   def getByIdWithAspects(
       tenantId: TenantId,
+      authDecision: AuthDecision,
       id: String,
-      recordOpaQueries: Option[List[(String, List[List[OpaQuery]])]],
-      linkedRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
       aspectIds: Iterable[String] = Seq(),
       optionalAspectIds: Iterable[String] = Seq(),
       dereference: Option[Boolean] = None
@@ -392,10 +383,9 @@ class DefaultRecordPersistence(config: Config)
     this
       .getRecords(
         tenantId,
+        authDecision,
         aspectIds,
         optionalAspectIds,
-        recordOpaQueries,
-        linkedRecordQueries,
         None,
         None,
         Some(1),
@@ -408,9 +398,8 @@ class DefaultRecordPersistence(config: Config)
 
   def getByIdsWithAspects(
       tenantId: TenantId,
+      authDecision: AuthDecision,
       ids: Iterable[String],
-      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
-      opaLinkedRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
       aspectIds: Iterable[String] = Seq(),
       optionalAspectIds: Iterable[String] = Seq(),
       dereference: Option[Boolean] = None
@@ -420,10 +409,9 @@ class DefaultRecordPersistence(config: Config)
     else
       this.getRecords(
         tenantId,
+        authDecision,
         aspectIds,
         optionalAspectIds,
-        opaRecordQueries,
-        opaLinkedRecordQueries,
         None,
         None,
         None,
@@ -434,9 +422,8 @@ class DefaultRecordPersistence(config: Config)
 
   def getRecordsLinkingToRecordIds(
       tenantId: TenantId,
+      authDecision: AuthDecision,
       ids: Iterable[String],
-      opaRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
-      opaLinkedRecordQueries: Option[List[(String, List[List[OpaQuery]])]],
       idsToExclude: Iterable[String] = Seq(),
       aspectIds: Iterable[String] = Seq(),
       optionalAspectIds: Iterable[String] = Seq(),
@@ -469,10 +456,9 @@ class DefaultRecordPersistence(config: Config)
 
       this.getRecords(
         tenantId,
+        authDecision,
         aspectIds,
         optionalAspectIds,
-        opaRecordQueries,
-        opaLinkedRecordQueries,
         None,
         None,
         None,
@@ -509,23 +495,22 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
 
   def getPageTokens(
       tenantId: TenantId,
+      authDecision: AuthDecision,
       aspectIds: Iterable[String],
-      opaQueries: Option[List[(String, List[List[OpaQuery]])]],
       limit: Option[Int] = None,
       recordSelector: Iterable[Option[SQLSyntax]] = Iterable()
   )(implicit session: DBSession): List[String] = {
     val recordsFilteredByTenantClause = filterRecordsByTenantClause(tenantId)
 
-    val requiredAspectsAndOpaQueriesSelectors: Seq[Option[SQLSyntax]] =
-      aspectIdsAndOpaQueriesToWhereParts(
-        tenantId,
-        aspectIds,
-        opaQueries,
-        AuthOperations.read
-      ).toSeq.map(item => Option(item))
+    val authQueryConditions = authDecision.toSql()
+
+    val aspectWhereClauses: Seq[Option[SQLSyntax]] = aspectIdsToWhereClause(
+      tenantId,
+      aspectIds
+    )
 
     val whereClauseParts
-        : Seq[Option[SQLSyntax]] = recordSelector.toSeq ++ requiredAspectsAndOpaQueriesSelectors :+ Some(
+        : Seq[Option[SQLSyntax]] = recordSelector.toSeq ++ aspectWhereClauses :+ authQueryConditions :+ Some(
       recordsFilteredByTenantClause
     )
 
@@ -575,6 +560,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
 
       (oldRecordWithoutAspects, eventId) <- this.getByIdWithAspects(
         tenantId,
+        UnconditionalTrueDecision,
         id,
         None,
         None
@@ -608,6 +594,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
                 case Failure(e) =>
                   this.getByIdWithAspects(
                     tenantId,
+                    UnconditionalTrueDecision,
                     id,
                     None,
                     None
@@ -792,7 +779,13 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       forceSkipAspectValidation: Boolean = false
   )(implicit session: DBSession): Try[(Record, Long)] = {
     for {
-      record <- this.getByIdWithAspects(tenantId, id, None, None) match {
+      record <- this.getByIdWithAspects(
+        tenantId,
+        UnconditionalTrueDecision,
+        id,
+        None,
+        None
+      ) match {
         case Some(record) => Success(record)
         case None =>
           Failure(new RuntimeException("No record exists with that ID."))
@@ -1405,7 +1398,6 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
   }
 
   def getLinkedRecordIds(
-      operation: AuthOperations.OperationType,
       recordId: String,
       aspectIds: Iterable[String] = List()
   )(implicit session: DBSession): Try[Iterable[String]] = {
@@ -1505,10 +1497,9 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
 
   private def getRecords(
       tenantId: TenantId,
+      authDecision: AuthDecision,
       aspectIds: Iterable[String],
       optionalAspectIds: Iterable[String],
-      recordOpaQueries: Option[List[(String, List[List[OpaQuery]])]],
-      linkedRecordOpaQueries: Option[List[(String, List[List[OpaQuery]])]],
       pageToken: Option[Long] = None,
       start: Option[Int] = None,
       rawLimit: Option[Int] = None,
@@ -1528,28 +1519,25 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       tenantId
     )
 
+    val authQueryConditions = authDecision.toSql()
+
     val theRecordSelector = recordSelector ++ Iterable(
       Some(recordsFilteredByTenantClause)
     )
 
-    val requiredAspectsAndOpaQueriesSelectors: Seq[Option[SQLSyntax]] =
-      aspectIdsAndOpaQueriesToWhereParts(
-        tenantId,
-        aspectIds,
-        recordOpaQueries,
-        AuthOperations.read
-      ).toSeq.map(item => Option(item))
+    val aspectWhereClauses: Seq[Option[SQLSyntax]] = aspectIdsToWhereClause(
+      tenantId,
+      aspectIds
+    )
 
     val whereClauseParts: Seq[Option[SQLSyntax]] =
-      (theRecordSelector.toSeq ++ requiredAspectsAndOpaQueriesSelectors) :+ pageToken
+      (theRecordSelector.toSeq ++ aspectWhereClauses) :+ authQueryConditions :+ pageToken
         .map(token => sqls"Records.sequence > $token")
 
     val aspectSelectors = aspectIdsToSelectClauses(
       tenantId,
+      authDecision,
       List.concat(aspectIds, optionalAspectIds), // aspectIds must come before optionalAspectIds.
-      AuthOperations.read,
-      recordOpaQueries,
-      linkedRecordOpaQueries,
       dereference.getOrElse(false)
     )
 
@@ -1622,15 +1610,15 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
 
   private def getCountInner(
       tenantId: TenantId,
-      opaQueries: Option[List[(String, List[List[OpaQuery]])]],
+      authDecision: AuthDecision,
       aspectIds: Iterable[String],
       recordSelector: Iterable[Option[SQLSyntax]] = Iterable()
   )(implicit session: DBSession): Long = {
     val recordsFilteredByTenantClause = filterRecordsByTenantClause(tenantId)
-    val opaConditions =
-      getOpaConditions(opaQueries, AuthOperations.read, defaultOpaPolicyId)
+    val authDecisionConditions =
+      authDecision.toSql()
     val theRecordSelector = Iterable(Some(recordsFilteredByTenantClause)) ++ recordSelector ++ Iterable(
-      Some(opaConditions)
+      authDecisionConditions
     )
     val statement = if (aspectIds.size == 1) {
       // If there's only one aspect id, it's much much more efficient to query the recordaspects table rather than records.
@@ -1671,14 +1659,6 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
       case Seq() => SQLSyntax.empty
       case nonEmpty =>
         SQLSyntax.where(SQLSyntax.joinWithAnd(nonEmpty.map(_.get): _*))
-    }
-  }
-
-  private def makeWhereParts(andParts: Seq[Option[SQLSyntax]]) = {
-    andParts.filter(_.isDefined) match {
-      case Seq() => SQLSyntax.empty
-      case nonEmpty =>
-        SQLSyntax.joinWithAnd(nonEmpty.map(_.get): _*)
     }
   }
 
@@ -1801,27 +1781,6 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
     }
   }
 
-  private def aspectIdsAndOpaQueriesToWhereParts(
-      tenantId: TenantId,
-      aspectIds: Iterable[String],
-      opaQueries: Option[List[(String, List[List[OpaQuery]])]],
-      operationType: AuthOperations.OperationType
-  ): Iterable[SQLSyntax] = {
-    val opaSql: SQLSyntax =
-      getOpaConditions(opaQueries, operationType, defaultOpaPolicyId)
-
-    val aspectWhereClauses: Seq[Option[SQLSyntax]] = aspectIdsToWhereClause(
-      tenantId,
-      aspectIds
-    )
-    val aspectWhereParts: SQLSyntax = makeWhereParts(aspectWhereClauses)
-    val result = List(
-      aspectWhereParts,
-      opaSql
-    )
-    result
-  }
-
   private def getAspectColumnName(
       index: Int,
       prefix: ColumnNamePrefixType.Value = ColumnNamePrefixType.PREFIX_EMPTY
@@ -1835,20 +1794,17 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
 
   private def aspectIdsToSelectClauses(
       tenantId: TenantId,
+      authDecision: AuthDecision,
       aspectIds: Iterable[String],
-      operationType: AuthOperations.OperationType,
-      recordOpaQueries: Option[List[(String, List[List[OpaQuery]])]],
-      linkedRecordOpaQueries: Option[List[(String, List[List[OpaQuery]])]],
       dereference: Boolean = false
   )(implicit session: DBSession): Iterable[scalikejdbc.SQLSyntax] = {
-    val outerOpaConditions =
-      getOpaConditions(recordOpaQueries, operationType, defaultOpaPolicyId)
-    val linkedRecordOpaConditions =
-      getOpaConditions(
-        linkedRecordOpaQueries,
-        operationType,
-        defaultOpaPolicyId
-      )
+    val tenantFilterCondition = Some(filterRecordsByTenantClause(tenantId))
+    val authDecisionCondition = authDecision.toSql()
+
+    val accessControlConditions =
+      SQLSyntax.toAndConditionOpt(authDecisionCondition, tenantFilterCondition)
+    val accessControlConditionsWhere = SQLSyntax.where(accessControlConditions)
+
     val referenceDetails =
       buildReferenceMap(aspectIds.toSeq)
 
@@ -1894,7 +1850,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
                       INNER JOIN jsonb_array_elements_text(RecordAspects.data->$propertyName)
                         WITH ordinality AS aggregatedId
                         ON aggregatedId.value=Records.recordId AND RecordAspects.tenantId=Records.tenantId
-                      WHERE $linkedRecordOpaConditions
+                      ${accessControlConditionsWhere}
                     )
                     -- If there's no link in this aspect, just get the raw aspect data
                     ELSE (
@@ -1915,7 +1871,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
                       from Records
                       inner join jsonb_array_elements_text(RecordAspects.data->$propertyName) as aggregatedId
                       on aggregatedId=Records.recordId and RecordAspects.tenantId=Records.tenantId
-                      where $linkedRecordOpaConditions
+                      ${accessControlConditionsWhere}
                     )
                     -- If there's no linked value, just return the raw aspect data
                     ELSE (
@@ -1949,7 +1905,7 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
                           'aspects', (
                             SELECT jsonb_object_agg(aspectId, data)
                             FROM RecordAspects
-                            WHERE tenantId=Records.tenantId AND recordId=Records.recordId AND $linkedRecordOpaConditions
+                            WHERE tenantId=Records.tenantId AND recordId=Records.recordId
                           )
                         )
                       )
@@ -1961,14 +1917,23 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
               val defaultClause =
                 sqls"""SELECT jsonb_set(RecordAspects.data, ${"{\"" + propertyName + "\"}"}::text[], 'null'::jsonb)"""
 
+              val recordWhereClause = SQLSyntax.where(
+                SQLSyntax.toAndConditionOpt(
+                  authDecisionCondition,
+                  tenantFilterCondition,
+                  Some(sqls"Records.tenantId=RecordAspects.tenantId"),
+                  Some(
+                    sqls"Records.recordId=RecordAspects.data->>$propertyName"
+                  )
+                )
+              )
+
               sqls"""(
                 SELECT coalesce (
                   (
                     SELECT ($linkedAspectsClause)
                     FROM Records
-                    WHERE Records.tenantId=RecordAspects.tenantId AND
-                      Records.recordId=RecordAspects.data->>$propertyName
-                      AND $linkedRecordOpaConditions
+                    ${recordWhereClause}
                   ),
                   (
                     ${defaultClause}
@@ -2007,8 +1972,8 @@ where (RecordAspects.recordId, RecordAspects.aspectId)=($recordId, $aspectId) AN
   ) = {
     Some(
       sqls"""exists (
-              select 1 from RecordAspects
-              where (aspectId, recordid, tenantId)=($aspectId, Records.recordId, Records.tenantId))
+              select 1 from recordaspects
+              where (aspectid, recordid, tenantid)=($aspectId, records.recordid, records.tenantid))
         """
     )
   }

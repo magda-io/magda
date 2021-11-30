@@ -7,12 +7,13 @@ import akka.http.scaladsl.server.Directives._
 import akka.stream.Materializer
 import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
 import au.csiro.data61.magda.model.Registry._
-import au.csiro.data61.magda.registry.Directives.withRecordOpaQuery
 import com.typesafe.config.Config
 import io.swagger.annotations._
+
 import javax.ws.rs.Path
 import scalikejdbc.DB
-import au.csiro.data61.magda.client.AuthOperations
+import au.csiro.data61.magda.client.{AuthDecisionReqConfig}
+import au.csiro.data61.magda.directives.AuthDirectives.withAuthDecision
 
 @Path("/records/{recordId}/aspects")
 @io.swagger.annotations.Api(
@@ -100,41 +101,26 @@ class RecordAspectsServiceRO(
     path(Segment / "aspects" / Segment) {
       (recordId: String, aspectId: String) =>
         requiresTenantId { tenantId =>
-          {
-            withRecordOpaQuery(
-              AuthOperations.read,
-              recordPersistence,
-              authApiClient,
-              Some(recordId),
-              (
-                StatusCodes.NotFound,
-                ApiError(
-                  "No record or aspect exists with the given IDs."
-                )
-              )
-            )(
-              config,
-              system,
-              materializer,
-              system.dispatcher
-            ) { opaQueries =>
-              DB readOnly { implicit session =>
-                recordPersistence
-                  .getRecordAspectById(
-                    tenantId,
-                    recordId,
-                    aspectId,
-                    opaQueries
-                  ) match {
-                  case Some(recordAspect) => complete(recordAspect)
-                  case _ =>
-                    complete(
-                      StatusCodes.NotFound,
-                      ApiError(
-                        "No record or aspect exists with the given IDs."
-                      )
+          withAuthDecision(
+            authApiClient,
+            AuthDecisionReqConfig("object/record/read")
+          ) { authDecision =>
+            DB readOnly { implicit session =>
+              recordPersistence
+                .getRecordAspectById(
+                  tenantId,
+                  authDecision,
+                  recordId,
+                  aspectId
+                ) match {
+                case Some(recordAspect) => complete(recordAspect)
+                case _ =>
+                  complete(
+                    StatusCodes.NotFound,
+                    ApiError(
+                      "No record or aspect exists with the given IDs."
                     )
-                }
+                  )
               }
             }
           }

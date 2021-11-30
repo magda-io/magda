@@ -7,14 +7,21 @@ import akka.http.scaladsl.model.headers.HttpChallenge
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{AuthenticationFailedRejection, _}
 import au.csiro.data61.magda.Authentication
-import au.csiro.data61.magda.client.AuthApiClient
+import au.csiro.data61.magda.client.{AuthApiClient, AuthDecisionReqConfig}
 import com.typesafe.config.Config
-import io.jsonwebtoken.{Jws, Claims}
+import io.jsonwebtoken.{Claims, Jws}
 
 import scala.util.control.NonFatal
-import au.csiro.data61.magda.model.Auth.User
+import au.csiro.data61.magda.model.Auth.{AuthDecision, User}
 
 object AuthDirectives {
+
+  def withAuthDecision(
+      authApiClient: AuthApiClient,
+      config: AuthDecisionReqConfig
+  ): Directive1[AuthDecision] = getJwt.flatMap { jwt =>
+    onSuccess(authApiClient.getAuthDecision(jwt, config)).flatMap(provide(_))
+  }
 
   /**
     * Returns true if config says to skip all authorization.

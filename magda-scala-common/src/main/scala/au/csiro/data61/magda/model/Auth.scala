@@ -2,15 +2,17 @@ package au.csiro.data61.magda.model
 
 import spray.json.{
   DefaultJsonProtocol,
+  JsArray,
   JsBoolean,
   JsFalse,
+  JsNull,
   JsNumber,
   JsString,
-  JsValue,
-  JsArray,
-  JsNull
+  JsTrue,
+  JsValue
 }
 import scalikejdbc.interpolation.SQLSyntax
+
 import scala.collection.SortedSet
 
 object Auth {
@@ -237,7 +239,27 @@ object Auth {
 
       }
     }
+
+    def toSql(
+        prefixes: Set[String] = Set("object.record"),
+        recordIdSqlRef: String = "records.recordid",
+        tenantIdSqlRef: String = "records.tenantid"
+    ): Option[SQLSyntax] =
+      SQLSyntax
+        .toOrConditionOpt(
+          this
+            .toAspectQueryGroups(prefixes)
+            .map(_.toSql(recordIdSqlRef, tenantIdSqlRef)): _*
+        )
+        .map(SQLSyntax.roundBracket(_))
+
   }
+
+  val UnconditionalTrueDecision =
+    AuthDecision(false, Some(JsTrue), None, false, None, None)
+
+  val UnconditionalFalseDecision =
+    AuthDecision(false, Some(JsFalse), None, false, None, None)
 
   trait AuthProtocols extends DefaultJsonProtocol {
     implicit val userFormat = jsonFormat2(User)
