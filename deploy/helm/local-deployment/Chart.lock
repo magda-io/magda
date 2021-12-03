@@ -47,9 +47,6 @@ dependencies:
 - name: magda-csw-connector
   repository: https://charts.magda.io
   version: 1.0.0
-- name: magda-project-open-data-connector
-  repository: https://charts.magda.io
-  version: 1.0.0
 - name: magda-csw-connector
   repository: https://charts.magda.io
   version: 1.0.0
@@ -110,5 +107,5 @@ dependencies:
 - name: magda-project-open-data-connector
   repository: https://charts.magda.io
   version: 1.0.0
-digest: sha256:5bc76cce58cd99725e47659eba61923fe88e95ad794d8602987276f2e2adb6e7
-generated: "2021-12-03T08:37:43.57632+11:00"
+digest: sha256:ef19577435b59cbb16e8126fcbeb521439f8564f2d7bcc2870cfb48ee8b347eb
+generated: "2021-12-03T11:16:07.411106+11:00"
