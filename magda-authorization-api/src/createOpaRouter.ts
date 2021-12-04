@@ -138,7 +138,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
             contentType &&
             contentType.toLowerCase() === "application/json"
         ) {
-            reqData = req.body;
+            reqData = { ...req.body };
         }
 
         try {
@@ -430,6 +430,9 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
 
             reqOpts.json.input.operationUri = operationUri;
             reqOpts.json.input.resourceUri = resourceUri;
+            if (reqOpts?.json?.unknowns === "") {
+                delete reqOpts.json.unknowns;
+            }
 
             /**
              * By default, we will auto-generate `unknowns` reference list.

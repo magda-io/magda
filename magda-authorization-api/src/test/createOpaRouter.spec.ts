@@ -154,7 +154,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
             );
         });
 
-        it("Can supply extra input (extra data) via POST request (no `unknowns` specified)", async () => {
+        it("will not auto-generate `unknowns` (full evaluation) when proper extra input (extra data) via POST request is supplied", async () => {
             let data: any;
 
             const scope = createOpaNockScope(
@@ -189,6 +189,7 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
             });
             expect(scope.isDone()).to.be.equal(true);
 
+            expect(data.unknowns).to.be.undefined;
             expect(data.input.user.roles).to.have.members([
                 ANONYMOUS_USERS_ROLE_ID
             ]);
@@ -303,6 +304,78 @@ describe("Auth api router", function (this: Mocha.ISuiteCallbackContext) {
             expect(data.unknowns).to.have.members(["input.x", "input.y"]);
             expect(data.input.resourceUri).to.equal("x/y");
             expect(data.query).to.be.equal("data.entrypoint.allow");
+            expect(data.input.user.roles).to.have.members([
+                ANONYMOUS_USERS_ROLE_ID
+            ]);
+            expect(data.input.operationUri).to.equal(
+                "object/any-object/any-operation"
+            );
+            expect(data.input.timestamp).to.be.within(
+                Date.now() - 20000,
+                Date.now() + 20000
+            );
+        });
+
+        it("Can force stop the endpoint from auto-generating unknowns by passing an empty string via the query parameter `unknowns`", async () => {
+            let data: any;
+
+            const scope = createOpaNockScope(
+                (queryParams, requestData) => {
+                    data = requestData;
+                },
+                null,
+                // as `unknowns` is not set, request will be evaluated by full evaluation endpoint
+                true
+            );
+
+            mockUserDataStore.reset();
+
+            // set unknowns to an empty string should stop endpoint from auto-generating unknowns
+            await request(app).get(
+                `/decision/object/any-object/any-operation?unknowns=`
+            );
+
+            expect(scope.isDone()).to.be.equal(true);
+
+            expect(data.unknowns).to.be.undefined;
+            expect(data.query).to.be.undefined;
+            expect(data.input.user.roles).to.have.members([
+                ANONYMOUS_USERS_ROLE_ID
+            ]);
+            expect(data.input.operationUri).to.equal(
+                "object/any-object/any-operation"
+            );
+            expect(data.input.timestamp).to.be.within(
+                Date.now() - 20000,
+                Date.now() + 20000
+            );
+        });
+
+        it("Can force stop the endpoint from auto-generating unknowns by passing an empty string via the post body parameter `unknowns`", async () => {
+            let data: any;
+
+            const scope = createOpaNockScope(
+                (queryParams, requestData) => {
+                    data = requestData;
+                },
+                null,
+                // as `unknowns` is not set, request will be evaluated by full evaluation endpoint
+                true
+            );
+
+            mockUserDataStore.reset();
+
+            await request(app)
+                .post(`/decision/object/any-object/any-operation`)
+                .send({
+                    // set unknowns to an empty string should stop endpoint from auto-generating unknowns
+                    unknowns: ""
+                });
+
+            expect(scope.isDone()).to.be.equal(true);
+
+            expect(data.unknowns).to.be.undefined;
+            expect(data.query).to.be.undefined;
             expect(data.input.user.roles).to.have.members([
                 ANONYMOUS_USERS_ROLE_ID
             ]);
