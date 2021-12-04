@@ -87,7 +87,7 @@ class AuthApiClient(authHttpFetcher: HttpFetcher)(
 
     val authDecisionEndpoint = UrlPath.parse("/v0/opa/decision")
 
-    val usePost = config.input.isDefined || config.unknowns.isDefined || config.resourceUri.isDefined
+    val usePost = config.input.isDefined || (config.unknowns.isDefined && config.unknowns.get.length > 0) || config.resourceUri.isDefined
 
     val requestQueryFields: ListBuffer[(String, Option[String])] = ListBuffer()
     if (config.rawAst.isDefined) {
@@ -110,6 +110,11 @@ class AuthApiClient(authHttpFetcher: HttpFetcher)(
       requestQueryFields += ("humanReadable" -> config.humanReadable
         .filter(!_)
         .map(_.toString))
+    }
+    if (config.unknowns.isDefined && config.unknowns.get.length == 0) {
+      // See decision endpoint docs, send unknowns as an empty string to stop endpoint from auto generating unknowns reference
+      // we send `unknowns` as query string for this case
+      requestQueryFields += ("unknowns" -> Some(""))
     }
 
     val requestUrl = Url(
@@ -136,7 +141,7 @@ class AuthApiClient(authHttpFetcher: HttpFetcher)(
       if (config.input.isDefined) {
         requestDataFields += ("input" -> config.input.get)
       }
-      if (config.unknowns.isDefined) {
+      if (config.unknowns.isDefined && config.unknowns.get.length > 0) {
         requestDataFields += ("unknowns" -> JsArray(
           config.unknowns.get.map(v => JsString(v)).toVector
         ))

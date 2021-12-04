@@ -296,8 +296,7 @@ class AuthApiClientSpec
             autoRetry shouldBe true
             payload shouldBe JsObject(
               "input" -> JsObject("test" -> JsTrue),
-              "operationUri" -> JsString(operationUri),
-              "unknowns" -> JsArray()
+              "operationUri" -> JsString(operationUri)
             )
             Future(defaultAllowResponse)
         }
@@ -309,10 +308,142 @@ class AuthApiClientSpec
           AuthDecisionReqConfig(
             "object/record/read",
             input = Some(JsObject("test" -> JsTrue)),
-            unknowns = Some(Nil)
+            unknowns = None
           )
         )
         .map(_ => succeed)
+    }
+
+  }
+
+  describe(
+    "Test getAuthDecision behaviours around `unknowns` parameters"
+  ) {
+    it(
+      "should send `unknowns` as a query parameter (as part of GET request) when `unknowns` is an empty list (Nil)"
+    ) {
+      val mockFetcher = mock[HttpFetcher]
+      val jwtVal = Random.alphanumeric.take(10).mkString
+      val operationUri = "object/record/read"
+
+      (mockFetcher.get _)
+        .expects(*, *)
+        .onCall {
+          (
+              path,
+              headers
+          ) =>
+            val url = RelativeUrl.parse(path)
+            url.path.toString shouldBe "/v0/opa/decision/object/record/read"
+            url.query.params("rawAst") shouldBe List(None)
+            url.query.params("explain") shouldBe List(Some("full"))
+            url.query.params("humanReadable") shouldBe List(None)
+            url.query.params("pretty") shouldBe List(Some("true"))
+            url.query.params("concise") shouldBe List(Some("false"))
+            url.query.params("unknowns") shouldBe List(Some(""))
+            headers shouldBe List(RawHeader("X-Magda-Session", jwtVal))
+            Future(defaultAllowResponse)
+        }
+        .once()
+      val client = new AuthApiClient(mockFetcher)
+
+      val resFuture = client.getAuthDecision(
+        Some(jwtVal),
+        AuthDecisionReqConfig(
+          operationUri,
+          rawAst = Some(true),
+          explain = Some("full"),
+          humanReadable = Some(true),
+          pretty = Some(true),
+          concise = Some(false),
+          unknowns = Some(Nil)
+        )
+      )
+
+      resFuture.map { decision =>
+        decision.hasWarns shouldBe false
+        decision.hasResidualRules shouldBe false
+        decision.result shouldBe Some(JsTrue)
+        decision.residualRules shouldBe None
+        decision.warns shouldBe None
+      }
+    }
+
+    it(
+      "should send `unknowns` as a query parameter (as part of POST request) when `unknowns` is an empty list (Nil)"
+    ) {
+      val mockFetcher = mock[HttpFetcher]
+      val jwtVal = Random.alphanumeric.take(10).mkString
+      val operationUri = "object/record/read"
+      val inputVal = Some(
+        JsObject(
+          "object" -> JsObject(
+            "record" -> DataSet(
+              identifier = "xxx",
+              tenantId = 0,
+              quality = 0,
+              catalog = None,
+              score = None
+            ).toJson
+          )
+        )
+      )
+
+      (mockFetcher
+        .post[JsValue](_: String, _: JsValue, _: Seq[HttpHeader], _: Boolean)(
+          _: ToEntityMarshaller[JsValue]
+        ))
+        .expects(*, *, *, *, *)
+        .onCall {
+          (
+              path,
+              payload,
+              headers,
+              autoRetry,
+              marshaller: ToEntityMarshaller[JsValue]
+          ) =>
+            val url = RelativeUrl.parse(path)
+            url.path.toString shouldBe "/v0/opa/decision"
+            url.query.params("rawAst") shouldBe List(None)
+            url.query.params("explain") shouldBe List(Some("full"))
+            url.query.params("humanReadable") shouldBe List(None)
+            url.query.params("pretty") shouldBe List(Some("true"))
+            url.query.params("concise") shouldBe List(Some("false"))
+            url.query.params("unknowns") shouldBe List(Some(""))
+            headers shouldBe List(RawHeader("X-Magda-Session", jwtVal))
+            autoRetry shouldBe true
+            payload shouldBe JsObject(
+              "input" -> inputVal.get,
+              "operationUri" -> JsString(operationUri),
+              "resourceUri" -> JsString("object/record")
+            )
+            Future(defaultAllowResponse)
+        }
+        .once()
+      val client = new AuthApiClient(mockFetcher)
+
+      val resFuture = client.getAuthDecision(
+        Some(jwtVal),
+        AuthDecisionReqConfig(
+          operationUri,
+          rawAst = Some(true),
+          explain = Some("full"),
+          humanReadable = Some(true),
+          pretty = Some(true),
+          concise = Some(false),
+          input = inputVal,
+          unknowns = Some(Nil),
+          resourceUri = Some("object/record")
+        )
+      )
+
+      resFuture.map { decision =>
+        decision.hasWarns shouldBe false
+        decision.hasResidualRules shouldBe false
+        decision.result shouldBe Some(JsTrue)
+        decision.residualRules shouldBe None
+        decision.warns shouldBe None
+      }
     }
 
   }
