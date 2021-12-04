@@ -253,7 +253,18 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      * This interface is provided to facilite users' own customised implementation only.
      *
      * @apiParam (Query String Parameters) {String[]} [unknowns] Use to supply A list of references that should be considered as "unknown" during the policy evaluation.
-     * More details please see `unknowns` parameter in `Request Body JSON` section below.
+     * If a conclusive/unconditional auth decision can't be made without knowing "unknown" data, the residual rules of the "partial evaluation" result will be responded in [rego](https://www.openpolicyagent.org/docs/latest/policy-language/) AST JSON format.
+     * e.g. When `unknowns=["input.object.dataset"]`, any rules related to dataset's attributes will be kept and output as residual rules, unless existing context info is sufficient to make a conclusive/unconditional auth decision (e.g. admin can access all datasets the values of regardless dataset attributes).
+     * > Please note: When `unknowns` is NOT supplied, this endpoint will auto-generate a JSON path that is made up of string "input" and the first segment of `operationUri` as the unknown reference.
+     * > e.g. When `operationUri` = `object/dataset/draft/read` and `unknowns` parameter is not supplied, by default, this endpoint will set `unknowns` parameter's value to array ["input.object"].
+     *
+     * > However, when extra context data is supplied as part request data at JSON path `input.object`, the `unknowns` will not be auto-set.
+     *
+     * > If you want to force stop the endpoint from auto-generating `unknowns`, you can supply `unknowns` parameter as an empty string.
+     * > Please note: When `unknowns` is set to an empty string, the request will be send to ["full evaluation endpoint"](https://www.openpolicyagent.org/docs/latest/rest-api/#get-a-document-with-input),
+     * > instead of ["partial evaluation endpoint"](https://www.openpolicyagent.org/docs/latest/rest-api/#compile-api).
+     * > You will always get definite answer from "full evaluation endpoint".
+     *
      * > Please note: you can supply an array by a query string like `unknowns=ref1&unknowns=ref2`
      *
      * @apiParam (Query String Parameters) {string="true"} [rawAst] Output RAW AST response from OPA instead parsed & processed result.
@@ -278,16 +289,7 @@ export default function createOpaRouter(options: OpaRouterOptions): Router {
      * @apiParam (Request Body JSON) {String} [resourceUri] Same as `resourceUri` in query parameter.
      * Users can also opt to supply `resourceUri` via request body instead.
      *
-     * @apiParam (Request Body JSON) {String[]} [unknowns] A list of references that should be considered as "unknown" during the policy evaluation.
-     * If a conclusive/unconditional auth decision can't be made without knowing "unknown" data, the residual rules of the "partial evaluation" result will be responded in [rego](https://www.openpolicyagent.org/docs/latest/policy-language/) AST JSON format.
-     * e.g. When `unknowns=["input.object.dataset"]`, any rules related to dataset's attributes will be kept and output as residual rules, unless existing context info is sufficient to make a conclusive/unconditional auth decision (e.g. admin can access all datasets the values of regardless dataset attributes).
-     * > Please note: When `unknowns` is NOT supplied, this endpoint will auto-generate a JSON path that is made up of string "input" and the first segment of `operationUri` as the unknown reference.
-     * > e.g. When `operationUri` = `object/dataset/draft/read` and `unknowns` parameter is not supplied, by default, this endpoint will set `unknowns` parameter's value to array ["input.object"].
-     * > However, when extra context data is supplied as part request data at JSON path `input.object`, the `unknowns` will not be auto-set.
-     * > If you want to force stop the endpoint from auto-generating `unknowns`, you can supply `unknowns` parameter as an empty string.
-     * > Please note: When `unknowns` is not set, the request will be send to ["full evaluation endpoint"](https://www.openpolicyagent.org/docs/latest/rest-api/#get-a-document-with-input),
-     * > instead of ["partial evaluation endpoint"](https://www.openpolicyagent.org/docs/latest/rest-api/#compile-api).
-     * > You will always get definite answer from "full evaluation endpoint".
+     * @apiParam (Request Body JSON) {String[]} [unknowns] Same as `unknowns` in query parameter. Users can also opt to supply `unknowns` via request body instead.
      *
      * @apiParam (Request Body JSON) {Object} [input] OPA "`input` data". Use to provide extra context data to support the auth decison making.
      * e.g. When you need to make decision on one particular dataset (rather than a group of dataset), you can supply the `input` data object as the following:
