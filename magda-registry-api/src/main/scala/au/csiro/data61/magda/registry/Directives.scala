@@ -1,25 +1,93 @@
 package au.csiro.data61.magda.registry
 
-import akka.actor.ActorSystem
+import akka.actor.TypedActor.context
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{Directive1, _}
-import akka.stream.Materializer
-import au.csiro.data61.magda.directives.AuthDirectives._
-import au.csiro.data61.magda.opa.OpaTypes._
-import com.typesafe.config.Config
-import scalikejdbc.DB
-import au.csiro.data61.magda.client.AuthOperations
-
-import scala.concurrent.{ExecutionContext, Future}
-import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.marshalling.ToResponseMarshallable
-import au.csiro.data61.magda.client.AuthOperations.OperationType
-import au.csiro.data61.magda.model.TenantId
+import akka.http.scaladsl.server.{Directive0}
+import au.csiro.data61.magda.client.{AuthApiClient}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import au.csiro.data61.magda.model.Auth.User
+import akka.http.scaladsl.model.StatusCodes.InternalServerError
+import scalikejdbc.{DBSession, ReadOnlyAutoSession}
+import spray.json.{JsNumber, JsObject, JsString, JsValue, JsonParser}
+
+import scala.util.{Failure, Success, Try}
+import scalikejdbc._
+
+import scala.collection.mutable.ListBuffer
+import scala.concurrent.{ExecutionContext, Future, blocking}
+import au.csiro.data61.magda.directives.AuthDirectives.requirePermission
 
 object Directives extends Protocols with SprayJsonSupport {
 
+  private def createRecordContextData(
+      recordId: String
+  )(implicit ec: ExecutionContext, session: DBSession): Future[JsObject] = {
+    Future {
+      blocking {
+        val recordJsFields: ListBuffer[(String, JsValue)] = ListBuffer()
+        sql"""SELECT * FROM records WHERE recordid=${recordId} LIMIT 1"""
+          .foreach { rs =>
+            recordJsFields += ("id" -> JsString(rs.string("recordId")))
+            recordJsFields += ("name" -> JsString(rs.string("recordName")))
+            recordJsFields += ("lastUpdate" -> JsNumber(
+              rs.bigInt("lastupdate")
+            ))
+            recordJsFields.appendAll(
+              rs.stringOpt("sourceTag").map(("sourceTag" -> JsString(_)))
+            )
+            recordJsFields.appendAll(
+              rs.bigIntOpt("tenantId").map(("tenantId" -> JsNumber(_)))
+            )
+          }
+
+        if (recordJsFields.length == 0) {
+          throw new Error(s"Cannot locate record by id: ${recordId}")
+        }
+
+        sql"""SELECT aspectid,data FROM recordaspects WHERE recordid=${recordId}"""
+          .foreach { rs =>
+            val aspectId = rs.string("aspectid")
+            Try(JsonParser(rs.string("data")).asJsObject).foreach { data =>
+              recordJsFields += (aspectId -> data)
+            }
+          }
+
+        JsObject(recordJsFields.toMap)
+      }
+    }
+  }
+
+  def requireRecordPermission(
+      authApiClient: AuthApiClient,
+      operationUri: String,
+      recordId: String
+  )(
+      session: DBSession = ReadOnlyAutoSession
+  ): Directive0 = (extractLog & extractExecutionContext).tflatMap {
+    case (log, akkaExeCtx) =>
+      implicit val blockingExeCtx =
+        context.system.dispatchers.lookup("blocking-io-dispatcher")
+
+      (withExecutionContext(blockingExeCtx) & onComplete(
+        createRecordContextData(recordId)(blockingExeCtx, session)
+      )).tflatMap {
+        case Tuple1(Success(recordData)) =>
+          requirePermission(
+            authApiClient,
+            operationUri,
+            input = Some(JsObject("object" -> JsObject("record" -> recordData)))
+          ) & withExecutionContext(akkaExeCtx) & pass // switch back to akka dispatcher
+        case Tuple1(Failure(e)) =>
+          log.error(
+            "Failed to create record context data for auth decision. record ID: {}. Error: {}",
+            recordId,
+            e
+          )
+          complete(
+            InternalServerError,
+            s"An error occurred while creating record context data for auth decision."
+          )
+      }
+  }
 //  /**
 //    * Returns true if the configuration says to skip the opa query.
 //    */
