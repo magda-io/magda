@@ -13,6 +13,8 @@
 - Registry-api, search API & indexer are now listen at non 80 port as they now run as non-root user in docker containers. Corresponding k8s svcs are still exposing services at 80 port.
 - Upgrade sbt to 1.4.9 to fix compatibility issues with apple m1 users
 - Fix: correct db backup job default schedule to `0 15 * * 6`
+- #3205: improve column type prediction logic & fixes the problem where visualisation / chart incorrectly put numeric columns to X
+- #3273 Fixed: when fetch data failed for preview chart, there should be proper error message shown to users
 
 ## 1.0.0
 
