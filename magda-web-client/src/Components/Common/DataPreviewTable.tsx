@@ -37,8 +37,8 @@ export default class DataPreviewTable extends Component<PropsType> {
                 >
                     <h3>Oops</h3>
                     <p>
-                        Either there's something wrong with the file or there's
-                        an internet connection problem
+                        The requested data source might not be available at this
+                        moment.
                     </p>
                 </div>
             );
