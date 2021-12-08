@@ -82,6 +82,7 @@ class DataPreviewChart extends Component<PropsType, StateType> {
         if (
             prevProps &&
             prevProps.dataLoadingResult === this.props.dataLoadingResult &&
+            prevProps.dataLoadError === this.props.dataLoadError &&
             prevState &&
             prevState.chartTitle === this.state.chartTitle &&
             prevState.chartType === this.state.chartType &&
@@ -198,13 +199,10 @@ class DataPreviewChart extends Component<PropsType, StateType> {
             return (
                 <AUpageAlert as="error" className="notification__inner">
                     <h3>Oops</h3>
-                    <p>Chart preview not available, please try table preview</p>
-                    <button
-                        onClick={this.onDismissError}
-                        className="switch-tab-btn"
-                    >
-                        Switch to table preview
-                    </button>
+                    <p>
+                        The requested data source might not be available at this
+                        moment.
+                    </p>
                 </AUpageAlert>
             );
         if (this.props.isLoading) return <Spinner height="420px" />;
