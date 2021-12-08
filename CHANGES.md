@@ -15,6 +15,8 @@
 - Fix: correct db backup job default schedule to `0 15 * * 6`
 - #3205: improve column type prediction logic & fixes the problem where visualisation / chart incorrectly put numeric columns to X
 - #3273 Fixed: when fetch data failed for preview chart, there should be proper error message shown to users
+- Fix TerriaJS sharing for data preview maps (See: https://github.com/TerriaJS/nationalmap/issues/1099)
+- #3232: fixed base backup made by wal-g remotely might miss files
 
 ## 1.0.0
 

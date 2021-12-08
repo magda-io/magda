@@ -71,6 +71,8 @@ spec:
             env:
               - name: PGHOST
                 value: {{ .Values.postgresql.fullnameOverride | quote }}
+              - name: WALG_TAR_SIZE_THRESHOLD
+                value: {{ .Values.backupRestore.backup.walgTarSizeThreshold | quote }}
 {{- include "magda.postgres-superuser-env" . | indent 14 }}
 {{- if not (empty .Values.backupRestore.storageConfig) }}
             {{- range $key, $value := .Values.backupRestore.storageConfig }}
