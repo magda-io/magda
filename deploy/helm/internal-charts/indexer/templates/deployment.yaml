@@ -22,6 +22,8 @@ spec:
       containers:
       - name: indexer
         env:
+        - name: LOG4J_FORMAT_MSG_NO_LOOKUPS
+          value: "true"
         - name: S3_SECRET_KEY
           value: dummy
         - name: JWT_SECRET
