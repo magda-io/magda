@@ -18,6 +18,10 @@
 - Fix TerriaJS sharing for data preview maps (See: https://github.com/TerriaJS/nationalmap/issues/1099)
 - #3232: fixed base backup made by wal-g remotely might miss files
 
+## 1.0.1
+
+- Mitigate log4j Vulnerability (CVE-2021-44228) by upgrading to 2.15.0 and set `LOG4J_FORMAT_MSG_NO_LOOKUPS` environment variable to `true`
+
 ## 1.0.0
 
 - #3197 Minion SDK: Make minion proactive crawling records number configurable
