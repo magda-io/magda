@@ -35,6 +35,9 @@ spec:
           - "-DelasticSearch.indices.regions.version={{ .Values.regionsIndexVersion }}"
 {{- end }}
 {{- if .Values.global.enableLivenessProbes }}
+        env:
+        - name: LOG4J_FORMAT_MSG_NO_LOOKUPS
+          value: "true"
         livenessProbe:
           httpGet:
             path: /v0/status/live

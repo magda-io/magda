@@ -63,6 +63,8 @@ spec:
           periodSeconds: 60
 {{- end }}
         env:
+        - name: LOG4J_FORMAT_MSG_NO_LOOKUPS
+          value: "true"
         - name: NAMESPACE
           valueFrom:
             fieldRef:
