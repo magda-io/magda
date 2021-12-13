@@ -73,6 +73,8 @@ spec:
         resources:
 {{ toYaml .Values.data.resources | indent 10 }}
         env:
+        - name: LOG4J_FORMAT_MSG_NO_LOOKUPS
+          value: "true"
         - name: NAMESPACE
           valueFrom:
             fieldRef:
