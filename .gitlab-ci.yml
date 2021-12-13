@@ -883,7 +883,7 @@ Release-Master-Tag-to-Docker-Hub:
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker login -u magdabot -p $DOCKER_HUB_PASSWORD
-    - yarn run retag-and-push -- -- -- -- toVersion=master --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --copyFromRegistry=true
+    - yarn run retag-and-push -- -- -- --toVersion=master --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --copyFromRegistry=true
 
 # When a new version is released (except pre-release versions), all images will be pushed to docker hub to replace `latest` tag
 Release-Latest-Tag-to-Docker-Hub:
@@ -913,7 +913,7 @@ Release-Latest-Tag-to-Docker-Hub:
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker login -u magdabot -p $DOCKER_HUB_PASSWORD
-    - yarn run retag-and-push -- -- -- -- toVersion=latest --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --copyFromRegistry=true
+    - yarn run retag-and-push -- -- -- --toVersion=latest --fromPrefix=registry.gitlab.com/magda-data/magda/ --fromVersion=$CI_COMMIT_REF_SLUG --copyFromRegistry=true
 
 Publish NPM Packages:
   stage: release
