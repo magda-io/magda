@@ -1,6 +1,6 @@
 # authorization-db
 
-![Version: 1.1.0-alpha.2](https://img.shields.io/badge/Version-1.1.0--alpha.2-informational?style=flat-square)
+![Version: 1.1.0-alpha.4](https://img.shields.io/badge/Version-1.1.0--alpha.4-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -10,7 +10,7 @@ Kubernetes: `>= 1.14.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../magda-postgres | magda-postgres | 1.1.0-alpha.2 |
+| file://../magda-postgres | magda-postgres | 1.1.0-alpha.4 |
 
 ## Values
 
