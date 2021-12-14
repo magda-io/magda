@@ -11,6 +11,7 @@ import takeRight from "lodash/takeRight";
 import sortBy from "lodash/sortBy";
 import * as d3 from "d3-collection";
 import * as chrono from "chrono-node";
+import escapeRegExp from "@magda/typescript-common/dist/util/escapeRegExp";
 
 const AVAILABLE_CHART_TYPES = ["bar", "pie", "scatter", "line"];
 const STRIP_NUMBER_REGEX = /[^\-\d.+]/g;
@@ -52,10 +53,16 @@ const OVERRIDE_TO_CATEGORY_COLUMNS = [
     "month",
     "reason",
     "year",
-    "country"
+    "country",
+    /^registration number$/i
 ];
 /** Columns with these terms in them will be overridden as time types */
-const OVERRIDE_TO_TIME_COLUMNS = ["date", "time", "start dt", "end dt"];
+const OVERRIDE_TO_TIME_COLUMNS = [
+    "date",
+    "time",
+    /(^|\W)start\W+dt(\W|$)/i,
+    /(^|\W)end\W+dt(\W|$)/i
+];
 /** Columns with these terms in them will be overridden as numeric types */
 const OVERRIDE_TO_NUMERIC_COLUMNS = [
     "amt",
@@ -65,6 +72,7 @@ const OVERRIDE_TO_NUMERIC_COLUMNS = [
     "tax",
     "value",
     "length",
+    "expenditure",
     "total"
 ];
 const EXCLUDE_COLUMNS = ["long", "lat", "lng"];
@@ -181,30 +189,41 @@ function testKeywords(str, keywords) {
         return false;
     } else if (!keywords || !keywords.length) {
         return false;
-    } else {
-        const r = new RegExp(`.*(${keywords.join("|")}).*`, "i");
-        return !!r.test(str);
     }
+
+    str = (str + "").replace(/_/g, " ").trim();
+    const stringKeywords = [];
+    for (let i = 0; i < keywords.length; i++) {
+        const item = keywords[i];
+        if (item instanceof RegExp) {
+            if (item.test(str)) {
+                return true;
+            }
+        } else {
+            stringKeywords.push(escapeRegExp(item));
+        }
+    }
+    const r = new RegExp(`(^|\\W)(${stringKeywords.join("|")})(\\W|$)`, "i");
+    return !!r.test(str);
 }
 
 function fieldDefAdjustment(field) {
-    if (testKeywords(field.label, OVERRIDE_TO_TIME_COLUMNS)) {
-        field.numeric = false;
-        field.category = false;
-        field.time = true;
+    const outputField = { ...field };
+    // we should take number & time column override as priority
+    if (testKeywords(field.label, OVERRIDE_TO_NUMERIC_COLUMNS)) {
+        outputField.numeric = true;
+        outputField.category = false;
+        outputField.time = false;
     } else if (testKeywords(field.label, OVERRIDE_TO_CATEGORY_COLUMNS)) {
-        return {
-            ...field,
-            numeric: false,
-            category: true,
-            time: false
-        };
-    } else if (testKeywords(field.label, OVERRIDE_TO_NUMERIC_COLUMNS)) {
-        field.numeric = true;
-        field.category = false;
-        field.time = false;
+        outputField.numeric = false;
+        outputField.category = true;
+        outputField.time = false;
+    } else if (testKeywords(field.label, OVERRIDE_TO_TIME_COLUMNS)) {
+        outputField.numeric = false;
+        outputField.category = false;
+        outputField.time = true;
     }
-    return field;
+    return outputField;
 }
 
 function preProcessFields(headerRow, distribution, chartType) {
