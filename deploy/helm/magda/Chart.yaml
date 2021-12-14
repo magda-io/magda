@@ -13,7 +13,7 @@ dependencies:
     repository: file://../magda-core
 
   - name: openfaas
-    version: 5.5.5-magda
+    version: 5.5.5-magda.1
     repository: https://charts.magda.io
     # Users should turn on / off openfaas via this condition var `global.openfaas.enabled` rather than `tags`
     # Due to a limitation of helm, the value of tags is not available in chart template.
