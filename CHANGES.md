@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.0.60-dt.0
+
+- Disable in-pod postgres instance backup module
+- mitigate log4j Vulnerability (CVE-2021-44228) by upgrading to 2.15.0 and set `LOG4J_FORMAT_MSG_NO_LOOKUPS` environment variable to `true`
+
 ## 0.0.60
 
 - Updated dataset pages and Ask A Question options for datasets with no contact points
