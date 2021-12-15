@@ -25,7 +25,7 @@ dependencies:
   # Thus, no tags or condition are required.
   # You should set its sub-chart to enabled or not.
   - name: magda-function-history-report
-    version: "1.0.0"
+    version: "1.1.0"
     repository: https://charts.magda.io
     tags:
       - all
@@ -70,7 +70,7 @@ dependencies:
       - minion-ckan-exporter
 
   - name: magda-ckan-connector
-    version: "1.2.0"
+    version: "1.3.0"
     alias: ckan-connector-functions
     repository: https://charts.magda.io
     tags:

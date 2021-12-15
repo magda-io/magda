@@ -7,7 +7,7 @@ dependencies:
   version: 5.5.5-magda.1
 - name: magda-function-history-report
   repository: https://charts.magda.io
-  version: 1.0.0
+  version: 1.1.0
 - name: magda-minion-broken-link
   repository: https://charts.magda.io
   version: 1.0.0
@@ -25,9 +25,9 @@ dependencies:
   version: 1.0.0
 - name: magda-ckan-connector
   repository: https://charts.magda.io
-  version: 1.2.0
+  version: 1.3.0
 - name: magda-function-esri-url-processor
   repository: https://charts.magda.io
   version: 1.1.0
-digest: sha256:5744efd4e7241083af60e8ce8f31d26a1e25ee2cf554703e255c141e00d3a50a
-generated: "2021-12-15T00:24:46.322628+11:00"
+digest: sha256:f9d1a6566e7144f87ce21635115d81354ab96be2b53cd004a83a1afd41fc6665
+generated: "2021-12-15T14:50:34.971084+11:00"
