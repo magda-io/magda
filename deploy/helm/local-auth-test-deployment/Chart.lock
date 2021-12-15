@@ -1,6 +1,6 @@
 dependencies:
 - name: magda-core
   repository: file://../magda-core
-  version: 0.0.60-rc.4
-digest: sha256:86d9ce8d9c3a1c2771c80844353cd0335d912d235a20475d026e05d85fbb28a2
-generated: "2021-06-22T09:48:41.681086+10:00"
+  version: 0.0.60-dt.0
+digest: sha256:1183cd5dc7ca66256810063173f4455132c44ee47d600d9bfc438b6e80cf3703
+generated: "2021-12-15T18:49:13.144643+11:00"
