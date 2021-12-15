@@ -4,10 +4,10 @@ dependencies:
   version: 1.1.0-alpha.4
 - name: openfaas
   repository: https://charts.magda.io
-  version: 5.5.5-magda
+  version: 5.5.5-magda.1
 - name: magda-function-history-report
   repository: https://charts.magda.io
-  version: 1.0.0
+  version: 1.1.0
 - name: magda-minion-broken-link
   repository: https://charts.magda.io
   version: 1.0.0
@@ -25,9 +25,9 @@ dependencies:
   version: 1.0.0
 - name: magda-ckan-connector
   repository: https://charts.magda.io
-  version: 1.2.0
+  version: 1.3.0
 - name: magda-function-esri-url-processor
   repository: https://charts.magda.io
-  version: 1.0.0
-digest: sha256:55ed7c35465358f8edee259fe5affd03da20a843cf068cbf8437afbadec5cab3
-generated: "2021-12-13T14:53:45.706745+11:00"
+  version: 1.1.0
+digest: sha256:f9d1a6566e7144f87ce21635115d81354ab96be2b53cd004a83a1afd41fc6665
+generated: "2021-12-15T14:50:34.971084+11:00"
