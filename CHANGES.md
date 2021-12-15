@@ -17,6 +17,7 @@
 - #3273 Fixed: when fetch data failed for preview chart, there should be proper error message shown to users
 - Fix TerriaJS sharing for data preview maps (See: https://github.com/TerriaJS/nationalmap/issues/1099)
 - #3232: fixed base backup made by wal-g remotely might miss files
+- #3192: Use use apiextensions.k8s.io/v1 for CRDs; Update all faas function charts
 
 ## 1.0.1
 
