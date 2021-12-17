@@ -1,6 +1,6 @@
 # magda
 
-![Version: 1.1.0-alpha.4](https://img.shields.io/badge/Version-1.1.0--alpha.4-informational?style=flat-square)
+![Version: 1.1.0](https://img.shields.io/badge/Version-1.1.0-informational?style=flat-square)
 
 A complete solution for managing, publishing and discovering government data, private and open. This chart includes the magda default deployment.
 
@@ -16,7 +16,7 @@ Kubernetes: `>= 1.14.0-0`
 
 | Repository | Name | Version |
 |------------|------|---------|
-| file://../magda-core | magda-core | 1.1.0-alpha.4 |
+| file://../magda-core | magda-core | 1.1.0 |
 | https://charts.magda.io | ckan-connector-functions(magda-ckan-connector) | 1.3.0 |
 | https://charts.magda.io | magda-function-esri-url-processor | 1.1.0 |
 | https://charts.magda.io | magda-function-history-report | 1.1.0 |
