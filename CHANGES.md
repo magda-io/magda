@@ -20,6 +20,7 @@
 - #3192: Use use apiextensions.k8s.io/v1 for CRDs; Update all faas function charts
 - Upgraded both [CSW](https://github.com/magda-io/magda-csw-connector) & [project open data](https://github.com/magda-io/magda-project-open-data-connector) connector to v1.1.0
 - #3283 mitigate log4j DOS (denial of service) Vulnerability CVE-2021-45046
+- #3285 Set default Google Cloud SQL proxy version to 1.11 (Seems 1.11 is more stable on high load. If prefer higher version, user can manually set image version via Helm chart config)
 
 ## 1.0.1
 
