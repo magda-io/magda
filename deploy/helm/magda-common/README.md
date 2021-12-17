@@ -1,6 +1,6 @@
 # magda-common
 
-![Version: 1.1.0-alpha.4](https://img.shields.io/badge/Version-1.1.0--alpha.4-informational?style=flat-square) ![Type: library](https://img.shields.io/badge/Type-library-informational?style=flat-square)
+![Version: 1.1.0-rc.1](https://img.shields.io/badge/Version-1.1.0--rc.1-informational?style=flat-square) ![Type: library](https://img.shields.io/badge/Type-library-informational?style=flat-square)
 
 A Library Helm Chart for sharing common Magda logic between charts.
 This chart is not deployable by itself.
