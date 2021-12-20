@@ -29,8 +29,6 @@ libraryDependencies ++= {
 
     "com.sksamuel.elastic4s" %% "elastic4s-core" % "6.5.1",
     "com.sksamuel.elastic4s" %% "elastic4s-http" % "6.5.1",
-    "org.apache.logging.log4j" % "log4j-core" % "2.16.0",
-    "org.apache.logging.log4j" % "log4j-api" % "2.16.0",
 
     "com.beachape" %% "enumeratum" % "1.5.10",
     "com.github.swagger-akka-http" %% "swagger-akka-http" % "1.1.0",
