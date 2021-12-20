@@ -21,6 +21,18 @@
 - Registry-api, search API & indexer are now listen at non 80 port as they now run as non-root user in docker containers. Corresponding k8s svcs are still exposing services at 80 port.
 - Upgrade sbt to 1.4.9 to fix compatibility issues with apple m1 users
 - Fix: correct db backup job default schedule to `0 15 * * 6`
+- #3205: improve column type prediction logic & fixes the problem where visualisation / chart incorrectly put numeric columns to X
+- #3273 Fixed: when fetch data failed for preview chart, there should be proper error message shown to users
+- Fix TerriaJS sharing for data preview maps (See: https://github.com/TerriaJS/nationalmap/issues/1099)
+- #3232: fixed base backup made by wal-g remotely might miss files
+- #3192: Use use apiextensions.k8s.io/v1 for CRDs; Update all faas function charts
+- Upgraded both [CSW](https://github.com/magda-io/magda-csw-connector) & [project open data](https://github.com/magda-io/magda-project-open-data-connector) connector to v1.1.0
+- #3283 mitigate log4j DOS (denial of service) Vulnerability CVE-2021-45046
+- #3285 Set default Google Cloud SQL proxy version to 1.11 (Seems 1.11 is more stable on high load. If prefer higher version, user can manually set image version via Helm chart config)
+
+## 1.0.1
+
+- Mitigate log4j Vulnerability (CVE-2021-44228) by upgrading to 2.15.0 and set `LOG4J_FORMAT_MSG_NO_LOOKUPS` environment variable to `true`
 
 ## 1.0.0
 

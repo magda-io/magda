@@ -72,6 +72,7 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
                 version: "8.0.0",
                 initSources: [
                     {
+                        stratum: "user",
                         catalog: [
                             {
                                 name: distribution?.title,

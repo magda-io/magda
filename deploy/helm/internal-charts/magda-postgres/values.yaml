@@ -21,7 +21,7 @@ postgresql:
   image:
     # -- the default docker image tag/version used by the postgresql chart. 
     # When dump the magda version using `yarn set-version` (at magda repo root), this default version will be auto-replaced with the new chart version number.
-    tag: "1.1.0-alpha.2"
+    tag: "1.1.0-alpha.4"
     repository: "data61/magda-postgres"
 
   # -- the name of config map contains entended postgresql config options.
@@ -161,6 +161,10 @@ backupRestore:
     # -- whether backup feature should be turn on.
     # The change of this field (and all other fields in backupRestore section) will take effect after restart the database pod.
     enabled: false
+    # -- To configure the size of one backup bundle (in bytes). See info of WALG_TAR_SIZE_THRESHOLD config option on [this page](https://github.com/wal-g/wal-g/blob/master/docs/PostgreSQL.md)
+    # Due to [this issue](https://github.com/wal-g/wal-g/issues/1106), we set default value to 21474836480 (20G) to avoid oversize issue.
+    # Users can set this setting to a bigger value if needs to create backup with bigger tablespace.
+    walgTarSizeThreshold: "21474836480"
     # -- archive timeout setting. See: https://www.postgresql.org/docs/13/runtime-config-wal.html#GUC-ARCHIVE-TIMEOUT
     # This setting guarantees there would be at least one WAL segment file generated (Thus, avaiable for backup) within the time frame.
     # Lower this value will bloat your archive storage but will reduce the max. time window of data loss when you need to recover from the WAL achieve backup.

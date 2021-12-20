@@ -3,17 +3,17 @@ name: "magda"
 description: "A complete solution for managing, publishing and discovering
   government data, private and open. This chart includes the magda default
   deployment."
-version: "1.1.0-alpha.2"
+version: "1.1.0-alpha.4"
 kubeVersion: ">= 1.14.0-0"
 home: "https://github.com/magda-io/magda"
 sources: [ "https://github.com/magda-io/magda" ]
 dependencies:
   - name: magda-core
-    version: 1.1.0-alpha.2
+    version: 1.1.0-alpha.4
     repository: file://../magda-core
 
   - name: openfaas
-    version: 5.5.5-magda
+    version: 5.5.5-magda.1
     repository: https://charts.magda.io
     # Users should turn on / off openfaas via this condition var `global.openfaas.enabled` rather than `tags`
     # Due to a limitation of helm, the value of tags is not available in chart template.
@@ -25,7 +25,7 @@ dependencies:
   # Thus, no tags or condition are required.
   # You should set its sub-chart to enabled or not.
   - name: magda-function-history-report
-    version: "1.0.0"
+    version: "1.1.0"
     repository: https://charts.magda.io
     tags:
       - all
@@ -70,7 +70,7 @@ dependencies:
       - minion-ckan-exporter
 
   - name: magda-ckan-connector
-    version: "1.2.0"
+    version: "1.3.0"
     alias: ckan-connector-functions
     repository: https://charts.magda.io
     tags:
@@ -79,7 +79,7 @@ dependencies:
       - ckan-connector-functions
 
   - name: magda-function-esri-url-processor
-    version: "1.0.0"
+    version: "1.1.0"
     repository: https://charts.magda.io
     tags:
       - all

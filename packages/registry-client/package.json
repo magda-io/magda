@@ -1,7 +1,7 @@
 {
   "name": "@magda/registry-client",
   "description": "MAGDA Registry Client",
-  "version": "1.1.0-alpha.2",
+  "version": "1.1.0-alpha.4",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "webpack && api-extractor run -l",
@@ -12,7 +12,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "devDependencies": {
-    "@magda/typescript-common": "^1.1.0-alpha.2",
+    "@magda/typescript-common": "^1.1.0-alpha.4",
     "@microsoft/api-extractor": "^7.7.8",
     "ts-loader": "^6.2.1",
     "typescript": "^3.7.2",

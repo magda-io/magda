@@ -2,7 +2,7 @@ global: {}
 image:
   name: gce-proxy
   repository: gcr.io/cloudsql-docker
-  tag: "1.26.0"
+  tag: "1.11"
   pullPolicy: IfNotPresent
   pullSecrets: false
 
