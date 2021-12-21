@@ -25,7 +25,7 @@ libraryDependencies ++= {
 
     "org.locationtech.spatial4j" % "spatial4j" % "0.7",
     "org.locationtech.jts" % "jts-core" % "1.15.0",
-    "org.elasticsearch" % "elasticsearch" % "6.5.1",
+    "org.elasticsearch" % "elasticsearch" % "6.5.1" exclude("org.apache.logging.log4j", "log4j-api"),
 
     "com.sksamuel.elastic4s" %% "elastic4s-core" % "6.5.1",
     "com.sksamuel.elastic4s" %% "elastic4s-http" % "6.5.1",
