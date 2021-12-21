@@ -1,6 +1,6 @@
 FROM docker.elastic.co/elasticsearch/elasticsearch:6.5.4
 
-RUN yum -y install sudo
+RUN yum -y install sudo zip
 
 # Delete all x-pack modules
 RUN find modules -type d -name "x-pack-*" -exec rm -r {} +
