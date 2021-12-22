@@ -5,7 +5,6 @@
 [![Try it out](https://img.shields.io/badge/try%20it%20out-demo.dev.magda.io-blue.svg)](https://demo.dev.magda.io)
 [![GitHub Discussions](https://img.shields.io/github/discussions/magda-io/magda?label=Get%20help%20or%20discuss%20&style=plastic)](https://github.com/magda-io/magda/discussions)
 
-
 Magda is a data catalog system that will provide a single place where all of an organization's data can be catalogued, enriched, searched, tracked and prioritized - whether big or small, internally or externally sourced, available as files, databases or APIs. Magda is designed specifically around the concept of _federation_ - providing a single view across all data of interest to a user, regardless of where the data is stored or where it was sourced from. The system is able to quickly crawl external data sources, track changes, make automatic enhancements and make notifications when changes occur, giving data users a one-stop shop to discover all the data that's available to them.
 
 ![Magda Search Demo](docs/assets/searchdemo420p.gif)
@@ -24,19 +23,19 @@ Over the past 18 months, our focus has been to develop Magda into a more general
 
 ## Features
 
--   Powerful and scalable search based on ElasticSearch
--   Quick and reliable aggregation of external sources of datasets
--   An unopinionated central store of metadata, able to cater for most metadata schemas
--   Federated authentication via passport.js - log in via Google, Facebook, WSFed, AAF, CKAN, and easily create new providers.
--   Based on Kubernetes for cloud agnosticism - deployable to nearly any cloud, on-premises, or on a local machine.
--   Easy (as long as you know Kubernetes) installation and upgrades
--   Extensions are based on adding new docker images to the cluster, and hence can be developed in any language
+- Powerful and scalable search based on ElasticSearch
+- Quick and reliable aggregation of external sources of datasets
+- An unopinionated central store of metadata, able to cater for most metadata schemas
+- Federated authentication via passport.js - log in via Google, Facebook, WSFed, AAF, CKAN, and easily create new providers.
+- Based on Kubernetes for cloud agnosticism - deployable to nearly any cloud, on-premises, or on a local machine.
+- Easy (as long as you know Kubernetes) installation and upgrades
+- Extensions are based on adding new docker images to the cluster, and hence can be developed in any language
 
 ### Currently Under Development
 
--   A heavily automated, quick and easy to use data cataloguing process intended to produce high-quality metadata for discovery
--   A robust, policy-based authorization system built on Open Policy Agent - write flexible policies to restrict access to datasets and have them work across the system, including by restricting search results to what you're allowed to see.
--   Storage of datasets
+- A heavily automated, quick and easy to use data cataloguing process intended to produce high-quality metadata for discovery
+- A robust, policy-based authorization system built on Open Policy Agent - write flexible policies to restrict access to datasets and have them work across the system, including by restricting search results to what you're allowed to see.
+- Storage of datasets
 
 Our current roadmap is available at https://magda.io/docs/roadmap
 
@@ -92,6 +91,7 @@ Great! Take a look at https://github.com/magda-io/magda/blob/master/.github/CONT
 
 ## Documentation links
 
--   [Magda API Reference](https://demo.dev.magda.io/api/v0/apidocs/index.html)
--   [Magda Helm Chart Reference](docs/docs/helm-charts-docs-index.md)
--   [Other documentations](docs/docs/index.md)
+- [Magda API Reference](https://demo.dev.magda.io/api/v0/apidocs/index.html)
+- [Magda Helm Chart Reference](docs/docs/helm-charts-docs-index.md)
+- [Migration & Upgrade Documents](docs/docs/migration)
+- [Other documentations](docs/docs/index.md)
