@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.2.0
+
+- #3291 Remove log4j from scala codebase dependency list
+
 ## 1.1.0
 
 - #3246 Upgrade default cloudSql proxy version to v1.26.0
