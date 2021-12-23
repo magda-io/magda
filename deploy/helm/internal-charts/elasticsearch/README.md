@@ -37,7 +37,7 @@ Kubernetes: `>= 1.14.0-0`
 | kibanaImage.pullPolicy | string | `"IfNotPresent"` |  |
 | kibanaImage.pullSecrets | bool | `false` |  |
 | kibanaImage.repository | string | `"docker.elastic.co/kibana"` |  |
-| kibanaImage.tag | string | `"6.5.4"` |  |
+| kibanaImage.tag | string | `"6.8.22"` |  |
 | master.pluginsInstall | string | `""` |  |
 | master.replicas | int | `3` |  |
 | master.resources.limits.cpu | string | `"100m"` |  |
