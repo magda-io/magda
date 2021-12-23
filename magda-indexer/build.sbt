@@ -8,7 +8,7 @@ resolvers += Resolver.bintrayRepo("monsanto", "maven")
 
 libraryDependencies ++= {
   val akkaV       = "2.5.23"
-  val akkaHttpV   = "10.1.8"
+  val akkaHttpV   = "10.2.7"
   val scalaTestV  = "3.0.8"
   Seq(
     "com.typesafe.akka" %% "akka-actor" % akkaV,

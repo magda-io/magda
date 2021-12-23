@@ -7,7 +7,7 @@ resolvers += "jitpack" at "https://jitpack.io"
 
 libraryDependencies ++= {
   val akkaV       = "2.5.23"
-  val akkaHttpV   = "10.1.8"
+  val akkaHttpV   = "10.2.7"
   val scalaTestV  = "3.0.8"
   val jjwtV = "0.10.7"
 
@@ -39,6 +39,9 @@ libraryDependencies ++= {
     "io.jsonwebtoken" % "jjwt-impl" % jjwtV,
     "io.jsonwebtoken" % "jjwt-jackson" % jjwtV,
 
-    "org.scalatest" %% "scalatest" % scalaTestV % Test
+    "org.scalatest" %% "scalatest" % scalaTestV % Test,
+
+    "com.typesafe.akka" %% "akka-stream-testkit" % akkaV % Test,
+    "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpV % Test
   )
 }
