@@ -16,11 +16,11 @@ libraryDependencies ++= {
   Seq(
     "org.scalatest"     %% "scalatest" % scalaTestV % "test",
 
-    "org.elasticsearch.plugin" % "reindex-client" % "6.3.0" % "test",
-    "org.elasticsearch.plugin" % "percolator-client" % "6.3.0" % "test",
-    "org.elasticsearch.plugin" % "lang-mustache-client" % "6.3.0" % "test",
-    "org.elasticsearch.plugin" % "transport-netty4-client" % "6.3.0" % "test",
-    "org.codelibs.elasticsearch.module" % "analysis-common" % "6.3.0" % "test",
+    "org.elasticsearch.plugin" % "reindex-client" % "6.8.22" % "test",
+    "org.elasticsearch.plugin" % "percolator-client" % "6.8.22" % "test",
+    "org.elasticsearch.plugin" % "lang-mustache-client" % "6.8.22" % "test",
+    "org.elasticsearch.plugin" % "transport-netty4-client" % "6.8.22" % "test",
+    "org.codelibs.elasticsearch.module" % "analysis-common" % "6.8.12" % "test",
 
     "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % "test",
     "com.fortysevendeg" %% "scalacheck-datetime" % "0.2.0" % "test",

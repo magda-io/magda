@@ -25,13 +25,13 @@ libraryDependencies ++= {
 
     "org.locationtech.spatial4j" % "spatial4j" % "0.7",
     "org.locationtech.jts" % "jts-core" % "1.15.0",
-    "org.elasticsearch" % "elasticsearch" % "6.5.1" exclude("org.apache.logging.log4j", "log4j-api"),
+    "org.elasticsearch" % "elasticsearch" % "6.8.22" exclude("org.apache.logging.log4j", "log4j-api"),
 
-    "com.sksamuel.elastic4s" %% "elastic4s-core" % "6.5.1",
-    "com.sksamuel.elastic4s" %% "elastic4s-http" % "6.5.1",
+    "com.sksamuel.elastic4s" %% "elastic4s-core" % "6.7.8",
+    "com.sksamuel.elastic4s" %% "elastic4s-http" % "6.7.8",
 
     "com.beachape" %% "enumeratum" % "1.5.10",
-    "com.github.swagger-akka-http" %% "swagger-akka-http" % "1.1.0",
+    "com.github.swagger-akka-http" %% "swagger-akka-http" % "1.4.0",
     "net.virtual-void" %%  "json-lenses" % "0.6.2",
     "com.mapbox.mapboxsdk" % "mapbox-sdk-geojson" % "4.5.0",
 
