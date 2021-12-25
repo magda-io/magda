@@ -1067,8 +1067,7 @@ class WebHookProcessingSpec
           List(
             ExpectedEventIdAndTenantId(3, TENANT_1),
             ExpectedEventIdAndTenantId(4, TENANT_1)
-          ),
-          payloadsSize = 2
+          )
         )
 
         for (i <- 1 to 50) {
@@ -1344,8 +1343,7 @@ class WebHookProcessingSpec
           List(
             ExpectedEventIdAndTenantId(8, TENANT_1),
             ExpectedEventIdAndTenantId(9, TENANT_2)
-          ),
-          payloadsSize = 2
+          )
         )
         assertRecordsInPayloads(
           List(
@@ -2175,13 +2173,16 @@ class WebHookProcessingSpec
 
   private def assertEventsInPayloads(
       expectedEventIdAndTenantIds: Seq[ExpectedEventIdAndTenantId],
-      payloadsSize: Int = 1
+      payloadsSize: Option[Int] = None
   ) = {
     Util.waitUntilAllDone(1000)
-    payloads.length shouldBe payloadsSize
     val events = payloads.foldLeft[List[RegistryEvent]](Nil)(
       (a, payload) => a ++ payload.events.get
     )
+
+    if(payloadsSize.isDefined) {
+      payloads.length shouldBe payloadsSize
+    }
 
     events.size shouldBe expectedEventIdAndTenantIds.size
     events
