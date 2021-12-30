@@ -360,6 +360,7 @@ class ElasticSearchIndexer(
           .execute(
             ElasticDsl
               .getMapping(indices.getIndex(config, indexDef.indicesIndex))
+              .copy(includeTypeName = Some(true))
           )
           .flatMap {
             case results: RequestSuccess[Seq[IndexMappings]] =>

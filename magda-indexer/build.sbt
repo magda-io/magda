@@ -7,7 +7,7 @@ scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 resolvers += Resolver.bintrayRepo("monsanto", "maven")
 
 libraryDependencies ++= {
-  val akkaV       = "2.5.23"
+  val akkaV       = "2.5.32"
   val akkaHttpV   = "10.2.7"
   val scalaTestV  = "3.0.8"
   Seq(

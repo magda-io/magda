@@ -6,7 +6,7 @@ resolvers += "elasticsearch-releases" at "https://artifacts.elastic.co/maven"
 resolvers += "jitpack" at "https://jitpack.io"
 
 libraryDependencies ++= {
-  val akkaV       = "2.5.23"
+  val akkaV       = "2.5.32"
   val akkaHttpV   = "10.2.7"
   val scalaTestV  = "3.0.8"
   val jjwtV = "0.10.7"

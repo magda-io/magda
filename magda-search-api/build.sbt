@@ -3,7 +3,7 @@ import DockerSetup._
 name := "magda-search-api"
 
 libraryDependencies ++= {
-  val akkaV       = "2.5.23"
+  val akkaV       = "2.5.32"
   val akkaHttpV   = "10.2.7"
   val scalaTestV  = "3.0.8"
   Seq(
