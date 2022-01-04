@@ -2180,7 +2180,7 @@ class WebHookProcessingSpec
       (a, payload) => a ++ payload.events.get
     )
 
-    if(payloadsSize.isDefined) {
+    if (payloadsSize.isDefined) {
       payloads.length shouldBe payloadsSize
     }
 
@@ -2198,18 +2198,32 @@ class WebHookProcessingSpec
   private def assertRecordsInPayloads(
       expectedRecordIdAndTenantIds: Seq[ExpectedRecordIdAndTenantId]
   ) = {
-    payloads.size shouldBe expectedRecordIdAndTenantIds.size
     val records = payloads.foldLeft[List[Record]](Nil)(
       (a, payload) => a ++ payload.records.get
     )
     records
-      .zip(expectedRecordIdAndTenantIds)
-      .map(pair => {
-        val actual = pair._1
-        val expected = pair._2
-        actual.id shouldBe expected.recordId
-        actual.tenantId shouldBe Some(expected.tenantId)
-      })
+      .filter(
+        record =>
+          expectedRecordIdAndTenantIds
+            .find(
+              item =>
+                item.recordId == record.id && item.tenantId == record.tenantId.get
+            )
+            .isEmpty
+      )
+      .length shouldBe 0
+
+    expectedRecordIdAndTenantIds
+      .filter(
+        item =>
+          records
+            .find(
+              record =>
+                item.recordId == record.id && item.tenantId == record.tenantId.get
+            )
+            .isEmpty
+      )
+      .length shouldBe 0
   }
 
   describe("async web hooks") {
