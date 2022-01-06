@@ -7,6 +7,7 @@ import au.csiro.data61.magda.model.misc.BoundingBox
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
 import au.csiro.data61.magda.spatial.{RegionLoader, RegionSources, RegionSource}
+import au.csiro.data61.magda.spatial.GeometryUtils.createEnvelope
 import au.csiro.data61.magda.util.MwundoJTSConversions._
 import com.monsanto.labs.mwundo.GeoJson
 import com.sksamuel.elastic4s.analyzers._
@@ -721,19 +722,5 @@ object IndexDefinition extends DefaultJsonProtocol {
       .map { count =>
         logger.info("Successfully indexed {} regions", count)
       }
-  }
-
-  val geoFactory = new GeometryFactory()
-
-  def createEnvelope(geometry: GeoJson.Geometry): BoundingBox = {
-    val indexedEnvelope =
-      GeometryConverter.toJTSGeo(geometry, geoFactory).getEnvelopeInternal
-
-    BoundingBox(
-      indexedEnvelope.getMaxY,
-      indexedEnvelope.getMaxX,
-      indexedEnvelope.getMinY,
-      indexedEnvelope.getMinX
-    )
   }
 }
