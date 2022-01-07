@@ -6,7 +6,7 @@ import akka.stream.scaladsl.Sink
 import au.csiro.data61.magda.model.misc.BoundingBox
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.spatial.RegionSource.generateRegionId
-import au.csiro.data61.magda.spatial.{RegionLoader, RegionSources, RegionSource}
+import au.csiro.data61.magda.spatial.{RegionLoader, RegionSource, RegionSources}
 import au.csiro.data61.magda.spatial.GeometryUtils.createEnvelope
 import au.csiro.data61.magda.util.MwundoJTSConversions._
 import com.monsanto.labs.mwundo.GeoJson
@@ -19,7 +19,7 @@ import com.sksamuel.elastic4s.http.{
   RequestSuccess
 }
 import com.sksamuel.elastic4s.indexes.CreateIndexRequest
-import com.sksamuel.elastic4s.mappings.FieldDefinition
+import com.sksamuel.elastic4s.mappings.{FieldDefinition, GeoshapeField}
 import com.typesafe.config.Config
 import org.locationtech.jts.geom._
 import org.locationtech.jts.simplify.TopologyPreservingSimplifier
@@ -42,6 +42,10 @@ case class IndexDefinition(
 ) {}
 
 object IndexDefinition extends DefaultJsonProtocol {
+
+  def magdaGeoShapeField(name: String) = {
+    GeoshapeField(name).tree("geohash").strategy("recursive")
+  }
 
   def magdaTextField(name: String, extraFields: FieldDefinition*) = {
     val fields = extraFields ++ Seq(
@@ -104,7 +108,7 @@ object IndexDefinition extends DefaultJsonProtocol {
 
   val dataSets: IndexDefinition = new IndexDefinition(
     name = "datasets",
-    version = 47,
+    version = 48,
     indicesIndex = Indices.DataSetsIndex,
     definition = (indices, config) => {
       var createIdxReq =
@@ -167,7 +171,7 @@ object IndexDefinition extends DefaultJsonProtocol {
                       .fielddata(true)
                   )
                 ),
-                objectField("spatial").fields(geoshapeField("geoJson")),
+                objectField("spatial").fields(magdaGeoShapeField("geoJson")),
                 magdaTextField("title"),
                 magdaSynonymLongHtmlTextField("description"),
                 magdaTextField("keywords"),
@@ -343,7 +347,7 @@ object IndexDefinition extends DefaultJsonProtocol {
   val regions: IndexDefinition =
     new IndexDefinition(
       name = "regions",
-      version = 24,
+      version = 25,
       indicesIndex = Indices.RegionsIndex,
       definition = (indices, config) => {
         val createIdxReq =
@@ -364,8 +368,8 @@ object IndexDefinition extends DefaultJsonProtocol {
                 textField("regionSearchId")
                   .analyzer("regionSearchIdIndex")
                   .searchAnalyzer("regionSearchIdInput"),
-                geoshapeField("boundingBox"),
-                geoshapeField("geometry"),
+                magdaGeoShapeField("boundingBox"),
+                magdaGeoShapeField("geometry"),
                 intField("order")
               )
             )
