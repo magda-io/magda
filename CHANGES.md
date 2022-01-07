@@ -3,6 +3,8 @@
 ## 1.2.0
 
 - #3291 Remove log4j from scala codebase dependency list
+- Upgrade elasticsearch to 6.8.22
+- Upgrade logback to 1.2.10
 
 ## 1.1.0
 
