@@ -48,18 +48,34 @@ object GeometryUtils {
     val jtsGeometry = GeometryConverter.toJTSGeo(geometry, geoFactory)
     val envelope = jtsGeometry.getEnvelopeInternal
 
-    val indexedEnvelope =
-      if (envelope.getWidth == 0 && envelope.getHeight == 0) {
-        buffer(jtsGeometry, MIN_BOUNDING_BOX_SIZE, Meters).getEnvelopeInternal
+    var xMin = envelope.getMinX
+    var xMax = envelope.getMaxX
+    var yMin = envelope.getMinY
+    var yMax = envelope.getMaxY
+
+    // turn empty area envelope (that produced for a point) into a tiny envelope to avoid error from es 6.6 and up
+    //adopted the solution from [geoportal-server-catalog](https://github.com/Esri/geoportal-server-catalog/blob/dad1406d740563434c1678883989614fc6fb9079/geoportal/src/main/resources/metadata/js/EvaluatorBase.js#L312)
+    // Apache License 2.0
+    if (xMin == xMax) {
+      if (xMax + 0.00000001 > 180) {
+        xMin -= 0.00000001;
       } else {
-        envelope
+        xMax += 0.00000001;
       }
+    }
+    if (yMin == yMax) {
+      if (yMax + 0.00000001 > 90) {
+        yMin -= 0.00000001;
+      } else {
+        yMax += 0.00000001;
+      }
+    }
 
     BoundingBox(
-      toValidLat(indexedEnvelope.getMaxY),
-      toValidLon(indexedEnvelope.getMaxX),
-      toValidLat(indexedEnvelope.getMinY),
-      toValidLon(indexedEnvelope.getMinX)
+      toValidLat(yMax),
+      toValidLon(xMax),
+      toValidLat(yMin),
+      toValidLon(xMin)
     )
   }
 }
