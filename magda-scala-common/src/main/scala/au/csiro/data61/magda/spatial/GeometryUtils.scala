@@ -25,8 +25,8 @@ object GeometryUtils {
   }
 
   val geoFactory = new GeometryFactory()
-  // min. bounding box size in meters
-  val MIN_BOUNDING_BOX_SIZE = 100
+
+  val minEnvelopeMargin = 0.00000001
 
   def toValidLat(lat: Double): Double = {
     if (math.abs(lat) > 90) {
