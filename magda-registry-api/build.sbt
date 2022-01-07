@@ -15,7 +15,7 @@ libraryDependencies ++= {
     "org.scalikejdbc" %% "scalikejdbc" % "3.0.0-RC3",
     "org.scalikejdbc" %% "scalikejdbc-config" % "3.0.0-RC3",
     "org.scalikejdbc" %% "scalikejdbc-test" % "3.0.0-RC3" % Test,
-    "ch.qos.logback"  %  "logback-classic" % "1.2.0",
+    "ch.qos.logback"  %  "logback-classic" % "1.2.10",
     "org.postgresql"  %  "postgresql" % "9.4.1212",
     "org.scalatest" %% "scalatest" % scalaTestV % Test,
     "de.heikoseeberger" %% "akka-http-circe" % "1.16.1",
