@@ -170,11 +170,39 @@ package misc {
       "POLYGON\\s*\\(\\(((-?[\\d\\.]+ -?[\\d\\.]+\\,?\\s?)+)\\)\\)".r
     val csvPattern: Regex = "^(-?\\d+\\.?\\d*\\,){3}-?\\d+\\.?\\d*$".r
 
+    def ensureCoordsClosed(coords: Seq[Coordinate]) = {
+      if (coords.head.x != coords.last.x || coords.head.y != coords.last.y) {
+        coords :+ Coordinate(coords.head.x, coords.head.y)
+      } else {
+        coords
+      }
+    }
+
+    /**
+      * Polygons should be topologically closed.
+      * i.e. the last point should be a repeat of the first point
+      * @param p
+      */
+    def ensurePolygonClosed(p: Polygon): Polygon =
+      p.copy(p.coordinates.map(ensureCoordsClosed(_)))
+
+    /**
+      * MultiPolygons should be topologically closed.
+      * i.e. the last point should be a repeat of the first point
+      * @param mp
+      */
+    def ensureMultiPolygonClosed(mp: MultiPolygon): MultiPolygon = {
+      val coordinates = mp.coordinates.map { pCoords =>
+        pCoords.map(ensureCoordsClosed(_))
+      }
+      mp.copy(coordinates)
+    }
+
     def applySanitised(
         text: String,
         geoJson: Option[Geometry] = None
     ): Location = {
-      val processedGeoJson: Option[Geometry] = geoJson match {
+      val processedGeoJson: Option[Geometry] = (geoJson match {
         case Some(Polygon(Seq(coords: Seq[Coordinate]))) =>
           coords.distinct match {
             case Seq(_)              => Some(Point(coords.head))
@@ -182,6 +210,10 @@ package misc {
             case _                   => Some(Polygon(Seq(coords)))
           }
         case x => x
+      }) match {
+        case Some(p: Polygon)       => Some(ensurePolygonClosed(p))
+        case Some(mp: MultiPolygon) => Some(ensureMultiPolygonClosed(mp))
+        case x                      => x
       }
 
       processedGeoJson.foreach(geoJson => GeoJsonValidator.validate(geoJson))

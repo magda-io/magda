@@ -5,6 +5,7 @@
 - #3291 Remove log4j from scala codebase dependency list
 - #3293 Upgrade elasticsearch to 6.8.22
 - Upgrade logback to 1.2.10
+- #3294 Indexer will auto-fixes non-topologically closed Polygons / MultiPolygons
 
 ## 1.1.0
 
