@@ -171,7 +171,7 @@ class CrawlerApiSpec
 
       val routes = crawlerApi.routes
 
-      crawler.crawl().await(30 seconds)
+      crawler.crawl().await(60 seconds) // we need to wait 60 seconds here as crawler will wait for 30 seconds before perform trim action
       indexer.ready.await(30 seconds)
 
       // Combine all the datasets but keep what interface they come from
