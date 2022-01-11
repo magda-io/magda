@@ -66,7 +66,7 @@ class RegistryCrawler(
         // visible to search. Defaults to 1s. Can be set to -1 to disable refresh.
         // Ref: https://www.elastic.co/guide/en/elasticsearch/reference/6.5/index-modules.html#dynamic-index-settings
         Future {
-          val delay = 1000
+          val delay = 30000
           Thread.sleep(delay)
         }.flatMap(_ => {
           val futureOpt: Option[Future[Unit]] =
