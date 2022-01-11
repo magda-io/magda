@@ -88,7 +88,8 @@ class WebhookIndexDatasetSamplesSpec
               indexingResultValidationFunc.get(result)
             } else {
               result.successes shouldBe 1
-              result.failures.size shouldBe 0
+              result.failures shouldBe 0
+              result.warns shouldBe 0
             }
           }
         }
@@ -148,9 +149,8 @@ class WebhookIndexDatasetSamplesSpec
       }),
       Some(result => {
         result.successes shouldBe 1
-        result.failures.size shouldBe 0
-        result.warns.size shouldBe 0
-        result.spatialFieldRetryCount shouldBe 0
+        result.failures shouldBe 0
+        result.warns shouldBe 0
       })
     )
 
@@ -165,10 +165,9 @@ class WebhookIndexDatasetSamplesSpec
         esDataset.spatial.get.text.isDefined shouldBe true
       }),
       Some(result => {
-        result.successes shouldBe 1
-        result.failures.size shouldBe 0
-        result.warns.size shouldBe 0
-        result.spatialFieldRetryCount shouldBe 1
+        result.successes shouldBe 0
+        result.failures shouldBe 0
+        result.warns shouldBe 1
       })
     )
 

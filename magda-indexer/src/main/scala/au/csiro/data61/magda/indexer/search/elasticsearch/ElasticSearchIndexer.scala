@@ -912,76 +912,97 @@ class ElasticSearchIndexer(
 
           val resultTuples = groupedResults.zip(sources)
 
-          val failures = resultTuples.filter(_._1.exists(_.error.isDefined))
+          val nonSuccesses = resultTuples.filter(_._1.exists(_.error.isDefined))
           val successes = resultTuples.filter(_._1.forall(_.error.isEmpty))
           val spatialFieldRetryPromises: ListBuffer[Promise[Unit]] =
             ListBuffer()
 
-          val errors: Seq[String] = failures.flatMap {
+          var failureCount: Long = 0
+          val failureReasons: ListBuffer[String] = ListBuffer()
+          val warnReasons: ListBuffer[String] = ListBuffer()
+
+          nonSuccesses.foreach {
             case (theResults, (dataSet, promise, _)) =>
+              // The dataset result is always the first
+              val hasRetried = theResults.head.error.isDefined && tryReindexSpatialFail(
+                dataSet,
+                theResults.head,
+                promise
+              )
+
               val errors = theResults.filter(_.error.isDefined).map(_.error.get)
+
               errors.foreach { error =>
-                logger.warning(
-                  "Failure when indexing {}: {}",
-                  dataSet.identifier,
-                  error
-                )
+                if (hasRetried) {
+                  logger.warning(
+                    "Failure when indexing {}: {}",
+                    dataSet.identifier,
+                    error
+                  )
+                } else {
+                  logger.error(
+                    "Failure when indexing {}: {}",
+                    dataSet.identifier,
+                    error
+                  )
+                }
               }
 
-              // The dataset result is always the first
-              if (theResults.head.error.isDefined) {
-                val hasRetried =
-                  tryReindexSpatialFail(dataSet, theResults.head, promise)
-                if (hasRetried) {
-                  spatialFieldRetryPromises += promise
-                  Seq()
-                } else {
-                  errors.map(_.toString)
-                }
+              if (hasRetried) {
+                warnReasons.appendAll(errors.map(_.toString))
+                spatialFieldRetryPromises += promise
               } else {
+                failureCount += 1
+                failureReasons.appendAll(errors.map(_.toString))
+
                 promise.failure(
                   new Exception(
                     s"Failed to index supplementary fields. errors: ${errors}"
                   )
                 )
-                errors.map(_.toString)
               }
           }
-
-          if (successes.nonEmpty) {
-            logger.info("Successfully indexed {} datasets", successes.size)
-          } else {
-            logger.info("Failed to index this batch. ", failures.size)
-          }
-
-          logger.info(
-            "{} datasets are going to be retried with spatial field removal. ",
-            spatialFieldRetryPromises.size
-          )
 
           successes.map(_._2).foreach {
             case (dataSet, promise, _) => promise.success(dataSet.identifier)
           }
 
-          val warnsFuture = spatialFieldRetryPromises.toList
+          if (successes.nonEmpty) {
+            logger.info("Successfully indexed {} datasets", successes.size)
+          } else {
+            logger.info("Failed to index this batch. {} ", resultTuples.size)
+          }
+
+          val retryFuture = spatialFieldRetryPromises.toList
             .map(_.future.map(_ => None).recover {
               case e: Throwable => Some(e)
             })
-            .foldLeft(Future.successful[(Long, Seq[String])]((0, Seq())))(
-              (warnsFuture, f) => {
-                warnsFuture.flatMap { result =>
+            // 1st tuple element [Long]: warnsCount (retry successful) index dataset successful with warns (i.e. after retry)
+            // 2nd tuple element [Long]: failureCount (retry failed)
+            // 3rd tuple element [Seq[String]]: failed retry reasons
+            .foldLeft(
+              Future.successful[(Long, Long, Seq[String])]((0, 0, Seq()))
+            )(
+              (retryFuture, f) => {
+                retryFuture.flatMap { result =>
                   f.map { e =>
                     if (e.isDefined) {
-                      (result._1, result._2 :+ e.get.toString)
+                      (result._1, result._2 + 1, result._3 :+ e.get.toString)
                     } else {
-                      (result._1 + 1, result._2)
+                      (result._1 + 1, result._2, result._3)
                     }
                   }
                 }
               }
             )
 
-          (successes.size, errors, warnsFuture, spatialFieldRetryPromises.size)
+          (
+            successes.size,
+            failureCount,
+            failureReasons,
+            retryFuture,
+            warnReasons
+          )
       }
       .recover {
         case e: Throwable =>
@@ -989,20 +1010,29 @@ class ElasticSearchIndexer(
           throw e
       }
       .runWith(
-        Sink.fold(Future(SearchIndexer.IndexResult(0, Seq(), Seq(), 0))) {
+        Sink.fold(Future(SearchIndexer.IndexResult(0, 0, 0, Seq(), Seq()))) {
           case (
               combinedResultFuture,
-              (successes, failures, warnsFuture, spatialFieldRetryCount)
+              (
+                successes,
+                failureCount,
+                failureReasons,
+                retryFuture,
+                warnReasons
+              )
               ) =>
-            combinedResultFuture.flatMap { combinedResult =>
-              warnsFuture.map { warns =>
-                IndexResult(
-                  combinedResult.successes + successes + warns._1,
-                  combinedResult.failures ++ failures,
-                  combinedResult.warns ++ warns._2,
-                  combinedResult.spatialFieldRetryCount + spatialFieldRetryCount
-                )
-              }
+            combinedResultFuture.flatMap {
+              combinedResult =>
+                retryFuture.map {
+                  retryResult =>
+                    IndexResult(
+                      combinedResult.successes + successes,
+                      combinedResult.failures + failureCount + retryResult._2,
+                      combinedResult.warns + retryResult._1,
+                      combinedResult.failureReasons ++ failureReasons ++ retryResult._3,
+                      combinedResult.warnReasons ++ warnReasons
+                    )
+                }
 
             }
         }

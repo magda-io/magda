@@ -32,10 +32,14 @@ trait SearchIndexer {
 
 object SearchIndexer {
   case class IndexResult(
-      successes: Long,
-      failures: Seq[String] = Seq(),
-      warns: Seq[String] = Seq(),
-      spatialFieldRetryCount: Long = 0
+      // no. of successfully indexed datasets
+      successes: Long = 0,
+      // no. of failures
+      failures: Long = 0,
+      // no .of datasets that are indexed with warns (e.g. after retry)
+      warns: Long = 0,
+      failureReasons: Seq[String] = Seq(),
+      warnReasons: Seq[String] = Seq()
   )
 
   def apply(clientProvider: ClientProvider, indices: Indices)(

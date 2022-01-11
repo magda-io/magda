@@ -52,9 +52,9 @@ class RegistryCrawler(
       .index(interfaceSource)
       .flatMap { result =>
         log.info(
-          "Indexed {} datasets with {} failures",
+          "Indexed datasets result: {} successes, {} successes after retry and {} failures",
           result.successes,
-          result.failures.length
+          result.failures
         )
 
         // By default ElasticSearch index is refreshed every second. Let the trimming operation
@@ -70,7 +70,7 @@ class RegistryCrawler(
           Thread.sleep(delay)
         }.flatMap(_ => {
           val futureOpt: Option[Future[Unit]] =
-            if (result.failures.isEmpty) { // does this need to be tunable?
+            if (result.failures == 0) { // does this need to be tunable?
               log.info("Trimming datasets indexed before {}", startInstant)
               Some(indexer.trim(startInstant))
             } else {
@@ -84,25 +84,23 @@ class RegistryCrawler(
       .recover {
         case e: Throwable =>
           log.error(e, "Failed while indexing {}")
-          SearchIndexer.IndexResult(0, Seq())
+          SearchIndexer.IndexResult()
       }
-      .map(result => (result.successes, result.failures.length))
-      .map {
-        case (successCount, failureCount) =>
-          if (successCount > 0) {
-            if (config.getBoolean("indexer.makeSnapshots")) {
-              log.info("Snapshotting...")
-              indexer.snapshot()
-            }
-          } else {
-            log.info(
-              "Did not successfully index anything, no need to snapshot either."
-            )
+      .map { result =>
+        if (result.successes > 0) {
+          if (config.getBoolean("indexer.makeSnapshots")) {
+            log.info("Snapshotting...")
+            indexer.snapshot()
           }
+        } else {
+          log.info(
+            "Did not successfully index anything, no need to snapshot either."
+          )
+        }
 
-          if (failureCount > 0) {
-            log.warning("Failed to index {} datasets", failureCount)
-          }
+        if (result.failures > 0) {
+          log.warning("Failed to index {} datasets", result.failures)
+        }
       }
       .recover {
         case e: Throwable =>

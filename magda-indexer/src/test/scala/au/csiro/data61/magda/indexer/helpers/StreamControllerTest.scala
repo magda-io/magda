@@ -105,7 +105,7 @@ class StreamControllerTest extends FlatSpec with Matchers {
         .map(dataSet => {
           (dataSet.identifier, index(dataSet))
         })
-        .runWith(Sink.fold(Future(SearchIndexer.IndexResult(0, Seq()))) {
+        .runWith(Sink.fold(Future(SearchIndexer.IndexResult())) {
           case (
               combinedResultFuture,
               (thisResultIdentifier, thisResultFuture)
@@ -118,7 +118,7 @@ class StreamControllerTest extends FlatSpec with Matchers {
                 .recover {
                   case _: Throwable =>
                     combinedResult.copy(
-                      failures = combinedResult.failures :+ thisResultIdentifier
+                      failureReasons = combinedResult.failureReasons :+ thisResultIdentifier
                     )
                 }
             }
@@ -197,7 +197,7 @@ class StreamControllerTest extends FlatSpec with Matchers {
     sc.start()
 
     indexResultF.map(
-      indexResult => indexResult shouldEqual IndexResult(dataSets.size, List())
+      indexResult => indexResult shouldEqual IndexResult(dataSets.size)
     )
   }
 
