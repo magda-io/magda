@@ -6,7 +6,7 @@
 - #3293 Upgrade elasticsearch to 6.8.22
 - Upgrade logback to 1.2.10
 - #3294 Indexer will auto-fixes non-topologically closed Polygons / MultiPolygons
-- Crawler will now wait for 30 seconds (used to be 1 second) before perform trim action to avoid timeout issue
+- Crawler will now wait for 3 seconds (used to be 1 second) before perform trim action to avoid timeout issue
 
 ## 1.1.0
 
