@@ -7,9 +7,11 @@ import akka.stream.Materializer
 import akka.actor.ActorSystem
 import au.csiro.data61.magda.search.elasticsearch.{ClientProvider, Indices}
 import com.typesafe.config.Config
+
 import java.time.Instant
 import akka.stream.scaladsl.Source
 import akka.NotUsed
+
 import java.time.OffsetDateTime
 import au.csiro.data61.magda.indexer.search.elasticsearch.ElasticSearchIndexer
 import au.csiro.data61.magda.indexer.crawler.RegistryCrawler
@@ -29,7 +31,12 @@ trait SearchIndexer {
 }
 
 object SearchIndexer {
-  case class IndexResult(successes: Long, failures: Seq[String])
+  case class IndexResult(
+      successes: Long,
+      failures: Seq[String] = Seq(),
+      warns: Seq[String] = Seq(),
+      spatialFieldRetryCount: Long = 0
+  )
 
   def apply(clientProvider: ClientProvider, indices: Indices)(
       implicit config: Config,

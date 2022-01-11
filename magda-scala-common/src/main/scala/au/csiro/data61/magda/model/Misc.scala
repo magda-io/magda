@@ -163,7 +163,7 @@ package misc {
   )
 
   object Location {
-    val geoJsonPattern: Regex = "\\{\"type\":\\s*\".+\",.*\\}".r
+    val geoJsonPattern: Regex = "\\{\\s*\"type\":\\s*\".+\",.*\\}".r
     val emptyPolygonPattern: Regex = "POLYGON \\(\\(0 0, 0 0, 0 0, 0 0\\)\\)".r
 
     val polygonPattern: Regex =

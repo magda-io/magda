@@ -13,11 +13,13 @@ import akka.http.scaladsl.model.StatusCodes.OK
 import au.csiro.data61.magda.client.Conversions
 import org.scalamock.scalatest.MockFactory
 import akka.stream.scaladsl.Source
+import au.csiro.data61.magda.indexer.search.SearchIndexer.IndexResult
 import com.monsanto.labs.mwundo.GeoJson.Polygon
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Seconds, Span}
 
 import java.time.ZoneOffset
+import scala.concurrent.{Future, Promise}
 
 class WebhookIndexDatasetSamplesSpec
     extends WebhookSpecBase
@@ -31,6 +33,8 @@ class WebhookIndexDatasetSamplesSpec
 
     val sampleFileDir = "magda-int-test/src/test/resources/sampleDatasets/"
 
+    val noop = (_: Any, _: Any) => ()
+
     /**
       * Run test case on a sample dataset data file.
       *
@@ -41,8 +45,9 @@ class WebhookIndexDatasetSamplesSpec
       */
     def testSampleFile(
         fileName: String,
-        validateDatasetFunc: ((Record, DataSet) => Unit) =
-          (_: Any, _: Any) => ()
+        validateDatasetFunc: Option[((Record, DataSet) => Unit)] = None,
+        indexingResultValidationFunc: Option[(IndexResult) => Unit] = None,
+        ignoreSpatialIndexError: Boolean = false
     ): Unit = {
       it(s"should index sample dataset file: ${fileName} with no error") {
         val jsonResSource: BufferedSource = fromFile(
@@ -61,7 +66,10 @@ class WebhookIndexDatasetSamplesSpec
         (mockLogger.error _: String => Unit)
           .expects(*)
           .onCall { msg: String =>
-            fail(msg)
+            system.log.error(s"mockLogger: ${msg}")
+            if (!ignoreSpatialIndexError) {
+              fail(msg)
+            }
           }
           .anyNumberOfTimes()
 
@@ -76,8 +84,12 @@ class WebhookIndexDatasetSamplesSpec
           timeout(Span(3, Seconds))
         ) { result =>
           withClue("Elasticsearch failed to index the dataset: ") {
-            result.successes shouldBe 1
-            result.failures.size shouldBe 0
+            if (indexingResultValidationFunc.isDefined) {
+              indexingResultValidationFunc.get(result)
+            } else {
+              result.successes shouldBe 1
+              result.failures.size shouldBe 0
+            }
           }
         }
 
@@ -91,10 +103,12 @@ class WebhookIndexDatasetSamplesSpec
           status shouldBe OK
           val response = responseAs[SearchResult]
 
-          response.hitCount shouldBe 1
-          response.dataSets.head.identifier shouldBe record.id
-
-          validateDatasetFunc(record, response.dataSets.head)
+          if (validateDatasetFunc.isDefined) {
+            validateDatasetFunc.get(record, response.dataSets.head)
+          } else {
+            response.hitCount shouldBe 1
+            response.dataSets.head.identifier shouldBe record.id
+          }
         }
 
         builtIndex.indexNames.foreach { idxName =>
@@ -103,9 +117,13 @@ class WebhookIndexDatasetSamplesSpec
       }
     }
 
+    /**
+      * Ensure indexer will auto-fix polygons / MultiPolygons that don't topologically closed.
+      * i.e. the last point should be a repeat of the first point
+      */
     testSampleFile(
       "wa1.json",
-      (sampleData, esDataset) => {
+      Some((sampleData, esDataset) => {
         val originalPolygon = sampleData.aspects
           .find(aspect => aspect._1 == "dcat-dataset-strings")
           .map(_._2.fields("spatial").asInstanceOf[JsString])
@@ -127,7 +145,31 @@ class WebhookIndexDatasetSamplesSpec
             pair._1.x shouldBe pair._2.x
             pair._1.y shouldBe pair._2.y
           }
-      }
+      }),
+      Some(result => {
+        result.successes shouldBe 1
+        result.failures.size shouldBe 0
+        result.warns.size shouldBe 0
+        result.spatialFieldRetryCount shouldBe 0
+      })
+    )
+
+    /**
+      * Ensure indexer will still index datasets with invalid spatial data (not auto-fixable) by
+      * retrying indexing a new version dataset with spatial field removed
+      */
+    testSampleFile(
+      "wa1-with-invalid-spatial-data.json",
+      Some((sampleData, esDataset) => {
+        esDataset.spatial.get.geoJson shouldBe None
+        esDataset.spatial.get.text.isDefined shouldBe true
+      }),
+      Some(result => {
+        result.successes shouldBe 1
+        result.failures.size shouldBe 0
+        result.warns.size shouldBe 0
+        result.spatialFieldRetryCount shouldBe 1
+      })
     )
 
   }

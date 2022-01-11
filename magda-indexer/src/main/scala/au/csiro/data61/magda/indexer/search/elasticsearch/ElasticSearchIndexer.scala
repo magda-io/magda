@@ -1,12 +1,12 @@
 package au.csiro.data61.magda.indexer.search.elasticsearch
 
 import java.time.{Instant, OffsetDateTime}
-
 import akka.NotUsed
 import akka.actor.{ActorSystem, Scheduler}
 import akka.stream.scaladsl.{Sink, Source, SourceQueue}
 import akka.stream.{Materializer, OverflowStrategy, QueueOfferResult}
 import au.csiro.data61.magda.indexer.search.SearchIndexer
+import au.csiro.data61.magda.indexer.search.SearchIndexer.IndexResult
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.search.elasticsearch.Exceptions._
@@ -38,6 +38,7 @@ import com.typesafe.config.Config
 import spray.json._
 
 import scala.collection.JavaConversions._
+import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future, Promise}
 
@@ -319,9 +320,9 @@ class ElasticSearchIndexer(
       dataSet: DataSet,
       result: BulkResponseItem,
       promise: Promise[Unit]
-  ) = {
+  ): Boolean = {
     val geoFail = result.error.isDefined && result.error.exists(
-      _.reason.contains("failed to parse [spatial.geoJson]")
+      _.reason.contains("failed to parse field [spatial.geoJson]")
     )
 
     if (geoFail) {
@@ -334,10 +335,12 @@ class ElasticSearchIndexer(
       )
       // TODO: Make one indexing request only so that we can remove the source queue completely.
       index2(dataSetWithoutSpatial, promise)
+      true
     } else {
       promise.failure(
         new Exception(s"Had failures other than geoJson parse: ${result.error}")
       )
+      false
     }
   }
 
@@ -911,61 +914,99 @@ class ElasticSearchIndexer(
 
           val failures = resultTuples.filter(_._1.exists(_.error.isDefined))
           val successes = resultTuples.filter(_._1.forall(_.error.isEmpty))
+          val spatialFieldRetryPromises: ListBuffer[Promise[Unit]] =
+            ListBuffer()
 
-          failures.foreach {
+          val errors: Seq[String] = failures.flatMap {
             case (theResults, (dataSet, promise, _)) =>
-              theResults.filter(_.error.isDefined).foreach { failure =>
+              val errors = theResults.filter(_.error.isDefined).map(_.error.get)
+              errors.foreach { error =>
                 logger.warning(
                   "Failure when indexing {}: {}",
                   dataSet.identifier,
-                  failure.error
+                  error
                 )
               }
 
               // The dataset result is always the first
               if (theResults.head.error.isDefined) {
-                tryReindexSpatialFail(dataSet, theResults.head, promise)
+                val hasRetried =
+                  tryReindexSpatialFail(dataSet, theResults.head, promise)
+                if (hasRetried) {
+                  spatialFieldRetryPromises += promise
+                  Seq()
+                } else {
+                  errors.map(_.toString)
+                }
               } else {
                 promise.failure(
-                  new Exception("Failed to index supplementary field")
+                  new Exception(
+                    s"Failed to index supplementary fields. errors: ${errors}"
+                  )
                 )
+                errors.map(_.toString)
               }
           }
 
           if (successes.nonEmpty) {
             logger.info("Successfully indexed {} datasets", successes.size)
           } else {
-            logger.info("Failed to index this batch", failures.size)
+            logger.info("Failed to index this batch. ", failures.size)
           }
+
+          logger.info(
+            "{} datasets are going to be retried with spatial field removal. ",
+            spatialFieldRetryPromises.size
+          )
 
           successes.map(_._2).foreach {
             case (dataSet, promise, _) => promise.success(dataSet.identifier)
           }
 
-          (failures.toList.toString(), Future.successful(successes.size))
+          val warnsFuture = spatialFieldRetryPromises.toList
+            .map(_.future.map(_ => None).recover {
+              case e: Throwable => Some(e)
+            })
+            .foldLeft(Future.successful[(Long, Seq[String])]((0, Seq())))(
+              (warnsFuture, f) => {
+                warnsFuture.flatMap { result =>
+                  f.map { e =>
+                    if (e.isDefined) {
+                      (result._1, result._2 :+ e.get.toString)
+                    } else {
+                      (result._1 + 1, result._2)
+                    }
+                  }
+                }
+              }
+            )
 
+          (successes.size, errors, warnsFuture, spatialFieldRetryPromises.size)
       }
       .recover {
         case e: Throwable =>
           logger.error(e, "Error when indexing: {}", e.getMessage)
           throw e
       }
-      .runWith(Sink.fold(Future(SearchIndexer.IndexResult(0, Seq()))) {
-        case (combinedResultFuture, (thisResultIdentifier, thisResultFuture)) =>
-          combinedResultFuture.flatMap { combinedResult =>
-            thisResultFuture
-              .map { thisResult =>
-                combinedResult
-                  .copy(successes = combinedResult.successes + thisResult)
+      .runWith(
+        Sink.fold(Future(SearchIndexer.IndexResult(0, Seq(), Seq(), 0))) {
+          case (
+              combinedResultFuture,
+              (successes, failures, warnsFuture, spatialFieldRetryCount)
+              ) =>
+            combinedResultFuture.flatMap { combinedResult =>
+              warnsFuture.map { warns =>
+                IndexResult(
+                  combinedResult.successes + successes + warns._1,
+                  combinedResult.failures ++ failures,
+                  combinedResult.warns ++ warns._2,
+                  combinedResult.spatialFieldRetryCount + spatialFieldRetryCount
+                )
               }
-              .recover {
-                case e: Throwable =>
-                  combinedResult.copy(
-                    failures = combinedResult.failures :+ thisResultIdentifier
-                  )
-              }
-          }
-      })
+
+            }
+        }
+      )
 
     indexResults.flatMap(identity)
   }
