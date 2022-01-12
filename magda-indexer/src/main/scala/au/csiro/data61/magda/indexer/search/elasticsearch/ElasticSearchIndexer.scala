@@ -140,7 +140,7 @@ class ElasticSearchIndexer(
 
               // The dataset result is always the first
               if (results.head.error.isDefined) {
-                tryReindexSpatialFail(dataSet, results.head, promise)
+                tryReindexSpatialFail(dataSet, results, promise)
               } else {
                 promise.failure(
                   new Exception("Failed to index supplementary field")
@@ -318,10 +318,11 @@ class ElasticSearchIndexer(
 
   private def tryReindexSpatialFail(
       dataSet: DataSet,
-      result: BulkResponseItem,
+      result: Seq[BulkResponseItem],
       promise: Promise[Unit]
   ): Boolean = {
-    val geoFail = result.error.isDefined && result.error.exists(
+    // The dataset result is always the first
+    val geoFail = result.head.error.isDefined && result.head.error.exists(
       _.reason.contains("failed to parse field [spatial.geoJson]")
     )
 
@@ -337,9 +338,30 @@ class ElasticSearchIndexer(
       index2(dataSetWithoutSpatial, promise)
       true
     } else {
-      promise.failure(
-        new Exception(s"Had failures other than geoJson parse: ${result.error}")
+      false
+    }
+  }
+
+  private def tryReindexDynamicMappingTimeoutFail(
+      dataSet: DataSet,
+      result: Seq[BulkResponseItem],
+      promise: Promise[Unit]
+  ): Boolean = {
+    val hasMappingTimeoutError = result.exists(
+      _.error.exists(
+        _.reason
+          .contains("timed out while waiting for a dynamic mapping update")
       )
+    )
+
+    if (hasMappingTimeoutError) {
+      logger.info(
+        "Retry index dataset due to dynamic mapping update timeout error. Dataset: {}",
+        dataSet.identifier
+      )
+      index2(dataSet, promise)
+      true
+    } else {
       false
     }
   }
@@ -893,6 +915,7 @@ class ElasticSearchIndexer(
           .map(result => (result, sources))
           .recover {
             case e: Throwable =>
+              logger.error("Bulk request error: {}", e)
               val promises = sources.map(_._2)
               promises.foreach(_.failure(e))
               throw e
@@ -914,7 +937,7 @@ class ElasticSearchIndexer(
 
           val nonSuccesses = resultTuples.filter(_._1.exists(_.error.isDefined))
           val successes = resultTuples.filter(_._1.forall(_.error.isEmpty))
-          val spatialFieldRetryPromises: ListBuffer[Promise[Unit]] =
+          val retryPromises: ListBuffer[Promise[Unit]] =
             ListBuffer()
 
           var failureCount: Long = 0
@@ -924,9 +947,13 @@ class ElasticSearchIndexer(
           nonSuccesses.foreach {
             case (theResults, (dataSet, promise, _)) =>
               // The dataset result is always the first
-              val hasRetried = theResults.head.error.isDefined && tryReindexSpatialFail(
+              val hasRetried = tryReindexSpatialFail(
                 dataSet,
-                theResults.head,
+                theResults,
+                promise
+              ) || tryReindexDynamicMappingTimeoutFail(
+                dataSet,
+                theResults,
                 promise
               )
 
@@ -950,7 +977,7 @@ class ElasticSearchIndexer(
 
               if (hasRetried) {
                 warnReasons.appendAll(errors.map(_.toString))
-                spatialFieldRetryPromises += promise
+                retryPromises += promise
               } else {
                 failureCount += 1
                 failureReasons.appendAll(errors.map(_.toString))
@@ -973,7 +1000,7 @@ class ElasticSearchIndexer(
             logger.info("Failed to index this batch. {} ", resultTuples.size)
           }
 
-          val retryFuture = spatialFieldRetryPromises.toList
+          val retryFuture = retryPromises.toList
             .map(_.future.map(_ => None).recover {
               case e: Throwable => Some(e)
             })
