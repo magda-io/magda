@@ -2,7 +2,7 @@ package au.csiro.data61.magda.indexer.search
 
 import au.csiro.data61.magda.model.misc._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future, Promise}
 import akka.stream.Materializer
 import akka.actor.ActorSystem
 import au.csiro.data61.magda.search.elasticsearch.{ClientProvider, Indices}
@@ -19,9 +19,26 @@ import au.csiro.data61.magda.search.elasticsearch.IndexDefinition
 
 trait SearchIndexer {
 
+  /**
+    * Provide simple / alternative interface and call `performIndex`` to perform index action
+    * @param dataSetStream
+    * @return
+    */
   def index(
       dataSetStream: Source[DataSet, NotUsed]
   ): Future[SearchIndexer.IndexResult]
+
+  /**
+    * Teh actual method to perform index action
+    * @param dataSetStream
+    * @param retryFailedDatasets
+    * @return
+    */
+  def performIndex(
+      dataSetStream: Source[(DataSet, Promise[Unit]), NotUsed],
+      retryFailedDatasets: Boolean = true
+  ): Future[SearchIndexer.IndexResult]
+
   def delete(identifiers: Seq[String]): Future[Unit]
   def snapshot(): Future[Unit]
   def ready: Future[Unit]
