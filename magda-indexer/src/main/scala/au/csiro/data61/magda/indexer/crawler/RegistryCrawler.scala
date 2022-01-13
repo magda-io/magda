@@ -52,8 +52,9 @@ class RegistryCrawler(
       .index(interfaceSource)
       .flatMap { result =>
         log.info(
-          "Indexed datasets result: {} successes, {} successes after retry and {} failures",
+          "Indexed datasets result: {} successes, {} successes with retry and {} failures",
           result.successes,
+          result.warns,
           result.failures
         )
 
