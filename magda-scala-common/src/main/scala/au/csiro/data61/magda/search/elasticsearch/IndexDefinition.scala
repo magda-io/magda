@@ -407,7 +407,7 @@ object IndexDefinition extends DefaultJsonProtocol {
   val publishers: IndexDefinition =
     new IndexDefinition(
       name = "publishers",
-      version = 5,
+      version = 6,
       indicesIndex = Indices.PublishersIndex,
       definition = (indices, config) => {
         val createIdxReq =
@@ -455,7 +455,7 @@ object IndexDefinition extends DefaultJsonProtocol {
   val formats: IndexDefinition =
     new IndexDefinition(
       name = "formats",
-      version = 1,
+      version = 2,
       indicesIndex = Indices.FormatsIndex,
       definition = (indices, config) => {
         val createIdxReq =
