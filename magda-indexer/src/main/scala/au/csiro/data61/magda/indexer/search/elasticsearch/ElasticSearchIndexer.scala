@@ -1,12 +1,12 @@
 package au.csiro.data61.magda.indexer.search.elasticsearch
 
 import java.time.{Instant, OffsetDateTime}
-
 import akka.NotUsed
 import akka.actor.{ActorSystem, Scheduler}
 import akka.stream.scaladsl.{Sink, Source, SourceQueue}
 import akka.stream.{Materializer, OverflowStrategy, QueueOfferResult}
 import au.csiro.data61.magda.indexer.search.SearchIndexer
+import au.csiro.data61.magda.indexer.search.SearchIndexer.IndexResult
 import au.csiro.data61.magda.model.misc.DataSet
 import au.csiro.data61.magda.search.elasticsearch.ElasticSearchImplicits._
 import au.csiro.data61.magda.search.elasticsearch.Exceptions._
@@ -38,6 +38,7 @@ import com.typesafe.config.Config
 import spray.json._
 
 import scala.collection.JavaConversions._
+import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future, Promise}
 
@@ -69,101 +70,6 @@ class ElasticSearchIndexer(
   implicit val scheduler: Scheduler = system.scheduler
 
   override def ready: Future[Unit] = setupFuture.map(_ => Unit)
-
-  // TODO: Remove the indexQueue after index2() method is changed.
-  // This needs to be a queue here because if we queue more than 50 requests into ElasticSearch it gets very very mad.
-  private lazy val indexQueue: SourceQueue[(DataSet, Promise[Unit])] =
-    Source
-      .queue[(DataSet, Promise[Unit])](
-        indexingQueueBufferSize,
-        OverflowStrategy.backpressure
-      )
-      .map {
-        case (dataSet, promise) =>
-          (buildDatasetIndexDefinition(dataSet), (dataSet, promise))
-      }
-      .batch(indexingMaxBatchSize, Seq(_))(_ :+ _)
-      .initialDelay(indexingInitialBatchDelayMs)
-      .mapAsync(1) { batch =>
-        val onRetry = (retryCount: Int, e: Throwable) =>
-          logger.error(
-            "Failed to index {} records with {}, retrying",
-            batch.length,
-            e.getMessage
-          )
-
-        // Combine all the ES inserts into one bulk statement
-        val bulkDef =
-          bulk(batch.flatMap { case (indexRequests, _) => indexRequests })
-
-        // Get out the source of each ES insert along with how many inserts it made (for publishers/formats etc)
-        val sources = batch.map {
-          case (indexDefs, (dataSet, promise)) =>
-            (dataSet, promise, indexDefs.size)
-        }
-
-        retry(() => bulkIndex(bulkDef), 30.seconds, 4, onRetry)
-          .map(result => (result, sources))
-          .recover {
-            case e: Throwable =>
-              val promises = sources.map(_._2)
-              promises.foreach(_.failure(e))
-              throw e
-          }
-      }
-      .map {
-        case (results, sources) =>
-          val groupedResults = sources
-            .map(_._3)
-            .foldLeft((0, Seq[Seq[BulkResponseItem]]())) {
-              case ((currentIndex, listSoFar), current) =>
-                val group = results.items.drop(currentIndex).take(current)
-                (currentIndex + group.size, listSoFar :+ group)
-            }
-            ._2
-
-          val resultTuples = groupedResults.zip(sources)
-
-          val failures = resultTuples.filter(_._1.exists(_.error.isDefined))
-          val successes = resultTuples.filter(_._1.forall(_.error.isEmpty))
-
-          failures.foreach {
-            case (results, (dataSet, promise, _)) =>
-              results.filter(_.error.isDefined).foreach { failure =>
-                logger.warning(
-                  "Failure when indexing {}: {}",
-                  dataSet.identifier,
-                  failure.error
-                )
-              }
-
-              // The dataset result is always the first
-              if (results.head.error.isDefined) {
-                tryReindexSpatialFail(dataSet, results.head, promise)
-              } else {
-                promise.failure(
-                  new Exception("Failed to index supplementary field")
-                )
-              }
-          }
-
-          if (successes.nonEmpty) {
-            logger.info("Successfully indexed {} datasets", successes.size)
-          } else {
-            logger.info("Failed to index this batch", failures.size)
-          }
-
-          successes.map(_._2).foreach {
-            case (dataSet, promise, _) => promise.success(dataSet.identifier)
-          }
-      }
-      .recover {
-        case e: Throwable =>
-          logger.error(e, "Error when indexing: {}", e.getMessage)
-          throw e
-      }
-      .to(Sink.ignore)
-      .run()
 
   private lazy val restoreQueue: SourceQueue[
     (ElasticClient, IndexDefinition, Snapshot, Promise[RestoreResult])
@@ -317,11 +223,12 @@ class ElasticSearchIndexer(
 
   private def tryReindexSpatialFail(
       dataSet: DataSet,
-      result: BulkResponseItem,
+      result: Seq[BulkResponseItem],
       promise: Promise[Unit]
-  ) = {
-    val geoFail = result.error.isDefined && result.error.exists(
-      _.reason.contains("failed to parse [spatial.geoJson]")
+  ): Boolean = {
+    // The dataset result is always the first
+    val geoFail = result.head.error.isDefined && result.head.error.exists(
+      _.reason.contains("failed to parse field [spatial.geoJson]")
     )
 
     if (geoFail) {
@@ -332,12 +239,38 @@ class ElasticSearchIndexer(
       val dataSetWithoutSpatial = dataSet.copy(
         spatial = dataSet.spatial.map(spatial => spatial.copy(geoJson = None))
       )
-      // TODO: Make one indexing request only so that we can remove the source queue completely.
-      index2(dataSetWithoutSpatial, promise)
+
+      performIndex(Source(List((dataSetWithoutSpatial, promise))), false)
+
+      true
     } else {
-      promise.failure(
-        new Exception(s"Had failures other than geoJson parse: ${result.error}")
+      false
+    }
+  }
+
+  private def tryReindexDynamicMappingTimeoutFail(
+      dataSet: DataSet,
+      result: Seq[BulkResponseItem],
+      promise: Promise[Unit]
+  ): Boolean = {
+    val hasMappingTimeoutError = result.exists(
+      _.error.exists(
+        _.reason
+          .contains("timed out while waiting for a dynamic mapping update")
       )
+    )
+
+    if (hasMappingTimeoutError) {
+      logger.info(
+        "Retry index dataset due to dynamic mapping update timeout error. Dataset: {}",
+        dataSet.identifier
+      )
+
+      performIndex(Source(List((dataSet, promise))), false)
+
+      true
+    } else {
+      false
     }
   }
 
@@ -360,6 +293,7 @@ class ElasticSearchIndexer(
           .execute(
             ElasticDsl
               .getMapping(indices.getIndex(config, indexDef.indicesIndex))
+              .copy(includeTypeName = Some(true))
           )
           .flatMap {
             case results: RequestSuccess[Seq[IndexMappings]] =>
@@ -612,22 +546,6 @@ class ElasticSearchIndexer(
     }
   }
 
-  // TODO: Instead of using indexQueue that performs bulk indexing, make single indexing request.
-  private def index2(
-      dataSet: DataSet,
-      promise: Promise[Unit] = Promise[Unit]
-  ): Future[Unit] = {
-
-    indexQueue
-      .offer((dataSet, promise))
-      .flatMap {
-        case QueueOfferResult.Enqueued    => promise.future
-        case QueueOfferResult.Dropped     => throw new Exception("Dropped")
-        case QueueOfferResult.QueueClosed => throw new Exception("Queue Closed")
-        case QueueOfferResult.Failure(e)  => throw e
-      }
-  }
-
   def snapshot(): Future[Unit] = {
     List(
       IndexDefinition.dataSets,
@@ -855,12 +773,12 @@ class ElasticSearchIndexer(
     List(indexDataSet) ::: indexPublisher.toList ::: indexFormats.toList
   }
 
-  override def index(
-      dataSetStream: Source[DataSet, NotUsed]
+  def performIndex(
+      dataSetStream: Source[(DataSet, Promise[Unit]), NotUsed],
+      retryFailedDatasets: Boolean = true
   ): Future[SearchIndexer.IndexResult] = {
     val indexResults = dataSetStream
       .buffer(indexingBufferSize, OverflowStrategy.backpressure)
-      .map(dataSet => (dataSet, Promise[Unit]))
       .map {
         case (dataSet, promise) =>
           (buildDatasetIndexDefinition(dataSet), (dataSet, promise))
@@ -889,6 +807,7 @@ class ElasticSearchIndexer(
           .map(result => (result, sources))
           .recover {
             case e: Throwable =>
+              logger.error("Bulk request error: {}", e)
               val promises = sources.map(_._2)
               promises.foreach(_.failure(e))
               throw e
@@ -908,66 +827,143 @@ class ElasticSearchIndexer(
 
           val resultTuples = groupedResults.zip(sources)
 
-          val failures = resultTuples.filter(_._1.exists(_.error.isDefined))
+          val nonSuccesses = resultTuples.filter(_._1.exists(_.error.isDefined))
           val successes = resultTuples.filter(_._1.forall(_.error.isEmpty))
+          val retryPromises: ListBuffer[Promise[Unit]] =
+            ListBuffer()
 
-          failures.foreach {
+          var failureCount: Long = 0
+          val failureReasons: ListBuffer[String] = ListBuffer()
+          val warnReasons: ListBuffer[String] = ListBuffer()
+
+          nonSuccesses.foreach {
             case (theResults, (dataSet, promise, _)) =>
-              theResults.filter(_.error.isDefined).foreach { failure =>
-                logger.warning(
-                  "Failure when indexing {}: {}",
-                  dataSet.identifier,
-                  failure.error
-                )
+              // retry failed dataset
+              val hasRetried = retryFailedDatasets && (tryReindexSpatialFail(
+                dataSet,
+                theResults,
+                promise
+              ) || tryReindexDynamicMappingTimeoutFail(
+                dataSet,
+                theResults,
+                promise
+              ))
+
+              val errors = theResults.filter(_.error.isDefined).map(_.error.get)
+
+              errors.foreach { error =>
+                if (hasRetried) {
+                  logger.warning(
+                    "Failure when indexing {}: {}",
+                    dataSet.identifier,
+                    error
+                  )
+                } else {
+                  logger.error(
+                    "Failure when indexing {}: {}",
+                    dataSet.identifier,
+                    error
+                  )
+                }
               }
 
-              // The dataset result is always the first
-              if (theResults.head.error.isDefined) {
-                tryReindexSpatialFail(dataSet, theResults.head, promise)
+              if (hasRetried) {
+                warnReasons.appendAll(errors.map(_.toString))
+                retryPromises += promise
               } else {
+                failureCount += 1
+                failureReasons.appendAll(errors.map(_.toString))
+
                 promise.failure(
-                  new Exception("Failed to index supplementary field")
+                  new Exception(
+                    s"Failed to index supplementary fields. errors: ${errors}"
+                  )
                 )
               }
-          }
-
-          if (successes.nonEmpty) {
-            logger.info("Successfully indexed {} datasets", successes.size)
-          } else {
-            logger.info("Failed to index this batch", failures.size)
           }
 
           successes.map(_._2).foreach {
             case (dataSet, promise, _) => promise.success(dataSet.identifier)
           }
 
-          (failures.toList.toString(), Future.successful(successes.size))
+          if (successes.nonEmpty) {
+            logger.info("Successfully indexed {} datasets", successes.size)
+          } else {
+            logger.info("Failed to index this batch. {} ", resultTuples.size)
+          }
 
+          val retryFuture = retryPromises.toList
+            .map(_.future.map(_ => None).recover {
+              case e: Throwable => Some(e)
+            })
+            // 1st tuple element [Long]: warnsCount (retry successful) index dataset successful with warns (i.e. after retry)
+            // 2nd tuple element [Long]: failureCount (retry failed)
+            // 3rd tuple element [Seq[String]]: failed retry reasons
+            .foldLeft(
+              Future.successful[(Long, Long, Seq[String])]((0, 0, Seq()))
+            )(
+              (retryFuture, f) => {
+                retryFuture.flatMap { result =>
+                  f.map { e =>
+                    if (e.isDefined) {
+                      (result._1, result._2 + 1, result._3 :+ e.get.toString)
+                    } else {
+                      (result._1 + 1, result._2, result._3)
+                    }
+                  }
+                }
+              }
+            )
+
+          (
+            successes.size,
+            failureCount,
+            failureReasons,
+            retryFuture,
+            warnReasons
+          )
       }
       .recover {
         case e: Throwable =>
           logger.error(e, "Error when indexing: {}", e.getMessage)
           throw e
       }
-      .runWith(Sink.fold(Future(SearchIndexer.IndexResult(0, Seq()))) {
-        case (combinedResultFuture, (thisResultIdentifier, thisResultFuture)) =>
-          combinedResultFuture.flatMap { combinedResult =>
-            thisResultFuture
-              .map { thisResult =>
-                combinedResult
-                  .copy(successes = combinedResult.successes + thisResult)
-              }
-              .recover {
-                case e: Throwable =>
-                  combinedResult.copy(
-                    failures = combinedResult.failures :+ thisResultIdentifier
-                  )
-              }
-          }
-      })
+      .runWith(
+        Sink.fold(Future(SearchIndexer.IndexResult(0, 0, 0, Seq(), Seq()))) {
+          case (
+              combinedResultFuture,
+              (
+                successes,
+                failureCount,
+                failureReasons,
+                retryFuture,
+                warnReasons
+              )
+              ) =>
+            combinedResultFuture.flatMap {
+              combinedResult =>
+                retryFuture.map {
+                  retryResult =>
+                    IndexResult(
+                      combinedResult.successes + successes,
+                      combinedResult.failures + failureCount + retryResult._2,
+                      combinedResult.warns + retryResult._1,
+                      combinedResult.failureReasons ++ failureReasons ++ retryResult._3,
+                      combinedResult.warnReasons ++ warnReasons
+                    )
+                }
+
+            }
+        }
+      )
 
     indexResults.flatMap(identity)
   }
+
+  def index(
+      dataSetStream: Source[DataSet, NotUsed]
+  ): Future[SearchIndexer.IndexResult] =
+    performIndex(dataSetStream.map(dataSet => (dataSet, Promise[Unit])), true)
 
 }
 

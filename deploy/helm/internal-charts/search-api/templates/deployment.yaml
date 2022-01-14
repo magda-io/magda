@@ -37,6 +37,12 @@ spec:
 {{- if .Values.regionsIndexVersion }}
           - "-DelasticSearch.indices.regions.version={{ .Values.regionsIndexVersion }}"
 {{- end }}
+{{- if .Values.publishersIndexVersion }}
+          - "-DelasticSearch.indices.publishers.version={{ .Values.publishersIndexVersion }}"
+{{- end }}
+{{- if .Values.formatsIndexVersion }}
+          - "-DelasticSearch.indices.formats.version={{ .Values.formatsIndexVersion }}"
+{{- end }}
 {{- if .Values.global.enableLivenessProbes }}
         livenessProbe:
           httpGet:
