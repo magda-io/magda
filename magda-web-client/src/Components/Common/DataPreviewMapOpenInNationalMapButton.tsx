@@ -4,6 +4,7 @@ import { config } from "../../config";
 import "./DataPreviewMapOpenInNationalMapButton.scss";
 import { BrowserDetectInfo } from "browser-detect/dist/types/browser-detect.interface";
 import { ParsedDistribution } from "helpers/record";
+import URI from "urijs";
 
 type PropsType = {
     distribution: ParsedDistribution;
@@ -13,7 +14,7 @@ type PropsType = {
     };
 };
 
-const DEFAULT_TARGET_URL = "https://nationalmap.gov.au/";
+const DEFAULT_TARGET_URL = "http://ci.terria.io/issue-6088/"; // "https://nationalmap.gov.au/";
 
 class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
     private browser: BrowserDetectInfo;
@@ -67,7 +68,52 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
                 ]
             };
         } else {
+            const dataUrl = distribution?.downloadURL
+                ? distribution.downloadURL
+                : distribution.accessURL;
+
+            let layers: any = undefined;
             const id = "data.gov.au-postMessage-" + distribution?.identifier;
+            if (dataUrl) {
+                const queries = URI.parseQuery(dataUrl);
+                layers = queries["layers"];
+                if (typeof layers !== "string") {
+                    layers = queries["LAYERS"];
+                }
+
+                if (typeof layers !== "string") {
+                    layers = queries["Layers"];
+                }
+            }
+
+            const type =
+                distribution?.format.toLowerCase() === "wms"
+                    ? layers
+                        ? "wms"
+                        : "wms-group"
+                    : undefined;
+
+            const terriaAspect: any = type
+                ? {
+                      aspects: {
+                          terria: {
+                              definition: {
+                                  name:
+                                      distribution?.title +
+                                      " (Opened by data.gov.au)",
+                                  url: dataUrl
+                              },
+                              id: id,
+                              type: type
+                          }
+                      }
+                  }
+                : undefined;
+
+            if (type === "wms") {
+                terriaAspect.aspects.terria.definition.layers = layers;
+            }
+
             catConfig = {
                 version: "8.0.0",
                 initSources: [
@@ -79,10 +125,13 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
                                 type: "magda",
                                 recordId: distribution?.identifier,
                                 url: config.baseExternalUrl,
-                                id
+                                override: terriaAspect,
+                                id,
+                                isGroup: type === "wms-group" ? true : false
                             }
                         ],
-                        workbench: [id]
+                        workbench: [id],
+                        previewedItemId: type === "wms-group" ? id : undefined
                     }
                 ]
             };
