@@ -130,7 +130,7 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
                                 isGroup: type === "wms-group" ? true : false
                             }
                         ],
-                        workbench: [id],
+                        workbench: type === "wms-group" ? [] : [id],
                         previewedItemId: type === "wms-group" ? id : undefined
                     }
                 ]
