@@ -54,7 +54,9 @@ const OVERRIDE_TO_CATEGORY_COLUMNS = [
     "reason",
     "year",
     "country",
-    /^registration number$/i
+    /^registration number$/i,
+    /^LIQ NUM$/i,
+    /^REG AUD NUM$/i
 ];
 /** Columns with these terms in them will be overridden as time types */
 const OVERRIDE_TO_TIME_COLUMNS = [
