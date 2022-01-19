@@ -1,12 +1,11 @@
-FROM --platform=linux/amd64 docker.elastic.co/elasticsearch/elasticsearch:6.5.4 as stage-amd64
-RUN yum -y install sudo
+FROM --platform=linux/amd64 docker.elastic.co/elasticsearch/elasticsearch:6.8.22 as stage-amd64
+RUN yum -y install sudo zip
 # Delete all x-pack modules
 RUN find modules -type d -name "x-pack-*" -exec rm -r {} +
 COPY --chown=elasticsearch:elasticsearch component/elasticsearch.yml /usr/share/elasticsearch/config/
 
-
-FROM --platform=linux/arm64 data61/elasticsearch:6.5.4 as stage-arm64
-RUN apt-get update && apt-get install -y --no-install-recommends sudo && rm -rf /var/lib/apt/lists/*
+FROM --platform=linux/arm64 data61/elasticsearch:6.8.22 as stage-arm64
+RUN apt-get update && apt-get install -y --no-install-recommends sudo zip && rm -rf /var/lib/apt/lists/*
 COPY --chown=elasticsearch:elasticsearch component/elasticsearch-arm64.yml /usr/share/elasticsearch/config/elasticsearch.yml
 
 ARG TARGETARCH

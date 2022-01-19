@@ -33,3 +33,17 @@ datasetsIndexVersion:
 # you want to manually set this setting when upgrade to a Magda version that involves region index version changes.
 # As it takes time to rebuild the index, you could use this setting to make search API query existing old version index before the new version index is built.
 regionsIndexVersion:
+
+
+# -- Manually set publisher index version.
+# If not specify, default version will be used.
+# you want to manually set this setting when upgrade to a Magda version that involves region index version changes.
+# As it takes time to rebuild the index, you could use this setting to make search API query existing old version index before the new version index is built.
+publishersIndexVersion:
+
+# -- Manually set format index version.
+# If not specify, default version will be used.
+# you want to manually set this setting when upgrade to a Magda version that involves region index version changes.
+# As it takes time to rebuild the index, you could use this setting to make search API query existing old version index before the new version index is built.
+formatsIndexVersion:
+

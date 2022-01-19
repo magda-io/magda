@@ -1,6 +1,6 @@
 # elasticsearch
 
-![Version: 1.1.0-alpha.2](https://img.shields.io/badge/Version-1.1.0--alpha.2-informational?style=flat-square)
+![Version: 1.2.0-alpha.0](https://img.shields.io/badge/Version-1.2.0--alpha.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes
 
@@ -37,7 +37,7 @@ Kubernetes: `>= 1.14.0-0`
 | kibanaImage.pullPolicy | string | `"IfNotPresent"` |  |
 | kibanaImage.pullSecrets | bool | `false` |  |
 | kibanaImage.repository | string | `"docker.elastic.co/kibana"` |  |
-| kibanaImage.tag | string | `"6.5.4"` |  |
+| kibanaImage.tag | string | `"6.8.22"` |  |
 | master.pluginsInstall | string | `""` |  |
 | master.replicas | int | `3` |  |
 | master.resources.limits.cpu | string | `"100m"` |  |

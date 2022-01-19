@@ -209,7 +209,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
         publishingStatusQueryFuture.flatMap { publishingStatusQuery =>
           val filterQuery = boolQuery().must(
             Seq(
-              termQuery("tenantId", tenantId),
+              tenantId.getEsQuery(),
               publishingStatusQuery,
               matchQuery(s"${field}.autoComplete", inputString)
             )
@@ -532,7 +532,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       strategy: SearchStrategy,
       facetSize: Int
   ) = {
-    val tenantIdTermQuery = termQuery("tenantId", tenantId)
+    val tenantIdTermQuery = tenantId.getEsQuery()
     filterAggregation("filter")
       .query(
         must(
@@ -584,7 +584,8 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
       */
     val allScorers = Seq(weightScore(1)) ++ qualityScorers ++ geomScorer.toSeq
 
-    val tenantTermQuery: TermQuery = termQuery("tenantId", tenantId)
+    val tenantTermQuery = tenantId.getEsQuery()
+
     val q: QueryDefinition = queryToQueryDef(query, strategy)
     functionScoreQuery()
       .query(
@@ -910,7 +911,7 @@ class ElasticSearchQueryer(indices: Indices = DefaultIndices)(
 
     clientFuture.flatMap { client =>
       val queryStringContent = queryString.getOrElse("*").trim
-      val tenantTermQuery: TermQuery = termQuery("tenantId", tenantId)
+      val tenantTermQuery = tenantId.getEsQuery()
       val query = ElasticDsl
         .search(indices.getIndex(config, Indices.DataSetsIndex))
         .start(start)
