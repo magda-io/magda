@@ -25,8 +25,6 @@ spec:
       containers:
       - name: {{ .name }}
         env:
-        - name: LOG4J_FORMAT_MSG_NO_LOOKUPS
-          value: "true"
         - name: JWT_SECRET
           valueFrom:
             secretKeyRef:

@@ -99,13 +99,20 @@ class StreamControllerTest extends FlatSpec with Matchers {
 
     override def index(
         source: Source[DataSet, NotUsed]
+    ): Future[SearchIndexer.IndexResult] =
+      performIndex(source.map(dataSet => (dataSet, Promise[Unit])))
+
+    def performIndex(
+        dataSetStream: Source[(DataSet, Promise[Unit]), NotUsed],
+        retryFailedDatasets: Boolean = true
     ): Future[SearchIndexer.IndexResult] = {
-      val indexResults = source
+      val indexResults = dataSetStream
         .buffer(bufferSize, OverflowStrategy.backpressure)
-        .map(dataSet => {
+        .map(item => {
+          val dataSet = item._1
           (dataSet.identifier, index(dataSet))
         })
-        .runWith(Sink.fold(Future(SearchIndexer.IndexResult(0, Seq()))) {
+        .runWith(Sink.fold(Future(SearchIndexer.IndexResult())) {
           case (
               combinedResultFuture,
               (thisResultIdentifier, thisResultFuture)
@@ -118,7 +125,7 @@ class StreamControllerTest extends FlatSpec with Matchers {
                 .recover {
                   case _: Throwable =>
                     combinedResult.copy(
-                      failures = combinedResult.failures :+ thisResultIdentifier
+                      failureReasons = combinedResult.failureReasons :+ thisResultIdentifier
                     )
                 }
             }
@@ -197,7 +204,7 @@ class StreamControllerTest extends FlatSpec with Matchers {
     sc.start()
 
     indexResultF.map(
-      indexResult => indexResult shouldEqual IndexResult(dataSets.size, List())
+      indexResult => indexResult shouldEqual IndexResult(dataSets.size)
     )
   }
 

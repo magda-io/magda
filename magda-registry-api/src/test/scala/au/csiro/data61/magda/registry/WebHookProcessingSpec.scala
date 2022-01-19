@@ -1067,8 +1067,7 @@ class WebHookProcessingSpec
           List(
             ExpectedEventIdAndTenantId(3, TENANT_1),
             ExpectedEventIdAndTenantId(4, TENANT_1)
-          ),
-          payloadsSize = 2
+          )
         )
 
         for (i <- 1 to 50) {
@@ -1344,8 +1343,7 @@ class WebHookProcessingSpec
           List(
             ExpectedEventIdAndTenantId(8, TENANT_1),
             ExpectedEventIdAndTenantId(9, TENANT_2)
-          ),
-          payloadsSize = 2
+          )
         )
         assertRecordsInPayloads(
           List(
@@ -2175,13 +2173,16 @@ class WebHookProcessingSpec
 
   private def assertEventsInPayloads(
       expectedEventIdAndTenantIds: Seq[ExpectedEventIdAndTenantId],
-      payloadsSize: Int = 1
+      payloadsSize: Option[Int] = None
   ) = {
     Util.waitUntilAllDone(1000)
-    payloads.length shouldBe payloadsSize
     val events = payloads.foldLeft[List[RegistryEvent]](Nil)(
       (a, payload) => a ++ payload.events.get
     )
+
+    if (payloadsSize.isDefined) {
+      payloads.length shouldBe payloadsSize
+    }
 
     events.size shouldBe expectedEventIdAndTenantIds.size
     events
@@ -2197,18 +2198,32 @@ class WebHookProcessingSpec
   private def assertRecordsInPayloads(
       expectedRecordIdAndTenantIds: Seq[ExpectedRecordIdAndTenantId]
   ) = {
-    payloads.size shouldBe expectedRecordIdAndTenantIds.size
     val records = payloads.foldLeft[List[Record]](Nil)(
       (a, payload) => a ++ payload.records.get
     )
     records
-      .zip(expectedRecordIdAndTenantIds)
-      .map(pair => {
-        val actual = pair._1
-        val expected = pair._2
-        actual.id shouldBe expected.recordId
-        actual.tenantId shouldBe Some(expected.tenantId)
-      })
+      .filter(
+        record =>
+          expectedRecordIdAndTenantIds
+            .find(
+              item =>
+                item.recordId == record.id && item.tenantId == record.tenantId.get
+            )
+            .isEmpty
+      )
+      .length shouldBe 0
+
+    expectedRecordIdAndTenantIds
+      .filter(
+        item =>
+          records
+            .find(
+              record =>
+                item.recordId == record.id && item.tenantId == record.tenantId.get
+            )
+            .isEmpty
+      )
+      .length shouldBe 0
   }
 
   describe("async web hooks") {

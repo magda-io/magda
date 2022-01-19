@@ -1,6 +1,6 @@
 {
   "name": "@magda/search-api-node",
-  "version": "1.1.0-alpha.4",
+  "version": "1.2.0-alpha.0",
   "scripts": {
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "yarn run compile",
@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@elastic/elasticsearch": "6.8.6",
-    "@magda/typescript-common": "^1.1.0-alpha.4",
+    "@magda/typescript-common": "^1.2.0-alpha.0",
     "express": "^4.17.1",
     "express-validation": "^3.0.2",
     "geojson": "^0.5.0",
@@ -25,7 +25,7 @@
     "yargs": "^12.0.5"
   },
   "devDependencies": {
-    "@magda/scripts": "^1.1.0-alpha.4",
+    "@magda/scripts": "^1.2.0-alpha.0",
     "@types/chai": "^4.1.2",
     "@types/express": "^4.17.6",
     "@types/geojson": "^7946.0.7",

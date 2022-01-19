@@ -8,6 +8,16 @@
 - Rewrote the OPA AST parser for better evaluation & reference handling
 - Added common policy entry point: entrypoint/allow.rego
 
+## 1.2.0
+
+- #3291 Remove log4j from scala codebase dependency list
+- #3293 Upgrade elasticsearch to 6.8.22
+- Upgrade logback to 1.2.10
+- #3294 Indexer will auto-fixes non-topologically closed Polygons / MultiPolygons
+- Crawler will now wait for 3 seconds (used to be 1 second) before perform trim action to avoid timeout issue
+- Refactor Indexer code to remove the redundant index queue
+- Allow overiding publisher / format indice version number for search API
+
 ## 1.1.0
 
 - #3246 Upgrade default cloudSql proxy version to v1.26.0

@@ -1,24 +1,33 @@
 package au.csiro.data61.magda.model
 
+import com.sksamuel.elastic4s.searches.queries.Query
+import com.sksamuel.elastic4s.searches.queries.matches.MatchAllQuery
+import com.sksamuel.elastic4s.searches.queries.term.TermQuery
+
 object TenantId {
   sealed trait TenantId {
     def specifiedOrThrow(): BigInt
     def isAllTenants(): Boolean
+    def getEsQuery(field: String = "tenantId"): Query
   }
   case object AllTenantsId extends TenantId {
-    override def specifiedOrThrow(): BigInt =
+
+    def specifiedOrThrow(): BigInt =
       throw new Exception("Used specifiedOrThrow on unspecified tenant id")
 
-    override def isAllTenants(): Boolean = true
+    def isAllTenants(): Boolean = true
+    def getEsQuery(field: String = "tenantId") = MatchAllQuery()
   }
   case class SpecifiedTenantId(tenantId: BigInt) extends TenantId {
-    override def specifiedOrThrow(): BigInt = tenantId;
+    def specifiedOrThrow(): BigInt = tenantId;
 
     override def toString: String = {
       tenantId.toString
     }
 
-    override def isAllTenants(): Boolean = false
+    def isAllTenants(): Boolean = false
+
+    def getEsQuery(field: String = "tenantId") = TermQuery(field, tenantId)
 
   }
 }
