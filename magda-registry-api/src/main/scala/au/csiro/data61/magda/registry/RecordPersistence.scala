@@ -581,37 +581,26 @@ class DefaultRecordPersistence(config: Config)
         // more time to get an existing one. We use a nested transaction so that, if the create fails,
         // we don't end up with an extraneous record creation event in the database.
         case None =>
-          // Check if record exists without any auth
-          this.getById(tenantId, UnconditionalTrueDecision, id) match {
-            case Some(record) =>
-              Failure(
-                // TODO: Return a better error code.
-                new RuntimeException(
-                  s"You don't have permission to create this record $record."
-                )
-              )
-            case None =>
-              DB.localTx { nested =>
-                // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
-                // --- as the aspect data has been validated (unless not required) in the beginning of current method
-                createRecord(tenantId, newRecord, userId, true)(nested).map {
-                  result =>
-                    // --- result._1: record result._2: eventId
-                    (result._1.copy(aspects = Map()), Some(result._2))
-                }
-              } match {
-                case Success(result) => Success(result)
-                case Failure(e) =>
-                  this.getByIdWithAspects(
-                    tenantId,
-                    UnconditionalTrueDecision,
-                    id,
-                    None,
-                    None
-                  ) match {
-                    case Some(record) => Success((record, None))
-                    case None         => Failure(e)
-                  }
+          DB.localTx { nested =>
+            // --- we never need to validate here (thus, set `forceSkipAspectValidation` = true)
+            // --- as the aspect data has been validated (unless not required) in the beginning of current method
+            createRecord(tenantId, newRecord, userId, true)(nested).map {
+              result =>
+                // --- result._1: record result._2: eventId
+                (result._1.copy(aspects = Map()), Some(result._2))
+            }
+          } match {
+            case Success(result) => Success(result)
+            case Failure(e) =>
+              this.getByIdWithAspects(
+                tenantId,
+                UnconditionalTrueDecision,
+                id,
+                None,
+                None
+              ) match {
+                case Some(record) => Success((record, None))
+                case None         => Failure(e)
               }
           }
       }

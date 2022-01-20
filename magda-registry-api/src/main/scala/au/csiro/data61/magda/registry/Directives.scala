@@ -2,8 +2,8 @@ package au.csiro.data61.magda.registry
 
 import akka.actor.TypedActor.context
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{Directive0}
-import au.csiro.data61.magda.client.{AuthApiClient}
+import akka.http.scaladsl.server.Directive0
+import au.csiro.data61.magda.client.AuthApiClient
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes.InternalServerError
 import scalikejdbc.{DBSession, ReadOnlyAutoSession}
@@ -15,8 +15,13 @@ import scalikejdbc._
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ExecutionContext, Future, blocking}
 import au.csiro.data61.magda.directives.AuthDirectives.requirePermission
+import au.csiro.data61.magda.model.Registry.Record
 
 object Directives extends Protocols with SprayJsonSupport {
+
+  final case class NoRecordFoundException(
+      recordId: String
+  ) extends Exception(s"Cannot locate record by id: ${recordId}")
 
   private def createRecordContextData(
       recordId: String
@@ -40,7 +45,7 @@ object Directives extends Protocols with SprayJsonSupport {
           }
 
         if (recordJsFields.length == 0) {
-          throw new Error(s"Cannot locate record by id: ${recordId}")
+          throw NoRecordFoundException(recordId)
         }
 
         sql"""SELECT aspectid,data FROM recordaspects WHERE recordid=${recordId}"""
@@ -59,8 +64,7 @@ object Directives extends Protocols with SprayJsonSupport {
   def requireRecordPermission(
       authApiClient: AuthApiClient,
       operationUri: String,
-      recordId: String
-  )(
+      recordId: String,
       session: DBSession = ReadOnlyAutoSession
   ): Directive0 = (extractLog & extractExecutionContext).tflatMap {
     case (log, akkaExeCtx) =>
@@ -88,6 +92,46 @@ object Directives extends Protocols with SprayJsonSupport {
           )
       }
   }
+
+  def requireRecordUpdateWithNonExistCreatePermission(
+      authApiClient: AuthApiClient,
+      newRecord: Record,
+      session: DBSession = ReadOnlyAutoSession
+  ): Directive0 = (extractLog & extractExecutionContext).tflatMap { t =>
+    val akkaExeCtx = t._2
+    val log = t._1
+
+    implicit val blockingExeCtx =
+      context.system.dispatchers.lookup("blocking-io-dispatcher")
+    onComplete(
+      createRecordContextData(newRecord.id)(blockingExeCtx, session)
+    ).flatMap {
+      case Success(recordData) =>
+        requirePermission(
+          authApiClient,
+          "object/record/update",
+          input = Some(JsObject("object" -> JsObject("record" -> recordData)))
+        ) & withExecutionContext(akkaExeCtx) & pass
+      case Failure(exception: NoRecordFoundException) =>
+        requirePermission(
+          authApiClient,
+          "object/record/create",
+          input =
+            Some(JsObject("object" -> JsObject("record" -> newRecord.toJson)))
+        ) & withExecutionContext(akkaExeCtx) & pass
+      case Failure(e: Throwable) =>
+        log.error(
+          "Failed to create record context data for auth decision. record ID: {}. Error: {}",
+          newRecord.id,
+          e
+        )
+        complete(
+          InternalServerError,
+          s"An error occurred while creating record context data for auth decision."
+        )
+    }
+  }
+
 //  /**
 //    * Returns true if the configuration says to skip the opa query.
 //    */
