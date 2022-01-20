@@ -126,7 +126,7 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
                                 recordId: distribution?.identifier,
                                 url: "https://dev.magda.io/", //config.baseExternalUrl,
                                 override: terriaAspect,
-                                id
+                                id: id
                             }
                         ],
                         workbench: type === "wms-group" ? [] : [id],
