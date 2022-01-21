@@ -1,5 +1,6 @@
 package au.csiro.data61.magda.registry
 
+import au.csiro.data61.magda.model.Auth.AuthDecision
 import scalikejdbc._
 import spray.json.JsonParser
 
@@ -11,14 +12,21 @@ import gnieh.diffson.sprayJson._
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.model.TenantId._
 import au.csiro.data61.magda.util.SQLUtils
+import scalikejdbc.interpolation.SQLSyntax
 
 object AspectPersistence extends Protocols with DiffsonProtocol {
 
   def getAll(
-      tenantId: TenantId
+      tenantId: TenantId,
+      authDecision: AuthDecision
   )(implicit session: DBSession): List[AspectDefinition] = {
+    val authDecisionCondition = authDecision.toSql()
+
+    val whereClauseParts = Seq(authDecisionCondition) :+ SQLUtils
+      .tenantIdToWhereClause(tenantId, "tenantid")
+
     sql"select aspectId, name, jsonSchema, tenantId from Aspects ${SQLSyntax
-      .where(SQLUtils.tenantIdToWhereClause(tenantId, "tenantid"))}"
+      .where(SQLSyntax.toAndConditionOpt(whereClauseParts: _*))}"
       .map(rowToAspect)
       .list
       .apply()
@@ -26,10 +34,18 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
 
   def getById(
       id: String,
-      tenantId: TenantId
+      tenantId: TenantId,
+      authDecision: AuthDecision
   )(implicit session: DBSession): Option[AspectDefinition] = {
+    val authDecisionCondition = authDecision.toSql()
+
+    val whereClauseParts = Seq(authDecisionCondition) :+ SQLUtils
+      .tenantIdToWhereClause(tenantId, "tenantid") :+ Some(
+      SQLSyntax.eq(sqls"aspectId", id)
+    )
+
     sql"select aspectId, name, jsonSchema, tenantId from Aspects ${SQLSyntax
-      .where(SQLSyntax.toAndConditionOpt(Some(sqls"aspectId=$id"), SQLUtils.tenantIdToWhereClause(tenantId, "tenantid")))}"
+      .where(SQLSyntax.toAndConditionOpt(whereClauseParts: _*))}"
       .map(rowToAspect)
       .single
       .apply()
@@ -37,13 +53,21 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
 
   def getByIds(
       ids: Iterable[String],
-      tenantId: TenantId
+      tenantId: TenantId,
+      authDecision: AuthDecision
   )(implicit session: DBSession): List[AspectDefinition] = {
     if (ids.isEmpty)
       List()
     else {
+      val authDecisionCondition = authDecision.toSql()
+
+      val whereClauseParts = Seq(authDecisionCondition) :+ SQLUtils
+        .tenantIdToWhereClause(tenantId, "tenantid") :+ Some(
+        SQLSyntax.in(sqls"aspectId", ids.toSeq)
+      )
+
       sql"select aspectId, name, jsonSchema, tenantId from Aspects ${SQLSyntax
-        .where(SQLSyntax.toAndConditionOpt(Some(sqls"aspectId in ($ids)"), SQLUtils.tenantIdToWhereClause(tenantId, "tenantid")))}"
+        .where(SQLSyntax.toAndConditionOpt(whereClauseParts: _*))}"
         .map(rowToAspect)
         .list
         .apply()

@@ -7,7 +7,7 @@ import au.csiro.data61.magda.client.AuthApiClient
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes.InternalServerError
 import scalikejdbc.{DBSession, ReadOnlyAutoSession}
-import spray.json.{JsNumber, JsObject, JsString, JsValue, JsonParser}
+import spray.json.{JsNull, JsNumber, JsObject, JsString, JsValue, JsonParser}
 
 import scala.util.{Failure, Success, Try}
 import scalikejdbc._
@@ -15,7 +15,7 @@ import scalikejdbc._
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ExecutionContext, Future, blocking}
 import au.csiro.data61.magda.directives.AuthDirectives.requirePermission
-import au.csiro.data61.magda.model.Registry.Record
+import au.csiro.data61.magda.model.Registry.{AspectDefinition, Record}
 
 object Directives extends Protocols with SprayJsonSupport {
 
@@ -38,6 +38,7 @@ object Directives extends Protocols with SprayJsonSupport {
         val recordJsFields: ListBuffer[(String, JsValue)] = ListBuffer()
         sql"""SELECT * FROM records WHERE recordid=${recordId} LIMIT 1"""
           .foreach { rs =>
+            // JDBC treat column name case insensitive
             recordJsFields += ("id" -> JsString(rs.string("recordId")))
             recordJsFields += ("name" -> JsString(rs.string("recordName")))
             recordJsFields += ("lastUpdate" -> JsNumber(
@@ -157,6 +158,140 @@ object Directives extends Protocols with SprayJsonSupport {
         complete(
           InternalServerError,
           s"An error occurred while creating record context data for auth decision."
+        )
+    }
+  }
+
+  /**
+    * retrieve aspect record from DB and convert into JSON data (to be used as part of policy engine context data)
+    * @param aspectId
+    * @param ec
+    * @param session
+    * @return
+    */
+  private def createAspectContextData(
+      aspectId: String
+  )(implicit ec: ExecutionContext, session: DBSession): Future[JsObject] = {
+    Future {
+      blocking {
+        val aspectJsFields: ListBuffer[(String, JsValue)] = ListBuffer()
+        sql"""SELECT * FROM aspects WHERE aspectid=${aspectId} LIMIT 1"""
+          .foreach { rs =>
+            // JDBC treat column name case insensitive
+            aspectJsFields += ("id" -> JsString(rs.string("aspectId")))
+            aspectJsFields += ("name" -> JsString(rs.string("name")))
+            aspectJsFields += ("lastUpdate" -> JsNumber(
+              rs.bigInt("lastupdate")
+            ))
+            aspectJsFields.appendAll(
+              rs.bigIntOpt("tenantId").map(("tenantId" -> JsNumber(_)))
+            )
+
+            val jsonSchema = Try {
+              JsonParser(rs.string("jsonschema"))
+            }.getOrElse(JsNull)
+
+            aspectJsFields += ("jsonSchema" -> jsonSchema)
+          }
+
+        if (aspectJsFields.length == 0) {
+          throw NoRecordFoundException(aspectId)
+        }
+
+        JsObject(aspectJsFields.toMap)
+      }
+    }
+  }
+
+  /**
+    * a request can only pass this directive when the user has unconditional permission for the given request operation.
+    * This directive will retrieve aspect data and supply to policy engine as part of context data
+    *
+    * @param authApiClient
+    * @param operationUri
+    * @param aspectId
+    * @param session
+    * @return
+    */
+  def requireAspectPermission(
+      authApiClient: AuthApiClient,
+      operationUri: String,
+      aspectId: String,
+      session: DBSession = ReadOnlyAutoSession
+  ): Directive0 = (extractLog & extractExecutionContext).tflatMap {
+    case (log, akkaExeCtx) =>
+      implicit val blockingExeCtx =
+        context.system.dispatchers.lookup("blocking-io-dispatcher")
+
+      (withExecutionContext(blockingExeCtx) & onComplete(
+        createAspectContextData(aspectId)(blockingExeCtx, session)
+      )).tflatMap {
+        case Tuple1(Success(aspectData)) =>
+          requirePermission(
+            authApiClient,
+            operationUri,
+            input = Some(JsObject("object" -> JsObject("aspect" -> aspectData)))
+          ) & withExecutionContext(akkaExeCtx) & pass // switch back to akka dispatcher
+        case Tuple1(Failure(e)) =>
+          log.error(
+            "Failed to create aspect context data for auth decision. aspect ID: {}. Error: {}",
+            aspectId,
+            e
+          )
+          complete(
+            InternalServerError,
+            s"An error occurred while creating aspect context data for auth decision."
+          )
+      }
+  }
+
+  /**
+    * a request can only pass this directive when:
+    * - the aspect exist and the user has `object/aspect/update` permission to the aspect
+    *   - the current aspect data will be supplied to policy engine as context data
+    * - the aspect doesn't exist and the use has `object/aspect/create` permission to create the aspect
+    *   - the new aspect data will be supplied to policy engine as context data
+    *
+    * @param authApiClient
+    * @param newAspect
+    * @param session
+    * @return
+    */
+  def requireAspectUpdateWithNonExistCreatePermission(
+      authApiClient: AuthApiClient,
+      newAspect: AspectDefinition,
+      session: DBSession = ReadOnlyAutoSession
+  ): Directive0 = (extractLog & extractExecutionContext).tflatMap { t =>
+    val akkaExeCtx = t._2
+    val log = t._1
+
+    implicit val blockingExeCtx =
+      context.system.dispatchers.lookup("blocking-io-dispatcher")
+    onComplete(
+      createAspectContextData(newAspect.id)(blockingExeCtx, session)
+    ).flatMap {
+      case Success(aspectData) =>
+        requirePermission(
+          authApiClient,
+          "object/aspect/update",
+          input = Some(JsObject("object" -> JsObject("aspect" -> aspectData)))
+        ) & withExecutionContext(akkaExeCtx) & pass
+      case Failure(exception: NoRecordFoundException) =>
+        requirePermission(
+          authApiClient,
+          "object/aspect/create",
+          input =
+            Some(JsObject("object" -> JsObject("aspect" -> newAspect.toJson)))
+        ) & withExecutionContext(akkaExeCtx) & pass
+      case Failure(e: Throwable) =>
+        log.error(
+          "Failed to create aspect context data for auth decision. aspect ID: {}. Error: {}",
+          newAspect.id,
+          e
+        )
+        complete(
+          InternalServerError,
+          s"An error occurred while creating aspect context data for auth decision."
         )
     }
   }
