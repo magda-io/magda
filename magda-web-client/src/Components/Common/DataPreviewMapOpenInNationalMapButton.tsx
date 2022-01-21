@@ -120,7 +120,7 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
                                 type: "magda",
                                 recordId: distribution?.identifier,
                                 url: config.baseExternalUrl,
-                                override: terriaAspect,
+                                addOrOverrideAspects: terriaAspect,
                                 id: id
                             }
                         ],
