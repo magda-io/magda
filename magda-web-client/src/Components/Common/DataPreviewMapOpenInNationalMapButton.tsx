@@ -14,7 +14,7 @@ type PropsType = {
     };
 };
 
-const DEFAULT_TARGET_URL = "http://ci.terria.io/issue-6088/"; // "https://nationalmap.gov.au/";
+const DEFAULT_TARGET_URL = "https://nationalmap.gov.au/";
 
 class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
     private browser: BrowserDetectInfo;
@@ -72,22 +72,17 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
                 ? distribution.downloadURL
                 : distribution.accessURL;
 
-            let layers: any = undefined;
-            const id = "data.gov.au-postMessage-" + distribution?.identifier;
-            if (dataUrl) {
-                const queries = URI.parseQuery(dataUrl);
-                layers = queries["layers"];
-                if (typeof layers !== "string") {
-                    layers = queries["LAYERS"];
-                }
-
-                if (typeof layers !== "string") {
-                    layers = queries["Layers"];
-                }
-            }
+            const id = "external-postMessage-" + distribution?.identifier;
+            const queries =
+                typeof dataUrl === "string" ? URI(dataUrl).query(true) : {};
+            const layers = queries["LAYERS"]
+                ? queries["LAYERS"]
+                : queries["layers"]
+                ? queries["layers"]
+                : queries["Layers"];
 
             const type =
-                distribution?.format.toLowerCase() === "wms"
+                distribution?.format?.toLowerCase() === "wms"
                     ? layers
                         ? "wms"
                         : "wms-group"
@@ -100,7 +95,7 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
                               definition: {
                                   name:
                                       distribution?.title +
-                                      " (Opened by data.gov.au)",
+                                      " (Added by external application)",
                                   url: dataUrl
                               },
                               id: id,
@@ -124,7 +119,7 @@ class DataPreviewMapOpenInNationalMapButton extends Component<PropsType> {
                                 name: distribution?.title,
                                 type: "magda",
                                 recordId: distribution?.identifier,
-                                url: "https://dev.magda.io/", //config.baseExternalUrl,
+                                url: config.baseExternalUrl,
                                 override: terriaAspect,
                                 id: id
                             }

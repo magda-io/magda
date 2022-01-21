@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.2.1
+
+- #3299 Add terria aspect to post message if dataset format is "wms".
+
 ## 1.2.0
 
 - #3291 Remove log4j from scala codebase dependency list
