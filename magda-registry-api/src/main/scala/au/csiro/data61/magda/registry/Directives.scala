@@ -23,6 +23,13 @@ object Directives extends Protocols with SprayJsonSupport {
       recordId: String
   ) extends Exception(s"Cannot locate record by id: ${recordId}")
 
+  /**
+    * retrieve record from DB and convert into JSON data (to be used as part of policy engine context data)
+    * @param recordId
+    * @param ec
+    * @param session
+    * @return
+    */
   private def createRecordContextData(
       recordId: String
   )(implicit ec: ExecutionContext, session: DBSession): Future[JsObject] = {
@@ -61,6 +68,16 @@ object Directives extends Protocols with SprayJsonSupport {
     }
   }
 
+  /**
+    * a request can only pass this directive when the user has unconditional permission for the given request operation.
+    * This directive will retrieve record data and supply to policy engine as part of context data
+    *
+    * @param authApiClient
+    * @param operationUri
+    * @param recordId
+    * @param session
+    * @return
+    */
   def requireRecordPermission(
       authApiClient: AuthApiClient,
       operationUri: String,
@@ -93,6 +110,18 @@ object Directives extends Protocols with SprayJsonSupport {
       }
   }
 
+  /**
+    * a request can only pass this directive when:
+    * - the record exist and the user has `object/record/update` permission to the record
+    *   - the current record data will be supplied to policy engine as context data
+    * - the record doesn't exist and the use has `object/record/create` permission to create the record
+    *   - the new record data will be supplied to policy engine as context data
+    *
+    * @param authApiClient
+    * @param newRecord
+    * @param session
+    * @return
+    */
   def requireRecordUpdateWithNonExistCreatePermission(
       authApiClient: AuthApiClient,
       newRecord: Record,

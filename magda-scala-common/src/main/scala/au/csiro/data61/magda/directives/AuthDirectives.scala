@@ -1,20 +1,15 @@
 package au.csiro.data61.magda.directives
 
-import akka.actor.ActorSystem
-import akka.event.Logging
 import akka.http.scaladsl.model.StatusCodes.{Forbidden, InternalServerError}
-import akka.http.scaladsl.model.headers.HttpChallenge
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{AuthenticationFailedRejection, Directive0, _}
+import akka.http.scaladsl.server.{Directive0, _}
 import au.csiro.data61.magda.Authentication
 import au.csiro.data61.magda.client.{AuthApiClient, AuthDecisionReqConfig}
-import com.typesafe.config.Config
 import io.jsonwebtoken.{Claims, Jws}
 import au.csiro.data61.magda.model.Auth
 
-import scala.util.control.NonFatal
-import au.csiro.data61.magda.model.Auth.{AuthDecision, User}
-import spray.json.{JsBoolean, JsObject}
+import au.csiro.data61.magda.model.Auth.{AuthDecision}
+import spray.json.{JsObject}
 
 import scala.util.{Failure, Success}
 
@@ -118,7 +113,7 @@ object AuthDirectives {
     }
 
   /** Gets the X-Magda-Session header out of the request, providing it as a string without doing any verification */
-  def getJwt(): Directive1[Option[String]] = {
+  def getJwt: Directive1[Option[String]] = {
     extractRequest.flatMap { request =>
       val sessionToken =
         request.headers.find(_.is(Authentication.headerName.toLowerCase))
@@ -129,9 +124,10 @@ object AuthDirectives {
 
   /**
     * get current user ID from JWT token
+    * If can't find JWT token, return None
     * @return
     */
-  def getUserId(): Directive1[Option[String]] = {
+  def getUserId: Directive1[Option[String]] = {
     extractLog.flatMap { logger =>
       getJwt.flatMap {
         case Some(jwtToken) =>
@@ -156,7 +152,12 @@ object AuthDirectives {
     }
   }
 
-  def requireUserId(): Directive1[String] = getUserId().flatMap {
+  /**
+    * get current user ID from JWT token
+    * If can't locate userId, response 400 error
+    * @return
+    */
+  def requireUserId: Directive1[String] = getUserId.flatMap {
     case Some(userId) => provide(userId)
     case _ =>
       complete(

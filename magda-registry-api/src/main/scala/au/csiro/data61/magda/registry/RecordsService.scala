@@ -120,7 +120,7 @@ class RecordsService(
   )
   def deleteById: Route = delete {
     path(Segment) { recordId: String =>
-      requireUserId() { userId =>
+      requireUserId { userId =>
         requireRecordPermission(authClient, "object/record/delete", recordId) {
           requiresSpecifiedTenantId { tenantId =>
             val theResult = DB localTx { implicit session =>
@@ -227,7 +227,7 @@ class RecordsService(
         authClient,
         AuthDecisionReqConfig("object/record/delete")
       ) {
-        requireUserId() { userId =>
+        requireUserId { userId =>
           requiresSpecifiedTenantId { tenantId =>
             parameters('sourceTagToPreserve, 'sourceId) {
               (sourceTagToPreserve, sourceId) =>
@@ -359,7 +359,7 @@ class RecordsService(
   )
   def putById: Route = put {
     path(Segment) { id: String =>
-      requireUserId() { userId =>
+      requireUserId { userId =>
         requiresSpecifiedTenantId { tenantId =>
           entity(as[Record]) { recordIn =>
             requireRecordUpdateWithNonExistCreatePermission(
@@ -485,7 +485,7 @@ class RecordsService(
   )
   def patchById: Route = patch {
     path(Segment) { id: String =>
-      requireUserId() { userId =>
+      requireUserId { userId =>
         requireRecordPermission(authClient, "object/record/update", id) {
           requiresSpecifiedTenantId { tenantId =>
             entity(as[JsonPatch]) { recordPatch =>
@@ -600,7 +600,7 @@ class RecordsService(
     )
   )
   def create: Route = post {
-    requireUserId() { userId =>
+    requireUserId { userId =>
       requiresSpecifiedTenantId { tenantId =>
         pathEnd {
           entity(as[Record]) { record =>
