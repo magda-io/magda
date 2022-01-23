@@ -6,14 +6,15 @@ import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
-import au.csiro.data61.magda.client.AuthApiClient
 import au.csiro.data61.magda.directives.AuthDirectives.{requireUserId}
 import au.csiro.data61.magda.directives.TenantDirectives.{
-  requiresSpecifiedTenantId,
-  requiresTenantId
+  requiresSpecifiedTenantId
 }
 import au.csiro.data61.magda.model.Registry._
-import au.csiro.data61.magda.registry.Directives.requireRecordPermission
+import au.csiro.data61.magda.registry.Directives.{
+  requireRecordAspectUpdatePermission,
+  requireDeleteRecordAspectPermission
+}
 import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
 import io.swagger.annotations._
@@ -133,9 +134,14 @@ class RecordAspectsService(
     path(Segment / "aspects" / Segment) {
       (recordId: String, aspectId: String) =>
         requireUserId { userId =>
-          requireRecordPermission(authClient, "object/record/update", recordId) {
-            requiresSpecifiedTenantId { tenantId =>
-              entity(as[JsObject]) { aspect =>
+          requiresSpecifiedTenantId { tenantId =>
+            entity(as[JsObject]) { aspect =>
+              requireRecordAspectUpdatePermission(
+                authClient,
+                recordId,
+                aspectId,
+                Left(aspect)
+              ) {
                 val theResult = DB localTx { session =>
                   recordPersistence.putRecordAspectById(
                     tenantId,
@@ -236,7 +242,7 @@ class RecordAspectsService(
         requireUserId { userId =>
           // delete a record aspect should be considered as update operation for the record
           // we will not implement aspect level auth for now
-          requireRecordPermission(authClient, "object/record/update", recordId) {
+          requireDeleteRecordAspectPermission(authClient, recordId, aspectId) {
             requiresSpecifiedTenantId { tenantId =>
               val theResult = DB localTx { session =>
                 recordPersistence.deleteRecordAspect(
@@ -351,9 +357,14 @@ class RecordAspectsService(
     path(Segment / "aspects" / Segment) {
       (recordId: String, aspectId: String) =>
         requireUserId { userId =>
-          requireRecordPermission(authClient, "object/record/update", recordId) {
-            requiresSpecifiedTenantId { tenantId =>
-              entity(as[JsonPatch]) { aspectPatch =>
+          requiresSpecifiedTenantId { tenantId =>
+            entity(as[JsonPatch]) { aspectPatch =>
+              requireRecordAspectUpdatePermission(
+                authClient,
+                recordId,
+                aspectId,
+                Right(aspectPatch)
+              ) {
                 val theResult = DB localTx { session =>
                   recordPersistence.patchRecordAspectById(
                     tenantId,

@@ -140,7 +140,6 @@ object Directives extends Protocols with SprayJsonSupport {
     * When the record doesn't exist and the record JSON patch was passed (via `newRecordOrJsonPath`), we will response BadRequest response immediately.
     * - as there is no way to process JSON patch without original record data.
     *
-    *
     * @param authApiClient
     * @param recordId
     * @param newRecordOrJsonPath
@@ -216,6 +215,153 @@ object Directives extends Protocols with SprayJsonSupport {
               s"Cannot locate request record by id: ${recordId}"
             )
         }
+      case Failure(e: Throwable) =>
+        log.error(
+          "Failed to create record context data for auth decision. record ID: {}. Error: {}",
+          recordId,
+          e
+        )
+        complete(
+          InternalServerError,
+          s"An error occurred while creating record context data for auth decision."
+        )
+    }
+  }
+
+  /**
+    * a request can only pass this directive when the user has permission to perform `update` operation on
+    * both current record and record after the aspect changes
+    *
+    * @param authApiClient
+    * @param recordId
+    * @param aspectId
+    * @param newAspectOrAspectJsonPath
+    * @param session
+    * @return
+    */
+  def requireRecordAspectUpdatePermission(
+      authApiClient: AuthApiClient,
+      recordId: String,
+      aspectId: String,
+      newAspectOrAspectJsonPath: Either[JsObject, JsonPatch],
+      session: DBSession = ReadOnlyAutoSession
+  ): Directive0 = (extractLog & extractExecutionContext).tflatMap { t =>
+    val akkaExeCtx = t._2
+    val log = t._1
+
+    implicit val blockingExeCtx =
+      context.system.dispatchers.lookup("blocking-io-dispatcher")
+
+    onComplete(
+      createRecordContextData(recordId)(blockingExeCtx, log, session)
+    ).flatMap {
+      case Success(currentRecordData) =>
+        val recordContextDataAfterUpdate = newAspectOrAspectJsonPath match {
+          case Left(newAspect) =>
+            JsObject(currentRecordData.fields + (aspectId -> newAspect))
+          case Right(recordJsonPath) =>
+            val newAspectData = recordJsonPath(
+              currentRecordData.fields
+                .get(aspectId)
+                .getOrElse(JsObject())
+            )
+            JsObject(
+              currentRecordData.fields + (aspectId -> newAspectData)
+            )
+        }
+        /*
+          We make sure user has permission to perform "object/record/update" operation on
+          - current record
+          - the record after the aspect data update
+          i.e. A user can't modify a record's data to make it a record that he has no permission to modify.
+         */
+        requirePermission(
+          authApiClient,
+          "object/record/update",
+          input =
+            Some(JsObject("object" -> JsObject("record" -> currentRecordData)))
+        ) & requirePermission(
+          authApiClient,
+          "object/record/update",
+          input = Some(
+            JsObject(
+              "object" -> JsObject(
+                "record" -> recordContextDataAfterUpdate
+              )
+            )
+          )
+        ) & withExecutionContext(akkaExeCtx) & pass
+      case Failure(_: NoRecordFoundException) =>
+        // There is no way to construct full record context data for auth decision without the original record
+        // we will send out BadRequest response immediately
+        complete(
+          BadRequest,
+          s"Cannot locate request record by id: ${recordId}"
+        )
+      case Failure(e: Throwable) =>
+        log.error(
+          "Failed to create record context data for auth decision. record ID: {}. Error: {}",
+          recordId,
+          e
+        )
+        complete(
+          InternalServerError,
+          s"An error occurred while creating record context data for auth decision."
+        )
+    }
+
+  }
+
+  /**
+    * a request can only pass this directive when the user has permission to perform `update` operation on
+    * both current record and record after the aspect is deleted
+    *
+    * @param authApiClient
+    * @param recordId
+    * @param aspectId
+    * @param session
+    * @return
+    */
+  def requireDeleteRecordAspectPermission(
+      authApiClient: AuthApiClient,
+      recordId: String,
+      aspectId: String,
+      session: DBSession = ReadOnlyAutoSession
+  ): Directive0 = (extractLog & extractExecutionContext).tflatMap { t =>
+    val akkaExeCtx = t._2
+    val log = t._1
+
+    implicit val blockingExeCtx =
+      context.system.dispatchers.lookup("blocking-io-dispatcher")
+
+    onComplete(
+      createRecordContextData(recordId)(blockingExeCtx, log, session)
+    ).flatMap {
+      case Success(currentRecordData) =>
+        val recordContextDataAfterUpdate =
+          JsObject(currentRecordData.fields - aspectId)
+        /*
+          Make sure user has permission before & after delete the aspect
+         */
+        requirePermission(
+          authApiClient,
+          "object/record/update",
+          input =
+            Some(JsObject("object" -> JsObject("record" -> currentRecordData)))
+        ) & requirePermission(
+          authApiClient,
+          "object/record/update",
+          input = Some(
+            JsObject(
+              "object" -> JsObject(
+                "record" -> recordContextDataAfterUpdate
+              )
+            )
+          )
+        ) & withExecutionContext(akkaExeCtx) & pass
+      case Failure(_: NoRecordFoundException) =>
+        // when record cannot found, aspect is already gone. We let it go.
+        withExecutionContext(akkaExeCtx) & pass
       case Failure(e: Throwable) =>
         log.error(
           "Failed to create record context data for auth decision. record ID: {}. Error: {}",

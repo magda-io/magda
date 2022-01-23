@@ -126,30 +126,25 @@ object JsonPathUtils {
       recordPatch,
       (aspectId, replaceObj) => {
         //onReplaceAspect
-        patchedRecord = patchedRecord.copy(aspects = patchedRecord.aspects.map {
-          item =>
-            if (item._1 == aspectId) {
-              (aspectId, replaceObj)
-            } else {
-              item
-            }
-        })
+        patchedRecord = patchedRecord.copy(
+          aspects = patchedRecord.aspects + (aspectId -> replaceObj)
+        )
       },
       (aspectId, jsonPatch) => {
         //onPatchAspect
-        patchedRecord = patchedRecord.copy(aspects = patchedRecord.aspects.map {
-          item =>
-            if (item._1 == aspectId) {
-              (aspectId, jsonPatch(item._2).asJsObject)
-            } else {
-              item
-            }
-        })
+        val aspectData =
+          patchedRecord.aspects.get(aspectId).getOrElse(JsObject())
+        patchedRecord = patchedRecord
+          .copy(
+            aspects = patchedRecord.aspects + (aspectId -> jsonPatch(
+              aspectData
+            ).asJsObject)
+          )
       },
       aspectId => {
         // onDeleteAspect
         patchedRecord = patchedRecord.copy(
-          aspects = patchedRecord.aspects.filter(_._1 != aspectId)
+          aspects = patchedRecord.aspects - aspectId
         )
       }
     )
@@ -182,28 +177,21 @@ object JsonPathUtils {
       recordPatch,
       (aspectId, replaceObj) => {
         //onReplaceAspect
-        patchedRecord = new JsObject(patchedRecord.fields.map { item =>
-          if (item._1 == aspectId) {
-            (aspectId, replaceObj)
-          } else {
-            item
-          }
-        })
+        patchedRecord =
+          JsObject(patchedRecord.fields + (aspectId -> replaceObj))
       },
       (aspectId, jsonPatch) => {
         //onPatchAspect
-        patchedRecord = new JsObject(patchedRecord.fields.map { item =>
-          if (item._1 == aspectId) {
-            (aspectId, jsonPatch(item._2).asJsObject)
-          } else {
-            item
-          }
-        })
+        val aspectData =
+          patchedRecord.fields.get(aspectId).getOrElse(JsObject())
+        patchedRecord = JsObject(
+          patchedRecord.fields + (aspectId -> jsonPatch(aspectData).asJsObject)
+        )
       },
       aspectId => {
         // onDeleteAspect
-        patchedRecord = new JsObject(
-          patchedRecord.fields.filter(_._1 != aspectId)
+        patchedRecord = JsObject(
+          patchedRecord.fields - aspectId
         )
       }
     )
