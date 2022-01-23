@@ -11,7 +11,7 @@ import akka.stream.Materializer
 import au.csiro.data61.magda.client.{AuthDecisionReqConfig}
 import au.csiro.data61.magda.registry.Directives.{
   requireRecordPermission,
-  requireRecordUpdateWithNonExistCreatePermission
+  requireRecordUpdateOrCreateWhenNonExistPermission
 }
 import au.csiro.data61.magda.directives.AuthDirectives.{
   requirePermission,
@@ -362,9 +362,10 @@ class RecordsService(
       requireUserId { userId =>
         requiresSpecifiedTenantId { tenantId =>
           entity(as[Record]) { recordIn =>
-            requireRecordUpdateWithNonExistCreatePermission(
+            requireRecordUpdateOrCreateWhenNonExistPermission(
               authClient,
-              recordIn
+              recordIn.id,
+              Left(recordIn)
             ) {
               val result = DB localTx { implicit session =>
                 recordPersistence.putRecordById(
@@ -486,9 +487,13 @@ class RecordsService(
   def patchById: Route = patch {
     path(Segment) { id: String =>
       requireUserId { userId =>
-        requireRecordPermission(authClient, "object/record/update", id) {
-          requiresSpecifiedTenantId { tenantId =>
-            entity(as[JsonPatch]) { recordPatch =>
+        requiresSpecifiedTenantId { tenantId =>
+          entity(as[JsonPatch]) { recordPatch =>
+            requireRecordUpdateOrCreateWhenNonExistPermission(
+              authClient,
+              id,
+              Right(recordPatch)
+            ) {
               val theResult = DB localTx { implicit session =>
                 recordPersistence.patchRecordById(
                   tenantId,
@@ -521,6 +526,7 @@ class RecordsService(
             }
           }
         }
+
       }
     }
   }

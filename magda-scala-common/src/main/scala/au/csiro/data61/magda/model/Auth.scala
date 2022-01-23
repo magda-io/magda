@@ -1,5 +1,6 @@
 package au.csiro.data61.magda.model
 
+import au.csiro.data61.magda.model.Registry.Record
 import spray.json.{
   DefaultJsonProtocol,
   JsArray,
@@ -7,6 +8,7 @@ import spray.json.{
   JsFalse,
   JsNull,
   JsNumber,
+  JsObject,
   JsString,
   JsTrue,
   JsValue
@@ -14,8 +16,27 @@ import spray.json.{
 import scalikejdbc.interpolation.SQLSyntax
 
 import scala.collection.SortedSet
+import scala.collection.mutable.ListBuffer
 
 object Auth {
+
+  def recordToContextData(record: Record): JsObject = {
+    val recordJsFields: ListBuffer[(String, JsValue)] = ListBuffer()
+
+    recordJsFields += ("id" -> JsString(record.id))
+    recordJsFields += ("name" -> JsString(record.name))
+    recordJsFields += ("lastUpdate" -> JsNull)
+    recordJsFields.appendAll(
+      record.sourceTag.map("sourceTag" -> JsString(_))
+    )
+    recordJsFields.appendAll(
+      record.tenantId.map("tenantId" -> JsNumber(_))
+    )
+
+    record.aspects.foreach(recordJsFields += _)
+
+    JsObject(recordJsFields.toMap)
+  }
 
   def isTrueEquivalent(value: JsValue): Boolean = {
     value match {

@@ -5,9 +5,11 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Directive0
 import au.csiro.data61.magda.client.AuthApiClient
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import akka.http.scaladsl.model.StatusCodes.InternalServerError
+import akka.http.scaladsl.model.StatusCodes.{BadRequest, InternalServerError}
+import akka.event.LoggingAdapter
 import scalikejdbc.{DBSession, ReadOnlyAutoSession}
 import spray.json.{JsNull, JsNumber, JsObject, JsString, JsValue, JsonParser}
+import gnieh.diffson.sprayJson.JsonPatch
 
 import scala.util.{Failure, Success, Try}
 import scalikejdbc._
@@ -16,6 +18,8 @@ import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ExecutionContext, Future, blocking}
 import au.csiro.data61.magda.directives.AuthDirectives.requirePermission
 import au.csiro.data61.magda.model.Registry.{AspectDefinition, Record}
+import au.csiro.data61.magda.util.JsonPathUtils.applyJsonPathToRecordContextData
+import au.csiro.data61.magda.model.Auth.recordToContextData
 
 object Directives extends Protocols with SprayJsonSupport {
 
@@ -32,14 +36,20 @@ object Directives extends Protocols with SprayJsonSupport {
     */
   private def createRecordContextData(
       recordId: String
-  )(implicit ec: ExecutionContext, session: DBSession): Future[JsObject] = {
+  )(
+      implicit ec: ExecutionContext,
+      logger: LoggingAdapter,
+      session: DBSession
+  ): Future[JsObject] = {
     Future {
       blocking {
         val recordJsFields: ListBuffer[(String, JsValue)] = ListBuffer()
+        var recordId: String = ""
         sql"""SELECT * FROM records WHERE recordid=${recordId} LIMIT 1"""
           .foreach { rs =>
             // JDBC treat column name case insensitive
-            recordJsFields += ("id" -> JsString(rs.string("recordId")))
+            recordId = rs.string("recordId")
+            recordJsFields += ("id" -> JsString(recordId))
             recordJsFields += ("name" -> JsString(rs.string("recordName")))
             recordJsFields += ("lastUpdate" -> JsNumber(
               rs.bigInt("lastupdate")
@@ -59,8 +69,15 @@ object Directives extends Protocols with SprayJsonSupport {
         sql"""SELECT aspectid,data FROM recordaspects WHERE recordid=${recordId}"""
           .foreach { rs =>
             val aspectId = rs.string("aspectid")
-            Try(JsonParser(rs.string("data")).asJsObject).foreach { data =>
-              recordJsFields += (aspectId -> data)
+            Try(JsonParser(rs.string("data")).asJsObject) match {
+              case Success(data) => recordJsFields += (aspectId -> data)
+              case Failure(e) =>
+                logger.warning(
+                  "Failed to parse aspect Json data while prepare policy evaluation context data. recordId: {} aspectId: {}",
+                  recordId,
+                  aspectId
+                )
+                throw e
             }
           }
 
@@ -90,7 +107,7 @@ object Directives extends Protocols with SprayJsonSupport {
         context.system.dispatchers.lookup("blocking-io-dispatcher")
 
       (withExecutionContext(blockingExeCtx) & onComplete(
-        createRecordContextData(recordId)(blockingExeCtx, session)
+        createRecordContextData(recordId)(blockingExeCtx, log, session)
       )).tflatMap {
         case Tuple1(Success(recordData)) =>
           requirePermission(
@@ -115,17 +132,25 @@ object Directives extends Protocols with SprayJsonSupport {
     * a request can only pass this directive when:
     * - the record exist and the user has `object/record/update` permission to the record
     *   - the current record data will be supplied to policy engine as context data
-    * - the record doesn't exist and the use has `object/record/create` permission to create the record
-    *   - the new record data will be supplied to policy engine as context data
+    * - the record doesn't exist:
+    *   - the new record data was passed (via `newRecordOrJsonPath`) and the use has `object/record/create` permission to create the record
+    *     - i.e. it's a non-patch request
+    *     - the new record data will be supplied to policy engine as context data for this case
+    *
+    * When the record doesn't exist and the record JSON patch was passed (via `newRecordOrJsonPath`), we will response BadRequest response immediately.
+    * - as there is no way to process JSON patch without original record data.
+    *
     *
     * @param authApiClient
-    * @param newRecord
+    * @param recordId
+    * @param newRecordOrJsonPath
     * @param session
     * @return
     */
-  def requireRecordUpdateWithNonExistCreatePermission(
+  def requireRecordUpdateOrCreateWhenNonExistPermission(
       authApiClient: AuthApiClient,
-      newRecord: Record,
+      recordId: String,
+      newRecordOrJsonPath: Either[Record, JsonPatch],
       session: DBSession = ReadOnlyAutoSession
   ): Directive0 = (extractLog & extractExecutionContext).tflatMap { t =>
     val akkaExeCtx = t._2
@@ -134,25 +159,67 @@ object Directives extends Protocols with SprayJsonSupport {
     implicit val blockingExeCtx =
       context.system.dispatchers.lookup("blocking-io-dispatcher")
     onComplete(
-      createRecordContextData(newRecord.id)(blockingExeCtx, session)
+      createRecordContextData(recordId)(blockingExeCtx, log, session)
     ).flatMap {
-      case Success(recordData) =>
+      case Success(currentRecordData) =>
+        val recordContextDataAfterUpdate = newRecordOrJsonPath match {
+          case Left(newRecord) => recordToContextData(newRecord)
+          case Right(recordJsonPath) =>
+            applyJsonPathToRecordContextData(currentRecordData, recordJsonPath).asJsObject
+        }
+        /*
+          We make sure user has permission to perform "object/record/update" operation on
+          - current record
+          - the record after update
+          i.e. A user can't modify a record's data to make it a record that he has no permission to modify.
+          Useful use case would be: a user with permission to only `update` draft dataset can't modify modify the draft dataset
+          to make it a publish dataset, unless he also has permission to update publish datasets.
+         */
         requirePermission(
           authApiClient,
           "object/record/update",
-          input = Some(JsObject("object" -> JsObject("record" -> recordData)))
-        ) & withExecutionContext(akkaExeCtx) & pass
-      case Failure(exception: NoRecordFoundException) =>
-        requirePermission(
-          authApiClient,
-          "object/record/create",
           input =
-            Some(JsObject("object" -> JsObject("record" -> newRecord.toJson)))
+            Some(JsObject("object" -> JsObject("record" -> currentRecordData)))
+        ) & requirePermission(
+          authApiClient,
+          "object/record/update",
+          input = Some(
+            JsObject(
+              "object" -> JsObject(
+                "record" -> recordContextDataAfterUpdate
+              )
+            )
+          )
         ) & withExecutionContext(akkaExeCtx) & pass
+      case Failure(_: NoRecordFoundException) =>
+        newRecordOrJsonPath match {
+          case Left(newRecord) =>
+            // if a new record data was passed (i.e. non json patch request),
+            // we will assess if user has permission to create the record as well
+            requirePermission(
+              authApiClient,
+              "object/record/create",
+              input = Some(
+                JsObject(
+                  "object" -> JsObject(
+                    "record" -> recordToContextData(newRecord)
+                  )
+                )
+              )
+            ) & withExecutionContext(akkaExeCtx) & pass
+          case Right(_) =>
+            // When record Json Patch was passed (i.e. a patch request),
+            // there is no way to create the record when it doesn't exist (as we don't know the current data)
+            // we will send out BadRequest response immediately
+            complete(
+              BadRequest,
+              s"Cannot locate request record by id: ${recordId}"
+            )
+        }
       case Failure(e: Throwable) =>
         log.error(
           "Failed to create record context data for auth decision. record ID: {}. Error: {}",
-          newRecord.id,
+          recordId,
           e
         )
         complete(

@@ -1,6 +1,9 @@
 package au.csiro.data61.magda.registry
 
-import au.csiro.data61.magda.model.Auth.AuthDecision
+import au.csiro.data61.magda.model.Auth.{
+  AuthDecision,
+  UnconditionalTrueDecision
+}
 import scalikejdbc._
 import spray.json.JsonParser
 
@@ -88,7 +91,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
             "The provided ID does not match the aspect's ID."
           )
         )
-      oldAspect <- this.getById(id, tenantId) match {
+      oldAspect <- this.getById(id, tenantId, UnconditionalTrueDecision) match {
         case Some(aspect) => Success(aspect)
         case None         => create(newAspect, tenantId, userId)
       }
@@ -110,7 +113,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
       userId: String
   )(implicit session: DBSession): Try[AspectDefinition] = {
     for {
-      aspect <- this.getById(id, tenantId) match {
+      aspect <- this.getById(id, tenantId, UnconditionalTrueDecision) match {
         case Some(aspect) => Success(aspect)
         case None =>
           Failure(new RuntimeException("No aspect exists with that ID."))

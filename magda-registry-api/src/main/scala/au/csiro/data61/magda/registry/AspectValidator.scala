@@ -9,6 +9,7 @@ import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
 import au.csiro.data61.magda.model.TenantId._
 import au.csiro.data61.magda.model.Auth.UnconditionalTrueDecision
+import au.csiro.data61.magda.util.JsonPathUtils.processRecordPatchOperationsOnAspects
 
 class AspectValidator(config: Config, recordPersistence: RecordPersistence) {
   def DEFAULT_META_SCHEMA_URI = "https://json-schema.org/draft-07/schema#"
@@ -23,7 +24,7 @@ class AspectValidator(config: Config, recordPersistence: RecordPersistence) {
       implicit session: DBSession
   ) {
     if (shouldValidate()) {
-      AspectPersistence.getById(aspectId, tenantId) match {
+      AspectPersistence.getById(aspectId, tenantId, UnconditionalTrueDecision) match {
         case Some(aspectDef) => validateWithDefinition(aspectDef, aspectData)
         case None =>
           throw new Exception(
@@ -85,7 +86,7 @@ class AspectValidator(config: Config, recordPersistence: RecordPersistence) {
       recordId: String,
       tenantId: TenantId
   )(implicit session: DBSession): Unit = {
-    recordPersistence.processRecordPatchOperationsOnAspects(
+    processRecordPatchOperationsOnAspects(
       recordPatch,
       (aspectId: String, aspectData: JsObject) => {
         validate(aspectId, aspectData, tenantId)(session)
