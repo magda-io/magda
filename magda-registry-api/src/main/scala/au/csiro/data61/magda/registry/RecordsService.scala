@@ -224,6 +224,10 @@ class RecordsService(
   )
   def trimBySourceTag: Route = delete {
     pathEnd {
+      // as trimBySourceTag is an `atomic` operation,
+      // i.e. we don't want it to be partially done because the user only has delete permission to some records
+      // we will ask "unconditional" permission here.
+      // i.e. user has delete permission regardless any records' attributes
       requireUnconditionalAuthDecision(
         authClient,
         AuthDecisionReqConfig("object/record/delete")
