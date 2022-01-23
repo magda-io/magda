@@ -21,6 +21,7 @@ import au.csiro.data61.magda.directives.AuthDirectives.{
 import au.csiro.data61.magda.directives.TenantDirectives.{
   requiresSpecifiedTenantId
 }
+import au.csiro.data61.magda.model.Auth.recordToContextData
 import au.csiro.data61.magda.model.Registry._
 import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
@@ -613,8 +614,11 @@ class RecordsService(
             requirePermission(
               authClient,
               "object/record/create",
-              input =
-                Some(JsObject("object" -> JsObject("record" -> record.toJson)))
+              input = Some(
+                JsObject(
+                  "object" -> JsObject("record" -> recordToContextData(record))
+                )
+              )
             ) {
               val result = DB localTx { implicit session =>
                 recordPersistence
