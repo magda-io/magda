@@ -8,25 +8,62 @@ import data.object.distribution.verifyPermission as verifyDistributionPermission
 
 default allow = false
 
-allow {
-    # dcat-dataset-strings' existence proves it's a dataset record
+isPublishedDataset {
     input.object.record["dcat-dataset-strings"]
-
-    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
-    inputOperationUri := concat("/", ["object", "dataset", "*", operationType])
-    # proxy to dataset related permission decision
-    verifyDatasetPermission(inputOperationUri, "record")
+    input.object.record.publishing.state = "published"
 }
 
+# a publish dataset record might only contains `dcat-dataset-strings` aspect (but not contain `dataset-draft` aspect)
+isPublishedDataset {
+    input.object.record["dcat-dataset-strings"]
+    not input.object.record["dataset-draft"]
+    not input.object.record.publishing.state
+}
+
+# delegated to published dataset rules
 allow {
-    # a draft dataset record might only contains `dataset-draft` aspect
+    isPublishedDataset
+
+    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
+    inputOperationUri := concat("/", ["object", "dataset", "published", operationType])
+    # proxy to dataset related permission decision
+    verifyDatasetPermission(inputOperationUri, "record")
+}
+
+# a draft dataset record might only contains `dataset-draft` aspect
+isDraftDataset {
     input.object.record["dataset-draft"]
+    input.object.record.publishing.state = "draft"
+}
+
+isDraftDataset {
+    input.object.record["dataset-draft"]
+    not input.object.record.publishing.state
+}
+
+# delegated to draft dataset rules
+allow {
+    isDraftDataset
+
+    [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
+    inputOperationUri := concat("/", ["object", "dataset", "draft", operationType])
+    # proxy to dataset related permission decision
+    verifyDatasetPermission(inputOperationUri, "record")
+}
+
+# delegated to rules for other dataset type (reserved for future)
+allow {
+    input.object.record["dcat-dataset-strings"]
+    not isDraftDataset
+    not isPublishedDataset
+    input.object.record.publishing.state
 
     [resourceType, operationType, resourceUriPrefix] := breakdownOperationUri(input.operationUri)
     inputOperationUri := concat("/", ["object", "dataset", "*", operationType])
     # proxy to dataset related permission decision
     verifyDatasetPermission(inputOperationUri, "record")
 }
+
 
 allow {
     # organization-details' existence proves it's a organization record

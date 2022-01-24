@@ -9,25 +9,49 @@ allow {
 }
 
 allow {
-     ## delegate generic record related decision to record_allow
+    ## delegate generic record related decision to record_allow
     startswith(input.operationUri, "object/record/")
     data.object.record.allow
 }
 
 allow {
-     ## delegate dataset related decision to dataset_allow
+    ## delegate dataset related decision to dataset_allow
     startswith(input.operationUri, "object/dataset/")
     data.object.dataset.allow
 }
 
 allow {
-     ## delegate organization related decision to organization_allow
+    ## delegate organization related decision to organization_allow
     startswith(input.operationUri, "object/organization/")
     data.object.organization.allow
 }
 
 allow {
-     ## delegate content related decision to content_allowRead
+    ## delegate distribution related decision to organization_allow
+    startswith(input.operationUri, "object/distribution/")
+    data.object.distribution.allow
+}
+
+allow {
+    ## delegate aspect related decision to aspect_allow
+    startswith(input.operationUri, "object/aspect/")
+    data.object.aspect.allow
+}
+
+allow {
+    ## delegate webhook related decision to webhook rules
+    startswith(input.operationUri, "object/webhook/")
+    data.object.webhook.allow
+}
+
+allow {
+    ## delegate event related decision to event rules
+    startswith(input.operationUri, "object/event/")
+    data.object.event.allow
+}
+
+allow {
+    ## delegate content related decision to content_allowRead
     startswith(input.operationUri, "object/content/")
     
     ## Operation type must be read
