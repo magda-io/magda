@@ -15,8 +15,7 @@ import au.csiro.data61.magda.directives.TenantDirectives.{
 }
 import au.csiro.data61.magda.model.Registry._
 import au.csiro.data61.magda.registry.Directives.{
-  requireAspectPermission,
-  requireAspectUpdateWithNonExistCreatePermission
+  requireAspectUpdateOrCreateWhenNonExistPermission
 }
 import com.typesafe.config.Config
 import gnieh.diffson.sprayJson._
@@ -197,9 +196,10 @@ class AspectsService(
         requireUserId { userId =>
           requiresSpecifiedTenantId { tenantId =>
             entity(as[AspectDefinition]) { aspect =>
-              requireAspectUpdateWithNonExistCreatePermission(
+              requireAspectUpdateOrCreateWhenNonExistPermission(
                 authClient,
-                aspect
+                id,
+                Left(aspect)
               ) {
                 val theResult = DB localTx { session =>
                   AspectPersistence.putById(id, aspect, tenantId, userId)(
@@ -294,9 +294,13 @@ class AspectsService(
   def patchById: Route = patch {
     path(Segment) { id: String =>
       requireUserId { userId =>
-        requireAspectPermission(authClient, "object/aspect/update", id) {
-          requiresSpecifiedTenantId { tenantId =>
-            entity(as[JsonPatch]) { aspectPatch =>
+        requiresSpecifiedTenantId { tenantId =>
+          entity(as[JsonPatch]) { aspectPatch =>
+            requireAspectUpdateOrCreateWhenNonExistPermission(
+              authClient,
+              id,
+              Right(aspectPatch)
+            ) {
               val theResult = DB localTx { session =>
                 AspectPersistence
                   .patchById(id, aspectPatch, tenantId, userId)(session) match {

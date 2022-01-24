@@ -466,13 +466,14 @@ object Directives extends Protocols with SprayJsonSupport {
     *   - the new aspect data will be supplied to policy engine as context data
     *
     * @param authApiClient
-    * @param newAspect
+    * @param newAspectOrJsonPatch
     * @param session
     * @return
     */
-  def requireAspectUpdateWithNonExistCreatePermission(
+  def requireAspectUpdateOrCreateWhenNonExistPermission(
       authApiClient: AuthApiClient,
-      newAspect: AspectDefinition,
+      aspectId: String,
+      newAspectOrJsonPatch: Either[AspectDefinition, JsonPatch],
       session: DBSession = ReadOnlyAutoSession
   ): Directive0 = (extractLog & extractExecutionContext).tflatMap { t =>
     val akkaExeCtx = t._2
@@ -481,25 +482,48 @@ object Directives extends Protocols with SprayJsonSupport {
     implicit val blockingExeCtx =
       context.system.dispatchers.lookup("blocking-io-dispatcher")
     onComplete(
-      createAspectContextData(newAspect.id)(blockingExeCtx, session)
+      createAspectContextData(aspectId)(blockingExeCtx, session)
     ).flatMap {
-      case Success(aspectData) =>
+      case Success(currentAspectData) =>
+        val aspectDataAfterUpdate = newAspectOrJsonPatch match {
+          case Left(newAspectData)   => newAspectData.toJson.asJsObject
+          case Right(aspectJsonPath) => aspectJsonPath(currentAspectData)
+        }
         requirePermission(
           authApiClient,
           "object/aspect/update",
-          input = Some(JsObject("object" -> JsObject("aspect" -> aspectData)))
+          input =
+            Some(JsObject("object" -> JsObject("aspect" -> currentAspectData)))
+        ) & requirePermission(
+          authApiClient,
+          "object/aspect/update",
+          input = Some(
+            JsObject("object" -> JsObject("aspect" -> aspectDataAfterUpdate))
+          )
         ) & withExecutionContext(akkaExeCtx) & pass
       case Failure(exception: NoRecordFoundException) =>
-        requirePermission(
-          authApiClient,
-          "object/aspect/create",
-          input =
-            Some(JsObject("object" -> JsObject("aspect" -> newAspect.toJson)))
-        ) & withExecutionContext(akkaExeCtx) & pass
+        newAspectOrJsonPatch match {
+          case Left(newAspectData) =>
+            requirePermission(
+              authApiClient,
+              "object/aspect/create",
+              input = Some(
+                JsObject("object" -> JsObject("aspect" -> newAspectData.toJson))
+              )
+            ) & withExecutionContext(akkaExeCtx) & pass
+          case Right(_) =>
+            // When aspect Json Patch was passed (i.e. a patch request),
+            // there is no way to create the aspect when it doesn't exist (as we don't know the current data)
+            // we will send out BadRequest response immediately
+            complete(
+              BadRequest,
+              s"Cannot locate aspect record by id: ${aspectId}"
+            )
+        }
       case Failure(e: Throwable) =>
         log.error(
           "Failed to create aspect context data for auth decision. aspect ID: {}. Error: {}",
-          newAspect.id,
+          aspectId,
           e
         )
         complete(
