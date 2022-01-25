@@ -168,7 +168,7 @@ object Directives extends Protocols with SprayJsonSupport {
         val recordContextDataAfterUpdate = newRecordOrJsonPath match {
           case Left(newRecord) => recordToContextData(newRecord)
           case Right(recordJsonPath) =>
-            applyJsonPathToRecordContextData(currentRecordData, recordJsonPath).asJsObject
+            applyJsonPathToRecordContextData(currentRecordData, recordJsonPath)
         }
         /*
           We make sure user has permission to perform "object/record/update" operation on
