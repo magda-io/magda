@@ -10,6 +10,22 @@ import scalikejdbc._
 
 object SQLUtils {
 
+  def getTableColumnName(
+      columnName: String,
+      tableRef: String = "",
+      useLowerCaseColumnName: Boolean = true
+  ): SQLSyntax = {
+    val id = List(
+      tableRef,
+      if (useLowerCaseColumnName) {
+        columnName.toLowerCase()
+      } else {
+        columnName
+      }
+    ).filter(_ != "").mkString(".")
+    escapeIdentifier(id)
+  }
+
   /**
     * Escape SQL identifier string
     * Although postgreSQL does allow non-ASCII characters in identifiers, to make it simple, we will remove any non-ASCII characters.

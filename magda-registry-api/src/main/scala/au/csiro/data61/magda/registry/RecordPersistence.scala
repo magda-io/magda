@@ -20,7 +20,8 @@ import au.csiro.data61.magda.model.Auth.{
 import au.csiro.data61.magda.model.{
   AspectQuery,
   AspectQueryExists,
-  AspectQueryGroup
+  AspectQueryGroup,
+  AspectQueryToSqlConfig
 }
 
 import scala.util.{Failure, Success, Try}
@@ -286,13 +287,16 @@ class DefaultRecordPersistence(config: Config)
       recordIdSqlRef: String = "records.recordid",
       tenantIdSqlRef: String = "records.tenantid"
   ): Option[SQLSyntax] = {
-
+    val config = AspectQueryToSqlConfig(
+      recordIdSqlRef = recordIdSqlRef,
+      tenantIdSqlRef = tenantIdSqlRef
+    )
     val andConditions =
       AspectQueryGroup(aspectQueries, joinWithAnd = true)
-        .toSql(recordIdSqlRef, tenantIdSqlRef)
+        .toSql(config)
     val orConditions =
       AspectQueryGroup(aspectOrQueries, joinWithAnd = false)
-        .toSql(recordIdSqlRef, tenantIdSqlRef)
+        .toSql(config)
 
     SQLSyntax
       .toAndConditionOpt(andConditions, orConditions)
@@ -474,10 +478,11 @@ class DefaultRecordPersistence(config: Config)
       recordId: String,
       aspectId: String
   )(implicit session: DBSession): Option[JsObject] = {
-    val authDecisionWhereClause = authDecision.toSql(
+    val config = AspectQueryToSqlConfig(
       recordIdSqlRef = "ras.recordid",
       tenantIdSqlRef = "ras.tenantid"
     )
+    val authDecisionWhereClause = authDecision.toSql(config)
 
     sql"""select ras.aspectId as aspectId, Aspects.name as aspectName, data, ras.tenantId
           from RecordAspects AS ras
@@ -1512,14 +1517,15 @@ class DefaultRecordPersistence(config: Config)
           "ras_tbl.tenantid"
         )
 
+      val config = AspectQueryToSqlConfig(
+        recordIdSqlRef = "ras_tbl.recordid",
+        tenantIdSqlRef = "ras_tbl.tenantid"
+      )
       val whereClauses = SQLSyntax.where(
         SQLSyntax.toAndConditionOpt(
           aspectIdsWhereClause,
           SQLUtils.tenantIdToWhereClause(tenantId, "ras_tbl.tenantid"),
-          authDecision.toSql(
-            recordIdSqlRef = "ras_tbl.recordid",
-            tenantIdSqlRef = "ras_tbl.tenantid"
-          ),
+          authDecision.toSql(config),
           aspectQueriesClause
         )
       )
@@ -1847,12 +1853,16 @@ class DefaultRecordPersistence(config: Config)
       recordIdSqlRef: String = "records.recordid",
       tenantIdSqlRef: String = "records.tenantid"
   ): Option[SQLSyntax] = {
+    val config = AspectQueryToSqlConfig(
+      recordIdSqlRef = recordIdSqlRef,
+      tenantIdSqlRef = tenantIdSqlRef
+    )
     SQLSyntax.toAndConditionOpt(
       aspectIds.toSeq
         .map(
           aspectId =>
             AspectQueryExists(aspectId, path = Nil)
-              .toSql(recordIdSqlRef, tenantIdSqlRef)
+              .toSql(config)
         ): _*
     )
   }

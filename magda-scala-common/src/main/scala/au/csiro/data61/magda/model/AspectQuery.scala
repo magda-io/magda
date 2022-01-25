@@ -6,19 +6,51 @@ import au.csiro.data61.magda.util.SQLUtils
 
 import java.net.URLDecoder
 
+// we should use all lowercase for table & column names
+// when we create table, we didn't use double quotes. Thus, those identifier are actually stored as lowercase internally
+// Upper case will work when we don't double quotes but it's due to the case insensitive treatment of PostgreSQL for non-quoted identifiers not because of its actual form.
+// We should gradually change all identifiers in our SQL to lowercase and make sure all future identifiers are all in lowercase `snake_case`
+case class AspectQueryToSqlConfig(
+    // a list of prefixes used to simplify ref when translate OPA query to AspectQuery
+    prefixes: Set[String] = Set("object.record"),
+    recordIdSqlRef: String = "records.recordid",
+    tenantIdSqlRef: String = "records.tenantid",
+    genericQuery: Boolean = false,
+    genericQueryTableRef: String = "",
+    genericQueryUseLowerCaseColumnName: Boolean = true
+)
+
 sealed trait AspectQuery {
   val aspectId: String
   val path: Seq[String]
   val negated: Boolean
 
-  // interface for different type of aspectQuery implement actual SQL queries
+  // interface for implementing logic of translating different types of AspectQuery to SQL queries
+  // This translation is done within `record aspect` context.
+  // i.e. assumes AspectQuery is querying a record's aspect.
   protected def sqlQueries(): Option[SQLSyntax]
 
+  /*
+     interface for implementing logic of translating different types of AspectQuery to SQL queries (in single table query context).
+     i.e. reuse the AspectQuery structure in single table query context:
+     - AspectId will be a column name of the table
+     - if `path` is not Nil, the the column must contain JSON data and the `path` can be used to access it.
+     sqlQueries() will generate SQL in context of querying a registry record
+     this method will generate SQL query against any generic table.
+     any aspects query will considered as query against table columns.
+     As we made the assumption of "single table query", this method can't handle queries require multiple table join.
+     We should extends AspectQuery to support that if it's required in future.
+   */
+  protected def genericSqlQueries(
+      genericQueryTableRef: String = "",
+      genericQueryUseLowerCaseColumnName: Boolean = true
+  ): Option[SQLSyntax]
+
   protected def sqlWithAspectQuery(
-      aspectQuerySql: Option[SQLSyntax],
       recordIdSqlRef: String,
       tenantIdSqlRef: String
   ): Option[SQLSyntax] = {
+    val aspectQuerySql = sqlQueries
     val aspectLookupCondition =
       sqls"(aspectid, recordid, tenantid)=($aspectId, ${SQLUtils
         .escapeIdentifier(recordIdSqlRef)}, ${SQLUtils.escapeIdentifier(
@@ -35,6 +67,22 @@ sealed trait AspectQuery {
     }
   }
 
+  protected def sqlWithGenericQuery(
+      genericQueryTableRef: String,
+      genericQueryUseLowerCaseColumnName: Boolean = true
+  ): Option[SQLSyntax] = {
+    if (negated) {
+      genericSqlQueries(
+        genericQueryTableRef,
+        genericQueryUseLowerCaseColumnName
+      ).map(SQLSyntax.roundBracket(_))
+        .map(item => sqls"NOT ${item}")
+    } else {
+      genericSqlQueries(genericQueryTableRef)
+    }
+
+  }
+
   /**
     * Public interface of all types of AspectQuery. Call this method to covert AspectQuery to SQL statement.
     * Sub-class might choose to override this method to alter generic logic
@@ -43,12 +91,7 @@ sealed trait AspectQuery {
     * @return
     */
   def toSql(
-      // we should use all lowercase for table & column names
-      // when we create table, we didn't use double quotes. Thus, those identifier are actually stored as lowercase internally
-      // Upper case will work when we don't double quotes but it's due to the case insensitive treatment of PostgreSQL for non-quoted identifiers not because of its actual form.
-      // We should gradually change all identifiers in our SQL to lowercase and make sure all future identifiers are all in lowercase `snake_case`
-      recordIdSqlRef: String = "records.recordid",
-      tenantIdSqlRef: String = "records.tenantid"
+      config: AspectQueryToSqlConfig = AspectQueryToSqlConfig()
   ): Option[SQLSyntax] = {
     if (aspectId.isEmpty) {
       throw new Error(
@@ -56,7 +99,14 @@ sealed trait AspectQuery {
       )
     }
     // we move actual implementation to method `sqlWithAspectQuery` so we can reuse its logic when override `toSql`
-    sqlWithAspectQuery(sqlQueries, recordIdSqlRef, tenantIdSqlRef)
+    if (!config.genericQuery) {
+      sqlWithAspectQuery(config.recordIdSqlRef, config.tenantIdSqlRef)
+    } else {
+      sqlWithGenericQuery(
+        config.genericQueryTableRef,
+        config.genericQueryUseLowerCaseColumnName
+      )
+    }
   }
 }
 
@@ -68,8 +118,16 @@ class AspectQueryTrue extends AspectQuery {
   def sqlQueries(): Option[SQLSyntax] =
     Some(SQLSyntax.createUnsafely("TRUE"))
 
-  override def toSql(recordIdSqlRef: String, tenantIdSqlRef: String) =
+  def genericSqlQueries(
+      genericQueryTableRef: String = "",
+      genericQueryUseLowerCaseColumnName: Boolean = true
+  ): Option[SQLSyntax] = sqlQueries
+
+  override def toSql(
+      config: AspectQueryToSqlConfig = AspectQueryToSqlConfig()
+  ) =
     sqlQueries
+
 }
 
 class AspectQueryFalse extends AspectQuery {
@@ -80,7 +138,14 @@ class AspectQueryFalse extends AspectQuery {
   def sqlQueries(): Option[SQLSyntax] =
     Some(SQLSyntax.createUnsafely("FALSE"))
 
-  override def toSql(recordIdSqlRef: String, tenantIdSqlRef: String) =
+  def genericSqlQueries(
+      genericQueryTableRef: String = "",
+      genericQueryUseLowerCaseColumnName: Boolean = true
+  ): Option[SQLSyntax] = sqlQueries
+
+  override def toSql(
+      config: AspectQueryToSqlConfig = AspectQueryToSqlConfig()
+  ) =
     sqlQueries
 }
 
@@ -101,6 +166,29 @@ case class AspectQueryExists(
       // no path. thus, only need to test whether the aspect exist or not by lookup recordaspects table
       // this has been done by `AspectQuery` trait `toSql` method. Therefore, we output None here.
       None
+    }
+  }
+
+  def genericSqlQueries(
+      genericQueryTableRef: String = "",
+      genericQueryUseLowerCaseColumnName: Boolean = true
+  ): Option[SQLSyntax] = {
+    val fieldRef = SQLUtils.getTableColumnName(
+      aspectId,
+      genericQueryTableRef,
+      genericQueryUseLowerCaseColumnName
+    )
+    if (path.length > 0) {
+      // has path: the field specified by aspectId is a JSON field
+      Some(sqls"""
+           ("${fieldRef}" #> string_to_array(${path
+        .mkString(
+          ","
+        )}, ',')) IS NOT NULL
+        """)
+    } else {
+      // no path. Only test whether field aspectId is NULL or not
+      Some(SQLSyntax.isNotNull(fieldRef))
     }
   }
 }
@@ -125,7 +213,7 @@ case class AspectQueryWithValue(
           """
     } else {
       sqls"""
-             COALESCE((${value.value}::${value.postgresType} $operator data #>> string_to_array(${path
+             COALESCE(${value.value}::${value.postgresType} $operator (data #>> string_to_array(${path
         .mkString(",")}, ','))::${value.postgresType}, false)
           """
     })
@@ -155,7 +243,7 @@ case class AspectQueryWithValue(
   private val recordFields =
     List("recordid", "name", "lastupdate", "sourcetag", "tenantid")
 
-  override def toSql(
+  def toSQLInRecordAspectQueryContext(
       recordIdSqlRef: String = "records.recordid",
       tenantIdSqlRef: String = "records.tenantid"
   ): Option[SQLSyntax] = {
@@ -164,9 +252,9 @@ case class AspectQueryWithValue(
         s"Invalid AspectQueryWithValue: aspectId cannot be empty."
       )
     }
-    if (path.length > 0) {
+    if (path.isEmpty) {
       // normal aspect query
-      sqlWithAspectQuery(sqlQueries, recordIdSqlRef, tenantIdSqlRef)
+      sqlWithAspectQuery(recordIdSqlRef, tenantIdSqlRef)
     } else {
       var columnName = aspectId.trim.toLowerCase
       if (columnName == "id") {
@@ -194,6 +282,49 @@ case class AspectQueryWithValue(
       }
     }
   }
+
+  def genericSqlQueries(
+      genericQueryTableRef: String = "",
+      genericQueryUseLowerCaseColumnName: Boolean = true
+  ): Option[SQLSyntax] = {
+    val fieldRef = SQLUtils.getTableColumnName(
+      aspectId,
+      genericQueryTableRef,
+      genericQueryUseLowerCaseColumnName
+    )
+    val tableDataRef = if (path.isEmpty) {
+      sqls"${fieldRef}::${value.postgresType}"
+    } else {
+      sqls"${fieldRef} #>> string_to_array(${path
+        .mkString(",")}, ','))::${value.postgresType}"
+    }
+
+    Some(if (placeReferenceFirst) {
+      sqls"""
+             COALESCE(${tableDataRef} $operator ${value.value}::${value.postgresType}, false)
+          """
+    } else {
+      sqls"""
+             COALESCE(${value.value}::${value.postgresType} $operator ${tableDataRef}, false)
+          """
+    })
+  }
+
+  override def toSql(
+      config: AspectQueryToSqlConfig = AspectQueryToSqlConfig()
+  ): Option[SQLSyntax] = {
+    if (!config.genericQuery) {
+      toSQLInRecordAspectQueryContext(
+        config.recordIdSqlRef,
+        config.tenantIdSqlRef
+      )
+    } else {
+      sqlWithGenericQuery(
+        config.genericQueryTableRef,
+        config.genericQueryUseLowerCaseColumnName
+      )
+    }
+  }
 }
 
 case class AspectQueryArrayNotEmpty(
@@ -215,6 +346,33 @@ case class AspectQueryArrayNotEmpty(
       ","
     )}, ',')) IS NOT NULL
         """)
+  }
+
+  /**
+    * As it's an AspectQueryArrayNotEmpty (in array context), the column should contains JSON data.
+    * When path is not empty, we will use it as JSON path for our query.
+    * Otherwise, the column data should be a JSON array
+    *
+    * @param genericQueryTableRef
+    * @return
+    */
+  def genericSqlQueries(
+      genericQueryTableRef: String = "",
+      genericQueryUseLowerCaseColumnName: Boolean = true
+  ): Option[SQLSyntax] = {
+    val fieldRef = SQLUtils.getTableColumnName(
+      aspectId,
+      genericQueryTableRef,
+      genericQueryUseLowerCaseColumnName
+    )
+    val tableDataRef = if (path.isEmpty) {
+      sqls"(${fieldRef} #> string_to_array('0',','))"
+    } else {
+      sqls"(${fieldRef} #> string_to_array(${(path :+ "0").mkString(
+        ","
+      )},','))"
+    }
+    Some(SQLSyntax.isNotNull(tableDataRef))
   }
 }
 
@@ -239,6 +397,30 @@ case class AspectQueryValueInArray(
             )
         """)
   }
+
+  def genericSqlQueries(
+      genericQueryTableRef: String = "",
+      genericQueryUseLowerCaseColumnName: Boolean = true
+  ): Option[SQLSyntax] = {
+    val fieldRef = SQLUtils.getTableColumnName(
+      aspectId,
+      genericQueryTableRef,
+      genericQueryUseLowerCaseColumnName
+    )
+    val tableDataRef = if (path.isEmpty) {
+      sqls"""COALESCE(
+        (${fieldRef}::JSONB #> string_to_array('0',',')::JSONB) @> ${value.value}::TEXT::JSONB,
+        FALSE
+      )"""
+    } else {
+      sqls"""COALESCE(
+        (${fieldRef}::JSONB #> string_to_array(${path
+        .mkString(",")}, ',')::JSONB) @> ${value.value}::TEXT::JSONB,
+        FALSE
+      )"""
+    }
+    Some(SQLSyntax.isNotNull(tableDataRef))
+  }
 }
 
 case class AspectQueryGroup(
@@ -249,8 +431,7 @@ case class AspectQueryGroup(
 ) {
 
   def toSql(
-      recordIdSqlRef: String = "records.recordid",
-      tenantIdSqlRef: String = "records.tenantid"
+      config: AspectQueryToSqlConfig = AspectQueryToSqlConfig()
   ): Option[SQLSyntax] = {
     if (queries.isEmpty) {
       return None
@@ -268,7 +449,7 @@ case class AspectQueryGroup(
             // unconditional true can be skipped in AND
             case _: AspectQueryTrue => None
             case aspectQuery =>
-              aspectQuery.toSql(recordIdSqlRef, tenantIdSqlRef)
+              aspectQuery.toSql(config)
           }: _*
         )
       }
@@ -285,7 +466,7 @@ case class AspectQueryGroup(
             // unconditional false can be skipped in OR
             case _: AspectQueryFalse => None
             case aspectQuery =>
-              aspectQuery.toSql(recordIdSqlRef, tenantIdSqlRef)
+              aspectQuery.toSql(config)
           }: _*
         )
       }

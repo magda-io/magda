@@ -1,5 +1,6 @@
 package au.csiro.data61.magda.registry
 
+import au.csiro.data61.magda.model.AspectQueryToSqlConfig
 import au.csiro.data61.magda.model.Auth.{
   AuthDecision,
   UnconditionalTrueDecision
@@ -23,7 +24,14 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
       tenantId: TenantId,
       authDecision: AuthDecision
   )(implicit session: DBSession): List[AspectDefinition] = {
-    val authDecisionCondition = authDecision.toSql()
+
+    val authDecisionCondition =
+      authDecision.toSql(
+        AspectQueryToSqlConfig(
+          prefixes = Set("object.aspect"),
+          genericQuery = true
+        )
+      )
 
     val whereClauseParts = Seq(authDecisionCondition) :+ SQLUtils
       .tenantIdToWhereClause(tenantId, "tenantid")
@@ -40,7 +48,13 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
       tenantId: TenantId,
       authDecision: AuthDecision
   )(implicit session: DBSession): Option[AspectDefinition] = {
-    val authDecisionCondition = authDecision.toSql()
+    val authDecisionCondition =
+      authDecision.toSql(
+        AspectQueryToSqlConfig(
+          prefixes = Set("object.aspect"),
+          genericQuery = true
+        )
+      )
 
     val whereClauseParts = Seq(authDecisionCondition) :+ SQLUtils
       .tenantIdToWhereClause(tenantId, "tenantid") :+ Some(
@@ -62,7 +76,13 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
     if (ids.isEmpty)
       List()
     else {
-      val authDecisionCondition = authDecision.toSql()
+      val authDecisionCondition =
+        authDecision.toSql(
+          AspectQueryToSqlConfig(
+            prefixes = Set("object.aspect"),
+            genericQuery = true
+          )
+        )
 
       val whereClauseParts = Seq(authDecisionCondition) :+ SQLUtils
         .tenantIdToWhereClause(tenantId, "tenantid") :+ Some(

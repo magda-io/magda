@@ -14,12 +14,14 @@ import gnieh.diffson.sprayJson.JsonPatch
 import scala.util.{Failure, Success, Try}
 import scalikejdbc._
 
-import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ExecutionContext, Future, blocking}
 import au.csiro.data61.magda.directives.AuthDirectives.requirePermission
-import au.csiro.data61.magda.model.Registry.{AspectDefinition, Record}
+import au.csiro.data61.magda.model.Registry.{AspectDefinition, Record, WebHook}
 import au.csiro.data61.magda.util.JsonPathUtils.applyJsonPathToRecordContextData
-import au.csiro.data61.magda.model.Auth.recordToContextData
+import au.csiro.data61.magda.model.Auth.{
+  UnconditionalTrueDecision,
+  recordToContextData
+}
 
 object Directives extends Protocols with SprayJsonSupport {
 
@@ -43,7 +45,7 @@ object Directives extends Protocols with SprayJsonSupport {
   ): Future[JsObject] = {
     Future {
       blocking {
-        val recordJsFields: ListBuffer[(String, JsValue)] = ListBuffer()
+        var recordJsFields: Map[String, JsValue] = Map()
         var recordId: String = ""
         sql"""SELECT * FROM records WHERE recordid=${recordId} LIMIT 1"""
           .foreach { rs =>
@@ -54,15 +56,17 @@ object Directives extends Protocols with SprayJsonSupport {
             recordJsFields += ("lastUpdate" -> JsNumber(
               rs.bigInt("lastupdate")
             ))
-            recordJsFields.appendAll(
-              rs.stringOpt("sourceTag").map(("sourceTag" -> JsString(_)))
-            )
-            recordJsFields.appendAll(
-              rs.bigIntOpt("tenantId").map(("tenantId" -> JsNumber(_)))
-            )
+            rs.stringOpt("sourceTag")
+              .foreach(
+                item => recordJsFields += ("sourceTag" -> JsString(item))
+              )
+            rs.stringOpt("tenantId")
+              .foreach(
+                item => recordJsFields += ("tenantId" -> JsNumber(item))
+              )
           }
 
-        if (recordJsFields.length == 0) {
+        if (recordJsFields.isEmpty) {
           throw NoRecordFoundException(recordId)
         }
 
@@ -81,7 +85,7 @@ object Directives extends Protocols with SprayJsonSupport {
             }
           }
 
-        JsObject(recordJsFields.toMap)
+        JsObject(recordJsFields)
       }
     }
   }
@@ -387,7 +391,7 @@ object Directives extends Protocols with SprayJsonSupport {
   )(implicit ec: ExecutionContext, session: DBSession): Future[JsObject] = {
     Future {
       blocking {
-        val aspectJsFields: ListBuffer[(String, JsValue)] = ListBuffer()
+        var aspectJsFields: Map[String, JsValue] = Map()
         sql"""SELECT * FROM aspects WHERE aspectid=${aspectId} LIMIT 1"""
           .foreach { rs =>
             // JDBC treat column name case insensitive
@@ -396,9 +400,9 @@ object Directives extends Protocols with SprayJsonSupport {
             aspectJsFields += ("lastUpdate" -> JsNumber(
               rs.bigInt("lastupdate")
             ))
-            aspectJsFields.appendAll(
-              rs.bigIntOpt("tenantId").map(("tenantId" -> JsNumber(_)))
-            )
+
+            rs.bigIntOpt("tenantId")
+              .foreach(id => aspectJsFields += ("tenantId" -> JsNumber(id)))
 
             val jsonSchema = Try {
               JsonParser(rs.string("jsonschema"))
@@ -407,11 +411,11 @@ object Directives extends Protocols with SprayJsonSupport {
             aspectJsFields += ("jsonSchema" -> jsonSchema)
           }
 
-        if (aspectJsFields.length == 0) {
+        if (aspectJsFields.isEmpty) {
           throw NoRecordFoundException(aspectId)
         }
 
-        JsObject(aspectJsFields.toMap)
+        JsObject(aspectJsFields)
       }
     }
   }
@@ -529,6 +533,141 @@ object Directives extends Protocols with SprayJsonSupport {
         complete(
           InternalServerError,
           s"An error occurred while creating aspect context data for auth decision."
+        )
+    }
+  }
+
+  /**
+    * retrieve webhook record from DB and convert into JSON data (to be used as part of policy engine context data)
+    * @param webhookId
+    * @param ec
+    * @param session
+    * @return
+    */
+  private def createWebhookContextData(
+      webhookId: String
+  )(implicit ec: ExecutionContext, session: DBSession): Future[JsObject] = {
+    Future {
+      blocking {
+        val hookData = HookPersistence
+          .getById(webhookId, UnconditionalTrueDecision)
+          .map(_.toPolicyEngineContextData)
+        if (hookData.isEmpty) {
+          throw NoRecordFoundException(webhookId)
+        } else {
+          hookData.get
+        }
+      }
+    }
+  }
+
+  /**
+    * a request can only pass this directive when the user has unconditional permission for the given request operation.
+    * This directive will retrieve webhook data and supply to policy engine as part of context data
+    *
+    * @param authApiClient
+    * @param operationUri
+    * @param webhookId
+    * @param session
+    * @return
+    */
+  def requireWebhookPermission(
+      authApiClient: AuthApiClient,
+      operationUri: String,
+      webhookId: String,
+      session: DBSession = ReadOnlyAutoSession
+  ): Directive0 = (extractLog & extractExecutionContext).tflatMap {
+    case (log, akkaExeCtx) =>
+      implicit val blockingExeCtx =
+        context.system.dispatchers.lookup("blocking-io-dispatcher")
+
+      (withExecutionContext(blockingExeCtx) & onComplete(
+        createWebhookContextData(webhookId)(blockingExeCtx, session)
+      )).tflatMap {
+        case Tuple1(Success(hookData)) =>
+          requirePermission(
+            authApiClient,
+            operationUri,
+            input = Some(JsObject("object" -> JsObject("webhook" -> hookData)))
+          ) & withExecutionContext(akkaExeCtx) & pass // switch back to akka dispatcher
+        case Tuple1(Failure(e)) =>
+          log.error(
+            "Failed to create webhook context data for auth decision. webhook ID: {}. Error: {}",
+            webhookId,
+            e
+          )
+          complete(
+            InternalServerError,
+            s"An error occurred while creating aspect context data for auth decision."
+          )
+      }
+  }
+
+  /**
+    * a request can only pass this directive when:
+    * - the webhook exist and the user has `object/webhook/update` permission to the webhook
+    *   - the current webhook data will be supplied to policy engine as context data
+    * - the webhook doesn't exist and the use has `object/webhook/create` permission to create the webhook
+    *   - the new webhook data will be supplied to policy engine as context data
+    *
+    * @param authApiClient
+    * @param newWebhook
+    * @param session
+    * @return
+    */
+  def requireWebhookUpdateOrCreateWhenNonExistPermission(
+      authApiClient: AuthApiClient,
+      webhookId: String,
+      newWebhook: WebHook,
+      session: DBSession = ReadOnlyAutoSession
+  ): Directive0 = (extractLog & extractExecutionContext).tflatMap { t =>
+    val akkaExeCtx = t._2
+    val log = t._1
+
+    implicit val blockingExeCtx =
+      context.system.dispatchers.lookup("blocking-io-dispatcher")
+    onComplete(
+      createWebhookContextData(webhookId)(blockingExeCtx, session)
+    ).flatMap {
+      case Success(currentWebHookData) =>
+        requirePermission(
+          authApiClient,
+          "object/webhook/update",
+          input = Some(
+            JsObject("object" -> JsObject("webhook" -> currentWebHookData))
+          )
+        ) & requirePermission(
+          authApiClient,
+          "object/webhook/update",
+          input = Some(
+            JsObject(
+              "object" -> JsObject(
+                "webhook" -> newWebhook.toPolicyEngineContextData
+              )
+            )
+          )
+        ) & withExecutionContext(akkaExeCtx) & pass
+      case Failure(e: NoRecordFoundException) =>
+        requirePermission(
+          authApiClient,
+          "object/webhook/create",
+          input = Some(
+            JsObject(
+              "object" -> JsObject(
+                "webhook" -> newWebhook.toPolicyEngineContextData
+              )
+            )
+          )
+        ) & withExecutionContext(akkaExeCtx) & pass
+      case Failure(e: Throwable) =>
+        log.error(
+          "Failed to create webhook context data for auth decision. webhook ID: {}. Error: {}",
+          webhookId,
+          e
+        )
+        complete(
+          InternalServerError,
+          s"An error occurred while creating webhook context data for auth decision."
         )
     }
   }

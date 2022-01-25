@@ -190,8 +190,28 @@ object Registry
       lastRetryTime: Option[OffsetDateTime] = None,
       retryCount: Int = 0,
       isRunning: Option[Boolean] = None,
-      isProcessing: Option[Boolean] = None
-  )
+      isProcessing: Option[Boolean] = None,
+      ownerId: Option[String] = None,
+      creatorId: Option[String] = None,
+      editorId: Option[String] = None,
+      createTime: Option[OffsetDateTime] = None,
+      editTime: Option[OffsetDateTime] = None
+  ) {
+
+    def toPolicyEngineContextData: JsObject = {
+      // context data field name should match table column name
+      // case won't matter as our SQL generation logic will auto convert column name to lower case
+      val fields = webHookFormat.write(this).asJsObject.fields.map {
+        case ("ownerId", v)    => ("owner_id", v)
+        case ("creatorId", v)  => ("creator_id", v)
+        case ("editorId", v)   => ("editor_id", v)
+        case ("createTime", v) => ("create_time", v)
+        case ("editTime", v)   => ("edit_time", v)
+        case t                 => t
+      }
+      JsObject(fields)
+    }
+  }
 
   case class WebHookConfig(
       aspects: Option[List[String]] = None,
@@ -292,7 +312,7 @@ object Registry
   implicit val aspectFormat = jsonFormat3(Registry.AspectDefinition)
   implicit val webHookPayloadFormat = jsonFormat6(Registry.WebHookPayload)
   implicit val webHookConfigFormat = jsonFormat6(Registry.WebHookConfig)
-  implicit val webHookFormat = jsonFormat13(Registry.WebHook)
+  implicit val webHookFormat = jsonFormat18(Registry.WebHook)
   implicit val registryRecordsResponseFormat = jsonFormat3(
     Registry.RegistryRecordsResponse.apply
   )

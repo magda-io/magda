@@ -16,26 +16,25 @@ import spray.json.{
 import scalikejdbc.interpolation.SQLSyntax
 
 import scala.collection.SortedSet
-import scala.collection.mutable.ListBuffer
 
 object Auth {
 
   def recordToContextData(record: Record): JsObject = {
-    val recordJsFields: ListBuffer[(String, JsValue)] = ListBuffer()
+    var recordJsFields: Map[String, JsValue] = Map()
 
     recordJsFields += ("id" -> JsString(record.id))
     recordJsFields += ("name" -> JsString(record.name))
     recordJsFields += ("lastUpdate" -> JsNull)
-    recordJsFields.appendAll(
-      record.sourceTag.map("sourceTag" -> JsString(_))
+    record.sourceTag.foreach(
+      item => recordJsFields += ("sourceTag" -> JsString(item))
     )
-    recordJsFields.appendAll(
-      record.tenantId.map("tenantId" -> JsNumber(_))
+    record.tenantId.foreach(
+      item => recordJsFields += ("tenantId" -> JsNumber(item))
     )
 
     record.aspects.foreach(recordJsFields += _)
 
-    JsObject(recordJsFields.toMap)
+    JsObject(recordJsFields)
   }
 
   def isTrueEquivalent(value: JsValue): Boolean = {
@@ -262,15 +261,15 @@ object Auth {
     }
 
     def toSql(
-        prefixes: Set[String] = Set("object.record"),
-        recordIdSqlRef: String = "records.recordid",
-        tenantIdSqlRef: String = "records.tenantid"
+        config: AspectQueryToSqlConfig = AspectQueryToSqlConfig()
     ): Option[SQLSyntax] =
       SQLSyntax
         .toOrConditionOpt(
           this
-            .toAspectQueryGroups(prefixes)
-            .map(_.toSql(recordIdSqlRef, tenantIdSqlRef)): _*
+            .toAspectQueryGroups(config.prefixes)
+            .map(
+              _.toSql(config)
+            ): _*
         )
         .map(SQLSyntax.roundBracket(_))
 
