@@ -3,7 +3,7 @@ package au.csiro.data61.magda.registry
 import akka.actor.TypedActor.context
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Directive0
-import au.csiro.data61.magda.client.AuthApiClient
+import au.csiro.data61.magda.client.{AuthApiClient, AuthDecisionReqConfig}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes.{BadRequest, InternalServerError}
 import akka.event.LoggingAdapter
@@ -15,7 +15,11 @@ import scala.util.{Failure, Success, Try}
 import scalikejdbc._
 
 import scala.concurrent.{ExecutionContext, Future, blocking}
-import au.csiro.data61.magda.directives.AuthDirectives.requirePermission
+import au.csiro.data61.magda.directives.AuthDirectives.{
+  requirePermission,
+  withAuthDecision
+}
+import au.csiro.data61.magda.model.Auth
 import au.csiro.data61.magda.model.Registry.{AspectDefinition, Record, WebHook}
 import au.csiro.data61.magda.util.JsonPathUtils.applyJsonPathToRecordContextData
 import au.csiro.data61.magda.model.Auth.{
@@ -671,6 +675,39 @@ object Directives extends Protocols with SprayJsonSupport {
         )
     }
   }
+
+  /**
+    * a request can only pass this directive when:
+    * - a user has unconditional "object/event/read" permission
+    * - or a user has permission to the record that's specified by recordId
+    *
+    * @param authApiClient
+    * @param recordId
+    * @param session
+    * @return
+    */
+  def requireRecordEventReadPermission(
+      authApiClient: AuthApiClient,
+      recordId: String,
+      session: DBSession = ReadOnlyAutoSession
+  ): Directive0 =
+    withAuthDecision(authApiClient, AuthDecisionReqConfig("object/event/read"))
+      .flatMap { authDecision =>
+        if (authDecision.hasResidualRules == false && authDecision.result.isDefined && (true == Auth
+              .isTrueEquivalent(authDecision.result.get))) {
+          // use has unconditional read permission to event, let request go
+          pass
+        } else {
+          // check if user has read permission to the record
+          // if so, the user can access all events of the records as well.
+          requireRecordPermission(
+            authApiClient,
+            "object/record/read",
+            recordId,
+            session
+          )
+        }
+      }
 
 //  /**
 //    * Returns true if the configuration says to skip the opa query.
