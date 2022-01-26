@@ -170,6 +170,11 @@ export class WebHook {
     "retryCount": number;
     "isRunning": any;
     "isProcessing": any;
+    "ownerId": string;
+    "creatorId": string;
+    "editorId": string;
+    "createTime": Date;
+    "editTime": Date;
 }
 
 /**

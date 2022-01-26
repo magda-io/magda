@@ -15,5 +15,7 @@ allow {
 allow {
     hasOwnerConstaintPermission(input.operationUri)
     # webhook field name should match table column name
-    input.object.webhook.owner_id = input.user.id
+    # as we didn't quoted column name when create the table
+    # either uppercase or lowercase will work
+    input.object.webhook.ownerId = input.user.id
 }

@@ -196,22 +196,7 @@ object Registry
       editorId: Option[String] = None,
       createTime: Option[OffsetDateTime] = None,
       editTime: Option[OffsetDateTime] = None
-  ) {
-
-    def toPolicyEngineContextData: JsObject = {
-      // context data field name should match table column name
-      // case won't matter as our SQL generation logic will auto convert column name to lower case
-      val fields = webHookFormat.write(this).asJsObject.fields.map {
-        case ("ownerId", v)    => ("owner_id", v)
-        case ("creatorId", v)  => ("creator_id", v)
-        case ("editorId", v)   => ("editor_id", v)
-        case ("createTime", v) => ("create_time", v)
-        case ("editTime", v)   => ("edit_time", v)
-        case t                 => t
-      }
-      JsObject(fields)
-    }
-  }
+  )
 
   case class WebHookConfig(
       aspects: Option[List[String]] = None,

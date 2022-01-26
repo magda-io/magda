@@ -43,11 +43,11 @@ object HookPersistence extends Protocols with DiffsonProtocol {
             enabled,
             lastRetryTime,
             retryCount,
-            owner_id,
-            creator_id,
-            create_time,
-            editor_time,
-            edit_time
+            ownerId,
+            creatorId,
+            createTime,
+            editorTime,
+            editTime
           from WebHooks ${SQLSyntax
       .where(SQLSyntax.toAndConditionOpt(whereClauseParts: _*))}"""
       .map(rowToHook)
@@ -85,11 +85,11 @@ object HookPersistence extends Protocols with DiffsonProtocol {
             enabled,
             lastRetryTime,
             retryCount,
-            owner_id,
-            creator_id,
-            create_time,
-            editor_time,
-            edit_time
+            ownerId,
+            creatorId,
+            createTime,
+            editorTime,
+            editTime
           from WebHooks
           ${SQLSyntax
       .where(SQLSyntax.toAndConditionOpt(whereClauseParts: _*))}"""
@@ -125,7 +125,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
       case Some(id) => id
     }
 
-    sql"""insert into WebHooks (webHookId, name, active, lastEvent, url, config, enabled, owner_id, creator_id, editor_id)
+    sql"""insert into WebHooks (webHookId, name, active, lastEvent, url, config, enabled, ownerId, creatorId, editorId)
           values (
             $theHookId,
             ${hook.name},
@@ -182,7 +182,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
       lastEventId: Long,
       userId: Option[String] = None
   )(implicit session: DBSession) = {
-    sql"update WebHooks set lastEvent=$lastEventId , editor_id=${userId}, edit_time=CURRENT_TIMESTAMP where webHookId=$id".update
+    sql"update WebHooks set lastEvent=$lastEventId , editorId=${userId}, editTime=CURRENT_TIMESTAMP where webHookId=$id".update
       .apply()
   }
 
@@ -191,28 +191,28 @@ object HookPersistence extends Protocols with DiffsonProtocol {
       isWaitingForResponse: Boolean,
       userId: Option[String] = None
   )(implicit session: DBSession) = {
-    sql"update WebHooks set isWaitingForResponse=$isWaitingForResponse , editor_id=${userId}, edit_time=CURRENT_TIMESTAMP where webHookId=$id".update
+    sql"update WebHooks set isWaitingForResponse=$isWaitingForResponse , editorId=${userId}, editTime=CURRENT_TIMESTAMP where webHookId=$id".update
       .apply()
   }
 
   def setActive(id: String, active: Boolean, userId: Option[String] = None)(
       implicit session: DBSession
   ) = {
-    sql"update WebHooks set active=$active , editor_id=${userId}, edit_time=CURRENT_TIMESTAMP where webHookId=$id".update
+    sql"update WebHooks set active=$active , editorId=${userId}, editTime=CURRENT_TIMESTAMP where webHookId=$id".update
       .apply()
   }
 
   def retry(id: String, userId: Option[String] = None)(
       implicit session: DBSession
   ) = {
-    sql"update WebHooks set active=${true}, lastretrytime=NOW(), retrycount=retrycount+1 , editor_id=${userId}, edit_time=CURRENT_TIMESTAMP where webHookId=$id".update
+    sql"update WebHooks set active=${true}, lastretrytime=NOW(), retrycount=retrycount+1 , editorId=${userId}, editTime=CURRENT_TIMESTAMP where webHookId=$id".update
       .apply()
   }
 
   def resetRetryCount(id: String, userId: Option[String] = None)(
       implicit session: DBSession
   ) = {
-    sql"update WebHooks set lastretrytime=NULL, retrycount=0 , editor_id=${userId}, edit_time=CURRENT_TIMESTAMP where webHookId=$id".update
+    sql"update WebHooks set lastretrytime=NULL, retrycount=0 , editorId=${userId}, editTime=CURRENT_TIMESTAMP where webHookId=$id".update
       .apply()
   }
 
@@ -228,7 +228,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
         )
       )
     } else {
-      sql"""insert into WebHooks (webHookId, name, active, lastevent, url, config, enabled, owner_id, creator_id, editor_id)
+      sql"""insert into WebHooks (webHookId, name, active, lastevent, url, config, enabled, ownerId, creatorId, editorId)
           values (
             ${hook.id.get},
             ${hook.name},
@@ -247,8 +247,8 @@ object HookPersistence extends Protocols with DiffsonProtocol {
             active = ${hook.active},
             url = ${hook.url},
             config = ${hook.config.toJson.compactPrint}::jsonb,
-            editor_id = ${userId},
-            edit_time = CURRENT_TIMESTAMP
+            editorId = ${userId},
+            editTime = CURRENT_TIMESTAMP
           """.update
         .apply()
       Success(hook)
@@ -311,11 +311,12 @@ object HookPersistence extends Protocols with DiffsonProtocol {
     enabled = rs.boolean("enabled"),
     lastRetryTime = rs.offsetDateTimeOpt("lastRetryTime"),
     retryCount = rs.int("retryCount"),
-    ownerId = rs.stringOpt("owner_id"),
-    creatorId = rs.stringOpt("creator_id"),
-    createTime = Try(rs.stringOpt("create_time").map(OffsetDateTime.parse(_)))
+    ownerId = rs.stringOpt("ownerId"),
+    creatorId = rs.stringOpt("creatorId"),
+    editorId = rs.stringOpt("editorId"),
+    createTime = Try(rs.stringOpt("createTime").map(OffsetDateTime.parse(_)))
       .getOrElse(None),
-    editTime = Try(rs.stringOpt("edit_time").map(OffsetDateTime.parse(_)))
+    editTime = Try(rs.stringOpt("editTime").map(OffsetDateTime.parse(_)))
       .getOrElse(None)
   )
 }
