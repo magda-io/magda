@@ -171,7 +171,7 @@ class AspectQuerySpec extends FunSpec with Matchers {
       val sql = aq.toSql()
       sql.isDefined shouldBe true
       sql.get.value.stripLineEndingWhitespaces shouldBe """ exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
-                                                          |             COALESCE((?::NUMERIC <= data #>> string_to_array(?, ','))::NUMERIC, false)
+                                                          |             COALESCE(?::NUMERIC <= (data #>> string_to_array(?, ','))::NUMERIC, false)
                                                           |          )""".stripMargin.stripLineEndingWhitespaces
       sql.get.parameters shouldBe List("testAspect", 1.57, "fieldA,fieldB")
     }

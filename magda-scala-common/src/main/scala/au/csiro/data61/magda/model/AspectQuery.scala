@@ -252,7 +252,7 @@ case class AspectQueryWithValue(
         s"Invalid AspectQueryWithValue: aspectId cannot be empty."
       )
     }
-    if (path.isEmpty) {
+    if (!path.isEmpty) {
       // normal aspect query
       sqlWithAspectQuery(recordIdSqlRef, tenantIdSqlRef)
     } else {

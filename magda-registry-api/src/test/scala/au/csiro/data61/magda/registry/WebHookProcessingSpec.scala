@@ -2522,8 +2522,8 @@ class WebHookProcessingSpec
         testWebHookWithResponse(param, Some(defaultWebHook), response) {
           (_, _) =>
             //--- retry will increase try count and set lastRetryTime
-            DB localTx { session =>
-              HookPersistence.retry(session, "test")
+            DB localTx { implicit session =>
+              HookPersistence.retry("test")
             }
 
             param.asAdmin(Get("/v0/hooks/test")) ~> param
