@@ -359,7 +359,7 @@ class HooksService(
             input = Some(
               JsObject(
                 "object" -> JsObject(
-                  "webhook" -> hook.toPolicyEngineContextData
+                  "webhook" -> hook.toJson
                 )
               )
             )
