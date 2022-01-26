@@ -194,7 +194,7 @@ abstract class ApiWithOpa
     "Branch B, Dep. A"
   )
 
-  val accessControlId = "dataset-access-control"
+  val accessControlId = "access-control"
   val esriAccessControlId = "esri-access-control"
   val organizationId = "organization"
   val withLinkId = "withLink"
@@ -214,7 +214,7 @@ abstract class ApiWithOpa
       return
 
     val accessControlSchemaSource: BufferedSource = fromFile(
-      "magda-registry-aspects/dataset-access-control.schema.json"
+      "magda-registry-aspects/access-control.schema.json"
     )
 
     val esriAccessControlSchemaSource: BufferedSource = fromFile(

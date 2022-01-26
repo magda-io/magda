@@ -7,6 +7,7 @@
 - move pre-defined role ids into a single contants file in magda-typescript-common
 - Rewrote the OPA AST parser for better evaluation & reference handling
 - Added common policy entry point: entrypoint/allow.rego
+- rename `dataset-access-control` aspect to `access-control` aspect
 
 ## 1.2.0
 

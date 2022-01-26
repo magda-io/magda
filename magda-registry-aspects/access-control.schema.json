@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/hyper-schema#",
-    "title": "Access Control information of a dataset or other registry record",
-    "description": "Access Control information of a dataset or other registry record. Including: ownership information and pre-authorised permissions. Although we named it `dataset-access-control` for legacy reasons, this aspect can actually be used for any registry records.",
+    "title": "Access Control information of a registry record",
+    "description": "Access Control information of a dataset or other registry record. Including: ownership information and pre-authorised permissions. Previously named `dataset-access-control` for legacy reasons, this aspect can actually be used for any registry records.",
     "type": "object",
     "properties": {
         "ownerId": {

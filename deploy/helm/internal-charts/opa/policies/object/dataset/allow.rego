@@ -61,7 +61,7 @@ verifyPermission(inputOperationUri, inputObjectRefName) {
     input.user.permissions[i].operations[_].uri = operationUri
 
     input.object[inputObjectRefName].publishing.state = permissionResourceType
-    input.object[inputObjectRefName]["dataset-access-control"].ownerId = input.user.id
+    input.object[inputObjectRefName]["access-control"].ownerId = input.user.id
 }
 
 # if find a permission with org unit ownership constraint
@@ -82,7 +82,7 @@ verifyPermission(inputOperationUri, inputObjectRefName) {
     input.user.permissions[i].operations[_].uri = operationUri
 
     input.object[inputObjectRefName].publishing.state = permissionResourceType
-    input.user.managingOrgUnitIds[_] = input.object[inputObjectRefName]["dataset-access-control"].orgUnitOwnerId
+    input.user.managingOrgUnitIds[_] = input.object[inputObjectRefName]["access-control"].orgUnitOwnerId
 }
 
 # if find a permission with pre-authorised constraint
@@ -103,5 +103,5 @@ verifyPermission(inputOperationUri, inputObjectRefName) {
     input.user.permissions[i].operations[_].uri = operationUri
 
     input.object[inputObjectRefName].publishing.state = permissionResourceType
-    input.object[inputObjectRefName]["dataset-access-control"].preAuthorisedPermissionIds[_] = input.user.permissions[i].id
+    input.object[inputObjectRefName]["access-control"].preAuthorisedPermissionIds[_] = input.user.permissions[i].id
 }

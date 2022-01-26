@@ -480,7 +480,7 @@ export function parseDataset(dataset?: RawDataset): ParsedDataset {
         ? Object.assign({}, defaultDatasetAspects, dataset["aspects"])
         : defaultDatasetAspects;
     const identifier = dataset && dataset.id;
-    const accessControl = aspects["dataset-access-control"];
+    const accessControl = aspects["access-control"];
     const datasetInfo = aspects["dcat-dataset-strings"];
     const distribution = aspects["dataset-distributions"];
     const temporalCoverage = aspects["temporal-coverage"] || { intervals: [] };

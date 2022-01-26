@@ -292,7 +292,7 @@ object Registry
       "dataset-format",
       "publishing",
       "spatial-coverage",
-      "dataset-access-control",
+      "access-control",
       "access",
       "provenance"
     )

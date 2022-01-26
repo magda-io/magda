@@ -5,7 +5,7 @@ test_allow_no_constraints_permission_user_without_no_constraints_permission {
         "operationUri": "object/dataset/draft/read",
         "object": {
             "dataset": {
-                "dataset-access-control": {
+                "access-control": {
                     "ownerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx",
                     "orgUnitOwnerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx",
                     "preAuthorisedPermissionIds": ["xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx"]
@@ -82,7 +82,7 @@ test_allow_no_constraints_permission_user_has_no_constraints_permission {
         "operationUri": "object/dataset/draft/read",
         "object": {
             "dataset": {
-                "dataset-access-control": {
+                "access-control": {
                     "ownerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx",
                     "orgUnitOwnerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx",
                     "preAuthorisedPermissionIds": ["xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx"]
@@ -176,7 +176,7 @@ test_allow_user_ownership_constraint_permission_user_is_not_owner {
         "operationUri": "object/dataset/draft/read",
         "object": {
             "dataset": {
-                "dataset-access-control": {
+                "access-control": {
                     "ownerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx",
                     "orgUnitOwnerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx",
                     "preAuthorisedPermissionIds": ["xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx"]
@@ -253,7 +253,7 @@ test_allow_user_ownership_constraint_permission_user_is_owner {
         "operationUri": "object/dataset/draft/read",
         "object": {
             "dataset": {
-                "dataset-access-control": {
+                "access-control": {
                     "ownerId": "80a9dce4-91af-44e2-a2f4-9ddccb3f4c5e",
                     "orgUnitOwnerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx",
                     "preAuthorisedPermissionIds": ["xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx"]
@@ -330,7 +330,7 @@ test_allow_user_ownership_constraint_permission_user_is_owner_wildcard_res_uri_t
         "operationUri": "object/dataset/*/read",
         "object": {
             "dataset": {
-                "dataset-access-control": {
+                "access-control": {
                     "ownerId": "80a9dce4-91af-44e2-a2f4-9ddccb3f4c5e",
                     "orgUnitOwnerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx",
                     "preAuthorisedPermissionIds": ["xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx"]
@@ -407,7 +407,7 @@ test_allow_user_ownership_constraint_permission_user_is_owner_wildcard_res_uri_t
         "operationUri": "object/dataset/*/read",
         "object": {
             "dataset": {
-                "dataset-access-control": {
+                "access-control": {
                     "ownerId": "80a9dce4-91af-44e2-a2f4-9ddccb3f4c5e",
                     "orgUnitOwnerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx",
                     "preAuthorisedPermissionIds": ["xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx"]
@@ -484,7 +484,7 @@ test_allow_pre_Authorised_constraint_permission_user_permission_is_not_pre_autho
         "operationUri": "object/dataset/draft/read",
         "object": {
             "dataset": {
-                "dataset-access-control": {
+                "access-control": {
                     "ownerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx",
                     "orgUnitOwnerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx",
                     "preAuthorisedPermissionIds": ["xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx"]
@@ -561,7 +561,7 @@ test_allow_pre_Authorised_constraint_permission_user_permission_is_pre_authorise
         "operationUri": "object/dataset/draft/read",
         "object": {
             "dataset": {
-                "dataset-access-control": {
+                "access-control": {
                     "ownerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx",
                     "orgUnitOwnerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx",
                     "preAuthorisedPermissionIds": ["72d52505-cf96-47b2-9b74-d0fdc1f5aee7"]
@@ -638,7 +638,7 @@ test_allow_pre_authorised_constraint_permission_user_permission_is_pre_authorise
         "operationUri": "object/dataset/draft/read",
         "object": {
             "dataset": {
-                "dataset-access-control": {
+                "access-control": {
                     "ownerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx",
                     "orgUnitOwnerId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxx",
                     "preAuthorisedPermissionIds": ["72d52505-cf96-47b2-9b74-d0fdc1f5aee7"]
