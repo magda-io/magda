@@ -46,7 +46,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
             ownerId,
             creatorId,
             createTime,
-            editorTime,
+            editorId,
             editTime
           from WebHooks ${SQLSyntax
       .where(SQLSyntax.toAndConditionOpt(whereClauseParts: _*))}"""
@@ -88,7 +88,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
             ownerId,
             creatorId,
             createTime,
-            editorTime,
+            editorId,
             editTime
           from WebHooks
           ${SQLSyntax
