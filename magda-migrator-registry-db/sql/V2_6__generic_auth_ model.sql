@@ -8,4 +8,4 @@ ADD COLUMN editTime timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP;
 
 CREATE INDEX webhooks_owner_id_idx ON webhooks USING btree (ownerId);
 CREATE INDEX webhooks_create_time_idx ON webhooks USING btree (createTime);
-CREATE INDEX webhooks_create_time_idx ON webhooks USING btree (editTime);
+CREATE INDEX webhooks_edit_time_idx ON webhooks USING btree (editTime);
