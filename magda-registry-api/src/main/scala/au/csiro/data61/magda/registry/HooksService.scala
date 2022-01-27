@@ -109,7 +109,7 @@ class HooksService(
     pathEnd {
       withAuthDecision(
         authApiClient,
-        AuthDecisionReqConfig("object/record/read")
+        AuthDecisionReqConfig("object/webhook/read")
       ) { authDecision =>
         complete {
           val hooks = DB readOnly { implicit session =>

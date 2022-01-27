@@ -20,7 +20,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
   )(implicit session: DBSession): List[WebHook] = {
     val authDecisionCondition = authDecision.toSql(
       AspectQueryToSqlConfig(
-        prefixes = Set("object.webhook"),
+        prefixes = Set("input.object.webhook"),
         genericQuery = true
       )
     )
@@ -60,7 +60,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
   ): Option[WebHook] = {
     val authDecisionCondition = authDecision.toSql(
       AspectQueryToSqlConfig(
-        prefixes = Set("object.webhook"),
+        prefixes = Set("input.object.webhook"),
         genericQuery = true
       )
     )

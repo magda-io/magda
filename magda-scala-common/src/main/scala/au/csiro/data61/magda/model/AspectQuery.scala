@@ -11,8 +11,10 @@ import java.net.URLDecoder
 // Upper case will work when we don't double quotes but it's due to the case insensitive treatment of PostgreSQL for non-quoted identifiers not because of its actual form.
 // We should gradually change all identifiers in our SQL to lowercase and make sure all future identifiers are all in lowercase `snake_case`
 case class AspectQueryToSqlConfig(
-    // a list of prefixes used to simplify ref when translate OPA query to AspectQuery
-    prefixes: Set[String] = Set("object.record"),
+    // a list of prefixes used to simplify / shorten ref when translate OPA query to AspectQuery
+    // e.g. input.object.record or input.object.webhook
+    // they should be a context data ref used in the auth policy
+    prefixes: Set[String] = Set("input.object.record"),
     recordIdSqlRef: String = "records.recordid",
     tenantIdSqlRef: String = "records.tenantid",
     genericQuery: Boolean = false,

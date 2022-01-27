@@ -28,7 +28,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
     val authDecisionCondition =
       authDecision.toSql(
         AspectQueryToSqlConfig(
-          prefixes = Set("object.aspect"),
+          prefixes = Set("input.object.aspect"),
           genericQuery = true
         )
       )
@@ -51,7 +51,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
     val authDecisionCondition =
       authDecision.toSql(
         AspectQueryToSqlConfig(
-          prefixes = Set("object.aspect"),
+          prefixes = Set("input.object.aspect"),
           genericQuery = true
         )
       )
@@ -79,7 +79,7 @@ object AspectPersistence extends Protocols with DiffsonProtocol {
       val authDecisionCondition =
         authDecision.toSql(
           AspectQueryToSqlConfig(
-            prefixes = Set("object.aspect"),
+            prefixes = Set("input.object.aspect"),
             genericQuery = true
           )
         )
