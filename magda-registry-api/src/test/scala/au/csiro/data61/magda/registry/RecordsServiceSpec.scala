@@ -13,6 +13,10 @@ import spray.json._
 
 import scala.util.Success
 
+/**
+  * This is functional test case suit. the auth is turned off in config in ApiSpec (i.e. all requested will be authorised)
+  * to minimise the code. Auth related logic will be moved to a seperate test case suit (with auth turned on).
+  */
 class RecordsServiceSpec extends ApiSpec {
   describe("with role Full") {
     readOnlyTests(Full)
@@ -43,7 +47,7 @@ class RecordsServiceSpec extends ApiSpec {
       it("starts with no records defined") { param =>
         val recordId = "foo"
         val record = Record(recordId, "foo", Map(), Some("blah"))
-        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -74,7 +78,7 @@ class RecordsServiceSpec extends ApiSpec {
       it("returns 404 if the given ID does not exist") { param =>
         val recordId = "foo"
         val record = Record(recordId, "foo", Map(), Some("blah"))
-        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(Full).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -92,12 +96,12 @@ class RecordsServiceSpec extends ApiSpec {
         param =>
           val aspectId = "test"
           val aspectDefinition = AspectDefinition(aspectId, "test", None)
-          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+          Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
-          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+          Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -105,17 +109,18 @@ class RecordsServiceSpec extends ApiSpec {
 
           val recordId = "foo"
           val record = Record(recordId, "foo", Map(), Some("blah"))
-          param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+          Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
-          param.asAdmin(
-            Post(
-              "/v0/records",
-              record.copy(aspects = Map(aspectId -> JsObject()))
-            )
-          ) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
+
+          Post(
+            "/v0/records",
+            record.copy(aspects = Map(aspectId -> JsObject()))
+          ) ~> addUserId() ~> addTenantIdHeader(TENANT_2) ~> param
+            .api(Full)
+            .routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -138,7 +143,7 @@ class RecordsServiceSpec extends ApiSpec {
           val testAspectId = "test"
           val testAspect = AspectDefinition(testAspectId, "test", None)
 
-          param.asAdmin(Post("/v0/aspects", testAspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", testAspect) ~> addUserId() ~> addTenantIdHeader(
             i
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -151,7 +156,7 @@ class RecordsServiceSpec extends ApiSpec {
             Some("blah")
           )
 
-          param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(i) ~> param
+          Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(i) ~> param
             .api(Full)
             .routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -189,12 +194,12 @@ class RecordsServiceSpec extends ApiSpec {
             Map(aspectId1 -> JsObject(), aspectId2 -> JsObject()),
             Some("blah")
           )
-          param.asAdmin(Post("/v0/records", recordWithAspects)) ~> addTenantIdHeader(
+          Post("/v0/records", recordWithAspects) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
-          param.asAdmin(Post("/v0/records", recordWithAspects)) ~> addTenantIdHeader(
+          Post("/v0/records", recordWithAspects) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -226,12 +231,12 @@ class RecordsServiceSpec extends ApiSpec {
             Map(aspectId1 -> JsObject(), aspectId2 -> JsObject()),
             Some("blah")
           )
-          param.asAdmin(Post("/v0/records", recordWithAspects1)) ~> addTenantIdHeader(
+          Post("/v0/records", recordWithAspects1) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
-          param.asAdmin(Post("/v0/records", recordWithAspects1)) ~> addTenantIdHeader(
+          Post("/v0/records", recordWithAspects1) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -245,12 +250,12 @@ class RecordsServiceSpec extends ApiSpec {
             Map(aspectId1 -> JsObject(), aspectId3 -> JsObject()),
             Some("blah")
           )
-          param.asAdmin(Post("/v0/records", recordWithAspects2)) ~> addTenantIdHeader(
+          Post("/v0/records", recordWithAspects2) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
-          param.asAdmin(Post("/v0/records", recordWithAspects2)) ~> addTenantIdHeader(
+          Post("/v0/records", recordWithAspects2) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -260,12 +265,12 @@ class RecordsServiceSpec extends ApiSpec {
           val recordName3 = "name3"
           val recordWithoutAspects3 =
             Record(recordId3, recordName3, Map(), Some("blah"))
-          param.asAdmin(Post("/v0/records", recordWithoutAspects3)) ~> addTenantIdHeader(
+          Post("/v0/records", recordWithoutAspects3) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
-          param.asAdmin(Post("/v0/records", recordWithoutAspects3)) ~> addTenantIdHeader(
+          Post("/v0/records", recordWithoutAspects3) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -340,19 +345,19 @@ class RecordsServiceSpec extends ApiSpec {
 
         def insertAspectDefs(param: FixtureParam, tenantId: BigInt) {
           val aspectDefinition1 = AspectDefinition(aspectId1, "test1", None)
-          param.asAdmin(Post("/v0/aspects", aspectDefinition1)) ~> addTenantIdHeader(
+          Post("/v0/aspects", aspectDefinition1) ~> addUserId() ~> addTenantIdHeader(
             tenantId
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
           val aspectDefinition2 = AspectDefinition(aspectId2, "test2", None)
-          param.asAdmin(Post("/v0/aspects", aspectDefinition2)) ~> addTenantIdHeader(
+          Post("/v0/aspects", aspectDefinition2) ~> addUserId() ~> addTenantIdHeader(
             tenantId
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
           val aspectDefinition3 = AspectDefinition(aspectId3, "test3", None)
-          param.asAdmin(Post("/v0/aspects", aspectDefinition3)) ~> addTenantIdHeader(
+          Post("/v0/aspects", aspectDefinition3) ~> addUserId() ~> addTenantIdHeader(
             tenantId
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -366,7 +371,7 @@ class RecordsServiceSpec extends ApiSpec {
           for (i <- 1 to 5) {
             val recordWithoutAspects =
               Record("id" + i, "name" + i, Map(), Some("blah"))
-            param.asAdmin(Post("/v0/records", recordWithoutAspects)) ~> addTenantIdHeader(
+            Post("/v0/records", recordWithoutAspects) ~> addUserId() ~> addTenantIdHeader(
               TENANT_1
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
@@ -386,7 +391,7 @@ class RecordsServiceSpec extends ApiSpec {
           for (i <- 1 to 3) {
             val recordWithoutAspects =
               Record("id" + i, "name" + i, Map(), Some("blah"))
-            param.asAdmin(Post("/v0/records", recordWithoutAspects)) ~> addTenantIdHeader(
+            Post("/v0/records", recordWithoutAspects) ~> addUserId() ~> addTenantIdHeader(
               TENANT_2
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
@@ -462,19 +467,19 @@ class RecordsServiceSpec extends ApiSpec {
           Record(withNoneRecordId, "with none", Map(), Some("blah"))
 
         it("includes optionalAspect if it exists") { param =>
-          param.asAdmin(Post("/v0/aspects", testAspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", testAspect) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withTestAspectRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withTestAspectRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withoutTestAspectRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withoutTestAspectRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -504,19 +509,19 @@ class RecordsServiceSpec extends ApiSpec {
         }
 
         it("requires presence of aspect") { param =>
-          param.asAdmin(Post("/v0/aspects", testAspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", testAspect) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withTestAspectRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withTestAspectRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withoutTestAspectRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withoutTestAspectRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -567,31 +572,31 @@ class RecordsServiceSpec extends ApiSpec {
         }
 
         it("requires any specified aspects to be present") { param =>
-          param.asAdmin(Post("/v0/aspects", fooAspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", fooAspect) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/aspects", barAspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", barAspect) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withFooRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withFooRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withBarRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withBarRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withFooAndBarRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withFooAndBarRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -634,37 +639,37 @@ class RecordsServiceSpec extends ApiSpec {
         }
 
         it("optionalAspects are optional") { param =>
-          param.asAdmin(Post("/v0/aspects", fooAspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", fooAspect) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/aspects", barAspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", barAspect) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withFooRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withFooRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withBarRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withBarRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withFooAndBarRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withFooAndBarRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withNoneRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withNoneRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -700,31 +705,31 @@ class RecordsServiceSpec extends ApiSpec {
         }
 
         it("supports a mix of aspects and optionalAspects") { param =>
-          param.asAdmin(Post("/v0/aspects", fooAspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", fooAspect) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/aspects", barAspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", barAspect) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/aspects", bazAspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", bazAspect) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withFooRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withFooRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withBarRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withBarRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -740,13 +745,13 @@ class RecordsServiceSpec extends ApiSpec {
             ),
             Some("blah")
           )
-          param.asAdmin(Post("/v0/records", withFooAndBarAndBaz)) ~> addTenantIdHeader(
+          Post("/v0/records", withFooAndBarAndBaz) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withNoneRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withNoneRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -781,7 +786,7 @@ class RecordsServiceSpec extends ApiSpec {
         it("accepts URL-encoded aspect names") { param =>
           val aspectWithSpaceId = "with space"
           val aspectWithSpace = AspectDefinition(aspectWithSpaceId, "foo", None)
-          param.asAdmin(Post("/v0/aspects", aspectWithSpace)) ~> addTenantIdHeader(
+          Post("/v0/aspects", aspectWithSpace) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -794,7 +799,7 @@ class RecordsServiceSpec extends ApiSpec {
             Map(aspectWithSpaceId -> JsObject("test" -> JsString("test"))),
             Some("blah")
           )
-          param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+          Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -856,12 +861,12 @@ class RecordsServiceSpec extends ApiSpec {
         it(
           "returns the specified aspect of the specified record of the specified tenant"
         ) { param =>
-          param.asAdmin(Post("/v0/aspects", testAspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", testAspect) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
-          param.asAdmin(Post("/v0/aspects", testAspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", testAspect) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -876,7 +881,7 @@ class RecordsServiceSpec extends ApiSpec {
               Map(testAspectId -> aspectValue1),
               Some("blah")
             )
-          param.asAdmin(Post("/v0/records", recordWithAspect1)) ~> addTenantIdHeader(
+          Post("/v0/records", recordWithAspect1) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -890,7 +895,7 @@ class RecordsServiceSpec extends ApiSpec {
               Map(testAspectId -> aspectValue2),
               Some("blah")
             )
-          param.asAdmin(Post("/v0/records", recordWithAspect2)) ~> addTenantIdHeader(
+          Post("/v0/records", recordWithAspect2) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -1026,12 +1031,12 @@ class RecordsServiceSpec extends ApiSpec {
             "with link",
             Some(JsonParser(jsonSchema).asJsObject)
           )
-          param.asAdmin(Post("/v0/aspects", withLinkAspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", withLinkAspect) ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
-          param.asAdmin(Post("/v0/aspects", withLinkAspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", withLinkAspect) ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -1047,12 +1052,12 @@ class RecordsServiceSpec extends ApiSpec {
             ),
             Some("blah")
           )
-          param.asAdmin(Post("/v0/records", sourceRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", sourceRecord) ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
-          param.asAdmin(Post("/v0/records", sourceRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", sourceRecord) ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -1068,12 +1073,12 @@ class RecordsServiceSpec extends ApiSpec {
             ),
             Some("blah")
           )
-          param.asAdmin(Post("/v0/records", targetRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", targetRecord) ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
-          param.asAdmin(Post("/v0/records", targetRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", targetRecord) ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -1251,45 +1256,45 @@ class RecordsServiceSpec extends ApiSpec {
         }
 
         it("dereferences an array of links if requested") { param =>
-          param.asAdmin(Post("/v0/aspects", withLinksAspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", withLinksAspect) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
-          param.asAdmin(Post("/v0/aspects", withLinksAspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", withLinksAspect) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withLinksSourceRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withLinksSourceRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
-          param.asAdmin(Post("/v0/records", withLinksSourceRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withLinksSourceRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withLinksTargetRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withLinksTargetRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
-          param.asAdmin(Post("/v0/records", withLinksTargetRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withLinksTargetRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withLinksAnotherTargetRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withLinksAnotherTargetRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
-          param.asAdmin(Post("/v0/records", withLinksAnotherTargetRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withLinksAnotherTargetRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -1555,24 +1560,24 @@ class RecordsServiceSpec extends ApiSpec {
         it(
           "should not excludes linking aspects when there are no links and dereference=true"
         ) { param =>
-          param.asAdmin(Post("/v0/aspects", withLinksAspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", withLinksAspect) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
-          param.asAdmin(Post("/v0/aspects", withLinksAspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", withLinksAspect) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withEmptyLinksSourceRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withEmptyLinksSourceRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withLinksSourceRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withLinksSourceRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -1708,49 +1713,49 @@ class RecordsServiceSpec extends ApiSpec {
         )
 
         it("works for shallow paths") { param =>
-          param.asAdmin(Post("/v0/aspects", aspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", aspect) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/aspects", aspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", aspect) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withQueriedValueRecord1)) ~> addTenantIdHeader(
+          Post("/v0/records", withQueriedValueRecord1) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withQueriedValueRecord1)) ~> addTenantIdHeader(
+          Post("/v0/records", withQueriedValueRecord1) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withQueriedValueRecord2)) ~> addTenantIdHeader(
+          Post("/v0/records", withQueriedValueRecord2) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withQueriedValueRecord2)) ~> addTenantIdHeader(
+          Post("/v0/records", withQueriedValueRecord2) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withoutQueriedValueRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withoutQueriedValueRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withoutQueriedValueRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withoutQueriedValueRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -1781,49 +1786,49 @@ class RecordsServiceSpec extends ApiSpec {
 
         it("works without specifying the aspect in aspects or optionalAspects") {
           param =>
-            param.asAdmin(Post("/v0/aspects", aspect)) ~> addTenantIdHeader(
+            Post("/v0/aspects", aspect) ~> addUserId() ~> addTenantIdHeader(
               TENANT_1
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
             }
 
-            param.asAdmin(Post("/v0/aspects", aspect)) ~> addTenantIdHeader(
+            Post("/v0/aspects", aspect) ~> addUserId() ~> addTenantIdHeader(
               TENANT_2
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
             }
 
-            param.asAdmin(Post("/v0/records", withQueriedValueRecord1)) ~> addTenantIdHeader(
+            Post("/v0/records", withQueriedValueRecord1) ~> addUserId() ~> addTenantIdHeader(
               TENANT_1
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
             }
 
-            param.asAdmin(Post("/v0/records", withQueriedValueRecord1)) ~> addTenantIdHeader(
+            Post("/v0/records", withQueriedValueRecord1) ~> addUserId() ~> addTenantIdHeader(
               TENANT_2
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
             }
 
-            param.asAdmin(Post("/v0/records", withQueriedValueRecord2)) ~> addTenantIdHeader(
+            Post("/v0/records", withQueriedValueRecord2) ~> addUserId() ~> addTenantIdHeader(
               TENANT_1
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
             }
 
-            param.asAdmin(Post("/v0/records", withQueriedValueRecord2)) ~> addTenantIdHeader(
+            Post("/v0/records", withQueriedValueRecord2) ~> addUserId() ~> addTenantIdHeader(
               TENANT_2
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
             }
 
-            param.asAdmin(Post("/v0/records", withoutQueriedValueRecord)) ~> addTenantIdHeader(
+            Post("/v0/records", withoutQueriedValueRecord) ~> addUserId() ~> addTenantIdHeader(
               TENANT_1
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
             }
 
-            param.asAdmin(Post("/v0/records", withoutQueriedValueRecord)) ~> addTenantIdHeader(
+            Post("/v0/records", withoutQueriedValueRecord) ~> addUserId() ~> addTenantIdHeader(
               TENANT_2
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
@@ -1858,51 +1863,51 @@ class RecordsServiceSpec extends ApiSpec {
         }
 
         it("works for deep paths") { param =>
-          param.asAdmin(Post("/v0/aspects", aspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", aspect) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/aspects", aspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", aspect) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withQueriedValueInDeepPathRecord1)) ~> addTenantIdHeader(
+          Post("/v0/records", withQueriedValueInDeepPathRecord1) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withQueriedValueInDeepPathRecord1)) ~> addTenantIdHeader(
+          Post("/v0/records", withQueriedValueInDeepPathRecord1) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withQueriedValueInDeepPathRecord2)) ~> addTenantIdHeader(
+          Post("/v0/records", withQueriedValueInDeepPathRecord2) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withQueriedValueInDeepPathRecord2)) ~> addTenantIdHeader(
+          Post("/v0/records", withQueriedValueInDeepPathRecord2) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(
-            Post("/v0/records", withoutQueriedValueInDeepPathRecord)
-          ) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+          Post("/v0/records", withoutQueriedValueInDeepPathRecord) ~> addUserId() ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(
-            Post("/v0/records", withoutQueriedValueInDeepPathRecord)
-          ) ~> addTenantIdHeader(TENANT_2) ~> param.api(Full).routes ~> check {
+          Post("/v0/records", withoutQueriedValueInDeepPathRecord) ~> addUserId() ~> addTenantIdHeader(
+            TENANT_2
+          ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
@@ -1930,49 +1935,49 @@ class RecordsServiceSpec extends ApiSpec {
         }
 
         it("works as AND when multiple queries specified") { param =>
-          param.asAdmin(Post("/v0/aspects", aspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", aspect) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/aspects", aspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", aspect) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", with2QueriedValuesRecord1)) ~> addTenantIdHeader(
+          Post("/v0/records", with2QueriedValuesRecord1) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", with2QueriedValuesRecord1)) ~> addTenantIdHeader(
+          Post("/v0/records", with2QueriedValuesRecord1) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", with2QueriedValuesRecord2)) ~> addTenantIdHeader(
+          Post("/v0/records", with2QueriedValuesRecord2) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", with2QueriedValuesRecord2)) ~> addTenantIdHeader(
+          Post("/v0/records", with2QueriedValuesRecord2) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withOnlyOneQueriedValueRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withOnlyOneQueriedValueRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", withOnlyOneQueriedValueRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", withOnlyOneQueriedValueRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -2004,12 +2009,10 @@ class RecordsServiceSpec extends ApiSpec {
         def createAspect(
             aspectDef: AspectDefinition
         )(implicit param: FixtureParam) =
-          param.asAdmin(
-            Post(
-              "/v0/aspects",
-              aspectDef
-            )
-          ) ~> addTenantIdHeader(
+          Post(
+            "/v0/aspects",
+            aspectDef
+          ) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -2018,7 +2021,7 @@ class RecordsServiceSpec extends ApiSpec {
         def createRecord(
             record: Record
         )(implicit param: FixtureParam) =
-          param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+          Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -2854,13 +2857,13 @@ class RecordsServiceSpec extends ApiSpec {
             java.net.URLEncoder.encode(rawQueriedValue, "UTF-8")
 
           val testAspect = AspectDefinition(rawTestAspectId, "any name", None)
-          param.asAdmin(Post("/v0/aspects", testAspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", testAspect) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/aspects", testAspect)) ~> addTenantIdHeader(
+          Post("/v0/aspects", testAspect) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -2877,13 +2880,13 @@ class RecordsServiceSpec extends ApiSpec {
             Some("blah"),
             tenantId = Some(TENANT_1)
           )
-          param.asAdmin(Post("/v0/records", theWithQueriedValueRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", theWithQueriedValueRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", theWithQueriedValueRecord)) ~> addTenantIdHeader(
+          Post("/v0/records", theWithQueriedValueRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -2898,13 +2901,13 @@ class RecordsServiceSpec extends ApiSpec {
             ),
             Some("blah")
           )
-          param.asAdmin(Post("/v0/records", theWithoutQueriedValueRecord1)) ~> addTenantIdHeader(
+          Post("/v0/records", theWithoutQueriedValueRecord1) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", theWithoutQueriedValueRecord1)) ~> addTenantIdHeader(
+          Post("/v0/records", theWithoutQueriedValueRecord1) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -2919,13 +2922,13 @@ class RecordsServiceSpec extends ApiSpec {
             ),
             Some("blah")
           )
-          param.asAdmin(Post("/v0/records", theWithoutQueriedValueRecord2)) ~> addTenantIdHeader(
+          Post("/v0/records", theWithoutQueriedValueRecord2) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
 
-          param.asAdmin(Post("/v0/records", theWithoutQueriedValueRecord2)) ~> addTenantIdHeader(
+          Post("/v0/records", theWithoutQueriedValueRecord2) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -2966,13 +2969,13 @@ class RecordsServiceSpec extends ApiSpec {
           val testAspect = AspectDefinition(testAspectId, "any name", None)
 
           it("honors the limit parameter") { param =>
-            param.asAdmin(Post("/v0/aspects", testAspect)) ~> addTenantIdHeader(
+            Post("/v0/aspects", testAspect) ~> addUserId() ~> addTenantIdHeader(
               TENANT_1
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
             }
 
-            param.asAdmin(Post("/v0/aspects", testAspect)) ~> addTenantIdHeader(
+            Post("/v0/aspects", testAspect) ~> addUserId() ~> addTenantIdHeader(
               TENANT_2
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
@@ -2984,13 +2987,13 @@ class RecordsServiceSpec extends ApiSpec {
                 Map(testAspectId -> JsObject("value" -> JsNumber(i))),
                 Some("blah")
               )
-              param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+              Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
                 TENANT_1
               ) ~> param.api(Full).routes ~> check {
                 status shouldEqual StatusCodes.OK
               }
 
-              param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+              Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
                 TENANT_2
               ) ~> param.api(Full).routes ~> check {
                 status shouldEqual StatusCodes.OK
@@ -3015,13 +3018,13 @@ class RecordsServiceSpec extends ApiSpec {
           }
 
           it("honors the start parameter") { param =>
-            param.asAdmin(Post("/v0/aspects", testAspect)) ~> addTenantIdHeader(
+            Post("/v0/aspects", testAspect) ~> addUserId() ~> addTenantIdHeader(
               TENANT_1
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
             }
 
-            param.asAdmin(Post("/v0/aspects", testAspect)) ~> addTenantIdHeader(
+            Post("/v0/aspects", testAspect) ~> addUserId() ~> addTenantIdHeader(
               TENANT_2
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
@@ -3034,13 +3037,13 @@ class RecordsServiceSpec extends ApiSpec {
                 Map(testAspectId -> JsObject("value" -> JsNumber(i))),
                 Some("blah")
               )
-              param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+              Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
                 TENANT_1
               ) ~> param.api(Full).routes ~> check {
                 status shouldEqual StatusCodes.OK
               }
 
-              param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+              Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
                 TENANT_2
               ) ~> param.api(Full).routes ~> check {
                 status shouldEqual StatusCodes.OK
@@ -3061,13 +3064,13 @@ class RecordsServiceSpec extends ApiSpec {
           }
 
           it("pageTokens can be used to page through results") { param =>
-            param.asAdmin(Post("/v0/aspects", testAspect)) ~> addTenantIdHeader(
+            Post("/v0/aspects", testAspect) ~> addUserId() ~> addTenantIdHeader(
               TENANT_1
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
             }
 
-            param.asAdmin(Post("/v0/aspects", testAspect)) ~> addTenantIdHeader(
+            Post("/v0/aspects", testAspect) ~> addUserId() ~> addTenantIdHeader(
               TENANT_2
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
@@ -3080,13 +3083,13 @@ class RecordsServiceSpec extends ApiSpec {
                 Map(testAspectId -> JsObject("value" -> JsNumber(i))),
                 Some("blah")
               )
-              param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+              Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
                 TENANT_1
               ) ~> param.api(Full).routes ~> check {
                 status shouldEqual StatusCodes.OK
               }
 
-              param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+              Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
                 TENANT_2
               ) ~> param.api(Full).routes ~> check {
                 status shouldEqual StatusCodes.OK
@@ -3139,13 +3142,13 @@ class RecordsServiceSpec extends ApiSpec {
           }
 
           it("provides hasMore correctly") { param =>
-            param.asAdmin(Post("/v0/aspects", testAspect)) ~> addTenantIdHeader(
+            Post("/v0/aspects", testAspect) ~> addUserId() ~> addTenantIdHeader(
               TENANT_1
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
             }
 
-            param.asAdmin(Post("/v0/aspects", testAspect)) ~> addTenantIdHeader(
+            Post("/v0/aspects", testAspect) ~> addUserId() ~> addTenantIdHeader(
               TENANT_2
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
@@ -3158,13 +3161,13 @@ class RecordsServiceSpec extends ApiSpec {
                 Map(testAspectId -> JsObject("value" -> JsNumber(i))),
                 Some("blah")
               )
-              param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+              Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
                 TENANT_1
               ) ~> param.api(Full).routes ~> check {
                 status shouldEqual StatusCodes.OK
               }
 
-              param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+              Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
                 TENANT_2
               ) ~> param.api(Full).routes ~> check {
                 status shouldEqual StatusCodes.OK
@@ -3250,13 +3253,13 @@ class RecordsServiceSpec extends ApiSpec {
                     val testAspectId = "test"
                     val testAspect =
                       AspectDefinition(testAspectId, "any name", None)
-                    param.asAdmin(Post("/v0/aspects", testAspect)) ~> addTenantIdHeader(
+                    Post("/v0/aspects", testAspect) ~> addUserId() ~> addTenantIdHeader(
                       TENANT_1
                     ) ~> param.api(Full).routes ~> check {
                       status shouldEqual StatusCodes.OK
                     }
 
-                    param.asAdmin(Post("/v0/aspects", testAspect)) ~> addTenantIdHeader(
+                    Post("/v0/aspects", testAspect) ~> addUserId() ~> addTenantIdHeader(
                       TENANT_2
                     ) ~> param.api(Full).routes ~> check {
                       status shouldEqual StatusCodes.OK
@@ -3271,13 +3274,13 @@ class RecordsServiceSpec extends ApiSpec {
                           Map(testAspectId -> JsObject("value" -> JsNumber(i))),
                           Some("blah")
                         )
-                        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+                        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
                           TENANT_1
                         ) ~> param.api(Full).routes ~> check {
                           status shouldEqual StatusCodes.OK
                         }
 
-                        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+                        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
                           TENANT_2
                         ) ~> param.api(Full).routes ~> check {
                           status shouldEqual StatusCodes.OK
@@ -3372,7 +3375,7 @@ class RecordsServiceSpec extends ApiSpec {
                         aspectNumber.toString,
                         None
                       )
-                      param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+                      Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
                         TENANT_1
                       ) ~> param.api(Full).routes ~> check {
                         status shouldEqual StatusCodes.OK
@@ -3390,7 +3393,7 @@ class RecordsServiceSpec extends ApiSpec {
                               ),
                               Some("blah")
                             )
-                            param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+                            Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
                               TENANT_1
                             ) ~> param.api(Full).routes ~> check {
                               status shouldEqual StatusCodes.OK
@@ -3399,7 +3402,7 @@ class RecordsServiceSpec extends ApiSpec {
                         }
                       }
 
-                      param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+                      Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
                         TENANT_2
                       ) ~> param.api(Full).routes ~> check {
                         status shouldEqual StatusCodes.OK
@@ -3417,7 +3420,7 @@ class RecordsServiceSpec extends ApiSpec {
                               ),
                               Some("blah")
                             )
-                            param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+                            Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
                               TENANT_2
                             ) ~> param.api(Full).routes ~> check {
                               status shouldEqual StatusCodes.OK
@@ -3519,13 +3522,13 @@ class RecordsServiceSpec extends ApiSpec {
                     aspectIds.foreach { aspectNumber =>
                       val aspectDefinition =
                         AspectDefinition(aspectNumber, aspectNumber, None)
-                      param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+                      Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
                         TENANT_1
                       ) ~> param.api(Full).routes ~> check {
                         status shouldEqual StatusCodes.OK
                       }
 
-                      param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+                      Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
                         TENANT_2
                       ) ~> param.api(Full).routes ~> check {
                         status shouldEqual StatusCodes.OK
@@ -3545,13 +3548,13 @@ class RecordsServiceSpec extends ApiSpec {
                             aspectValues.toMap,
                             Some("blah")
                           )
-                        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+                        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
                           TENANT_1
                         ) ~> param.api(Full).routes ~> check {
                           status shouldEqual StatusCodes.OK
                         }
 
-                        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+                        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
                           TENANT_2
                         ) ~> param.api(Full).routes ~> check {
                           status shouldEqual StatusCodes.OK
@@ -3568,13 +3571,13 @@ class RecordsServiceSpec extends ApiSpec {
                           Map(aspectId -> JsObject("value" -> JsNumber(i))),
                           Some("blah")
                         )
-                        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+                        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
                           TENANT_1
                         ) ~> param.api(Full).routes ~> check {
                           status shouldEqual StatusCodes.OK
                         }
 
-                        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+                        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
                           TENANT_2
                         ) ~> param.api(Full).routes ~> check {
                           status shouldEqual StatusCodes.OK
@@ -3681,15 +3684,22 @@ class RecordsServiceSpec extends ApiSpec {
     }
   }
 
+  /**
+    *  Todo: this auth logic related test case should be move to a seperate auth test suit
+    *  It currently won't work as we turn off the auth in this test suit
+    * @param recordId
+    * @param eventId
+    * @param tenantId
+    * @param param
+    */
   def checkDeleteRecordOperationEventId(
       recordId: String,
       eventId: Option[String],
       tenantId: BigInt = TENANT_1
   )(implicit param: FixtureParam): Unit = {
-    param.asAdmin(
-      Get(
-        s"/v0/records/${URLEncoder.encode(recordId, "UTF-8").replace("+", "%20")}/history"
-      )
+
+    Get(
+      s"/v0/records/${URLEncoder.encode(recordId, "UTF-8").replace("+", "%20")}/history"
     ) ~> addTenantIdHeader(
       TENANT_1
     ) ~> param
@@ -3716,7 +3726,7 @@ class RecordsServiceSpec extends ApiSpec {
       it("can add a new record") { param =>
         var eventId: Option[String] = None
         val record = Record("testId", "testName", Map(), Some("tag"))
-        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -3766,7 +3776,7 @@ class RecordsServiceSpec extends ApiSpec {
         var eventId: Option[String] = None
         val record_1 =
           Record("aRecordId", "a default tenant", Map(), Some("tag"))
-        param.asAdmin(Post("/v0/records", record_1)) ~> addTenantIdHeader(
+        Post("/v0/records", record_1) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -3780,7 +3790,7 @@ class RecordsServiceSpec extends ApiSpec {
         checkRecordLastEventId("aRecordId", eventId, TENANT_1)
 
         val record_2 = Record("aRecordId", "a new tenant", Map(), Some("tag"))
-        param.asAdmin(Post("/v0/records", record_2)) ~> addTenantIdHeader(
+        Post("/v0/records", record_2) ~> addUserId() ~> addTenantIdHeader(
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -3814,7 +3824,7 @@ class RecordsServiceSpec extends ApiSpec {
 
       it("sets sourcetag to NULL by default") { implicit param =>
         val record = Record("testId", "testName", Map(), None)
-        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -3846,7 +3856,7 @@ class RecordsServiceSpec extends ApiSpec {
 
       it("supports invalid URL characters in ID") { implicit param =>
         val record = Record("in valid", "testName", Map(), Some("blah"))
-        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -3883,7 +3893,7 @@ class RecordsServiceSpec extends ApiSpec {
       it("returns 400 if a record with the given ID already exists") {
         implicit param =>
           val record = Record("testId", "testName", Map(), Some("blah"))
-          param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+          Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -3900,7 +3910,7 @@ class RecordsServiceSpec extends ApiSpec {
           }
 
           val updated = record.copy(name = "foo")
-          param.asAdmin(Post("/v0/records", updated)) ~> addTenantIdHeader(
+          Post("/v0/records", updated) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.BadRequest
@@ -3909,7 +3919,7 @@ class RecordsServiceSpec extends ApiSpec {
             header("x-magda-event-id").isEmpty shouldBe true
           }
 
-          param.asAdmin(Post("/v0/records", updated)) ~> addTenantIdHeader(
+          Post("/v0/records", updated) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -3923,16 +3933,12 @@ class RecordsServiceSpec extends ApiSpec {
           }
       }
 
-      checkMustBeAdmin(role) {
-        val record = Record("testId", "testName", Map(), Some("blah"))
-        Post("/v0/records", record)
-      }
     }
 
     describe("PUT") {
       it("can add a new record") { implicit param =>
         val record = Record("testId", "testName", Map(), Some("policy"))
-        param.asAdmin(Put("/v0/records/testId", record)) ~> addTenantIdHeader(
+        Put("/v0/records/testId", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -3992,7 +3998,7 @@ class RecordsServiceSpec extends ApiSpec {
             authnReadPolicyId = Some("old.policy")
           )
 
-        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4007,7 +4013,7 @@ class RecordsServiceSpec extends ApiSpec {
 
         val newRecord =
           record.copy(name = "newName", authnReadPolicyId = Some("new.policy"))
-        param.asAdmin(Put("/v0/records/testId", newRecord)) ~> addTenantIdHeader(
+        Put("/v0/records/testId", newRecord) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4023,7 +4029,7 @@ class RecordsServiceSpec extends ApiSpec {
           )
         }
 
-        param.asAdmin(Put("/v0/records/testId", newRecord)) ~> addTenantIdHeader(
+        Put("/v0/records/testId", newRecord) ~> addUserId() ~> addTenantIdHeader(
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4091,7 +4097,7 @@ class RecordsServiceSpec extends ApiSpec {
             tenantId = Some(TENANT_1),
             authnReadPolicyId = Some("old.policy")
           )
-        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4105,7 +4111,7 @@ class RecordsServiceSpec extends ApiSpec {
 
         val newRecord =
           record.copy(authnReadPolicyId = None)
-        param.asAdmin(Put("/v0/records/testId", newRecord)) ~> addTenantIdHeader(
+        Put("/v0/records/testId", newRecord) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4138,7 +4144,7 @@ class RecordsServiceSpec extends ApiSpec {
         "updates the sourcetag of an otherwise identical record without generating events"
       ) { implicit param =>
         val record = Record("testId", "testName", Map(), Some("tag1"))
-        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4165,7 +4171,7 @@ class RecordsServiceSpec extends ApiSpec {
         }
 
         val newRecord = record.copy(sourceTag = Some("tag2"))
-        param.asAdmin(Put("/v0/records/testId", newRecord)) ~> addTenantIdHeader(
+        Put("/v0/records/testId", newRecord) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4176,7 +4182,7 @@ class RecordsServiceSpec extends ApiSpec {
           header("x-magda-event-id").map(_.value()).get shouldEqual "0"
         }
 
-        param.asAdmin(Put("/v0/records/testId", newRecord)) ~> addTenantIdHeader(
+        Put("/v0/records/testId", newRecord) ~> addUserId() ~> addTenantIdHeader(
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4224,7 +4230,7 @@ class RecordsServiceSpec extends ApiSpec {
 
       it("cannot change the ID of an existing record") { implicit param =>
         val record = Record("testId", "testName", Map(), Some("blah"))
-        param.asAdmin(Put("/v0/records/testId", record)) ~> addTenantIdHeader(
+        Put("/v0/records/testId", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4238,7 +4244,7 @@ class RecordsServiceSpec extends ApiSpec {
         }
 
         val updated = record.copy(id = "foo")
-        param.asAdmin(Put("/v0/records/testId", updated)) ~> addTenantIdHeader(
+        Put("/v0/records/testId", updated) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
@@ -4248,7 +4254,7 @@ class RecordsServiceSpec extends ApiSpec {
           header("x-magda-event-id").isEmpty shouldBe true
         }
 
-        param.asAdmin(Put("/v0/records/testId", updated)) ~> addTenantIdHeader(
+        Put("/v0/records/testId", updated) ~> addUserId() ~> addTenantIdHeader(
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
@@ -4258,7 +4264,7 @@ class RecordsServiceSpec extends ApiSpec {
 
       it("supports invalid URL characters in ID") { implicit param =>
         val record = Record("in valid", "testName", Map(), Some("blah"))
-        param.asAdmin(Put("/v0/records/in%20valid", record)) ~> addTenantIdHeader(
+        Put("/v0/records/in%20valid", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4281,14 +4287,14 @@ class RecordsServiceSpec extends ApiSpec {
 
       it("can add an aspect") { implicit param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val record = Record("testId", "testName", Map(), Some("blah"))
-        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4301,7 +4307,7 @@ class RecordsServiceSpec extends ApiSpec {
         }
 
         val updated = record.copy(aspects = Map("test" -> JsObject()))
-        param.asAdmin(Put("/v0/records/testId", updated)) ~> addTenantIdHeader(
+        Put("/v0/records/testId", updated) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4324,7 +4330,7 @@ class RecordsServiceSpec extends ApiSpec {
 
       it("can modify an aspect") { implicit param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4336,7 +4342,7 @@ class RecordsServiceSpec extends ApiSpec {
           Map("test" -> JsObject("foo" -> JsString("bar"))),
           Some("blah")
         )
-        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4351,7 +4357,7 @@ class RecordsServiceSpec extends ApiSpec {
         val updated = record.copy(
           aspects = Map("test" -> JsObject("foo" -> JsString("baz")))
         )
-        param.asAdmin(Put("/v0/records/testId", updated)) ~> addTenantIdHeader(
+        Put("/v0/records/testId", updated) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4376,7 +4382,7 @@ class RecordsServiceSpec extends ApiSpec {
         "does not remove aspects simply because they're missing from the PUT payload"
       ) { implicit param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4388,7 +4394,7 @@ class RecordsServiceSpec extends ApiSpec {
           Map("test" -> JsObject("foo" -> JsString("bar"))),
           Some("blah")
         )
-        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4403,7 +4409,7 @@ class RecordsServiceSpec extends ApiSpec {
         // TODO: the PUT should return the real record, not just echo back what the user provided.
         //       i.e. the aspects should be included.  I think.
         val updated = record.copy(aspects = Map())
-        param.asAdmin(Put("/v0/records/testId", updated)) ~> addTenantIdHeader(
+        Put("/v0/records/testId", updated) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4420,16 +4426,12 @@ class RecordsServiceSpec extends ApiSpec {
         }
       }
 
-      checkMustBeAdmin(role) {
-        val record = Record("testId", "testName", Map(), Some("blah"))
-        Put("/v0/records/testId", record)
-      }
     }
 
     describe("PATCH") {
       it("returns an error when the record does not exist") { param =>
         val patch = JsonPatch()
-        param.asAdmin(Patch("/v0/records/doesnotexist", patch)) ~> addTenantIdHeader(
+        Patch("/v0/records/doesnotexist", patch) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
@@ -4441,7 +4443,7 @@ class RecordsServiceSpec extends ApiSpec {
 
       it("can modify a record's name") { implicit param =>
         val record = Record("testId", "testName", Map(), Some("blah"))
-        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4454,7 +4456,7 @@ class RecordsServiceSpec extends ApiSpec {
         }
 
         val patch = JsonPatch(Replace(Pointer.root / "name", JsString("foo")))
-        param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
+        Patch("/v0/records/testId", patch) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4473,7 +4475,7 @@ class RecordsServiceSpec extends ApiSpec {
           )
         }
 
-        param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
+        Patch("/v0/records/testId", patch) ~> addUserId() ~> addTenantIdHeader(
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
@@ -4523,7 +4525,7 @@ class RecordsServiceSpec extends ApiSpec {
           Map(),
           authnReadPolicyId = Some("policyA")
         )
-        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4538,7 +4540,7 @@ class RecordsServiceSpec extends ApiSpec {
         val patch = JsonPatch(
           Replace(Pointer.root / "authnReadPolicyId", JsString("policyB"))
         )
-        param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
+        Patch("/v0/records/testId", patch) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4560,7 +4562,7 @@ class RecordsServiceSpec extends ApiSpec {
 
       it("cannot modify a record's ID") { implicit param =>
         val record = Record("testId", "testName", Map(), Some("blah"))
-        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4573,7 +4575,7 @@ class RecordsServiceSpec extends ApiSpec {
         }
 
         val patch = JsonPatch(Replace(Pointer.root / "id", JsString("foo")))
-        param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
+        Patch("/v0/records/testId", patch) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
@@ -4584,14 +4586,14 @@ class RecordsServiceSpec extends ApiSpec {
 
       it("can add an aspect") { implicit param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val record = Record("testId", "testName", Map(), Some("blah"))
-        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4605,7 +4607,7 @@ class RecordsServiceSpec extends ApiSpec {
 
         val patch =
           JsonPatch(Add(Pointer.root / "aspects" / "test", JsObject()))
-        param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
+        Patch("/v0/records/testId", patch) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4624,7 +4626,7 @@ class RecordsServiceSpec extends ApiSpec {
           )
         }
 
-        param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
+        Patch("/v0/records/testId", patch) ~> addUserId() ~> addTenantIdHeader(
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
@@ -4653,7 +4655,7 @@ class RecordsServiceSpec extends ApiSpec {
 
       it("can modify an aspect") { implicit param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4665,7 +4667,7 @@ class RecordsServiceSpec extends ApiSpec {
           Map("test" -> JsObject("foo" -> JsString("bar"))),
           Some("blah")
         )
-        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4680,7 +4682,7 @@ class RecordsServiceSpec extends ApiSpec {
         val patch = JsonPatch(
           Replace(Pointer.root / "aspects" / "test" / "foo", JsString("baz"))
         )
-        param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
+        Patch("/v0/records/testId", patch) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4699,7 +4701,7 @@ class RecordsServiceSpec extends ApiSpec {
           )
         }
 
-        param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
+        Patch("/v0/records/testId", patch) ~> addUserId() ~> addTenantIdHeader(
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
@@ -4728,7 +4730,7 @@ class RecordsServiceSpec extends ApiSpec {
 
       it("can add a new property to an aspect") { implicit param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4740,7 +4742,7 @@ class RecordsServiceSpec extends ApiSpec {
           Map("test" -> JsObject("foo" -> JsString("bar"))),
           Some("blah")
         )
-        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4755,7 +4757,7 @@ class RecordsServiceSpec extends ApiSpec {
         val patch = JsonPatch(
           Add(Pointer.root / "aspects" / "test" / "newprop", JsString("test"))
         )
-        param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
+        Patch("/v0/records/testId", patch) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4779,7 +4781,7 @@ class RecordsServiceSpec extends ApiSpec {
           )
         }
 
-        param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
+        Patch("/v0/records/testId", patch) ~> addUserId() ~> addTenantIdHeader(
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
@@ -4813,7 +4815,7 @@ class RecordsServiceSpec extends ApiSpec {
 
       it("can remove an aspect") { implicit param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4825,7 +4827,7 @@ class RecordsServiceSpec extends ApiSpec {
           Map("test" -> JsObject("foo" -> JsString("bar"))),
           Some("blah")
         )
-        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4838,7 +4840,7 @@ class RecordsServiceSpec extends ApiSpec {
         }
 
         val patch = JsonPatch(Remove(Pointer.root / "aspects" / "test"))
-        param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
+        Patch("/v0/records/testId", patch) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4857,7 +4859,7 @@ class RecordsServiceSpec extends ApiSpec {
           )
         }
 
-        param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
+        Patch("/v0/records/testId", patch) ~> addUserId() ~> addTenantIdHeader(
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
@@ -4886,7 +4888,7 @@ class RecordsServiceSpec extends ApiSpec {
 
       it("can remove a property from an aspect") { implicit param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4903,7 +4905,7 @@ class RecordsServiceSpec extends ApiSpec {
           ),
           Some("blah")
         )
-        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4917,7 +4919,7 @@ class RecordsServiceSpec extends ApiSpec {
 
         val patch =
           JsonPatch(Remove(Pointer.root / "aspects" / "test" / "newprop"))
-        param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
+        Patch("/v0/records/testId", patch) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4936,7 +4938,7 @@ class RecordsServiceSpec extends ApiSpec {
           )
         }
 
-        param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
+        Patch("/v0/records/testId", patch) ~> addUserId() ~> addTenantIdHeader(
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
@@ -4965,7 +4967,7 @@ class RecordsServiceSpec extends ApiSpec {
 
       it("supports Move within an aspect") { implicit param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4977,7 +4979,7 @@ class RecordsServiceSpec extends ApiSpec {
           Map("test" -> JsObject("foo" -> JsString("bar"))),
           Some("blah")
         )
-        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -4995,7 +4997,7 @@ class RecordsServiceSpec extends ApiSpec {
             Pointer.root / "aspects" / "test" / "bar"
           )
         )
-        param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
+        Patch("/v0/records/testId", patch) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -5014,7 +5016,7 @@ class RecordsServiceSpec extends ApiSpec {
           )
         }
 
-        param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
+        Patch("/v0/records/testId", patch) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
@@ -5043,7 +5045,7 @@ class RecordsServiceSpec extends ApiSpec {
 
       it("supports Copy within an aspect") { implicit param =>
         val aspectDefinition = AspectDefinition("test", "test", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -5055,7 +5057,7 @@ class RecordsServiceSpec extends ApiSpec {
           Map("test" -> JsObject("foo" -> JsString("bar"))),
           Some("blah")
         )
-        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -5073,7 +5075,7 @@ class RecordsServiceSpec extends ApiSpec {
             Pointer.root / "aspects" / "test" / "bar"
           )
         )
-        param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
+        Patch("/v0/records/testId", patch) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -5097,7 +5099,7 @@ class RecordsServiceSpec extends ApiSpec {
           )
         }
 
-        param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
+        Patch("/v0/records/testId", patch) ~> addUserId() ~> addTenantIdHeader(
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
@@ -5131,7 +5133,7 @@ class RecordsServiceSpec extends ApiSpec {
 
       it("evaluates Test operations") { implicit param =>
         val A = AspectDefinition("A", "A", None)
-        param.asAdmin(Post("/v0/aspects", A)) ~> addTenantIdHeader(TENANT_1) ~> param
+        Post("/v0/aspects", A) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
           .api(role)
           .routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -5143,7 +5145,7 @@ class RecordsServiceSpec extends ApiSpec {
           Map("A" -> JsObject("foo" -> JsString("bar"))),
           Some("blah")
         )
-        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -5158,7 +5160,7 @@ class RecordsServiceSpec extends ApiSpec {
         val patchSuccess = JsonPatch(
           Test(Pointer.root / "aspects" / "A" / "foo", JsString("bar"))
         )
-        param.asAdmin(Patch("/v0/records/testId", patchSuccess)) ~> addTenantIdHeader(
+        Patch("/v0/records/testId", patchSuccess) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -5173,7 +5175,7 @@ class RecordsServiceSpec extends ApiSpec {
           header("x-magda-event-id").map(_.value()).get shouldEqual "0"
         }
 
-        param.asAdmin(Patch("/v0/records/testId", patchSuccess)) ~> addTenantIdHeader(
+        Patch("/v0/records/testId", patchSuccess) ~> addUserId() ~> addTenantIdHeader(
           TENANT_2
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
@@ -5186,7 +5188,7 @@ class RecordsServiceSpec extends ApiSpec {
             JsString("not this value")
           )
         )
-        param.asAdmin(Patch("/v0/records/testId", patchFail)) ~> addTenantIdHeader(
+        Patch("/v0/records/testId", patchFail) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
@@ -5197,14 +5199,14 @@ class RecordsServiceSpec extends ApiSpec {
 
       it("does not support Move between aspects") { implicit param =>
         val A = AspectDefinition("A", "A", None)
-        param.asAdmin(Post("/v0/aspects", A)) ~> addTenantIdHeader(TENANT_1) ~> param
+        Post("/v0/aspects", A) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
           .api(role)
           .routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val B = AspectDefinition("B", "B", None)
-        param.asAdmin(Post("/v0/aspects", B)) ~> addTenantIdHeader(TENANT_1) ~> param
+        Post("/v0/aspects", B) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
           .api(role)
           .routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -5216,7 +5218,7 @@ class RecordsServiceSpec extends ApiSpec {
           Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject()),
           Some("blah")
         )
-        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -5234,7 +5236,7 @@ class RecordsServiceSpec extends ApiSpec {
             Pointer.root / "aspects" / "B" / "foo"
           )
         )
-        param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
+        Patch("/v0/records/testId", patch) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
@@ -5245,14 +5247,14 @@ class RecordsServiceSpec extends ApiSpec {
 
       it("does not support Copy between aspects") { implicit param =>
         val A = AspectDefinition("A", "A", None)
-        param.asAdmin(Post("/v0/aspects", A)) ~> addTenantIdHeader(TENANT_1) ~> param
+        Post("/v0/aspects", A) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
           .api(role)
           .routes ~> check {
           status shouldEqual StatusCodes.OK
         }
 
         val B = AspectDefinition("B", "B", None)
-        param.asAdmin(Post("/v0/aspects", B)) ~> addTenantIdHeader(TENANT_1) ~> param
+        Post("/v0/aspects", B) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
           .api(role)
           .routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -5264,7 +5266,7 @@ class RecordsServiceSpec extends ApiSpec {
           Map("A" -> JsObject("foo" -> JsString("bar")), "B" -> JsObject()),
           Some("blah")
         )
-        param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -5282,7 +5284,7 @@ class RecordsServiceSpec extends ApiSpec {
             Pointer.root / "aspects" / "B" / "foo"
           )
         )
-        param.asAdmin(Patch("/v0/records/testId", patch)) ~> addTenantIdHeader(
+        Patch("/v0/records/testId", patch) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
@@ -5291,17 +5293,13 @@ class RecordsServiceSpec extends ApiSpec {
         }
       }
 
-      checkMustBeAdmin(role) {
-        val patch = JsonPatch(Replace(Pointer.root / "name", JsString("foo")))
-        Patch("/v0/records/testId", patch)
-      }
     }
 
     describe("DELETE") {
       describe("by id") {
         it("can delete a record without any aspects") { implicit param =>
           val record = Record("without", "without", Map(), Some("blah"))
-          param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+          Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -5314,7 +5312,7 @@ class RecordsServiceSpec extends ApiSpec {
           }
 
           var eventId: Option[String] = None
-          param.asAdmin(Delete("/v0/records/without")) ~> addTenantIdHeader(
+          Delete("/v0/records/without") ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -5322,7 +5320,7 @@ class RecordsServiceSpec extends ApiSpec {
             eventId = header("x-magda-event-id").map(_.value())
           }
 
-          param.asAdmin(Get(s"/v0/records/without/history")) ~> addTenantIdHeader(
+          Get(s"/v0/records/without/history") ~> addTenantIdHeader(
             TENANT_1
           ) ~> param
             .api(role)
@@ -5353,7 +5351,7 @@ class RecordsServiceSpec extends ApiSpec {
             responseAs[EventsPage].events.size shouldEqual 0
           }
 
-          param.asAdmin(Delete("/v0/records/without")) ~> addTenantIdHeader(
+          Delete("/v0/records/without") ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -5366,7 +5364,7 @@ class RecordsServiceSpec extends ApiSpec {
         it(
           "returns 200 and deleted=false when asked to delete a record that doesn't exist"
         ) { param =>
-          param.asAdmin(Delete("/v0/records/doesnotexist")) ~> addTenantIdHeader(
+          Delete("/v0/records/doesnotexist") ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -5378,7 +5376,7 @@ class RecordsServiceSpec extends ApiSpec {
 
         it("can delete a record with an aspect") { implicit param =>
           val aspectDefinition = AspectDefinition("test", "test", None)
-          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+          Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -5386,7 +5384,7 @@ class RecordsServiceSpec extends ApiSpec {
 
           val record =
             Record("with", "with", Map("test" -> JsObject()), Some("blah"))
-          param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+          Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -5398,7 +5396,7 @@ class RecordsServiceSpec extends ApiSpec {
             )
           }
 
-          param.asAdmin(Delete("/v0/records/with")) ~> addTenantIdHeader(
+          Delete("/v0/records/with") ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -5407,7 +5405,7 @@ class RecordsServiceSpec extends ApiSpec {
             header("x-magda-event-id").map(_.value()).get shouldEqual "0"
           }
 
-          param.asAdmin(Delete("/v0/records/with")) ~> addTenantIdHeader(
+          Delete("/v0/records/with") ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -5419,10 +5417,6 @@ class RecordsServiceSpec extends ApiSpec {
               TENANT_1
             )
           }
-        }
-
-        checkMustBeAdmin(role) {
-          Delete("/v0/records/without")
         }
       }
 
@@ -5463,7 +5457,7 @@ class RecordsServiceSpec extends ApiSpec {
             "source",
             Some(lines.parseJson.asJsObject)
           )
-          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+          Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -5541,7 +5535,7 @@ class RecordsServiceSpec extends ApiSpec {
 
           all.foreach(
             record =>
-              param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+              Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
                 TENANT_1
               ) ~> param.api(role).routes ~> check {
                 status shouldEqual StatusCodes.OK
@@ -5564,16 +5558,16 @@ class RecordsServiceSpec extends ApiSpec {
             res.records.length shouldEqual 0
           }
 
-          param.asAdmin(
-            Delete("/v0/records?sourceTagToPreserve=righttag&sourceId=right")
-          ) ~> addTenantIdHeader(TENANT_2) ~> param.api(role).routes ~> check {
+          Delete("/v0/records?sourceTagToPreserve=righttag&sourceId=right") ~> addUserId() ~> addTenantIdHeader(
+            TENANT_2
+          ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
             responseAs[MultipleDeleteResult].count shouldEqual 0
           }
 
-          param.asAdmin(
-            Delete("/v0/records?sourceTagToPreserve=righttag&sourceId=right")
-          ) ~> addTenantIdHeader(TENANT_1) ~> param.api(role).routes ~> check {
+          Delete("/v0/records?sourceTagToPreserve=righttag&sourceId=right") ~> addUserId() ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
             responseAs[MultipleDeleteResult].count shouldEqual 2
           }
@@ -5596,7 +5590,7 @@ class RecordsServiceSpec extends ApiSpec {
                 status shouldEqual StatusCodes.NotFound
               }
 
-              param.asAdmin(Get(s"/v0/records/$recordId/history")) ~> addTenantIdHeader(
+              Get(s"/v0/records/$recordId/history") ~> addUserId() ~> addTenantIdHeader(
                 TENANT_1
               ) ~> param.api(role).routes ~> check {
                 status shouldEqual StatusCodes.OK
@@ -5665,7 +5659,7 @@ class RecordsServiceSpec extends ApiSpec {
                 Success(1)
             }
 
-          param.asAdmin(Delete("?sourceTagToPreserve=righttag&sourceId=right")) ~> addTenantIdHeader(
+          Delete("?sourceTagToPreserve=righttag&sourceId=right") ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> mockedApi.route ~> check {
             status shouldEqual StatusCodes.Accepted
@@ -5691,7 +5685,7 @@ class RecordsServiceSpec extends ApiSpec {
             "source",
             Some(lines.parseJson.asJsObject)
           )
-          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+          Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -5709,7 +5703,7 @@ class RecordsServiceSpec extends ApiSpec {
 
           all.foreach(
             record =>
-              param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+              Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
                 TENANT_1
               ) ~> param.api(role).routes ~> check {
                 status shouldEqual StatusCodes.OK
@@ -5724,9 +5718,9 @@ class RecordsServiceSpec extends ApiSpec {
             res.records.length shouldEqual all.length
           }
 
-          param.asAdmin(
-            Delete("/v0/records?sourceTagToPreserve=righttag&sourceId=right")
-          ) ~> addTenantIdHeader(TENANT_1) ~> param.api(role).routes ~> check {
+          Delete("/v0/records?sourceTagToPreserve=righttag&sourceId=right") ~> addUserId() ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
             responseAs[MultipleDeleteResult].count shouldEqual 0
           }
@@ -5740,10 +5734,6 @@ class RecordsServiceSpec extends ApiSpec {
             res.records.count(record => record.id == "righttag-rightsource") shouldEqual 1
           }
 
-        }
-
-        checkMustBeAdmin(role) {
-          Delete("/v0/records?sourceTagToPreserve=blah&sourceId=blah2")
         }
       }
     }

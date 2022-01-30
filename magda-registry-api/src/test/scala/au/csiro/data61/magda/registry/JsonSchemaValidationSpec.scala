@@ -144,7 +144,7 @@ class JsonSchemaValidationSpec extends ApiSpec {
       param: FixtureParam,
       aspectDef: AspectDefinition
   ): Unit = {
-    param.asAdmin(Post("/v0/aspects", aspectDef)) ~> addTenantIdHeader(TENANT_1) ~> param
+    Post("/v0/aspects", aspectDef) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
       .api(Full)
       .routes ~> check {
       status shouldEqual StatusCodes.OK
@@ -176,7 +176,7 @@ class JsonSchemaValidationSpec extends ApiSpec {
                 Some("tag")
               )
 
-              param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+              Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
                 TENANT_1
               ) ~> param.api(Full).routes ~> check {
                 status shouldEqual StatusCodes.OK
@@ -205,7 +205,7 @@ class JsonSchemaValidationSpec extends ApiSpec {
                 Some("tag")
               )
 
-              param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+              Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
                 TENANT_1
               ) ~> param.api(Full).routes ~> check {
                 status shouldEqual StatusCodes.OK
@@ -236,7 +236,7 @@ class JsonSchemaValidationSpec extends ApiSpec {
                 Some("tag")
               )
 
-              param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+              Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
                 TENANT_1
               ) ~> param.api(Full).routes ~> check {
                 status shouldEqual StatusCodes.OK
@@ -265,7 +265,7 @@ class JsonSchemaValidationSpec extends ApiSpec {
               Some("tag")
             )
 
-            param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+            Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
               TENANT_1
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.BadRequest
@@ -300,7 +300,7 @@ class JsonSchemaValidationSpec extends ApiSpec {
                 Some("tag")
               )
 
-              param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+              Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
                 TENANT_1
               ) ~> param.api(Full).routes ~> check {
                 status shouldEqual StatusCodes.OK
@@ -314,7 +314,7 @@ class JsonSchemaValidationSpec extends ApiSpec {
                   s"${ASPECT_ID}" -> jsonString.parseJson.convertTo[JsObject]
                 )
               )
-              param.asAdmin(Put(s"/v0/records/${record.id}", newRecord)) ~> addTenantIdHeader(
+              Put(s"/v0/records/${record.id}", newRecord) ~> addUserId() ~> addTenantIdHeader(
                 TENANT_1
               ) ~> param.api(Full).routes ~> check {
                 status shouldEqual StatusCodes.OK
@@ -342,7 +342,7 @@ class JsonSchemaValidationSpec extends ApiSpec {
               Some("tag")
             )
 
-            param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+            Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
               TENANT_1
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
@@ -357,7 +357,7 @@ class JsonSchemaValidationSpec extends ApiSpec {
               )
             )
 
-            param.asAdmin(Put(s"/v0/records/${record.id}", newRecord)) ~> addTenantIdHeader(
+            Put(s"/v0/records/${record.id}", newRecord) ~> addUserId() ~> addTenantIdHeader(
               TENANT_1
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.BadRequest
@@ -385,7 +385,7 @@ class JsonSchemaValidationSpec extends ApiSpec {
                 Some("tag")
               )
 
-              param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+              Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
                 TENANT_1
               ) ~> param.api(Full).routes ~> check {
                 status shouldEqual StatusCodes.OK
@@ -402,7 +402,7 @@ class JsonSchemaValidationSpec extends ApiSpec {
 
               val patch = JsonDiff.diff(record, newRecord, remember = false)
 
-              param.asAdmin(Patch(s"/v0/records/${record.id}", patch)) ~> addTenantIdHeader(
+              Patch(s"/v0/records/${record.id}", patch) ~> addUserId() ~> addTenantIdHeader(
                 TENANT_1
               ) ~> param.api(Full).routes ~> check {
                 status shouldEqual StatusCodes.OK
@@ -431,7 +431,7 @@ class JsonSchemaValidationSpec extends ApiSpec {
               Some("tag")
             )
 
-            param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+            Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
               TENANT_1
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
@@ -448,7 +448,7 @@ class JsonSchemaValidationSpec extends ApiSpec {
 
             val patch = JsonDiff.diff(record, newRecord, remember = false)
 
-            param.asAdmin(Patch(s"/v0/records/${record.id}", patch)) ~> addTenantIdHeader(
+            Patch(s"/v0/records/${record.id}", patch) ~> addUserId() ~> addTenantIdHeader(
               TENANT_1
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.BadRequest
@@ -476,7 +476,7 @@ class JsonSchemaValidationSpec extends ApiSpec {
                 Some("tag")
               )
 
-              param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+              Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
                 TENANT_1
               ) ~> param.api(Full).routes ~> check {
                 status shouldEqual StatusCodes.OK
@@ -487,12 +487,10 @@ class JsonSchemaValidationSpec extends ApiSpec {
 
               val aspectData = jsonString.parseJson.convertTo[JsObject]
 
-              param.asAdmin(
-                Put(
-                  s"/v0/records/${record.id}/aspects/${ASPECT_ID}",
-                  aspectData
-                )
-              ) ~> addTenantIdHeader(TENANT_1) ~> param
+              Put(
+                s"/v0/records/${record.id}/aspects/${ASPECT_ID}",
+                aspectData
+              ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
                 .api(Full)
                 .routes ~> check {
                 status shouldEqual StatusCodes.OK
@@ -518,7 +516,7 @@ class JsonSchemaValidationSpec extends ApiSpec {
               Some("tag")
             )
 
-            param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+            Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
               TENANT_1
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
@@ -529,9 +527,9 @@ class JsonSchemaValidationSpec extends ApiSpec {
 
             val aspectData = jsonString.parseJson.convertTo[JsObject]
 
-            param.asAdmin(
-              Put(s"/v0/records/${record.id}/aspects/${ASPECT_ID}", aspectData)
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
+            Put(s"/v0/records/${record.id}/aspects/${ASPECT_ID}", aspectData) ~> addUserId() ~> addTenantIdHeader(
+              TENANT_1
+            ) ~> param
               .api(Full)
               .routes ~> check {
               status shouldEqual StatusCodes.BadRequest
@@ -559,7 +557,7 @@ class JsonSchemaValidationSpec extends ApiSpec {
                 Some("tag")
               )
 
-              param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+              Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
                 TENANT_1
               ) ~> param.api(Full).routes ~> check {
                 status shouldEqual StatusCodes.OK
@@ -573,9 +571,9 @@ class JsonSchemaValidationSpec extends ApiSpec {
               val patch =
                 JsonDiff.diff(JsObject(), aspectData, remember = false)
 
-              param.asAdmin(
-                Patch(s"/v0/records/${record.id}/aspects/${ASPECT_ID}", patch)
-              ) ~> addTenantIdHeader(TENANT_1) ~> param
+              Patch(s"/v0/records/${record.id}/aspects/${ASPECT_ID}", patch) ~> addUserId() ~> addTenantIdHeader(
+                TENANT_1
+              ) ~> param
                 .api(Full)
                 .routes ~> check {
                 status shouldEqual StatusCodes.OK
@@ -601,7 +599,7 @@ class JsonSchemaValidationSpec extends ApiSpec {
               Some("tag")
             )
 
-            param.asAdmin(Post("/v0/records", record)) ~> addTenantIdHeader(
+            Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
               TENANT_1
             ) ~> param.api(Full).routes ~> check {
               status shouldEqual StatusCodes.OK
@@ -614,9 +612,9 @@ class JsonSchemaValidationSpec extends ApiSpec {
 
             val patch = JsonDiff.diff(JsObject(), aspectData, remember = false)
 
-            param.asAdmin(
-              Patch(s"/v0/records/${record.id}/aspects/${ASPECT_ID}", patch)
-            ) ~> addTenantIdHeader(TENANT_1) ~> param
+            Patch(s"/v0/records/${record.id}/aspects/${ASPECT_ID}", patch) ~> addUserId() ~> addTenantIdHeader(
+              TENANT_1
+            ) ~> param
               .api(Full)
               .routes ~> check {
               status shouldEqual StatusCodes.BadRequest

@@ -32,7 +32,7 @@ class RecordHistoryServiceSpec extends ApiSpec {
         Some(JsonParser(schemaString).asJsObject)
       )
 
-      param.asAdmin(Post(s"/v0/aspects", aspectDef)) ~> addTenantIdHeader(
+      Post(s"/v0/aspects", aspectDef) ~> addUserId() ~> addTenantIdHeader(
         TENANT_1
       ) ~> param.api(Full).routes ~> check {
         status shouldBe StatusCodes.OK
@@ -105,14 +105,14 @@ class RecordHistoryServiceSpec extends ApiSpec {
         Some("tag")
       )
 
-      param.asAdmin(Post(s"/v0/records", orgRecord)) ~> addTenantIdHeader(
+      Post(s"/v0/records", orgRecord) ~> addUserId() ~> addTenantIdHeader(
         TENANT_1
       ) ~> param.api(Full).routes ~> check {
         status shouldBe StatusCodes.OK
         responseAs[Record] shouldEqual orgRecord.copy(tenantId = Some(TENANT_1))
       }
 
-      param.asAdmin(Post(s"/v0/records", distRecord)) ~> addTenantIdHeader(
+      Post(s"/v0/records", distRecord) ~> addUserId() ~> addTenantIdHeader(
         TENANT_1
       ) ~> param.api(Full).routes ~> check {
         status shouldBe StatusCodes.OK
@@ -121,7 +121,7 @@ class RecordHistoryServiceSpec extends ApiSpec {
         )
       }
 
-      param.asAdmin(Post(s"/v0/records", datasetRecord)) ~> addTenantIdHeader(
+      Post(s"/v0/records", datasetRecord) ~> addUserId() ~> addTenantIdHeader(
         TENANT_1
       ) ~> param.api(Full).routes ~> check {
         status shouldBe StatusCodes.OK
@@ -501,21 +501,21 @@ class RecordHistoryServiceSpec extends ApiSpec {
 
         val events = getEvents(records1._1.id, Seq(), true)
 
-        param.asAdmin(
-          Put(
-            s"/v0/records/${records1._1.id}/aspects/dataset-distributions",
-            JsObject(
-              Map(
-                "distributions" -> JsArray(
-                  // dataset 1's current distribution
-                  JsString(records1._3.id),
-                  // add dataset 2's current distribution to dataset 1
-                  JsString(records2._3.id)
-                )
+        Put(
+          s"/v0/records/${records1._1.id}/aspects/dataset-distributions",
+          JsObject(
+            Map(
+              "distributions" -> JsArray(
+                // dataset 1's current distribution
+                JsString(records1._3.id),
+                // add dataset 2's current distribution to dataset 1
+                JsString(records2._3.id)
               )
             )
           )
-        ) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+        ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
+          .api(Full)
+          .routes ~> check {
           status shouldBe StatusCodes.OK
         }
 
@@ -542,11 +542,10 @@ class RecordHistoryServiceSpec extends ApiSpec {
         val events = getEvents(records1._1.id, Seq(), true)
 
         // remove all distribution for dataset 1
-        param.asAdmin(
-          Put(
-            s"/v0/records/${records1._1.id}/aspects/dataset-distributions",
-            JsObject(Map("distributions" -> JsArray()))
-          )
+
+        Put(
+          s"/v0/records/${records1._1.id}/aspects/dataset-distributions",
+          JsObject(Map("distributions" -> JsArray()))
         ) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
           status shouldBe StatusCodes.OK
         }
@@ -563,18 +562,16 @@ class RecordHistoryServiceSpec extends ApiSpec {
         ).size shouldEqual events.size
 
         // add distribution 2 to dataset 1
-        param.asAdmin(
-          Put(
-            s"/v0/records/${records1._1.id}/aspects/dataset-distributions",
-            JsObject(
-              Map(
-                "distributions" -> JsArray(
-                  JsString(records2._3.id)
-                )
+        Put(
+          s"/v0/records/${records1._1.id}/aspects/dataset-distributions",
+          JsObject(
+            Map(
+              "distributions" -> JsArray(
+                JsString(records2._3.id)
               )
             )
           )
-        ) ~> addTenantIdHeader(TENANT_1) ~> param
+        ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
           .api(Full)
           .routes ~> check {
           status shouldBe StatusCodes.OK
@@ -604,19 +601,19 @@ class RecordHistoryServiceSpec extends ApiSpec {
 
         val events = getEvents(records1._1.id, Seq(), true)
 
-        param.asAdmin(
-          Put(
-            s"/v0/records/${records1._1.id}/aspects/dataset-publisher",
-            JsObject(
-              Map(
-                "publisher" -> JsString(
-                  // assign dataset 2's org record as dataset 1's publisher
-                  records2._2.id
-                )
+        Put(
+          s"/v0/records/${records1._1.id}/aspects/dataset-publisher",
+          JsObject(
+            Map(
+              "publisher" -> JsString(
+                // assign dataset 2's org record as dataset 1's publisher
+                records2._2.id
               )
             )
           )
-        ) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
+        ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
+          .api(Full)
+          .routes ~> check {
           status shouldBe StatusCodes.OK
         }
 

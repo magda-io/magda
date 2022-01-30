@@ -1,6 +1,7 @@
 package au.csiro.data61.magda.registry
 
 import akka.http.scaladsl.model.StatusCodes
+import au.csiro.data61.magda.model.Auth.UnconditionalTrueDecision
 import au.csiro.data61.magda.model.Registry._
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
@@ -30,21 +31,31 @@ class AspectsServiceSpec extends ApiSpec {
   def readOnlyTests(role: Role) {
     describe("GET") {
       it("starts with no aspects defined") { param =>
+        param.authFetcher.setAuthDecision(
+          "object/aspect/read",
+          UnconditionalTrueDecision
+        )
         Get("/v0/aspects") ~> addTenantIdHeader(TENANT_1) ~> param
           .api(role)
           .routes ~> check {
           status shouldEqual StatusCodes.OK
           responseAs[List[AspectDefinition]].length shouldEqual 0
         }
+        param.authFetcher.callTimesByOperationUri("object/aspect/read") shouldBe 1
       }
 
       it("returns 404 if the given ID does not exist") { param =>
+        param.authFetcher.setAuthDecision(
+          "object/aspect/read",
+          UnconditionalTrueDecision
+        )
         Get("/v0/aspects/foo") ~> addTenantIdHeader(TENANT_1) ~> param
           .api(role)
           .routes ~> check {
           status shouldEqual StatusCodes.NotFound
           responseAs[ApiError].message should include("exist")
         }
+        param.authFetcher.callTimesByOperationUri("object/aspect/read") shouldBe 1
       }
     }
   }
@@ -52,9 +63,17 @@ class AspectsServiceSpec extends ApiSpec {
   def writeTests(role: Role) {
     describe("POST") {
       it("can add a new aspect definition") { param =>
+        param.authFetcher.setAuthDecision(
+          "object/aspect/create",
+          UnconditionalTrueDecision
+        )
+        param.authFetcher.setAuthDecision(
+          "object/aspect/read",
+          UnconditionalTrueDecision
+        )
         val aspectDefinition =
           AspectDefinition("testId", "testName", Some(JsObject()))
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -70,11 +89,21 @@ class AspectsServiceSpec extends ApiSpec {
             aspectDefinitions.head shouldEqual aspectDefinition
           }
         }
+        param.authFetcher.callTimesByOperationUri("object/aspect/create") shouldBe 1
+        param.authFetcher.callTimesByOperationUri("object/aspect/read") shouldBe 1
       }
 
       it("supports invalid URL characters in ID") { param =>
+        param.authFetcher.setAuthDecision(
+          "object/aspect/create",
+          UnconditionalTrueDecision
+        )
+        param.authFetcher.setAuthDecision(
+          "object/aspect/read",
+          UnconditionalTrueDecision
+        )
         val aspectDefinition = AspectDefinition("in valid", "testName", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -87,27 +116,34 @@ class AspectsServiceSpec extends ApiSpec {
             responseAs[AspectDefinition] shouldEqual aspectDefinition
           }
         }
+        param.authFetcher.callTimesByOperationUri("object/aspect/create") shouldBe 1
+        param.authFetcher.callTimesByOperationUri("object/aspect/read") shouldBe 1
       }
 
       it("returns 400 if an aspect definition with the given ID already exists") {
         param =>
+          param.authFetcher.setAuthDecision(
+            "object/aspect/create",
+            UnconditionalTrueDecision
+          )
           val aspectDefinition = AspectDefinition("testId", "testName", None)
-          param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+          Post("/v0/aspects", aspectDefinition) ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
             responseAs[AspectDefinition] shouldEqual aspectDefinition
 
-            param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+            Post("/v0/aspects", aspectDefinition) ~> addTenantIdHeader(
               TENANT_1
             ) ~> param.api(role).routes ~> check {
               status shouldEqual StatusCodes.BadRequest
               responseAs[ApiError].message should include("already exists")
             }
           }
+          param.authFetcher.callTimesByOperationUri("object/aspect/create") shouldBe 2
       }
 
-      checkMustBeAdmin(role) {
+      checkRequirePermission(role, "object/aspect/create") {
         val aspectDefinition = AspectDefinition("testId", "testName", None)
         Post("/v0/aspects", aspectDefinition) ~> addTenantIdHeader(TENANT_1)
       }
@@ -115,8 +151,16 @@ class AspectsServiceSpec extends ApiSpec {
 
     describe("PUT") {
       it("can add a new aspect definition") { param =>
+        param.authFetcher.setAuthDecision(
+          "object/aspect/create",
+          UnconditionalTrueDecision
+        )
+        param.authFetcher.setAuthDecision(
+          "object/aspect/read",
+          UnconditionalTrueDecision
+        )
         val aspectDefinition = AspectDefinition("testId", "testName", None)
-        param.asAdmin(Put("/v0/aspects/testId", aspectDefinition)) ~> addTenantIdHeader(
+        Put("/v0/aspects/testId", aspectDefinition) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -132,26 +176,47 @@ class AspectsServiceSpec extends ApiSpec {
             aspectDefinitions.head shouldEqual aspectDefinition
           }
         }
+        param.authFetcher.callTimesByOperationUri("object/aspect/create") shouldBe 1
+        param.authFetcher.callTimesByOperationUri("object/aspect/read") shouldBe 1
       }
 
       it("can update an existing aspect definition") { param =>
+        param.authFetcher.setAuthDecision(
+          "object/aspect/create",
+          UnconditionalTrueDecision
+        )
+        param.authFetcher.setAuthDecision(
+          "object/aspect/update",
+          UnconditionalTrueDecision
+        )
         val aspectDefinition = AspectDefinition("testId", "testName", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           val newDefinition = aspectDefinition.copy(name = "newName")
-          param.asAdmin(Put("/v0/aspects/testId", newDefinition)) ~> addTenantIdHeader(
+          Put("/v0/aspects/testId", newDefinition) ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
             responseAs[AspectDefinition] shouldEqual newDefinition
           }
         }
+        param.authFetcher.callTimesByOperationUri("object/aspect/create") shouldBe 1
+        param.authFetcher.callTimesByOperationUri("object/aspect/update") shouldBe 1
       }
 
       it("cannot change the ID of an existing aspect definition") { param =>
+        param.authFetcher.setAuthDecision(
+          "object/aspect/create",
+          UnconditionalTrueDecision
+        )
+        param.authFetcher.setAuthDecision(
+          "object/aspect/update",
+          UnconditionalTrueDecision
+        )
         val aspectDefinition = AspectDefinition("testId", "testName", None)
-        param.asAdmin(Put("/v0/aspects/testId", aspectDefinition)) ~> addTenantIdHeader(
+        // first PUT will attempt to create, thus require create permission
+        Put("/v0/aspects/testId", aspectDefinition) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -162,18 +227,28 @@ class AspectsServiceSpec extends ApiSpec {
           )
 
           val updated = aspectDefinition.copy(id = "foo")
-          param.asAdmin(Put("/v0/aspects/testId", updated)) ~> addTenantIdHeader(
+          Put("/v0/aspects/testId", updated) ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.BadRequest
             responseAs[ApiError].message should include("ID")
           }
         }
+        param.authFetcher.callTimesByOperationUri("object/aspect/create") shouldBe 1
+        param.authFetcher.callTimesByOperationUri("object/aspect/update") shouldBe 1
       }
 
       it("supports invalid URL characters in ID") { param =>
         val aspectDefinition = AspectDefinition("in valid", "testName", None)
-        param.asAdmin(Put("/v0/aspects/in%20valid", aspectDefinition)) ~> addTenantIdHeader(
+        param.authFetcher.setAuthDecision(
+          "object/aspect/create",
+          UnconditionalTrueDecision
+        )
+        param.authFetcher.setAuthDecision(
+          "object/aspect/read",
+          UnconditionalTrueDecision
+        )
+        Put("/v0/aspects/in%20valid", aspectDefinition) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.OK
@@ -186,45 +261,67 @@ class AspectsServiceSpec extends ApiSpec {
             responseAs[AspectDefinition] shouldEqual aspectDefinition
           }
         }
+        param.authFetcher.callTimesByOperationUri("object/aspect/create") shouldBe 1
+        param.authFetcher.callTimesByOperationUri("object/aspect/read") shouldBe 1
       }
 
       it("can add a schema") { param =>
+        param.authFetcher.setAuthDecision(
+          "object/aspect/create",
+          UnconditionalTrueDecision
+        )
+        param.authFetcher.setAuthDecision(
+          "object/aspect/update",
+          UnconditionalTrueDecision
+        )
         val aspectDefinition = AspectDefinition("testId", "testName", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           val updated = aspectDefinition.copy(jsonSchema = Some(JsObject()))
-          param.asAdmin(Put("/v0/aspects/testId", updated)) ~> addTenantIdHeader(
+          Put("/v0/aspects/testId", updated) ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
             responseAs[AspectDefinition] shouldEqual updated
           }
         }
+        param.authFetcher.callTimesByOperationUri("object/aspect/create") shouldBe 1
+        param.authFetcher.callTimesByOperationUri("object/aspect/update") shouldBe 1
       }
 
       it("can modify a schema") { param =>
+        param.authFetcher.setAuthDecision(
+          "object/aspect/create",
+          UnconditionalTrueDecision
+        )
+        param.authFetcher.setAuthDecision(
+          "object/aspect/update",
+          UnconditionalTrueDecision
+        )
         val aspectDefinition = AspectDefinition(
           "testId",
           "testName",
           Some(JsObject("foo" -> JsString("bar")))
         )
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           val updated = aspectDefinition.copy(
             jsonSchema = Some(JsObject("foo" -> JsString("baz")))
           )
-          param.asAdmin(Put("/v0/aspects/testId", updated)) ~> addTenantIdHeader(
+          Put("/v0/aspects/testId", updated) ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
             responseAs[AspectDefinition] shouldEqual updated
           }
         }
+        param.authFetcher.callTimesByOperationUri("object/aspect/create") shouldBe 1
+        param.authFetcher.callTimesByOperationUri("object/aspect/update") shouldBe 1
       }
 
-      checkMustBeAdmin(role) {
+      checkRequirePermission(role, "object/aspect/create") {
         val aspectDefinition = AspectDefinition("testId", "testName", None)
         Put("/v0/aspects/testId", aspectDefinition)
       }
@@ -233,23 +330,36 @@ class AspectsServiceSpec extends ApiSpec {
     describe("PATCH") {
       it("returns an error when the aspect definition does not exist") {
         param =>
+          param.authFetcher.setAuthDecision(
+            "object/aspect/update",
+            UnconditionalTrueDecision
+          )
           val patch = JsonPatch()
-          param.asAdmin(Patch("/v0/aspects/doesnotexist", patch)) ~> addTenantIdHeader(
+          Patch("/v0/aspects/doesnotexist", patch) ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.BadRequest
             responseAs[ApiError].message should include("exists")
             responseAs[ApiError].message should include("ID")
           }
+          param.authFetcher.callTimesByOperationUri("object/aspect/update") shouldBe 1
       }
 
       it("can modify an aspect's name") { param =>
+        param.authFetcher.setAuthDecision(
+          "object/aspect/create",
+          UnconditionalTrueDecision
+        )
+        param.authFetcher.setAuthDecision(
+          "object/aspect/update",
+          UnconditionalTrueDecision
+        )
         val aspectDefinition = AspectDefinition("testId", "testName", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           val patch = JsonPatch(Replace(Pointer.root / "name", JsString("foo")))
-          param.asAdmin(Patch("/v0/aspects/testId", patch)) ~> addTenantIdHeader(
+          Patch("/v0/aspects/testId", patch) ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -260,30 +370,50 @@ class AspectsServiceSpec extends ApiSpec {
             )
           }
         }
+        param.authFetcher.callTimesByOperationUri("object/aspect/create") shouldBe 1
+        param.authFetcher.callTimesByOperationUri("object/aspect/update") shouldBe 1
       }
 
       it("cannot modify an aspect's ID") { param =>
+        param.authFetcher.setAuthDecision(
+          "object/aspect/create",
+          UnconditionalTrueDecision
+        )
+        param.authFetcher.setAuthDecision(
+          "object/aspect/update",
+          UnconditionalTrueDecision
+        )
         val aspectDefinition = AspectDefinition("testId", "testName", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           val patch = JsonPatch(Replace(Pointer.root / "id", JsString("foo")))
-          param.asAdmin(Patch("/v0/aspects/testId", patch)) ~> addTenantIdHeader(
+          Patch("/v0/aspects/testId", patch) ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.BadRequest
             responseAs[ApiError].message should include("ID")
           }
         }
+        param.authFetcher.callTimesByOperationUri("object/aspect/create") shouldBe 1
+        param.authFetcher.callTimesByOperationUri("object/aspect/update") shouldBe 1
       }
 
       it("can add a schema") { param =>
+        param.authFetcher.setAuthDecision(
+          "object/aspect/create",
+          UnconditionalTrueDecision
+        )
+        param.authFetcher.setAuthDecision(
+          "object/aspect/update",
+          UnconditionalTrueDecision
+        )
         val aspectDefinition = AspectDefinition("testId", "testName", None)
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           val patch = JsonPatch(Add(Pointer.root / "jsonSchema", JsObject()))
-          param.asAdmin(Patch("/v0/aspects/testId", patch)) ~> addTenantIdHeader(
+          Patch("/v0/aspects/testId", patch) ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -294,21 +424,31 @@ class AspectsServiceSpec extends ApiSpec {
             )
           }
         }
+        param.authFetcher.callTimesByOperationUri("object/aspect/create") shouldBe 1
+        param.authFetcher.callTimesByOperationUri("object/aspect/update") shouldBe 1
       }
 
       it("can modify a schema") { param =>
+        param.authFetcher.setAuthDecision(
+          "object/aspect/create",
+          UnconditionalTrueDecision
+        )
+        param.authFetcher.setAuthDecision(
+          "object/aspect/update",
+          UnconditionalTrueDecision
+        )
         val aspectDefinition = AspectDefinition(
           "testId",
           "testName",
           Some(JsObject("foo" -> JsString("bar")))
         )
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           val patch = JsonPatch(
             Replace(Pointer.root / "jsonSchema" / "foo", JsString("baz"))
           )
-          param.asAdmin(Patch("/v0/aspects/testId", patch)) ~> addTenantIdHeader(
+          Patch("/v0/aspects/testId", patch) ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(role).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -319,6 +459,8 @@ class AspectsServiceSpec extends ApiSpec {
             )
           }
         }
+        param.authFetcher.callTimesByOperationUri("object/aspect/create") shouldBe 1
+        param.authFetcher.callTimesByOperationUri("object/aspect/update") shouldBe 1
       }
 
       def getLastAspectEventId(
@@ -334,12 +476,20 @@ class AspectsServiceSpec extends ApiSpec {
       }
 
       it("Only create event if patch makes difference") { param =>
+        param.authFetcher.setAuthDecision(
+          "object/aspect/create",
+          UnconditionalTrueDecision
+        )
+        param.authFetcher.setAuthDecision(
+          "object/aspect/update",
+          UnconditionalTrueDecision
+        )
         val aspectDefinition = AspectDefinition(
           "testId",
           "testName",
           Some(JsObject("foo" -> JsString("bar")))
         )
-        param.asAdmin(Post("/v0/aspects", aspectDefinition)) ~> addTenantIdHeader(
+        Post("/v0/aspects", aspectDefinition) ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           DB readOnly { implicit session =>
@@ -351,7 +501,7 @@ class AspectsServiceSpec extends ApiSpec {
                 Replace(Pointer.root / "jsonSchema" / "foo", JsString("baz")),
                 Replace(Pointer.root / "jsonSchema" / "foo", JsString("bar"))
               )
-            param.asAdmin(Patch("/v0/aspects/testId", patch)) ~> addTenantIdHeader(
+            Patch("/v0/aspects/testId", patch) ~> addTenantIdHeader(
               TENANT_1
             ) ~> param.api(role).routes ~> check {
               status shouldEqual StatusCodes.OK
@@ -366,9 +516,11 @@ class AspectsServiceSpec extends ApiSpec {
             }
           }
         }
+        param.authFetcher.callTimesByOperationUri("object/aspect/create") shouldBe 1
+        param.authFetcher.callTimesByOperationUri("object/aspect/update") shouldBe 1
       }
 
-      checkMustBeAdmin(role) {
+      checkRequirePermission(role, "object/aspect/create") {
         val patch = JsonPatch(Replace(Pointer.root / "name", JsString("foo")))
         Patch("/v0/aspects/testId", patch) ~> addTenantIdHeader(TENANT_1)
       }

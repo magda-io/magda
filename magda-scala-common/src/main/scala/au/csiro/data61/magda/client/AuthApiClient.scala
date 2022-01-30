@@ -75,13 +75,7 @@ class AuthApiClient(authHttpFetcher: HttpFetcher)(
         "WARNING: Skip OPA (policy engine) querying option is turned on! This is fine for testing or playing around, but this should NOT BE TURNED ON FOR PRODUCTION!"
       )
       return Future(
-        Auth.AuthDecision(
-          hasResidualRules = false,
-          result = Some(JsTrue),
-          residualRules = None,
-          hasWarns = false,
-          warns = None
-        )
+        Auth.UnconditionalTrueDecision
       )
     }
 

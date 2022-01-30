@@ -40,7 +40,7 @@ class WebHookActorSpec extends ApiSpec with BeforeAndAfterEach {
       )
     )
 
-    param.asAdmin(Post("/v0/hooks", hook)) ~> param.api(Full).routes ~> check {
+    Post("/v0/hooks", hook) ~> addUserId() ~> param.api(Full).routes ~> check {
       status shouldEqual StatusCodes.OK
       responseAs[WebHook].enabled shouldBe true
     }
@@ -73,7 +73,7 @@ class WebHookActorSpec extends ApiSpec with BeforeAndAfterEach {
         enabled = false
       )
 
-      param.asAdmin(Post("/v0/hooks", hook)) ~> param
+      Post("/v0/hooks", hook) ~> addUserId() ~> param
         .api(Full)
         .routes ~> check {
         status shouldEqual StatusCodes.OK
@@ -105,7 +105,7 @@ class WebHookActorSpec extends ApiSpec with BeforeAndAfterEach {
       )
     )
 
-    param.asAdmin(Post("/v0/hooks", hook)) ~> param.api(Full).routes ~> check {
+    Post("/v0/hooks", hook) ~> addUserId() ~> param.api(Full).routes ~> check {
       status shouldEqual StatusCodes.OK
       responseAs[WebHook].enabled shouldBe true
     }
@@ -118,7 +118,7 @@ class WebHookActorSpec extends ApiSpec with BeforeAndAfterEach {
     case class DeleteProcessor(deleted: Boolean)
     implicit val DeleteProcessorFormat: RootJsonFormat[DeleteProcessor] =
       jsonFormat1(DeleteProcessor.apply)
-    param.asAdmin(Delete(s"/v0/hooks/$hookId")) ~> param
+    Delete(s"/v0/hooks/$hookId") ~> addUserId() ~> param
       .api(Full)
       .routes ~> check {
       status shouldEqual StatusCodes.OK
