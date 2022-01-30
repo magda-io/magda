@@ -134,6 +134,7 @@ abstract class ApiSpec
 
   override def withFixture(test: OneArgTest) = {
     val authHttpFetcher = new MockAuthHttpFetcher
+    val httpFetcher = mock[HttpFetcher]
 
     //    webHookActorProbe.expectMsg(1 millis, WebHookActor.Process(true))
 
@@ -185,6 +186,7 @@ abstract class ApiSpec
             api,
             actor,
             authHttpFetcher,
+            httpFetcher,
             authClient
           )
         )
@@ -252,6 +254,7 @@ abstract class ApiSpec
       api: Role => Api,
       webHookActor: ActorRef,
       authFetcher: MockAuthHttpFetcher,
+      httpFetcher: HttpFetcher,
       authClient: RegistryAuthApiClient
   )
 
