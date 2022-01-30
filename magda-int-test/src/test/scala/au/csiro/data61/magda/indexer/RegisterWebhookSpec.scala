@@ -24,7 +24,7 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
       expectWebHookGet(param)
 
       // Expect the new hook to be posted
-      (param.authFetcher
+      (param.httpFetcher
         .post(_: String, _: WebHook, _: Seq[HttpHeader], _: Boolean)(
           _: ToEntityMarshaller[WebHook]
         ))
@@ -38,23 +38,18 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
               marshaller: ToEntityMarshaller[WebHook]
           ) => {
             // Forward the req to the registry api
-            expectAdminCheck(
-              param.authFetcher,
-              true,
-              TestActorSystem.AUTH_USER_ID
-            )
             val request = Post(url, webhook)(marshaller, param.api(Full).ec)
               .withHeaders(scala.collection.immutable.Seq.concat(headers))
 
             assert(webhook.id.isDefined)
 
-            request ~> param.api(Full).routes ~> check {
+            request ~> addUserId() ~> param.api(Full).routes ~> check {
               Future.successful(response)
             }
           }
         )
 
-      val interface = new RegistryExternalInterface(param.authFetcher)(
+      val interface = new RegistryExternalInterface(param.httpFetcher)(
         config,
         system,
         executor,
@@ -69,7 +64,7 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
       initResult should be(RegisterWebhook.ShouldCrawl)
 
       // Make sure the new webhook was inserted correctly.
-      param.asAdmin(Get("/v0/hooks")) ~> param.api(Full).routes ~> check {
+      Get("/v0/hooks") ~> param.api(Full).routes ~> check {
         val hooks = responseAs[Seq[WebHook]]
 
         hooks.size should equal(1)
@@ -87,25 +82,24 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
       val webhookId = config.getString("registry.webhookId")
 
       // Create an existing webhook
-      param.asAdmin(
-        Post(
-          "/v0/hooks",
-          WebHook(
-            id = Some(webhookId),
-            name = "Indexer",
-            eventTypes = Set(),
-            url = config.getString("registry.webhookUrl"),
-            config = WebHookConfig(
-              aspects = None,
-              optionalAspects = None,
-              includeRecords = None,
-              dereference = None
-            ),
-            isWaitingForResponse = None,
-            active = true
-          )
+
+      Post(
+        "/v0/hooks",
+        WebHook(
+          id = Some(webhookId),
+          name = "Indexer",
+          eventTypes = Set(),
+          url = config.getString("registry.webhookUrl"),
+          config = WebHookConfig(
+            aspects = None,
+            optionalAspects = None,
+            includeRecords = None,
+            dereference = None
+          ),
+          isWaitingForResponse = None,
+          active = true
         )
-      ) ~> param.api(Full).routes ~> check {
+      ) ~> addUserId() ~> param.api(Full).routes ~> check {
         status should equal(OK)
       }
 
@@ -113,7 +107,7 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
       expectWebHookGet(param)
 
       // Expect the hook to update itself
-      (param.authFetcher
+      (param.httpFetcher
         .put(_: String, _: WebHook, _: Seq[HttpHeader], _: Boolean)(
           _: ToEntityMarshaller[WebHook]
         ))
@@ -127,24 +121,19 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
               marshaller: ToEntityMarshaller[WebHook]
           ) => {
             // Forward the req to the registry api
-            expectAdminCheck(
-              param.authFetcher,
-              true,
-              TestActorSystem.AUTH_USER_ID
-            )
             val request = Put(url, webhook)(marshaller, param.api(Full).ec)
               .withHeaders(scala.collection.immutable.Seq.concat(headers))
 
             assert(webhook.id.isDefined)
 
-            request ~> param.api(Full).routes ~> check {
+            request ~> addUserId() ~> param.api(Full).routes ~> check {
               Future.successful(response)
             }
           }
         )
 
       // Expect an ACK call once the indexer has determined that the webhook already exists
-      (param.authFetcher
+      (param.httpFetcher
         .post(
           _: String,
           _: WebHookAcknowledgement,
@@ -176,7 +165,7 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
         )
 
       // Start the test
-      val interface = new RegistryExternalInterface(param.authFetcher)(
+      val interface = new RegistryExternalInterface(param.httpFetcher)(
         config,
         system,
         executor,
@@ -190,8 +179,7 @@ class RegisterWebhookSpec extends BaseRegistryApiSpec with SprayJsonSupport {
     }
 
     def expectWebHookGet(param: FixtureParam) {
-      expectAdminCheck(param.authFetcher, true, TestActorSystem.AUTH_USER_ID)
-      (param.authFetcher
+      (param.httpFetcher
         .get(_: String, _: Seq[HttpHeader]))
         .expects(*, *)
         .onCall((url: String, headers: Seq[HttpHeader]) => {
