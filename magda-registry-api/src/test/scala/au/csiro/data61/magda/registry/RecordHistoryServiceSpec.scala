@@ -546,8 +546,12 @@ class RecordHistoryServiceSpec extends ApiSpec {
         Put(
           s"/v0/records/${records1._1.id}/aspects/dataset-distributions",
           JsObject(Map("distributions" -> JsArray()))
-        ) ~> addTenantIdHeader(TENANT_1) ~> param.api(Full).routes ~> check {
-          status shouldBe StatusCodes.OK
+        ) ~> addUserId() ~> addTenantIdHeader(TENANT_1) ~> param
+          .api(Full)
+          .routes ~> check {
+          withClue(responseAs[String]) {
+            status shouldBe StatusCodes.OK
+          }
         }
 
         // all events are for record 1 (dataset), record 1's org record

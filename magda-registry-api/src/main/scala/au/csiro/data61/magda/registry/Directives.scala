@@ -50,13 +50,14 @@ object Directives extends Protocols with SprayJsonSupport {
     Future {
       blocking {
         var recordJsFields: Map[String, JsValue] = Map()
-        var recordId: String = ""
-        sql"""SELECT * FROM records WHERE recordid=${recordId} LIMIT 1"""
+        var fetchedRecordId: String = ""
+
+        sql"SELECT * FROM records WHERE recordid=${recordId} LIMIT 1"
           .foreach { rs =>
             // JDBC treat column name case insensitive
-            recordId = rs.string("recordId")
-            recordJsFields += ("id" -> JsString(recordId))
-            recordJsFields += ("name" -> JsString(rs.string("recordName")))
+            fetchedRecordId = rs.string("recordId")
+            recordJsFields += ("id" -> JsString(fetchedRecordId))
+            recordJsFields += ("name" -> JsString(rs.string("name")))
             recordJsFields += ("lastUpdate" -> JsNumber(
               rs.bigInt("lastupdate")
             ))
@@ -330,7 +331,6 @@ object Directives extends Protocols with SprayJsonSupport {
             s"An error occurred while creating record context data for auth decision."
           )
       }
-
     }
 
   /**

@@ -291,7 +291,9 @@ class DefaultEventPersistence(recordPersistence: RecordPersistence)
       recordId: String,
       aspectIds: Seq[String] = Seq()
   )(implicit session: DBSession): Seq[String] = {
-    val tenantFilter = SQLUtils.tenantIdToWhereClause(tenantId, "tenantid")
+    val tenantFilter = SQLUtils
+      .tenantIdToWhereClause(tenantId, "tenantid")
+      .getOrElse(SQLSyntax.empty)
 
     // --- pick all aspects of the specified record mentioned in the events till now
     val mentionedAspects = if (aspectIds.size == 0) {

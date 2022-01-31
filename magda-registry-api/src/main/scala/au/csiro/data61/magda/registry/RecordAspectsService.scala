@@ -49,6 +49,7 @@ class RecordAspectsService(
     * @apiGroup Registry Record Aspects
     * @api {put} /v0/registry/records/{recordId}/aspects/{aspectId} Modify a record aspect by ID
     * @apiDescription Modifies a record aspect. If the aspect does not yet exist on this record, it is created.
+    *   Please note: when the record (specified by recordId ) doesn't exist, this API will respond 400 error.
     * @apiParam (path) {string} recordId ID of the record for which to update an aspect.
     * @apiParam (path) {string} aspectId ID of the aspect to update
     * @apiParam (body) {json} aspect The record aspect to save
