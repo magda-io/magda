@@ -1,6 +1,6 @@
 package au.csiro.data61.magda.registry
 
-import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.model.{StatusCodes}
 import au.csiro.data61.magda.model.Auth.{
   UnconditionalFalseDecision,
   UnconditionalTrueDecision
@@ -27,23 +27,22 @@ class AspectsServiceAuthSpec extends ApiSpec {
     """.stripMargin
 
   describe("Aspect Service Auth Logic") {
-    describe("Create endpoint: ") {
-      it("should respond 200 when user has permission") { param =>
-        param.authFetcher.setAuthDecision(
-          "object/aspect/create",
-          UnconditionalTrueDecision
-        )
-        param.authFetcher.setAuthDecision(
-          "object/aspect/read",
-          UnconditionalTrueDecision
-        )
-        val aspectDefinition =
-          AspectDefinition("testId", "testName", Some(JsObject()))
-        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
-          TENANT_1
-        ) ~> param.api(Full).routes ~> check {
-          status shouldEqual StatusCodes.OK
+
+    describe("Create endpoint {post} /v0/registry/aspects: ") {
+
+      val aspectDefinition =
+        AspectDefinition("testId", "testName", Some(JsObject()))
+
+      endpointStandardAuthTestCase(
+        Post("/v0/aspects", aspectDefinition),
+        List("object/aspect/create"),
+        response200Check = param => {
           responseAs[AspectDefinition] shouldEqual aspectDefinition
+
+          param.authFetcher.setAuthDecision(
+            "object/aspect/read",
+            UnconditionalTrueDecision
+          )
 
           Get("/v0/aspects") ~> addTenantIdHeader(TENANT_1) ~> param
             .api(Full)
@@ -54,53 +53,128 @@ class AspectsServiceAuthSpec extends ApiSpec {
             aspectDefinitions.length shouldEqual 1
             aspectDefinitions.head shouldEqual aspectDefinition
           }
-        }
-        param.authFetcher.callTimesByOperationUri("object/aspect/create") shouldBe 1
-        param.authFetcher.callTimesByOperationUri("object/aspect/read") shouldBe 1
-      }
 
-      it("should respond 403 (Forbidden) when user has no permission") {
-        param =>
-          param.authFetcher.setAuthDecision(
-            "object/aspect/create",
-            UnconditionalFalseDecision
-          )
-          val aspectDefinition =
-            AspectDefinition("testId", "testName", Some(JsObject()))
-          Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
-            TENANT_1
-          ) ~> param.api(Full).routes ~> check {
-            status shouldEqual StatusCodes.Forbidden
-          }
-          param.authFetcher.callTimesByOperationUri("object/aspect/create") shouldBe 1
-      }
-
-      it(
-        "should respond 500 when failed to retrieve auth decision from policy engine"
-      ) { param =>
-        param.authFetcher
-          .setResponse(StatusCodes.InternalServerError, "Something wrong.")
-        val aspectDefinition =
-          AspectDefinition("testId", "testName", Some(JsObject()))
-        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
-          TENANT_1
-        ) ~> param.api(Full).routes ~> check {
-          status shouldEqual StatusCodes.InternalServerError
-        }
-      }
-
-      it(
-        "should respond 500 when failed to process auth decision from policy engine"
-      ) { param =>
-        param.authFetcher.setError(new Exception("something wrong"))
-        val aspectDefinition =
-          AspectDefinition("testId", "testName", Some(JsObject()))
-        Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
-          TENANT_1
-        ) ~> param.api(Full).routes ~> check {
-          status shouldEqual StatusCodes.InternalServerError
-        }
-      }
+          param.authFetcher
+            .callTimesByOperationUri("object/aspect/create") shouldBe 1
+          param.authFetcher
+            .callTimesByOperationUri("object/aspect/read") shouldBe 1
+        },
+        response403Check = param => {
+          param.authFetcher
+            .callTimesByOperationUri("object/aspect/create") shouldBe 1
+        },
+        requireUserId = true
+      )
     }
+
+    describe("Modify endpoint {put} /v0/registry/aspects/{id}: ") {
+
+      describe("When there is an existing aspect:") {
+
+        val aspectDefinition =
+          AspectDefinition(
+            "testId",
+            "testNameModified",
+            Some(JsObject("foo" -> JsString("bar")))
+          )
+
+        endpointStandardAuthTestCase(
+          Put(s"/v0/aspects/testId", aspectDefinition),
+          List("object/aspect/update"),
+          response200Check = param => {
+            responseAs[AspectDefinition] shouldEqual aspectDefinition
+
+            // endpoint will query policy engine re: "object/aspect/update" twice
+            // as we want to make sure the user has access to both before-update & after-update aspect record
+            param.authFetcher
+              .callTimesByOperationUri("object/aspect/update") shouldBe 2
+
+            param.authFetcher.setAuthDecision(
+              "object/aspect/read",
+              UnconditionalTrueDecision
+            )
+
+            Get("/v0/aspects/testId") ~> addTenantIdHeader(TENANT_1) ~> param
+              .api(Full)
+              .routes ~> check {
+              status shouldEqual StatusCodes.OK
+              responseAs[AspectDefinition] shouldEqual aspectDefinition
+            }
+
+            param.authFetcher
+              .callTimesByOperationUri("object/aspect/read") shouldBe 1
+          },
+          response403Check = param => {
+            param.authFetcher
+              .callTimesByOperationUri("object/aspect/update") shouldBe 1
+          },
+          beforeRequest = param => {
+            // create aspect before modify it
+            param.authFetcher.setAuthDecision(
+              "object/aspect/create",
+              UnconditionalTrueDecision
+            )
+            val aspectDefinition =
+              AspectDefinition("testId", "testName", Some(JsObject()))
+            Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
+              TENANT_1
+            ) ~> param.api(Full).routes ~> check {
+              status shouldEqual StatusCodes.OK
+            }
+            param.authFetcher.resetMock()
+          },
+          requireUserId = true
+        )
+
+      }
+
+      describe("When the aspect doesn't exist:") {
+
+        val aspectDefinition =
+          AspectDefinition(
+            "testId",
+            "testNameModified",
+            Some(JsObject("foo" -> JsString("bar")))
+          )
+
+        endpointStandardAuthTestCase(
+          Put(s"/v0/aspects/testId", aspectDefinition),
+          List("object/aspect/create", "object/aspect/update"),
+          response200Check = param => {
+            responseAs[AspectDefinition] shouldEqual aspectDefinition
+
+            // as the aspect doesn't existing, the endpoint actually performed a "create" operation
+            // thus, the endpoint should ask an auth decision for "object/aspect/create" instead
+            param.authFetcher
+              .callTimesByOperationUri("object/aspect/create") shouldBe 1
+            param.authFetcher
+              .callTimesByOperationUri("object/aspect/update") shouldBe 0
+
+            param.authFetcher.setAuthDecision(
+              "object/aspect/read",
+              UnconditionalTrueDecision
+            )
+
+            Get("/v0/aspects/testId") ~> addTenantIdHeader(TENANT_1) ~> param
+              .api(Full)
+              .routes ~> check {
+              status shouldEqual StatusCodes.OK
+              responseAs[AspectDefinition] shouldEqual aspectDefinition
+            }
+
+            param.authFetcher
+              .callTimesByOperationUri("object/aspect/read") shouldBe 1
+          },
+          response403Check = param => {
+            param.authFetcher
+              .callTimesByOperationUri("object/aspect/create") shouldBe 1
+          },
+          requireUserId = true
+        )
+
+      }
+
+    }
+
   }
 }

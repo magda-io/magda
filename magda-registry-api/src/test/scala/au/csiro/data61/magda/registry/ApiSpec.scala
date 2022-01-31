@@ -197,40 +197,6 @@ abstract class ApiSpec
     }
   }
 
-  def checkRequirePermission(role: Role, operationUri: String)(
-      fn: => HttpRequest
-  ) {
-    describe(
-      s"should only work when the user has permission to perform operation `${operationUri}`"
-    ) {
-      it("respond `Forbidden` status code if the user has not permission") {
-        param =>
-          param.authFetcher.setAuthDecision(
-            operationUri,
-            UnconditionalFalseDecision
-          )
-          fn ~> param
-            .api(role)
-            .routes ~> check {
-            status shouldEqual StatusCodes.Forbidden
-          }
-      }
-
-      it("respond `OK` 200 status code if the user has permission") { param =>
-        param.authFetcher.setAuthDecision(
-          operationUri,
-          UnconditionalTrueDecision
-        )
-        fn ~> param
-          .api(role)
-          .routes ~> check {
-          status shouldEqual StatusCodes.OK
-        }
-      }
-    }
-
-  }
-
   def routesShouldBeNonExistentWithRole(
       role: Role,
       routes: List[(String, String => HttpRequest, String)]
@@ -257,5 +223,113 @@ abstract class ApiSpec
       httpFetcher: HttpFetcher,
       authClient: RegistryAuthApiClient
   )
+
+  def endpointStandardAuthTestCase(
+      request: HttpRequest,
+      requiredOperationUris: List[String],
+      response200Check: FixtureParam => Unit,
+      response403Check: FixtureParam => Unit,
+      beforeRequest: FixtureParam => Unit = (param: FixtureParam) => Unit,
+      requireUserId: Boolean = false
+  ) = {
+
+    val req = request ~> addTenantIdHeader(
+      TENANT_1
+    )
+    val reqWithUserId = req ~> addUserId()
+
+    it("should respond 200 when user has permission") { param =>
+      beforeRequest(param)
+      // preset UnconditionalTrueDecision auth decision for required operation uris
+      requiredOperationUris.foreach(
+        operationUri =>
+          param.authFetcher.setAuthDecision(
+            operationUri,
+            UnconditionalTrueDecision
+          )
+      )
+
+      (if (requireUserId) reqWithUserId else req) ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param
+        .api(Full)
+        .routes ~> check {
+        status shouldEqual StatusCodes.OK
+        response200Check(param)
+      }
+    }
+
+    it("should respond 403 (Forbidden) when user has no permission") { param =>
+      beforeRequest(param)
+      // preset UnconditionalFalseDecision auth decision for required operation uris
+      requiredOperationUris.foreach(
+        operationUri =>
+          param.authFetcher.setAuthDecision(
+            operationUri,
+            UnconditionalFalseDecision
+          )
+      )
+      (if (requireUserId) reqWithUserId else req) ~> param
+        .api(Full)
+        .routes ~> check {
+        status shouldEqual StatusCodes.Forbidden
+        response403Check(param)
+      }
+    }
+
+    it(
+      "should respond 500 when failed to retrieve auth decision from policy engine"
+    ) { param =>
+      beforeRequest(param)
+
+      param.authFetcher
+        .setResponse(StatusCodes.InternalServerError, "Something wrong.")
+
+      (if (requireUserId) reqWithUserId else req) ~> param
+        .api(Full)
+        .routes ~> check {
+        status shouldEqual StatusCodes.InternalServerError
+      }
+    }
+
+    it(
+      "should respond 500 when failed to process auth decision from policy engine"
+    ) { param =>
+      beforeRequest(param)
+
+      param.authFetcher.setError(new Exception("something wrong"))
+
+      (if (requireUserId) reqWithUserId else req) ~> param
+        .api(Full)
+        .routes ~> check {
+        status shouldEqual StatusCodes.InternalServerError
+      }
+    }
+
+    if (requireUserId) {
+      it(
+        "should respond 403 (Forbidden) for anonymous users / can't locate user id"
+      ) { param =>
+        // this test case assume the request passed in doesn't contain JWT token / userId
+        beforeRequest(param)
+
+        // preset UnconditionalTrueDecision auth decision for required operation uris
+        requiredOperationUris.foreach(
+          operationUri =>
+            param.authFetcher.setAuthDecision(
+              operationUri,
+              UnconditionalTrueDecision
+            )
+        )
+
+        req ~> param
+          .api(Full)
+          .routes ~> check {
+          status shouldEqual StatusCodes.Forbidden
+        }
+      }
+    }
+
+  }
 
 }
