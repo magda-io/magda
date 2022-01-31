@@ -125,6 +125,8 @@ object HookPersistence extends Protocols with DiffsonProtocol {
       case Some(id) => id
     }
 
+    val userIdSql = userId.map(id => sqls"${id}::UUID").getOrElse(sqls"NULL")
+
     sql"""insert into WebHooks (webHookId, name, active, lastEvent, url, config, enabled, ownerId, creatorId, editorId)
           values (
             $theHookId,
@@ -134,9 +136,9 @@ object HookPersistence extends Protocols with DiffsonProtocol {
             ${hook.url},
             ${hook.config.toJson.compactPrint}::jsonb,
             ${hook.enabled},
-            ${userId},
-            ${userId},
-            ${userId},
+            ${userIdSql},
+            ${userIdSql},
+            ${userIdSql}
            )""".update
       .apply()
 
@@ -182,7 +184,8 @@ object HookPersistence extends Protocols with DiffsonProtocol {
       lastEventId: Long,
       userId: Option[String] = None
   )(implicit session: DBSession) = {
-    sql"update WebHooks set lastEvent=$lastEventId , editorId=${userId}, editTime=CURRENT_TIMESTAMP where webHookId=$id".update
+    val userIdSql = userId.map(id => sqls"${id}::UUID").getOrElse(sqls"NULL")
+    sql"update WebHooks set lastEvent=$lastEventId , editorId=${userIdSql}, editTime=CURRENT_TIMESTAMP where webHookId=$id".update
       .apply()
   }
 
@@ -191,28 +194,32 @@ object HookPersistence extends Protocols with DiffsonProtocol {
       isWaitingForResponse: Boolean,
       userId: Option[String] = None
   )(implicit session: DBSession) = {
-    sql"update WebHooks set isWaitingForResponse=$isWaitingForResponse , editorId=${userId}, editTime=CURRENT_TIMESTAMP where webHookId=$id".update
+    val userIdSql = userId.map(id => sqls"${id}::UUID").getOrElse(sqls"NULL")
+    sql"update WebHooks set isWaitingForResponse=$isWaitingForResponse , editorId=${userIdSql}, editTime=CURRENT_TIMESTAMP where webHookId=$id".update
       .apply()
   }
 
   def setActive(id: String, active: Boolean, userId: Option[String] = None)(
       implicit session: DBSession
   ) = {
-    sql"update WebHooks set active=$active , editorId=${userId}, editTime=CURRENT_TIMESTAMP where webHookId=$id".update
+    val userIdSql = userId.map(id => sqls"${id}::UUID").getOrElse(sqls"NULL")
+    sql"update WebHooks set active=$active , editorId=${userIdSql}, editTime=CURRENT_TIMESTAMP where webHookId=$id".update
       .apply()
   }
 
   def retry(id: String, userId: Option[String] = None)(
       implicit session: DBSession
   ) = {
-    sql"update WebHooks set active=${true}, lastretrytime=NOW(), retrycount=retrycount+1 , editorId=${userId}, editTime=CURRENT_TIMESTAMP where webHookId=$id".update
+    val userIdSql = userId.map(id => sqls"${id}::UUID").getOrElse(sqls"NULL")
+    sql"update WebHooks set active=${true}, lastretrytime=NOW(), retrycount=retrycount+1 , editorId=${userIdSql}, editTime=CURRENT_TIMESTAMP where webHookId=$id".update
       .apply()
   }
 
   def resetRetryCount(id: String, userId: Option[String] = None)(
       implicit session: DBSession
   ) = {
-    sql"update WebHooks set lastretrytime=NULL, retrycount=0 , editorId=${userId}, editTime=CURRENT_TIMESTAMP where webHookId=$id".update
+    val userIdSql = userId.map(id => sqls"${id}::UUID").getOrElse(sqls"NULL")
+    sql"update WebHooks set lastretrytime=NULL, retrycount=0 , editorId=${userIdSql}, editTime=CURRENT_TIMESTAMP where webHookId=$id".update
       .apply()
   }
 
@@ -228,6 +235,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
         )
       )
     } else {
+      val userIdSql = userId.map(id => sqls"${id}::UUID").getOrElse(sqls"NULL")
       sql"""insert into WebHooks (webHookId, name, active, lastevent, url, config, enabled, ownerId, creatorId, editorId)
           values (
             ${hook.id.get},
@@ -237,9 +245,9 @@ object HookPersistence extends Protocols with DiffsonProtocol {
             ${hook.url},
             ${hook.config.toJson.compactPrint}::jsonb,
             ${hook.enabled},
-            ${userId},
-            ${userId},
-            ${userId}
+            ${userIdSql},
+            ${userIdSql},
+            ${userIdSql}
           )
           on conflict (webHookId) do update
           set
@@ -247,7 +255,7 @@ object HookPersistence extends Protocols with DiffsonProtocol {
             active = ${hook.active},
             url = ${hook.url},
             config = ${hook.config.toJson.compactPrint}::jsonb,
-            editorId = ${userId},
+            editorId = ${userIdSql},
             editTime = CURRENT_TIMESTAMP
           """.update
         .apply()
