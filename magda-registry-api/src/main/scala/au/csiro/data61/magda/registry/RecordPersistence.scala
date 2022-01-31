@@ -1355,8 +1355,14 @@ class DefaultRecordPersistence(config: Config)
       sql"""select Records.sequence as sequence,
                    Records.recordId as recordId,
                    Records.name as recordName,
-                   (select array_agg(aspectId) from RecordAspects where recordId = Records.recordId and ${SQLUtils
-        .tenantIdToWhereClause(tenantId, "tenantid")}) as aspects,
+                   (select array_agg(aspectId) from RecordAspects ${SQLSyntax
+        .where(
+          SQLSyntax.toAndConditionOpt(
+            Some(sqls"recordId = Records.recordId"),
+            SQLUtils
+              .tenantIdToWhereClause(tenantId, "tenantid")
+          )
+        )}) as aspects,
                    Records.tenantId as tenantId
             from Records
             ${SQLSyntax.where(SQLSyntax.toAndConditionOpt(whereClauseParts: _*))}

@@ -8,6 +8,9 @@ import scala.io.Source.fromFile
 import scala.util.Success
 import scala.io.BufferedSource
 
+/**
+  * Auth has been turned off in ApiSpec (authorization.skipOpaQuer) for all test cases in this suit as we want to focus on functionality test.
+  */
 class RecordHistoryServiceSpec extends ApiSpec {
 
   describe("History Api") {

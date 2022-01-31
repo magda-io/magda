@@ -15,7 +15,7 @@ import scala.util.Success
 
 /**
   * This is functional test case suit. the auth is turned off in config in ApiSpec (i.e. all requested will be authorised)
-  * to minimise the code. Auth related logic will be moved to a seperate test case suit (with auth turned on).
+  * to minimise the code. Auth related logic will be moved to a separate test case suit (with auth turned on).
   */
 class RecordsServiceSpec extends ApiSpec {
   describe("with role Full") {
@@ -1031,12 +1031,12 @@ class RecordsServiceSpec extends ApiSpec {
             "with link",
             Some(JsonParser(jsonSchema).asJsObject)
           )
-          Post("/v0/aspects", withLinkAspect) ~> addTenantIdHeader(
+          Post("/v0/aspects", withLinkAspect) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
-          Post("/v0/aspects", withLinkAspect) ~> addTenantIdHeader(
+          Post("/v0/aspects", withLinkAspect) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -1052,12 +1052,12 @@ class RecordsServiceSpec extends ApiSpec {
             ),
             Some("blah")
           )
-          Post("/v0/records", sourceRecord) ~> addTenantIdHeader(
+          Post("/v0/records", sourceRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
-          Post("/v0/records", sourceRecord) ~> addTenantIdHeader(
+          Post("/v0/records", sourceRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -1073,12 +1073,12 @@ class RecordsServiceSpec extends ApiSpec {
             ),
             Some("blah")
           )
-          Post("/v0/records", targetRecord) ~> addTenantIdHeader(
+          Post("/v0/records", targetRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_1
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
           }
-          Post("/v0/records", targetRecord) ~> addTenantIdHeader(
+          Post("/v0/records", targetRecord) ~> addUserId() ~> addTenantIdHeader(
             TENANT_2
           ) ~> param.api(Full).routes ~> check {
             status shouldEqual StatusCodes.OK
@@ -4431,12 +4431,13 @@ class RecordsServiceSpec extends ApiSpec {
     describe("PATCH") {
       it("returns an error when the record does not exist") { param =>
         val patch = JsonPatch()
-        Patch("/v0/records/doesnotexist", patch) ~> addTenantIdHeader(
+        Patch("/v0/records/doesnotexist", patch) ~> addUserId() ~> addTenantIdHeader(
           TENANT_1
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
-          responseAs[ApiError].message should include("exists")
-          responseAs[ApiError].message should include("ID")
+          responseAs[String] should include(
+            "Cannot locate aspect record by id:"
+          )
           header("x-magda-event-id").isEmpty shouldBe true
         }
       }
@@ -5339,16 +5340,6 @@ class RecordsServiceSpec extends ApiSpec {
 
             // --- previous delete request response should include correct eventId as header value
             eventId.get shouldEqual responseAs[EventsPage].events.last.id.get.toString
-          }
-
-          Get(
-            s"/v0/records/without/history"
-          ) ~> addTenantIdHeader(TENANT_1) ~> param
-            .api(ReadOnly)
-            .routes ~> check {
-            status shouldEqual StatusCodes.OK
-            // --- only admin can see deleted record history
-            responseAs[EventsPage].events.size shouldEqual 0
           }
 
           Delete("/v0/records/without") ~> addUserId() ~> addTenantIdHeader(

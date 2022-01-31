@@ -6,6 +6,9 @@ import spray.json._
 import scalikejdbc._
 import gnieh.diffson.sprayJson._
 
+/**
+  * Auth has been turned off in ApiSpec (authorization.skipOpaQuer) for all test cases in this suit as we want to focus on functionality test.
+  */
 class JsonSchemaValidationSpec extends ApiSpec {
 
   val DEFAULT_MEATA_SCHEMA_URI = "http://json-schema.org/draft-07/schema#"
