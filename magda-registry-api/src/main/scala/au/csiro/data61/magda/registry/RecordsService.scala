@@ -130,7 +130,7 @@ class RecordsService(
           // we will check "unconditional" `delete` permission. i.e.
           // users with "unconditional" `delete` permission will get 200 status code with "record is deleted" response (this is for matching existing behaviour).
           // users without this permission will not be able to know that the record has been removed.
-          Some(
+          onRecordNotFound = Some(
             () =>
               requireUnconditionalAuthDecision(
                 authClient,
