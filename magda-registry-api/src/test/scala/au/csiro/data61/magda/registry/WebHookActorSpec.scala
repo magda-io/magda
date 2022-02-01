@@ -8,6 +8,9 @@ import spray.json.RootJsonFormat
 
 import scala.concurrent.duration._
 
+/**
+  * Auth has been turned off in ApiSpec (authorization.skipOpaQuery) for all test cases in this suit as we want to focus on functionality test.
+  */
 class WebHookActorSpec extends ApiSpec with BeforeAndAfterEach {
   implicit val timeout: Timeout = Timeout(5 seconds)
   private val hookId = "abc"

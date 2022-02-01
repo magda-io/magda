@@ -1,7 +1,6 @@
 package au.csiro.data61.magda.registry
 
 import java.net.URLEncoder
-
 import akka.event.LoggingAdapter
 import akka.http.scaladsl.model.StatusCodes
 import au.csiro.data61.magda.model.Registry._
@@ -4436,7 +4435,7 @@ class RecordsServiceSpec extends ApiSpec {
         ) ~> param.api(role).routes ~> check {
           status shouldEqual StatusCodes.BadRequest
           responseAs[String] should include(
-            "Cannot locate aspect record by id:"
+            "Cannot locate request record by id:"
           )
           header("x-magda-event-id").isEmpty shouldBe true
         }

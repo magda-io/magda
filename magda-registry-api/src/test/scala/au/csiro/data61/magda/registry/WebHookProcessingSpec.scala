@@ -19,6 +19,9 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.util.Random
 
+/**
+  * Auth has been turned off in ApiSpec (authorization.skipOpaQuery) for all test cases in this suit as we want to focus on functionality test.
+  */
 class WebHookProcessingSpec
     extends ApiSpec
     with BeforeAndAfterAll

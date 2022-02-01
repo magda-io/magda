@@ -8,7 +8,7 @@ import scalikejdbc._
 import spray.json._
 
 /**
-  * Auth has been turned off in ApiSpec (authorization.skipOpaQuer) for all test cases in this suit as we want to focus on functionality test.
+  * Auth has been turned off in ApiSpec (authorization.skipOpaQuery) for all test cases in this suit as we want to focus on functionality test.
   */
 class AspectsServiceSpec extends ApiSpec {
 

@@ -19,13 +19,15 @@ import au.csiro.data61.magda.directives.AuthDirectives.{
   requirePermission,
   withAuthDecision
 }
-import au.csiro.data61.magda.model.Auth
+import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
+import au.csiro.data61.magda.model.{Auth, TenantId}
 import au.csiro.data61.magda.model.Registry.{AspectDefinition, Record, WebHook}
 import au.csiro.data61.magda.util.JsonPathUtils.applyJsonPathToRecordContextData
 import au.csiro.data61.magda.model.Auth.{
   UnconditionalTrueDecision,
   recordToContextData
 }
+import au.csiro.data61.magda.model.TenantId.{SpecifiedTenantId, TenantId}
 
 object Directives extends Protocols with SprayJsonSupport {
 
@@ -41,7 +43,8 @@ object Directives extends Protocols with SprayJsonSupport {
     * @return
     */
   private def createRecordContextData(
-      recordId: String
+      recordId: String,
+      tenantId: TenantId
   )(
       implicit ec: ExecutionContext,
       logger: LoggingAdapter,
@@ -52,7 +55,10 @@ object Directives extends Protocols with SprayJsonSupport {
         var recordJsFields: Map[String, JsValue] = Map()
         var fetchedRecordId: String = ""
 
-        sql"SELECT * FROM records WHERE recordid=${recordId} LIMIT 1"
+        sql"SELECT * FROM records WHERE recordid=${recordId} ${tenantId match {
+          case SpecifiedTenantId(tenantId) => sqls" AND tenantid=${tenantId}"
+          case _                           => SQLSyntax.empty
+        }} LIMIT 1"
           .foreach { rs =>
             // JDBC treat column name case insensitive
             fetchedRecordId = rs.string("recordId")
@@ -68,6 +74,11 @@ object Directives extends Protocols with SprayJsonSupport {
             rs.stringOpt("tenantId")
               .foreach(
                 item => recordJsFields += ("tenantId" -> JsNumber(item))
+              )
+            rs.stringOpt("authnReadPolicyId")
+              .foreach(
+                item =>
+                  recordJsFields += ("authnReadPolicyId" -> JsString(item))
               )
           }
 
@@ -111,35 +122,42 @@ object Directives extends Protocols with SprayJsonSupport {
       recordId: String,
       session: DBSession = ReadOnlyAutoSession
   ): Directive0 =
-    (extractLog & extractExecutionContext & extractActorSystem).tflatMap { t =>
-      val requestExeCtx = t._2
-      val log = t._1
-      val requestActorSystem = t._3
+    (extractLog & extractExecutionContext & extractActorSystem & requiresTenantId)
+      .tflatMap { t =>
+        val requestExeCtx = t._2
+        val log = t._1
+        val requestActorSystem = t._3
+        val tenantId = t._4
 
-      implicit val blockingExeCtx =
-        requestActorSystem.dispatchers.lookup("blocking-io-dispatcher")
+        implicit val blockingExeCtx =
+          requestActorSystem.dispatchers.lookup("blocking-io-dispatcher")
 
-      (withExecutionContext(blockingExeCtx) & onComplete(
-        createRecordContextData(recordId)(blockingExeCtx, log, session)
-      )).tflatMap {
-        case Tuple1(Success(recordData)) =>
-          requirePermission(
-            authApiClient,
-            operationUri,
-            input = Some(JsObject("object" -> JsObject("record" -> recordData)))
-          ) & withExecutionContext(requestExeCtx) & pass // switch back to akka dispatcher
-        case Tuple1(Failure(e)) =>
-          log.error(
-            "Failed to create record context data for auth decision. record ID: {}. Error: {}",
-            recordId,
-            e
+        (withExecutionContext(blockingExeCtx) & onComplete(
+          createRecordContextData(recordId, tenantId)(
+            blockingExeCtx,
+            log,
+            session
           )
-          complete(
-            InternalServerError,
-            s"An error occurred while creating record context data for auth decision."
-          )
+        )).tflatMap {
+          case Tuple1(Success(recordData)) =>
+            requirePermission(
+              authApiClient,
+              operationUri,
+              input =
+                Some(JsObject("object" -> JsObject("record" -> recordData)))
+            ) & withExecutionContext(requestExeCtx) & pass // switch back to akka dispatcher
+          case Tuple1(Failure(e)) =>
+            log.error(
+              "Failed to create record context data for auth decision. record ID: {}. Error: {}",
+              recordId,
+              e
+            )
+            complete(
+              InternalServerError,
+              s"An error occurred while creating record context data for auth decision."
+            )
+        }
       }
-    }
 
   /**
     * a request can only pass this directive when:
@@ -165,87 +183,97 @@ object Directives extends Protocols with SprayJsonSupport {
       newRecordOrJsonPath: Either[Record, JsonPatch],
       session: DBSession = ReadOnlyAutoSession
   ): Directive0 =
-    (extractLog & extractExecutionContext & extractActorSystem).tflatMap { t =>
-      val requestExeCtx = t._2
-      val log = t._1
-      val requestActorSystem = t._3
+    (extractLog & extractExecutionContext & extractActorSystem & requiresTenantId)
+      .tflatMap { t =>
+        val requestExeCtx = t._2
+        val log = t._1
+        val requestActorSystem = t._3
+        val tenantId = t._4
 
-      implicit val blockingExeCtx =
-        requestActorSystem.dispatchers.lookup("blocking-io-dispatcher")
-      onComplete(
-        createRecordContextData(recordId)(blockingExeCtx, log, session)
-      ).flatMap {
-        case Success(currentRecordData) =>
-          val recordContextDataAfterUpdate = newRecordOrJsonPath match {
-            case Left(newRecord) => recordToContextData(newRecord)
-            case Right(recordJsonPath) =>
-              applyJsonPathToRecordContextData(
-                currentRecordData,
-                recordJsonPath
-              )
+        implicit val blockingExeCtx =
+          requestActorSystem.dispatchers.lookup("blocking-io-dispatcher")
+        onComplete(
+          createRecordContextData(recordId, tenantId)(
+            blockingExeCtx,
+            log,
+            session
+          ).map { currentRecordData =>
+            val recordContextDataAfterUpdate = newRecordOrJsonPath match {
+              case Left(newRecord) => recordToContextData(newRecord)
+              case Right(recordJsonPath) =>
+                applyJsonPathToRecordContextData(
+                  currentRecordData,
+                  recordJsonPath
+                )
+            }
+            (currentRecordData, recordContextDataAfterUpdate)
           }
-          /*
+        ).flatMap {
+          case Success((currentRecordData, recordContextDataAfterUpdate)) =>
+            /*
           We make sure user has permission to perform "object/record/update" operation on
           - current record
           - the record after update
           i.e. A user can't modify a record's data to make it a record that he has no permission to modify.
           Useful use case would be: a user with permission to only `update` draft dataset can't modify modify the draft dataset
           to make it a publish dataset, unless he also has permission to update publish datasets.
-           */
-          requirePermission(
-            authApiClient,
-            "object/record/update",
-            input = Some(
-              JsObject("object" -> JsObject("record" -> currentRecordData))
-            )
-          ) & requirePermission(
-            authApiClient,
-            "object/record/update",
-            input = Some(
-              JsObject(
-                "object" -> JsObject(
-                  "record" -> recordContextDataAfterUpdate
+             */
+            requirePermission(
+              authApiClient,
+              "object/record/update",
+              input = Some(
+                JsObject(
+                  "object" -> JsObject("record" -> currentRecordData)
                 )
               )
-            )
-          ) & withExecutionContext(requestExeCtx) & pass
-        case Failure(_: NoRecordFoundException) =>
-          newRecordOrJsonPath match {
-            case Left(newRecord) =>
-              // if a new record data was passed (i.e. non json patch request),
-              // we will assess if user has permission to create the record as well
-              requirePermission(
-                authApiClient,
-                "object/record/create",
-                input = Some(
-                  JsObject(
-                    "object" -> JsObject(
-                      "record" -> recordToContextData(newRecord)
-                    )
+            ) & requirePermission(
+              authApiClient,
+              "object/record/update",
+              input = Some(
+                JsObject(
+                  "object" -> JsObject(
+                    "record" -> recordContextDataAfterUpdate
                   )
                 )
-              ) & withExecutionContext(requestExeCtx) & pass
-            case Right(_) =>
-              // When record Json Patch was passed (i.e. a patch request),
-              // there is no way to create the record when it doesn't exist (as we don't know the current data)
-              // we will send out BadRequest response immediately
-              complete(
-                BadRequest,
-                s"Cannot locate request record by id: ${recordId}"
               )
-          }
-        case Failure(e: Throwable) =>
-          log.error(
-            "Failed to create record context data for auth decision. record ID: {}. Error: {}",
-            recordId,
-            e
-          )
-          complete(
-            InternalServerError,
-            s"An error occurred while creating record context data for auth decision."
-          )
+            ) & withExecutionContext(requestExeCtx) & pass
+          case Failure(_: NoRecordFoundException) =>
+            newRecordOrJsonPath match {
+              case Left(newRecord) =>
+                // if a new record data was passed (i.e. non json patch request),
+                // we will assess if user has permission to create the record as well
+                requirePermission(
+                  authApiClient,
+                  "object/record/create",
+                  input = Some(
+                    JsObject(
+                      "object" -> JsObject(
+                        "record" -> recordToContextData(newRecord)
+                      )
+                    )
+                  )
+                ) & withExecutionContext(requestExeCtx) & pass
+              case Right(_) =>
+                // When record Json Patch was passed (i.e. a patch request),
+                // there is no way to create the record when it doesn't exist (as we don't know the current data)
+                // we will send out BadRequest response immediately
+                complete(
+                  BadRequest,
+                  s"Cannot locate request record by id: ${recordId}"
+                )
+            }
+          case Failure(e: Throwable) =>
+            log.error(
+              "Failed to create record context data for auth decision. record ID: {}. Error: {}",
+              recordId,
+              e
+            )
+            complete(
+              InternalServerError,
+              s"An error occurred while creating record context data for auth decision."
+            )
+        }
       }
-    }
 
   /**
     * a request can only pass this directive when the user has permission to perform `update` operation on
@@ -265,73 +293,82 @@ object Directives extends Protocols with SprayJsonSupport {
       newAspectOrAspectJsonPath: Either[JsObject, JsonPatch],
       session: DBSession = ReadOnlyAutoSession
   ): Directive0 =
-    (extractLog & extractExecutionContext & extractActorSystem).tflatMap { t =>
-      val requestExeCtx = t._2
-      val log = t._1
-      val requestActorSystem = t._3
+    (extractLog & extractExecutionContext & extractActorSystem & requiresTenantId)
+      .tflatMap { t =>
+        val requestExeCtx = t._2
+        val log = t._1
+        val requestActorSystem = t._3
+        val tenantId = t._4
 
-      implicit val blockingExeCtx =
-        requestActorSystem.dispatchers.lookup("blocking-io-dispatcher")
+        implicit val blockingExeCtx =
+          requestActorSystem.dispatchers.lookup("blocking-io-dispatcher")
 
-      onComplete(
-        createRecordContextData(recordId)(blockingExeCtx, log, session)
-      ).flatMap {
-        case Success(currentRecordData) =>
-          val recordContextDataAfterUpdate = newAspectOrAspectJsonPath match {
-            case Left(newAspect) =>
-              JsObject(currentRecordData.fields + (aspectId -> newAspect))
-            case Right(recordJsonPath) =>
-              val newAspectData = recordJsonPath(
-                currentRecordData.fields
-                  .get(aspectId)
-                  .getOrElse(JsObject())
-              )
-              JsObject(
-                currentRecordData.fields + (aspectId -> newAspectData)
-              )
+        onComplete(
+          createRecordContextData(recordId, tenantId)(
+            blockingExeCtx,
+            log,
+            session
+          ).map { currentRecordData =>
+            val recordContextDataAfterUpdate = newAspectOrAspectJsonPath match {
+              case Left(newAspect) =>
+                JsObject(currentRecordData.fields + (aspectId -> newAspect))
+              case Right(recordJsonPath) =>
+                val newAspectData = recordJsonPath(
+                  currentRecordData.fields
+                    .get(aspectId)
+                    .getOrElse(JsObject())
+                )
+                JsObject(
+                  currentRecordData.fields + (aspectId -> newAspectData)
+                )
+            }
+            (currentRecordData, recordContextDataAfterUpdate)
           }
-          /*
+        ).flatMap {
+          case Success((currentRecordData, recordContextDataAfterUpdate)) =>
+            //val recordContextDataAfterUpdate =
+            /*
           We make sure user has permission to perform "object/record/update" operation on
           - current record
           - the record after the aspect data update
           i.e. A user can't modify a record's data to make it a record that he has no permission to modify.
-           */
-          requirePermission(
-            authApiClient,
-            "object/record/update",
-            input = Some(
-              JsObject("object" -> JsObject("record" -> currentRecordData))
-            )
-          ) & requirePermission(
-            authApiClient,
-            "object/record/update",
-            input = Some(
-              JsObject(
-                "object" -> JsObject(
-                  "record" -> recordContextDataAfterUpdate
+             */
+            requirePermission(
+              authApiClient,
+              "object/record/update",
+              input = Some(
+                JsObject("object" -> JsObject("record" -> currentRecordData))
+              )
+            ) & requirePermission(
+              authApiClient,
+              "object/record/update",
+              input = Some(
+                JsObject(
+                  "object" -> JsObject(
+                    "record" -> recordContextDataAfterUpdate
+                  )
                 )
               )
+            ) & withExecutionContext(requestExeCtx) & pass
+          case Failure(_: NoRecordFoundException) =>
+            // There is no way to construct full record context data for auth decision without the original record
+            // we will send out BadRequest response immediately
+            complete(
+              BadRequest,
+              s"Cannot locate request record by id: ${recordId}"
             )
-          ) & withExecutionContext(requestExeCtx) & pass
-        case Failure(_: NoRecordFoundException) =>
-          // There is no way to construct full record context data for auth decision without the original record
-          // we will send out BadRequest response immediately
-          complete(
-            BadRequest,
-            s"Cannot locate request record by id: ${recordId}"
-          )
-        case Failure(e: Throwable) =>
-          log.error(
-            "Failed to create record context data for auth decision. record ID: {}. Error: {}",
-            recordId,
-            e
-          )
-          complete(
-            InternalServerError,
-            s"An error occurred while creating record context data for auth decision."
-          )
+          case Failure(e: Throwable) =>
+            log.error(
+              "Failed to create record context data for auth decision. record ID: {}. Error: {}",
+              recordId,
+              e
+            )
+            complete(
+              InternalServerError,
+              s"An error occurred while creating record context data for auth decision."
+            )
+        }
       }
-    }
 
   /**
     * a request can only pass this directive when the user has permission to perform `update` operation on
@@ -349,55 +386,63 @@ object Directives extends Protocols with SprayJsonSupport {
       aspectId: String,
       session: DBSession = ReadOnlyAutoSession
   ): Directive0 =
-    (extractLog & extractExecutionContext & extractActorSystem).tflatMap { t =>
-      val requestExeCtx = t._2
-      val log = t._1
-      val requestActorSystem = t._3
+    (extractLog & extractExecutionContext & extractActorSystem & requiresTenantId)
+      .tflatMap { t =>
+        val requestExeCtx = t._2
+        val log = t._1
+        val requestActorSystem = t._3
+        val tenantId = t._4
 
-      implicit val blockingExeCtx =
-        requestActorSystem.dispatchers.lookup("blocking-io-dispatcher")
+        implicit val blockingExeCtx =
+          requestActorSystem.dispatchers.lookup("blocking-io-dispatcher")
 
-      onComplete(
-        createRecordContextData(recordId)(blockingExeCtx, log, session)
-      ).flatMap {
-        case Success(currentRecordData) =>
-          val recordContextDataAfterUpdate =
-            JsObject(currentRecordData.fields - aspectId)
-          /*
+        onComplete(
+          createRecordContextData(recordId, tenantId)(
+            blockingExeCtx,
+            log,
+            session
+          ).map { currentRecordData =>
+            val recordContextDataAfterUpdate =
+              JsObject(currentRecordData.fields - aspectId)
+            (currentRecordData, recordContextDataAfterUpdate)
+          }
+        ).flatMap {
+          case Success((currentRecordData, recordContextDataAfterUpdate)) =>
+            /*
           Make sure user has permission before & after delete the aspect
-           */
-          requirePermission(
-            authApiClient,
-            "object/record/update",
-            input = Some(
-              JsObject("object" -> JsObject("record" -> currentRecordData))
-            )
-          ) & requirePermission(
-            authApiClient,
-            "object/record/update",
-            input = Some(
-              JsObject(
-                "object" -> JsObject(
-                  "record" -> recordContextDataAfterUpdate
+             */
+            requirePermission(
+              authApiClient,
+              "object/record/update",
+              input = Some(
+                JsObject("object" -> JsObject("record" -> currentRecordData))
+              )
+            ) & requirePermission(
+              authApiClient,
+              "object/record/update",
+              input = Some(
+                JsObject(
+                  "object" -> JsObject(
+                    "record" -> recordContextDataAfterUpdate
+                  )
                 )
               )
+            ) & withExecutionContext(requestExeCtx) & pass
+          case Failure(_: NoRecordFoundException) =>
+            // when record cannot found, aspect is already gone. We let it go.
+            withExecutionContext(requestExeCtx) & pass
+          case Failure(e: Throwable) =>
+            log.error(
+              "Failed to create record context data for auth decision. record ID: {}. Error: {}",
+              recordId,
+              e
             )
-          ) & withExecutionContext(requestExeCtx) & pass
-        case Failure(_: NoRecordFoundException) =>
-          // when record cannot found, aspect is already gone. We let it go.
-          withExecutionContext(requestExeCtx) & pass
-        case Failure(e: Throwable) =>
-          log.error(
-            "Failed to create record context data for auth decision. record ID: {}. Error: {}",
-            recordId,
-            e
-          )
-          complete(
-            InternalServerError,
-            s"An error occurred while creating record context data for auth decision."
-          )
+            complete(
+              InternalServerError,
+              s"An error occurred while creating record context data for auth decision."
+            )
+        }
       }
-    }
 
   /**
     * retrieve aspect record from DB and convert into JSON data (to be used as part of policy engine context data)
@@ -407,12 +452,16 @@ object Directives extends Protocols with SprayJsonSupport {
     * @return
     */
   private def createAspectContextData(
-      aspectId: String
+      aspectId: String,
+      tenantId: TenantId
   )(implicit ec: ExecutionContext, session: DBSession): Future[JsObject] = {
     Future {
       blocking {
         var aspectJsFields: Map[String, JsValue] = Map()
-        sql"""SELECT * FROM aspects WHERE aspectid=${aspectId} LIMIT 1"""
+        sql"SELECT * FROM aspects WHERE aspectid=${aspectId} ${tenantId match {
+          case SpecifiedTenantId(tenantId) => sqls" AND tenantid=${tenantId}"
+          case _                           => SQLSyntax.empty
+        }} LIMIT 1"
           .foreach { rs =>
             // JDBC treat column name case insensitive
             aspectJsFields += ("id" -> JsString(rs.string("aspectId")))
@@ -456,35 +505,38 @@ object Directives extends Protocols with SprayJsonSupport {
       aspectId: String,
       session: DBSession = ReadOnlyAutoSession
   ): Directive0 =
-    (extractLog & extractExecutionContext & extractActorSystem).tflatMap { t =>
-      val requestExeCtx = t._2
-      val log = t._1
-      val requestActorSystem = t._3
+    (extractLog & extractExecutionContext & extractActorSystem & requiresTenantId)
+      .tflatMap { t =>
+        val requestExeCtx = t._2
+        val log = t._1
+        val requestActorSystem = t._3
+        val tenantId = t._4
 
-      implicit val blockingExeCtx =
-        requestActorSystem.dispatchers.lookup("blocking-io-dispatcher")
+        implicit val blockingExeCtx =
+          requestActorSystem.dispatchers.lookup("blocking-io-dispatcher")
 
-      (withExecutionContext(blockingExeCtx) & onComplete(
-        createAspectContextData(aspectId)(blockingExeCtx, session)
-      )).tflatMap {
-        case Tuple1(Success(aspectData)) =>
-          requirePermission(
-            authApiClient,
-            operationUri,
-            input = Some(JsObject("object" -> JsObject("aspect" -> aspectData)))
-          ) & withExecutionContext(requestExeCtx) & pass // switch back to akka dispatcher
-        case Tuple1(Failure(e)) =>
-          log.error(
-            "Failed to create aspect context data for auth decision. aspect ID: {}. Error: {}",
-            aspectId,
-            e
-          )
-          complete(
-            InternalServerError,
-            s"An error occurred while creating aspect context data for auth decision."
-          )
+        (withExecutionContext(blockingExeCtx) & onComplete(
+          createAspectContextData(aspectId, tenantId)(blockingExeCtx, session)
+        )).tflatMap {
+          case Tuple1(Success(aspectData)) =>
+            requirePermission(
+              authApiClient,
+              operationUri,
+              input =
+                Some(JsObject("object" -> JsObject("aspect" -> aspectData)))
+            ) & withExecutionContext(requestExeCtx) & pass // switch back to akka dispatcher
+          case Tuple1(Failure(e)) =>
+            log.error(
+              "Failed to create aspect context data for auth decision. aspect ID: {}. Error: {}",
+              aspectId,
+              e
+            )
+            complete(
+              InternalServerError,
+              s"An error occurred while creating aspect context data for auth decision."
+            )
+        }
       }
-    }
 
   /**
     * a request can only pass this directive when:
@@ -504,67 +556,74 @@ object Directives extends Protocols with SprayJsonSupport {
       newAspectOrJsonPatch: Either[AspectDefinition, JsonPatch],
       session: DBSession = ReadOnlyAutoSession
   ): Directive0 =
-    (extractLog & extractExecutionContext & extractActorSystem).tflatMap { t =>
-      val requestExeCtx = t._2
-      val log = t._1
-      val requestActorSystem = t._3
+    (extractLog & extractExecutionContext & extractActorSystem & requiresTenantId)
+      .tflatMap { t =>
+        val requestExeCtx = t._2
+        val log = t._1
+        val requestActorSystem = t._3
+        val tenantId = t._4
 
-      implicit val blockingExeCtx =
-        requestActorSystem.dispatchers.lookup("blocking-io-dispatcher")
-      onComplete(
-        createAspectContextData(aspectId)(blockingExeCtx, session)
-      ).flatMap {
-        case Success(currentAspectData) =>
-          val aspectDataAfterUpdate = newAspectOrJsonPatch match {
-            case Left(newAspectData)   => newAspectData.toJson.asJsObject
-            case Right(aspectJsonPath) => aspectJsonPath(currentAspectData)
-          }
-          requirePermission(
-            authApiClient,
-            "object/aspect/update",
-            input = Some(
-              JsObject("object" -> JsObject("aspect" -> currentAspectData))
-            )
-          ) & requirePermission(
-            authApiClient,
-            "object/aspect/update",
-            input = Some(
-              JsObject("object" -> JsObject("aspect" -> aspectDataAfterUpdate))
-            )
-          ) & withExecutionContext(requestExeCtx) & pass
-        case Failure(exception: NoRecordFoundException) =>
-          newAspectOrJsonPatch match {
-            case Left(newAspectData) =>
-              requirePermission(
-                authApiClient,
-                "object/aspect/create",
-                input = Some(
-                  JsObject(
-                    "object" -> JsObject("aspect" -> newAspectData.toJson)
-                  )
-                )
-              ) & withExecutionContext(requestExeCtx) & pass
-            case Right(_) =>
-              // When aspect Json Patch was passed (i.e. a patch request),
-              // there is no way to create the aspect when it doesn't exist (as we don't know the current data)
-              // we will send out BadRequest response immediately
-              complete(
-                BadRequest,
-                s"Cannot locate aspect record by id: ${aspectId}"
+        implicit val blockingExeCtx =
+          requestActorSystem.dispatchers.lookup("blocking-io-dispatcher")
+        onComplete(
+          createAspectContextData(aspectId, tenantId)(blockingExeCtx, session)
+            .map { currentAspectData =>
+              val aspectDataAfterUpdate = newAspectOrJsonPatch match {
+                case Left(newAspectData)   => newAspectData.toJson.asJsObject
+                case Right(aspectJsonPath) => aspectJsonPath(currentAspectData)
+              }
+              (currentAspectData, aspectDataAfterUpdate)
+            }
+        ).flatMap {
+          case Success((currentAspectData, aspectDataAfterUpdate)) =>
+            requirePermission(
+              authApiClient,
+              "object/aspect/update",
+              input = Some(
+                JsObject("object" -> JsObject("aspect" -> currentAspectData))
               )
-          }
-        case Failure(e: Throwable) =>
-          log.error(
-            "Failed to create aspect context data for auth decision. aspect ID: {}. Error: {}",
-            aspectId,
-            e
-          )
-          complete(
-            InternalServerError,
-            s"An error occurred while creating aspect context data for auth decision."
-          )
+            ) & requirePermission(
+              authApiClient,
+              "object/aspect/update",
+              input = Some(
+                JsObject(
+                  "object" -> JsObject("aspect" -> aspectDataAfterUpdate)
+                )
+              )
+            ) & withExecutionContext(requestExeCtx) & pass
+          case Failure(exception: NoRecordFoundException) =>
+            newAspectOrJsonPatch match {
+              case Left(newAspectData) =>
+                requirePermission(
+                  authApiClient,
+                  "object/aspect/create",
+                  input = Some(
+                    JsObject(
+                      "object" -> JsObject("aspect" -> newAspectData.toJson)
+                    )
+                  )
+                ) & withExecutionContext(requestExeCtx) & pass
+              case Right(_) =>
+                // When aspect Json Patch was passed (i.e. a patch request),
+                // there is no way to create the aspect when it doesn't exist (as we don't know the current data)
+                // we will send out BadRequest response immediately
+                complete(
+                  BadRequest,
+                  s"Cannot locate aspect record by id: ${aspectId}"
+                )
+            }
+          case Failure(e: Throwable) =>
+            log.error(
+              "Failed to create aspect context data for auth decision. aspect ID: {}. Error: {}",
+              aspectId,
+              e
+            )
+            complete(
+              InternalServerError,
+              s"An error occurred while creating aspect context data for auth decision."
+            )
+        }
       }
-    }
 
   /**
     * retrieve webhook record from DB and convert into JSON data (to be used as part of policy engine context data)
