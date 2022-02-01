@@ -1,8 +1,7 @@
 package au.csiro.data61.magda.registry
 
-import akka.actor.TypedActor.context
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.Directive0
+import akka.http.scaladsl.server.{Directive0}
 import au.csiro.data61.magda.client.{AuthApiClient, AuthDecisionReqConfig}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.StatusCodes.{BadRequest, InternalServerError}
@@ -20,7 +19,7 @@ import au.csiro.data61.magda.directives.AuthDirectives.{
   withAuthDecision
 }
 import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
-import au.csiro.data61.magda.model.{Auth, TenantId}
+import au.csiro.data61.magda.model.{Auth}
 import au.csiro.data61.magda.model.Registry.{AspectDefinition, Record, WebHook}
 import au.csiro.data61.magda.util.JsonPathUtils.applyJsonPathToRecordContextData
 import au.csiro.data61.magda.model.Auth.{
@@ -28,6 +27,7 @@ import au.csiro.data61.magda.model.Auth.{
   recordToContextData
 }
 import au.csiro.data61.magda.model.TenantId.{SpecifiedTenantId, TenantId}
+import gnieh.diffson.PatchException
 
 object Directives extends Protocols with SprayJsonSupport {
 
@@ -120,6 +120,7 @@ object Directives extends Protocols with SprayJsonSupport {
       authApiClient: AuthApiClient,
       operationUri: String,
       recordId: String,
+      onRecordNotFound: Option[() => Directive0] = None,
       session: DBSession = ReadOnlyAutoSession
   ): Directive0 =
     (extractLog & extractExecutionContext & extractActorSystem & requiresTenantId)
@@ -146,6 +147,17 @@ object Directives extends Protocols with SprayJsonSupport {
               input =
                 Some(JsObject("object" -> JsObject("record" -> recordData)))
             ) & withExecutionContext(requestExeCtx) & pass // switch back to akka dispatcher
+          case Tuple1(Failure(e: NoRecordFoundException)) =>
+            if (onRecordNotFound.isDefined) {
+              onRecordNotFound.get()
+            } else {
+              complete(
+                BadRequest,
+                ApiError(
+                  s"Failed to locate record for auth context data creation."
+                )
+              )
+            }
           case Tuple1(Failure(e)) =>
             log.error(
               "Failed to create record context data for auth decision. record ID: {}. Error: {}",
@@ -154,7 +166,9 @@ object Directives extends Protocols with SprayJsonSupport {
             )
             complete(
               InternalServerError,
-              s"An error occurred while creating record context data for auth decision."
+              ApiError(
+                s"An error occurred while creating record context data for auth decision."
+              )
             )
         }
       }
@@ -259,9 +273,14 @@ object Directives extends Protocols with SprayJsonSupport {
                 // we will send out BadRequest response immediately
                 complete(
                   BadRequest,
-                  s"Cannot locate request record by id: ${recordId}"
+                  ApiError(s"Cannot locate request record by id: ${recordId}")
                 )
             }
+          case Failure(e: PatchException) =>
+            complete(
+              BadRequest,
+              ApiError(s"JSON patch error: ${e}")
+            )
           case Failure(e: Throwable) =>
             log.error(
               "Failed to create record context data for auth decision. record ID: {}. Error: {}",
@@ -270,7 +289,9 @@ object Directives extends Protocols with SprayJsonSupport {
             )
             complete(
               InternalServerError,
-              s"An error occurred while creating record context data for auth decision."
+              ApiError(
+                s"An error occurred while creating record context data for auth decision."
+              )
             )
         }
       }
@@ -355,7 +376,12 @@ object Directives extends Protocols with SprayJsonSupport {
             // we will send out BadRequest response immediately
             complete(
               BadRequest,
-              s"Cannot locate request record by id: ${recordId}"
+              ApiError(s"Cannot locate request record by id: ${recordId}")
+            )
+          case Failure(e: PatchException) =>
+            complete(
+              BadRequest,
+              ApiError(s"JSON patch error: ${e}")
             )
           case Failure(e: Throwable) =>
             log.error(
@@ -365,7 +391,9 @@ object Directives extends Protocols with SprayJsonSupport {
             )
             complete(
               InternalServerError,
-              s"An error occurred while creating record context data for auth decision."
+              ApiError(
+                s"An error occurred while creating record context data for auth decision."
+              )
             )
         }
       }
@@ -439,7 +467,9 @@ object Directives extends Protocols with SprayJsonSupport {
             )
             complete(
               InternalServerError,
-              s"An error occurred while creating record context data for auth decision."
+              ApiError(
+                s"An error occurred while creating record context data for auth decision."
+              )
             )
         }
       }
@@ -533,7 +563,9 @@ object Directives extends Protocols with SprayJsonSupport {
             )
             complete(
               InternalServerError,
-              s"An error occurred while creating aspect context data for auth decision."
+              ApiError(
+                s"An error occurred while creating aspect context data for auth decision."
+              )
             )
         }
       }
@@ -609,9 +641,14 @@ object Directives extends Protocols with SprayJsonSupport {
                 // we will send out BadRequest response immediately
                 complete(
                   BadRequest,
-                  s"Cannot locate aspect record by id: ${aspectId}"
+                  ApiError(s"Cannot locate aspect record by id: ${aspectId}")
                 )
             }
+          case Failure(e: PatchException) =>
+            complete(
+              BadRequest,
+              ApiError(s"JSON patch error: ${e}")
+            )
           case Failure(e: Throwable) =>
             log.error(
               "Failed to create aspect context data for auth decision. aspect ID: {}. Error: {}",
@@ -620,7 +657,9 @@ object Directives extends Protocols with SprayJsonSupport {
             )
             complete(
               InternalServerError,
-              s"An error occurred while creating aspect context data for auth decision."
+              ApiError(
+                s"An error occurred while creating aspect context data for auth decision."
+              )
             )
         }
       }
@@ -690,7 +729,9 @@ object Directives extends Protocols with SprayJsonSupport {
           )
           complete(
             InternalServerError,
-            s"An error occurred while creating aspect context data for auth decision."
+            ApiError(
+              s"An error occurred while creating aspect context data for auth decision."
+            )
           )
       }
     }
@@ -761,7 +802,9 @@ object Directives extends Protocols with SprayJsonSupport {
           )
           complete(
             InternalServerError,
-            s"An error occurred while creating webhook context data for auth decision."
+            ApiError(
+              s"An error occurred while creating webhook context data for auth decision."
+            )
           )
       }
     }
@@ -794,6 +837,7 @@ object Directives extends Protocols with SprayJsonSupport {
             authApiClient,
             "object/record/read",
             recordId,
+            None,
             session
           )
         }

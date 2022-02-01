@@ -122,7 +122,22 @@ class RecordsService(
   def deleteById: Route = delete {
     path(Segment) { recordId: String =>
       requireUserId { userId =>
-        requireRecordPermission(authClient, "object/record/delete", recordId) {
+        requireRecordPermission(
+          authClient,
+          "object/record/delete",
+          recordId,
+          // when the record doesn't not exist (or not accessible within current tenant)
+          // we will check "unconditional" `delete` permission. i.e.
+          // users with "unconditional" `delete` permission will get 200 status code with "record is deleted" response (this is for matching existing behaviour).
+          // users without this permission will not be able to know that the record has been removed.
+          Some(
+            () =>
+              requireUnconditionalAuthDecision(
+                authClient,
+                AuthDecisionReqConfig("object/record/delete")
+              ) & pass
+          )
+        ) {
           requiresSpecifiedTenantId { tenantId =>
             val theResult = DB localTx { implicit session =>
               recordPersistence.deleteRecord(tenantId, recordId, userId) match {

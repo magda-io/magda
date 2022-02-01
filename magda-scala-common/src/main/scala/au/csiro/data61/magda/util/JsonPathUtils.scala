@@ -4,6 +4,7 @@ import au.csiro.data61.magda.model.Registry.Record
 import gnieh.diffson._
 import gnieh.diffson.sprayJson._
 import spray.json.JsObject
+import gnieh.diffson.PatchException
 
 object JsonPathUtils {
 
@@ -68,21 +69,21 @@ object JsonPathUtils {
                   "aspects" / (sourceName / sourceRest),
                   "aspects" / (destName / destRest)
                   ) =>
-                if (sourceName != destName)
+                if (sourceName != destName) {
                   // We can relax this restriction, and the one on Copy below, by turning a cross-aspect
                   // Move into a Remove on one and an Add on the other.  But it's probably not worth
                   // the trouble.
-                  throw new RuntimeException(
+                  throw new PatchException(
                     "A patch may not move values between two different aspects."
                   )
-                else
+                } else
                   Move(sourceRest, destRest)
               case Copy(
                   "aspects" / (sourceName / sourceRest),
                   "aspects" / (destName / destRest)
                   ) =>
                 if (sourceName != destName)
-                  throw new RuntimeException(
+                  throw new PatchException(
                     "A patch may not copy values between two different aspects."
                   )
                 else
@@ -90,14 +91,14 @@ object JsonPathUtils {
               case Test("aspects" / (_ / rest), aValue) =>
                 Test(rest, aValue)
               case _ =>
-                throw new RuntimeException(
+                throw new PatchException(
                   "The patch contains an unsupported operation for aspect " + aspectId
                 )
             }))
           )
 
         case _ =>
-          throw new RuntimeException(
+          throw new PatchException(
             "Aspect ID is missing (this shouldn't be possible)."
           )
       }
