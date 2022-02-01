@@ -227,8 +227,8 @@ abstract class ApiSpec
   def endpointStandardAuthTestCase(
       request: HttpRequest,
       requiredOperationUris: List[String],
-      response200Check: FixtureParam => Unit,
-      response403Check: FixtureParam => Unit,
+      hasPermissionCheck: FixtureParam => Unit,
+      noPermissionCheck: FixtureParam => Unit,
       beforeRequest: FixtureParam => Unit = (param: FixtureParam) => Unit,
       requireUserId: Boolean = false
   ) = {
@@ -254,8 +254,7 @@ abstract class ApiSpec
       ) ~> param
         .api(Full)
         .routes ~> check {
-        status shouldEqual StatusCodes.OK
-        response200Check(param)
+        hasPermissionCheck(param)
       }
     }
 
@@ -272,8 +271,7 @@ abstract class ApiSpec
       (if (requireUserId) reqWithUserId else req) ~> param
         .api(Full)
         .routes ~> check {
-        status shouldEqual StatusCodes.Forbidden
-        response403Check(param)
+        noPermissionCheck(param)
       }
     }
 

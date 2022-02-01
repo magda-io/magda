@@ -1,11 +1,13 @@
 package au.csiro.data61.magda.registry
 
-import akka.http.scaladsl.model.{StatusCodes}
+import akka.http.scaladsl.model.StatusCodes
 import au.csiro.data61.magda.model.Auth.{
   UnconditionalFalseDecision,
   UnconditionalTrueDecision
 }
 import au.csiro.data61.magda.model.Registry._
+import gnieh.diffson._
+import gnieh.diffson.sprayJson._
 import spray.json._
 
 /**
@@ -28,6 +30,38 @@ class AspectsServiceAuthSpec extends ApiSpec {
 
   describe("Aspect Service Auth Logic") {
 
+    describe("Get All endpoint {get} /v0/registry/aspects: ") {
+      endpointStandardAuthTestCase(
+        Get("/v0/aspects"),
+        List("object/aspect/read"),
+        hasPermissionCheck = param => {
+          status shouldEqual StatusCodes.OK
+          responseAs[List[AspectDefinition]].length shouldEqual 1
+          param.authFetcher
+            .callTimesByOperationUri("object/aspect/read") shouldBe 1
+        },
+        noPermissionCheck = param => {
+          status shouldEqual StatusCodes.OK
+          responseAs[List[AspectDefinition]].length shouldEqual 0
+          param.authFetcher
+            .callTimesByOperationUri("object/aspect/read") shouldBe 1
+        },
+        beforeRequest = param => {
+          param.authFetcher.setAuthDecision(
+            "object/aspect/create",
+            UnconditionalTrueDecision
+          )
+          val aspectDefinition = AspectDefinition("testId", "testName", None)
+          Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          param.authFetcher.resetMock()
+        }
+      )
+    }
+
     describe("Create endpoint {post} /v0/registry/aspects: ") {
 
       val aspectDefinition =
@@ -36,7 +70,8 @@ class AspectsServiceAuthSpec extends ApiSpec {
       endpointStandardAuthTestCase(
         Post("/v0/aspects", aspectDefinition),
         List("object/aspect/create"),
-        response200Check = param => {
+        hasPermissionCheck = param => {
+          status shouldEqual StatusCodes.OK
           responseAs[AspectDefinition] shouldEqual aspectDefinition
 
           param.authFetcher.setAuthDecision(
@@ -59,7 +94,8 @@ class AspectsServiceAuthSpec extends ApiSpec {
           param.authFetcher
             .callTimesByOperationUri("object/aspect/read") shouldBe 1
         },
-        response403Check = param => {
+        noPermissionCheck = param => {
+          status shouldEqual StatusCodes.Forbidden
           param.authFetcher
             .callTimesByOperationUri("object/aspect/create") shouldBe 1
         },
@@ -81,7 +117,8 @@ class AspectsServiceAuthSpec extends ApiSpec {
         endpointStandardAuthTestCase(
           Put(s"/v0/aspects/testId", aspectDefinition),
           List("object/aspect/update"),
-          response200Check = param => {
+          hasPermissionCheck = param => {
+            status shouldEqual StatusCodes.OK
             responseAs[AspectDefinition] shouldEqual aspectDefinition
 
             // endpoint will query policy engine re: "object/aspect/update" twice
@@ -104,7 +141,8 @@ class AspectsServiceAuthSpec extends ApiSpec {
             param.authFetcher
               .callTimesByOperationUri("object/aspect/read") shouldBe 1
           },
-          response403Check = param => {
+          noPermissionCheck = param => {
+            status shouldEqual StatusCodes.Forbidden
             param.authFetcher
               .callTimesByOperationUri("object/aspect/update") shouldBe 1
           },
@@ -140,7 +178,8 @@ class AspectsServiceAuthSpec extends ApiSpec {
         endpointStandardAuthTestCase(
           Put(s"/v0/aspects/testId", aspectDefinition),
           List("object/aspect/create", "object/aspect/update"),
-          response200Check = param => {
+          hasPermissionCheck = param => {
+            status shouldEqual StatusCodes.OK
             responseAs[AspectDefinition] shouldEqual aspectDefinition
 
             // as the aspect doesn't existing, the endpoint actually performed a "create" operation
@@ -165,13 +204,79 @@ class AspectsServiceAuthSpec extends ApiSpec {
             param.authFetcher
               .callTimesByOperationUri("object/aspect/read") shouldBe 1
           },
-          response403Check = param => {
+          noPermissionCheck = param => {
+            status shouldEqual StatusCodes.Forbidden
             param.authFetcher
               .callTimesByOperationUri("object/aspect/create") shouldBe 1
           },
           requireUserId = true
         )
 
+      }
+
+    }
+
+    describe("Patch API {patch} /v0/registry/aspects/{id}") {
+
+      endpointStandardAuthTestCase(
+        Patch(
+          "/v0/aspects/testId",
+          JsonPatch(Replace(Pointer.root / "name", JsString("foo")))
+        ),
+        List("object/aspect/update"),
+        hasPermissionCheck = param => {
+          status shouldEqual StatusCodes.OK
+          responseAs[AspectDefinition] shouldEqual AspectDefinition(
+            "testId",
+            "foo",
+            None
+          )
+          // check whether user has both before & after update aspect access
+          param.authFetcher
+            .callTimesByOperationUri("object/aspect/update") shouldBe 2
+        },
+        noPermissionCheck = param => {
+          status shouldEqual StatusCodes.Forbidden
+          param.authFetcher
+            .callTimesByOperationUri("object/aspect/update") shouldBe 1
+        },
+        beforeRequest = param => {
+          param.authFetcher.setAuthDecision(
+            "object/aspect/create",
+            UnconditionalTrueDecision
+          )
+          val aspectDefinition = AspectDefinition("testId", "testName", None)
+          Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          param.authFetcher.resetMock()
+        },
+        requireUserId = true
+      )
+
+      it("should response BadRequest 400 error as can't construct context data") {
+        param =>
+          param.authFetcher.setAuthDecision(
+            "object/aspect/update",
+            UnconditionalTrueDecision
+          )
+          param.authFetcher.setAuthDecision(
+            "object/aspect/create",
+            UnconditionalTrueDecision
+          )
+          Patch(
+            "/v0/aspects/testId",
+            JsonPatch(Replace(Pointer.root / "name", JsString("foo")))
+          ) ~> addUserId() ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.BadRequest
+            responseAs[String] should include(
+              "Cannot locate aspect record by id"
+            )
+          }
       }
 
     }
