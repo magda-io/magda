@@ -435,18 +435,20 @@ class DefaultRecordPersistence(config: Config)
       val dereferenceSelectors = linkAspects.map {
         case (aspectId, propertyWithLink) =>
           SQLSyntax
-            .exists(sqls"select 1 from RecordAspects")
-            .where(
-              SQLSyntax.toAndConditionOpt(
-                Some(sqls"RecordAspects.recordId=Records.recordId"),
-                Some(sqls"aspectId=$aspectId"),
-                SQLUtils
-                  .tenantIdToWhereClause(tenantId, "recordaspects.tenantid"),
-                Some(
-                  sqls"jsonb_exists_any(data->${propertyWithLink.propertyName}, ARRAY[$ids]))"
+            .exists(
+              sqls"select 1 from RecordAspects".where(
+                SQLSyntax.toAndConditionOpt(
+                  Some(sqls"RecordAspects.recordId=Records.recordId"),
+                  Some(sqls"aspectId=$aspectId"),
+                  SQLUtils
+                    .tenantIdToWhereClause(tenantId, "recordaspects.tenantid"),
+                  Some(
+                    sqls"jsonb_exists_any(data->${propertyWithLink.propertyName}, ARRAY[$ids])"
+                  )
                 )
               )
             )
+
       }
 
       val excludeSelector =
@@ -1472,7 +1474,9 @@ class DefaultRecordPersistence(config: Config)
       else SQLSyntax.empty},
                      Records.sourcetag as sourceTag
               from Records
-              ${makeWhereClause(whereClauseParts)}
+              ${SQLSyntax.where(
+        SQLSyntax.toAndConditionOpt(whereClauseParts: _*)
+      )}
             ) as $tempName
             ${if (aspectIds.nonEmpty) sqls"$nonNullAspectsWhereClause"
       else SQLSyntax.empty}
@@ -1555,14 +1559,6 @@ class DefaultRecordPersistence(config: Config)
     }
 
     statement.map(_.long(1)).single.apply().getOrElse(0L)
-  }
-
-  private def makeWhereClause(andParts: Seq[Option[SQLSyntax]]) = {
-    andParts.filter(_.isDefined) match {
-      case Seq() => SQLSyntax.empty
-      case nonEmpty =>
-        SQLSyntax.where(SQLSyntax.joinWithAnd(nonEmpty.map(_.get): _*))
-    }
   }
 
   private def rowToRecordSummary(rs: WrappedResultSet): RecordSummary = {
