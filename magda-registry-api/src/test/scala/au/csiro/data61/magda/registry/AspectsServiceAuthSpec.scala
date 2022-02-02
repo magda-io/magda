@@ -140,6 +140,116 @@ class AspectsServiceAuthSpec extends ApiSpec {
 
   describe("Aspect Service Auth Logic") {
 
+    describe("Get by id endpoint {get} /v0/registry/aspects/{id}: ") {
+      it("should response 404 when auth decision allows no record") { param =>
+        // setting up testing aspects
+        param.authFetcher.setAuthDecision(
+          "object/aspect/create",
+          UnconditionalTrueDecision
+        )
+
+        List(
+          AspectDefinition("test1", "test 1", None),
+          AspectDefinition(
+            "test2",
+            "test 2",
+            Some(JsObject("b" -> JsNumber(1)))
+          ),
+          AspectDefinition(
+            "test3",
+            "test 2",
+            Some(JsObject("a" -> JsNumber(1)))
+          )
+        ).foreach { aspect =>
+          Post("/v0/aspects", aspect) ~> addUserId() ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+        }
+
+        param.authFetcher.resetMock()
+
+        param.authFetcher.setAuthDecision(
+          "object/aspect/read",
+          AuthDecision(
+            hasResidualRules = true,
+            result = None,
+            residualRules = Some(
+              List(
+                ConciseRule(
+                  fullName = "rule1",
+                  name = "rule1",
+                  value = JsTrue,
+                  expressions = List(
+                    ConciseExpression(
+                      negated = false,
+                      operator = None,
+                      operands = Vector(
+                        ConciseOperand(
+                          isRef = true,
+                          value = JsString("input.object.aspect.jsonSchema")
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+
+        // should response 404 as test1 doesn't meet authDecision (i.e. jsonSchema is not empty)
+        Get("/v0/aspects/test1") ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.NotFound
+        }
+
+        // should response 200 as test2 meet authDecision (i.e. jsonSchema is not empty)
+        Get("/v0/aspects/test2") ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[AspectDefinition].id shouldBe "test2"
+        }
+      }
+
+      val aspectDefinition =
+        AspectDefinition("testId1", "testName", Some(JsObject()))
+
+      endpointStandardAuthTestCase(
+        Get("/v0/aspects/testId1", aspectDefinition),
+        List("object/aspect/read"),
+        hasPermissionCheck = param => {
+          status shouldEqual StatusCodes.OK
+          responseAs[AspectDefinition] shouldEqual aspectDefinition
+
+          param.authFetcher
+            .callTimesByOperationUri("object/aspect/read") shouldBe 1
+        },
+        noPermissionCheck = param => {
+          status shouldEqual StatusCodes.NotFound
+          param.authFetcher
+            .callTimesByOperationUri("object/aspect/read") shouldBe 1
+        },
+        beforeRequest = param => {
+          // create aspect before query it
+          param.authFetcher.setAuthDecision(
+            "object/aspect/create",
+            UnconditionalTrueDecision
+          )
+          Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          param.authFetcher.resetMock()
+        }
+      )
+
+    }
+
     describe("Get All endpoint {get} /v0/registry/aspects: ") {
 
       testAspectQuery(
@@ -290,36 +400,6 @@ class AspectsServiceAuthSpec extends ApiSpec {
         expectedAspectIds = List("test3")
       )
 
-      endpointStandardAuthTestCase(
-        Get("/v0/aspects"),
-        List("object/aspect/read"),
-        hasPermissionCheck = param => {
-          status shouldEqual StatusCodes.OK
-          responseAs[List[AspectDefinition]].length shouldEqual 1
-          param.authFetcher
-            .callTimesByOperationUri("object/aspect/read") shouldBe 1
-        },
-        noPermissionCheck = param => {
-          status shouldEqual StatusCodes.OK
-          responseAs[List[AspectDefinition]].length shouldEqual 0
-          param.authFetcher
-            .callTimesByOperationUri("object/aspect/read") shouldBe 1
-        },
-        beforeRequest = param => {
-          param.authFetcher.setAuthDecision(
-            "object/aspect/create",
-            UnconditionalTrueDecision
-          )
-          val aspectDefinition = AspectDefinition("testId", "testName", None)
-          Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
-            TENANT_1
-          ) ~> param.api(Full).routes ~> check {
-            status shouldEqual StatusCodes.OK
-          }
-          param.authFetcher.resetMock()
-        }
-      )
-
       testAspectQuery(
         "should filter aspect correctly according to auth decision contains (AspectQueryValueInArray)",
         testAspects = List(
@@ -354,6 +434,36 @@ class AspectsServiceAuthSpec extends ApiSpec {
           )
         ),
         expectedAspectIds = List("test2")
+      )
+
+      endpointStandardAuthTestCase(
+        Get("/v0/aspects"),
+        List("object/aspect/read"),
+        hasPermissionCheck = param => {
+          status shouldEqual StatusCodes.OK
+          responseAs[List[AspectDefinition]].length shouldEqual 1
+          param.authFetcher
+            .callTimesByOperationUri("object/aspect/read") shouldBe 1
+        },
+        noPermissionCheck = param => {
+          status shouldEqual StatusCodes.OK
+          responseAs[List[AspectDefinition]].length shouldEqual 0
+          param.authFetcher
+            .callTimesByOperationUri("object/aspect/read") shouldBe 1
+        },
+        beforeRequest = param => {
+          param.authFetcher.setAuthDecision(
+            "object/aspect/create",
+            UnconditionalTrueDecision
+          )
+          val aspectDefinition = AspectDefinition("testId", "testName", None)
+          Post("/v0/aspects", aspectDefinition) ~> addUserId() ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          param.authFetcher.resetMock()
+        }
       )
 
     }
