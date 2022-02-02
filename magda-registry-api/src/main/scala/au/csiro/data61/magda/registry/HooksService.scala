@@ -22,6 +22,7 @@ import com.typesafe.config.Config
 import au.csiro.data61.magda.client.{AuthApiClient, AuthDecisionReqConfig}
 import au.csiro.data61.magda.directives.AuthDirectives.{
   requirePermission,
+  requireUnconditionalAuthDecision,
   requireUserId,
   withAuthDecision
 }
@@ -32,7 +33,7 @@ import au.csiro.data61.magda.registry.Directives.{
 import spray.json.JsObject
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await}
+import scala.concurrent.Await
 
 @Path("/hooks")
 @io.swagger.annotations.Api(value = "web hooks", produces = "application/json")
@@ -711,7 +712,18 @@ class HooksService(
   )
   def deleteById = delete {
     path(Segment) { (hookId: String) =>
-      requireWebhookPermission(authClient, "object/webhook/delete", hookId) {
+      requireWebhookPermission(
+        authClient,
+        "object/webhook/delete",
+        hookId,
+        onRecordNotFound = Some(() => {
+          // when record not found, only user has unconditional permission can confirm the hook is deleted
+          requireUnconditionalAuthDecision(
+            authClient,
+            AuthDecisionReqConfig("object/webhook/delete")
+          ) & pass
+        })
+      ) {
         val result = DB localTx { implicit session =>
           HookPersistence.delete(hookId) match {
             case Success(result) =>

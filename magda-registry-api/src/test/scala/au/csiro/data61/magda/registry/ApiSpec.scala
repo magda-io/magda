@@ -230,7 +230,8 @@ abstract class ApiSpec
       hasPermissionCheck: FixtureParam => Unit,
       noPermissionCheck: FixtureParam => Unit,
       beforeRequest: FixtureParam => Unit = (param: FixtureParam) => Unit,
-      requireUserId: Boolean = false
+      requireUserId: Boolean = false,
+      skipPolicyRetrieveAndProcessCheck: Boolean = false
   ) = {
 
     val req = request ~> addTenantIdHeader(
@@ -277,32 +278,34 @@ abstract class ApiSpec
       }
     }
 
-    it(
-      "should respond 500 when failed to retrieve auth decision from policy engine"
-    ) { param =>
-      beforeRequest(param)
+    if (!skipPolicyRetrieveAndProcessCheck) {
+      it(
+        "should respond 500 when failed to retrieve auth decision from policy engine"
+      ) { param =>
+        beforeRequest(param)
 
-      param.authFetcher
-        .setResponse(StatusCodes.InternalServerError, "Something wrong.")
+        param.authFetcher
+          .setResponse(StatusCodes.InternalServerError, "Something wrong.")
 
-      (if (requireUserId) reqWithUserId else req) ~> param
-        .api(Full)
-        .routes ~> check {
-        status shouldEqual StatusCodes.InternalServerError
+        (if (requireUserId) reqWithUserId else req) ~> param
+          .api(Full)
+          .routes ~> check {
+          status shouldEqual StatusCodes.InternalServerError
+        }
       }
-    }
 
-    it(
-      "should respond 500 when failed to process auth decision from policy engine"
-    ) { param =>
-      beforeRequest(param)
+      it(
+        "should respond 500 when failed to process auth decision from policy engine"
+      ) { param =>
+        beforeRequest(param)
 
-      param.authFetcher.setError(new Exception("something wrong"))
+        param.authFetcher.setError(new Exception("something wrong"))
 
-      (if (requireUserId) reqWithUserId else req) ~> param
-        .api(Full)
-        .routes ~> check {
-        status shouldEqual StatusCodes.InternalServerError
+        (if (requireUserId) reqWithUserId else req) ~> param
+          .api(Full)
+          .routes ~> check {
+          status shouldEqual StatusCodes.InternalServerError
+        }
       }
     }
 

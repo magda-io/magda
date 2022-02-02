@@ -702,6 +702,7 @@ object Directives extends Protocols with SprayJsonSupport {
       authApiClient: AuthApiClient,
       operationUri: String,
       webhookId: String,
+      onRecordNotFound: Option[() => Directive0] = None,
       session: DBSession = ReadOnlyAutoSession
   ): Directive0 =
     (extractLog & extractExecutionContext & extractActorSystem).tflatMap { t =>
@@ -721,6 +722,17 @@ object Directives extends Protocols with SprayJsonSupport {
             operationUri,
             input = Some(JsObject("object" -> JsObject("webhook" -> hookData)))
           ) & withExecutionContext(requestExeCtx) & pass // switch back to akka dispatcher
+        case Tuple1(Failure(e: NoRecordFoundException)) =>
+          if (onRecordNotFound.isDefined) {
+            onRecordNotFound.get()
+          } else {
+            complete(
+              BadRequest,
+              ApiError(
+                s"Failed to locate hook for auth context data creation."
+              )
+            )
+          }
         case Tuple1(Failure(e)) =>
           log.error(
             "Failed to create webhook context data for auth decision. webhook ID: {}. Error: {}",

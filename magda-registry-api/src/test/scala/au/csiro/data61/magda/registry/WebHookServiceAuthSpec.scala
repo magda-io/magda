@@ -142,6 +142,368 @@ class WebHookServiceAuthSpec extends ApiSpec {
   }
 
   describe("Webhook Service Auth Logic") {
+
+    describe("Create endpoint {post} /v0/registry/hooks: ") {
+
+      val hookDefinition = WebHook(
+        Some("test"),
+        "test hook",
+        active = true,
+        url = "http://test",
+        eventTypes = Set(EventType.CreateRecord),
+        config = WebHookConfig(
+          optionalAspects = Some(List("aspects1", "aspects3", "aspects5")),
+          dereference = Some(true)
+        )
+      )
+
+      endpointStandardAuthTestCase(
+        Post("/v0/hooks", hookDefinition),
+        List("object/webhook/create"),
+        hasPermissionCheck = param => {
+          status shouldEqual StatusCodes.OK
+          responseAs[WebHook].id.get shouldEqual hookDefinition.id.get
+
+          param.authFetcher
+            .callTimesByOperationUri("object/webhook/create") shouldBe 1
+        },
+        noPermissionCheck = param => {
+          status shouldEqual StatusCodes.Forbidden
+          param.authFetcher
+            .callTimesByOperationUri("object/webhook/create") shouldBe 1
+        },
+        requireUserId = true
+      )
+    }
+
+    describe("Modify endpoint {put} /v0/registry/hooks/{id}: ") {
+
+      val hookDefinition = WebHook(
+        Some("test"),
+        "test hook",
+        active = true,
+        url = "http://test",
+        eventTypes = Set(EventType.CreateRecord),
+        config = WebHookConfig(
+          optionalAspects = Some(List("aspects1", "aspects3", "aspects5")),
+          dereference = Some(true)
+        )
+      )
+
+      describe("with existing record") {
+        endpointStandardAuthTestCase(
+          Put("/v0/hooks/test", hookDefinition),
+          List("object/webhook/update"),
+          hasPermissionCheck = param => {
+            status shouldEqual StatusCodes.OK
+            responseAs[WebHook].id.get shouldEqual hookDefinition.id.get
+
+            param.authFetcher
+              .callTimesByOperationUri("object/webhook/update") shouldBe 2
+          },
+          noPermissionCheck = param => {
+            status shouldEqual StatusCodes.Forbidden
+            param.authFetcher
+              .callTimesByOperationUri("object/webhook/update") shouldBe 1
+          },
+          requireUserId = true,
+          beforeRequest = param => {
+            // create hook before modify it
+            param.authFetcher.setAuthDecision(
+              "object/webhook/create",
+              UnconditionalTrueDecision
+            )
+            Post("/v0/hooks", hookDefinition) ~> addUserId() ~> addTenantIdHeader(
+              TENANT_1
+            ) ~> param.api(Full).routes ~> check {
+              status shouldEqual StatusCodes.OK
+            }
+            param.authFetcher.resetMock()
+          }
+        )
+      }
+
+      describe("without existing record") {
+        endpointStandardAuthTestCase(
+          Put("/v0/hooks/test", hookDefinition),
+          List("object/webhook/create"),
+          hasPermissionCheck = param => {
+            status shouldEqual StatusCodes.OK
+            responseAs[WebHook].id.get shouldEqual hookDefinition.id.get
+            param.authFetcher
+              .callTimesByOperationUri("object/webhook/create") shouldBe 1
+          },
+          noPermissionCheck = param => {
+            status shouldEqual StatusCodes.Forbidden
+            param.authFetcher
+              .callTimesByOperationUri("object/webhook/create") shouldBe 1
+          },
+          requireUserId = true
+        )
+      }
+
+    }
+
+    describe("Delete endpoint {delete} /v0/registry/hooks/{id}: ") {
+      val hookDefinition = WebHook(
+        Some("test"),
+        "test hook",
+        active = true,
+        url = "http://test",
+        eventTypes = Set(EventType.CreateRecord),
+        config = WebHookConfig(
+          optionalAspects = Some(List("aspects1", "aspects3", "aspects5")),
+          dereference = Some(true)
+        )
+      )
+
+      describe("with existing record") {
+        endpointStandardAuthTestCase(
+          Delete("/v0/hooks/test"),
+          List("object/webhook/delete"),
+          hasPermissionCheck = param => {
+            status shouldEqual StatusCodes.OK
+
+            param.authFetcher
+              .callTimesByOperationUri("object/webhook/delete") shouldBe 1
+          },
+          noPermissionCheck = param => {
+            status shouldEqual StatusCodes.Forbidden
+            param.authFetcher
+              .callTimesByOperationUri("object/webhook/delete") shouldBe 1
+          },
+          requireUserId = false,
+          beforeRequest = param => {
+            // create hook before modify it
+            param.authFetcher.setAuthDecision(
+              "object/webhook/create",
+              UnconditionalTrueDecision
+            )
+            Post("/v0/hooks", hookDefinition) ~> addUserId() ~> addTenantIdHeader(
+              TENANT_1
+            ) ~> param.api(Full).routes ~> check {
+              status shouldEqual StatusCodes.OK
+            }
+            param.authFetcher.resetMock()
+          }
+        )
+      }
+
+      describe("without existing record") {
+        endpointStandardAuthTestCase(
+          Delete("/v0/hooks/test"),
+          List("object/webhook/delete"),
+          hasPermissionCheck = param => {
+            status shouldEqual StatusCodes.OK
+            param.authFetcher
+              .callTimesByOperationUri("object/webhook/delete") shouldBe 1
+          },
+          noPermissionCheck = param => {
+            status shouldEqual StatusCodes.Forbidden
+            param.authFetcher
+              .callTimesByOperationUri("object/webhook/delete") shouldBe 1
+          },
+          requireUserId = false
+        )
+      }
+    }
+
+    describe("Ack endpoint {post} /v0/registry/hooks/{id}/ack: ") {
+
+      val hookAcknowledgement = WebHookAcknowledgement(succeeded = false)
+      val hookDefinition = WebHook(
+        Some("test"),
+        "test hook",
+        active = true,
+        url = "http://test",
+        eventTypes = Set(EventType.CreateRecord),
+        config = WebHookConfig(
+          optionalAspects = Some(List("aspects1", "aspects3", "aspects5")),
+          dereference = Some(true)
+        )
+      )
+
+      describe("with existing record") {
+        endpointStandardAuthTestCase(
+          Post("/v0/hooks/test/ack", hookAcknowledgement),
+          List("object/webhook/ack"),
+          hasPermissionCheck = param => {
+            status shouldEqual StatusCodes.OK
+
+            param.authFetcher
+              .callTimesByOperationUri("object/webhook/ack") shouldBe 1
+          },
+          noPermissionCheck = param => {
+            status shouldEqual StatusCodes.Forbidden
+            param.authFetcher
+              .callTimesByOperationUri("object/webhook/ack") shouldBe 1
+          },
+          requireUserId = false,
+          beforeRequest = param => {
+            // create hook before modify it
+            param.authFetcher.setAuthDecision(
+              "object/webhook/create",
+              UnconditionalTrueDecision
+            )
+            Post("/v0/hooks", hookDefinition) ~> addUserId() ~> addTenantIdHeader(
+              TENANT_1
+            ) ~> param.api(Full).routes ~> check {
+              status shouldEqual StatusCodes.OK
+            }
+            param.authFetcher.resetMock()
+          }
+        )
+      }
+
+      describe("without existing record") {
+        endpointStandardAuthTestCase(
+          Post("/v0/hooks/test/ack", hookAcknowledgement),
+          List("object/webhook/ack"),
+          hasPermissionCheck = param => {
+            status shouldEqual StatusCodes.BadRequest
+            param.authFetcher
+              .callTimesByOperationUri("object/webhook/ack") shouldBe 0
+          },
+          noPermissionCheck = param => {
+            status shouldEqual StatusCodes.BadRequest
+            param.authFetcher
+              .callTimesByOperationUri("object/webhook/ack") shouldBe 0
+          },
+          requireUserId = false,
+          skipPolicyRetrieveAndProcessCheck = true
+        )
+      }
+
+    }
+
+    describe("Get by id endpoint {get} /v0/registry/hook/{id}:  ") {
+      it("should response 404 when auth decision allows no record") { param =>
+        // setting up testing data
+        param.authFetcher.setAuthDecision(
+          "object/webhook/create",
+          UnconditionalTrueDecision
+        )
+
+        List(
+          WebHook(
+            Some("test1"),
+            "test AspectQueryExists 1",
+            active = false,
+            url = "http://test1",
+            eventTypes = Set(EventType.CreateRecord),
+            config = WebHookConfig(
+              aspects = Some(List("aspects1")),
+              dereference = Some(true)
+            )
+          ),
+          WebHook(
+            Some("test3"),
+            "test AspectQueryExists 3",
+            active = true,
+            url = "http://test3",
+            eventTypes = Set(EventType.CreateRecord),
+            config = WebHookConfig(
+              aspects = Some(List()),
+              dereference = Some(true)
+            )
+          )
+        ).foreach { hook =>
+          Post("/v0/hooks", hook) ~> addUserId() ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+        }
+
+        param.authFetcher.resetMock()
+
+        param.authFetcher.setAuthDecision(
+          "object/webhook/read",
+          AuthDecision(
+            hasResidualRules = true,
+            result = None,
+            residualRules = Some(
+              List(
+                ConciseRule(
+                  fullName = "rule1",
+                  name = "rule1",
+                  value = JsTrue,
+                  expressions = List(
+                    ConciseExpression(
+                      negated = false,
+                      operator = None,
+                      operands = Vector(
+                        ConciseOperand(
+                          isRef = true,
+                          value =
+                            JsString("input.object.webhook.config.aspects[_]")
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+
+        // should response 404 as test3 doesn't meet authDecision
+        Get("/v0/hooks/test3") ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.NotFound
+        }
+
+        // should response 200 as test1 meet authDecision
+        Get("/v0/hooks/test1") ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          responseAs[WebHook].id.get shouldBe "test1"
+        }
+      }
+
+      val hookDefinition = WebHook(
+        Some("test"),
+        "test hook",
+        active = true,
+        url = "http://test",
+        eventTypes = Set(EventType.CreateRecord),
+        config = WebHookConfig(
+          optionalAspects = Some(List("aspects1", "aspects3", "aspects5")),
+          dereference = Some(true)
+        )
+      )
+
+      endpointStandardAuthTestCase(
+        Get("/v0/hooks/test"),
+        List("object/webhook/read"),
+        hasPermissionCheck = param => {
+          status shouldEqual StatusCodes.OK
+          responseAs[WebHook].id.get shouldBe hookDefinition.id.get
+          param.authFetcher
+            .callTimesByOperationUri("object/webhook/read") shouldBe 1
+        },
+        noPermissionCheck = param => {
+          status shouldEqual StatusCodes.NotFound
+          param.authFetcher
+            .callTimesByOperationUri("object/webhook/read") shouldBe 1
+        },
+        beforeRequest = param => {
+          param.authFetcher.setAuthDecision(
+            "object/webhook/create",
+            UnconditionalTrueDecision
+          )
+          Post("/v0/hooks", hookDefinition) ~> addUserId() ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          param.authFetcher.resetMock()
+        }
+      )
+    }
+
     describe("Get All endpoint {get} /v0/registry/hooks: ") {
 
       testAspectQuery(
