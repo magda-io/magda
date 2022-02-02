@@ -631,6 +631,116 @@ class WebHookServiceAuthSpec extends ApiSpec {
         expectedHookIds = List("test2")
       )
 
+      it("should filter by ownerId correctly") { param =>
+        param.authFetcher.setAuthDecision(
+          "object/webhook/create",
+          UnconditionalTrueDecision
+        )
+
+        Post(
+          "/v0/hooks",
+          WebHook(
+            Some("test1"),
+            "test hook 1",
+            active = true,
+            url = "http://test",
+            eventTypes = Set(EventType.CreateRecord),
+            config = WebHookConfig(
+              optionalAspects = Some(List("aspects1", "aspects3", "aspects5")),
+              dereference = Some(true)
+            )
+          )
+        ) ~> addUserId(Some("3f1ee629-e070-4294-8db9-7ac371fd8526")) ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Post(
+          "/v0/hooks",
+          WebHook(
+            Some("test2"),
+            "test hook 2",
+            active = true,
+            url = "http://test",
+            eventTypes = Set(EventType.CreateRecord),
+            config = WebHookConfig(
+              optionalAspects = Some(List("aspects1", "aspects3", "aspects5")),
+              dereference = Some(true)
+            )
+          )
+        ) ~> addUserId(Some("54754c04-9a41-43fb-a4b0-a2daf3917c58")) ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        Post(
+          "/v0/hooks",
+          WebHook(
+            Some("test3"),
+            "test hook 3",
+            active = true,
+            url = "http://test",
+            eventTypes = Set(EventType.CreateRecord),
+            config = WebHookConfig(
+              optionalAspects = Some(List("aspects1", "aspects3", "aspects5")),
+              dereference = Some(true)
+            )
+          )
+        ) ~> addUserId(Some("f085ca8b-b044-4f93-8bd4-b15c0c8d001c")) ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+
+        param.authFetcher.resetMock()
+
+        param.authFetcher.setAuthDecision(
+          "object/webhook/read",
+          AuthDecision(
+            hasResidualRules = true,
+            result = None,
+            residualRules = Some(
+              List(
+                ConciseRule(
+                  fullName = "rule1",
+                  name = "rule1",
+                  value = JsTrue,
+                  expressions = List(
+                    ConciseExpression(
+                      negated = false,
+                      operator = Some("="),
+                      operands = Vector(
+                        ConciseOperand(
+                          isRef = true,
+                          value = JsString("input.object.webhook.ownerId")
+                        ),
+                        ConciseOperand(
+                          isRef = false,
+                          value =
+                            JsString("54754c04-9a41-43fb-a4b0-a2daf3917c58")
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+
+        // should only response hook with owner "54754c04-9a41-43fb-a4b0-a2daf3917c58"
+        Get("/v0/hooks") ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          val hooks = responseAs[List[WebHook]]
+          hooks.length shouldBe 1
+          hooks.head.ownerId.get shouldBe "54754c04-9a41-43fb-a4b0-a2daf3917c58"
+        }
+      }
+
       testAspectQuery(
         "should filter aspect correctly according to auth decision contains (AspectQueryArrayNotEmpty)",
         testHooks = List(
