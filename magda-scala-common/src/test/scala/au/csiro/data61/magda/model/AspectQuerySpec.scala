@@ -326,10 +326,13 @@ class AspectQuerySpec extends FunSpec with Matchers {
       sql.isDefined shouldBe true
       sql.get.value.stripLineEndingWhitespaces shouldBe """ exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
                                                           |           COALESCE(
-                                                          |              (data::JSONB #> string_to_array(?, ',')::JSONB) @> ?::TEXT::JSONB,
+                                                          |              (
+                                                          |                (data::JSONB #> string_to_array(?, ','))::JSONB
+                                                          |              ) @> ?::TEXT::JSONB,
                                                           |              FALSE
                                                           |            )
-                                                          |        )""".stripMargin.stripLineEndingWhitespaces
+                                                          |        )
+                                                          |""".stripMargin.stripLineEndingWhitespaces
       // we attempt to retrieve the first element and test whether it is NULL
       sql.get.parameters shouldBe List("testAspect", "fieldA,fieldB", 1.56)
     }
@@ -346,10 +349,13 @@ class AspectQuerySpec extends FunSpec with Matchers {
       sql.isDefined shouldBe true
       sql.get.value.stripLineEndingWhitespaces shouldBe """ not exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
                                                           |           COALESCE(
-                                                          |              (data::JSONB #> string_to_array(?, ',')::JSONB) @> ?::TEXT::JSONB,
+                                                          |              (
+                                                          |                (data::JSONB #> string_to_array(?, ','))::JSONB
+                                                          |              ) @> ?::TEXT::JSONB,
                                                           |              FALSE
                                                           |            )
-                                                          |        )""".stripMargin.stripLineEndingWhitespaces
+                                                          |        )
+                                                          |""".stripMargin.stripLineEndingWhitespaces
       sql.get.parameters shouldBe List("testAspect", "fieldA,fieldB", true)
     }
 
@@ -383,7 +389,9 @@ class AspectQuerySpec extends FunSpec with Matchers {
       sql.isDefined shouldBe true
       sql.get.value.stripLineEndingWhitespaces shouldBe """ exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
                                                           |           COALESCE(
-                                                          |              (data::JSONB #> string_to_array(?, ',')::JSONB) @> ?::TEXT::JSONB,
+                                                          |              (
+                                                          |                (data::JSONB #> string_to_array(?, ','))::JSONB
+                                                          |              ) @> ?::TEXT::JSONB,
                                                           |              FALSE
                                                           |            )
                                                           |        ) and  exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
@@ -417,7 +425,9 @@ class AspectQuerySpec extends FunSpec with Matchers {
       sql.isDefined shouldBe true
       sql.get.value.stripLineEndingWhitespaces shouldBe """ exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
                                                           |           COALESCE(
-                                                          |              (data::JSONB #> string_to_array(?, ',')::JSONB) @> ?::TEXT::JSONB,
+                                                          |              (
+                                                          |                (data::JSONB #> string_to_array(?, ','))::JSONB
+                                                          |              ) @> ?::TEXT::JSONB,
                                                           |              FALSE
                                                           |            )
                                                           |        ) or  exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
@@ -493,7 +503,9 @@ class AspectQuerySpec extends FunSpec with Matchers {
       sql.isDefined shouldBe true
       sql.get.value.stripLineEndingWhitespaces shouldBe """NOT ( exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
                                                           |           COALESCE(
-                                                          |              (data::JSONB #> string_to_array(?, ',')::JSONB) @> ?::TEXT::JSONB,
+                                                          |              (
+                                                          |                (data::JSONB #> string_to_array(?, ','))::JSONB
+                                                          |              ) @> ?::TEXT::JSONB,
                                                           |              FALSE
                                                           |            )
                                                           |        ) and  exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and

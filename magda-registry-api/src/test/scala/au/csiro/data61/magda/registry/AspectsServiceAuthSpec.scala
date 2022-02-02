@@ -6,7 +6,6 @@ import au.csiro.data61.magda.model.Auth.{
   ConciseExpression,
   ConciseOperand,
   ConciseRule,
-  UnconditionalFalseDecision,
   UnconditionalTrueDecision
 }
 import au.csiro.data61.magda.model.Registry._
@@ -319,6 +318,42 @@ class AspectsServiceAuthSpec extends ApiSpec {
           }
           param.authFetcher.resetMock()
         }
+      )
+
+      testAspectQuery(
+        "should filter aspect correctly according to auth decision contains (AspectQueryValueInArray)",
+        testAspects = List(
+          AspectDefinition("test1", "test AspectQueryWithValue 1", None),
+          AspectDefinition(
+            "test2",
+            "test AspectQueryWithValue 2",
+            Some(
+              JsObject("a" -> JsArray(JsNumber(2), JsNumber(4), JsNumber(6)))
+            )
+          ),
+          AspectDefinition(
+            "test3",
+            "test AspectQueryWithValue 3",
+            Some(
+              JsObject("a" -> JsArray(JsNumber(1), JsNumber(3), JsNumber(5)))
+            )
+          )
+        ),
+        ConciseExpression(
+          negated = false,
+          operator = Some("="),
+          operands = Vector(
+            ConciseOperand(
+              isRef = true,
+              value = JsString("input.object.aspect.jsonSchema.a[_]")
+            ),
+            ConciseOperand(
+              isRef = false,
+              value = JsNumber(6)
+            )
+          )
+        ),
+        expectedAspectIds = List("test2")
       )
 
     }

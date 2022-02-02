@@ -393,8 +393,10 @@ case class AspectQueryValueInArray(
     }
     Some(sqls"""
            COALESCE(
-              (data::JSONB #> string_to_array(${path
-      .mkString(",")}, ',')::JSONB) @> ${value.value}::TEXT::JSONB,
+              (
+                (data::JSONB #> string_to_array(${path
+      .mkString(",")}, ','))::JSONB
+              ) @> ${value.value}::TEXT::JSONB,
               FALSE
             )
         """)
@@ -411,17 +413,21 @@ case class AspectQueryValueInArray(
     )
     val tableDataRef = if (path.isEmpty) {
       sqls"""COALESCE(
-        (${fieldRef}::JSONB #> string_to_array('0',',')::JSONB) @> ${value.value}::TEXT::JSONB,
+        (
+          (${fieldRef}::JSONB #> string_to_array('0',','))::JSONB
+        ) @> ${value.value}::TEXT::JSONB,
         FALSE
       )"""
     } else {
       sqls"""COALESCE(
-        (${fieldRef}::JSONB #> string_to_array(${path
-        .mkString(",")}, ',')::JSONB) @> ${value.value}::TEXT::JSONB,
+        (
+          (${fieldRef}::JSONB #> string_to_array(${path
+        .mkString(",")}, ','))::JSONB
+        ) @> ${value.value}::TEXT::JSONB,
         FALSE
       )"""
     }
-    Some(SQLSyntax.isNotNull(tableDataRef))
+    Some(tableDataRef)
   }
 }
 
