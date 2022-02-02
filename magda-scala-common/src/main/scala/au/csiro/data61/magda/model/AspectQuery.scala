@@ -183,7 +183,7 @@ case class AspectQueryExists(
     if (path.length > 0) {
       // has path: the field specified by aspectId is a JSON field
       Some(sqls"""
-           ("${fieldRef}" #> string_to_array(${path
+           (${fieldRef} #> string_to_array(${path
         .mkString(
           ","
         )}, ',')) IS NOT NULL
@@ -297,7 +297,7 @@ case class AspectQueryWithValue(
     val tableDataRef = if (path.isEmpty) {
       sqls"${fieldRef}::${value.postgresType}"
     } else {
-      sqls"${fieldRef} #>> string_to_array(${path
+      sqls"(${fieldRef} #>> string_to_array(${path
         .mkString(",")}, ','))::${value.postgresType}"
     }
 

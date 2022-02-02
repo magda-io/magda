@@ -96,20 +96,19 @@ object Auth {
     ): (String, Seq[String], Boolean) = {
       // make it work for both "input.object.record" & "input.object.record." prefixe input
       // we remove the first leading `.` char (if any)
-      val ref = refStringWithoutPrefixes(prefixes).replaceFirst("""^\.""", "")
+      var ref = refStringWithoutPrefixes(prefixes).replaceFirst("""^\.""", "")
+      val isCollection = isCollectionRef
+      if (isCollection) {
+        ref = ref.replaceFirst("""\[_\]$""", "")
+      }
       val parts = ref.split("\\.").filter(_ != "")
       if (parts.length < 2) {
-        (ref, Nil, false)
+        (ref, Nil, isCollection)
       } else {
-        val isCollection = parts(parts.length - 1).endsWith("[_]")
         (
           parts.head,
           parts
-            .slice(1, if (isCollection) {
-              parts.length - 1
-            } else {
-              parts.length
-            })
+            .slice(1, parts.length)
             .toSeq,
           isCollection
         )
@@ -219,7 +218,7 @@ object Auth {
   }
 
   case class ConciseRule(
-      default: Boolean,
+      default: Boolean = false,
       value: JsValue,
       fullName: String,
       name: String,
@@ -239,8 +238,8 @@ object Auth {
       hasResidualRules: Boolean,
       result: Option[JsValue],
       residualRules: Option[List[ConciseRule]],
-      hasWarns: Boolean,
-      warns: Option[List[String]],
+      hasWarns: Boolean = false,
+      warns: Option[List[String]] = None,
       unknowns: Option[List[String]] = None
   ) {
 

@@ -2,6 +2,10 @@ package au.csiro.data61.magda.registry
 
 import akka.http.scaladsl.model.StatusCodes
 import au.csiro.data61.magda.model.Auth.{
+  AuthDecision,
+  ConciseExpression,
+  ConciseOperand,
+  ConciseRule,
   UnconditionalFalseDecision,
   UnconditionalTrueDecision
 }
@@ -28,9 +32,265 @@ class AspectsServiceAuthSpec extends ApiSpec {
        |trimBySourceTagTimeoutThreshold=500
     """.stripMargin
 
+  def testAspectQuery(
+      testDesc: String,
+      testAspects: List[AspectDefinition],
+      expression: ConciseExpression,
+      expectedAspectIds: List[String],
+      testNegated: Boolean = true
+  ): Unit = {
+    it(testDesc) { param =>
+      // setting up testing aspects
+      param.authFetcher.setAuthDecision(
+        "object/aspect/create",
+        UnconditionalTrueDecision
+      )
+
+      testAspects.foreach { aspect =>
+        Post("/v0/aspects", aspect) ~> addUserId() ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+        }
+      }
+
+      param.authFetcher.resetMock()
+
+      param.authFetcher.setAuthDecision(
+        "object/aspect/read",
+        AuthDecision(
+          hasResidualRules = true,
+          result = None,
+          residualRules = Some(
+            List(
+              ConciseRule(
+                fullName = "rule1",
+                name = "rule1",
+                value = JsTrue,
+                // jsonSchema field should exist
+                expressions = List(
+                  expression
+                )
+              )
+            )
+          )
+        )
+      )
+
+      Get("/v0/aspects") ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val aspects = responseAs[List[AspectDefinition]]
+        aspects.map(_.id) shouldEqual expectedAspectIds
+      }
+    }
+
+    if (testNegated) {
+      it(testDesc + "(Negated Logic)") { param =>
+        // setting up testing aspects
+        param.authFetcher.setAuthDecision(
+          "object/aspect/create",
+          UnconditionalTrueDecision
+        )
+
+        testAspects.foreach { aspect =>
+          Post("/v0/aspects", aspect) ~> addUserId() ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+        }
+
+        param.authFetcher.resetMock()
+
+        param.authFetcher.setAuthDecision(
+          "object/aspect/read",
+          AuthDecision(
+            hasResidualRules = true,
+            result = None,
+            residualRules = Some(
+              List(
+                ConciseRule(
+                  fullName = "rule1",
+                  name = "rule1",
+                  value = JsTrue,
+                  // jsonSchema field should exist
+                  expressions = List(
+                    expression.copy(negated = true)
+                  )
+                )
+              )
+            )
+          )
+        )
+
+        Get("/v0/aspects") ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldEqual StatusCodes.OK
+          val aspects = responseAs[List[AspectDefinition]]
+          val responseIds = aspects.map(_.id)
+          testAspects
+            .map(_.id)
+            .filter(id => !responseIds.exists(_ == id)) shouldEqual expectedAspectIds
+        }
+      }
+    }
+  }
+
   describe("Aspect Service Auth Logic") {
 
     describe("Get All endpoint {get} /v0/registry/aspects: ") {
+
+      testAspectQuery(
+        "should filter aspect correctly according to auth decision contains (AspectQueryExist 1)",
+        testAspects = List(
+          AspectDefinition("test1", "test AspectQueryExists 1", None),
+          AspectDefinition(
+            "test2",
+            "test AspectQueryExists 2",
+            Some(JsObject("b" -> JsNumber(1)))
+          ),
+          AspectDefinition(
+            "test3",
+            "test AspectQueryExists 2",
+            Some(JsObject("a" -> JsNumber(1)))
+          )
+        ),
+        ConciseExpression(
+          negated = false,
+          operator = None,
+          operands = Vector(
+            ConciseOperand(
+              isRef = true,
+              value = JsString("input.object.aspect.jsonSchema")
+            )
+          )
+        ),
+        expectedAspectIds = List("test2", "test3")
+      )
+
+      testAspectQuery(
+        "should filter aspect correctly according to auth decision contains (AspectQueryExist 2)",
+        testAspects = List(
+          AspectDefinition("test1", "test AspectQueryExists 1", None),
+          AspectDefinition(
+            "test2",
+            "test AspectQueryExists 2",
+            Some(JsObject("b" -> JsNumber(1)))
+          ),
+          AspectDefinition(
+            "test3",
+            "test AspectQueryExists 2",
+            Some(JsObject("a" -> JsNumber(1)))
+          )
+        ),
+        ConciseExpression(
+          negated = false,
+          operator = None,
+          operands = Vector(
+            ConciseOperand(
+              isRef = true,
+              value = JsString("input.object.aspect.jsonSchema.a")
+            )
+          )
+        ),
+        expectedAspectIds = List("test3")
+      )
+
+      testAspectQuery(
+        "should filter aspect correctly according to auth decision contains (AspectQueryWithValue)",
+        testAspects = List(
+          AspectDefinition("test1", "test AspectQueryWithValue 1", None),
+          AspectDefinition(
+            "test2",
+            "test AspectQueryWithValue 2",
+            Some(JsObject("a" -> JsNumber(2)))
+          ),
+          AspectDefinition(
+            "test3",
+            "test AspectQueryWithValue 2",
+            Some(JsObject("a" -> JsNumber(1)))
+          )
+        ),
+        ConciseExpression(
+          negated = false,
+          operator = Some(">"),
+          operands = Vector(
+            ConciseOperand(
+              isRef = true,
+              value = JsString("input.object.aspect.jsonSchema.a")
+            ),
+            ConciseOperand(
+              isRef = false,
+              value = JsNumber(1)
+            )
+          )
+        ),
+        expectedAspectIds = List("test2")
+      )
+
+      testAspectQuery(
+        "should filter aspect correctly according to auth decision contains (AspectQueryWithValue test 2)",
+        testAspects = List(
+          AspectDefinition("test1", "test AspectQueryWithValue 1", None),
+          AspectDefinition(
+            "test2",
+            "test AspectQueryWithValue 2",
+            Some(JsObject("a" -> JsNumber(2)))
+          ),
+          AspectDefinition(
+            "test3",
+            "test AspectQueryWithValue 3",
+            Some(JsObject("a" -> JsNumber(1)))
+          )
+        ),
+        ConciseExpression(
+          negated = false,
+          operator = Some("="),
+          operands = Vector(
+            ConciseOperand(
+              isRef = true,
+              value = JsString("input.object.aspect.name")
+            ),
+            ConciseOperand(
+              isRef = false,
+              value = JsString("test AspectQueryWithValue 1")
+            )
+          )
+        ),
+        expectedAspectIds = List("test1")
+      )
+
+      testAspectQuery(
+        "should filter aspect correctly according to auth decision contains (AspectQueryArrayNotEmpty)",
+        testAspects = List(
+          AspectDefinition("test1", "test AspectQueryWithValue 1", None),
+          AspectDefinition(
+            "test2",
+            "test AspectQueryWithValue 2",
+            Some(JsObject("a" -> JsArray()))
+          ),
+          AspectDefinition(
+            "test3",
+            "test AspectQueryWithValue 3",
+            Some(JsObject("a" -> JsArray(JsNumber(1))))
+          )
+        ),
+        ConciseExpression(
+          negated = false,
+          operator = None,
+          operands = Vector(
+            ConciseOperand(
+              isRef = true,
+              value = JsString("input.object.aspect.jsonSchema.a[_]")
+            )
+          )
+        ),
+        expectedAspectIds = List("test3")
+      )
+
       endpointStandardAuthTestCase(
         Get("/v0/aspects"),
         List("object/aspect/read"),
@@ -60,6 +320,7 @@ class AspectsServiceAuthSpec extends ApiSpec {
           param.authFetcher.resetMock()
         }
       )
+
     }
 
     describe("Create endpoint {post} /v0/registry/aspects: ") {
