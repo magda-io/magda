@@ -328,7 +328,7 @@ class AspectQuerySpec extends FunSpec with Matchers {
                                                           |           COALESCE(
                                                           |              (
                                                           |                (data::JSONB #> string_to_array(?, ','))::JSONB
-                                                          |              ) @> ?::TEXT::JSONB,
+                                                          |              ) @> to_json(?)::JSONB,
                                                           |              FALSE
                                                           |            )
                                                           |        )
@@ -351,7 +351,7 @@ class AspectQuerySpec extends FunSpec with Matchers {
                                                           |           COALESCE(
                                                           |              (
                                                           |                (data::JSONB #> string_to_array(?, ','))::JSONB
-                                                          |              ) @> ?::TEXT::JSONB,
+                                                          |              ) @> to_json(?)::JSONB,
                                                           |              FALSE
                                                           |            )
                                                           |        )
@@ -391,7 +391,7 @@ class AspectQuerySpec extends FunSpec with Matchers {
                                                           |           COALESCE(
                                                           |              (
                                                           |                (data::JSONB #> string_to_array(?, ','))::JSONB
-                                                          |              ) @> ?::TEXT::JSONB,
+                                                          |              ) @> to_json(?)::JSONB,
                                                           |              FALSE
                                                           |            )
                                                           |        ) and  exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
@@ -427,7 +427,7 @@ class AspectQuerySpec extends FunSpec with Matchers {
                                                           |           COALESCE(
                                                           |              (
                                                           |                (data::JSONB #> string_to_array(?, ','))::JSONB
-                                                          |              ) @> ?::TEXT::JSONB,
+                                                          |              ) @> to_json(?)::JSONB,
                                                           |              FALSE
                                                           |            )
                                                           |        ) or  exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and
@@ -505,7 +505,7 @@ class AspectQuerySpec extends FunSpec with Matchers {
                                                           |           COALESCE(
                                                           |              (
                                                           |                (data::JSONB #> string_to_array(?, ','))::JSONB
-                                                          |              ) @> ?::TEXT::JSONB,
+                                                          |              ) @> to_json(?)::JSONB,
                                                           |              FALSE
                                                           |            )
                                                           |        ) and  exists (SELECT 1 FROM recordaspects where (aspectid, recordid, tenantid)=(?, "records"."recordid", "records"."tenantid") and

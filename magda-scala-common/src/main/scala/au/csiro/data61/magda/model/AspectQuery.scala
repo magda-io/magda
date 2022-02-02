@@ -396,7 +396,7 @@ case class AspectQueryValueInArray(
               (
                 (data::JSONB #> string_to_array(${path
       .mkString(",")}, ','))::JSONB
-              ) @> ${value.value}::TEXT::JSONB,
+              ) @> to_json(${value.value})::JSONB,
               FALSE
             )
         """)
@@ -415,7 +415,7 @@ case class AspectQueryValueInArray(
       sqls"""COALESCE(
         (
           (${fieldRef}::JSONB #> string_to_array('0',','))::JSONB
-        ) @> ${value.value}::TEXT::JSONB,
+        ) @> to_json(${value.value})::JSONB,
         FALSE
       )"""
     } else {
@@ -423,7 +423,7 @@ case class AspectQueryValueInArray(
         (
           (${fieldRef}::JSONB #> string_to_array(${path
         .mkString(",")}, ','))::JSONB
-        ) @> ${value.value}::TEXT::JSONB,
+        ) @> to_json(${value.value})::JSONB,
         FALSE
       )"""
     }

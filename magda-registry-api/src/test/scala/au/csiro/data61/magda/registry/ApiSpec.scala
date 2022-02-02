@@ -258,7 +258,9 @@ abstract class ApiSpec
       }
     }
 
-    it("should respond 403 (Forbidden) when user has no permission") { param =>
+    it(
+      "should respond non-200 code (e.g. 403 or 404 depends on API) when user has no permission"
+    ) { param =>
       beforeRequest(param)
       // preset UnconditionalFalseDecision auth decision for required operation uris
       requiredOperationUris.foreach(

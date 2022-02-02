@@ -184,7 +184,7 @@ object Registry
       lastEvent: Option[Long] = None,
       url: String,
       eventTypes: Set[EventType],
-      isWaitingForResponse: Option[Boolean],
+      isWaitingForResponse: Option[Boolean] = None,
       config: WebHookConfig,
       enabled: Boolean = true,
       lastRetryTime: Option[OffsetDateTime] = None,
