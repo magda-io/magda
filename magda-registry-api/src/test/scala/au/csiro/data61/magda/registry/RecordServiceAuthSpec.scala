@@ -34,6 +34,43 @@ class RecordServiceAuthSpec extends ApiSpec {
        |trimBySourceTagTimeoutThreshold=500
     """.stripMargin
 
+  def settingUpTestData(param: FixtureParam, records: List[Record]) = {
+
+    val testDataAspects = records
+      .flatMap(_.aspects.map(_._1))
+      .toSet
+      .map(aspectId => AspectDefinition(aspectId, s"${aspectId} aspect", None))
+
+    // setting up testing aspects
+    param.authFetcher.setAuthDecision(
+      "object/aspect/create",
+      UnconditionalTrueDecision
+    )
+
+    testDataAspects.foreach { aspect =>
+      Post("/v0/aspects", aspect) ~> addUserId() ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+    }
+
+    // setting up testing records
+    param.authFetcher.setAuthDecision(
+      "object/record/create",
+      UnconditionalTrueDecision
+    )
+
+    records.foreach { record =>
+      Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
+        TENANT_1
+      ) ~> param.api(Full).routes ~> check {
+        status shouldEqual StatusCodes.OK
+      }
+    }
+    param.authFetcher.resetMock()
+  }
+
   def testRecordQuery(
       testDesc: String,
       request: HttpRequest,
@@ -43,44 +80,9 @@ class RecordServiceAuthSpec extends ApiSpec {
       checkFunc: (FixtureParam, Boolean) => Unit,
       testNegated: Boolean = true
   ): Unit = {
-    val testDataAspects = testRecords
-      .flatMap(_.aspects.map(_._1))
-      .toSet
-      .map(aspectId => AspectDefinition(aspectId, s"${aspectId} aspect", None))
-
-    def settingUpTestData(param: FixtureParam) = {
-      // setting up testing aspects
-      param.authFetcher.setAuthDecision(
-        "object/aspect/create",
-        UnconditionalTrueDecision
-      )
-
-      testDataAspects.foreach { aspect =>
-        Post("/v0/aspects", aspect) ~> addUserId() ~> addTenantIdHeader(
-          TENANT_1
-        ) ~> param.api(Full).routes ~> check {
-          status shouldEqual StatusCodes.OK
-        }
-      }
-
-      // setting up testing records
-      param.authFetcher.setAuthDecision(
-        "object/record/create",
-        UnconditionalTrueDecision
-      )
-
-      testRecords.foreach { record =>
-        Post("/v0/records", record) ~> addUserId() ~> addTenantIdHeader(
-          TENANT_1
-        ) ~> param.api(Full).routes ~> check {
-          status shouldEqual StatusCodes.OK
-        }
-      }
-      param.authFetcher.resetMock()
-    }
 
     it(testDesc) { param =>
-      settingUpTestData(param)
+      settingUpTestData(param, testRecords)
 
       param.authFetcher.setAuthDecision(
         "object/record/read",
@@ -93,7 +95,6 @@ class RecordServiceAuthSpec extends ApiSpec {
                 fullName = "rule1",
                 name = "rule1",
                 value = JsTrue,
-                // jsonSchema field should exist
                 expressions = List(
                   expression
                 )
@@ -113,7 +114,7 @@ class RecordServiceAuthSpec extends ApiSpec {
     if (testNegated) {
       it(testDesc + "(Negated Logic)") { param =>
         // setting up testing records
-        settingUpTestData(param)
+        settingUpTestData(param, testRecords)
 
         param.authFetcher.setAuthDecision(
           "object/record/read",
@@ -126,7 +127,6 @@ class RecordServiceAuthSpec extends ApiSpec {
                   fullName = "rule1",
                   name = "rule1",
                   value = JsTrue,
-                  // jsonSchema field should exist
                   expressions = List(
                     expression.copy(negated = true)
                   )
@@ -146,8 +146,73 @@ class RecordServiceAuthSpec extends ApiSpec {
   }
 
   describe("Record Service Auth Logic") {
-
+    
     describe("Get All API: {get} /v0/registry/records:") {
+
+      testRecordQuery(
+        "should filter aspect correctly according to auth decision contains AspectQueryValueInArray",
+        Get("/v0/records"),
+        testRecords = List(
+          Record(
+            "test1",
+            "test record 1",
+            aspects = Map(
+              "aspectA" -> JsObject(
+                // this record won't be picked as the array is on path `b`
+                "b" -> JsArray(JsNumber(1), JsNumber(3), JsNumber(5))
+              )
+            ),
+            None
+          ),
+          Record(
+            "test2",
+            "test record 2",
+            aspects = Map(
+              "aspectA" -> JsObject(
+                "a" -> JsArray(JsNumber(1), JsNumber(3), JsNumber(5))
+              )
+            ),
+            None
+          ),
+          Record(
+            "test3",
+            "test record 3",
+            aspects = Map(
+              "aspectA" -> JsObject(
+                "a" -> JsArray(JsNumber(2), JsNumber(4), JsNumber(6))
+              )
+            ),
+            None
+          )
+        ),
+        expression = ConciseExpression(
+          negated = false,
+          operator = Some("="),
+          operands = Vector(
+            ConciseOperand(
+              isRef = true,
+              value = JsString("input.object.record.aspectA.a[_]")
+            ),
+            ConciseOperand(
+              isRef = false,
+              value = JsNumber(3)
+            )
+          )
+        ),
+        checkFunc = (param, isNegatedTest) => {
+          status shouldBe StatusCodes.OK
+          val page = responseAs[RecordsPage[Record]]
+          if (isNegatedTest) {
+            page.records.length shouldBe 2
+            page.records.map(_.id) shouldEqual List("test1", "test3")
+          } else {
+            page.records.length shouldBe 1
+            page.records.map(_.id) shouldEqual List("test2")
+          }
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        }
+      )
 
       testRecordQuery(
         "should filter aspect correctly according to auth decision contains AspectQueryExist",
@@ -288,6 +353,1158 @@ class RecordServiceAuthSpec extends ApiSpec {
           }
           param.authFetcher
             .callTimesByOperationUri("object/record/read") shouldBe 1
+        }
+      )
+
+      testRecordQuery(
+        "should filter aspect correctly according to auth decision contains AspectQueryArrayNotEmpty",
+        Get("/v0/records"),
+        testRecords = List(
+          Record(
+            "test1",
+            "test record 1",
+            aspects = Map("aspectA" -> JsObject("a" -> JsArray())),
+            None
+          ),
+          Record(
+            "test2",
+            "test record 2",
+            aspects = Map("aspectA" -> JsObject("a" -> JsArray(JsNumber(1)))),
+            None
+          ),
+          Record(
+            "test3",
+            "test record 3",
+            aspects = Map("aspectA" -> JsObject("a" -> JsArray(JsNumber(1)))),
+            None
+          )
+        ),
+        expression = ConciseExpression(
+          negated = false,
+          operator = None,
+          operands = Vector(
+            ConciseOperand(
+              isRef = true,
+              value = JsString("input.object.record.aspectA.a[_]")
+            )
+          )
+        ),
+        checkFunc = (param, isNegatedTest) => {
+          status shouldBe StatusCodes.OK
+          val page = responseAs[RecordsPage[Record]]
+          if (isNegatedTest) {
+            page.records.length shouldBe 1
+            page.records.map(_.id) shouldEqual List("test1")
+          } else {
+            page.records.length shouldBe 2
+            page.records.map(_.id) shouldEqual List("test2", "test3")
+          }
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        }
+      )
+
+      endpointStandardAuthTestCase(
+        Get(s"/v0/records"),
+        List("object/record/read"),
+        hasPermissionCheck = param => {
+          status shouldEqual StatusCodes.OK
+          val records = responseAs[RecordsPage[Record]].records
+          records.length shouldBe 1
+          records.head.id shouldEqual "testId"
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        },
+        noPermissionCheck = param => {
+          status shouldEqual StatusCodes.OK
+          val records = responseAs[RecordsPage[Record]].records
+          records.length shouldBe 0
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        },
+        beforeRequest = param => {
+          // create record
+          param.authFetcher.setAuthDecision(
+            "object/record/create",
+            UnconditionalTrueDecision
+          )
+          Post(
+            "/v0/records",
+            Record("testId", "testName", Map(), Some("blah"))
+          ) ~> addUserId() ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          param.authFetcher.resetMock()
+        }
+      )
+
+    }
+
+    describe("Get All getAllSummary API: {get} /v0/registry/records/summary:") {
+
+      testRecordQuery(
+        "should filter aspect correctly according to auth decision contains AspectQueryValueInArray",
+        Get("/v0/records/summary"),
+        testRecords = List(
+          Record(
+            "test1",
+            "test record 1",
+            aspects = Map(
+              "aspectA" -> JsObject(
+                // this record won't be picked as the array is on path `b`
+                "b" -> JsArray(JsNumber(1), JsNumber(3), JsNumber(5))
+              )
+            ),
+            None
+          ),
+          Record(
+            "test2",
+            "test record 2",
+            aspects = Map(
+              "aspectA" -> JsObject(
+                "a" -> JsArray(JsNumber(1), JsNumber(3), JsNumber(5))
+              )
+            ),
+            None
+          ),
+          Record(
+            "test3",
+            "test record 3",
+            aspects = Map(
+              "aspectA" -> JsObject(
+                "a" -> JsArray(JsNumber(2), JsNumber(4), JsNumber(6))
+              )
+            ),
+            None
+          )
+        ),
+        expression = ConciseExpression(
+          negated = false,
+          operator = Some("="),
+          operands = Vector(
+            ConciseOperand(
+              isRef = true,
+              value = JsString("input.object.record.aspectA.a[_]")
+            ),
+            ConciseOperand(
+              isRef = false,
+              value = JsNumber(3)
+            )
+          )
+        ),
+        checkFunc = (param, isNegatedTest) => {
+          status shouldBe StatusCodes.OK
+          val page = responseAs[RecordsPage[RecordSummary]]
+          if (isNegatedTest) {
+            page.records.length shouldBe 2
+            page.records.map(_.id) shouldEqual List("test1", "test3")
+          } else {
+            page.records.length shouldBe 1
+            page.records.map(_.id) shouldEqual List("test2")
+          }
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        }
+      )
+
+      testRecordQuery(
+        "should filter aspect correctly according to auth decision contains AspectQueryExist",
+        Get("/v0/records/summary"),
+        testRecords = List(
+          Record(
+            "test1",
+            "test record 1",
+            aspects = Map("aspectB" -> JsObject("b" -> JsNumber(1))),
+            None
+          ),
+          Record(
+            "test2",
+            "test record 2",
+            aspects = Map("aspectA" -> JsObject("a" -> JsNumber(1))),
+            None
+          ),
+          Record(
+            "test3",
+            "test record 3",
+            aspects = Map(),
+            None
+          )
+        ),
+        expression = ConciseExpression(
+          negated = false,
+          operator = None,
+          operands = Vector(
+            ConciseOperand(
+              isRef = true,
+              value = JsString("input.object.record.aspectA")
+            )
+          )
+        ),
+        checkFunc = (param, isNegatedTest) => {
+          status shouldBe StatusCodes.OK
+          val page = responseAs[RecordsPage[RecordSummary]]
+          if (isNegatedTest) {
+            page.records.length shouldBe 2
+            page.records.map(_.id) shouldEqual List("test1", "test3")
+          } else {
+            page.records.length shouldBe 1
+            page.records.map(_.id) shouldEqual List("test2")
+          }
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        }
+      )
+
+      // this test case query a record aspect field `aspectA.a`
+      testRecordQuery(
+        "should filter aspect correctly according to auth decision contains AspectQueryWithValue",
+        Get("/v0/records/summary"),
+        testRecords = List(
+          Record(
+            "test1",
+            "test record 1",
+            aspects = Map("aspectB" -> JsObject("b" -> JsNumber(1)))
+          ),
+          Record(
+            "test2",
+            "test record 2",
+            aspects = Map("aspectA" -> JsObject("a" -> JsNumber(1)))
+          ),
+          Record(
+            "test3",
+            "test record 3",
+            aspects = Map("aspectA" -> JsObject("a" -> JsNumber(6)))
+          )
+        ),
+        expression = ConciseExpression(
+          negated = false,
+          operator = Some(">"),
+          operands = Vector(
+            ConciseOperand(
+              isRef = true,
+              value = JsString("input.object.record.aspectA.a")
+            ),
+            ConciseOperand(isRef = false, value = JsNumber(1))
+          )
+        ),
+        checkFunc = (param, isNegatedTest) => {
+          status shouldBe StatusCodes.OK
+          val page = responseAs[RecordsPage[RecordSummary]]
+          if (isNegatedTest) {
+            page.records.length shouldBe 2
+            page.records.map(_.id) shouldEqual List("test1", "test2")
+          } else {
+            page.records.length shouldBe 1
+            page.records.map(_.id) shouldEqual List("test3")
+          }
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        }
+      )
+
+      // this test case query record table column `name`
+      testRecordQuery(
+        "should filter aspect correctly according to auth decision contains AspectQueryWithValue no.2",
+        Get("/v0/records/summary"),
+        testRecords = List(
+          Record(
+            "test1",
+            "test record 1",
+            aspects = Map("aspectB" -> JsObject("b" -> JsNumber(1)))
+          ),
+          Record(
+            "test2",
+            "test record 2",
+            aspects = Map("aspectA" -> JsObject("a" -> JsNumber(1)))
+          ),
+          Record(
+            "test3",
+            "test record 3",
+            aspects = Map("aspectA" -> JsObject("a" -> JsNumber(6)))
+          )
+        ),
+        expression = ConciseExpression(
+          negated = false,
+          operator = Some("="),
+          operands = Vector(
+            ConciseOperand(
+              isRef = true,
+              value = JsString("input.object.record.name")
+            ),
+            ConciseOperand(isRef = false, value = JsString("test record 1"))
+          )
+        ),
+        checkFunc = (param, isNegatedTest) => {
+          status shouldBe StatusCodes.OK
+          val page = responseAs[RecordsPage[RecordSummary]]
+          if (isNegatedTest) {
+            page.records.length shouldBe 2
+            page.records.map(_.id) shouldEqual List("test2", "test3")
+          } else {
+            page.records.length shouldBe 1
+            page.records.map(_.id) shouldEqual List("test1")
+          }
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        }
+      )
+
+      testRecordQuery(
+        "should filter aspect correctly according to auth decision contains AspectQueryArrayNotEmpty",
+        Get("/v0/records/summary"),
+        testRecords = List(
+          Record(
+            "test1",
+            "test record 1",
+            aspects = Map("aspectA" -> JsObject("a" -> JsArray())),
+            None
+          ),
+          Record(
+            "test2",
+            "test record 2",
+            aspects = Map("aspectA" -> JsObject("a" -> JsArray(JsNumber(1)))),
+            None
+          ),
+          Record(
+            "test3",
+            "test record 3",
+            aspects = Map("aspectA" -> JsObject("a" -> JsArray(JsNumber(1)))),
+            None
+          )
+        ),
+        expression = ConciseExpression(
+          negated = false,
+          operator = None,
+          operands = Vector(
+            ConciseOperand(
+              isRef = true,
+              value = JsString("input.object.record.aspectA.a[_]")
+            )
+          )
+        ),
+        checkFunc = (param, isNegatedTest) => {
+          status shouldBe StatusCodes.OK
+          val page = responseAs[RecordsPage[RecordSummary]]
+          if (isNegatedTest) {
+            page.records.length shouldBe 1
+            page.records.map(_.id) shouldEqual List("test1")
+          } else {
+            page.records.length shouldBe 2
+            page.records.map(_.id) shouldEqual List("test2", "test3")
+          }
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        }
+      )
+
+      endpointStandardAuthTestCase(
+        Get(s"/v0/records/summary"),
+        List("object/record/read"),
+        hasPermissionCheck = param => {
+          status shouldEqual StatusCodes.OK
+          val records = responseAs[RecordsPage[RecordSummary]].records
+          records.length shouldBe 1
+          records.head.id shouldEqual "testId"
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        },
+        noPermissionCheck = param => {
+          status shouldEqual StatusCodes.OK
+          val records = responseAs[RecordsPage[RecordSummary]].records
+          records.length shouldBe 0
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        },
+        beforeRequest = param => {
+          // create record
+          param.authFetcher.setAuthDecision(
+            "object/record/create",
+            UnconditionalTrueDecision
+          )
+          Post(
+            "/v0/records",
+            Record("testId", "testName", Map(), Some("blah"))
+          ) ~> addUserId() ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          param.authFetcher.resetMock()
+        }
+      )
+
+    }
+
+    describe("getById API: /v0/registry/records/{id}:") {
+
+      it(
+        "should response 404 if user has not access to the record based on conditional decision"
+      ) { param =>
+        settingUpTestData(
+          param,
+          List(
+            Record(
+              "test1",
+              "test record 1",
+              aspects = Map(
+                "aspectA" -> JsObject(
+                  // this record won't be picked as the array is on path `b`
+                  "b" -> JsArray(JsNumber(1), JsNumber(3), JsNumber(5))
+                )
+              )
+            )
+          )
+        )
+
+        // set decision
+        param.authFetcher.setAuthDecision(
+          "object/record/read",
+          AuthDecision(
+            hasResidualRules = true,
+            result = None,
+            residualRules = Some(
+              List(
+                ConciseRule(
+                  fullName = "rule1",
+                  name = "rule1",
+                  value = JsTrue,
+                  expressions = List(
+                    ConciseExpression(
+                      negated = false,
+                      operator = Some("="),
+                      operands = Vector(
+                        ConciseOperand(
+                          isRef = true,
+                          value = JsString("input.object.record.aspectA.a[_]")
+                        ),
+                        ConciseOperand(
+                          isRef = false,
+                          value = JsNumber(3)
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+
+        // the record with id `test1` exist but it's not accessible due to auth decision
+        Get(s"/v0/records/test1") ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldBe StatusCodes.NotFound
+        }
+      }
+
+      endpointStandardAuthTestCase(
+        Get(s"/v0/records/testId"),
+        List("object/record/read"),
+        hasPermissionCheck = param => {
+          status shouldEqual StatusCodes.OK
+          val record = responseAs[Record]
+          record.id shouldEqual "testId"
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        },
+        noPermissionCheck = param => {
+          status shouldEqual StatusCodes.NotFound
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        },
+        beforeRequest = param => {
+          // create record
+          param.authFetcher.setAuthDecision(
+            "object/record/create",
+            UnconditionalTrueDecision
+          )
+          Post(
+            "/v0/records",
+            Record("testId", "testName", Map(), Some("blah"))
+          ) ~> addUserId() ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          param.authFetcher.resetMock()
+        }
+      )
+
+    }
+
+    describe("getById API: /v0/registry/records/summary/{id}:") {
+
+      it(
+        "should response 404 if user has not access to the record based on conditional decision"
+      ) { param =>
+        settingUpTestData(
+          param,
+          List(
+            Record(
+              "test1",
+              "test record 1",
+              aspects = Map(
+                "aspectA" -> JsObject(
+                  // this record won't be picked as the array is on path `b`
+                  "b" -> JsArray(JsNumber(1), JsNumber(3), JsNumber(5))
+                )
+              )
+            )
+          )
+        )
+
+        // set decision
+        param.authFetcher.setAuthDecision(
+          "object/record/read",
+          AuthDecision(
+            hasResidualRules = true,
+            result = None,
+            residualRules = Some(
+              List(
+                ConciseRule(
+                  fullName = "rule1",
+                  name = "rule1",
+                  value = JsTrue,
+                  expressions = List(
+                    ConciseExpression(
+                      negated = false,
+                      operator = Some("="),
+                      operands = Vector(
+                        ConciseOperand(
+                          isRef = true,
+                          value = JsString("input.object.record.aspectA.a[_]")
+                        ),
+                        ConciseOperand(
+                          isRef = false,
+                          value = JsNumber(3)
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+
+        // the record with id `test1` exist but it's not accessible due to auth decision
+        Get(s"/v0/records/summary/test1") ~> addTenantIdHeader(
+          TENANT_1
+        ) ~> param.api(Full).routes ~> check {
+          status shouldBe StatusCodes.NotFound
+        }
+      }
+
+      endpointStandardAuthTestCase(
+        Get(s"/v0/records/summary/testId"),
+        List("object/record/read"),
+        hasPermissionCheck = param => {
+          status shouldEqual StatusCodes.OK
+          val record = responseAs[RecordSummary]
+          record.id shouldEqual "testId"
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        },
+        noPermissionCheck = param => {
+          status shouldEqual StatusCodes.NotFound
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        },
+        beforeRequest = param => {
+          // create record
+          param.authFetcher.setAuthDecision(
+            "object/record/create",
+            UnconditionalTrueDecision
+          )
+          Post(
+            "/v0/records",
+            Record("testId", "testName", Map(), Some("blah"))
+          ) ~> addUserId() ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          param.authFetcher.resetMock()
+        }
+      )
+
+    }
+
+    describe("Get PageTokens API: {get}/v0/registry/records/pagetokens:") {
+
+      testRecordQuery(
+        "should filter aspect correctly according to auth decision contains AspectQueryValueInArray",
+        Get("/v0/records/pagetokens?limit=1"),
+        testRecords = List(
+          Record(
+            "test1",
+            "test record 1",
+            aspects = Map(
+              "aspectA" -> JsObject(
+                // this record won't be picked as the array is on path `b`
+                "b" -> JsArray(JsNumber(1), JsNumber(3), JsNumber(5))
+              )
+            )
+          ),
+          Record(
+            "test2",
+            "test record 2",
+            aspects = Map(
+              "aspectA" -> JsObject(
+                "a" -> JsArray(JsNumber(1), JsNumber(3), JsNumber(5))
+              )
+            )
+          ),
+          Record(
+            "test3",
+            "test record 3",
+            aspects = Map(
+              "aspectA" -> JsObject(
+                "a" -> JsArray(JsNumber(2), JsNumber(4), JsNumber(6))
+              )
+            )
+          )
+        ),
+        expression = ConciseExpression(
+          negated = false,
+          operator = Some("="),
+          operands = Vector(
+            ConciseOperand(
+              isRef = true,
+              value = JsString("input.object.record.aspectA.a[_]")
+            ),
+            ConciseOperand(
+              isRef = false,
+              value = JsNumber(3)
+            )
+          )
+        ),
+        checkFunc = (param, isNegatedTest) => {
+          status shouldBe StatusCodes.OK
+          val tokenList = responseAs[List[String]]
+          if (isNegatedTest) {
+            tokenList.length shouldBe 3
+            tokenList shouldEqual List("0", "1", "3")
+          } else {
+            tokenList.length shouldBe 2
+            tokenList shouldEqual List("0", "2")
+          }
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        }
+      )
+
+      testRecordQuery(
+        "should filter aspect correctly according to auth decision contains AspectQueryExist",
+        Get("/v0/records/pagetokens?limit=1"),
+        testRecords = List(
+          Record(
+            "test1",
+            "test record 1",
+            aspects = Map("aspectB" -> JsObject("b" -> JsNumber(1))),
+            None
+          ),
+          Record(
+            "test2",
+            "test record 2",
+            aspects = Map("aspectA" -> JsObject("a" -> JsNumber(1))),
+            None
+          ),
+          Record(
+            "test3",
+            "test record 3",
+            aspects = Map(),
+            None
+          )
+        ),
+        expression = ConciseExpression(
+          negated = false,
+          operator = None,
+          operands = Vector(
+            ConciseOperand(
+              isRef = true,
+              value = JsString("input.object.record.aspectA")
+            )
+          )
+        ),
+        checkFunc = (param, isNegatedTest) => {
+          status shouldBe StatusCodes.OK
+          val tokenList = responseAs[List[String]]
+          if (isNegatedTest) {
+            tokenList.length shouldBe 3
+            tokenList shouldEqual List("0", "1", "3")
+          } else {
+            tokenList.length shouldBe 2
+            tokenList shouldEqual List("0", "2")
+          }
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        }
+      )
+
+      // this test case query a record aspect field `aspectA.a`
+      testRecordQuery(
+        "should filter aspect correctly according to auth decision contains AspectQueryWithValue",
+        Get("/v0/records/pagetokens?limit=1"),
+        testRecords = List(
+          Record(
+            "test1",
+            "test record 1",
+            aspects = Map("aspectB" -> JsObject("b" -> JsNumber(1)))
+          ),
+          Record(
+            "test2",
+            "test record 2",
+            aspects = Map("aspectA" -> JsObject("a" -> JsNumber(1)))
+          ),
+          Record(
+            "test3",
+            "test record 3",
+            aspects = Map("aspectA" -> JsObject("a" -> JsNumber(6)))
+          )
+        ),
+        expression = ConciseExpression(
+          negated = false,
+          operator = Some(">"),
+          operands = Vector(
+            ConciseOperand(
+              isRef = true,
+              value = JsString("input.object.record.aspectA.a")
+            ),
+            ConciseOperand(isRef = false, value = JsNumber(1))
+          )
+        ),
+        checkFunc = (param, isNegatedTest) => {
+          status shouldBe StatusCodes.OK
+          val tokenList = responseAs[List[String]]
+          if (isNegatedTest) {
+            tokenList.length shouldBe 3
+            tokenList shouldEqual List("0", "1", "2")
+          } else {
+            tokenList.length shouldBe 2
+            tokenList shouldEqual List("0", "3")
+          }
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        }
+      )
+
+      // this test case query record table column `name`
+      testRecordQuery(
+        "should filter aspect correctly according to auth decision contains AspectQueryWithValue no.2",
+        Get("/v0/records/pagetokens?limit=1"),
+        testRecords = List(
+          Record(
+            "test1",
+            "test record 1",
+            aspects = Map("aspectB" -> JsObject("b" -> JsNumber(1)))
+          ),
+          Record(
+            "test2",
+            "test record 2",
+            aspects = Map("aspectA" -> JsObject("a" -> JsNumber(1)))
+          ),
+          Record(
+            "test3",
+            "test record 3",
+            aspects = Map("aspectA" -> JsObject("a" -> JsNumber(6)))
+          )
+        ),
+        expression = ConciseExpression(
+          negated = false,
+          operator = Some("="),
+          operands = Vector(
+            ConciseOperand(
+              isRef = true,
+              value = JsString("input.object.record.name")
+            ),
+            ConciseOperand(isRef = false, value = JsString("test record 1"))
+          )
+        ),
+        checkFunc = (param, isNegatedTest) => {
+          status shouldBe StatusCodes.OK
+          val tokenList = responseAs[List[String]]
+          if (isNegatedTest) {
+            tokenList.length shouldBe 3
+            tokenList shouldEqual List("0", "2", "3")
+          } else {
+            tokenList.length shouldBe 2
+            tokenList shouldEqual List("0", "1")
+          }
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        }
+      )
+
+      testRecordQuery(
+        "should filter aspect correctly according to auth decision contains AspectQueryArrayNotEmpty",
+        Get("/v0/records/pagetokens?limit=1"),
+        testRecords = List(
+          Record(
+            "test1",
+            "test record 1",
+            aspects = Map("aspectA" -> JsObject("a" -> JsArray())),
+            None
+          ),
+          Record(
+            "test2",
+            "test record 2",
+            aspects = Map("aspectA" -> JsObject("a" -> JsArray(JsNumber(1)))),
+            None
+          ),
+          Record(
+            "test3",
+            "test record 3",
+            aspects = Map("aspectA" -> JsObject("a" -> JsArray(JsNumber(1)))),
+            None
+          )
+        ),
+        expression = ConciseExpression(
+          negated = false,
+          operator = None,
+          operands = Vector(
+            ConciseOperand(
+              isRef = true,
+              value = JsString("input.object.record.aspectA.a[_]")
+            )
+          )
+        ),
+        checkFunc = (param, isNegatedTest) => {
+          status shouldBe StatusCodes.OK
+          val tokenList = responseAs[List[String]]
+          if (isNegatedTest) {
+            tokenList.length shouldBe 2
+            tokenList shouldEqual List("0", "1")
+          } else {
+            tokenList.length shouldBe 3
+            tokenList shouldEqual List("0", "2", "3")
+          }
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        }
+      )
+
+      endpointStandardAuthTestCase(
+        Get(s"/v0/records/pagetokens?limit=1"),
+        List("object/record/read"),
+        hasPermissionCheck = param => {
+          status shouldEqual StatusCodes.OK
+          val tokenList = responseAs[List[String]]
+          tokenList.length shouldBe 2
+          tokenList shouldEqual List("0", "1")
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        },
+        noPermissionCheck = param => {
+          status shouldEqual StatusCodes.OK
+          val tokenList = responseAs[List[String]]
+          tokenList.length shouldBe 1
+          tokenList shouldEqual List("0")
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        },
+        beforeRequest = param => {
+          // create record
+          param.authFetcher.setAuthDecision(
+            "object/record/create",
+            UnconditionalTrueDecision
+          )
+          Post(
+            "/v0/records",
+            Record("testId", "testName", Map(), Some("blah"))
+          ) ~> addUserId() ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          param.authFetcher.resetMock()
+        }
+      )
+
+    }
+
+    describe("Get Count API: {get} /v0/registry/records/count:") {
+
+      testRecordQuery(
+        "should filter aspect correctly according to auth decision contains AspectQueryValueInArray",
+        Get("/v0/records/count"),
+        testRecords = List(
+          Record(
+            "test1",
+            "test record 1",
+            aspects = Map(
+              "aspectA" -> JsObject(
+                // this record won't be picked as the array is on path `b`
+                "b" -> JsArray(JsNumber(1), JsNumber(3), JsNumber(5))
+              )
+            ),
+            None
+          ),
+          Record(
+            "test2",
+            "test record 2",
+            aspects = Map(
+              "aspectA" -> JsObject(
+                "a" -> JsArray(JsNumber(1), JsNumber(3), JsNumber(5))
+              )
+            ),
+            None
+          ),
+          Record(
+            "test3",
+            "test record 3",
+            aspects = Map(
+              "aspectA" -> JsObject(
+                "a" -> JsArray(JsNumber(2), JsNumber(4), JsNumber(6))
+              )
+            ),
+            None
+          )
+        ),
+        expression = ConciseExpression(
+          negated = false,
+          operator = Some("="),
+          operands = Vector(
+            ConciseOperand(
+              isRef = true,
+              value = JsString("input.object.record.aspectA.a[_]")
+            ),
+            ConciseOperand(
+              isRef = false,
+              value = JsNumber(3)
+            )
+          )
+        ),
+        checkFunc = (param, isNegatedTest) => {
+          status shouldBe StatusCodes.OK
+          val count = responseAs[CountResponse].count
+          if (isNegatedTest) {
+            count shouldBe 2
+          } else {
+            count shouldBe 1
+          }
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        }
+      )
+
+      testRecordQuery(
+        "should filter aspect correctly according to auth decision contains AspectQueryExist",
+        Get("/v0/records/count"),
+        testRecords = List(
+          Record(
+            "test1",
+            "test record 1",
+            aspects = Map("aspectB" -> JsObject("b" -> JsNumber(1))),
+            None
+          ),
+          Record(
+            "test2",
+            "test record 2",
+            aspects = Map("aspectA" -> JsObject("a" -> JsNumber(1))),
+            None
+          ),
+          Record(
+            "test3",
+            "test record 3",
+            aspects = Map(),
+            None
+          )
+        ),
+        expression = ConciseExpression(
+          negated = false,
+          operator = None,
+          operands = Vector(
+            ConciseOperand(
+              isRef = true,
+              value = JsString("input.object.record.aspectA")
+            )
+          )
+        ),
+        checkFunc = (param, isNegatedTest) => {
+          status shouldBe StatusCodes.OK
+          val count = responseAs[CountResponse].count
+          if (isNegatedTest) {
+            count shouldBe 2
+          } else {
+            count shouldBe 1
+          }
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        }
+      )
+
+      // this test case query a record aspect field `aspectA.a`
+      testRecordQuery(
+        "should filter aspect correctly according to auth decision contains AspectQueryWithValue",
+        Get("/v0/records/count"),
+        testRecords = List(
+          Record(
+            "test1",
+            "test record 1",
+            aspects = Map("aspectB" -> JsObject("b" -> JsNumber(1)))
+          ),
+          Record(
+            "test2",
+            "test record 2",
+            aspects = Map("aspectA" -> JsObject("a" -> JsNumber(1)))
+          ),
+          Record(
+            "test3",
+            "test record 3",
+            aspects = Map("aspectA" -> JsObject("a" -> JsNumber(6)))
+          )
+        ),
+        expression = ConciseExpression(
+          negated = false,
+          operator = Some(">"),
+          operands = Vector(
+            ConciseOperand(
+              isRef = true,
+              value = JsString("input.object.record.aspectA.a")
+            ),
+            ConciseOperand(isRef = false, value = JsNumber(1))
+          )
+        ),
+        checkFunc = (param, isNegatedTest) => {
+          status shouldBe StatusCodes.OK
+          val count = responseAs[CountResponse].count
+          if (isNegatedTest) {
+            count shouldBe 2
+          } else {
+            count shouldBe 1
+          }
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        }
+      )
+
+      // this test case query record table column `name`
+      testRecordQuery(
+        "should filter aspect correctly according to auth decision contains AspectQueryWithValue no.2",
+        Get("/v0/records/count"),
+        testRecords = List(
+          Record(
+            "test1",
+            "test record 1",
+            aspects = Map("aspectB" -> JsObject("b" -> JsNumber(1)))
+          ),
+          Record(
+            "test2",
+            "test record 2",
+            aspects = Map("aspectA" -> JsObject("a" -> JsNumber(1)))
+          ),
+          Record(
+            "test3",
+            "test record 3",
+            aspects = Map("aspectA" -> JsObject("a" -> JsNumber(6)))
+          )
+        ),
+        expression = ConciseExpression(
+          negated = false,
+          operator = Some("="),
+          operands = Vector(
+            ConciseOperand(
+              isRef = true,
+              value = JsString("input.object.record.name")
+            ),
+            ConciseOperand(isRef = false, value = JsString("test record 1"))
+          )
+        ),
+        checkFunc = (param, isNegatedTest) => {
+          status shouldBe StatusCodes.OK
+          val count = responseAs[CountResponse].count
+          if (isNegatedTest) {
+            count shouldBe 2
+          } else {
+            count shouldBe 1
+          }
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        }
+      )
+
+      testRecordQuery(
+        "should filter aspect correctly according to auth decision contains AspectQueryArrayNotEmpty",
+        Get("/v0/records/count"),
+        testRecords = List(
+          Record(
+            "test1",
+            "test record 1",
+            aspects = Map("aspectA" -> JsObject("a" -> JsArray())),
+            None
+          ),
+          Record(
+            "test2",
+            "test record 2",
+            aspects = Map("aspectA" -> JsObject("a" -> JsArray(JsNumber(1)))),
+            None
+          ),
+          Record(
+            "test3",
+            "test record 3",
+            aspects = Map("aspectA" -> JsObject("a" -> JsArray(JsNumber(1)))),
+            None
+          )
+        ),
+        expression = ConciseExpression(
+          negated = false,
+          operator = None,
+          operands = Vector(
+            ConciseOperand(
+              isRef = true,
+              value = JsString("input.object.record.aspectA.a[_]")
+            )
+          )
+        ),
+        checkFunc = (param, isNegatedTest) => {
+          status shouldBe StatusCodes.OK
+          val count = responseAs[CountResponse].count
+          if (isNegatedTest) {
+            count shouldBe 1
+          } else {
+            count shouldBe 2
+          }
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        }
+      )
+
+      endpointStandardAuthTestCase(
+        Get(s"/v0/records/count"),
+        List("object/record/read"),
+        hasPermissionCheck = param => {
+          status shouldEqual StatusCodes.OK
+          val count = responseAs[CountResponse].count
+          count shouldBe 1
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        },
+        noPermissionCheck = param => {
+          status shouldEqual StatusCodes.OK
+          val count = responseAs[CountResponse].count
+          count shouldBe 0
+          param.authFetcher
+            .callTimesByOperationUri("object/record/read") shouldBe 1
+        },
+        beforeRequest = param => {
+          // create record
+          param.authFetcher.setAuthDecision(
+            "object/record/create",
+            UnconditionalTrueDecision
+          )
+          Post(
+            "/v0/records",
+            Record("testId", "testName", Map(), Some("blah"))
+          ) ~> addUserId() ~> addTenantIdHeader(
+            TENANT_1
+          ) ~> param.api(Full).routes ~> check {
+            status shouldEqual StatusCodes.OK
+          }
+          param.authFetcher.resetMock()
         }
       )
 
