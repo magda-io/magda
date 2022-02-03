@@ -193,7 +193,7 @@ class AspectQuerySpec extends FunSpec with Matchers {
       )
       val sql = aq.toSql()
       sql.isDefined shouldBe true
-      sql.get.value.stripLineEndingWhitespaces.trim shouldBe " exists (SELECT 1 FROM records where (recordid, tenantid)=(\"records\".\"recordid\", \"records\".\"tenantid\") and COALESCE(recordid::TEXT = ?::TEXT, FALSE))".stripMargin.stripLineEndingWhitespaces.trim
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe " exists (SELECT 1 FROM records as record_tbl_sub_query_ref where (recordid, tenantid)=(\"records\".\"recordid\", \"records\".\"tenantid\") and COALESCE(recordid::TEXT = ?::TEXT, FALSE))".stripMargin.stripLineEndingWhitespaces.trim
       sql.get.parameters shouldBe List(213233222)
     }
 
@@ -207,7 +207,7 @@ class AspectQuerySpec extends FunSpec with Matchers {
       )
       val sql = aq.toSql()
       sql.isDefined shouldBe true
-      sql.get.value.stripLineEndingWhitespaces.trim shouldBe " exists (SELECT 1 FROM records where (recordid, tenantid)=(\"records\".\"recordid\", \"records\".\"tenantid\") and COALESCE(recordid::TEXT = ?::TEXT, FALSE))".stripMargin.stripLineEndingWhitespaces.trim
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe " exists (SELECT 1 FROM records as record_tbl_sub_query_ref where (recordid, tenantid)=(\"records\".\"recordid\", \"records\".\"tenantid\") and COALESCE(recordid::TEXT = ?::TEXT, FALSE))".stripMargin.stripLineEndingWhitespaces.trim
       sql.get.parameters shouldBe List("sds-dsd-233222")
     }
 
@@ -223,7 +223,7 @@ class AspectQuerySpec extends FunSpec with Matchers {
       )
       val sql = aq.toSql()
       sql.isDefined shouldBe true
-      sql.get.value.stripLineEndingWhitespaces.trim shouldBe " exists (SELECT 1 FROM records where (recordid, tenantid)=(\"records\".\"recordid\", \"records\".\"tenantid\") and COALESCE(lastupdate::NUMERIC = ?::NUMERIC, FALSE))".stripMargin.stripLineEndingWhitespaces.trim
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe " exists (SELECT 1 FROM records as record_tbl_sub_query_ref where (recordid, tenantid)=(\"records\".\"recordid\", \"records\".\"tenantid\") and COALESCE(lastupdate::NUMERIC = ?::NUMERIC, FALSE))".stripMargin.stripLineEndingWhitespaces.trim
       sql.get.parameters shouldBe List("23432879")
     }
 
@@ -237,7 +237,7 @@ class AspectQuerySpec extends FunSpec with Matchers {
       )
       val sql = aq.toSql()
       sql.isDefined shouldBe true
-      sql.get.value.stripLineEndingWhitespaces.trim shouldBe " exists (SELECT 1 FROM records where (recordid, tenantid)=(\"records\".\"recordid\", \"records\".\"tenantid\") and COALESCE(lastupdate::NUMERIC = ?::NUMERIC, FALSE))".stripMargin.stripLineEndingWhitespaces.trim
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe " exists (SELECT 1 FROM records as record_tbl_sub_query_ref where (recordid, tenantid)=(\"records\".\"recordid\", \"records\".\"tenantid\") and COALESCE(lastupdate::NUMERIC = ?::NUMERIC, FALSE))".stripMargin.stripLineEndingWhitespaces.trim
       sql.get.parameters shouldBe List(23432879)
     }
 
@@ -278,7 +278,7 @@ class AspectQuerySpec extends FunSpec with Matchers {
       )
       val sql = aq.toSql()
       sql.isDefined shouldBe true
-      sql.get.value.stripLineEndingWhitespaces.trim shouldBe " not exists (SELECT 1 FROM records where (recordid, tenantid)=(\"records\".\"recordid\", \"records\".\"tenantid\") and COALESCE(tenantid::TEXT = ?::TEXT, FALSE))".stripMargin.stripLineEndingWhitespaces.trim
+      sql.get.value.stripLineEndingWhitespaces.trim shouldBe " not exists (SELECT 1 FROM records as record_tbl_sub_query_ref where (recordid, tenantid)=(\"records\".\"recordid\", \"records\".\"tenantid\") and COALESCE(tenantid::TEXT = ?::TEXT, FALSE))".stripMargin.stripLineEndingWhitespaces.trim
       sql.get.parameters shouldBe List(213233222)
     }
 

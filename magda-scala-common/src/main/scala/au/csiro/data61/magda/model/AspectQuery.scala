@@ -267,15 +267,16 @@ case class AspectQueryWithValue(
           s"Invalid AspectQueryWithValue: ${aspectId} is not valid or supported record property / aspect name."
         )
       } else {
-        val recordQuery = sqls"SELECT 1 FROM records".where(
-          SQLSyntax.toAndConditionOpt(
-            Some(
-              sqls"(recordid, tenantid)=(${SQLUtils
-                .escapeIdentifier(recordIdSqlRef)}, ${SQLUtils.escapeIdentifier(tenantIdSqlRef)})"
-            ),
-            recordPropertySqlQueries(columnName)
+        val recordQuery =
+          sqls"SELECT 1 FROM records as record_tbl_sub_query_ref".where(
+            SQLSyntax.toAndConditionOpt(
+              Some(
+                sqls"(recordid, tenantid)=(${SQLUtils
+                  .escapeIdentifier(recordIdSqlRef)}, ${SQLUtils.escapeIdentifier(tenantIdSqlRef)})"
+              ),
+              recordPropertySqlQueries(columnName)
+            )
           )
-        )
         if (negated) {
           Some(SQLSyntax.notExists(recordQuery))
         } else {

@@ -113,7 +113,7 @@ object Registry
         value = "The read authorization policy id of a record",
         required = false,
         allowEmptyValue = true
-      ) authnReadPolicyId: Option[String],
+      ) authnReadPolicyId: Option[String] = None,
       @(ApiModelProperty @field)(
         value = "A tag representing the action by the source of this record " +
           "(e.g. an id for a individual crawl of a data portal).",
