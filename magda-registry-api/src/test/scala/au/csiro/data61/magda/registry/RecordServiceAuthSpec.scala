@@ -146,7 +146,7 @@ class RecordServiceAuthSpec extends ApiSpec {
   }
 
   describe("Record Service Auth Logic") {
-    
+
     describe("Get All API: {get} /v0/registry/records:") {
 
       testRecordQuery(
@@ -835,7 +835,7 @@ class RecordServiceAuthSpec extends ApiSpec {
 
     }
 
-    describe("getById API: /v0/registry/records/summary/{id}:") {
+    describe("getById Summary API: /v0/registry/records/summary/{id}:") {
 
       it(
         "should response 404 if user has not access to the record based on conditional decision"

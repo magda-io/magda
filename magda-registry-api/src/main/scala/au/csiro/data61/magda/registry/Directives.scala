@@ -20,6 +20,7 @@ import scalikejdbc._
 import scala.concurrent.{ExecutionContext, Future, blocking}
 import au.csiro.data61.magda.directives.AuthDirectives.{
   requirePermission,
+  requireUnconditionalAuthDecision,
   withAuthDecision
 }
 import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
@@ -461,8 +462,11 @@ object Directives extends Protocols with SprayJsonSupport {
               )
             ) & withExecutionContext(requestExeCtx) & pass
           case Failure(_: NoRecordFoundException) =>
-            // when record cannot found, aspect is already gone. We let it go.
-            withExecutionContext(requestExeCtx) & pass
+            // when record cannot found, only user has unconditional record update access can proceed to this API (and potentially know the aspect has been already deleted)
+            requireUnconditionalAuthDecision(
+              authApiClient,
+              AuthDecisionReqConfig("object/record/update")
+            ) & withExecutionContext(requestExeCtx) & pass
           case Failure(e: Throwable) =>
             log.error(
               "Failed to create record context data for auth decision. record ID: {}. Error: {}",
