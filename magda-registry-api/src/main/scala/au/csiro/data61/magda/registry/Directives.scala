@@ -1,10 +1,14 @@
 package au.csiro.data61.magda.registry
 
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{Directive0}
+import akka.http.scaladsl.server.Directive0
 import au.csiro.data61.magda.client.{AuthApiClient, AuthDecisionReqConfig}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import akka.http.scaladsl.model.StatusCodes.{BadRequest, InternalServerError}
+import akka.http.scaladsl.model.StatusCodes.{
+  BadRequest,
+  Forbidden,
+  InternalServerError
+}
 import akka.event.LoggingAdapter
 import scalikejdbc.{DBSession, ReadOnlyAutoSession}
 import spray.json.{JsNull, JsNumber, JsObject, JsString, JsValue, JsonParser}
@@ -19,7 +23,7 @@ import au.csiro.data61.magda.directives.AuthDirectives.{
   withAuthDecision
 }
 import au.csiro.data61.magda.directives.TenantDirectives.requiresTenantId
-import au.csiro.data61.magda.model.{Auth}
+import au.csiro.data61.magda.model.Auth
 import au.csiro.data61.magda.model.Registry.{AspectDefinition, Record, WebHook}
 import au.csiro.data61.magda.util.JsonPathUtils.applyJsonPathToRecordContextData
 import au.csiro.data61.magda.model.Auth.{
@@ -849,7 +853,15 @@ object Directives extends Protocols with SprayJsonSupport {
             authApiClient,
             "object/record/read",
             recordId,
-            None,
+            onRecordNotFound = Some(
+              () =>
+                complete(
+                  Forbidden,
+                  ApiError(
+                    s"An error occurred while creating webhook context data for auth decision."
+                  )
+                )
+            ),
             session
           )
         }
